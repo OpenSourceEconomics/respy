@@ -9,21 +9,30 @@ import pandas as pd
 '''
 
 
-def simulate(init_dict, k_state, emax, payoffs_ex_ante, f_state):
+def simulate(robupy_obj):
     """ Simulate from dynamic programming model.
     """
 
-    num_periods = init_dict['BASICS']['periods']
-    num_agents = init_dict['BASICS']['agents']
+    # Distribute class attributes
+    shocks = robupy_obj.get_attr('shocks')
+    k_state = robupy_obj.get_attr('k_state')
+    emax = robupy_obj.get_attr('emax')
+    payoffs_ex_ante = robupy_obj.get_attr('payoffs_ex_ante')
+    f_state = robupy_obj.get_attr('f_state')
+
+    # Auxiliary objects
+    num_periods = robupy_obj.get_attr('num_periods')
+    num_agents = robupy_obj.get_attr('num_agents')
 
     # Initialization of COMPUTATION
-    edu_start = init_dict['EDUCATION']['initial']
+    edu_start = robupy_obj.get_attr('edu_start')
 
+    seed = robupy_obj.get_attr('seed')
     # Disturbance
     # Draw random variable
-    np.random.seed(init_dict['COMPUTATION']['seed'])
+    np.random.seed(seed)
 
-    eps = np.random.multivariate_normal(np.zeros(4), init_dict['SHOCKS'],
+    eps = np.random.multivariate_normal(np.zeros(4), shocks,
                                         (num_periods, num_agents))
 
 
@@ -33,7 +42,7 @@ def simulate(init_dict, k_state, emax, payoffs_ex_ante, f_state):
 
     for i in range(num_agents):
 
-        current_state = k_state[0, 0, :]
+        current_state = k_state[0, 0, :].copy()
 
         data[count, 0] = i
 
@@ -45,7 +54,7 @@ def simulate(init_dict, k_state, emax, payoffs_ex_ante, f_state):
             eps_agent = eps[period, i]
 
             # Get payoffs
-            v = get_payoffs(period, current_state, emax, payoffs_ex_ante,
+            v = _get_payoffs(period, current_state, emax, payoffs_ex_ante,
                             eps_agent, f_state, edu_start)
 
             max_idx = np.argmax(v)
@@ -90,7 +99,7 @@ def simulate(init_dict, k_state, emax, payoffs_ex_ante, f_state):
 '''
 
 
-def get_payoffs(period, k_state, emax, payoffs_ex_ante, eps, f_state, edu_start):
+def _get_payoffs(period, k_state, emax, payoffs_ex_ante, eps, f_state, edu_start):
         """ Get the alternative specific payoffs.
 
         """

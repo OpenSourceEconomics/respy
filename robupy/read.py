@@ -6,6 +6,9 @@ simulating the model's initialization file.
 import numpy as np
 import shlex
 
+# project library
+from robupy.clsRobupy import RobupyCls
+
 
 ''' Public function
 '''
@@ -51,8 +54,15 @@ def read(file_):
     # Check quality.
     _check_integrity_process(dict_)
 
+    # Construct container
+    robupy_obj = RobupyCls()
+
+    robupy_obj.set_attr('init_dict', dict_)
+
+    robupy_obj.lock()
+
     # Finishing.
-    return dict_
+    return robupy_obj
 
 
 ''' Private functions

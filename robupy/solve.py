@@ -9,41 +9,47 @@ import numpy as np
 '''
 
 
-def solve(init_dict):
-    # Initialization of BASICS
-    DELTA = init_dict['BASICS']['delta']
-    NUM_PERIODS = init_dict['BASICS']['periods']
-    NUM_AGENTS = init_dict['BASICS']['agents']
+def solve(robupy_obj):
+    """ Solve dynamic programming problem by backward induction.
+    """
+
+    init_dict = robupy_obj.get_attr('init_dict')
+
+    delta = robupy_obj.get_attr('delta')
+    num_periods = robupy_obj.get_attr('num_periods')
+    num_agents = robupy_obj.get_attr('num_agents')
 
     # Initialization of COMPUTATION
-    NUM_DRAWS = init_dict['COMPUTATION']['draws']
+    num_draws = robupy_obj.get_attr('num_draws')
 
     # Initialization of EDUCATION
-    EDU_START = init_dict['EDUCATION']['initial']
-    EDU_MAX = init_dict['EDUCATION']['maximum']
+    edu_start = robupy_obj.get_attr('edu_start')
+    edu_max = robupy_obj.get_attr('edu_max')
+    seed = robupy_obj.get_attr('seed')
 
 
     # Create grid of possible/admissible state space values
-    k_state, k_period, f_state = _create_state_space(init_dict)
+    k_state, k_period, f_state = _create_state_space(robupy_obj)
 
+    # TODO: KMAX
     k_max = max(k_period)
 
     # Draw random variable
-    np.random.seed(init_dict['COMPUTATION']['seed'])
+    np.random.seed(seed)
 
     eps = np.random.multivariate_normal(np.zeros(4), init_dict['SHOCKS'],
-                                        (NUM_PERIODS, NUM_DRAWS))
+                                        (num_periods, num_draws))
 
     ''' Solve finite horizon dynamic programming problem by backward induction.
     Speed consideration are of the outmost importance here.
     '''
-    emax = np.tile(np.nan, (NUM_PERIODS, k_max))
+    emax = np.tile(np.nan, (num_periods, k_max))
 
     # Systematic components of payoff
-    payoffs_ex_ante = np.tile(np.nan, (NUM_PERIODS, k_max, 4))
+    payoffs_ex_ante = np.tile(np.nan, (num_periods, k_max, 4))
 
     # Calculate systematic instantaneous payoffs
-    for period in range(NUM_PERIODS - 1, -1, -1):
+    for period in range(num_periods - 1, -1, -1):
 
         # Loop over all possible states
         for k in range(k_period[period]):
@@ -82,7 +88,7 @@ def solve(init_dict):
             # Calculate systematic part of HOME
             payoffs_ex_ante[period, k, 3] = init_dict['HOME']['int']
 
-    for period in range(NUM_PERIODS - 1, -1, -1):
+    for period in range(num_periods - 1, -1, -1):
 
         # Loop over all possible states
         for k in range(k_period[period]):
@@ -112,7 +118,7 @@ def solve(init_dict):
 
             vmax = 0
 
-            for i in range(NUM_DRAWS):
+            for i in range(num_draws):
 
                 # Calculate ex post payoffs
                 for j in [0, 1]:
@@ -127,19 +133,19 @@ def solve(init_dict):
                 wA_total, wB_total, edu_total, home_total = payoffs_ex_post
 
                 # Future utilities
-                if period != (NUM_PERIODS - 1):
+                if period != (num_periods - 1):
 
                     # Working in occupation A
                     future_idx = f_state[period + 1, exp_A + 1, exp_B,
-                                         (edu - EDU_START), 0]
+                                         (edu - edu_start), 0]
 
-                    wA_total += DELTA * emax[period + 1, future_idx]
+                    wA_total += delta * emax[period + 1, future_idx]
 
                     # Working in occupation B
                     future_idx = f_state[period + 1, exp_A, exp_B + 1,
-                                         (edu - EDU_START), 0]
+                                         (edu - edu_start), 0]
 
-                    wB_total += DELTA * emax[period + 1, future_idx]
+                    wB_total += delta * emax[period + 1, future_idx]
 
                     # Increasing schooling. Note that adding an additional year
                     # of schooling is only possible for those that have strictly
@@ -147,20 +153,20 @@ def solve(init_dict):
                     #
                     #
                     # Is this a valid way to impose this restriction?
-                    if edu < EDU_MAX:
+                    if edu < edu_max:
                         future_idx = f_state[period + 1, exp_A, exp_B,
-                                             (edu - EDU_START + 1), 1]
+                                             (edu - edu_start + 1), 1]
 
-                        edu_total += DELTA * emax[period + 1, future_idx]
+                        edu_total += delta * emax[period + 1, future_idx]
                     else:
 
                         edu_total = - 40000
 
                     # Staying at home
                     future_idx = f_state[period + 1, exp_A, exp_B,
-                                         (edu - EDU_START), 0]
+                                         (edu - edu_start), 0]
 
-                    home_total += DELTA * emax[period + 1, future_idx]
+                    home_total += delta * emax[period + 1, future_idx]
 
                 # Hypothetical choice
                 vmax = max(wA_total, wB_total, edu_total, home_total)
@@ -169,31 +175,46 @@ def solve(init_dict):
                 emax[period, k] += vmax
 
             # Scaling
-            emax[period, k] = emax[period, k] / NUM_DRAWS
+            emax[period, k] = emax[period, k] / num_draws
 
     # Checking validity of expected future values. All valid values need to be
     # finite.
-    for period in range(NUM_PERIODS):
+    for period in range(num_periods):
         assert (np.all(np.isfinite(emax[period, :k_period[period]])))
 
+    # Update
+    robupy_obj.unlock()
+
+    robupy_obj.set_attr('emax', emax)
+
+    robupy_obj.set_attr('k_period', k_period)
+
+    robupy_obj.set_attr('k_state', k_state)
+
+    robupy_obj.set_attr('payoffs_ex_ante', payoffs_ex_ante)
+
+    robupy_obj.set_attr('f_state', f_state)
+
+    robupy_obj.lock()
+
     # Finishing
-    return emax, k_period, k_state, eps, payoffs_ex_ante, f_state
+    return robupy_obj
 
 
 ''' Private functions
 '''
 
 
-def _create_state_space(init_dict):
+def _create_state_space(robupy_obj):
     """ Create grid for state space.
     """
 
     # Initialization of BASICS
-    num_periods = init_dict['BASICS']['periods']
+    num_periods = robupy_obj.get_attr('num_periods')
 
     # Initialization of EDUCATION
-    edu_start = init_dict['EDUCATION']['initial']
-    edu_max = init_dict['EDUCATION']['maximum']
+    edu_start = robupy_obj.get_attr('edu_start')
+    edu_max = robupy_obj.get_attr('edu_max')
 
     # Array for possible realization of state space by period
     k_state = np.tile(np.nan, (num_periods, 100000, 4))
