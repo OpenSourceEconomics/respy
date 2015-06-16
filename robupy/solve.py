@@ -12,37 +12,36 @@ import numpy as np
 def solve(robupy_obj):
     """ Solve dynamic programming problem by backward induction.
     """
+    # Antibugging
+    assert (robupy_obj.get_status())
 
+    # Distribute class attributes
     init_dict = robupy_obj.get_attr('init_dict')
 
     delta = robupy_obj.get_attr('delta')
-    num_periods = robupy_obj.get_attr('num_periods')
-    num_agents = robupy_obj.get_attr('num_agents')
 
-    # Initialization of COMPUTATION
+    num_periods = robupy_obj.get_attr('num_periods')
+
     num_draws = robupy_obj.get_attr('num_draws')
 
-    # Initialization of EDUCATION
     edu_start = robupy_obj.get_attr('edu_start')
-    edu_max = robupy_obj.get_attr('edu_max')
-    seed = robupy_obj.get_attr('seed')
 
+    edu_max = robupy_obj.get_attr('edu_max')
+
+    seed = robupy_obj.get_attr('seed')
 
     # Create grid of possible/admissible state space values
     k_state, k_period, f_state = _create_state_space(robupy_obj)
 
-    # TODO: KMAX
     k_max = max(k_period)
 
-    # Draw random variable
+    # Draw random variables
     np.random.seed(seed)
 
     eps = np.random.multivariate_normal(np.zeros(4), init_dict['SHOCKS'],
                                         (num_periods, num_draws))
 
-    ''' Solve finite horizon dynamic programming problem by backward induction.
-    Speed consideration are of the outmost importance here.
-    '''
+    # Initialize container for expected future values
     emax = np.tile(np.nan, (num_periods, k_max))
 
     # Systematic components of payoff
@@ -55,11 +54,7 @@ def solve(robupy_obj):
         for k in range(k_period[period]):
 
             # Distribute state space
-            exp_A = k_state[period, k, 0]
-            exp_B = k_state[period, k, 1]
-
-            edu = k_state[period, k, 2]
-            edu_lagged = k_state[period, k, 3]
+            exp_A, exp_B, edu, edu_lagged = k_state[period, k, :]
 
             # Auxiliary objects
             coeffs = dict()
@@ -88,6 +83,7 @@ def solve(robupy_obj):
             # Calculate systematic part of HOME
             payoffs_ex_ante[period, k, 3] = init_dict['HOME']['int']
 
+    # Iterate backward through all periods
     for period in range(num_periods - 1, -1, -1):
 
         # Loop over all possible states
@@ -99,35 +95,19 @@ def solve(robupy_obj):
             payoffs_ex_post = np.tile(np.nan, 4)
 
             # Distribute state space
-            exp_A = k_state[period, k, 0]
-            exp_B = k_state[period, k, 1]
+            exp_A, exp_B, edu, edu_lagged = k_state[period, k, :]
 
-            edu = k_state[period, k, 2]
-            edu_lagged = k_state[period, k, 3]
-
-            # Calculate systematic part of wages
-            wA_systm = payoffs_ex_ante[period, k, 0]
-
-            wB_systm = payoffs_ex_ante[period, k, 1]
-
-            # Calculate systematic part of schooling utility
-            edu_systm = payoffs_ex_ante[period, k, 2]
-
-            # Calculate systematic part of HOME
-            home_systm = payoffs_ex_ante[period, k, 3]
-
-            vmax = 0
-
+            # Calculate maximum value
             for i in range(num_draws):
 
                 # Calculate ex post payoffs
                 for j in [0, 1]:
                     payoffs_ex_post[j] = payoffs_ex_ante[period, k, j] * \
-                                         np.exp(eps[period, i, j])
+                        np.exp(eps[period, i, j])
 
                 for j in [2, 3]:
                     payoffs_ex_post[j] = payoffs_ex_ante[period, k, j] + \
-                                         eps[period, i, j]
+                        eps[period, i, j]
 
                 # Future utilities
                 wA_total, wB_total, edu_total, home_total = payoffs_ex_post
@@ -169,10 +149,10 @@ def solve(robupy_obj):
                     home_total += delta * emax[period + 1, future_idx]
 
                 # Hypothetical choice
-                vmax = max(wA_total, wB_total, edu_total, home_total)
+                maximum = max(wA_total, wB_total, edu_total, home_total)
 
                 # Recording expected future value
-                emax[period, k] += vmax
+                emax[period, k] += maximum
 
             # Scaling
             emax[period, k] = emax[period, k] / num_draws
@@ -209,11 +189,11 @@ def _create_state_space(robupy_obj):
     """ Create grid for state space.
     """
 
-    # Initialization of BASICS
+    # Distribute class attributes
     num_periods = robupy_obj.get_attr('num_periods')
 
-    # Initialization of EDUCATION
     edu_start = robupy_obj.get_attr('edu_start')
+
     edu_max = robupy_obj.get_attr('edu_max')
 
     # Array for possible realization of state space by period
@@ -226,6 +206,7 @@ def _create_state_space(robupy_obj):
     f_state = np.tile(np.nan, (num_periods, num_periods, num_periods,
                                min(num_periods, edu_max), 2))
 
+    # Construct state space by periods
     for period in range(num_periods):
 
         # Count admissible realizations of state space by period
@@ -245,8 +226,9 @@ def _create_state_space(robupy_obj):
                     # does not matter.
                     for edu_lagged in [0, 1]:
 
-                        # Check if lagged education admissible. (1) In the first
-                        # period all agents have lagged schooling equal to one.
+                        # Check if lagged education admissible. (1) In the
+                        # first period all agents have lagged schooling equal
+                        # to one.
                         if (edu_lagged == 0) and (period == 0): continue
                         # (2) Whenever an agent has ten years of education and
                         # we are not in the first period, then this cannot be
@@ -257,9 +239,10 @@ def _create_state_space(robupy_obj):
                         # Check if admissible for time constraints
                         total = (edu - edu_start) + exp_A + exp_B
 
-                        # Note that the total number of activities does not have
-                        # is less or equal to the total possible number of
-                        # activites as the rest is implicitly filled with leisure.
+                        # Note that the total number of activities does not
+                        # have is less or equal to the total possible number of
+                        # activites as the rest is implicitly filled with
+                        # leisure.
                         if total > period: continue
 
                         # Collect opportunities
@@ -278,6 +261,7 @@ def _create_state_space(robupy_obj):
 
     # Type transformation
     k_period = np.array(k_period, dtype='int')
+
     k_state = np.array(k_state, dtype='int')
 
     # Auxiliary objects
