@@ -42,7 +42,7 @@ class RobupyCls(MetaCls):
 
         self.attr['payoffs_ex_ante'] = None
 
-        self.attr['f_state'] = None
+        self.attr['state_to_idx'] = None
 
         # Status indicator
         self.is_locked = False

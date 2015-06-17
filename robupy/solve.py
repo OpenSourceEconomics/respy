@@ -31,7 +31,7 @@ def solve(robupy_obj):
     seed = robupy_obj.get_attr('seed')
 
     # Create grid of possible/admissible state space values
-    k_state, k_period, f_state = _create_state_space(robupy_obj)
+    k_state, k_period, state_to_idx = _create_state_space(robupy_obj)
 
     k_max = max(k_period)
 
@@ -116,13 +116,13 @@ def solve(robupy_obj):
                 if period != (num_periods - 1):
 
                     # Working in occupation A
-                    future_idx = f_state[period + 1, exp_A + 1, exp_B,
+                    future_idx = state_to_idx[period + 1, exp_A + 1, exp_B,
                                          (edu - edu_start), 0]
 
                     wA_total += delta * emax[period + 1, future_idx]
 
                     # Working in occupation B
-                    future_idx = f_state[period + 1, exp_A, exp_B + 1,
+                    future_idx = state_to_idx[period + 1, exp_A, exp_B + 1,
                                          (edu - edu_start), 0]
 
                     wB_total += delta * emax[period + 1, future_idx]
@@ -134,7 +134,7 @@ def solve(robupy_obj):
                     #
                     # Is this a valid way to impose this restriction?
                     if edu < edu_max:
-                        future_idx = f_state[period + 1, exp_A, exp_B,
+                        future_idx = state_to_idx[period + 1, exp_A, exp_B,
                                              (edu - edu_start + 1), 1]
 
                         edu_total += delta * emax[period + 1, future_idx]
@@ -143,7 +143,7 @@ def solve(robupy_obj):
                         edu_total = - 40000
 
                     # Staying at home
-                    future_idx = f_state[period + 1, exp_A, exp_B,
+                    future_idx = state_to_idx[period + 1, exp_A, exp_B,
                                          (edu - edu_start), 0]
 
                     home_total += delta * emax[period + 1, future_idx]
@@ -173,7 +173,7 @@ def solve(robupy_obj):
 
     robupy_obj.set_attr('payoffs_ex_ante', payoffs_ex_ante)
 
-    robupy_obj.set_attr('f_state', f_state)
+    robupy_obj.set_attr('state_to_idx', state_to_idx)
 
     robupy_obj.lock()
 
@@ -203,7 +203,7 @@ def _create_state_space(robupy_obj):
     k_period = np.tile(np.nan, num_periods)
 
     # Array for future states by period
-    f_state = np.tile(np.nan, (num_periods, num_periods, num_periods,
+    state_to_idx = np.tile(np.nan, (num_periods, num_periods, num_periods,
                                min(num_periods, edu_max), 2))
 
     # Construct state space by periods
@@ -241,7 +241,7 @@ def _create_state_space(robupy_obj):
 
                         # Note that the total number of activities does not
                         # have is less or equal to the total possible number of
-                        # activites as the rest is implicitly filled with
+                        # activities as the rest is implicitly filled with
                         # leisure.
                         if total > period: continue
 
@@ -250,7 +250,7 @@ def _create_state_space(robupy_obj):
 
                         # Collect future state. Note that the -1 shift is
                         # required as Python indexing starts at 0.
-                        f_state[period, exp_A, exp_B, (edu - edu_start),
+                        state_to_idx[period, exp_A, exp_B, (edu - edu_start),
                                 edu_lagged] = k
 
                         # Update count
@@ -276,4 +276,4 @@ def _create_state_space(robupy_obj):
         assert (np.all(np.isfinite(k_state[period, :k_period[period]])))
 
     # Finishing
-    return k_state, k_period, f_state
+    return k_state, k_period, state_to_idx

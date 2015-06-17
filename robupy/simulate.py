@@ -24,7 +24,7 @@ def simulate(robupy_obj):
 
     payoffs_ex_ante = robupy_obj.get_attr('payoffs_ex_ante')
 
-    f_state = robupy_obj.get_attr('f_state')
+    state_to_idx = robupy_obj.get_attr('state_to_idx')
 
     num_periods = robupy_obj.get_attr('num_periods')
 
@@ -63,7 +63,7 @@ def simulate(robupy_obj):
 
             # Get payoffs
             v = _get_payoffs(period, current_state, emax, payoffs_ex_ante,
-                             eps_agent, f_state, edu_start)
+                             eps_agent, state_to_idx, edu_start)
 
             max_idx = np.argmax(v)
 
@@ -117,7 +117,7 @@ def _write_out(data):
                      formatters=formats)
 
 
-def _get_payoffs(period, k_state, emax, payoffs_ex_ante, eps, f_state,
+def _get_payoffs(period, k_state, emax, payoffs_ex_ante, eps, state_to_idx,
                  edu_start):
     """ Get the alternative specific payoffs.
     """
@@ -125,7 +125,7 @@ def _get_payoffs(period, k_state, emax, payoffs_ex_ante, eps, f_state,
     exp_A, exp_B, edu, edu_lagged = k_state
 
     # Get index
-    idx = f_state[period, exp_A, exp_B, (edu - edu_start), edu_lagged]
+    idx = state_to_idx[period, exp_A, exp_B, (edu - edu_start), edu_lagged]
 
     # Construct total value
     values = payoffs_ex_ante[period, idx, :] + eps
