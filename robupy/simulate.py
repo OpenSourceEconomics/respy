@@ -18,13 +18,13 @@ def simulate(robupy_obj):
     # Distribute class attributes
     shocks = robupy_obj.get_attr('shocks')
 
-    k_state = robupy_obj.get_attr('k_state')
+    states_all = robupy_obj.get_attr('states_all')
 
     emax = robupy_obj.get_attr('emax')
 
     payoffs_ex_ante = robupy_obj.get_attr('payoffs_ex_ante')
 
-    state_to_idx = robupy_obj.get_attr('state_to_idx')
+    mapping_state_idx = robupy_obj.get_attr('mapping_state_idx')
 
     num_periods = robupy_obj.get_attr('num_periods')
 
@@ -48,7 +48,7 @@ def simulate(robupy_obj):
 
     for i in range(num_agents):
 
-        current_state = k_state[0, 0, :].copy()
+        current_state = states_all[0, 0, :].copy()
 
         data[count, 0] = i
 
@@ -63,7 +63,7 @@ def simulate(robupy_obj):
 
             # Get payoffs
             v = _get_payoffs(period, current_state, emax, payoffs_ex_ante,
-                             eps_agent, state_to_idx, edu_start)
+                             eps_agent, mapping_state_idx, edu_start)
 
             max_idx = np.argmax(v)
 
@@ -117,15 +117,15 @@ def _write_out(data):
                      formatters=formats)
 
 
-def _get_payoffs(period, k_state, emax, payoffs_ex_ante, eps, state_to_idx,
+def _get_payoffs(period, states_all, emax, payoffs_ex_ante, eps, mapping_state_idx,
                  edu_start):
     """ Get the alternative specific payoffs.
     """
     # Distribute current state space
-    exp_A, exp_B, edu, edu_lagged = k_state
+    exp_A, exp_B, edu, edu_lagged = states_all
 
     # Get index
-    idx = state_to_idx[period, exp_A, exp_B, (edu - edu_start), edu_lagged]
+    idx = mapping_state_idx[period, exp_A, exp_B, (edu - edu_start), edu_lagged]
 
     # Construct total value
     values = payoffs_ex_ante[period, idx, :] + eps

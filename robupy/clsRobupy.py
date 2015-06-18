@@ -33,16 +33,18 @@ class RobupyCls(MetaCls):
 
         self.attr['seed'] = None
 
+        self.attr['debug'] = None
+
         # Results
         self.attr['emax'] = None
 
-        self.attr['k_period'] = None
+        self.attr['states_number_period'] = None
 
-        self.attr['k_state'] = None
+        self.attr['states_all'] = None
 
-        self.attr['payoffs_ex_ante'] = None
+        self.attr['period_payoffs_ex_ante'] = None
 
-        self.attr['state_to_idx'] = None
+        self.attr['mapping_state_idx'] = None
 
         # Status indicator
         self.is_locked = False
@@ -63,15 +65,21 @@ class RobupyCls(MetaCls):
 
         self.attr['delta'] = init_dict['BASICS']['delta']
 
-
         self.attr['edu_start'] = init_dict['EDUCATION']['initial']
 
         self.attr['edu_max'] = init_dict['EDUCATION']['maximum']
 
         self.attr['num_draws'] = init_dict['COMPUTATION']['draws']
 
+        self.attr['debug'] = init_dict['COMPUTATION']['debug']
+
         self.attr['seed'] = init_dict['COMPUTATION']['seed']
 
         self.attr['shocks'] = init_dict['SHOCKS']
 
-    # TODO: TESTING
+    def _check_integrity(self):
+        """ Check integrity of class instance.
+        """
+
+        # Debug status
+        assert (self.attr['debug'] in [True, False])

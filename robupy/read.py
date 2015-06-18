@@ -130,6 +130,9 @@ def _process_standard(list_, dict_, keyword):
         val = int(val)
     elif name in []:
         val = str(val)
+    elif name in ['debug']:
+        assert (val.upper() in ['TRUE', 'FALSE'])
+        val = (val.upper() == 'TRUE')
     else:
         val = float(val)
 
@@ -200,6 +203,8 @@ def _check_integrity_process(dict_):
     for label in ['initial', 'maximum']:
         assert (isinstance(dict_['EDUCATION'][label], int))
         assert (dict_['EDUCATION'][label] >= 0)
+
+    assert (dict_['EDUCATION']['maximum'] > dict_['EDUCATION']['initial'])
 
     assert (isinstance(dict_['EDUCATION']['int'], float))
     assert (np.isfinite(dict_['EDUCATION']['int']))
