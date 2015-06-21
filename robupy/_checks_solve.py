@@ -113,11 +113,11 @@ def _checks(str_, robupy_obj, *args):
             # Check that all inadmissible states are infinite
             assert (np.all(np.isfinite(period_payoffs_ex_ante[is_infinite == False])) == False)
 
-    # Check the ex ante period payoffs
+    # Check the ex ante period payoffs and its ingredients
     elif str_ == 'emax':
 
         # Distribute input parameters
-        states_all, states_number_period, emax = args
+        states_all, states_number_period, emax, future_payoffs = args
 
         # Check that the payoffs are finite for all admissible values and infinite for all others.
         is_infinite = np.tile(False, reps=emax.shape)
@@ -131,7 +131,24 @@ def _checks(str_, robupy_obj, *args):
             # Check that all admissible states are finite
             assert (np.all(np.isfinite(emax[is_infinite == True])))
             # Check that all inadmissible states are infinite
-            assert (np.all(np.isfinite(emax[is_infinite == False])) == False)
+            if num_periods == 1:
+                assert (len(emax[is_infinite == False]) == 0)
+            else:
+                assert (np.all(np.isfinite(emax[is_infinite == False])) == False)
+
+        # Check that the payoffs are finite for all admissible values and infinite for all others.
+        for period in range(num_periods):
+            # Loop over all possible states
+            for k in range(states_number_period[period]):
+                # Check for finite value at admissible state, infinite
+                # values are allowed for the third column when the
+                # maximum level of education is attained.
+                assert (np.all(np.isfinite(future_payoffs[period, k, :2])))
+                assert (np.all(np.isfinite(future_payoffs[period, k, 3])))
+                # Special checks for infinite value due to
+                # high education.
+                if not np.isfinite(future_payoffs[period, k, 2]):
+                    assert (states_all[period, k][2] == edu_max - edu_start)
 
     else:
 

@@ -42,9 +42,18 @@ class RobupyCls(MetaCls):
 
         self.attr['states_all'] = None
 
-        self.attr['period_payoffs_ex_ante'] = None
+        self.attr['period_payoffs_ex_post'] = None
 
         self.attr['mapping_state_idx'] = None
+
+        # The ex post realizations are only stored for
+        # debugging purposes. In the special case of
+        # no randomness, they have to be equal to the
+        # ex ante version. The same is true for the
+        # future payoffs
+        self.attr['period_payoffs_ex_ante'] = None
+
+        self.attr['future_payoffs'] = None
 
         # Status indicator
         self.is_locked = False
@@ -65,9 +74,9 @@ class RobupyCls(MetaCls):
 
         self.attr['delta'] = init_dict['BASICS']['delta']
 
-        self.attr['edu_start'] = init_dict['EDUCATION']['initial']
+        self.attr['edu_start'] = init_dict['EDUCATION']['start']
 
-        self.attr['edu_max'] = init_dict['EDUCATION']['maximum']
+        self.attr['edu_max'] = init_dict['EDUCATION']['max']
 
         self.attr['num_draws'] = init_dict['COMPUTATION']['draws']
 

@@ -7,6 +7,7 @@ import numpy as np
 
 # project library
 from robupy._checks_solve import _checks
+from robupy._shared import _get_future_payoffs
 
 ''' Public function
 '''
@@ -51,8 +52,12 @@ def solve(robupy_obj):
     # Initialize container for expected future values
     emax = np.tile(np.nan, (num_periods, max(states_number_period)))
 
-    # Systematic components of payoff
+    # Initialize components of payoffs. The ex post payoffs and the future payoffs
+    # are only stored for debugging reasons and can be removed if memory usage
+    # turns out to be an issue.
     period_payoffs_ex_ante = np.tile(np.nan, (num_periods, max(states_number_period), 4))
+    period_payoffs_ex_post = np.tile(np.nan, (num_periods, max(states_number_period), 4))
+    future_payoffs = np.tile(np.nan, (num_periods, max(states_number_period), 4))
 
     # Calculate systematic instantaneous payoffs
     for period in range(num_periods - 1, -1, -1):
@@ -101,62 +106,26 @@ def solve(robupy_obj):
             # Initialize container
             emax[period, k] = 0
 
-            period_payoffs_ex_post = np.tile(np.nan, 4)
-
-            # Distribute state space
-            exp_A, exp_B, edu, edu_lagged = states_all[period, k, :]
-
             # Calculate maximum value
             for i in range(num_draws):
 
                 # Calculate ex post payoffs
                 for j in [0, 1]:
-                    period_payoffs_ex_post[j] = period_payoffs_ex_ante[period, k, j] * \
+                    period_payoffs_ex_post[period, k, j] = period_payoffs_ex_ante[period, k, j] * \
                         np.exp(eps[period, i, j])
 
                 for j in [2, 3]:
-                    period_payoffs_ex_post[j] = period_payoffs_ex_ante[period, k, j] + \
+                    period_payoffs_ex_post[period, k, j] = period_payoffs_ex_ante[period, k, j] + \
                         eps[period, i, j]
 
-                # Future utilities
-                total_payoffs = period_payoffs_ex_post
+                # Calculate future utilities
+                future_payoffs[period, k, :] = _get_future_payoffs(edu_max, edu_start, mapping_state_idx, period, emax,
+                                                     k, states_all, num_periods, delta)
 
-                # Future utilities
-                if period != (num_periods - 1):
+                # Calculate total utilities
+                total_payoffs = period_payoffs_ex_post[period, k, :] + future_payoffs[period, k, :]
 
-                    # Working in occupation A
-                    future_idx = mapping_state_idx[period + 1, exp_A + 1, exp_B,
-                                              edu, 0]
-
-                    total_payoffs[0] += delta * emax[period + 1, future_idx]
-
-                    # Working in occupation B
-                    future_idx = mapping_state_idx[period + 1, exp_A, exp_B + 1,
-                                              edu, 0]
-
-                    total_payoffs[1] += delta * emax[period + 1, future_idx]
-
-                    # Increasing schooling. Note that adding an additional year
-                    # of schooling is only possible for those that have strictly
-                    # less than the maximum level of additional education allowed.
-                    if edu < edu_max - edu_start:
-
-                        future_idx = mapping_state_idx[period + 1, exp_A, exp_B,
-                                             edu + 1, 1]
-
-                        total_payoffs[2] += delta * emax[period + 1, future_idx]
-
-                    else:
-
-                        total_payoffs[2] = -np.inf
-
-                    # Staying at home
-                    future_idx = mapping_state_idx[period + 1, exp_A, exp_B,
-                                         edu, 0]
-
-                    total_payoffs[3] += delta * emax[period + 1, future_idx]
-
-                # Hypothetical choice
+                # Determine optimal choice
                 maximum = max(total_payoffs)
 
                 # Recording expected future value
@@ -165,22 +134,26 @@ def solve(robupy_obj):
             # Scaling
             emax[period, k] = emax[period, k] / num_draws
 
-    # Run checks on expected future values
+    # Run checks on expected future values and its ingredients
     if debug is True:
-        _checks('emax', robupy_obj, states_all, states_number_period, emax)
+        _checks('emax', robupy_obj, states_all, states_number_period, emax, future_payoffs)
 
     # Update
     robupy_obj.unlock()
 
-    robupy_obj.set_attr('emax', emax)
-
     robupy_obj.set_attr('states_number_period', states_number_period)
-
-    robupy_obj.set_attr('states_all', states_all)
 
     robupy_obj.set_attr('period_payoffs_ex_ante', period_payoffs_ex_ante)
 
+    robupy_obj.set_attr('period_payoffs_ex_post', period_payoffs_ex_post)
+
     robupy_obj.set_attr('mapping_state_idx', mapping_state_idx)
+
+    robupy_obj.set_attr('future_payoffs', future_payoffs)
+
+    robupy_obj.set_attr('states_all', states_all)
+
+    robupy_obj.set_attr('emax', emax)
 
     robupy_obj.lock()
 

@@ -126,7 +126,7 @@ def _process_standard(list_, dict_, keyword):
             dict_[keyword][name] = []
 
     # Type conversion
-    if name in ['agents', 'periods', 'initial', 'maximum', 'draws', 'seed']:
+    if name in ['agents', 'periods', 'start', 'max', 'draws', 'seed']:
         val = int(val)
     elif name in []:
         val = str(val)
@@ -200,11 +200,11 @@ def _check_integrity_process(dict_):
             'coeff']))
 
     # Check EDUCATION
-    for label in ['initial', 'maximum']:
+    for label in ['start', 'max']:
         assert (isinstance(dict_['EDUCATION'][label], int))
         assert (dict_['EDUCATION'][label] >= 0)
 
-    assert (dict_['EDUCATION']['maximum'] > dict_['EDUCATION']['initial'])
+    assert (dict_['EDUCATION']['max'] > dict_['EDUCATION']['start'])
 
     assert (isinstance(dict_['EDUCATION']['int'], float))
     assert (np.isfinite(dict_['EDUCATION']['int']))
@@ -223,12 +223,13 @@ def _check_integrity_process(dict_):
     assert (dict_['COMPUTATION']['draws'] >= 0)
     assert (isinstance(dict_['COMPUTATION']['seed'], int))
     assert (dict_['COMPUTATION']['seed'] >= 0)
+    assert (dict_['COMPUTATION']['debug'] in [True, False])
 
     # Check SHOCKS
     assert (len(dict_['SHOCKS']) == 4)
     assert (np.array(dict_['SHOCKS']).shape == (4, 4))
     assert (np.all(np.isfinite(np.array(dict_['SHOCKS']))))
-    assert (np.all(np.diag(np.array(dict_['SHOCKS']) > 0)))
+    assert (np.all(np.diag(np.array(dict_['SHOCKS']) >= 0)))
     assert ((np.array(dict_['SHOCKS']).transpose() ==
              np.array(dict_['SHOCKS'])).all())
 

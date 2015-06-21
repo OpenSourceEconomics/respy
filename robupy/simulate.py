@@ -1,9 +1,25 @@
 """ This module contains all the capabilities to simulate from the model.
+
+    Structure of Dataset:
+
+    0   Identifier of Agent
+    1   Time Period
+    2   Choice (0 = Work A, 1 = Work B, 2 = Education, 3 = Home)
+    3   Earnings (missing value if not working)
+    4   Work Experience A
+    5   Work Experience B
+    6   Schooling
+    7   Lagged Schooling
+
 """
 
 # standard library
 import numpy as np
 import pandas as pd
+
+# project library
+from robupy._checks_simulate import _checks
+from robupy._shared import _get_future_payoffs
 
 ''' Public function
 '''
@@ -16,13 +32,21 @@ def simulate(robupy_obj):
     assert (robupy_obj.get_status())
 
     # Distribute class attributes
+    debug = robupy_obj.get_attr('debug')
+
     shocks = robupy_obj.get_attr('shocks')
 
     states_all = robupy_obj.get_attr('states_all')
 
     emax = robupy_obj.get_attr('emax')
 
-    payoffs_ex_ante = robupy_obj.get_attr('payoffs_ex_ante')
+    delta = robupy_obj.get_attr('delta')
+
+    edu_start = robupy_obj.get_attr('edu_start')
+
+    edu_max = robupy_obj.get_attr('edu_max')
+
+    period_payoffs_ex_ante = robupy_obj.get_attr('period_payoffs_ex_ante')
 
     mapping_state_idx = robupy_obj.get_attr('mapping_state_idx')
 
@@ -30,18 +54,16 @@ def simulate(robupy_obj):
 
     num_agents = robupy_obj.get_attr('num_agents')
 
-    edu_start = robupy_obj.get_attr('edu_start')
-
     seed = robupy_obj.get_attr('seed')
 
-    # Draw disturbances
+    # Draw disturbances.
     np.random.seed(seed)
 
     eps = np.random.multivariate_normal(np.zeros(4), shocks,
                                         (num_periods, num_agents))
 
     # Initialize data
-    data = np.tile(np.nan, (num_agents * num_periods, 6))
+    data = np.tile(np.nan, (num_agents * num_periods, 8))
 
     # Initialize row indicator
     count = 0
@@ -55,17 +77,45 @@ def simulate(robupy_obj):
         # Iterate over each period for the agent
         for period in range(num_periods):
 
+            # Distribute state space
+            exp_A, exp_B, edu, edu_lagged = current_state
+
+            k = mapping_state_idx[period, exp_A, exp_B, edu, edu_lagged]
+
             # Write agent identifier and current period to data frame
             data[count, :2] = i, period
 
-            # Select disturbances
-            eps_agent = eps[period, i]
+            period_payoffs_ex_post = np.tile(np.nan, 4)
 
-            # Get payoffs
-            v = _get_payoffs(period, current_state, emax, payoffs_ex_ante,
-                             eps_agent, mapping_state_idx, edu_start)
+            # Calculate ex post payoffs
+            for j in [0, 1]:
+                period_payoffs_ex_post[j] = period_payoffs_ex_ante[period, k, j] * \
+                                                np.exp(eps[period, i, j])
 
-            max_idx = np.argmax(v)
+            for j in [2, 3]:
+                period_payoffs_ex_post[j] = period_payoffs_ex_ante[period, k, j] + \
+                                                eps[period, i, j]
+
+            # Calculate future utilities
+            future_payoffs = _get_future_payoffs(edu_max, edu_start, mapping_state_idx, period,
+                                                 emax, k, states_all, num_periods, delta)
+
+            # Calculate total utilities
+            total_payoffs = period_payoffs_ex_post + future_payoffs
+
+            # Determine optimal choice
+            max_idx = np.argmax(total_payoffs)
+
+            # Record agent decision
+            data[count, 2] = max_idx
+
+            # Record earnings
+            data[count, 3] = np.nan
+            if max_idx in [0, 1]:
+                data[count, 3] = period_payoffs_ex_post[max_idx]
+
+            # Write relevant state space for period to data frame
+            data[count, 4:8] = current_state
 
             # Update work experiences and education
             if max_idx == 0:
@@ -81,60 +131,84 @@ def simulate(robupy_obj):
             if max_idx == 2:
                 current_state[3] = 1
 
-            # Write relevant state space for period to data frame
-            data[count, 2:6] = current_state
-
             # Update row indicator
             count += 1
 
-    # Write to file
-    _write_out(data)
+    # Convert to pandas data frame
+    data_frame = pd.DataFrame(data)
 
+    # Run checks of pandas data array
+    if debug is True:
+        _checks('data_frame', robupy_obj, data_frame)
+
+    # Write to dataset and information to file
+    _write_out(data_frame)
+
+    _write_info(data_frame)
 
 ''' Private functions
 '''
 
+def _write_info(data_frame):
+    """ Write information about the simulated economy.
+    """
 
-def _write_out(data):
+    # Get basic information
+    num_agents = data_frame[1].value_counts()[0]
+
+    num_periods = data_frame[0].value_counts()[0]
+
+    # Write information to file
+    with open('data.robupy.info', 'w') as file_:
+
+        file_.write('\n Simulated Economy\n\n')
+
+        file_.write('   Number of Agents:       ' + str(num_agents) + '\n\n')
+
+        file_.write('   Number of Periods:      ' + str(num_periods) + '\n\n')
+
+        file_.write('   Choices:  \n\n')
+
+        file_.write('       Period     Work A     Work B    Schooling Education      \n\n')
+
+        for t in range(num_periods):
+
+            work_A = str(np.sum((data_frame[2] == 0) & (data_frame[1] == t)))
+
+            work_B = str(np.sum((data_frame[2] == 1) & (data_frame[1] == t)))
+
+            schooling = str(np.sum((data_frame[2] == 2) & (data_frame[1] == t)))
+
+            home = str(np.sum((data_frame[2] == 3) & (data_frame[1] == t)))
+
+            string = '''{0[0]:>10} {0[1]:>10} {0[2]:>10} {0[3]:>10} {0[4]:>10}\n'''
+
+            file_.write(string.format([(t + 1), work_A, work_B, schooling, home]))
+
+        file_.write('\n\n')
+
+
+def _write_out(data_frame):
     """ Write dataset to file.
     """
     # Antibugging
-    assert (isinstance(data, np.ndarray))
+    assert (isinstance(data_frame, pd.DataFrame))
 
     # Formatting of columns
     formats = []
 
     formats += [_format_integer, _format_integer, _format_integer]
 
-    formats += [_format_integer, _format_integer, _format_integer]
+    formats += [_format_float, _format_integer, _format_integer]
 
-    # Convert to pandas data frame
-    df = pd.DataFrame(data)
+    formats += [_format_integer, _format_integer]
+
+
 
     with open('data.robupy.dat', 'w', newline='') as file_:
-        # noinspection PyPep8
-        df.to_string(file_, index=False, header=None, na_rep='.',
+
+        data_frame.to_string(file_, index=False, header=None, na_rep='.',
                      formatters=formats)
-
-
-def _get_payoffs(period, states_all, emax, payoffs_ex_ante, eps, mapping_state_idx,
-                 edu_start):
-    """ Get the alternative specific payoffs.
-    """
-    # Distribute current state space
-    exp_A, exp_B, edu, edu_lagged = states_all
-
-    # Get index
-    idx = mapping_state_idx[period, exp_A, exp_B, (edu - edu_start), edu_lagged]
-
-    # Construct total value
-    values = payoffs_ex_ante[period, idx, :] + eps
-
-    values += emax[period, idx]
-
-    # Finishing
-    return values
-
 
 def _format_float(x):
     """ Format floating point number.
@@ -145,7 +219,7 @@ def _format_float(x):
 
     else:
 
-        return "%15.8f" % x
+        return "%10.2f" % x
 
 
 def _format_integer(x):
