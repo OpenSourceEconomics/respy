@@ -58,6 +58,8 @@ class RobupyCls(MetaCls):
         # Status indicator
         self.is_locked = False
 
+        self.is_first = True
+
     ''' Derived attributes
     '''
     def _derived_attributes(self):
@@ -67,24 +69,29 @@ class RobupyCls(MetaCls):
         # Distribute class attributes
         init_dict = self.attr['init_dict']
 
-        #
-        self.attr['num_periods'] = init_dict['BASICS']['periods']
+        is_first = self.is_first
 
-        self.attr['num_agents'] = init_dict['BASICS']['agents']
+        if is_first:
 
-        self.attr['delta'] = init_dict['BASICS']['delta']
+            self.attr['num_periods'] = init_dict['BASICS']['periods']
 
-        self.attr['edu_start'] = init_dict['EDUCATION']['start']
+            self.attr['num_agents'] = init_dict['BASICS']['agents']
 
-        self.attr['edu_max'] = init_dict['EDUCATION']['max']
+            self.attr['delta'] = init_dict['BASICS']['delta']
 
-        self.attr['num_draws'] = init_dict['COMPUTATION']['draws']
+            self.attr['edu_start'] = init_dict['EDUCATION']['start']
 
-        self.attr['debug'] = init_dict['COMPUTATION']['debug']
+            self.attr['edu_max'] = init_dict['EDUCATION']['max']
 
-        self.attr['seed'] = init_dict['COMPUTATION']['seed']
+            self.attr['num_draws'] = init_dict['COMPUTATION']['draws']
 
-        self.attr['shocks'] = init_dict['SHOCKS']
+            self.attr['debug'] = init_dict['COMPUTATION']['debug']
+
+            self.attr['seed'] = init_dict['COMPUTATION']['seed']
+
+            self.attr['shocks'] = init_dict['SHOCKS']
+
+            self.is_first = False
 
     def _check_integrity(self):
         """ Check integrity of class instance.

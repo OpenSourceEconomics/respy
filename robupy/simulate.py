@@ -148,6 +148,9 @@ def simulate(robupy_obj):
 
     _write_info(data_frame)
 
+    # Finishing
+    return data_frame
+
 ''' Private functions
 '''
 
@@ -204,8 +207,6 @@ def _write_out(data_frame):
     formats += [_format_float, _format_integer, _format_integer]
 
     formats += [_format_integer, _format_integer]
-
-
 
     with open('data.robupy.dat', 'w', newline='') as file_:
 
