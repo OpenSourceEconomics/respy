@@ -137,7 +137,7 @@ def _checks(str_, robupy_obj, *args):
                 assert (np.all(np.isfinite(emax[is_infinite == False])) == False)
 
         # Check that the payoffs are finite for all admissible values and infinite for all others.
-        for period in range(num_periods):
+        for period in range(num_periods - 1):
             # Loop over all possible states
             for k in range(states_number_period[period]):
                 # Check for finite value at admissible state, infinite

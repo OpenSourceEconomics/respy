@@ -5,7 +5,7 @@
 # standard library
 import numpy as np
 
-def _get_future_payoffs(edu_max, edu_start, mapping_state_idx, period, emax, k, states_all, num_periods, delta):
+def _get_future_payoffs(edu_max, edu_start, mapping_state_idx, period, emax, k, states_all):
     """ Get future payoffs for additional choices.
     """
 
@@ -14,10 +14,6 @@ def _get_future_payoffs(edu_max, edu_start, mapping_state_idx, period, emax, k, 
 
     # Future utilities
     future_payoffs = np.tile(np.nan, 4)
-
-    # Check applicability
-    if period == (num_periods - 1):
-        return np.zeros(4, dtype='float')
 
     # Working in occupation A
     future_idx = mapping_state_idx[period + 1, exp_A + 1, exp_B,
@@ -49,9 +45,6 @@ def _get_future_payoffs(edu_max, edu_start, mapping_state_idx, period, emax, k, 
                                          edu, 0]
 
     future_payoffs[3] = emax[period + 1, future_idx]
-
-    # Discounting
-    future_payoffs *= delta
 
     # Ensuring that schooling does not increase beyond the
     # maximum allowed level. This is necessary as in the
