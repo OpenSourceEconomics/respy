@@ -1,0 +1,12 @@
+language: python
+python:
+  - "3.4"
+bundler_args: --retry 3
+before_install: python travis-ci/requirements.py
+# command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
+install: travis_retry travis_wait pip install -r requirements.txt
+# command to run tests, e.g. python setup.py test
+script:  python travis-ci/run.py
+# command to run coveralls.
+after_success:
+  - coveralls
