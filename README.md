@@ -1,4 +1,4 @@
-# Package
+# robupy
 
 Toolbox for the simulation and estimation of robust dynamic discrete choice models.
 
