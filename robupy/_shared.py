@@ -5,7 +5,9 @@
 # standard library
 import numpy as np
 
-def _get_future_payoffs(edu_max, edu_start, mapping_state_idx, period, emax, k, states_all):
+
+def _get_future_payoffs(edu_max, edu_start, mapping_state_idx, period, emax, k,
+                        states_all):
     """ Get future payoffs for additional choices.
     """
 
@@ -17,12 +19,12 @@ def _get_future_payoffs(edu_max, edu_start, mapping_state_idx, period, emax, k, 
 
     # Working in occupation A
     future_idx = mapping_state_idx[period + 1, exp_A + 1, exp_B,
-                                              edu, 0]
+                                   edu, 0]
     future_payoffs[0] = emax[period + 1, future_idx]
 
     # Working in occupation B
     future_idx = mapping_state_idx[period + 1, exp_A, exp_B + 1,
-                                              edu, 0]
+                                   edu, 0]
 
     future_payoffs[1] = emax[period + 1, future_idx]
 
@@ -32,7 +34,7 @@ def _get_future_payoffs(edu_max, edu_start, mapping_state_idx, period, emax, k, 
     if edu < edu_max - edu_start:
 
         future_idx = mapping_state_idx[period + 1, exp_A, exp_B,
-                                             edu + 1, 1]
+                                       edu + 1, 1]
 
         future_payoffs[2] = emax[period + 1, future_idx]
 
@@ -42,7 +44,7 @@ def _get_future_payoffs(edu_max, edu_start, mapping_state_idx, period, emax, k, 
 
     # Staying at home
     future_idx = mapping_state_idx[period + 1, exp_A, exp_B,
-                                         edu, 0]
+                                   edu, 0]
 
     future_payoffs[3] = emax[period + 1, future_idx]
 
