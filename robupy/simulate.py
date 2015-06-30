@@ -18,7 +18,7 @@ import numpy as np
 import pandas as pd
 
 # project library
-from robupy._checks_simulate import _checks
+from robupy.checks._checks_simulate import _checks
 from robupy._shared import _get_future_payoffs
 
 ''' Public function

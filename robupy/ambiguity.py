@@ -7,6 +7,7 @@ import numpy as np
 from scipy.optimize import minimize
 
 # project library
+from robupy.checks._checks_ambiguity import _checks
 from robupy._shared import _get_future_payoffs
 
 
@@ -56,7 +57,7 @@ def _criterion(x, num_draws, period_payoffs_ex_post, eps_standard, period,
                    k, period_payoffs_ex_ante, edu_max, edu_start,
                    mapping_state_idx, states_all, future_payoffs,
                    num_periods, emax, true_cholesky):
-    """ Simulate expected future value
+    """ Simulate expected future value for alternative shock distributions.
     """
 
     # Transformations
@@ -67,9 +68,6 @@ def _criterion(x, num_draws, period_payoffs_ex_post, eps_standard, period,
 
     # Initialize container
     simulated = 0.0
-
-    # TODO: Can IU have a unit test to compare critarion to the coutnerpart
-    # in the risk case.
 
     # Calculate maximum value
     for i in range(num_draws):
@@ -93,6 +91,7 @@ def _criterion(x, num_draws, period_payoffs_ex_post, eps_standard, period,
         future_payoffs[period, k, :] = \
             _get_future_payoffs(edu_max, edu_start, mapping_state_idx,
                                 period, emax, k, states_all)
+
         # Calculate total utilities
         total_payoffs = period_payoffs_ex_post[period, k, :] + \
             future_payoffs[period, k, :]

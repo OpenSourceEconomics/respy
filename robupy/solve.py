@@ -6,7 +6,7 @@ programming problem.
 import numpy as np
 
 # project library
-from robupy._checks_solve import _checks
+from robupy.checks._checks_solve import _checks
 from robupy.ambiguity import *
 from robupy.risk import *
 
