@@ -4,10 +4,12 @@ programming problem.
 
 # standard library
 import numpy as np
+from scipy.optimize import minimize
 
 # project library
 from robupy._checks_solve import _checks
 from robupy._shared import _get_future_payoffs
+from robupy._ambiguity import *
 
 ''' Public function
 '''
@@ -36,6 +38,14 @@ def solve(robupy_obj):
 
     debug = robupy_obj.get_attr('debug')
 
+    ambiguity = robupy_obj.get_attr('ambiguity')
+
+    level = ambiguity['level']
+
+    measure = ambiguity['measure']
+
+    para = ambiguity['para']
+
     # Create grid of possible/admissible state space values
     states_all, states_number_period, mapping_state_idx = _create_state_space(
         robupy_obj)
@@ -48,7 +58,6 @@ def solve(robupy_obj):
     # Draw random variables
     np.random.seed(seed)
 
-    # TODO: How to deal with mean?
     standard_eps = np.random.multivariate_normal(np.zeros(4), np.identity(4),
                                                  (num_periods, num_draws))
 
@@ -132,14 +141,23 @@ def solve(robupy_obj):
         for k in range(states_number_period[period]):
 
             # Simulate the expected future value
-            simulated, period_payoffs_ex_ante, period_payoffs_ex_post, \
-            future_payoffs = _simulate_emax(num_draws,
-                                            period_payoffs_ex_post,
-                                            disturbances, period,
-                                            k, period_payoffs_ex_ante, edu_max,
-                                            edu_start, mapping_state_idx,
-                                            states_all, future_payoffs,
-                                            num_periods, emax)
+            if level == 0.00:
+
+                simulated, period_payoffs_ex_ante, period_payoffs_ex_post, \
+                future_payoffs = _simulate_emax(num_draws,
+                                                period_payoffs_ex_post,
+                                                disturbances, period,
+                                                k, period_payoffs_ex_ante, edu_max,
+                                                edu_start, mapping_state_idx,
+                                                states_all, future_payoffs,
+                                                num_periods, emax)
+            else:
+                print('test')
+                simulated = _get_worst(num_draws, period_payoffs_ex_post,
+                                      disturbances, period,
+                   k, period_payoffs_ex_ante, edu_max, edu_start,
+                   mapping_state_idx, states_all, future_payoffs,
+                   num_periods, emax, ambiguity)
 
             # Collect
             emax[period, k] = simulated
@@ -174,62 +192,6 @@ def solve(robupy_obj):
 
 ''' Private functions
 '''
-
-def _get_worst():
-    """ Get worst case 
-    """
-
-
-
-def _simulate_emax(num_draws, period_payoffs_ex_post, disturbances, period,
-                   k, period_payoffs_ex_ante, edu_max, edu_start,
-                   mapping_state_idx, states_all, future_payoffs,
-                   num_periods, emax):
-    """ Simulate expected future value
-    """
-    # Initialize container
-    simulated = 0.0
-
-    # Calculate maximum value
-    for i in range(num_draws):
-
-        # Calculate ex post payoffs
-        for j in [0, 1]:
-            period_payoffs_ex_post[period, k, j] = period_payoffs_ex_ante[
-                                                       period, k, j] * \
-                                                   disturbances[period, i, j]
-
-        for j in [2, 3]:
-            period_payoffs_ex_post[period, k, j] = period_payoffs_ex_ante[
-                                                       period, k, j] + \
-                                                   disturbances[period, i, j]
-
-        # Check applicability
-        if period == (num_periods - 1):
-            continue
-
-        # Get future values
-        future_payoffs[period, k, :] = _get_future_payoffs(edu_max, edu_start,
-                                                           mapping_state_idx,
-                                                           period, emax,
-                                                           k, states_all)
-        # Calculate total utilities
-        total_payoffs = period_payoffs_ex_post[period, k, :] + \
-                        future_payoffs[period, k, :]
-
-        # Determine optimal choice
-        maximum = max(total_payoffs)
-
-        # Recording expected future value
-        simulated += maximum
-
-    # Scaling
-    simulated = simulated / num_draws
-
-    # Finishing
-    return simulated, period_payoffs_ex_ante, period_payoffs_ex_post, \
-           future_payoffs
-
 
 def _create_state_space(robupy_obj):
     """ Create grid for state space.
@@ -325,3 +287,144 @@ def _create_state_space(robupy_obj):
 
     # Finishing
     return states_all, states_number_period, mapping_state_idx
+
+
+def _get_worst(num_draws, period_payoffs_ex_post, disturbances, period,
+                   k, period_payoffs_ex_ante, edu_max, edu_start,
+                   mapping_state_idx, states_all, future_payoffs,
+                   num_periods, emax, ambiguity):
+    """ Get worst case 
+    """
+
+    level = ambiguity['level']
+
+    # Initialize options.
+    options = dict()
+
+    options['maxiter'] = 10000
+
+    # Set starting values to zero means
+    x0 = get_start(ambiguity)
+
+
+    bounds = [[-level, level], [-level, level],
+              [-level, level], [-level, level]]
+
+    args = (num_draws, period_payoffs_ex_post, disturbances, period,
+                   k, period_payoffs_ex_ante, edu_max, edu_start,
+                   mapping_state_idx, states_all, future_payoffs,
+                   num_periods, emax)
+
+    opt = minimize(_criterion, x0, args, method='SLSQP',
+                           options=options, bounds=bounds)
+
+    return opt['fun']
+
+
+def _criterion(x, num_draws, period_payoffs_ex_post, disturbances, period,
+                   k, period_payoffs_ex_ante, edu_max, edu_start,
+                   mapping_state_idx, states_all, future_payoffs,
+                   num_periods, emax):
+    """ Simulate expected future value
+    """
+    # Initialize container
+    simulated = 0.0
+
+    # TODO:
+    #  The means shift is not inside the exp
+
+    # Calculate maximum value
+    for i in range(num_draws):
+
+        # Calculate ex post payoffs
+        for j in [0, 1]:
+            period_payoffs_ex_post[period, k, j] = period_payoffs_ex_ante[
+                                                       period, k, j] * \
+                                                   disturbances[period, i,
+                                                                j] + x[j]
+
+        for j in [2, 3]:
+            period_payoffs_ex_post[period, k, j] = period_payoffs_ex_ante[
+                                                       period, k, j] + \
+                                                   disturbances[period, i,
+                                                                j]  + x[j]
+
+        # Check applicability
+        if period == (num_periods - 1):
+            continue
+
+        # Get future values
+        future_payoffs[period, k, :] = _get_future_payoffs(edu_max, edu_start,
+                                                           mapping_state_idx,
+                                                           period, emax,
+                                                           k, states_all)
+        # Calculate total utilities
+        total_payoffs = period_payoffs_ex_post[period, k, :] + \
+                        future_payoffs[period, k, :]
+
+        # Determine optimal choice
+        maximum = max(total_payoffs)
+
+        # Recording expected future value
+        simulated += maximum
+
+    # Scaling
+    simulated = simulated / num_draws
+
+    # Finishing
+    return simulated
+
+
+
+
+
+def _simulate_emax(num_draws, period_payoffs_ex_post, disturbances, period,
+                   k, period_payoffs_ex_ante, edu_max, edu_start,
+                   mapping_state_idx, states_all, future_payoffs,
+                   num_periods, emax):
+    """ Simulate expected future value
+    """
+    # Initialize container
+    simulated = 0.0
+
+    # Calculate maximum value
+    for i in range(num_draws):
+
+        # Calculate ex post payoffs
+        for j in [0, 1]:
+            period_payoffs_ex_post[period, k, j] = period_payoffs_ex_ante[
+                                                       period, k, j] * \
+                                                   disturbances[period, i, j]
+
+        for j in [2, 3]:
+            period_payoffs_ex_post[period, k, j] = period_payoffs_ex_ante[
+                                                       period, k, j] + \
+                                                   disturbances[period, i, j]
+
+        # Check applicability
+        if period == (num_periods - 1):
+            continue
+
+        # Get future values
+        future_payoffs[period, k, :] = _get_future_payoffs(edu_max, edu_start,
+                                                           mapping_state_idx,
+                                                           period, emax,
+                                                           k, states_all)
+        # Calculate total utilities
+        total_payoffs = period_payoffs_ex_post[period, k, :] + \
+                        future_payoffs[period, k, :]
+
+        # Determine optimal choice
+        maximum = max(total_payoffs)
+
+        # Recording expected future value
+        simulated += maximum
+
+    # Scaling
+    simulated = simulated / num_draws
+
+    # Finishing
+    return simulated, period_payoffs_ex_ante, period_payoffs_ex_post, \
+           future_payoffs
+
+
