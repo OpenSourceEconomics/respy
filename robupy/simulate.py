@@ -19,7 +19,7 @@ import pandas as pd
 
 # project library
 from robupy.checks._checks_simulate import _checks
-from robupy._shared import _get_future_payoffs
+from robupy.shared import *
 
 ''' Public function
 '''
@@ -100,7 +100,7 @@ def simulate(robupy_obj):
             if period == (num_periods - 1):
                 future_payoffs = np.zeros(4)
             else:
-                future_payoffs = _get_future_payoffs(edu_max, edu_start, mapping_state_idx, period, emax, k, states_all)
+                future_payoffs = get_future_payoffs(edu_max, edu_start, mapping_state_idx, period, emax, k, states_all)
 
             # Calculate total utilities
             total_payoffs = period_payoffs_ex_post + delta * future_payoffs

@@ -7,8 +7,6 @@ import numpy as np
 import pandas as pd
 
 # project library
-from robupy._checks_ambiguity import _checks
-
 
 def _checks(str_, *args):
     """ This checks the integrity of the objects related to the
