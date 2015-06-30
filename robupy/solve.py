@@ -7,8 +7,8 @@ import numpy as np
 
 # project library
 from robupy._checks_solve import _checks
-from robupy._ambiguity import *
-from robupy._risk import *
+from robupy.ambiguity import *
+from robupy.risk import *
 
 ''' Public function
 '''
@@ -57,7 +57,7 @@ def solve(robupy_obj):
     # Draw random variables
     np.random.seed(seed)
 
-    standard_eps = np.random.multivariate_normal(np.zeros(4), np.identity(4),
+    eps_standard_periods = np.random.multivariate_normal(np.zeros(4), np.identity(4),
                                                  (num_periods, num_draws))
 
     # Handle special case. This case is useful to perform hand
@@ -123,15 +123,20 @@ def solve(robupy_obj):
             # Calculate systematic part of HOME
             period_payoffs_ex_ante[period, k, 3] = init_dict['HOME']['int']
 
-    disturbances = np.tile(np.nan, (num_periods, num_draws, 4))
+    # Initialize baseline disturbances
+    eps_baseline_periods = np.tile(np.nan, (num_periods, num_draws, 4))
 
     for period in range(num_periods):
-        disturbances[period, :, :] = np.dot(true_cholesky,
-                                            standard_eps[period, :,
+        eps_baseline_periods[period, :, :] = np.dot(true_cholesky,
+                                            eps_standard_periods[period, :,
                                             :].T).T
 
     # Iterate backward through all periods
     for period in range(num_periods - 1, -1, -1):
+
+        # Extract disturbances
+        eps_baseline = eps_baseline_periods[period, :, :]
+        eps_standard = eps_standard_periods[period, :, :]
 
         # Loop over all possible states
         for k in range(states_number_period[period]):
@@ -139,21 +144,22 @@ def solve(robupy_obj):
             # Simulate the expected future value
             if level == 0.00:
 
-                simulated, period_payoffs_ex_ante, period_payoffs_ex_post, \
-                future_payoffs = simulate_emax_risk(num_draws,
-                                                period_payoffs_ex_post,
-                                                disturbances, period,
+                simulated, period_payoffs_ex_ante, \
+                period_payoffs_ex_post, future_payoffs = \
+                    simulate_emax_risk(num_draws, period_payoffs_ex_post,
+                        eps_baseline_periods, period,
                                                 k, period_payoffs_ex_ante, edu_max,
                                                 edu_start, mapping_state_idx,
                                                 states_all, future_payoffs,
                                                 num_periods, emax)
             else:
                 print('test')
+                # TODO: How to calculate the period_payoff_ex_post, etc
                 simulated = simulate_emax_ambiguity(num_draws, period_payoffs_ex_post,
-                                      disturbances, period,
+                                      eps_standard, period,
                    k, period_payoffs_ex_ante, edu_max, edu_start,
                    mapping_state_idx, states_all, future_payoffs,
-                   num_periods, emax, ambiguity)
+                   num_periods, emax, ambiguity, true_cholesky)
 
             # Collect
             emax[period, k] = simulated
