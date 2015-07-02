@@ -15,8 +15,8 @@ import sys
 import os
 
 # project library
-from modules._auxiliary import *
-import modules._tests as lib
+from modules.auxiliary import *
+import modules.tests as lib
 
 # virtual environment
 if not hasattr(sys, 'real_prefix'):
@@ -104,9 +104,8 @@ if __name__ == '__main__':
     parser.add_argument('--hours', action='store', dest='hours',
                         type=float, default=1.0, help='run time in hours')
 
-    parser.add_argument('--notification', action = 'store_true', \
-                        dest = 'notification', default = False, \
-                        help = 'send notification')
+    parser.add_argument('--notification', action = 'store_true', dest='notification', default = False,
+                        help='send notification')
 
     hours, notification = distribute_input(parser)
 

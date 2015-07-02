@@ -8,7 +8,7 @@ import sys
 import os
 
 # project library
-from modules._random_init import generate_init
+from modules.random_init import generate_init
 
 # robustToolbox
 sys.path.insert(0, os.environ['ROBUPY'])
@@ -70,7 +70,7 @@ def test_B():
 
         states_all = robupy_obj.get_attr('states_all')
 
-        # The next harded-coded results assume that at least two more
+        # The next hard-coded results assume that at least two more
         # years of education are admissible.
         edu_max = robupy_obj.get_attr('edu_max')
         edu_start = robupy_obj.get_attr('edu_start')

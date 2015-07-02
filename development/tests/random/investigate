@@ -11,8 +11,8 @@ sys.path.insert(0, os.environ['ROBUPY'])
 from robupy import *
 
 # project library
-from modules._auxiliary import *
-import modules._tests as lib
+from modules.auxiliary import *
+import modules.tests as lib
 
 ''' Request
 '''

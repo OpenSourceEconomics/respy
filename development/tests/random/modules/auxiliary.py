@@ -36,21 +36,24 @@ def start_logging():
     logger.addHandler(fh)
 
 def distribute_input(parser):
-    """ Check input for estimation script.
-    """
+    ''' Check input for estimation script.
+    '''
     # Parse arguments.
     args = parser.parse_args()
 
     # Distribute arguments.
     hours = args.hours
-
     notification = args.notification
 
     # Assertions.
+    assert (notification in [True, False])
     assert (isinstance(hours, float))
     assert (hours > 0.0)
 
-    assert (notification in [True, False])
+    # Validity checks
+    if notification:
+        # Check that the credentials file is stored in the user's HOME directory.
+        assert (os.path.exists(os.environ['HOME'] + '/.credentials'))
 
     # Finishing.
     return hours, notification

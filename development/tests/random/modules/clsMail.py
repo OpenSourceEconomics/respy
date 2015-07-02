@@ -31,6 +31,7 @@ import copy
 import json
 import os
 
+
 ''' Private class.
 '''
 class _meta(object):
@@ -151,9 +152,9 @@ class mailCls(_meta):
         self.attr['recipient'] = 'eisenhauer@policy-lab.org'
 
         # Derived attributes.
-        self.attr['username'] = 'auto@policy-lab.org'
+        self.attr['username'] = None
 
-        self.attr['password'] = 'gh78h0po'
+        self.attr['password'] = None
 
         # Status indicator.
         self.isLocked = False
@@ -223,3 +224,10 @@ class mailCls(_meta):
 
         # Check availability.
         assert (self.attr['message'] is not None)
+
+        # Process credentials.
+        dict_ = json.load(open(os.environ['HOME'] + '/.credentials'))
+
+        self.attr['username'] = dict_['username']
+
+        self.attr['password'] = dict_['password']
