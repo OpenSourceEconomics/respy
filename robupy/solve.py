@@ -3,6 +3,7 @@ programming problem.
 """
 
 # standard library
+import os
 import numpy as np
 
 # project library
@@ -39,7 +40,16 @@ def solve(robupy_obj):
 
     ambiguity = robupy_obj.get_attr('ambiguity')
 
+    # Construct auxiliary objects
     level = ambiguity['level']
+
+    with_ambiguity = (level != 0.00)
+
+    if os.path.exists('ambiguity.robupy.log'):
+        os.remove('ambiguity.robupy.log')
+
+    if ambiguity['debug']:
+        open('ambiguity.robupy.log', 'w').close()
 
     # Create grid of admissible state space values.
     states_all, states_number_period, mapping_state_idx = \
@@ -64,7 +74,7 @@ def solve(robupy_obj):
         num_periods, max(states_number_period)))
     period_payoffs_ex_post = np.tile(np.nan, (
         num_periods, max(states_number_period), 4))
-    future_payoffs = np.tile(np.nan, (
+    period_future_payoffs = np.tile(np.nan, (
         num_periods, max(states_number_period), 4))
 
     # Calculate ex ante payoffs. These are calculated without any reference
@@ -82,25 +92,36 @@ def solve(robupy_obj):
         # Loop over all possible states
         for k in range(states_number_period[period]):
 
+            # Extract payoffs
+            payoffs_ex_ante = period_payoffs_ex_ante[period, k, :]
+            payoffs_ex_post = period_payoffs_ex_post[period, k, :]
+            future_payoffs = period_future_payoffs[period, k, :]
+
             # Simulate the expected future value. There needs to be a single
             # assertion in the future.
-            if level == 0.00:
+            # TODO: I want to merge the interface of these two functions and
+            #  then select the relevant function once at the beginnning of
+            # the solution procedure.
+            if with_ambiguity:
 
-                simulated, period_payoffs_ex_ante, \
-                period_payoffs_ex_post, future_payoffs = \
-                    simulate_emax_risk(num_draws, period_payoffs_ex_post,
-                        eps_baseline, period, k, period_payoffs_ex_ante,
+                simulated = \
+                    simulate_emax_ambiguity(num_draws, payoffs_ex_post,
+                        eps_standard, period, k, payoffs_ex_ante,
                         edu_max, edu_start, mapping_state_idx, states_all,
-                        future_payoffs, num_periods, emax)
+                        future_payoffs, num_periods, emax, ambiguity,
+                        true_cholesky, delta)
 
             else:
 
-                simulated = \
-                    simulate_emax_ambiguity(num_draws, period_payoffs_ex_post,
-                        eps_standard, period, k, period_payoffs_ex_ante,
+                simulated, payoffs_ex_post, future_payoffs = \
+                    simulate_emax_risk(num_draws, payoffs_ex_post,
+                        eps_baseline, period, k, payoffs_ex_ante,
                         edu_max, edu_start, mapping_state_idx, states_all,
-                        future_payoffs, num_periods, emax, ambiguity,
-                        true_cholesky)
+                        future_payoffs, num_periods, emax, delta)
+
+            # Collect ex post payoffs
+            period_payoffs_ex_post[period, k, :] = payoffs_ex_post
+            period_future_payoffs[period, k, :] = future_payoffs
 
             # Collect
             emax[period, k] = simulated
@@ -108,7 +129,7 @@ def solve(robupy_obj):
     # Run checks on expected future values and its ingredients
     if debug is True:
         _checks('emax', robupy_obj, states_all, states_number_period, emax,
-                future_payoffs)
+                period_future_payoffs)
 
     # Update
     robupy_obj.unlock()
@@ -119,9 +140,9 @@ def solve(robupy_obj):
 
     robupy_obj.set_attr('period_payoffs_ex_post', period_payoffs_ex_post)
 
-    robupy_obj.set_attr('mapping_state_idx', mapping_state_idx)
+    robupy_obj.set_attr('period_future_payoffs', period_future_payoffs)
 
-    robupy_obj.set_attr('future_payoffs', future_payoffs)
+    robupy_obj.set_attr('mapping_state_idx', mapping_state_idx)
 
     robupy_obj.set_attr('states_all', states_all)
 

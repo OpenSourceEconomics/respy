@@ -62,7 +62,7 @@ class RobupyCls(MetaCls):
         # future payoffs
         self.attr['period_payoffs_ex_ante'] = None
 
-        self.attr['future_payoffs'] = None
+        self.attr['period_future_payoffs'] = None
 
         # Status indicator
         self.is_locked = False
@@ -108,6 +108,9 @@ class RobupyCls(MetaCls):
 
             self.attr['ambiguity']['para'] = init_dict['AMBIGUITY'][
                 'para']
+
+            self.attr['ambiguity']['debug'] = init_dict['AMBIGUITY'][
+                'debug']
 
             # Update status indicator
             self.is_first = False

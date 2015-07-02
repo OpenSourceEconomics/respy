@@ -239,6 +239,8 @@ def _check_integrity_process(dict_):
     assert (isinstance(dict_['AMBIGUITY']['level'], float))
     assert (dict_['AMBIGUITY']['level'] >= 0.00)
     assert (np.isfinite(dict_['AMBIGUITY']['level']))
+    print(dict_['AMBIGUITY']['debug'])
+    assert (dict_['AMBIGUITY']['debug'] in [True, False])
 
     # Temporary restrictions
     assert ((dict_['AMBIGUITY']['level'] >= 0.00))

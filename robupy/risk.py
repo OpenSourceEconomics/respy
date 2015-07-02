@@ -12,9 +12,9 @@ from robupy.shared import *
 '''
 
 
-def simulate_emax_risk(num_draws, period_payoffs_ex_post, eps_baseline, period,
-        k, period_payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,
-        states_all, future_payoffs, num_periods, emax):
+def simulate_emax_risk(num_draws, payoffs_ex_post, eps_baseline, period,
+        k, payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,
+        states_all, future_payoffs, num_periods, emax, delta):
     """ Simulate expected future value under risk.
     """
     # Transformation of standard normal deviates to relevant distributions.
@@ -23,12 +23,10 @@ def simulate_emax_risk(num_draws, period_payoffs_ex_post, eps_baseline, period,
         eps_relevant[:, j] = np.exp(eps_relevant[:, j])
 
     # Simulate the expected future value for a given parameterization.
-    simulated, period_payoffs_ex_ante, period_payoffs_ex_post, \
-    future_payoffs = simulate_emax(num_draws, period_payoffs_ex_post,
-            period, k, eps_relevant, period_payoffs_ex_ante, edu_max,
+    simulated, payoffs_ex_post, future_payoffs = simulate_emax(num_draws,
+            payoffs_ex_post, period, k, eps_relevant, payoffs_ex_ante, edu_max,
             edu_start, num_periods, emax, states_all, future_payoffs,
-            mapping_state_idx)
+            mapping_state_idx, delta)
 
     # Finishing
-    return simulated, period_payoffs_ex_ante, period_payoffs_ex_post, \
-           future_payoffs
+    return simulated, payoffs_ex_post, future_payoffs

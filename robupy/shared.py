@@ -5,10 +5,10 @@
 # standard library
 import numpy as np
 
-def simulate_emax(num_draws, period_payoffs_ex_post, period, k,
-                  eps_relevant, period_payoffs_ex_ante, edu_max,
+def simulate_emax(num_draws, payoffs_ex_post, period, k,
+                  eps_relevant, payoffs_ex_ante, edu_max,
                   edu_start, num_periods, emax, states_all, future_payoffs,
-                  mapping_state_idx):
+                  mapping_state_idx, delta):
     """ Simulate expected future value.
     """
 
@@ -20,27 +20,21 @@ def simulate_emax(num_draws, period_payoffs_ex_post, period, k,
 
         # Calculate ex post payoffs
         for j in [0, 1]:
-            period_payoffs_ex_post[period, k, j] = \
-                period_payoffs_ex_ante[period, k, j] * \
-                eps_relevant[i, j]
+            payoffs_ex_post[j] = payoffs_ex_ante[j] * eps_relevant[i, j]
 
         for j in [2, 3]:
-            period_payoffs_ex_post[period, k, j] = \
-                period_payoffs_ex_ante[period, k, j] + \
-                eps_relevant[i, j]
+            payoffs_ex_post[j] = payoffs_ex_ante[j] + eps_relevant[i, j]
 
         # Check applicability
         if period == (num_periods - 1):
             continue
 
         # Get future values
-        future_payoffs[period, k, :] = \
-            get_future_payoffs(edu_max, edu_start, mapping_state_idx,
-                                period, emax, k, states_all)
+        future_payoffs = get_future_payoffs(edu_max, edu_start,
+                            mapping_state_idx, period, emax, k, states_all)
 
         # Calculate total utilities
-        total_payoffs = period_payoffs_ex_post[period, k, :] + \
-            future_payoffs[period, k, :]
+        total_payoffs = payoffs_ex_post + delta * future_payoffs
 
         # Determine optimal choice
         maximum = max(total_payoffs)
@@ -52,8 +46,7 @@ def simulate_emax(num_draws, period_payoffs_ex_post, period, k,
     simulated = simulated / num_draws
 
     # Finishing
-    return simulated, period_payoffs_ex_ante, period_payoffs_ex_post, \
-           future_payoffs
+    return simulated, payoffs_ex_post, future_payoffs
 
 
 def get_future_payoffs(edu_max, edu_start, mapping_state_idx, period, emax, k,
