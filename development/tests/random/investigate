@@ -1,0 +1,37 @@
+#!/usr/bin/env python
+""" Script to quickly investigate failed estimation runs.
+"""
+# standard library
+import numpy as np
+import sys
+import os
+
+# project library
+sys.path.insert(0, os.environ['ROBUPY'])
+from robupy import *
+
+# project library
+from modules._auxiliary import *
+import modules._tests as lib
+
+''' Request
+'''
+label, seed = 'D', 50715
+
+''' Error Reproduction
+'''
+if True:
+
+    test = getattr(lib,'test_' + label)
+
+    np.random.seed(seed)
+
+    test()
+
+else:
+
+    robupy_obj = read('test.robupy.ini')
+
+    robupy_obj = solve(robupy_obj)
+
+    simulate(robupy_obj)
