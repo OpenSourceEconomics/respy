@@ -128,7 +128,7 @@ def _process_standard(list_, dict_, keyword):
     # Type conversion
     if name in ['agents', 'periods', 'start', 'max', 'draws', 'seed']:
         val = int(val)
-    elif name in []:
+    elif name in ['para', 'measure']:
         val = str(val)
     elif name in ['debug']:
         assert (val.upper() in ['TRUE', 'FALSE'])
@@ -176,7 +176,7 @@ def _check_integrity_process(dict_):
 
     # Check all keys
     keys_ = ['BASICS', 'EDUCATION', 'A', 'B', 'HOME']
-    keys_ += ['SHOCKS', 'COMPUTATION']
+    keys_ += ['SHOCKS', 'COMPUTATION', 'AMBIGUITY']
 
     assert (set(keys_) == set(dict_.keys()))
 
@@ -232,6 +232,19 @@ def _check_integrity_process(dict_):
     assert (np.all(np.diag(np.array(dict_['SHOCKS']) >= 0)))
     assert ((np.array(dict_['SHOCKS']).transpose() ==
              np.array(dict_['SHOCKS'])).all())
+
+    # Check AMBIGUITY
+    assert (dict_['AMBIGUITY']['measure'] in ['kl', 'absolute'])
+    assert (dict_['AMBIGUITY']['para'] in ['cov', 'mean', 'both'])
+    assert (isinstance(dict_['AMBIGUITY']['level'], float))
+    assert (dict_['AMBIGUITY']['level'] >= 0.00)
+    assert (np.isfinite(dict_['AMBIGUITY']['level']))
+    print(dict_['AMBIGUITY']['debug'])
+    assert (dict_['AMBIGUITY']['debug'] in [True, False])
+
+    # Temporary restrictions
+    assert ((dict_['AMBIGUITY']['level'] >= 0.00))
+    assert (dict_['AMBIGUITY']['measure'] in ['absolute'])
 
     # Finishing
     return True

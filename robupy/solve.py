@@ -3,11 +3,13 @@ programming problem.
 """
 
 # standard library
+import os
 import numpy as np
 
 # project library
-from robupy._checks_solve import _checks
-from robupy._shared import _get_future_payoffs
+from robupy.checks._checks_solve import _checks
+from robupy.ambiguity import *
+from robupy.risk import *
 
 ''' Public function
 '''
@@ -36,28 +38,155 @@ def solve(robupy_obj):
 
     debug = robupy_obj.get_attr('debug')
 
-    # Create grid of possible/admissible state space values
-    states_all, states_number_period, mapping_state_idx = _create_state_space(robupy_obj)
+    ambiguity = robupy_obj.get_attr('ambiguity')
+
+    # Construct auxiliary objects
+    level = ambiguity['level']
+
+    with_ambiguity = (level != 0.00)
+
+    if os.path.exists('ambiguity.robupy.log'):
+        os.remove('ambiguity.robupy.log')
+
+    if ambiguity['debug']:
+        open('ambiguity.robupy.log', 'w').close()
+
+    # Create grid of admissible state space values.
+    states_all, states_number_period, mapping_state_idx = \
+        _create_state_space(robupy_obj)
 
     # Run checks of the state space variables
     if debug is True:
-        _checks('state_space', robupy_obj, states_all, states_number_period, mapping_state_idx)
+        _checks('state_space', robupy_obj, states_all, states_number_period,
+                mapping_state_idx)
 
-    # Draw random variables
+    # Draw random variables. Handle special case of zero variances as this
+    # case is useful for hand-based testing.
+    eps_baseline_periods, eps_standard_periods, true_cholesky = \
+        _create_eps(seed, num_periods, num_draws, init_dict)
+
+    # Initialize container for expected future values and payoffs. The ex post
+    # payoffs and the future payoffs are only stored for debugging reasons
+    # and can be removed if memory usage turns out to be an issue. I
+    # initialize all infinite values as this allows for easy assertion tests
+    # later on.
+    emax = np.tile(np.nan, (
+        num_periods, max(states_number_period)))
+    period_payoffs_ex_post = np.tile(np.nan, (
+        num_periods, max(states_number_period), 4))
+    period_future_payoffs = np.tile(np.nan, (
+        num_periods, max(states_number_period), 4))
+
+    # Calculate ex ante payoffs. These are calculated without any reference
+    # to the alternative shock distributions.
+    period_payoffs_ex_ante = _create_payoffs_ex_ante(num_periods,
+        states_number_period, states_all, init_dict, edu_start)
+
+    # Iterate backward through all periods
+    for period in range(num_periods - 1, -1, -1):
+
+        # Extract disturbances
+        eps_baseline = eps_baseline_periods[period, :, :]
+        eps_standard = eps_standard_periods[period, :, :]
+
+        # Loop over all possible states
+        for k in range(states_number_period[period]):
+
+            # Extract payoffs
+            payoffs_ex_ante = period_payoffs_ex_ante[period, k, :]
+            payoffs_ex_post = period_payoffs_ex_post[period, k, :]
+            future_payoffs = period_future_payoffs[period, k, :]
+
+            # Simulate the expected future value. There needs to be a single
+            # assertion in the future.
+            # TODO: I want to merge the interface of these two functions and
+            #  then select the relevant function once at the beginnning of
+            # the solution procedure.
+            if with_ambiguity:
+
+                simulated = \
+                    simulate_emax_ambiguity(num_draws, payoffs_ex_post,
+                        eps_standard, period, k, payoffs_ex_ante,
+                        edu_max, edu_start, mapping_state_idx, states_all,
+                        future_payoffs, num_periods, emax, ambiguity,
+                        true_cholesky, delta)
+
+            else:
+
+                simulated, payoffs_ex_post, future_payoffs = \
+                    simulate_emax_risk(num_draws, payoffs_ex_post,
+                        eps_baseline, period, k, payoffs_ex_ante,
+                        edu_max, edu_start, mapping_state_idx, states_all,
+                        future_payoffs, num_periods, emax, delta)
+
+            # Collect ex post payoffs
+            period_payoffs_ex_post[period, k, :] = payoffs_ex_post
+            period_future_payoffs[period, k, :] = future_payoffs
+
+            # Collect
+            emax[period, k] = simulated
+
+    # Run checks on expected future values and its ingredients
+    if debug is True:
+        _checks('emax', robupy_obj, states_all, states_number_period, emax,
+                period_future_payoffs)
+
+    # Update
+    robupy_obj.unlock()
+
+    robupy_obj.set_attr('states_number_period', states_number_period)
+
+    robupy_obj.set_attr('period_payoffs_ex_ante', period_payoffs_ex_ante)
+
+    robupy_obj.set_attr('period_payoffs_ex_post', period_payoffs_ex_post)
+
+    robupy_obj.set_attr('period_future_payoffs', period_future_payoffs)
+
+    robupy_obj.set_attr('mapping_state_idx', mapping_state_idx)
+
+    robupy_obj.set_attr('states_all', states_all)
+
+    robupy_obj.set_attr('emax', emax)
+
+    robupy_obj.lock()
+
+    # Finishing
+    return robupy_obj
+
+
+''' Private functions
+'''
+
+def _create_eps(seed, num_periods, num_draws, init_dict):
+    """ Create disturbances.
+    """
+
     np.random.seed(seed)
 
-    eps = np.random.multivariate_normal(np.zeros(4), init_dict['SHOCKS'],
-                                        (num_periods, num_draws))
+    eps_standard_periods = np.random.multivariate_normal(np.zeros(4), np.identity(4),
+                                                 (num_periods, num_draws))
 
-    # Initialize container for expected future values
-    emax = np.tile(np.nan, (num_periods, max(states_number_period)))
+    all_zeros = (np.count_nonzero(init_dict['SHOCKS']) == 0)
 
-    # Initialize components of payoffs. The ex post payoffs and the future payoffs
-    # are only stored for debugging reasons and can be removed if memory usage
-    # turns out to be an issue.
-    period_payoffs_ex_ante = np.tile(np.nan, (num_periods, max(states_number_period), 4))
-    period_payoffs_ex_post = np.tile(np.nan, (num_periods, max(states_number_period), 4))
-    future_payoffs = np.tile(np.nan, (num_periods, max(states_number_period), 4))
+    if all_zeros:
+        true_cholesky = np.zeros((4, 4))
+    else:
+        true_cholesky = np.linalg.cholesky(init_dict['SHOCKS'])
+
+    eps_baseline_periods = np.tile(np.nan, (num_periods, num_draws, 4))
+
+    for period in range(num_periods):
+        eps_baseline_periods[period, :, :] = \
+            np.dot(true_cholesky, eps_standard_periods[period, :, :].T).T
+
+    # Finishing
+    return eps_baseline_periods, eps_standard_periods, true_cholesky
+
+def _create_payoffs_ex_ante(num_periods, states_number_period, states_all,
+                            init_dict, edu_start):
+
+    period_payoffs_ex_ante = np.tile(np.nan, (
+        num_periods, max(states_number_period), 4))
 
     # Calculate systematic instantaneous payoffs
     for period in range(num_periods - 1, -1, -1):
@@ -73,13 +202,16 @@ def solve(robupy_obj):
             coeffs['A'] = [init_dict['A']['int']] + init_dict['A']['coeff']
             coeffs['B'] = [init_dict['B']['int']] + init_dict['B']['coeff']
 
-            covars = [1.0, edu + edu_start, exp_A, exp_A ** 2, exp_B, exp_B ** 2]
+            covars = [1.0, edu + edu_start, exp_A, exp_A ** 2, exp_B,
+                      exp_B ** 2]
 
             # Calculate systematic part of wages in occupation A
-            period_payoffs_ex_ante[period, k, 0] = np.exp(np.dot(coeffs['A'], covars))
+            period_payoffs_ex_ante[period, k, 0] = np.exp(
+                np.dot(coeffs['A'], covars))
 
             # Calculate systematic part pf wages in occupation B
-            period_payoffs_ex_ante[period, k, 1] = np.exp(np.dot(coeffs['B'], covars))
+            period_payoffs_ex_ante[period, k, 1] = np.exp(
+                np.dot(coeffs['B'], covars))
 
             # Calculate systematic part of schooling utility
             payoff = init_dict['EDUCATION']['int']
@@ -95,77 +227,10 @@ def solve(robupy_obj):
             period_payoffs_ex_ante[period, k, 2] = payoff
 
             # Calculate systematic part of HOME
-            period_payoffs_ex_ante[period, k, 3] = init_dict['HOME']['int']
-
-    # Iterate backward through all periods
-    for period in range(num_periods - 1, -1, -1):
-
-        # Loop over all possible states
-        for k in range(states_number_period[period]):
-
-            # Initialize container
-            emax[period, k] = 0
-
-            # Calculate maximum value
-            for i in range(num_draws):
-
-                # Calculate ex post payoffs
-                for j in [0, 1]:
-                    period_payoffs_ex_post[period, k, j] = period_payoffs_ex_ante[period, k, j] * \
-                        np.exp(eps[period, i, j])
-
-                for j in [2, 3]:
-                    period_payoffs_ex_post[period, k, j] = period_payoffs_ex_ante[period, k, j] + \
-                        eps[period, i, j]
-
-                # Check applicability
-                if period == (num_periods - 1):
-                    continue
-
-                # Get future values
-                future_payoffs[period, k, :] = _get_future_payoffs(edu_max, edu_start, mapping_state_idx, period, emax,
-                                                                         k, states_all)
-                # Calculate total utilities
-                total_payoffs = period_payoffs_ex_post[period, k, :] + future_payoffs[period, k, :]
-
-                # Determine optimal choice
-                maximum = max(total_payoffs)
-
-                # Recording expected future value
-                emax[period, k] += maximum
-
-            # Scaling
-            emax[period, k] = emax[period, k] / num_draws
-
-    # Run checks on expected future values and its ingredients
-    if debug is True:
-        _checks('emax', robupy_obj, states_all, states_number_period, emax, future_payoffs)
-
-    # Update
-    robupy_obj.unlock()
-
-    robupy_obj.set_attr('states_number_period', states_number_period)
-
-    robupy_obj.set_attr('period_payoffs_ex_ante', period_payoffs_ex_ante)
-
-    robupy_obj.set_attr('period_payoffs_ex_post', period_payoffs_ex_post)
-
-    robupy_obj.set_attr('mapping_state_idx', mapping_state_idx)
-
-    robupy_obj.set_attr('future_payoffs', future_payoffs)
-
-    robupy_obj.set_attr('states_all', states_all)
-
-    robupy_obj.set_attr('emax', emax)
-
-    robupy_obj.lock()
+            period_payoffs_ex_ante[period, k, 3] = init_dict['HOME']['int'] \
 
     # Finishing
-    return robupy_obj
-
-
-''' Private functions
-'''
+    return period_payoffs_ex_ante
 
 
 def _create_state_space(robupy_obj):
@@ -240,11 +305,12 @@ def _create_state_space(robupy_obj):
                         if total > period: continue
 
                         # Collect all possible realizations of state space
-                        states_all[period, k, :] = [exp_A, exp_B, edu, edu_lagged]
+                        states_all[period, k, :] = [exp_A, exp_B, edu,
+                                                    edu_lagged]
 
                         # Collect mapping of state space to array index.
                         mapping_state_idx[period, exp_A, exp_B, edu,
-                                edu_lagged] = k
+                                          edu_lagged] = k
 
                         # Update count
                         k += 1
