@@ -50,11 +50,6 @@ def simulate_emax_ambiguity(num_draws, period_payoffs_ex_post, eps_standard,
     if debug:
         _write_result(period, k, opt)
 
-
-    print('\n\n')
-    print(opt['message'])
-    print(x0)
-    print(bounds)
     # Extract information
     fun = opt['fun']
 
