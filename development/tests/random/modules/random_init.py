@@ -45,7 +45,7 @@ def _random_dict(constraints={}):
     # Ambiguity (with temporary constraints)
     dict_['AMBIGUITY'] = dict()
     dict_['AMBIGUITY']['measure'] = 'absolute'
-    dict_['AMBIGUITY']['level'] = 0.00
+    dict_['AMBIGUITY']['level'] = np.random.choice([0.00, np.random.uniform()])
     dict_['AMBIGUITY']['para'] = 'both'
 
     # Home

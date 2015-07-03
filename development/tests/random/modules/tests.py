@@ -182,3 +182,18 @@ def test_D():
 
     # Finishing
     return True
+
+def test_E():
+    """ Testing whether thousand random initialization file can generated
+    and read.
+    """
+    for i in range(1000):
+
+        # Generate random initialization file
+        generate_init()
+
+        # Perform toolbox actions
+        read('test.robupy.ini')
+
+    # Finishing
+    return True

@@ -48,7 +48,7 @@ def solve(robupy_obj):
     if os.path.exists('ambiguity.robupy.log'):
         os.remove('ambiguity.robupy.log')
 
-    if ambiguity['debug']:
+    if debug:
         open('ambiguity.robupy.log', 'w').close()
 
     # Create grid of admissible state space values.
@@ -104,7 +104,7 @@ def solve(robupy_obj):
             # the solution procedure.
             if with_ambiguity:
 
-                simulated = \
+                simulated, payoffs_ex_post, future_payoffs = \
                     simulate_emax_ambiguity(num_draws, payoffs_ex_post,
                         eps_standard, period, k, payoffs_ex_ante,
                         edu_max, edu_start, mapping_state_idx, states_all,

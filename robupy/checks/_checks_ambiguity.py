@@ -13,7 +13,7 @@ def _checks(str_, *args):
     if str_ == '_get_start':
 
         # Distribute input parameters
-        x0, measure  = args
+        x0, measure = args
 
         # Check quality of starting values
         assert (len(x0) == 4)
@@ -21,6 +21,24 @@ def _checks(str_, *args):
 
         if measure == 'absolute':
             assert (all(val == 0 for val in x0))
+
+    elif str_ == 'simulate_emax_ambiguity':
+
+        # Distribute input parameters
+        simulated, opt = args
+
+        # Check quality of results. As I evaluate the function at the parameters
+        # resulting from the optimization, the value of the criterion function
+        # should be the same.
+        assert (simulated == opt['fun'])
+
+    elif str_ == '_criterion':
+
+        # Distribute input parameters
+        simulated, = args
+
+        # Check quality of bounds
+        assert (np.isfinite(simulated))
 
     elif str_ == '_get_bounds':
 

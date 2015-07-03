@@ -38,7 +38,7 @@ def simulate_emax_ambiguity(num_draws, period_payoffs_ex_post, eps_standard,
     args = (num_draws, period_payoffs_ex_post, eps_standard, period,
             k, payoffs_ex_ante, edu_max, edu_start,
             mapping_state_idx, states_all, future_payoffs,
-            num_periods, emax, true_cholesky, delta)
+            num_periods, emax, true_cholesky, delta, debug)
 
     # Run optimization
     opt = minimize(_criterion, x0, args, method='SLSQP', options=options,
@@ -48,15 +48,51 @@ def simulate_emax_ambiguity(num_draws, period_payoffs_ex_post, eps_standard,
     if debug:
         _write_result(period, k, opt)
 
-    # Extract information
-    fun = opt['fun']
+    # Transformation of standard normal deviates to relevant distributions.
+    eps_relevant = np.dot(true_cholesky, eps_standard.T).T + opt['x']
+    for j in [0, 1]:
+        eps_relevant[:, j] = np.exp(eps_relevant[:, j])
+
+    simulated, payoffs_ex_post, future_payoffs = simulate_emax(num_draws,
+        period_payoffs_ex_post, period, k, eps_relevant, payoffs_ex_ante,
+        edu_max, edu_start, num_periods, emax, states_all, future_payoffs,
+        mapping_state_idx, delta)
+
+    # Debugging
+    if debug is True:
+        _checks('simulate_emax_ambiguity', simulated, opt)
 
     # Finishing
-    return fun
-
+    return simulated, payoffs_ex_post, future_payoffs
 
 ''' Private functions
 '''
+
+
+def _criterion(x, num_draws, period_payoffs_ex_post, eps_standard, period,
+                   k, payoffs_ex_ante, edu_max, edu_start,
+                   mapping_state_idx, states_all, future_payoffs,
+                   num_periods, emax, true_cholesky, delta, debug):
+    """ Simulate expected future value for alternative shock distributions.
+    """
+    # Transformation of standard normal deviates to relevant distributions.
+    eps_relevant = np.dot(true_cholesky, eps_standard.T).T + x
+    for j in [0, 1]:
+        eps_relevant[:, j] = np.exp(eps_relevant[:, j])
+
+    # Simulate the expected future value for a given parameterization.
+    simulated, _, _ = \
+        simulate_emax(num_draws, period_payoffs_ex_post, period, k,
+                      eps_relevant, payoffs_ex_ante, edu_max,
+                      edu_start, num_periods, emax, states_all, future_payoffs,
+                      mapping_state_idx, delta)
+
+    # Debugging
+    if debug is True:
+        _checks('_criterion', simulated)
+
+    # Finishing
+    return simulated
 
 def _write_result(period, k, opt):
     """ Write result of optimization problem to loggging file.
@@ -72,30 +108,6 @@ def _write_result(period, k, opt):
     file_.write('Message ' + opt['message'] + '\n\n\n')
 
     file_.close()
-
-def _criterion(x, num_draws, period_payoffs_ex_post, eps_standard, period,
-                   k, payoffs_ex_ante, edu_max, edu_start,
-                   mapping_state_idx, states_all, future_payoffs,
-                   num_periods, emax, true_cholesky, delta):
-    """ Simulate expected future value for alternative shock distributions.
-    """
-    # Transformation of standard normal deviates to relevant distributions.
-    eps_relevant = np.dot(true_cholesky, eps_standard.T).T + x
-    for j in [0, 1]:
-        eps_relevant[:, j] = np.exp(eps_relevant[:, j])
-
-    # Simulate the expected future value for a given parameterization.
-    simulated, _, _ = \
-        simulate_emax(num_draws, period_payoffs_ex_post, period, k,
-                      eps_relevant, payoffs_ex_ante, edu_max,
-                      edu_start, num_periods, emax, states_all, future_payoffs,
-                      mapping_state_idx, delta)
-
-    assert (np.isfinite(simulated))
-
-    # Finishing
-    return simulated
-
 
 def _get_start(ambiguity, debug):
     """ Get starting values.
