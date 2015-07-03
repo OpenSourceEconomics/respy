@@ -88,7 +88,7 @@ def _random_dict(constraints={}):
         assert (np.isfinite(level))
         assert (level >= 0.0)
         assert (isinstance(level, float))
-        # Replace in initialziation file
+        # Replace in initialization file
         dict_['AMBIGUITY']['level'] = level
 
     # Replace number of periods
