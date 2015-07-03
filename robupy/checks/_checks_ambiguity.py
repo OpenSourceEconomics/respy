@@ -4,25 +4,53 @@
 
 # standard library
 import numpy as np
-import pandas as pd
-
-# project library
 
 def _checks(str_, *args):
     """ This checks the integrity of the objects related to the
         solution of the model.
     """
 
-    # Distribute class attributes
-    #num_periods = robupy_obj.get_attr('num_periods')
+    if str_ == '_get_start':
 
-    #edu_start = robupy_obj.get_attr('edu_start')
+        # Distribute input parameters
+        x0, measure = args
 
-    #edu_max = robupy_obj.get_attr('edu_max')
+        # Check quality of starting values
+        assert (len(x0) == 4)
+        assert (np.all(np.isfinite(x0)))
 
-#    if str_ == 'state_space':
-    if True:
-        pass
+        if measure == 'absolute':
+            assert (all(val == 0 for val in x0))
+
+    elif str_ == 'simulate_emax_ambiguity':
+
+        # Distribute input parameters
+        simulated, opt = args
+
+        # Check quality of results. As I evaluate the function at the parameters
+        # resulting from the optimization, the value of the criterion function
+        # should be the same.
+        assert (simulated == opt['fun'])
+
+    elif str_ == '_criterion':
+
+        # Distribute input parameters
+        simulated, = args
+
+        # Check quality of bounds
+        assert (np.isfinite(simulated))
+
+    elif str_ == '_get_bounds':
+
+        # Distribute input parameters
+        bounds, measure  = args
+
+        # Check quality of bounds
+        assert (len(bounds) == 4)
+
+        if measure == 'absolute':
+            for i in range(4):
+                assert (bounds[0] == bounds[i])
 
     else:
 

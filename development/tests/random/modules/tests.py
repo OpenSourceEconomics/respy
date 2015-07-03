@@ -115,6 +115,7 @@ def test_C():
         # Generate constraint periods
         constraints = dict()
         constraints['eps_zero'] = True
+        constraints['level'] = 0.00
 
         # Generate random initialization file
         generate_init(constraints)
@@ -179,6 +180,21 @@ def test_D():
         # Checks
         assert (np.isfinite(diff))
         assert (diff < 10e-10)
+
+    # Finishing
+    return True
+
+def test_E():
+    """ Testing whether thousand random initialization file can generated
+    and read.
+    """
+    for i in range(1000):
+
+        # Generate random initialization file
+        generate_init()
+
+        # Perform toolbox actions
+        read('test.robupy.ini')
 
     # Finishing
     return True

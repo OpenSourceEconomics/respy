@@ -16,7 +16,7 @@ import modules.tests as lib
 
 ''' Request
 '''
-label, seed = 'D', 2839
+label, seed = 'C', 95097
 
 ''' Error Reproduction
 '''

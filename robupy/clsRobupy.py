@@ -109,9 +109,6 @@ class RobupyCls(MetaCls):
             self.attr['ambiguity']['para'] = init_dict['AMBIGUITY'][
                 'para']
 
-            self.attr['ambiguity']['debug'] = init_dict['AMBIGUITY'][
-                'debug']
-
             # Update status indicator
             self.is_first = False
 

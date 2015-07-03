@@ -45,9 +45,8 @@ def _random_dict(constraints={}):
     # Ambiguity (with temporary constraints)
     dict_['AMBIGUITY'] = dict()
     dict_['AMBIGUITY']['measure'] = 'absolute'
-    dict_['AMBIGUITY']['level'] = 0.00
+    dict_['AMBIGUITY']['level'] = np.random.choice([0.00, np.random.uniform()])
     dict_['AMBIGUITY']['para'] = 'both'
-    dict_['AMBIGUITY']['debug'] = 'True'
 
     # Home
     dict_['HOME'] = dict()
@@ -81,7 +80,18 @@ def _random_dict(constraints={}):
     cov = np.random.normal(size=16).reshape((4,4))
     dict_['SHOCKS'] = np.dot(cov, cov.T)
 
-    # Replace with instructions
+    # Replace level of ambiguity
+    if 'level' in constraints.keys():
+        # Extract objects
+        level = constraints['level']
+        # Checks
+        assert (np.isfinite(level))
+        assert (level >= 0.0)
+        assert (isinstance(level, float))
+        # Replace in initialization file
+        dict_['AMBIGUITY']['level'] = level
+
+    # Replace number of periods
     if 'periods' in constraints.keys():
         # Extract objects
         periods = constraints['periods']
