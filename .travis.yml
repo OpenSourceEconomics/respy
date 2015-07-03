@@ -1,6 +1,7 @@
 language: python
 python:
   - "3.4"
+sudo: required
 bundler_args: --retry 3
 before_install: python travis-ci/requirements.py
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors

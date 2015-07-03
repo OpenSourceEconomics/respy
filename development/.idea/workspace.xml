@@ -6,8 +6,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="56803c1c-81e4-4070-9cf6-fc7503291db5" name="Default" comment="82333.99728503">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/travis-ci/requirements.py" afterPath="$PROJECT_DIR$/package/travis-ci/requirements.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/.idea/workspace.xml" afterPath="$PROJECT_DIR$/package/development/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/.travis.yml" afterPath="$PROJECT_DIR$/package/.travis.yml" />
     </list>
     <ignored path="robustToolbox.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -85,16 +84,6 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="_checks_ambiguity.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/package/robupy/checks/_checks_ambiguity.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="36" column="37" selection-start-line="36" selection-start-column="37" selection-end-line="36" selection-end-column="37" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="ambiguity.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/package/robupy/ambiguity.py">
           <provider selected="true" editor-type-id="text-editor">
@@ -117,11 +106,21 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="requirements.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="requirements.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/package/travis-ci/requirements.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.31681558">
+            <state vertical-scroll-proportion="0.0">
               <caret line="15" column="20" selection-start-line="15" selection-start-column="20" selection-end-line="15" selection-end-column="20" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name=".travis.yml" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/package/.travis.yml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.06336312">
+              <caret line="3" column="14" selection-start-line="3" selection-start-column="14" selection-end-line="3" selection-end-column="14" />
               <folding />
             </state>
           </provider>
@@ -158,7 +157,6 @@
         <option value="$PROJECT_DIR$/development/tests/fixed/data.robupy.info" />
         <option value="$PROJECT_DIR$/development/tests/fixed/data.robupy.dat" />
         <option value="$PROJECT_DIR$/package/travis-ci/run.py" />
-        <option value="$PROJECT_DIR$/package/.travis.yml" />
         <option value="$PROJECT_DIR$/development/vagrant/Vagrantfile" />
         <option value="$PROJECT_DIR$/development/vagrant/pull.py" />
         <option value="$PROJECT_DIR$/development/vagrant/provisioning.py" />
@@ -203,6 +201,7 @@
         <option value="$PROJECT_DIR$/package/robupy/simulate.py" />
         <option value="$PROJECT_DIR$/package/robupy/simulate.py" />
         <option value="$PROJECT_DIR$/package/travis-ci/requirements.py" />
+        <option value="$PROJECT_DIR$/package/.travis.yml" />
       </list>
     </option>
   </component>
@@ -1085,8 +1084,16 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/package/travis-ci/requirements.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.31681558">
+        <state vertical-scroll-proportion="0.0">
           <caret line="15" column="20" selection-start-line="15" selection-start-column="20" selection-end-line="15" selection-end-column="20" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/.travis.yml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.06336312">
+          <caret line="3" column="14" selection-start-line="3" selection-start-column="14" selection-end-line="3" selection-end-column="14" />
           <folding />
         </state>
       </provider>
