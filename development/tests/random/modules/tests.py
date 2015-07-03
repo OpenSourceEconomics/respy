@@ -178,7 +178,7 @@ def test_D():
 
         # Checks
         assert (np.isfinite(diff))
-        assert (diff < 10e-15)
+        assert (diff < 10e-10)
 
     # Finishing
     return True
