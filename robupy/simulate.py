@@ -174,7 +174,7 @@ def _write_info(data_frame):
 
         file_.write('   Choices:  \n\n')
 
-        file_.write('       Period     Work A     Work B    Schooling Education      \n\n')
+        file_.write('       Period     Work A     Work B    Schooling   Home      \n\n')
 
         for t in range(num_periods):
 

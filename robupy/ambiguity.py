@@ -136,7 +136,8 @@ def _get_bounds(ambiguity, debug):
 
     # Construct appropriate bounds
     if measure == 'absolute':
-        bounds = [[-level, level], [-level, level], [-level, level], [-level, level]]
+        bounds = [[-level, level], [-level, level],
+                  [-level, level], [-level, level]]
 
     # Debugging
     if debug is True:

@@ -227,7 +227,7 @@ def _create_payoffs_ex_ante(num_periods, states_number_period, states_all,
             period_payoffs_ex_ante[period, k, 2] = payoff
 
             # Calculate systematic part of HOME
-            period_payoffs_ex_ante[period, k, 3] = init_dict['HOME']['int'] \
+            period_payoffs_ex_ante[period, k, 3] = init_dict['HOME']['int']
 
     # Finishing
     return period_payoffs_ex_ante
