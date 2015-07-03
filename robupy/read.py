@@ -232,6 +232,8 @@ def _check_integrity_process(dict_):
     assert (np.all(np.diag(np.array(dict_['SHOCKS']) >= 0)))
     assert ((np.array(dict_['SHOCKS']).transpose() ==
              np.array(dict_['SHOCKS'])).all())
+    if not (np.count_nonzero(dict_['SHOCKS']) == 0):
+        assert(np.linalg.det(dict_['SHOCKS']) > 0)
 
     # Check AMBIGUITY
     assert (dict_['AMBIGUITY']['measure'] in ['kl', 'absolute'])
