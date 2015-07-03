@@ -16,17 +16,19 @@ import modules.tests as lib
 
 ''' Request
 '''
-label, seed = 'B', 14615
+label, seed = 'F', 14615
 
 ''' Error Reproduction
 '''
 if True:
 
-    test = getattr(lib,'test_' + label)
+    for _ in range(10):
 
-    np.random.seed(seed)
+        test = getattr(lib,'test_' + label)
 
-    test()
+        np.random.seed(seed)
+
+        test()
 
 else:
 

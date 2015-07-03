@@ -99,9 +99,6 @@ def solve(robupy_obj):
 
             # Simulate the expected future value. There needs to be a single
             # assertion in the future.
-            # TODO: I want to merge the interface of these two functions and
-            #  then select the relevant function once at the beginnning of
-            # the solution procedure.
             if with_ambiguity:
 
                 simulated, payoffs_ex_post, future_payoffs = \

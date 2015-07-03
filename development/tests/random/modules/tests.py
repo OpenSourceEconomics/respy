@@ -4,6 +4,7 @@
 # standard library
 import numpy as np
 
+import random
 import sys
 import os
 
@@ -195,6 +196,51 @@ def test_E():
 
         # Perform toolbox actions
         read('test.robupy.ini')
+
+    # Finishing
+    return True
+
+def test_F():
+    """ Testing whether the risk code is identical to the ambiguity code for
+        very, very small levels of ambiguity..
+    """
+    # Get a seed
+    seed = random.randint(0, 100)
+
+    # Initialize containers
+    base = None
+
+    # Loop over fast and slow evaluation of criterion function.
+    for level in [0.00, 0.000000001]:
+
+        # Set seed
+        np.random.seed(seed)
+
+        # Generate constraint periods
+        constraints = dict()
+        constraints['level'] = level
+
+        # Generate random initialization file
+        generate_init(constraints)
+
+        # Perform toolbox actions
+        robupy_obj = read('test.robupy.ini')
+
+        robupy_obj = solve(robupy_obj)
+
+        # Distribute class attributes
+        emax = robupy_obj.get_attr('emax')
+
+        if base is None:
+            base = emax.copy()
+
+        # Statistic
+        diff = np.max(abs(np.ma.masked_invalid(base) - np.ma.masked_invalid(
+            emax)))
+
+        # Checks
+        assert (np.isfinite(diff))
+        assert (diff < 10e-10)
 
     # Finishing
     return True
