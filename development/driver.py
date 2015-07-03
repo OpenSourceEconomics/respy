@@ -17,4 +17,4 @@ robupy_obj = read('model.robupy.ini')
 
 robupy_obj = solve(robupy_obj)
 
-#simulate(robupy_obj)
+simulate(robupy_obj)
