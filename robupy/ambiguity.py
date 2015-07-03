@@ -20,7 +20,7 @@ from robupy.shared import *
 def simulate_emax_ambiguity(num_draws, period_payoffs_ex_post, eps_standard,
         period, k, payoffs_ex_ante, edu_max, edu_start,
         mapping_state_idx, states_all, future_payoffs, num_periods, emax,
-        ambiguity, true_cholesky, delta):
+        ambiguity, true_cholesky, delta, debug):
     """ Get worst case
     """
 
@@ -29,12 +29,10 @@ def simulate_emax_ambiguity(num_draws, period_payoffs_ex_post, eps_standard,
 
     options['maxiter'] = 10000
 
-    debug = ambiguity['debug']
-
     # Initialize optimization problem.
-    x0 = _get_start(ambiguity)
+    x0 = _get_start(ambiguity, debug)
 
-    bounds = _get_bounds(ambiguity)
+    bounds = _get_bounds(ambiguity, debug)
 
     # Collect arguments
     args = (num_draws, period_payoffs_ex_post, eps_standard, period,
@@ -99,34 +97,40 @@ def _criterion(x, num_draws, period_payoffs_ex_post, eps_standard, period,
     return simulated
 
 
-def _get_start(ambiguity):
-    """ Get starting value.
+def _get_start(ambiguity, debug):
+    """ Get starting values.
     """
     # Distribute information
     measure = ambiguity['measure']
-    level = ambiguity['level']
-    para = ambiguity['para']
 
+    # Get appropriate starting values
     if measure == 'absolute':
-
         x0 = [0.00, 0.00, 0.00, 0.00]
 
+    # Debugging
+    if debug is True:
+        _checks('_get_start', x0, measure)
+
+    # Finishing
     return x0
 
 
-def _get_bounds(ambiguity):
+def _get_bounds(ambiguity, debug):
     """ Get bounds.
     """
     # Distribute information
     measure = ambiguity['measure']
     level = ambiguity['level']
-    para = ambiguity['para']
 
+    # Construct appropriate bounds
     if measure == 'absolute':
+        bounds = [[-level, level], [-level, level], [-level, level], [-level, level]]
 
-        bounds = [[-level, level], [-level, level],
-                      [-level, level], [-level, level]]
+    # Debugging
+    if debug is True:
+        _checks('_get_bounds', bounds, measure)
 
+    # Finishing
     return bounds
 
 

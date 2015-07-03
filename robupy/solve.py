@@ -109,7 +109,7 @@ def solve(robupy_obj):
                         eps_standard, period, k, payoffs_ex_ante,
                         edu_max, edu_start, mapping_state_idx, states_all,
                         future_payoffs, num_periods, emax, ambiguity,
-                        true_cholesky, delta)
+                        true_cholesky, delta, debug)
 
             else:
 

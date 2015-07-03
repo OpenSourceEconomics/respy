@@ -47,7 +47,6 @@ def _random_dict(constraints={}):
     dict_['AMBIGUITY']['measure'] = 'absolute'
     dict_['AMBIGUITY']['level'] = 0.00
     dict_['AMBIGUITY']['para'] = 'both'
-    dict_['AMBIGUITY']['debug'] = 'True'
 
     # Home
     dict_['HOME'] = dict()

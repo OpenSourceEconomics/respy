@@ -11,7 +11,7 @@ HOME = os.getcwd()
 
 ''' Run fixed test battery
 '''
-os.chdir('tests/fixed')
+os.chdir('fixed')
 
 os.system('python run')
 
@@ -19,7 +19,7 @@ os.chdir(HOME)
 
 ''' Run randon test battery
 '''
-os.chdir('tests/random')
+os.chdir('random')
 
 os.system('./run --hours 0.001')
 
