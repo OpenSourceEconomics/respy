@@ -115,6 +115,7 @@ def test_C():
         # Generate constraint periods
         constraints = dict()
         constraints['eps_zero'] = True
+        constraints['level'] = 0.00
 
         # Generate random initialization file
         generate_init(constraints)

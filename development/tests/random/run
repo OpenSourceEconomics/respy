@@ -33,7 +33,7 @@ def run(hours):
     start, timeout = datetime.now(), timedelta(hours=hours)
 
     labels = ['A', 'B', 'C', 'D', 'E']
-
+    
     # Initialize counter.
     dict_ = dict()
 
