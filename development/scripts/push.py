@@ -19,21 +19,23 @@ def push():
     """
     for repo in REPOS:
 
-        # Check if checked out
-        if repo not in os.listdir('.'):
-            continue
+        try:
 
-        print('\n.. pushing ' + repo)
+            print('\n.. pushing ' + repo)
 
-        os.chdir(repo)
+            os.chdir(repo)
 
-        os.system("git clean -f") 
+            os.system("git clean -f")
 
-        os.system("git commit -a -m'committing'") 
+            os.system("git commit -a -m'committing'")
 
-        os.system("git push")
+            os.system("git push")
 
-        os.chdir('../')
+            os.chdir('../')
+
+        except:
+
+            pass
 
     print('')
 

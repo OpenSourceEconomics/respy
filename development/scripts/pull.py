@@ -7,9 +7,9 @@ import argparse
 import os
 
 # module-wide variables
-REPOS = ['development', 'documentation', 'package']
+REPOS = ['documentation/sources', 'package']
 
-REPOS += ['robustToolbox.github.io']
+REPOS += ['documentation/robustToolbox.github.io']
 
 
 ''' Functions
@@ -20,16 +20,19 @@ def update():
     for repo in REPOS:
 
         # Check if checked out
-        if repo not in os.listdir('.'):
-            continue
+        try:
 
-        print('\n.. updating ' + repo)
+            print('\n.. updating ' + repo)
 
-        os.chdir(repo)
+            os.chdir(repo)
 
-        os.system('git pull')
+            os.system('git pull')
 
-        os.chdir('../')
+            os.chdir('../')
+
+        except:
+
+            pass
 
     print('')
 
