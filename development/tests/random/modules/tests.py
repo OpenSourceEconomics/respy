@@ -239,3 +239,45 @@ def test_F():
 
     # Finishing
     return True
+
+def test_G():
+    """ Testing whether the ex ante benefit calculation is unaffected by
+    the level of ambiguity.
+    """
+    # Get a seed
+    seed = random.randint(0, 100)
+
+    # Initialize containers
+    base = None
+
+    # Loop over different uncertain environments.
+    for _ in range(5):
+
+        # Set seed
+        np.random.seed(seed)
+
+        # Generate constraint periods
+        constraints = dict()
+        constraints['level'] = np.random.choice([0.00, np.random.uniform()])
+
+        # Generate random initialization file
+        generate_init(constraints)
+
+        # Perform toolbox actions
+        robupy_obj = read('test.robupy.ini')
+
+        robupy_obj = solve(robupy_obj)
+
+        # Distribute class attributes
+        ex_ante = robupy_obj.get_attr('period_payoffs_ex_ante')
+
+        if base is None:
+            base = ex_ante.copy()
+
+        # Checks
+        np.testing.assert_allclose(base, ex_ante)
+
+    # Finishing
+    return True
+
+
