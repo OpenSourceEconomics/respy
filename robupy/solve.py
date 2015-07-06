@@ -118,7 +118,7 @@ def solve(robupy_obj):
                               mapping_state_idx, states_all, num_periods,
                               emax, delta, debug, ambiguity_args)
 
-            # Collect ex post payoffs
+            # Collect information
             period_payoffs_ex_post[period, k, :] = payoffs_ex_post
             period_future_payoffs[period, k, :] = future_payoffs
 
