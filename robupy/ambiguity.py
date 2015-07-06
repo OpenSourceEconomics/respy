@@ -17,12 +17,15 @@ from robupy.shared import *
 '''
 
 
-def simulate_emax_ambiguity(num_draws, period_payoffs_ex_post, eps_standard,
+def simulate_emax_ambiguity(num_draws, eps_standard,
         period, k, payoffs_ex_ante, edu_max, edu_start,
         mapping_state_idx, states_all, num_periods, emax,
-        ambiguity, true_cholesky, delta, debug):
+        delta, debug, ambiguity_args):
     """ Get worst case
     """
+    # Distribute arguments
+    ambiguity = ambiguity_args['with_ambiguity']
+    cholesky = ambiguity_args['cholesky']
 
     # Initialize options.
     options = dict()
@@ -35,10 +38,10 @@ def simulate_emax_ambiguity(num_draws, period_payoffs_ex_post, eps_standard,
     bounds = _get_bounds(ambiguity, debug)
 
     # Collect arguments
-    args = (num_draws, period_payoffs_ex_post, eps_standard, period,
+    args = (num_draws, eps_standard, period,
             k, payoffs_ex_ante, edu_max, edu_start,
             mapping_state_idx, states_all,
-            num_periods, emax, true_cholesky, delta, debug)
+            num_periods, emax, cholesky, delta, debug)
 
     # Run optimization
     opt = minimize(_criterion, x0, args, method='SLSQP', options=options,
@@ -49,12 +52,12 @@ def simulate_emax_ambiguity(num_draws, period_payoffs_ex_post, eps_standard,
         _write_result(period, k, opt)
 
     # Transformation of standard normal deviates to relevant distributions.
-    eps_relevant = np.dot(true_cholesky, eps_standard.T).T + opt['x']
+    eps_relevant = np.dot(cholesky, eps_standard.T).T + opt['x']
     for j in [0, 1]:
         eps_relevant[:, j] = np.exp(eps_relevant[:, j])
 
     simulated, payoffs_ex_post, future_payoffs = simulate_emax(num_draws,
-        period_payoffs_ex_post, period, k, eps_relevant, payoffs_ex_ante,
+        period, k, eps_relevant, payoffs_ex_ante,
         edu_max, edu_start, num_periods, emax, states_all,
         mapping_state_idx, delta)
 
@@ -69,7 +72,7 @@ def simulate_emax_ambiguity(num_draws, period_payoffs_ex_post, eps_standard,
 '''
 
 
-def _criterion(x, num_draws, period_payoffs_ex_post, eps_standard, period,
+def _criterion(x, num_draws, eps_standard, period,
                    k, payoffs_ex_ante, edu_max, edu_start,
                    mapping_state_idx, states_all,
                    num_periods, emax, true_cholesky, delta, debug):
@@ -82,7 +85,7 @@ def _criterion(x, num_draws, period_payoffs_ex_post, eps_standard, period,
 
     # Simulate the expected future value for a given parameterization.
     simulated, _, _ = \
-        simulate_emax(num_draws, period_payoffs_ex_post, period, k,
+        simulate_emax(num_draws, period, k,
                       eps_relevant, payoffs_ex_ante, edu_max,
                       edu_start, num_periods, emax, states_all,
                       mapping_state_idx, delta)

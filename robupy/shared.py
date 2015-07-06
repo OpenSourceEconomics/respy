@@ -5,15 +5,14 @@
 # standard library
 import numpy as np
 
-def simulate_emax(num_draws, payoffs_ex_post, period, k,
-                  eps_relevant, payoffs_ex_ante, edu_max,
-                  edu_start, num_periods, emax, states_all,
-                  mapping_state_idx, delta):
+def simulate_emax(num_draws, period, k, eps_relevant, payoffs_ex_ante, edu_max,
+                  edu_start, num_periods, emax, states_all, mapping_state_idx,
+                  delta):
     """ Simulate expected future value.
     """
 
-    # Initialize container
-    simulated = 0.0
+    # Initialize containers
+    payoffs_ex_post, emax_simulated = np.tile(np.nan, 4), 0.0
 
     # Calculate maximum value
     for i in range(num_draws):
@@ -41,13 +40,13 @@ def simulate_emax(num_draws, payoffs_ex_post, period, k,
         maximum = max(total_payoffs)
 
         # Recording expected future value
-        simulated += maximum
+        emax_simulated += maximum
 
     # Scaling
-    simulated = simulated / num_draws
+    emax_simulated = emax_simulated / num_draws
 
     # Finishing
-    return simulated, payoffs_ex_post, future_payoffs
+    return emax_simulated, payoffs_ex_post, future_payoffs
 
 
 def get_future_payoffs(edu_max, edu_start, mapping_state_idx, period, emax, k,

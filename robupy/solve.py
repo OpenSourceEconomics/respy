@@ -65,6 +65,23 @@ def solve(robupy_obj):
     eps_baseline_periods, eps_standard_periods, true_cholesky = \
         _create_eps(seed, num_periods, num_draws, init_dict)
 
+    # Collect special arguments for ambiguity. This setup allows to
+    # integrate the interfaces to the risk and ambiguity functions.
+    ambiguity_args = None
+
+    if with_ambiguity:
+        ambiguity_args = dict()
+        ambiguity_args['cholesky'] = true_cholesky
+        ambiguity_args['ambiguity'] = ambiguity
+
+    # Select interface to simulate the EMAX appropriately.
+    eps_relevant_periods = eps_baseline_periods
+    simulate_emax = simulate_emax_risk
+
+    if with_ambiguity:
+        eps_relevant_periods = eps_standard_periods
+        simulate_emax = simulate_emax_ambiguity
+
     # Initialize container for expected future values and payoffs. The ex post
     # payoffs and the future payoffs are only stored for debugging reasons
     # and can be removed if memory usage turns out to be an issue. I
@@ -86,34 +103,20 @@ def solve(robupy_obj):
     for period in range(num_periods - 1, -1, -1):
 
         # Extract disturbances
-        eps_baseline = eps_baseline_periods[period, :, :]
-        eps_standard = eps_standard_periods[period, :, :]
+        eps_relevant = eps_relevant_periods[period, :, :]
 
         # Loop over all possible states
         for k in range(states_number_period[period]):
 
             # Extract payoffs
             payoffs_ex_ante = period_payoffs_ex_ante[period, k, :]
-            payoffs_ex_post = period_payoffs_ex_post[period, k, :]
 
-            # Simulate the expected future value. There needs to be a single
-            # case distinction in the future.
-            if with_ambiguity:
-
-                emax_simulated, payoffs_ex_post, future_payoffs = \
-                    simulate_emax_ambiguity(num_draws, payoffs_ex_post,
-                        eps_standard, period, k, payoffs_ex_ante,
-                        edu_max, edu_start, mapping_state_idx, states_all,
-                        num_periods, emax, ambiguity,
-                        true_cholesky, delta, debug)
-
-            else:
-
-                emax_simulated, payoffs_ex_post, future_payoffs = \
-                    simulate_emax_risk(num_draws, payoffs_ex_post,
-                        eps_baseline, period, k, payoffs_ex_ante,
-                        edu_max, edu_start, mapping_state_idx, states_all,
-                        num_periods, emax, delta)
+            # Simulate the expected future value.
+            emax_simulated, payoffs_ex_post, future_payoffs = \
+                simulate_emax(num_draws, eps_relevant, period, k,
+                              payoffs_ex_ante, edu_max, edu_start,
+                              mapping_state_idx, states_all, num_periods,
+                              emax, delta, debug, ambiguity_args)
 
             # Collect ex post payoffs
             period_payoffs_ex_post[period, k, :] = payoffs_ex_post
