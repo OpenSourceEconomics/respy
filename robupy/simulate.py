@@ -185,15 +185,17 @@ def _write_info(data_frame):
 
         for t in range(num_periods):
 
-            work_A = str(np.sum((data_frame[2] == 0) & (data_frame[1] == t)))
+            work_A = np.sum((data_frame[2] == 0) & (data_frame[1] ==
+                                                        t))/num_agents
 
-            work_B = str(np.sum((data_frame[2] == 1) & (data_frame[1] == t)))
+            work_B = np.sum((data_frame[2] == 1) & (data_frame[1] == t))/num_agents
 
-            schooling = str(np.sum((data_frame[2] == 2) & (data_frame[1] == t)))
+            schooling = np.sum((data_frame[2] == 2) & (data_frame[1] ==
+                                                           t))/num_agents
 
-            home = str(np.sum((data_frame[2] == 3) & (data_frame[1] == t)))
+            home = np.sum((data_frame[2] == 3) & (data_frame[1] == t))/num_agents
 
-            string = '''{0[0]:>10} {0[1]:>10} {0[2]:>10} {0[3]:>10} {0[4]:>10}\n'''
+            string = '''{0[0]:>10}    {0[1]:10.4f} {0[2]:10.4f} {0[3]:10.4f} {0[4]:10.4f}\n'''
 
             file_.write(string.format([(t + 1), work_A, work_B, schooling, home]))
 
