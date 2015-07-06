@@ -7,7 +7,7 @@ import numpy as np
 
 def simulate_emax(num_draws, payoffs_ex_post, period, k,
                   eps_relevant, payoffs_ex_ante, edu_max,
-                  edu_start, num_periods, emax, states_all, future_payoffs,
+                  edu_start, num_periods, emax, states_all,
                   mapping_state_idx, delta):
     """ Simulate expected future value.
     """
@@ -27,6 +27,7 @@ def simulate_emax(num_draws, payoffs_ex_post, period, k,
 
         # Check applicability
         if period == (num_periods - 1):
+            future_payoffs = np.tile(np.nan, 4)
             continue
 
         # Get future values

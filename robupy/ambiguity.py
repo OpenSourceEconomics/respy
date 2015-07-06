@@ -19,7 +19,7 @@ from robupy.shared import *
 
 def simulate_emax_ambiguity(num_draws, period_payoffs_ex_post, eps_standard,
         period, k, payoffs_ex_ante, edu_max, edu_start,
-        mapping_state_idx, states_all, future_payoffs, num_periods, emax,
+        mapping_state_idx, states_all, num_periods, emax,
         ambiguity, true_cholesky, delta, debug):
     """ Get worst case
     """
@@ -37,7 +37,7 @@ def simulate_emax_ambiguity(num_draws, period_payoffs_ex_post, eps_standard,
     # Collect arguments
     args = (num_draws, period_payoffs_ex_post, eps_standard, period,
             k, payoffs_ex_ante, edu_max, edu_start,
-            mapping_state_idx, states_all, future_payoffs,
+            mapping_state_idx, states_all,
             num_periods, emax, true_cholesky, delta, debug)
 
     # Run optimization
@@ -55,7 +55,7 @@ def simulate_emax_ambiguity(num_draws, period_payoffs_ex_post, eps_standard,
 
     simulated, payoffs_ex_post, future_payoffs = simulate_emax(num_draws,
         period_payoffs_ex_post, period, k, eps_relevant, payoffs_ex_ante,
-        edu_max, edu_start, num_periods, emax, states_all, future_payoffs,
+        edu_max, edu_start, num_periods, emax, states_all,
         mapping_state_idx, delta)
 
     # Debugging
@@ -71,7 +71,7 @@ def simulate_emax_ambiguity(num_draws, period_payoffs_ex_post, eps_standard,
 
 def _criterion(x, num_draws, period_payoffs_ex_post, eps_standard, period,
                    k, payoffs_ex_ante, edu_max, edu_start,
-                   mapping_state_idx, states_all, future_payoffs,
+                   mapping_state_idx, states_all,
                    num_periods, emax, true_cholesky, delta, debug):
     """ Simulate expected future value for alternative shock distributions.
     """
@@ -84,7 +84,7 @@ def _criterion(x, num_draws, period_payoffs_ex_post, eps_standard, period,
     simulated, _, _ = \
         simulate_emax(num_draws, period_payoffs_ex_post, period, k,
                       eps_relevant, payoffs_ex_ante, edu_max,
-                      edu_start, num_periods, emax, states_all, future_payoffs,
+                      edu_start, num_periods, emax, states_all,
                       mapping_state_idx, delta)
 
     # Debugging

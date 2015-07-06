@@ -6,6 +6,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="56803c1c-81e4-4070-9cf6-fc7503291db5" name="Default" comment="82333.99728503">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/ambiguity.py" afterPath="$PROJECT_DIR$/package/robupy/ambiguity.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/tests/random/investigate" afterPath="$PROJECT_DIR$/package/development/tests/random/investigate" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/risk.py" afterPath="$PROJECT_DIR$/package/robupy/risk.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/shared.py" afterPath="$PROJECT_DIR$/package/robupy/shared.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/solve.py" afterPath="$PROJECT_DIR$/package/robupy/solve.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/.idea/workspace.xml" afterPath="$PROJECT_DIR$/package/development/.idea/workspace.xml" />
     </list>
@@ -38,8 +42,8 @@
       <file leaf-file-name="solve.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/package/robupy/solve.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.16628176">
-              <caret line="103" column="63" selection-start-line="103" selection-start-column="49" selection-end-line="103" selection-end-column="63" />
+            <state vertical-scroll-proportion="0.14983352">
+              <caret line="92" column="33" selection-start-line="92" selection-start-column="33" selection-end-line="92" selection-end-column="33" />
               <folding />
             </state>
           </provider>
@@ -49,7 +53,27 @@
         <entry file="file://$PROJECT_DIR$/package/robupy/risk.py">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="16" column="34" selection-start-line="16" selection-start-column="20" selection-end-line="16" selection-end-column="34" />
+              <caret line="28" column="36" selection-start-line="28" selection-start-column="31" selection-end-line="28" selection-end-column="36" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ambiguity.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/package/robupy/ambiguity.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="-5.714286">
+              <caret line="61" column="21" selection-start-line="61" selection-start-column="21" selection-end-line="61" selection-end-column="21" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="investigate" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/package/development/tests/random/investigate">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="24" column="20" selection-start-line="24" selection-start-column="20" selection-end-line="24" selection-end-column="20" />
               <folding />
             </state>
           </provider>
@@ -59,7 +83,7 @@
         <entry file="file://$PROJECT_DIR$/package/robupy/shared.py">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="9" column="74" selection-start-line="9" selection-start-column="60" selection-end-line="9" selection-end-column="74" />
+              <caret line="26" column="0" selection-start-line="26" selection-start-column="0" selection-end-line="26" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -99,9 +123,7 @@
         <option value="$PROJECT_DIR$/development/model.robupy.ini" />
         <option value="$PROJECT_DIR$/development/tests/fixed/second.robupy.ini" />
         <option value="$PROJECT_DIR$/development/tests/random/modules/_random_init.py" />
-        <option value="$PROJECT_DIR$/package/robupy/shared.py" />
         <option value="$PROJECT_DIR$/development/tests/fixed/first.robupy.ini" />
-        <option value="$PROJECT_DIR$/package/robupy/risk.py" />
         <option value="$PROJECT_DIR$/package/development/tests/fixed/run" />
         <option value="$PROJECT_DIR$/package/development/tests/random/modules/clsMail.py" />
         <option value="$PROJECT_DIR$/package/development/tests/random/modules/auxiliary.py" />
@@ -123,14 +145,16 @@
         <option value="$PROJECT_DIR$/package/.travis.yml" />
         <option value="$PROJECT_DIR$/package/robupy/read.py" />
         <option value="$PROJECT_DIR$/package/development/tests/random/logging.log" />
-        <option value="$PROJECT_DIR$/package/robupy/ambiguity.py" />
         <option value="$PROJECT_DIR$/package/development/model.robupy.ini" />
         <option value="$PROJECT_DIR$/pull" />
         <option value="$PROJECT_DIR$/push" />
         <option value="$PROJECT_DIR$/package/development/tests/random/run" />
-        <option value="$PROJECT_DIR$/package/development/tests/random/investigate" />
         <option value="$PROJECT_DIR$/package/development/tests/random/modules/tests.py" />
         <option value="$PROJECT_DIR$/package/robupy/solve.py" />
+        <option value="$PROJECT_DIR$/package/robupy/risk.py" />
+        <option value="$PROJECT_DIR$/package/robupy/shared.py" />
+        <option value="$PROJECT_DIR$/package/development/tests/random/investigate" />
+        <option value="$PROJECT_DIR$/package/robupy/ambiguity.py" />
       </list>
     </option>
   </component>
@@ -985,14 +1009,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/tests/random/investigate">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="18" column="16" selection-start-line="18" selection-start-column="16" selection-end-line="18" selection-end-column="16" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/package/development/tests/random/run">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-0.6992231">
@@ -1027,14 +1043,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/robupy/ambiguity.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.019977802">
-          <caret line="43" column="16" selection-start-line="43" selection-start-column="16" selection-end-line="43" selection-end-column="16" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/package/robupy/clsRobupy.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="1.4783574">
@@ -1043,10 +1051,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/robupy/risk.py">
+    <entry file="file://$PROJECT_DIR$/package/development/tests/random/investigate">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="16" column="34" selection-start-line="16" selection-start-column="20" selection-end-line="16" selection-end-column="34" />
+          <caret line="24" column="20" selection-start-line="24" selection-start-column="20" selection-end-line="24" selection-end-column="20" />
           <folding />
         </state>
       </provider>
@@ -1054,15 +1062,31 @@
     <entry file="file://$PROJECT_DIR$/package/robupy/shared.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="9" column="74" selection-start-line="9" selection-start-column="60" selection-end-line="9" selection-end-column="74" />
+          <caret line="26" column="0" selection-start-line="26" selection-start-column="0" selection-end-line="26" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/robupy/risk.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="28" column="36" selection-start-line="28" selection-start-column="31" selection-end-line="28" selection-end-column="36" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/robupy/ambiguity.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-5.714286">
+          <caret line="61" column="21" selection-start-line="61" selection-start-column="21" selection-end-line="61" selection-end-column="21" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/package/robupy/solve.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.16628176">
-          <caret line="103" column="63" selection-start-line="103" selection-start-column="49" selection-end-line="103" selection-end-column="63" />
+        <state vertical-scroll-proportion="0.14983352">
+          <caret line="92" column="33" selection-start-line="92" selection-start-column="33" selection-end-line="92" selection-end-column="33" />
           <folding />
         </state>
       </provider>
