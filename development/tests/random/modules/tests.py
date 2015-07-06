@@ -9,7 +9,7 @@ import sys
 import os
 
 # project library
-from modules.random_init import generate_init
+from modules.random_init import *
 
 # robustToolbox
 sys.path.insert(0, os.environ['ROBUPY'])
@@ -204,8 +204,8 @@ def test_F():
     """ Testing whether the risk code is identical to the ambiguity code for
         very, very small levels of ambiguity..
     """
-    # Get a seed
-    seed = random.randint(0, 100)
+    # Generate random initialization dictionary
+    init_dict = generate_random_dict()
 
     # Initialize containers
     base = None
@@ -213,15 +213,11 @@ def test_F():
     # Loop over different uncertain environments.
     for level in [0.00, 0.000000001]:
 
-        # Set seed
-        np.random.seed(seed)
+        # Set varying constraints
+        init_dict['AMBIGUITY']['level'] = level
 
-        # Generate constraint periods
-        constraints = dict()
-        constraints['level'] = level
-
-        # Generate random initialization file
-        generate_init(constraints)
+        # Print to dictionary
+        print_random_dict(init_dict)
 
         # Perform toolbox actions
         robupy_obj = read('test.robupy.ini')
@@ -244,8 +240,8 @@ def test_G():
     """ Testing whether the ex ante benefit calculation is unaffected by
     the level of ambiguity.
     """
-    # Get a seed
-    seed = random.randint(0, 100)
+    # Generate random initialization dictionary
+    init_dict = generate_random_dict()
 
     # Initialize containers
     base = None
@@ -253,15 +249,11 @@ def test_G():
     # Loop over different uncertain environments.
     for _ in range(5):
 
-        # Set seed
-        np.random.seed(seed)
+        # Set varying constraints
+        init_dict['AMBIGUITY']['level'] = np.random.choice([0.00, np.random.uniform()])
 
-        # Generate constraint periods
-        constraints = dict()
-        constraints['level'] = np.random.choice([0.00, np.random.uniform()])
-
-        # Generate random initialization file
-        generate_init(constraints)
+        # Print to dictionary
+        print_random_dict(init_dict)
 
         # Perform toolbox actions
         robupy_obj = read('test.robupy.ini')

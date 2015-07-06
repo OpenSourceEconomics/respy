@@ -18,9 +18,9 @@ MAX_PERIODS = 4
 def generate_init(constraints={}):
     """ Get a random initialization file.
     """
-    dict_ = _random_dict(constraints)
+    dict_ = generate_random_dict(constraints)
         
-    _print_dict(dict_)
+    print_random_dict(dict_)
     
     # Finishing.
     return dict_
@@ -29,7 +29,7 @@ def generate_init(constraints={}):
 '''
 
 
-def _random_dict(constraints={}):
+def generate_random_dict(constraints={}):
     """ Draw random dictionary instance that can be processed into an
         initialization file.
     """
@@ -121,7 +121,7 @@ def _random_dict(constraints={}):
     # Finishing.
     return dict_
 
-def _print_dict(dict_):
+def print_random_dict(dict_):
     """ Print initialization dictionary to file.
     """
     # Antibugging.
