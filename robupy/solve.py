@@ -48,7 +48,7 @@ def solve(robupy_obj):
     if os.path.exists('ambiguity.robupy.log'):
         os.remove('ambiguity.robupy.log')
 
-    if debug:
+    if debug and with_ambiguity:
         open('ambiguity.robupy.log', 'w').close()
 
     # Create grid of admissible state space values.
