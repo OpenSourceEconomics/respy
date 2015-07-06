@@ -222,10 +222,10 @@ def _create_payoffs_ex_ante(num_periods, states_number_period, states_all,
             # Tuition cost for higher education if agents move
             # beyond high school.
             if edu + edu_start > 12:
-                payoff -= init_dict['EDUCATION']['coeff'][0]
+                payoff += init_dict['EDUCATION']['coeff'][0]
             # Psychic cost of going back to school
             if edu_lagged == 0:
-                payoff -= init_dict['EDUCATION']['coeff'][1]
+                payoff += init_dict['EDUCATION']['coeff'][1]
 
             period_payoffs_ex_ante[period, k, 2] = payoff
 
