@@ -98,10 +98,10 @@ def solve(robupy_obj):
             future_payoffs = period_future_payoffs[period, k, :]
 
             # Simulate the expected future value. There needs to be a single
-            # assertion in the future.
+            # case distinction in the future.
             if with_ambiguity:
 
-                simulated, payoffs_ex_post, future_payoffs = \
+                emax_simulated, payoffs_ex_post, future_payoffs = \
                     simulate_emax_ambiguity(num_draws, payoffs_ex_post,
                         eps_standard, period, k, payoffs_ex_ante,
                         edu_max, edu_start, mapping_state_idx, states_all,
@@ -110,7 +110,7 @@ def solve(robupy_obj):
 
             else:
 
-                simulated, payoffs_ex_post, future_payoffs = \
+                emax_simulated, payoffs_ex_post, future_payoffs = \
                     simulate_emax_risk(num_draws, payoffs_ex_post,
                         eps_baseline, period, k, payoffs_ex_ante,
                         edu_max, edu_start, mapping_state_idx, states_all,
@@ -121,7 +121,7 @@ def solve(robupy_obj):
             period_future_payoffs[period, k, :] = future_payoffs
 
             # Collect
-            emax[period, k] = simulated
+            emax[period, k] = emax_simulated
 
     # Run checks on expected future values and its ingredients
     if debug is True:
