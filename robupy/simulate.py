@@ -16,10 +16,14 @@
 # standard library
 import numpy as np
 import pandas as pd
+import logging
 
 # project library
 from robupy.checks._checks_simulate import _checks
 from robupy.shared import *
+
+# Logging
+logger = logging.getLogger('ROBUPY')
 
 ''' Public function
 '''
@@ -30,6 +34,9 @@ def simulate(robupy_obj):
     """
     # Antibugging
     assert (robupy_obj.get_status())
+
+    # Logging
+    logger.info('Staring simulation of model.')
 
     # Distribute class attributes
     debug = robupy_obj.get_attr('debug')

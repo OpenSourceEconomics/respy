@@ -3,13 +3,17 @@ programming problem.
 """
 
 # standard library
-import os
 import numpy as np
+import logging
+import os
 
 # project library
 from robupy.checks._checks_solve import _checks
 from robupy.ambiguity import *
 from robupy.risk import *
+
+# Logging
+logger = logging.getLogger('ROBUPY')
 
 ''' Public function
 '''
@@ -99,8 +103,14 @@ def solve(robupy_obj):
     period_payoffs_ex_ante = _create_payoffs_ex_ante(num_periods,
         states_number_period, states_all, init_dict, edu_start)
 
+
+    logger.info('Staring backward induction procedure.')
+
     # Iterate backward through all periods
     for period in range(num_periods - 1, -1, -1):
+
+        # Logging.
+        logger.info('... solving period ' + str(period))
 
         # Extract disturbances
         eps_relevant = eps_relevant_periods[period, :, :]
@@ -187,6 +197,10 @@ def _create_eps(seed, num_periods, num_draws, init_dict):
 
 def _create_payoffs_ex_ante(num_periods, states_number_period, states_all,
                             init_dict, edu_start):
+    """ Calculate ex ante payoffs.
+    """
+    # Logging
+    logger.info('Staring calculation of ex ante payoffs.')
 
     period_payoffs_ex_ante = np.tile(np.nan, (
         num_periods, max(states_number_period), 4))
