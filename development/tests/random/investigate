@@ -6,6 +6,10 @@ import numpy as np
 import sys
 import os
 
+# virtual environment
+if not hasattr(sys, 'real_prefix'):
+    raise AssertionError('Please use a virtual environment for testing')
+
 # project library
 sys.path.insert(0, os.environ['ROBUPY'])
 from robupy import *
@@ -16,7 +20,7 @@ import modules.tests as lib
 
 ''' Request
 '''
-label, seed = 'A', 45550
+label, seed = 'B', 66175
 
 ''' Error Reproduction
 '''

@@ -24,7 +24,7 @@ def simulate_emax_ambiguity(num_draws, eps_standard,
     """ Get worst case
     """
     # Distribute arguments
-    ambiguity = ambiguity_args['with_ambiguity']
+    ambiguity = ambiguity_args['ambiguity']
     cholesky = ambiguity_args['cholesky']
 
     # Initialize options.
