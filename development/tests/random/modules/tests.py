@@ -210,7 +210,7 @@ def test_F():
     # Initialize containers
     base = None
 
-    # Loop over fast and slow evaluation of criterion function.
+    # Loop over different uncertain environments.
     for level in [0.00, 0.000000001]:
 
         # Set seed
@@ -234,13 +234,8 @@ def test_F():
         if base is None:
             base = emax.copy()
 
-        # Statistic
-        diff = np.max(abs(np.ma.masked_invalid(base) - np.ma.masked_invalid(
-            emax)))
-
         # Checks
-        assert (np.isfinite(diff))
-        assert (diff < 10e-10)
+        np.testing.assert_allclose(base, emax)
 
     # Finishing
     return True

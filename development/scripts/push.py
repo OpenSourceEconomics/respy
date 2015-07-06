@@ -7,10 +7,9 @@ import argparse
 import os
 
 # module-wide variables
-REPOS = ['development', 'documentation', 'package']
+REPOS = ['documentation/sources', 'package']
 
-REPOS += ['robustToolbox.github.io']
-
+REPOS += ['documentation/robustToolbox.github.io']
 
 ''' Functions
 '''

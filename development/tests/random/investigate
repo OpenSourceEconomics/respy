@@ -16,13 +16,13 @@ import modules.tests as lib
 
 ''' Request
 '''
-label, seed = 'F', 14615
+label, seed = 'D', 14615
 
 ''' Error Reproduction
 '''
 if True:
 
-    for _ in range(10):
+    for _ in range(10000000):
 
         test = getattr(lib,'test_' + label)
 
