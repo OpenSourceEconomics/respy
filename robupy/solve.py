@@ -147,6 +147,10 @@ def solve(robupy_obj):
 
     robupy_obj.set_attr('emax', emax)
 
+    # Set flag that object includes the solution objects.
+    robupy_obj.set_attr('is_solved', True)
+
+    # Lock up again
     robupy_obj.lock()
 
     # Finishing

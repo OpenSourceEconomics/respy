@@ -55,6 +55,8 @@ class RobupyCls(MetaCls):
 
         self.attr['mapping_state_idx'] = None
 
+        self.attr['is_solved'] = False
+
         # The ex post realizations are only stored for
         # debugging purposes. In the special case of
         # no randomness, they have to be equal to the

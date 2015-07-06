@@ -33,34 +33,18 @@ def remove_nuisances():
         for filename in fnmatch.filter(dir_, '__pycache__'):
             matches.append(os.path.join(root, filename))
 
-        for filename in fnmatch.filter(dir_, '.vagrant'):
-            matches.append(os.path.join(root, filename))
-
-        for file_types in ['*.aux', '*.log', '*.pyc', '*.so',  '*tar',
-                           '*.bbl', '*.blg', '*.out',
-                           '*.zip', '.waf*', '*lock*', '*.mod', '*.a',
-                           '*.snm', '*.toc', '*.nav', 'main.pdf',
-                           '__pycache__', '.DS_Store', '*.pyo', '*.profile',
-                           'doc.pdf', 'dataset.txt', 'results.txt',
-                           'simulated.txt', '.coverage', '.vagrant']:
+        for file_types in ['*.robupy.*']:
 
             for filename in fnmatch.filter(file_names, file_types):
 
                 matches.append(os.path.join(root, filename))
 
-    for files in matches:
+    for file_ in matches:
 
-        remove(files)
+        if 'ini' in file_: continue
 
-    for root, dir_, file_names in os.walk('.'):
+        remove(file_)
 
-        if 'ipynb_checkpoints' in root:
-
-            shutil.rmtree(root)
-
-        if 'lecture_files' in root:
-
-            shutil.rmtree(root)
 
 """ Main algorithm.
 """
