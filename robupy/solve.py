@@ -103,8 +103,8 @@ def solve(robupy_obj):
     period_payoffs_ex_ante = _create_payoffs_ex_ante(num_periods,
         states_number_period, states_all, init_dict, edu_start)
 
-
-    logger.info('Staring backward induction procedure.')
+    # Logging
+    logger.info('Staring backward induction procedure')
 
     # Iterate backward through all periods
     for period in range(num_periods - 1, -1, -1):
@@ -134,6 +134,9 @@ def solve(robupy_obj):
 
             # Collect
             emax[period, k] = emax_simulated
+
+    # Logging
+    logger.info('... finished \n')
 
     # Run checks on expected future values and its ingredients
     if debug is True:
@@ -200,7 +203,7 @@ def _create_payoffs_ex_ante(num_periods, states_number_period, states_all,
     """ Calculate ex ante payoffs.
     """
     # Logging
-    logger.info('Staring calculation of ex ante payoffs.')
+    logger.info('Staring calculation of ex ante payoffs')
 
     period_payoffs_ex_ante = np.tile(np.nan, (
         num_periods, max(states_number_period), 4))
@@ -245,6 +248,9 @@ def _create_payoffs_ex_ante(num_periods, states_number_period, states_all,
 
             # Calculate systematic part of HOME
             period_payoffs_ex_ante[period, k, 3] = init_dict['HOME']['int']
+
+    # Logging
+    logger.info('... finished \n')
 
     # Finishing
     return period_payoffs_ex_ante

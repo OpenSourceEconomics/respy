@@ -36,7 +36,7 @@ def simulate(robupy_obj):
     assert (robupy_obj.get_status())
 
     # Logging
-    logger.info('Staring simulation of model.')
+    logger.info('Staring simulation of model')
 
     # Distribute class attributes
     debug = robupy_obj.get_attr('debug')
@@ -154,6 +154,9 @@ def simulate(robupy_obj):
     _write_out(data_frame)
 
     _write_info(data_frame)
+
+    # Logging
+    logger.info('... finished \n')
 
     # Finishing
     return data_frame
