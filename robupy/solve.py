@@ -12,7 +12,7 @@ from robupy.checks._checks_solve import _checks
 from robupy.ambiguity import *
 from robupy.risk import *
 
-import robupy.fort.fort_robupy_interface as fort
+import robupy.fort.interface as fort
 
 
 # Logging
@@ -62,6 +62,9 @@ def solve(robupy_obj):
     states_all, states_number_period, mapping_state_idx = \
         _create_state_space(robupy_obj)
 
+    # Auxiliary objects
+    max_states_period = max(states_number_period)
+
     # Run checks of the state space variables
     if debug is True:
         _checks('state_space', robupy_obj, states_all, states_number_period,
@@ -95,18 +98,39 @@ def solve(robupy_obj):
     # initialize all infinite values as this allows for easy assertion tests
     # later on.
     emax = np.tile(np.nan, (
-        num_periods, max(states_number_period)))
+        num_periods, max_states_period))
     period_payoffs_ex_post = np.tile(np.nan, (
-        num_periods, max(states_number_period), 4))
+        num_periods, max_states_period, 4))
     period_future_payoffs = np.tile(np.nan, (
-        num_periods, max(states_number_period), 4))
+        num_periods, max_states_period, 4))
 
     # Calculate ex ante payoffs. These are calculated without any reference
     # to the alternative shock distributions.
-    period_payoffs_ex_ante = _create_payoffs_ex_ante(num_periods,
-        states_number_period, states_all, init_dict, edu_start)
+    logger.info('Staring calculation of ex ante payoffs')
+
+    # Construct coefficients
+    coeffs_A = [init_dict['A']['int']] + init_dict['A']['coeff']
+    coeffs_B = [init_dict['B']['int']] + init_dict['B']['coeff']
+
+    coeffs_edu = [init_dict['EDUCATION']['int']] + init_dict['EDUCATION']['coeff']
+    coeffs_home = [init_dict['HOME']['int']]
+
+
+    if False:
+
+        period_payoffs_ex_ante = _calculate_payoffs_ex_ante(num_periods,
+                                    states_number_period, states_all,
+                                    edu_start, coeffs_A, coeffs_B, coeffs_edu,
+                                        coeffs_home, max_states_period)
+    else:
+
+        period_payoffs_ex_ante = fort.wrapper_calculate_payoffs_ex_ante(num_periods,
+                states_number_period, states_all, edu_start, coeffs_A,
+                coeffs_B, coeffs_edu, coeffs_home, max_states_period)
 
     # Logging
+    logger.info('... finished \n')
+
     logger.info('Staring backward induction procedure')
 
     # Iterate backward through all periods
@@ -200,69 +224,6 @@ def _create_eps(seed, num_periods, num_draws, init_dict):
 
     # Finishing
     return eps_baseline_periods, eps_standard_periods, true_cholesky
-
-def _create_payoffs_ex_ante(num_periods, states_number_period, states_all,
-                            init_dict, edu_start):
-    """ Calculate ex ante payoffs.
-    """
-    # Logging
-    logger.info('Staring calculation of ex ante payoffs')
-
-    period_payoffs_ex_ante = np.tile(np.nan, (
-        num_periods, max(states_number_period), 4))
-
-    # Construct coefficients
-    coeffs_A = [init_dict['A']['int']] + init_dict['A']['coeff']
-    coeffs_B = [init_dict['B']['int']] + init_dict['B']['coeff']
-
-    coeffs_edu = [init_dict['EDUCATION']['int']] + init_dict['EDUCATION']['coeff']
-    coeffs_home = [init_dict['HOME']['int']]
-
-    print('I am in.')
-    fort.wrapper_foo(4)
-
-    # Calculate systematic instantaneous payoffs
-    for period in range(num_periods - 1, -1, -1):
-
-        # Loop over all possible states
-        for k in range(states_number_period[period]):
-
-            # Distribute state space
-            exp_A, exp_B, edu, edu_lagged = states_all[period, k, :]
-
-            # Auxiliary objects
-            covars = [1.0, edu + edu_start, exp_A, exp_A ** 2, exp_B,
-                      exp_B ** 2]
-
-            # Calculate systematic part of wages in occupation A
-            period_payoffs_ex_ante[period, k, 0] = np.exp(
-                np.dot(coeffs_A, covars))
-
-            # Calculate systematic part pf wages in occupation B
-            period_payoffs_ex_ante[period, k, 1] = np.exp(
-                np.dot(coeffs_B, covars))
-
-            # Calculate systematic part of schooling utility
-            payoff = coeffs_edu[0]
-
-            # Tuition cost for higher education if agents move
-            # beyond high school.
-            if edu + edu_start > 12:
-                payoff += coeffs_edu[1]
-            # Psychic cost of going back to school
-            if edu_lagged == 0:
-                payoff += coeffs_edu[2]
-
-            period_payoffs_ex_ante[period, k, 2] = payoff
-
-            # Calculate systematic part of HOME
-            period_payoffs_ex_ante[period, k, 3] = coeffs_home[0]
-
-    # Logging
-    logger.info('... finished \n')
-
-    # Finishing
-    return period_payoffs_ex_ante
 
 
 def _create_state_space(robupy_obj):

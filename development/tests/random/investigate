@@ -20,7 +20,7 @@ import modules.tests as lib
 
 ''' Request
 '''
-label, seed = 'G', 221578
+label, seed = 'H', 221578
 
 ''' Error Reproduction
 '''
@@ -30,7 +30,7 @@ if True:
 
         test = getattr(lib,'test_' + label)
 
-        #np.random.seed(seed)
+        np.random.seed(seed)
 
         test()
 

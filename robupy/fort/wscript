@@ -11,7 +11,8 @@ def build(bld):
 
     compiler_options = '-fbounds-check -Wunused -fPIC'
 
-    files = ['fort_robupy_auxiliiary.f90']
+    files = ['robupy_program_constants.f90', 'robupy_auxiliiary.f90',
+             'robupy_main.f90']
 
     for file_ in files:
 
@@ -26,11 +27,11 @@ def build(bld):
 
     bld.add_group()
 
-    bld(rule = post_build)
+    bld(rule=post_build)
 
     bld.add_group()
 
-    bld(rule = f2py_call)
+    bld(rule=f2py_call)
 
 ''' Auxiliary functions.
 '''
@@ -77,7 +78,7 @@ def post_build(self):
 def f2py_call(self):
     """ Create the interface to f90_main using f2py.
     """
-    os.system('f2py3 -c -m  fort_robupy_interface fort_robupy_interface.f90 -Iinclude -Llib -lfort_robupy')
+    os.system('f2py3 -c -m  interface interface.f90 -Iinclude -Llib -lfort_robupy')
 
     # Cleanup
     for dir_ in ['include', 'lib']:

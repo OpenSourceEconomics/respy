@@ -19,7 +19,7 @@ def configure(conf):
     
     conf.load('compiler_fc')
 
-    conf.env.project_paths = {}
+    conf.env.project_paths = dict()
 
     conf.env.project_paths['ROBUPY'] = os.getcwd()
 

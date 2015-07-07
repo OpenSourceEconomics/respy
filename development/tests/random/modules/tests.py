@@ -272,4 +272,57 @@ def test_G():
     # Finishing
     return True
 
+def test_H():
+    """ Testing whether the FORTRAN and PYTHON implementation for the ex
+    ante calculation of payoffs are identical.
+    """
+
+    # Get interfaces
+    from robupy.fort.interface import  wrapper_calculate_payoffs_ex_ante
+    from robupy.shared import calculate_payoffs_ex_ante
+
+    # Rename functions
+    fort = wrapper_calculate_payoffs_ex_ante
+
+    py = calculate_payoffs_ex_ante
+
+    # Evaluations
+    for _ in range(100):
+
+        # Construct random evaluation
+        num_periods = np.random.random_integers(1, 10)
+        states_number_period = np.random.random_integers(1, 10,
+                                size=num_periods)
+
+        max_states_period = max(states_number_period)
+
+        states_all = np.random.random_integers(1,
+            size=num_periods*max_states_period*4).reshape((num_periods,
+            max_states_period, 4))
+
+
+        edu_start = np.random.random_integers(1, 100)
+
+        coeffs_A = np.random.randn(6)
+        coeffs_B = np.random.randn(6)
+        coeffs_edu = np.random.randn(3)
+        coeffs_home = np.random.randn(1)
+
+        # Evaluate functions
+        py_rslt = py(num_periods, states_number_period, states_all,
+                                edu_start, coeffs_A, coeffs_B, coeffs_edu,
+                                coeffs_home, max_states_period)
+
+        fort_rslt = fort(num_periods, states_number_period, states_all,
+                                edu_start, coeffs_A, coeffs_B, coeffs_edu,
+                                coeffs_home, max_states_period)
+
+        # Get grid
+        not_nan = (np.isnan(py_rslt) == False)
+
+        # Checks
+        np.testing.assert_allclose(py_rslt[not_nan], fort_rslt[not_nan])
+
+    # Finishing
+    return True
 
