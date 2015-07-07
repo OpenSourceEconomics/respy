@@ -3,13 +3,17 @@ programming problem.
 """
 
 # standard library
-import os
 import numpy as np
+import logging
+import os
 
 # project library
 from robupy.checks._checks_solve import _checks
 from robupy.ambiguity import *
 from robupy.risk import *
+
+# Logging
+logger = logging.getLogger('ROBUPY')
 
 ''' Public function
 '''
@@ -48,7 +52,7 @@ def solve(robupy_obj):
     if os.path.exists('ambiguity.robupy.log'):
         os.remove('ambiguity.robupy.log')
 
-    if debug:
+    if debug and with_ambiguity:
         open('ambiguity.robupy.log', 'w').close()
 
     # Create grid of admissible state space values.
@@ -99,8 +103,14 @@ def solve(robupy_obj):
     period_payoffs_ex_ante = _create_payoffs_ex_ante(num_periods,
         states_number_period, states_all, init_dict, edu_start)
 
+    # Logging
+    logger.info('Staring backward induction procedure')
+
     # Iterate backward through all periods
     for period in range(num_periods - 1, -1, -1):
+
+        # Logging.
+        logger.info('... solving period ' + str(period))
 
         # Extract disturbances
         eps_relevant = eps_relevant_periods[period, :, :]
@@ -125,6 +135,9 @@ def solve(robupy_obj):
             # Collect
             emax[period, k] = emax_simulated
 
+    # Logging
+    logger.info('... finished \n')
+
     # Run checks on expected future values and its ingredients
     if debug is True:
         _checks('emax', robupy_obj, states_all, states_number_period, emax,
@@ -147,6 +160,10 @@ def solve(robupy_obj):
 
     robupy_obj.set_attr('emax', emax)
 
+    # Set flag that object includes the solution objects.
+    robupy_obj.set_attr('is_solved', True)
+
+    # Lock up again
     robupy_obj.lock()
 
     # Finishing
@@ -183,6 +200,10 @@ def _create_eps(seed, num_periods, num_draws, init_dict):
 
 def _create_payoffs_ex_ante(num_periods, states_number_period, states_all,
                             init_dict, edu_start):
+    """ Calculate ex ante payoffs.
+    """
+    # Logging
+    logger.info('Staring calculation of ex ante payoffs')
 
     period_payoffs_ex_ante = np.tile(np.nan, (
         num_periods, max(states_number_period), 4))
@@ -218,15 +239,18 @@ def _create_payoffs_ex_ante(num_periods, states_number_period, states_all,
             # Tuition cost for higher education if agents move
             # beyond high school.
             if edu + edu_start > 12:
-                payoff -= init_dict['EDUCATION']['coeff'][0]
+                payoff += init_dict['EDUCATION']['coeff'][0]
             # Psychic cost of going back to school
             if edu_lagged == 0:
-                payoff -= init_dict['EDUCATION']['coeff'][1]
+                payoff += init_dict['EDUCATION']['coeff'][1]
 
             period_payoffs_ex_ante[period, k, 2] = payoff
 
             # Calculate systematic part of HOME
             period_payoffs_ex_ante[period, k, 3] = init_dict['HOME']['int']
+
+    # Logging
+    logger.info('... finished \n')
 
     # Finishing
     return period_payoffs_ex_ante

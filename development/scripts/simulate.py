@@ -1,0 +1,71 @@
+#!/usr/bin/env python
+""" This module allows to simulate a dynamic programming model using the
+terminal.
+"""
+
+# standard library
+import pickle as pkl
+import argparse
+import sys
+import os
+
+# ROBUPY
+sys.path.insert(0, os.environ['ROBUPY'])
+from robupy.simulate import simulate as robupy_simulate
+
+def _distribute_inputs(parser):
+    """ Process input arguments.
+    """
+    # Parse arguments.
+    args = parser.parse_args()
+
+    # Distribute arguments.
+    solution = args.solution
+    num_agents = args.num_agents
+
+    # Assertions.
+    assert (isinstance(solution, str))
+    assert (os.path.exists(solution))
+
+    if num_agents is not None:
+        assert (isinstance(num_agents, int))
+        assert (num_agents > 0)
+
+    # Finishing.
+    return solution, num_agents
+
+def simulate(solution, num_agents):
+    """ Simulate the dynamic programming model.
+    """
+    # Solve model
+    robupy_obj = pkl.load(open(solution, 'rb'))
+
+    # Update agents
+    if num_agents is not None:
+        robupy_obj.unlock()
+
+        robupy_obj.set_attr('num_agents', num_agents)
+
+        robupy_obj.lock()
+
+    # Simulate the model
+    robupy_simulate(robupy_obj)
+
+''' Execution of module as script.
+'''
+if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser(description='Simulate dynamic discrete '
+                                                 'choice model.',
+        formatter_class = argparse.ArgumentDefaultsHelpFormatter)
+
+    parser.add_argument('--solution', action='store', dest='solution',
+                        default='solution.robupy.pkl',
+                        help='solution object')
+
+    parser.add_argument('--agents', type=int, default=None, dest='num_agents',
+                        help='number of agents')
+
+    solution, num_agents = _distribute_inputs(parser)
+
+    simulate(solution, num_agents)
