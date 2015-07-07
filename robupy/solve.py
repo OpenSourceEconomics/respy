@@ -12,6 +12,9 @@ from robupy.checks._checks_solve import _checks
 from robupy.ambiguity import *
 from robupy.risk import *
 
+import robupy.fort.fort_robupy_interface as fort
+
+
 # Logging
 logger = logging.getLogger('ROBUPY')
 
@@ -208,6 +211,16 @@ def _create_payoffs_ex_ante(num_periods, states_number_period, states_all,
     period_payoffs_ex_ante = np.tile(np.nan, (
         num_periods, max(states_number_period), 4))
 
+    # Construct coefficients
+    coeffs_A = [init_dict['A']['int']] + init_dict['A']['coeff']
+    coeffs_B = [init_dict['B']['int']] + init_dict['B']['coeff']
+
+    coeffs_edu = [init_dict['EDUCATION']['int']] + init_dict['EDUCATION']['coeff']
+    coeffs_home = [init_dict['HOME']['int']]
+
+    print('I am in.')
+    fort.wrapper_foo(4)
+
     # Calculate systematic instantaneous payoffs
     for period in range(num_periods - 1, -1, -1):
 
@@ -218,36 +231,32 @@ def _create_payoffs_ex_ante(num_periods, states_number_period, states_all,
             exp_A, exp_B, edu, edu_lagged = states_all[period, k, :]
 
             # Auxiliary objects
-            coeffs = dict()
-            coeffs['A'] = [init_dict['A']['int']] + init_dict['A']['coeff']
-            coeffs['B'] = [init_dict['B']['int']] + init_dict['B']['coeff']
-
             covars = [1.0, edu + edu_start, exp_A, exp_A ** 2, exp_B,
                       exp_B ** 2]
 
             # Calculate systematic part of wages in occupation A
             period_payoffs_ex_ante[period, k, 0] = np.exp(
-                np.dot(coeffs['A'], covars))
+                np.dot(coeffs_A, covars))
 
             # Calculate systematic part pf wages in occupation B
             period_payoffs_ex_ante[period, k, 1] = np.exp(
-                np.dot(coeffs['B'], covars))
+                np.dot(coeffs_B, covars))
 
             # Calculate systematic part of schooling utility
-            payoff = init_dict['EDUCATION']['int']
+            payoff = coeffs_edu[0]
 
             # Tuition cost for higher education if agents move
             # beyond high school.
             if edu + edu_start > 12:
-                payoff += init_dict['EDUCATION']['coeff'][0]
+                payoff += coeffs_edu[1]
             # Psychic cost of going back to school
             if edu_lagged == 0:
-                payoff += init_dict['EDUCATION']['coeff'][1]
+                payoff += coeffs_edu[2]
 
             period_payoffs_ex_ante[period, k, 2] = payoff
 
             # Calculate systematic part of HOME
-            period_payoffs_ex_ante[period, k, 3] = init_dict['HOME']['int']
+            period_payoffs_ex_ante[period, k, 3] = coeffs_home[0]
 
     # Logging
     logger.info('... finished \n')
