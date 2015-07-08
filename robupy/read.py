@@ -130,7 +130,7 @@ def _process_standard(list_, dict_, keyword):
         val = int(val)
     elif name in ['para', 'measure']:
         val = str(val)
-    elif name in ['debug', 'fast']:
+    elif name in ['debug']:
         assert (val.upper() in ['TRUE', 'FALSE'])
         val = (val.upper() == 'TRUE')
     else:
@@ -224,7 +224,6 @@ def _check_integrity_process(dict_):
     assert (isinstance(dict_['COMPUTATION']['seed'], int))
     assert (dict_['COMPUTATION']['seed'] >= 0)
     assert (dict_['COMPUTATION']['debug'] in [True, False])
-    assert (dict_['COMPUTATION']['fast'] in [True, False])
 
     # Check SHOCKS
     assert (len(dict_['SHOCKS']) == 4)

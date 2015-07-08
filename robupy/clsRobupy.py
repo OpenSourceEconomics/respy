@@ -102,8 +102,6 @@ class RobupyCls(MetaCls):
 
             self.attr['seed'] = init_dict['COMPUTATION']['seed']
 
-            self.attr['fast'] = init_dict['COMPUTATION']['fast']
-
             self.attr['shocks'] = init_dict['SHOCKS']
 
             self.attr['ambiguity']['measure'] = init_dict['AMBIGUITY'][

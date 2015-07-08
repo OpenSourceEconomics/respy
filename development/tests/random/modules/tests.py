@@ -3,8 +3,10 @@
 
 # standard library
 from pandas.util.testing import assert_frame_equal
+import pandas as pd
 import numpy as np
 
+import importlib
 import random
 import sys
 import os
@@ -274,90 +276,58 @@ def test_G():
     return True
 
 def test_H():
-    """ Testing whether the FORTRAN and PYTHON implementation for the ex
-    ante calculation of payoffs are identical.
-    """
-
-    # Get interfaces
-    from robupy.fort.interface import  wrapper_calculate_payoffs_ex_ante
-    from robupy.shared import calculate_payoffs_ex_ante
-
-    # Rename functions
-    fort = wrapper_calculate_payoffs_ex_ante
-
-    py = calculate_payoffs_ex_ante
-
-    # Evaluations
-    for _ in range(100):
-
-        # Construct random evaluation
-        num_periods = np.random.random_integers(1, 10)
-        states_number_period = np.random.random_integers(1, 10,
-                                size=num_periods)
-
-        max_states_period = max(states_number_period)
-
-        states_all = np.random.random_integers(1,
-            size=num_periods*max_states_period*4).reshape((num_periods,
-            max_states_period, 4))
-
-
-        edu_start = np.random.random_integers(1, 100)
-
-        coeffs_A = np.random.randn(6)
-        coeffs_B = np.random.randn(6)
-        coeffs_edu = np.random.randn(3)
-        coeffs_home = np.random.randn(1)
-
-        # Evaluate functions
-        py_rslt = py(num_periods, states_number_period, states_all,
-                                edu_start, coeffs_A, coeffs_B, coeffs_edu,
-                                coeffs_home, max_states_period)
-
-        fort_rslt = fort(num_periods, states_number_period, states_all,
-                                edu_start, coeffs_A, coeffs_B, coeffs_edu,
-                                coeffs_home, max_states_period)
-
-        # Get grid
-        not_nan = (np.isnan(py_rslt) == False)
-
-        # Checks
-        np.testing.assert_allclose(py_rslt[not_nan], fort_rslt[not_nan])
-
-    # Finishing
-    return True
-
-def test_I():
     """ Testing whether the results from a fast and slow execution of the code result in identical simulate datasets.
     """
-    # Generate random initialization dictionary
-    init_dict = generate_random_dict()
+    # Generate random initialization
+    generate_init()
 
     # Initialize containers
     base = None
 
-    # Evaluations
-    for fast in ['True', 'False']:
+    for which in ['fast', 'slow']:
 
-        # Set varying constraints
-        init_dict['COMPUTATION']['fast'] = fast
+        compile_package(which)
 
-        # Print to dictionary
-        print_random_dict(init_dict)
+        # Simulate the ROBUPY package
+        os.system('robupy-solve --simulate --model test.robupy.ini')
 
-        # Perform toolbox actions
-        robupy_obj = read('test.robupy.ini')
+        # Load simulated data frame
+        data_frame = pd.read_csv('data.robupy.dat')
 
-        robupy_obj = solve(robupy_obj)
-
-        data_frame = simulate(robupy_obj)
-
-        # Distribute class attributes
+        # Compare
         if base is None:
             base = data_frame.copy()
 
-        # Checks
         assert_frame_equal(base, data_frame)
 
     # Finishing
     return True
+
+''' Auxiliary functions
+'''
+
+def compile_package(which):
+    """ Compile toolbox
+    """
+    # Antibugging
+    assert (which in ['fast', 'slow'])
+
+    # Auxiliary objects
+    package_dir = os.environ['ROBUPY'] + '/robupy'
+    tests_dir = os.getcwd()
+
+    # Compile package
+    os.chdir(package_dir)
+
+    os.system('./waf distclean > /dev/null 2>&1')
+
+    cmd = './waf configure build'
+
+    if which == 'fast':
+        cmd += ' --fast'
+
+    cmd = cmd + ' > /dev/null 2>&1'
+
+    os.system(cmd)
+
+    os.chdir(tests_dir)

@@ -78,7 +78,7 @@ def post_build(self):
 def f2py_call(self):
     """ Create the interface to f90_main using f2py.
     """
-    os.system('f2py3 -c -m  interface interface.f90 -Iinclude -Llib -lfort_robupy')
+    os.system('f2py3 -c -m  fortran_functions fortran_functions.f90 -Iinclude -Llib -lfort_robupy')
 
     # Cleanup
     for dir_ in ['include', 'lib']:

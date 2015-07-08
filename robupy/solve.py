@@ -8,6 +8,8 @@ import logging
 import os
 
 # project library
+import robupy.fort.performance as perf
+
 from robupy.checks._checks_solve import _checks
 from robupy.ambiguity import *
 from robupy.risk import *
@@ -43,14 +45,6 @@ def solve(robupy_obj):
     debug = robupy_obj.get_attr('debug')
 
     ambiguity = robupy_obj.get_attr('ambiguity')
-
-    fast = robupy_obj.get_attr('fast')
-
-    # Check for FORTRAN replacements.
-    if fast:
-        import robupy.fort.fortran_functions as perf
-    else:
-        import robupy.fort.python_functions as perf
 
     # Construct auxiliary objects
     level = ambiguity['level']
@@ -119,7 +113,6 @@ def solve(robupy_obj):
 
     coeffs_edu = [init_dict['EDUCATION']['int']] + init_dict['EDUCATION']['coeff']
     coeffs_home = [init_dict['HOME']['int']]
-
 
     period_payoffs_ex_ante = perf.calculate_payoffs_ex_ante(num_periods,
                 states_number_period, states_all, edu_start, coeffs_A,
