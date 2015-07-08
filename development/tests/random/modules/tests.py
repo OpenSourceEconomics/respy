@@ -202,7 +202,7 @@ def test_E():
 
 def test_F():
     """ Testing whether the risk code is identical to the ambiguity code for
-        very, very small levels of ambiguity..
+        very, very small levels of ambiguity.
     """
     # Generate random initialization dictionary
     init_dict = generate_random_dict()
@@ -211,7 +211,7 @@ def test_F():
     base = None
 
     # Loop over different uncertain environments.
-    for level in [0.00, 0.000000001]:
+    for level in [0.00, 0.000000000000001]:
 
         # Set varying constraints
         init_dict['AMBIGUITY']['level'] = level
