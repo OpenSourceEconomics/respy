@@ -2,6 +2,7 @@
 """
 
 # standard library
+from pandas.util.testing import assert_frame_equal
 import numpy as np
 
 import random
@@ -326,3 +327,37 @@ def test_H():
     # Finishing
     return True
 
+def test_I():
+    """ Testing whether the results from a fast and slow execution of the code result in identical simulate datasets.
+    """
+    # Generate random initialization dictionary
+    init_dict = generate_random_dict()
+
+    # Initialize containers
+    base = None
+
+    # Evaluations
+    for fast in ['True', 'False']:
+
+        # Set varying constraints
+        init_dict['COMPUTATION']['fast'] = fast
+
+        # Print to dictionary
+        print_random_dict(init_dict)
+
+        # Perform toolbox actions
+        robupy_obj = read('test.robupy.ini')
+
+        robupy_obj = solve(robupy_obj)
+
+        data_frame = simulate(robupy_obj)
+
+        # Distribute class attributes
+        if base is None:
+            base = data_frame.copy()
+
+        # Checks
+        assert_frame_equal(base, data_frame)
+
+    # Finishing
+    return True
