@@ -31,6 +31,8 @@ def configure(conf):
     if fast:
         conf.load('compiler_fc')
 
+
+
 def build(bld):
 
     # Distribute options
@@ -45,10 +47,9 @@ def distclean(dst):
 
     remove_for_distclean('.bld')
 
-
     try:
 
-        remove_for_distclean(glob.glob('.waf-*')[0])\
+        remove_for_distclean(glob.glob('.waf3-*')[0])
 
     except:
 

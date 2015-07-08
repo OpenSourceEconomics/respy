@@ -1,5 +1,94 @@
 !******************************************************************************
 !******************************************************************************
+SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, future_payoffs, num_periods, &
+                 max_states_period, num_draws, period, k, eps_relevant, payoffs_ex_ante, &
+                 edu_max, edu_start, emax, states_all, mapping_state_idx, delta)
+
+
+    !/* external libraries    */
+
+    USE robupy_library
+
+    !/* setup    */
+
+    IMPLICIT NONE
+
+    !/* external objects    */
+
+    DOUBLE PRECISION, INTENT(OUT)   :: emax_simulated
+    DOUBLE PRECISION, INTENT(OUT)   :: payoffs_ex_post(4)
+    DOUBLE PRECISION, INTENT(OUT)   :: future_payoffs(4)
+
+    DOUBLE PRECISION, INTENT(IN)    :: eps_relevant(:,:)
+    DOUBLE PRECISION, INTENT(IN)    :: payoffs_ex_ante(:)
+    DOUBLE PRECISION, INTENT(IN)    :: emax(:,:)
+    DOUBLE PRECISION, INTENT(IN)    :: delta
+
+    INTEGER, INTENT(IN)             :: mapping_state_idx(:,:,:,:,:)
+
+    INTEGER, INTENT(IN)             :: states_all(:,:,:)
+    INTEGER, INTENT(IN)             :: period
+    INTEGER, INTENT(IN)             :: num_periods
+    INTEGER, INTENT(IN)             :: max_states_period
+    INTEGER, INTENT(IN)             :: num_draws
+    INTEGER, INTENT(IN)             :: k
+    INTEGER, INTENT(IN)             :: edu_max
+    INTEGER, INTENT(IN)             :: edu_start
+
+    REAL(our_dble)                  :: total_payoffs(4)
+    REAL(our_dble)                  :: maximum
+
+    !/* internals objects    */
+
+    INTEGER(our_int)    :: i
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+future_payoffs = 0.00
+! Initialize containers
+emax_simulated = zero_dble
+
+DO i = 1, num_draws
+
+    ! Calculate ex post payoffs
+    payoffs_ex_post(1) = payoffs_ex_ante(1) * eps_relevant(i, 1)
+    payoffs_ex_post(2) = payoffs_ex_ante(2) * eps_relevant(i, 2)
+    payoffs_ex_post(3) = payoffs_ex_ante(3) + eps_relevant(i, 3)
+    payoffs_ex_post(4) = payoffs_ex_ante(4) + eps_relevant(i, 4)
+
+    ! Check applicability
+    IF (period .EQ. (num_periods - 1)) THEN
+
+        future_payoffs = - HUGE(future_payoffs)
+        CONTINUE
+
+    ELSE
+
+        ! Get future values
+        CALL get_future_payoffs_lib(future_payoffs, edu_max, edu_start, mapping_state_idx, period,  &
+                                emax, k, states_all)
+
+
+        ! Calculate total utilities
+        total_payoffs = payoffs_ex_post + delta * future_payoffs
+
+        ! Determine optimal choice
+        maximum = MAXVAL(total_payoffs)
+
+        ! Recording expected future value
+        emax_simulated = emax_simulated + maximum
+
+        ! Scaling
+        emax_simulated = emax_simulated / num_draws
+
+    END IF
+
+END DO
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE calculate_payoffs_ex_ante(period_payoffs_ex_ante, num_periods, &
               states_number_period, states_all, edu_start, &
               coeffs_A, coeffs_B, coeffs_edu, coeffs_home, max_states_period)
@@ -126,49 +215,11 @@ SUBROUTINE get_future_payoffs(future_payoffs, edu_max, edu_start, mapping_state_
     INTEGER, INTENT(IN)             :: states_all(:,:,:)
     INTEGER, INTENT(IN)             :: mapping_state_idx(:,:,:,:,:)
 
-    !/* internals objects    */
-
-    INTEGER(our_int)    :: exp_A
-    INTEGER(our_int)    :: exp_B
-    INTEGER(our_int)    :: edu
-    INTEGER(our_int)    :: edu_lagged
-    INTEGER(our_int)    :: future_idx
-
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
 
-! Distribute state space
-exp_A = states_all(period + 1, k + 1, 1)
-exp_B = states_all(period + 1, k + 1, 2)
-edu = states_all(period + 1, k + 1, 3)
-edu_lagged = states_all(period + 1, k + 1, 4)
-
-! Working in occupation A
-!
-!   There might be a shift required to accoutn for the difference in Python
-!
-!
-future_idx = mapping_state_idx(period + 1 + 1, exp_A + 1 + 1, exp_B + 1, edu + 1, 1)
-future_payoffs(1) = emax(period + 1 + 1, future_idx + 1)
-
-!Working in occupation B
-future_idx = mapping_state_idx(period + 1 + 1, exp_A + 1, exp_B + 1 + 1, edu + 1, 1)
-future_payoffs(2) = emax(period + 1 + 1, future_idx + 1)
-
-! Increasing schooling. Note that adding an additional year
-! of schooling is only possible for those that have strictly
-! less than the maximum level of additional education allowed.
-IF (edu < edu_max - edu_start) THEN
-    future_idx = mapping_state_idx(period + 1 + 1, exp_A + 1, exp_B + 1, edu + 1 + 1, 2)
-    future_payoffs(3) = emax(period + 1 + 1, future_idx + 1)
-ELSE
-    future_payoffs(3) = -HUGE(future_payoffs)
-END IF
-
-! Staying at home
-future_idx = mapping_state_idx(period + 1 + 1, exp_A + 1, exp_B + 1, edu + 1, 1)
-future_payoffs(4) = emax(period + 1 + 1, future_idx + 1)
-
+        CALL get_future_payoffs_lib(future_payoffs, edu_max, edu_start, mapping_state_idx, period,  &
+                                emax, k, states_all)
 END SUBROUTINE
 

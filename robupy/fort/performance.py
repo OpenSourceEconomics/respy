@@ -15,6 +15,8 @@ import robupy.fort.python_functions as py
 if is_accelerated:
     calculate_payoffs_ex_ante = fort.calculate_payoffs_ex_ante
     get_future_payoffs = fort.get_future_payoffs
+    simulate_emax = fort.simulate_emax
 else:
     calculate_payoffs_ex_ante = py.calculate_payoffs_ex_ante
     get_future_payoffs = py.get_future_payoffs
+    simulate_emax = py.simulate_emax

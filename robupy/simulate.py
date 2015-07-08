@@ -22,7 +22,6 @@ import logging
 import robupy.fort.performance as perf
 
 from robupy.checks._checks_simulate import _checks
-from robupy.shared import *
 
 # Logging
 logger = logging.getLogger('ROBUPY')
