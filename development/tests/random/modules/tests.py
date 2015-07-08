@@ -231,7 +231,7 @@ def test_F():
             base = emax.copy()
 
         # Checks
-        np.testing.assert_allclose(base, emax)
+        np.testing.assert_allclose(base, emax, rtol=1e-06)
 
     # Finishing
     return True
