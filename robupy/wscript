@@ -27,3 +27,52 @@ def build(bld):
     
     bld.recurse('fort')
 
+def distclean(dst):
+
+
+    remove_filetypes_distclean('.')
+
+    remove_for_distclean('.bld')
+
+    remove_for_distclean(glob.glob('.waf-*')[0])
+
+
+''' Auxiliary functions
+'''
+def remove_for_distclean(path):
+    """ Remove path, where path can be either a directory or a file. The
+        appropriate function is selected. Note, however, that if an
+        OSError occurs, the function will just path.
+    """
+    if os.path.isdir(path):
+
+        shutil.rmtree(path)
+
+    if os.path.isfile(path):
+
+        os.remove(path)
+
+def remove_filetypes_distclean(path):
+    """ Remove nuisance files from the directory tree.
+    """
+    matches = []
+
+    for root, _, filenames in os.walk('.'):
+
+        for filetypes in ['*.aux','*.log','*.pyc', '*.so', '*~', '*tar', \
+            '*.zip', '.waf*', '*lock*', '*.mod', '*.a', '*.pkl', '*.out', '*.pyo', '*.info',\
+            '__pycache__', '.coverage']:
+
+                for filename in fnmatch.filter(filenames, filetypes):
+
+                    matches.append(os.path.join(root, filename))
+
+    matches.append('.lock-wafbuild')
+
+    for files in matches:
+
+        remove_for_distclean(files)
+
+    for dirName, _, _ in os.walk('.'):
+
+        if('__pycache__' in dirName): shutil.rmtree(dirName)

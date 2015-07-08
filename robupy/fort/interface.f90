@@ -2,6 +2,13 @@ SUBROUTINE wrapper_calculate_payoffs_ex_ante(period_payoffs_ex_ante, num_periods
               states_number_period, states_all, edu_start, &
               coeffs_A, coeffs_B, coeffs_edu, coeffs_home, max_states_period)
 
+
+    ! Development Notes:
+    !
+    !     Future releases of the gfortran compiler will allow to assign NAN to the array
+    !     using the IEEE_ARITHMETIC module.
+    !
+
     !/* external libraries    */
 
     USE robupy_library
