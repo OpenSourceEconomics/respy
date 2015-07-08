@@ -75,6 +75,7 @@ def generate_random_dict(constraints={}):
     dict_['COMPUTATION']['draws'] = np.random.random_integers(1, MAX_DRAWS)
     dict_['COMPUTATION']['seed'] = np.random.random_integers(1, 10000)
     dict_['COMPUTATION']['debug'] = np.random.choice(['True', 'False'])
+    dict_['COMPUTATION']['fast'] = np.random.choice(['True', 'False'])
 
     # Shocks
     cov = np.random.normal(size=16).reshape((4,4))
@@ -90,6 +91,15 @@ def generate_random_dict(constraints={}):
         assert (isinstance(level, float))
         # Replace in initialization file
         dict_['AMBIGUITY']['level'] = level
+
+    # Replace fast
+    if 'fast' in constraints.keys():
+        # Extract objects
+        fast = constraints['fast']
+        # Checks
+        assert (fast in ['True', 'False'])
+        # Replace in initialization files
+        dict_['COMPUTATION']['fast'] = speed
 
     # Replace number of periods
     if 'periods' in constraints.keys():

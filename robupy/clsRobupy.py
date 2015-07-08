@@ -35,6 +35,8 @@ class RobupyCls(MetaCls):
 
         self.attr['debug'] = None
 
+        self.attr['speed'] = None
+
         # Ambiguity
         self.attr['ambiguity'] = {}
 
@@ -99,6 +101,8 @@ class RobupyCls(MetaCls):
             self.attr['debug'] = init_dict['COMPUTATION']['debug']
 
             self.attr['seed'] = init_dict['COMPUTATION']['seed']
+
+            self.attr['fast'] = init_dict['COMPUTATION']['fast']
 
             self.attr['shocks'] = init_dict['SHOCKS']
 

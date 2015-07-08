@@ -12,9 +12,6 @@ from robupy.checks._checks_solve import _checks
 from robupy.ambiguity import *
 from robupy.risk import *
 
-import robupy.fort.interface as fort
-
-
 # Logging
 logger = logging.getLogger('ROBUPY')
 
@@ -46,6 +43,14 @@ def solve(robupy_obj):
     debug = robupy_obj.get_attr('debug')
 
     ambiguity = robupy_obj.get_attr('ambiguity')
+
+    fast = robupy_obj.get_attr('fast')
+
+    # Check for FORTRAN replacements.
+    if fast:
+        import robupy.fort.fortran_functions as perf
+    else:
+        import robupy.fort.python_functions as perf
 
     # Construct auxiliary objects
     level = ambiguity['level']
@@ -116,15 +121,7 @@ def solve(robupy_obj):
     coeffs_home = [init_dict['HOME']['int']]
 
 
-    if False:
-
-        period_payoffs_ex_ante = _calculate_payoffs_ex_ante(num_periods,
-                                    states_number_period, states_all,
-                                    edu_start, coeffs_A, coeffs_B, coeffs_edu,
-                                        coeffs_home, max_states_period)
-    else:
-
-        period_payoffs_ex_ante = fort.wrapper_calculate_payoffs_ex_ante(num_periods,
+    period_payoffs_ex_ante = perf.calculate_payoffs_ex_ante(num_periods,
                 states_number_period, states_all, edu_start, coeffs_A,
                 coeffs_B, coeffs_edu, coeffs_home, max_states_period)
 

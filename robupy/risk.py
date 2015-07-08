@@ -15,12 +15,12 @@ from robupy.shared import *
 
 def simulate_emax_risk(num_draws, eps_baseline, period,
         k, payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,
-        states_all, num_periods, emax, delta, debug, ambigutiy_args=None):
+        states_all, num_periods, emax, delta, debug, ambiguity_args=None):
     """ Simulate expected future value under risk.
     """
     # Check input parameters
     if debug is True:
-        _checks('simulate_emax_risk', ambigutiy_args)
+        _checks('simulate_emax_risk', ambiguity_args)
 
     # Transformation of standard normal deviates to relevant distributions.
     eps_relevant = eps_baseline.copy()
