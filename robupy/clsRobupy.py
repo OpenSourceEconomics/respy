@@ -35,6 +35,8 @@ class RobupyCls(MetaCls):
 
         self.attr['debug'] = None
 
+        self.attr['speed'] = None
+
         # Ambiguity
         self.attr['ambiguity'] = {}
 

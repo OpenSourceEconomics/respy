@@ -1,0 +1,97 @@
+#!/usr/bin/env python
+
+# standard library
+import os
+import glob
+import shutil
+import fnmatch
+
+top = '.'
+out = '.bld'
+
+def options(opt):
+
+    opt.load('compiler_c')
+
+    opt.load('compiler_fc')
+
+    opt.add_option('--fast', action='store_true', dest='fast', default=False,
+                   help='compile FORTRAN library')
+
+def configure(conf):
+
+    # Distribute options
+    fast = conf.options.fast
+
+    # Construct environment variables
+    conf.env.project_paths = dict()
+
+    conf.env.project_paths['ROBUPY'] = os.getcwd()
+
+    if fast:
+        conf.load('compiler_fc')
+
+
+
+def build(bld):
+
+    # Distribute options
+    fast = bld.options.fast
+
+    if fast:
+        bld.recurse('fort')
+
+def distclean(dst):
+
+    remove_filetypes_distclean('.')
+
+    remove_for_distclean('.bld')
+
+    try:
+
+        remove_for_distclean(glob.glob('.waf3-*')[0])
+
+    except:
+
+        pass
+
+
+''' Auxiliary functions
+'''
+def remove_for_distclean(path):
+    """ Remove path, where path can be either a directory or a file. The
+        appropriate function is selected. Note, however, that if an
+        OSError occurs, the function will just path.
+    """
+    if os.path.isdir(path):
+
+        shutil.rmtree(path)
+
+    if os.path.isfile(path):
+
+        os.remove(path)
+
+def remove_filetypes_distclean(path):
+    """ Remove nuisance files from the directory tree.
+    """
+    matches = []
+
+    for root, _, filenames in os.walk('.'):
+
+        for filetypes in ['*.aux','*.log','*.pyc', '*.so', '*~', '*tar', \
+            '*.zip', '.waf*', '*lock*', '*.mod', '*.a', '*.pkl', '*.out', '*.pyo', '*.info',\
+            '__pycache__', '.coverage']:
+
+                for filename in fnmatch.filter(filenames, filetypes):
+
+                    matches.append(os.path.join(root, filename))
+
+    matches.append('.lock-wafbuild')
+
+    for files in matches:
+
+        remove_for_distclean(files)
+
+    for dirName, _, _ in os.walk('.'):
+
+        if('__pycache__' in dirName): shutil.rmtree(dirName)

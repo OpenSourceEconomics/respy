@@ -8,6 +8,8 @@ import logging
 import os
 
 # project library
+import robupy.fort.performance as perf
+
 from robupy.checks._checks_solve import _checks
 from robupy.ambiguity import *
 from robupy.risk import *
@@ -59,6 +61,9 @@ def solve(robupy_obj):
     states_all, states_number_period, mapping_state_idx = \
         _create_state_space(robupy_obj)
 
+    # Auxiliary objects
+    max_states_period = max(states_number_period)
+
     # Run checks of the state space variables
     if debug is True:
         _checks('state_space', robupy_obj, states_all, states_number_period,
@@ -92,18 +97,30 @@ def solve(robupy_obj):
     # initialize all infinite values as this allows for easy assertion tests
     # later on.
     emax = np.tile(np.nan, (
-        num_periods, max(states_number_period)))
+        num_periods, max_states_period))
     period_payoffs_ex_post = np.tile(np.nan, (
-        num_periods, max(states_number_period), 4))
+        num_periods, max_states_period, 4))
     period_future_payoffs = np.tile(np.nan, (
-        num_periods, max(states_number_period), 4))
+        num_periods, max_states_period, 4))
 
     # Calculate ex ante payoffs. These are calculated without any reference
     # to the alternative shock distributions.
-    period_payoffs_ex_ante = _create_payoffs_ex_ante(num_periods,
-        states_number_period, states_all, init_dict, edu_start)
+    logger.info('Staring calculation of ex ante payoffs')
+
+    # Construct coefficients
+    coeffs_A = [init_dict['A']['int']] + init_dict['A']['coeff']
+    coeffs_B = [init_dict['B']['int']] + init_dict['B']['coeff']
+
+    coeffs_edu = [init_dict['EDUCATION']['int']] + init_dict['EDUCATION']['coeff']
+    coeffs_home = [init_dict['HOME']['int']]
+
+    period_payoffs_ex_ante = perf.calculate_payoffs_ex_ante(num_periods,
+                states_number_period, states_all, edu_start, coeffs_A,
+                coeffs_B, coeffs_edu, coeffs_home, max_states_period)
 
     # Logging
+    logger.info('... finished \n')
+
     logger.info('Staring backward induction procedure')
 
     # Iterate backward through all periods
@@ -124,9 +141,9 @@ def solve(robupy_obj):
             # Simulate the expected future value.
             emax_simulated, payoffs_ex_post, future_payoffs = \
                 simulate_emax(num_draws, eps_relevant, period, k,
-                              payoffs_ex_ante, edu_max, edu_start,
-                              mapping_state_idx, states_all, num_periods,
-                              emax, delta, debug, ambiguity_args)
+                    payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,
+                    states_all, num_periods, emax, delta, debug,
+                    max_states_period, ambiguity_args)
 
             # Collect information
             period_payoffs_ex_post[period, k, :] = payoffs_ex_post
@@ -176,19 +193,22 @@ def solve(robupy_obj):
 def _create_eps(seed, num_periods, num_draws, init_dict):
     """ Create disturbances.
     """
-
+    # Ensure recomputability
     np.random.seed(seed)
 
-    eps_standard_periods = np.random.multivariate_normal(np.zeros(4), np.identity(4),
-                                                 (num_periods, num_draws))
+    eps_standard_periods = np.random.multivariate_normal(np.zeros(4),
+                                np.identity(4), (num_periods, num_draws))
 
+    # Check for special case
     all_zeros = (np.count_nonzero(init_dict['SHOCKS']) == 0)
 
+    # Prepare Cholesky decomposition
     if all_zeros:
         true_cholesky = np.zeros((4, 4))
     else:
         true_cholesky = np.linalg.cholesky(init_dict['SHOCKS'])
 
+    # Construct baseline disturbances
     eps_baseline_periods = np.tile(np.nan, (num_periods, num_draws, 4))
 
     for period in range(num_periods):
@@ -198,68 +218,10 @@ def _create_eps(seed, num_periods, num_draws, init_dict):
     # Finishing
     return eps_baseline_periods, eps_standard_periods, true_cholesky
 
-def _create_payoffs_ex_ante(num_periods, states_number_period, states_all,
-                            init_dict, edu_start):
-    """ Calculate ex ante payoffs.
-    """
-    # Logging
-    logger.info('Staring calculation of ex ante payoffs')
-
-    period_payoffs_ex_ante = np.tile(np.nan, (
-        num_periods, max(states_number_period), 4))
-
-    # Calculate systematic instantaneous payoffs
-    for period in range(num_periods - 1, -1, -1):
-
-        # Loop over all possible states
-        for k in range(states_number_period[period]):
-
-            # Distribute state space
-            exp_A, exp_B, edu, edu_lagged = states_all[period, k, :]
-
-            # Auxiliary objects
-            coeffs = dict()
-            coeffs['A'] = [init_dict['A']['int']] + init_dict['A']['coeff']
-            coeffs['B'] = [init_dict['B']['int']] + init_dict['B']['coeff']
-
-            covars = [1.0, edu + edu_start, exp_A, exp_A ** 2, exp_B,
-                      exp_B ** 2]
-
-            # Calculate systematic part of wages in occupation A
-            period_payoffs_ex_ante[period, k, 0] = np.exp(
-                np.dot(coeffs['A'], covars))
-
-            # Calculate systematic part pf wages in occupation B
-            period_payoffs_ex_ante[period, k, 1] = np.exp(
-                np.dot(coeffs['B'], covars))
-
-            # Calculate systematic part of schooling utility
-            payoff = init_dict['EDUCATION']['int']
-
-            # Tuition cost for higher education if agents move
-            # beyond high school.
-            if edu + edu_start > 12:
-                payoff += init_dict['EDUCATION']['coeff'][0]
-            # Psychic cost of going back to school
-            if edu_lagged == 0:
-                payoff += init_dict['EDUCATION']['coeff'][1]
-
-            period_payoffs_ex_ante[period, k, 2] = payoff
-
-            # Calculate systematic part of HOME
-            period_payoffs_ex_ante[period, k, 3] = init_dict['HOME']['int']
-
-    # Logging
-    logger.info('... finished \n')
-
-    # Finishing
-    return period_payoffs_ex_ante
-
 
 def _create_state_space(robupy_obj):
     """ Create grid for state space.
     """
-
     # Distribute class attributes
     num_periods = robupy_obj.get_attr('num_periods')
 

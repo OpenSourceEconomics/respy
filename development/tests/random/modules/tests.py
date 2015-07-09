@@ -2,14 +2,15 @@
 """
 
 # standard library
+from pandas.util.testing import assert_frame_equal
+import pandas as pd
 import numpy as np
-
-import random
 import sys
 import os
 
 # project library
 from modules.random_init import *
+from modules.auxiliary import *
 
 # robustToolbox
 sys.path.insert(0, os.environ['ROBUPY'])
@@ -202,7 +203,7 @@ def test_E():
 
 def test_F():
     """ Testing whether the risk code is identical to the ambiguity code for
-        very, very small levels of ambiguity..
+        very, very small levels of ambiguity.
     """
     # Generate random initialization dictionary
     init_dict = generate_random_dict()
@@ -211,7 +212,7 @@ def test_F():
     base = None
 
     # Loop over different uncertain environments.
-    for level in [0.00, 0.000000001]:
+    for level in [0.00, 0.000000000000001]:
 
         # Set varying constraints
         init_dict['AMBIGUITY']['level'] = level
@@ -231,7 +232,7 @@ def test_F():
             base = emax.copy()
 
         # Checks
-        np.testing.assert_allclose(base, emax)
+        np.testing.assert_allclose(base, emax, rtol=1e-06)
 
     # Finishing
     return True
@@ -272,4 +273,30 @@ def test_G():
     # Finishing
     return True
 
+def test_H():
+    """ Testing whether the results from a fast and slow execution of the code result in identical simulate datasets.
+    """
+    # Generate random initialization
+    generate_init()
 
+    # Initialize containers
+    base = None
+
+    for which in ['fast', 'slow']:
+
+        compile_package(which)
+
+        # Simulate the ROBUPY package
+        os.system('robupy-solve --simulate --model test.robupy.ini')
+
+        # Load simulated data frame
+        data_frame = pd.read_csv('data.robupy.dat')
+
+        # Compare
+        if base is None:
+            base = data_frame.copy()
+
+        assert_frame_equal(base, data_frame)
+
+    # Finishing
+    return True
