@@ -20,7 +20,7 @@ import modules.tests as lib
 
 ''' Request
 '''
-label, seed = 'H', 60728
+label, seed = 'H', 28525
 
 ''' Error Reproduction
 '''
@@ -30,7 +30,11 @@ if True:
 
     np.random.seed(seed)
 
-    test()
+    for i in range(100):
+
+        print("\n Iteration: ", i)
+        test()
+
 
 else:
 
