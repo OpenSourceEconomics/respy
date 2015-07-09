@@ -15,7 +15,6 @@ def remove(path):
         appropriate function is selected. Note, however, that if an
         OSError occurs, the function will just path.
     """
-    print(path, os.path.isdir(path))
     if os.path.isdir(path):
         shutil.rmtree(path)
 
