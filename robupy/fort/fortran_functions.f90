@@ -9,9 +9,9 @@
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, future_payoffs, & 
-                num_periods, max_states_period, num_draws, period, k, & 
-                eps_relevant, payoffs_ex_ante, edu_max, edu_start, emax, & 
-                states_all, mapping_state_idx, delta)
+                num_periods, num_draws, period, k, eps_relevant, & 
+                payoffs_ex_ante, edu_max, edu_start, emax, states_all, & 
+                mapping_state_idx, delta)
 
     !/* external libraries    */
 
@@ -36,7 +36,6 @@ SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, future_payoffs, &
     INTEGER, INTENT(IN)             :: states_all(:,:,:)
     INTEGER, INTENT(IN)             :: period
     INTEGER, INTENT(IN)             :: num_periods
-    INTEGER, INTENT(IN)             :: max_states_period
     INTEGER, INTENT(IN)             :: num_draws
     INTEGER, INTENT(IN)             :: k
     INTEGER, INTENT(IN)             :: edu_max

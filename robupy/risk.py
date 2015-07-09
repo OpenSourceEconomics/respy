@@ -29,7 +29,7 @@ def simulate_emax_risk(num_draws, eps_baseline, period,
         eps_relevant[:, j] = np.exp(eps_relevant[:, j])
 
     # Simulate expected future value.
-    simulated, payoffs_ex_post, future_payoffs = perf.simulate_emax(num_periods, max_states_period, num_draws, period, k, eps_relevant,
+    simulated, payoffs_ex_post, future_payoffs = perf.simulate_emax(num_periods, num_draws, period, k, eps_relevant,
                                  payoffs_ex_ante, edu_max, edu_start, emax, states_all,
                                  mapping_state_idx, delta)
 

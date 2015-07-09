@@ -141,9 +141,9 @@ def solve(robupy_obj):
             # Simulate the expected future value.
             emax_simulated, payoffs_ex_post, future_payoffs = \
                 simulate_emax(num_draws, eps_relevant, period, k,
-                              payoffs_ex_ante, edu_max, edu_start,
-                              mapping_state_idx, states_all, num_periods,
-                              emax, delta, debug, max_states_period, ambiguity_args)
+                    payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,
+                    states_all, num_periods, emax, delta, debug,
+                    max_states_period, ambiguity_args)
 
             # Collect information
             period_payoffs_ex_post[period, k, :] = payoffs_ex_post
@@ -193,19 +193,22 @@ def solve(robupy_obj):
 def _create_eps(seed, num_periods, num_draws, init_dict):
     """ Create disturbances.
     """
-
+    # Ensure recomputability
     np.random.seed(seed)
 
-    eps_standard_periods = np.random.multivariate_normal(np.zeros(4), np.identity(4),
-                                                 (num_periods, num_draws))
+    eps_standard_periods = np.random.multivariate_normal(np.zeros(4),
+                                np.identity(4), (num_periods, num_draws))
 
+    # Check for special case
     all_zeros = (np.count_nonzero(init_dict['SHOCKS']) == 0)
 
+    # Prepare Cholesky decomposition
     if all_zeros:
         true_cholesky = np.zeros((4, 4))
     else:
         true_cholesky = np.linalg.cholesky(init_dict['SHOCKS'])
 
+    # Construct baseline disturbances
     eps_baseline_periods = np.tile(np.nan, (num_periods, num_draws, 4))
 
     for period in range(num_periods):
@@ -219,7 +222,6 @@ def _create_eps(seed, num_periods, num_draws, init_dict):
 def _create_state_space(robupy_obj):
     """ Create grid for state space.
     """
-
     # Distribute class attributes
     num_periods = robupy_obj.get_attr('num_periods')
 

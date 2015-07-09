@@ -5,14 +5,12 @@
 from pandas.util.testing import assert_frame_equal
 import pandas as pd
 import numpy as np
-
-import importlib
-import random
 import sys
 import os
 
 # project library
 from modules.random_init import *
+from modules.auxiliary import *
 
 # robustToolbox
 sys.path.insert(0, os.environ['ROBUPY'])
@@ -302,32 +300,3 @@ def test_H():
 
     # Finishing
     return True
-
-''' Auxiliary functions
-'''
-
-def compile_package(which):
-    """ Compile toolbox
-    """
-    # Antibugging
-    assert (which in ['fast', 'slow'])
-
-    # Auxiliary objects
-    package_dir = os.environ['ROBUPY'] + '/robupy'
-    tests_dir = os.getcwd()
-
-    # Compile package
-    os.chdir(package_dir)
-
-    os.system('./waf distclean > /dev/null 2>&1')
-
-    cmd = './waf configure build'
-
-    if which == 'fast':
-        cmd += ' --fast'
-
-    cmd = cmd + ' > /dev/null 2>&1'
-
-    os.system(cmd)
-
-    os.chdir(tests_dir)

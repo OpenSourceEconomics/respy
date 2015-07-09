@@ -15,7 +15,7 @@ def remove(path):
         appropriate function is selected. Note, however, that if an
         OSError occurs, the function will just path.
     """
-
+    print(path, os.path.isdir(path))
     if os.path.isdir(path):
         shutil.rmtree(path)
 
@@ -33,10 +33,10 @@ def remove_nuisances():
         for filename in fnmatch.filter(dir_, '__pycache__'):
             matches.append(os.path.join(root, filename))
 
-        for file_types in ['*.robupy.*']:
+        for file_types in ['*.robupy.*', '.lock-waf_linux_build',
+                           '*.so']:
 
             for filename in fnmatch.filter(file_names, file_types):
-
                 matches.append(os.path.join(root, filename))
 
     for file_ in matches:
@@ -45,6 +45,16 @@ def remove_nuisances():
 
         remove(file_)
 
+    # Iterate for directories
+    for root, dir_, file_names in os.walk('.'):
+
+        if '.bld' in root:
+
+            shutil.rmtree(root)
+
+        if '.waf' in root:
+
+            shutil.rmtree(root)
 
 """ Main algorithm.
 """

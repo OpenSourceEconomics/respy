@@ -3,10 +3,8 @@
 """
 
 # standard library
-import numpy as np
 from scipy.optimize import minimize
-
-np.set_printoptions(formatter={'float': '{: 0.3f}'.format})
+import numpy as np
 
 # project library
 from robupy.checks._checks_ambiguity import _checks
@@ -17,9 +15,9 @@ import robupy.fort.performance as perf
 '''
 
 
-def simulate_emax_ambiguity(num_draws, eps_standard, period,
-        k, payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,
-        states_all, num_periods, emax, delta, debug, max_states_period, ambiguity_args):
+def simulate_emax_ambiguity(num_draws, eps_standard, period, k,
+        payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, states_all,
+        num_periods, emax, delta, debug, max_states_period, ambiguity_args):
     """ Get worst case
     """
     # Distribute arguments
@@ -28,7 +26,6 @@ def simulate_emax_ambiguity(num_draws, eps_standard, period,
 
     # Initialize options.
     options = dict()
-
     options['maxiter'] = 10000
 
     # Initialize optimization problem.
@@ -37,10 +34,9 @@ def simulate_emax_ambiguity(num_draws, eps_standard, period,
     bounds = _get_bounds(ambiguity, debug)
 
     # Collect arguments
-    args = (num_draws, eps_standard, period,
-            k, payoffs_ex_ante, edu_max, edu_start,
-            mapping_state_idx, states_all,
-            num_periods, emax, cholesky, delta, debug, max_states_period)
+    args = (num_draws, eps_standard, period, k, payoffs_ex_ante, edu_max,
+            edu_start, mapping_state_idx, states_all, num_periods, emax,
+            cholesky, delta, debug)
 
     # Run optimization
     opt = minimize(_criterion, x0, args, method='SLSQP', options=options,
@@ -55,9 +51,11 @@ def simulate_emax_ambiguity(num_draws, eps_standard, period,
     for j in [0, 1]:
         eps_relevant[:, j] = np.exp(eps_relevant[:, j])
 
-    simulated, payoffs_ex_post, future_payoffs = perf.simulate_emax(num_periods, max_states_period, num_draws, period, k, eps_relevant,
-                                 payoffs_ex_ante, edu_max, edu_start, emax, states_all,
-                                 mapping_state_idx, delta)
+    simulated, payoffs_ex_post, future_payoffs = \
+        perf.simulate_emax(num_periods, num_draws, period, k, eps_relevant,
+            payoffs_ex_ante, edu_max, edu_start, emax, states_all,
+            mapping_state_idx, delta)
+
     # Debugging
     if debug is True:
         _checks('simulate_emax_ambiguity', simulated, opt)
@@ -69,10 +67,9 @@ def simulate_emax_ambiguity(num_draws, eps_standard, period,
 '''
 
 
-def _criterion(x, num_draws, eps_standard, period,
-                   k, payoffs_ex_ante, edu_max, edu_start,
-                   mapping_state_idx, states_all,
-                   num_periods, emax, true_cholesky, delta, debug, max_states_period):
+def _criterion(x, num_draws, eps_standard, period, k, payoffs_ex_ante, edu_max,
+        edu_start, mapping_state_idx, states_all, num_periods, emax,
+        true_cholesky, delta, debug):
     """ Simulate expected future value for alternative shock distributions.
     """
     # Transformation of standard normal deviates to relevant distributions.
@@ -80,11 +77,10 @@ def _criterion(x, num_draws, eps_standard, period,
     for j in [0, 1]:
         eps_relevant[:, j] = np.exp(eps_relevant[:, j])
 
-    # Simulate the expected future value for a given parameterization.
-    simulated, _, _ = \
-        perf.simulate_emax(num_periods, max_states_period, num_draws, period, k, eps_relevant,
-                                 payoffs_ex_ante, edu_max, edu_start, emax, states_all,
-                                 mapping_state_idx, delta)
+    # Simulate the expected future value for a given parametrization.
+    simulated, _, _ = perf.simulate_emax(num_periods, num_draws, period, k,
+                        eps_relevant, payoffs_ex_ante, edu_max, edu_start,
+                        emax, states_all, mapping_state_idx, delta)
 
     # Debugging
     if debug is True:
