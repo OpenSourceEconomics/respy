@@ -17,7 +17,7 @@ import robupy.fort.performance as perf
 
 def simulate_emax_ambiguity(num_draws, eps_standard, period, k,
         payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, states_all,
-        num_periods, emax, delta, debug, max_states_period, ambiguity_args):
+        num_periods, emax, delta, debug, ambiguity_args):
     """ Get worst case
     """
     # Distribute arguments

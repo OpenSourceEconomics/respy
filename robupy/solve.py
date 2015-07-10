@@ -142,8 +142,7 @@ def solve(robupy_obj):
             emax_simulated, payoffs_ex_post, future_payoffs = \
                 simulate_emax(num_draws, eps_relevant, period, k,
                     payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,
-                    states_all, num_periods, emax, delta, debug,
-                    max_states_period, ambiguity_args)
+                    states_all, num_periods, emax, delta, debug, ambiguity_args)
 
             # Collect information
             period_payoffs_ex_post[period, k, :] = payoffs_ex_post
