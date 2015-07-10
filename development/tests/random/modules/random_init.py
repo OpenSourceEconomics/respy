@@ -46,7 +46,6 @@ def generate_random_dict(constraints={}):
     dict_['AMBIGUITY'] = dict()
     dict_['AMBIGUITY']['measure'] = np.random.choice(['absolute', 'kl'])
     dict_['AMBIGUITY']['level'] = np.random.choice([0.00, np.random.uniform()])
-    dict_['AMBIGUITY']['para'] = 'both'
 
     # Home
     dict_['HOME'] = dict()

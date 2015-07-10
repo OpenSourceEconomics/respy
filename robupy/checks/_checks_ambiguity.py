@@ -16,7 +16,7 @@ def _checks(str_, *args):
         x0,  = args
 
         # Check quality of starting values
-        assert (len(x0) == 4)
+        assert (len(x0) == 2)
         assert (np.all(np.isfinite(x0)))
 
         assert (all(val == 0 for val in x0))
@@ -45,7 +45,7 @@ def _checks(str_, *args):
         bounds, = args
 
         # Check quality of bounds
-        assert (len(bounds) == 4)
+        assert (len(bounds) == 2)
 
         for i in range(4):
             assert (bounds[0] == bounds[i])

@@ -62,7 +62,8 @@ def simulate_emax_ambiguity(num_draws, eps_standard, period, k,
         _write_result(period, k, opt)
 
     # Transformation of standard normal deviates to relevant distributions.
-    eps_relevant = np.dot(cholesky, eps_standard.T).T + opt['x']
+    eps_relevant = np.dot(cholesky, eps_standard.T).T
+    eps_relevant[:, :2] = eps_relevant[:, :2] + opt['x']
     for j in [0, 1]:
         eps_relevant[:, j] = np.exp(eps_relevant[:, j])
 
@@ -107,7 +108,9 @@ def _divergence(x, cov, level):
         from center.
     """
     # Construct alternative distribution
-    alt_mean, alt_cov = np.array(x), cov
+    alt_mean = np.zeros(4)
+    alt_mean[:2] = x
+    alt_cov = cov
 
     # Construct baseline distribution
     old_mean, old_cov = np.array([0.0, 0.0, 0.0, 0.0]), cov
@@ -131,7 +134,8 @@ def _criterion(x, num_draws, eps_standard, period, k, payoffs_ex_ante, edu_max,
     """ Simulate expected future value for alternative shock distributions.
     """
     # Transformation of standard normal deviates to relevant distributions.
-    eps_relevant = np.dot(true_cholesky, eps_standard.T).T + x
+    eps_relevant = np.dot(true_cholesky, eps_standard.T).T
+    eps_relevant[:, :2] = eps_relevant[:, :2] + x
     for j in [0, 1]:
         eps_relevant[:, j] = np.clip(np.exp(eps_relevant[:, j]), 0.0,
                                      HUGE_FLOAT)
@@ -151,15 +155,14 @@ def _write_result(period, k, opt):
     """ Write result of optimization problem to loggging file.
     """
 
-    string = '''{0[0]:>10} {0[1]:10.4f} {0[2]:10.4f} {0[3]:10.4f} {0[4]:10.4f}\n\n'''
+    string = '''{0[0]:>10} {0[1]:10.4f} {0[2]:10.4f}\n\n'''
 
     file_ = open('ambiguity.robupy.log', 'a')
 
     file_.write('PERIOD ' + str(period) + '    State ' + str(k) + '\n' +
                     '-------------------\n\n')
 
-    file_.write(string.format(['Result', opt['x'][0], opt['x'][0], opt['x'][
-        0], opt['x'][0]]))
+    file_.write(string.format(['Result', opt['x'][0], opt['x'][0]]))
 
     file_.write('    Success ' + str(opt['success']) + '\n')
     file_.write('    Message ' + opt['message'] + '\n\n\n')
@@ -170,7 +173,7 @@ def _get_start(debug):
     """ Get starting values.
     """
     # Get appropriate starting values
-    x0 = [0.00, 0.00, 0.00, 0.00]
+    x0 = [0.00, 0.00]
 
     # Debugging
     if debug is True:
@@ -186,8 +189,7 @@ def _prep_absolute(ambiguity, debug):
     level = ambiguity['level']
 
     # Construct appropriate bounds
-    bounds = [[-level, level], [-level, level],
-                  [-level, level], [-level, level]]
+    bounds = [[-level, level], [-level, level]]
 
     # Debugging
     if debug is True:
