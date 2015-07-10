@@ -146,6 +146,9 @@ def test_D():
     constraints = dict()
     constraints['eps_zero'] = True
 
+    # The calculation of the KL does not work for this case.
+    constraints['measure'] = 'absolute'
+
     # Generate random initialization file
     generate_init(constraints)
 
@@ -282,7 +285,7 @@ def test_H():
     # Initialize containers
     base = None
 
-    for which in ['fast', 'slow']:
+    for which in ['slow', 'fast']:
 
         compile_package(which)
 

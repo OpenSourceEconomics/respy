@@ -31,9 +31,6 @@ def _checks(str_, *args):
         # should be the same.
         assert (simulated == opt['fun'])
 
-        # Check success for optimization
-        assert (opt['success'])
-
     elif str_ == '_criterion':
 
         # Distribute input parameters

@@ -28,7 +28,7 @@ def simulate_emax_ambiguity(num_draws, eps_standard, period, k,
 
     # Auxiliary objects
     measure = ambiguity['measure']
-    level   = ambiguity['level']
+    level = ambiguity['level']
 
     # Initialize options.
     options = dict()
