@@ -73,6 +73,9 @@ def run(hours):
 
             test()
 
+            # Check success of ambiguity optimizations
+            check_ambiguity_optimization()
+
             dict_[label]['success'] += 1
 
         except:

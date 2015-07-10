@@ -5,7 +5,7 @@
 import logging
 import socket
 import shutil
-import json
+import shlex
 import glob
 import os
 
@@ -161,3 +161,67 @@ def compile_package(which):
     os.system(cmd)
 
     os.chdir(tests_dir)
+
+def check_ambiguity_optimization():
+    """ This function checks that less than 5% of all optimization for each
+    period fail.
+    """
+    def _process_cases(list_):
+        """ Process cases and determine whether keyword or empty line.
+        """
+        # Antibugging
+        assert (isinstance(list_, list))
+
+        # Get information
+        is_empty = (len(list_) == 0)
+
+        if not is_empty:
+            is_summary = (list_[0] == 'SUMMARY')
+        else:
+            is_summary = False
+
+        # Antibugging
+        assert (is_summary in [True, False])
+        assert (is_empty in [True, False])
+
+        # Finishing
+        return is_empty, is_summary
+
+    is_relevant = False
+
+    # Check relevance
+    if not os.path.exists('ambiguity.robupy.log'):
+        return
+
+    for line in open('ambiguity.robupy.log').readlines():
+
+        # Split line
+        list_ = shlex.split(line)
+
+        # Determine special cases
+        is_empty, is_summary = _process_cases(list_)
+
+        # Applicability
+        if is_empty:
+            continue
+
+        # Prepare dictionary
+        if is_summary:
+            is_relevant = True
+            continue
+
+        if not is_relevant:
+            continue
+
+        if list_[0] == 'Period':
+            continue
+
+        period, total, success, failure = list_
+
+        total = success + failure
+
+        if float(failure)/float(total) > 0.05:
+            raise AssertionError
+
+
+

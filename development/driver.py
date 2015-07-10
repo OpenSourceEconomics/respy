@@ -16,16 +16,18 @@ from robupy import *
 # Run workflowR
 robupy_obj = read('model.robupy.ini')
 
-print(' Starting to solve the model ...')
-
-start_time = time.time()
-
 robupy_obj = solve(robupy_obj)
 
-exit_time = time.time()
+import shlex
 
-print('    Duration: ', (exit_time - start_time)/60)
 
-print('\n Starting to simulate ...')
 
-simulate(robupy_obj)
+
+
+
+
+
+
+
+
+print('done')

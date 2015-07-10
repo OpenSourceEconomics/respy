@@ -151,14 +151,18 @@ def _write_result(period, k, opt):
     """ Write result of optimization problem to loggging file.
     """
 
+    string = '''{0[0]:>10} {0[1]:10.4f} {0[2]:10.4f} {0[3]:10.4f} {0[4]:10.4f}\n\n'''
+
     file_ = open('ambiguity.robupy.log', 'a')
 
-    file_.write('Period ' + str(period) + '    State ' + str(k) + '\n' +
+    file_.write('PERIOD ' + str(period) + '    State ' + str(k) + '\n' +
                     '-------------------\n\n')
 
-    file_.write('Result  ' + str(opt['x']) + '\n')
-    file_.write('Success ' + str(opt['success']) + '\n')
-    file_.write('Message ' + opt['message'] + '\n\n\n')
+    file_.write(string.format(['Result', opt['x'][0], opt['x'][0], opt['x'][
+        0], opt['x'][0]]))
+
+    file_.write('    Success ' + str(opt['success']) + '\n')
+    file_.write('    Message ' + opt['message'] + '\n\n\n')
 
     file_.close()
 

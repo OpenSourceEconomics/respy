@@ -35,6 +35,7 @@ if True:
         print("\n Iteration: ", i)
         test()
 
+        check_ambiguity_optimization()
 
 else:
 
