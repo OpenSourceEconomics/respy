@@ -139,6 +139,35 @@ def test_C():
 
     cleanup()
 
+def test_D():
+    """ Test the solution of model with ambiguity against hard coded results
+    to detect unwanted deviations.
+    """
+    # Relative Criterion
+    robupy_obj = read('third.robupy.ini')
+
+    robupy_obj = solve(robupy_obj)
+
+    simulate(robupy_obj)
+
+    cleanup()
+
+    # Assert unchanged value
+    assert abs(robupy_obj.get_attr('emax')[0, :1] - 55931.87437459) < 0.00000001
+
+    # Absolute Criterion
+    robupy_obj = read('fourth.robupy.ini')
+
+    robupy_obj = solve(robupy_obj)
+
+    simulate(robupy_obj)
+
+    cleanup()
+
+    # Assert unchanged value
+    assert abs(robupy_obj.get_attr('emax')[0, :1] - 18.07006519) < 0.00000001
+
+
 ''' Main
 '''
 test_A()
@@ -146,3 +175,5 @@ test_A()
 test_B()
 
 test_C()
+
+test_D()

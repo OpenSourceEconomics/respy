@@ -47,7 +47,7 @@ def _checks(str_, *args):
         # Check quality of bounds
         assert (len(bounds) == 2)
 
-        for i in range(4):
+        for i in range(2):
             assert (bounds[0] == bounds[i])
 
     else:
