@@ -20,7 +20,7 @@ import modules.tests as lib
 
 ''' Request
 '''
-label, seed = 'H', 28525
+label, seed = 'B', 67558
 
 ''' Error Reproduction
 '''
