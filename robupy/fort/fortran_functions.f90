@@ -235,4 +235,166 @@ SUBROUTINE get_future_payoffs(future_payoffs, edu_max, edu_start, &
             mapping_state_idx, period,  emax, k, states_all)
 
 END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE determinant(det, A)
 
+    ! Development Notes:
+    !
+    !    This subroutine is just a wrapper to the corresponding function in the
+    !    ROBUPY library. This is required as it is used by other subroutines
+    !    in this front-end module.
+    !
+
+    !/* external libraries    */
+
+    USE robupy_library
+
+    !/* setup    */
+
+    IMPLICIT NONE
+
+    !/* external objects    */
+
+    DOUBLE PRECISION, INTENT(OUT)   :: det
+
+    DOUBLE PRECISION, INTENT(IN)    :: A(:,:)
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    det = det_fun(A)
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE inverse(inv, A, n)
+
+    ! Development Notes:
+    !
+    !    This subroutine is just a wrapper to the corresponding function in the
+    !    ROBUPY library. This is required as it is used by other subroutines
+    !    in this front-end module.
+    !
+
+    !/* external libraries    */
+
+    USE robupy_library
+
+    !/* setup    */
+
+    IMPLICIT NONE
+
+    !/* external objects    */
+
+    DOUBLE PRECISION, INTENT(OUT)   :: inv(n,n)
+
+    DOUBLE PRECISION, INTENT(IN)    :: A(:,:)
+
+    INTEGER(our_int), INTENT(IN)    :: n
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    ! Get inverse
+    inv = inverse_fun(A, n)
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE trace(rslt, A)
+
+    ! Development Notes:
+    !
+    !    This subroutine is just a wrapper to the corresponding function in the
+    !    ROBUPY library. This is required as it is used by other subroutines
+    !    in this front-end module.
+    !
+
+    !/* external libraries    */
+
+    USE robupy_library
+
+    !/* setup    */
+
+    IMPLICIT NONE
+
+    !/* external objects    */
+
+    DOUBLE PRECISION, INTENT(OUT) :: rslt
+
+    DOUBLE PRECISION, INTENT(IN)  :: A(:,:)
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    rslt = trace_fun(A)
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE divergence(div, x, cov, level)
+
+    !/* external libraries    */
+
+    USE robupy_library
+
+    !/* setup    */
+
+    IMPLICIT NONE
+
+    !/* external objects    */
+
+    DOUBLE PRECISION, INTENT(OUT)   :: div
+
+    DOUBLE PRECISION, INTENT(IN)    :: x(2)
+    DOUBLE PRECISION, INTENT(IN)    :: cov(4,4)
+    DOUBLE PRECISION, INTENT(IN)    :: level
+
+    !/* internals objects    */
+
+    REAL(our_dble)                  :: alt_mean(4, 1) = zero_dble
+    REAL(our_dble)                  :: old_mean(4, 1) = zero_dble
+    REAL(our_dble)                  :: alt_cov(4,4)
+    REAL(our_dble)                  :: old_cov(4,4)
+    REAL(our_dble)                  :: inv_old_cov(4,4)
+    REAL(our_dble)                  :: comp_a
+    REAL(our_dble)                  :: comp_b(1, 1)
+    REAL(our_dble)                  :: comp_c
+    REAL(our_dble)                  :: rslt
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    ! Construct alternative distribution
+    alt_mean(1,1) = x(1)
+    alt_mean(2,1) = x(2)
+    alt_cov = cov
+
+    ! Construct baseline distribution
+    old_cov = cov
+
+    ! Construct auxiliary objects.
+    inv_old_cov = inverse_fun(old_cov, 4)
+
+    ! Calculate first component
+    comp_a = trace_fun(MATMUL(inv_old_cov, alt_cov))
+
+    ! Calculate second component
+    comp_b = MATMUL(MATMUL(TRANSPOSE(old_mean - alt_mean), inv_old_cov), &
+                old_mean - alt_mean)
+
+    ! Calculate third component
+    comp_c = LOG(det_fun(alt_cov) / det_fun(old_cov))
+
+    ! Statistic
+    rslt = half_dble * (comp_a + comp_b(1,1) - four_dble + comp_c)
+
+    ! Divergence
+    div = level - rslt
+
+END SUBROUTINE
