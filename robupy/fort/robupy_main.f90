@@ -17,8 +17,10 @@ MODULE robupy_library
 
 	IMPLICIT NONE
 
-    PUBLIC ::   get_future_payoffs_lib
-    
+    PUBLIC :: get_future_payoffs_lib
+    PUBLIC :: inverse_lib
+    PUBLIC :: det_lib
+
 CONTAINS
 !******************************************************************************
 !******************************************************************************
@@ -83,6 +85,134 @@ SUBROUTINE get_future_payoffs_lib(future_payoffs, edu_max, edu_start, &
 	future_payoffs(4) = emax(period + 1 + 1, future_idx + 1)
 
 END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+FUNCTION inverse_lib(A, k)
+
+    !/* external objects    */
+
+	INTEGER(our_int), INTENT(IN)	:: k
+
+	REAL(our_dble), INTENT(IN)		:: A(k, k)
+
+    !/* internal objects    */
+	
+	REAL(our_dble), ALLOCATABLE		:: y(:, :)
+	REAL(our_dble), ALLOCATABLE		:: B(:, :)
+	REAL(our_dble)					:: d
+	REAL(our_dble) 					:: inverse_lib(k, k)
+
+	INTEGER(our_int), ALLOCATABLE	:: indx(:)	
+	INTEGER(our_int)				:: n
+	INTEGER(our_int)				:: i
+	INTEGER(our_int)				:: j
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+	
+	! Auxiliary objects
+	n  = size(A, 1)
+
+	! Allocate containers
+	ALLOCATE(y(n, n))
+	ALLOCATE(B(n, n))
+	ALLOCATE(indx(n))
+
+	! Initialize containers
+	y = zero_dble
+	B = A
+
+	! Main
+	DO i = 1, n
+	
+	   y(i, i) = 1
+	
+	END DO
+
+	CALL ludcmp(B, d, indx)
+
+	DO j = 1, n
+	
+	   CALL lubksb(B, y(:, j), indx)
+	
+	END DO
+	
+	! Collect result
+	inverse_lib = y
+
+END FUNCTION
+!******************************************************************************
+!******************************************************************************
+FUNCTION det_lib(A)
+
+    !/* external objects    */
+
+	REAL(our_dble), INTENT(IN)		:: A(:, :)
+	REAL(our_dble) 					:: det_lib
+
+    !/* internal objects    */
+	INTEGER(our_int), ALLOCATABLE	:: indx(:)
+	INTEGER(our_int)				:: j
+	INTEGER(our_int)				:: n
+
+	REAL(our_dble), ALLOCATABLE		:: B(:, :)
+	REAL(our_dble)					:: d
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+	! Auxiliary objects
+	n  = size(A, 1)
+
+	! Allocate containers
+	ALLOCATE(B(n, n))
+	ALLOCATE(indx(n))
+
+	! Initialize containers
+	B = A
+
+	CALL ludcmp(B, d, indx)
+	
+	DO j = 1, n
+	
+	   d = d * B(j, j)
+	
+	END DO
+	
+	! Collect results
+	det_lib = d
+
+END FUNCTION
+!******************************************************************************
+!******************************************************************************
+PURE FUNCTION trace_fun(A)
+
+    !/* external objects    */
+
+    REAL(our_dble), INTENT(IN)     	:: A(:,:)
+    REAL(our_dble) 					:: trace_fun
+
+    !/* internals objects    */
+
+    INTEGER(our_int)                :: i
+    INTEGER(our_int)                :: n
+
+    ! Initialize results
+    trace_fun = zero_dble
+
+    ! Get dimension
+    n = SIZE(A, DIM = 1)
+
+    ! Calculate trace
+    DO i = 1, n
+
+        trace_fun = trace_fun + A(i, i)
+
+    END DO
+
+END FUNCTION
 !******************************************************************************
 !******************************************************************************
 END MODULE  

@@ -264,7 +264,7 @@ SUBROUTINE determinant(det, A)
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    det = det_fun(A)
+    det = det_lib(A)
 
 END SUBROUTINE
 !******************************************************************************
@@ -299,7 +299,7 @@ SUBROUTINE inverse(inv, A, n)
 !------------------------------------------------------------------------------
 
     ! Get inverse
-    inv = inverse_fun(A, n)
+    inv = inverse_lib(A, n)
 
 END SUBROUTINE
 !******************************************************************************
@@ -379,7 +379,7 @@ SUBROUTINE divergence(div, x, cov, level)
     old_cov = cov
 
     ! Construct auxiliary objects.
-    inv_old_cov = inverse_fun(old_cov, 4)
+    inv_old_cov = inverse_lib(old_cov, 4)
 
     ! Calculate first component
     comp_a = trace_fun(MATMUL(inv_old_cov, alt_cov))
@@ -389,7 +389,7 @@ SUBROUTINE divergence(div, x, cov, level)
                 old_mean - alt_mean)
 
     ! Calculate third component
-    comp_c = LOG(det_fun(alt_cov) / det_fun(old_cov))
+    comp_c = LOG(det_lib(alt_cov) / det_lib(old_cov))
 
     ! Statistic
     rslt = half_dble * (comp_a + comp_b(1,1) - four_dble + comp_c)

@@ -8,12 +8,6 @@ MODULE robupy_auxiliary
 
 	IMPLICIT NONE
 
-    PRIVATE
-
-    PUBLIC ::   trace_fun
-    PUBLIC ::   inverse_fun
-    PUBLIC ::   det_fun
-
 CONTAINS
 !******************************************************************************
 !******************************************************************************
@@ -79,29 +73,7 @@ SUBROUTINE ludcmp(A, d, indx)
        END IF
     END DO
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
-FUNCTION det_fun(A)
-!
-!This function calculates the determinant of a matrix A.
-!
-REAL(KIND=our_dble), INTENT(IN)	:: A(:,:)
-REAL(KIND=our_dble) 	:: det_fun
-!Definition of local variables
-REAL(KIND=our_dble)					:: d
-REAL(KIND=our_dble), ALLOCATABLE	:: B(:,:)
-INTEGER(KIND=our_int)				:: j, n
-INTEGER(KIND=our_int), ALLOCATABLE	:: indx(:)
-!Algorithm
-n = size(A,1); ALLOCATE(B(n,n))
-B = A
-ALLOCATE(indx(n))
-CALL ludcmp(B, d, indx)
-DO j = 1,n
-   d = d*B(j,j)
-END DO
-det_fun = d
-END function
+
 !******************************************************************************
 !******************************************************************************
 SUBROUTINE lubksb(A, B, indx)
@@ -142,69 +114,6 @@ DO i = n, 1, -1
    b(i) = sums/a(i,i)
 END DO
 END SUBROUTINE
-!********************************************************************
-!********************************************************************
-FUNCTION inverse_fun(A, k)
-!
-!This function calculates the inverse of a matrix A.
-!
-!Calls  : ludcmp, lubksb
-!Version: 19.10.2008
-!
-IMPLICIT NONE
-!Definition of arguments
-
-INTEGER(KIND=our_int), INTENT(IN)		:: k
-REAL(KIND=our_dble), INTENT(IN)		:: A(k,k)
-REAL(KIND=our_dble) :: inverse_fun(k,k)
-!Definition of local variables
-REAL(KIND=our_dble)					:: d
-REAL(KIND=our_dble), ALLOCATABLE	:: y(:,:), B(:,:)
-INTEGER(KIND=our_int)				:: n, i, j
-INTEGER(KIND=our_int), ALLOCATABLE	:: indx(:)
-!Algorithm
-n  = size(A,1)
-ALLOCATE(y(n,n)); y = 0
-ALLOCATE(B(n,n)); B = A
-ALLOCATE(indx(n))
-DO i = 1,n
-   y(i,i) = 1
-END DO
-CALL ludcmp(B, d, indx)
-DO j = 1,n
-   CALL lubksb(B, y(:,j), indx)
-END DO
-inverse_fun = y
-END FUNCTION
-
-!******************************************************************************
-!******************************************************************************
-PURE FUNCTION trace_fun(A)
-
-    REAL(KIND=our_dble), INTENT(IN)     :: A(:,:)
-    REAL(our_dble) :: trace_fun
-
-    !/* internals objects    */
-
-    INTEGER(our_int)                    :: i
-
-    INTEGER(our_int)                    :: n
-
-    ! Initialize results
-    trace_fun = zero_dble
-
-    ! Get dimension
-    n = SIZE(A, DIM = 1)
-
-    ! Calculate trace
-    DO i = 1, n
-
-        trace_fun = trace_fun + A(i,i)
-
-    END DO
-
-END FUNCTION
-
 !******************************************************************************
 !******************************************************************************
 END MODULE
