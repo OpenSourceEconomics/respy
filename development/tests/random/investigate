@@ -21,17 +21,17 @@ from modules.random_init import *
 
 ''' Request
 '''
-label, seed = 'F', 95357
+label, seed = 'F', 91363
 
 ''' Error Reproduction
 '''
-if False:
+if True:
 
     test = getattr(lib,'test_' + label)
 
     np.random.seed(seed)
 
-    compile_package('slow')
+    compile_package('fast')
 
     test()
 
@@ -88,6 +88,6 @@ def test_F():
     return True
 
 
-compile_package('slow')
+#compile_package('slow')
 
-test_F()
+#test_F()

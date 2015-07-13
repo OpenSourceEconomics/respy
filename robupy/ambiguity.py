@@ -100,9 +100,6 @@ def _correct_debugging(opt, x0, level, eps_standard, cholesky, num_periods,
     if not (level < 0.1e-10):
         return opt
 
-    # Check expected result
-    assert (np.max(x0 - opt['x']) < 10e-6)
-
     # Correct resulting values
     opt['x'] = x0
 
