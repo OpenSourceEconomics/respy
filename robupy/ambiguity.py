@@ -61,24 +61,11 @@ def simulate_emax_ambiguity(num_draws, eps_standard, period, k,
         # is not satisfied, even though success is indicated. To ensure
         # a smooth and informative run of TEST_F in the random development
         # test battery the following checks are performed.
-        level_is_small = (level < 0.1e-10)
-        deviation_small = (np.max(x0 - opt['x']) < 10e-6)
-
-        if level_is_small and deviation_small:
-
-            opt['x'] = x0
-
-            eps_relevant = np.dot(cholesky, eps_standard.T).T
-            eps_relevant[:, :2] = eps_relevant[:, :2] + opt['x']
-            for j in [0, 1]:
-                eps_relevant[:, j] = np.exp(eps_relevant[:, j])
-
-            simulated, payoffs_ex_post, future_payoffs = \
-                perf.simulate_emax(num_periods, num_draws, period, k, eps_relevant,
-                    payoffs_ex_ante, edu_max, edu_start, emax, states_all,
-                    mapping_state_idx, delta)
-
-            opt['fun'] = simulated
+        if debug:
+            opt = _correct_debugging(opt, x0, level, eps_standard, cholesky,
+                        num_periods, num_draws, period, k, payoffs_ex_ante,
+                        edu_max, edu_start, emax, states_all,
+                        mapping_state_idx, delta)
 
     # Write result to file
     if debug:
@@ -104,6 +91,36 @@ def simulate_emax_ambiguity(num_draws, eps_standard, period, k,
 
 ''' Private functions
 '''
+def _correct_debugging(opt, x0, level, eps_standard, cholesky, num_periods,
+            num_draws, period, k, payoffs_ex_ante, edu_max, edu_start, emax,
+            states_all, mapping_state_idx, delta):
+    """ Some manipulations for test battery
+    """
+    # Check applicability
+    if not (level < 0.1e-10):
+        return opt
+
+    # Check expected result
+    assert (np.max(x0 - opt['x']) < 10e-6)
+
+    # Correct resulting values
+    opt['x'] = x0
+
+    # Correct final function value
+    eps_relevant = np.dot(cholesky, eps_standard.T).T
+    eps_relevant[:, :2] = eps_relevant[:, :2] + opt['x']
+    for j in [0, 1]:
+        eps_relevant[:, j] = np.exp(eps_relevant[:, j])
+
+    simulated, payoffs_ex_post, future_payoffs = \
+                perf.simulate_emax(num_periods, num_draws, period, k, eps_relevant,
+                    payoffs_ex_ante, edu_max, edu_start, emax, states_all,
+                    mapping_state_idx, delta)
+
+    opt['fun'] = simulated
+
+    # Finishing
+    return opt
 
 def _prep_kl(cholesky, level):
     """ Construct Kullback-Leibler constraint for optimization.

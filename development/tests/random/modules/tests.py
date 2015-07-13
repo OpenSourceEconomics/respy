@@ -209,7 +209,10 @@ def test_F():
         very, very small levels of ambiguity.
     """
     # Generate random initialization dictionary
-    init_dict = generate_random_dict()
+    constraints = dict()
+    constraints['debug'] = 'True'
+
+    init_dict = generate_random_dict(constraints)
 
     # Initialize containers
     base = None

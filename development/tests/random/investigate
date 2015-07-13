@@ -65,6 +65,7 @@ def test_F():
         init_dict['AMBIGUITY']['level'] = 0.1e-15
         init_dict['AMBIGUITY']['measure'] = measure
         init_dict['COMPUTATION']['draws'] = 1
+        init_dict['COMPUTATION']['debug'] = 'True'
 
         # Print to dictionary
         print_random_dict(init_dict)
