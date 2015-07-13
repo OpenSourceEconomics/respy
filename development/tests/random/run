@@ -52,6 +52,10 @@ def run(hours):
 
     logger.info(msg)
 
+    # Compile package. I also test the equality of results between the fast
+    # and slow compilation in Test H.
+    compile_package('fast')
+
     # # Evaluation loop.
     while True:
 
@@ -68,6 +72,9 @@ def run(hours):
         try:
 
             test()
+
+            # Check success of ambiguity optimizations
+            check_ambiguity_optimization()
 
             dict_[label]['success'] += 1
 

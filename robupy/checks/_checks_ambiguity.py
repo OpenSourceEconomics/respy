@@ -13,14 +13,13 @@ def _checks(str_, *args):
     if str_ == '_get_start':
 
         # Distribute input parameters
-        x0, measure = args
+        x0,  = args
 
         # Check quality of starting values
-        assert (len(x0) == 4)
+        assert (len(x0) == 2)
         assert (np.all(np.isfinite(x0)))
 
-        if measure == 'absolute':
-            assert (all(val == 0 for val in x0))
+        assert (all(val == 0 for val in x0))
 
     elif str_ == 'simulate_emax_ambiguity':
 
@@ -40,17 +39,16 @@ def _checks(str_, *args):
         # Check quality of bounds
         assert (np.isfinite(simulated))
 
-    elif str_ == '_get_bounds':
+    elif str_ == '_prep_absolute':
 
         # Distribute input parameters
-        bounds, measure  = args
+        bounds, = args
 
         # Check quality of bounds
-        assert (len(bounds) == 4)
+        assert (len(bounds) == 2)
 
-        if measure == 'absolute':
-            for i in range(4):
-                assert (bounds[0] == bounds[i])
+        for i in range(2):
+            assert (bounds[0] == bounds[i])
 
     else:
 

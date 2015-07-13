@@ -13,19 +13,14 @@ sys.path.insert(0, os.environ['ROBUPY'])
 # project library
 from robupy import *
 
-# Run workflowR
-robupy_obj = read('model.robupy.ini')
-
-print(' Starting to solve the model ...')
-
-start_time = time.time()
+# Relative Criterion
+robupy_obj = read('tests/fixed/third.robupy.ini')
 
 robupy_obj = solve(robupy_obj)
 
-exit_time = time.time()
-
-print('    Duration: ', (exit_time - start_time)/60)
-
-print('\n Starting to simulate ...')
-
 simulate(robupy_obj)
+
+cleanup()
+
+# Assert unchanged value
+assert abs(robupy_obj.get_attr('emax')[0, :1] - 55931.87437459) < 0.00000001

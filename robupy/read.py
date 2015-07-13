@@ -52,7 +52,7 @@ def read(file_):
     del dict_['WORK']
 
     # Check quality.
-    _check_integrity_process(dict_)
+    _check_integrity_read(dict_)
 
     # Construct container
     robupy_obj = RobupyCls()
@@ -128,7 +128,7 @@ def _process_standard(list_, dict_, keyword):
     # Type conversion
     if name in ['agents', 'periods', 'start', 'max', 'draws', 'seed']:
         val = int(val)
-    elif name in ['para', 'measure']:
+    elif name in ['measure']:
         val = str(val)
     elif name in ['debug']:
         assert (val.upper() in ['TRUE', 'FALSE'])
@@ -168,7 +168,7 @@ def _process_cases(list_):
     return is_empty, is_keyword
 
 
-def _check_integrity_process(dict_):
+def _check_integrity_read(dict_):
     """ Check integrity of initialization dictionary.
     """
     # Antibugging
@@ -237,14 +237,13 @@ def _check_integrity_process(dict_):
 
     # Check AMBIGUITY
     assert (dict_['AMBIGUITY']['measure'] in ['kl', 'absolute'])
-    assert (dict_['AMBIGUITY']['para'] in ['cov', 'mean', 'both'])
     assert (isinstance(dict_['AMBIGUITY']['level'], float))
     assert (dict_['AMBIGUITY']['level'] >= 0.00)
     assert (np.isfinite(dict_['AMBIGUITY']['level']))
 
     # Temporary restrictions
     assert ((dict_['AMBIGUITY']['level'] >= 0.00))
-    assert (dict_['AMBIGUITY']['measure'] in ['absolute'])
+    assert (dict_['AMBIGUITY']['measure'] in ['absolute', 'kl'])
 
     # Finishing
     return True

@@ -8,74 +8,211 @@ MODULE robupy_auxiliary
 
 	IMPLICIT NONE
 
-    PRIVATE
-
-    PUBLIC ::   get_future_payoffs_lib
-
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_future_payoffs_lib(future_payoffs, edu_max, edu_start, &
-        mapping_state_idx, period, emax, k, states_all)
-
-    !/* external libraries    */
-
-    !/* setup    */
-
-    IMPLICIT NONE
+SUBROUTINE ludcmp(A, d, indx)
 
     !/* external objects    */
+    
+    INTEGER(our_int), INTENT(INOUT) :: indx(:)
 
-    DOUBLE PRECISION, INTENT(OUT)   :: future_payoffs(4)
+    REAL(our_dble), INTENT(INOUT)		:: a(:,:)
+    REAL(our_dble), INTENT(INOUT)		:: d
 
-    DOUBLE PRECISION, INTENT(IN)    :: emax(:,:)
+    !/* internal objects    */
 
-    INTEGER, INTENT(IN)             :: k
-    INTEGER, INTENT(IN)             :: period
-    INTEGER, INTENT(IN)             :: edu_max
-    INTEGER, INTENT(IN)             :: edu_start
-    INTEGER, INTENT(IN)             :: states_all(:,:,:)
-    INTEGER, INTENT(IN)             :: mapping_state_idx(:,:,:,:,:)
+    INTEGER(our_int)			          :: i
+    INTEGER(our_int)                :: j
+    INTEGER(our_int)                :: k
+    INTEGER(our_int)                :: imax
+    INTEGER(our_int)                :: n
 
-    !/* internals objects    */
-
-    INTEGER(our_int)    :: exp_A
-    INTEGER(our_int)    :: exp_B
-    INTEGER(our_int)    :: edu
-    INTEGER(our_int)    :: edu_lagged
-    INTEGER(our_int)    :: future_idx
+    REAL(our_dble), ALLOCATABLE     :: vv(:)
+    REAL(our_dble)				          :: dum
+    REAL(our_dble)                  :: sums
+    REAL(our_dble)                  :: aamax
 
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
 
-! Distribute state space
-exp_A = states_all(period + 1, k + 1, 1)
-exp_B = states_all(period + 1, k + 1, 2)
-edu = states_all(period + 1, k + 1, 3)
-edu_lagged = states_all(period + 1, k + 1, 4)
+    ! Auxiliary objects
+    n = SIZE(A, DIM = 1)
 
-! Working in occupation A
-future_idx = mapping_state_idx(period + 1 + 1, exp_A + 1 + 1, exp_B + 1, edu + 1, 1)
-future_payoffs(1) = emax(period + 1 + 1, future_idx + 1)
+    ! Initialize containers
+    ALLOCATE(vv(n))
 
-!Working in occupation B
-future_idx = mapping_state_idx(period + 1 + 1, exp_A + 1, exp_B + 1 + 1, edu + 1, 1)
-future_payoffs(2) = emax(period + 1 + 1, future_idx + 1)
+    ! Allocate containers
+    d = one_dble
 
-! Increasing schooling. Note that adding an additional year
-! of schooling is only possible for those that have strictly
-! less than the maximum level of additional education allowed.
-IF (edu < edu_max - edu_start) THEN
-    future_idx = mapping_state_idx(period + 1 + 1, exp_A + 1, exp_B + 1, edu + 1 + 1, 2)
-    future_payoffs(3) = emax(period + 1 + 1, future_idx + 1)
-ELSE
-    future_payoffs(3) = -HUGE(future_payoffs)
-END IF
+    ! Main
+    DO i = 1, n
 
-! Staying at home
-future_idx = mapping_state_idx(period + 1 + 1, exp_A + 1, exp_B + 1, edu + 1, 1)
-future_payoffs(4) = emax(period + 1 + 1, future_idx + 1)
+       aamax = zero_dble
+
+       DO j = 1, n
+
+          IF(abs(a(i, j)) > aamax) aamax = abs(a(i, j))
+
+       END DO
+
+       vv(i) = one_dble / aamax
+
+    END DO
+
+    DO j = 1, n
+
+       DO i = 1, (j - 1)
+    
+          sums = a(i, j)
+    
+          DO k = 1, (i - 1)
+    
+             sums = sums - a(i, k)*a(k, j)
+    
+          END DO
+    
+       a(i,j) = sums
+    
+       END DO
+    
+       aamax = zero_dble
+    
+       DO i = j, n
+
+          sums = a(i, j)
+
+          DO k = 1, (j - 1)
+
+             sums = sums - a(i, k)*a(k, j)
+
+          END DO
+
+          a(i, j) = sums
+
+          dum = vv(i) * abs(sums)
+
+          IF(dum >= aamax) THEN
+
+            imax  = i
+
+            aamax = dum
+
+          END IF
+
+       END DO
+
+       IF(j /= imax) THEN
+
+         DO k = 1, n
+
+            dum = a(imax, k)
+
+            a(imax, k) = a(j, k)
+
+            a(j, k) = dum
+
+         END DO
+
+         d = -d
+
+         vv(imax) = vv(j)
+
+       END IF
+
+       indx(j) = imax
+       
+       IF(a(j, j) == zero_dble) a(j, j) = tiny
+       
+       IF(j /= n) THEN
+       
+         dum = one_dble / a(j, j)
+       
+         DO i = (j + 1), n
+       
+            a(i, j) = a(i, j) * dum
+       
+         END DO
+       
+       END IF
+    
+    END DO
 
 END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE lubksb(A, B, indx)
+
+    !/* external objects    */
+
+    INTEGER(our_int), INTENT(IN)    :: indx(:)
+
+    REAL(our_dble), INTENT(INOUT)		:: A(:, :)
+    REAL(our_dble), INTENT(INOUT)   :: B(:)
+
+    !/* internal objects    */
+
+    INTEGER(our_int) 		            :: ii
+    INTEGER(our_int)                :: n
+    INTEGER(our_int)                :: ll
+    INTEGER(our_int)                :: j
+    INTEGER(our_int)                :: i
+
+    REAL(our_dble)			            :: sums
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    ! Auxiliary objects
+    n = SIZE(A, DIM = 1)
+
+    ! Allocate containers
+    ii = zero_dble
+
+    ! Main
+    DO i = 1, n
+    
+       ll = indx(i)
+    
+       sums = B(ll)					 
+    
+       B(ll) = B(i)
+    
+       IF(ii /= zero_dble) THEN
+    
+         DO j = ii, (i - 1)
+    
+           	sums = sums - a(i, j) * b(j)
+
+         END DO
+    
+       ELSE IF(sums /= zero_dble) THEN
+    
+         ii = i
+    
+       END IF
+    
+       b(i) = sums
+    
+    END DO
+    
+    DO i = n, 1, -1
+    
+       sums = b(i)
+    
+       DO j = (i + 1), n
+    
+          sums = sums - a(i, j) * b(j)
+    
+       END DO
+    
+       b(i) = sums / a(i, i)
+    
+    END DO
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
 END MODULE

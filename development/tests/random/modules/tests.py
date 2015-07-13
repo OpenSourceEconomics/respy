@@ -146,6 +146,9 @@ def test_D():
     constraints = dict()
     constraints['eps_zero'] = True
 
+    # The calculation of the KL does not work for this case.
+    constraints['measure'] = 'absolute'
+
     # Generate random initialization file
     generate_init(constraints)
 
@@ -206,7 +209,10 @@ def test_F():
         very, very small levels of ambiguity.
     """
     # Generate random initialization dictionary
-    init_dict = generate_random_dict()
+    constraints = dict()
+    constraints['debug'] = 'True'
+
+    init_dict = generate_random_dict(constraints)
 
     # Initialize containers
     base = None
@@ -282,7 +288,7 @@ def test_H():
     # Initialize containers
     base = None
 
-    for which in ['fast', 'slow']:
+    for which in ['slow', 'fast']:
 
         compile_package(which)
 

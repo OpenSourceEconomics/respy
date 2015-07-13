@@ -44,8 +44,6 @@ class RobupyCls(MetaCls):
 
         self.attr['ambiguity']['level'] = None
 
-        self.attr['ambiguity']['para'] = None
-
         # Results
         self.attr['emax'] = None
 
@@ -109,9 +107,6 @@ class RobupyCls(MetaCls):
 
             self.attr['ambiguity']['level'] = init_dict['AMBIGUITY'][
                 'level']
-
-            self.attr['ambiguity']['para'] = init_dict['AMBIGUITY'][
-                'para']
 
             # Update status indicator
             self.is_first = False

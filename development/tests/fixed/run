@@ -20,6 +20,32 @@ from robupy import *
 
 ''' Auxiliary functions
 '''
+def compile_package(which):
+    """ Compile toolbox
+    """
+    # Antibugging
+    assert (which in ['fast', 'slow'])
+
+    # Auxiliary objects
+    package_dir = os.environ['ROBUPY'] + '/robupy'
+    tests_dir = os.getcwd()
+
+    # Compile package
+    os.chdir(package_dir)
+
+    os.system('./waf distclean > /dev/null 2>&1')
+
+    cmd = './waf configure build'
+
+    if which == 'fast':
+        cmd += ' --fast'
+
+    cmd = cmd + ' > /dev/null 2>&1'
+
+    os.system(cmd)
+
+    os.chdir(tests_dir)
+
 def cleanup():
     """ Cleanup after test battery.
     '"""
@@ -139,10 +165,82 @@ def test_C():
 
     cleanup()
 
+def test_D():
+    """ Test the solution of model with ambiguity against hard coded results
+    to detect unwanted deviations.
+    """
+    # Relative Criterion
+    robupy_obj = read('third.robupy.ini')
+
+    robupy_obj = solve(robupy_obj)
+
+    simulate(robupy_obj)
+
+    cleanup()
+
+    # Assert unchanged value
+    assert abs(robupy_obj.get_attr('emax')[0, :1] - 48577.7790991) < 0.00000001
+
+    # Absolute Criterion
+    robupy_obj = read('fourth.robupy.ini')
+
+    robupy_obj = solve(robupy_obj)
+
+    simulate(robupy_obj)
+
+    cleanup()
+
+    # Assert unchanged value
+    assert abs(robupy_obj.get_attr('emax')[0, :1] - 18.07006519) < 0.00000001
+
+
+def test_E():
+    """ Test FORTRAN implementation of selected functions.
+    """
+
+    compile_package('fast')
+
+    # Imports
+    import robupy.fort.fortran_functions as fort
+
+    # Draw random matrix for testing purposes
+    matrix = (np.random.multivariate_normal(np.zeros(4), np.identity(4), 4))
+    cov = np.dot(matrix, matrix.T)
+
+    # Inverse
+    for _ in range(1000):
+
+        py = np.linalg.inv(cov)
+        f90 = fort.inverse(cov, 4)
+
+        np.testing.assert_allclose(py, f90, rtol=1e-06)
+
+    # Determinant
+    for _ in range(1000):
+
+        py = np.linalg.det(cov)
+        f90 = fort.determinant(cov)
+
+        np.testing.assert_allclose(py, f90, rtol=1e-06)
+
+    # Trace
+    for _ in range(1000):
+
+        py = np.trace(cov)
+        f90 = fort.trace(cov)
+
+        np.testing.assert_allclose(py, f90, rtol=1e-06)
+
 ''' Main
 '''
+np.random.seed(4536)
+
 test_A()
 
 test_B()
 
 test_C()
+
+test_D()
+
+test_E()

@@ -44,9 +44,8 @@ def generate_random_dict(constraints={}):
 
     # Ambiguity (with temporary constraints)
     dict_['AMBIGUITY'] = dict()
-    dict_['AMBIGUITY']['measure'] = 'absolute'
+    dict_['AMBIGUITY']['measure'] = np.random.choice(['absolute', 'kl'])
     dict_['AMBIGUITY']['level'] = np.random.choice([0.00, np.random.uniform()])
-    dict_['AMBIGUITY']['para'] = 'both'
 
     # Home
     dict_['HOME'] = dict()
@@ -126,6 +125,15 @@ def generate_random_dict(constraints={}):
         assert (constraints['eps_zero'] is True)
         # Replace in initialization files
         dict_['SHOCKS'] = np.zeros((4, 4))
+
+    # Ambiguity only of a particular type
+    if 'measure' in constraints.keys():
+        # Extract object
+        measure = constraints['measure']
+        # Checks
+        assert (measure in ['kl', 'absolute'])
+        # Replace in initialization files
+        dict_['AMBIGUITY']['measure'] = measure
 
     # Finishing.
     return dict_

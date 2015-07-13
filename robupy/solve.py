@@ -5,6 +5,7 @@ programming problem.
 # standard library
 import numpy as np
 import logging
+import shlex
 import os
 
 # project library
@@ -30,21 +31,21 @@ def solve(robupy_obj):
     # Distribute class attributes
     init_dict = robupy_obj.get_attr('init_dict')
 
-    delta = robupy_obj.get_attr('delta')
-
     num_periods = robupy_obj.get_attr('num_periods')
 
     num_draws = robupy_obj.get_attr('num_draws')
 
     edu_start = robupy_obj.get_attr('edu_start')
 
-    edu_max = robupy_obj.get_attr('edu_max')
+    ambiguity = robupy_obj.get_attr('ambiguity')
 
-    seed = robupy_obj.get_attr('seed')
+    edu_max = robupy_obj.get_attr('edu_max')
 
     debug = robupy_obj.get_attr('debug')
 
-    ambiguity = robupy_obj.get_attr('ambiguity')
+    delta = robupy_obj.get_attr('delta')
+
+    seed = robupy_obj.get_attr('seed')
 
     # Construct auxiliary objects
     level = ambiguity['level']
@@ -158,6 +159,10 @@ def solve(robupy_obj):
     if debug is True:
         _checks('emax', robupy_obj, states_all, states_number_period, emax,
                 period_future_payoffs)
+
+    # Summarize optimizations in case of ambiguity.
+    if debug is True and with_ambiguity:
+        _summarize_ambiguity(num_periods)
 
     # Update
     robupy_obj.unlock()
@@ -310,3 +315,79 @@ def _create_state_space(robupy_obj):
 
     # Finishing
     return states_all, states_number_period, mapping_state_idx
+
+def _summarize_ambiguity(num_periods):
+    """ Summarize optimizations in case of ambiguity.
+    """
+    def _process_cases(list_):
+        """ Process cases and determine whether keyword or empty line.
+        """
+        # Antibugging
+        assert (isinstance(list_, list))
+
+        # Get information
+        is_empty = (len(list_) == 0)
+
+        if not is_empty:
+            is_block = list_[0].isupper()
+        else:
+            is_block = False
+
+        # Antibugging
+        assert (is_block in [True, False])
+        assert (is_empty in [True, False])
+
+        # Finishing
+        return is_empty, is_block
+
+    dict_ = dict()
+
+    for line in open('ambiguity.robupy.log').readlines():
+
+        # Split line
+        list_ = shlex.split(line)
+
+        # Determine special cases
+        is_empty, is_block = _process_cases(list_)
+
+        # Applicability
+        if is_empty:
+            continue
+
+        # Prepare dictionary
+        if is_block:
+
+            period = int(list_[1])
+
+            if period in dict_.keys():
+                continue
+
+            dict_[period] = {}
+            dict_[period]['success'] = 0
+            dict_[period]['failure'] = 0
+
+        # Collect success indicator
+        if list_[0] == 'Success':
+            is_success = (list_[1] == 'True')
+            if is_success:
+                dict_[period]['success'] += 1
+            else:
+                dict_[period]['failure'] += 1
+
+    with open('ambiguity.robupy.log', 'a') as file_:
+
+        file_.write('SUMMARY\n\n')
+
+        string = '''{0[0]:>10} {0[1]:>10} {0[2]:>10} {0[3]:>10}\n'''
+
+        file_.write(string.format(['Period', 'Total', 'Success', 'Failure']))
+
+        file_.write('\n')
+
+        for period in range(num_periods):
+
+            success = dict_[period]['success']
+            failure = dict_[period]['failure']
+            total = success + failure
+
+            file_.write(string.format([period, total, success, failure]))
