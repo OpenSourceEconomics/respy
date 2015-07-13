@@ -179,7 +179,7 @@ def test_D():
     cleanup()
 
     # Assert unchanged value
-    assert abs(robupy_obj.get_attr('emax')[0, :1] - 55931.87437459) < 0.00000001
+    assert abs(robupy_obj.get_attr('emax')[0, :1] - 48577.7790991) < 0.00000001
 
     # Absolute Criterion
     robupy_obj = read('fourth.robupy.ini')
