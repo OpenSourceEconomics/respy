@@ -41,56 +41,14 @@ SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, future_payoffs, &
     INTEGER, INTENT(IN)             :: edu_max
     INTEGER, INTENT(IN)             :: edu_start
 
-    !/* internals objects    */
-
-    INTEGER(our_int)                :: i
-
-    REAL(our_dble)                  :: total_payoffs(4)
-    REAL(our_dble)                  :: maximum
-
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
 
-    ! Initialize containers
-    emax_simulated = zero_dble
-    future_payoffs = zero_dble
-
-    ! Iterate over Monte Carlo draws
-    DO i = 1, num_draws 
-
-        ! Calculate ex post payoffs
-        payoffs_ex_post(1) = payoffs_ex_ante(1) * eps_relevant(i, 1)
-        payoffs_ex_post(2) = payoffs_ex_ante(2) * eps_relevant(i, 2)
-        payoffs_ex_post(3) = payoffs_ex_ante(3) + eps_relevant(i, 3)
-        payoffs_ex_post(4) = payoffs_ex_ante(4) + eps_relevant(i, 4)
-
-        ! Check applicability
-        IF (period .EQ. (num_periods - one_int)) THEN
-
-            future_payoffs =  -HUGE(future_payoffs)
-
-        ELSE
-
-            ! Get future values
-            CALL get_future_payoffs_lib(future_payoffs, edu_max, edu_start, & 
-                    mapping_state_idx, period,  emax, k, states_all)
-
-            ! Calculate total utilities
-            total_payoffs = payoffs_ex_post + delta * future_payoffs
-
-            ! Determine optimal choice
-            maximum = MAXVAL(total_payoffs)
-
-            ! Recording expected future value
-            emax_simulated = emax_simulated + maximum
-
-        END IF
-
-    END DO
-
-    ! Scaling
-    emax_simulated = emax_simulated / num_draws
+    CALL simulate_emax_lib(emax_simulated, payoffs_ex_post, future_payoffs, & 
+                num_periods, num_draws, period, k, eps_relevant, & 
+                payoffs_ex_ante, edu_max, edu_start, emax, states_all, & 
+                mapping_state_idx, delta)
 
 END SUBROUTINE
 !******************************************************************************
@@ -156,14 +114,14 @@ SUBROUTINE get_future_payoffs(future_payoffs, edu_max, edu_start, &
 
     DOUBLE PRECISION, INTENT(OUT)   :: future_payoffs(4)
 
-    DOUBLE PRECISION, INTENT(IN)    :: emax(:,:)
+    DOUBLE PRECISION, INTENT(IN)    :: emax(:, :)
 
     INTEGER, INTENT(IN)             :: k
     INTEGER, INTENT(IN)             :: period
     INTEGER, INTENT(IN)             :: edu_max
     INTEGER, INTENT(IN)             :: edu_start
-    INTEGER, INTENT(IN)             :: states_all(:,:,:)
-    INTEGER, INTENT(IN)             :: mapping_state_idx(:,:,:,:,:)
+    INTEGER, INTENT(IN)             :: states_all(:, :,: )
+    INTEGER, INTENT(IN)             :: mapping_state_idx(:, :, :, :, :)
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -196,7 +154,7 @@ SUBROUTINE determinant(det, A)
 
     DOUBLE PRECISION, INTENT(OUT)   :: det
 
-    DOUBLE PRECISION, INTENT(IN)    :: A(:,:)
+    DOUBLE PRECISION, INTENT(IN)    :: A(:, :)
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -226,9 +184,9 @@ SUBROUTINE inverse(inv, A, n)
 
     !/* external objects    */
 
-    DOUBLE PRECISION, INTENT(OUT)   :: inv(n,n)
+    DOUBLE PRECISION, INTENT(OUT)   :: inv(n, n)
 
-    DOUBLE PRECISION, INTENT(IN)    :: A(:,:)
+    DOUBLE PRECISION, INTENT(IN)    :: A(:, :)
 
     INTEGER(our_int), INTENT(IN)    :: n
 
@@ -292,47 +250,10 @@ SUBROUTINE divergence(div, x, cov, level)
     DOUBLE PRECISION, INTENT(IN)    :: cov(4,4)
     DOUBLE PRECISION, INTENT(IN)    :: level
 
-    !/* internals objects    */
-
-    REAL(our_dble)                  :: alt_mean(4, 1) = zero_dble
-    REAL(our_dble)                  :: old_mean(4, 1) = zero_dble
-    REAL(our_dble)                  :: alt_cov(4,4)
-    REAL(our_dble)                  :: old_cov(4,4)
-    REAL(our_dble)                  :: inv_old_cov(4,4)
-    REAL(our_dble)                  :: comp_a
-    REAL(our_dble)                  :: comp_b(1, 1)
-    REAL(our_dble)                  :: comp_c
-    REAL(our_dble)                  :: rslt
-
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    ! Construct alternative distribution
-    alt_mean(1,1) = x(1)
-    alt_mean(2,1) = x(2)
-    alt_cov = cov
-
-    ! Construct baseline distribution
-    old_cov = cov
-
-    ! Construct auxiliary objects.
-    inv_old_cov = inverse_lib(old_cov, 4)
-
-    ! Calculate first component
-    comp_a = trace_fun(MATMUL(inv_old_cov, alt_cov))
-
-    ! Calculate second component
-    comp_b = MATMUL(MATMUL(TRANSPOSE(old_mean - alt_mean), inv_old_cov), &
-                old_mean - alt_mean)
-
-    ! Calculate third component
-    comp_c = LOG(det_lib(alt_cov) / det_lib(old_cov))
-
-    ! Statistic
-    rslt = half_dble * (comp_a + comp_b(1,1) - four_dble + comp_c)
-
-    ! Divergence
-    div = level - rslt
+    CALL divergence_lib(div, x, cov, level)
 
 END SUBROUTINE
