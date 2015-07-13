@@ -199,11 +199,15 @@ PURE FUNCTION trace_fun(A)
     INTEGER(our_int)                :: i
     INTEGER(our_int)                :: n
 
-    ! Initialize results
-    trace_fun = zero_dble
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
 
     ! Get dimension
     n = SIZE(A, DIM = 1)
+
+    ! Initialize results
+    trace_fun = zero_dble
 
     ! Calculate trace
     DO i = 1, n
