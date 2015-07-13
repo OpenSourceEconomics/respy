@@ -57,6 +57,29 @@ def simulate_emax_ambiguity(num_draws, eps_standard, period, k,
         opt = minimize(_criterion, x0, args, method='SLSQP', options=options,
                        constraints=constraints)
 
+        # This is not very satisfactory, but it occurs that the constraint
+        # is not satisfied, even though success is indicated. To ensure
+        # a smooth and informative run of TEST_F in the random development
+        # test battery the following checks are performed.
+        level_is_small = (level < 0.1e-10)
+        deviation_small = (np.max(x0 - opt['x']) < 10e-6)
+
+        if level_is_small and deviation_small:
+
+            opt['x'] = x0
+
+            eps_relevant = np.dot(cholesky, eps_standard.T).T
+            eps_relevant[:, :2] = eps_relevant[:, :2] + opt['x']
+            for j in [0, 1]:
+                eps_relevant[:, j] = np.exp(eps_relevant[:, j])
+
+            simulated, payoffs_ex_post, future_payoffs = \
+                perf.simulate_emax(num_periods, num_draws, period, k, eps_relevant,
+                    payoffs_ex_ante, edu_max, edu_start, emax, states_all,
+                    mapping_state_idx, delta)
+
+            opt['fun'] = simulated
+
     # Write result to file
     if debug:
         _write_result(period, k, opt)
@@ -88,7 +111,7 @@ def _prep_kl(cholesky, level):
     # Construct covariances
     cov = np.dot(cholesky, cholesky.T)
 
-    # Construct constaint
+    # Construct constraint
     constraint_divergence = dict()
 
     constraint_divergence['type'] = 'ineq'
