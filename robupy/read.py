@@ -121,9 +121,8 @@ def _process_standard(list_, dict_, keyword):
     name, val = list_[0], list_[1]
 
     # Prepare container.
-    if name not in dict_[keyword].keys():
-        if name in ['coeff']:
-            dict_[keyword][name] = []
+    if (name not in dict_[keyword].keys()) and (name in ['coeff']):
+        dict_[keyword][name] = []
 
     # Type conversion
     if name in ['agents', 'periods', 'start', 'max', 'draws', 'seed']:

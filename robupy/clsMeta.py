@@ -7,7 +7,9 @@ import pickle as pkl
 
 class MetaCls(object):
     def __init__(self):
-        pass
+        """ Initialization of hand-crafted base class.
+        """
+        self.is_locked = False
 
     ''' Meta methods.
     '''
@@ -80,14 +82,12 @@ class MetaCls(object):
         # Finishing.
         return True
 
-    def _derived_attributes(self):
+    @staticmethod
+    def derived_attributes():
         """ Calculate derived attributes.
         """
 
-        pass
-
-    def _check_integrity(self):
+    @staticmethod
+    def _check_integrity():
         """ Check integrity of class instance.
         """
-
-        pass

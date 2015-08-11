@@ -38,7 +38,8 @@ class MetaCls(object):
     file self-contained.
     """
     def __init__(self):
-
+        """ Initialization of supporting class for the MailCls.
+        """
         self.is_locked = False
 
     ''' Meta methods.
@@ -131,7 +132,8 @@ class MailCls(MetaCls):
     """
 
     def __init__(self):
-
+        """ Initialization of MailCls.
+        """
         self.attr = dict()
 
         # Constitutive attributes

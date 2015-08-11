@@ -246,4 +246,4 @@ def _format_integer(x):
 
     else:
 
-        return "%5d" % x
+        return '{0:<5}'.format(int(x))
