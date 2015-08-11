@@ -91,17 +91,17 @@ def finish(dict_, HOURS, notification):
         message = ' A ' + str(HOURS) +' hour run of the testing battery on @' + \
                   hostname + ' is completed.'
 
-        mailObj = MailCls()
+        mail_obj = MailCls()
 
-        mailObj.set_attr('subject', subject)
+        mail_obj.set_attr('subject', subject)
 
-        mailObj.set_attr('message', message)
+        mail_obj.set_attr('message', message)
 
-        mailObj.set_attr('attachment', 'logging.log')
+        mail_obj.set_attr('attachment', 'logging.log')
 
-        mailObj.lock()
+        mail_obj.lock()
 
-        mailObj.send()
+        mail_obj.send()
 
 def cleanup():
     """ Cleanup after test battery.

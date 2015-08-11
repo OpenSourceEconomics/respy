@@ -34,7 +34,9 @@ import os
 ''' Private class.
 '''
 class MetaCls(object):
-
+    """ This class is contains some methods for the MailCls. This makes the
+    file self-contained.
+    """
     def __init__(self):
 
         self.is_locked = False
@@ -124,6 +126,9 @@ class MetaCls(object):
 ''' Main Class.
 '''
 class MailCls(MetaCls):
+    """ This class is used to manage the sending of the notification after a
+    completed test run.
+    """
 
     def __init__(self):
 

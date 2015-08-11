@@ -12,22 +12,22 @@ if not hasattr(sys, 'real_prefix'):
 
 # project library
 sys.path.insert(0, os.environ['ROBUPY'])
+from robupy.tests.tests import Tests
+
 from robupy import *
 
 # project library
 from modules.auxiliary import *
-import modules.tests as lib
-from modules.random_init import *
 
 ''' Request
 '''
-label, seed = 'F', 78943
+label, seed = '8', 78943
 
 ''' Error Reproduction
 '''
 if True:
 
-    test = getattr(lib,'test_' + label)
+    test = getattr(Tests,'test_' + label)
 
     np.random.seed(seed)
 
@@ -37,7 +37,7 @@ if True:
 
     check_ambiguity_optimization()
 
-if False:
+if True:
 
     robupy_obj = read('test.robupy.ini')
 
@@ -45,49 +45,3 @@ if False:
 
     simulate(robupy_obj)
 
-
-np.random.seed(seed)
-
-def test_F():
-    """ Testing whether the risk code is identical to the ambiguity code for
-        very, very small levels of ambiguity.
-    """
-    # Generate random initialization dictionary
-    init_dict = generate_random_dict()
-
-    # Initialize containers
-    base = None
-
-    # Loop over different uncertain environments.
-    for measure in ['absolute', 'kl']:
-
-        # Set varying constraints
-        init_dict['AMBIGUITY']['level'] = 0.1e-15
-        init_dict['AMBIGUITY']['measure'] = measure
-        init_dict['COMPUTATION']['draws'] = 1
-        init_dict['COMPUTATION']['debug'] = 'True'
-
-        # Print to dictionary
-        print_random_dict(init_dict)
-
-        # Perform toolbox actions
-        robupy_obj = read('test.robupy.ini')
-
-        robupy_obj = solve(robupy_obj)
-
-        # Distribute class attributes
-        emax = robupy_obj.get_attr('emax')
-
-        if base is None:
-            base = emax.copy()
-
-        # Checks
-        np.testing.assert_allclose(base, emax, rtol=1e-06)
-
-    # Finishing
-    return True
-
-
-#compile_package('slow')
-
-#test_F()

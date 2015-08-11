@@ -235,8 +235,7 @@ def _format_float(x):
 
     else:
 
-        return "%10.2f" % x
-
+        return '{0:10.2f}'.format(x)
 
 def _format_integer(x):
     """ Format integers.
