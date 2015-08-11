@@ -6,16 +6,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="56803c1c-81e4-4070-9cf6-fc7503291db5" name="Default" comment="82333.99728503">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/package/development/tests/random/modules/tests.py" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/tests/random/modules/__init__.py" afterPath="$PROJECT_DIR$/package/development/tests/random/modules/__init__.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/__init__.py" afterPath="$PROJECT_DIR$/package/robupy/__init__.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/tests/random/modules/auxiliary.py" afterPath="$PROJECT_DIR$/package/development/tests/random/modules/auxiliary.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/tests/auxiliary.py" afterPath="$PROJECT_DIR$/package/robupy/tests/auxiliary.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/scripts/clean.py" afterPath="$PROJECT_DIR$/package/development/scripts/clean.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/tests/random/modules/clsMail.py" afterPath="$PROJECT_DIR$/package/development/tests/random/modules/clsMail.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/tests/random_init.py" afterPath="$PROJECT_DIR$/package/robupy/tests/random_init.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/tests/random/run" afterPath="$PROJECT_DIR$/package/development/tests/random/run" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/tests/tests.py" afterPath="$PROJECT_DIR$/package/robupy/tests/tests.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/keane/create.py" afterPath="$PROJECT_DIR$/package/development/keane/create.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/travis-ci/requirements.py" afterPath="$PROJECT_DIR$/package/travis-ci/requirements.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/travis-ci/run.py" afterPath="$PROJECT_DIR$/package/travis-ci/run.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/scripts/solve.py" afterPath="$PROJECT_DIR$/package/development/scripts/solve.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/solve.py" afterPath="$PROJECT_DIR$/package/robupy/solve.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/.idea/workspace.xml" afterPath="$PROJECT_DIR$/package/development/.idea/workspace.xml" />
     </list>
     <ignored path="robustToolbox.iws" />
