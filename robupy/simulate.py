@@ -189,10 +189,10 @@ def _write_info(data_frame):
 
         for t in range(num_periods):
 
-            work_A = np.sum((data_frame[2] == 0) & (data_frame[1] ==
+            work_a = np.sum((data_frame[2] == 0) & (data_frame[1] ==
                                                         t))/num_agents
 
-            work_B = np.sum((data_frame[2] == 1) & (data_frame[1] == t))/num_agents
+            work_b = np.sum((data_frame[2] == 1) & (data_frame[1] == t))/num_agents
 
             schooling = np.sum((data_frame[2] == 2) & (data_frame[1] ==
                                                            t))/num_agents
@@ -201,7 +201,7 @@ def _write_info(data_frame):
 
             string = '''{0[0]:>10}    {0[1]:10.4f} {0[2]:10.4f} {0[3]:10.4f} {0[4]:10.4f}\n'''
 
-            file_.write(string.format([(t + 1), work_A, work_B, schooling, home]))
+            file_.write(string.format([(t + 1), work_a, work_b, schooling, home]))
 
         file_.write('\n\n')
 

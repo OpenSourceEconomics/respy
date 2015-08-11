@@ -110,8 +110,8 @@ def solve(robupy_obj):
     logger.info('Staring calculation of ex ante payoffs')
 
     # Construct coefficients
-    coeffs_A = [init_dict['A']['int']] + init_dict['A']['coeff']
-    coeffs_B = [init_dict['B']['int']] + init_dict['B']['coeff']
+    coeffs_a = [init_dict['A']['int']] + init_dict['A']['coeff']
+    coeffs_b = [init_dict['B']['int']] + init_dict['B']['coeff']
 
     coeffs_edu = [init_dict['EDUCATION']['int']] + init_dict['EDUCATION'][
         'coeff']
@@ -120,8 +120,8 @@ def solve(robupy_obj):
     period_payoffs_ex_ante = perf.calculate_payoffs_ex_ante(num_periods,
                                                             states_number_period,
                                                             states_all,
-                                                            edu_start, coeffs_A,
-                                                            coeffs_B,
+                                                            edu_start, coeffs_a,
+                                                            coeffs_b,
                                                             coeffs_edu,
                                                             coeffs_home,
                                                             max_states_period)
