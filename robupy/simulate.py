@@ -221,7 +221,7 @@ def _write_out(data_frame):
 
     formats += [_format_integer, _format_integer]
 
-    with open('data.robupy.dat', 'w', newline='') as file_:
+    with open('data.robupy.dat', 'w') as file_:
 
         data_frame.to_string(file_, index=False, header=None, na_rep='.',
                      formatters=formats)

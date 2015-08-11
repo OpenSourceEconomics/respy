@@ -10,4 +10,5 @@ sign up for our mailing list [here](http://eepurl.com/RStEH). Please feel free t
 #### Quality Assurance
 
 [![Build Status](https://travis-ci.org/robustToolbox/package.svg?branch=master)](https://travis-ci.org/robustToolbox/package)
+[![Coverage Status](https://coveralls.io/repos/peisenha/robustToolbox/badge.svg?branch=development&service=github)](https://coveralls.io/github/peisenha/robustToolbox?branch=development)
 [![Codacy Badge](https://www.codacy.com/project/badge/19e3f4eeb62e435ebd3f078fcae89cdb)](https://www.codacy.com/app/eisenhauer/robustToolbox_package)
