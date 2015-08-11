@@ -13,6 +13,7 @@ from robupy.solve import solve as robupy_solve
 from robupy.simulate import simulate as robupy_simulate
 from robupy.read import read
 
+
 def _distribute_inputs(parser):
     """ Process input arguments.
     """
@@ -32,6 +33,7 @@ def _distribute_inputs(parser):
     # Finishing.
     return model, solution, simulate
 
+
 def solve(model, solution, simulate):
     """ Solve the dynamic programming model.
     """
@@ -48,12 +50,13 @@ def solve(model, solution, simulate):
     if simulate:
         robupy_simulate(robupy_obj)
 
+
 ''' Execution of module as script.
 '''
 if __name__ == '__main__':
-
-    parser = argparse.ArgumentParser(description='Solve dynamic discrete choice model.',
-        formatter_class = argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description='Solve dynamic discrete choice model.',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('--model', action='store', dest='model',
                         default='model.robupy.ini',

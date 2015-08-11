@@ -8,9 +8,7 @@ by Michael Keane and Kenneth Wolpin in The Review of Economics and Statistics.
 # standard library
 import os
 
-
 for dir_ in ['one', 'two', 'three']:
-
     os.chdir('data_' + dir_)
 
     os.system('robupy-clean &')

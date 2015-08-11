@@ -112,12 +112,18 @@ def solve(robupy_obj):
     coeffs_A = [init_dict['A']['int']] + init_dict['A']['coeff']
     coeffs_B = [init_dict['B']['int']] + init_dict['B']['coeff']
 
-    coeffs_edu = [init_dict['EDUCATION']['int']] + init_dict['EDUCATION']['coeff']
+    coeffs_edu = [init_dict['EDUCATION']['int']] + init_dict['EDUCATION'][
+        'coeff']
     coeffs_home = [init_dict['HOME']['int']]
 
     period_payoffs_ex_ante = perf.calculate_payoffs_ex_ante(num_periods,
-                states_number_period, states_all, edu_start, coeffs_A,
-                coeffs_B, coeffs_edu, coeffs_home, max_states_period)
+                                                            states_number_period,
+                                                            states_all,
+                                                            edu_start, coeffs_A,
+                                                            coeffs_B,
+                                                            coeffs_edu,
+                                                            coeffs_home,
+                                                            max_states_period)
 
     # Logging
     logger.info('... finished \n')
@@ -135,15 +141,16 @@ def solve(robupy_obj):
 
         # Loop over all possible states
         for k in range(states_number_period[period]):
-
             # Extract payoffs
             payoffs_ex_ante = period_payoffs_ex_ante[period, k, :]
 
             # Simulate the expected future value.
             emax_simulated, payoffs_ex_post, future_payoffs = \
                 simulate_emax(num_draws, eps_relevant, period, k,
-                    payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,
-                    states_all, num_periods, emax, delta, debug, ambiguity_args)
+                              payoffs_ex_ante, edu_max, edu_start,
+                              mapping_state_idx,
+                              states_all, num_periods, emax, delta, debug,
+                              ambiguity_args)
 
             # Collect information
             period_payoffs_ex_post[period, k, :] = payoffs_ex_post
@@ -194,6 +201,7 @@ def solve(robupy_obj):
 ''' Private functions
 '''
 
+
 def _create_eps(seed, num_periods, num_draws, init_dict):
     """ Create disturbances.
     """
@@ -201,7 +209,9 @@ def _create_eps(seed, num_periods, num_draws, init_dict):
     np.random.seed(seed)
 
     eps_standard_periods = np.random.multivariate_normal(np.zeros(4),
-                                np.identity(4), (num_periods, num_draws))
+                                                         np.identity(4), (
+                                                             num_periods,
+                                                             num_draws))
 
     # Check for special case
     all_zeros = (np.count_nonzero(init_dict['SHOCKS']) == 0)
@@ -242,7 +252,8 @@ def _create_state_space(robupy_obj):
     # Array for the mapping of state space values to indices in variety
     # of matrices.
     mapping_state_idx = np.tile(np.nan, (num_periods, num_periods, num_periods,
-                            min(num_periods, (edu_max - edu_start + 1)), 2))
+                                         min(num_periods,
+                                             (edu_max - edu_start + 1)), 2))
 
     # Construct state space by periods
     for period in range(num_periods):
@@ -316,9 +327,11 @@ def _create_state_space(robupy_obj):
     # Finishing
     return states_all, states_number_period, mapping_state_idx
 
+
 def _summarize_ambiguity(num_periods):
     """ Summarize optimizations in case of ambiguity.
     """
+
     def _process_cases(list_):
         """ Process cases and determine whether keyword or empty line.
         """
@@ -385,7 +398,6 @@ def _summarize_ambiguity(num_periods):
         file_.write('\n')
 
         for period in range(num_periods):
-
             success = dict_[period]['success']
             failure = dict_[period]['failure']
             total = success + failure

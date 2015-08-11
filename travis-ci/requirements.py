@@ -12,5 +12,4 @@ packages = ['build-essential', 'gfortran', 'python3-pip', 'python-pip', 'git',
             'libevent-dev']
 
 for package in packages:
-
     os.system('sudo apt-get install -y ' + package)
