@@ -21,7 +21,7 @@ from modules.random_init import *
 
 ''' Request
 '''
-label, seed = 'F', 91363
+label, seed = 'F', 78943
 
 ''' Error Reproduction
 '''

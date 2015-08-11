@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 """ Script to start development test battery for the ROBUPY package.
+
+    TODO: The testing routine does not account for problems in the
+    optimization of the ambiguity step.
+
 """
 
 # standard library
@@ -72,9 +76,6 @@ def run(hours):
         try:
 
             test()
-
-            # Check success of ambiguity optimizations
-            check_ambiguity_optimization()
 
             dict_[label]['success'] += 1
 
