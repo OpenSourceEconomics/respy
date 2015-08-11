@@ -18,12 +18,14 @@ import random
 import sys
 import os
 
-# project library
-from modules.auxiliary import *
+# project
+from modules.auxiliary import compile_package, cleanup, distribute_input
+from modules.auxiliary import start_logging, finish
+import modules.battery as development_tests
 
 # ROBUPY import
 sys.path.insert(0, os.environ['ROBUPY'])
-from robupy.tests.tests import Tests
+from robupy.tests.tests import Tests as package_tests
 
 # virtual environment
 if not hasattr(sys, 'real_prefix'):
@@ -39,12 +41,17 @@ def run(hours):
 
     start, timeout = datetime.now(), timedelta(hours=hours)
 
-    labels = ['1', '2', '3', '4', '5', '6', '7', '8']
+    package_labels = ['1', '2', '3', '4', '5', '6', '7']
+
+    development_labels = ['99']
+
+    labels = package_labels + development_labels
 
     # Initialize counter.
     dict_ = dict()
 
     for label in labels:
+
         dict_[label] = dict()
 
         dict_[label]['success'] = 0
@@ -67,8 +74,10 @@ def run(hours):
 
         # Setup of test case.
         label = np.random.choice(labels)
-
-        test = getattr(Tests, 'test_' + label)
+        if label in development_labels:
+            test = getattr(development_tests, 'test_' + label)
+        else:
+            test = getattr(package_tests, 'test_' + label)
 
         # Set seed.
         seed = random.randrange(1, 100000)

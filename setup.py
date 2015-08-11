@@ -4,7 +4,7 @@ setup(
   packages = ['robupy', 'robupy.checks', 'robupy.fort', 'robupy.tests'], # this
   # must be the same as the name above
     package_data = {'robupy': ['fort/*.f90'],},
-  version = '0.1.2',
+  version = '0.1.3',
   description = 'Toolbox to explore robust dynamic discrete choice model',
   author = 'Philipp Eisenhauer',
   author_email = 'eisenhauer@policy-lab.org',

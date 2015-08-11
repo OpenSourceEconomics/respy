@@ -2,8 +2,6 @@
 """
 
 # standard library
-from pandas.util.testing import assert_frame_equal
-import pandas as pd
 import numpy as np
 import shutil
 import glob
@@ -13,7 +11,6 @@ import os
 # project library
 from robupy.tests.random_init import generate_init, generate_random_dict
 from robupy.tests.random_init import print_random_dict
-from robupy.tests.auxiliary import compile_package
 
 # module variables
 FILE_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -334,29 +331,3 @@ class Tests(object):
             # Checks
             np.testing.assert_allclose(base, ex_ante)
 
-    @staticmethod
-    def test_8():
-        """ Testing whether the results from a fast and slow execution of the
-        code result in identical simulate datasets.
-        """
-        # Generate random initialization
-        generate_init()
-
-        # Initialize containers
-        base = None
-
-        for which in ['slow', 'fast']:
-
-            compile_package(which)
-
-            # Simulate the ROBUPY package
-            os.system('robupy-solve --simulate --model test.robupy.ini')
-
-            # Load simulated data frame
-            data_frame = pd.read_csv('data.robupy.dat')
-
-            # Compare
-            if base is None:
-                base = data_frame.copy()
-
-            assert_frame_equal(base, data_frame)
