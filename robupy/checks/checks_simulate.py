@@ -1,4 +1,5 @@
-""" This module contains some additional checks related to the simulation of the model..
+""" This module contains some additional checks related to the simulation of
+the model..
 """
 
 # standard library
@@ -6,8 +7,9 @@ import numpy as np
 import pandas as pd
 
 
-def _checks(str_, robupy_obj, *args):
-    """ This checks the integrity of the objects related to the solution of the model.
+def checks(str_, robupy_obj, *args):
+    """ This checks the integrity of the objects related to the solution of
+    the model.
     """
 
     # Distribute class attributes
@@ -21,7 +23,7 @@ def _checks(str_, robupy_obj, *args):
     if str_ == 'data_frame':
 
         # Distribute input parameters
-        data_frame,  = args
+        data_frame, = args
 
         # Check dimension of data frame
         assert (data_frame.shape == (num_periods * num_agents, 8))
@@ -35,11 +37,13 @@ def _checks(str_, robupy_obj, *args):
             assert (data_frame.count(axis=0)[i] == (num_periods * num_agents))
 
         # Check that the maximum number of values are valid
-        for i, max_ in enumerate([num_agents, num_periods, 3, num_periods, num_periods, num_periods,
-                                 edu_max - edu_start, 1]):
+        for i, max_ in enumerate(
+                [num_agents, num_periods, 3, num_periods, num_periods,
+                 num_periods,
+                 edu_max - edu_start, 1]):
             # Agent and time index
             if i in [0, 1]:
-               assert (data_frame.max(axis=0)[i] == (max_ - 1))
+                assert (data_frame.max(axis=0)[i] == (max_ - 1))
             # Choice observation
             if i == 2:
                 assert (data_frame.max(axis=0)[i] <= max_)

@@ -5,7 +5,8 @@
 # standard library
 import numpy as np
 
-def _checks(str_, *args):
+
+def checks(str_, *args):
     """ This checks the integrity of the objects related to the
         solution of the model.
     """
@@ -13,7 +14,7 @@ def _checks(str_, *args):
     if str_ == '_get_start':
 
         # Distribute input parameters
-        x0,  = args
+        x0, = args
 
         # Check quality of starting values
         assert (len(x0) == 2)

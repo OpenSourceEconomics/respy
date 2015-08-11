@@ -30,7 +30,7 @@ def update():
 
             os.chdir('../')
 
-        except:
+        except Exception:
 
             pass
 

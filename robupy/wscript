@@ -51,7 +51,7 @@ def distclean(dst):
 
         remove_for_distclean(glob.glob('.waf3-*')[0])
 
-    except:
+    except Exception:
 
         pass
 
@@ -94,4 +94,5 @@ def remove_filetypes_distclean(path):
 
     for dirName, _, _ in os.walk('.'):
 
-        if('__pycache__' in dirName): shutil.rmtree(dirName)
+        if '__pycache__' in dirName:
+            shutil.rmtree(dirName)

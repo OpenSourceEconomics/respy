@@ -7,7 +7,7 @@ from scipy.optimize import minimize
 import numpy as np
 
 # project library
-from robupy.checks._checks_ambiguity import _checks
+from robupy.checks.checks_ambiguity import checks
 import robupy.fort.performance as perf
 
 # module wide variables
@@ -84,7 +84,7 @@ def simulate_emax_ambiguity(num_draws, eps_standard, period, k,
 
     # Debugging
     if debug is True:
-        _checks('simulate_emax_ambiguity', simulated, opt)
+        checks('simulate_emax_ambiguity', simulated, opt)
 
     # Finishing
     return simulated, payoffs_ex_post, future_payoffs
@@ -183,7 +183,7 @@ def _criterion(x, num_draws, eps_standard, period, k, payoffs_ex_ante, edu_max,
                         emax, states_all, mapping_state_idx, delta)
     # Debugging
     if debug is True:
-        _checks('_criterion', simulated)
+        checks('_criterion', simulated)
 
     # Finishing
     return simulated
@@ -214,7 +214,7 @@ def _get_start(debug):
 
     # Debugging
     if debug is True:
-        _checks('_get_start', x0)
+        checks('_get_start', x0)
 
     # Finishing
     return x0
@@ -230,7 +230,7 @@ def _prep_absolute(ambiguity, debug):
 
     # Debugging
     if debug is True:
-        _checks('_prep_absolute', bounds)
+        checks('_prep_absolute', bounds)
 
     # Finishing
     return bounds

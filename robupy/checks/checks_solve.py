@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 
 
-def _checks(str_, robupy_obj, *args):
+def checks(str_, robupy_obj, *args):
     """ This checks the integrity of the objects related to the solution of the model.
     """
 
@@ -20,7 +20,7 @@ def _checks(str_, robupy_obj, *args):
     if str_ == 'state_space':
 
         # Distribute input parameters
-        states_all, states_number_period, mapping_state_idx,  = args
+        states_all, states_number_period, mapping_state_idx, = args
 
         # If the agent never increased their level of education,
         # the lagged education variable cannot take a value
@@ -45,24 +45,29 @@ def _checks(str_, robupy_obj, *args):
             assert (np.nanmin(states_all[period, :, :3]) == 0)
 
         # All finite values have to be larger or equal to zero.
-        # The loop is required as np.all evalutes to FALSE
+        # The loop is required as np.all evaluates to FALSE
         # for this condition (see NUMPY documentation).
         for period in range(num_periods):
-            assert (np.all(states_all[period, :states_number_period[period]] >= 0))
+            assert (
+                np.all(states_all[period, :states_number_period[period]] >= 0))
 
         # The maximum number of additional education years is never
         # larger than (EDU_MAX - EDU_START).
         for period in range(num_periods):
-            assert (np.nanmax(states_all[period, :, :][:, 2], axis=0) <= (edu_max - edu_start))
+            assert (np.nanmax(states_all[period, :, :][:, 2], axis=0) <= (
+                edu_max - edu_start))
 
         # Check for duplicate rows in each period
         for period in range(num_periods):
-            assert (np.sum(pd.DataFrame(states_all[period, :states_number_period[period], :]).duplicated()) == 0)
+            assert (np.sum(pd.DataFrame(
+                states_all[period, :states_number_period[period],
+                :]).duplicated()) == 0)
 
         # Checking validity of state space values. All valid
         # values need to be finite.
         for period in range(num_periods):
-            assert (np.all(np.isfinite(states_all[period, :states_number_period[period]])))
+            assert (np.all(
+                np.isfinite(states_all[period, :states_number_period[period]])))
 
         # There are no infinite values in final period.
         assert (np.all(np.isfinite(states_all[(num_periods - 1), :, :])))
@@ -83,13 +88,17 @@ def _checks(str_, robupy_obj, *args):
             indices = states_all[period, :states_number_period[period], :]
             for index in indices:
                 # Check for finite value at admissible state
-                assert (np.isfinite(mapping_state_idx[period, index[0], index[1], index[2], index[3]]))
+                assert (np.isfinite(mapping_state_idx[
+                                        period, index[0], index[1], index[2],
+                                        index[3]]))
                 # Record finite value
-                is_infinite[period, index[0], index[1], index[2], index[3]] = True
+                is_infinite[
+                    period, index[0], index[1], index[2], index[3]] = True
         # Check that all admissible states are finite
         assert (np.all(np.isfinite(mapping_state_idx[is_infinite == True])))
         # Check that all inadmissible states are infinite
-        assert (np.all(np.isfinite(mapping_state_idx[is_infinite == False])) == False)
+        assert (
+            np.all(np.isfinite(mapping_state_idx[is_infinite == False])) == False)
 
     # Check the ex ante period payoffs
     elif str_ == 'period_payoffs_ex_ante':
@@ -105,13 +114,16 @@ def _checks(str_, robupy_obj, *args):
                 # Check that wages are all positive
                 assert (np.all(period_payoffs_ex_ante[period, k, :2] > 0.0))
                 # Check for finite value at admissible state
-                assert (np.all(np.isfinite(period_payoffs_ex_ante[period, k, :])))
+                assert (
+                    np.all(np.isfinite(period_payoffs_ex_ante[period, k, :])))
                 # Record finite value
                 is_infinite[period, k, :] = True
             # Check that all admissible states are finite
-            assert (np.all(np.isfinite(period_payoffs_ex_ante[is_infinite == True])))
+            assert (
+                np.all(np.isfinite(period_payoffs_ex_ante[is_infinite == True])))
             # Check that all inadmissible states are infinite
-            assert (np.all(np.isfinite(period_payoffs_ex_ante[is_infinite == False])) == False)
+            assert (np.all(np.isfinite(
+                period_payoffs_ex_ante[is_infinite == False])) == False)
 
     # Check the ex ante period payoffs and its ingredients
     elif str_ == 'emax':
@@ -134,7 +146,8 @@ def _checks(str_, robupy_obj, *args):
             if num_periods == 1:
                 assert (len(emax[is_infinite == False]) == 0)
             else:
-                assert (np.all(np.isfinite(emax[is_infinite == False])) == False)
+                assert (
+                    np.all(np.isfinite(emax[is_infinite == False])) == False)
 
         # Check that the payoffs are finite for all admissible values and infinite for all others.
         for period in range(num_periods - 1):

@@ -36,8 +36,8 @@ def start_logging():
     logger.addHandler(fh)
 
 def distribute_input(parser):
-    ''' Check input for estimation script.
-    '''
+    """ Check input for estimation script.
+    """
     # Parse arguments.
     args = parser.parse_args()
 

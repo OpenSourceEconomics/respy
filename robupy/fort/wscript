@@ -5,17 +5,16 @@ import fnmatch
 import shutil
 import os
 
-def build(bld):
 
+def build(bld):
     bld(rule=pre_build)
 
     compiler_options = '-fbounds-check -Wunused -fPIC'
 
-    files = ['robupy_program_constants.f90', 'robupy_auxiliiary.f90',
+    files = ['robupy_program_constants.f90', 'robupy_auxiliary.f90',
              'robupy_main.f90']
 
     for file_ in files:
-
         bld.add_group()
 
         bld(features='fc', source=file_, fcflags=compiler_options)
@@ -33,8 +32,11 @@ def build(bld):
 
     bld(rule=f2py_call)
 
+
 ''' Auxiliary functions.
 '''
+
+
 def pre_build(self):
     """ Create the include and library directory to store the library and
         compiled files if not yet present.
@@ -53,6 +55,7 @@ def pre_build(self):
 
             pass
 
+
 def post_build(self):
     """ Copy the resulting library from the build directory to the working
         directory.
@@ -64,7 +67,6 @@ def post_build(self):
     target = 'include'
 
     for i in range(len(mod_files)):
-
         mod_files[i] = project_root + '/.bld/' + mod_files[i]
 
         shutil.copy(mod_files[i], target)
@@ -75,10 +77,12 @@ def post_build(self):
 
     shutil.copy(source, target)
 
+
 def f2py_call(self):
     """ Create the interface to f90_main using f2py.
     """
-    os.system('f2py3 -c -m  fortran_functions fortran_functions.f90 -Iinclude -Llib -lfort_robupy')
+    os.system(
+        'f2py3 -c -m  fortran_functions fortran_functions.f90 -Iinclude -Llib -lfort_robupy')
 
     # Cleanup
     for dir_ in ['include', 'lib']:

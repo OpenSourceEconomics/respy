@@ -11,6 +11,8 @@ REPOS = ['development', 'package']
 
 ''' Functions
 '''
+
+
 def update():
     """ Update all remote repositories.
     """
@@ -34,9 +36,9 @@ def update():
 '''
 if __name__ == '__main__':
 
-    parser  = argparse.ArgumentParser(description = \
+    parser = argparse.ArgumentParser(description=\
         'Update all remote repositories.',
-        formatter_class = argparse.ArgumentDefaultsHelpFormatter)
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     args = parser.parse_args()
 

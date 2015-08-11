@@ -32,7 +32,7 @@ def push():
 
             os.chdir('../')
 
-        except:
+        except Exception:
 
             pass
 

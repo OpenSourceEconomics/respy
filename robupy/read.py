@@ -242,7 +242,7 @@ def _check_integrity_read(dict_):
     assert (np.isfinite(dict_['AMBIGUITY']['level']))
 
     # Temporary restrictions
-    assert ((dict_['AMBIGUITY']['level'] >= 0.00))
+    assert (dict_['AMBIGUITY']['level'] >= 0.00)
     assert (dict_['AMBIGUITY']['measure'] in ['absolute', 'kl'])
 
     # Finishing

@@ -17,7 +17,7 @@ os.system('python run')
 
 os.chdir(HOME)
 
-''' Run randon test battery
+''' Run random test battery
 '''
 os.chdir('random')
 

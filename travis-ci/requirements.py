@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-""" Script that prepare the virtual machine for the installation of SciPy and Pandas.
+""" Script that prepare the virtual machine for the installation of SciPy
+and Pandas.
 """
 
 # standard library

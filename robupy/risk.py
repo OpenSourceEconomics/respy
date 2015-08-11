@@ -6,7 +6,7 @@
 import numpy as np
 
 # project library
-from robupy.checks._checks_risk import _checks
+from robupy.checks.checks_risk import checks
 
 import robupy.fort.performance as perf
 
@@ -21,7 +21,7 @@ def simulate_emax_risk(num_draws, eps_baseline, period,
     """
     # Check input parameters
     if debug is True:
-        _checks('simulate_emax_risk', ambiguity_args)
+        checks('simulate_emax_risk', ambiguity_args)
 
     # Transformation of standard normal deviates to relevant distributions.
     eps_relevant = eps_baseline.copy()

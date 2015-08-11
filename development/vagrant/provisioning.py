@@ -52,7 +52,7 @@ if 'virtualenvwrapper' not in open(GUEST + '/.profile').read():
     
     with open(GUEST + '/.profile', 'a+') as file_:
 
-        file_.write('\n' + 'export WORKON_HOME=' + GUEST +'/.envs')
+        file_.write('\n' + 'export WORKON_HOME=' + GUEST + '/.envs')
 
         file_.write('\n' + 'source /usr/local/bin/virtualenvwrapper.sh')
 

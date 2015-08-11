@@ -1,4 +1,4 @@
-""" This module contains some additional checks related to soliving the
+""" This module contains some additional checks related to solving the
 model under the presence of risk
 """
 
@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 
 
-def _checks(str_, *args):
+def checks(str_, *args):
     """ This checks the integrity of the objects related to the solution of
     the model under risk.
     """
@@ -15,10 +15,10 @@ def _checks(str_, *args):
     if str_ == 'simulate_emax_risk':
 
         # Distribute arguments
-        ambigutiy_args, = args
+        ambiguity_args, = args
 
         # Checks
-        assert (ambigutiy_args is None)
+        assert (ambiguity_args is None)
 
     else:
 
