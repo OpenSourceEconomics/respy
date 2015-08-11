@@ -5,13 +5,15 @@
 from pandas.util.testing import assert_frame_equal
 import pandas as pd
 import numpy as np
+import shutil
 import glob
 import sys
 import os
 
 # project library
-from robupy.tests.random_init import *
-from robupy.tests.auxiliary import *
+from robupy.tests.random_init import generate_init, generate_random_dict
+from robupy.tests.random_init import print_random_dict
+from robupy.tests.auxiliary import compile_package
 
 # module variables
 FILE_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -21,10 +23,11 @@ TEST_PATH = os.getcwd()
 dir_ = FILE_PATH.replace('/tests', '')
 sys.path.insert(0, dir_)
 
-from robupy import *
+from robupy import read, solve, simulate
 
 ''' Test class.
 '''
+
 
 class Tests(object):
     """ Test class.
@@ -85,13 +88,13 @@ class Tests(object):
             except OSError:
 
                 pass
+
     @staticmethod
     def test_1():
         """ Testing whether ten random initialization file can be
         solved and simulated.
         """
         for i in range(10):
-
             # Generate random initialization file
             generate_init()
 
@@ -176,7 +179,6 @@ class Tests(object):
         in the payoffs
         """
         for i in range(10):
-
             # Generate constraint periods
             constraints = dict()
             constraints['eps_zero'] = True
@@ -195,7 +197,8 @@ class Tests(object):
             ex_post = robupy_obj.get_attr('period_payoffs_ex_post')
 
             # Check
-            assert (np.ma.all(np.ma.masked_invalid(ex_ante) == np.ma.masked_invalid(ex_post)))
+            assert (np.ma.all(
+                np.ma.masked_invalid(ex_ante) == np.ma.masked_invalid(ex_post)))
 
     @staticmethod
     def test_4():
@@ -253,7 +256,6 @@ class Tests(object):
         and read.
         """
         for i in range(1000):
-
             # Generate random initialization file
             generate_init()
 
@@ -312,7 +314,8 @@ class Tests(object):
         for _ in range(5):
 
             # Set varying constraints
-            init_dict['AMBIGUITY']['level'] = np.random.choice([0.00, np.random.uniform()])
+            init_dict['AMBIGUITY']['level'] = np.random.choice(
+                [0.00, np.random.uniform()])
 
             # Print to dictionary
             print_random_dict(init_dict)
@@ -333,7 +336,8 @@ class Tests(object):
 
     @staticmethod
     def test_8():
-        """ Testing whether the results from a fast and slow execution of the code result in identical simulate datasets.
+        """ Testing whether the results from a fast and slow execution of the
+        code result in identical simulate datasets.
         """
         # Generate random initialization
         generate_init()

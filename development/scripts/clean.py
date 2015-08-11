@@ -33,7 +33,7 @@ def remove_nuisances():
             matches.append(os.path.join(root, filename))
 
         for file_types in ['*.robupy.*', '.lock-waf_linux_build',
-                           '*.so']:
+                           '*.so', '.coverage']:
 
             for filename in fnmatch.filter(file_names, file_types):
                 matches.append(os.path.join(root, filename))

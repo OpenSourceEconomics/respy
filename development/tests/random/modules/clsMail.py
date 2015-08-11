@@ -1,6 +1,5 @@
-''' This module holds the class for mailing capabilities. A file with the
-    log in credentials is required in its directory.
-
+""" This module holds the class for mailing capabilities. A file with the
+    log in credentials is required in the HOME directory.
 
     Example Usage:
 
@@ -17,11 +16,11 @@
 
         mailObj.send()
 
-'''
+"""
 
 # standard library
-from email.mime.multipart   import MIMEMultipart
-from email.mime.text        import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 import pickle as pkl
 
@@ -34,198 +33,189 @@ import os
 
 ''' Private class.
 '''
-class _meta(object):
+class MetaCls(object):
 
     def __init__(self):
 
-        pass
+        self.is_locked = False
 
     ''' Meta methods.
     '''
-    def getStatus(self):
-        ''' Get status of class instance.
-        '''
+    def get_status(self):
+        """ Get status of class instance.
+        """
 
-        return self.isLocked
+        return self.is_locked
 
     def lock(self):
-        ''' Lock class instance.
-        '''
-        # Antibugging.
-        assert (self.getStatus() == False)
+        """ Lock class instance.
+        """
+        # Antibugging
+        assert (self.get_status() is False)
 
-        # Update class attributes.
-        self.isLocked = True
+        # Update class attributes
+        self.is_locked = True
 
-        # Finalize.
-        self._derivedAttributes()
+        # Finalize
+        self._derived_attributes()
 
-        self._checkIntegrity()
+        self._check_integrity()
 
     def unlock(self):
-        ''' Unlock class instance.
-        '''
-        # Antibugging.
-        assert (self.getStatus() == True)
+        """ Unlock class instance.
+        """
+        # Antibugging
+        assert (self.get_status() is True)
 
-        # Update class attributes.
-        self.isLocked = False
+        # Update class attributes
+        self.is_locked = False
 
-    def getAttr(self, key, deep = False):
-        ''' Get attributes.
-        '''
-        # Antibugging.
-        assert (self.getStatus() == True)
+    def get_attr(self, key, deep=False):
+        """ Get attributes.
+        """
+        # Antibugging
+        assert (self.get_status() is True)
         assert (deep in [True, False])
 
-        # Copy requested object.
-        if(deep):
-
+        # Copy requested object
+        if deep:
             attr = copy.deepcopy(self.attr[key])
-
         else:
-
             attr = self.attr[key]
 
         # Finishing.
         return attr
 
-    def setAttr(self, key, value, deep = False):
-        ''' Get attributes.
-        '''
-        # Antibugging.
-        assert (self.getStatus() == False)
+    def set_attr(self, key, value, deep=False):
+        """ Get attributes.
+        """
+        # Antibugging
+        assert (self.get_status() is False)
         assert (key in self.attr.keys())
 
-        # Copy requested object.
-        if(deep):
-
+        # Copy requested object
+        if deep:
             attr = copy.deepcopy(value)
-
         else:
-
             attr = value
 
-        # Finishing.
+        # Finishing
         self.attr[key] = attr
 
-    def _derivedAttributes(self):
-        ''' Calculate derived attributes.
-        '''
+    @staticmethod
+    def _derived_attributes():
+        """ Calculate derived attributes.
+        """
+    @staticmethod
+    def _check_integrity():
+        """ Check integrity of class instance.
+        """
 
-        pass
+    def store(self, file_name):
+        """ Store class instance.
+        """
+        # Antibugging
+        assert (self.get_status() is True)
+        assert (isinstance(file_name, str))
 
-    def _checkIntegrity(self):
-        ''' Check integrity of class instance.
-        '''
-
-        pass
-
-    def store(self, fileName):
-        ''' Store class instance.
-        '''
-        # Antibugging.
-        assert (self.getStatus() == True)
-        assert (isinstance(fileName, str))
-
-        # Store.
-        pkl.dump(self, open(fileName, 'wb'))
+        # Store
+        pkl.dump(self, open(file_name, 'wb'))
 
 ''' Main Class.
 '''
-class mailCls(_meta):
+class MailCls(MetaCls):
 
     def __init__(self):
 
-        self.attr = {}
+        self.attr = dict()
 
-        # Constitutive attributes.
+        # Constitutive attributes
         self.attr['subject'] = None
 
         self.attr['message'] = None
 
         self.attr['attachment'] = None
 
-        # Setup.
-        self.attr['sender']    = socket.gethostname()
+        # Setup
+        self.attr['sender'] = socket.gethostname()
 
         self.attr['recipient'] = 'eisenhauer@policy-lab.org'
 
-        # Derived attributes.
+        # Derived attributes
         self.attr['username'] = None
 
         self.attr['password'] = None
 
-        # Status indicator.
-        self.isLocked = False
+        # Status indicator
+        self.is_locked = False
 
     ''' Public methods.
     '''
     def send(self):
-        ''' Send message.
-        '''
-        # Antibugging.
-        assert (self.getStatus() == True)
+        """ Send message.
+        """
+        # Antibugging
+        assert (self.get_status() is True)
 
-        # Distribute class attributes.
-        subject    = self.attr['subject']
+        # Distribute class attributes
+        subject = self.attr['subject']
 
-        message    = self.attr['message']
+        message = self.attr['message']
 
-        sender     = self.attr['sender']
+        sender = self.attr['sender']
 
-        recipient  = self.attr['recipient']
+        recipient = self.attr['recipient']
 
-        username   = self.attr['username']
+        username = self.attr['username']
 
-        password   = self.attr['password']
+        password = self.attr['password']
 
         attachment = self.attr['attachment']
 
-        # Connect to Gmail.
+        # Connect to gmail
         server = smtplib.SMTP('smtp.gmail.com:587')
 
         server.starttls()
 
         server.login(username, password)
 
-        # Formatting.
+        # Formatting
         msg = MIMEMultipart('alternative')
 
         msg['Subject'], msg['From'] = subject, sender
 
-        # Attachment.
+        # Attachment
         f = open(attachment, 'r')
 
         attached = MIMEText(f.read())
 
-        attached.add_header('Content-Disposition', 'attachment', filename = attachment)
+        attached.add_header('Content-Disposition', 'attachment', filename=attachment)
 
         msg.attach(attached)
 
-        # Message.
+        # Message
         message = MIMEText(message, 'plain')
 
         msg.attach(message)
 
-        # Send.
+        # Send
         server.sendmail(sender, recipient, msg.as_string())
 
-        # Disconnect.
+        # Disconnect
         server.quit()
 
     ''' Private methods.
     '''
-    def _derivedAttributes(self):
-        ''' Construct derived attributes.
-        '''
+    def _derived_attributes(self):
+        """ Construct derived attributes.
+        """
         # Antibugging
-        assert (self.getStatus() == True)
+        assert (self.get_status() is True)
 
-        # Check availability.
+        # Check availability
         assert (self.attr['message'] is not None)
 
-        # Process credentials.
+        # Process credentials
         dict_ = json.load(open(os.environ['HOME'] + '/.credentials'))
 
         self.attr['username'] = dict_['username']

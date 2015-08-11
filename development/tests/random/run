@@ -20,7 +20,10 @@ import os
 
 # project library
 from modules.auxiliary import *
-import modules.tests as lib
+
+# ROBUPY import
+sys.path.insert(0, os.environ['ROBUPY'])
+from robupy.tests.tests import Tests
 
 # virtual environment
 if not hasattr(sys, 'real_prefix'):
@@ -36,13 +39,12 @@ def run(hours):
 
     start, timeout = datetime.now(), timedelta(hours=hours)
 
-    labels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+    labels = ['1', '2', '3', '4', '5', '6', '7', '8']
 
     # Initialize counter.
     dict_ = dict()
 
     for label in labels:
-
         dict_[label] = dict()
 
         dict_[label]['success'] = 0
@@ -66,7 +68,7 @@ def run(hours):
         # Setup of test case.
         label = np.random.choice(labels)
 
-        test = getattr(lib, 'test_' + label)
+        test = getattr(Tests, 'test_' + label)
 
         # Set seed.
         seed = random.randrange(1, 100000)
@@ -79,7 +81,7 @@ def run(hours):
 
             dict_[label]['success'] += 1
 
-        except:
+        except Exception:
 
             dict_[label]['failure'] += 1
 
@@ -105,14 +107,15 @@ def run(hours):
 ''' Execution of module as script.
 '''
 if __name__ == '__main__':
-
     parser = argparse.ArgumentParser(description='Run development test '
-        'battery of ROBUPY package.', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+                                                 'battery of ROBUPY package.',
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('--hours', action='store', dest='hours',
                         type=float, default=1.0, help='run time in hours')
 
-    parser.add_argument('--notification', action = 'store_true', dest='notification', default = False,
+    parser.add_argument('--notification', action='store_true',
+                        dest='notification', default=False,
                         help='send notification')
 
     hours, notification = distribute_input(parser)
