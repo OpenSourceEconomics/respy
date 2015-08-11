@@ -1,12 +1,12 @@
-""" This module contains some additional checks related to the
-    solution of the dynamic programming problem with ambiguity.
+""" This module contains some additional checks related to the solution of
+the dynamic programming problem with ambiguity.
 """
 
 # standard library
 import numpy as np
 
 
-def checks(str_, *args):
+def checks_ambiguity(str_, *args):
     """ This checks the integrity of the objects related to the
         solution of the model.
     """

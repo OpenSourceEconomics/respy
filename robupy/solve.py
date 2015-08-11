@@ -11,9 +11,9 @@ import os
 # project library
 import robupy.fort.performance as perf
 
-from robupy.checks.checks_solve import checks
-from robupy.ambiguity import *
-from robupy.risk import *
+from robupy.checks.checks_solve import checks_solve
+from robupy.ambiguity import simulate_emax_ambiguity
+from robupy.risk import simulate_emax_risk
 
 # Logging
 logger = logging.getLogger('ROBUPY')
@@ -67,7 +67,8 @@ def solve(robupy_obj):
 
     # Run checks of the state space variables
     if debug is True:
-        checks('state_space', robupy_obj, states_all, states_number_period,
+        checks_solve('state_space', robupy_obj, states_all,
+                     states_number_period,
                 mapping_state_idx)
 
     # Draw random variables. Handle special case of zero variances as this
@@ -164,7 +165,7 @@ def solve(robupy_obj):
 
     # Run checks on expected future values and its ingredients
     if debug is True:
-        checks('emax', robupy_obj, states_all, states_number_period, emax,
+        checks_solve('emax', robupy_obj, states_all, states_number_period, emax,
                 period_future_payoffs)
 
     # Summarize optimizations in case of ambiguity.

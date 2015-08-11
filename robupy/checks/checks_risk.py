@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 
 
-def checks(str_, *args):
+def checks_risk(str_, *args):
     """ This checks the integrity of the objects related to the solution of
     the model under risk.
     """

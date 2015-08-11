@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 
 
-def checks(str_, robupy_obj, *args):
+def checks_solve(str_, robupy_obj, *args):
     """ This checks the integrity of the objects related to the solution of the model.
     """
 

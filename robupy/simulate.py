@@ -21,7 +21,7 @@ import logging
 # project library
 import robupy.fort.performance as perf
 
-from robupy.checks.checks_simulate import checks
+from robupy.checks.checks_simulate import checks_simulate
 
 # Logging
 logger = logging.getLogger('ROBUPY')
@@ -149,7 +149,7 @@ def simulate(robupy_obj):
 
     # Run checks of pandas data array
     if debug is True:
-        checks('data_frame', robupy_obj, data_frame)
+        checks_simulate('data_frame', robupy_obj, data_frame)
 
     # Write to dataset and information to file
     _write_out(data_frame)
