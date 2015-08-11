@@ -1,3 +1,10 @@
+# Check for Python 3
+import sys
+
+if not (sys.version_info[0] == 3):
+    raise AssertionError('Please use Python 3')
+
+# Package structure
 from .read import read
 from .solve import solve
 from .simulate import simulate

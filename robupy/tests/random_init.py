@@ -15,24 +15,36 @@ MAX_PERIODS = 4
 '''
 
 
-def generate_init(constraints={}):
+def generate_init(constraints=None):
     """ Get a random initialization file.
     """
+
+    # Antibugging. This interface is using a sentinal value.
+    if constraints is not None:
+        assert (isinstance(constraints, dict))
+
     dict_ = generate_random_dict(constraints)
-        
+
     print_random_dict(dict_)
-    
+
     # Finishing.
     return dict_
+
 
 ''' Private Functions
 '''
 
 
-def generate_random_dict(constraints={}):
+def generate_random_dict(constraints=None):
     """ Draw random dictionary instance that can be processed into an
         initialization file.
     """
+    # Antibugging. This interface is using a sentinal value.
+    if constraints is not None:
+        assert (isinstance(constraints, dict))
+    else:
+        constraints = dict()
+
     # Initialize container
     dict_ = dict()
 
@@ -67,7 +79,8 @@ def generate_random_dict(constraints={}):
     dict_['EDUCATION']['int'] = np.random.uniform(-0.05, 0.05, 1)[0]
 
     dict_['EDUCATION']['start'] = np.random.random_integers(1, 10)
-    dict_['EDUCATION']['max'] = np.random.random_integers(dict_['EDUCATION']['start'] + 1, 20)
+    dict_['EDUCATION']['max'] = np.random.random_integers(
+        dict_['EDUCATION']['start'] + 1, 20)
 
     # Computation
     dict_['COMPUTATION'] = {}
@@ -76,7 +89,7 @@ def generate_random_dict(constraints={}):
     dict_['COMPUTATION']['debug'] = np.random.choice(['True', 'False'])
 
     # Shocks
-    cov = np.random.normal(size=16).reshape((4,4))
+    cov = np.random.normal(size=16).reshape((4, 4))
     dict_['SHOCKS'] = np.dot(cov, cov.T)
 
     # Replace debugging level
@@ -138,6 +151,7 @@ def generate_random_dict(constraints={}):
     # Finishing.
     return dict_
 
+
 def print_random_dict(dict_):
     """ Print initialization dictionary to file.
     """
@@ -156,7 +170,6 @@ def print_random_dict(dict_):
                 file_.write(' ' + flag.upper() + '\n\n')
 
                 for keys_ in dict_[flag]:
-
                     file_.write(str_.format(keys_, dict_[flag][keys_]))
 
                 file_.write('\n')
@@ -168,13 +181,11 @@ def print_random_dict(dict_):
                 file_.write(' ' + flag.upper() + '\n\n')
 
                 for j in range(4):
-
-                    file_.write(str_.format(*dict_[flag][j,:]))
+                    file_.write(str_.format(*dict_[flag][j, :]))
 
                 file_.write('\n')
 
             if flag in ['EDUCATION']:
-
                 str_ = ' {0:<15} {1:<15} \n'
 
                 file_.write(' ' + flag.upper() + '\n\n')
@@ -198,24 +209,23 @@ def print_random_dict(dict_):
     # Adding WORK
     with open('test.robupy.ini', 'a') as file_:
 
-            str_ = ' {0:<15} {1:<15} {2:<15} \n'
+        str_ = ' {0:<15} {1:<15} {2:<15} \n'
 
-            file_.write(' WORK \n\n')
+        file_.write(' WORK \n\n')
 
-            # Coefficient
-            for j in range(5):
+        # Coefficient
+        for j in range(5):
+            line = ['coeff', dict_['A']['coeff'][j]]
 
-                line = ['coeff', dict_['A']['coeff'][j]]
-
-                line += [dict_['B']['coeff'][j]]
-
-                file_.write(str_.format(*line))
-
-            file_.write('\n')
-
-            # Intercept
-            line = ['int', dict_['A']['int'], dict_['B']['int']]
+            line += [dict_['B']['coeff'][j]]
 
             file_.write(str_.format(*line))
 
-            file_.write('\n')
+        file_.write('\n')
+
+        # Intercept
+        line = ['int', dict_['A']['int'], dict_['B']['int']]
+
+        file_.write(str_.format(*line))
+
+        file_.write('\n')

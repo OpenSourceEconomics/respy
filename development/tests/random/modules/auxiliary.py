@@ -10,7 +10,7 @@ import glob
 import os
 
 # project library
-from modules.clsMail import mailCls
+from modules.clsMail import MailCls
 
 ''' Auxiliary functions.
 '''
@@ -91,13 +91,13 @@ def finish(dict_, HOURS, notification):
         message = ' A ' + str(HOURS) +' hour run of the testing battery on @' + \
                   hostname + ' is completed.'
 
-        mailObj = mailCls()
+        mailObj = MailCls()
 
-        mailObj.setAttr('subject', subject)
+        mailObj.set_attr('subject', subject)
 
-        mailObj.setAttr('message', message)
+        mailObj.set_attr('message', message)
 
-        mailObj.setAttr('attachment', 'logging.log')
+        mailObj.set_attr('attachment', 'logging.log')
 
         mailObj.lock()
 
@@ -156,7 +156,7 @@ def compile_package(which):
     if which == 'fast':
         cmd += ' --fast'
 
-    cmd = cmd + ' > /dev/null 2>&1'
+    cmd += ' > /dev/null 2>&1'
 
     os.system(cmd)
 
