@@ -7,6 +7,13 @@ sign up for our mailing list [here](http://eepurl.com/RStEH). Please feel free t
 
 [![Join the chat at https://gitter.im/robustToolbox/contact](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/robustToolbox/contact?utm_source=share-link&utm_medium=link&utm_campaign=share-link)
 
+#### Installation
+ 
+    $ pip install robupy
+    $ python -c "import robupy; robupy.test()"
+
+The last command runs several tests to check the integrity of the package. You can look at the tests [here](https://github.com/robustToolbox/package/blob/master/robupy/tests/tests.py). We have set up an additional testing infrastructure [here](https://github.com/robustToolbox/package/tree/master/development/tests).
+
 #### Quality Assurance
 
 [![Build Status](https://travis-ci.org/robustToolbox/package.svg?branch=master)](https://travis-ci.org/robustToolbox/package)
