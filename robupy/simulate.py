@@ -36,9 +36,6 @@ def simulate(robupy_obj):
     # Antibugging
     assert (robupy_obj.get_status())
 
-    # Logging
-    logger.info('Staring simulation of model')
-
     # Distribute class attributes
     debug = robupy_obj.get_attr('debug')
 
@@ -64,6 +61,10 @@ def simulate(robupy_obj):
 
     seed = robupy_obj.get_attr('seed')
 
+    # Logging
+    logger.info('Staring simulation of model for ' +
+                str(num_agents) + ' agents')
+
     # Draw disturbances.
     np.random.seed(seed)
 
@@ -81,6 +82,10 @@ def simulate(robupy_obj):
         current_state = states_all[0, 0, :].copy()
 
         data[count, 0] = i
+
+        # Logging
+        if (i != 0) and (i % 100 == 0):
+            logger.info('... simulated ' + str(i) + ' agents')
 
         # Iterate over each period for the agent
         for period in range(num_periods):
