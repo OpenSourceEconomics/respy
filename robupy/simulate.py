@@ -24,7 +24,7 @@ import robupy.fort.performance as perf
 from robupy.checks.checks_simulate import checks_simulate
 
 # Logging
-logger = logging.getLogger('ROBUPY')
+logger = logging.getLogger('ROBUPY_SIMULATE')
 
 ''' Public function
 '''

@@ -34,12 +34,26 @@ import logging
 
 logging.captureWarnings(True)
 
-logger = logging.getLogger('ROBUPY')
-
 formatter = logging.Formatter(' %(asctime)s     %(message)s \n',
                               datefmt='%I:%M:%S %p')
 
-handler = logging.FileHandler('logging.robupy.log', mode='w')
+
+
+logger = logging.getLogger('ROBUPY_SOLVE')
+
+handler = logging.FileHandler('logging.robupy.sol.log', mode='w', delay=True)
+
+handler.setFormatter(formatter)
+
+logger.setLevel(logging.INFO)
+
+logger.addHandler(handler)
+
+
+logger = logging.getLogger('ROBUPY_SIMULATE')
+
+handler = logging.FileHandler('logging.robupy.sim.log', mode='w',
+                              delay=True)
 
 handler.setFormatter(formatter)
 

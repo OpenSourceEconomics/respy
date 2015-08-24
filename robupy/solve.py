@@ -16,7 +16,7 @@ from robupy.ambiguity import simulate_emax_ambiguity
 from robupy.risk import simulate_emax_risk
 
 # Logging
-logger = logging.getLogger('ROBUPY')
+logger = logging.getLogger('ROBUPY_SOLVE')
 
 ''' Public function
 '''
