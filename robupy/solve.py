@@ -6,7 +6,6 @@ programming problem.
 import numpy as np
 import logging
 import shlex
-import time
 import os
 
 # project library
@@ -28,9 +27,6 @@ def solve(robupy_obj):
     """
     # Antibugging
     assert (robupy_obj.get_status())
-
-    # Start time
-    start_time = time.time()
 
     # Distribute class attributes
     init_dict = robupy_obj.get_attr('init_dict')
@@ -163,11 +159,6 @@ def solve(robupy_obj):
 
             # Collect
             emax[period, k] = emax_simulated
-
-    # End time
-    end_time = time.time()
-
-    print(time.strftime('%Y-%m-%dT%H:%M:%S', start_time -  end_time))
 
     # Logging
     logger.info('... finished \n')
