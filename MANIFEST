@@ -22,6 +22,5 @@ robupy/fort/robupy_auxiliary.f90
 robupy/fort/robupy_main.f90
 robupy/fort/robupy_program_constants.f90
 robupy/tests/__init__.py
-robupy/tests/auxiliary.py
 robupy/tests/random_init.py
 robupy/tests/tests.py
