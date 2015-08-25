@@ -1,6 +1,7 @@
+# TODO: I am also using the toolbox with Python 2 at the moment as no good
+# visual profiling tool seems available at this point.
 # Check for Python 3
-import sys
-
+# import sys
 #if not (sys.version_info[0] == 3):
 #    raise AssertionError('Please use Python 3')
 
@@ -13,6 +14,7 @@ from robupy.simulate import simulate
 """ Testing functions
 """
 import os
+
 
 def test():
     """ Run nose tester for the package.
@@ -37,8 +39,7 @@ logging.captureWarnings(True)
 formatter = logging.Formatter(' %(asctime)s     %(message)s \n',
                               datefmt='%I:%M:%S %p')
 
-
-
+# This log file contains information about the progress in solving the model.
 logger = logging.getLogger('ROBUPY_SOLVE')
 
 handler = logging.FileHandler('logging.robupy.sol.log', mode='w', delay=True)
@@ -49,7 +50,7 @@ logger.setLevel(logging.INFO)
 
 logger.addHandler(handler)
 
-
+# This log file contains information about the progress of data simulations.
 logger = logging.getLogger('ROBUPY_SIMULATE')
 
 handler = logging.FileHandler('logging.robupy.sim.log', mode='w',
@@ -60,3 +61,25 @@ handler.setFormatter(formatter)
 logger.setLevel(logging.INFO)
 
 logger.addHandler(handler)
+
+
+# This log file contains information that are mainly informative in the
+# development process.
+logger = logging.getLogger('ROBUPY_INFO')
+
+handler = logging.FileHandler('logging.robupy.info.log', mode='w',
+                              delay=False)
+
+handler.setFormatter(formatter)
+
+logger.setLevel(logging.INFO)
+
+logger.addHandler(handler)
+
+# Check for FORTRAN library
+try:
+    import robupy.fort.fortran_functions as fort
+    logger.info('Using accelerated version of package')
+except ImportError:
+    logger.info('Using standard version of package')
+

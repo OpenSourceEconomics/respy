@@ -1,4 +1,5 @@
-""" This module serves as the interface to the FORTRAN implementations of selected function.
+""" This module serves as the interface to the FORTRAN implementations of
+selected functions.
 """
 
 # Check for FORTRAN library

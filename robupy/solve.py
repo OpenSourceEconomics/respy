@@ -69,7 +69,7 @@ def solve(robupy_obj):
     if debug is True:
         checks_solve('state_space', robupy_obj, states_all,
                      states_number_period,
-                mapping_state_idx)
+                     mapping_state_idx)
 
     # Draw random variables. Handle special case of zero variances as this
     # case is useful for hand-based testing.
