@@ -68,7 +68,7 @@ def simulate(robupy_obj):
 
     # Logging
     logger.info('Staring simulation of model for ' +
-                str(num_agents) + ' agents')
+                str(num_agents) + ' agents with seed ' + str(seed))
 
     # Draw disturbances.
     np.random.seed(seed)
@@ -164,7 +164,7 @@ def simulate(robupy_obj):
     # Write to dataset and information to file
     _write_out(data_frame)
 
-    _write_info(data_frame)
+    _write_info(data_frame, seed)
 
     # Logging
     logger.info('... finished \n')
@@ -175,7 +175,7 @@ def simulate(robupy_obj):
 ''' Private functions
 '''
 
-def _write_info(data_frame):
+def _write_info(data_frame, seed):
     """ Write information about the simulated economy.
     """
 
@@ -192,6 +192,8 @@ def _write_info(data_frame):
         file_.write('   Number of Agents:       ' + str(num_agents) + '\n\n')
 
         file_.write('   Number of Periods:      ' + str(num_periods) + '\n\n')
+
+        file_.write('   Seed:                   ' + str(seed) + '\n\n\n')
 
         file_.write('   Choices:  \n\n')
 

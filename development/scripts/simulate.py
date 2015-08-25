@@ -20,8 +20,9 @@ def _distribute_inputs(parser):
     args = parser.parse_args()
 
     # Distribute arguments.
-    solution = args.solution
     num_agents = args.num_agents
+    solution = args.solution
+    seed = args.seed
 
     # Assertions.
     assert (isinstance(solution, str))
@@ -31,20 +32,32 @@ def _distribute_inputs(parser):
         assert (isinstance(num_agents, int))
         assert (num_agents > 0)
 
-    # Finishing.
-    return solution, num_agents
+    if seed is not None:
+        assert (isinstance(seed, int))
 
-def simulate(solution, num_agents):
+    # Finishing.
+    return solution, num_agents, seed
+
+
+def simulate(solution, num_agents, seed):
     """ Simulate the dynamic programming model.
     """
     # Solve model
     robupy_obj = pkl.load(open(solution, 'rb'))
 
+    # Modifications
+    with_modifications = (num_agents is not None) or (seed is not None)
+
     # Update agents
-    if num_agents is not None:
+
+    if with_modifications:
         robupy_obj.unlock()
 
-        robupy_obj.set_attr('num_agents', num_agents)
+        if num_agents is not None:
+            robupy_obj.set_attr('num_agents', num_agents)
+
+        if seed is not None:
+            robupy_obj.set_attr('seed', seed)
 
         robupy_obj.lock()
 
@@ -66,6 +79,9 @@ if __name__ == '__main__':
     parser.add_argument('--agents', type=int, default=None, dest='num_agents',
                         help='number of agents')
 
-    solution, num_agents = _distribute_inputs(parser)
+    parser.add_argument('--seed', type=int, default=None, dest='seed',
+                        help='seed for simulation')
 
-    simulate(solution, num_agents)
+    solution, num_agents, seed = _distribute_inputs(parser)
+
+    simulate(solution, num_agents, seed)
