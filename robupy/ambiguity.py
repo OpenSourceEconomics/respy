@@ -8,7 +8,7 @@ import numpy as np
 
 # project library
 from robupy.checks.checks_ambiguity import checks_ambiguity
-import robupy.fort.performance as perf
+import robupy.performance.access as perf
 
 # module wide variables
 HUGE_FLOAT = 10e10
@@ -19,12 +19,15 @@ HUGE_FLOAT = 10e10
 
 def simulate_emax_ambiguity(num_draws, eps_standard, period, k,
         payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, states_all,
-        num_periods, emax, delta, debug, ambiguity_args):
+        num_periods, emax, delta, fast, debug, ambiguity_args):
     """ Get worst case
     """
     # Distribute arguments
     ambiguity = ambiguity_args['ambiguity']
     cholesky = ambiguity_args['cholesky']
+
+    # Access performance library
+    perf_lib = perf.get_library(fast)
 
     # Auxiliary objects
     measure = ambiguity['measure']
@@ -40,7 +43,7 @@ def simulate_emax_ambiguity(num_draws, eps_standard, period, k,
     # Collect arguments
     args = (num_draws, eps_standard, period, k, payoffs_ex_ante, edu_max,
             edu_start, mapping_state_idx, states_all, num_periods, emax,
-            cholesky, delta, debug)
+            cholesky, delta, fast, debug)
 
     # Run optimization
     if measure == 'absolute':
@@ -65,7 +68,7 @@ def simulate_emax_ambiguity(num_draws, eps_standard, period, k,
             opt = _correct_debugging(opt, x0, level, eps_standard, cholesky,
                         num_periods, num_draws, period, k, payoffs_ex_ante,
                         edu_max, edu_start, emax, states_all,
-                        mapping_state_idx, delta)
+                        mapping_state_idx, delta, fast)
 
     # Write result to file
     if debug:
@@ -78,7 +81,7 @@ def simulate_emax_ambiguity(num_draws, eps_standard, period, k,
         eps_relevant[:, j] = np.exp(eps_relevant[:, j])
 
     simulated, payoffs_ex_post, future_payoffs = \
-        perf.simulate_emax(num_periods, num_draws, period, k, eps_relevant,
+        perf_lib.simulate_emax(num_periods, num_draws, period, k, eps_relevant,
             payoffs_ex_ante, edu_max, edu_start, emax, states_all,
             mapping_state_idx, delta)
 
@@ -93,12 +96,15 @@ def simulate_emax_ambiguity(num_draws, eps_standard, period, k,
 '''
 def _correct_debugging(opt, x0, level, eps_standard, cholesky, num_periods,
             num_draws, period, k, payoffs_ex_ante, edu_max, edu_start, emax,
-            states_all, mapping_state_idx, delta):
+            states_all, mapping_state_idx, delta, fast):
     """ Some manipulations for test battery
     """
     # Check applicability
     if not (level < 0.1e-10):
         return opt
+
+    # Access performance library
+    perf_lib = perf.get_library(fast)
 
     # Correct resulting values
     opt['x'] = x0
@@ -110,7 +116,7 @@ def _correct_debugging(opt, x0, level, eps_standard, cholesky, num_periods,
         eps_relevant[:, j] = np.exp(eps_relevant[:, j])
 
     simulated, payoffs_ex_post, future_payoffs = \
-                perf.simulate_emax(num_periods, num_draws, period, k, eps_relevant,
+                perf_lib.simulate_emax(num_periods, num_draws, period, k, eps_relevant,
                     payoffs_ex_ante, edu_max, edu_start, emax, states_all,
                     mapping_state_idx, delta)
 
@@ -167,9 +173,12 @@ def _divergence(x, cov, level):
 
 def _criterion(x, num_draws, eps_standard, period, k, payoffs_ex_ante, edu_max,
         edu_start, mapping_state_idx, states_all, num_periods, emax,
-        true_cholesky, delta, debug):
+        true_cholesky, delta, fast, debug):
     """ Simulate expected future value for alternative shock distributions.
     """
+    # Access performance library
+    perf_lib = perf.get_library(fast)
+
     # Transformation of standard normal deviates to relevant distributions.
     eps_relevant = np.dot(true_cholesky, eps_standard.T).T
     eps_relevant[:, :2] = eps_relevant[:, :2] + x
@@ -178,7 +187,7 @@ def _criterion(x, num_draws, eps_standard, period, k, payoffs_ex_ante, edu_max,
                                      HUGE_FLOAT)
 
     # Simulate the expected future value for a given parametrization.
-    simulated, _, _ = perf.simulate_emax(num_periods, num_draws, period, k,
+    simulated, _, _ = perf_lib.simulate_emax(num_periods, num_draws, period, k,
                         eps_relevant, payoffs_ex_ante, edu_max, edu_start,
                         emax, states_all, mapping_state_idx, delta)
     # Debugging

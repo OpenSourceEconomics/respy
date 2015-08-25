@@ -5,6 +5,8 @@ simulating the model's initialization file.
 # standard library
 import numpy as np
 import shlex
+import glob
+import os
 
 # project library
 from robupy.clsRobupy import RobupyCls
@@ -129,7 +131,7 @@ def _process_standard(list_, dict_, keyword):
         val = int(val)
     elif name in ['measure']:
         val = str(val)
-    elif name in ['debug']:
+    elif name in ['debug', 'fast']:
         assert (val.upper() in ['TRUE', 'FALSE'])
         val = (val.upper() == 'TRUE')
     else:
@@ -223,6 +225,11 @@ def _check_integrity_read(dict_):
     assert (isinstance(dict_['COMPUTATION']['seed'], int))
     assert (dict_['COMPUTATION']['seed'] >= 0)
     assert (dict_['COMPUTATION']['debug'] in [True, False])
+    assert (dict_['COMPUTATION']['fast'] in [True, False])
+
+    if dict_['COMPUTATION']['fast'] is True:
+        package_dir = os.path.dirname(os.path.realpath(__file__))
+        assert (len(glob.glob(package_dir + '/performance/fortran/*.so')) == 1)
 
     # Check SHOCKS
     assert (len(dict_['SHOCKS']) == 4)

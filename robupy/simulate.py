@@ -19,7 +19,7 @@ import pandas as pd
 import logging
 
 # project library
-import robupy.fort.performance as perf
+import robupy.performance.access as perf
 
 from robupy.checks.checks_simulate import checks_simulate
 
@@ -60,6 +60,11 @@ def simulate(robupy_obj):
     num_agents = robupy_obj.get_attr('num_agents')
 
     seed = robupy_obj.get_attr('seed')
+
+    fast = robupy_obj.get_attr('fast')
+
+    # Access performance library
+    perf_lib = perf.get_library(fast)
 
     # Logging
     logger.info('Staring simulation of model for ' +
@@ -113,7 +118,7 @@ def simulate(robupy_obj):
             if period == (num_periods - 1):
                 future_payoffs = np.zeros(4)
             else:
-                future_payoffs = perf.get_future_payoffs(edu_max, edu_start, mapping_state_idx, period, emax, k, states_all)
+                future_payoffs = perf_lib.get_future_payoffs(edu_max, edu_start, mapping_state_idx, period, emax, k, states_all)
 
             # Calculate total utilities
             total_payoffs = period_payoffs_ex_post + delta * future_payoffs

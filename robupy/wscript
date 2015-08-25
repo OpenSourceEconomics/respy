@@ -18,6 +18,9 @@ def options(opt):
     opt.add_option('--fast', action='store_true', dest='fast', default=False,
                    help='compile FORTRAN library')
 
+    opt.add_option('--test', action='store_true', dest='test', default=False,
+                   help='run test battery')
+
 def configure(conf):
 
     # Distribute options
@@ -31,15 +34,19 @@ def configure(conf):
     if fast:
         conf.load('compiler_fc')
 
-
-
 def build(bld):
 
     # Distribute options
     fast = bld.options.fast
 
+    test = bld.options.test
+
+    # Run
     if fast:
-        bld.recurse('fort')
+        bld.recurse('performance')
+    if test:
+        os.chdir('tests')
+        os.system('nosetests tests.py')
 
 def distclean(dst):
 

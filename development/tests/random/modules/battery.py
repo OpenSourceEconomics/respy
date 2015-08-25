@@ -15,7 +15,7 @@ from modules.auxiliary import compile_package
 
 # ROBUPY import
 sys.path.insert(0, os.environ['ROBUPY'])
-from robupy.tests.random_init import generate_init
+from robupy.tests.random_init import generate_random_dict, print_random_dict
 
 ''' Main
 '''
@@ -23,15 +23,21 @@ def test_99():
     """ Testing whether the results from a fast and slow execution of the
     code result in identical simulate datasets.
     """
+    # Set up constraints
+    compile_package('fast')
+
     # Generate random initialization
-    generate_init()
+    init_dict = generate_random_dict()
 
     # Initialize containers
     base = None
 
-    for which in ['slow', 'fast']:
+    for fast in ['True', 'False']:
 
-        compile_package(which)
+        # Prepare initialization file
+        init_dict['COMPUTATION']['fast'] = fast
+
+        print_random_dict(init_dict)
 
         # Simulate the ROBUPY package
         os.system('robupy-solve --simulate --model test.robupy.ini')

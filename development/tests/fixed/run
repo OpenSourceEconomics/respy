@@ -201,7 +201,7 @@ def test_E():
     compile_package('fast')
 
     # Imports
-    import robupy.fort.fortran_functions as fort
+    import robupy.performance.fortran.fortran_functions as fort
 
     # Draw random matrix for testing purposes
     matrix = (np.random.multivariate_normal(np.zeros(4), np.identity(4), 4))

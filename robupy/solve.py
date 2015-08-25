@@ -9,7 +9,7 @@ import shlex
 import os
 
 # project library
-import robupy.fort.performance as perf
+import robupy.performance.access as perf
 
 from robupy.checks.checks_solve import checks_solve
 from robupy.ambiguity import simulate_emax_ambiguity
@@ -46,6 +46,11 @@ def solve(robupy_obj):
     delta = robupy_obj.get_attr('delta')
 
     seed = robupy_obj.get_attr('seed')
+
+    fast = robupy_obj.get_attr('fast')
+
+    # Access performance library
+    perf_lib = perf.get_library(fast)
 
     # Construct auxiliary objects
     level = ambiguity['level']
@@ -117,7 +122,9 @@ def solve(robupy_obj):
         'coeff']
     coeffs_home = [init_dict['HOME']['int']]
 
-    period_payoffs_ex_ante = perf.calculate_payoffs_ex_ante(num_periods,
+
+
+    period_payoffs_ex_ante = perf_lib.calculate_payoffs_ex_ante(num_periods,
                                                             states_number_period,
                                                             states_all,
                                                             edu_start, coeffs_a,
@@ -150,7 +157,7 @@ def solve(robupy_obj):
                 simulate_emax(num_draws, eps_relevant, period, k,
                               payoffs_ex_ante, edu_max, edu_start,
                               mapping_state_idx,
-                              states_all, num_periods, emax, delta, debug,
+                              states_all, num_periods, emax, delta, fast, debug,
                               ambiguity_args)
 
             # Collect information

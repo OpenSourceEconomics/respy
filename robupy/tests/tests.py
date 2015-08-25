@@ -92,8 +92,13 @@ class Tests(object):
         solved and simulated.
         """
         for i in range(10):
+
+            # Generate constraints
+            constraints = dict()
+            constraints['fast'] = 'False'
+
             # Generate random initialization file
-            generate_init()
+            generate_init(constraints)
 
             # Perform toolbox actions
             robupy_obj = read('test.robupy.ini')
@@ -121,6 +126,7 @@ class Tests(object):
             # Generate constraint periods
             constraints = dict()
             constraints['periods'] = np.random.randint(3, 10)
+            constraints['fast'] = 'False'
 
             # Generate random initialization file
             generate_init(constraints)
@@ -179,6 +185,7 @@ class Tests(object):
             # Generate constraint periods
             constraints = dict()
             constraints['eps_zero'] = True
+            constraints['fast'] = 'False'
             constraints['level'] = 0.00
 
             # Generate random initialization file
@@ -203,9 +210,10 @@ class Tests(object):
         then the number of draws to simulate the
         expected future value should have no effect.
         """
-        # Generate constraint periods
+        # Generate constraints
         constraints = dict()
         constraints['eps_zero'] = True
+        constraints['fast'] = 'False'
 
         # The calculation of the KL does not work for this case.
         constraints['measure'] = 'absolute'
@@ -253,8 +261,13 @@ class Tests(object):
         and read.
         """
         for i in range(1000):
+
+            # Initialize constraints
+            constraints = dict()
+            constraints['fast'] = 'False'
+
             # Generate random initialization file
-            generate_init()
+            generate_init(constraints)
 
             # Perform toolbox actions
             read('test.robupy.ini')
@@ -267,6 +280,7 @@ class Tests(object):
         # Generate random initialization dictionary
         constraints = dict()
         constraints['debug'] = 'True'
+        constraints['fast'] = 'False'
 
         init_dict = generate_random_dict(constraints)
 
@@ -301,8 +315,13 @@ class Tests(object):
         """ Testing whether the ex ante benefit calculation is unaffected by
         the level of ambiguity.
         """
+
+        # Generate constraints
+        constraints = dict()
+        constraints['fast'] = 'False'
+
         # Generate random initialization dictionary
-        init_dict = generate_random_dict()
+        init_dict = generate_random_dict(constraints)
 
         # Initialize containers
         base = None
