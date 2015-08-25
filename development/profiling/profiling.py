@@ -3,6 +3,7 @@
 """
 
 # standard library
+import cProfile
 import sys
 import os
 
@@ -14,4 +15,6 @@ from robupy.read import read
 
 robupy_obj = read('model.robupy.ini')
 
-solve(robupy_obj)
+cProfile.run('solve(robupy_obj)', filename='profiling.robupy.prof')
+
+

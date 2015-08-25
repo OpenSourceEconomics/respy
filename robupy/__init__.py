@@ -1,8 +1,8 @@
 # Check for Python 3
 import sys
 
-if not (sys.version_info[0] == 3):
-    raise AssertionError('Please use Python 3')
+#if not (sys.version_info[0] == 3):
+#    raise AssertionError('Please use Python 3')
 
 # Package structure
 from robupy.read import read

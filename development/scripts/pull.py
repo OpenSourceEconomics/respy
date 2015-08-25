@@ -7,6 +7,8 @@ import argparse
 import os
 
 # module-wide variables
+HOME = os.getcwd()
+
 REPOS = ['documentation/sources', 'package']
 
 REPOS += ['documentation/robustToolbox.github.io']
@@ -28,11 +30,11 @@ def update():
 
             os.system('git pull')
 
-            os.chdir('../')
-
         except Exception:
 
             pass
+
+        os.chdir(HOME)
 
     print('')
 
