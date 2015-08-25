@@ -18,6 +18,10 @@ class RobupyCls(MetaCls):
         self.attr['init_dict'] = None
 
         # Derived attributes
+        self.attr['seed_solution'] = None
+
+        self.attr['seed_simulation'] = None
+
         self.attr['num_periods'] = None
 
         self.attr['num_agents'] = None
@@ -31,8 +35,6 @@ class RobupyCls(MetaCls):
         self.attr['delta'] = None
 
         self.attr['shocks'] = None
-
-        self.attr['seed'] = None
 
         self.attr['debug'] = None
 
@@ -87,21 +89,23 @@ class RobupyCls(MetaCls):
 
             self.attr['num_periods'] = init_dict['BASICS']['periods']
 
-            self.attr['num_agents'] = init_dict['BASICS']['agents']
-
             self.attr['delta'] = init_dict['BASICS']['delta']
 
             self.attr['edu_start'] = init_dict['EDUCATION']['start']
 
             self.attr['edu_max'] = init_dict['EDUCATION']['max']
 
-            self.attr['num_draws'] = init_dict['COMPUTATION']['draws']
+            self.attr['num_draws'] = init_dict['SOLUTION']['draws']
 
-            self.attr['debug'] = init_dict['COMPUTATION']['debug']
+            self.attr['debug'] = init_dict['SOLUTION']['debug']
 
-            self.attr['seed'] = init_dict['COMPUTATION']['seed']
+            self.attr['seed_solution'] = init_dict['SOLUTION']['seed']
 
-            self.attr['fast'] = init_dict['COMPUTATION']['fast']
+            self.attr['seed_simulation'] = init_dict['SIMULATION']['seed']
+
+            self.attr['fast'] = init_dict['SOLUTION']['fast']
+
+            self.attr['num_agents'] = init_dict['SIMULATION']['agents']
 
             self.attr['shocks'] = init_dict['SHOCKS']
 

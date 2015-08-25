@@ -177,14 +177,11 @@ def _check_integrity_read(dict_):
 
     # Check all keys
     keys_ = ['BASICS', 'EDUCATION', 'A', 'B', 'HOME']
-    keys_ += ['SHOCKS', 'COMPUTATION', 'AMBIGUITY']
+    keys_ += ['SHOCKS', 'SOLUTION', 'AMBIGUITY', 'SIMULATION']
 
     assert (set(keys_) == set(dict_.keys()))
 
     # Check BASICS
-    assert (isinstance(dict_['BASICS']['agents'], int))
-    assert (dict_['BASICS']['agents'] > 0)
-
     assert (isinstance(dict_['BASICS']['periods'], int))
     assert (dict_['BASICS']['periods'] > 0)
 
@@ -219,15 +216,15 @@ def _check_integrity_read(dict_):
     assert (isinstance(dict_['HOME']['int'], float))
     assert (np.isfinite(dict_['HOME']['int']))
 
-    # Check COMPUTATION
-    assert (isinstance(dict_['COMPUTATION']['draws'], int))
-    assert (dict_['COMPUTATION']['draws'] >= 0)
-    assert (isinstance(dict_['COMPUTATION']['seed'], int))
-    assert (dict_['COMPUTATION']['seed'] >= 0)
-    assert (dict_['COMPUTATION']['debug'] in [True, False])
-    assert (dict_['COMPUTATION']['fast'] in [True, False])
+    # Check SOLUTION
+    assert (isinstance(dict_['SOLUTION']['draws'], int))
+    assert (dict_['SOLUTION']['draws'] >= 0)
+    assert (isinstance(dict_['SOLUTION']['seed'], int))
+    assert (dict_['SOLUTION']['seed'] >= 0)
+    assert (dict_['SOLUTION']['debug'] in [True, False])
+    assert (dict_['SOLUTION']['fast'] in [True, False])
 
-    if dict_['COMPUTATION']['fast'] is True:
+    if dict_['SOLUTION']['fast'] is True:
         package_dir = os.path.dirname(os.path.realpath(__file__))
         assert (len(glob.glob(package_dir + '/performance/fortran/*.so')) == 1)
 
@@ -246,6 +243,12 @@ def _check_integrity_read(dict_):
     assert (isinstance(dict_['AMBIGUITY']['level'], float))
     assert (dict_['AMBIGUITY']['level'] >= 0.00)
     assert (np.isfinite(dict_['AMBIGUITY']['level']))
+
+    # Check SIMULATION
+    assert (isinstance(dict_['SIMULATION']['agents'], int))
+    assert (dict_['SIMULATION']['agents'] > 0)
+    assert (isinstance(dict_['SIMULATION']['seed'], int))
+    assert (dict_['SIMULATION']['seed'] >= 0)
 
     # Temporary restrictions
     assert (dict_['AMBIGUITY']['level'] >= 0.00)

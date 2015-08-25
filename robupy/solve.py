@@ -45,7 +45,7 @@ def solve(robupy_obj):
 
     delta = robupy_obj.get_attr('delta')
 
-    seed = robupy_obj.get_attr('seed')
+    seed = robupy_obj.get_attr('seed_solution')
 
     fast = robupy_obj.get_attr('fast')
 

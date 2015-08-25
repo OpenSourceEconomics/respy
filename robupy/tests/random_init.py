@@ -50,7 +50,6 @@ def generate_random_dict(constraints=None):
 
     # Basics
     dict_['BASICS'] = {}
-    dict_['BASICS']['agents'] = np.random.random_integers(1, MAX_AGENTS)
     dict_['BASICS']['periods'] = np.random.random_integers(1, MAX_PERIODS)
     dict_['BASICS']['delta'] = np.random.random()
 
@@ -82,12 +81,17 @@ def generate_random_dict(constraints=None):
     dict_['EDUCATION']['max'] = np.random.random_integers(
         dict_['EDUCATION']['start'] + 1, 20)
 
-    # Computation
-    dict_['COMPUTATION'] = {}
-    dict_['COMPUTATION']['draws'] = np.random.random_integers(1, MAX_DRAWS)
-    dict_['COMPUTATION']['seed'] = np.random.random_integers(1, 10000)
-    dict_['COMPUTATION']['debug'] = np.random.choice(['True', 'False'])
-    dict_['COMPUTATION']['fast'] = np.random.choice(['True', 'False'])
+    # SOLUTION
+    dict_['SOLUTION'] = {}
+    dict_['SOLUTION']['draws'] = np.random.random_integers(1, MAX_DRAWS)
+    dict_['SOLUTION']['seed'] = np.random.random_integers(1, 10000)
+    dict_['SOLUTION']['debug'] = np.random.choice(['True', 'False'])
+    dict_['SOLUTION']['fast'] = np.random.choice(['True', 'False'])
+
+    # SIMULATION
+    dict_['SIMULATION'] = {}
+    dict_['SIMULATION']['seed'] = np.random.random_integers(1, 10000)
+    dict_['SIMULATION']['agents'] = np.random.random_integers(1, MAX_AGENTS)
 
     # Shocks
     cov = np.random.normal(size=16).reshape((4, 4))
@@ -100,7 +104,7 @@ def generate_random_dict(constraints=None):
         # Checks
         assert (fast in ['True', 'False'])
         # Replace in initialization file
-        dict_['COMPUTATION']['fast'] = fast
+        dict_['SOLUTION']['fast'] = fast
 
     # Replace debugging level
     if 'debug' in constraints.keys():
@@ -109,7 +113,7 @@ def generate_random_dict(constraints=None):
         # Checks
         assert (debug in ['True', 'False'])
         # Replace in initialization file
-        dict_['COMPUTATION']['debug'] = debug
+        dict_['SOLUTION']['debug'] = debug
 
     # Replace level of ambiguity
     if 'level' in constraints.keys():
@@ -173,7 +177,8 @@ def print_random_dict(dict_):
 
         for flag in dict_.keys():
 
-            if flag in ['COMPUTATION', 'BASICS', 'HOME', 'AMBIGUITY']:
+            if flag in ['SOLUTION', 'BASICS', 'HOME', 'AMBIGUITY',
+                        'SIMULATION']:
 
                 str_ = ' {0:<15} {1:<15} \n'
 

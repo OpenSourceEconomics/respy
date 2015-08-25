@@ -57,7 +57,7 @@ def simulate(solution, num_agents, seed):
             robupy_obj.set_attr('num_agents', num_agents)
 
         if seed is not None:
-            robupy_obj.set_attr('seed', seed)
+            robupy_obj.set_attr('seed_simulation', seed)
 
         robupy_obj.lock()
 

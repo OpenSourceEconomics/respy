@@ -59,7 +59,7 @@ def simulate(robupy_obj):
 
     num_agents = robupy_obj.get_attr('num_agents')
 
-    seed = robupy_obj.get_attr('seed')
+    seed = robupy_obj.get_attr('seed_simulation')
 
     fast = robupy_obj.get_attr('fast')
 

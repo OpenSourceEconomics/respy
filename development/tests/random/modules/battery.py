@@ -35,7 +35,7 @@ def test_99():
     for fast in ['True', 'False']:
 
         # Prepare initialization file
-        init_dict['COMPUTATION']['fast'] = fast
+        init_dict['SOLUTION']['fast'] = fast
 
         print_random_dict(init_dict)
 
