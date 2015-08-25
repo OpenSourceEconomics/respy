@@ -9,11 +9,11 @@ import shlex
 import os
 
 # project library
-import robupy.performance.access as perf
 
 from robupy.checks.checks_solve import checks_solve
 from robupy.ambiguity import simulate_emax_ambiguity
 from robupy.risk import simulate_emax_risk
+import robupy.performance.access as perf
 
 # Logging
 logger = logging.getLogger('ROBUPY_SOLVE')

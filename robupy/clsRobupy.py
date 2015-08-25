@@ -11,7 +11,8 @@ from robupy.clsMeta import MetaCls
 class RobupyCls(MetaCls):
     
     def __init__(self):
-        
+        """ Initialization of hand-crafted class for package management.
+        """
         self.attr = dict()
 
         self.attr['init_dict'] = None
