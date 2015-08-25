@@ -1,0 +1,6 @@
+#!/bin/sh
+FILENV=assign.prg
+export FILENV 
+ja
+cf77 -Zv -o dpml4a -Wf"-e m" -F dpml4a.f -l imsl10
+cost
