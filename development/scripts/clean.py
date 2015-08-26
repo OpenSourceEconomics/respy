@@ -43,6 +43,8 @@ def remove_nuisances():
 
         if 'ini' in file_: continue
 
+        if 'monte_carlo' in file_: continue
+
         remove(file_)
 
     # Iterate for directories
