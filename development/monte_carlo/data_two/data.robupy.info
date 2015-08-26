@@ -1,0 +1,19 @@
+
+ Simulated Economy
+
+   Number of Agents:       1000
+
+   Number of Periods:      3
+
+   Seed:                   123
+
+
+   Choices:  
+
+       Period     Work A     Work B    Schooling   Home      
+
+         1        0.5020     0.0670     0.0390     0.3920
+         2        0.4950     0.1000     0.0010     0.4040
+         3        0.5270     0.1040     0.0000     0.3690
+
+
