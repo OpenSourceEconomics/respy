@@ -231,7 +231,7 @@ SUBROUTINE calculate_payoffs_ex_ante_lib(period_payoffs_ex_ante, num_periods, &
 
             ! Tuition cost for higher education if agents move
             ! beyond high school.
-            IF(edu + edu_start > 12) THEN
+            IF(edu + edu_start >= 12) THEN
 
                 payoff = payoff + coeffs_edu(2)
             

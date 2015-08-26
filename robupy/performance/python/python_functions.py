@@ -126,7 +126,7 @@ def calculate_payoffs_ex_ante(num_periods, states_number_period, states_all,
 
             # Tuition cost for higher education if agents move
             # beyond high school.
-            if edu + edu_start > 12:
+            if edu + edu_start >= 12:
                 payoff += coeffs_edu[1]
             # Psychic cost of going back to school
             if edu_lagged == 0:
