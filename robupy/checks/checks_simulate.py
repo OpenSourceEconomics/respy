@@ -40,7 +40,7 @@ def checks_simulate(str_, robupy_obj, *args):
         for i, max_ in enumerate(
                 [num_agents, num_periods, 3, num_periods, num_periods,
                  num_periods,
-                 edu_max - edu_start, 1]):
+                 edu_max, 1]):
             # Agent and time index
             if i in [0, 1]:
                 assert (data_frame.max(axis=0)[i] == (max_ - 1))

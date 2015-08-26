@@ -137,6 +137,9 @@ def simulate(robupy_obj):
             # Write relevant state space for period to data frame
             data[count, 4:8] = current_state
 
+            # Special treatment for education
+            data[count, 6] += edu_start
+
             # Update work experiences and education
             if max_idx == 0:
                 current_state[0] += 1
