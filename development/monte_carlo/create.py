@@ -1,8 +1,5 @@
 #!/usr/bin/env python
-""" This module starts the test runs using the data specifications from
-the seminal paper ``The Solution and Estimation of Discrete Choice Dynamic
-Programming Models by Simulation and Interpolation: Monte Carlo Evidence''
-by Michael Keane and Kenneth Wolpin in The Review of Economics and Statistics.
+""" Starting of Monte Carlo specifications.
 """
 
 # standard library
