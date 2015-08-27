@@ -216,7 +216,7 @@ PROGRAM dp3asim
 
 
   ! Open files
-  open(9,file='in3.txt')
+  open(9,file='in.txt')
     
   open(10,file='otest.txt')
     
@@ -309,9 +309,7 @@ PROGRAM dp3asim
 !***************************
 !*  DRAW RANDOM VARIABLES  *
 !***************************
-      !CALL RNSET(1111111111)
-      CALL RNSET(19999999999)
-
+      CALL RNSET(1111111111)
 !C     DO 30 T=1,NPER
       DO 31 J=1,DRAW
       DO 30 T=1,NPER
@@ -319,7 +317,7 @@ PROGRAM dp3asim
        EU1(J,T) = exp(A(1,1)*RNN(1))
        EU2(J,T) = exp(A(2,1)*RNN(1)+A(2,2)*RNN(2))
        C(J,T)   = A(3,1)*RNN(1)+A(3,2)*RNN(2)+A(3,3)*RNN(3)
-       B(J,T)   = A(4,1)*RNN(1)+A(4,2)*RNN(2)+A(4,3)*RNN(3) +A(4,4)*RNN(4)
+       B(J,T)   = A(4,1)*RNN(1)+A(4,2)*RNN(2)+A(4,3)*RNN(3)+A(4,4)*RNN(4)
    30 CONTINUE
    31 CONTINUE
 !C  30 CONTINUE
