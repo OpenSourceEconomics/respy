@@ -6,11 +6,15 @@ MODULE IMSL_REPLACEMENTS
   ! IMSL library in the original work.
   !*****************************************************************************
 
+  IMPLICIT NONE
+
+  PUBLIC
+
   CONTAINS
 
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE LFCDS(a, matrix, b , factor, c, d)
+SUBROUTINE LFCDS(a, matrix, b, factor, c, d)
 ! I WANT THE INTERFACE CLOSER TO THE ORGINAL IMSL IF POSSIBLE
 !This subroutine generates the cholesky factor of the argument 'matrix' and stores
 !the result in the argument 'factor'.
@@ -54,55 +58,57 @@ DO i = 1,n
 END DO
 END SUBROUTINE 
 
-!********************************************************************
-SUBROUTINE normal1(vec, mean, variance)
-!
-!This subroutine generates a univariate sample of random numbers form N(mean, variance)
-!using the Box-Muller algorithm.
-!
-IMPLICIT NONE
-!Defining arguments
-REAL, INTENT(OUT)	:: vec(:,:)
-REAL, INTENT(IN)		:: mean(:), variance(:,:)
-!Defining local variables
-REAL, PARAMETER		:: pi = 3.1415926
-REAL, ALLOCATABLE    :: u(:), r(:)
-INTEGER   			:: g, i, s
-!Algorithm
-s = size(vec,1) 
-ALLOCATE(u(2*s))
-ALLOCATE(r(2*s))
-CALL random_number(u)
-DO g = 1, 2*s, 2
-   r(g) 	= sqrt(-2*log(u(g)))*cos(2*pi*u(g+1)) 
-   r(g+1)	= sqrt(-2*log(u(g)))*sin(2*pi*u(g+1)) 
-END DO
-DO i = 1,s 
-   vec(i,1) = mean(1) + sqrt(variance(1,1))*r(i)			
-END DO
-END SUBROUTINE normal1
+  !***************************************************************************** 
+  !***************************************************************************** 
+  SUBROUTINE RNNOR(dim, draw)
 
-!********************************************************************
-SUBROUTINE RNNOR(dim, draw)
-!
-! This subroutine draws a single deviate from a  mutlivariate normal distribution with mean zero.
-!
-IMPLICIT NONE
-!Defining arguments
-INTEGER, INTENT(IN)				:: dim
-REAL, INTENT(OUT)				:: draw(4)
-!Defining local variables
-INTEGER				:: g, n, i
-REAL			:: zero(1) = 0.0, one(1,1) = 1.0, z(4,1)
-!Algorithm
-CALL normal1(z, zero, one)
+    !
+    ! This subroutine generates deviates from a standard normal distribution using 
+    ! the Box-Muller algorithm.
+    !
 
-draw = z(:,1)
+    !/* external objects    */
 
-END SUBROUTINE 
+    INTEGER, INTENT(IN)	:: dim
 
+    REAL, INTENT(OUT)   :: draw(dim)
+    
+    !/* internal objects    */
 
-!********************************************************************
+    INTEGER             :: g 
+
+    REAL, PARAMETER     :: pi = 3.141592653589793238462643383279502884197
+    REAL, ALLOCATABLE   :: u(:), r(:)
+
+    !--------------------------------------------------------------------------- 
+    ! Algorithm
+    !--------------------------------------------------------------------------- 
+
+    ! Allocate containers
+    ALLOCATE(u(2*dim)); ALLOCATE(r(2*dim))
+
+    ! Call uniform deviates
+    CALL random_number(u)
+
+    ! Apply Box-Muller transform
+    DO g = 1, 2*dim, 2
+
+       r(g)   = SQRT(-2*LOG(u(g)))*COS(2*pi*u(g+1)) 
+       r(g+1) = SQRT(-2*LOG(u(g)))*SIN(2*pi*u(g+1)) 
+
+    END DO
+
+    ! Extract relevant floats
+    DO g = 1, dim 
+
+       draw(g) = r(g)     
+
+    END DO
+
+  END SUBROUTINE 
+
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE RNSET(a)
 !
 ! St random seed
@@ -114,6 +120,8 @@ INTEGER, INTENT(IN)				:: a
 
 END SUBROUTINE 
 
+!*******************************************************************************
+!*******************************************************************************
 
 END MODULE
 
@@ -126,10 +134,10 @@ PROGRAM dp3asim
   ! The input and output connections are opened and the commenting
   ! style is changed to comply with the FORTRAN95 standard. Line
   ! breaks are removed.
-  !*****************************************************************************
+  !***************************************************************************** 
 
-	!Interface to IMSL replacements
-	USE IMSL_REPLACEMENTS
+  ! Interface to IMSL replacements
+  USE IMSL_REPLACEMENTS
   
 !********************************************************
 !*  PROGRAM TO CONSTRUCT MONTE CARLO DATA FOR DP MODEL  *
@@ -151,12 +159,12 @@ PROGRAM dp3asim
       INTEGER X1,X2,E,T
 
 
-! Open files
-open(9,file='in1a.txt')
-  
-open(10,file='otest.txt')
-  
-open(11,file='ftest.txt')
+  ! Open files
+  open(9,file='in1.txt')
+    
+  open(10,file='otest.txt')
+    
+  open(11,file='ftest.txt')
 
 
       READ(9,1500) NPER,NPOP,DRAW,DRAW1,TAU
