@@ -6,11 +6,12 @@ The material in this directory allows to reproduce the Monte Carlo results repor
 
 > Michael P. Keane, Kenneth I. Wolpin (1994). The Solution and Estimation of Discrete Choice Dynamic Programming Models by Simulation and Interpolation: Monte Carlo Evidence. The Review of Economics and Statistics, 76(4): 648-672.
 
-Their original source code is available in the **sources** subdirectory.
-
 #### Execution
  
     $ python create.py
 
 The resulting choice probabilities reported in **data.robupy.info** align with their results provided in **original-results.pdf**. Minor discrepancies are due to randomness.  
 
+### Original
+
+The original source codes are available in the **sources** subdirectory. An upgraded FORTRAN95 implementation is available [here](https://github.com/robustToolbox/package/tree/master/development/monte_carlo/sources/f95).
