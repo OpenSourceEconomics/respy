@@ -12,7 +12,7 @@ PROGRAM monte_carlo
       DIMENSION PROB1(40,4)
       INTEGER X1,X2,E,T
 
-  open(9,file='in1.txt')
+  open(9,file='init.txt')
  1500 FORMAT(1x,i3,1x,i5,1x,f7.0,1x,f6.0,1x,f6.2)
 
       READ(9,1500) NPER,NPOP,DRAW,DRAW1,TAU
@@ -85,7 +85,8 @@ PROGRAM monte_carlo
 !*  CREATE THE STATE INDEX  *
 !****************************
 DO T = 1, NPER
-  K=0
+  
+    K=0
         DO E=10,20
           IF(E.GT.10+T-1) THEN
             CYCLE
@@ -124,6 +125,283 @@ END DO
 
 
 
-PRINT *, KMAX
+
+!***************************
+!*  DRAW RANDOM VARIABLES  *
+!***************************
+CALL RANDOM_SEED() 
+
+DO J = 1, INT(DRAW)
+
+  DO T = 1, NPER
+!        CALL RNNOR(4,RNN) THIS NEEDS TO BE FIXED OF COURSE
+          RNN = 0.1
+
+        EU1(J,T) = 99.0!exp(A(1,1)*RNN(1))
+        EU2(J,T) = exp(A(2,1)*RNN(1)+A(2,2)*RNN(2))
+        C(J,T)   = A(3,1)*RNN(1)+A(3,2)*RNN(2)+A(3,3)*RNN(3)
+        B(J,T)   = A(4,1)*RNN(1)+A(4,2)*RNN(2)+A(4,3)*RNN(3)+A(4,4)*RNN(4)
+END DO
+ END DO
+! *****************************************************************
+! *  CONSTRUCT THE EXPECTED MAX OF THE TIME NPER VALUE FUNCTIONS  *
+! *****************************************************************
+DO K = 1, KMAX(NPER)
+         EMAX(NPER,K)=0.
+!C       EMAX1(NPER,K)=0.
+END DO
+
+  DO K=1,KMAX(NPER)
+
+         X1=KSTATE(NPER,K,1)
+         X2=KSTATE(NPER,K,2)
+         E=KSTATE(NPER,K,3)
+         LS=KSTATE(NPER,K,4)
+         W1=exp(BETA(1,1)+BETA(1,2)*E+BETA(1,3)*X1+BETA(1,4)*X1**2 +BETA(1,5)*X2+BETA(1,6)*X2**2)
+         W2=exp(BETA(2,1)+BETA(2,2)*E+BETA(2,3)*X1+BETA(2,4)*X1**2 +BETA(2,5)*X2+BETA(2,6)*X2**2)
+         IF(E.GE.12) THEN                 
+           CBAR = CBAR1 - CBAR2 
+          ELSE
+           CBAR = CBAR1
+         END IF
+         IF(LS.eq.0) THEN
+          CBAR = CBAR - CS
+          END IF
+          
+       DO J=1,INT(DRAW)
+         V1 = W1*EU1(J,NPER)
+         V2 = W2*EU2(J,NPER) 
+         IF(E.LE.19) THEN
+           V3 = CBAR+C(J,NPER)
+          ELSE
+           V3 = CBAR - 40000.0
+         ENDIF
+
+         V4 = VHOME+B(J,NPER)
+! C        write(10,2002) j,eu1(nper,j),eu2(nper,j),c(nper,j)
+! C 2002   format(' j=',i2,' eu1=',f10.3,' eu2=',f10.3,' c=',f10.3)
+! C        SUMV=EXP((V1-VMAX)/TAU)+EXP((V2-VMAX)/TAU)
+! C     *            +EXP((V3-VMAX)/TAU)+EXP((V4-VMAX)/TAU)
+!         VMAX=AMAX1(V1,V2,V3,V4)
+!         EMAX(NPER,K)=EMAX(NPER,K)+VMAX
+! C        EMAX1(NPER,K)=EMAX1(NPER,K)
+! C     *       +TAU*(GAMA+LOG(SUMV)+VMAX/TAU)
+      END DO
+
+  EMAX(NPER,K) = EMAX(NPER,K)/DRAW
+
+END DO
+! ***********************************************************
+! *  CONSTRUCT THE EXPECTED MAX OF THE VALUE FUNCTIONS FOR  *
+! *  PERIODS 2 THROUGH NPER-1                               *
+! ***********************************************************
+       DO S=1,NPER-2
+       T=NPER-S
+       DO K=1,KMAX(T)
+         EMAX(T,K)=0.
+! C       EMAX1(T,K)=0.
+      END DO
+       DO K=1,KMAX(T)
+         X1=KSTATE(T,K,1)
+         X2=KSTATE(T,K,2)
+         E=KSTATE(T,K,3)
+         LS=KSTATE(T,K,4)
+         W1=exp(BETA(1,1)+BETA(1,2)*E+BETA(1,3)*X1+BETA(1,4)*X1**2+BETA(1,5)*X2+BETA(1,6)*X2**2)
+         W2=exp(BETA(2,1)+BETA(2,2)*E+BETA(2,3)*X1+BETA(2,4)*X1**2+BETA(2,5)*X2+BETA(2,6)*X2**2)
+         IF(E.GE.12) THEN                 
+           CBAR = CBAR1 - CBAR2 
+          ELSE
+           CBAR = CBAR1
+         ENDIF
+
+         IF(LS.eq.0) THEN
+          CBAR = CBAR - CS
+         END IF
+
+       DO J=1,DRAW
+         V1=W1*EU1(J,T)    + DELTA*EMAX(T+1,FSTATE(T+1,X1+2,X2+1,E-9,1))
+         V2=W2*EU2(J,T)    + DELTA*EMAX(T+1,FSTATE(T+1,X1+1,X2+2,E-9,1))
+         IF(E.LE.19) THEN
+           V3=CBAR+C(J,T)  + DELTA*EMAX(T+1,FSTATE(T+1,X1+1,X2+1,E-8,2))
+          ELSE
+           V3=CBAR - 40000.0
+         END IF
+         V4=VHOME+B(J,T)   + DELTA*EMAX(T+1,FSTATE(T+1,X1+1,X2+1,E-9,1))
+! C       SUMV=EXP((V1-VMAX)/TAU)+EXP((V2-VMAX)/TAU)
+! C    *     +EXP((V3-VMAX)/TAU)+EXP(V4-VMAX)/TAU)         
+         VMAX=AMAX1(V1,V2,V3,V4)
+         EMAX(T,K)=EMAX(T,K)+VMAX
+! C       EMAX1(T,k)=EMAX1(T,K)
+! C    *     +TAU*(GAMA+LOG(SUMV+VMAX/TAU)
+ END DO
+       EMAX(T,K) = EMAX(T,K)/DRAW
+END DO
+END DO
+! C      DO 54 T=2,NPER
+! C      DO 55 K=1,KMAX(T)
+! C        WRITE(10,2000) T,K,KSTATE(T,K,1),KSTATE(T,K,2),
+! C     *   KSTATE(T,K,3),EMAX(T,K)  
+! C 2000   FORMAT(' T=',I2,' K=',I4,' X1=',I2,' X2=',I2,
+! C     *    ' E=',I2,' EMAX=',F16.3)
+! C   55 CONTINUE
+! C   54 CONTINUE
+! C      GOTO 999
+
+
+! ***********************************************************
+! *  CONSTRUCT MONTE-CARLO DATA FOR PERIODS 1 THROUGH NPER  *
+! ***********************************************************
+!       do 58 t=1,nper
+!       do 59 j=1,4
+!         prob(t,j)=0.0
+!         prob1(t,j)=0.0
+!   59  continue
+!   58  continue
+!       wealth = 0.0 
+!       DO 60 L=1,NPOP
+!         X1=0
+!         X2=0
+!         E=10
+!         LS1=1
+!       DO 61 T=1,NPER-1
+!        LS = LS1
+!        W1=exp(BETA(1,1)+BETA(1,2)*E+BETA(1,3)*X1+BETA(1,4)*X1**2
+!      *       +BETA(1,5)*X2+BETA(1,6)*X2**2)
+!        W2=exp(BETA(2,1)+BETA(2,2)*E+BETA(2,3)*X1+BETA(2,4)*X1**2
+!      *       +BETA(2,5)*X2+BETA(2,6)*X2**2)
+!        WAGE1=W1*EU1(L,T)
+!        WAGE2=W2*EU2(L,T)  
+!        V1=WAGE1 + DELTA*EMAX(T+1,FSTATE(T+1,X1+2,X2+1,E-9,1))
+!        V2=WAGE2 + DELTA*EMAX(T+1,FSTATE(T+1,X1+1,X2+2,E-9,1)) 
+!        IF(E.GE.12) THEN                 
+!          CBAR = CBAR1 - CBAR2 
+!         ELSE
+!          CBAR = CBAR1
+!        ENDIF
+!        IF(LS.eq.0) CBAR = CBAR - CS
+!        IF(E.LE.19) then 
+!          V3=CBAR+C(L,T) + DELTA*EMAX(T+1,FSTATE(T+1,X1+1,X2+1,E-8,2))
+!          WAGE3=CBAR+C(L,T)  
+!         ELSE
+!          V3=CBAR - 40000.0
+!          WAGE3=CBAR-40000.0
+!        ENDIF
+!        V4=VHOME+B(L,T) + DELTA*EMAX(T+1,FSTATE(T+1,X1+1,X2+1,E-9,1))
+!        WAGE4=VHOME+B(L,T) 
+!        VMAX=AMAX1(V1,V2,V3,V4)
+!        SUMV=EXP((V1-VMAX)/TAU)+EXP((V2-VMAX)/TAU)
+!      *     +EXP((V3-VMAX)/TAU)+EXP((V4-VMAX)/TAU) 
+!        prob(t,1)=prob(t,1)+( EXP((v1-vmax)/tau) /sumv ) /npop         
+!        prob(t,2)=prob(t,2)+( EXP((v2-vmax)/tau) /sumv ) /npop         
+!        prob(t,3)=prob(t,3)+( EXP((v3-vmax)/tau) /sumv ) /npop         
+!        prob(t,4)=prob(t,4)+( EXP((v4-vmax)/tau) /sumv ) /npop         
+!        IF (VMAX .EQ. V1) THEN
+!          K=1
+!          LS1=0
+!        ENDIF
+!        IF (VMAX .EQ. V2) THEN
+!          K=2
+!          LS1=0
+!        ENDIF
+!        IF (VMAX .EQ. V3) THEN
+!          K=3
+!          LS1=1
+!        ENDIF
+!        IF (VMAX .EQ. V4) THEN
+!          K=4
+!          LS1=0
+!        ENDIF
+!        prob1(t,k)=prob1(t,k)+1.0/npop
+!        IF(K.EQ.1) THEN
+!         WRITE(11,1000) L,NPER,K,WAGE1,X1,X2,E,LS
+!         X1=X1+1
+!         wealth = wealth + WAGE1*(DELTA**T)
+!        ENDIF
+!        IF(K.EQ.2) THEN
+!         WRITE(11,1000) L,NPER,K,WAGE2,X1,X2,E,LS
+!         X2=X2+1
+!         wealth = wealth + WAGE2*(DELTA**T)
+!        ENDIF
+!        IF(K.EQ.3) THEN
+!         WRITE(11,1000) L,NPER,K,WAGE3,X1,X2,E,LS
+!         E=E+1
+!         wealth = wealth + WAGE3*(DELTA**T)
+!        ENDIF
+!        IF(K.EQ.4) THEN
+!         WRITE(11,1000) L,NPER,K,WAGE4,X1,X2,E,LS
+!         wealth = wealth + WAGE4*(DELTA**T)
+!        ENDIF
+!    61 CONTINUE
+!        T = NPER 
+!        LS = LS1
+!        W1=exp(BETA(1,1)+BETA(1,2)*E+BETA(1,3)*X1+BETA(1,4)*X1**2
+!      *       +BETA(1,5)*X2+BETA(1,6)*X2**2)
+!        W2=exp(BETA(2,1)+BETA(2,2)*E+BETA(2,3)*X1+BETA(2,4)*X1**2
+!      *       +BETA(2,5)*X2+BETA(2,6)*X2**2)
+!        V1=W1*EU1(L,T)
+!        V2=W2*EU2(L,T)  
+!        IF(E.GE.12) THEN                 
+!          CBAR = CBAR1 - CBAR2 
+!         ELSE
+!          CBAR = CBAR1
+!        ENDIF
+!        IF(LS.eq.0) CBAR = CBAR - CS
+!        IF(E.LE.19) then 
+!          V3=CBAR+C(L,T) 
+!         ELSE
+!          V3=CBAR - 40000.0
+!        ENDIF
+!        V4=VHOME+B(L,T) 
+!        VMAX=AMAX1(V1,V2,V3,V4)
+!        SUMV=EXP((V1-VMAX)/TAU)+EXP((V2-VMAX)/TAU)
+!      *     +EXP((V3-VMAX)/TAU)+EXP((V4-VMAX)/TAU) 
+!        prob(t,1)=prob(t,1)+( EXP((v1-vmax)/tau) /sumv ) /npop         
+!        prob(t,2)=prob(t,2)+( EXP((v2-vmax)/tau) /sumv ) /npop         
+!        prob(t,3)=prob(t,3)+( EXP((v3-vmax)/tau) /sumv ) /npop         
+!        prob(t,4)=prob(t,4)+( EXP((v4-vmax)/tau) /sumv ) /npop         
+!        IF (VMAX .EQ. V1) THEN
+!          K=1
+!        ENDIF
+!        IF (VMAX .EQ. V2) THEN
+!          K=2
+!        ENDIF
+!        IF (VMAX .EQ. V3) THEN
+!          K=3
+!        ENDIF
+!        IF (VMAX .EQ. V4) THEN
+!          K=4
+!        ENDIF
+!        prob1(t,k)=prob1(t,k)+1.0/npop
+!        IF(K.EQ.1) THEN
+!         WRITE(11,1000) L,NPER,K,V1,X1,X2,E,LS
+!         wealth = wealth + WAGE1*(DELTA**T)
+!        ENDIF
+!        IF(K.EQ.2) THEN
+!         WRITE(11,1000) L,NPER,K,V2,X1,X2,E,LS
+!         wealth = wealth + WAGE2*(DELTA**T)
+!        ENDIF
+!        IF(K.EQ.3) THEN
+!         WRITE(11,1000) L,NPER,K,V3,X1,X2,E,LS
+!         wealth = wealth + WAGE3*(DELTA**T)
+!        ENDIF
+!        IF(K.EQ.4) THEN
+!         WRITE(11,1000) L,NPER,K,V4,X1,X2,E,LS
+!         wealth = wealth + WAGE4*(DELTA**T)
+!        ENDIF
+!    60 CONTINUE
+!       wealth = wealth/npop
+!       write(10,1060) wealth
+!  1060 format(' discounted wealth = ',f16.2)
+!       do 70 t=1,nper
+!         write(10,3000) t,(prob(t,j),j=1,4)
+!  3000   format(' t=',i3,' prob=',4f16.12)
+!    70 continue
+!       do 71 t=1,nper
+!         write(10,3001) t,(prob1(t,j),j=1,4)
+!  3001   format(' t=',i3,' prob1=',4f16.12)
+!    71 continue
+!  1000 FORMAT(1X,I5,1X,I3,1X,I1,1X,F10.2,4(1X,I3))
+! C 999 CONTINUE
+
 
 END PROGRAM 
