@@ -12,59 +12,98 @@ MODULE IMSL_REPLACEMENTS
 
   CONTAINS
 
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE LFCDS(a, matrix, b, factor, c, d)
-! I WANT THE INTERFACE CLOSER TO THE ORGINAL IMSL IF POSSIBLE
-!This subroutine generates the cholesky factor of the argument 'matrix' and stores
-!the result in the argument 'factor'.
-!
-IMPLICIT NONE
-!Defining arguments
-REAL, INTENT(IN)	    :: matrix(:,:)
-REAL, INTENT(INOUT)	:: factor(:,:), d
-INTEGER,  INTENT(IN):: a, b, c 
-!Definition of local variables
+  !*****************************************************************************
+  !*****************************************************************************
+  SUBROUTINE LFCDS(a, matrix, b, factor, c, d)
 
-INTEGER				:: i, n, k, j
-REAL					:: sums
-REAL, ALLOCATABLE	:: clon(:,:)
-!Algorithm
-factor = 0
-n = size(matrix,1)
-ALLOCATE(clon(n,n))
-clon = matrix
-DO j = 1, n
-   sums = 0.0
-   DO k = 1, j-1
-      sums = sums + clon(j,k)**2
-   END DO
- 
-clon(j,j) = sqrt(clon(j,j) - sums)
+    !
+    ! This subroutine performs a Cholesky decomposition. Some input arguments
+    ! are just present to align the interface to the original function call.
+    !
+
+
+    !/* external objects    */
     
-   DO i = j + 1, n
-      sums = 0.0
-      DO k = 1, j-1
-         sums = sums + clon(j,k)*clon(i,k)
+    REAL, INTENT(IN)	     :: matrix(:,:)
+    REAL, INTENT(OUT)      :: factor(:,:)
+    REAL, INTENT(INOUT)    :: d
+    
+    INTEGER,  INTENT(IN)   :: a
+    INTEGER,  INTENT(IN)   :: b
+    INTEGER,  INTENT(IN)   :: c
+
+    !/* internal objects    */
+
+    INTEGER				         :: i
+    INTEGER                :: n
+    INTEGER                :: k
+    INTEGER                :: j
+
+    REAL					         :: sums
+    REAL, ALLOCATABLE	     :: clon(:,:)
+
+    !--------------------------------------------------------------------------- 
+    ! Algorithm
+    !--------------------------------------------------------------------------- 
+    
+    ! Initialize containers and auxiliary objects
+    factor = 0
+
+    n = size(matrix, 1)
+
+    ALLOCATE(clon(n, n))
+
+    clon = matrix
+
+    ! Construct decomposition
+    DO j = 1, n
+
+        sums = 0.0
+
+        DO k = 1, (j - 1)
+
+          sums = sums + clon(j, k)**2
+
+        END DO
+     
+        clon(j,j) = sqrt(clon(j, j) - sums)
+        
+        DO i = (j + 1), n
+        
+          sums = 0.0
+        
+          DO k = 1, (j-1)
+        
+             sums = sums + clon(j, k)*clon(i, k)
+        
+          END DO
+        
+          clon(i, j) = (clon(i, j) - sums)/clon(j, j)
+       
+       END DO
+
+    END DO
+
+    ! Transfer information from matrix to factor
+    DO i = 1,n
+      
+      DO j = 1,n
+      
+         IF(i <= j) factor(j,i) = clon(j,i) 
+      
       END DO
-      clon(i,j) = (clon(i,j) - sums)/clon(j,j)
-   END DO
-END DO
-!Transfer information from matrix to factor
-DO i = 1,n
-  DO j = 1,n
-     IF(i <= j) factor(j,i) = clon(j,i) 
-  END DO
-END DO
-END SUBROUTINE 
+    
+    END DO
+
+  END SUBROUTINE 
 
   !***************************************************************************** 
   !***************************************************************************** 
   SUBROUTINE RNNOR(dim, draw)
 
     !
-    ! This subroutine generates deviates from a standard normal distribution using 
-    ! the Box-Muller algorithm.
+    ! This subroutine generates deviates from a standard normal distribution 
+    ! using the Box-Muller algorithm.
     !
 
     !/* external objects    */
@@ -107,18 +146,35 @@ END SUBROUTINE
 
   END SUBROUTINE 
 
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE RNSET(a)
-!
-! St random seed
-!
-IMPLICIT NONE
-!Defining arguments
-INTEGER, INTENT(IN)				:: a
+  !*****************************************************************************
+  !*****************************************************************************
+  SUBROUTINE RNSET(seed)
 
+    !
+    ! Set random seed.
+    !
 
-END SUBROUTINE 
+    !/* external objects    */
+
+    INTEGER, INTENT(IN)				:: seed
+
+    !/* internal objects    */
+
+    INTEGER                   :: size
+
+    INTEGER                   :: auxiliary(55)
+
+    !--------------------------------------------------------------------------- 
+    ! Algorithm
+    !--------------------------------------------------------------------------- 
+
+    CALL RANDOM_SEED(size=size)
+
+    auxiliary = seed
+
+    CALL RANDOM_SEED(put=auxiliary)
+
+  END SUBROUTINE 
 
 !*******************************************************************************
 !*******************************************************************************
@@ -160,7 +216,7 @@ PROGRAM dp3asim
 
 
   ! Open files
-  open(9,file='in1.txt')
+  open(9,file='in3.txt')
     
   open(10,file='otest.txt')
     
@@ -253,7 +309,9 @@ PROGRAM dp3asim
 !***************************
 !*  DRAW RANDOM VARIABLES  *
 !***************************
-      CALL RNSET(1111111111)
+      !CALL RNSET(1111111111)
+      CALL RNSET(19999999999)
+
 !C     DO 30 T=1,NPER
       DO 31 J=1,DRAW
       DO 30 T=1,NPER
@@ -261,7 +319,7 @@ PROGRAM dp3asim
        EU1(J,T) = exp(A(1,1)*RNN(1))
        EU2(J,T) = exp(A(2,1)*RNN(1)+A(2,2)*RNN(2))
        C(J,T)   = A(3,1)*RNN(1)+A(3,2)*RNN(2)+A(3,3)*RNN(3)
-       B(J,T)   = A(4,1)*RNN(1)+A(4,2)*RNN(2)+A(4,3)*RNN(3)   +A(4,4)*RNN(4)
+       B(J,T)   = A(4,1)*RNN(1)+A(4,2)*RNN(2)+A(4,3)*RNN(3) +A(4,4)*RNN(4)
    30 CONTINUE
    31 CONTINUE
 !C  30 CONTINUE
