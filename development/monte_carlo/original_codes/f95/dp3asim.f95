@@ -21,7 +21,6 @@ MODULE IMSL_REPLACEMENTS
     ! are just present to align the interface to the original function call.
     !
 
-
     !/* external objects    */
     
     REAL, INTENT(IN)	     :: matrix(:,:)
