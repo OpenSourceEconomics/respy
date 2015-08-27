@@ -1,8 +1,16 @@
-module IMSL_REPLACEMENTS
-  contains
-!********************************************************************
-!********************************************************************
-SUBROUTINE LFCDS(matrix, factor)
+MODULE IMSL_REPLACEMENTS
+  
+
+  !*****************************************************************************
+  ! This module provides the required functionality that is provided by the  
+  ! IMSL library in the original work.
+  !*****************************************************************************
+
+  CONTAINS
+
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE LFCDS(a, matrix, b , factor, c, d)
 ! I WANT THE INTERFACE CLOSER TO THE ORGINAL IMSL IF POSSIBLE
 !This subroutine generates the cholesky factor of the argument 'matrix' and stores
 !the result in the argument 'factor'.
@@ -10,8 +18,10 @@ SUBROUTINE LFCDS(matrix, factor)
 IMPLICIT NONE
 !Defining arguments
 REAL, INTENT(IN)	    :: matrix(:,:)
-REAL, INTENT(INOUT)	:: factor(:,:)
+REAL, INTENT(INOUT)	:: factor(:,:), d
+INTEGER,  INTENT(IN):: a, b, c 
 !Definition of local variables
+
 INTEGER				:: i, n, k, j
 REAL					:: sums
 REAL, ALLOCATABLE	:: clon(:,:)
@@ -92,20 +102,42 @@ draw = z(:,1)
 END SUBROUTINE 
 
 
+!********************************************************************
+SUBROUTINE RNSET(a)
+!
+! St random seed
+!
+IMPLICIT NONE
+!Defining arguments
+INTEGER, INTENT(IN)				:: a
 
 
-
-end module IMSL_REPLACEMENTS
-
+END SUBROUTINE 
 
 
+END MODULE
 
-
-
+!*******************************************************************************
+!*******************************************************************************
 PROGRAM dp3asim
-		
-		USE IMSL_REPLACEMENTS
 
+  !*****************************************************************************  
+  ! There are only minor modifications to the original source code.
+  ! The input and output connections are opened and the commenting
+  ! style is changed to comply with the FORTRAN95 standard. Line
+  ! breaks are removed.
+  !*****************************************************************************
+
+	!Interface to IMSL replacements
+	USE IMSL_REPLACEMENTS
+  
+!********************************************************
+!*  PROGRAM TO CONSTRUCT MONTE CARLO DATA FOR DP MODEL  *
+!********************************************************
+!*  TUITION COST INCLUDED                               *
+!********************************************************
+!*  VERSION WITH LAGGED SCHOOL AS STATE VARIABLE        *
+!********************************************************
       INTEGER KSTATE(40,14000,4)
       INTEGER FSTATE(40,40,40,11,2)
       INTEGER KMAX(40)
@@ -118,37 +150,35 @@ PROGRAM dp3asim
       DIMENSION PROB1(40,4)
       INTEGER X1,X2,E,T
 
-  open(9,file='in1.txt')
-  open(10,file='otest.txt')
-  open(11,file='ftest.txt')
 
+! Open files
+open(9,file='in1a.txt')
+  
+open(10,file='otest.txt')
+  
+open(11,file='ftest.txt')
 
- 1500 FORMAT(1x,i3,1x,i5,1x,f7.0,1x,f6.0,1x,f6.2)
 
       READ(9,1500) NPER,NPOP,DRAW,DRAW1,TAU
       WRITE(10,1500) NPER,NPOP,DRAW,DRAW1,TAU
+ 1500 FORMAT(1x,i3,1x,i5,1x,f7.0,1x,f6.0,1x,f6.2)
 !C     GAMA= 0.577
-!      WNA=-9.99
-      DO  J=1,2
+      WNA=-9.99
+      do 1 J=1,2
       READ(9,1501) (BETA(J,k),k=1,6)
       WRITE(10,1501) (BETA(J,k),k=1,6)
  1501 FORMAT(6(1x,f10.6))
-      END DO
-!    1 continue
+    1 continue
       READ(9,1502) CBAR1,CBAR2,CS,VHOME,DELTA
       WRITE(10,1502) CBAR1,CBAR2,CS,VHOME,DELTA
  1502 FORMAT(5(1x,f10.5))
-      DO   J=1,4
+      do 2 J=1,4
       READ(9,1503) (RHO(J,K),K=1,J)
       WRITE(10,1503) (RHO(J,K),K=1,J)
  1503 FORMAT(4(1x,f10.5))
-      END DO
-
+    2 continue
       READ(9,1503) (SIGMA(J),J=1,4)
       WRITE(10,1503) (SIGMA(J),J=1,4)
-
-  
-
 !*********************
 !*  TRANSFORMATIONS  *
 !*********************
@@ -156,11 +186,9 @@ PROGRAM dp3asim
       CBAR2 = CBAR2*1000.00
       CS    = CS   *1000.00
       VHOME = VHOME*1000.00
-      DO J=3,4             
+      DO 1007 J=3,4             
         SIGMA(J) = SIGMA(J)*1000.0
-      END DO
-
-!PRINT *, SIGMA
+ 1007 CONTINUE
 !*********************************************************
 !*  TAKE THE CHOLESKY DECOMPOSITION OF RHO AND PUT IN A  *
 !*********************************************************
@@ -169,7 +197,7 @@ PROGRAM dp3asim
         RHO(K,J) = RHO(J,K)
     4 CONTINUE
     3 CONTINUE
-      CALL LFCDS(RHO, A)
+      CALL LFCDS(4,RHO,4,A,4,COND)
       DO 5 J=2,4
       DO 6 K=1,J-1
         A(J,K) = A(K,J)
@@ -184,10 +212,7 @@ PROGRAM dp3asim
  1008   CONTINUE
         WRITE(10,1503) (A(J,K),K=1,4)
     8 CONTINUE
-
-
-    !**************
-
+!****************************
 !*  CREATE THE STATE INDEX  *
 !****************************
       DO 10 T=1,NPER
@@ -220,7 +245,7 @@ PROGRAM dp3asim
 !***************************
 !*  DRAW RANDOM VARIABLES  *
 !***************************
-      !CALL RNSET(1111111111)
+      CALL RNSET(1111111111)
 !C     DO 30 T=1,NPER
       DO 31 J=1,DRAW
       DO 30 T=1,NPER
@@ -228,13 +253,13 @@ PROGRAM dp3asim
        EU1(J,T) = exp(A(1,1)*RNN(1))
        EU2(J,T) = exp(A(2,1)*RNN(1)+A(2,2)*RNN(2))
        C(J,T)   = A(3,1)*RNN(1)+A(3,2)*RNN(2)+A(3,3)*RNN(3)
-       B(J,T)   = A(4,1)*RNN(1)+A(4,2)*RNN(2)+A(4,3)*RNN(3)+A(4,4)*RNN(4)
+       B(J,T)   = A(4,1)*RNN(1)+A(4,2)*RNN(2)+A(4,3)*RNN(3)   +A(4,4)*RNN(4)
    30 CONTINUE
    31 CONTINUE
 !C  30 CONTINUE
-! *****************************************************************
-! *  CONSTRUCT THE EXPECTED MAX OF THE TIME NPER VALUE FUNCTIONS  *
-! *****************************************************************
+!*****************************************************************
+!*  CONSTRUCT THE EXPECTED MAX OF THE TIME NPER VALUE FUNCTIONS  *
+!*****************************************************************
       DO 40 K=1,KMAX(NPER)
         EMAX(NPER,K)=0.
 !C       EMAX1(NPER,K)=0.
@@ -244,8 +269,8 @@ PROGRAM dp3asim
         X2=KSTATE(NPER,K,2)
         E=KSTATE(NPER,K,3)
         LS=KSTATE(NPER,K,4)
-        W1=exp(BETA(1,1)+BETA(1,2)*E+BETA(1,3)*X1+BETA(1,4)*X1**2+BETA(1,5)*X2+BETA(1,6)*X2**2)
-        W2=exp(BETA(2,1)+BETA(2,2)*E+BETA(2,3)*X1+BETA(2,4)*X1**2+BETA(2,5)*X2+BETA(2,6)*X2**2)
+        W1=exp(BETA(1,1)+BETA(1,2)*E+BETA(1,3)*X1+BETA(1,4)*X1**2    +BETA(1,5)*X2+BETA(1,6)*X2**2)
+        W2=exp(BETA(2,1)+BETA(2,2)*E+BETA(2,3)*X1+BETA(2,4)*X1**2  +BETA(2,5)*X2+BETA(2,6)*X2**2)
         IF(E.GE.12) THEN                 
           CBAR = CBAR1 - CBAR2 
          ELSE
@@ -287,8 +312,8 @@ PROGRAM dp3asim
         X2=KSTATE(T,K,2)
         E=KSTATE(T,K,3)
         LS=KSTATE(T,K,4)
-        W1=exp(BETA(1,1)+BETA(1,2)*E+BETA(1,3)*X1+BETA(1,4)*X1**2+BETA(1,5)*X2+BETA(1,6)*X2**2)
-        W2=exp(BETA(2,1)+BETA(2,2)*E+BETA(2,3)*X1+BETA(2,4)*X1**2+BETA(2,5)*X2+BETA(2,6)*X2**2)
+        W1=exp(BETA(1,1)+BETA(1,2)*E+BETA(1,3)*X1+BETA(1,4)*X1**2      +BETA(1,5)*X2+BETA(1,6)*X2**2)
+        W2=exp(BETA(2,1)+BETA(2,2)*E+BETA(2,3)*X1+BETA(2,4)*X1**2      +BETA(2,5)*X2+BETA(2,6)*X2**2)
         IF(E.GE.12) THEN                 
           CBAR = CBAR1 - CBAR2 
          ELSE
@@ -341,7 +366,7 @@ PROGRAM dp3asim
       DO 61 T=1,NPER-1
        LS = LS1
        W1=exp(BETA(1,1)+BETA(1,2)*E+BETA(1,3)*X1+BETA(1,4)*X1**2 +BETA(1,5)*X2+BETA(1,6)*X2**2)
-       W2=exp(BETA(2,1)+BETA(2,2)*E+BETA(2,3)*X1+BETA(2,4)*X1**2+BETA(2,5)*X2+BETA(2,6)*X2**2)
+       W2=exp(BETA(2,1)+BETA(2,2)*E+BETA(2,3)*X1+BETA(2,4)*X1**2 +BETA(2,5)*X2+BETA(2,6)*X2**2)
        WAGE1=W1*EU1(L,T)
        WAGE2=W2*EU2(L,T)  
        V1=WAGE1 + DELTA*EMAX(T+1,FSTATE(T+1,X1+2,X2+1,E-9,1))
@@ -362,7 +387,7 @@ PROGRAM dp3asim
        V4=VHOME+B(L,T) + DELTA*EMAX(T+1,FSTATE(T+1,X1+1,X2+1,E-9,1))
        WAGE4=VHOME+B(L,T) 
        VMAX=AMAX1(V1,V2,V3,V4)
-       SUMV=EXP((V1-VMAX)/TAU)+EXP((V2-VMAX)/TAU)+EXP((V3-VMAX)/TAU)+EXP((V4-VMAX)/TAU) 
+       SUMV=EXP((V1-VMAX)/TAU)+EXP((V2-VMAX)/TAU)   +EXP((V3-VMAX)/TAU)+EXP((V4-VMAX)/TAU) 
        prob(t,1)=prob(t,1)+( EXP((v1-vmax)/tau) /sumv ) /npop         
        prob(t,2)=prob(t,2)+( EXP((v2-vmax)/tau) /sumv ) /npop         
        prob(t,3)=prob(t,3)+( EXP((v3-vmax)/tau) /sumv ) /npop         
@@ -406,8 +431,8 @@ PROGRAM dp3asim
    61 CONTINUE
        T = NPER 
        LS = LS1
-       W1=exp(BETA(1,1)+BETA(1,2)*E+BETA(1,3)*X1+BETA(1,4)*X1**2+BETA(1,5)*X2+BETA(1,6)*X2**2)
-       W2=exp(BETA(2,1)+BETA(2,2)*E+BETA(2,3)*X1+BETA(2,4)*X1**2+BETA(2,5)*X2+BETA(2,6)*X2**2)
+       W1=exp(BETA(1,1)+BETA(1,2)*E+BETA(1,3)*X1+BETA(1,4)*X1**2 +BETA(1,5)*X2+BETA(1,6)*X2**2)
+       W2=exp(BETA(2,1)+BETA(2,2)*E+BETA(2,3)*X1+BETA(2,4)*X1**2 +BETA(2,5)*X2+BETA(2,6)*X2**2)
        V1=W1*EU1(L,T)
        V2=W2*EU2(L,T)  
        IF(E.GE.12) THEN                 
@@ -423,7 +448,7 @@ PROGRAM dp3asim
        ENDIF
        V4=VHOME+B(L,T) 
        VMAX=AMAX1(V1,V2,V3,V4)
-       SUMV=EXP((V1-VMAX)/TAU)+EXP((V2-VMAX)/TAU)+EXP((V3-VMAX)/TAU)+EXP((V4-VMAX)/TAU) 
+       SUMV=EXP((V1-VMAX)/TAU)+EXP((V2-VMAX)/TAU) +EXP((V3-VMAX)/TAU)+EXP((V4-VMAX)/TAU) 
        prob(t,1)=prob(t,1)+( EXP((v1-vmax)/tau) /sumv ) /npop         
        prob(t,2)=prob(t,2)+( EXP((v2-vmax)/tau) /sumv ) /npop         
        prob(t,3)=prob(t,3)+( EXP((v3-vmax)/tau) /sumv ) /npop         
@@ -471,5 +496,5 @@ PROGRAM dp3asim
    71 continue
  1000 FORMAT(1X,I5,1X,I3,1X,I1,1X,F10.2,4(1X,I3))
 !C 999 CONTINUE
-END PROGRAM 
-
+      STOP
+      END
