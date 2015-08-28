@@ -120,6 +120,7 @@ SUBROUTINE simulate_emax_lib(emax_simulated, payoffs_ex_post, future_payoffs, &
 !-------------------------------------------------------------------------------
 
     ! Initialize containers
+    payoffs_ex_post = zero_dble
     emax_simulated = zero_dble
     future_payoffs = zero_dble
 
@@ -133,26 +134,22 @@ SUBROUTINE simulate_emax_lib(emax_simulated, payoffs_ex_post, future_payoffs, &
         payoffs_ex_post(4) = payoffs_ex_ante(4) + eps_relevant(i, 4)
 
         ! Check applicability
-        IF (period .EQ. (num_periods - one_int)) THEN
-
-            future_payoffs =  -HUGE(future_payoffs)
-
-        ELSE
+        IF (period .NE. (num_periods - one_int)) THEN
 
             ! Get future values
             CALL get_future_payoffs_lib(future_payoffs, edu_max, edu_start, & 
                     mapping_state_idx, period,  emax, k, states_all)
 
-            ! Calculate total utilities
-            total_payoffs = payoffs_ex_post + delta * future_payoffs
-
-            ! Determine optimal choice
-            maximum = MAXVAL(total_payoffs)
-
-            ! Recording expected future value
-            emax_simulated = emax_simulated + maximum
-
         END IF
+
+        ! Calculate total utilities
+        total_payoffs = payoffs_ex_post + delta * future_payoffs
+
+        ! Determine optimal choice
+        maximum = MAXVAL(total_payoffs)
+
+        ! Recording expected future value
+        emax_simulated = emax_simulated + maximum
 
     END DO
 

@@ -75,11 +75,3 @@ handler.setFormatter(formatter)
 logger.setLevel(logging.INFO)
 
 logger.addHandler(handler)
-
-# Check for FORTRAN library
-try:
-    import robupy.fort.fortran_functions as fort
-    logger.info('Using accelerated version of package')
-except ImportError:
-    logger.info('Using standard version of package')
-

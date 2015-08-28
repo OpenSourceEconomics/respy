@@ -107,15 +107,6 @@ class Tests(object):
 
             simulate(robupy_obj)
 
-            # Distribute class attributes
-            num_periods = robupy_obj.get_attr('num_periods')
-
-            emax = robupy_obj.get_attr('emax')
-
-            # Check that the expected future value is always
-            # zero in the last period.
-            assert (np.all(emax[(num_periods - 1), :] == 0.00))
-
     @staticmethod
     def test_2():
         """ Testing ten admissible realizations of state space
