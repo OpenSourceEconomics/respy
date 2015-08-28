@@ -14,4 +14,4 @@ The resulting choice probabilities reported in **data.robupy.info** align with t
 
 ### Original
 
-The original source codes are available in the **sources** subdirectory. An upgraded FORTRAN95 implementation is available [here](https://github.com/robustToolbox/package/tree/master/development/monte_carlo/original_codes/f95).
+The original source codes are available in the **sources** subdirectory. An upgraded **FORTRAN95** implementation is available [here](https://github.com/robustToolbox/package/tree/master/development/monte_carlo/original_codes/f95).
