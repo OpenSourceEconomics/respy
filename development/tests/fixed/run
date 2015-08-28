@@ -235,12 +235,12 @@ def test_E():
 '''
 np.random.seed(4536)
 
-test_A()
+#test_A()
 
-test_B()
+#test_B()
 
-test_C()
+test_C() #unaffected
 
-test_D()
+#test_D()
 
-test_E()
+#test_E() unaffected

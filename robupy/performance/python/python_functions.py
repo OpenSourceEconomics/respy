@@ -12,6 +12,7 @@ def simulate_emax(num_periods, num_draws, period, k, eps_relevant,
 
     # Initialize containers
     payoffs_ex_post, emax_simulated = np.tile(np.nan, 4), 0.0
+    future_payoffs = 0.0
 
     # Calculate maximum value
     for i in range(num_draws):
@@ -24,13 +25,11 @@ def simulate_emax(num_periods, num_draws, period, k, eps_relevant,
             payoffs_ex_post[j] = payoffs_ex_ante[j] + eps_relevant[i, j]
 
         # Check applicability
-        if period == (num_periods - 1):
-            future_payoffs = np.tile(np.nan, 4)
-            continue
+        if period != (num_periods - 1):
 
-        # Get future values
-        future_payoffs = get_future_payoffs(edu_max, edu_start,
-                            mapping_state_idx, period, emax, k, states_all)
+            # Get future values
+            future_payoffs = get_future_payoffs(edu_max, edu_start,
+                                mapping_state_idx, period, emax, k, states_all)
 
         # Calculate total utilities
         total_payoffs = payoffs_ex_post + delta * future_payoffs
