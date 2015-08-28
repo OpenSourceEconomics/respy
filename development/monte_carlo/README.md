@@ -6,7 +6,7 @@ The material in this directory allows to reproduce the Monte Carlo results repor
 
 > Michael P. Keane, Kenneth I. Wolpin (1994). The Solution and Estimation of Discrete Choice Dynamic Programming Models by Simulation and Interpolation: Monte Carlo Evidence. The Review of Economics and Statistics, 76(4): 648-672.
 
-#### Execution
+### Execution
  
     $ python create.py
 
