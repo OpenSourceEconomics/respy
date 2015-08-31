@@ -8,19 +8,25 @@ import logging
 
 # project libray
 from robupy.risk import get_payoffs_risk
-#from robupy.ambiguity import get_payoffs_ambiguity
+from robupy.ambiguity import get_payoffs_ambiguity
 
 # Logging
 logger = logging.getLogger('ROBUPY_SOLVE')
 
 
-def backward_induction(num_periods, eps_relevant_periods,
-                       states_number_period, max_states_period,
-                       period_payoffs_ex_ante, num_draws, edu_max, edu_start,
-                       mapping_state_idx, states_all, delta, fast, debug,
-                       ambiguity_args, with_ambiguity):
+def backward_induction(num_periods, max_states_period, eps_relevant_periods, num_draws,
+            states_number_period, period_payoffs_ex_ante, edu_max, edu_start,
+            mapping_state_idx, states_all, delta, debug, cholesky, level, measure):
     """ Backward iteration procedure.
     """
+
+
+    get_payoffs = get_payoffs_risk
+
+    if level > 0.00:
+        get_payoffs = get_payoffs_ambiguity
+
+
     # Initialize
     period_emax = np.tile(-99.00, (num_periods, max_states_period))
     period_payoffs_ex_post = np.tile(-99.00, ( num_periods, max_states_period, 4))
@@ -43,9 +49,10 @@ def backward_induction(num_periods, eps_relevant_periods,
 
             # Simulate the expected future value.
             emax, payoffs_ex_post, future_payoffs = \
-                get_payoffs_risk(num_draws, eps_relevant, period, k, payoffs_ex_ante,
+                get_payoffs(num_draws, eps_relevant, period, k, payoffs_ex_ante,
                     edu_max, edu_start,mapping_state_idx, states_all,
-                    num_periods, period_emax, delta, fast, debug, ambiguity_args)
+                    num_periods, period_emax, delta, debug, cholesky, level,
+                            measure)
 
             # Collect information
             period_payoffs_ex_post[period, k, :] = payoffs_ex_post

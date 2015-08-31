@@ -19,19 +19,11 @@ HUGE_FLOAT = 10e10
 
 def get_payoffs_ambiguity(num_draws, eps_standard, period, k,
         payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, states_all,
-        num_periods, emax, delta, fast, debug, ambiguity_args):
+        num_periods, emax, delta, debug, cholesky, level, measure):
     """ Get worst case
     """
-    # Distribute arguments
-    ambiguity = ambiguity_args['ambiguity']
-    cholesky = ambiguity_args['cholesky']
-
     # Access performance library
-    perf_lib = perf.get_library(fast)
-
-    # Auxiliary objects
-    measure = ambiguity['measure']
-    level = ambiguity['level']
+    perf_lib = perf.get_library(False)
 
     # Initialize options.
     options = dict()
@@ -43,12 +35,12 @@ def get_payoffs_ambiguity(num_draws, eps_standard, period, k,
     # Collect arguments
     args = (num_draws, eps_standard, period, k, payoffs_ex_ante, edu_max,
             edu_start, mapping_state_idx, states_all, num_periods, emax,
-            cholesky, delta, fast, debug)
+            cholesky, delta, debug)
 
     # Run optimization
     if measure == 'absolute':
 
-        bounds = _prep_absolute(ambiguity, debug)
+        bounds = _prep_absolute(level, debug)
 
         opt = minimize(_criterion, x0, args, method='SLSQP', options=options,
                        bounds=bounds)
@@ -68,7 +60,7 @@ def get_payoffs_ambiguity(num_draws, eps_standard, period, k,
             opt = _correct_debugging(opt, x0, level, eps_standard, cholesky,
                         num_periods, num_draws, period, k, payoffs_ex_ante,
                         edu_max, edu_start, emax, states_all,
-                        mapping_state_idx, delta, fast)
+                        mapping_state_idx, delta)
 
     # Write result to file
     if debug:
@@ -86,8 +78,9 @@ def get_payoffs_ambiguity(num_draws, eps_standard, period, k,
             mapping_state_idx, delta)
 
     # Debugging
-    if debug is True:
-        checks_ambiguity('simulate_emax_ambiguity', simulated, opt)
+    # TODO: Work back in
+    #if debug is True:
+    #    checks_ambiguity('simulate_emax_ambiguity', simulated, opt)
 
     # Finishing
     return simulated, payoffs_ex_post, future_payoffs
@@ -96,7 +89,7 @@ def get_payoffs_ambiguity(num_draws, eps_standard, period, k,
 '''
 def _correct_debugging(opt, x0, level, eps_standard, cholesky, num_periods,
             num_draws, period, k, payoffs_ex_ante, edu_max, edu_start, emax,
-            states_all, mapping_state_idx, delta, fast):
+            states_all, mapping_state_idx, delta):
     """ Some manipulations for test battery
     """
     # Check applicability
@@ -104,7 +97,7 @@ def _correct_debugging(opt, x0, level, eps_standard, cholesky, num_periods,
         return opt
 
     # Access performance library
-    perf_lib = perf.get_library(fast)
+    perf_lib = perf.get_library(False)
 
     # Correct resulting values
     opt['x'] = x0
@@ -173,11 +166,11 @@ def _divergence(x, cov, level):
 
 def _criterion(x, num_draws, eps_standard, period, k, payoffs_ex_ante, edu_max,
         edu_start, mapping_state_idx, states_all, num_periods, emax,
-        true_cholesky, delta, fast, debug):
+        true_cholesky, delta, debug):
     """ Simulate expected future value for alternative shock distributions.
     """
     # Access performance library
-    perf_lib = perf.get_library(fast)
+    perf_lib = perf.get_library(False)
 
     # Transformation of standard normal deviates to relevant distributions.
     eps_relevant = np.dot(true_cholesky, eps_standard.T).T
@@ -227,12 +220,10 @@ def _get_start(debug):
     # Finishing
     return x0
 
-def _prep_absolute(ambiguity, debug):
+
+def _prep_absolute(level, debug):
     """ Get bounds.
     """
-    # Distribute information
-    level = ambiguity['level']
-
     # Construct appropriate bounds
     bounds = [[-level, level], [-level, level]]
 

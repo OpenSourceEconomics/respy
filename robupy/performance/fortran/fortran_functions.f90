@@ -11,7 +11,8 @@
 SUBROUTINE backward_induction(period_emax, period_payoffs_ex_post, period_future_payoffs, num_periods, &
                 max_states_period, eps_relevant_periods, num_draws, & 
                 states_number_period, period_payoffs_ex_ante, edu_max, edu_start, & 
-                mapping_state_idx, states_all, delta)
+                mapping_state_idx, states_all, delta, debug)
+
     !/* external libraries    */
 
     USE robupy_library
@@ -31,6 +32,7 @@ SUBROUTINE backward_induction(period_emax, period_payoffs_ex_post, period_future
 
     DOUBLE PRECISION, INTENT(IN)   :: delta
 
+    LOGICAL, INTENT(IN)             :: debug
 
     INTEGER, INTENT(IN)             :: mapping_state_idx(:, :, :, :, :)    
     INTEGER, INTENT(IN)             :: num_periods

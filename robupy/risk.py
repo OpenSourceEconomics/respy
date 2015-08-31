@@ -7,7 +7,6 @@ import numpy as np
 
 # project library
 from robupy.checks.checks_risk import checks_risk
-
 import robupy.performance.access as perf
 
 ''' Public functions
@@ -16,16 +15,11 @@ import robupy.performance.access as perf
 
 def get_payoffs_risk(num_draws, eps_baseline, period,
         k, payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,
-        states_all, num_periods, emax, delta, fast, debug,
-                       ambiguity_args=None):
+        states_all, num_periods, emax, delta, debug):
     """ Simulate expected future value under risk.
     """
-    # Check input parameters
-    if debug is True:
-        checks_risk('get_payoffs_risk', ambiguity_args)
-
     # Access performance library
-    perf_lib = perf.get_library(fast)
+    perf_lib = perf.get_library(False)
 
     # Transformation of standard normal deviates to relevant distributions.
     eps_relevant = eps_baseline.copy()

@@ -282,14 +282,14 @@ def test_6():
 '''
 np.random.seed(4536)
 
-test_1()
+#test_1()
 
-test_2()
+#test_2()
 
-test_3()
+#test_3()
 
 test_4()
 
-test_5()
+#test_5()
 
-test_6()
+#test_6()

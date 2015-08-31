@@ -88,6 +88,10 @@ def solve(robupy_obj):
         ambiguity_args['cholesky'] = true_cholesky
         ambiguity_args['ambiguity'] = ambiguity
 
+
+    level = ambiguity['level']
+    measure = ambiguity['measure']
+
     # Select relevant disturbances
     eps_relevant_periods = eps_baseline_periods
 
@@ -117,29 +121,11 @@ def solve(robupy_obj):
     logger.info('Staring backward induction procedure')
 
     # Backward iteration procedure
-    if not fast:
-
-        period_emax, period_payoffs_ex_post, period_future_payoffs = perf_lib.backward_induction(
-            num_periods, eps_relevant_periods, states_number_period,
-            max_states_period, period_payoffs_ex_ante, num_draws, edu_max,
-            edu_start, mapping_state_idx, states_all, delta, fast, debug,
-            ambiguity_args, with_ambiguity)
-
-        print(period_emax, period_payoffs_ex_post, period_future_payoffs)
-        import sys
-        sys.exit('exit')
-
-    else:
-        period_emax, period_payoffs_ex_post, period_future_payoffs = \
-            perf_lib.backward_induction(
-            num_periods, max_states_period, eps_relevant_periods, num_draws,
-            states_number_period, period_payoffs_ex_ante, edu_max, edu_start,
-            mapping_state_idx, states_all, delta)
-
-        print(period_emax, period_payoffs_ex_post, period_future_payoffs)
-
-        import sys
-        sys.exit('exit')
+    period_emax, period_payoffs_ex_post, period_future_payoffs = \
+        _backward_induction_procedure(num_periods, max_states_period,
+                eps_relevant_periods, num_draws, states_number_period,
+                period_payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,
+                states_all, delta, debug, perf_lib, true_cholesky, level, measure)
 
     # Logging
     logger.info('... finished \n')
@@ -208,6 +194,29 @@ def _create_state_space(num_periods, edu_max, edu_start, perf_lib):
     # Finishing
     return states_all, states_number_period, mapping_state_idx
 
+
+def _backward_induction_procedure(num_periods, max_states_period,
+        eps_relevant_periods, num_draws, states_number_period,
+        period_payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,
+        states_all, delta, debug, perf_lib, true_cholesky, level, measure):
+    """ Wrapper for backward induction procedure.
+    """
+
+    period_emax, period_payoffs_ex_post, period_future_payoffs = \
+            perf_lib.backward_induction(
+            num_periods, max_states_period, eps_relevant_periods, num_draws,
+            states_number_period, period_payoffs_ex_ante, edu_max, edu_start,
+            mapping_state_idx, states_all, delta, debug, true_cholesky, level, measure)
+
+    # Set missing values to NAN
+    period_emax = _replace_missing_values(period_emax)
+
+    period_future_payoffs = _replace_missing_values(period_future_payoffs)
+
+    period_payoffs_ex_post = _replace_missing_values(period_payoffs_ex_post)
+
+    # Finishing
+    return period_emax, period_payoffs_ex_post, period_future_payoffs
 
 def _replace_missing_values(argument):
     """ Replace missing value -99 with NAN
