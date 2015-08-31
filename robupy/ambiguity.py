@@ -17,7 +17,7 @@ HUGE_FLOAT = 10e10
 '''
 
 
-def simulate_emax_ambiguity(num_draws, eps_standard, period, k,
+def get_payoffs_ambiguity(num_draws, eps_standard, period, k,
         payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, states_all,
         num_periods, emax, delta, fast, debug, ambiguity_args):
     """ Get worst case

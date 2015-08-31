@@ -1,7 +1,61 @@
 """ This module contains the PYTHON implementations fo several functions
 where FORTRAN alternatives are available.
 """
+
+# standard library
 import numpy as np
+import logging
+
+# project libray
+from robupy.risk import get_payoffs_risk
+#from robupy.ambiguity import get_payoffs_ambiguity
+
+# Logging
+logger = logging.getLogger('ROBUPY_SOLVE')
+
+
+def backward_induction(num_periods, eps_relevant_periods,
+                       states_number_period, max_states_period,
+                       period_payoffs_ex_ante, num_draws, edu_max, edu_start,
+                       mapping_state_idx, states_all, delta, fast, debug,
+                       ambiguity_args, with_ambiguity):
+    """ Backward iteration procedure.
+    """
+    # Initialize
+    period_emax = np.tile(-99.00, (num_periods, max_states_period))
+    period_payoffs_ex_post = np.tile(-99.00, ( num_periods, max_states_period, 4))
+    period_future_payoffs = np.tile(-99.00, ( num_periods, max_states_period, 4))
+
+    # Iterate backward through all periods
+    for period in range(num_periods - 1, -1, -1):
+
+        # Logging.
+        logger.info('... solving period ' + str(period))
+
+        # Extract disturbances
+        eps_relevant = eps_relevant_periods[period, :, :]
+
+        # Loop over all possible states
+        for k in range(states_number_period[period]):
+
+            # Extract payoffs
+            payoffs_ex_ante = period_payoffs_ex_ante[period, k, :]
+
+            # Simulate the expected future value.
+            emax, payoffs_ex_post, future_payoffs = \
+                get_payoffs_risk(num_draws, eps_relevant, period, k, payoffs_ex_ante,
+                    edu_max, edu_start,mapping_state_idx, states_all,
+                    num_periods, period_emax, delta, fast, debug, ambiguity_args)
+
+            # Collect information
+            period_payoffs_ex_post[period, k, :] = payoffs_ex_post
+            period_future_payoffs[period, k, :] = future_payoffs
+
+            # Collect
+            period_emax[period, k] = emax
+
+    # Finishing
+    return period_emax, period_payoffs_ex_post, period_future_payoffs
 
 
 def simulate_emax(num_periods, num_draws, period, k, eps_relevant,

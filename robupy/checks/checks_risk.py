@@ -12,7 +12,7 @@ def checks_risk(str_, *args):
     the model under risk.
     """
 
-    if str_ == 'simulate_emax_risk':
+    if str_ == 'get_payoffs_risk':
 
         # Distribute arguments
         ambiguity_args, = args

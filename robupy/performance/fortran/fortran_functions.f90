@@ -8,6 +8,87 @@
 !
 !*******************************************************************************
 !*******************************************************************************
+SUBROUTINE backward_induction(period_emax, period_payoffs_ex_post, period_future_payoffs, num_periods, &
+                max_states_period, eps_relevant_periods, num_draws, & 
+                states_number_period, period_payoffs_ex_ante, edu_max, edu_start, & 
+                mapping_state_idx, states_all, delta)
+    !/* external libraries    */
+
+    USE robupy_library
+
+    !/* setup    */
+
+    IMPLICIT NONE
+
+    !/* external objects    */
+
+    DOUBLE PRECISION, INTENT(OUT)   :: period_emax(num_periods, max_states_period)
+    DOUBLE PRECISION, INTENT(OUT)   :: period_payoffs_ex_post(num_periods, max_states_period, 4)
+    DOUBLE PRECISION, INTENT(OUT)   :: period_future_payoffs(num_periods, max_states_period, 4)
+
+    DOUBLE PRECISION, INTENT(IN)    :: eps_relevant_periods(:, :, :)
+    DOUBLE PRECISION, INTENT(IN)    :: period_payoffs_ex_ante(:, :, :   )
+
+    DOUBLE PRECISION, INTENT(IN)   :: delta
+
+
+    INTEGER, INTENT(IN)             :: mapping_state_idx(:, :, :, :, :)    
+    INTEGER, INTENT(IN)             :: num_periods
+    INTEGER, INTENT(IN)             :: edu_start
+    INTEGER, INTENT(IN)             :: edu_max
+    INTEGER, INTENT(IN)             :: states_number_period(:)
+    INTEGER, INTENT(IN)             :: num_draws
+    INTEGER, INTENT(IN)             :: max_states_period
+    INTEGER, INTENT(IN)             :: states_all(:, :, :)
+
+    !/* internals objects    */
+
+    INTEGER(our_int)                :: period
+    INTEGER(our_int)                :: k
+
+    REAL(our_dble)                  :: eps_relevant(num_draws, 4)
+    REAL(our_dble)                  :: payoffs_ex_ante(4)
+    REAL(our_dble)                  :: payoffs_ex_post(4)
+    REAL(our_dble)                  :: future_payoffs(4)
+    REAL(our_dble)                  :: emax
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+        
+    ! Set to missing value
+    period_emax = missing_dble
+    period_future_payoffs = missing_dble
+    period_payoffs_ex_post = missing_dble
+
+    ! Backward induction
+    DO period = (num_periods - 1), 0, -1
+
+        ! Extract disturbances
+        eps_relevant = eps_relevant_periods(period + 1, :, :)
+
+        ! Loop over all possible states, CAN K BE SIMPLIFIED
+        DO k = 0, (states_number_period(period + 1) - 1)
+
+            ! Extract payoffs
+            payoffs_ex_ante = period_payoffs_ex_ante(period + 1, k + 1, :)
+
+            CALL get_payoffs_risk_lib(emax, payoffs_ex_post, future_payoffs, &
+                num_draws, eps_relevant, period, k, payoffs_ex_ante, edu_max, & 
+                edu_start, mapping_state_idx, states_all, num_periods, period_emax, delta)
+
+            ! Collect information            
+            period_payoffs_ex_post(period + 1, k + 1, :) = payoffs_ex_post
+            period_future_payoffs(period + 1, k + 1, :) = future_payoffs
+            period_emax(period + 1, k + 1) = emax
+
+        END DO
+
+    END DO
+
+END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE create_state_space(states_all, states_number_period, mapping_state_idx, & 
                 num_periods, edu_start, edu_max, min_idx)
     

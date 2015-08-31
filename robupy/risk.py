@@ -14,7 +14,7 @@ import robupy.performance.access as perf
 '''
 
 
-def simulate_emax_risk(num_draws, eps_baseline, period,
+def get_payoffs_risk(num_draws, eps_baseline, period,
         k, payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,
         states_all, num_periods, emax, delta, fast, debug,
                        ambiguity_args=None):
@@ -22,7 +22,7 @@ def simulate_emax_risk(num_draws, eps_baseline, period,
     """
     # Check input parameters
     if debug is True:
-        checks_risk('simulate_emax_risk', ambiguity_args)
+        checks_risk('get_payoffs_risk', ambiguity_args)
 
     # Access performance library
     perf_lib = perf.get_library(fast)

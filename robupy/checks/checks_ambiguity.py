@@ -22,7 +22,7 @@ def checks_ambiguity(str_, *args):
 
         assert (all(val == 0 for val in x0))
 
-    elif str_ == 'simulate_emax_ambiguity':
+    elif str_ == 'get_payoffs_ambiguity':
 
         # Distribute input parameters
         simulated, opt = args

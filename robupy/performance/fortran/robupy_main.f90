@@ -20,12 +20,66 @@ MODULE robupy_library
     PUBLIC :: calculate_payoffs_ex_ante_lib
     PUBLIC :: get_future_payoffs_lib
     PUBLIC :: create_state_space_lib
+    PUBLIC :: get_payoffs_risk_lib
     PUBLIC :: simulate_emax_lib
     PUBLIC :: divergence_lib
     PUBLIC :: inverse_lib
     PUBLIC :: det_lib
 
 CONTAINS
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE get_payoffs_risk_lib(emax, payoffs_ex_post, future_payoffs, &
+                num_draws, eps_baseline, period, k, payoffs_ex_ante, & 
+                edu_max, edu_start, mapping_state_idx, states_all, num_periods, & 
+                period_emax, delta)
+
+    !/* external objects    */
+
+    REAL(our_dble), INTENT(OUT)      :: emax
+    REAL(our_dble), INTENT(OUT)      :: payoffs_ex_post(4)
+    REAL(our_dble), INTENT(OUT)      :: future_payoffs(4)
+
+    INTEGER, INTENT(IN)             :: num_draws
+    INTEGER, INTENT(IN)             :: period
+    INTEGER, INTENT(IN)             :: k 
+    INTEGER, INTENT(IN)             :: edu_max
+    INTEGER, INTENT(IN)             :: edu_start
+    INTEGER, INTENT(IN)             :: num_periods
+    INTEGER, INTENT(IN)             :: states_all(:, :, :)
+    INTEGER, INTENT(IN)             :: mapping_state_idx(:, :, :, :, :)
+
+    REAL(our_dble), INTENT(IN)      :: eps_baseline(:, :)
+    REAL(our_dble), INTENT(IN)      :: payoffs_ex_ante(:)
+    REAL(our_dble), INTENT(IN)      :: delta
+    REAL(our_dble), INTENT(IN)      :: period_emax(:, :)
+
+    !/* internals objects    */
+    
+    REAL(our_dble), ALLOCATABLE     :: eps_relevant(:, :)
+
+    INTEGER(our_int)    :: i
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    ! Allocate
+    ALLOCATE(eps_relevant(num_draws, 4))
+
+    ! Transform disturbances for occupations
+    eps_relevant = eps_baseline
+    DO i = 1, 2
+        eps_relevant(:, i) = EXP(eps_relevant(:, i))
+    END DO
+
+    ! Simulated expected future value
+    CALL simulate_emax_lib(emax, payoffs_ex_post, future_payoffs, & 
+                num_periods, num_draws, period, k, eps_relevant, & 
+                payoffs_ex_ante, edu_max, edu_start, period_emax, states_all, & 
+                mapping_state_idx, delta)
+ 
+END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
 SUBROUTINE create_state_space_lib(states_all, states_number_period, &

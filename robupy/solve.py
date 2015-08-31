@@ -11,8 +11,6 @@ import os
 # project library
 
 from robupy.checks.checks_solve import checks_solve
-from robupy.ambiguity import simulate_emax_ambiguity
-from robupy.risk import simulate_emax_risk
 import robupy.performance.access as perf
 
 # Logging
@@ -90,25 +88,11 @@ def solve(robupy_obj):
         ambiguity_args['cholesky'] = true_cholesky
         ambiguity_args['ambiguity'] = ambiguity
 
-    # Select interface to simulate the EMAX appropriately.
+    # Select relevant disturbances
     eps_relevant_periods = eps_baseline_periods
-    simulate_emax = simulate_emax_risk
 
     if with_ambiguity:
         eps_relevant_periods = eps_standard_periods
-        simulate_emax = simulate_emax_ambiguity
-
-    # Initialize container for expected future values and payoffs. The ex post
-    # payoffs and the future payoffs are only stored for debugging reasons
-    # and can be removed if memory usage turns out to be an issue. I
-    # initialize all infinite values as this allows for easy assertion tests
-    # later on.
-    emax = np.tile(np.nan, (
-        num_periods, max_states_period))
-    period_payoffs_ex_post = np.tile(np.nan, (
-        num_periods, max_states_period, 4))
-    period_future_payoffs = np.tile(np.nan, (
-        num_periods, max_states_period, 4))
 
     # Calculate ex ante payoffs. These are calculated without any reference
     # to the alternative shock distributions.
@@ -122,57 +106,47 @@ def solve(robupy_obj):
         'coeff']
     coeffs_home = [init_dict['HOME']['int']]
 
-
-
+    # Calculate ex ante payoffs
     period_payoffs_ex_ante = perf_lib.calculate_payoffs_ex_ante(num_periods,
-                                                            states_number_period,
-                                                            states_all,
-                                                            edu_start, coeffs_a,
-                                                            coeffs_b,
-                                                            coeffs_edu,
-                                                            coeffs_home,
-                                                            max_states_period)
+            states_number_period, states_all, edu_start, coeffs_a, coeffs_b,
+            coeffs_edu, coeffs_home, max_states_period)
 
     # Logging
     logger.info('... finished \n')
 
     logger.info('Staring backward induction procedure')
 
-    # Iterate backward through all periods
-    for period in range(num_periods - 1, -1, -1):
+    # Backward iteration procedure
+    if not fast:
 
-        # Logging.
-        logger.info('... solving period ' + str(period))
+        period_emax, period_payoffs_ex_post, period_future_payoffs = perf_lib.backward_induction(
+            num_periods, eps_relevant_periods, states_number_period,
+            max_states_period, period_payoffs_ex_ante, num_draws, edu_max,
+            edu_start, mapping_state_idx, states_all, delta, fast, debug,
+            ambiguity_args, with_ambiguity)
 
-        # Extract disturbances
-        eps_relevant = eps_relevant_periods[period, :, :]
+        print(period_emax, period_payoffs_ex_post, period_future_payoffs)
+        import sys
+        sys.exit('exit')
 
-        # Loop over all possible states
-        for k in range(states_number_period[period]):
-            # Extract payoffs
-            payoffs_ex_ante = period_payoffs_ex_ante[period, k, :]
+    else:
+        period_emax, period_payoffs_ex_post, period_future_payoffs = \
+            perf_lib.backward_induction(
+            num_periods, max_states_period, eps_relevant_periods, num_draws,
+            states_number_period, period_payoffs_ex_ante, edu_max, edu_start,
+            mapping_state_idx, states_all, delta)
 
-            # Simulate the expected future value.
-            emax_simulated, payoffs_ex_post, future_payoffs = \
-                simulate_emax(num_draws, eps_relevant, period, k,
-                              payoffs_ex_ante, edu_max, edu_start,
-                              mapping_state_idx,
-                              states_all, num_periods, emax, delta, fast, debug,
-                              ambiguity_args)
+        print(period_emax, period_payoffs_ex_post, period_future_payoffs)
 
-            # Collect information
-            period_payoffs_ex_post[period, k, :] = payoffs_ex_post
-            period_future_payoffs[period, k, :] = future_payoffs
-
-            # Collect
-            emax[period, k] = emax_simulated
+        import sys
+        sys.exit('exit')
 
     # Logging
     logger.info('... finished \n')
 
     # Run checks on expected future values and its ingredients
     if debug is True:
-        checks_solve('emax', robupy_obj, states_all, states_number_period, emax,
+        checks_solve('emax', robupy_obj, states_all, states_number_period, period_emax,
                 period_future_payoffs)
 
     # Summarize optimizations in case of ambiguity.
@@ -194,7 +168,7 @@ def solve(robupy_obj):
 
     robupy_obj.set_attr('states_all', states_all)
 
-    robupy_obj.set_attr('emax', emax)
+    robupy_obj.set_attr('emax', period_emax)
 
     # Set flag that object includes the solution objects.
     robupy_obj.set_attr('is_solved', True)
