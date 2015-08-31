@@ -55,6 +55,15 @@ def pre_build(self):
 
             pass
 
+        # Sometimes a file and not a directory is created.
+        try:
+
+            os.remove(dir_)
+
+        except OSError:
+
+            pass
+
 
 def post_build(self):
     """ Copy the resulting library from the build directory to the working
