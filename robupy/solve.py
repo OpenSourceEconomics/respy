@@ -52,6 +52,7 @@ def solve(robupy_obj):
 
     # Construct auxiliary objects
     level = ambiguity['level']
+    measure = ambiguity['measure']
 
     with_ambiguity = (level != 0.00)
 
@@ -71,47 +72,32 @@ def solve(robupy_obj):
     # Run checks of the state space variables
     if debug is True:
         checks_solve('state_space', robupy_obj, states_all,
-                     states_number_period,
-                     mapping_state_idx)
+            states_number_period, mapping_state_idx)
 
     # Draw random variables. Handle special case of zero variances as this
     # case is useful for hand-based testing.
     eps_baseline_periods, eps_standard_periods, true_cholesky = \
         _create_eps(seed, num_periods, num_draws, init_dict)
 
-    # Collect special arguments for ambiguity. This setup allows to
-    # integrate the interfaces to the risk and ambiguity functions.
-    ambiguity_args = None
-
-    if with_ambiguity:
-        ambiguity_args = dict()
-        ambiguity_args['cholesky'] = true_cholesky
-        ambiguity_args['ambiguity'] = ambiguity
-
-
-    level = ambiguity['level']
-    measure = ambiguity['measure']
-
     # Select relevant disturbances
-    eps_relevant_periods = eps_baseline_periods
-
     if with_ambiguity:
         eps_relevant_periods = eps_standard_periods
+    else:
+        eps_relevant_periods = eps_baseline_periods
 
     # Calculate ex ante payoffs. These are calculated without any reference
     # to the alternative shock distributions.
-    logger.info('Staring calculation of ex ante payoffs')
+    logger.info('Starting calculation of ex ante payoffs')
 
     # Construct coefficients
     coeffs_a = [init_dict['A']['int']] + init_dict['A']['coeff']
     coeffs_b = [init_dict['B']['int']] + init_dict['B']['coeff']
 
-    coeffs_edu = [init_dict['EDUCATION']['int']] + init_dict['EDUCATION'][
-        'coeff']
+    coeffs_edu = [init_dict['EDUCATION']['int']] + init_dict['EDUCATION']['coeff']
     coeffs_home = [init_dict['HOME']['int']]
 
     # Calculate ex ante payoffs
-    period_payoffs_ex_ante = perf_lib.calculate_payoffs_ex_ante(num_periods,
+    periods_payoffs_ex_ante = perf_lib.calculate_payoffs_ex_ante(num_periods,
             states_number_period, states_all, edu_start, coeffs_a, coeffs_b,
             coeffs_edu, coeffs_home, max_states_period)
 
@@ -121,22 +107,23 @@ def solve(robupy_obj):
     logger.info('Staring backward induction procedure')
 
     # Backward iteration procedure
-    period_emax, period_payoffs_ex_post, period_future_payoffs = \
+    periods_emax, periods_payoffs_ex_post, periods_future_payoffs = \
         _backward_induction_procedure(num_periods, max_states_period,
                 eps_relevant_periods, num_draws, states_number_period,
-                period_payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,
-                states_all, delta, debug, perf_lib, true_cholesky, level, measure)
+                periods_payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,
+                states_all, delta, debug, perf_lib, true_cholesky, level,
+                measure)
 
     # Logging
     logger.info('... finished \n')
 
     # Run checks on expected future values and its ingredients
-    if debug is True:
-        checks_solve('emax', robupy_obj, states_all, states_number_period, period_emax,
-                period_future_payoffs)
+    if debug:
+        checks_solve('emax', robupy_obj, states_all, states_number_period,
+                     periods_emax, periods_future_payoffs)
 
     # Summarize optimizations in case of ambiguity.
-    if debug is True and with_ambiguity:
+    if debug and with_ambiguity:
         _summarize_ambiguity(num_periods)
 
     # Update
@@ -144,17 +131,17 @@ def solve(robupy_obj):
 
     robupy_obj.set_attr('states_number_period', states_number_period)
 
-    robupy_obj.set_attr('period_payoffs_ex_ante', period_payoffs_ex_ante)
+    robupy_obj.set_attr('period_payoffs_ex_ante', periods_payoffs_ex_ante)
 
-    robupy_obj.set_attr('period_payoffs_ex_post', period_payoffs_ex_post)
+    robupy_obj.set_attr('period_payoffs_ex_post', periods_payoffs_ex_post)
 
-    robupy_obj.set_attr('period_future_payoffs', period_future_payoffs)
+    robupy_obj.set_attr('period_future_payoffs', periods_future_payoffs)
 
     robupy_obj.set_attr('mapping_state_idx', mapping_state_idx)
 
     robupy_obj.set_attr('states_all', states_all)
 
-    robupy_obj.set_attr('emax', period_emax)
+    robupy_obj.set_attr('emax', periods_emax)
 
     # Set flag that object includes the solution objects.
     robupy_obj.set_attr('is_solved', True)
@@ -203,10 +190,10 @@ def _backward_induction_procedure(num_periods, max_states_period,
     """
 
     period_emax, period_payoffs_ex_post, period_future_payoffs = \
-            perf_lib.backward_induction(
-            num_periods, max_states_period, eps_relevant_periods, num_draws,
-            states_number_period, period_payoffs_ex_ante, edu_max, edu_start,
-            mapping_state_idx, states_all, delta, debug, true_cholesky, level, measure)
+        perf_lib.backward_induction(num_periods, max_states_period,
+            eps_relevant_periods, num_draws, states_number_period,
+            period_payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,
+            states_all, delta, debug, true_cholesky, level, measure)
 
     # Set missing values to NAN
     period_emax = _replace_missing_values(period_emax)
@@ -217,6 +204,7 @@ def _backward_induction_procedure(num_periods, max_states_period,
 
     # Finishing
     return period_emax, period_payoffs_ex_post, period_future_payoffs
+
 
 def _replace_missing_values(argument):
     """ Replace missing value -99 with NAN

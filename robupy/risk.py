@@ -15,7 +15,8 @@ import robupy.performance.access as perf
 
 def get_payoffs_risk(num_draws, eps_baseline, period,
         k, payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,
-        states_all, num_periods, emax, delta, debug):
+        states_all, num_periods, emax, delta, debug, cholesky, level,
+                            measure):
     """ Simulate expected future value under risk.
     """
     # Access performance library

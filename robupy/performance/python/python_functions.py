@@ -65,6 +65,88 @@ def backward_induction(num_periods, max_states_period, eps_relevant_periods, num
     return period_emax, period_payoffs_ex_post, period_future_payoffs
 
 
+def create_state_space(num_periods, edu_start, edu_max, min_idx):
+    """ Create grid for state space.
+    """
+    # Array for possible realization of state space by period
+    states_all = np.tile(-99, (num_periods, 100000, 4))
+
+    # Array for the mapping of state space values to indices in variety
+    # of matrices.
+    mapping_state_idx = np.tile(-99, (num_periods, num_periods, num_periods,
+                                         min_idx, 2))
+
+    # Array for maximum number of realizations of state space by period
+    states_number_period = np.tile(np.nan, num_periods)
+
+    # Construct state space by periods
+    for period in range(num_periods):
+
+        # Count admissible realizations of state space by period
+        k = 0
+
+        # Loop over all admissible work experiences for occupation A
+        for exp_A in range(num_periods + 1):
+
+            # Loop over all admissible work experience for occupation B
+            for exp_B in range(num_periods + 1):
+
+                # Loop over all admissible additional education levels
+                for edu in range(num_periods + 1):
+
+                    # Agent cannot attain more additional education
+                    # than (EDU_MAX - EDU_START).
+                    if edu > (edu_max - edu_start):
+                        continue
+
+                    # Loop over all admissible values for leisure. Note that
+                    # the leisure variable takes only zero/value. The time path
+                    # does not matter.
+                    for edu_lagged in [0, 1]:
+
+                        # Check if lagged education admissible. (1) In the
+                        # first period all agents have lagged schooling equal
+                        # to one.
+                        if (edu_lagged == 0) and (period == 0):
+                            continue
+                        # (2) Whenever an agent has not acquired any additional
+                        # education and we are not in the first period,
+                        # then this cannot be the case.
+                        if (edu_lagged == 1) and (edu == 0) and (period > 0):
+                            continue
+                        # (3) Whenever an agent has only acquired additional
+                        # education, then edu_lagged cannot be zero.
+                        if (edu_lagged == 0) and (edu == period):
+                            continue
+
+                        # Check if admissible for time constraints
+                        total = edu + exp_A + exp_B
+
+                        # Note that the total number of activities does not
+                        # have is less or equal to the total possible number of
+                        # activities as the rest is implicitly filled with
+                        # leisure.
+                        if total > period:
+                            continue
+
+                        # Collect all possible realizations of state space
+                        states_all[period, k, :] = [exp_A, exp_B, edu,
+                                                    edu_lagged]
+
+                        # Collect mapping of state space to array index.
+                        mapping_state_idx[period, exp_A, exp_B, edu,
+                                          edu_lagged] = k
+
+                        # Update count
+                        k += 1
+
+        # Record maximum number of state space realizations by time period
+        states_number_period[period] = k
+
+    # Finishing
+    return states_all, states_number_period, mapping_state_idx
+
+
 def simulate_emax(num_periods, num_draws, period, k, eps_relevant,
         payoffs_ex_ante, edu_max, edu_start, emax, states_all,
         mapping_state_idx, delta):
@@ -150,6 +232,7 @@ def get_future_payoffs(edu_max, edu_start, mapping_state_idx, period, emax, k,
     # Finishing
     return future_payoffs
 
+
 def calculate_payoffs_ex_ante(num_periods, states_number_period, states_all,
                                 edu_start, coeffs_A, coeffs_B, coeffs_edu,
                                 coeffs_home, max_states_period):
@@ -201,83 +284,3 @@ def calculate_payoffs_ex_ante(num_periods, states_number_period, states_all,
     return period_payoffs_ex_ante
 
 
-def create_state_space(num_periods, edu_start, edu_max, min_idx):
-    """ Create grid for state space.
-    """
-    # Array for possible realization of state space by period
-    states_all = np.tile(-99, (num_periods, 100000, 4))
-
-    # Array for the mapping of state space values to indices in variety
-    # of matrices.
-    mapping_state_idx = np.tile(-99, (num_periods, num_periods, num_periods,
-                                         min_idx, 2))
-
-    # Array for maximum number of realizations of state space by period
-    states_number_period = np.tile(np.nan, num_periods)
-
-    # Construct state space by periods
-    for period in range(num_periods):
-
-        # Count admissible realizations of state space by period
-        k = 0
-
-        # Loop over all admissible work experiences for occupation A
-        for exp_A in range(num_periods + 1):
-
-            # Loop over all admissible work experience for occupation B
-            for exp_B in range(num_periods + 1):
-
-                # Loop over all admissible additional education levels
-                for edu in range(num_periods + 1):
-
-                    # Agent cannot attain more additional education
-                    # than (EDU_MAX - EDU_START).
-                    if edu > (edu_max - edu_start):
-                        continue
-
-                    # Loop over all admissible values for leisure. Note that
-                    # the leisure variable takes only zero/value. The time path
-                    # does not matter.
-                    for edu_lagged in [0, 1]:
-
-                        # Check if lagged education admissible. (1) In the
-                        # first period all agents have lagged schooling equal
-                        # to one.
-                        if (edu_lagged == 0) and (period == 0):
-                            continue
-                        # (2) Whenever an agent has not acquired any additional
-                        # education and we are not in the first period,
-                        # then this cannot be the case.
-                        if (edu_lagged == 1) and (edu == 0) and (period > 0):
-                            continue
-                        # (3) Whenever an agent has only acquired additional
-                        # education, then edu_lagged cannot be zero.
-                        if (edu_lagged == 0) and (edu == period):
-                            continue
-
-                        # Check if admissible for time constraints
-                        total = edu + exp_A + exp_B
-
-                        # Note that the total number of activities does not
-                        # have is less or equal to the total possible number of
-                        # activities as the rest is implicitly filled with
-                        # leisure.
-                        if total > period:
-                            continue
-
-                        # Collect all possible realizations of state space
-                        states_all[period, k, :] = [exp_A, exp_B, edu,
-                                                    edu_lagged]
-
-                        # Collect mapping of state space to array index.
-                        mapping_state_idx[period, exp_A, exp_B, edu,
-                                          edu_lagged] = k
-
-                        # Update count
-                        k += 1
-
-        # Record maximum number of state space realizations by time period
-        states_number_period[period] = k
-
-    # Finishing
-    return states_all, states_number_period, mapping_state_idx
