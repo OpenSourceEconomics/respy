@@ -1,10 +1,10 @@
-!*************************************************************************
-!**************************************************************************
+!******************************************************************************
+!******************************************************************************
 !
 !   Interface to ROBUPY library.
 !
-!**************************************************************************
-!**************************************************************************
+!******************************************************************************
+!******************************************************************************
 MODULE robupy_library
 
 	!/*	external modules	*/
@@ -19,6 +19,7 @@ MODULE robupy_library
 
     PUBLIC :: calculate_payoffs_ex_ante_lib
     PUBLIC :: get_future_payoffs_lib
+    PUBLIC :: create_state_space_lib
     PUBLIC :: simulate_emax_lib
     PUBLIC :: divergence_lib
     PUBLIC :: inverse_lib
@@ -27,15 +28,143 @@ MODULE robupy_library
 CONTAINS
 !******************************************************************************
 !******************************************************************************
+SUBROUTINE create_state_space_lib(states_all, states_number_period, &
+                mapping_state_idx, num_periods, edu_start, edu_max, min_idx)
+
+    !/* external objects    */
+
+    INTEGER, INTENT(OUT)            :: states_all(num_periods, 100000, 4)
+    INTEGER, INTENT(OUT)            :: states_number_period(num_periods)
+    INTEGER, INTENT(OUT)            :: mapping_state_idx(num_periods, & 
+                                        num_periods, num_periods, min_idx, 2)
+
+    INTEGER, INTENT(IN)             :: num_periods
+    INTEGER, INTENT(IN)             :: edu_start
+    INTEGER, INTENT(IN)             :: edu_max
+    INTEGER, INTENT(IN)             :: min_idx
+
+    !/* internals objects    */
+
+    INTEGER(our_int)                :: edu_lagged
+    INTEGER(our_int)                :: period
+    INTEGER(our_int)                :: total
+    INTEGER(our_int)                :: exp_A
+    INTEGER(our_int)                :: exp_B
+    INTEGER(our_int)                :: edu
+    INTEGER(our_int)                :: k
+ 
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+    
+    ! Initialize output 
+    states_number_period = missing_int
+    mapping_state_idx    = missing_int
+    states_all           = missing_int
+
+    ! Construct state space by periods
+    DO period = 0, (num_periods - 1)
+
+        ! Count admissible realizations of state space by period
+        k = 0
+
+        ! Loop over all admissible work experiences for occupation A
+        DO exp_A = 0, num_periods
+
+            ! Loop over all admissible work experience for occupation B
+            DO exp_B = 0, num_periods
+                
+                ! Loop over all admissible additional education levels
+                DO edu = 0, num_periods
+
+                    ! Agent cannot attain more additional education
+                    ! than (EDU_MAX - EDU_START).
+                    IF (edu .GT. edu_max - edu_start) THEN
+                        CYCLE
+                    END IF
+
+                    ! Loop over all admissible values for leisure. Note that
+                    ! the leisure variable takes only zero/value. The time path
+                    ! does not matter.
+                    DO edu_lagged = 0, 1
+
+                        ! Check if lagged education admissible. (1) In the
+                        ! first period all agents have lagged schooling equal
+                        ! to one.
+                        IF (edu_lagged .EQ. zero_int) THEN
+                            IF (period .EQ. zero_int) THEN
+                                CYCLE
+                            END IF
+                        END IF
+                        
+                        ! (2) Whenever an agent has not acquired any additional
+                        ! education and we are not in the first period,
+                        ! then this cannot be the case.
+                        IF (edu_lagged .EQ. one_int) THEN
+                            IF (edu .EQ. zero_int) THEN
+                                IF (period .GT. zero_int) THEN
+                                    CYCLE
+                                END IF
+                            END IF
+                        END IF
+
+                        ! (3) Whenever an agent has only acquired additional
+                        ! education, then edu_lagged cannot be zero.
+                        IF (edu_lagged .EQ. zero_int) THEN
+                            IF (edu .EQ. period) THEN
+                                CYCLE
+                            END IF
+                        END IF
+
+                        ! Check if admissible for time constraints
+                        total = edu + exp_A + exp_B
+
+                        ! Note that the total number of activities does not
+                        ! have is less or equal to the total possible number of
+                        ! activities as the rest is implicitly filled with
+                        ! leisure.
+                        IF (total .GT. period) THEN
+                            CYCLE
+                        END IF
+                        
+                        ! Collect all possible realizations of state space
+                        states_all(period + 1, k + 1, 1) = exp_A
+                        states_all(period + 1, k + 1, 2) = exp_B
+                        states_all(period + 1, k + 1, 3) = edu
+                        states_all(period + 1, k + 1, 4) = edu_lagged
+
+                        ! Collect mapping of state space to array index.
+                        mapping_state_idx(period + 1, exp_A + 1, exp_B + 1, & 
+                            edu + 1 , edu_lagged + 1) = k
+
+                        ! Update count
+                        k = k + 1
+
+                     END DO
+
+                 END DO
+
+             END DO
+
+         END DO
+        
+        ! Record maximum number of state space realizations by time period
+        states_number_period(period + 1) = k
+
+      END DO
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE divergence_lib(div, x, cov, level)
 
     !/* external objects    */
 
-    DOUBLE PRECISION, INTENT(OUT)   :: div
+    REAL(our_dble), INTENT(OUT)   :: div
 
-    DOUBLE PRECISION, INTENT(IN)    :: x(2)
-    DOUBLE PRECISION, INTENT(IN)    :: cov(4,4)
-    DOUBLE PRECISION, INTENT(IN)    :: level
+    REAL(our_dble), INTENT(IN)    :: x(2)
+    REAL(our_dble), INTENT(IN)    :: cov(4,4)
+    REAL(our_dble), INTENT(IN)    :: level
 
     !/* internals objects    */
 
@@ -90,14 +219,14 @@ SUBROUTINE simulate_emax_lib(emax_simulated, payoffs_ex_post, future_payoffs, &
 
     !/* external objects    */
 
-    DOUBLE PRECISION, INTENT(OUT)   :: payoffs_ex_post(4)
-    DOUBLE PRECISION, INTENT(OUT)   :: emax_simulated
-    DOUBLE PRECISION, INTENT(OUT)   :: future_payoffs(4)
+    REAL(our_dble), INTENT(OUT)   :: payoffs_ex_post(4)
+    REAL(our_dble), INTENT(OUT)   :: emax_simulated
+    REAL(our_dble), INTENT(OUT)   :: future_payoffs(4)
 
-    DOUBLE PRECISION, INTENT(IN)    :: payoffs_ex_ante(:)
-    DOUBLE PRECISION, INTENT(IN)    :: eps_relevant(:,:)
-    DOUBLE PRECISION, INTENT(IN)    :: emax(:,:)
-    DOUBLE PRECISION, INTENT(IN)    :: delta
+    REAL(our_dble), INTENT(IN)    :: payoffs_ex_ante(:)
+    REAL(our_dble), INTENT(IN)    :: eps_relevant(:,:)
+    REAL(our_dble), INTENT(IN)    :: emax(:,:)
+    REAL(our_dble), INTENT(IN)    :: delta
 
     INTEGER, INTENT(IN)             :: mapping_state_idx(:,:,:,:,:)
     INTEGER, INTENT(IN)             :: states_all(:,:,:)
@@ -115,9 +244,9 @@ SUBROUTINE simulate_emax_lib(emax_simulated, payoffs_ex_post, future_payoffs, &
     REAL(our_dble)                  :: total_payoffs(4)
     REAL(our_dble)                  :: maximum
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 
     ! Initialize containers
     payoffs_ex_post = zero_dble
@@ -165,13 +294,13 @@ SUBROUTINE calculate_payoffs_ex_ante_lib(period_payoffs_ex_ante, num_periods, &
 
     !/* external objects    */
 
-    DOUBLE PRECISION, INTENT(OUT)   :: period_payoffs_ex_ante(num_periods, &
+    REAL(our_dble), INTENT(OUT)   :: period_payoffs_ex_ante(num_periods, &
                                             max_states_period, 4)
 
-    DOUBLE PRECISION, INTENT(IN)    :: coeffs_A(:)
-    DOUBLE PRECISION, INTENT(IN)    :: coeffs_B(:)
-    DOUBLE PRECISION, INTENT(IN)    :: coeffs_edu(:)
-    DOUBLE PRECISION, INTENT(IN)    :: coeffs_home(:)
+    REAL(our_dble), INTENT(IN)    :: coeffs_A(:)
+    REAL(our_dble), INTENT(IN)    :: coeffs_B(:)
+    REAL(our_dble), INTENT(IN)    :: coeffs_edu(:)
+    REAL(our_dble), INTENT(IN)    :: coeffs_home(:)
 
     INTEGER, INTENT(IN)             :: num_periods
     INTEGER, INTENT(IN)             :: states_number_period(:)
@@ -257,9 +386,9 @@ SUBROUTINE get_future_payoffs_lib(future_payoffs, edu_max, edu_start, &
 
     !/* external objects    */
 
-    DOUBLE PRECISION, INTENT(OUT)   :: future_payoffs(4)
+    REAL(our_dble), INTENT(OUT)   :: future_payoffs(4)
 
-    DOUBLE PRECISION, INTENT(IN)    :: emax(:, :)
+    REAL(our_dble), INTENT(IN)    :: emax(:, :)
 
     INTEGER, INTENT(IN)             :: k
     INTEGER, INTENT(IN)             :: period

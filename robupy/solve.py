@@ -63,9 +63,9 @@ def solve(robupy_obj):
     if debug and with_ambiguity:
         open('ambiguity.robupy.log', 'w').close()
 
-    # Create grid of admissible state space values.
+    # Create state space
     states_all, states_number_period, mapping_state_idx = \
-        _create_state_space(robupy_obj)
+        _create_state_space(num_periods, edu_max, edu_start, perf_lib)
 
     # Auxiliary objects
     max_states_period = max(states_number_period)
@@ -210,6 +210,47 @@ def solve(robupy_obj):
 '''
 
 
+def _create_state_space(num_periods, edu_max, edu_start, perf_lib):
+    """ Create state space. This function is a wrapper around the PYTHON and
+    FORTRAN implementation.
+    """
+    # Create grid of admissible state space values.
+    min_idx = min(num_periods, (edu_max - edu_start + 1))
+
+    states_all, states_number_period, mapping_state_idx = \
+        perf_lib.create_state_space(num_periods, edu_start, edu_max, min_idx)
+
+    # Type transformations
+    states_number_period = np.array(states_number_period, dtype='int')
+
+    # Cutting to size
+    states_all = states_all[:, :max(states_number_period), :]
+
+    # Set missing values to NAN
+    states_all = _replace_missing_values(states_all)
+
+    mapping_state_idx = _replace_missing_values(mapping_state_idx)
+
+    # Finishing
+    return states_all, states_number_period, mapping_state_idx
+
+
+def _replace_missing_values(argument):
+    """ Replace missing value -99 with NAN
+    """
+    # Determine missing values
+    is_missing = (argument == -99)
+
+    # Transform to float array
+    mapping_state_idx = np.asfarray(argument)
+
+    # Replace missing values
+    mapping_state_idx[is_missing] = np.nan
+
+    # Finishing
+    return mapping_state_idx
+
+
 def _create_eps(seed, num_periods, num_draws, init_dict):
     """ Create disturbances.
     """
@@ -239,101 +280,6 @@ def _create_eps(seed, num_periods, num_draws, init_dict):
 
     # Finishing
     return eps_baseline_periods, eps_standard_periods, true_cholesky
-
-
-def _create_state_space(robupy_obj):
-    """ Create grid for state space.
-    """
-    # Distribute class attributes
-    num_periods = robupy_obj.get_attr('num_periods')
-
-    edu_start = robupy_obj.get_attr('edu_start')
-
-    edu_max = robupy_obj.get_attr('edu_max')
-
-    # Array for possible realization of state space by period
-    states_all = np.tile(np.nan, (num_periods, 100000, 4))
-
-    # Array for maximum number of realizations of state space by period
-    states_number_period = np.tile(np.nan, num_periods)
-
-    # Array for the mapping of state space values to indices in variety
-    # of matrices.
-    mapping_state_idx = np.tile(np.nan, (num_periods, num_periods, num_periods,
-                                         min(num_periods,
-                                             (edu_max - edu_start + 1)), 2))
-
-    # Construct state space by periods
-    for period in range(num_periods):
-
-        # Count admissible realizations of state space by period
-        k = 0
-
-        # Loop over all admissible work experiences for occupation A
-        for exp_A in range(num_periods + 1):
-
-            # Loop over all admissible work experience for occupation B
-            for exp_B in range(num_periods + 1):
-
-                # Loop over all admissible additional education levels
-                for edu in range(num_periods + 1):
-
-                    # Agent cannot attain more additional education
-                    # than (EDU_MAX - EDU_START).
-                    if edu > (edu_max - edu_start):
-                        continue
-
-                    # Loop over all admissible values for leisure. Note that
-                    # the leisure variable takes only zero/value. The time path
-                    # does not matter.
-                    for edu_lagged in [0, 1]:
-
-                        # Check if lagged education admissible. (1) In the
-                        # first period all agents have lagged schooling equal
-                        # to one.
-                        if (edu_lagged == 0) and (period == 0):
-                            continue
-                        # (2) Whenever an agent has not acquired any additional
-                        # education and we are not in the first period,
-                        # then this cannot be the case.
-                        if (edu_lagged == 1) and (edu == 0) and (period > 0):
-                            continue
-                        # (3) Whenever an agent has only acquired additional
-                        # education, then edu_lagged cannot be zero.
-                        if (edu_lagged == 0) and (edu == period):
-                            continue
-
-                        # Check if admissible for time constraints
-                        total = edu + exp_A + exp_B
-
-                        # Note that the total number of activities does not
-                        # have is less or equal to the total possible number of
-                        # activities as the rest is implicitly filled with
-                        # leisure.
-                        if total > period: continue
-
-                        # Collect all possible realizations of state space
-                        states_all[period, k, :] = [exp_A, exp_B, edu,
-                                                    edu_lagged]
-
-                        # Collect mapping of state space to array index.
-                        mapping_state_idx[period, exp_A, exp_B, edu,
-                                          edu_lagged] = k
-
-                        # Update count
-                        k += 1
-
-        # Record maximum number of state space realizations by time period
-        states_number_period[period] = k
-
-    # Type transformation
-    states_number_period = np.array(states_number_period, dtype='int')
-
-    # Cutting to size
-    states_all = states_all[:, :max(states_number_period), :]
-
-    # Finishing
-    return states_all, states_number_period, mapping_state_idx
 
 
 def _summarize_ambiguity(num_periods):
