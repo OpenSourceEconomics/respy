@@ -20,10 +20,13 @@ import logging
 
 # project library
 from robupy.checks.checks_simulate import checks_simulate
-from robupy.performance.python.auxiliary import get_future_payoffs
 
-import robupy.performance.fortran.fortran_core as fortran_core
 import robupy.performance.python.python_core as python_core
+
+try:
+    import robupy.performance.fortran.fortran_core as fortran_core
+except ImportError:
+    pass
 
 
 # Logging
@@ -131,7 +134,7 @@ def _wrapper_simulate_sample(robupy_obj, periods_eps_relevant):
             num_periods, mapping_state_idx, periods_payoffs_ex_ante,
             periods_eps_relevant, edu_max, edu_start, periods_emax, delta)
 
-    # Set missing values to NAN
+    # Replace missing values
     dataset = _replace_missing_values(dataset)
 
     # Create pandas data frame
