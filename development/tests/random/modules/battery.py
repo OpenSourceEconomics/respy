@@ -26,8 +26,12 @@ def test_99():
     # Set up constraints
     compile_package('fast')
 
+    # Constraint to risk model
+    constraints = dict()
+    constraints['level'] = 0.0
+
     # Generate random initialization
-    init_dict = generate_random_dict()
+    init_dict = generate_random_dict(constraints)
 
     # Initialize containers
     base = None
