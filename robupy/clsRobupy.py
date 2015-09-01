@@ -124,3 +124,8 @@ class RobupyCls(MetaCls):
 
         # Debug status
         assert (self.attr['debug'] in [True, False])
+
+        # Constraints
+        with_ambiguity = (self.attr['ambiguity']['level'] > 0.00)
+        if with_ambiguity:
+            assert (self.attr['fast'] is False)

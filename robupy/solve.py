@@ -1,5 +1,10 @@
 """ This module contains all the capabilities to solve the dynamic
 programming problem.
+
+
+    This module uses features as object oriented programming. The backend is
+    written with a performance based
+
 """
 
 # standard library
@@ -11,7 +16,9 @@ import os
 # project library
 
 from robupy.checks.checks_solve import checks_solve
-import robupy.performance.access as perf
+
+import robupy.performance.fortran.fortran_functions as fort
+import robupy.performance.python.python_functions as py
 
 # Logging
 logger = logging.getLogger('ROBUPY_SOLVE')
@@ -27,28 +34,9 @@ def solve(robupy_obj):
     assert (robupy_obj.get_status())
 
     # Distribute class attributes
-    init_dict = robupy_obj.get_attr('init_dict')
-
-    num_periods = robupy_obj.get_attr('num_periods')
-
-    num_draws = robupy_obj.get_attr('num_draws')
-
-    edu_start = robupy_obj.get_attr('edu_start')
-
     ambiguity = robupy_obj.get_attr('ambiguity')
 
-    edu_max = robupy_obj.get_attr('edu_max')
-
     debug = robupy_obj.get_attr('debug')
-
-    delta = robupy_obj.get_attr('delta')
-
-    seed = robupy_obj.get_attr('seed_solution')
-
-    fast = robupy_obj.get_attr('fast')
-
-    # Access performance library
-    perf_lib = perf.get_library(fast)
 
     # Construct auxiliary objects
     level = ambiguity['level']
@@ -62,84 +50,70 @@ def solve(robupy_obj):
     if debug and with_ambiguity:
         open('ambiguity.robupy.log', 'w').close()
 
-    # Create state space
+    # Creating the state space of the model and collect the results in the
+    # package class.
+    logger.info('Starting state space creation')
+
     states_all, states_number_period, mapping_state_idx = \
-        _create_state_space(num_periods, edu_max, edu_start, perf_lib)
+        _wrapper_create_state_space(robupy_obj)
 
-    # Auxiliary objects
-    max_states_period = max(states_number_period)
+    logger.info('... finished \n')
 
-    # Run checks of the state space variables
-    if debug is True:
-        checks_solve('state_space', robupy_obj, states_all,
-            states_number_period, mapping_state_idx)
+    robupy_obj.unlock()
 
-    # Draw random variables. Handle special case of zero variances as this
-    # case is useful for hand-based testing.
+    robupy_obj.set_attr('states_number_period', states_number_period)
+
+    robupy_obj.set_attr('mapping_state_idx', mapping_state_idx)
+
+    robupy_obj.set_attr('states_all', states_all)
+
+    robupy_obj.lock()
+
+    # Draw random variables.
     eps_baseline_periods, eps_standard_periods, true_cholesky = \
-        _create_eps(seed, num_periods, num_draws, init_dict)
+        _create_eps(robupy_obj)
 
-    # Select relevant disturbances
     if with_ambiguity:
         eps_relevant_periods = eps_standard_periods
     else:
         eps_relevant_periods = eps_baseline_periods
 
-    # Calculate ex ante payoffs. These are calculated without any reference
+    # Calculate ex ante payoffs which are later used in the backward
+    # induction procedure. These are calculated without any reference
     # to the alternative shock distributions.
     logger.info('Starting calculation of ex ante payoffs')
 
-    # Construct coefficients
-    coeffs_a = [init_dict['A']['int']] + init_dict['A']['coeff']
-    coeffs_b = [init_dict['B']['int']] + init_dict['B']['coeff']
+    periods_payoffs_ex_ante = _wrapper_calculate_payoffs_ex_ante(robupy_obj)
 
-    coeffs_edu = [init_dict['EDUCATION']['int']] + init_dict['EDUCATION']['coeff']
-    coeffs_home = [init_dict['HOME']['int']]
-
-    # Calculate ex ante payoffs
-    periods_payoffs_ex_ante = perf_lib.calculate_payoffs_ex_ante(num_periods,
-            states_number_period, states_all, edu_start, coeffs_a, coeffs_b,
-            coeffs_edu, coeffs_home, max_states_period)
-
-    # Logging
     logger.info('... finished \n')
 
+    robupy_obj.unlock()
+
+    robupy_obj.set_attr('period_payoffs_ex_ante', periods_payoffs_ex_ante)
+
+    robupy_obj.lock()
+
+    # Backward iteration procedure. There is a PYTHON and FORTRAN
+    # implementation available.
     logger.info('Staring backward induction procedure')
 
-    # Backward iteration procedure
     periods_emax, periods_payoffs_ex_post, periods_future_payoffs = \
-        _backward_induction_procedure(num_periods, max_states_period,
-                eps_relevant_periods, num_draws, states_number_period,
-                periods_payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,
-                states_all, delta, debug, perf_lib, true_cholesky, level,
-                measure)
+        _wrapper_backward_induction_procedure(robupy_obj, eps_relevant_periods,
+            true_cholesky, level, measure)
 
-    # Logging
     logger.info('... finished \n')
-
-    # Run checks on expected future values and its ingredients
-    if debug:
-        checks_solve('emax', robupy_obj, states_all, states_number_period,
-                     periods_emax, periods_future_payoffs)
 
     # Summarize optimizations in case of ambiguity.
     if debug and with_ambiguity:
-        _summarize_ambiguity(num_periods)
+        _summarize_ambiguity(robupy_obj)
 
     # Update
+    # TODO: renaming periods?
     robupy_obj.unlock()
-
-    robupy_obj.set_attr('states_number_period', states_number_period)
-
-    robupy_obj.set_attr('period_payoffs_ex_ante', periods_payoffs_ex_ante)
 
     robupy_obj.set_attr('period_payoffs_ex_post', periods_payoffs_ex_post)
 
     robupy_obj.set_attr('period_future_payoffs', periods_future_payoffs)
-
-    robupy_obj.set_attr('mapping_state_idx', mapping_state_idx)
-
-    robupy_obj.set_attr('states_all', states_all)
 
     robupy_obj.set_attr('emax', periods_emax)
 
@@ -153,19 +127,76 @@ def solve(robupy_obj):
     return robupy_obj
 
 
-''' Private functions
+''' Wrappers for core functions
 '''
 
 
-def _create_state_space(num_periods, edu_max, edu_start, perf_lib):
+def _wrapper_calculate_payoffs_ex_ante(robupy_obj):
+    """ Calculate the ex ante payoffs.
+    """
+    # Distribute class attributes
+    states_number_period = robupy_obj.get_attr('states_number_period')
+
+    num_periods = robupy_obj.get_attr('num_periods')
+
+    states_all = robupy_obj.get_attr('states_all')
+
+    init_dict = robupy_obj.get_attr('init_dict')
+
+    edu_start = robupy_obj.get_attr('edu_start')
+
+    fast = robupy_obj.get_attr('fast')
+
+    # Auxiliary objects
+    max_states_period = max(states_number_period)
+
+    # Construct coefficients
+    coeffs_a = [init_dict['A']['int']] + init_dict['A']['coeff']
+    coeffs_b = [init_dict['B']['int']] + init_dict['B']['coeff']
+
+    coeffs_edu = [init_dict['EDUCATION']['int']] + init_dict['EDUCATION']['coeff']
+    coeffs_home = [init_dict['HOME']['int']]
+
+    # Interface to core functions
+    if fast:
+        periods_payoffs_ex_ante = fort.calculate_payoffs_ex_ante(num_periods,
+            states_number_period, states_all, edu_start, coeffs_a, coeffs_b,
+            coeffs_edu, coeffs_home, max_states_period)
+    else:
+        periods_payoffs_ex_ante = py.calculate_payoffs_ex_ante(num_periods,
+            states_number_period, states_all, edu_start, coeffs_a, coeffs_b,
+            coeffs_edu, coeffs_home, max_states_period)
+
+    # Finishing
+    return periods_payoffs_ex_ante
+
+
+def _wrapper_create_state_space(robupy_obj):
     """ Create state space. This function is a wrapper around the PYTHON and
     FORTRAN implementation.
     """
-    # Create grid of admissible state space values.
+
+    # Distribute class attributes
+    num_periods = robupy_obj.get_attr('num_periods')
+
+    edu_start = robupy_obj.get_attr('edu_start')
+
+    edu_max = robupy_obj.get_attr('edu_max')
+
+    debug = robupy_obj.get_attr('debug')
+
+    fast = robupy_obj.get_attr('fast')
+
+    # Create grid of admissible state space values
     min_idx = min(num_periods, (edu_max - edu_start + 1))
 
-    states_all, states_number_period, mapping_state_idx = \
-        perf_lib.create_state_space(num_periods, edu_start, edu_max, min_idx)
+    # Interface to core functions
+    if fast:
+        states_all, states_number_period, mapping_state_idx = \
+            fort.create_state_space(num_periods, edu_start, edu_max, min_idx)
+    else:
+        states_all, states_number_period, mapping_state_idx = \
+            py.create_state_space(num_periods, edu_start, edu_max, min_idx)
 
     # Type transformations
     states_number_period = np.array(states_number_period, dtype='int')
@@ -178,33 +209,76 @@ def _create_state_space(num_periods, edu_max, edu_start, perf_lib):
 
     mapping_state_idx = _replace_missing_values(mapping_state_idx)
 
+    # Run checks of the state space variables
+    if debug:
+        checks_solve('_wrapper_create_state_space_out', robupy_obj, states_all,
+            states_number_period, mapping_state_idx)
+
     # Finishing
     return states_all, states_number_period, mapping_state_idx
 
 
-def _backward_induction_procedure(num_periods, max_states_period,
-        eps_relevant_periods, num_draws, states_number_period,
-        period_payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,
-        states_all, delta, debug, perf_lib, true_cholesky, level, measure):
+def _wrapper_backward_induction_procedure(robupy_obj, eps_relevant_periods,
+        true_cholesky, level, measure):
     """ Wrapper for backward induction procedure.
     """
+    # Distribute class attributes
+    period_payoffs_ex_ante = robupy_obj.get_attr('period_payoffs_ex_ante')
 
-    period_emax, period_payoffs_ex_post, period_future_payoffs = \
-        perf_lib.backward_induction(num_periods, max_states_period,
-            eps_relevant_periods, num_draws, states_number_period,
-            period_payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,
-            states_all, delta, debug, true_cholesky, level, measure)
+    states_number_period = robupy_obj.get_attr('states_number_period')
+
+    mapping_state_idx = robupy_obj.get_attr('mapping_state_idx')
+
+    num_periods = robupy_obj.get_attr('num_periods')
+
+    states_all = robupy_obj.get_attr('states_all')
+
+    num_draws = robupy_obj.get_attr('num_draws')
+
+    edu_start = robupy_obj.get_attr('edu_start')
+
+    edu_max = robupy_obj.get_attr('edu_max')
+
+    delta = robupy_obj.get_attr('delta')
+
+    debug = robupy_obj.get_attr('debug')
+
+    fast = robupy_obj.get_attr('fast')
+
+    # Auxiliary objects
+    max_states_period = max(states_number_period)
+
+    # Interface to core functions
+    if fast:
+        periods_emax, periods_payoffs_ex_post, periods_future_payoffs = \
+            fort.backward_induction(num_periods, max_states_period,
+                eps_relevant_periods, num_draws, states_number_period,
+                period_payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,
+                states_all, delta, debug, true_cholesky, level, measure)
+    else:
+        periods_emax, periods_payoffs_ex_post, periods_future_payoffs = \
+            py.backward_induction(num_periods, max_states_period,
+                eps_relevant_periods, num_draws, states_number_period,
+                period_payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,
+                states_all, delta, debug, true_cholesky, level, measure)
 
     # Set missing values to NAN
-    period_emax = _replace_missing_values(period_emax)
+    periods_emax = _replace_missing_values(periods_emax)
 
-    period_future_payoffs = _replace_missing_values(period_future_payoffs)
+    periods_future_payoffs = _replace_missing_values(periods_future_payoffs)
 
-    period_payoffs_ex_post = _replace_missing_values(period_payoffs_ex_post)
+    periods_payoffs_ex_post = _replace_missing_values(periods_payoffs_ex_post)
+
+    # Run checks on expected future values and its ingredients
+    if debug:
+        checks_solve('emax', robupy_obj, periods_emax, periods_future_payoffs)
 
     # Finishing
-    return period_emax, period_payoffs_ex_post, period_future_payoffs
+    return periods_emax, periods_payoffs_ex_post, periods_future_payoffs
 
+
+''' Auxiliary functions
+'''
 
 def _replace_missing_values(argument):
     """ Replace missing value -99 with NAN
@@ -222,9 +296,20 @@ def _replace_missing_values(argument):
     return mapping_state_idx
 
 
-def _create_eps(seed, num_periods, num_draws, init_dict):
-    """ Create disturbances.
+def _create_eps(robupy_obj):
+    """ Create disturbances.  Handle special case of zero variances as this
+        case is useful for hand-based testing.
     """
+
+    # Distribute class attributes
+    num_periods = robupy_obj.get_attr('num_periods')
+
+    num_draws = robupy_obj.get_attr('num_draws')
+
+    init_dict = robupy_obj.get_attr('init_dict')
+
+    seed = robupy_obj.get_attr('seed_solution')
+
     # Ensure recomputability
     np.random.seed(seed)
 
@@ -253,7 +338,7 @@ def _create_eps(seed, num_periods, num_draws, init_dict):
     return eps_baseline_periods, eps_standard_periods, true_cholesky
 
 
-def _summarize_ambiguity(num_periods):
+def _summarize_ambiguity(robupy_obj):
     """ Summarize optimizations in case of ambiguity.
     """
 
@@ -277,6 +362,9 @@ def _summarize_ambiguity(num_periods):
 
         # Finishing
         return is_empty, is_block
+
+    # Distribute class attributes
+    num_periods = robupy_obj.get_attr('num_periods')
 
     dict_ = dict()
 

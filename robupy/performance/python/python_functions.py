@@ -7,8 +7,8 @@ import numpy as np
 import logging
 
 # project libray
-from robupy.risk import get_payoffs_risk
-from robupy.ambiguity import get_payoffs_ambiguity
+from robupy.performance.python.risk import get_payoffs_risk
+from robupy.performance.python.ambiguity import get_payoffs_ambiguity
 
 # Logging
 logger = logging.getLogger('ROBUPY_SOLVE')
@@ -282,5 +282,6 @@ def calculate_payoffs_ex_ante(num_periods, states_number_period, states_all,
 
     # Finishing
     return period_payoffs_ex_ante
+
 
 

@@ -11,13 +11,20 @@ def checks_solve(str_, robupy_obj, *args):
     """
 
     # Distribute class attributes
-    num_periods = robupy_obj.get_attr('num_periods')
+    if robupy_obj is not None:
 
-    edu_start = robupy_obj.get_attr('edu_start')
+        num_periods = robupy_obj.get_attr('num_periods')
 
-    edu_max = robupy_obj.get_attr('edu_max')
+        edu_start = robupy_obj.get_attr('edu_start')
 
-    if str_ == 'state_space':
+        edu_max = robupy_obj.get_attr('edu_max')
+
+        states_all = robupy_obj.get_attr('states_all')
+
+        states_number_period = robupy_obj.get_attr('states_number_period')
+
+
+    if str_ == '_wrapper_create_state_space_out':
 
         # Distribute input parameters
         states_all, states_number_period, mapping_state_idx, = args
@@ -129,7 +136,7 @@ def checks_solve(str_, robupy_obj, *args):
     elif str_ == 'emax':
 
         # Distribute input parameters
-        states_all, states_number_period, emax, future_payoffs = args
+        emax, future_payoffs = args
 
         # Check that the payoffs are finite for all admissible values and infinite for all others.
         is_infinite = np.tile(False, reps=emax.shape)
