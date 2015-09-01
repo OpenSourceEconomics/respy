@@ -1,9 +1,7 @@
-# TODO: I am also using the toolbox with Python 2 at the moment as no good
-# visual profiling tool seems available at this point.
 # Check for Python 3
-# import sys
-#if not (sys.version_info[0] == 3):
-#    raise AssertionError('Please use Python 3')
+import sys
+if not (sys.version_info[0] == 3):
+    raise AssertionError('Please use Python 3')
 
 # Package structure
 from robupy.read import read

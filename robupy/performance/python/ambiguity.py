@@ -8,7 +8,7 @@ import numpy as np
 
 # project library
 from robupy.checks.checks_ambiguity import checks_ambiguity
-import robupy.performance.access as perf
+from robupy.performance.python.auxiliary import simulate_emax
 
 # module wide variables
 HUGE_FLOAT = 10e10
@@ -22,9 +22,6 @@ def get_payoffs_ambiguity(num_draws, eps_standard, period, k,
         num_periods, emax, delta, debug, cholesky, level, measure):
     """ Get worst case
     """
-    # Access performance library
-    perf_lib = perf.get_library(False)
-
     # Initialize options.
     options = dict()
     options['maxiter'] = 100000000
@@ -73,7 +70,7 @@ def get_payoffs_ambiguity(num_draws, eps_standard, period, k,
         eps_relevant[:, j] = np.exp(eps_relevant[:, j])
 
     simulated, payoffs_ex_post, future_payoffs = \
-        perf_lib.simulate_emax(num_periods, num_draws, period, k, eps_relevant,
+        simulate_emax(num_periods, num_draws, period, k, eps_relevant,
             payoffs_ex_ante, edu_max, edu_start, emax, states_all,
             mapping_state_idx, delta)
 
@@ -96,9 +93,6 @@ def _correct_debugging(opt, x0, level, eps_standard, cholesky, num_periods,
     if not (level < 0.1e-10):
         return opt
 
-    # Access performance library
-    perf_lib = perf.get_library(False)
-
     # Correct resulting values
     opt['x'] = x0
 
@@ -109,7 +103,8 @@ def _correct_debugging(opt, x0, level, eps_standard, cholesky, num_periods,
         eps_relevant[:, j] = np.exp(eps_relevant[:, j])
 
     simulated, payoffs_ex_post, future_payoffs = \
-                perf_lib.simulate_emax(num_periods, num_draws, period, k, eps_relevant,
+                simulate_emax(num_periods, num_draws, period, k,
+                                 eps_relevant,
                     payoffs_ex_ante, edu_max, edu_start, emax, states_all,
                     mapping_state_idx, delta)
 
@@ -169,8 +164,6 @@ def _criterion(x, num_draws, eps_standard, period, k, payoffs_ex_ante, edu_max,
         true_cholesky, delta, debug):
     """ Simulate expected future value for alternative shock distributions.
     """
-    # Access performance library
-    perf_lib = perf.get_library(False)
 
     # Transformation of standard normal deviates to relevant distributions.
     eps_relevant = np.dot(true_cholesky, eps_standard.T).T
@@ -180,7 +173,7 @@ def _criterion(x, num_draws, eps_standard, period, k, payoffs_ex_ante, edu_max,
                                      HUGE_FLOAT)
 
     # Simulate the expected future value for a given parametrization.
-    simulated, _, _ = perf_lib.simulate_emax(num_periods, num_draws, period, k,
+    simulated, _, _ = simulate_emax(num_periods, num_draws, period, k,
                         eps_relevant, payoffs_ex_ante, edu_max, edu_start,
                         emax, states_all, mapping_state_idx, delta)
     # Debugging
