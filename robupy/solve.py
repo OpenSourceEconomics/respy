@@ -38,14 +38,13 @@ def solve(robupy_obj):
     assert (robupy_obj.get_status())
 
     # Distribute class attributes
-    ambiguity = robupy_obj.get_attr('ambiguity')
+    measure = robupy_obj.get_attr('measure')
+
+    level = robupy_obj.get_attr('level')
 
     debug = robupy_obj.get_attr('debug')
 
     # Construct auxiliary objects
-    level = ambiguity['level']
-    measure = ambiguity['measure']
-
     with_ambiguity = (level != 0.00)
 
     if os.path.exists('ambiguity.robupy.log'):
@@ -107,12 +106,6 @@ def solve(robupy_obj):
 
     logger.info('... finished \n')
 
-    # Summarize optimizations in case of ambiguity.
-    if debug and with_ambiguity:
-        _summarize_ambiguity(robupy_obj)
-
-    # Update
-    # TODO: renaming periods?
     robupy_obj.unlock()
 
     robupy_obj.set_attr('periods_payoffs_ex_post', periods_payoffs_ex_post)
@@ -121,10 +114,17 @@ def solve(robupy_obj):
 
     robupy_obj.set_attr('periods_emax', periods_emax)
 
+    robupy_obj.lock()
+
+    # Summarize optimizations in case of ambiguity.
+    if debug and with_ambiguity:
+        _summarize_ambiguity(robupy_obj)
+
     # Set flag that object includes the solution objects.
+    robupy_obj.unlock()
+
     robupy_obj.set_attr('is_solved', True)
 
-    # Lock up again
     robupy_obj.lock()
 
     # Finishing

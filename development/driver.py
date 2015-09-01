@@ -11,7 +11,7 @@ import os
 sys.path.insert(0, os.environ['ROBUPY'])
 
 # project library
-from robupy import *
+#from robupy import *
 
 # Relative Criterion
 HOME = os.getcwd()
@@ -29,4 +29,4 @@ for _ in range(1):
     os.chdir(HOME)
 
     # Run
-    os.system('robupy-solve')
+    os.system('robupy-solve --simulate')

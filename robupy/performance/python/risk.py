@@ -6,7 +6,6 @@
 import numpy as np
 
 # project library
-from robupy.checks.checks_risk import checks_risk
 from robupy.performance.python.auxiliary import simulate_emax
 
 

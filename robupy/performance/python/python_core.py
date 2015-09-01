@@ -9,6 +9,7 @@ import logging
 # project libray
 from robupy.performance.python.ambiguity import get_payoffs_ambiguity
 from robupy.performance.python.risk import get_payoffs_risk
+from robupy.performance.python.auxiliary import get_future_payoffs
 
 # Logging
 logger = logging.getLogger('ROBUPY_SOLVE')
@@ -201,5 +202,95 @@ def calculate_payoffs_ex_ante(num_periods, states_number_period, states_all,
     # Finishing
     return periods_payoffs_ex_ante
 
+def simulate_sample(num_agents, states_all, num_periods,
+        mapping_state_idx, periods_payoffs_ex_ante, periods_eps_relevant,
+        edu_max, edu_start, periods_emax, delta):
+    """ Sample simulation
+    """
+    count = 0
 
+    # Initialize data
+    dataset = np.tile(-99.00, (num_agents * num_periods, 8))
 
+    for i in range(num_agents):
+
+        current_state = states_all[0, 0, :].copy()
+
+        dataset[count, 0] = i
+
+        # Logging
+        if (i != 0) and (i % 100 == 0):
+            logger.info('... simulated ' + str(i) + ' agents')
+
+        # Iterate over each period for the agent
+        for period in range(num_periods):
+
+            # Distribute state space
+            exp_A, exp_B, edu, edu_lagged = current_state
+
+            k = mapping_state_idx[period, exp_A, exp_B, edu, edu_lagged]
+
+            # Write agent identifier and current period to data frame
+            dataset[count, :2] = i, period
+
+            payoffs_ex_post = np.tile(np.nan, 4)
+
+            # Calculate ex post payoffs
+            for j in [0, 1]:
+                payoffs_ex_post[j] = periods_payoffs_ex_ante[period,
+                                                                    k, j] * \
+                                                np.exp(periods_eps_relevant[period, i, j])
+
+            for j in [2, 3]:
+                payoffs_ex_post[j] = periods_payoffs_ex_ante[period,
+                                                                    k, j] + \
+                                                periods_eps_relevant[period, i, j]
+
+            # Calculate future utilities
+            if period == (num_periods - 1):
+                future_payoffs = np.zeros(4)
+            else:
+                future_payoffs = get_future_payoffs(edu_max, edu_start,
+                                                             mapping_state_idx,
+                                                             period, periods_emax, k,
+                                                             states_all)
+
+            # Calculate total utilities
+            total_payoffs = payoffs_ex_post + delta * future_payoffs
+
+            # Determine optimal choice
+            max_idx = np.argmax(total_payoffs)
+
+            # Record agent decision
+            dataset[count, 2] = max_idx + 1
+
+            # Record earnings
+            dataset[count, 3] = -99.00
+            if max_idx in [0, 1]:
+                dataset[count, 3] = payoffs_ex_post[max_idx]
+
+            # Write relevant state space for period to data frame
+            dataset[count, 4:8] = current_state
+
+            # Special treatment for education
+            dataset[count, 6] += edu_start
+
+            # Update work experiences and education
+            if max_idx == 0:
+                current_state[0] += 1
+            elif max_idx == 1:
+                current_state[1] += 1
+            elif max_idx == 2:
+                current_state[2] += 1
+
+            # Update lagged education
+            current_state[3] = 0
+
+            if max_idx == 2:
+                current_state[3] = 1
+
+            # Update row indicator
+            count += 1
+
+    # Finishing
+    return dataset

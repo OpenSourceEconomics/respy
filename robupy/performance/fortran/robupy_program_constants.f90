@@ -16,6 +16,8 @@ MODULE robupy_program_constants
     INTEGER(our_int), PARAMETER :: zero_int     = 0_our_int
     INTEGER(our_int), PARAMETER :: one_int 	    = 1_our_int
     INTEGER(our_int), PARAMETER :: two_int 	    = 2_our_int
+    INTEGER(our_int), PARAMETER :: three_int    = 3_our_int
+    INTEGER(our_int), PARAMETER :: four_int     = 4_our_int
 
     REAL(our_dble), PARAMETER :: missing_dble = -99_our_dble
     REAL(our_dble), PARAMETER :: zero_dble    = 0.00_our_dble

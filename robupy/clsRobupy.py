@@ -41,11 +41,9 @@ class RobupyCls(MetaCls):
         self.attr['fast'] = None
 
         # Ambiguity
-        self.attr['ambiguity'] = {}
+        self.attr['measure'] = None
 
-        self.attr['ambiguity']['measure'] = None
-
-        self.attr['ambiguity']['level'] = None
+        self.attr['level'] = None
 
         # Results
         self.attr['periods_emax'] = None
@@ -109,11 +107,9 @@ class RobupyCls(MetaCls):
 
             self.attr['shocks'] = init_dict['SHOCKS']
 
-            self.attr['ambiguity']['measure'] = init_dict['AMBIGUITY'][
-                'measure']
+            self.attr['measure'] = init_dict['AMBIGUITY']['measure']
 
-            self.attr['ambiguity']['level'] = init_dict['AMBIGUITY'][
-                'level']
+            self.attr['level'] = init_dict['AMBIGUITY']['level']
 
             # Update status indicator
             self.is_first = False
@@ -126,7 +122,7 @@ class RobupyCls(MetaCls):
         assert (self.attr['debug'] in [True, False])
 
         # Constraints
-        with_ambiguity = (self.attr['ambiguity']['level'] > 0.00)
+        with_ambiguity = (self.attr['level'] > 0.00)
         if with_ambiguity:
             assert (self.attr['fast'] is False)
 

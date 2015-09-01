@@ -7,7 +7,6 @@ from scipy.optimize import minimize
 import numpy as np
 
 # project library
-from robupy.checks.checks_ambiguity import checks_ambiguity
 from robupy.performance.python.auxiliary import simulate_emax
 
 # module wide variables
@@ -75,9 +74,8 @@ def get_payoffs_ambiguity(num_draws, eps_standard, period, k,
             mapping_state_idx, delta)
 
     # Debugging
-    # TODO: Work back in
-    #if debug is True:
-    #    checks_ambiguity('simulate_emax_ambiguity', simulated, opt)
+    if debug:
+        checks_ambiguity('get_payoffs_ambiguity', simulated, opt)
 
     # Finishing
     return simulated, payoffs_ex_post, future_payoffs
@@ -226,3 +224,55 @@ def _prep_absolute(level, debug):
 
     # Finishing
     return bounds
+
+def checks_ambiguity(str_, *args):
+    """ This checks the integrity of the objects related to the
+        solution of the model.
+    """
+
+    if str_ == '_get_start':
+
+        # Distribute input parameters
+        x0, = args
+
+        # Check quality of starting values
+        assert (len(x0) == 2)
+        assert (np.all(np.isfinite(x0)))
+
+        assert (all(val == 0 for val in x0))
+
+    elif str_ == 'get_payoffs_ambiguity':
+
+        # Distribute input parameters
+        simulated, opt = args
+
+        # Check quality of results. As I evaluate the function at the parameters
+        # resulting from the optimization, the value of the criterion function
+        # should be the same.
+        assert (simulated == opt['fun'])
+
+    elif str_ == '_criterion':
+
+        # Distribute input parameters
+        simulated, = args
+
+        # Check quality of bounds
+        assert (np.isfinite(simulated))
+
+    elif str_ == '_prep_absolute':
+
+        # Distribute input parameters
+        bounds, = args
+
+        # Check quality of bounds
+        assert (len(bounds) == 2)
+
+        for i in range(2):
+            assert (bounds[0] == bounds[i])
+
+    else:
+
+        raise AssertionError
+
+    # Finishing
+    return True

@@ -8,6 +8,46 @@
 !
 !*******************************************************************************
 !*******************************************************************************
+SUBROUTINE simulate_sample(dataset, num_agents, states_all, num_periods, &
+                mapping_state_idx, periods_payoffs_ex_ante, &
+                periods_eps_relevant, edu_max, edu_start, periods_emax, delta)
+
+    !/* external libraries    */
+
+    USE robupy_library
+
+    !/* setup    */
+
+    IMPLICIT NONE
+
+    !/* external objects    */
+
+    DOUBLE PRECISION, INTENT(OUT)   :: dataset(num_agents*num_periods, 8)
+
+    DOUBLE PRECISION, INTENT(IN)    :: periods_emax(:, :)
+    DOUBLE PRECISION, INTENT(IN)    :: periods_payoffs_ex_ante(:, :, :)
+    DOUBLE PRECISION, INTENT(IN)    :: periods_eps_relevant(:, :, :)
+    DOUBLE PRECISION, INTENT(IN)    :: delta
+
+    INTEGER, INTENT(IN)             :: num_periods
+    INTEGER, INTENT(IN)             :: edu_start
+
+    INTEGER, INTENT(IN)             :: edu_max
+    INTEGER, INTENT(IN)             :: num_agents
+    INTEGER, INTENT(IN)             :: mapping_state_idx(:, :, :, :, :)
+    INTEGER, INTENT(IN)             :: states_all(:, :, :)
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+
+    CALL simulate_sample_lib(dataset, num_agents, states_all, num_periods, &
+                mapping_state_idx, periods_payoffs_ex_ante, &
+                periods_eps_relevant, edu_max, edu_start, periods_emax, delta)
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
                 periods_future_payoffs, num_periods, max_states_period, &
                 eps_relevant_periods, num_draws, states_number_period, & 
@@ -145,8 +185,7 @@ SUBROUTINE calculate_payoffs_ex_ante(periods_payoffs_ex_ante, num_periods, &
 
     !/* external objects    */
 
-    DOUBLE PRECISION, INTENT(OUT)   :: periods_payoffs_ex_ante(num_periods, &
-                                            max_states_period, 4)
+    DOUBLE PRECISION, INTENT(OUT)   :: periods_payoffs_ex_ante(num_periods, max_states_period, 4)
 
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_A(:)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_B(:)
