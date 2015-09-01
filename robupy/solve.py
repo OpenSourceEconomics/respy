@@ -17,8 +17,9 @@ import os
 
 # project library
 from robupy.checks.checks_solve import checks_solve
-import robupy.performance.python.python_core as python_core
+from robupy.auxiliary import _replace_missing_values
 
+import robupy.performance.python.python_core as python_core
 try:
     import robupy.performance.fortran.fortran_core as fortran_core
 except ImportError:
@@ -45,13 +46,7 @@ def solve(robupy_obj):
     debug = robupy_obj.get_attr('debug')
 
     # Construct auxiliary objects
-    with_ambiguity = (level != 0.00)
-
-    if os.path.exists('ambiguity.robupy.log'):
-        os.remove('ambiguity.robupy.log')
-
-    if debug and with_ambiguity:
-        open('ambiguity.robupy.log', 'w').close()
+    with_ambiguity = _start_ambiguity_logging(robupy_obj)
 
     # Creating the state space of the model and collect the results in the
     # package class.
@@ -268,7 +263,7 @@ def _wrapper_backward_induction_procedure(robupy_obj, eps_relevant_periods,
                 periods_payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,
                 states_all, delta, debug, true_cholesky, level, measure)
 
-    # Set missing values to NAN
+    # Replace missing values
     periods_emax = _replace_missing_values(periods_emax)
 
     periods_future_payoffs = _replace_missing_values(periods_future_payoffs)
@@ -285,21 +280,6 @@ def _wrapper_backward_induction_procedure(robupy_obj, eps_relevant_periods,
 
 ''' Auxiliary functions
 '''
-
-def _replace_missing_values(argument):
-    """ Replace missing value -99 with NAN
-    """
-    # Determine missing values
-    is_missing = (argument == -99)
-
-    # Transform to float array
-    mapping_state_idx = np.asfarray(argument)
-
-    # Replace missing values
-    mapping_state_idx[is_missing] = np.nan
-
-    # Finishing
-    return mapping_state_idx
 
 
 def _create_eps(robupy_obj):
@@ -422,3 +402,24 @@ def _summarize_ambiguity(robupy_obj):
             total = success + failure
 
             file_.write(string.format([period, total, success, failure]))
+
+
+def _start_ambiguity_logging(robupy_obj):
+    """ Start logging for ambiguity.
+    """
+    # Distribute class attributes
+    level = robupy_obj.get_attr('level')
+
+    debug = robupy_obj.get_attr('debug')
+
+    # Start logging if required
+    with_ambiguity = (level != 0.00)
+
+    if os.path.exists('ambiguity.robupy.log'):
+        os.remove('ambiguity.robupy.log')
+
+    if debug and with_ambiguity:
+        open('ambiguity.robupy.log', 'w').close()
+
+    # Finishing
+    return with_ambiguity

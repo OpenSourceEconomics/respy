@@ -17,14 +17,14 @@ logger = logging.getLogger('ROBUPY_SOLVE')
 
 def backward_induction(num_periods, max_states_period, eps_relevant_periods, num_draws,
             states_number_period, periods_payoffs_ex_ante, edu_max, edu_start,
-            mapping_state_idx, states_all, delta, debug, cholesky, level, measure):
+            mapping_state_idx, states_all, delta, debug, cholesky, level,
+            measure):
     """ Backward iteration procedure.
     """
-
-
+    # Auxiliary objects
     with_ambiguity = (level > 0.00)
 
-    # Initialize
+    # Initialize containers with missing values
     periods_emax = np.tile(-99.00, (num_periods, max_states_period))
     periods_payoffs_ex_post = np.tile(-99.00, (num_periods,
                                                max_states_period, 4))
@@ -74,15 +74,15 @@ def create_state_space(num_periods, edu_start, edu_max, min_idx):
     """ Create grid for state space.
     """
     # Array for possible realization of state space by period
-    states_all = np.tile(-99, (num_periods, 100000, 4))
+    states_all = np.tile(-99.00, (num_periods, 100000, 4))
 
     # Array for the mapping of state space values to indices in variety
     # of matrices.
-    mapping_state_idx = np.tile(-99, (num_periods, num_periods, num_periods,
+    mapping_state_idx = np.tile(-99.00, (num_periods, num_periods, num_periods,
                                          min_idx, 2))
 
     # Array for maximum number of realizations of state space by period
-    states_number_period = np.tile(np.nan, num_periods)
+    states_number_period = np.tile(-99.00, num_periods)
 
     # Construct state space by periods
     for period in range(num_periods):
@@ -190,6 +190,7 @@ def calculate_payoffs_ex_ante(num_periods, states_number_period, states_all,
             # beyond high school.
             if edu + edu_start >= 12:
                 payoff += coeffs_edu[1]
+
             # Psychic cost of going back to school
             if edu_lagged == 0:
                 payoff += coeffs_edu[2]

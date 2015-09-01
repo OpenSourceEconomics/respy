@@ -4,7 +4,7 @@
 
     0   Identifier of Agent
     1   Time Period
-    2   Choice (0 = Work A, 1 = Work B, 2 = Education, 3 = Home)
+    2   Choice (1 = Work A, 2 = Work B, 3 = Education, 4 = Home)
     3   Earnings (missing value if not working)
     4   Work Experience A
     5   Work Experience B
@@ -14,39 +14,22 @@
 """
 
 # standard library
-import numpy as np
 import pandas as pd
+import numpy as np
 import logging
 
 # project library
 from robupy.checks.checks_simulate import checks_simulate
+from robupy.auxiliary import _replace_missing_values
 
 import robupy.performance.python.python_core as python_core
-
 try:
     import robupy.performance.fortran.fortran_core as fortran_core
 except ImportError:
     pass
 
-
 # Logging
 logger = logging.getLogger('ROBUPY_SIMULATE')
-
-def _replace_missing_values(argument):
-    """ Replace missing value -99 with NAN
-    """
-    # Determine missing values
-    is_missing = (argument == -99)
-
-    # Transform to float array
-    mapping_state_idx = np.asfarray(argument)
-
-    # Replace missing values
-    mapping_state_idx[is_missing] = np.nan
-
-    # Finishing
-    return mapping_state_idx
-
 
 ''' Public function
 '''
@@ -59,21 +42,21 @@ def simulate(robupy_obj):
     assert (robupy_obj.get_status())
 
     # Distribute class attributes
-    debug = robupy_obj.get_attr('debug')
-
-    shocks = robupy_obj.get_attr('shocks')
-
     num_periods = robupy_obj.get_attr('num_periods')
 
     num_agents = robupy_obj.get_attr('num_agents')
 
     seed = robupy_obj.get_attr('seed_simulation')
 
+    shocks = robupy_obj.get_attr('shocks')
+
+    debug = robupy_obj.get_attr('debug')
+
     # Draw disturbances for the simulation.
     np.random.seed(seed)
 
     periods_eps_relevant = np.random.multivariate_normal(np.zeros(4), shocks,
-                                        (num_periods, num_agents))
+                                (num_periods, num_agents))
 
     # Simulate a dataset with the results from the solution.
     logger.info('Staring simulation of model for ' +
@@ -81,7 +64,7 @@ def simulate(robupy_obj):
 
     data_frame = _wrapper_simulate_sample(robupy_obj, periods_eps_relevant)
 
-    # Run checks of pandas data array
+    # Run checks on data frame
     if debug:
         checks_simulate('data_frame', robupy_obj, data_frame)
 
@@ -143,8 +126,10 @@ def _wrapper_simulate_sample(robupy_obj, periods_eps_relevant):
     # Finishing
     return dataset
 
+
 ''' Private functions
 '''
+
 
 def _write_info(data_frame, seed):
     """ Write information about the simulated economy.
@@ -211,6 +196,7 @@ def _write_out(data_frame):
         data_frame.to_string(file_, index=False, header=None, na_rep='.',
                      formatters=formats)
 
+
 def _format_float(x):
     """ Format floating point number.
     """
@@ -221,6 +207,7 @@ def _format_float(x):
     else:
 
         return '{0:10.2f}'.format(x)
+
 
 def _format_integer(x):
     """ Format integers.
