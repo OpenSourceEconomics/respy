@@ -30,20 +30,23 @@ MODULE robupy_library
 CONTAINS
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE backward_induction_lib(period_emax, period_payoffs_ex_post, & 
-                period_future_payoffs, num_periods, max_states_period, & 
+SUBROUTINE backward_induction_lib(periods_emax, periods_payoffs_ex_post, &
+                periods_future_payoffs, num_periods, max_states_period, &
                 eps_relevant_periods, num_draws, states_number_period, & 
-                period_payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, & 
-                states_all, delta)
+                periods_payoffs_ex_ante, edu_max, edu_start, &
+                mapping_state_idx, states_all, delta)
 
     !/* external objects    */
 
-    REAL(our_dble), INTENT(OUT)     :: period_emax(num_periods, max_states_period)
-    REAL(our_dble), INTENT(OUT)     :: period_payoffs_ex_post(num_periods, max_states_period, 4)
-    REAL(our_dble), INTENT(OUT)     :: period_future_payoffs(num_periods, max_states_period, 4)
+    REAL(our_dble), INTENT(OUT)     :: periods_emax(num_periods, &
+    max_states_period)
+    REAL(our_dble), INTENT(OUT)     :: periods_payoffs_ex_post(num_periods, &
+    max_states_period, 4)
+    REAL(our_dble), INTENT(OUT)     :: periods_future_payoffs(num_periods, &
+    max_states_period, 4)
 
     REAL(our_dble), INTENT(IN)      :: eps_relevant_periods(:, :, :)
-    REAL(our_dble), INTENT(IN)      :: period_payoffs_ex_ante(:, :, :   )
+    REAL(our_dble), INTENT(IN)      :: periods_payoffs_ex_ante(:, :, :   )
     REAL(our_dble), INTENT(IN)      :: delta
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:, :, :, :, :)    
@@ -71,9 +74,9 @@ SUBROUTINE backward_induction_lib(period_emax, period_payoffs_ex_post, &
 !-------------------------------------------------------------------------------
         
     ! Set to missing value
-    period_emax = missing_dble
-    period_future_payoffs = missing_dble
-    period_payoffs_ex_post = missing_dble
+    periods_emax = missing_dble
+    periods_future_payoffs = missing_dble
+    periods_payoffs_ex_post = missing_dble
 
     ! Backward induction
     DO period = (num_periods - 1), 0, -1
@@ -85,17 +88,17 @@ SUBROUTINE backward_induction_lib(period_emax, period_payoffs_ex_post, &
         DO k = 0, (states_number_period(period + 1) - 1)
 
             ! Extract payoffs
-            payoffs_ex_ante = period_payoffs_ex_ante(period + 1, k + 1, :)
+            payoffs_ex_ante = periods_payoffs_ex_ante(period + 1, k + 1, :)
 
             CALL get_payoffs_risk_lib(emax, payoffs_ex_post, future_payoffs, &
                     num_draws, eps_relevant, period, k, payoffs_ex_ante, & 
                     edu_max, edu_start, mapping_state_idx, states_all, & 
-                    num_periods, period_emax, delta)
+                    num_periods, periods_emax, delta)
 
             ! Collect information            
-            period_payoffs_ex_post(period + 1, k + 1, :) = payoffs_ex_post
-            period_future_payoffs(period + 1, k + 1, :) = future_payoffs
-            period_emax(period + 1, k + 1) = emax
+            periods_payoffs_ex_post(period + 1, k + 1, :) = payoffs_ex_post
+            periods_future_payoffs(period + 1, k + 1, :) = future_payoffs
+            periods_emax(period + 1, k + 1) = emax
 
         END DO
 
@@ -107,7 +110,7 @@ END SUBROUTINE
 SUBROUTINE get_payoffs_risk_lib(emax, payoffs_ex_post, future_payoffs, &
                 num_draws, eps_baseline, period, k, payoffs_ex_ante, & 
                 edu_max, edu_start, mapping_state_idx, states_all, num_periods, & 
-                period_emax, delta)
+                periods_emax, delta)
 
     !/* external objects    */
 
@@ -127,7 +130,7 @@ SUBROUTINE get_payoffs_risk_lib(emax, payoffs_ex_post, future_payoffs, &
     REAL(our_dble), INTENT(IN)      :: eps_baseline(:, :)
     REAL(our_dble), INTENT(IN)      :: payoffs_ex_ante(:)
     REAL(our_dble), INTENT(IN)      :: delta
-    REAL(our_dble), INTENT(IN)      :: period_emax(:, :)
+    REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
 
     !/* internals objects    */
     
@@ -151,7 +154,7 @@ SUBROUTINE get_payoffs_risk_lib(emax, payoffs_ex_post, future_payoffs, &
     ! Simulated expected future value
     CALL simulate_emax_lib(emax, payoffs_ex_post, future_payoffs, num_periods, & 
             num_draws, period, k, eps_relevant, payoffs_ex_ante, edu_max, & 
-            edu_start, period_emax, states_all, mapping_state_idx, delta)
+            edu_start, periods_emax, states_all, mapping_state_idx, delta)
  
 END SUBROUTINE
 !******************************************************************************
@@ -416,13 +419,13 @@ SUBROUTINE simulate_emax_lib(emax_simulated, payoffs_ex_post, future_payoffs, &
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE calculate_payoffs_ex_ante_lib(period_payoffs_ex_ante, num_periods, &
+SUBROUTINE calculate_payoffs_ex_ante_lib(periods_payoffs_ex_ante, num_periods, &
               states_number_period, states_all, edu_start, coeffs_A, coeffs_B, & 
               coeffs_edu, coeffs_home, max_states_period)
 
     !/* external objects    */
 
-    REAL(our_dble), INTENT(OUT)     :: period_payoffs_ex_ante(num_periods, &
+    REAL(our_dble), INTENT(OUT)     :: periods_payoffs_ex_ante(num_periods, &
                                             max_states_period, 4)
 
     REAL(our_dble), INTENT(IN)      :: coeffs_A(:)
@@ -473,11 +476,11 @@ SUBROUTINE calculate_payoffs_ex_ante_lib(period_payoffs_ex_ante, num_periods, &
             covars(6) = exp_B ** 2
 
             ! Calculate systematic part of payoff in occupation A
-            period_payoffs_ex_ante(period, k, 1) =  & 
+            periods_payoffs_ex_ante(period, k, 1) =  &
                 EXP(DOT_PRODUCT(covars, coeffs_A))
 
             ! Calculate systematic part of payoff in occupation B
-            period_payoffs_ex_ante(period, k, 2) = & 
+            periods_payoffs_ex_ante(period, k, 2) = &
                 EXP(DOT_PRODUCT(covars, coeffs_B))
 
             ! Calculate systematic part of schooling utility
@@ -497,10 +500,10 @@ SUBROUTINE calculate_payoffs_ex_ante_lib(period_payoffs_ex_ante, num_periods, &
                 payoff = payoff + coeffs_edu(3)
             
             END IF
-            period_payoffs_ex_ante(period, k, 3) = payoff
+            periods_payoffs_ex_ante(period, k, 3) = payoff
 
             ! Calculate systematic part of payoff in home production
-            period_payoffs_ex_ante(period, k, 4) = coeffs_home(1)
+            periods_payoffs_ex_ante(period, k, 4) = coeffs_home(1)
 
         END DO
 

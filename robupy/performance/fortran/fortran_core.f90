@@ -8,11 +8,11 @@
 !
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE backward_induction(period_emax, period_payoffs_ex_post, & 
-                period_future_payoffs, num_periods, max_states_period, & 
+SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
+                periods_future_payoffs, num_periods, max_states_period, &
                 eps_relevant_periods, num_draws, states_number_period, & 
-                period_payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, & 
-                states_all, delta, debug, true_cholesky, level, measure)
+                periods_payoffs_ex_ante, edu_max, edu_start, & 
+                mapping_state_idx, states_all, delta)
 
     !/* external libraries    */
 
@@ -24,14 +24,12 @@ SUBROUTINE backward_induction(period_emax, period_payoffs_ex_post, &
 
     !/* external objects    */
 
-    DOUBLE PRECISION, INTENT(OUT)   :: period_emax(num_periods, max_states_period)
-    DOUBLE PRECISION, INTENT(OUT)   :: period_payoffs_ex_post(num_periods, max_states_period, 4)
-    DOUBLE PRECISION, INTENT(OUT)   :: period_future_payoffs(num_periods, max_states_period, 4)
+    DOUBLE PRECISION, INTENT(OUT)   :: periods_emax(num_periods, max_states_period)
+    DOUBLE PRECISION, INTENT(OUT)   :: periods_payoffs_ex_post(num_periods, max_states_period, 4)
+    DOUBLE PRECISION, INTENT(OUT)   :: periods_future_payoffs(num_periods, max_states_period, 4)
 
     DOUBLE PRECISION, INTENT(IN)    :: eps_relevant_periods(:, :, :)
-    DOUBLE PRECISION, INTENT(IN)    :: period_payoffs_ex_ante(:, :, :   )
-    DOUBLE PRECISION, INTENT(IN)    :: true_cholesky(:, :)
-    DOUBLE PRECISION, INTENT(IN)    :: level
+    DOUBLE PRECISION, INTENT(IN)    :: periods_payoffs_ex_ante(:, :, :   )
     DOUBLE PRECISION, INTENT(IN)    :: delta
 
     INTEGER, INTENT(IN)             :: mapping_state_idx(:, :, :, :, :)    
@@ -43,18 +41,14 @@ SUBROUTINE backward_induction(period_emax, period_payoffs_ex_post, &
     INTEGER, INTENT(IN)             :: max_states_period
     INTEGER, INTENT(IN)             :: states_all(:, :, :)
 
-    CHARACTER,INTENT(IN)            :: measure
-
-    LOGICAL, INTENT(IN)             :: debug
-
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
         
-    CALL backward_induction_lib(period_emax, period_payoffs_ex_post, &  
-            period_future_payoffs, num_periods, max_states_period, & 
+    CALL backward_induction_lib(periods_emax, periods_payoffs_ex_post, &
+            periods_future_payoffs, num_periods, max_states_period, &
             eps_relevant_periods, num_draws, states_number_period, & 
-            period_payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, & 
+            periods_payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
             states_all, delta)
 
 END SUBROUTINE
@@ -137,7 +131,7 @@ SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, future_payoffs, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE calculate_payoffs_ex_ante(period_payoffs_ex_ante, num_periods, &
+SUBROUTINE calculate_payoffs_ex_ante(periods_payoffs_ex_ante, num_periods, &
               states_number_period, states_all, edu_start, coeffs_A, & 
               coeffs_B, coeffs_edu, coeffs_home, max_states_period)
 
@@ -151,7 +145,7 @@ SUBROUTINE calculate_payoffs_ex_ante(period_payoffs_ex_ante, num_periods, &
 
     !/* external objects    */
 
-    DOUBLE PRECISION, INTENT(OUT)   :: period_payoffs_ex_ante(num_periods, &
+    DOUBLE PRECISION, INTENT(OUT)   :: periods_payoffs_ex_ante(num_periods, &
                                             max_states_period, 4)
 
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_A(:)
@@ -169,7 +163,7 @@ SUBROUTINE calculate_payoffs_ex_ante(period_payoffs_ex_ante, num_periods, &
 ! Algorithm
 !-------------------------------------------------------------------------------
     
-    CALL calculate_payoffs_ex_ante_lib(period_payoffs_ex_ante, num_periods, &
+    CALL calculate_payoffs_ex_ante_lib(periods_payoffs_ex_ante, num_periods, &
               states_number_period, states_all, edu_start, coeffs_A, & 
               coeffs_B, coeffs_edu, coeffs_home, max_states_period)
 

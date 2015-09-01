@@ -188,8 +188,8 @@ class Tests(object):
             robupy_obj = solve(robupy_obj)
 
             # Distribute class attributes
-            ex_ante = robupy_obj.get_attr('period_payoffs_ex_ante')
-            ex_post = robupy_obj.get_attr('period_payoffs_ex_post')
+            ex_ante = robupy_obj.get_attr('periods_payoffs_ex_ante')
+            ex_post = robupy_obj.get_attr('periods_payoffs_ex_post')
 
             # Check
             assert (np.ma.all(
@@ -233,14 +233,14 @@ class Tests(object):
             robupy_obj = solve(robupy_obj)
 
             # Distribute class attributes
-            emax = robupy_obj.get_attr('emax')
+            periods_emax = robupy_obj.get_attr('periods_emax')
 
             if base is None:
-                base = emax.copy()
+                base = periods_emax.copy()
 
             # Statistic
             diff = np.max(abs(np.ma.masked_invalid(base) - np.ma.masked_invalid(
-                emax)))
+                periods_emax)))
 
             # Checks
             assert (np.isfinite(diff))
@@ -293,13 +293,13 @@ class Tests(object):
             robupy_obj = solve(robupy_obj)
 
             # Distribute class attributes
-            emax = robupy_obj.get_attr('emax')
+            periods_emax = robupy_obj.get_attr('periods_emax')
 
             if base is None:
-                base = emax.copy()
+                base = periods_emax.copy()
 
             # Checks
-            np.testing.assert_allclose(base, emax, rtol=1e-06)
+            np.testing.assert_allclose(base, periods_emax, rtol=1e-06)
 
     @staticmethod
     def test_7():
@@ -333,7 +333,7 @@ class Tests(object):
             robupy_obj = solve(robupy_obj)
 
             # Distribute class attributes
-            ex_ante = robupy_obj.get_attr('period_payoffs_ex_ante')
+            ex_ante = robupy_obj.get_attr('periods_payoffs_ex_ante')
 
             if base is None:
                 base = ex_ante.copy()

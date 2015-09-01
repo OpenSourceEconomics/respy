@@ -43,7 +43,7 @@ def simulate(robupy_obj):
 
     states_all = robupy_obj.get_attr('states_all')
 
-    emax = robupy_obj.get_attr('emax')
+    periods_emax = robupy_obj.get_attr('periods_emax')
 
     delta = robupy_obj.get_attr('delta')
 
@@ -51,7 +51,7 @@ def simulate(robupy_obj):
 
     edu_max = robupy_obj.get_attr('edu_max')
 
-    period_payoffs_ex_ante = robupy_obj.get_attr('period_payoffs_ex_ante')
+    periods_payoffs_ex_ante = robupy_obj.get_attr('periods_payoffs_ex_ante')
 
     mapping_state_idx = robupy_obj.get_attr('mapping_state_idx')
 
@@ -100,15 +100,17 @@ def simulate(robupy_obj):
             # Write agent identifier and current period to data frame
             data[count, :2] = i, period
 
-            period_payoffs_ex_post = np.tile(np.nan, 4)
+            periods_payoffs_ex_post = np.tile(np.nan, 4)
 
             # Calculate ex post payoffs
             for j in [0, 1]:
-                period_payoffs_ex_post[j] = period_payoffs_ex_ante[period, k, j] * \
+                periods_payoffs_ex_post[j] = periods_payoffs_ex_ante[period,
+                                                                    k, j] * \
                                                 np.exp(eps[period, i, j])
 
             for j in [2, 3]:
-                period_payoffs_ex_post[j] = period_payoffs_ex_ante[period, k, j] + \
+                periods_payoffs_ex_post[j] = periods_payoffs_ex_ante[period,
+                                                                    k, j] + \
                                                 eps[period, i, j]
 
             # Calculate future utilities
@@ -117,11 +119,11 @@ def simulate(robupy_obj):
             else:
                 future_payoffs = get_future_payoffs(edu_max, edu_start,
                                                              mapping_state_idx,
-                                                             period, emax, k,
+                                                             period, periods_emax, k,
                                                              states_all)
 
             # Calculate total utilities
-            total_payoffs = period_payoffs_ex_post + delta * future_payoffs
+            total_payoffs = periods_payoffs_ex_post + delta * future_payoffs
 
             # Determine optimal choice
             max_idx = np.argmax(total_payoffs)
@@ -132,7 +134,7 @@ def simulate(robupy_obj):
             # Record earnings
             data[count, 3] = np.nan
             if max_idx in [0, 1]:
-                data[count, 3] = period_payoffs_ex_post[max_idx]
+                data[count, 3] = periods_payoffs_ex_post[max_idx]
 
             # Write relevant state space for period to data frame
             data[count, 4:8] = current_state

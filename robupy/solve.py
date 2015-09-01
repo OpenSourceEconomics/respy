@@ -5,6 +5,8 @@ programming problem.
     This module uses features as object oriented programming. The backend is
     written with a performance based
 
+    Python core
+
 """
 
 # standard library
@@ -14,11 +16,13 @@ import shlex
 import os
 
 # project library
-
 from robupy.checks.checks_solve import checks_solve
+import robupy.performance.python.python_core as python_core
 
-import robupy.performance.fortran.fortran_functions as fort
-import robupy.performance.python.python_functions as py
+try:
+    import robupy.performance.fortran.fortran_core as fortran_core
+except ImportError:
+    pass
 
 # Logging
 logger = logging.getLogger('ROBUPY_SOLVE')
@@ -89,7 +93,7 @@ def solve(robupy_obj):
 
     robupy_obj.unlock()
 
-    robupy_obj.set_attr('period_payoffs_ex_ante', periods_payoffs_ex_ante)
+    robupy_obj.set_attr('periods_payoffs_ex_ante', periods_payoffs_ex_ante)
 
     robupy_obj.lock()
 
@@ -111,11 +115,11 @@ def solve(robupy_obj):
     # TODO: renaming periods?
     robupy_obj.unlock()
 
-    robupy_obj.set_attr('period_payoffs_ex_post', periods_payoffs_ex_post)
+    robupy_obj.set_attr('periods_payoffs_ex_post', periods_payoffs_ex_post)
 
-    robupy_obj.set_attr('period_future_payoffs', periods_future_payoffs)
+    robupy_obj.set_attr('periods_future_payoffs', periods_future_payoffs)
 
-    robupy_obj.set_attr('emax', periods_emax)
+    robupy_obj.set_attr('periods_emax', periods_emax)
 
     # Set flag that object includes the solution objects.
     robupy_obj.set_attr('is_solved', True)
@@ -159,11 +163,11 @@ def _wrapper_calculate_payoffs_ex_ante(robupy_obj):
 
     # Interface to core functions
     if fast:
-        periods_payoffs_ex_ante = fort.calculate_payoffs_ex_ante(num_periods,
+        periods_payoffs_ex_ante = fortran_core.calculate_payoffs_ex_ante(num_periods,
             states_number_period, states_all, edu_start, coeffs_a, coeffs_b,
             coeffs_edu, coeffs_home, max_states_period)
     else:
-        periods_payoffs_ex_ante = py.calculate_payoffs_ex_ante(num_periods,
+        periods_payoffs_ex_ante = python_core.calculate_payoffs_ex_ante(num_periods,
             states_number_period, states_all, edu_start, coeffs_a, coeffs_b,
             coeffs_edu, coeffs_home, max_states_period)
 
@@ -193,10 +197,12 @@ def _wrapper_create_state_space(robupy_obj):
     # Interface to core functions
     if fast:
         states_all, states_number_period, mapping_state_idx = \
-            fort.create_state_space(num_periods, edu_start, edu_max, min_idx)
+            fortran_core.create_state_space(num_periods, edu_start, edu_max,
+                min_idx)
     else:
         states_all, states_number_period, mapping_state_idx = \
-            py.create_state_space(num_periods, edu_start, edu_max, min_idx)
+            python_core.create_state_space(num_periods, edu_start, edu_max,
+                min_idx)
 
     # Type transformations
     states_number_period = np.array(states_number_period, dtype='int')
@@ -223,7 +229,7 @@ def _wrapper_backward_induction_procedure(robupy_obj, eps_relevant_periods,
     """ Wrapper for backward induction procedure.
     """
     # Distribute class attributes
-    period_payoffs_ex_ante = robupy_obj.get_attr('period_payoffs_ex_ante')
+    periods_payoffs_ex_ante = robupy_obj.get_attr('periods_payoffs_ex_ante')
 
     states_number_period = robupy_obj.get_attr('states_number_period')
 
@@ -251,15 +257,15 @@ def _wrapper_backward_induction_procedure(robupy_obj, eps_relevant_periods,
     # Interface to core functions
     if fast:
         periods_emax, periods_payoffs_ex_post, periods_future_payoffs = \
-            fort.backward_induction(num_periods, max_states_period,
+            fortran_core.backward_induction(num_periods, max_states_period,
                 eps_relevant_periods, num_draws, states_number_period,
-                period_payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,
-                states_all, delta, debug, true_cholesky, level, measure)
+                periods_payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,
+                states_all, delta)
     else:
         periods_emax, periods_payoffs_ex_post, periods_future_payoffs = \
-            py.backward_induction(num_periods, max_states_period,
+            python_core.backward_induction(num_periods, max_states_period,
                 eps_relevant_periods, num_draws, states_number_period,
-                period_payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,
+                periods_payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,
                 states_all, delta, debug, true_cholesky, level, measure)
 
     # Set missing values to NAN
@@ -271,7 +277,7 @@ def _wrapper_backward_induction_procedure(robupy_obj, eps_relevant_periods,
 
     # Run checks on expected future values and its ingredients
     if debug:
-        checks_solve('emax', robupy_obj, periods_emax, periods_future_payoffs)
+        checks_solve('periods_emax', robupy_obj, periods_emax, periods_future_payoffs)
 
     # Finishing
     return periods_emax, periods_payoffs_ex_post, periods_future_payoffs

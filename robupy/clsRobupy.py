@@ -48,13 +48,13 @@ class RobupyCls(MetaCls):
         self.attr['ambiguity']['level'] = None
 
         # Results
-        self.attr['emax'] = None
+        self.attr['periods_emax'] = None
 
         self.attr['states_number_period'] = None
 
         self.attr['states_all'] = None
 
-        self.attr['period_payoffs_ex_post'] = None
+        self.attr['periods_payoffs_ex_post'] = None
 
         self.attr['mapping_state_idx'] = None
 
@@ -65,9 +65,9 @@ class RobupyCls(MetaCls):
         # no randomness, they have to be equal to the
         # ex ante version. The same is true for the
         # future payoffs
-        self.attr['period_payoffs_ex_ante'] = None
+        self.attr['periods_payoffs_ex_ante'] = None
 
-        self.attr['period_future_payoffs'] = None
+        self.attr['periods_future_payoffs'] = None
 
         # Status indicator
         self.is_locked = False
@@ -129,3 +129,7 @@ class RobupyCls(MetaCls):
         with_ambiguity = (self.attr['ambiguity']['level'] > 0.00)
         if with_ambiguity:
             assert (self.attr['fast'] is False)
+
+        # Check library
+        if self.attr['fast']:
+            import robupy.performance.fortran.fortran_core as fortran_core

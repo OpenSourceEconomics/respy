@@ -7,29 +7,28 @@ import numpy as np
 import logging
 
 # project libray
-from robupy.performance.python.risk import get_payoffs_risk
 from robupy.performance.python.ambiguity import get_payoffs_ambiguity
+from robupy.performance.python.risk import get_payoffs_risk
 
 # Logging
 logger = logging.getLogger('ROBUPY_SOLVE')
 
 
 def backward_induction(num_periods, max_states_period, eps_relevant_periods, num_draws,
-            states_number_period, period_payoffs_ex_ante, edu_max, edu_start,
+            states_number_period, periods_payoffs_ex_ante, edu_max, edu_start,
             mapping_state_idx, states_all, delta, debug, cholesky, level, measure):
     """ Backward iteration procedure.
     """
 
 
-    get_payoffs = get_payoffs_risk
-
-    if level > 0.00:
-        get_payoffs = get_payoffs_ambiguity
+    with_ambiguity = (level > 0.00)
 
     # Initialize
-    period_emax = np.tile(-99.00, (num_periods, max_states_period))
-    period_payoffs_ex_post = np.tile(-99.00, ( num_periods, max_states_period, 4))
-    period_future_payoffs = np.tile(-99.00, ( num_periods, max_states_period, 4))
+    periods_emax = np.tile(-99.00, (num_periods, max_states_period))
+    periods_payoffs_ex_post = np.tile(-99.00, (num_periods,
+                                               max_states_period, 4))
+    periods_future_payoffs = np.tile(-99.00, (num_periods,
+                                               max_states_period, 4))
 
     # Iterate backward through all periods
     for period in range(num_periods - 1, -1, -1):
@@ -44,24 +43,30 @@ def backward_induction(num_periods, max_states_period, eps_relevant_periods, num
         for k in range(states_number_period[period]):
 
             # Extract payoffs
-            payoffs_ex_ante = period_payoffs_ex_ante[period, k, :]
+            payoffs_ex_ante = periods_payoffs_ex_ante[period, k, :]
 
             # Simulate the expected future value.
-            emax, payoffs_ex_post, future_payoffs = \
-                get_payoffs(num_draws, eps_relevant, period, k, payoffs_ex_ante,
-                    edu_max, edu_start,mapping_state_idx, states_all,
-                    num_periods, period_emax, delta, debug, cholesky, level,
-                            measure)
+            if with_ambiguity:
+                emax, payoffs_ex_post, future_payoffs = \
+                    get_payoffs_ambiguity(num_draws, eps_relevant, period, k,
+                        payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,
+                        states_all, num_periods, periods_emax, delta, debug,
+                        cholesky, level, measure)
+            else:
+                emax, payoffs_ex_post, future_payoffs = \
+                    get_payoffs_risk(num_draws, eps_relevant, period, k,
+                        payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,
+                        states_all, num_periods, periods_emax, delta)
 
             # Collect information
-            period_payoffs_ex_post[period, k, :] = payoffs_ex_post
-            period_future_payoffs[period, k, :] = future_payoffs
+            periods_payoffs_ex_post[period, k, :] = payoffs_ex_post
+            periods_future_payoffs[period, k, :] = future_payoffs
 
             # Collect
-            period_emax[period, k] = emax
+            periods_emax[period, k] = emax
 
     # Finishing
-    return period_emax, period_payoffs_ex_post, period_future_payoffs
+    return periods_emax, periods_payoffs_ex_post, periods_future_payoffs
 
 
 def create_state_space(num_periods, edu_start, edu_max, min_idx):
@@ -153,7 +158,7 @@ def calculate_payoffs_ex_ante(num_periods, states_number_period, states_all,
     """
 
     # Initialize
-    period_payoffs_ex_ante = np.tile(np.nan, (num_periods, max_states_period,
+    periods_payoffs_ex_ante = np.tile(np.nan, (num_periods, max_states_period,
                                                   4))
 
     # Calculate systematic instantaneous payoffs
@@ -170,11 +175,11 @@ def calculate_payoffs_ex_ante(num_periods, states_number_period, states_all,
                           exp_B ** 2]
 
             # Calculate systematic part of wages in occupation A
-            period_payoffs_ex_ante[period, k, 0] = np.exp(
+            periods_payoffs_ex_ante[period, k, 0] = np.exp(
                 np.dot(coeffs_A, covars))
 
             # Calculate systematic part pf wages in occupation B
-            period_payoffs_ex_ante[period, k, 1] = np.exp(
+            periods_payoffs_ex_ante[period, k, 1] = np.exp(
                 np.dot(coeffs_B, covars))
 
             # Calculate systematic part of schooling utility
@@ -188,13 +193,13 @@ def calculate_payoffs_ex_ante(num_periods, states_number_period, states_all,
             if edu_lagged == 0:
                 payoff += coeffs_edu[2]
 
-            period_payoffs_ex_ante[period, k, 2] = payoff
+            periods_payoffs_ex_ante[period, k, 2] = payoff
 
             # Calculate systematic part of HOME
-            period_payoffs_ex_ante[period, k, 3] = coeffs_home[0]
+            periods_payoffs_ex_ante[period, k, 3] = coeffs_home[0]
 
     # Finishing
-    return period_payoffs_ex_ante
+    return periods_payoffs_ex_ante
 
 
 

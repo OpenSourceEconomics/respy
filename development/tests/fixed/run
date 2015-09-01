@@ -95,10 +95,10 @@ def test_1():
     cleanup()
 
     # Extract input
-    emax = robupy_obj.get_attr('emax')
+    periods_emax = robupy_obj.get_attr('periods_emax')
 
     # Evaluate statistic
-    np.testing.assert_allclose(emax[0, :1], [103320.40501])
+    np.testing.assert_allclose(periods_emax[0, :1], [103320.40501])
 
 
 def test_2():
@@ -109,11 +109,11 @@ def test_2():
     robupy_obj = solve(robupy_obj)
 
     # Distribute class attributes
-    emax = robupy_obj.get_attr('emax')
+    periods_emax = robupy_obj.get_attr('periods_emax')
 
-    ex_post = robupy_obj.get_attr('period_payoffs_ex_post')
+    ex_post = robupy_obj.get_attr('periods_payoffs_ex_post')
 
-    ex_ante = robupy_obj.get_attr('period_payoffs_ex_ante')
+    ex_ante = robupy_obj.get_attr('periods_payoffs_ex_ante')
 
     # GENERAL: As there are no random disturbances, the ex ante and
     # ex post versions of the period payoffs should be identical.
@@ -145,7 +145,7 @@ def test_2():
     vals += [11.58834671922, 14.1540386453, 14.1540386453, 18.5412874597]
     vals += [27.660350558516747]
     for i, val in enumerate(vals):
-        (np.testing.assert_allclose(emax[2, i], [val]))
+        (np.testing.assert_allclose(periods_emax[2, i], [val]))
 
     # PERIOD 2: Check the ex ante payoffs against hand calculations.
     vals = [[2.7456010150169163, 07.5383249336619222, -3999.60, 1.140]]
@@ -158,7 +158,7 @@ def test_2():
     # PERIOD 2: Check expected future values.
     vals = [18.9965372481, 23.2024229903, 41.6888863803, 29.7329464954]
     for i, val in enumerate(vals):
-        (np.testing.assert_allclose(emax[1, i], [val]))
+        (np.testing.assert_allclose(periods_emax[1, i], [val]))
 
     # PERIOD 1: Check the ex ante payoffs against hand calculations.
     vals = [[2.7456010150169163, 7.5383249336619222, 0.90, 1.140]]
@@ -168,7 +168,7 @@ def test_2():
     # PERIOD 1 Check expected future values.
     vals = [47.142766995]
     for i, val in enumerate(vals):
-        (np.testing.assert_allclose(emax[0, 0], [val]))
+        (np.testing.assert_allclose(periods_emax[0, 0], [val]))
 
 
 def test_3():
@@ -197,7 +197,7 @@ def test_4():
     cleanup()
 
     # Assert unchanged value
-    np.testing.assert_allclose(robupy_obj.get_attr('emax')[0, :1],
+    np.testing.assert_allclose(robupy_obj.get_attr('periods_emax')[0, :1],
                                74747.851153)
 
     # Absolute Criterion
@@ -210,7 +210,7 @@ def test_4():
     cleanup()
 
     # Assert unchanged value
-    np.testing.assert_allclose(robupy_obj.get_attr('emax')[0, :1],
+    np.testing.assert_allclose(robupy_obj.get_attr('periods_emax')[0, :1],
                                44.843587)
 
 
@@ -220,8 +220,8 @@ def test_5():
 
     compile_package('fast')
 
-    import robupy.performance.fortran.fortran_functions as fort
-    import robupy.performance.python.python_functions as py
+    import robupy.performance.fortran.fortran_core as fort
+    import robupy.performance.python.python_core as py
 
     for _ in range(1000):
 
@@ -255,8 +255,9 @@ def test_6():
 
     compile_package('fast')
 
-    import robupy.performance.fortran.fortran_functions as fort
-    import robupy.performance.python.python_functions as py
+    import robupy.performance.fortran.fortran_core as fort
+    import robupy.performance.python.python_core as py
+
 
     for _ in range(25):
 
