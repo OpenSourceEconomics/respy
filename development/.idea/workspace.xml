@@ -6,20 +6,20 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="56803c1c-81e4-4070-9cf6-fc7503291db5" name="Default" comment="82333.99728503">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/package/development/restud/testing/modules/auxiliary.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/package/development/restud/testing/modules/battery.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/package/development/restud/testing/modules/clsMail.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/package/development/restud/testing/investigate" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/package/development/restud/testing/run" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/restud/testing/dp3asim.f95" afterPath="$PROJECT_DIR$/package/development/restud/testing/modules/dp3asim.f95" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/restud/testing/modules/auxiliary.py" afterPath="$PROJECT_DIR$/package/development/restud/testing/modules/auxiliary.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/restud/testing/modules/battery.py" afterPath="$PROJECT_DIR$/package/development/restud/testing/modules/battery.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../../../../structRobust/dat/creation/build" afterPath="$PROJECT_DIR$/../../../../structRobust/dat/creation/build" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../../../../structRobust/clean" afterPath="$PROJECT_DIR$/../../../../structRobust/clean" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/restud/codes/upgraded/dp3asim.f95" afterPath="$PROJECT_DIR$/package/development/restud/codes/upgraded/dp3asim.f95" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../../../../structRobust/doc/bib/literature.bib" afterPath="$PROJECT_DIR$/../../../../structRobust/doc/bib/literature.bib" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/restud/simulation/data_one/logging.robupy.sim.log" afterPath="$PROJECT_DIR$/package/development/restud/simulation/data_one/logging.robupy.sim.log" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/restud/simulation/data_three/logging.robupy.sim.log" afterPath="$PROJECT_DIR$/package/development/restud/simulation/data_three/logging.robupy.sim.log" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/restud/simulation/data_two/logging.robupy.sim.log" afterPath="$PROJECT_DIR$/package/development/restud/simulation/data_two/logging.robupy.sim.log" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/restud/simulation/data_one/logging.robupy.sol.log" afterPath="$PROJECT_DIR$/package/development/restud/simulation/data_one/logging.robupy.sol.log" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/restud/simulation/data_three/logging.robupy.sol.log" afterPath="$PROJECT_DIR$/package/development/restud/simulation/data_three/logging.robupy.sol.log" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/restud/simulation/data_two/logging.robupy.sol.log" afterPath="$PROJECT_DIR$/package/development/restud/simulation/data_two/logging.robupy.sol.log" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../../../../structRobust/pull" afterPath="$PROJECT_DIR$/../../../../structRobust/pull" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../../../../structRobust/push" afterPath="$PROJECT_DIR$/../../../../structRobust/push" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/performance/python/python_core.py" afterPath="$PROJECT_DIR$/package/robupy/performance/python/python_core.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/tests/random_init.py" afterPath="$PROJECT_DIR$/package/robupy/tests/random_init.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/restud/testing/run" afterPath="$PROJECT_DIR$/package/development/restud/testing/run" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../../../../structRobust/.idea/structRobust.iml" afterPath="$PROJECT_DIR$/../../../../structRobust/.idea/structRobust.iml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/.idea/workspace.xml" afterPath="$PROJECT_DIR$/package/development/.idea/workspace.xml" />
     </list>
@@ -50,34 +50,12 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="run" pinned="false" current-in-tab="false">
+      <file leaf-file-name="run" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/package/development/restud/testing/run">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-10.8">
-              <caret line="78" column="8" selection-start-line="78" selection-start-column="8" selection-end-line="78" selection-end-column="8" />
+            <state vertical-scroll-proportion="0.02078522">
+              <caret line="1" column="65" selection-start-line="1" selection-start-column="65" selection-end-line="1" selection-end-column="65" />
               <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="battery.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/package/development/restud/testing/modules/battery.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="51" column="64" selection-start-line="51" selection-start-column="64" selection-end-line="51" selection-end-column="64" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="auxiliary.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/package/development/restud/testing/modules/auxiliary.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.62355655">
-              <caret line="120" column="31" selection-start-line="120" selection-start-column="31" selection-end-line="120" selection-end-column="31" />
-              <folding>
-                <element signature="e#76#90#0" expanded="true" />
-              </folding>
             </state>
           </provider>
         </entry>
@@ -145,9 +123,9 @@
         <option value="$PROJECT_DIR$/package/development/restud/testing/investigate.py" />
         <option value="$PROJECT_DIR$/package/development/restud/testing/create.py" />
         <option value="$PROJECT_DIR$/package/development/tests/random/run" />
-        <option value="$PROJECT_DIR$/package/development/restud/testing/run" />
         <option value="$PROJECT_DIR$/package/development/restud/testing/modules/battery.py" />
         <option value="$PROJECT_DIR$/package/development/restud/testing/modules/auxiliary.py" />
+        <option value="$PROJECT_DIR$/package/development/restud/testing/run" />
       </list>
     </option>
   </component>
@@ -1250,18 +1228,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/robupy/simulate.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="127" column="0" selection-start-line="127" selection-start-column="0" selection-end-line="127" selection-end-column="0" />
-          <folding>
-            <element signature="e#383#402#0" expanded="true" />
-            <element signature="e#5852#5987#0" expanded="false" />
-            <element signature="e#6018#6142#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/package/robupy/performance/python/python_core.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -1304,29 +1270,43 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/restud/testing/run">
+    <entry file="file://$PROJECT_DIR$/package/development/restud/testing/modules/auxiliary.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-10.8">
-          <caret line="78" column="8" selection-start-line="78" selection-start-column="8" selection-end-line="78" selection-end-column="8" />
-          <folding />
+        <state vertical-scroll-proportion="2.9930716">
+          <caret line="144" column="8" selection-start-line="144" selection-start-column="8" selection-end-line="144" selection-end-column="8" />
+          <folding>
+            <element signature="e#76#90#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/package/development/restud/testing/modules/battery.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="51" column="64" selection-start-line="51" selection-start-column="64" selection-end-line="51" selection-end-column="64" />
-          <folding />
+        <state vertical-scroll-proportion="0.48057714">
+          <caret line="108" column="29" selection-start-line="108" selection-start-column="29" selection-end-line="108" selection-end-column="29" />
+          <folding>
+            <element signature="e#124#174#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/restud/testing/modules/auxiliary.py">
+    <entry file="file://$PROJECT_DIR$/package/robupy/simulate.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.62355655">
-          <caret line="120" column="31" selection-start-line="120" selection-start-column="31" selection-end-line="120" selection-end-column="31" />
+        <state vertical-scroll-proportion="0.9800222">
+          <caret line="127" column="0" selection-start-line="127" selection-start-column="0" selection-end-line="127" selection-end-column="0" />
           <folding>
-            <element signature="e#76#90#0" expanded="true" />
+            <element signature="e#383#402#0" expanded="true" />
+            <element signature="e#5852#5987#0" expanded="false" />
+            <element signature="e#6018#6142#0" expanded="false" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/development/restud/testing/run">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.02078522">
+          <caret line="1" column="65" selection-start-line="1" selection-start-column="65" selection-end-line="1" selection-end-column="65" />
+          <folding />
         </state>
       </provider>
     </entry>

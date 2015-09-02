@@ -5,7 +5,6 @@
 import logging
 import socket
 import shutil
-import shlex
 import glob
 import os
 
@@ -35,6 +34,7 @@ def start_logging():
     # Add the handlers to the logger
     logger.addHandler(fh)
 
+
 def distribute_input(parser):
     """ Check input for estimation script.
     """
@@ -50,13 +50,13 @@ def distribute_input(parser):
     assert (isinstance(hours, float))
     assert (hours > 0.0)
 
-    # Validity checks
+    # Check that the credentials file is stored in the user's HOME directory.
     if notification:
-        # Check that the credentials file is stored in the user's HOME directory.
         assert (os.path.exists(os.environ['HOME'] + '/.credentials'))
 
     # Finishing.
     return hours, notification
+
 
 def finish(dict_, HOURS, notification):
     """ Finishing up a run of the testing battery.
@@ -103,6 +103,7 @@ def finish(dict_, HOURS, notification):
 
         mail_obj.send()
 
+
 def cleanup():
     """ Cleanup after test battery.
     '"""
@@ -141,6 +142,7 @@ def cleanup():
         except OSError:
 
             pass
+
 
 def compile_package(which):
     """ Compile toolbox

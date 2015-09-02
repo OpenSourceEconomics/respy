@@ -4,11 +4,8 @@
 
 # standard library
 from pandas.util.testing import assert_frame_equal
-
 import pandas as pd
-
 import numpy as np
-import glob
 import sys
 import os
 
@@ -18,26 +15,6 @@ from robupy.tests.random_init import *
 
 from robupy import read, solve, simulate
 
-
-def cleanup(final=False):
-    """ Cleanup after single test run.
-    """
-    files = []
-
-    files += glob.glob('*.robupy.*')
-
-    files += glob.glob('*.mod')
-
-    files += glob.glob('*.txt')
-
-    files += glob.glob('.write_out')
-
-    if final:
-        files += glob.glob('dp3asim')
-
-    # Remove relevant files
-    for file_ in files:
-        os.remove(file_)
 
 """ Compile toolbox
 """
@@ -149,9 +126,3 @@ def compare_implementations():
             missing_values='.'), ndmin=2)[:, -4:])
 
     assert_frame_equal(py, fort)
-
-    # Cleanup
-    # cleanup()
-
-# Final cleanup
-#cleanup(True)
