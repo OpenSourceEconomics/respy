@@ -191,7 +191,7 @@ PROGRAM dp3asim
   ! breaks are removed. Some consecutive IF statements were changed to ELSEIF. 
   !
   ! The program is amended to write out the random components to allow for 
-  ! testing its output against the ROBUPY package.
+  ! testing its output against the ROBUPY package (if requested).
   !
   !***************************************************************************** 
 

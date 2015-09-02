@@ -94,8 +94,10 @@ def generate_random_dict(constraints=None):
     dict_['SIMULATION']['agents'] = np.random.random_integers(1, MAX_AGENTS)
 
     # Shocks
-    cov = np.random.normal(size=16).reshape((4, 4))
-    dict_['SHOCKS'] = np.dot(cov, cov.T)
+    cov = np.identity(4)
+    for i, val in enumerate(np.random.uniform(0.05, 1, 4)):
+        cov[i, i] = val
+    dict_['SHOCKS'] = cov
 
     # Replace education
     if 'edu' in constraints.keys():
@@ -228,7 +230,7 @@ def print_random_dict(dict_):
 
             if flag in ['SHOCKS']:
 
-                str_ = ' {0:<15} {1:<15} {2:<15} {3:<15}\n'
+                str_ = ' {0:15.2f} {1:15.2f} {2:15.2f} {3:15.2f}\n'
 
                 file_.write(' ' + flag.upper() + '\n\n')
 

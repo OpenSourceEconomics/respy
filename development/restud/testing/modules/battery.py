@@ -1,10 +1,5 @@
 #!/usr/bin/env python
 """ This script allows to test the original codes against the ROBUPY package.
-
-The main constraints in the code are that the same random deviates are used
-for the Monte Carlo integration and the simulation. Thus, the number of draws
-always needs to be more than the number of agents. The maximum number of
-periods is set to forty. The maximum number of draws is set to five thousands.
 """
 
 # standard library
@@ -13,7 +8,6 @@ from pandas.util.testing import assert_frame_equal
 import pandas as pd
 
 import numpy as np
-import shutil
 import glob
 import sys
 import os
@@ -48,13 +42,16 @@ def cleanup(final=False):
 """ Compile toolbox
 """
 
-#np.random.seed(123)
+def compare_implementations():
+    """  Compare results from the RESTUD program and the ROBUPY package.
+    """
 
-os.system(' gfortran -o dp3asim dp3asim.f95')
+    # Compile
+    os.chdir('modules')
 
-for i in range(1000):
+    os.system(' gfortran -o dp3asim dp3asim.f95 > /dev/null 2>&1 ')
 
-    print(' ', i, '\n')
+    os.chdir('../')
 
     # Impose some constraints on the initialization file which ensures that
     # the problem can be solved by the RESTUD code.
@@ -72,7 +69,7 @@ for i in range(1000):
     if num_draws < num_agents:
         init_dict['SOLUTION']['draws'] = num_agents
 
-    #print_random_dict(init_dict)
+    print_random_dict(init_dict)
 
     # Perform toolbox actions
     robupy_obj = read('test.robupy.ini')
@@ -99,7 +96,7 @@ for i in range(1000):
         for label in ['A', 'B']:
             coeffs = [init_dict[label]['int']] + init_dict[label]['coeff']
             line = ' {0:10.6f} {1:10.6f} {2:10.6f} {3:10.6f}  {4:10.6f}' \
-                   ' {5:10.6f}\n'.format(*coeffs)
+                    ' {5:10.6f}\n'.format(*coeffs)
             file_.write(line)
 
         # Write out coefficients for education and home payoffs as well as
@@ -112,7 +109,7 @@ for i in range(1000):
         delta = init_dict['BASICS']['delta']
         coeffs = edu_coeffs + [home, delta]
         line = ' {0:10.6f} {1:10.6f} {2:10.6f} {3:10.6f}' \
-               ' {4:10.6f}\n'.format(*coeffs)
+                ' {4:10.6f}\n'.format(*coeffs)
         file_.write(line)
 
         # Write out coefficients of correlation, which need to be constructed
@@ -139,7 +136,7 @@ for i in range(1000):
         file_.write(line)
 
     # Solve model using RESTUD code.
-    os.system('./dp3asim')
+    os.system('./modules/dp3asim')
 
     # Solve model using ROBUPY package.
     solve(robupy_obj); simulate(robupy_obj)
@@ -151,19 +148,10 @@ for i in range(1000):
     fort = pd.DataFrame(np.array(np.genfromtxt('ftest.txt',
             missing_values='.'), ndmin=2)[:, -4:])
 
-    with open('python.dat', 'w') as file_:
-
-        py.to_string(file_, index=False, header=None, na_rep='.')
-
-    with open('fortran.dat', 'w') as file_:
-
-        fort.to_string(file_, index=False, header=None, na_rep='.')
-
-
     assert_frame_equal(py, fort)
 
     # Cleanup
-    cleanup()
+    # cleanup()
 
 # Final cleanup
-cleanup(True)
+#cleanup(True)
