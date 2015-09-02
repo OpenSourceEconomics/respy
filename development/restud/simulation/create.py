@@ -1,17 +1,15 @@
-#!/usr/bin/env python
-""" Starting of Monte Carlo specifications.
+""" This scripts starts the reproduction of the simulated samples from the
+original paper using the RESTUD program and the ROBUPY package.
 """
 
 # standard library
 import os
 
-# Start model solution and simulation
-for dir_ in ['one', 'two', 'three']:
 
-    os.chdir('data_' + dir_)
+for dir_ in ['dp3asim', 'robupy']:
 
-    os.system('robupy-clean &')
+    os.chdir(dir_)
 
-    os.system('robupy-solve --simulate &')
+    os.sytem('python create.py')
 
-    os.chdir('..')
+    os.chdir('../')
