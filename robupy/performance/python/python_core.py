@@ -259,6 +259,8 @@ def simulate_sample(num_agents, states_all, num_periods,
             # Calculate total utilities
             total_payoffs = payoffs_ex_post + delta * future_payoffs
 
+            print(total_payoffs)
+
             # Determine optimal choice
             max_idx = np.argmax(total_payoffs)
 
