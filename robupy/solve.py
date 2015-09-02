@@ -17,7 +17,7 @@ import os
 
 # project library
 from robupy.checks.checks_solve import checks_solve
-from robupy.auxiliary import _replace_missing_values
+from robupy.auxiliary import replace_missing_values,  read_restud_disturbances
 
 import robupy.performance.python.python_core as python_core
 try:
@@ -75,6 +75,12 @@ def solve(robupy_obj):
         eps_relevant_periods = eps_standard_periods
     else:
         eps_relevant_periods = eps_baseline_periods
+
+    # This is only used to compare the RESTUD program to the ROBUPY package.
+    # It aligns the random components between the two. It is only used in the
+    # development process.
+    if robupy_obj.is_restud:
+        eps_relevant_periods = read_restud_disturbances(robupy_obj)
 
     # Calculate ex ante payoffs which are later used in the backward
     # induction procedure. These are calculated without any reference
@@ -206,9 +212,9 @@ def _wrapper_create_state_space(robupy_obj):
     states_all = states_all[:, :max(states_number_period), :]
 
     # Set missing values to NAN
-    states_all = _replace_missing_values(states_all)
+    states_all = replace_missing_values(states_all)
 
-    mapping_state_idx = _replace_missing_values(mapping_state_idx)
+    mapping_state_idx = replace_missing_values(mapping_state_idx)
 
     # Run checks of the state space variables
     if debug:
@@ -264,11 +270,11 @@ def _wrapper_backward_induction_procedure(robupy_obj, eps_relevant_periods,
                 states_all, delta, debug, true_cholesky, level, measure)
 
     # Replace missing values
-    periods_emax = _replace_missing_values(periods_emax)
+    periods_emax = replace_missing_values(periods_emax)
 
-    periods_future_payoffs = _replace_missing_values(periods_future_payoffs)
+    periods_future_payoffs = replace_missing_values(periods_future_payoffs)
 
-    periods_payoffs_ex_post = _replace_missing_values(periods_payoffs_ex_post)
+    periods_payoffs_ex_post = replace_missing_values(periods_payoffs_ex_post)
 
     # Run checks on expected future values and its ingredients
     if debug:

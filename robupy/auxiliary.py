@@ -6,7 +6,7 @@ and simulation modules.
 import numpy as np
 
 
-def _replace_missing_values(argument):
+def replace_missing_values(argument):
     """ Replace missing value -99 with NAN
     """
     # Determine missing values
@@ -20,3 +20,26 @@ def _replace_missing_values(argument):
 
     # Finishing
     return mapping_state_idx
+
+
+def read_restud_disturbances(robupy_obj):
+    """ Red the disturbances from the RESTUD program. This is only used in
+    the development process.
+    """
+    # Distribute class attributes
+    num_periods = robupy_obj.get_attr('num_periods')
+
+    num_draws = robupy_obj.get_attr('num_draws')
+
+    # Initialize containers
+    eps_relevant_periods = np.tile(np.nan, (num_periods, num_draws, 4))
+
+    # Read and distribute disturbances
+    disturbances = np.array(np.genfromtxt('disturbances.txt'), ndmin = 2)
+    for period in range(num_periods):
+        lower = 0 + num_draws*period
+        upper = lower + num_draws
+        eps_relevant_periods[period, :, :] = disturbances[lower:upper, :]
+
+    # Finishing
+    return eps_relevant_periods

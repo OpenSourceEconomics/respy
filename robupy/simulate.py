@@ -20,7 +20,7 @@ import logging
 
 # project library
 from robupy.checks.checks_simulate import checks_simulate
-from robupy.auxiliary import _replace_missing_values
+from robupy.auxiliary import replace_missing_values,  read_restud_disturbances
 
 import robupy.performance.python.python_core as python_core
 try:
@@ -107,6 +107,12 @@ def _wrapper_simulate_sample(robupy_obj, periods_eps_relevant):
 
     fast = robupy_obj.get_attr('fast')
 
+    # This is only used to compare the RESTUD program to the ROBUPY package.
+    # It aligns the random components between the two. It is only used in the
+    # development process.
+    if robupy_obj.is_restud:
+        periods_eps_relevant = read_restud_disturbances(robupy_obj)
+
     # Interface to core functions
     if fast:
         dataset = fortran_core.simulate_sample(num_agents, states_all,
@@ -118,7 +124,7 @@ def _wrapper_simulate_sample(robupy_obj, periods_eps_relevant):
             periods_eps_relevant, edu_max, edu_start, periods_emax, delta)
 
     # Replace missing values
-    dataset = _replace_missing_values(dataset)
+    dataset = replace_missing_values(dataset)
 
     # Create pandas data frame
     dataset = pd.DataFrame(dataset)
