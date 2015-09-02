@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """ This scripts starts the reproduction of the simulated samples from the
 original paper using the RESTUD program and the ROBUPY package.
 """
@@ -10,6 +11,6 @@ for dir_ in ['dp3asim', 'robupy']:
 
     os.chdir(dir_)
 
-    os.sytem('python create.py')
+    os.system('python create.py')
 
     os.chdir('../')

@@ -6,12 +6,15 @@ The material in this directory allows to reproduce the Monte Carlo results repor
 
 > Michael P. Keane, Kenneth I. Wolpin (1994). The Solution and Estimation of Discrete Choice Dynamic Programming Models by Simulation and Interpolation: Monte Carlo Evidence. The Review of Economics and Statistics, 76(4): 648-672.
 
-### Execution
- 
-    $ python create.py
+### Codes
 
-The resulting choice probabilities reported in **data.robupy.info** align with their results provided in **original-results.pdf**. Minor discrepancies are due to randomness.  
+Source codes for the orginal FORTRAN program are available in the **codes** subdirectory. I post the original FORTRAN77 codes and also provide an upgraded FORTRAN95 version.
 
-### Original
+### Simulation
 
-The original source codes are available in the **sources** subdirectory. An upgraded **FORTRAN95** implementation is available [here](https://github.com/robustToolbox/package/tree/master/development/monte_carlo/original_codes/f95).
+You can reproduce the Monte Carlo simulations simply by typing:
+ 	
+    $ cd simulation; python create.py
+
+This solves and simulates the model for the three parametrizations analyzed in the paper using the FORTRAN95 program and the ROBUPY package. The resulting choice probabilities summarized in **data.robupy.info** align between the implementations and the published results (see **original-results.pdf**). Minor discrepancies are due to randomness.  
+
