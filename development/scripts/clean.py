@@ -43,7 +43,7 @@ def remove_nuisances():
 
         if 'ini' in file_: continue
 
-        if 'monte_carlo' in file_: continue
+        if 'simulation' in file_: continue
 
         remove(file_)
 
