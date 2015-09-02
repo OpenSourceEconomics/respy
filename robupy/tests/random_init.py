@@ -97,6 +97,19 @@ def generate_random_dict(constraints=None):
     cov = np.random.normal(size=16).reshape((4, 4))
     dict_['SHOCKS'] = np.dot(cov, cov.T)
 
+    # Replace education
+    if 'edu' in constraints.keys():
+        # Extract objects
+        start, max_ = constraints['edu']
+        # Checks
+        assert (isinstance(start, int))
+        assert (start > 0)
+        assert (isinstance(max_, int))
+        assert (max_ > start)
+        # Replace in initialization file
+        dict_['EDUCATION']['start'] = start
+        dict_['EDUCATION']['max'] = max_
+
     # Replace fast
     if 'fast' in constraints.keys():
         # Extract objects
@@ -167,7 +180,8 @@ def generate_random_dict(constraints=None):
 
 
 def print_random_dict(dict_):
-    """ Print initialization dictionary to file.
+    """ Print initialization dictionary to file. The different formatting
+    makes the file rather involved.
     """
     # Antibugging.
     assert (isinstance(dict_, dict))
@@ -177,8 +191,31 @@ def print_random_dict(dict_):
 
         for flag in dict_.keys():
 
-            if flag in ['SOLUTION', 'BASICS', 'HOME', 'AMBIGUITY',
-                        'SIMULATION']:
+            if flag in ['BASICS']:
+
+                file_.write(' BASICS \n\n')
+
+                str_ = ' {0:<15} {1:<15} \n'
+
+                file_.write(str_.format('periods', dict_[flag]['periods']))
+
+                str_ = ' {0:<15} {1:15.2f} \n'
+
+                file_.write(str_.format('delta', dict_[flag]['delta']))
+
+                file_.write('\n')
+
+            if flag in ['HOME']:
+
+                file_.write(' HOME \n\n')
+
+                str_ = ' {0:<15} {1:15.2f} \n'
+
+                file_.write(str_.format('int', dict_[flag]['int']))
+
+                file_.write('\n')
+
+            if flag in ['SOLUTION', 'AMBIGUITY', 'SIMULATION']:
 
                 str_ = ' {0:<15} {1:<15} \n'
 
@@ -201,7 +238,7 @@ def print_random_dict(dict_):
                 file_.write('\n')
 
             if flag in ['EDUCATION']:
-                str_ = ' {0:<15} {1:<15} \n'
+                str_ = ' {0:<15} {1:15.2f} \n'
 
                 file_.write(' ' + flag.upper() + '\n\n')
 
@@ -215,6 +252,8 @@ def print_random_dict(dict_):
 
                 file_.write('\n')
 
+                str_ = ' {0:<15} {1:<15} \n'
+
                 file_.write(str_.format('start', dict_[flag]['start']))
 
                 file_.write(str_.format('max', dict_[flag]['max']))
@@ -224,7 +263,7 @@ def print_random_dict(dict_):
     # Adding WORK
     with open('test.robupy.ini', 'a') as file_:
 
-        str_ = ' {0:<15} {1:<15} {2:<15} \n'
+        str_ = ' {0:<15} {1:15.2f} {2:15.2f} \n'
 
         file_.write(' WORK \n\n')
 
