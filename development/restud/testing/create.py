@@ -72,7 +72,7 @@ for i in range(1000):
     if num_draws < num_agents:
         init_dict['SOLUTION']['draws'] = num_agents
 
-    print_random_dict(init_dict)
+    #print_random_dict(init_dict)
 
     # Perform toolbox actions
     robupy_obj = read('test.robupy.ini')
@@ -150,6 +150,15 @@ for i in range(1000):
 
     fort = pd.DataFrame(np.array(np.genfromtxt('ftest.txt',
             missing_values='.'), ndmin=2)[:, -4:])
+
+    with open('python.dat', 'w') as file_:
+
+        py.to_string(file_, index=False, header=None, na_rep='.')
+
+    with open('fortran.dat', 'w') as file_:
+
+        fort.to_string(file_, index=False, header=None, na_rep='.')
+
 
     assert_frame_equal(py, fort)
 
