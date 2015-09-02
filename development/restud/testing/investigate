@@ -1,8 +1,0 @@
-
-    with open('python.dat', 'w') as file_:
-
-        py.to_string(file_, index=False, header=None, na_rep='.')
-
-    with open('fortran.dat', 'w') as file_:
-
-        fort.to_string(file_, index=False, header=None, na_rep='.')
