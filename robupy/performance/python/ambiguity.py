@@ -7,8 +7,7 @@ from scipy.optimize import minimize
 import numpy as np
 
 # project library
-from robupy.checks.checks_ambiguity import checks_ambiguity
-import robupy.performance.access as perf
+from robupy.performance.python.auxiliary import simulate_emax
 
 # module wide variables
 HUGE_FLOAT = 10e10
@@ -17,22 +16,11 @@ HUGE_FLOAT = 10e10
 '''
 
 
-def simulate_emax_ambiguity(num_draws, eps_standard, period, k,
+def get_payoffs_ambiguity(num_draws, eps_standard, period, k,
         payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, states_all,
-        num_periods, emax, delta, fast, debug, ambiguity_args):
+        num_periods, emax, delta, debug, cholesky, level, measure):
     """ Get worst case
     """
-    # Distribute arguments
-    ambiguity = ambiguity_args['ambiguity']
-    cholesky = ambiguity_args['cholesky']
-
-    # Access performance library
-    perf_lib = perf.get_library(fast)
-
-    # Auxiliary objects
-    measure = ambiguity['measure']
-    level = ambiguity['level']
-
     # Initialize options.
     options = dict()
     options['maxiter'] = 100000000
@@ -43,12 +31,12 @@ def simulate_emax_ambiguity(num_draws, eps_standard, period, k,
     # Collect arguments
     args = (num_draws, eps_standard, period, k, payoffs_ex_ante, edu_max,
             edu_start, mapping_state_idx, states_all, num_periods, emax,
-            cholesky, delta, fast, debug)
+            cholesky, delta, debug)
 
     # Run optimization
     if measure == 'absolute':
 
-        bounds = _prep_absolute(ambiguity, debug)
+        bounds = _prep_absolute(level, debug)
 
         opt = minimize(_criterion, x0, args, method='SLSQP', options=options,
                        bounds=bounds)
@@ -68,7 +56,7 @@ def simulate_emax_ambiguity(num_draws, eps_standard, period, k,
             opt = _correct_debugging(opt, x0, level, eps_standard, cholesky,
                         num_periods, num_draws, period, k, payoffs_ex_ante,
                         edu_max, edu_start, emax, states_all,
-                        mapping_state_idx, delta, fast)
+                        mapping_state_idx, delta)
 
     # Write result to file
     if debug:
@@ -81,13 +69,13 @@ def simulate_emax_ambiguity(num_draws, eps_standard, period, k,
         eps_relevant[:, j] = np.exp(eps_relevant[:, j])
 
     simulated, payoffs_ex_post, future_payoffs = \
-        perf_lib.simulate_emax(num_periods, num_draws, period, k, eps_relevant,
+        simulate_emax(num_periods, num_draws, period, k, eps_relevant,
             payoffs_ex_ante, edu_max, edu_start, emax, states_all,
             mapping_state_idx, delta)
 
     # Debugging
-    if debug is True:
-        checks_ambiguity('simulate_emax_ambiguity', simulated, opt)
+    if debug:
+        checks_ambiguity('get_payoffs_ambiguity', simulated, opt)
 
     # Finishing
     return simulated, payoffs_ex_post, future_payoffs
@@ -96,15 +84,12 @@ def simulate_emax_ambiguity(num_draws, eps_standard, period, k,
 '''
 def _correct_debugging(opt, x0, level, eps_standard, cholesky, num_periods,
             num_draws, period, k, payoffs_ex_ante, edu_max, edu_start, emax,
-            states_all, mapping_state_idx, delta, fast):
+            states_all, mapping_state_idx, delta):
     """ Some manipulations for test battery
     """
     # Check applicability
     if not (level < 0.1e-10):
         return opt
-
-    # Access performance library
-    perf_lib = perf.get_library(fast)
 
     # Correct resulting values
     opt['x'] = x0
@@ -116,7 +101,8 @@ def _correct_debugging(opt, x0, level, eps_standard, cholesky, num_periods,
         eps_relevant[:, j] = np.exp(eps_relevant[:, j])
 
     simulated, payoffs_ex_post, future_payoffs = \
-                perf_lib.simulate_emax(num_periods, num_draws, period, k, eps_relevant,
+                simulate_emax(num_periods, num_draws, period, k,
+                                 eps_relevant,
                     payoffs_ex_ante, edu_max, edu_start, emax, states_all,
                     mapping_state_idx, delta)
 
@@ -173,11 +159,9 @@ def _divergence(x, cov, level):
 
 def _criterion(x, num_draws, eps_standard, period, k, payoffs_ex_ante, edu_max,
         edu_start, mapping_state_idx, states_all, num_periods, emax,
-        true_cholesky, delta, fast, debug):
+        true_cholesky, delta, debug):
     """ Simulate expected future value for alternative shock distributions.
     """
-    # Access performance library
-    perf_lib = perf.get_library(fast)
 
     # Transformation of standard normal deviates to relevant distributions.
     eps_relevant = np.dot(true_cholesky, eps_standard.T).T
@@ -187,7 +171,7 @@ def _criterion(x, num_draws, eps_standard, period, k, payoffs_ex_ante, edu_max,
                                      HUGE_FLOAT)
 
     # Simulate the expected future value for a given parametrization.
-    simulated, _, _ = perf_lib.simulate_emax(num_periods, num_draws, period, k,
+    simulated, _, _ = simulate_emax(num_periods, num_draws, period, k,
                         eps_relevant, payoffs_ex_ante, edu_max, edu_start,
                         emax, states_all, mapping_state_idx, delta)
     # Debugging
@@ -227,12 +211,10 @@ def _get_start(debug):
     # Finishing
     return x0
 
-def _prep_absolute(ambiguity, debug):
+
+def _prep_absolute(level, debug):
     """ Get bounds.
     """
-    # Distribute information
-    level = ambiguity['level']
-
     # Construct appropriate bounds
     bounds = [[-level, level], [-level, level]]
 
@@ -242,3 +224,55 @@ def _prep_absolute(ambiguity, debug):
 
     # Finishing
     return bounds
+
+def checks_ambiguity(str_, *args):
+    """ This checks the integrity of the objects related to the
+        solution of the model.
+    """
+
+    if str_ == '_get_start':
+
+        # Distribute input parameters
+        x0, = args
+
+        # Check quality of starting values
+        assert (len(x0) == 2)
+        assert (np.all(np.isfinite(x0)))
+
+        assert (all(val == 0 for val in x0))
+
+    elif str_ == 'get_payoffs_ambiguity':
+
+        # Distribute input parameters
+        simulated, opt = args
+
+        # Check quality of results. As I evaluate the function at the parameters
+        # resulting from the optimization, the value of the criterion function
+        # should be the same.
+        assert (simulated == opt['fun'])
+
+    elif str_ == '_criterion':
+
+        # Distribute input parameters
+        simulated, = args
+
+        # Check quality of bounds
+        assert (np.isfinite(simulated))
+
+    elif str_ == '_prep_absolute':
+
+        # Distribute input parameters
+        bounds, = args
+
+        # Check quality of bounds
+        assert (len(bounds) == 2)
+
+        for i in range(2):
+            assert (bounds[0] == bounds[i])
+
+    else:
+
+        raise AssertionError
+
+    # Finishing
+    return True

@@ -11,13 +11,20 @@ def checks_solve(str_, robupy_obj, *args):
     """
 
     # Distribute class attributes
-    num_periods = robupy_obj.get_attr('num_periods')
+    if robupy_obj is not None:
 
-    edu_start = robupy_obj.get_attr('edu_start')
+        num_periods = robupy_obj.get_attr('num_periods')
 
-    edu_max = robupy_obj.get_attr('edu_max')
+        edu_start = robupy_obj.get_attr('edu_start')
 
-    if str_ == 'state_space':
+        edu_max = robupy_obj.get_attr('edu_max')
+
+        states_all = robupy_obj.get_attr('states_all')
+
+        states_number_period = robupy_obj.get_attr('states_number_period')
+
+
+    if str_ == '_wrapper_create_state_space_out':
 
         # Distribute input parameters
         states_all, states_number_period, mapping_state_idx, = args
@@ -101,35 +108,36 @@ def checks_solve(str_, robupy_obj, *args):
             np.all(np.isfinite(mapping_state_idx[is_infinite == False])) == False)
 
     # Check the ex ante period payoffs
-    elif str_ == 'period_payoffs_ex_ante':
+    elif str_ == 'periods_payoffs_ex_ante':
 
         # Distribute input parameters
-        states_all, states_number_period, period_payoffs_ex_ante = args
+        states_all, states_number_period, periods_payoffs_ex_ante = args
 
         # Check that the payoffs are finite for all admissible values and infinite for all others.
-        is_infinite = np.tile(False, reps=period_payoffs_ex_ante.shape)
+        is_infinite = np.tile(False, reps=periods_payoffs_ex_ante.shape)
         for period in range(num_periods):
             # Loop over all possible states
             for k in range(states_number_period[period]):
                 # Check that wages are all positive
-                assert (np.all(period_payoffs_ex_ante[period, k, :2] > 0.0))
+                assert (np.all(periods_payoffs_ex_ante[period, k, :2] > 0.0))
                 # Check for finite value at admissible state
                 assert (
-                    np.all(np.isfinite(period_payoffs_ex_ante[period, k, :])))
+                    np.all(np.isfinite(periods_payoffs_ex_ante[period, k, :])))
                 # Record finite value
                 is_infinite[period, k, :] = True
             # Check that all admissible states are finite
             assert (
-                np.all(np.isfinite(period_payoffs_ex_ante[is_infinite == True])))
+                np.all(np.isfinite(periods_payoffs_ex_ante[is_infinite ==
+                                                           True])))
             # Check that all inadmissible states are infinite
             assert (np.all(np.isfinite(
-                period_payoffs_ex_ante[is_infinite == False])) == False)
+                periods_payoffs_ex_ante[is_infinite == False])) == False)
 
     # Check the ex ante period payoffs and its ingredients
-    elif str_ == 'emax':
+    elif str_ == 'periods_emax':
 
         # Distribute input parameters
-        states_all, states_number_period, emax, future_payoffs = args
+        emax, future_payoffs = args
 
         # Check that the payoffs are finite for all admissible values and infinite for all others.
         is_infinite = np.tile(False, reps=emax.shape)

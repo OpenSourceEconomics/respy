@@ -8,7 +8,7 @@ import os
 import shutil
 
 # Compile executable
-os.system(' gfortran -o dp3asim dp3asim.f95')
+os.system(' gfortran -o dp3asim dp3asim.f95 > /dev/null 2>&1 ')
 
 # Ensure fresh start
 for which in ['one', 'two', 'three']:
@@ -35,7 +35,7 @@ for i, which in enumerate(['one', 'two', 'three']):
     os.symlink('in' + str(i + 1) + '.txt', 'in.txt')
 
     # Solve and simulate model
-    os.system('./dp3asim')
+    os.system('./dp3asim  > /dev/null 2>&1 ')
 
     # Clean
     os.remove('in.txt')

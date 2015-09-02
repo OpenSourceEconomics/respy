@@ -1,6 +1,8 @@
-""" This module contains the PYTHON implementations fo several functions
-where FORTRAN alternatives are available.
+""" This module contains some auxiliary functions for the PYTHON
+implementations of the core functions.
 """
+
+# standard library
 import numpy as np
 
 
@@ -46,7 +48,6 @@ def simulate_emax(num_periods, num_draws, period, k, eps_relevant,
     # Finishing
     return emax_simulated, payoffs_ex_post, future_payoffs
 
-
 def get_future_payoffs(edu_max, edu_start, mapping_state_idx, period, emax, k,
         states_all):
     """ Get future payoffs for additional choices.
@@ -88,54 +89,3 @@ def get_future_payoffs(edu_max, edu_start, mapping_state_idx, period, emax, k,
 
     # Finishing
     return future_payoffs
-
-def calculate_payoffs_ex_ante(num_periods, states_number_period, states_all,
-                                edu_start, coeffs_A, coeffs_B, coeffs_edu,
-                                coeffs_home, max_states_period):
-    """ Calculate ex ante payoffs.
-    """
-
-    # Initialize
-    period_payoffs_ex_ante = np.tile(np.nan, (num_periods, max_states_period,
-                                                  4))
-
-    # Calculate systematic instantaneous payoffs
-    for period in range(num_periods - 1, -1, -1):
-
-        # Loop over all possible states
-        for k in range(states_number_period[period]):
-
-            # Distribute state space
-            exp_A, exp_B, edu, edu_lagged = states_all[period, k, :]
-
-            # Auxiliary objects
-            covars = [1.0, edu + edu_start, exp_A, exp_A ** 2, exp_B,
-                          exp_B ** 2]
-
-            # Calculate systematic part of wages in occupation A
-            period_payoffs_ex_ante[period, k, 0] = np.exp(
-                np.dot(coeffs_A, covars))
-
-            # Calculate systematic part pf wages in occupation B
-            period_payoffs_ex_ante[period, k, 1] = np.exp(
-                np.dot(coeffs_B, covars))
-
-            # Calculate systematic part of schooling utility
-            payoff = coeffs_edu[0]
-
-            # Tuition cost for higher education if agents move
-            # beyond high school.
-            if edu + edu_start >= 12:
-                payoff += coeffs_edu[1]
-            # Psychic cost of going back to school
-            if edu_lagged == 0:
-                payoff += coeffs_edu[2]
-
-            period_payoffs_ex_ante[period, k, 2] = payoff
-
-            # Calculate systematic part of HOME
-            period_payoffs_ex_ante[period, k, 3] = coeffs_home[0]
-
-    # Finishing
-    return period_payoffs_ex_ante
-

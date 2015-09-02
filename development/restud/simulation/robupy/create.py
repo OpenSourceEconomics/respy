@@ -3,7 +3,17 @@
 """
 
 # standard library
+import sys
 import os
+
+# PYTHONPATH
+sys.path.insert(0, os.environ['ROBUPY'] + '/development/tests/random')
+
+# Import function to that a fast version of the toolbox is available.
+from modules.auxiliary import compile_package
+
+# Compile fast version of ROBUPY package
+compile_package('fast')
 
 # Start model solution and simulation
 for dir_ in ['one', 'two', 'three']:

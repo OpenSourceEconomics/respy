@@ -43,7 +43,7 @@ def run(hours):
 
     package_labels = ['1', '2', '3', '4', '5', '6', '7']
 
-    development_labels = ['99']
+    development_labels = ['98', '99']
 
     labels = package_labels + development_labels
 

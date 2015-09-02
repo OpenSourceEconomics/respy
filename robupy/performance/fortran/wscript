@@ -55,6 +55,15 @@ def pre_build(self):
 
             pass
 
+        # Sometimes a file and not a directory is created.
+        try:
+
+            os.remove(dir_)
+
+        except OSError:
+
+            pass
+
 
 def post_build(self):
     """ Copy the resulting library from the build directory to the working
@@ -82,7 +91,8 @@ def f2py_call(self):
     """ Create the interface to f90_main using f2py.
     """
     os.system(
-        'f2py3 -c -m  fortran_functions fortran_functions.f90 -Iinclude -Llib -lfort_robupy')
+        'f2py3 -c -m  fortran_core fortran_core.f90 -Iinclude -Llib '
+        '-lfort_robupy')
 
     # Cleanup
     for dir_ in ['include', 'lib']:

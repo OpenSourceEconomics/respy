@@ -12,10 +12,14 @@ MODULE robupy_program_constants
     INTEGER, PARAMETER :: our_sgle 	= selected_real_kind(6,37)
     INTEGER, PARAMETER :: our_dble  = selected_real_kind(15,307)
 
-    INTEGER(our_int), PARAMETER :: zero_int = 0_our_int
-    INTEGER(our_int), PARAMETER :: one_int 	= 1_our_int
-    INTEGER(our_int), PARAMETER :: two_int 	= 2_our_int
+    INTEGER(our_int), PARAMETER :: missing_int  = -99_our_int
+    INTEGER(our_int), PARAMETER :: zero_int     = 0_our_int
+    INTEGER(our_int), PARAMETER :: one_int 	    = 1_our_int
+    INTEGER(our_int), PARAMETER :: two_int 	    = 2_our_int
+    INTEGER(our_int), PARAMETER :: three_int    = 3_our_int
+    INTEGER(our_int), PARAMETER :: four_int     = 4_our_int
 
+    REAL(our_dble), PARAMETER :: missing_dble = -99_our_dble
     REAL(our_dble), PARAMETER :: zero_dble    = 0.00_our_dble
     REAL(our_dble), PARAMETER :: quarter_dble = 0.25_our_dble
     REAL(our_dble), PARAMETER :: half_dble    = 0.50_our_dble

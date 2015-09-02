@@ -188,7 +188,11 @@ PROGRAM dp3asim
   ! There are only minor modifications to the original source code.
   ! The input and output connections are opened and the commenting
   ! style is changed to comply with the FORTRAN95 standard. Line
-  ! breaks are removed.
+  ! breaks are removed. Some consecutive IF statements were changed to ELSEIF. 
+  !
+  ! The program is amended to write out the random components to allow for 
+  ! testing its output against the ROBUPY package (if requested).
+  !
   !***************************************************************************** 
 
   ! Interface to IMSL replacements
@@ -213,6 +217,8 @@ PROGRAM dp3asim
       DIMENSION PROB1(40,4)
       INTEGER X1,X2,E,T
 
+      ! Flag to write out all random components
+      LOGICAL :: write_out
 
   ! Open files
   open(9,file='in.txt')
@@ -313,13 +319,43 @@ PROGRAM dp3asim
       DO 31 J=1,DRAW
       DO 30 T=1,NPER
        CALL RNNOR(4,RNN)
-       EU1(J,T) = exp(A(1,1)*RNN(1))
-       EU2(J,T) = exp(A(2,1)*RNN(1)+A(2,2)*RNN(2))
+       EU1(J,T) = A(1,1)*RNN(1)
+       EU2(J,T) = A(2,1)*RNN(1)+A(2,2)*RNN(2)
        C(J,T)   = A(3,1)*RNN(1)+A(3,2)*RNN(2)+A(3,3)*RNN(3)
        B(J,T)   = A(4,1)*RNN(1)+A(4,2)*RNN(2)+A(4,3)*RNN(3)+A(4,4)*RNN(4)
    30 CONTINUE
    31 CONTINUE
 !C  30 CONTINUE
+
+
+  !----------------------------------------------------------------------------
+  ! Write out all random components.
+  !----------------------------------------------------------------------------
+  INQUIRE(FILE='.write_out', EXIST=write_out)
+
+  IF (write_out .EQV. .True.) THEN
+
+    OPEN(12, file='disturbances.txt')
+    
+    DO T = 1, NPER
+
+      DO J = 1, DRAW
+      
+        2000 FORMAT(6(1x,f20.15))
+        WRITE(12,2000) EU1(J, T), EU2(J, T), C(J, T), B(J, T)
+      
+      END DO
+    
+    END DO
+
+  END IF
+  !----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
+
+  ! Finalize transformation of random payoff components for occupations
+  EU1 = EXP(EU1)
+  EU2 = EXP(EU2)
+
 !*****************************************************************
 !*  CONSTRUCT THE EXPECTED MAX OF THE TIME NPER VALUE FUNCTIONS  *
 !*****************************************************************
@@ -458,16 +494,13 @@ PROGRAM dp3asim
        IF (VMAX .EQ. V1) THEN
          K=1
          LS1=0
-       ENDIF
-       IF (VMAX .EQ. V2) THEN
+       ELSE IF (VMAX .EQ. V2) THEN
          K=2
          LS1=0
-       ENDIF
-       IF (VMAX .EQ. V3) THEN
+       ELSE IF (VMAX .EQ. V3) THEN
          K=3
          LS1=1
-       ENDIF
-       IF (VMAX .EQ. V4) THEN
+       ELSE IF (VMAX .EQ. V4) THEN
          K=4
          LS1=0
        ENDIF
@@ -518,14 +551,11 @@ PROGRAM dp3asim
        prob(t,4)=prob(t,4)+( EXP((v4-vmax)/tau) /sumv ) /npop         
        IF (VMAX .EQ. V1) THEN
          K=1
-       ENDIF
-       IF (VMAX .EQ. V2) THEN
+       ELSE IF (VMAX .EQ. V2) THEN
          K=2
-       ENDIF
-       IF (VMAX .EQ. V3) THEN
+       ELSE IF (VMAX .EQ. V3) THEN
          K=3
-       ENDIF
-       IF (VMAX .EQ. V4) THEN
+       ELSE IF (VMAX .EQ. V4) THEN
          K=4
        ENDIF
        prob1(t,k)=prob1(t,k)+1.0/npop

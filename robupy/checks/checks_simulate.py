@@ -38,7 +38,7 @@ def checks_simulate(str_, robupy_obj, *args):
 
         # Check that the maximum number of values are valid
         for i, max_ in enumerate(
-                [num_agents, num_periods, 3, num_periods, num_periods,
+                [num_agents, num_periods, 4, num_periods, num_periods,
                  num_periods,
                  edu_max, 1]):
             # Agent and time index
@@ -72,7 +72,7 @@ def checks_simulate(str_, robupy_obj, *args):
 
         # Check valid values of wage observations
         for count in range(num_agents * num_periods):
-            is_working = (data_frame[2][count] in [0, 1])
+            is_working = (data_frame[2][count] in [1, 2])
             if is_working:
                 assert (np.isfinite(data_frame[3][count]))
                 assert (data_frame[3][count] > 0.00)

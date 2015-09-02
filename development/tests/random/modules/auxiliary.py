@@ -118,6 +118,10 @@ def cleanup():
 
     files = files + glob.glob('*.dat')
 
+    files = files + glob.glob('modules/dp3asim')
+
+    files = files + glob.glob('.write_out')
+
     for file_ in files:
 
         try:

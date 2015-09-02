@@ -41,20 +41,18 @@ class RobupyCls(MetaCls):
         self.attr['fast'] = None
 
         # Ambiguity
-        self.attr['ambiguity'] = {}
+        self.attr['measure'] = None
 
-        self.attr['ambiguity']['measure'] = None
-
-        self.attr['ambiguity']['level'] = None
+        self.attr['level'] = None
 
         # Results
-        self.attr['emax'] = None
+        self.attr['periods_emax'] = None
 
         self.attr['states_number_period'] = None
 
         self.attr['states_all'] = None
 
-        self.attr['period_payoffs_ex_post'] = None
+        self.attr['periods_payoffs_ex_post'] = None
 
         self.attr['mapping_state_idx'] = None
 
@@ -65,14 +63,20 @@ class RobupyCls(MetaCls):
         # no randomness, they have to be equal to the
         # ex ante version. The same is true for the
         # future payoffs
-        self.attr['period_payoffs_ex_ante'] = None
+        self.attr['periods_payoffs_ex_ante'] = None
 
-        self.attr['period_future_payoffs'] = None
+        self.attr['periods_future_payoffs'] = None
 
         # Status indicator
         self.is_locked = False
 
         self.is_first = True
+
+        # This indicator is only used to compare the ROBUPY package to the
+        # RESTUD codes. If set to true, it uses disturbances written out by
+        # the RESTUD program. It aligns the random components across the two
+        # components. It is only used in the development process.
+        self.is_restud = False
 
     ''' Derived attributes
     '''
@@ -109,11 +113,9 @@ class RobupyCls(MetaCls):
 
             self.attr['shocks'] = init_dict['SHOCKS']
 
-            self.attr['ambiguity']['measure'] = init_dict['AMBIGUITY'][
-                'measure']
+            self.attr['measure'] = init_dict['AMBIGUITY']['measure']
 
-            self.attr['ambiguity']['level'] = init_dict['AMBIGUITY'][
-                'level']
+            self.attr['level'] = init_dict['AMBIGUITY']['level']
 
             # Update status indicator
             self.is_first = False
@@ -124,3 +126,12 @@ class RobupyCls(MetaCls):
 
         # Debug status
         assert (self.attr['debug'] in [True, False])
+
+        # Constraints
+        with_ambiguity = (self.attr['level'] > 0.00)
+        if with_ambiguity:
+            assert (self.attr['fast'] is False)
+
+        # Check library
+        if self.attr['fast']:
+            import robupy.performance.fortran.fortran_core as fortran_core
