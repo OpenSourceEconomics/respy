@@ -17,8 +17,6 @@ MODULE robupy_library
 
 	IMPLICIT NONE
 
-    PRIVATE
-
     !/* core functions */
 
     PUBLIC :: calculate_payoffs_ex_ante_lib

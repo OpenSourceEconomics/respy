@@ -8,11 +8,13 @@
     <list default="true" id="56803c1c-81e4-4070-9cf6-fc7503291db5" name="Default" comment="82333.99728503">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../../../../structRobust/dat/creation/build" afterPath="$PROJECT_DIR$/../../../../structRobust/dat/creation/build" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../../../../structRobust/clean" afterPath="$PROJECT_DIR$/../../../../structRobust/clean" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/tests/random/investigate" afterPath="$PROJECT_DIR$/package/development/tests/random/investigate" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../../../../structRobust/doc/bib/literature.bib" afterPath="$PROJECT_DIR$/../../../../structRobust/doc/bib/literature.bib" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../../../../structRobust/pull" afterPath="$PROJECT_DIR$/../../../../structRobust/pull" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../../../../structRobust/push" afterPath="$PROJECT_DIR$/../../../../structRobust/push" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/tests/random/run" afterPath="$PROJECT_DIR$/package/development/tests/random/run" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/performance/fortran/robupy_main.f90" afterPath="$PROJECT_DIR$/package/robupy/performance/fortran/robupy_main.f90" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../../../../structRobust/.idea/structRobust.iml" afterPath="$PROJECT_DIR$/../../../../structRobust/.idea/structRobust.iml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/.idea/workspace.xml" afterPath="$PROJECT_DIR$/package/development/.idea/workspace.xml" />
     </list>
     <ignored path="robustToolbox.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -41,11 +43,41 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="run" pinned="false" current-in-tab="true">
+      <file leaf-file-name="run" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/package/development/tests/random/run">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.27968922">
+            <state vertical-scroll-proportion="0.0">
               <caret line="43" column="21" selection-start-line="43" selection-start-column="21" selection-end-line="43" selection-end-column="21" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="run" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/package/development/tests/fixed/run">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="228" column="0" selection-start-line="228" selection-start-column="0" selection-end-line="228" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="investigate" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/package/development/tests/random/investigate">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="39" column="1" selection-start-line="39" selection-start-column="1" selection-end-line="39" selection-end-column="1" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="auxiliary.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/package/development/tests/random/modules/auxiliary.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.7391787">
+              <caret line="162" column="4" selection-start-line="162" selection-start-column="4" selection-end-line="162" selection-end-column="4" />
               <folding />
             </state>
           </provider>
@@ -102,14 +134,12 @@
         <option value="$PROJECT_DIR$/package/robupy/clsRobupy.py" />
         <option value="$PROJECT_DIR$/package/robupy/performance/fortran/robupy_main.f90" />
         <option value="$PROJECT_DIR$/package/robupy/performance/fortran/fortran_core.f90" />
-        <option value="$PROJECT_DIR$/package/development/tests/random/modules/auxiliary.py" />
         <option value="$PROJECT_DIR$/package/robupy/checks/checks_simulate.py" />
         <option value="$PROJECT_DIR$/package/development/tests/random/clean" />
         <option value="$PROJECT_DIR$/package/robupy/performance/python/risk.py" />
         <option value="$PROJECT_DIR$/package/robupy/simulate.py" />
         <option value="$PROJECT_DIR$/package/robupy/simulate.py" />
         <option value="$PROJECT_DIR$/package/robupy/solve.py" />
-        <option value="$PROJECT_DIR$/package/development/tests/random/investigate" />
         <option value="$PROJECT_DIR$/package/robupy/performance/python/python_core.py" />
         <option value="$PROJECT_DIR$/package/robupy/performance/python/auxiliary.py" />
         <option value="$PROJECT_DIR$/package/development/tests/fixed/run" />
@@ -117,6 +147,8 @@
         <option value="$PROJECT_DIR$/package/robupy/performance/python/ambiguity.py" />
         <option value="$PROJECT_DIR$/package/robupy/auxiliary.py" />
         <option value="$PROJECT_DIR$/package/development/tests/random/run" />
+        <option value="$PROJECT_DIR$/package/development/tests/random/investigate" />
+        <option value="$PROJECT_DIR$/package/development/tests/random/modules/auxiliary.py" />
       </list>
     </option>
   </component>
@@ -1039,13 +1071,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/tests/random/modules/auxiliary.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.35849056">
-          <caret line="120" column="34" selection-start-line="120" selection-start-column="31" selection-end-line="120" selection-end-column="34" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/package/robupy/checks/checks_simulate.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -1092,22 +1117,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.53940064">
           <caret line="27" column="0" selection-start-line="27" selection-start-column="0" selection-end-line="27" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/tests/random/investigate">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.6792453">
-          <caret line="36" column="16" selection-start-line="36" selection-start-column="16" selection-end-line="36" selection-end-column="16" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/tests/fixed/run">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="1.299667">
-          <caret line="263" column="0" selection-start-line="263" selection-start-column="0" selection-end-line="263" selection-end-column="0" />
           <folding />
         </state>
       </provider>
@@ -1170,8 +1179,32 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/package/development/tests/random/run">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.27968922">
+        <state vertical-scroll-proportion="0.0">
           <caret line="43" column="21" selection-start-line="43" selection-start-column="21" selection-end-line="43" selection-end-column="21" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/development/tests/fixed/run">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="228" column="0" selection-start-line="228" selection-start-column="0" selection-end-line="228" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/development/tests/random/investigate">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="39" column="1" selection-start-line="39" selection-start-column="1" selection-end-line="39" selection-end-column="1" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/development/tests/random/modules/auxiliary.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.7391787">
+          <caret line="162" column="4" selection-start-line="162" selection-start-column="4" selection-end-line="162" selection-end-column="4" />
           <folding />
         </state>
       </provider>

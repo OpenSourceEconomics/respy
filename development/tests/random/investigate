@@ -13,6 +13,9 @@ if not hasattr(sys, 'real_prefix'):
 # project library
 sys.path.insert(0, os.environ['ROBUPY'])
 
+#from robupy.tests.tests import Tests
+import modules.battery as Tests
+
 from robupy import *
 
 # project library
@@ -20,7 +23,7 @@ from modules.auxiliary import *
 
 ''' Request
 '''
-label, seed = '2', 74733
+label, seed = '97', 96842
 
 ''' Error Reproduction
 '''
@@ -32,15 +35,9 @@ if True:
 
     compile_package('fast')
 
-    try:
-        from robupy.tests.tests import Tests
-        test = getattr(Tests, 'test_' + label)
-        test()
-    except NameError:
-        import modules.battery as Tests
-        test = getattr(Tests, 'test_' + label)
-        test()
-
+    test = getattr(Tests, 'test_' + label)
+    test()
+ 
     #check_ambiguity_optimization()
 
 if True:
