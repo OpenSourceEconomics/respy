@@ -54,8 +54,6 @@ def backward_induction(num_periods, max_states_period, eps_relevant_periods,
                         states_all, num_periods, periods_emax, delta, debug,
                         eps_cholesky, level, measure)
             else:
-                print('outside ', eps_relevant[0,:])
-
                 emax, payoffs_ex_post, future_payoffs = \
                     get_payoffs_risk(num_draws, eps_relevant, period, k,
                         payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,
@@ -67,9 +65,6 @@ def backward_induction(num_periods, max_states_period, eps_relevant_periods,
 
             # Collect
             periods_emax[period, k] = emax
-
-    print()
-    print(periods_emax[num_periods - 1,:3])
 
     # Finishing
     return periods_emax, periods_payoffs_ex_post, periods_future_payoffs

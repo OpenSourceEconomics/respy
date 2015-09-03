@@ -262,7 +262,8 @@ def _wrapper_backward_induction_procedure(robupy_obj, eps_relevant_periods,
 
     # Run checks on expected future values and its ingredients
     if debug:
-        checks_solve('periods_emax', robupy_obj, periods_emax, periods_future_payoffs)
+        checks_solve('periods_emax', robupy_obj, periods_emax,
+            periods_future_payoffs)
 
     # Finishing
     return periods_emax, periods_payoffs_ex_post, periods_future_payoffs
