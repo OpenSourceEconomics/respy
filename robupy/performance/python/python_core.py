@@ -8,7 +8,7 @@ import logging
 
 # project libray
 from robupy.performance.python.ambiguity import get_payoffs_ambiguity
-from robupy.performance.python.auxiliary import get_future_payoffs
+from robupy.performance.python.auxiliary import get_total_value
 from robupy.performance.python.risk import get_payoffs_risk
 
 # Logging
@@ -203,6 +203,7 @@ def calculate_payoffs_ex_ante(num_periods, states_number_period, states_all,
     # Finishing
     return periods_payoffs_ex_ante
 
+
 def simulate_sample(num_agents, states_all, num_periods,
         mapping_state_idx, periods_payoffs_ex_ante, periods_eps_relevant,
         edu_max, edu_start, periods_emax, delta):
@@ -234,38 +235,14 @@ def simulate_sample(num_agents, states_all, num_periods,
             # Write agent identifier and current period to data frame
             dataset[count, :2] = i, period
 
-            payoffs_ex_post = np.tile(np.nan, 4)
+            # Select relevant subset
+            payoffs_ex_ante = periods_payoffs_ex_ante[period, k, :]
+            disturbances = periods_eps_relevant[period, i, :]
 
-            # Calculate ex post payoffs
-            for j in [0, 1]:
-                payoffs_ex_post[j] = periods_payoffs_ex_ante[period,
-                                                                    k, j] * \
-                                                periods_eps_relevant[period, i, j]
-
-            for j in [2, 3]:
-                payoffs_ex_post[j] = periods_payoffs_ex_ante[period,
-                                                                    k, j] + \
-                                                periods_eps_relevant[period, i, j]
-
-            # Calculate future utilities
-            if period == (num_periods - 1):
-                future_payoffs = np.zeros(4)
-            else:
-                future_payoffs = get_future_payoffs(edu_max, edu_start,
-                                                             mapping_state_idx,
-                                                             period, periods_emax, k,
-                                                             states_all)
-
-            # Calculate total utilities
-            total_payoffs = payoffs_ex_post + delta * future_payoffs
-
-            # Ensuring that schooling does not increase beyond the maximum
-            # allowed level. This is necessary as in the special case where
-            # delta is equal to zero, (-np.inf * 0.00) evaluates to NAN. This is
-            #  returned as the maximum value when calling np.argmax.
-            if delta == 0.0:
-                is_inf = np.isneginf(future_payoffs)
-                total_payoffs[is_inf] = -np.inf
+            # Get total value of admissible states
+            total_payoffs, payoffs_ex_post, _ = get_total_value(period,
+                num_periods, delta, payoffs_ex_ante, disturbances, edu_max,
+                edu_start, mapping_state_idx, periods_emax, k, states_all)
 
             # Determine optimal choice
             max_idx = np.argmax(total_payoffs)

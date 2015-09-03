@@ -11,38 +11,19 @@ def simulate_emax(num_periods, num_draws, period, k, eps_relevant,
         mapping_state_idx, delta):
     """ Simulate expected future value.
     """
-
     # Initialize containers
-    payoffs_ex_post, emax_simulated = np.tile(np.nan, 4), 0.0
-    future_payoffs = 0.0
+    emax_simulated = 0.0
 
     # Calculate maximum value
     for i in range(num_draws):
 
-        # Calculate ex post payoffs
-        for j in [0, 1]:
-            payoffs_ex_post[j] = payoffs_ex_ante[j] * eps_relevant[i, j]
+        # Select disturbances for this draw
+        disturbances = eps_relevant[i, :]
 
-        for j in [2, 3]:
-            payoffs_ex_post[j] = payoffs_ex_ante[j] + eps_relevant[i, j]
-
-        # Check applicability
-        if period != (num_periods - 1):
-
-            # Get future values
-            future_payoffs = get_future_payoffs(edu_max, edu_start,
-                                mapping_state_idx, period, emax, k, states_all)
-
-        # Calculate total utilities
-        total_payoffs = payoffs_ex_post + delta * future_payoffs
-
-        # Ensuring that schooling does not increase beyond the maximum
-        # allowed level. This is necessary as in the special case where
-        # delta is equal to zero, (-np.inf * 0.00) evaluates to NAN. This is
-        #  returned as the maximum value when calling np.argmax.
-        if delta == 0.0:
-            is_inf = np.isneginf(future_payoffs)
-            total_payoffs[is_inf] = -np.inf
+        # Get total value of admissible states
+        total_payoffs, payoffs_ex_post, future_payoffs = get_total_value(period,
+            num_periods, delta, payoffs_ex_ante, disturbances, edu_max,
+            edu_start, mapping_state_idx, emax, k, states_all)
 
         # Determine optimal choice
         maximum = max(total_payoffs)
@@ -56,7 +37,48 @@ def simulate_emax(num_periods, num_draws, period, k, eps_relevant,
     # Finishing
     return emax_simulated, payoffs_ex_post, future_payoffs
 
-def get_future_payoffs(edu_max, edu_start, mapping_state_idx, period, emax, k,
+
+def get_total_value(period, num_periods, delta, payoffs_ex_ante,
+                    disturbances, edu_max, edu_start, mapping_state_idx,
+                    emax, k, states_all):
+    """ Get total value of all possible states.
+    """
+    # Auxiliary objects
+    is_myopic = (delta == 0.00)
+
+    # Initialize containers
+    payoffs_ex_post = np.tile(np.nan, 4)
+
+    # Calculate ex post payoffs
+    for j in [0, 1]:
+        payoffs_ex_post[j] = payoffs_ex_ante[j] * disturbances[j]
+
+    for j in [2, 3]:
+        payoffs_ex_post[j] = payoffs_ex_ante[j] + disturbances[j]
+
+    # Get future values
+    if period != (num_periods - 1):
+        future_payoffs = _get_future_payoffs(edu_max, edu_start,
+                            mapping_state_idx, period, emax, k, states_all)
+    else:
+        future_payoffs = np.tile(0.0, 4)
+
+    # Calculate total utilities
+    total_payoffs = payoffs_ex_post + delta * future_payoffs
+
+    # Special treatment in case of myopic agents
+    if is_myopic:
+        total_payoffs = _stabilize_myopic(total_payoffs, future_payoffs)
+
+    # Finishing
+    return total_payoffs, payoffs_ex_post, future_payoffs
+
+
+''' Private functions
+'''
+
+
+def _get_future_payoffs(edu_max, edu_start, mapping_state_idx, period, emax, k,
         states_all):
     """ Get future payoffs for additional choices.
     """
@@ -90,3 +112,19 @@ def get_future_payoffs(edu_max, edu_start, mapping_state_idx, period, emax, k,
 
     # Finishing
     return future_payoffs
+
+
+def _stabilize_myopic(total_payoffs, future_payoffs):
+    """ Ensuring that schooling does not increase beyond the maximum allowed
+    level. This is necessary as in the special case where delta is equal to
+    zero, (-np.inf * 0.00) evaluates to NAN. This is returned as the maximum
+    value when calling np.argmax.
+    """
+    # Determine NAN
+    is_inf = np.isneginf(future_payoffs)
+
+    # Replace with negative infinity
+    total_payoffs[is_inf] = -np.inf
+
+    # Finishing
+    return total_payoffs

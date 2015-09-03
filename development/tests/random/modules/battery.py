@@ -20,6 +20,38 @@ from robupy import read, solve, simulate
 
 ''' Main
 '''
+def test_97():
+    """ Compare results between FORTRAN and PYTHON implementations.
+    """
+    compile_package('fast')
+
+    import robupy.performance.fortran.fortran_core as fort
+    import robupy.performance.python.python_core as py
+
+    for _ in range(1000):
+
+        # Draw random matrix for testing purposes
+        matrix = (np.random.multivariate_normal(np.zeros(4), np.identity(4), 4))
+        cov = np.dot(matrix, matrix.T)
+
+        # Inverse
+        py = np.linalg.inv(cov)
+        f90 = fort.debug_inverse(cov, 4)
+        np.testing.assert_allclose(py, f90, rtol=1e-06)
+
+        # Determinant
+        py = np.linalg.det(cov)
+        f90 = fort.debug_determinant(cov)
+
+        np.testing.assert_allclose(py, f90, rtol=1e-06)
+
+        # Trace
+        py = np.trace(cov)
+        f90 = fort.debug_trace(cov)
+
+        np.testing.assert_allclose(py, f90, rtol=1e-06)
+
+
 def test_98():
     """  Compare results from the RESTUD program and the ROBUPY package.
     """

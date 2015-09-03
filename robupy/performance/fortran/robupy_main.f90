@@ -17,11 +17,14 @@ MODULE robupy_library
 
 	IMPLICIT NONE
 
+    PRIVATE
+
     !/* core functions */
 
     PUBLIC :: calculate_payoffs_ex_ante_lib
     PUBLIC :: backward_induction_lib
     PUBLIC :: create_state_space_lib
+    PUBLIC :: simulate_sample_lib
 
     !/* auxiliary functions */
 
@@ -109,31 +112,11 @@ SUBROUTINE simulate_sample_lib(dataset, num_agents, states_all, num_periods, &
             payoffs_ex_ante = periods_payoffs_ex_ante(period + 1, k + 1, :)
             disturbances = periods_eps_relevant(period + 1, i + 1, :)
 
-            payoffs_ex_post(1) = payoffs_ex_ante(1) * disturbances(1)
-            payoffs_ex_post(2) = payoffs_ex_ante(2) * disturbances(2)
-            payoffs_ex_post(3) = payoffs_ex_ante(3) + disturbances(3)
-            payoffs_ex_post(4) = payoffs_ex_ante(4) + disturbances(4)
-
-            ! Get future values
-            IF (period .NE. (num_periods - one_int)) THEN
-                CALL get_future_payoffs_lib(future_payoffs, edu_max, edu_start, & 
-                        mapping_state_idx, period,  periods_emax, k, states_all)
-            ELSE
-                future_payoffs = zero_dble
-            END IF
-
             ! Calculate total utilities
-            total_payoffs = payoffs_ex_post + delta * future_payoffs
-
-            ! Ensuring that schooling does not increase beyond the maximum
-            ! allowed level. This is necessary as in the special case where
-            ! delta is equal to zero, (-HUGE * 0.00) evaluates to zero. This is
-            ! might result in pursuing a higher education.
-            IF (delta .EQ. zero_dble) THEN
-                IF (future_payoffs(3) .EQ. -HUGE(future_payoffs)) THEN
-                    total_payoffs(3) = -HUGE(future_payoffs)
-                END IF
-            END IF
+            CALL get_total_value_lib(total_payoffs, payoffs_ex_post, & 
+                    future_payoffs, period, num_periods, delta, &
+                    payoffs_ex_ante, disturbances, edu_max, edu_start, & 
+                    mapping_state_idx, periods_emax, k, states_all)
 
             ! Write relevant state space for period to data frame
             dataset(count + 1, 5:8) = current_state
@@ -601,6 +584,7 @@ SUBROUTINE simulate_emax_lib(emax_simulated, payoffs_ex_post, future_payoffs, &
     INTEGER(our_int)                :: i
 
     REAL(our_dble)                  :: total_payoffs(4)
+    REAL(our_dble)                  :: disturbances(4)
     REAL(our_dble)                  :: maximum
 
 !------------------------------------------------------------------------------
@@ -614,33 +598,14 @@ SUBROUTINE simulate_emax_lib(emax_simulated, payoffs_ex_post, future_payoffs, &
     ! Iterate over Monte Carlo draws
     DO i = 1, num_draws 
 
-        ! Calculate ex post payoffs
-        payoffs_ex_post(1) = payoffs_ex_ante(1) * eps_relevant(i, 1)
-        payoffs_ex_post(2) = payoffs_ex_ante(2) * eps_relevant(i, 2)
-        payoffs_ex_post(3) = payoffs_ex_ante(3) + eps_relevant(i, 3)
-        payoffs_ex_post(4) = payoffs_ex_ante(4) + eps_relevant(i, 4)
+        ! Select disturbances for this draw
+        disturbances = eps_relevant(i, :)
 
-        ! Check applicability
-        IF (period .NE. (num_periods - one_int)) THEN
-            CALL get_future_payoffs_lib(future_payoffs, edu_max, edu_start, & 
-                    mapping_state_idx, period,  emax, k, states_all)
-        ELSE
-            future_payoffs = zero_dble
-        END IF
-
-        ! Calculate total utilities
-        total_payoffs = payoffs_ex_post + delta * future_payoffs
-
-        ! Ensuring that schooling does not increase beyond the maximum
-        ! allowed level. This is necessary as in the special case where
-        ! delta is equal to zero, (-HUGE * 0.00) evaluates to zero. This is
-        ! might result in pursuing a higher education.
-        IF (delta .EQ. zero_dble) THEN
-            IF (future_payoffs(3) .EQ. -HUGE(future_payoffs)) THEN
-                total_payoffs(3) = -HUGE(future_payoffs)
-            END IF
-        END IF
-
+        ! Calculate total value
+        CALL get_total_value_lib(total_payoffs, payoffs_ex_post, future_payoffs, &
+                period, num_periods, delta, payoffs_ex_ante, disturbances, &
+                edu_max, edu_start, mapping_state_idx, emax, k, states_all)
+        
         ! Determine optimal choice
         maximum = MAXVAL(total_payoffs)
 
@@ -655,8 +620,97 @@ SUBROUTINE simulate_emax_lib(emax_simulated, payoffs_ex_post, future_payoffs, &
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
+SUBROUTINE get_total_value_lib(total_payoffs, payoffs_ex_post, future_payoffs, &
+                period, num_periods, delta, payoffs_ex_ante, & 
+                disturbances, edu_max, edu_start, mapping_state_idx, & 
+                periods_emax, k, states_all)
+
+    !/* external objects    */
+
+    REAL(our_dble), INTENT(OUT)     :: total_payoffs(4)
+    REAL(our_dble), INTENT(OUT)     :: payoffs_ex_post(4)
+    REAL(our_dble), INTENT(OUT)     :: future_payoffs(4)
+
+    INTEGER(our_int), INTENT(IN)    :: k
+    INTEGER(our_int), INTENT(IN)    :: period
+    INTEGER(our_int), INTENT(IN)    :: num_periods
+    INTEGER(our_int), INTENT(IN)    :: edu_max
+    INTEGER(our_int), INTENT(IN)    :: edu_start
+    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:, :, :, :, :)
+    INTEGER(our_int), INTENT(IN)    :: states_all(:, :, :)
+
+    REAL(our_dble), INTENT(IN)      :: delta
+    REAL(our_dble), INTENT(IN)      :: payoffs_ex_ante(:)
+    REAL(our_dble), INTENT(IN)      :: disturbances(:)
+    REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
+
+    !/* internals objects    */
+
+    LOGICAL                         :: is_myopic
+    
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+    
+    ! Initialize containers
+    payoffs_ex_post = zero_dble
+
+    ! Auxiliary objects
+    is_myopic = (delta .EQ. zero_dble)
+
+    ! Calculate ex post payoffs
+    payoffs_ex_post(1) = payoffs_ex_ante(1) * disturbances(1)
+    payoffs_ex_post(2) = payoffs_ex_ante(2) * disturbances(2)
+    payoffs_ex_post(3) = payoffs_ex_ante(3) + disturbances(3)
+    payoffs_ex_post(4) = payoffs_ex_ante(4) + disturbances(4)
+
+    ! Get future values
+    IF (period .NE. (num_periods - one_int)) THEN
+        CALL get_future_payoffs_lib(future_payoffs, edu_max, edu_start, & 
+                mapping_state_idx, period,  periods_emax, k, states_all)
+        ELSE
+            future_payoffs = zero_dble
+    END IF
+
+    ! Calculate total utilities
+    total_payoffs = payoffs_ex_post + delta * future_payoffs
+
+    ! Stabilization in case of myopic agents
+    IF (is_myopic .EQV. .True.) THEN
+        CALL stabilize_myopic(total_payoffs, future_payoffs)
+    END IF
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE stabilize_myopic(total_payoffs, future_payoffs)
+
+
+    !/* external objects    */
+
+    REAL(our_dble), INTENT(INOUT)   :: total_payoffs(:)
+    REAL(our_dble), INTENT(IN)      :: future_payoffs(:)
+
+    !/* internals objects    */
+
+    LOGICAL                         :: is_huge
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+    
+    ! Determine NAN
+    is_huge = (future_payoffs(3) == -HUGE(future_payoffs))
+
+    IF (is_huge .EQV. .True.) THEN
+        total_payoffs(3) = -HUGE(future_payoffs)
+    END IF
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE get_future_payoffs_lib(future_payoffs, edu_max, edu_start, &
-        mapping_state_idx, period, emax, k, states_all)
+                mapping_state_idx, period, emax, k, states_all)
 
     !/* external objects    */
 

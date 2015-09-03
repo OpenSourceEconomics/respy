@@ -18,7 +18,7 @@ HUGE_FLOAT = 10e10
 
 def get_payoffs_ambiguity(num_draws, eps_standard, period, k,
         payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, states_all,
-        num_periods, emax, delta, debug, cholesky, level, measure):
+        num_periods, emax, delta, debug, eps_cholesky, level, measure):
     """ Get worst case
     """
     # Initialize options.
@@ -31,7 +31,7 @@ def get_payoffs_ambiguity(num_draws, eps_standard, period, k,
     # Collect arguments
     args = (num_draws, eps_standard, period, k, payoffs_ex_ante, edu_max,
             edu_start, mapping_state_idx, states_all, num_periods, emax,
-            cholesky, delta, debug)
+            eps_cholesky, delta, debug)
 
     # Run optimization
     if measure == 'absolute':
@@ -43,7 +43,7 @@ def get_payoffs_ambiguity(num_draws, eps_standard, period, k,
 
     else:
 
-        constraints = _prep_kl(cholesky, level)
+        constraints = _prep_kl(eps_cholesky, level)
 
         opt = minimize(_criterion, x0, args, method='SLSQP', options=options,
                        constraints=constraints)
@@ -53,7 +53,7 @@ def get_payoffs_ambiguity(num_draws, eps_standard, period, k,
         # a smooth and informative run of TEST_F in the random development
         # test battery the following checks are performed.
         if debug:
-            opt = _correct_debugging(opt, x0, level, eps_standard, cholesky,
+            opt = _correct_debugging(opt, x0, level, eps_standard, eps_cholesky,
                         num_periods, num_draws, period, k, payoffs_ex_ante,
                         edu_max, edu_start, emax, states_all,
                         mapping_state_idx, delta)
@@ -63,7 +63,7 @@ def get_payoffs_ambiguity(num_draws, eps_standard, period, k,
         _write_result(period, k, opt)
 
     # Transformation of standard normal deviates to relevant distributions.
-    eps_relevant = np.dot(cholesky, eps_standard.T).T
+    eps_relevant = np.dot(eps_cholesky, eps_standard.T).T
     eps_relevant[:, :2] = eps_relevant[:, :2] + opt['x']
     for j in [0, 1]:
         eps_relevant[:, j] = np.exp(eps_relevant[:, j])
@@ -84,7 +84,7 @@ def get_payoffs_ambiguity(num_draws, eps_standard, period, k,
 '''
 
 
-def _correct_debugging(opt, x0, level, eps_standard, cholesky, num_periods,
+def _correct_debugging(opt, x0, level, eps_standard, eps_cholesky, num_periods,
             num_draws, period, k, payoffs_ex_ante, edu_max, edu_start, emax,
             states_all, mapping_state_idx, delta):
     """ Some manipulations for test battery
@@ -97,7 +97,7 @@ def _correct_debugging(opt, x0, level, eps_standard, cholesky, num_periods,
     opt['x'] = x0
 
     # Correct final function value
-    eps_relevant = np.dot(cholesky, eps_standard.T).T
+    eps_relevant = np.dot(eps_cholesky, eps_standard.T).T
     eps_relevant[:, :2] = eps_relevant[:, :2] + opt['x']
     for j in [0, 1]:
         eps_relevant[:, j] = np.exp(eps_relevant[:, j])
@@ -114,11 +114,11 @@ def _correct_debugging(opt, x0, level, eps_standard, cholesky, num_periods,
     return opt
 
 
-def _prep_kl(cholesky, level):
+def _prep_kl(eps_cholesky, level):
     """ Construct Kullback-Leibler constraint for optimization.
     """
     # Construct covariances
-    cov = np.dot(cholesky, cholesky.T)
+    cov = np.dot(eps_cholesky, eps_cholesky.T)
 
     # Construct constraint
     constraint_divergence = dict()
@@ -164,12 +164,12 @@ def _divergence(x, cov, level):
 
 def _criterion(x, num_draws, eps_standard, period, k, payoffs_ex_ante, edu_max,
         edu_start, mapping_state_idx, states_all, num_periods, emax,
-        true_cholesky, delta, debug):
+        eps_cholesky, delta, debug):
     """ Simulate expected future value for alternative shock distributions.
     """
 
     # Transformation of standard normal deviates to relevant distributions.
-    eps_relevant = np.dot(true_cholesky, eps_standard.T).T
+    eps_relevant = np.dot(eps_cholesky, eps_standard.T).T
     eps_relevant[:, :2] = eps_relevant[:, :2] + x
     for j in [0, 1]:
         eps_relevant[:, j] = np.clip(np.exp(eps_relevant[:, j]), 0.0,

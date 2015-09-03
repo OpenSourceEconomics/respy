@@ -1,10 +1,24 @@
 !*******************************************************************************
 !*******************************************************************************
+!s
+!   Core Interfaces
+!   ---------------
 !
-! Development Notes:
+!   calculate_payoffs_ex_ante
+!   backward_induction
+!   create_state_space
+!   simulate_sample
 !
-!     Future releases of the GFORTRAN compiler will allow to assign NAN 
-!     directly using the IEEE_ARITHMETIC module.
+!   
+!   Debug Interfaces
+!   ----------------
+
+!   debug_get_future_payoffs!
+!   debug_simulate_emax
+!   debug_determinant
+!   debug_inverse
+!   debug_trace
+!   debug_divergence
 !
 !*******************************************************************************
 !*******************************************************************************
@@ -126,7 +140,46 @@ SUBROUTINE create_state_space(states_all, states_number_period, mapping_state_id
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, future_payoffs, & 
+SUBROUTINE calculate_payoffs_ex_ante(periods_payoffs_ex_ante, num_periods, &
+              states_number_period, states_all, edu_start, coeffs_A, & 
+              coeffs_B, coeffs_edu, coeffs_home, max_states_period)
+
+    !/* external libraries    */
+
+    USE robupy_library
+
+    !/* setup    */
+
+    IMPLICIT NONE
+
+    !/* external objects    */
+
+    DOUBLE PRECISION, INTENT(OUT)   :: periods_payoffs_ex_ante(num_periods, max_states_period, 4)
+
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_A(:)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_B(:)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_edu(:)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_home(:)
+
+    INTEGER, INTENT(IN)             :: num_periods
+    INTEGER, INTENT(IN)             :: states_number_period(:)
+    INTEGER, INTENT(IN)             :: states_all(:,:,:)
+    INTEGER, INTENT(IN)             :: edu_start
+    INTEGER, INTENT(IN)             :: max_states_period
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+    
+    CALL calculate_payoffs_ex_ante_lib(periods_payoffs_ex_ante, num_periods, &
+              states_number_period, states_all, edu_start, coeffs_A, & 
+              coeffs_B, coeffs_edu, coeffs_home, max_states_period)
+
+END SUBROUTINE
+!*******************************************************************************
+! Debug Interfaces
+!*******************************************************************************
+SUBROUTINE debug_simulate_emax(emax_simulated, payoffs_ex_post, future_payoffs, & 
                 num_periods, num_draws, period, k, eps_relevant, & 
                 payoffs_ex_ante, edu_max, edu_start, emax, states_all, & 
                 mapping_state_idx, delta)
@@ -171,45 +224,7 @@ SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, future_payoffs, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE calculate_payoffs_ex_ante(periods_payoffs_ex_ante, num_periods, &
-              states_number_period, states_all, edu_start, coeffs_A, & 
-              coeffs_B, coeffs_edu, coeffs_home, max_states_period)
-
-    !/* external libraries    */
-
-    USE robupy_library
-
-    !/* setup    */
-
-    IMPLICIT NONE
-
-    !/* external objects    */
-
-    DOUBLE PRECISION, INTENT(OUT)   :: periods_payoffs_ex_ante(num_periods, max_states_period, 4)
-
-    DOUBLE PRECISION, INTENT(IN)    :: coeffs_A(:)
-    DOUBLE PRECISION, INTENT(IN)    :: coeffs_B(:)
-    DOUBLE PRECISION, INTENT(IN)    :: coeffs_edu(:)
-    DOUBLE PRECISION, INTENT(IN)    :: coeffs_home(:)
-
-    INTEGER, INTENT(IN)             :: num_periods
-    INTEGER, INTENT(IN)             :: states_number_period(:)
-    INTEGER, INTENT(IN)             :: states_all(:,:,:)
-    INTEGER, INTENT(IN)             :: edu_start
-    INTEGER, INTENT(IN)             :: max_states_period
-
-!-------------------------------------------------------------------------------
-! Algorithm
-!-------------------------------------------------------------------------------
-    
-    CALL calculate_payoffs_ex_ante_lib(periods_payoffs_ex_ante, num_periods, &
-              states_number_period, states_all, edu_start, coeffs_A, & 
-              coeffs_B, coeffs_edu, coeffs_home, max_states_period)
-
-END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE get_future_payoffs(future_payoffs, edu_max, edu_start, & 
+SUBROUTINE debug_get_future_payoffs(future_payoffs, edu_max, edu_start, & 
                 mapping_state_idx, period, emax, k, states_all)
 
     ! Development Notes:
@@ -250,7 +265,7 @@ SUBROUTINE get_future_payoffs(future_payoffs, edu_max, edu_start, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE determinant(det, A)
+SUBROUTINE debug_determinant(det, A)
 
     ! Development Notes:
     !
@@ -282,7 +297,7 @@ SUBROUTINE determinant(det, A)
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE inverse(inv, A, n)
+SUBROUTINE debug_inverse(inv, A, n)
 
     ! Development Notes:
     !
@@ -317,7 +332,7 @@ SUBROUTINE inverse(inv, A, n)
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE trace(rslt, A)
+SUBROUTINE debug_trace(rslt, A)
 
     ! Development Notes:
     !
@@ -349,7 +364,7 @@ SUBROUTINE trace(rslt, A)
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE divergence(div, x, cov, level)
+SUBROUTINE debug_divergence(div, x, cov, level)
 
     !/* external libraries    */
 
