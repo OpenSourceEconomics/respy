@@ -82,6 +82,8 @@ def get_payoffs_ambiguity(num_draws, eps_standard, period, k,
 
 ''' Private functions
 '''
+
+
 def _correct_debugging(opt, x0, level, eps_standard, cholesky, num_periods,
             num_draws, period, k, payoffs_ex_ante, edu_max, edu_start, emax,
             states_all, mapping_state_idx, delta):
@@ -111,6 +113,7 @@ def _correct_debugging(opt, x0, level, eps_standard, cholesky, num_periods,
     # Finishing
     return opt
 
+
 def _prep_kl(cholesky, level):
     """ Construct Kullback-Leibler constraint for optimization.
     """
@@ -131,6 +134,7 @@ def _prep_kl(cholesky, level):
 
     # Finishing.
     return constraints
+
 
 def _divergence(x, cov, level):
     """ Calculate the relevant Kullback-Leibler distance of evaluation points
@@ -157,6 +161,7 @@ def _divergence(x, cov, level):
     # Finishing.
     return level - rslt
 
+
 def _criterion(x, num_draws, eps_standard, period, k, payoffs_ex_ante, edu_max,
         edu_start, mapping_state_idx, states_all, num_periods, emax,
         true_cholesky, delta, debug):
@@ -180,6 +185,7 @@ def _criterion(x, num_draws, eps_standard, period, k, payoffs_ex_ante, edu_max,
 
     # Finishing
     return simulated
+
 
 def _write_result(period, k, opt):
     """ Write result of optimization problem to loggging file.
@@ -224,6 +230,7 @@ def _prep_absolute(level, debug):
 
     # Finishing
     return bounds
+
 
 def checks_ambiguity(str_, *args):
     """ This checks the integrity of the objects related to the

@@ -61,20 +61,10 @@ def solve(robupy_obj):
 
     robupy_obj.lock()
 
-    # Draw random variables.
-    eps_baseline_periods, eps_standard_periods, true_cholesky = \
-        _create_eps(robupy_obj)
-
-    if with_ambiguity:
-        eps_relevant_periods = eps_standard_periods
-    else:
-        eps_relevant_periods = eps_baseline_periods
-
-    # This is only used to compare the RESTUD program to the ROBUPY package.
-    # It aligns the random components between the two. It is only used in the
-    # development process.
-    if robupy_obj.is_restud:
-        eps_relevant_periods = read_restud_disturbances(robupy_obj)
+    # Draw a set of unobservable disturbances. There is an important
+    # distinction between the case with and without ambiguity.
+    eps_relevant_periods, true_cholesky = \
+        _create_eps(robupy_obj, with_ambiguity)
 
     # Calculate ex ante payoffs which are later used in the backward
     # induction procedure. These are calculated without any reference
@@ -282,11 +272,11 @@ def _wrapper_backward_induction_procedure(robupy_obj, eps_relevant_periods,
 '''
 
 
-def _create_eps(robupy_obj):
+def _create_eps(robupy_obj, with_ambiguity):
     """ Create disturbances.  Handle special case of zero variances as this
-        case is useful for hand-based testing.
+    case is useful for hand-based testing. The distribution of disturbances
+    differs between the case with and without ambiguity.
     """
-
     # Distribute class attributes
     num_periods = robupy_obj.get_attr('num_periods')
 
@@ -296,32 +286,32 @@ def _create_eps(robupy_obj):
 
     seed = robupy_obj.get_attr('seed_solution')
 
-    # Ensure recomputability
-    np.random.seed(seed)
-
-    eps_standard_periods = np.random.multivariate_normal(np.zeros(4),
-                                                         np.identity(4), (
-                                                             num_periods,
-                                                             num_draws))
-
-    # Check for special case
-    all_zeros = (np.count_nonzero(init_dict['SHOCKS']) == 0)
-
     # Prepare Cholesky decomposition
+    all_zeros = (np.count_nonzero(init_dict['SHOCKS']) == 0)
     if all_zeros:
         true_cholesky = np.zeros((4, 4))
     else:
         true_cholesky = np.linalg.cholesky(init_dict['SHOCKS'])
 
-    # Construct baseline disturbances
-    eps_baseline_periods = np.tile(np.nan, (num_periods, num_draws, 4))
+    # Ensure recomputability
+    np.random.seed(seed)
 
-    for period in range(num_periods):
-        eps_baseline_periods[period, :, :] = \
-            np.dot(true_cholesky, eps_standard_periods[period, :, :].T).T
+    eps_relevant_periods = np.random.multivariate_normal(np.zeros(4),
+        np.identity(4), (num_periods, num_draws))
+
+    if not with_ambiguity:
+        for period in range(num_periods):
+            eps_relevant_periods[period, :, :] = \
+                np.dot(true_cholesky, eps_relevant_periods[period, :, :].T).T
+
+    # This is only used to compare the RESTUD program to the ROBUPY package.
+    # It aligns the random components between the two. It is only used in the
+    # development process.
+    if robupy_obj.is_restud:
+        eps_relevant_periods = read_restud_disturbances(robupy_obj)
 
     # Finishing
-    return eps_baseline_periods, eps_standard_periods, true_cholesky
+    return eps_relevant_periods, true_cholesky
 
 
 def _summarize_ambiguity(robupy_obj):
