@@ -231,7 +231,6 @@ def _prep_absolute(level, debug):
     # Finishing
     return bounds
 
-
 def checks_ambiguity(str_, *args):
     """ This checks the integrity of the objects related to the
         solution of the model.

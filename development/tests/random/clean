@@ -44,6 +44,10 @@ files += glob.glob('modules/*.out*')
 
 files += glob.glob('modules/*.pyc')
 
+files += glob.glob('modules/*.mod')
+
+files += glob.glob('modules/dp3asim')
+
 for file_ in files:
 
     try:

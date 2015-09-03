@@ -139,9 +139,14 @@ def _create_eps(robupy_obj):
     # Set random seed
     np.random.seed(seed)
 
-    # Draw a set of unobservable disturbances.
-    periods_eps_relevant = np.random.multivariate_normal(np.zeros(4), shocks,
-        (num_periods, num_agents))
+    # Draw random disturbances and adjust them for the two occupations
+    np.random.seed(seed)
+    periods_eps_relevant = np.random.multivariate_normal(np.zeros(4),
+        shocks, (num_periods, num_agents))
+    for period in range(num_periods):
+        for j in [0, 1]:
+            periods_eps_relevant[period, :, j] = np.exp(periods_eps_relevant[
+                                                  period, :, j])
 
     # This is only used to compare the RESTUD program to the ROBUPY package.
     # It aligns the random components between the two. It is only used in the

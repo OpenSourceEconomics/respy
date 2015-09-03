@@ -50,7 +50,7 @@ END SUBROUTINE
 !******************************************************************************
 SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
                 periods_future_payoffs, num_periods, max_states_period, &
-                eps_relevant_periods, num_draws, states_number_period, & 
+                eps_relevant_periods, num_draws, states_number_period, &
                 periods_payoffs_ex_ante, edu_max, edu_start, & 
                 mapping_state_idx, states_all, delta)
 
@@ -87,7 +87,7 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
         
     CALL backward_induction_lib(periods_emax, periods_payoffs_ex_post, &
             periods_future_payoffs, num_periods, max_states_period, &
-            eps_relevant_periods, num_draws, states_number_period, & 
+            eps_relevant_periods, num_draws, states_number_period, &
             periods_payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
             states_all, delta)
 

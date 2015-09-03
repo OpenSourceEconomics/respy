@@ -8,17 +8,17 @@ import logging
 
 # project libray
 from robupy.performance.python.ambiguity import get_payoffs_ambiguity
-from robupy.performance.python.risk import get_payoffs_risk
 from robupy.performance.python.auxiliary import get_future_payoffs
+from robupy.performance.python.risk import get_payoffs_risk
 
 # Logging
 logger = logging.getLogger('ROBUPY_SOLVE')
 
 
-def backward_induction(num_periods, max_states_period, eps_relevant_periods, num_draws,
-            states_number_period, periods_payoffs_ex_ante, edu_max, edu_start,
-            mapping_state_idx, states_all, delta, debug, cholesky, level,
-            measure):
+def backward_induction(num_periods, max_states_period, eps_relevant_periods,
+        num_draws, states_number_period, periods_payoffs_ex_ante, edu_max,
+        edu_start, mapping_state_idx, states_all, delta, debug, eps_cholesky,
+        level, measure):
     """ Backward iteration procedure.
     """
     # Auxiliary objects
@@ -52,8 +52,10 @@ def backward_induction(num_periods, max_states_period, eps_relevant_periods, num
                     get_payoffs_ambiguity(num_draws, eps_relevant, period, k,
                         payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,
                         states_all, num_periods, periods_emax, delta, debug,
-                        cholesky, level, measure)
+                        eps_cholesky, level, measure)
             else:
+                print('outside ', eps_relevant[0,:])
+
                 emax, payoffs_ex_post, future_payoffs = \
                     get_payoffs_risk(num_draws, eps_relevant, period, k,
                         payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,
@@ -65,6 +67,9 @@ def backward_induction(num_periods, max_states_period, eps_relevant_periods, num
 
             # Collect
             periods_emax[period, k] = emax
+
+    print()
+    print(periods_emax[num_periods - 1,:3])
 
     # Finishing
     return periods_emax, periods_payoffs_ex_post, periods_future_payoffs
@@ -240,7 +245,7 @@ def simulate_sample(num_agents, states_all, num_periods,
             for j in [0, 1]:
                 payoffs_ex_post[j] = periods_payoffs_ex_ante[period,
                                                                     k, j] * \
-                                                np.exp(periods_eps_relevant[period, i, j])
+                                                periods_eps_relevant[period, i, j]
 
             for j in [2, 3]:
                 payoffs_ex_post[j] = periods_payoffs_ex_ante[period,

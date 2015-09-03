@@ -27,6 +27,7 @@ def test_98():
     # Prepare RESTUD program
     os.chdir('modules')
     os.system(' gfortran -o dp3asim dp3asim.f95 > /dev/null 2>&1 ')
+    os.remove('pei_additions.mod')
     os.remove('imsl_replacements.mod')
     os.chdir('../')
 

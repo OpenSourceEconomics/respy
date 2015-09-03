@@ -1,3 +1,70 @@
+MODULE PEI_ADDITIONS
+  
+  !*****************************************************************************
+  ! This module provides additional functions that allow to test this program 
+  ! against the ROBUPY package.
+  !*****************************************************************************
+
+  IMPLICIT NONE
+
+  PUBLIC
+
+  CONTAINS
+
+  !*****************************************************************************
+  !*****************************************************************************
+  SUBROUTINE WRITE_OUT_DISTURBANCES(PERIODS_EPS_RELEVANT, NPER, DRAW)
+
+    !
+    ! Write random disturbances to file.
+    !
+
+    !/* external objects    */
+
+    INTEGER, INTENT(IN)       :: NPER
+
+    REAL, INTENT(IN)          :: DRAW
+    REAL, INTENT(IN)          :: PERIODS_EPS_RELEVANT(:, :, :)
+
+    !/* internal objects    */
+
+    INTEGER                   :: J
+    INTEGER                   :: T
+
+    LOGICAL                   :: WRITE_OUT
+
+    !--------------------------------------------------------------------------- 
+    ! Algorithm
+    !--------------------------------------------------------------------------- 
+
+    INQUIRE(FILE='.write_out', EXIST=WRITE_OUT)
+
+    IF (WRITE_OUT .EQV. .True.) THEN
+
+      OPEN(12, file='disturbances.txt')
+      
+      DO T = 1, NPER
+
+        DO J = 1, DRAW
+        
+          2000 FORMAT(6(1x,f20.15))
+          WRITE(12,2000) PERIODS_EPS_RELEVANT(J, T, :)
+        
+        END DO
+      
+      END DO
+
+    END IF
+
+  END SUBROUTINE 
+
+!*******************************************************************************
+!*******************************************************************************
+
+END MODULE
+
+!*******************************************************************************
+!*******************************************************************************
 MODULE IMSL_REPLACEMENTS
   
 
@@ -195,7 +262,10 @@ PROGRAM dp3asim
   !
   !***************************************************************************** 
 
-  ! Interface to IMSL replacements
+  ! PEI: Interface to added functions
+  USE PEI_ADDITIONS 
+
+  ! PEI: Interface to IMSL replacements
   USE IMSL_REPLACEMENTS
   
 !********************************************************
@@ -217,15 +287,16 @@ PROGRAM dp3asim
       DIMENSION PROB1(40,4)
       INTEGER X1,X2,E,T
 
-      ! Flag to write out all random components
-      LOGICAL :: write_out
+      ! PEI: Container for relevant disturbances. Allows to align the 
+      ! results between this program and the ROBUPY package.
+      DIMENSION PERIODS_EPS_RELEVANT(5000, 40, 4)
 
-  ! Open files
-  open(9,file='in.txt')
-    
-  open(10,file='otest.txt')
-    
-  open(11,file='ftest.txt')
+      ! PEI: Open files
+      open(9,file='in.txt')
+        
+      open(10,file='otest.txt')
+        
+      open(11,file='ftest.txt')
 
 
       READ(9,1500) NPER,NPOP,DRAW,DRAW1,TAU
@@ -319,42 +390,21 @@ PROGRAM dp3asim
       DO 31 J=1,DRAW
       DO 30 T=1,NPER
        CALL RNNOR(4,RNN)
-       EU1(J,T) = A(1,1)*RNN(1)
-       EU2(J,T) = A(2,1)*RNN(1)+A(2,2)*RNN(2)
+       EU1(J,T) = exp(A(1,1)*RNN(1))
+       EU2(J,T) = exp(A(2,1)*RNN(1)+A(2,2)*RNN(2))
        C(J,T)   = A(3,1)*RNN(1)+A(3,2)*RNN(2)+A(3,3)*RNN(3)
-       B(J,T)   = A(4,1)*RNN(1)+A(4,2)*RNN(2)+A(4,3)*RNN(3)+A(4,4)*RNN(4)
+       B(J,T)   = A(4,1)*RNN(1)+A(4,2)*RNN(2)+A(4,3)*RNN(3)+A(4,4)*RNN(4)     
+
+       ! PEI: Collect standard deviates
+       PERIODS_EPS_RELEVANT(J, T, :2) = (/ EU1(J, T), EU2(J, T)/)
+       PERIODS_EPS_RELEVANT(J, T, 3:) = (/ C(J, T), B(J,T) /)
+
    30 CONTINUE
    31 CONTINUE
 !C  30 CONTINUE
-
-
-  !----------------------------------------------------------------------------
-  ! Write out all random components.
-  !----------------------------------------------------------------------------
-  INQUIRE(FILE='.write_out', EXIST=write_out)
-
-  IF (write_out .EQV. .True.) THEN
-
-    OPEN(12, file='disturbances.txt')
-    
-    DO T = 1, NPER
-
-      DO J = 1, DRAW
-      
-        2000 FORMAT(6(1x,f20.15))
-        WRITE(12,2000) EU1(J, T), EU2(J, T), C(J, T), B(J, T)
-      
-      END DO
-    
-    END DO
-
-  END IF
-  !----------------------------------------------------------------------------
-  !----------------------------------------------------------------------------
-
-  ! Finalize transformation of random payoff components for occupations
-  EU1 = EXP(EU1)
-  EU2 = EXP(EU2)
+ 
+  ! PEI: Write out all random components.
+  CALL WRITE_OUT_DISTURBANCES(PERIODS_EPS_RELEVANT, NPER, DRAW)
 
 !*****************************************************************
 !*  CONSTRUCT THE EXPECTED MAX OF THE TIME NPER VALUE FUNCTIONS  *

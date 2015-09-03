@@ -109,8 +109,8 @@ SUBROUTINE simulate_sample_lib(dataset, num_agents, states_all, num_periods, &
             payoffs_ex_ante = periods_payoffs_ex_ante(period + 1, k + 1, :)
             disturbances = periods_eps_relevant(period + 1, i + 1, :)
 
-            payoffs_ex_post(1) = payoffs_ex_ante(1) * EXP(disturbances(1))
-            payoffs_ex_post(2) = payoffs_ex_ante(2) * EXP(disturbances(2))
+            payoffs_ex_post(1) = payoffs_ex_ante(1) * disturbances(1)
+            payoffs_ex_post(2) = payoffs_ex_ante(2) * disturbances(2)
             payoffs_ex_post(3) = payoffs_ex_ante(3) + disturbances(3)
             payoffs_ex_post(4) = payoffs_ex_ante(4) + disturbances(4)
 
@@ -469,7 +469,7 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE get_payoffs_risk_lib(emax, payoffs_ex_post, future_payoffs, &
-                num_draws, eps_baseline, period, k, payoffs_ex_ante, & 
+                num_draws, eps_relevant, period, k, payoffs_ex_ante, & 
                 edu_max, edu_start, mapping_state_idx, states_all, num_periods, & 
                 periods_emax, delta)
 
@@ -488,35 +488,24 @@ SUBROUTINE get_payoffs_risk_lib(emax, payoffs_ex_post, future_payoffs, &
     INTEGER(our_int), INTENT(IN)    :: states_all(:, :, :)
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:, :, :, :, :)
 
-    REAL(our_dble), INTENT(IN)      :: eps_baseline(:, :)
+    REAL(our_dble), INTENT(IN)      :: eps_relevant(:, :)
     REAL(our_dble), INTENT(IN)      :: payoffs_ex_ante(:)
     REAL(our_dble), INTENT(IN)      :: delta
     REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
 
     !/* internals objects    */
     
-    REAL(our_dble), ALLOCATABLE     :: eps_relevant(:, :)
-
     INTEGER(our_int)                :: i
 
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    ! Allocate
-    ALLOCATE(eps_relevant(num_draws, 4))
-
-    ! Transform disturbances for occupations
-    eps_relevant = eps_baseline
-    DO i = 1, 2
-        eps_relevant(:, i) = EXP(eps_relevant(:, i))
-    END DO
-
     ! Simulated expected future value
     CALL simulate_emax_lib(emax, payoffs_ex_post, future_payoffs, num_periods, & 
             num_draws, period, k, eps_relevant, payoffs_ex_ante, edu_max, & 
             edu_start, periods_emax, states_all, mapping_state_idx, delta)
- 
+    
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************

@@ -55,6 +55,8 @@ class RobupyCls(MetaCls):
 
         self.attr['periods_emax'] = None
 
+        self.attr['eps_cholesky'] = False
+
         self.attr['states_all'] = None
 
         self.attr['is_solved'] = False

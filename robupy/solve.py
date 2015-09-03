@@ -61,10 +61,8 @@ def solve(robupy_obj):
 
     robupy_obj.lock()
 
-    # Draw a set of unobservable disturbances. There is an important
-    # distinction between the case with and without ambiguity.
-    eps_relevant_periods, true_cholesky = \
-        _create_eps(robupy_obj, with_ambiguity)
+    # Draw a set of standard normal unobservable disturbances.
+    eps_relevant_periods, eps_cholesky = _create_eps(robupy_obj)
 
     # Calculate ex ante payoffs which are later used in the backward
     # induction procedure. These are calculated without any reference
@@ -79,6 +77,8 @@ def solve(robupy_obj):
 
     robupy_obj.set_attr('periods_payoffs_ex_ante', periods_payoffs_ex_ante)
 
+    robupy_obj.set_attr('eps_cholesky', eps_cholesky)
+
     robupy_obj.lock()
 
     # Backward iteration procedure. There is a PYTHON and FORTRAN
@@ -87,7 +87,7 @@ def solve(robupy_obj):
 
     periods_emax, periods_payoffs_ex_post, periods_future_payoffs = \
         _wrapper_backward_induction_procedure(robupy_obj, eps_relevant_periods,
-            true_cholesky, level, measure)
+            eps_cholesky, level, measure)
 
     logger.info('... finished \n')
 
@@ -210,7 +210,7 @@ def _wrapper_create_state_space(robupy_obj):
 
 
 def _wrapper_backward_induction_procedure(robupy_obj, eps_relevant_periods,
-        true_cholesky, level, measure):
+        eps_cholesky, level, measure):
     """ Wrapper for backward induction procedure.
     """
     # Distribute class attributes
@@ -251,7 +251,7 @@ def _wrapper_backward_induction_procedure(robupy_obj, eps_relevant_periods,
             python_core.backward_induction(num_periods, max_states_period,
                 eps_relevant_periods, num_draws, states_number_period,
                 periods_payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,
-                states_all, delta, debug, true_cholesky, level, measure)
+                states_all, delta, debug, eps_cholesky, level, measure)
 
     # Replace missing values
     periods_emax = replace_missing_values(periods_emax)
@@ -272,42 +272,43 @@ def _wrapper_backward_induction_procedure(robupy_obj, eps_relevant_periods,
 '''
 
 
-def _create_eps(robupy_obj, with_ambiguity):
+def _create_eps(robupy_obj):
     """ Create disturbances.  Handle special case of zero variances as this
-    case is useful for hand-based testing. The distribution of disturbances
-    differs between the case with and without ambiguity.
-
-    Development Note:
-        Treating the disturbances different in the two cases is not very
-        satisfying. However, this is required at this point
-
+    case is useful for hand-based testing. The disturbances are drawn from a
+    standard normal distribution and transformed later in the code.
     """
     # Distribute class attributes
     num_periods = robupy_obj.get_attr('num_periods')
 
     num_draws = robupy_obj.get_attr('num_draws')
 
-    init_dict = robupy_obj.get_attr('init_dict')
+    shocks = robupy_obj.get_attr('shocks')
 
     seed = robupy_obj.get_attr('seed_solution')
 
+    level = robupy_obj.get_attr('level')
+
+    # Auxiliary objects
+    with_ambiguity = (level > 0.00)
+
     # Prepare Cholesky decomposition
-    all_zeros = (np.count_nonzero(init_dict['SHOCKS']) == 0)
+    all_zeros = (np.count_nonzero(shocks) == 0)
     if all_zeros:
-        true_cholesky = np.zeros((4, 4))
+        eps_cholesky = np.zeros((4, 4))
     else:
-        true_cholesky = np.linalg.cholesky(init_dict['SHOCKS'])
+        eps_cholesky = np.linalg.cholesky(shocks)
 
-    # Ensure recomputability
+    # Draw random disturbances and adjust them for the two occupations
     np.random.seed(seed)
-
     eps_relevant_periods = np.random.multivariate_normal(np.zeros(4),
         np.identity(4), (num_periods, num_draws))
 
-    if not with_ambiguity:
-        for period in range(num_periods):
-            eps_relevant_periods[period, :, :] = \
-                np.dot(true_cholesky, eps_relevant_periods[period, :, :].T).T
+    for period in range(num_periods):
+        eps_relevant_periods[period, :, :] = np.dot(eps_cholesky,
+            eps_relevant_periods[period, :, :].T).T
+        for j in [0, 1]:
+            eps_relevant_periods[period, :, j] = np.exp(eps_relevant_periods[
+                                                  period, :, j])
 
     # This is only used to compare the RESTUD program to the ROBUPY package.
     # It aligns the random components between the two. It is only used in the
@@ -315,8 +316,18 @@ def _create_eps(robupy_obj, with_ambiguity):
     if robupy_obj.is_restud:
         eps_relevant_periods = read_restud_disturbances(robupy_obj)
 
+    # In the case of ambiguity, standard normal deviates are passed into the
+    # routine. This is unsatisfactory, but required to compare the outputs
+    # between the RESTUD program and the ROBUPY package. If standard deviates
+    # are passed in from the beginning, the alignment of randomness between
+    # the two program yields a too large precision loss.
+    if with_ambiguity:
+        np.random.seed(seed)
+        eps_relevant_periods = np.random.multivariate_normal(np.zeros(4),
+            np.identity(4), (num_periods, num_draws))
+
     # Finishing
-    return eps_relevant_periods, true_cholesky
+    return eps_relevant_periods, eps_cholesky
 
 
 def _summarize_ambiguity(robupy_obj):
