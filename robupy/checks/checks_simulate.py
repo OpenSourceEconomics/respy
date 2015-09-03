@@ -4,19 +4,17 @@ the model..
 
 # standard library
 import numpy as np
-import pandas as pd
 
 
 def checks_simulate(str_, robupy_obj, *args):
-    """ This checks the integrity of the objects related to the solution of
+    """ Checks the integrity of the objects related to the simulation of
     the model.
     """
 
     # Distribute class attributes
     num_periods = robupy_obj.get_attr('num_periods')
-    num_agents = robupy_obj.get_attr('num_agents')
 
-    edu_start = robupy_obj.get_attr('edu_start')
+    num_agents = robupy_obj.get_attr('num_agents')
 
     edu_max = robupy_obj.get_attr('edu_max')
 
@@ -60,13 +58,11 @@ def checks_simulate(str_, robupy_obj, *args):
             if i in [7]:
                 assert (data_frame.max(axis=0)[i] <= max_)
 
-        # Each valid period indicator occurs as often as
-        # agents in the dataset.
+        # Each valid period indicator occurs as often as agents in the dataset.
         for period in range(num_periods):
             assert (data_frame[1].value_counts()[period] == num_agents)
 
-        # Each valid agent indicator occurs as often
-        # as periods in the dataset.
+        # Each valid agent indicator occurs as often as periods in the dataset.
         for agent in range(num_agents):
             assert (data_frame[0].value_counts()[agent] == num_periods)
 

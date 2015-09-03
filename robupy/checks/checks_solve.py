@@ -1,4 +1,5 @@
-""" This module contains some additional checks related to the solution of the dynamic programming model.
+""" This module contains some additional checks related to the solution of
+the dynamic programming model.
 """
 
 # standard library
@@ -7,59 +8,56 @@ import pandas as pd
 
 
 def checks_solve(str_, robupy_obj, *args):
-    """ This checks the integrity of the objects related to the solution of the model.
+    """ This checks the integrity of the objects related to the solution of the
+    model.
     """
-
     # Distribute class attributes
     if robupy_obj is not None:
 
+        states_number_period = robupy_obj.get_attr('states_number_period')
+
         num_periods = robupy_obj.get_attr('num_periods')
+
+        states_all = robupy_obj.get_attr('states_all')
 
         edu_start = robupy_obj.get_attr('edu_start')
 
         edu_max = robupy_obj.get_attr('edu_max')
-
-        states_all = robupy_obj.get_attr('states_all')
-
-        states_number_period = robupy_obj.get_attr('states_number_period')
-
 
     if str_ == '_wrapper_create_state_space_out':
 
         # Distribute input parameters
         states_all, states_number_period, mapping_state_idx, = args
 
-        # If the agent never increased their level of education,
-        # the lagged education variable cannot take a value
-        # larger than zero.
+        # If the agent never increased their level of education, the lagged
+        # education variable cannot take a value larger than zero.
         for period in range(1, num_periods):
             indices = (np.where(states_all[period, :, :][:, 2] == 0))
             for index in indices:
                 assert (np.all(states_all[period, :, :][index, 3]) == 0)
 
-        # No values can be larger than constraint time.
-        # The exception in the lagged schooling variable
-        # in the first period, which takes value one but has
-        # index zero.
+        # No values can be larger than constraint time. The exception in the
+        # lagged schooling variable in the first period, which takes value
+        # one but has index zero.
         for period in range(num_periods):
             assert (np.nanmax(states_all[period, :, :3]) <= period)
 
-        # Lagged schooling can only take value zero or one if finite.
-        # In fact, it can only take value one in the first period.
+        # Lagged schooling can only take value zero or one if finite. In fact,
+        # it can only take value one in the first period.
         for period in range(num_periods):
             assert (np.all(states_all[0, :, 3]) == 1)
             assert (np.nanmax(states_all[period, :, 3]) == 1)
             assert (np.nanmin(states_all[period, :, :3]) == 0)
 
-        # All finite values have to be larger or equal to zero.
-        # The loop is required as np.all evaluates to FALSE
-        # for this condition (see NUMPY documentation).
+        # All finite values have to be larger or equal to zero. The loop is
+        # required as np.all evaluates to FALSE for this condition
+        # (see NUMPY documentation).
         for period in range(num_periods):
             assert (
                 np.all(states_all[period, :states_number_period[period]] >= 0))
 
-        # The maximum number of additional education years is never
-        # larger than (EDU_MAX - EDU_START).
+        # The maximum number of additional education years is never larger
+        # than (EDU_MAX - EDU_START).
         for period in range(num_periods):
             assert (np.nanmax(states_all[period, :, :][:, 2], axis=0) <= (
                 edu_max - edu_start))
@@ -82,13 +80,14 @@ def checks_solve(str_, robupy_obj, *args):
         # There are is only one finite realization in period one.
         assert (np.sum(np.isfinite(mapping_state_idx[0, :, :, :, :])) == 1)
 
-        # If valid, the number of state space realizations in period two is four.
+        # If valid, the number of state space realizations in period two is
+        # four.
         if num_periods > 1:
             assert (np.sum(np.isfinite(mapping_state_idx[1, :, :, :, :])) == 4)
 
-        # Check that mapping is defined for all possible realizations
-        # of the state space by period. Check that mapping is not defined
-        # for all inadmissible values.
+        # Check that mapping is defined for all possible realizations of the
+        # state space by period. Check that mapping is not defined for all
+        # inadmissible values.
         is_infinite = np.tile(False, reps=mapping_state_idx.shape)
         for period in range(num_periods):
             # Subsetting valid indices
@@ -113,7 +112,8 @@ def checks_solve(str_, robupy_obj, *args):
         # Distribute input parameters
         states_all, states_number_period, periods_payoffs_ex_ante = args
 
-        # Check that the payoffs are finite for all admissible values and infinite for all others.
+        # Check that the payoffs are finite for all admissible values and
+        # infinite for all others.
         is_infinite = np.tile(False, reps=periods_payoffs_ex_ante.shape)
         for period in range(num_periods):
             # Loop over all possible states
@@ -139,7 +139,8 @@ def checks_solve(str_, robupy_obj, *args):
         # Distribute input parameters
         emax, future_payoffs = args
 
-        # Check that the payoffs are finite for all admissible values and infinite for all others.
+        # Check that the payoffs are finite for all admissible values and
+        # infinite for all others.
         is_infinite = np.tile(False, reps=emax.shape)
         for period in range(num_periods):
             # Loop over all possible states
@@ -157,7 +158,8 @@ def checks_solve(str_, robupy_obj, *args):
                 assert (
                     np.all(np.isfinite(emax[is_infinite == False])) == False)
 
-        # Check that the payoffs are finite for all admissible values and infinite for all others.
+        # Check that the payoffs are finite for all admissible values and
+        # infinite for all others.
         for period in range(num_periods - 1):
             # Loop over all possible states
             for k in range(states_number_period[period]):

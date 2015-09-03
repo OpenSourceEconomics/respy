@@ -2,14 +2,14 @@
 
     Structure of Dataset:
 
-    0   Identifier of Agent
-    1   Time Period
-    2   Choice (1 = Work A, 2 = Work B, 3 = Education, 4 = Home)
-    3   Earnings (missing value if not working)
-    4   Work Experience A
-    5   Work Experience B
-    6   Schooling
-    7   Lagged Schooling
+        0   Identifier of Agent
+        1   Time Period
+        2   Choice (1 = Work A, 2 = Work B, 3 = Education, 4 = Home)
+        3   Earnings (missing value if not working)
+        4   Work Experience A
+        5   Work Experience B
+        6   Schooling
+        7   Lagged Schooling
 
 """
 
@@ -20,7 +20,8 @@ import logging
 
 # project library
 from robupy.checks.checks_simulate import checks_simulate
-from robupy.auxiliary import replace_missing_values,  read_restud_disturbances
+from robupy.auxiliary import replace_missing_values
+from robupy.auxiliary import read_restud_disturbances
 
 import robupy.performance.python.python_core as python_core
 try:
@@ -42,38 +43,25 @@ def simulate(robupy_obj):
     assert (robupy_obj.get_status())
 
     # Distribute class attributes
-    num_periods = robupy_obj.get_attr('num_periods')
+    num_agents = robupy_obj.get_attr('seed_simulation')
 
-    num_agents = robupy_obj.get_attr('num_agents')
-
-    seed = robupy_obj.get_attr('seed_simulation')
-
-    shocks = robupy_obj.get_attr('shocks')
-
-    debug = robupy_obj.get_attr('debug')
+    seed = robupy_obj.get_attr('num_agents')
 
     # Draw disturbances for the simulation.
-    np.random.seed(seed)
+    periods_eps_relevant = _create_eps(robupy_obj)
 
-    periods_eps_relevant = np.random.multivariate_normal(np.zeros(4), shocks,
-                                (num_periods, num_agents))
-
-    # Simulate a dataset with the results from the solution.
-    logger.info('Staring simulation of model for ' +
-                str(num_agents) + ' agents with seed ' + str(seed))
+    # Simulate a dataset with the results from the solution and write out the
+    # dataset to a text file. In addition a file summarizing the dataset is
+    # produced.
+    logger.info('Staring simulation of model for ' + str(num_agents) +
+        ' agents with seed ' + str(seed))
 
     data_frame = _wrapper_simulate_sample(robupy_obj, periods_eps_relevant)
 
-    # Run checks on data frame
-    if debug:
-        checks_simulate('data_frame', robupy_obj, data_frame)
-
-    # Write to dataset and information to file
     _write_out(data_frame)
 
-    _write_info(data_frame, seed)
+    _write_info(robupy_obj, data_frame)
 
-    # Logging
     logger.info('... finished \n')
 
     # Finishing
@@ -105,7 +93,55 @@ def _wrapper_simulate_sample(robupy_obj, periods_eps_relevant):
 
     delta = robupy_obj.get_attr('delta')
 
+    debug = robupy_obj.get_attr('debug')
+
     fast = robupy_obj.get_attr('fast')
+
+    # Interface to core functions
+    if fast:
+        data_frame = fortran_core.simulate_sample(num_agents, states_all,
+            num_periods, mapping_state_idx, periods_payoffs_ex_ante,
+            periods_eps_relevant, edu_max, edu_start, periods_emax, delta)
+    else:
+        data_frame = python_core.simulate_sample(num_agents, states_all,
+            num_periods, mapping_state_idx, periods_payoffs_ex_ante,
+            periods_eps_relevant, edu_max, edu_start, periods_emax, delta)
+
+    # Replace missing values
+    data_frame = replace_missing_values(data_frame)
+
+    # Create pandas data frame
+    data_frame = pd.DataFrame(data_frame)
+
+    # Run checks on data frame
+    if debug:
+        checks_simulate('data_frame', robupy_obj, data_frame)
+
+    # Finishing
+    return data_frame
+
+''' Auxiliary functions
+'''
+
+
+def _create_eps(robupy_obj):
+    """ Create relevant disturbances.
+    """
+    # Distribute class attributes
+    num_periods = robupy_obj.get_attr('num_periods')
+
+    num_agents = robupy_obj.get_attr('num_agents')
+
+    seed = robupy_obj.get_attr('seed_simulation')
+
+    shocks = robupy_obj.get_attr('shocks')
+
+    # Set random seed
+    np.random.seed(seed)
+
+    # Draw a set of unobservable disturbances.
+    periods_eps_relevant = np.random.multivariate_normal(np.zeros(4), shocks,
+        (num_periods, num_agents))
 
     # This is only used to compare the RESTUD program to the ROBUPY package.
     # It aligns the random components between the two. It is only used in the
@@ -113,33 +149,15 @@ def _wrapper_simulate_sample(robupy_obj, periods_eps_relevant):
     if robupy_obj.is_restud:
         periods_eps_relevant = read_restud_disturbances(robupy_obj)
 
-    # Interface to core functions
-    if fast:
-        dataset = fortran_core.simulate_sample(num_agents, states_all,
-            num_periods, mapping_state_idx, periods_payoffs_ex_ante,
-            periods_eps_relevant, edu_max, edu_start, periods_emax, delta)
-    else:
-        dataset = python_core.simulate_sample(num_agents, states_all,
-            num_periods, mapping_state_idx, periods_payoffs_ex_ante,
-            periods_eps_relevant, edu_max, edu_start, periods_emax, delta)
-
-    # Replace missing values
-    dataset = replace_missing_values(dataset)
-
-    # Create pandas data frame
-    dataset = pd.DataFrame(dataset)
-
     # Finishing
-    return dataset
+    return periods_eps_relevant
 
 
-''' Private functions
-'''
-
-
-def _write_info(data_frame, seed):
+def _write_info(robupy_obj, data_frame):
     """ Write information about the simulated economy.
     """
+    # Distribute class attributes
+    seed = robupy_obj.get_attr('seed_simulation')
 
     # Get basic information
     num_agents = data_frame[1].value_counts()[0]
@@ -185,9 +203,6 @@ def _write_info(data_frame, seed):
 def _write_out(data_frame):
     """ Write dataset to file.
     """
-    # Antibugging
-    assert (isinstance(data_frame, pd.DataFrame))
-
     # Formatting of columns
     formats = []
 
@@ -204,24 +219,18 @@ def _write_out(data_frame):
 
 
 def _format_float(x):
-    """ Format floating point number.
+    """ Pretty formatting for floats
     """
     if pd.isnull(x):
-
         return '    .'
-
     else:
-
         return '{0:10.2f}'.format(x)
 
 
 def _format_integer(x):
-    """ Format integers.
+    """ Pretty formatting for integers.
     """
     if pd.isnull(x):
-
         return '    .'
-
     else:
-
         return '{0:<5}'.format(int(x))

@@ -1,12 +1,5 @@
 """ This module contains all the capabilities to solve the dynamic
 programming problem.
-
-
-    This module uses features as object oriented programming. The backend is
-    written with a performance based
-
-    Python core
-
 """
 
 # standard library
@@ -17,7 +10,8 @@ import os
 
 # project library
 from robupy.checks.checks_solve import checks_solve
-from robupy.auxiliary import replace_missing_values,  read_restud_disturbances
+from robupy.auxiliary import replace_missing_values
+from robupy.auxiliary import read_restud_disturbances
 
 import robupy.performance.python.python_core as python_core
 try:
