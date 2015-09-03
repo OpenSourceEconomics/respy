@@ -276,6 +276,11 @@ def _create_eps(robupy_obj, with_ambiguity):
     """ Create disturbances.  Handle special case of zero variances as this
     case is useful for hand-based testing. The distribution of disturbances
     differs between the case with and without ambiguity.
+
+    Development Note:
+        Treating the disturbances different in the two cases is not very
+        satisfying. However, this is required at this point
+
     """
     # Distribute class attributes
     num_periods = robupy_obj.get_attr('num_periods')
