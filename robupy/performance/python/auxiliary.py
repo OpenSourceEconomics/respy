@@ -36,6 +36,14 @@ def simulate_emax(num_periods, num_draws, period, k, eps_relevant,
         # Calculate total utilities
         total_payoffs = payoffs_ex_post + delta * future_payoffs
 
+        # Ensuring that schooling does not increase beyond the maximum
+        # allowed level. This is necessary as in the special case where
+        # delta is equal to zero, (-np.inf * 0.00) evaluates to NAN. This is
+        #  returned as the maximum value when calling np.argmax.
+        if delta == 0.0:
+            is_inf = np.isneginf(future_payoffs)
+            total_payoffs[is_inf] = -np.inf
+
         # Determine optimal choice
         maximum = max(total_payoffs)
 
@@ -79,13 +87,6 @@ def get_future_payoffs(edu_max, edu_start, mapping_state_idx, period, emax, k,
     # Staying at home
     future_idx = mapping_state_idx[period + 1, exp_A, exp_B, edu, 0]
     future_payoffs[3] = emax[period + 1, future_idx]
-
-    # Ensuring that schooling does not increase beyond the
-    # maximum allowed level. This is necessary as in the
-    # special case where delta is equal to zero,
-    # (-np.inf * 0) evaluates to NAN.
-    if edu >= edu_max - edu_start:
-        future_payoffs[2] = -np.inf
 
     # Finishing
     return future_payoffs

@@ -125,6 +125,16 @@ SUBROUTINE simulate_sample_lib(dataset, num_agents, states_all, num_periods, &
             ! Calculate total utilities
             total_payoffs = payoffs_ex_post + delta * future_payoffs
 
+            ! Ensuring that schooling does not increase beyond the maximum
+            ! allowed level. This is necessary as in the special case where
+            ! delta is equal to zero, (-HUGE * 0.00) evaluates to zero. This is
+            ! might result in pursuing a higher education.
+            IF (delta .EQ. zero_dble) THEN
+                IF (future_payoffs(3) .EQ. -HUGE(future_payoffs)) THEN
+                    total_payoffs(3) = -HUGE(future_payoffs)
+                END IF
+            END IF
+
             ! Write relevant state space for period to data frame
             dataset(count + 1, 5:8) = current_state
 
@@ -493,10 +503,6 @@ SUBROUTINE get_payoffs_risk_lib(emax, payoffs_ex_post, future_payoffs, &
     REAL(our_dble), INTENT(IN)      :: delta
     REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
 
-    !/* internals objects    */
-    
-    INTEGER(our_int)                :: i
-
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
@@ -624,6 +630,16 @@ SUBROUTINE simulate_emax_lib(emax_simulated, payoffs_ex_post, future_payoffs, &
 
         ! Calculate total utilities
         total_payoffs = payoffs_ex_post + delta * future_payoffs
+
+        ! Ensuring that schooling does not increase beyond the maximum
+        ! allowed level. This is necessary as in the special case where
+        ! delta is equal to zero, (-HUGE * 0.00) evaluates to zero. This is
+        ! might result in pursuing a higher education.
+        IF (delta .EQ. zero_dble) THEN
+            IF (future_payoffs(3) .EQ. -HUGE(future_payoffs)) THEN
+                total_payoffs(3) = -HUGE(future_payoffs)
+            END IF
+        END IF
 
         ! Determine optimal choice
         maximum = MAXVAL(total_payoffs)

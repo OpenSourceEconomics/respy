@@ -259,6 +259,14 @@ def simulate_sample(num_agents, states_all, num_periods,
             # Calculate total utilities
             total_payoffs = payoffs_ex_post + delta * future_payoffs
 
+            # Ensuring that schooling does not increase beyond the maximum
+            # allowed level. This is necessary as in the special case where
+            # delta is equal to zero, (-np.inf * 0.00) evaluates to NAN. This is
+            #  returned as the maximum value when calling np.argmax.
+            if delta == 0.0:
+                is_inf = np.isneginf(future_payoffs)
+                total_payoffs[is_inf] = -np.inf
+
             # Determine optimal choice
             max_idx = np.argmax(total_payoffs)
 
