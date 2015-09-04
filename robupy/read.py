@@ -226,7 +226,8 @@ def _check_integrity_read(dict_):
 
     if dict_['SOLUTION']['fast'] is True:
         package_dir = os.path.dirname(os.path.realpath(__file__))
-        assert (len(glob.glob(package_dir + '/performance/fortran/*.so')) == 1)
+        assert (len(glob.glob(package_dir +
+                              '/performance/fortran/f2py_core.*.so')) == 1)
 
     # Check SHOCKS
     assert (len(dict_['SHOCKS']) == 4)

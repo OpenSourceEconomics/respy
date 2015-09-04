@@ -12,7 +12,7 @@ def build(bld):
     compiler_options = '-fbounds-check -Wunused -fPIC'
 
     files = ['robupy_program_constants.f90', 'robupy_auxiliary.f90',
-             'robupy_main.f90']
+             'robupy_core.f90']
 
     for file_ in files:
         bld.add_group()
@@ -91,7 +91,11 @@ def f2py_call(self):
     """ Create the interface to f90_main using f2py.
     """
     os.system(
-        'f2py3 -c -m  fortran_core fortran_core.f90 -Iinclude -Llib '
+        'f2py3 -c -m  f2py_core f2py_interface_core.f90 -Iinclude -Llib '
+        '-lfort_robupy')
+
+    os.system(
+        'f2py3 -c -m  f2py_debug f2py_interface_debug.f90 -Iinclude -Llib '
         '-lfort_robupy')
 
     # Cleanup

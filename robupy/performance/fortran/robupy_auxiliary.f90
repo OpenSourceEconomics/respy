@@ -11,6 +11,222 @@ MODULE robupy_auxiliary
 CONTAINS
 !******************************************************************************
 !******************************************************************************
+SUBROUTINE divergence(div, x, cov, level)
+
+    !/* external objects    */
+
+    REAL(our_dble), INTENT(OUT)     :: div
+
+    REAL(our_dble), INTENT(IN)      :: x(2)
+    REAL(our_dble), INTENT(IN)      :: cov(4,4)
+    REAL(our_dble), INTENT(IN)      :: level
+
+    !/* internals objects    */
+
+    REAL(our_dble)                  :: alt_mean(4, 1) = zero_dble
+    REAL(our_dble)                  :: old_mean(4, 1) = zero_dble
+    REAL(our_dble)                  :: alt_cov(4,4)
+    REAL(our_dble)                  :: old_cov(4,4)
+    REAL(our_dble)                  :: inv_old_cov(4,4)
+    REAL(our_dble)                  :: comp_a
+    REAL(our_dble)                  :: comp_b(1, 1)
+    REAL(our_dble)                  :: comp_c
+    REAL(our_dble)                  :: rslt
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    ! Construct alternative distribution
+    alt_mean(1,1) = x(1)
+    alt_mean(2,1) = x(2)
+    alt_cov = cov
+
+    ! Construct baseline distribution
+    old_cov = cov
+
+    ! Construct auxiliary objects.
+    inv_old_cov = inverse(old_cov, 4)
+
+    ! Calculate first component
+    comp_a = trace_fun(MATMUL(inv_old_cov, alt_cov))
+
+    ! Calculate second component
+    comp_b = MATMUL(MATMUL(TRANSPOSE(old_mean - alt_mean), inv_old_cov), &
+                old_mean - alt_mean)
+
+    ! Calculate third component
+    comp_c = LOG(determinant(alt_cov) / determinant(old_cov))
+
+    ! Statistic
+    rslt = half_dble * (comp_a + comp_b(1,1) - four_dble + comp_c)
+
+    ! Divergence
+    div = level - rslt
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE stabilize_myopic(total_payoffs, future_payoffs)
+
+
+    !/* external objects    */
+
+    REAL(our_dble), INTENT(INOUT)   :: total_payoffs(:)
+    REAL(our_dble), INTENT(IN)      :: future_payoffs(:)
+
+    !/* internals objects    */
+
+    LOGICAL                         :: is_huge
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+    
+    ! Determine NAN
+    is_huge = (future_payoffs(3) == -HUGE(future_payoffs))
+
+    IF (is_huge .EQV. .True.) THEN
+        total_payoffs(3) = -HUGE(future_payoffs)
+    END IF
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+FUNCTION inverse(A, k)
+
+    !/* external objects    */
+
+  INTEGER(our_int), INTENT(IN)  :: k
+
+  REAL(our_dble), INTENT(IN)    :: A(k, k)
+
+    !/* internal objects    */
+  
+  REAL(our_dble), ALLOCATABLE   :: y(:, :)
+  REAL(our_dble), ALLOCATABLE   :: B(:, :)
+  REAL(our_dble)          :: d
+  REAL(our_dble)          :: inverse(k, k)
+
+  INTEGER(our_int), ALLOCATABLE :: indx(:)  
+  INTEGER(our_int)        :: n
+  INTEGER(our_int)        :: i
+  INTEGER(our_int)        :: j
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+  
+  ! Auxiliary objects
+  n  = size(A, 1)
+
+  ! Allocate containers
+  ALLOCATE(y(n, n))
+  ALLOCATE(B(n, n))
+  ALLOCATE(indx(n))
+
+  ! Initialize containers
+  y = zero_dble
+  B = A
+
+  ! Main
+  DO i = 1, n
+  
+     y(i, i) = 1
+  
+  END DO
+
+  CALL ludcmp(B, d, indx)
+
+  DO j = 1, n
+  
+     CALL lubksb(B, y(:, j), indx)
+  
+  END DO
+  
+  ! Collect result
+  inverse = y
+
+END FUNCTION
+!******************************************************************************
+!******************************************************************************
+FUNCTION determinant(A)
+
+    !/* external objects    */
+
+  REAL(our_dble), INTENT(IN)    :: A(:, :)
+  REAL(our_dble)          :: determinant
+
+    !/* internal objects    */
+  INTEGER(our_int), ALLOCATABLE :: indx(:)
+  INTEGER(our_int)        :: j
+  INTEGER(our_int)        :: n
+
+  REAL(our_dble), ALLOCATABLE   :: B(:, :)
+  REAL(our_dble)          :: d
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+  ! Auxiliary objects
+  n  = size(A, 1)
+
+  ! Allocate containers
+  ALLOCATE(B(n, n))
+  ALLOCATE(indx(n))
+
+  ! Initialize containers
+  B = A
+
+  CALL ludcmp(B, d, indx)
+  
+  DO j = 1, n
+  
+     d = d * B(j, j)
+  
+  END DO
+  
+  ! Collect results
+  determinant = d
+
+END FUNCTION
+!******************************************************************************
+!******************************************************************************
+PURE FUNCTION trace_fun(A)
+
+    !/* external objects    */
+
+    REAL(our_dble), INTENT(IN)      :: A(:,:)
+    REAL(our_dble)          :: trace_fun
+
+    !/* internals objects    */
+
+    INTEGER(our_int)                :: i
+    INTEGER(our_int)                :: n
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    ! Get dimension
+    n = SIZE(A, DIM = 1)
+
+    ! Initialize results
+    trace_fun = zero_dble
+
+    ! Calculate trace
+    DO i = 1, n
+
+        trace_fun = trace_fun + A(i, i)
+
+    END DO
+
+END FUNCTION
+!******************************************************************************
+!******************************************************************************
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE ludcmp(A, d, indx)
 
     !/* external objects    */

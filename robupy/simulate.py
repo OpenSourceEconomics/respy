@@ -25,7 +25,7 @@ from robupy.auxiliary import read_restud_disturbances
 
 import robupy.performance.python.python_core as python_core
 try:
-    import robupy.performance.fortran.fortran_core as fortran_core
+    import robupy.performance.fortran.f2py_core as f2py_core
 except ImportError:
     pass
 
@@ -99,8 +99,8 @@ def _wrapper_simulate_sample(robupy_obj, periods_eps_relevant):
 
     # Interface to core functions
     if fast:
-        data_frame = fortran_core.simulate_sample(num_agents, states_all,
-            num_periods, mapping_state_idx, periods_payoffs_ex_ante,
+        data_frame = f2py_core.wrapper_simulate_sample(num_agents,
+            states_all, num_periods, mapping_state_idx, periods_payoffs_ex_ante,
             periods_eps_relevant, edu_max, edu_start, periods_emax, delta)
     else:
         data_frame = python_core.simulate_sample(num_agents, states_all,

@@ -25,8 +25,7 @@ def test_97():
     """
     compile_package('fast')
 
-    import robupy.performance.fortran.fortran_core as fort
-    import robupy.performance.python.python_core as py
+    import robupy.performance.fortran.f2py_debug as fort
 
     for _ in range(1000):
 
@@ -36,18 +35,18 @@ def test_97():
 
         # Inverse
         py = np.linalg.inv(cov)
-        f90 = fort.debug_inverse(cov, 4)
+        f90 = fort.wrapper_inverse(cov, 4)
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
         # Determinant
         py = np.linalg.det(cov)
-        f90 = fort.debug_determinant(cov)
+        f90 = fort.wrapper_determinant(cov)
 
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
         # Trace
         py = np.trace(cov)
-        f90 = fort.debug_trace(cov)
+        f90 = fort.wrapper_trace(cov)
 
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 

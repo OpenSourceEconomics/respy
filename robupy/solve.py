@@ -15,7 +15,7 @@ from robupy.auxiliary import read_restud_disturbances
 
 import robupy.performance.python.python_core as python_core
 try:
-    import robupy.performance.fortran.fortran_core as fortran_core
+    import robupy.performance.fortran.f2py_core as f2py_core
 except ImportError:
     pass
 
@@ -148,7 +148,8 @@ def _wrapper_calculate_payoffs_ex_ante(robupy_obj):
 
     # Interface to core functions
     if fast:
-        periods_payoffs_ex_ante = fortran_core.calculate_payoffs_ex_ante(num_periods,
+        periods_payoffs_ex_ante = \
+            f2py_core.wrapper_calculate_payoffs_ex_ante(num_periods,
             states_number_period, states_all, edu_start, coeffs_a, coeffs_b,
             coeffs_edu, coeffs_home, max_states_period)
     else:
@@ -182,8 +183,8 @@ def _wrapper_create_state_space(robupy_obj):
     # Interface to core functions
     if fast:
         states_all, states_number_period, mapping_state_idx = \
-            fortran_core.create_state_space(num_periods, edu_start, edu_max,
-                min_idx)
+            f2py_core.wrapper_create_state_space(num_periods, edu_start,
+                edu_max, min_idx)
     else:
         states_all, states_number_period, mapping_state_idx = \
             python_core.create_state_space(num_periods, edu_start, edu_max,
@@ -242,9 +243,10 @@ def _wrapper_backward_induction_procedure(robupy_obj, eps_relevant_periods,
     # Interface to core functions
     if fast:
         periods_emax, periods_payoffs_ex_post, periods_future_payoffs = \
-            fortran_core.backward_induction(num_periods, max_states_period,
-                eps_relevant_periods, num_draws, states_number_period,
-                periods_payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,
+            f2py_core.wrapper_backward_induction(num_periods,
+                max_states_period, eps_relevant_periods, num_draws,
+                states_number_period, periods_payoffs_ex_ante, edu_max,
+                edu_start, mapping_state_idx,
                 states_all, delta)
     else:
         periods_emax, periods_payoffs_ex_post, periods_future_payoffs = \
