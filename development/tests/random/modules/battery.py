@@ -37,19 +37,19 @@ def test_97():
         # Inverse
         py = np.linalg.inv(cov)
         f90 = fort.debug_inverse(cov, 4)
-        np.testing.assert_allclose(py, f90, rtol=1e-06)
+        np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
         # Determinant
         py = np.linalg.det(cov)
         f90 = fort.debug_determinant(cov)
 
-        np.testing.assert_allclose(py, f90, rtol=1e-06)
+        np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
         # Trace
         py = np.trace(cov)
         f90 = fort.debug_trace(cov)
 
-        np.testing.assert_allclose(py, f90, rtol=1e-06)
+        np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
 
 def test_98():
