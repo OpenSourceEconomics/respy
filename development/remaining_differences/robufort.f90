@@ -1,3 +1,473 @@
+MODULE robupy_program_constants
+
+    !/* setup   */
+
+    IMPLICIT NONE
+
+!------------------------------------------------------------------------------ 
+!   Parameters and Types
+!------------------------------------------------------------------------------ 
+
+    INTEGER, PARAMETER :: our_int   = selected_int_kind(9)
+    INTEGER, PARAMETER :: our_sgle  = selected_real_kind(6,37)
+    INTEGER, PARAMETER :: our_dble  = selected_real_kind(15,307)
+
+    INTEGER(our_int), PARAMETER :: missing_int  = -99_our_int
+    INTEGER(our_int), PARAMETER :: zero_int     = 0_our_int
+    INTEGER(our_int), PARAMETER :: one_int      = 1_our_int
+    INTEGER(our_int), PARAMETER :: two_int      = 2_our_int
+    INTEGER(our_int), PARAMETER :: three_int    = 3_our_int
+    INTEGER(our_int), PARAMETER :: four_int     = 4_our_int
+
+    REAL(our_dble), PARAMETER :: missing_dble = -99_our_dble
+    REAL(our_dble), PARAMETER :: zero_dble    = 0.00_our_dble
+    REAL(our_dble), PARAMETER :: quarter_dble = 0.25_our_dble
+    REAL(our_dble), PARAMETER :: half_dble    = 0.50_our_dble
+    REAL(our_dble), PARAMETER :: one_dble     = 1.00_our_dble
+    REAL(our_dble), PARAMETER :: two_dble     = 2.00_our_dble
+    REAL(our_dble), PARAMETER :: three_dble   = 3.00_our_dble
+    REAL(our_dble), PARAMETER :: four_dble    = 4.00_our_dble
+    REAL(our_dble), PARAMETER :: upperClip    = 0.999999999999_our_dble
+    REAL(our_dble), PARAMETER :: lowerClip    = 0.000000000001_our_dble
+    REAL(our_dble), PARAMETER :: tiny         = 1.0e-20_our_dble
+    
+!******************************************************************************
+!******************************************************************************
+END MODULE 
+MODULE robupy_auxiliary
+
+    !/* external modules    */
+
+    USE robupy_program_constants
+
+    !/* setup   */
+
+    IMPLICIT NONE
+
+CONTAINS
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE divergence(div, x, cov, level)
+
+    !/* external objects    */
+
+    REAL(our_dble), INTENT(OUT)     :: div
+
+    REAL(our_dble), INTENT(IN)      :: x(2)
+    REAL(our_dble), INTENT(IN)      :: cov(4,4)
+    REAL(our_dble), INTENT(IN)      :: level
+
+    !/* internals objects    */
+
+    REAL(our_dble)                  :: alt_mean(4, 1) = zero_dble
+    REAL(our_dble)                  :: old_mean(4, 1) = zero_dble
+    REAL(our_dble)                  :: alt_cov(4,4)
+    REAL(our_dble)                  :: old_cov(4,4)
+    REAL(our_dble)                  :: inv_old_cov(4,4)
+    REAL(our_dble)                  :: comp_a
+    REAL(our_dble)                  :: comp_b(1, 1)
+    REAL(our_dble)                  :: comp_c
+    REAL(our_dble)                  :: rslt
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    ! Construct alternative distribution
+    alt_mean(1,1) = x(1)
+    alt_mean(2,1) = x(2)
+    alt_cov = cov
+
+    ! Construct baseline distribution
+    old_cov = cov
+
+    ! Construct auxiliary objects.
+    inv_old_cov = inverse(old_cov, 4)
+
+    ! Calculate first component
+    comp_a = trace_fun(MATMUL(inv_old_cov, alt_cov))
+
+    ! Calculate second component
+    comp_b = MATMUL(MATMUL(TRANSPOSE(old_mean - alt_mean), inv_old_cov), &
+                old_mean - alt_mean)
+
+    ! Calculate third component
+    comp_c = LOG(determinant(alt_cov) / determinant(old_cov))
+
+    ! Statistic
+    rslt = half_dble * (comp_a + comp_b(1,1) - four_dble + comp_c)
+
+    ! Divergence
+    div = level - rslt
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE stabilize_myopic(total_payoffs, future_payoffs)
+
+
+    !/* external objects    */
+
+    REAL(our_dble), INTENT(INOUT)   :: total_payoffs(:)
+    REAL(our_dble), INTENT(IN)      :: future_payoffs(:)
+
+    !/* internals objects    */
+
+    LOGICAL                         :: is_huge
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+    
+    ! Determine NAN
+    is_huge = (future_payoffs(3) == -HUGE(future_payoffs))
+
+    IF (is_huge .EQV. .True.) THEN
+        total_payoffs(3) = -HUGE(future_payoffs)
+    END IF
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+FUNCTION inverse(A, k)
+
+    !/* external objects    */
+
+  INTEGER(our_int), INTENT(IN)  :: k
+
+  REAL(our_dble), INTENT(IN)    :: A(k, k)
+
+    !/* internal objects    */
+  
+  REAL(our_dble), ALLOCATABLE   :: y(:, :)
+  REAL(our_dble), ALLOCATABLE   :: B(:, :)
+  REAL(our_dble)          :: d
+  REAL(our_dble)          :: inverse(k, k)
+
+  INTEGER(our_int), ALLOCATABLE :: indx(:)  
+  INTEGER(our_int)        :: n
+  INTEGER(our_int)        :: i
+  INTEGER(our_int)        :: j
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+  
+  ! Auxiliary objects
+  n  = size(A, 1)
+
+  ! Allocate containers
+  ALLOCATE(y(n, n))
+  ALLOCATE(B(n, n))
+  ALLOCATE(indx(n))
+
+  ! Initialize containers
+  y = zero_dble
+  B = A
+
+  ! Main
+  DO i = 1, n
+  
+     y(i, i) = 1
+  
+  END DO
+
+  CALL ludcmp(B, d, indx)
+
+  DO j = 1, n
+  
+     CALL lubksb(B, y(:, j), indx)
+  
+  END DO
+  
+  ! Collect result
+  inverse = y
+
+END FUNCTION
+!******************************************************************************
+!******************************************************************************
+FUNCTION determinant(A)
+
+    !/* external objects    */
+
+  REAL(our_dble), INTENT(IN)    :: A(:, :)
+  REAL(our_dble)          :: determinant
+
+    !/* internal objects    */
+  INTEGER(our_int), ALLOCATABLE :: indx(:)
+  INTEGER(our_int)        :: j
+  INTEGER(our_int)        :: n
+
+  REAL(our_dble), ALLOCATABLE   :: B(:, :)
+  REAL(our_dble)          :: d
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+  ! Auxiliary objects
+  n  = size(A, 1)
+
+  ! Allocate containers
+  ALLOCATE(B(n, n))
+  ALLOCATE(indx(n))
+
+  ! Initialize containers
+  B = A
+
+  CALL ludcmp(B, d, indx)
+  
+  DO j = 1, n
+  
+     d = d * B(j, j)
+  
+  END DO
+  
+  ! Collect results
+  determinant = d
+
+END FUNCTION
+!******************************************************************************
+!******************************************************************************
+PURE FUNCTION trace_fun(A)
+
+    !/* external objects    */
+
+    REAL(our_dble), INTENT(IN)      :: A(:,:)
+    REAL(our_dble)          :: trace_fun
+
+    !/* internals objects    */
+
+    INTEGER(our_int)                :: i
+    INTEGER(our_int)                :: n
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    ! Get dimension
+    n = SIZE(A, DIM = 1)
+
+    ! Initialize results
+    trace_fun = zero_dble
+
+    ! Calculate trace
+    DO i = 1, n
+
+        trace_fun = trace_fun + A(i, i)
+
+    END DO
+
+END FUNCTION
+!******************************************************************************
+!******************************************************************************
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE ludcmp(A, d, indx)
+
+    !/* external objects    */
+    
+    INTEGER(our_int), INTENT(INOUT) :: indx(:)
+
+    REAL(our_dble), INTENT(INOUT)       :: a(:,:)
+    REAL(our_dble), INTENT(INOUT)       :: d
+
+    !/* internal objects    */
+
+    INTEGER(our_int)                      :: i
+    INTEGER(our_int)                :: j
+    INTEGER(our_int)                :: k
+    INTEGER(our_int)                :: imax
+    INTEGER(our_int)                :: n
+
+    REAL(our_dble), ALLOCATABLE     :: vv(:)
+    REAL(our_dble)                        :: dum
+    REAL(our_dble)                  :: sums
+    REAL(our_dble)                  :: aamax
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    ! Auxiliary objects
+    n = SIZE(A, DIM = 1)
+
+    ! Initialize containers
+    ALLOCATE(vv(n))
+
+    ! Allocate containers
+    d = one_dble
+
+    ! Main
+    DO i = 1, n
+
+       aamax = zero_dble
+
+       DO j = 1, n
+
+          IF(abs(a(i, j)) > aamax) aamax = abs(a(i, j))
+
+       END DO
+
+       vv(i) = one_dble / aamax
+
+    END DO
+
+    DO j = 1, n
+
+       DO i = 1, (j - 1)
+    
+          sums = a(i, j)
+    
+          DO k = 1, (i - 1)
+    
+             sums = sums - a(i, k)*a(k, j)
+    
+          END DO
+    
+       a(i,j) = sums
+    
+       END DO
+    
+       aamax = zero_dble
+    
+       DO i = j, n
+
+          sums = a(i, j)
+
+          DO k = 1, (j - 1)
+
+             sums = sums - a(i, k)*a(k, j)
+
+          END DO
+
+          a(i, j) = sums
+
+          dum = vv(i) * abs(sums)
+
+          IF(dum >= aamax) THEN
+
+            imax  = i
+
+            aamax = dum
+
+          END IF
+
+       END DO
+
+       IF(j /= imax) THEN
+
+         DO k = 1, n
+
+            dum = a(imax, k)
+
+            a(imax, k) = a(j, k)
+
+            a(j, k) = dum
+
+         END DO
+
+         d = -d
+
+         vv(imax) = vv(j)
+
+       END IF
+
+       indx(j) = imax
+       
+       IF(a(j, j) == zero_dble) a(j, j) = tiny
+       
+       IF(j /= n) THEN
+       
+         dum = one_dble / a(j, j)
+       
+         DO i = (j + 1), n
+       
+            a(i, j) = a(i, j) * dum
+       
+         END DO
+       
+       END IF
+    
+    END DO
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE lubksb(A, B, indx)
+
+    !/* external objects    */
+
+    INTEGER(our_int), INTENT(IN)    :: indx(:)
+
+    REAL(our_dble), INTENT(INOUT)       :: A(:, :)
+    REAL(our_dble), INTENT(INOUT)   :: B(:)
+
+    !/* internal objects    */
+
+    INTEGER(our_int)                    :: ii
+    INTEGER(our_int)                :: n
+    INTEGER(our_int)                :: ll
+    INTEGER(our_int)                :: j
+    INTEGER(our_int)                :: i
+
+    REAL(our_dble)                      :: sums
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    ! Auxiliary objects
+    n = SIZE(A, DIM = 1)
+
+    ! Allocate containers
+    ii = zero_dble
+
+    ! Main
+    DO i = 1, n
+    
+       ll = indx(i)
+    
+       sums = B(ll)                  
+    
+       B(ll) = B(i)
+    
+       IF(ii /= zero_dble) THEN
+    
+         DO j = ii, (i - 1)
+    
+            sums = sums - a(i, j) * b(j)
+
+         END DO
+    
+       ELSE IF(sums /= zero_dble) THEN
+    
+         ii = i
+    
+       END IF
+    
+       b(i) = sums
+    
+    END DO
+    
+    DO i = n, 1, -1
+    
+       sums = b(i)
+    
+       DO j = (i + 1), n
+    
+          sums = sums - a(i, j) * b(j)
+    
+       END DO
+    
+       b(i) = sums / a(i, i)
+    
+    END DO
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+END MODULE
 !******************************************************************************
 !******************************************************************************
 !
@@ -7,15 +477,15 @@
 !******************************************************************************
 MODULE robupy_library
 
-	!/*	external modules	*/
+    !/* external modules    */
 
     USE robupy_program_constants
 
     USE robupy_auxiliary
 
-	!/*	setup	*/
+    !/* setup   */
 
-	IMPLICIT NONE
+    IMPLICIT NONE
 
     !/* core functions */
 
@@ -639,49 +1109,296 @@ SUBROUTINE get_future_payoffs(future_payoffs, edu_max, edu_start, &
 
     !/* internals objects    */
 
-    INTEGER(our_int)    			:: exp_A
-    INTEGER(our_int)    			:: exp_B
-    INTEGER(our_int)    			:: edu
-    INTEGER(our_int)    			:: edu_lagged
-    INTEGER(our_int)    			:: future_idx
+    INTEGER(our_int)                :: exp_A
+    INTEGER(our_int)                :: exp_B
+    INTEGER(our_int)                :: edu
+    INTEGER(our_int)                :: edu_lagged
+    INTEGER(our_int)                :: future_idx
 
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
 
-	! Distribute state space
-	exp_A = states_all(period + 1, k + 1, 1)
-	exp_B = states_all(period + 1, k + 1, 2)
-	edu = states_all(period + 1, k + 1, 3)
-	edu_lagged = states_all(period + 1, k + 1, 4)
+    ! Distribute state space
+    exp_A = states_all(period + 1, k + 1, 1)
+    exp_B = states_all(period + 1, k + 1, 2)
+    edu = states_all(period + 1, k + 1, 3)
+    edu_lagged = states_all(period + 1, k + 1, 4)
 
-	! Working in occupation A
-	future_idx = mapping_state_idx(period + 1 + 1, exp_A + 1 + 1, & 
-					exp_B + 1, edu + 1, 1)
-	future_payoffs(1) = emax(period + 1 + 1, future_idx + 1)
+    ! Working in occupation A
+    future_idx = mapping_state_idx(period + 1 + 1, exp_A + 1 + 1, & 
+                    exp_B + 1, edu + 1, 1)
+    future_payoffs(1) = emax(period + 1 + 1, future_idx + 1)
 
-	!Working in occupation B
-	future_idx = mapping_state_idx(period + 1 + 1, exp_A + 1, & 
-					exp_B + 1 + 1, edu + 1, 1)
-	future_payoffs(2) = emax(period + 1 + 1, future_idx + 1)
+    !Working in occupation B
+    future_idx = mapping_state_idx(period + 1 + 1, exp_A + 1, & 
+                    exp_B + 1 + 1, edu + 1, 1)
+    future_payoffs(2) = emax(period + 1 + 1, future_idx + 1)
 
-	! Increasing schooling. Note that adding an additional year
-	! of schooling is only possible for those that have strictly
-	! less than the maximum level of additional education allowed.
-	IF (edu < edu_max - edu_start) THEN
-	    future_idx = mapping_state_idx(period + 1 + 1, exp_A + 1, &
-	    				exp_B + 1, edu + 1 + 1, 2)
-	    future_payoffs(3) = emax(period + 1 + 1, future_idx + 1)
-	ELSE
-	    future_payoffs(3) = -HUGE(future_payoffs)
-	END IF
+    ! Increasing schooling. Note that adding an additional year
+    ! of schooling is only possible for those that have strictly
+    ! less than the maximum level of additional education allowed.
+    IF (edu < edu_max - edu_start) THEN
+        future_idx = mapping_state_idx(period + 1 + 1, exp_A + 1, &
+                        exp_B + 1, edu + 1 + 1, 2)
+        future_payoffs(3) = emax(period + 1 + 1, future_idx + 1)
+    ELSE
+        future_payoffs(3) = -HUGE(future_payoffs)
+    END IF
 
-	! Staying at home
-	future_idx = mapping_state_idx(period + 1 + 1, exp_A + 1, & 
-					exp_B + 1, edu + 1, 1)
-	future_payoffs(4) = emax(period + 1 + 1, future_idx + 1)
+    ! Staying at home
+    future_idx = mapping_state_idx(period + 1 + 1, exp_A + 1, & 
+                    exp_B + 1, edu + 1, 1)
+    future_payoffs(4) = emax(period + 1 + 1, future_idx + 1)
 
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
 END MODULE  
+!*******************************************************************************
+!*******************************************************************************
+PROGRAM robufort
+
+USE robupy_library
+USE robupy_program_constants
+
+INTEGER :: j, k, num_periods, edu_start, edu_max, num_draws, num_agents, & 
+seed_simulation, seed_solution, period
+
+1500 FORMAT(6(1x,f15.10))
+1510 FORMAT(f15.10)
+
+1505 FORMAT(i10)
+1515 FORMAT(i10,1x,i10)
+
+DOUBLE PRECISION :: coeffs_A(6), coeffs_B(6), delta, coeffs_edu(3), coeffs_home(1), shocks(4, 4)
+
+INTEGER :: min_idx, max_states_period
+
+    INTEGER                :: i
+DOUBLE PRECISION                  :: total_payoffs(4), emax
+   DOUBLE PRECISION                   :: disturbances(4)
+   DOUBLE PRECISION                  :: maximum, emax_simulated
+   DOUBLE PRECISION                  :: payoffs_ex_post(4), payoffs_ex_ante(4), future_payoffs(4)
+    INTEGER                :: exp_A
+    INTEGER               :: exp_B
+    INTEGER                :: edu
+    INTEGER       :: edu_lagged
+    INTEGER               :: future_idx
+
+! Auxiliary objects
+
+INTEGER, ALLOCATABLE  :: states_all(:, :, :)
+INTEGER, ALLOCATABLE  :: states_number_period(:)
+INTEGER, ALLOCATABLE  :: mapping_state_idx(:, :, :, :, :)
+DOUBLE PRECISION, ALLOCATABLE  :: periods_payoffs_ex_ante(:, :, :)
+DOUBLE PRECISION, ALLOCATABLE  :: periods_emax(:, :), periods_payoffs_ex_post(:, :, :)
+DOUBLE PRECISION, ALLOCATABLE :: periods_future_payoffs(:, :, :)
+DOUBLE PRECISION, ALLOCATABLE :: eps_relevant_periods(:, :, :), eps_relevant(:, :)
+
+
+
+
+OPEN(UNIT=1, FILE='model.robufort.ini')
+
+    ! BASICS
+    READ(1, 1505) num_periods
+    READ(1, 1510) delta
+
+    ! WORK
+    READ(1, 1500) coeffs_A
+    READ(1, 1500) coeffs_B
+
+    ! EDUCATION
+    READ(1, 1500) coeffs_edu
+    READ(1, 1515) edu_start, edu_max
+
+    ! HOME
+    READ(1, 1500) coeffs_home
+
+    ! SHOCKS
+    DO j = 1, 4
+        READ(1, 1500) (shocks(j, k), k=1, 4)
+    END DO
+
+    ! SOLUTION
+    READ(1, 1505) num_draws
+    READ(1, 1505) seed_solution
+
+    ! SIMULATION
+    READ(1, 1505) num_agents
+    READ(1, 1505) seed_simulation
+
+
+! Auxiliary
+min_idx = MIN(num_periods, (edu_max - edu_start + 1))
+
+
+! Allocate arrays
+ALLOCATE(states_all(num_periods, 100000, 4))
+ALLOCATE(states_number_period(num_periods))
+ALLOCATE(mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2))
+
+! Create the state space of the model
+CALL create_state_space(states_all, states_number_period, mapping_state_idx, & 
+        num_periods, edu_start, edu_max, min_idx)
+
+! Allocate additional containers
+max_states_period = MAXVAL(states_number_period)
+ALLOCATE(periods_payoffs_ex_ante(num_periods, max_states_period, 4))
+
+! Calculate the ex ante payoffs
+CALL calculate_payoffs_ex_ante(periods_payoffs_ex_ante, num_periods, &
+        states_number_period, states_all, edu_start, coeffs_A, coeffs_B, & 
+        coeffs_edu, coeffs_home, max_states_period)
+
+! Allocate additional containers
+ALLOCATE(periods_emax(num_periods, max_states_period))
+ALLOCATE(periods_payoffs_ex_post(num_periods, max_states_period, 4))
+ALLOCATE(periods_future_payoffs(num_periods, max_states_period, 4))
+ALLOCATE(eps_relevant_periods(num_periods, num_draws, 4))
+
+ALLOCATE(eps_relevant(num_draws, 4))
+
+! Draw random disturbances
+eps_relevant_periods = 1.00
+
+IF (.True.) THEN
+
+CALL backward_induction(periods_emax, periods_payoffs_ex_post, &
+                periods_future_payoffs, num_periods, max_states_period, &
+                eps_relevant_periods, num_draws, states_number_period, & 
+                periods_payoffs_ex_ante, edu_max, edu_start, &
+                mapping_state_idx, states_all, delta)
+ELSE
+
+    ! Set to missing value
+    periods_emax = -99.0
+    periods_future_payoffs = -99.0
+    periods_payoffs_ex_post = -99.0
+
+    ! Backward induction
+    DO period = (num_periods - 1), 0, -1
+
+    PRINT *, period
+        ! Extract disturbances
+        eps_relevant = eps_relevant_periods(period + 1, :, :)
+
+        ! Loop over all possible states, CAN K BE SIMPLIFIED
+        DO k = 0, (states_number_period(period + 1) - 1)
+
+            ! Extract payoffs
+            payoffs_ex_ante = periods_payoffs_ex_ante(period + 1, k + 1, :)
+
+    ! Initialize containers
+    payoffs_ex_post = 0.00
+    emax_simulated = 0.00
+
+    ! Iterate over Monte Carlo draws
+    DO i = 1, num_draws 
+
+        ! Select disturbances for this draw
+        disturbances = eps_relevant(i, :)
+    ! Initialize containers
+    payoffs_ex_post = zero_dble
+
+    ! Auxiliary objects
+    is_myopic = (delta .EQ. zero_dble)
+
+    ! Calculate ex post payoffs
+    payoffs_ex_post(1) = payoffs_ex_ante(1) * disturbances(1)
+    payoffs_ex_post(2) = payoffs_ex_ante(2) * disturbances(2)
+    payoffs_ex_post(3) = payoffs_ex_ante(3) + disturbances(3)
+    payoffs_ex_post(4) = payoffs_ex_ante(4) + disturbances(4)
+
+    ! Get future values
+    IF (period .NE. (num_periods - one_int)) THEN
+        
+        IF (.TRUE.) THEN
+            !PRINT *, 'pei'
+            CALL get_future_payoffs(future_payoffs, edu_max, edu_start, & 
+                    mapping_state_idx, period,  periods_emax, k, states_all)
+
+        ELSE IF (.TRUE.) THEN
+
+            CALL get_future_payoffs(future_payoffs, edu_max, edu_start, & 
+                    mapping_state_idx, period,  periods_emax, k, states_all)
+
+         ELSE
+
+
+
+
+                ! Distribute state space
+                exp_A = states_all(period + 1, k + 1, 1)
+                exp_B = states_all(period + 1, k + 1, 2)
+                edu = states_all(period + 1, k + 1, 3)
+                edu_lagged = states_all(period + 1, k + 1, 4)
+
+                ! Working in occupation A
+                future_idx = mapping_state_idx(period + 1 + 1, exp_A + 1 + 1, & 
+                                exp_B + 1, edu + 1, 1)
+                future_payoffs(1) = periods_emax(period + 1 + 1, future_idx + 1)
+
+                !Working in occupation B
+                future_idx = mapping_state_idx(period + 1 + 1, exp_A + 1, & 
+                                exp_B + 1 + 1, edu + 1, 1)
+                future_payoffs(2) = periods_emax(period + 1 + 1, future_idx + 1)
+
+                ! Increasing schooling. Note that adding an additional year
+                ! of schooling is only possible for those that have strictly
+                ! less than the maximum level of additional education allowed.
+                IF (edu < edu_max - edu_start) THEN
+                    future_idx = mapping_state_idx(period + 1 + 1, exp_A + 1, &
+                                    exp_B + 1, edu + 1 + 1, 2)
+                    future_payoffs(3) = periods_emax(period + 1 + 1, future_idx + 1)
+                ELSE
+                    future_payoffs(3) = -HUGE(future_payoffs)
+                END IF
+
+                ! Staying at home
+                future_idx = mapping_state_idx(period + 1 + 1, exp_A + 1, & 
+                                exp_B + 1, edu + 1, 1)
+                future_payoffs(4) = periods_emax(period + 1 + 1, future_idx + 1)
+
+
+            END IF
+
+
+
+
+
+        
+
+        ELSE
+            future_payoffs = zero_dble
+    END IF
+    ! Calculate total utilities
+    total_payoffs = payoffs_ex_post + delta * future_payoffs
+
+    ! Stabilization in case of myopic agents
+    
+        maximum = MAXVAL(total_payoffs)
+
+        ! Recording expected future value
+        emax_simulated = emax_simulated + maximum
+
+    END DO
+
+    ! Scaling
+    emax_simulated = emax_simulated / num_draws
+
+            ! Collect information            
+            periods_payoffs_ex_post(period + 1, k + 1, :) = payoffs_ex_post
+            periods_future_payoffs(period + 1, k + 1, :) = future_payoffs
+            periods_emax(period + 1, k + 1) = emax
+
+        END DO
+
+    END DO
+
+END IF
+
+!******************************************************************************
+!******************************************************************************
+END PROGRAM

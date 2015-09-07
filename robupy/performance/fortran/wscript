@@ -9,7 +9,7 @@ import os
 def build(bld):
     bld(rule=pre_build)
 
-    compiler_options = '-fbounds-check -Wunused -fPIC'
+    compiler_options = '-O3'
 
     files = ['robupy_program_constants.f90', 'robupy_auxiliary.f90',
              'robupy_core.f90']
@@ -99,5 +99,5 @@ def f2py_call(self):
         '-lfort_robupy')
 
     # Cleanup
-    for dir_ in ['include', 'lib']:
-        shutil.rmtree(dir_, ignore_errors=True)
+    #for dir_ in ['include', 'lib']:
+    #    shutil.rmtree(dir_, ignore_errors=True)
