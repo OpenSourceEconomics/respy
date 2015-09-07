@@ -43,7 +43,7 @@ def build(bld):
 
     # Run
     if fast:
-        bld.recurse('performance')
+        bld.recurse('python')
     if test:
         os.chdir('tests')
         os.system('nosetests tests.py')

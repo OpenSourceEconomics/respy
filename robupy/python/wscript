@@ -12,5 +12,5 @@ def build(bld):
     fast = bld.options.fast
 
     if fast:
-        bld.recurse('fortran')
+        bld.recurse('f2py')
 

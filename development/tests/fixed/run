@@ -221,8 +221,8 @@ def test_5():
 
     compile_package('fast')
 
-    import robupy.performance.fortran.f2py_core as fort
-    import robupy.performance.python.python_core as py
+    import robupy.python.f2py.f2py_core as fort
+    import robupy.python.py.python_core as py
 
 
     for _ in range(25):

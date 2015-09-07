@@ -7,7 +7,7 @@ from scipy.optimize import minimize
 import numpy as np
 
 # project library
-from robupy.performance.python.auxiliary import simulate_emax
+from robupy.python.py.auxiliary import simulate_emax
 
 # module wide variables
 HUGE_FLOAT = 10e10

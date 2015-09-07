@@ -13,9 +13,9 @@ from robupy.checks.checks_solve import checks_solve
 from robupy.auxiliary import replace_missing_values
 from robupy.auxiliary import read_restud_disturbances
 
-import robupy.performance.python.python_core as python_core
+import robupy.python.py.python_core as python_core
 try:
-    import robupy.performance.fortran.f2py_core as f2py_core
+    import robupy.python.f2py.f2py_core as f2py_core
 except ImportError:
     pass
 

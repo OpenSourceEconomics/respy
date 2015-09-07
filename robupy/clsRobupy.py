@@ -220,7 +220,7 @@ class RobupyCls(MetaCls):
         # Fast version of package
         assert (fast in [True, False])
         if fast:
-            import robupy.performance.fortran.f2py_core as f2py_core
+            import robupy.python.f2py.f2py_core as f2py_core
 
         # Shock distribution
         assert (isinstance(shocks, list))

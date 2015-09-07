@@ -43,7 +43,7 @@ def pre_build(self):
     """
     path = self.env.project_paths['ROBUPY']
 
-    os.chdir(path + '/performance/fortran')
+    os.chdir(path + '/python/f2py')
 
     for dir_ in ['include', 'lib']:
 
@@ -80,7 +80,7 @@ def post_build(self):
 
         shutil.copy(mod_files[i], target)
 
-    source = project_root + '/.bld/performance/fortran/libfort_robupy.a'
+    source = project_root + '/.bld/python/f2py/libfort_robupy.a'
 
     target = 'lib/'
 
@@ -99,5 +99,5 @@ def f2py_call(self):
         '-lfort_robupy')
 
     # Cleanup
-    #for dir_ in ['include', 'lib']:
-    #    shutil.rmtree(dir_, ignore_errors=True)
+    for dir_ in ['include', 'lib']:
+        shutil.rmtree(dir_, ignore_errors=True)

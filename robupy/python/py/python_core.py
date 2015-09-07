@@ -7,9 +7,9 @@ import numpy as np
 import logging
 
 # project libray
-from robupy.performance.python.ambiguity import get_payoffs_ambiguity
-from robupy.performance.python.auxiliary import get_total_value
-from robupy.performance.python.risk import get_payoffs_risk
+from robupy.python.py.ambiguity import get_payoffs_ambiguity
+from robupy.python.py.auxiliary import get_total_value
+from robupy.python.py.risk import get_payoffs_risk
 
 # Logging
 logger = logging.getLogger('ROBUPY_SOLVE')
