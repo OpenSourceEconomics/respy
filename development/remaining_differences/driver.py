@@ -5,12 +5,14 @@ long-run development tests.
 
 # standard library
 from pandas.util.testing import assert_frame_equal
+import fileinput
+import shutil
 import sys
 import os
 
 # project library
 import time
-
+import shlex
 # Development Imports
 
 
@@ -24,25 +26,109 @@ from modules.auxiliary import compile_package, transform_robupy_to_restud
 from robupy import read, solve, simulate
 from robupy.tests.random_init import generate_init
 
-print('not compiling at the moment')
-#compile_package('fast')
 
 
-for _ in range(1):
-    constr = dict()
-    constr['fast'] = 'False'
-    constr['level'] = 0.00
-    constr['edu'] = (10, 20)
-
-    #generate_init(constr)
 
 
-    robupy_obj = read('model.robupy.ini')
-
-    init_dict = robupy_obj.get_attr('init_dict')
 
 
-    with open('model.robufort.ini', 'w') as file_:
+def mark_inlinings(subroutines):
+    """ This function marks the subroutines for which inlining
+    information is available.
+    """
+    # Auxiliary objects
+    inlining_routines = subroutines.keys()
+
+    # Read file with pre-inlining code
+    with open('robufort_extended.f90', 'r') as old_file:
+        num_lines = len(old_file.readlines())
+
+    # Initialize logical variables
+    is_program = False
+
+    with open('robufort_extended.f90', 'r') as old_file:
+        with open('.robufort_inlining.f90', 'w') as new_file:
+
+            for _ in range(num_lines):
+
+                # Extract old information
+                old_line = old_file.readline()
+                old_list = shlex.split(old_line)
+
+                # Skip all empty lines
+                if not old_list:
+                    new_file.write(old_line)
+                    continue
+
+                # Skip modifying all lines before actual program begins.
+                # This skips over the module where the program constants
+                # are defined.
+                if not is_program:
+                    is_program = (old_list[0] == 'PROGRAM')
+                    new_file.write(old_line)
+                    continue
+
+                # Skip modifying of all lines without a CALL statement
+                is_call = (old_list[0] == 'CALL')
+                if not is_call:
+                    new_file.write(old_line)
+                    continue
+
+                # Determine name is call that will be replaced. Note that
+                # not all functions or routines will be relaced.
+                name = old_list[1].split('(')[0]
+                if name not in inlining_routines:
+                    new_file.write(old_line)
+                    continue
+
+                # Write out keyworkd for future replacement. Ensure that
+                # interfaces that run across multiple lines are removed
+                # completely.
+                new_file.write('INLINING: ' + name + ' \n')
+                while True:
+                    is_end = ')' in old_list[-1]
+                    if is_end:
+                        break
+                    old_list = shlex.split(old_file.readline())
+
+
+def replace_inlinings():
+    """ This function replaces subroutines marked for inlining with the
+    relevant code.
+    """
+    # Auxiliary objects
+    count = 0
+
+    # Read file with inlining instructions
+    with open('.robufort_inlining.f90', 'r') as old_file:
+        old_lines = old_file.readlines()
+
+    # Construct new FORTRAN file.
+    with open('robufort_extended.f90', 'w') as new_file:
+        for old_line in old_lines:
+
+            # Check for subroutines marked for replacement
+            is_inlining = 'INLINING' in old_line
+
+            if not is_inlining:
+                new_file.write(old_line)
+            else:
+                # Write out code of relevant subroutine
+                name = shlex.split(old_line)[1]
+                for code_line in subroutines[name]:
+                    new_file.write(code_line)
+                # Store workload
+                count += 1
+
+    # Finishing
+    return count
+
+
+def write_robufort_initialization(init_dict):
+    """ Write out model request to hidden file .model.robufort.ini.
+    """
+
+    with open('.model.robufort.ini', 'w') as file_:
 
         # BASICS
         line = '{0:10d}\n'.format(init_dict['BASICS']['periods'])
@@ -79,7 +165,7 @@ for _ in range(1):
             line = ' {0:15.5f} {1:15.5f} {2:15.5f} {3:15.5f}\n'.format(*shocks[j])
             file_.write(line)
 
-        # SOLUTION
+         # SOLUTION
         line = '{0:10d}\n'.format(init_dict['SOLUTION']['draws'])
         file_.write(line)
 
@@ -94,142 +180,117 @@ for _ in range(1):
         file_.write(line)
 
 
-
-
-
-    filenames = ['robupy_program_constants.f90', 'robupy_auxiliary.f90',
-                     'robupy_core.f90','robufort.f90']
-    #with open('robufort_extended.f90', 'w') as outfile:
-    #        for fname in filenames:
-    #              with open(fname) as infile:
-    #                for line in infile:
-    #                    outfile.write(line)
-    #            outfile.write('\n')
-
-    import shlex
-    # Read in all subroutines
+def read_subroutines():
+    """ Read information on all subroutines which are candidates for
+    inlining.
+    """
+    # Initialize container
     subroutines = dict()
 
-    for f90 in ['robupy_core.f90', 'robupy_auxiliary.f90']:
+    # Determine number of lines
+    with open('robupy_core.f90', 'r') as old_file:
+        num_lines = len(old_file.readlines())
 
-        with open('robupy_core.f90') as file_:
+    # Extract information
+    with open('robupy_core.f90') as file_:
 
-            for _ in range(2000):
+        for _ in range(num_lines):
 
-                list_ = shlex.split(file_.readline())
+            list_ = shlex.split(file_.readline())
 
-                # Initialize new subroutine
-                new_subroutine = False
-                try:
-                    new_subroutine = (list_[0] == 'SUBROUTINE')
-                except IndexError:
-                    pass
+            # Skip all empty lines
+            if not list_:
+                continue
 
-                if new_subroutine:
-                    name = list_[1].split('(')[0]
-                    subroutines[name] = []
+            # Initialize container for new subroutine
+            new_subroutine = (list_[0] == 'SUBROUTINE')
+            if new_subroutine:
+                name = list_[1].split('(')[0]
+                subroutines[name] = []
 
-                # Collect algorithm
-                is_algorithm = ('Algorithm' in list_)
+            # Collect algorithm information.
+            is_algorithm = ('Algorithm' in list_)
 
-                if is_algorithm:
+            # The WHILE loop iterates over all lines of the file until
+            # the subroutine ends.
+            if is_algorithm:
+                while True:
+                    code_line = file_.readline()
+                    list_ = shlex.split(code_line)
 
-                    while True:
+                    is_end = False
+                    try:
+                        is_end = list_[:2] == ['END', 'SUBROUTINE']
+                    except IndexError:
+                        pass
 
-                        code_line = file_.readline()
-                        list_ = shlex.split(code_line)
+                    if is_end:
+                        break
 
-                        is_end = False
-                        try:
-                            is_end = list_[:2] == ['END', 'SUBROUTINE']
-                        except IndexError:
-                            pass
+                    # Collect information
+                    subroutines[name] += [code_line]
 
-                        if is_end:
-                            break
-
-                        # Collect information
-                        subroutines[name] += [code_line]
-
-
-    for line in subroutines['backward_induction']:
-        print(line)
-
-
-    old_file = open('robufort.f90', 'r')
-    new_file = open('robufort_inlining.f90', 'w')
-
-    for _ in range(2000):
-
-        old_line = old_file.readline()
-
-        old_list = shlex.split(old_line)
+    # Finishing
+    return subroutines
 
 
-        try:
-            is_backward = (old_list[0] == 'CALL') and  \
-            (old_list[1].split('(')[0] == 'backward_induction')
-
-        except IndexError:
-            is_backward = False
+print('not compiling at the moment')
+#compile_package('fast')
 
 
-        if is_backward:
-            new_file.write('INLINING: backward_induction\n')
-
-            while True:
-
-                old_list = shlex.split(old_file.readline())
-
-                is_end = ')' in old_list[-1]
-                print( old_list[-1])
-                if is_end:
-                    break
-
-        else:
-            print(old_line)
-            new_file.write(old_line)
-
-    old_file.close()
-    new_file.close()
-
-
-
-    # Replacements
-    old_file = open('robufort_inlining.f90', 'r')
-    new_file = open('robufort_extended.f90', 'w')
-
-    for _ in range(2000):
-
-        line_ = old_file.readline()
-
-
-
-        is_inlining = 'INLINING' in line_
-
-
-        if is_inlining:
-
-            for code_line in subroutines['backward_induction']:
-                new_file.write(code_line)
-
-        else:
-
-            new_file.write(line_)
-
-    new_file.close(); new_file.close()
-
-#    print(subroutines['backward_induction'])
-    #print(subroutines['backward_induction'])
-#    os.system('gfortran -finline-limit=800 -O3 -o robufort '
-#              'robufort_extended.f90')
-    try:
+''' Compilation of ROBUFORT
+'''
+try:
         os.remove('robufort')
-    except:
+except:
         pass
 
-    os.system('gfortran -finline-limit=800 -O3 -o robufort '
-              'robufort_extended.f90')
+# Performance considerations require an automatic inlining of the core
+# subroutines in a single file. Prepare starting version of extended ROBUFORT
+# code. At first the module containing the program constants is inserted.
+# Then the code tailored for the inlinings is added.
+with open('robufort_extended.f90', 'w') as outfile:
+    for fname in ['robupy_program_constants.f90', 'robufort.f90']:
+        with open(fname) as infile:
+            for line in infile:
+                outfile.write(line)
+        outfile.write('\n')
+
+# This loop iteratively marks subroutines for inlinings and then replaces
+# them with the relevant code lines. The loop stops once no subroutines
+# are marked for further inlining.
+subroutines = read_subroutines()
+
+while True:
+
+    mark_inlinings(subroutines)
+
+    count = replace_inlinings()
+
+    # Check for further applicability and cleaning.
+    if count == 0:
+        os.remove('.robufort_inlining.f90')
+        break
+
+# Compile the executable
+os.system('gfortran -O3 -o robufort robufort_extended.f90')
+
+
+for _ in range(1):
+    constr = dict()
+    constr['fast'] = 'False'
+    constr['level'] = 0.00
+    constr['edu'] = (10, 20)
+
+    generate_init(constr)
+
+
+    robupy_obj = read('model.robupy.ini')
+
+    init_dict = robupy_obj.get_attr('init_dict')
+
+
+
 
     transform_robupy_to_restud(init_dict)
 
@@ -244,6 +305,8 @@ for _ in range(1):
     print('RESTUD ', time.time() - start_time)
 
 
+    # Run ROBUFORT
+    write_robufort_initialization(init_dict)
 
     start_time = time.time()
 

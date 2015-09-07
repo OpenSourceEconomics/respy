@@ -9,7 +9,7 @@ import os
 def build(bld):
     bld(rule=pre_build)
 
-    compiler_options = '-O3'
+    compiler_options = '-O3 -fpic'
 
     files = ['robupy_program_constants.f90', 'robupy_auxiliary.f90',
              'robupy_core.f90']

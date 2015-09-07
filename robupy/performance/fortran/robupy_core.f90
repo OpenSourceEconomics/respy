@@ -29,6 +29,7 @@ MODULE robupy_library
     PUBLIC :: get_future_payoffs 
     PUBLIC :: get_payoffs_risk 
     PUBLIC :: simulate_emax 
+    PUBLIC :: stabilize_myopic
 
 CONTAINS
 !******************************************************************************
@@ -455,14 +456,14 @@ SUBROUTINE create_state_space(states_all, states_number_period, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE get_payoffs_risk(emax, payoffs_ex_post, future_payoffs, &
+SUBROUTINE get_payoffs_risk(emax_simulated, payoffs_ex_post, future_payoffs, &
                 num_draws, eps_relevant, period, k, payoffs_ex_ante, & 
                 edu_max, edu_start, mapping_state_idx, states_all, num_periods, & 
                 periods_emax, delta)
 
     !/* external objects    */
 
-    REAL(our_dble), INTENT(OUT)     :: emax
+    REAL(our_dble), INTENT(OUT)     :: emax_simulated
     REAL(our_dble), INTENT(OUT)     :: payoffs_ex_post(4)
     REAL(our_dble), INTENT(OUT)     :: future_payoffs(4)
 
@@ -485,7 +486,7 @@ SUBROUTINE get_payoffs_risk(emax, payoffs_ex_post, future_payoffs, &
 !------------------------------------------------------------------------------
 
     ! Simulated expected future value
-    CALL simulate_emax(emax, payoffs_ex_post, future_payoffs, num_periods, & 
+    CALL simulate_emax(emax_simulated, payoffs_ex_post, future_payoffs, num_periods, & 
             num_draws, period, k, eps_relevant, payoffs_ex_ante, edu_max, & 
             edu_start, periods_emax, states_all, mapping_state_idx, delta)
     
@@ -494,7 +495,7 @@ END SUBROUTINE
 !******************************************************************************
 SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, future_payoffs, & 
                 num_periods, num_draws, period, k, eps_relevant, & 
-                payoffs_ex_ante, edu_max, edu_start, emax, states_all, & 
+                payoffs_ex_ante, edu_max, edu_start, periods_emax, states_all, & 
                 mapping_state_idx, delta)
 
     !/* external objects    */
@@ -514,7 +515,7 @@ SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, future_payoffs, &
 
     REAL(our_dble), INTENT(IN)      :: payoffs_ex_ante(:)
     REAL(our_dble), INTENT(IN)      :: eps_relevant(:,:)
-    REAL(our_dble), INTENT(IN)      :: emax(:,:)
+    REAL(our_dble), INTENT(IN)      :: periods_emax(:,:)
     REAL(our_dble), INTENT(IN)      :: delta
 
     !/* internals objects    */
@@ -542,7 +543,7 @@ SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, future_payoffs, &
         ! Calculate total value
         CALL get_total_value(total_payoffs, payoffs_ex_post, future_payoffs, &
                 period, num_periods, delta, payoffs_ex_ante, disturbances, &
-                edu_max, edu_start, mapping_state_idx, emax, k, states_all)
+                edu_max, edu_start, mapping_state_idx, periods_emax, k, states_all)
         
         ! Determine optimal choice
         maximum = MAXVAL(total_payoffs)
@@ -614,7 +615,7 @@ SUBROUTINE get_total_value(total_payoffs, payoffs_ex_post, future_payoffs, &
     total_payoffs = payoffs_ex_post + delta * future_payoffs
 
     ! Stabilization in case of myopic agents
-    IF (is_myopic .EQV. .True.) THEN
+    IF (is_myopic .EQV. .TRUE.) THEN
         CALL stabilize_myopic(total_payoffs, future_payoffs)
     END IF
 
@@ -622,7 +623,7 @@ END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
 SUBROUTINE get_future_payoffs(future_payoffs, edu_max, edu_start, &
-                mapping_state_idx, period, emax, k, states_all)
+                mapping_state_idx, period, periods_emax, k, states_all)
 
     !/* external objects    */
 
@@ -635,7 +636,7 @@ SUBROUTINE get_future_payoffs(future_payoffs, edu_max, edu_start, &
     INTEGER(our_int), INTENT(IN)    :: states_all(:, :, :)
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:, :, :, :, :)
 
-    REAL(our_dble), INTENT(IN)      :: emax(:, :)
+    REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
 
     !/* internals objects    */
 
@@ -658,12 +659,12 @@ SUBROUTINE get_future_payoffs(future_payoffs, edu_max, edu_start, &
 	! Working in occupation A
 	future_idx = mapping_state_idx(period + 1 + 1, exp_A + 1 + 1, & 
 					exp_B + 1, edu + 1, 1)
-	future_payoffs(1) = emax(period + 1 + 1, future_idx + 1)
+	future_payoffs(1) = periods_emax(period + 1 + 1, future_idx + 1)
 
 	!Working in occupation B
 	future_idx = mapping_state_idx(period + 1 + 1, exp_A + 1, & 
 					exp_B + 1 + 1, edu + 1, 1)
-	future_payoffs(2) = emax(period + 1 + 1, future_idx + 1)
+	future_payoffs(2) = periods_emax(period + 1 + 1, future_idx + 1)
 
 	! Increasing schooling. Note that adding an additional year
 	! of schooling is only possible for those that have strictly
@@ -671,7 +672,7 @@ SUBROUTINE get_future_payoffs(future_payoffs, edu_max, edu_start, &
 	IF (edu < edu_max - edu_start) THEN
 	    future_idx = mapping_state_idx(period + 1 + 1, exp_A + 1, &
 	    				exp_B + 1, edu + 1 + 1, 2)
-	    future_payoffs(3) = emax(period + 1 + 1, future_idx + 1)
+	    future_payoffs(3) = periods_emax(period + 1 + 1, future_idx + 1)
 	ELSE
 	    future_payoffs(3) = -HUGE(future_payoffs)
 	END IF
@@ -679,7 +680,33 @@ SUBROUTINE get_future_payoffs(future_payoffs, edu_max, edu_start, &
 	! Staying at home
 	future_idx = mapping_state_idx(period + 1 + 1, exp_A + 1, & 
 					exp_B + 1, edu + 1, 1)
-	future_payoffs(4) = emax(period + 1 + 1, future_idx + 1)
+	future_payoffs(4) = periods_emax(period + 1 + 1, future_idx + 1)
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE stabilize_myopic(total_payoffs, future_payoffs)
+
+
+    !/* external objects    */
+
+    REAL(our_dble), INTENT(INOUT)   :: total_payoffs(:)
+    REAL(our_dble), INTENT(IN)      :: future_payoffs(:)
+
+    !/* internals objects    */
+
+    LOGICAL                         :: is_huge
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+    
+    ! Determine NAN
+    is_huge = (future_payoffs(3) == -HUGE(future_payoffs))
+
+    IF (is_huge .EQV. .True.) THEN
+        total_payoffs(3) = -HUGE(future_payoffs)
+    END IF
 
 END SUBROUTINE
 !******************************************************************************

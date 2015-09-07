@@ -67,32 +67,6 @@ SUBROUTINE divergence(div, x, cov, level)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE stabilize_myopic(total_payoffs, future_payoffs)
-
-
-    !/* external objects    */
-
-    REAL(our_dble), INTENT(INOUT)   :: total_payoffs(:)
-    REAL(our_dble), INTENT(IN)      :: future_payoffs(:)
-
-    !/* internals objects    */
-
-    LOGICAL                         :: is_huge
-
-!------------------------------------------------------------------------------
-! Algorithm
-!------------------------------------------------------------------------------
-    
-    ! Determine NAN
-    is_huge = (future_payoffs(3) == -HUGE(future_payoffs))
-
-    IF (is_huge .EQV. .True.) THEN
-        total_payoffs(3) = -HUGE(future_payoffs)
-    END IF
-
-END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
 FUNCTION inverse(A, k)
 
     !/* external objects    */
