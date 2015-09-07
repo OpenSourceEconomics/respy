@@ -7,84 +7,29 @@ import os
 
 
 def build(bld):
-    bld(rule=pre_build)
 
-    compiler_options = '-O3 -fpic'
+    current_directory = os.getcwd()
 
-    files = ['robupy_program_constants.f90', 'robupy_auxiliary.f90',
-             'robupy_core.f90']
+    path = bld.env.project_paths['ROBUPY']
 
-    for file_ in files:
-        bld.add_group()
+    os.chdir(path + '/python/f2py')
 
-        bld(features='fc', source=file_, fcflags=compiler_options)
+    # Link to original library
+    for dir_ in ['include', 'lib']:
+        try:
+            os.remove(dir_)
+        except OSError:
+            pass
 
-    bld.add_group()
+        os.symlink('../../fortran/' + dir_, dir_)
 
-    bld(features='fc fcstlib', source=files, target='fort_robupy',
-        fcflags=compiler_options)
+    f2py_call(bld)
 
-    bld.add_group()
-
-    bld(rule=post_build)
-
-    bld.add_group()
-
-    bld(rule=f2py_call)
+    os.chdir(current_directory)
 
 
 ''' Auxiliary functions.
 '''
-
-
-def pre_build(self):
-    """ Create the include and library directory to store the library and
-        compiled files if not yet present.
-    """
-    path = self.env.project_paths['ROBUPY']
-
-    os.chdir(path + '/python/f2py')
-
-    for dir_ in ['include', 'lib']:
-
-        try:
-
-            os.makedirs(dir_)
-
-        except OSError:
-
-            pass
-
-        # Sometimes a file and not a directory is created.
-        try:
-
-            os.remove(dir_)
-
-        except OSError:
-
-            pass
-
-
-def post_build(self):
-    """ Copy the resulting library from the build directory to the working
-        directory.
-    """
-    project_root = self.env.project_paths['ROBUPY']
-
-    mod_files = fnmatch.filter(os.listdir(project_root + '/.bld/'), '*.mod')
-
-    target = 'include'
-
-    for i in range(len(mod_files)):
-        mod_files[i] = project_root + '/.bld/' + mod_files[i]
-
-        shutil.copy(mod_files[i], target)
-
-    source = project_root + '/.bld/python/f2py/libfort_robupy.a'
-
-    target = 'lib/'
-
-    shutil.copy(source, target)
 
 
 def f2py_call(self):
@@ -97,7 +42,3 @@ def f2py_call(self):
     os.system(
         'f2py3 -c -m  f2py_debug f2py_interface_debug.f90 -Iinclude -Llib '
         '-lfort_robupy')
-
-    # Cleanup
-    for dir_ in ['include', 'lib']:
-        shutil.rmtree(dir_, ignore_errors=True)

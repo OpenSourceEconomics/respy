@@ -95,7 +95,7 @@ class Tests(object):
 
             # Generate constraints
             constraints = dict()
-            constraints['fast'] = 'False'
+            constraints['version'] = 'PYTHON'
 
             # Generate random initialization file
             generate_init(constraints)
@@ -117,7 +117,7 @@ class Tests(object):
             # Generate constraint periods
             constraints = dict()
             constraints['periods'] = np.random.randint(3, 10)
-            constraints['fast'] = 'False'
+            constraints['version'] = 'PYTHON'
 
             # Generate random initialization file
             generate_init(constraints)
@@ -176,7 +176,7 @@ class Tests(object):
             # Generate constraint periods
             constraints = dict()
             constraints['eps_zero'] = True
-            constraints['fast'] = 'False'
+            constraints['version'] = 'PYTHON'
             constraints['level'] = 0.00
 
             # Generate random initialization file
@@ -204,7 +204,7 @@ class Tests(object):
         # Generate constraints
         constraints = dict()
         constraints['eps_zero'] = True
-        constraints['fast'] = 'False'
+        constraints['version'] = 'PYTHON'
 
         # The calculation of the KL does not work for this case.
         constraints['measure'] = 'absolute'
@@ -255,7 +255,7 @@ class Tests(object):
 
             # Initialize constraints
             constraints = dict()
-            constraints['fast'] = 'False'
+            constraints['version'] = 'PYTHON'
 
             # Generate random initialization file
             generate_init(constraints)
@@ -271,7 +271,7 @@ class Tests(object):
         # Generate random initialization dictionary
         constraints = dict()
         constraints['debug'] = 'True'
-        constraints['fast'] = 'False'
+        constraints['version'] = 'PYTHON'
 
         init_dict = generate_random_dict(constraints)
 
@@ -309,7 +309,7 @@ class Tests(object):
 
         # Generate constraints
         constraints = dict()
-        constraints['fast'] = 'False'
+        constraints['version'] = 'PYTHON'
 
         # Generate random initialization dictionary
         init_dict = generate_random_dict(constraints)

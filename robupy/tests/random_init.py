@@ -85,8 +85,12 @@ def generate_random_dict(constraints=None):
     dict_['SOLUTION'] = {}
     dict_['SOLUTION']['draws'] = np.random.random_integers(1, MAX_DRAWS)
     dict_['SOLUTION']['seed'] = np.random.random_integers(1, 10000)
-    dict_['SOLUTION']['debug'] = np.random.choice(['True', 'False'])
-    dict_['SOLUTION']['fast'] = np.random.choice(['True', 'False'])
+
+    # PROGRAM
+    dict_['PROGRAM'] = {}
+    dict_['PROGRAM']['debug'] = np.random.choice(['True', 'False'])
+    dict_['PROGRAM']['version'] = np.random.choice(['FORTRAN', 'F2PY',
+                                                    'PYTHON'])
 
     # SIMULATION
     dict_['SIMULATION'] = {}
@@ -112,14 +116,14 @@ def generate_random_dict(constraints=None):
         dict_['EDUCATION']['start'] = start
         dict_['EDUCATION']['max'] = max_
 
-    # Replace fast
-    if 'fast' in constraints.keys():
+    # Replace version
+    if 'version' in constraints.keys():
         # Extract objects
-        fast = constraints['fast']
+        version = constraints['version']
         # Checks
-        assert (fast in ['True', 'False'])
+        assert (version in ['PYTHON', 'FORTRAN', 'F2PY'])
         # Replace in initialization file
-        dict_['SOLUTION']['fast'] = fast
+        dict_['PROGRAM']['version'] = version
 
     # Replace debugging level
     if 'debug' in constraints.keys():
@@ -217,7 +221,7 @@ def print_random_dict(dict_):
 
                 file_.write('\n')
 
-            if flag in ['SOLUTION', 'AMBIGUITY', 'SIMULATION']:
+            if flag in ['SOLUTION', 'AMBIGUITY', 'SIMULATION', 'PROGRAM']:
 
                 str_ = ' {0:<15} {1:<15} \n'
 

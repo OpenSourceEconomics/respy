@@ -25,7 +25,7 @@ def test_97():
     """
     compile_package('fast')
 
-    import robupy.performance.fortran.f2py_debug as fort
+    import robupy.python.f2py.f2py_debug as fort
 
     for _ in range(1000):
 

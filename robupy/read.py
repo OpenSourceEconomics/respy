@@ -131,9 +131,12 @@ def _process_standard(list_, dict_, keyword):
         val = int(val)
     elif name in ['measure']:
         val = str(val)
-    elif name in ['debug', 'fast']:
+    elif name in ['debug']:
         assert (val.upper() in ['TRUE', 'FALSE'])
         val = (val.upper() == 'TRUE')
+    elif name in ['version']:
+        assert (val.upper() in ['FORTRAN', 'F2PY', 'PYTHON'])
+        val = val.upper()
     else:
         val = float(val)
 
@@ -177,7 +180,7 @@ def _check_integrity_read(dict_):
 
     # Check all keys
     keys_ = ['BASICS', 'EDUCATION', 'A', 'B', 'HOME']
-    keys_ += ['SHOCKS', 'SOLUTION', 'AMBIGUITY', 'SIMULATION']
+    keys_ += ['SHOCKS', 'SOLUTION', 'AMBIGUITY', 'SIMULATION', 'PROGRAM']
 
     assert (set(keys_) == set(dict_.keys()))
 
@@ -221,13 +224,21 @@ def _check_integrity_read(dict_):
     assert (dict_['SOLUTION']['draws'] >= 0)
     assert (isinstance(dict_['SOLUTION']['seed'], int))
     assert (dict_['SOLUTION']['seed'] >= 0)
-    assert (dict_['SOLUTION']['debug'] in [True, False])
-    assert (dict_['SOLUTION']['fast'] in [True, False])
 
-    if dict_['SOLUTION']['fast'] is True:
+
+    # Check PROGRAM
+    assert (dict_['PROGRAM']['debug'] in [True, False])
+    assert (dict_['PROGRAM']['version'] in ['FORTRAN', 'F2PY', 'PYTHON'])
+
+    if dict_['PROGRAM']['version'] == 'F2PY':
         package_dir = os.path.dirname(os.path.realpath(__file__))
         assert (len(glob.glob(package_dir +
                               '/python/f2py/f2py_core.*.so')) == 1)
+
+    if dict_['PROGRAM']['version'] == 'FORTRAN':
+        package_dir = os.path.dirname(os.path.realpath(__file__))
+        assert (len(glob.glob(package_dir +
+                              '/fortran/bin/robufo*')) == 1)
 
     # Check SHOCKS
     assert (len(dict_['SHOCKS']) == 4)

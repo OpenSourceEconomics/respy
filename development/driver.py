@@ -20,13 +20,13 @@ HOME = os.getcwd()
 for _ in range(1):
 
     # Re-compile ROBUPY package
-    os.chdir('/home/peisenha/robustToolbox/package/robupy')
+    #os.chdir('/home/peisenha/robustToolbox/package/robupy')
 
-    os.system('./waf distclean')
+    #os.system('./waf distclean')
 
-    os.system('./waf configure build --fast')
+    #os.system('./waf configure build --fast')
 
-    os.chdir(HOME)
+    #os.chdir(HOME)
 
     # Run
     os.system('robupy-solve --simulate')

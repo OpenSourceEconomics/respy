@@ -43,9 +43,19 @@ def build(bld):
 
     # Run
     if fast:
+
+        bld.recurse('fortran')
+
+        bld.add_group()
+
         bld.recurse('python')
+
+        bld.add_group()
+
+
     if test:
         os.chdir('tests')
+
         os.system('nosetests tests.py')
 
 def distclean(dst):

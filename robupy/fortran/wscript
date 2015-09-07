@@ -1,0 +1,287 @@
+#!/usr/bin/env python
+
+# standard library
+import shlex
+import fnmatch
+import shutil
+import os
+
+
+def build(bld):
+    bld(rule=pre_build)
+
+    compiler_options = '-O3 -fpic'
+
+    files = ['robupy_program_constants.f90', 'robupy_auxiliary.f90',
+             'robupy_core.f90']
+
+    for file_ in files:
+        bld.add_group()
+
+        bld(features='fc', source=file_, fcflags=compiler_options)
+
+    bld.add_group()
+
+    bld(features='fc fcstlib', source=files, target='fort_robupy',
+        fcflags=compiler_options)
+
+    bld.add_group()
+
+    bld(rule=post_build)
+
+    bld.add_group()
+
+    bld.add_group()
+
+    bld(rule=robufort_build)
+
+    bld.add_group()
+
+
+
+''' Auxiliary functions.
+'''
+def robufort_build(self):
+
+    # Compilation of executable for fastest performance
+    current_directory = os.getcwd()
+
+    path = self.env.project_paths['ROBUPY']
+
+    os.chdir(path + '/fortran')
+
+    # Performance considerations require an automatic inlining of the core
+    # subroutines in a single file. Prepare starting version of extended
+    # ROBUFORT code. At first the module containing the program constants is
+    # inserted. Then the code tailored for the inlinings is added.
+    with open('robufort_extended.f90', 'w') as outfile:
+        for fname in ['robupy_program_constants.f90', 'robufort.f90']:
+            with open(fname) as infile:
+                for line in infile:
+                    outfile.write(line)
+            outfile.write('\n')
+
+    # This loop iteratively marks subroutines for inlinings and then replaces
+    # them with the relevant code lines. The loop stops once no subroutines
+    # are marked for further inlining.
+    subroutines = read_subroutines()
+
+    while True:
+
+        mark_inlinings(subroutines)
+
+        count = replace_inlinings(subroutines)
+
+        # Check for further applicability and cleaning.
+        if count == 0:
+            os.remove('.robufort_inlining.f90')
+            break
+
+    # Compile the executable
+    os.system('gfortran -O3 -o robufort robufort_extended.f90')
+
+    shutil.move('robufort', 'bin/robufort')
+
+    #os.unlink('robufort_extended.f90')
+
+    os.unlink('robupy_program_constants.mod')
+
+    os.chdir(current_directory)
+
+
+
+def mark_inlinings(subroutines):
+    """ This function marks the subroutines for which inlining
+    information is available.
+    """
+    # Auxiliary objects
+    inlining_routines = subroutines.keys()
+
+    # Read file with pre-inlining code
+    with open('robufort_extended.f90', 'r') as old_file:
+        num_lines = len(old_file.readlines())
+
+    # Initialize logical variables
+    is_program = False
+
+    with open('robufort_extended.f90', 'r') as old_file:
+        with open('.robufort_inlining.f90', 'w') as new_file:
+
+            for _ in range(num_lines):
+
+                # Extract old information
+                old_line = old_file.readline()
+                old_list = shlex.split(old_line)
+
+                # Skip all empty lines
+                if not old_list:
+                    new_file.write(old_line)
+                    continue
+
+                # Skip modifying all lines before actual program begins.
+                # This skips over the module where the program constants
+                # are defined.
+                if not is_program:
+                    is_program = (old_list[0] == 'PROGRAM')
+                    new_file.write(old_line)
+                    continue
+
+                # Skip modifying of all lines without a CALL statement
+                is_call = (old_list[0] == 'CALL')
+                if not is_call:
+                    new_file.write(old_line)
+                    continue
+
+                # Determine name is call that will be replaced. Note that
+                # not all functions or routines will be relaced.
+                name = old_list[1].split('(')[0]
+                if name not in inlining_routines:
+                    new_file.write(old_line)
+                    continue
+
+                # Write out keyworkd for future replacement. Ensure that
+                # interfaces that run across multiple lines are removed
+                # completely.
+                new_file.write('INLINING: ' + name + ' \n')
+                while True:
+                    is_end = ')' in old_list[-1]
+                    if is_end:
+                        break
+                    old_list = shlex.split(old_file.readline())
+
+
+def replace_inlinings(subroutines):
+    """ This function replaces subroutines marked for inlining with the
+    relevant code.
+    """
+    # Auxiliary objects
+    count = 0
+
+    # Read file with inlining instructions
+    with open('.robufort_inlining.f90', 'r') as old_file:
+        old_lines = old_file.readlines()
+
+    # Construct new FORTRAN file.
+    with open('robufort_extended.f90', 'w') as new_file:
+        for old_line in old_lines:
+
+            # Check for subroutines marked for replacement
+            is_inlining = 'INLINING' in old_line
+
+            if not is_inlining:
+                new_file.write(old_line)
+            else:
+                # Write out code of relevant subroutine
+                name = shlex.split(old_line)[1]
+                for code_line in subroutines[name]:
+                    new_file.write(code_line)
+                # Store workload
+                count += 1
+
+    # Finishing
+    return count
+
+
+def read_subroutines():
+    """ Read information on all subroutines which are candidates for
+    inlining.
+    """
+    # Initialize container
+    subroutines = dict()
+
+    # Determine number of lines
+    with open('robupy_core.f90', 'r') as old_file:
+        num_lines = len(old_file.readlines())
+
+    # Extract information
+    with open('robupy_core.f90') as file_:
+
+        for _ in range(num_lines):
+
+            list_ = shlex.split(file_.readline())
+
+            # Skip all empty lines
+            if not list_:
+                continue
+
+            # Initialize container for new subroutine
+            new_subroutine = (list_[0] == 'SUBROUTINE')
+            if new_subroutine:
+                name = list_[1].split('(')[0]
+                subroutines[name] = []
+
+            # Collect algorithm information.
+            is_algorithm = ('Algorithm' in list_)
+
+            # The WHILE loop iterates over all lines of the file until
+            # the subroutine ends.
+            if is_algorithm:
+                while True:
+                    code_line = file_.readline()
+                    list_ = shlex.split(code_line)
+
+                    is_end = False
+                    try:
+                        is_end = list_[:2] == ['END', 'SUBROUTINE']
+                    except IndexError:
+                        pass
+
+                    if is_end:
+                        break
+
+                    # Collect information
+                    subroutines[name] += [code_line]
+
+    # Finishing
+    return subroutines
+
+
+def pre_build(self):
+    """ Create the include and library directory to store the library and
+        compiled files if not yet present.
+    """
+    path = self.env.project_paths['ROBUPY']
+
+    os.chdir(path + '/fortran')
+
+    for dir_ in ['include', 'lib', 'bin']:
+
+        try:
+
+            os.makedirs(dir_)
+
+        except OSError:
+
+            pass
+
+        # Sometimes a file and not a directory is created.
+        try:
+
+            os.remove(dir_)
+
+        except OSError:
+
+            pass
+
+
+def post_build(self):
+    """ Copy the resulting library from the build directory to the working
+        directory.
+    """
+    project_root = self.env.project_paths['ROBUPY']
+
+    mod_files = fnmatch.filter(os.listdir(project_root + '/.bld/'), '*.mod')
+
+    target = 'include'
+
+    for i in range(len(mod_files)):
+        mod_files[i] = project_root + '/.bld/' + mod_files[i]
+
+        shutil.copy(mod_files[i], target)
+
+    source = project_root + '/.bld/fortran/libfort_robupy.a'
+
+    target = 'lib/'
+
+    shutil.copy(source, target)
+

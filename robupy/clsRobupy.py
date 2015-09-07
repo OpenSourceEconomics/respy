@@ -35,11 +35,12 @@ class RobupyCls(MetaCls):
 
         self.attr['shocks'] = None
 
+        self.attr['version'] = None
+
         self.attr['delta'] = None
 
         self.attr['debug'] = None
 
-        self.attr['fast'] = None
 
         # Ambiguity
         self.attr['measure'] = None
@@ -106,15 +107,15 @@ class RobupyCls(MetaCls):
 
             self.attr['num_draws'] = init_dict['SOLUTION']['draws']
 
+            self.attr['version'] = init_dict['PROGRAM']['version']
+
             self.attr['level'] = init_dict['AMBIGUITY']['level']
 
             self.attr['edu_max'] = init_dict['EDUCATION']['max']
 
-            self.attr['debug'] = init_dict['SOLUTION']['debug']
+            self.attr['debug'] = init_dict['PROGRAM']['debug']
 
             self.attr['delta'] = init_dict['BASICS']['delta']
-
-            self.attr['fast'] = init_dict['SOLUTION']['fast']
 
             self.attr['shocks'] = init_dict['SHOCKS']
 
@@ -154,7 +155,7 @@ class RobupyCls(MetaCls):
 
         level = self.attr['level']
 
-        fast = self.attr['fast']
+        version = self.attr['version']
 
         is_first = self.is_first
 
@@ -164,7 +165,7 @@ class RobupyCls(MetaCls):
         # Constraints
         with_ambiguity = (level > 0.00)
         if with_ambiguity:
-            assert (fast is False)
+            assert (version in ['PYTHON'])
 
         # Seeds
         for seed in [seed_solution, seed_simulation]:
@@ -217,10 +218,8 @@ class RobupyCls(MetaCls):
         assert (isinstance(delta, float))
         assert (delta >= 0.00)
 
-        # Fast version of package
-        assert (fast in [True, False])
-        if fast:
-            import robupy.python.f2py.f2py_core as f2py_core
+        # Version version of package
+        assert (version in ['FORTRAN', 'F2PY', 'PYTHON'])
 
         # Shock distribution
         assert (isinstance(shocks, list))
