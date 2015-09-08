@@ -5,6 +5,7 @@ MODULE robufort_library
     !/* external modules    */
 
     USE robupy_program_constants
+    USE robupy_auxiliary
 
     !/* setup   */
 
@@ -24,25 +25,25 @@ SUBROUTINE read_specification(num_periods, delta, coeffs_A, coeffs_B, &
 
     !/* external objects    */
 
-    INTEGER(our_int), INTENT(OUT)   :: num_periods
-    INTEGER(our_int), INTENT(OUT)   :: num_draws
-    INTEGER(our_int), INTENT(OUT)   :: num_agents
-    INTEGER(our_int), INTENT(OUT)   :: seed_solution    
     INTEGER(our_int), INTENT(OUT)   :: seed_simulation
+    INTEGER(our_int), INTENT(OUT)   :: seed_solution    
+    INTEGER(our_int), INTENT(OUT)   :: num_periods
+    INTEGER(our_int), INTENT(OUT)   :: num_agents
+    INTEGER(our_int), INTENT(OUT)   :: num_draws
     INTEGER(our_int), INTENT(OUT)   :: edu_start
     INTEGER(our_int), INTENT(OUT)   :: edu_max
 
+    REAL(our_dble), INTENT(OUT)     :: coeffs_home(1)
+    REAL(our_dble), INTENT(OUT)     :: coeffs_edu(3)
     REAL(our_dble), INTENT(OUT)     :: shocks(4, 4)
-    REAL(our_dble), INTENT(OUT)     :: delta
     REAL(our_dble), INTENT(OUT)     :: coeffs_A(6)
     REAL(our_dble), INTENT(OUT)     :: coeffs_B(6)
-    REAL(our_dble), INTENT(OUT)     :: coeffs_edu(3)
-    REAL(our_dble), INTENT(OUT)     :: coeffs_home(1)
+    REAL(our_dble), INTENT(OUT)     :: delta
 
     !/* internal objects    */
 
-    INTEGER(our_int) :: j
-    INTEGER(our_int) :: k
+    INTEGER(our_int)                :: j
+    INTEGER(our_int)                :: k
 
 !-------------------------------------------------------------------------------
 ! Algorithm
@@ -91,29 +92,94 @@ SUBROUTINE read_specification(num_periods, delta, coeffs_A, coeffs_B, &
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_disturbances(eps_relevant_periods, shocks) 
+SUBROUTINE get_disturbances(periods_eps_relevant, shocks) 
 
     !/* external objects    */
 
-    REAL(our_dble), INTENT(OUT)     :: eps_relevant_periods(:, :, :)
+    REAL(our_dble), INTENT(OUT)     :: periods_eps_relevant(:, :, :)
 
     REAL(our_dble), INTENT(IN)      :: shocks(4, 4)
 
     !/* internal objects    */
 
-    INTEGER(our_int) :: j
-    INTEGER(our_int) :: k
+    INTEGER(our_int)                :: num_periods
+    INTEGER(our_int)                :: period
+
+    REAL(our_dble)                  :: mean(4)
 
 !------------------------------------------------------------------------------ 
 ! Algorithm
 !------------------------------------------------------------------------------ 
-        eps_relevant_periods = 1.00
+    ! Auxiliary objects
+    num_periods = SIZE(periods_eps_relevant, 1)
 
+    ! Initialize mean 
+    mean = zero_dble
+
+    DO period = 1, num_periods
+    
+        CALL multivariate_normal(periods_eps_relevant(period, :, :), mean, & 
+                shocks)
+    
+    END DO
+
+    PRINT *, ' Temporary Debug', num_periods, SIZE(periods_eps_relevant, 2)
+        periods_eps_relevant = 0
+
+    DO period = 1, num_periods
+
+        periods_eps_relevant(period, :,:2) = one_dble
+
+END DO
 
 END SUBROUTINE
 !****************************************************************************** 
 !****************************************************************************** 
+SUBROUTINE multivariate_normal_deviates(dim, draw)
+
+    !/* external objects    */
+
+    INTEGER, INTENT(IN)             :: dim
+
+    REAL, INTENT(OUT)               :: draw(dim)
+    
+    !/* internal objects    */
+
+    INTEGER                         :: g 
+
+    REAL, ALLOCATABLE               :: u(:)
+    REAL, ALLOCATABLE               :: r(:)
+
+    !--------------------------------------------------------------------------- 
+    ! Algorithm
+    !--------------------------------------------------------------------------- 
+
+    ! Allocate containers
+    ALLOCATE(u(2*dim)); ALLOCATE(r(2*dim))
+
+    ! Call uniform deviates
+    CALL random_number(u)
+
+    ! Apply Box-Muller transform
+    DO g = 1, 2*dim, 2
+
+       r(g)   = SQRT(-2*LOG(u(g)))*COS(2*pi*u(g+1)) 
+       r(g+1) = SQRT(-2*LOG(u(g)))*SIN(2*pi*u(g+1)) 
+
+    END DO
+
+    ! Extract relevant floats
+    DO g = 1, dim 
+
+       draw(g) = r(g)     
+
+    END DO
+
+  END SUBROUTINE 
+!****************************************************************************** 
+!****************************************************************************** 
 END MODULE 
+
 !****************************************************************************** 
 !****************************************************************************** 
 PROGRAM robufort
@@ -136,6 +202,7 @@ PROGRAM robufort
     INTEGER(our_int), ALLOCATABLE   :: states_all(:, :, :)
 
     INTEGER(our_int)                :: max_states_period
+    INTEGER(our_int)                :: current_state(4)
     INTEGER(our_int)                :: seed_simulation
     INTEGER(our_int)                :: seed_solution
     INTEGER(our_int)                :: num_periods
@@ -145,11 +212,13 @@ PROGRAM robufort
     INTEGER(our_int)                :: edu_start
     INTEGER(our_int)                :: num_draws
     INTEGER(our_int)                :: covars(6)
+    INTEGER(our_int)                :: choice(1)
     INTEGER(our_int)                :: edu_max
     INTEGER(our_int)                :: min_idx
     INTEGER(our_int)                :: period
     INTEGER(our_int)                :: total
     INTEGER(our_int)                :: exp_A
+    INTEGER(our_int)                :: count
     INTEGER(our_int)                :: exp_B
     INTEGER(our_int)                :: edu
     INTEGER(our_int)                :: i
@@ -159,9 +228,10 @@ PROGRAM robufort
     REAL(our_dble), ALLOCATABLE     :: periods_payoffs_ex_ante(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_payoffs_ex_post(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_future_payoffs(:, :, :)
-    REAL(our_dble), ALLOCATABLE     :: eps_relevant_periods(:, :, :)
+    REAL(our_dble), ALLOCATABLE     :: periods_eps_relevant(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: eps_relevant(:, :)
     REAL(our_dble), ALLOCATABLE     :: periods_emax(:, :)
+    REAL(our_dble), ALLOCATABLE     :: dataset(:, :)
     
     REAL(our_dble)                  :: payoffs_ex_post(4)
     REAL(our_dble)                  :: payoffs_ex_ante(4)
@@ -177,7 +247,6 @@ PROGRAM robufort
     REAL(our_dble)                  :: maximum
     REAL(our_dble)                  :: payoff
     REAL(our_dble)                  :: delta
-    REAL(our_dble)                  :: emax
     
     LOGICAL                         :: is_myopic
     LOGICAL                         :: is_huge
@@ -217,20 +286,53 @@ PROGRAM robufort
     ! Allocate additional containers
     ALLOCATE(periods_payoffs_ex_post(num_periods, max_states_period, 4))
     ALLOCATE(periods_future_payoffs(num_periods, max_states_period, 4))
-    ALLOCATE(eps_relevant_periods(num_periods, num_draws, 4))
+    ALLOCATE(periods_eps_relevant(num_periods, num_draws, 4))
     ALLOCATE(periods_emax(num_periods, max_states_period))
     ALLOCATE(eps_relevant(num_draws, 4))
 
     ! Draw random disturbances. For debugging purposes, these might also be 
     ! read in from disk.
-    CALL get_disturbances(eps_relevant_periods, shocks)
+    CALL get_disturbances(periods_eps_relevant, shocks)
 
     ! Perform backward induction
     CALL backward_induction(periods_emax, periods_payoffs_ex_post, &
             periods_future_payoffs, num_periods, max_states_period, &
-            eps_relevant_periods, num_draws, states_number_period, & 
+            periods_eps_relevant, num_draws, states_number_period, & 
             periods_payoffs_ex_ante, edu_max, edu_start, &
             mapping_state_idx, states_all, delta)
+
+    ! Allocate additional containers
+    ALLOCATE(dataset(num_agents * num_periods, 8))
+
+    ! Simulate sample
+    CALL simulate_sample(dataset, num_agents, states_all, num_periods, &
+                mapping_state_idx, periods_payoffs_ex_ante, &
+                periods_eps_relevant, edu_max, edu_start, periods_emax, delta)
+
+    DO i = 1, 3
+        DO j = 1, 10
+            PRINT *, periods_eps_relevant(i, j, :)
+        END DO
+        PRINT *, ''
+    END DO
+
+    ! Read model specification
+    OPEN(UNIT=1, FILE='data.robupy.dat')
+
+    1600 FORMAT(3(1x,i5), 1x, A4, 4(1x,i5))
+
+    DO i = 1, (num_agents * num_periods)
+
+        WRITE(1, 1600) INT(dataset(i, 1)), INT(dataset(i, 2)), INT(dataset(i, 3)), &
+            '.', INT(dataset(i, 5)), INT(dataset(i, 6)), INT(dataset(i, 7)), INT(dataset(i, 8))
+
+    END DO
+
+
+
+
+
+
 
 !******************************************************************************
 !******************************************************************************

@@ -53,9 +53,11 @@ def robufort_build(self):
     # Performance considerations require an automatic inlining of the core
     # subroutines in a single file. Prepare starting version of extended
     # ROBUFORT code. At first the module containing the program constants is
-    # inserted. Then the code tailored for the inlinings is added.
+    # inserted as well as the auxiliary functions. Then the code tailored for
+    # the inlinings is added.
     with open('robufort_extended.f90', 'w') as outfile:
-        for fname in ['robupy_program_constants.f90', 'robufort.f90']:
+        for fname in ['robupy_program_constants.f90', 'robupy_auxiliary.f90',
+                      'robufort.f90']:
             with open(fname) as infile:
                 for line in infile:
                     outfile.write(line)

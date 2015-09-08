@@ -33,7 +33,7 @@ if True:
 
     np.random.seed(seed)
 
-    compile_package('fast')
+    #compile_package('fast')
 
     test = getattr(Tests, 'test_' + label)
     test()

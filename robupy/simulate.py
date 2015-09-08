@@ -49,7 +49,8 @@ def simulate(robupy_obj):
 
     # Draw disturbances for the simulation.
     periods_eps_relevant = _create_eps(robupy_obj)
-
+    print('test')
+    print(periods_eps_relevant)
     # Simulate a dataset with the results from the solution and write out the
     # dataset to a text file. In addition a file summarizing the dataset is
     # produced.
@@ -156,6 +157,14 @@ def _create_eps(robupy_obj):
     # development process.
     if robupy_obj.is_restud:
         periods_eps_relevant = read_restud_disturbances(robupy_obj)
+
+    print('eps set to yzero')
+
+    for period in range(num_periods):
+        for j in [0, 1]:
+            periods_eps_relevant[period, :, j] = 1
+        for j in [2, 3]:
+            periods_eps_relevant[period, :, j] = 0
 
     # Finishing
     return periods_eps_relevant

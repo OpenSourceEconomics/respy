@@ -256,7 +256,7 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
                 periods_future_payoffs, num_periods, max_states_period, &
-                eps_relevant_periods, num_draws, states_number_period, & 
+                periods_eps_relevant, num_draws, states_number_period, & 
                 periods_payoffs_ex_ante, edu_max, edu_start, &
                 mapping_state_idx, states_all, delta)
 
@@ -266,7 +266,7 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
     REAL(our_dble), INTENT(OUT)     :: periods_payoffs_ex_post(num_periods, max_states_period, 4)
     REAL(our_dble), INTENT(OUT)     :: periods_future_payoffs(num_periods, max_states_period, 4)
 
-    REAL(our_dble), INTENT(IN)      :: eps_relevant_periods(:, :, :)
+    REAL(our_dble), INTENT(IN)      :: periods_eps_relevant(:, :, :)
     REAL(our_dble), INTENT(IN)      :: periods_payoffs_ex_ante(:, :, :   )
     REAL(our_dble), INTENT(IN)      :: delta
 
@@ -288,7 +288,7 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
     REAL(our_dble)                  :: payoffs_ex_ante(4)
     REAL(our_dble)                  :: payoffs_ex_post(4)
     REAL(our_dble)                  :: future_payoffs(4)
-    REAL(our_dble)                  :: emax
+    REAL(our_dble)                  :: emax_simulated
 
 !-------------------------------------------------------------------------------
 ! Algorithm
@@ -303,23 +303,23 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
     DO period = (num_periods - 1), 0, -1
 
         ! Extract disturbances
-        eps_relevant = eps_relevant_periods(period + 1, :, :)
+        eps_relevant = periods_eps_relevant(period + 1, :, :)
 
-        ! Loop over all possible states, CAN K BE SIMPLIFIED
+        ! Loop over all possible states
         DO k = 0, (states_number_period(period + 1) - 1)
 
             ! Extract payoffs
             payoffs_ex_ante = periods_payoffs_ex_ante(period + 1, k + 1, :)
 
-            CALL get_payoffs_risk(emax, payoffs_ex_post, future_payoffs, &
-                    num_draws, eps_relevant, period, k, payoffs_ex_ante, & 
-                    edu_max, edu_start, mapping_state_idx, states_all, & 
-                    num_periods, periods_emax, delta)
+            CALL get_payoffs_risk(emax_simulated, payoffs_ex_post, & 
+                    future_payoffs, num_draws, eps_relevant, period, k, & 
+                    payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, & 
+                    states_all, num_periods, periods_emax, delta)
 
             ! Collect information            
             periods_payoffs_ex_post(period + 1, k + 1, :) = payoffs_ex_post
             periods_future_payoffs(period + 1, k + 1, :) = future_payoffs
-            periods_emax(period + 1, k + 1) = emax
+            periods_emax(period + 1, k + 1) = emax_simulated
 
         END DO
 

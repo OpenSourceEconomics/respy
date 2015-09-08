@@ -30,6 +30,7 @@ MODULE robupy_program_constants
     REAL(our_dble), PARAMETER :: upperClip    = 0.999999999999_our_dble
     REAL(our_dble), PARAMETER :: lowerClip    = 0.000000000001_our_dble
     REAL(our_dble), PARAMETER :: tiny         = 1.0e-20_our_dble
+    REAL(our_dble), PARAMETER :: pi           = 3.141592653589793238462643383279502884197
     
 !******************************************************************************
 !******************************************************************************

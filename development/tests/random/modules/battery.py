@@ -21,21 +21,27 @@ from robupy import read, solve, simulate
 ''' Main
 '''
 def test_97():
-    """ Compare results between FORTRAN and PYTHON implementations.
+    """ Compare results between FORTRAN and PYTHON of selected functions. The
+    file python/f2py/debug_interface.f90 provides the F2PY bindings.
     """
-    compile_package('fast')
+    # TODO: Comment back in
+    #compile_package('fast')
 
     import robupy.python.f2py.f2py_debug as fort
 
     for _ in range(1000):
 
-        # Draw random matrix for testing purposes
-        matrix = (np.random.multivariate_normal(np.zeros(4), np.identity(4), 4))
+        # Draw random requests for testing purposes.
+        num_draws = np.random.random_integers(1, 1000)
+        dim = np.random.random_integers(1, 6)
+        mean = np.random.uniform(-0.5, 0.5, (dim))
+
+        matrix = (np.random.multivariate_normal(np.zeros(dim), np.identity(dim), dim))
         cov = np.dot(matrix, matrix.T)
 
         # Inverse
         py = np.linalg.inv(cov)
-        f90 = fort.wrapper_inverse(cov, 4)
+        f90 = fort.wrapper_inverse(cov, dim)
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
         # Determinant
@@ -49,6 +55,17 @@ def test_97():
         f90 = fort.wrapper_trace(cov)
 
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
+
+        # Cholesky decomposition
+        f90 = fort.wrapper_cholesky(cov, dim)
+        py = np.linalg.cholesky(cov)
+
+        np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
+
+        # Random normal deviates. This only tests the interface, requires
+        # visual inspection in IPYTHON notebook as well.
+        fort.wrapper_standard_normal(num_draws)
+        fort.wrapper_multivariate_normal(mean, cov, num_draws, dim)
 
 
 def test_98():
@@ -112,7 +129,8 @@ def test_99():
     code result in identical simulate datasets.
     """
     # Set up constraints
-    compile_package('fast')
+    # TODO: Comment back in
+    #compile_package('fast')
 
     # Constraint to risk model
     constraints = dict()
@@ -124,10 +142,10 @@ def test_99():
     # Initialize containers
     base = None
 
-    for fast in ['True', 'False']:
+    for version in ['PYTHON', 'F2PY']:
 
         # Prepare initialization file
-        init_dict['SOLUTION']['fast'] = fast
+        init_dict['PROGRAM']['version'] = version
 
         print_random_dict(init_dict)
 

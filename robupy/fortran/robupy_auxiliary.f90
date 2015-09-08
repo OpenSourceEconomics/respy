@@ -79,13 +79,13 @@ FUNCTION inverse(A, k)
   
   REAL(our_dble), ALLOCATABLE   :: y(:, :)
   REAL(our_dble), ALLOCATABLE   :: B(:, :)
-  REAL(our_dble)          :: d
-  REAL(our_dble)          :: inverse(k, k)
+  REAL(our_dble)                :: d
+  REAL(our_dble)                :: inverse(k, k)
 
   INTEGER(our_int), ALLOCATABLE :: indx(:)  
-  INTEGER(our_int)        :: n
-  INTEGER(our_int)        :: i
-  INTEGER(our_int)        :: j
+  INTEGER(our_int)              :: n
+  INTEGER(our_int)              :: i
+  INTEGER(our_int)              :: j
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -128,41 +128,42 @@ FUNCTION determinant(A)
 
     !/* external objects    */
 
-  REAL(our_dble), INTENT(IN)    :: A(:, :)
-  REAL(our_dble)          :: determinant
+    REAL(our_dble), INTENT(IN)    :: A(:, :)
+    REAL(our_dble)                :: determinant
 
     !/* internal objects    */
-  INTEGER(our_int), ALLOCATABLE :: indx(:)
-  INTEGER(our_int)        :: j
-  INTEGER(our_int)        :: n
 
-  REAL(our_dble), ALLOCATABLE   :: B(:, :)
-  REAL(our_dble)          :: d
+    INTEGER(our_int), ALLOCATABLE :: indx(:)
+    INTEGER(our_int)              :: j
+    INTEGER(our_int)              :: n
+
+    REAL(our_dble), ALLOCATABLE   :: B(:, :)
+    REAL(our_dble)                :: d
 
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
 
-  ! Auxiliary objects
-  n  = size(A, 1)
+    ! Auxiliary objects
+    n  = size(A, 1)
 
-  ! Allocate containers
-  ALLOCATE(B(n, n))
-  ALLOCATE(indx(n))
+    ! Allocate containers
+    ALLOCATE(B(n, n))
+    ALLOCATE(indx(n))
 
-  ! Initialize containers
-  B = A
+    ! Initialize containers
+    B = A
 
-  CALL ludcmp(B, d, indx)
-  
-  DO j = 1, n
-  
-     d = d * B(j, j)
-  
-  END DO
-  
-  ! Collect results
-  determinant = d
+    CALL ludcmp(B, d, indx)
+    
+    DO j = 1, n
+    
+       d = d * B(j, j)
+    
+    END DO
+    
+    ! Collect results
+    determinant = d
 
 END FUNCTION
 !******************************************************************************
@@ -403,6 +404,176 @@ SUBROUTINE lubksb(A, B, indx)
     END DO
 
 END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE cholesky(factor, matrix)
+
+    !/* external objects    */
+
+    REAL(our_dble), INTENT(OUT)     :: factor(:,:)
+
+    REAL(our_dble), INTENT(IN)      :: matrix(:,:)
+
+    !/* internal objects    */
+
+    INTEGER(our_int)                :: i
+    INTEGER(our_int)                :: n
+    INTEGER(our_int)                :: k
+    INTEGER(our_int)                :: j
+
+    REAL(our_dble), ALLOCATABLE     :: clon(:, :)
+
+    REAL(our_dble)                  :: sums
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+    
+    ! Auxiliary objects
+    n = size(matrix,1)
+   
+    ! Allocate containers
+    ALLOCATE(clon(n,n))
+    
+    ! Apply Cholesky decomposition
+    clon = matrix
+    
+    DO j = 1, n
+
+      sums = 0.0
+      
+      DO k = 1, (j - 1)
+
+        sums = sums + clon(j, k)**2
+
+      END DO
+
+      clon(j, j) = DSQRT(clon(j, j) - sums)
+       
+      DO i = (j + 1), n
+
+        sums = zero_dble
+
+        DO k = 1, (j - 1)
+
+          sums = sums + clon(j, k)*clon(i, k)
+
+        END DO
+
+        clon(i, j) = (clon(i, j) - sums)/clon(j, j)
+
+      END DO
+    
+    END DO
+    
+    ! Transfer information from matrix to factor
+    DO i = 1, n
+    
+      DO j = 1, n  
+    
+        IF(i .LE. j) THEN
+    
+          factor(j, i) = clon(j, i) 
+    
+        END IF
+    
+      END DO
+    
+    END DO
+
+END SUBROUTINE 
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE standard_normal(draw)
+
+    !/* external objects    */
+
+    REAL(our_dble), INTENT(OUT)     :: draw(:)
+
+    !/* internal objects    */
+
+    INTEGER(our_int)                :: g
+    INTEGER(our_int)                :: dim
+    
+    REAL(our_dble), ALLOCATABLE     :: u(:)
+    REAL(our_dble), ALLOCATABLE     :: r(:)
+
+    !--------------------------------------------------------------------------- 
+    ! Algorithm
+    !--------------------------------------------------------------------------- 
+
+    ! Auxiliary objects
+    dim = SIZE(draw)
+
+    ! Allocate containers
+    ALLOCATE(u(2 * dim)); ALLOCATE(r(2 * dim))
+
+    ! Call uniform deviates
+    CALL RANDOM_NUMBER(u)
+
+    ! Apply Box-Muller transform
+    DO g = 1, (2 * dim), 2
+
+       r(g) = DSQRT(-2 * LOG(u(g)))*COS(2 *pi * u(g + 1)) 
+       r(g + 1) = DSQRT(-2 * LOG(u(g)))*SIN(2 *pi * u(g + 1)) 
+
+    END DO
+
+    ! Extract relevant floats
+    DO g = 1, dim 
+
+       draw(g) = r(g)     
+
+    END DO
+
+END SUBROUTINE 
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE multivariate_normal(draws, mean, covariance)
+
+    !/* external objects    */
+
+    REAL(our_dble), INTENT(OUT)     :: draws(:, :)
+    REAL(our_dble), INTENT(IN)      :: mean(:)
+    REAL(our_dble), INTENT(IN)      :: covariance(:, :)
+    
+    !/* internal objects    */
+    
+    INTEGER(our_int)                :: i
+    INTEGER(our_int)                :: num_draws
+    INTEGER(our_int)                :: dim
+    
+    REAL(our_dble), ALLOCATABLE     :: z(:, :)
+    REAL(our_dble), ALLOCATABLE     :: ch(:, :)
+
+!--------------------------------------------------------------------------- 
+! Algorithm
+!--------------------------------------------------------------------------- 
+  
+    ! Auxiliary objects
+    num_draws = SIZE(draws, 1)
+
+    dim       = SIZE(draws, 2)
+
+    ! Allocate containers
+    ALLOCATE(z(dim, 1)); ALLOCATE(ch(dim, dim))
+
+    ! Initialize containers
+    ch = zero_dble
+
+    ! Construct Cholesky decomposition
+    CALL cholesky(ch, covariance) 
+
+    ! Draw deviates
+    DO i = 1, num_draws
+       
+       CALL standard_normal(z(:, 1))
+       
+       draws(i, :) = MATMUL(ch, z(:, 1)) + mean(:)  
+    
+    END DO
+
+END SUBROUTINE 
 !******************************************************************************
 !******************************************************************************
 END MODULE
