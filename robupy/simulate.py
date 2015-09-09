@@ -102,7 +102,7 @@ def _wrapper_simulate_sample(robupy_obj, periods_eps_relevant):
     is_f2py = (fast == 'F2PY')
 
     # Interface to core functions
-    if fast:
+    if is_f2py:
         data_frame = f2py_core.wrapper_simulate_sample(num_agents,
             states_all, num_periods, mapping_state_idx, periods_payoffs_ex_ante,
             periods_eps_relevant, edu_max, edu_start, periods_emax, delta)
