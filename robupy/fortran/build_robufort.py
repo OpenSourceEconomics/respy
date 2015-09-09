@@ -158,6 +158,15 @@ def _split_backward_induction_loops(code_lines):
             code_lines['other_periods'][-1] = \
                     'DO period = (num_periods - 2), 0, -1'
 
+        # Make sure that the initialization of the outcome variables is not
+        # redone when moving from the last to previous periods.
+        if ('periods_emax' in element) and ('missing_dble' in element):
+            code_lines['other_periods'][-1] = ''
+        if ('periods_future_payoffs' in element) and ('missing_dble' in element):
+            code_lines['other_periods'][-1] = ''
+        if ('periods_payoffs_ex_post' in element) and ('missing_dble' in element):
+            code_lines['other_periods'][-1] = ''
+
     # Finishing
     return code_lines
 

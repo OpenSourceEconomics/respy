@@ -111,20 +111,21 @@ def test_98():
     # between the alternative implementations
     num_draws = init_dict['SOLUTION']['draws']
     num_periods = init_dict['BASICS']['periods']
+    shocks = init_dict['SHOCKS']
 
-    eps_relevant_periods = np.random.multivariate_normal(np.zeros(4),
-        np.identity(4), (num_periods, num_draws))
+    periods_eps_relevant = np.random.multivariate_normal(np.zeros(4),
+        shocks, (num_periods, num_draws))
 
     for period in range(num_periods):
         for j in [0, 1]:
-            eps_relevant_periods[period, :, j] = \
-                np.exp(eps_relevant_periods[period, :, j])
+            periods_eps_relevant[period, :, j] = \
+                np.exp(periods_eps_relevant[period, :, j])
 
     with open('disturbances.txt', 'w') as file_:
         for period in range(num_periods):
             for i in range(num_draws):
                 line = ' {0:15.10f} {1:15.10f} {2:15.10f} {3:15.10f}\n'.format(
-                    *eps_relevant_periods[period, i, :])
+                    *periods_eps_relevant[period, i, :])
                 file_.write(line)
 
     # Perform toolbox actions

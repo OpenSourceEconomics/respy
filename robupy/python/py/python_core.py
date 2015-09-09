@@ -15,7 +15,7 @@ from robupy.python.py.risk import get_payoffs_risk
 logger = logging.getLogger('ROBUPY_SOLVE')
 
 
-def backward_induction(num_periods, max_states_period, eps_relevant_periods,
+def backward_induction(num_periods, max_states_period, periods_eps_relevant,
         num_draws, states_number_period, periods_payoffs_ex_ante, edu_max,
         edu_start, mapping_state_idx, states_all, delta, debug, eps_cholesky,
         level, measure):
@@ -38,7 +38,7 @@ def backward_induction(num_periods, max_states_period, eps_relevant_periods,
         logger.info('... solving period ' + str(period))
 
         # Extract disturbances
-        eps_relevant = eps_relevant_periods[period, :, :]
+        eps_relevant = periods_eps_relevant[period, :, :]
 
         # Loop over all possible states
         for k in range(states_number_period[period]):

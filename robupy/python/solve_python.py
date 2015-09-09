@@ -56,7 +56,7 @@ def solve_python(robupy_obj):
     robupy_obj.lock()
 
     # Draw a set of standard normal unobservable disturbances.
-    eps_relevant_periods, eps_cholesky = _create_eps(robupy_obj)
+    periods_eps_relevant, eps_cholesky = _create_eps(robupy_obj)
 
     # Calculate ex ante payoffs which are later used in the backward
     # induction procedure. These are calculated without any reference
@@ -80,7 +80,7 @@ def solve_python(robupy_obj):
     logger.info('Staring backward induction procedure')
 
     periods_emax, periods_payoffs_ex_post, periods_future_payoffs = \
-        _wrapper_backward_induction_procedure(robupy_obj, eps_relevant_periods,
+        _wrapper_backward_induction_procedure(robupy_obj, periods_eps_relevant,
             eps_cholesky, level, measure)
 
     logger.info('... finished \n')
@@ -207,7 +207,7 @@ def _wrapper_create_state_space(robupy_obj):
     return states_all, states_number_period, mapping_state_idx
 
 
-def _wrapper_backward_induction_procedure(robupy_obj, eps_relevant_periods,
+def _wrapper_backward_induction_procedure(robupy_obj, periods_eps_relevant,
         eps_cholesky, level, measure):
     """ Wrapper for backward induction procedure.
     """
@@ -242,14 +242,14 @@ def _wrapper_backward_induction_procedure(robupy_obj, eps_relevant_periods,
     if is_f2py:
         periods_emax, periods_payoffs_ex_post, periods_future_payoffs = \
             f2py_core.wrapper_backward_induction(num_periods,
-                max_states_period, eps_relevant_periods, num_draws,
+                max_states_period, periods_eps_relevant, num_draws,
                 states_number_period, periods_payoffs_ex_ante, edu_max,
                 edu_start, mapping_state_idx,
                 states_all, delta)
     else:
         periods_emax, periods_payoffs_ex_post, periods_future_payoffs = \
             python_core.backward_induction(num_periods, max_states_period,
-                eps_relevant_periods, num_draws, states_number_period,
+                periods_eps_relevant, num_draws, states_number_period,
                 periods_payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,
                 states_all, delta, debug, eps_cholesky, level, measure)
 
@@ -303,21 +303,21 @@ def _create_eps(robupy_obj):
 
     # Draw random disturbances and adjust them for the two occupations
     np.random.seed(seed)
-    eps_relevant_periods = np.random.multivariate_normal(np.zeros(4),
+    periods_eps_relevant = np.random.multivariate_normal(np.zeros(4),
         np.identity(4), (num_periods, num_draws))
 
     for period in range(num_periods):
-        eps_relevant_periods[period, :, :] = np.dot(eps_cholesky,
-            eps_relevant_periods[period, :, :].T).T
+        periods_eps_relevant[period, :, :] = np.dot(eps_cholesky,
+            periods_eps_relevant[period, :, :].T).T
         for j in [0, 1]:
-            eps_relevant_periods[period, :, j] = np.exp(eps_relevant_periods[
+            periods_eps_relevant[period, :, j] = np.exp(periods_eps_relevant[
                                                   period, :, j])
 
     # This is only used to compare the RESTUD program to the ROBUPY package.
     # It aligns the random components between the two. It is only used in the
     # development process.
     if debug and os.path.isfile('disturbances.txt'):
-        eps_relevant_periods = read_restud_disturbances(robupy_obj)
+        periods_eps_relevant = read_restud_disturbances(robupy_obj)
 
     # In the case of ambiguity, standard normal deviates are passed into the
     # routine. This is unsatisfactory, but required to compare the outputs
@@ -326,11 +326,11 @@ def _create_eps(robupy_obj):
     # the two program yields a too large precision loss.
     if with_ambiguity:
         np.random.seed(seed)
-        eps_relevant_periods = np.random.multivariate_normal(np.zeros(4),
+        periods_eps_relevant = np.random.multivariate_normal(np.zeros(4),
             np.identity(4), (num_periods, num_draws))
 
     # Finishing
-    return eps_relevant_periods, eps_cholesky
+    return periods_eps_relevant, eps_cholesky
 
 
 def _summarize_ambiguity(robupy_obj):
