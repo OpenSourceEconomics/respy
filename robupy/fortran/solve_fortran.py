@@ -71,7 +71,7 @@ def write_robufort_initialization(init_dict):
             line = ' {0:15.5f} {1:15.5f} {2:15.5f} {3:15.5f}\n'.format(*shocks[j])
             file_.write(line)
 
-         # SOLUTION
+        # SOLUTION
         line = '{0:10d}\n'.format(init_dict['SOLUTION']['draws'])
         file_.write(line)
 
@@ -85,3 +85,6 @@ def write_robufort_initialization(init_dict):
         line = '{0:10d}\n'.format(init_dict['SIMULATION']['seed'])
         file_.write(line)
 
+        # PROGRAM
+        line = '{0}'.format(init_dict['PROGRAM']['debug'])
+        file_.write(line + '\n')

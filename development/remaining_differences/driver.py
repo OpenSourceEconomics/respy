@@ -15,6 +15,8 @@ import time
 import shlex
 # Development Imports
 
+CURRENT_WD = os.environ['ROBUPY'] + '/development'
+ROBUPY_DIR = os.environ['ROBUPY'] + '/robupy'
 
 # ROBUPY import
 sys.path.insert(0, os.environ['ROBUPY'])
@@ -45,9 +47,9 @@ for _ in range(1):
 
     transform_robupy_to_restud(init_dict)
 
-    os.system(' gfortran -O3 -o dp3asim dp3asim.f90')
 
     # Run DP3ASIM
+    os.system(' gfortran -O3 -o dp3asim dp3asim.f90')
 
     start_time = time.time()
 
@@ -57,6 +59,12 @@ for _ in range(1):
 
 
     # Run ROBUFORT
+    os.chdir(ROBUPY_DIR)
+
+    os.system('./waf configure build --fast')
+
+    os.chdir(CURRENT_WD)
+
     write_robufort_initialization(init_dict)
 
     start_time = time.time()

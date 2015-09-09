@@ -38,6 +38,10 @@ files += glob.glob('.slave-*')
 
 files += glob.glob('.dat*')
 
+files += glob.glob('*.robupy.*')
+
+files += glob.glob('*.robufort.*')
+
 ''' Clean modules.
     '''
 files += glob.glob('modules/*.out*')

@@ -13,7 +13,7 @@ MODULE PEI_ADDITIONS
 
   !*****************************************************************************
   !*****************************************************************************
-  SUBROUTINE WRITE_OUT_DISTURBANCES(PERIODS_EPS_RELEVANT, NPER, DRAW)
+  SUBROUTINE READ_IN_DISTURBANCES(EU1, EU2, C, B, NPER, DRAW)
 
     !
     ! Write random disturbances to file.
@@ -21,25 +21,33 @@ MODULE PEI_ADDITIONS
 
     !/* external objects    */
 
-    INTEGER, INTENT(IN)       :: NPER
+    REAL, INTENT(INOUT)           :: EU1(:, :)
+    REAL, INTENT(INOUT)           :: EU2(:, :)
+    REAL, INTENT(INOUT)           :: C(:, :)
+    REAL, INTENT(INOUT)           :: B(:, :)
+    REAL, INTENT(IN)              :: DRAW
 
-    REAL, INTENT(IN)          :: DRAW
-    REAL, INTENT(IN)          :: PERIODS_EPS_RELEVANT(:, :, :)
+    INTEGER, INTENT(IN)           :: NPER
 
     !/* internal objects    */
 
-    INTEGER                   :: J
-    INTEGER                   :: T
+    INTEGER                       :: J
+    INTEGER                       :: T
 
-    LOGICAL                   :: WRITE_OUT
+    REAL                          :: PERIODS_EPS_RELEVANT(40, 5000, 4)
+
+    LOGICAL                       :: READ_IN
 
     !--------------------------------------------------------------------------- 
     ! Algorithm
     !--------------------------------------------------------------------------- 
 
-    INQUIRE(FILE='.write_out', EXIST=WRITE_OUT)
+    PERIODS_EPS_RELEVANT = -99.00
+    
+    ! Check applicability
+    INQUIRE(FILE='disturbances.txt', EXIST=READ_IN)
 
-    IF (WRITE_OUT .EQV. .True.) THEN
+    IF (READ_IN .EQV. .True.) THEN
 
       OPEN(12, file='disturbances.txt')
       
@@ -47,14 +55,23 @@ MODULE PEI_ADDITIONS
 
         DO J = 1, DRAW
         
-          2000 FORMAT(6(1x,f20.15))
-          WRITE(12,2000) PERIODS_EPS_RELEVANT(J, T, :)
+          2000 FORMAT(4(1x,f15.10))
+          READ(12,2000) PERIODS_EPS_RELEVANT(T, J, :)
         
         END DO
       
       END DO
 
     END IF
+
+    ! Replacements
+    EU1 = TRANSPOSE(PERIODS_EPS_RELEVANT(:, :, 1))
+
+    EU2 = TRANSPOSE(PERIODS_EPS_RELEVANT(:, :, 2))
+    
+    C = TRANSPOSE(PERIODS_EPS_RELEVANT(:, :, 3))
+    
+    B = TRANSPOSE(PERIODS_EPS_RELEVANT(:, :, 4))
 
   END SUBROUTINE 
 
@@ -287,10 +304,6 @@ PROGRAM dp3asim
       DIMENSION PROB1(40,4)
       INTEGER X1,X2,E,T
 
-      ! PEI: Container for relevant disturbances. Allows to align the 
-      ! results between this program and the ROBUPY package.
-      DIMENSION PERIODS_EPS_RELEVANT(5000, 40, 4)
-
       ! PEI: Open files
       open(9,file='in.txt')
         
@@ -394,17 +407,13 @@ PROGRAM dp3asim
        EU2(J,T) = exp(A(2,1)*RNN(1)+A(2,2)*RNN(2))
        C(J,T)   = A(3,1)*RNN(1)+A(3,2)*RNN(2)+A(3,3)*RNN(3)
        B(J,T)   = A(4,1)*RNN(1)+A(4,2)*RNN(2)+A(4,3)*RNN(3)+A(4,4)*RNN(4)     
-
-       ! PEI: Collect standard deviates
-       PERIODS_EPS_RELEVANT(J, T, :2) = (/ EU1(J, T), EU2(J, T)/)
-       PERIODS_EPS_RELEVANT(J, T, 3:) = (/ C(J, T), B(J,T) /)
-
    30 CONTINUE
    31 CONTINUE
 !C  30 CONTINUE
  
-  ! PEI: Write out all random components.
-  CALL WRITE_OUT_DISTURBANCES(PERIODS_EPS_RELEVANT, NPER, DRAW)
+  ! PEI: Read in random components (if requested for debugging). Replacement
+  ! of the disturbances originally created inside the RESTUD program.
+  CALL READ_IN_DISTURBANCES(EU1, EU2, C, B, NPER, DRAW)
 
 !*****************************************************************
 !*  CONSTRUCT THE EXPECTED MAX OF THE TIME NPER VALUE FUNCTIONS  *

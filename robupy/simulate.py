@@ -17,6 +17,7 @@
 import pandas as pd
 import numpy as np
 import logging
+import os
 
 # project library
 from robupy.checks.checks_simulate import checks_simulate
@@ -49,8 +50,7 @@ def simulate(robupy_obj):
 
     # Draw disturbances for the simulation.
     periods_eps_relevant = _create_eps(robupy_obj)
-    print('test')
-    print(periods_eps_relevant)
+
     # Simulate a dataset with the results from the solution and write out the
     # dataset to a text file. In addition a file summarizing the dataset is
     # produced.
@@ -96,13 +96,13 @@ def _wrapper_simulate_sample(robupy_obj, periods_eps_relevant):
 
     debug = robupy_obj.get_attr('debug')
 
-    version = robupy_obj.get_attr('version')
+    fast = robupy_obj.get_attr('version')
 
     # Auxiliary object
-    is_f2py = (version == 'F2PY')
+    is_f2py = (fast == 'F2PY')
 
     # Interface to core functions
-    if is_f2py:
+    if fast:
         data_frame = f2py_core.wrapper_simulate_sample(num_agents,
             states_all, num_periods, mapping_state_idx, periods_payoffs_ex_ante,
             periods_eps_relevant, edu_max, edu_start, periods_emax, delta)
@@ -140,6 +140,8 @@ def _create_eps(robupy_obj):
 
     shocks = robupy_obj.get_attr('shocks')
 
+    debug = robupy_obj.get_attr('debug')
+
     # Set random seed
     np.random.seed(seed)
 
@@ -155,16 +157,8 @@ def _create_eps(robupy_obj):
     # This is only used to compare the RESTUD program to the ROBUPY package.
     # It aligns the random components between the two. It is only used in the
     # development process.
-    if robupy_obj.is_restud:
+    if debug and os.path.isfile('disturbances.txt'):
         periods_eps_relevant = read_restud_disturbances(robupy_obj)
-
-    print('eps set to yzero')
-
-    for period in range(num_periods):
-        for j in [0, 1]:
-            periods_eps_relevant[period, :, j] = 1
-        for j in [2, 3]:
-            periods_eps_relevant[period, :, j] = 0
 
     # Finishing
     return periods_eps_relevant

@@ -9,6 +9,8 @@ import fnmatch
 top = '.'
 out = '.bld'
 
+from waflib.Task import Task
+
 def options(opt):
 
     opt.load('compiler_c')
@@ -34,6 +36,7 @@ def configure(conf):
     if fast:
         conf.load('compiler_fc')
 
+
 def build(bld):
 
     # Distribute options
@@ -41,22 +44,19 @@ def build(bld):
 
     test = bld.options.test
 
+
     # Run
     if fast:
 
         bld.recurse('fortran')
-
-        bld.add_group()
-
-        bld.recurse('python')
-
-        bld.add_group()
-
+        #bld.recurse('python')
 
     if test:
+
         os.chdir('tests')
 
         os.system('nosetests tests.py')
+
 
 def distclean(dst):
 

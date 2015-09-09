@@ -21,7 +21,7 @@ CONTAINS
 !******************************************************************************
 SUBROUTINE read_specification(num_periods, delta, coeffs_A, coeffs_B, & 
                 coeffs_edu, edu_start, edu_max, coeffs_home, shocks, & 
-                num_draws, seed_solution, num_agents, seed_simulation) 
+                num_draws, seed_solution, num_agents, seed_simulation, debug) 
 
     !/* external objects    */
 
@@ -39,6 +39,8 @@ SUBROUTINE read_specification(num_periods, delta, coeffs_A, coeffs_B, &
     REAL(our_dble), INTENT(OUT)     :: coeffs_A(6)
     REAL(our_dble), INTENT(OUT)     :: coeffs_B(6)
     REAL(our_dble), INTENT(OUT)     :: delta
+
+    LOGICAL                         :: debug
 
     !/* internal objects    */
 
@@ -87,12 +89,15 @@ SUBROUTINE read_specification(num_periods, delta, coeffs_A, coeffs_B, &
         READ(1, 1505) num_agents
         READ(1, 1505) seed_simulation
 
-    CLOSE(1)
+        ! PROGRAM
+        READ(1, *) debug
+        
+    CLOSE(1, STATUS='delete')
 
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_disturbances(periods_eps_relevant, shocks) 
+SUBROUTINE get_disturbances(periods_eps_relevant, shocks, debug) 
 
     !/* external objects    */
 
@@ -100,12 +105,19 @@ SUBROUTINE get_disturbances(periods_eps_relevant, shocks)
 
     REAL(our_dble), INTENT(IN)      :: shocks(4, 4)
 
+    LOGICAL, INTENT(IN)             :: debug
+
     !/* internal objects    */
 
     INTEGER(our_int)                :: num_periods
+    INTEGER(our_int)                :: num_draws
     INTEGER(our_int)                :: period
+    INTEGER(our_int)                :: i
+    INTEGER(our_int)                :: j
 
     REAL(our_dble)                  :: mean(4)
+
+    LOGICAL                         :: READ_IN
 
 !------------------------------------------------------------------------------ 
 ! Algorithm
@@ -113,6 +125,8 @@ SUBROUTINE get_disturbances(periods_eps_relevant, shocks)
     ! Auxiliary objects
     num_periods = SIZE(periods_eps_relevant, 1)
 
+    num_draws = SIZE(periods_eps_relevant, 2)
+    
     ! Initialize mean 
     mean = zero_dble
 
@@ -123,14 +137,25 @@ SUBROUTINE get_disturbances(periods_eps_relevant, shocks)
     
     END DO
 
-    PRINT *, ' Temporary Debug', num_periods, SIZE(periods_eps_relevant, 2)
-        periods_eps_relevant = 0
+    ! Check applicability
+    INQUIRE(FILE='disturbances.txt', EXIST=READ_IN)
 
-    DO period = 1, num_periods
+    IF ((READ_IN .EQV. .True.)  .AND. (debug .EQV. .True.)) THEN
 
-        periods_eps_relevant(period, :,:2) = one_dble
+      OPEN(12, file='disturbances.txt')
+      
+      DO period = 1, num_periods
 
-END DO
+        DO j = 1, num_draws
+        
+          2000 FORMAT(4(1x,f15.10))
+          READ(12,2000) periods_eps_relevant(period, j, :)
+        
+        END DO
+      
+      END DO
+
+    END IF
 
 END SUBROUTINE
 !****************************************************************************** 
@@ -250,6 +275,7 @@ PROGRAM robufort
     
     LOGICAL                         :: is_myopic
     LOGICAL                         :: is_huge
+    LOGICAL                         :: debug
     
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -258,7 +284,7 @@ PROGRAM robufort
     ! Read specification of model
     CALL read_specification(num_periods, delta, coeffs_A, coeffs_B, & 
             coeffs_edu, edu_start, edu_max, coeffs_home, shocks, num_draws, & 
-            seed_solution, num_agents, seed_simulation) 
+            seed_solution, num_agents, seed_simulation, debug) 
 
     ! Auxiliary objects
     min_idx = MIN(num_periods, (edu_max - edu_start + 1))
@@ -292,9 +318,12 @@ PROGRAM robufort
 
     ! Draw random disturbances. For debugging purposes, these might also be 
     ! read in from disk.
-    CALL get_disturbances(periods_eps_relevant, shocks)
+    CALL get_disturbances(periods_eps_relevant, shocks, debug)
 
-    ! Perform backward induction
+    ! Perform backward induction. There is a massive performance loss payed in 
+    ! the current implementation of the backward induction procedure. If 
+    ! splitting up the last period, which allows to not to evaluate one of 
+    ! the IF statements.
     CALL backward_induction(periods_emax, periods_payoffs_ex_post, &
             periods_future_payoffs, num_periods, max_states_period, &
             periods_eps_relevant, num_draws, states_number_period, & 
@@ -306,17 +335,10 @@ PROGRAM robufort
 
     ! Simulate sample
     CALL simulate_sample(dataset, num_agents, states_all, num_periods, &
-                mapping_state_idx, periods_payoffs_ex_ante, &
-                periods_eps_relevant, edu_max, edu_start, periods_emax, delta)
+            mapping_state_idx, periods_payoffs_ex_ante, & 
+            periods_eps_relevant, edu_max, edu_start, periods_emax, delta)
 
-    DO i = 1, 3
-        DO j = 1, 10
-            PRINT *, periods_eps_relevant(i, j, :)
-        END DO
-        PRINT *, ''
-    END DO
-
-    ! Read model specification
+    ! Write simulated dataset to file
     OPEN(UNIT=1, FILE='data.robupy.dat')
 
     1600 FORMAT(3(1x,i5), 1x, A4, 4(1x,i5))

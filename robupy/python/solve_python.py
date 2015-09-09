@@ -283,9 +283,11 @@ def _create_eps(robupy_obj):
 
     num_draws = robupy_obj.get_attr('num_draws')
 
+    seed = robupy_obj.get_attr('seed_solution')
+
     shocks = robupy_obj.get_attr('shocks')
 
-    seed = robupy_obj.get_attr('seed_solution')
+    debug = robupy_obj.get_attr('debug')
 
     level = robupy_obj.get_attr('level')
 
@@ -314,7 +316,7 @@ def _create_eps(robupy_obj):
     # This is only used to compare the RESTUD program to the ROBUPY package.
     # It aligns the random components between the two. It is only used in the
     # development process.
-    if robupy_obj.is_restud:
+    if debug and os.path.isfile('disturbances.txt'):
         eps_relevant_periods = read_restud_disturbances(robupy_obj)
 
     # In the case of ambiguity, standard normal deviates are passed into the

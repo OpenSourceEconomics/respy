@@ -132,7 +132,7 @@ def generate_random_dict(constraints=None):
         # Checks
         assert (debug in ['True', 'False'])
         # Replace in initialization file
-        dict_['SOLUTION']['debug'] = debug
+        dict_['PROGRAM']['debug'] = debug
 
     # Replace level of ambiguity
     if 'level' in constraints.keys():

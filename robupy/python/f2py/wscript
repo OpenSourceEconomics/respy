@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 # standard library
-import fnmatch
 import shutil
 import os
 
@@ -21,6 +20,11 @@ def build(bld):
         except OSError:
             pass
 
+        try:
+            shutil.rmtree(dir_)
+        except OSError:
+            pass
+
         os.symlink('../../fortran/' + dir_, dir_)
 
     f2py_call(bld)
@@ -33,7 +37,7 @@ def build(bld):
 
 
 def f2py_call(self):
-    """ Create the interface to f90_main using f2py.
+    """ Create the interface to PYTHON using f2py.
     """
     os.system(
         'f2py3 -c -m  f2py_core f2py_interface_core.f90 -Iinclude -Llib '

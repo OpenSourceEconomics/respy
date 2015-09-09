@@ -74,12 +74,6 @@ class RobupyCls(MetaCls):
 
         self.is_first = True
 
-        # This indicator is only used to compare the ROBUPY package to the
-        # RESTUD codes. If set to true, it uses disturbances written out by
-        # the RESTUD program. It aligns the random components across the two
-        # components. It is only used in the development process.
-        self.is_restud = False
-
     ''' Derived attributes
     '''
     def _derived_attributes(self):
