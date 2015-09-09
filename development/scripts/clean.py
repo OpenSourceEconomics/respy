@@ -8,6 +8,7 @@ import fnmatch
 import shutil
 import os
 
+
 """ Auxiliary functions.
 """
 
@@ -67,3 +68,6 @@ def remove_nuisances():
 """
 remove_nuisances()
 
+os.chdir('package/robupy')
+
+os.system('./waf distclean')

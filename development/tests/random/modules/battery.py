@@ -20,12 +20,14 @@ from robupy import read, solve, simulate
 
 ''' Main
 '''
+
+
 def test_97():
     """ Compare results between FORTRAN and PYTHON of selected functions. The
     file python/f2py/debug_interface.f90 provides the F2PY bindings.
     """
-    # TODO: Comment back in
-    #compile_package('fast')
+    # Ensure that fast solution methods are available
+    compile_package('fast')
 
     import robupy.python.f2py.f2py_debug as fort
 
@@ -71,6 +73,9 @@ def test_97():
 def test_98():
     """  Compare results from the RESTUD program and the ROBUPY package.
     """
+
+    # Ensure that fast solution methods are available
+    compile_package('fast')
 
     # Prepare RESTUD program
     os.chdir('modules')
@@ -158,9 +163,8 @@ def test_99():
     """ Testing whether the results from a fast and slow execution of the
     code result in identical simulate datasets.
     """
-    # Set up constraints
-    # TODO: Comment back in
-    #compile_package('fast')
+    # Ensure that fast solution methods are available
+    compile_package('fast')
 
     # Constraint to risk model
     constraints = dict()
