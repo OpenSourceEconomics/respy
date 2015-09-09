@@ -23,7 +23,6 @@ sys.path.insert(0, os.environ['ROBUPY'])
 sys.path.insert(0, os.environ['ROBUPY'] + '/development/tests/random')
 from modules.auxiliary import compile_package, transform_robupy_to_restud
 
-from wscript import distclean
 
 from robupy import read, solve, simulate
 from robupy.tests.random_init import generate_init

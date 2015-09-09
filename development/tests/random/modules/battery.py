@@ -153,6 +153,9 @@ def test_98():
     fort = pd.DataFrame(np.array(np.genfromtxt('ftest.txt',
             missing_values='.'), ndmin=2)[:, -4:])
 
+    fort.to_csv('fort.dat')
+    py.to_csv('py.dat')
+
     assert_frame_equal(py, fort)
 
     # Cleanup
