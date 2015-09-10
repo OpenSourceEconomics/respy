@@ -466,6 +466,7 @@ PROGRAM robufort
     DEALLOCATE(periods_eps_relevant) 
     ALLOCATE(periods_eps_relevant(num_periods, num_agents, 4))
     
+    print *, periods_eps_relevant(1, 1, :)
     CALL get_disturbances(periods_eps_relevant, shocks, seed_simulation, &
             is_debug) 
 
