@@ -221,8 +221,8 @@ def test_5():
 
     compile_package('fast')
 
-    import robupy.performance.fortran.fortran_core as fort
-    import robupy.performance.python.python_core as py
+    import robupy.python.f2py.f2py_core as fort
+    import robupy.python.py.python_core as py
 
 
     for _ in range(25):
@@ -236,8 +236,8 @@ def test_5():
         min_idx = min(num_periods, (edu_max - edu_start + 1))
 
         # FORTRAN
-        fort_a, fort_b, fort_c = fort.create_state_space(num_periods, edu_start,
-                                                         edu_max, min_idx)
+        fort_a, fort_b, fort_c = fort.wrapper_create_state_space(num_periods, 
+                                    edu_start, edu_max, min_idx)
 
         # PYTHON
         py_a, py_b, py_c = py.create_state_space(num_periods, edu_start,

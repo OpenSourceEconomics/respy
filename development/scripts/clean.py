@@ -6,10 +6,15 @@
 # standard library
 import fnmatch
 import shutil
+import sys
 import os
+
+# module-wide variables
+PROJECT_DIR = os.environ['ROBUPY']
 
 """ Auxiliary functions.
 """
+
 
 def remove(path):
     """ Remove path, where path can be either a directory or a file. The
@@ -21,6 +26,7 @@ def remove(path):
 
     if os.path.isfile(path):
         os.remove(path)
+
 
 def remove_nuisances():
     """ Remove nuisance files from the directory tree.
@@ -35,7 +41,7 @@ def remove_nuisances():
 
         for file_types in ['*.robupy.*', '.lock-waf_linux_build',
                            '*.so', '.coverage', '*.txt', '.write_out',
-                           'dp3asim']:
+                           'dp3asim', '*.o']:
 
             for filename in fnmatch.filter(file_names, file_types):
                 matches.append(os.path.join(root, filename))
@@ -67,3 +73,6 @@ def remove_nuisances():
 """
 remove_nuisances()
 
+os.chdir(PROJECT_DIR + '/robupy')
+
+os.system('./waf distclean')

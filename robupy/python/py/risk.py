@@ -6,7 +6,7 @@
 import numpy as np
 
 # project library
-from robupy.performance.python.auxiliary import simulate_emax
+from robupy.python.py.auxiliary import simulate_emax
 
 
 ''' Public functions

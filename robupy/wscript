@@ -2,12 +2,18 @@
 
 # standard library
 import os
+import sys
 import glob
 import shutil
 import fnmatch
 
 top = '.'
 out = '.bld'
+
+# Check for Python 3
+if not (sys.version_info[0] == 3):
+    raise AssertionError('Please use Python 3')
+
 
 def options(opt):
 
@@ -20,6 +26,9 @@ def options(opt):
 
     opt.add_option('--test', action='store_true', dest='test', default=False,
                    help='run test battery')
+
+    opt.add_option('--debug', action='store_true', dest='debug', default=False,
+                   help='use debug compiler options')
 
 def configure(conf):
 
@@ -34,6 +43,7 @@ def configure(conf):
     if fast:
         conf.load('compiler_fc')
 
+
 def build(bld):
 
     # Distribute options
@@ -41,42 +51,64 @@ def build(bld):
 
     test = bld.options.test
 
-    # Run
+    # Start from a clean slate
+    distclean(bld, all==False)
+
     if fast:
-        bld.recurse('performance')
+
+        bld.recurse('fortran')
+
     if test:
+
         os.chdir('tests')
+
         os.system('nosetests tests.py')
 
-def distclean(dst):
 
+def distclean(dst, all_=True):
+
+    # Remove nuisance files
     remove_filetypes_distclean('.')
 
-    remove_for_distclean('.bld')
+    # Remove compiled files
+    for dir_ in ['lib', 'bin', 'include']:
 
-    try:
+        remove_for_distclean('fortran/' + dir_)
 
-        remove_for_distclean(glob.glob('.waf3-*')[0])
+        # Special treatment for symbolic links
+        try:
+            os.unlink('python/f2py/' + dir_)
+        except OSError:
+            pass
 
-    except Exception:
-
-        pass
+    # Remove build system
+    if all_:
+        remove_for_distclean(glob.glob('.waf*'))
+        remove_for_distclean('.bld')
 
 
 ''' Auxiliary functions
 '''
-def remove_for_distclean(path):
+
+
+def remove_for_distclean(paths):
     """ Remove path, where path can be either a directory or a file. The
         appropriate function is selected. Note, however, that if an
         OSError occurs, the function will just path.
     """
-    if os.path.isdir(path):
+    if not isinstance(paths, list):
+        paths = [paths]
 
-        shutil.rmtree(path)
+    for path in paths:
 
-    if os.path.isfile(path):
+        if os.path.isdir(path):
 
-        os.remove(path)
+            shutil.rmtree(path)
+
+        if os.path.isfile(path):
+
+            os.remove(path)
+
 
 def remove_filetypes_distclean(path):
     """ Remove nuisance files from the directory tree.
@@ -85,9 +117,10 @@ def remove_filetypes_distclean(path):
 
     for root, _, filenames in os.walk('.'):
 
-        for filetypes in ['*.aux','*.log','*.pyc', '*.so', '*~', '*tar', \
-            '*.zip', '.waf*', '*lock*', '*.mod', '*.a', '*.pkl', '*.out', '*.pyo', '*.info',\
-            '__pycache__', '.coverage']:
+        for filetypes in ['*.aux','*.log','*.pyc', '*.so', '*~', '*tar',
+                          '*.zip', '.waf*', '*lock*', '*.mod', '*.a',
+                          '*.pkl', '*.out', '*.pyo', '*.info',
+                          '__pycache__', '.coverage', '*.o']:
 
                 for filename in fnmatch.filter(filenames, filetypes):
 

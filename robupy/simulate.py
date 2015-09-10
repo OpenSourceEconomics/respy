@@ -17,15 +17,15 @@
 import pandas as pd
 import numpy as np
 import logging
+import os
 
 # project library
-from robupy.checks.checks_simulate import checks_simulate
 from robupy.auxiliary import replace_missing_values
 from robupy.auxiliary import read_restud_disturbances
 
-import robupy.performance.python.python_core as python_core
+import robupy.python.py.python_core as python_core
 try:
-    import robupy.performance.fortran.fortran_core as fortran_core
+    import robupy.python.f2py.f2py_core as f2py_core
 except ImportError:
     pass
 
@@ -91,16 +91,19 @@ def _wrapper_simulate_sample(robupy_obj, periods_eps_relevant):
 
     edu_max = robupy_obj.get_attr('edu_max')
 
+    fast = robupy_obj.get_attr('version')
+
     delta = robupy_obj.get_attr('delta')
 
     debug = robupy_obj.get_attr('debug')
 
-    fast = robupy_obj.get_attr('fast')
+    # Auxiliary object
+    is_f2py = (fast == 'F2PY')
 
     # Interface to core functions
-    if fast:
-        data_frame = fortran_core.simulate_sample(num_agents, states_all,
-            num_periods, mapping_state_idx, periods_payoffs_ex_ante,
+    if is_f2py:
+        data_frame = f2py_core.wrapper_simulate_sample(num_agents,
+            states_all, num_periods, mapping_state_idx, periods_payoffs_ex_ante,
             periods_eps_relevant, edu_max, edu_start, periods_emax, delta)
     else:
         data_frame = python_core.simulate_sample(num_agents, states_all,
@@ -115,13 +118,75 @@ def _wrapper_simulate_sample(robupy_obj, periods_eps_relevant):
 
     # Run checks on data frame
     if debug:
-        checks_simulate('data_frame', robupy_obj, data_frame)
+        _check_dataset(data_frame, robupy_obj)
 
     # Finishing
     return data_frame
 
 ''' Auxiliary functions
 '''
+
+def _check_dataset(data_frame, robupy_obj):
+    """ This routine runs some consistency checks on the simulated data frame.
+    """
+    # Distribute class attributes
+    num_periods = robupy_obj.get_attr('num_periods')
+
+    num_agents = robupy_obj.get_attr('num_agents')
+
+    edu_max = robupy_obj.get_attr('edu_max')
+
+    # Check dimension of data frame
+    assert (data_frame.shape == (num_periods * num_agents, 8))
+
+    # Check that there are the appropriate number of values
+    for i in range(8):
+        # This is not applicable for the wage observations
+        if i == 3:
+            continue
+        # Check valid values
+        assert (data_frame.count(axis=0)[i] == (num_periods * num_agents))
+
+    # Check that the maximum number of values are valid
+    for i, max_ in enumerate(
+            [num_agents, num_periods, 4, num_periods, num_periods,
+                num_periods,
+                edu_max, 1]):
+        # Agent and time index
+        if i in [0, 1]:
+            assert (data_frame.max(axis=0)[i] == (max_ - 1))
+        # Choice observation
+        if i == 2:
+            assert (data_frame.max(axis=0)[i] <= max_)
+        # Wage observations
+        if i == 3:
+               pass
+        # Work experience A, B
+        if i in [4, 5]:
+            assert (data_frame.max(axis=0)[i] <= max_)
+        # Education
+        if i in [6]:
+            assert (data_frame.max(axis=0)[i] <= max_)
+        # Lagged Education
+        if i in [7]:
+            assert (data_frame.max(axis=0)[i] <= max_)
+
+    # Each valid period indicator occurs as often as agents in the dataset.
+    for period in range(num_periods):
+        assert (data_frame[1].value_counts()[period] == num_agents)
+
+    # Each valid agent indicator occurs as often as periods in the dataset.
+    for agent in range(num_agents):
+        assert (data_frame[0].value_counts()[agent] == num_periods)
+
+    # Check valid values of wage observations
+    for count in range(num_agents * num_periods):
+        is_working = (data_frame[2][count] in [1, 2])
+        if is_working:
+            assert (np.isfinite(data_frame[3][count]))
+            assert (data_frame[3][count] > 0.00)
+        else:
+            assert (np.isfinite(data_frame[3][count]) == False)
 
 
 def _create_eps(robupy_obj):
@@ -135,6 +200,8 @@ def _create_eps(robupy_obj):
     seed = robupy_obj.get_attr('seed_simulation')
 
     shocks = robupy_obj.get_attr('shocks')
+
+    debug = robupy_obj.get_attr('debug')
 
     # Set random seed
     np.random.seed(seed)
@@ -151,7 +218,7 @@ def _create_eps(robupy_obj):
     # This is only used to compare the RESTUD program to the ROBUPY package.
     # It aligns the random components between the two. It is only used in the
     # development process.
-    if robupy_obj.is_restud:
+    if debug and os.path.isfile('disturbances.txt'):
         periods_eps_relevant = read_restud_disturbances(robupy_obj)
 
     # Finishing

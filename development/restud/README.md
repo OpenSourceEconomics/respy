@@ -8,7 +8,7 @@ The material in this directory allows to reproduce the Monte Carlo results repor
 
 ### Codes
 
-Source codes for the orginal FORTRAN program are available in the **codes** subdirectory. I post the original FORTRAN77 codes and also provide an upgraded FORTRAN95 version.
+Source codes for the original FORTRAN program are available in the **codes** subdirectory. I post the original FORTRAN77 codes and also provide an upgraded FORTRAN95 version.
 
 ### Simulation
 

@@ -1,11 +1,9 @@
-!******************************************************************************
-!******************************************************************************
 MODULE PEI_ADDITIONS
   
-!*******************************************************************************
-! This module provides additional functions that allow to test this program 
-! against the ROBUPY package.
-!*******************************************************************************
+  !*****************************************************************************
+  ! This module provides additional functions that allow to test this program 
+  ! against the ROBUPY package.
+  !*****************************************************************************
 
   IMPLICIT NONE
 
@@ -13,39 +11,35 @@ MODULE PEI_ADDITIONS
 
   CONTAINS
 
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE READ_IN_DISTURBANCES(EU1, EU2, C, B, NPER, DRAW)
+  !*****************************************************************************
+  !*****************************************************************************
+  SUBROUTINE WRITE_OUT_DISTURBANCES(PERIODS_EPS_RELEVANT, NPER, DRAW)
 
-  !/* external objects    */
+    !
+    ! Write random disturbances to file.
+    !
 
-  REAL, INTENT(INOUT)           :: EU1(:, :)
-  REAL, INTENT(INOUT)           :: EU2(:, :)
-  REAL, INTENT(INOUT)           :: C(:, :)
-  REAL, INTENT(INOUT)           :: B(:, :)
-  REAL, INTENT(IN)              :: DRAW
+    !/* external objects    */
 
-  INTEGER, INTENT(IN)           :: NPER
+    INTEGER, INTENT(IN)       :: NPER
 
-  !/* internal objects    */
+    REAL, INTENT(IN)          :: DRAW
+    REAL, INTENT(IN)          :: PERIODS_EPS_RELEVANT(:, :, :)
 
-  INTEGER                       :: J
-  INTEGER                       :: T
+    !/* internal objects    */
 
-  REAL                          :: PERIODS_EPS_RELEVANT(40, 5000, 4)
+    INTEGER                   :: J
+    INTEGER                   :: T
 
-  LOGICAL                       :: READ_IN
+    LOGICAL                   :: WRITE_OUT
 
-!------------------------------------------------------------------------------- 
-! Algorithm
-!------------------------------------------------------------------------------- 
+    !--------------------------------------------------------------------------- 
+    ! Algorithm
+    !--------------------------------------------------------------------------- 
 
-    PERIODS_EPS_RELEVANT = -99.00
-    
-    ! Check applicability
-    INQUIRE(FILE='disturbances.txt', EXIST=READ_IN)
+    INQUIRE(FILE='.write_out', EXIST=WRITE_OUT)
 
-    IF (READ_IN .EQV. .True.) THEN
+    IF (WRITE_OUT .EQV. .True.) THEN
 
       OPEN(12, file='disturbances.txt')
       
@@ -53,38 +47,31 @@ SUBROUTINE READ_IN_DISTURBANCES(EU1, EU2, C, B, NPER, DRAW)
 
         DO J = 1, DRAW
         
-          2000 FORMAT(4(1x,f15.10))
-          READ(12,2000) PERIODS_EPS_RELEVANT(T, J, :)
+          2000 FORMAT(6(1x,f20.15))
+          WRITE(12,2000) PERIODS_EPS_RELEVANT(J, T, :)
         
         END DO
       
       END DO
 
-      ! Replacements
-      EU1 = TRANSPOSE(PERIODS_EPS_RELEVANT(:, :, 1))
-
-      EU2 = TRANSPOSE(PERIODS_EPS_RELEVANT(:, :, 2))
-      
-      C = TRANSPOSE(PERIODS_EPS_RELEVANT(:, :, 3))
-      
-      B = TRANSPOSE(PERIODS_EPS_RELEVANT(:, :, 4))
-
-
     END IF
 
-END SUBROUTINE 
+  END SUBROUTINE 
+
 !*******************************************************************************
 !*******************************************************************************
+
 END MODULE
 
 !*******************************************************************************
 !*******************************************************************************
 MODULE IMSL_REPLACEMENTS
   
-!*******************************************************************************
-! This module provides the required functionality that is provided by the  
-! IMSL library in the original work.
-!*******************************************************************************
+
+  !*****************************************************************************
+  ! This module provides the required functionality that is provided by the  
+  ! IMSL library in the original work.
+  !*****************************************************************************
 
   IMPLICIT NONE
 
@@ -92,165 +79,172 @@ MODULE IMSL_REPLACEMENTS
 
   CONTAINS
 
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE LFCDS(a, matrix, b, factor, c, d)
+  !*****************************************************************************
+  !*****************************************************************************
+  SUBROUTINE LFCDS(a, matrix, b, factor, c, d)
 
-  !
-  ! This subroutine performs a Cholesky decomposition. Some input arguments
-  ! are just present to align the interface to the original function call.
-  !
+    !
+    ! This subroutine performs a Cholesky decomposition. Some input arguments
+    ! are just present to align the interface to the original function call.
+    !
 
-  !/* external objects    */
+    !/* external objects    */
     
-  REAL, INTENT(IN)	     :: matrix(:,:)
-  REAL, INTENT(OUT)      :: factor(:,:)
-  REAL, INTENT(INOUT)    :: d
+    REAL, INTENT(IN)	     :: matrix(:,:)
+    REAL, INTENT(OUT)      :: factor(:,:)
+    REAL, INTENT(INOUT)    :: d
     
-  INTEGER,  INTENT(IN)   :: a
-  INTEGER,  INTENT(IN)   :: b
-  INTEGER,  INTENT(IN)   :: c
+    INTEGER,  INTENT(IN)   :: a
+    INTEGER,  INTENT(IN)   :: b
+    INTEGER,  INTENT(IN)   :: c
 
-  !/* internal objects    */
+    !/* internal objects    */
 
-  INTEGER				         :: i
-  INTEGER                :: n
-  INTEGER                :: k
-  INTEGER                :: j
+    INTEGER				         :: i
+    INTEGER                :: n
+    INTEGER                :: k
+    INTEGER                :: j
 
-  REAL					         :: sums
-  REAL, ALLOCATABLE	     :: clon(:,:)
+    REAL					         :: sums
+    REAL, ALLOCATABLE	     :: clon(:,:)
 
-!------------------------------------------------------------------------------- 
-! Algorithm
-!------------------------------------------------------------------------------- 
+    !--------------------------------------------------------------------------- 
+    ! Algorithm
+    !--------------------------------------------------------------------------- 
     
-  ! Initialize containers and auxiliary objects
-  factor = 0
+    ! Initialize containers and auxiliary objects
+    factor = 0
 
-  n = size(matrix, 1)
+    n = size(matrix, 1)
 
-  ALLOCATE(clon(n, n))
+    ALLOCATE(clon(n, n))
 
-  clon = matrix
+    clon = matrix
 
-  ! Construct decomposition
-  DO j = 1, n
+    ! Construct decomposition
+    DO j = 1, n
 
-      sums = 0.0
-
-      DO k = 1, (j - 1)
-
-        sums = sums + clon(j, k)**2
-
-      END DO
-     
-      clon(j,j) = sqrt(clon(j, j) - sums)
-        
-      DO i = (j + 1), n
-        
         sums = 0.0
-        
-        DO k = 1, (j-1)
-        
-            sums = sums + clon(j, k)*clon(i, k)
-        
+
+        DO k = 1, (j - 1)
+
+          sums = sums + clon(j, k)**2
+
         END DO
+     
+        clon(j,j) = sqrt(clon(j, j) - sums)
         
-        clon(i, j) = (clon(i, j) - sums)/clon(j, j)
+        DO i = (j + 1), n
+        
+          sums = 0.0
+        
+          DO k = 1, (j-1)
+        
+             sums = sums + clon(j, k)*clon(i, k)
+        
+          END DO
+        
+          clon(i, j) = (clon(i, j) - sums)/clon(j, j)
        
-      END DO
+       END DO
 
-  END DO
-
-  ! Transfer information from matrix to factor
-  DO i = 1,n
-      
-    DO j = 1,n
-      
-        IF(i <= j) factor(j,i) = clon(j,i) 
-      
     END DO
+
+    ! Transfer information from matrix to factor
+    DO i = 1,n
+      
+      DO j = 1,n
+      
+         IF(i <= j) factor(j,i) = clon(j,i) 
+      
+      END DO
     
-  END DO
-
-END SUBROUTINE 
-!******************************************************************************* 
-!******************************************************************************* 
-SUBROUTINE RNNOR(dim, draw)
-
-  !
-  ! This subroutine generates deviates from a standard normal distribution 
-  ! using the Box-Muller algorithm.
-  !
-
-  !/* external objects    */
-
-  INTEGER, INTENT(IN)	:: dim
-
-  REAL, INTENT(OUT)   :: draw(dim)
-    
-  !/* internal objects    */
-
-  INTEGER             :: g 
-
-  REAL, PARAMETER     :: pi = 3.141592653589793238462643383279502884197
-  REAL, ALLOCATABLE   :: u(:), r(:)
-
-!------------------------------------------------------------------------------- 
-! Algorithm
-!------------------------------------------------------------------------------- 
-
-  ! Allocate containers
-  ALLOCATE(u(2*dim)); ALLOCATE(r(2*dim))
-
-  ! Call uniform deviates
-  CALL random_number(u)
-
-  ! Apply Box-Muller transform
-  DO g = 1, 2*dim, 2
-  
-      r(g)   = SQRT(-2*LOG(u(g)))*COS(2*pi*u(g+1)) 
-      r(g+1) = SQRT(-2*LOG(u(g)))*SIN(2*pi*u(g+1)) 
-  
-  END DO
-
-  ! Extract relevant floats
-  DO g = 1, dim 
-
-      draw(g) = r(g)     
-  
-  END DO
-
-END SUBROUTINE 
-
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE RNSET(seed)
-
-  !/* external objects    */
-
-  INTEGER, INTENT(IN)				:: seed
-
-  !/* internal objects    */
-
-  INTEGER                   :: size
-
-  INTEGER                   :: auxiliary(55)
-
-!------------------------------------------------------------------------------- 
-! Algorithm
-!------------------------------------------------------------------------------- 
-
-  CALL RANDOM_SEED(size=size)
-
-  auxiliary = seed
-
-  CALL RANDOM_SEED(put=auxiliary)
+    END DO
 
   END SUBROUTINE 
+
+  !***************************************************************************** 
+  !***************************************************************************** 
+  SUBROUTINE RNNOR(dim, draw)
+
+    !
+    ! This subroutine generates deviates from a standard normal distribution 
+    ! using the Box-Muller algorithm.
+    !
+
+    !/* external objects    */
+
+    INTEGER, INTENT(IN)	:: dim
+
+    REAL, INTENT(OUT)   :: draw(dim)
+    
+    !/* internal objects    */
+
+    INTEGER             :: g 
+
+    REAL, PARAMETER     :: pi = 3.141592653589793238462643383279502884197
+    REAL, ALLOCATABLE   :: u(:), r(:)
+
+    !--------------------------------------------------------------------------- 
+    ! Algorithm
+    !--------------------------------------------------------------------------- 
+
+    ! Allocate containers
+    ALLOCATE(u(2*dim)); ALLOCATE(r(2*dim))
+
+    ! Call uniform deviates
+    CALL random_number(u)
+
+    ! Apply Box-Muller transform
+    DO g = 1, 2*dim, 2
+
+       r(g)   = SQRT(-2*LOG(u(g)))*COS(2*pi*u(g+1)) 
+       r(g+1) = SQRT(-2*LOG(u(g)))*SIN(2*pi*u(g+1)) 
+
+    END DO
+
+    ! Extract relevant floats
+    DO g = 1, dim 
+
+       draw(g) = r(g)     
+
+    END DO
+
+  END SUBROUTINE 
+
+  !*****************************************************************************
+  !*****************************************************************************
+  SUBROUTINE RNSET(seed)
+
+    !
+    ! Set random seed.
+    !
+
+    !/* external objects    */
+
+    INTEGER, INTENT(IN)				:: seed
+
+    !/* internal objects    */
+
+    INTEGER                   :: size
+
+    INTEGER                   :: auxiliary(55)
+
+    !--------------------------------------------------------------------------- 
+    ! Algorithm
+    !--------------------------------------------------------------------------- 
+
+    CALL RANDOM_SEED(size=size)
+
+    auxiliary = seed
+
+    CALL RANDOM_SEED(put=auxiliary)
+
+  END SUBROUTINE 
+
 !*******************************************************************************
 !*******************************************************************************
+
 END MODULE
 
 !*******************************************************************************
@@ -263,8 +257,8 @@ PROGRAM dp3asim
   ! style is changed to comply with the FORTRAN95 standard. Line
   ! breaks are removed. Some consecutive IF statements were changed to ELSEIF. 
   !
-  ! The program is amended to read in random components to allow for testing
-  ! its output against the ROBUPY package (if requested).
+  ! The program is amended to write out the random components to allow for 
+  ! testing its output against the ROBUPY package (if requested).
   !
   !***************************************************************************** 
 
@@ -293,11 +287,15 @@ PROGRAM dp3asim
       DIMENSION PROB1(40,4)
       INTEGER X1,X2,E,T
 
+      ! PEI: Container for relevant disturbances. Allows to align the 
+      ! results between this program and the ROBUPY package.
+      DIMENSION PERIODS_EPS_RELEVANT(5000, 40, 4)
+
       ! PEI: Open files
       open(9,file='in.txt')
-
-      open(10,file='otest.txt'); 
-
+        
+      open(10,file='otest.txt')
+        
       open(11,file='ftest.txt')
 
 
@@ -396,13 +394,17 @@ PROGRAM dp3asim
        EU2(J,T) = exp(A(2,1)*RNN(1)+A(2,2)*RNN(2))
        C(J,T)   = A(3,1)*RNN(1)+A(3,2)*RNN(2)+A(3,3)*RNN(3)
        B(J,T)   = A(4,1)*RNN(1)+A(4,2)*RNN(2)+A(4,3)*RNN(3)+A(4,4)*RNN(4)     
+
+       ! PEI: Collect standard deviates
+       PERIODS_EPS_RELEVANT(J, T, :2) = (/ EU1(J, T), EU2(J, T)/)
+       PERIODS_EPS_RELEVANT(J, T, 3:) = (/ C(J, T), B(J,T) /)
+
    30 CONTINUE
    31 CONTINUE
 !C  30 CONTINUE
  
-  ! PEI: Read in random components (if requested for debugging). Replacement
-  ! of the disturbances originally created inside the RESTUD program.
-  CALL READ_IN_DISTURBANCES(EU1, EU2, C, B, NPER, DRAW)
+  ! PEI: Write out all random components.
+  CALL WRITE_OUT_DISTURBANCES(PERIODS_EPS_RELEVANT, NPER, DRAW)
 
 !*****************************************************************
 !*  CONSTRUCT THE EXPECTED MAX OF THE TIME NPER VALUE FUNCTIONS  *

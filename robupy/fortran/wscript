@@ -1,0 +1,138 @@
+#!/usr/bin/env python
+
+# standard library
+import shutil
+import glob
+import os
+
+# WAF system
+from waflib.Task import Task
+
+''' Task Generators
+'''
+
+
+class CreateDirectoryStructure(Task):
+
+    def run(self):
+
+        os.chdir(self.env.project_paths['ROBUPY'] + '/fortran')
+
+        for dir_ in ['include', 'lib', 'bin']:
+            try:
+                os.makedirs(dir_)
+            except OSError:
+                pass
+
+            try:
+                os.remove(dir_)
+            except OSError:
+                pass
+
+
+class CreateRobupyLibrary(Task):
+
+    after = ['CreateDirectoryStructure']
+
+    def run(self):
+
+        # Determine compiler options
+        compiler_options = '-O3 -fpic'
+
+        files = ['robupy_program_constants.f90', 'robupy_auxiliary.f90',
+                 'robupy_core.f90']
+
+        for file_ in files:
+            os.system('gfortran ' + compiler_options + ' -c ' + file_)
+
+        os.system('ar crs libfort_robupy.a *.o *.mod')
+
+        os.chdir(self.env.project_paths['ROBUPY'] + '/fortran')
+
+        module_files = glob.glob('*.mod')
+        for file_ in module_files:
+            shutil.move(file_, 'include/')
+
+        shutil.move('libfort_robupy.a', 'lib/')
+
+
+class CreateRobufortExecutable(Task):
+
+    after = ['CreateRobupyLibrary']
+
+    def run(self):
+
+        is_debug = self.is_debug
+
+        from fortran.build_robufort import robufort_build
+
+        robufort_build(self, is_debug)
+
+
+class CreateF2pyInterface(Task):
+
+    after = ['CreateRobufortExecutable_debug']
+
+    def run(self):
+
+        os.chdir(self.env.project_paths['ROBUPY'] + '/python/f2py')
+
+        # Link to original library
+        for dir_ in ['include', 'lib']:
+            try:
+                os.remove(dir_)
+            except OSError:
+                pass
+
+            try:
+                shutil.rmtree(dir_)
+            except OSError:
+                pass
+
+            os.symlink('../../fortran/' + dir_, dir_)
+
+        os.system(
+            'f2py3 -c -m  f2py_core f2py_interface_core.f90 -Iinclude -Llib '
+            '-lfort_robupy')
+
+        os.system(
+            'f2py3 -c -m  f2py_debug f2py_interface_debug.f90 -Iinclude -Llib '
+            '-lfort_robupy')
+
+''' Build
+'''
+
+
+def build(bld):
+
+    is_debug = bld.options.debug
+
+
+    task_1 = CreateDirectoryStructure(env=bld.env)
+
+    bld.add_to_group(task_1)
+
+
+    task_2 = CreateRobupyLibrary(env=bld.env)
+
+    bld.add_to_group(task_2)
+
+    task_2.set_run_after(task_1)
+
+
+    task_3 = CreateRobufortExecutable(env=bld.env)
+
+    task_3.is_debug = is_debug
+
+    bld.add_to_group(task_3)
+
+    task_3.set_run_after(task_2)
+
+
+    task_4 = CreateF2pyInterface(env=bld.env)
+
+    bld.add_to_group(task_4)
+
+    task_4.set_run_after(task_3)
+
+
