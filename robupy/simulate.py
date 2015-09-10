@@ -92,11 +92,11 @@ def _wrapper_simulate_sample(robupy_obj, periods_eps_relevant):
 
     edu_max = robupy_obj.get_attr('edu_max')
 
+    fast = robupy_obj.get_attr('version')
+
     delta = robupy_obj.get_attr('delta')
 
     debug = robupy_obj.get_attr('debug')
-
-    fast = robupy_obj.get_attr('version')
 
     # Auxiliary object
     is_f2py = (fast == 'F2PY')
