@@ -6,11 +6,15 @@
 # standard library
 import fnmatch
 import shutil
+import sys
 import os
 
+# module-wide variables
+PROJECT_DIR = os.environ['ROBUPY']
 
 """ Auxiliary functions.
 """
+
 
 def remove(path):
     """ Remove path, where path can be either a directory or a file. The
@@ -22,6 +26,7 @@ def remove(path):
 
     if os.path.isfile(path):
         os.remove(path)
+
 
 def remove_nuisances():
     """ Remove nuisance files from the directory tree.
@@ -67,3 +72,7 @@ def remove_nuisances():
 """ Main algorithm.
 """
 remove_nuisances()
+
+os.chdir(PROJECT_DIR + '/robupy')
+
+os.system('./waf distclean')

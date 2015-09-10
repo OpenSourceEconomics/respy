@@ -10,7 +10,6 @@ import os
 # ROBUPY
 sys.path.insert(0, os.environ['ROBUPY'])
 from robupy.solve import solve as robupy_solve
-from robupy.simulate import simulate as robupy_simulate
 from robupy.read import read
 
 
