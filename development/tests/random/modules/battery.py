@@ -152,6 +152,10 @@ def test_99():
     constraints['level'] = 0.0
     constraints['debug'] = 'True'
 
+    # Just making sure that it also works for this special case.
+    if np.random.choice([True, False]):
+        constraints['eps_zero'] = True
+
     # Generate random initialization file. Since this exercise is only for
     # debugging purposes, the codes uses the same disturbances for the
     # simulation and solution of the model. Thus, the number of agents cannot

@@ -19,12 +19,10 @@ def solve_fortran(robupy_obj):
     """ Solve dynamic programming using FORTRAN.
     """
     # Distribute class attributes
-    init_dict = robupy_obj.get_attr('init_dict')
-
     store = robupy_obj.get_attr('store')
 
     # Prepare and execute ROBUFORT
-    write_robufort_initialization(init_dict)
+    write_robufort_initialization(robupy_obj)
 
     os.system('"' + PACKAGE_PATH + '/bin/robufort"')
 
@@ -108,9 +106,16 @@ def add_results(robupy_obj):
     # Finishing
     return robupy_obj
 
-def write_robufort_initialization(init_dict):
+def write_robufort_initialization(robupy_obj):
     """ Write out model request to hidden file .model.robufort.ini.
     """
+
+    # Distribute class attributes
+    init_dict = robupy_obj.get_attr('init_dict')
+
+    # Auxiliary objects
+    eps_zero = robupy_obj.get_attr('eps_zero')
+
 
     with open('.model.robufort.ini', 'w') as file_:
 
@@ -168,4 +173,8 @@ def write_robufort_initialization(init_dict):
 
         # PROGRAM
         line = '{0}'.format(init_dict['PROGRAM']['debug'])
+        file_.write(line + '\n')
+
+        # Auxiliary
+        line = '{0}'.format(eps_zero)
         file_.write(line + '\n')

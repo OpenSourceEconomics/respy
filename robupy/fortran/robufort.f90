@@ -180,7 +180,7 @@ END SUBROUTINE
 SUBROUTINE read_specification(num_periods, delta, coeffs_A, coeffs_B, & 
                 coeffs_edu, edu_start, edu_max, coeffs_home, shocks, & 
                 num_draws, seed_solution, is_store, num_agents, &
-                seed_simulation, is_debug) 
+                seed_simulation, is_debug, is_zero) 
 
     !/* external objects    */
 
@@ -201,6 +201,7 @@ SUBROUTINE read_specification(num_periods, delta, coeffs_A, coeffs_B, &
 
     LOGICAL, INTENT(OUT)            :: is_debug
     LOGICAL, INTENT(OUT)            :: is_store
+    LOGICAL, INTENT(OUT)            :: is_zero
 
     !/* internal objects    */
 
@@ -252,13 +253,18 @@ SUBROUTINE read_specification(num_periods, delta, coeffs_A, coeffs_B, &
 
         ! PROGRAM
         READ(1, *) is_debug
+
+        ! AUXILIARY
+        READ(1, *) is_zero
+
         
     CLOSE(1, STATUS='delete')
 
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE get_disturbances(periods_eps_relevant, shocks, seed, is_debug) 
+SUBROUTINE get_disturbances(periods_eps_relevant, shocks, seed, is_debug, & 
+                is_zero) 
 
     !/* external objects    */
 
@@ -269,6 +275,7 @@ SUBROUTINE get_disturbances(periods_eps_relevant, shocks, seed, is_debug)
     INTEGER(our_int),INTENT(IN)     :: seed 
 
     LOGICAL, INTENT(IN)             :: is_debug
+    LOGICAL, INTENT(IN)             :: is_zero
 
     !/* internal objects    */
 
@@ -300,15 +307,25 @@ SUBROUTINE get_disturbances(periods_eps_relevant, shocks, seed, is_debug)
 
     CALL RANDOM_SEED(put=seed_inflated)
 
-    ! Initialize mean 
-    mean = zero_dble
 
-    DO period = 1, num_periods
+    ! Initialize mean 
+    IF (is_zero .EQV. .True.) THEN
     
-        CALL multivariate_normal(periods_eps_relevant(period, :, :), mean, & 
-                shocks)
+        periods_eps_relevant(:, :, 1:2) = one_dble
+        periods_eps_relevant(:, :, 3:4) = zero_dble
+
+    ELSE
     
-    END DO
+        mean = zero_dble
+
+        DO period = 1, num_periods
+       
+            CALL multivariate_normal(periods_eps_relevant(period, :, :), mean, & 
+                    shocks)
+        
+        END DO
+
+    END IF
 
     ! Check applicability
     INQUIRE(FILE='disturbances.txt', EXIST=READ_IN)
@@ -408,6 +425,7 @@ PROGRAM robufort
     LOGICAL                         :: is_debug
     LOGICAL                         :: is_store
     LOGICAL                         :: is_huge
+    LOGICAL                         :: is_zero
 
 !-------------------------------------------------------------------------------
 ! Algorithm
@@ -416,7 +434,8 @@ PROGRAM robufort
     ! Read specification of model
     CALL read_specification(num_periods, delta, coeffs_A, coeffs_B, & 
             coeffs_edu, edu_start, edu_max, coeffs_home, shocks, num_draws, & 
-            seed_solution, is_store, num_agents, seed_simulation, is_debug) 
+            seed_solution, is_store, num_agents, seed_simulation, is_debug, &
+            is_zero) 
 
     ! Auxiliary objects
     min_idx = MIN(num_periods, (edu_max - edu_start + 1))
@@ -449,8 +468,9 @@ PROGRAM robufort
     ALLOCATE(eps_relevant(num_draws, 4))
 
     ! Draw random disturbances. For is_debugging purposes, these might also be 
-    ! read in from disk.
-    CALL get_disturbances(periods_eps_relevant, shocks, seed_solution, is_debug)
+    ! read in from disk or set to zero.
+    CALL get_disturbances(periods_eps_relevant, shocks, seed_solution, & 
+            is_debug, is_zero)
 
     ! Perform backward induction.
     CALL backward_induction(periods_emax, periods_payoffs_ex_post, &
@@ -466,9 +486,8 @@ PROGRAM robufort
     DEALLOCATE(periods_eps_relevant) 
     ALLOCATE(periods_eps_relevant(num_periods, num_agents, 4))
     
-    print *, periods_eps_relevant(1, 1, :)
     CALL get_disturbances(periods_eps_relevant, shocks, seed_simulation, &
-            is_debug) 
+            is_debug, is_zero) 
 
     ! Simulate sample.    
     CALL simulate_sample(dataset, num_agents, states_all, num_periods, &

@@ -127,7 +127,11 @@ class RobupyCls(MetaCls):
 
             edu_max = self.attr['edu_max']
 
+            shocks = self.attr['shocks']
+
             self.attr['min_idx'] = min(num_periods, (edu_max - edu_start + 1))
+
+            self.attr['eps_zero'] = (np.count_nonzero(shocks) == 0)
 
             # Update status indicator
             self.is_first = False
