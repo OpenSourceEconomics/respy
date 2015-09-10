@@ -12,10 +12,9 @@ import os
 
 # project library
 import time
-import shlex
-# Development Imports
 
-CURRENT_WD = os.environ['ROBUPY'] + '/development/remaining_differences'
+# Development Imports
+CURRENT_WD = os.getcwd()
 ROBUPY_DIR = os.environ['ROBUPY'] + '/robupy'
 
 # ROBUPY import
@@ -33,18 +32,9 @@ for _ in range(1):
 
     compile_package("fast")
 
-    constr = dict()
-    constr['fast'] = 'False'
-    constr['level'] = 0.00
-    constr['edu'] = (10, 20)
-
-    #generate_init(constr)
-
-
     robupy_obj = read('model.robupy.ini')
 
     init_dict = robupy_obj.get_attr('init_dict')
-
 
 
     # Run DP3ASIM
@@ -58,7 +48,6 @@ for _ in range(1):
 
     print('RESTUD ', time.time() - start_time)
 
-
     # Run ROBUFORT
     os.chdir(ROBUPY_DIR)
 
@@ -66,7 +55,7 @@ for _ in range(1):
 
     os.chdir(CURRENT_WD)
 
-    write_robufort_initialization(init_dict)
+    write_robufort_initialization(robupy_obj)
 
     start_time = time.time()
 

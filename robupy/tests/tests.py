@@ -24,6 +24,8 @@ from robupy import read, solve, simulate
 
 ''' Auxiliary function
 '''
+
+
 def cleanup(is_final=False):
     """ Cleanup after test battery.
     '"""
@@ -44,9 +46,8 @@ def cleanup(is_final=False):
         # This complication is required as all tests run in parallel and
         # a test might clean up while another test that requires access
         # to the ambiguity log is still running.
-        if not is_final:
-            if 'ambiguity' in file_:
-                continue
+        if (not is_final) and ('ambiguity' in file_):
+            continue
 
         try:
 
@@ -82,7 +83,7 @@ class Tests(object):
     def teardown_class():
         """ Teardown after any methods in this class.
         """
-        cleanup(True)
+        cleanup()
 
         os.chdir(TEST_PATH)
 

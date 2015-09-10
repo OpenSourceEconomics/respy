@@ -103,6 +103,7 @@ def add_results(robupy_obj):
     # Finishing
     return robupy_obj
 
+
 def write_robufort_initialization(robupy_obj):
     """ Write out model request to hidden file .model.robufort.ini.
     """
