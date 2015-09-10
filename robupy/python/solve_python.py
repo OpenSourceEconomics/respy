@@ -9,7 +9,6 @@ import shlex
 import os
 
 # project library
-from robupy.checks.checks_solve import checks_solve
 from robupy.auxiliary import replace_missing_values
 from robupy.auxiliary import read_restud_disturbances
 
@@ -206,11 +205,6 @@ def _wrapper_create_state_space(robupy_obj):
 
     mapping_state_idx = replace_missing_values(mapping_state_idx)
 
-    # Run checks of the state space variables
-    if debug:
-        checks_solve('_wrapper_create_state_space_out', robupy_obj, states_all,
-            states_number_period, mapping_state_idx)
-
     # Finishing
     return states_all, states_number_period, mapping_state_idx
 
@@ -267,11 +261,6 @@ def _wrapper_backward_induction_procedure(robupy_obj, periods_eps_relevant,
     periods_future_payoffs = replace_missing_values(periods_future_payoffs)
 
     periods_payoffs_ex_post = replace_missing_values(periods_payoffs_ex_post)
-
-    # Run checks on expected future values and its ingredients
-    if debug:
-        checks_solve('periods_emax', robupy_obj, periods_emax,
-            periods_future_payoffs)
 
     # Finishing
     return periods_emax, periods_payoffs_ex_post, periods_future_payoffs

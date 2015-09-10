@@ -3,6 +3,7 @@
 """
 
 # standard library
+import pandas as pd
 import numpy as np
 
 # project library
@@ -240,3 +241,180 @@ class RobupyCls(MetaCls):
         assert (np.all(np.isfinite(shocks)))
         assert (np.array(shocks).shape == (4, 4))
 
+        # Check integrity of results as well
+        self._check_integrity_results()
+
+    def _check_integrity_results(self):
+        """ This methods check the integrity of the results.
+        """
+
+        # Distribute auxiliary objects
+        num_periods = self.attr['num_periods']
+
+        edu_start = self.attr['edu_start']
+
+        edu_max = self.attr['edu_max']
+
+        # Distribute results
+        periods_payoffs_ex_ante = self.attr['periods_payoffs_ex_ante']
+
+        periods_future_payoffs = self.attr['periods_future_payoffs']
+
+        states_number_period = self.attr['states_number_period']
+
+        mapping_state_idx = self.attr['mapping_state_idx']
+
+        periods_emax = self.attr['periods_emax']
+
+        states_all = self.attr['states_all']
+
+        # Check the creation of the state space
+        is_applicable = (states_all is not None)
+        is_applicable = is_applicable and (states_number_period is not None)
+        is_applicable = is_applicable and (mapping_state_idx is not None)
+
+        if is_applicable:
+            # If the agent never increased their level of education, the lagged
+            # education variable cannot take a value larger than zero.
+            for period in range(1, num_periods):
+                indices = (np.where(states_all[period, :, :][:, 2] == 0))
+                for index in indices:
+                    assert (np.all(states_all[period, :, :][index, 3]) == 0)
+
+            # No values can be larger than constraint time. The exception in the
+            # lagged schooling variable in the first period, which takes value
+            # one but has index zero.
+            for period in range(num_periods):
+                assert (np.nanmax(states_all[period, :, :3]) <= period)
+
+            # Lagged schooling can only take value zero or one if finite.
+            # In fact, it can only take value one in the first period.
+            for period in range(num_periods):
+                assert (np.all(states_all[0, :, 3]) == 1)
+                assert (np.nanmax(states_all[period, :, 3]) == 1)
+                assert (np.nanmin(states_all[period, :, :3]) == 0)
+
+            # All finite values have to be larger or equal to zero. The loop is
+            # required as np.all evaluates to FALSE for this condition
+            # (see NUMPY documentation).
+            for period in range(num_periods):
+                assert (
+                    np.all(states_all[period, :states_number_period[period]] >= 0))
+
+            # The maximum number of additional education years is never larger
+            # than (EDU_MAX - EDU_START).
+            for period in range(num_periods):
+                assert (np.nanmax(states_all[period, :, :][:, 2], axis=0) <= (
+                    edu_max - edu_start))
+
+            # Check for duplicate rows in each period
+            for period in range(num_periods):
+                assert (np.sum(pd.DataFrame(
+                    states_all[period, :states_number_period[period],
+                    :]).duplicated()) == 0)
+
+            # Checking validity of state space values. All valid
+            # values need to be finite.
+            for period in range(num_periods):
+                assert (np.all(
+                    np.isfinite(states_all[period, :states_number_period[period]])))
+
+            # There are no infinite values in final period.
+            assert (np.all(np.isfinite(states_all[(num_periods - 1), :, :])))
+
+            # There are is only one finite realization in period one.
+            assert (np.sum(np.isfinite(mapping_state_idx[0, :, :, :, :])) == 1)
+
+            # If valid, the number of state space realizations in period two is
+            # four.
+            if num_periods > 1:
+                assert (np.sum(np.isfinite(mapping_state_idx[1, :, :, :, :])) == 4)
+
+            # Check that mapping is defined for all possible realizations of the
+            # state space by period. Check that mapping is not defined for all
+            # inadmissible values.
+            is_infinite = np.tile(False, reps=mapping_state_idx.shape)
+            for period in range(num_periods):
+                # Subsetting valid indices
+                indices = states_all[period, :states_number_period[period], :]
+                for index in indices:
+                    # Check for finite value at admissible state
+                    assert (np.isfinite(mapping_state_idx[
+                                            period, index[0], index[1], index[2],
+                                            index[3]]))
+                    # Record finite value
+                    is_infinite[
+                        period, index[0], index[1], index[2], index[3]] = True
+            # Check that all admissible states are finite
+            assert (np.all(np.isfinite(mapping_state_idx[is_infinite == True])))
+
+            # Check that all inadmissible states are infinite
+            assert (
+                np.all(np.isfinite(mapping_state_idx[is_infinite == False])) == False)
+
+        # Check the calculated ex ante payoffs
+        is_applicable = (states_all is not None)
+        is_applicable = is_applicable and (states_number_period is not None)
+        is_applicable = is_applicable and (periods_payoffs_ex_ante is not None)
+
+        if is_applicable:
+            # Check that the payoffs are finite for all admissible values and
+            # infinite for all others.
+            is_infinite = np.tile(False, reps=periods_payoffs_ex_ante.shape)
+            for period in range(num_periods):
+                # Loop over all possible states
+                for k in range(states_number_period[period]):
+                    # Check that wages are all positive
+                    assert (np.all(periods_payoffs_ex_ante[period, k, :2] > 0.0))
+                    # Check for finite value at admissible state
+                    assert (
+                        np.all(np.isfinite(periods_payoffs_ex_ante[period, k, :])))
+                    # Record finite value
+                    is_infinite[period, k, :] = True
+                # Check that all admissible states are finite
+                assert (
+                    np.all(np.isfinite(periods_payoffs_ex_ante[is_infinite ==
+                                                               True])))
+                # Check that all inadmissible states are infinite
+                if num_periods > 1:
+                    assert (np.all(np.isfinite(
+                        periods_payoffs_ex_ante[is_infinite == False])) == False)
+
+        # Check the expected future value
+        is_applicable = (periods_emax is not None)
+        is_applicable = is_applicable and (periods_future_payoffs is not None)
+
+        if is_applicable:
+            # Check that the payoffs are finite for all admissible values and
+            # infinite for all others.
+            is_infinite = np.tile(False, reps=periods_emax.shape)
+            for period in range(num_periods):
+                # Loop over all possible states
+                for k in range(states_number_period[period]):
+                    # Check for finite value at admissible state
+                    assert (np.all(np.isfinite(periods_emax[period, k])))
+                    # Record finite value
+                    is_infinite[period, k] = True
+                # Check that all admissible states are finite
+                assert (np.all(np.isfinite(periods_emax[is_infinite == True])))
+                # Check that all inadmissible states are infinite
+                if num_periods == 1:
+                    assert (len(periods_emax[is_infinite == False]) == 0)
+                else:
+                    assert (
+                        np.all(np.isfinite(periods_emax[is_infinite == False])) == False)
+
+            # Check that the payoffs are finite for all admissible values and
+            # infinite for all others.
+            for period in range(num_periods - 1):
+                # Loop over all possible states
+                for k in range(states_number_period[period]):
+                    # Check for finite value at admissible state, infinite
+                    # values are allowed for the third column when the
+                    # maximum level of education is attained.
+                    assert (np.all(np.isfinite(periods_future_payoffs[period, k, :2])))
+                    assert (np.all(np.isfinite(periods_future_payoffs[period, k, 3])))
+                    # Special checks for infinite value due to
+                    # high education.
+                    if not np.isfinite(periods_future_payoffs[period, k, 2]):
+                        assert (states_all[period, k][2] == edu_max - edu_start)

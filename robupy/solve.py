@@ -37,14 +37,12 @@ def solve(robupy_obj):
 
     robupy_obj.lock()
 
+    # Simulate model.
+    simulate(robupy_obj)
+
     # Store results if requested
     if store:
         robupy_obj.store('solution.robupy.pkl')
-
-    # Simulate model. The model is directly simulated in the ROBUFORT
-    # executable.
-    if version in ['PYTHON', 'F2PY']:
-        simulate(robupy_obj)
 
     # Finishing
     return robupy_obj

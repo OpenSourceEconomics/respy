@@ -36,6 +36,7 @@ class CreateRobupyLibrary(Task):
 
     def run(self):
 
+        # Determine compiler options
         compiler_options = '-O3 -fpic'
 
         files = ['robupy_program_constants.f90', 'robupy_auxiliary.f90',
@@ -61,14 +62,16 @@ class CreateRobufortExecutable(Task):
 
     def run(self):
 
+        is_debug = self.is_debug
+
         from fortran.build_robufort import robufort_build
 
-        robufort_build(self)
+        robufort_build(self, is_debug)
 
 
 class CreateF2pyInterface(Task):
 
-    after = ['CreateRobufortExecutable']
+    after = ['CreateRobufortExecutable_debug']
 
     def run(self):
 
@@ -102,13 +105,34 @@ class CreateF2pyInterface(Task):
 
 def build(bld):
 
-    bld.add_to_group(CreateDirectoryStructure(env=bld.env))
+    is_debug = bld.options.debug
 
-    bld.add_to_group(CreateRobupyLibrary(env=bld.env))
 
-    bld.add_to_group(CreateRobufortExecutable(env=bld.env))
+    task_1 = CreateDirectoryStructure(env=bld.env)
 
-    bld.add_to_group(CreateF2pyInterface(env=bld.env))
+    bld.add_to_group(task_1)
 
+
+    task_2 = CreateRobupyLibrary(env=bld.env)
+
+    bld.add_to_group(task_2)
+
+    task_2.set_run_after(task_1)
+
+
+    task_3 = CreateRobufortExecutable(env=bld.env)
+
+    task_3.is_debug = is_debug
+
+    bld.add_to_group(task_3)
+
+    task_3.set_run_after(task_2)
+
+
+    task_4 = CreateF2pyInterface(env=bld.env)
+
+    bld.add_to_group(task_4)
+
+    task_4.set_run_after(task_3)
 
 

@@ -22,7 +22,49 @@ sys.path.insert(0, dir_)
 
 from robupy import read, solve, simulate
 
-''' Test class.
+''' Auxiliary function
+'''
+def cleanup(is_final=False):
+    """ Cleanup after test battery.
+    '"""
+    files = []
+
+    files = files + glob.glob('*.robupy.*')
+
+    files = files + glob.glob('*.ini')
+
+    files = files + glob.glob('*.pkl')
+
+    files = files + glob.glob('*.txt')
+
+    files = files + glob.glob('*.dat')
+
+    for file_ in files:
+
+        # This complication is required as all tests run in parallel and
+        # a test might clean up while another test that requires access
+        # to the ambiguity log is still running.
+        if not is_final:
+            if 'ambiguity' in file_:
+                continue
+
+        try:
+
+            os.remove(file_)
+
+        except OSError:
+
+            pass
+
+        try:
+
+            shutil.rmtree(file_)
+
+        except OSError:
+
+            pass
+
+''' Test class
 '''
 
 
@@ -40,51 +82,19 @@ class Tests(object):
     def teardown_class():
         """ Teardown after any methods in this class.
         """
+        cleanup(True)
+
         os.chdir(TEST_PATH)
 
     def teardown(self):
         """ Teardown after each test method.
         """
-        self.cleanup()
+        cleanup()
 
     @staticmethod
     def setup():
         """ Setup before each test method.
         """
-
-    @staticmethod
-    def cleanup():
-        """ Cleanup after test battery.
-        '"""
-        files = []
-
-        files = files + glob.glob('*.robupy.*')
-
-        files = files + glob.glob('*.ini')
-
-        files = files + glob.glob('*.pkl')
-
-        files = files + glob.glob('*.txt')
-
-        files = files + glob.glob('*.dat')
-
-        for file_ in files:
-
-            try:
-
-                os.remove(file_)
-
-            except OSError:
-
-                pass
-
-            try:
-
-                shutil.rmtree(file_)
-
-            except OSError:
-
-                pass
 
     @staticmethod
     def test_1():
@@ -168,9 +178,8 @@ class Tests(object):
 
     @staticmethod
     def test_3():
-        """ Testing whether the ex ante and ex post payoffs
-        are identical if there is no random variation
-        in the payoffs
+        """ Testing whether the ex ante and ex post payoffs are identical if
+        there is no random variation in the payoffs
         """
         for i in range(10):
             # Generate constraint periods
@@ -197,9 +206,8 @@ class Tests(object):
 
     @staticmethod
     def test_4():
-        """ If there is no random variation in payoffs
-        then the number of draws to simulate the
-        expected future value should have no effect.
+        """ If there is no random variation in payoffs then the number of
+        draws to simulate the expected future value should have no effect.
         """
         # Generate constraints
         constraints = dict()

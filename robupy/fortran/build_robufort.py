@@ -9,13 +9,15 @@ import shutil
 import copy
 import os
 
-# Module wide variables. Setting IS_DEBUG to true compiles the executable
-# with numerous debugging flags. This should be integrated in the build
-# process at a later stage.
-IS_DEBUG = False
 
+DEBUG_OPTIONS = ' -O2 -fimplicit-none  -Wall  -Wline-truncation ' \
+                ' -Wcharacter-truncation  -Wsurprising  -Waliasing' \
+                ' -Wimplicit-interface  -Wunused-parameter  -fwhole-file ' \
+                ' -fcheck=all  -std=f2008  -pedantic  -fbacktrace'
 
-def robufort_build(self):
+PRODUCTION_OPTIONS = '-O3'
+
+def robufort_build(self, is_debug=False):
 
     # Compilation of executable for fastest performance
     current_directory = os.getcwd()
@@ -79,17 +81,13 @@ def robufort_build(self):
     os.remove('.robufort_inlining.f90')
 
     # Compile the executable
-    if IS_DEBUG:
-
-        os.system('gfortran -O2 -fimplicit-none  -Wall  -Wline-truncation '
-                  ' -Wcharacter-truncation  -Wsurprising  -Waliasing '
-                  ' -Wimplicit-interface  -Wunused-parameter  -fwhole-file '
-                  ' -fcheck=all  -std=f2008  -pedantic  -fbacktrace '
-                  ' -o robufort robufort_extended.f90')
-
+    if is_debug:
+        compiler_options = DEBUG_OPTIONS
     else:
+        compiler_options = PRODUCTION_OPTIONS
 
-        os.system('gfortran -O3 -o robufort robufort_extended.f90')
+    os.system('gfortran ' + compiler_options + ' -o robufort ' \
+                'robufort_extended.f90')
 
     shutil.move('robufort', 'bin/robufort')
 

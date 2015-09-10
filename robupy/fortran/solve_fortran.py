@@ -18,17 +18,13 @@ from robupy.auxiliary import replace_missing_values
 def solve_fortran(robupy_obj):
     """ Solve dynamic programming using FORTRAN.
     """
-    # Distribute class attributes
-    store = robupy_obj.get_attr('store')
-
     # Prepare and execute ROBUFORT
     write_robufort_initialization(robupy_obj)
 
     os.system('"' + PACKAGE_PATH + '/bin/robufort"')
 
     # Add results
-    if store:
-        add_results(robupy_obj)
+    add_results(robupy_obj)
 
     # Finishing
     return robupy_obj
@@ -160,9 +156,6 @@ def write_robufort_initialization(robupy_obj):
 
         line = '{0:10d}\n'.format(init_dict['SOLUTION']['seed'])
         file_.write(line)
-
-        line = '{0}'.format(init_dict['SOLUTION']['store'])
-        file_.write(line + '\n')
 
         # SIMULATION
         line = '{0:10d}\n'.format(init_dict['SIMULATION']['agents'])

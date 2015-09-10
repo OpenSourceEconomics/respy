@@ -184,7 +184,7 @@ def compile_package(which):
 
     os.system('./waf distclean > /dev/null 2>&1')
 
-    cmd = './waf configure build'
+    cmd = './waf configure build --debug'
 
     if which == 'fast':
         cmd += ' --fast'

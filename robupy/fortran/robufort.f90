@@ -15,7 +15,6 @@ MODULE robufort_library
 
     PUBLIC :: read_specification
     PUBLIC :: get_disturbances
-    PUBLIC :: write_dataset
     PUBLIC :: store_results
 
 CONTAINS
@@ -125,61 +124,9 @@ SUBROUTINE store_results(mapping_state_idx, states_all, periods_payoffs_ex_ante,
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE write_dataset(dataset, num_agents, num_periods) 
-
-    !/* external objects    */
-
-    INTEGER(our_int), INTENT(IN)   :: num_periods
-    INTEGER(our_int), INTENT(IN)   :: num_agents
-
-    REAL(our_dble), INTENT(IN)     :: dataset(:, :)
-
-    !/* internal objects    */
-
-    INTEGER(our_int)                :: i
-
-    LOGICAL                         :: is_working
-
-!-------------------------------------------------------------------------------
-! Algorithm
-!-------------------------------------------------------------------------------
-
-    ! Format
-    1600 FORMAT(3(1x,i5), 9x, A1, 1x, 4(1x,i5))
-    1605 FORMAT(3(1x,i5), 1x, f10.2, 4(1x,i5))
-
-    ! File connection
-    OPEN(UNIT=1, FILE='data.robupy.dat')
-
-    DO i = 1, (num_agents * num_periods)
-
-        ! Check whether agent working in particular period
-        is_working = (dataset(i, 3) .LE. two_dble)
-
-        IF (is_working .EQV. .TRUE.) THEN
-
-            WRITE(1, 1605) INT(dataset(i, 1)), INT(dataset(i, 2)), &
-                INT(dataset(i, 3)), dataset(i, 4), INT(dataset(i, 5)), &
-                INT(dataset(i, 6)), INT(dataset(i, 7)), INT(dataset(i, 8))
-
-        ELSE
-
-            WRITE(1, 1600) INT(dataset(i, 1)), INT(dataset(i, 2)), & 
-                INT(dataset(i, 3)), '.', INT(dataset(i, 5)), & 
-                INT(dataset(i, 6)), INT(dataset(i, 7)), INT(dataset(i, 8))
-
-        END IF
-
-    END DO
-
-    CLOSE(1)
-
-END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
 SUBROUTINE read_specification(num_periods, delta, coeffs_A, coeffs_B, & 
                 coeffs_edu, edu_start, edu_max, coeffs_home, shocks, & 
-                num_draws, seed_solution, is_store, num_agents, &
+                num_draws, seed_solution, num_agents, &
                 seed_simulation, is_debug, is_zero) 
 
     !/* external objects    */
@@ -200,7 +147,6 @@ SUBROUTINE read_specification(num_periods, delta, coeffs_A, coeffs_B, &
     REAL(our_dble), INTENT(OUT)     :: delta
 
     LOGICAL, INTENT(OUT)            :: is_debug
-    LOGICAL, INTENT(OUT)            :: is_store
     LOGICAL, INTENT(OUT)            :: is_zero
 
     !/* internal objects    */
@@ -245,7 +191,6 @@ SUBROUTINE read_specification(num_periods, delta, coeffs_A, coeffs_B, &
         ! SOLUTION
         READ(1, 1505) num_draws
         READ(1, 1505) seed_solution
-        READ(1, *) is_store
 
         ! SIMULATION
         READ(1, 1505) num_agents
@@ -310,7 +255,7 @@ SUBROUTINE get_disturbances(periods_eps_relevant, shocks, seed, is_debug, &
 
     ! Initialize mean 
     IF (is_zero .EQV. .True.) THEN
-    
+
         periods_eps_relevant(:, :, 1:2) = one_dble
         periods_eps_relevant(:, :, 3:4) = zero_dble
 
@@ -376,7 +321,6 @@ PROGRAM robufort
     INTEGER(our_int), ALLOCATABLE   :: states_all(:, :, :)
 
     INTEGER(our_int)                :: max_states_period
-    INTEGER(our_int)                :: current_state(4)
     INTEGER(our_int)                :: seed_simulation 
     INTEGER(our_int)                :: seed_solution 
     INTEGER(our_int)                :: num_periods
@@ -386,13 +330,11 @@ PROGRAM robufort
     INTEGER(our_int)                :: edu_start
     INTEGER(our_int)                :: num_draws
     INTEGER(our_int)                :: covars(6)
-    INTEGER(our_int)                :: choice(1)
     INTEGER(our_int)                :: edu_max
     INTEGER(our_int)                :: min_idx
     INTEGER(our_int)                :: period
     INTEGER(our_int)                :: total
     INTEGER(our_int)                :: exp_A
-    INTEGER(our_int)                :: count
     INTEGER(our_int)                :: exp_B
     INTEGER(our_int)                :: edu
     INTEGER(our_int)                :: i
@@ -404,7 +346,6 @@ PROGRAM robufort
     REAL(our_dble), ALLOCATABLE     :: periods_eps_relevant(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: eps_relevant(:, :)
     REAL(our_dble), ALLOCATABLE     :: periods_emax(:, :)
-    REAL(our_dble), ALLOCATABLE     :: dataset(:, :)
     
     REAL(our_dble)                  :: payoffs_ex_post(4)
     REAL(our_dble)                  :: payoffs_ex_ante(4)
@@ -423,7 +364,6 @@ PROGRAM robufort
     
     LOGICAL                         :: is_myopic
     LOGICAL                         :: is_debug
-    LOGICAL                         :: is_store
     LOGICAL                         :: is_huge
     LOGICAL                         :: is_zero
 
@@ -434,8 +374,7 @@ PROGRAM robufort
     ! Read specification of model
     CALL read_specification(num_periods, delta, coeffs_A, coeffs_B, & 
             coeffs_edu, edu_start, edu_max, coeffs_home, shocks, num_draws, & 
-            seed_solution, is_store, num_agents, seed_simulation, is_debug, &
-            is_zero) 
+            seed_solution, num_agents, seed_simulation, is_debug, is_zero) 
 
     ! Auxiliary objects
     min_idx = MIN(num_periods, (edu_max - edu_start + 1))
@@ -479,34 +418,11 @@ PROGRAM robufort
             periods_payoffs_ex_ante, edu_max, edu_start, &
             mapping_state_idx, states_all, delta)
 
-    ! Allocate additional containers
-    ALLOCATE(dataset(num_agents * num_periods, 8))
-
-    ! Re-sampling of disturbances to allow for different seeds. 
-    DEALLOCATE(periods_eps_relevant) 
-    ALLOCATE(periods_eps_relevant(num_periods, num_agents, 4))
-    
-    CALL get_disturbances(periods_eps_relevant, shocks, seed_simulation, &
-            is_debug, is_zero) 
-
-    ! Simulate sample.    
-    CALL simulate_sample(dataset, num_agents, states_all, num_periods, &
-            mapping_state_idx, periods_payoffs_ex_ante, & 
-            periods_eps_relevant, edu_max, edu_start, periods_emax, delta)
-
-    ! Write dataset to file
-    CALL write_dataset(dataset, num_agents, num_periods) 
-
-    ! Store results to file. These are read in by the PYTHON wrapper and added 
+    ! Store results. These are read in by the PYTHON wrapper and added 
     ! to the clsRobupy instance.
-    IF (is_store .EQV. .TRUE.) THEN
-
-        CALL store_results(mapping_state_idx, states_all, &
-                periods_payoffs_ex_ante, states_number_period, periods_emax, &
-                num_periods, min_idx, max_states_period) 
-    
-    END IF
-
+    CALL store_results(mapping_state_idx, states_all, periods_payoffs_ex_ante, &
+            states_number_period, periods_emax, num_periods, min_idx, &
+            max_states_period) 
 
 !*******************************************************************************
 !*******************************************************************************
