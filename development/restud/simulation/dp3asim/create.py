@@ -45,5 +45,5 @@ for i, which in enumerate(['one', 'two', 'three']):
         shutil.move(file_, 'data_' + which + '/')
 
 # Final cleanup
-for file_ in ['dp3asim', 'imsl_replacements.mod']:
+for file_ in ['dp3asim', 'imsl_replacements.mod', 'pei_additions.mod']:
     os.remove(file_)

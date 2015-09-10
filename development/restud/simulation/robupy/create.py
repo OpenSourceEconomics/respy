@@ -3,6 +3,7 @@
 """
 
 # standard library
+import glob
 import sys
 import os
 
@@ -20,8 +21,13 @@ for dir_ in ['one', 'two', 'three']:
 
     os.chdir('data_' + dir_)
 
-    os.system('robupy-clean &')
+    os.system('robupy-clean')
 
-    os.system('robupy-solve --simulate &')
+    os.system('robupy-solve')
+
+    # Cleanup
+    files = glob.glob('logging.*')
+    for file_ in files:
+        os.unlink(file_)
 
     os.chdir('..')

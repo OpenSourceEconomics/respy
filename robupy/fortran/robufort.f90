@@ -256,8 +256,7 @@ SUBROUTINE get_disturbances(periods_eps_relevant, shocks, seed, is_debug, &
     ! Initialize mean 
     IF (is_zero .EQV. .True.) THEN
 
-        periods_eps_relevant(:, :, 1:2) = one_dble
-        periods_eps_relevant(:, :, 3:4) = zero_dble
+        periods_eps_relevant = zero_dble
 
     ELSE
     
@@ -271,6 +270,12 @@ SUBROUTINE get_disturbances(periods_eps_relevant, shocks, seed, is_debug, &
         END DO
 
     END IF
+
+    ! Transform for occupations
+    DO j = 1, 2
+        periods_eps_relevant(:, :, j) = EXP(periods_eps_relevant(:, :, j))
+    END DO
+
 
     ! Check applicability
     INQUIRE(FILE='disturbances.txt', EXIST=READ_IN)
@@ -407,7 +412,7 @@ PROGRAM robufort
     ALLOCATE(eps_relevant(num_draws, 4))
 
     ! Draw random disturbances. For is_debugging purposes, these might also be 
-    ! read in from disk or set to zero.
+    ! read in from disk or set to zero/one.
     CALL get_disturbances(periods_eps_relevant, shocks, seed_solution, & 
             is_debug, is_zero)
 

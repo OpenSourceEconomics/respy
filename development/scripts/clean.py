@@ -67,7 +67,3 @@ def remove_nuisances():
 """ Main algorithm.
 """
 remove_nuisances()
-
-os.chdir('package/robupy')
-
-os.system('./waf distclean')

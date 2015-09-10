@@ -62,16 +62,17 @@ MODULE PEI_ADDITIONS
       
       END DO
 
+      ! Replacements
+      EU1 = TRANSPOSE(PERIODS_EPS_RELEVANT(:, :, 1))
+
+      EU2 = TRANSPOSE(PERIODS_EPS_RELEVANT(:, :, 2))
+      
+      C = TRANSPOSE(PERIODS_EPS_RELEVANT(:, :, 3))
+      
+      B = TRANSPOSE(PERIODS_EPS_RELEVANT(:, :, 4))
+
+
     END IF
-
-    ! Replacements
-    EU1 = TRANSPOSE(PERIODS_EPS_RELEVANT(:, :, 1))
-
-    EU2 = TRANSPOSE(PERIODS_EPS_RELEVANT(:, :, 2))
-    
-    C = TRANSPOSE(PERIODS_EPS_RELEVANT(:, :, 3))
-    
-    B = TRANSPOSE(PERIODS_EPS_RELEVANT(:, :, 4))
 
   END SUBROUTINE 
 

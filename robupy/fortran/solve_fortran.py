@@ -47,10 +47,14 @@ def add_results(robupy_obj):
     # processed below.
     max_states_period = int(np.loadtxt('.max_states_period.robufort.dat'))
 
+    os.unlink('.max_states_period.robufort.dat')
+
     # Labels for objects
     labels = []
 
     labels += ['mapping_state_idx']
+
+    labels += ['states_number_period']
 
     labels += ['states_all']
 
@@ -63,33 +67,30 @@ def add_results(robupy_obj):
 
     shapes += [(num_periods, num_periods, num_periods, min_idx, 2)]
 
+    shapes += [(num_periods)]
+
     shapes += [(num_periods, max_states_period, 4)]
 
     shapes += [(num_periods, max_states_period, 4)]
 
     shapes += [(num_periods, max_states_period)]
 
-    # Types for objects
-    types = []
-
-    types += [np.int]
-
-    types += [np.int]
-
-    types += [np.float64]
-
-    types += [np.float64]
-
     # Add objects to class instance
     robupy_obj.unlock()
 
-    for i in range(4):
+    for i in range(5):
 
-        label, shape, type_ = labels[i], shapes[i], types[i]
+        label, shape = labels[i], shapes[i]
 
         file_ = '.' + label +'.robufort.dat'
 
-        data = replace_missing_values(np.loadtxt(file_, dtype=type_))
+        # This special treatment is required as it is crucial for this data
+        # to stay of integer type. All other data is transformed to float in
+        # the replacement of missing values.
+        if label == 'states_number_period':
+            data = np.loadtxt(file_, dtype=np.int64)
+        else:
+            data = replace_missing_values(np.loadtxt(file_))
 
         data = np.reshape(data, shape)
 
