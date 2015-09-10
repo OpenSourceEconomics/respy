@@ -39,8 +39,12 @@ class RobupyCls(MetaCls):
 
         self.attr['delta'] = None
 
+        self.attr['store'] = None
+
         self.attr['debug'] = None
 
+        # Auxiliary object
+        self.attr['min_idx'] = None
 
         # Ambiguity
         self.attr['measure'] = None
@@ -48,7 +52,7 @@ class RobupyCls(MetaCls):
         self.attr['level'] = None
 
         # Results
-        self.attr['periods_payoffs_ex_post'] = None
+        self.attr['periods_payoffs_ex_ante'] = None
 
         self.attr['states_number_period'] = None
 
@@ -65,7 +69,7 @@ class RobupyCls(MetaCls):
         # The ex post realizations are only stored for debugging purposes.
         # In the special case of no randomness, they have to be equal to the
         # ex ante version. The same is true for the future payoffs
-        self.attr['periods_payoffs_ex_ante'] = None
+        self.attr['periods_payoffs_ex_post'] = None
 
         self.attr['periods_future_payoffs'] = None
 
@@ -84,7 +88,8 @@ class RobupyCls(MetaCls):
 
         is_first = self.is_first
 
-        # Extract information from initialization dictionary
+        # Extract information from initialization dictionary and construct
+        # auxiliary objects.
         if is_first:
 
             self.attr['seed_simulation'] = init_dict['SIMULATION']['seed']
@@ -107,11 +112,22 @@ class RobupyCls(MetaCls):
 
             self.attr['edu_max'] = init_dict['EDUCATION']['max']
 
+            self.attr['store'] = init_dict['SOLUTION']['store']
+
             self.attr['debug'] = init_dict['PROGRAM']['debug']
 
             self.attr['delta'] = init_dict['BASICS']['delta']
 
             self.attr['shocks'] = init_dict['SHOCKS']
+
+            # Auxiliary objects
+            num_periods = self.attr['num_periods']
+
+            edu_start = self.attr['edu_start']
+
+            edu_max = self.attr['edu_max']
+
+            self.attr['min_idx'] = min(num_periods, (edu_max - edu_start + 1))
 
             # Update status indicator
             self.is_first = False

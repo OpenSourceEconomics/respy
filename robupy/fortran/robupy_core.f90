@@ -196,6 +196,9 @@ SUBROUTINE calculate_payoffs_ex_ante(periods_payoffs_ex_ante, num_periods, &
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
+    
+    ! Initialize missing value
+    periods_payoffs_ex_ante = missing_dble
 
     ! Calculate systematic instantaneous payoffs
     DO period = num_periods, 1, -1

@@ -2,12 +2,17 @@
 
 # standard library
 import os
+import sys
 import glob
 import shutil
 import fnmatch
 
 top = '.'
 out = '.bld'
+
+# Check for Python 3
+if not (sys.version_info[0] == 3):
+    raise AssertionError('Please use Python 3')
 
 
 def options(opt):
@@ -22,6 +27,8 @@ def options(opt):
     opt.add_option('--test', action='store_true', dest='test', default=False,
                    help='run test battery')
 
+    opt.add_option('--debug', action='store_true', dest='debug', default=False,
+                   help='use debug compiler options')
 
 def configure(conf):
 

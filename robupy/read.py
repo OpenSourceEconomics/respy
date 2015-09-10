@@ -131,7 +131,7 @@ def _process_standard(list_, dict_, keyword):
         val = int(val)
     elif name in ['measure']:
         val = str(val)
-    elif name in ['debug']:
+    elif name in ['debug', 'store']:
         assert (val.upper() in ['TRUE', 'FALSE'])
         val = (val.upper() == 'TRUE')
     elif name in ['version']:
@@ -224,7 +224,7 @@ def _check_integrity_read(dict_):
     assert (dict_['SOLUTION']['draws'] >= 0)
     assert (isinstance(dict_['SOLUTION']['seed'], int))
     assert (dict_['SOLUTION']['seed'] >= 0)
-
+    assert (dict_['SOLUTION']['store'] in [True, False])
 
     # Check PROGRAM
     assert (dict_['PROGRAM']['debug'] in [True, False])

@@ -360,7 +360,7 @@ SUBROUTINE lubksb(A, B, indx)
     n = SIZE(A, DIM = 1)
 
     ! Allocate containers
-    ii = zero_dble
+    ii = zero_int
 
     ! Main
     DO i = 1, n
@@ -514,8 +514,8 @@ SUBROUTINE standard_normal(draw)
     ! Apply Box-Muller transform
     DO g = 1, (2 * dim), 2
 
-       r(g) = DSQRT(-2 * LOG(u(g)))*COS(2 *pi * u(g + 1)) 
-       r(g + 1) = DSQRT(-2 * LOG(u(g)))*SIN(2 *pi * u(g + 1)) 
+       r(g) = DSQRT(-two_dble * LOG(u(g)))*COS(two_dble *pi * u(g + one_int)) 
+       r(g + 1) = DSQRT(-two_dble * LOG(u(g)))*SIN(two_dble *pi * u(g + one_int)) 
 
     END DO
 
@@ -565,7 +565,7 @@ SUBROUTINE multivariate_normal(draws, mean, covariance)
     CALL cholesky(ch, covariance) 
 
     ! Draw deviates
-    DO i = 1, num_draws
+    DO i = 1, num_draws   
        
        CALL standard_normal(z(:, 1))
        

@@ -85,6 +85,7 @@ def generate_random_dict(constraints=None):
     dict_['SOLUTION'] = {}
     dict_['SOLUTION']['draws'] = np.random.random_integers(1, MAX_DRAWS)
     dict_['SOLUTION']['seed'] = np.random.random_integers(1, 10000)
+    dict_['SOLUTION']['store'] = np.random.choice(['True', 'False'])
 
     # PROGRAM
     dict_['PROGRAM'] = {}
@@ -124,6 +125,15 @@ def generate_random_dict(constraints=None):
         assert (version in ['PYTHON', 'FORTRAN', 'F2PY'])
         # Replace in initialization file
         dict_['PROGRAM']['version'] = version
+
+    # Replace store attribute
+    if 'store' in constraints.keys():
+        # Extract objects
+        store = constraints['store']
+        # Checks
+        assert (store in ['True', 'False'])
+        # Replace in initialization file
+        dict_['SOLUTION']['store'] = store
 
     # Replace debugging level
     if 'debug' in constraints.keys():

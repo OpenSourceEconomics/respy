@@ -27,11 +27,13 @@ def solve_python(robupy_obj):
     """ Solve using PYTHON and F2PY functions
     """
     # Distribute class attributes
+    measure = robupy_obj.get_attr('measure')
+
     debug = robupy_obj.get_attr('debug')
 
     level = robupy_obj.get_attr('level')
 
-    measure = robupy_obj.get_attr('measure')
+    store = robupy_obj.get_attr('store')
 
     # Construct auxiliary objects
     with_ambiguity = _start_ambiguity_logging(robupy_obj)
@@ -106,6 +108,10 @@ def solve_python(robupy_obj):
 
     robupy_obj.lock()
 
+    # Store object to file
+    if store:
+        robupy_obj.store('solution.robupy.pkl')
+
     # Finishing
     return robupy_obj
 
@@ -151,6 +157,9 @@ def _wrapper_calculate_payoffs_ex_ante(robupy_obj):
             states_number_period, states_all, edu_start, coeffs_a, coeffs_b,
             coeffs_edu, coeffs_home, max_states_period)
 
+    # Set missing values to NAN
+    periods_payoffs_ex_ante = replace_missing_values(periods_payoffs_ex_ante)
+
     # Finishing
     return periods_payoffs_ex_ante
 
@@ -169,13 +178,12 @@ def _wrapper_create_state_space(robupy_obj):
 
     version = robupy_obj.get_attr('version')
 
+    min_idx = robupy_obj.get_attr('min_idx')
+
     debug = robupy_obj.get_attr('debug')
 
     # Auxiliary objects
     is_f2py = (version == 'F2PY')
-
-    # Create grid of admissible state space values
-    min_idx = min(num_periods, (edu_max - edu_start + 1))
 
     # Interface to core functions
     if is_f2py:

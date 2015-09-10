@@ -9,6 +9,11 @@ import shutil
 import copy
 import os
 
+# Module wide variables. Setting IS_DEBUG to true compiles the executable
+# with numerous debugging flags. This should be integrated in the build
+# process at a later stage.
+IS_DEBUG = False
+
 
 def robufort_build(self):
 
@@ -74,7 +79,17 @@ def robufort_build(self):
     os.remove('.robufort_inlining.f90')
 
     # Compile the executable
-    os.system('gfortran -O3 -o robufort robufort_extended.f90')
+    if IS_DEBUG:
+
+        os.system('gfortran -O2 -fimplicit-none  -Wall  -Wline-truncation '
+                  ' -Wcharacter-truncation  -Wsurprising  -Waliasing '
+                  ' -Wimplicit-interface  -Wunused-parameter  -fwhole-file '
+                  ' -fcheck=all  -std=f2008  -pedantic  -fbacktrace '
+                  ' -o robufort robufort_extended.f90')
+
+    else:
+
+        os.system('gfortran -O3 -o robufort robufort_extended.f90')
 
     shutil.move('robufort', 'bin/robufort')
 

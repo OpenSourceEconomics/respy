@@ -159,7 +159,7 @@ def calculate_payoffs_ex_ante(num_periods, states_number_period, states_all,
     """
 
     # Initialize
-    periods_payoffs_ex_ante = np.tile(np.nan, (num_periods, max_states_period,
+    periods_payoffs_ex_ante = np.tile(-99.0, (num_periods, max_states_period,
                                                   4))
 
     # Calculate systematic instantaneous payoffs
