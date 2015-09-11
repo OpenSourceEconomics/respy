@@ -5,7 +5,7 @@ This directory contains the main testing infrastructure for the ***RobuPy*** pac
 
 ### Random
 
-The setup allows to test the *RobuPy* for a fixed amount of time. Random model specifications are generated and the integrity of the package is checked. 
+The setup allows to test the ***RobuPy*** for a fixed amount of time. Random model specifications are generated and the integrity of the package is checked. 
 
 For more details:
 
