@@ -1,4 +1,4 @@
-# RobuPy
+# *RobuPy*
 
 Toolbox for the simulation and estimation of robust dynamic discrete choice models. Building on the illustrative model from:
 
