@@ -17,6 +17,8 @@ sign up for our mailing list [here](http://eepurl.com/RStEH). Please feel free t
 
 The last command runs several tests to check the integrity of the package. You can look at the tests [here](https://github.com/robustToolbox/package/blob/master/robupy/tests/tests.py). We have set up an additional testing infrastructure [here](https://github.com/robustToolbox/package/tree/master/development/tests).
 
+To get started using the package, we provide an *IPython Notebook* [here](http://nbviewer.ipython.org/github/robustToolbox/package/blob/master/example/example.ipynb).
+
 #### Quality Assurance
 
 [![Build Status](https://travis-ci.org/robustToolbox/package.svg?branch=master)](https://travis-ci.org/robustToolbox/package)

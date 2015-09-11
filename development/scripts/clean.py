@@ -69,6 +69,10 @@ def remove_nuisances():
 
             shutil.rmtree(root)
 
+        if 'ipynb_checkpoints' in root:
+
+            shutil.rmtree(root)
+
 """ Main algorithm.
 """
 remove_nuisances()
