@@ -11,7 +11,7 @@ SUBROUTINE wrapper_simulate_sample(dataset, num_agents, states_all, num_periods,
 
     !/* external libraries    */
 
-    USE robupy_library
+    USE robufort_library
 
     !/* setup    */
 
@@ -53,7 +53,7 @@ SUBROUTINE wrapper_backward_induction(periods_emax, periods_payoffs_ex_post, &
 
     !/* external libraries    */
 
-    USE robupy_library
+    USE robufort_library
 
     !/* setup    */
 
@@ -96,7 +96,7 @@ SUBROUTINE wrapper_create_state_space(states_all, states_number_period, mapping_
     
     !/* external libraries    */
 
-    USE robupy_library
+    USE robufort_library
 
     !/* setup    */
 
@@ -129,7 +129,7 @@ SUBROUTINE wrapper_calculate_payoffs_ex_ante(periods_payoffs_ex_ante, num_period
 
     !/* external libraries    */
 
-    USE robupy_library
+    USE robufort_library
 
     !/* setup    */
 

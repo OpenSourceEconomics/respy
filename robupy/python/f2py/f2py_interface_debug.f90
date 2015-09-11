@@ -10,7 +10,7 @@ SUBROUTINE wrapper_multivariate_normal(draws, mean, covariance, num_draws, dim)
 
     !/* external libraries    */
 
-    USE robupy_library
+    USE robufort_library
 
     !/* setup    */
 
@@ -39,7 +39,7 @@ SUBROUTINE wrapper_standard_normal(draw, dim)
 
     !/* external libraries    */
 
-    USE robupy_library
+    USE robufort_library
 
     !/* setup    */
 
@@ -65,7 +65,7 @@ SUBROUTINE wrapper_determinant(det, A)
 
     !/* external libraries    */
 
-    USE robupy_library
+    USE robufort_library
 
     !/* setup    */
 
@@ -91,7 +91,7 @@ SUBROUTINE wrapper_cholesky(factor, matrix, n)
 
     !/* external libraries    */
 
-    USE robupy_library
+    USE robufort_library
 
     !/* setup    */
 
@@ -119,7 +119,7 @@ SUBROUTINE wrapper_inverse(inv, A, n)
 
     !/* external libraries    */
 
-    USE robupy_library
+    USE robufort_library
 
     !/* setup    */
 
@@ -147,7 +147,7 @@ SUBROUTINE wrapper_trace(rslt, A)
 
     !/* external libraries    */
 
-    USE robupy_library
+    USE robufort_library
 
     !/* setup    */
 
@@ -173,7 +173,7 @@ SUBROUTINE wrapper_divergence(div, x, cov, level)
 
     !/* external libraries    */
 
-    USE robupy_library
+    USE robufort_library
 
     !/* setup    */
 

@@ -12,7 +12,7 @@ def simulate_emax(num_periods, num_draws, period, k, eps_relevant,
     """ Simulate expected future value.
     """
     # Initialize containers
-    emax_simulated = 0.0
+    emax_simulated, payoffs_ex_post, future_payoffs = 0.0, 0.0, 0.0
 
     # Calculate maximum value
     for i in range(num_draws):

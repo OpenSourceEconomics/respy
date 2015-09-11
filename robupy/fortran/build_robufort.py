@@ -1,7 +1,7 @@
 """ This module contains all functions required to build the ROBUFORT
-executable tedious modifications of the original source code is required to
+executable. Tedious modifications of the original source code is required to
 get the maximum performance. The main component is an iterative inlining of
-all functionality from the robupy library. This allows to maintain a
+all functionality from the ROBUFORT library. This allows to maintain a
 well-organized code without any loss of performance.
 """
 
@@ -11,7 +11,7 @@ import shutil
 import copy
 import os
 
-
+# module-wide variables
 DEBUG_OPTIONS = ' -O2 -fimplicit-none  -Wall  -Wline-truncation ' \
                 ' -Wcharacter-truncation  -Wsurprising  -Waliasing' \
                 ' -Wimplicit-interface  -Wunused-parameter  -fwhole-file ' \
@@ -21,7 +21,8 @@ PRODUCTION_OPTIONS = '-O3'
 
 
 def robufort_build(self, is_debug=False):
-
+    """ Building the ROBUFORT executable for high speed execution.
+    """
     # Compilation of executable for fastest performance
     current_directory = os.getcwd()
 
@@ -33,9 +34,9 @@ def robufort_build(self, is_debug=False):
     # subroutines in a single file. Prepare starting version of extended
     # ROBUFORT code. At first the module containing the program constants is
     # inserted as well as the auxiliary functions. Then the code tailored for
-    # the inlinings is added. The subroutines from the robupy_auxiliarz f
+    # the inlinings is added.
     with open('robufort_extended.f90', 'w') as outfile:
-        for fname in ['robupy_program_constants.f90', 'robupy_auxiliary.f90',
+        for fname in ['robufort_program_constants.f90', 'robufort_auxiliary.f90',
                       'robufort.f90']:
             with open(fname) as infile:
                 for line in infile:
@@ -45,7 +46,7 @@ def robufort_build(self, is_debug=False):
     # This loop iteratively marks subroutines for inlinings and then replaces
     # them with the relevant code lines. The loop stops once no subroutines
     # are marked for further inlining. The original code of the subroutines
-    # is read in directly from the robupy_core.f90 file.
+    # is read in directly from the robufort_core.f90 file.
     subroutines = _read_subroutines()
 
     while True:
@@ -96,7 +97,7 @@ def robufort_build(self, is_debug=False):
 
     os.unlink('robufort_extended.f90')
 
-    os.unlink('robupy_program_constants.mod')
+    os.unlink('robufort_program_constants.mod')
 
     os.chdir(current_directory)
 
@@ -391,12 +392,15 @@ def _read_subroutines():
     # Initialize container
     subroutines = dict()
 
+    # Auxiliary containers
+    name = None
+
     # Determine number of lines
-    with open('robupy_core.f90', 'r') as old_file:
+    with open('robufort_core.f90', 'r') as old_file:
         num_lines = len(old_file.readlines())
 
     # Extract information
-    with open('robupy_core.f90') as file_:
+    with open('robufort_core.f90') as file_:
 
         for _ in range(num_lines):
 

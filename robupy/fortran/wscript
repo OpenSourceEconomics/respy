@@ -30,7 +30,7 @@ class CreateDirectoryStructure(Task):
                 pass
 
 
-class CreateRobupyLibrary(Task):
+class CreateRobufortLibrary(Task):
 
     after = ['CreateDirectoryStructure']
 
@@ -39,13 +39,13 @@ class CreateRobupyLibrary(Task):
         # Determine compiler options
         compiler_options = '-O3 -fpic'
 
-        files = ['robupy_program_constants.f90', 'robupy_auxiliary.f90',
-                 'robupy_core.f90']
+        files = ['robufort_program_constants.f90', 'robufort_auxiliary.f90',
+                 'robufort_core.f90']
 
         for file_ in files:
             os.system('gfortran ' + compiler_options + ' -c ' + file_)
 
-        os.system('ar crs libfort_robupy.a *.o *.mod')
+        os.system('ar crs libfort_robufort.a *.o *.mod')
 
         os.chdir(self.env.project_paths['ROBUPY'] + '/fortran')
 
@@ -53,12 +53,12 @@ class CreateRobupyLibrary(Task):
         for file_ in module_files:
             shutil.move(file_, 'include/')
 
-        shutil.move('libfort_robupy.a', 'lib/')
+        shutil.move('libfort_robufort.a', 'lib/')
 
 
 class CreateRobufortExecutable(Task):
 
-    after = ['CreateRobupyLibrary']
+    after = ['CreateRobufortLibrary']
 
     def run(self):
 
@@ -93,11 +93,11 @@ class CreateF2pyInterface(Task):
 
         os.system(
             'f2py3 -c -m  f2py_core f2py_interface_core.f90 -Iinclude -Llib '
-            '-lfort_robupy')
+            '-lfort_robufort')
 
         os.system(
             'f2py3 -c -m  f2py_debug f2py_interface_debug.f90 -Iinclude -Llib '
-            '-lfort_robupy')
+            '-lfort_robufort')
 
 ''' Build
 '''
@@ -105,21 +105,24 @@ class CreateF2pyInterface(Task):
 
 def build(bld):
 
+    # Distribute class attributes
     is_debug = bld.options.debug
 
-
+    # Initialize directory structure
     task_1 = CreateDirectoryStructure(env=bld.env)
 
     bld.add_to_group(task_1)
 
-
-    task_2 = CreateRobupyLibrary(env=bld.env)
+    # Create the ROBUFORT library. This is build in addition to the ROBUFORT
+    # executable to allow for the use of an F2PY interface to the core
+    # functions as well.
+    task_2 = CreateRobufortLibrary(env=bld.env)
 
     bld.add_to_group(task_2)
 
     task_2.set_run_after(task_1)
 
-
+    # Create the ROBUFORT executable
     task_3 = CreateRobufortExecutable(env=bld.env)
 
     task_3.is_debug = is_debug
@@ -128,11 +131,10 @@ def build(bld):
 
     task_3.set_run_after(task_2)
 
-
+    # Build F2PY interface
     task_4 = CreateF2pyInterface(env=bld.env)
 
     bld.add_to_group(task_4)
 
     task_4.set_run_after(task_3)
-
 

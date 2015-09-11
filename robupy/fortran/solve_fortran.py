@@ -67,7 +67,7 @@ def add_results(robupy_obj):
 
     shapes += [(num_periods, num_periods, num_periods, min_idx, 2)]
 
-    shapes += [(num_periods)]
+    shapes += [(num_periods,)]
 
     shapes += [(num_periods, max_states_period, 4)]
 

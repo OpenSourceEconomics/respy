@@ -4,8 +4,8 @@ MODULE robufort_library
 
     !/* external modules    */
 
-    USE robupy_program_constants
-    USE robupy_auxiliary
+    USE robufort_program_constants
+    USE robufort_auxiliary
 
     !/* setup   */
 
@@ -313,7 +313,7 @@ PROGRAM robufort
 
     USE robufort_library
 
-    USE robupy_program_constants
+    USE robufort_program_constants
 
     !/* setup   */
 

@@ -224,7 +224,6 @@ def test_5():
     import robupy.python.f2py.f2py_core as fort
     import robupy.python.py.python_core as py
 
-
     for _ in range(25):
 
         # Create grid of admissible state space values.
