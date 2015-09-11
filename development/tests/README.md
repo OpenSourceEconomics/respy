@@ -1,6 +1,6 @@
 # Development Tests
 
-This directory contains the main testing infrastructure for the *RobuPy* package
+This directory contains the main testing infrastructure for the ***RobuPy*** package
 
 
 ### Random
