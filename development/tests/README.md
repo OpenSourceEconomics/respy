@@ -1,15 +1,15 @@
 # Development Tests
 
-This directory contains the main testing infrastructure for the *robupy* package
+This directory contains the main testing infrastructure for the *RobuPy* package
 
 
 ### Random
 
-The setup allows to test the *robupy* for a fixed amount of time. Random model specifications are generated and the integrity of the package is checked. 
+The setup allows to test the *RobuPy* for a fixed amount of time. Random model specifications are generated and the integrity of the package is checked. 
 
 For more details:
 
-    $ ./run --h
+    $ ./run -h
 
 ### Fixed
 
