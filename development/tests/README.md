@@ -3,15 +3,16 @@
 This directory contains the main testing infrastructure for the *robupy* package
 
 
-### Codes
+### Random
 
-Source codes for the original FORTRAN77 and an upgraded FORTRAN95 program are available in the **codes** subdirectory.
+The setup allows to test the *robupy* for a fixed amount of time. Random model specifications are generated and the integrity of the package is checked. 
 
-### Simulation
+For more details:
 
-You can generate their simulated samples by simply typing:
- 	
-    $ cd simulation; python create.py
+    $ ./run --h
 
-This solves and simulates the model for the three parametrizations analyzed in the paper using their program and the robupy package. The resulting choice probabilities summarized in **data.robupy.info** align between the implementations and the published results (see **original-results.pdf**). Minor discrepancies are due to randomness.  
+### Fixed
 
+This setup runs battery of tests for fixed model specifications and allows to ensure that the results of the package does not change during refactoring. To run the test battery:
+
+	$ ./run
