@@ -1,5 +1,5 @@
-""" This module contains all the capabilities for the processing and
-simulating the model's initialization file.
+""" This module contains all the capabilities for the processing the model's
+initialization file.
 """
 
 # standard library

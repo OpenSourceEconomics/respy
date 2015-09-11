@@ -10,7 +10,7 @@ import os
 
 # project library
 from robupy.auxiliary import replace_missing_values
-from robupy.auxiliary import read_restud_disturbances
+from robupy.auxiliary import read_disturbances
 
 import robupy.python.py.python_core as python_core
 try:
@@ -179,8 +179,6 @@ def _wrapper_create_state_space(robupy_obj):
 
     min_idx = robupy_obj.get_attr('min_idx')
 
-    debug = robupy_obj.get_attr('debug')
-
     # Auxiliary objects
     is_f2py = (version == 'F2PY')
 
@@ -314,13 +312,11 @@ def _create_eps(robupy_obj):
     # It aligns the random components between the two. It is only used in the
     # development process.
     if debug and os.path.isfile('disturbances.txt'):
-        periods_eps_relevant = read_restud_disturbances(robupy_obj)
+        periods_eps_relevant = read_disturbances(robupy_obj)
 
-    # In the case of ambiguity, standard normal deviates are passed into the
-    # routine. This is unsatisfactory, but required to compare the outputs
-    # between the RESTUD program and the ROBUPY package. If standard deviates
-    # are passed in from the beginning, the alignment of randomness between
-    # the two program yields a too large precision loss.
+    # This is useful for debugging purposes as it allows to align the
+    # disturbances across the different implementations. This is particularly
+    # useful for the ROBUFORT and RESTUD program.
     if with_ambiguity:
         np.random.seed(seed)
         periods_eps_relevant = np.random.multivariate_normal(np.zeros(4),

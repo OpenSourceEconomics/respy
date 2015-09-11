@@ -1,5 +1,5 @@
 """ This module contains all the capabilities to solve the dynamic
-programming problem.
+programming problem building the ROBUFORT executable.
 """
 
 # standard library
@@ -113,7 +113,6 @@ def write_robufort_initialization(robupy_obj):
 
     # Auxiliary objects
     eps_zero = robupy_obj.get_attr('eps_zero')
-
 
     with open('.model.robufort.ini', 'w') as file_:
 

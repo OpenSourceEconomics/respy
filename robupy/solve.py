@@ -1,4 +1,5 @@
-""" This module serves as the interface to the solution functions.
+""" This module serves as the interface to the alternative implementations to
+solve the model.
 """
 
 # project library

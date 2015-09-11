@@ -1,6 +1,8 @@
 """ This module contains all functions required to build the ROBUFORT
 executable tedious modifications of the original source code is required to
-get the maximum performance.
+get the maximum performance. The main component is an iterative inlining of
+all functionality from the robupy library. This allows to maintain a
+well-organized code without any loss of performance.
 """
 
 # standard library
@@ -16,6 +18,7 @@ DEBUG_OPTIONS = ' -O2 -fimplicit-none  -Wall  -Wline-truncation ' \
                 ' -fcheck=all  -std=f2008  -pedantic  -fbacktrace'
 
 PRODUCTION_OPTIONS = '-O3'
+
 
 def robufort_build(self, is_debug=False):
 

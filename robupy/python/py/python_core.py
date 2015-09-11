@@ -6,7 +6,7 @@ where FORTRAN alternatives are available.
 import numpy as np
 import logging
 
-# project libray
+# project library
 from robupy.python.py.ambiguity import get_payoffs_ambiguity
 from robupy.python.py.auxiliary import get_total_value
 from robupy.python.py.risk import get_payoffs_risk

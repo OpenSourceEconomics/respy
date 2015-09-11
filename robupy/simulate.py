@@ -20,8 +20,8 @@ import logging
 import os
 
 # project library
+from robupy.auxiliary import read_disturbances
 from robupy.auxiliary import replace_missing_values
-from robupy.auxiliary import read_restud_disturbances
 
 import robupy.python.py.python_core as python_core
 try:
@@ -123,8 +123,10 @@ def _wrapper_simulate_sample(robupy_obj, periods_eps_relevant):
     # Finishing
     return data_frame
 
+
 ''' Auxiliary functions
 '''
+
 
 def _check_dataset(data_frame, robupy_obj):
     """ This routine runs some consistency checks on the simulated data frame.
@@ -160,7 +162,7 @@ def _check_dataset(data_frame, robupy_obj):
             assert (data_frame.max(axis=0)[i] <= max_)
         # Wage observations
         if i == 3:
-               pass
+            pass
         # Work experience A, B
         if i in [4, 5]:
             assert (data_frame.max(axis=0)[i] <= max_)
@@ -215,11 +217,11 @@ def _create_eps(robupy_obj):
             periods_eps_relevant[period, :, j] = np.exp(periods_eps_relevant[
                                                   period, :, j])
 
-    # This is only used to compare the RESTUD program to the ROBUPY package.
-    # It aligns the random components between the two. It is only used in the
-    # development process.
+    # This is useful for debugging purposes as it allows to align the
+    # disturbances across the different implementations. This is particularly
+    # useful for the ROBUFORT and RESTUD program.
     if debug and os.path.isfile('disturbances.txt'):
-        periods_eps_relevant = read_restud_disturbances(robupy_obj)
+        periods_eps_relevant = read_disturbances(robupy_obj)
 
     # Finishing
     return periods_eps_relevant
@@ -275,7 +277,6 @@ def _write_info(robupy_obj, data_frame):
 def _write_out(data_frame):
     """ Write dataset to file.
     """
-    # Formatting of columns
     formats = []
 
     formats += [_format_integer, _format_integer, _format_integer]
@@ -287,7 +288,7 @@ def _write_out(data_frame):
     with open('data.robupy.dat', 'w') as file_:
 
         data_frame.to_string(file_, index=False, header=None, na_rep='.',
-                     formatters=formats)
+                            formatters=formats)
 
 
 def _format_float(x):

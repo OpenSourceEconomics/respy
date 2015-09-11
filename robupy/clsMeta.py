@@ -1,4 +1,4 @@
-""" Module for the meta class.
+""" Module for the MetaCls, which serves as the parent for all project classes.
 """
 
 # standard library
@@ -6,6 +6,7 @@ import pickle as pkl
 
 
 class MetaCls(object):
+
     def __init__(self):
         """ Initialization of hand-crafted base class.
         """
@@ -17,7 +18,6 @@ class MetaCls(object):
     def get_status(self):
         """ Get status of class instance.
         """
-
         return self.is_locked
 
     def lock(self):
@@ -37,36 +37,36 @@ class MetaCls(object):
     def unlock(self):
         """ Unlock class instance.
         """
-        # Antibugging.
+        # Antibugging
         assert (self.get_status() is True)
 
-        # Update class attributes.
+        # Update class attributes
         self.is_locked = False
 
     def get_attr(self, key):
         """ Get attributes.
         """
-        # Antibugging.
+        # Antibugging
         assert (self.get_status() is True)
         assert (self._check_key(key) is True)
 
-        # Finishing.
+        # Finishing
         return self.attr[key]
 
     def set_attr(self, key, value):
         """ Get attributes.
         """
-        # Antibugging.
+        # Antibugging
         assert (self.get_status() is False)
         assert (self._check_key(key) is True)
 
-        # Finishing.
+        # Finishing
         self.attr[key] = value
 
     def store(self, file_name):
         """ Store class instance.
         """
-        # Antibugging.
+        # Antibugging
         assert (self.get_status() is True)
         assert (isinstance(file_name, str))
 
@@ -76,7 +76,7 @@ class MetaCls(object):
     def _check_key(self, key):
         """ Check that key is present.
         """
-        # Check presence.
+        # Check presence
         assert (key in self.attr.keys())
 
         # Finishing.

@@ -16,9 +16,9 @@ HUGE_FLOAT = 10e10
 '''
 
 
-def get_payoffs_ambiguity(num_draws, eps_standard, period, k,
-        payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, states_all,
-        num_periods, emax, delta, debug, eps_cholesky, level, measure):
+def get_payoffs_ambiguity(num_draws, eps_standard, period, k, payoffs_ex_ante,
+        edu_max, edu_start, mapping_state_idx, states_all, num_periods, emax,
+        delta, debug, eps_cholesky, level, measure):
     """ Get worst case
     """
     # Initialize options.
@@ -85,8 +85,8 @@ def get_payoffs_ambiguity(num_draws, eps_standard, period, k,
 
 
 def _correct_debugging(opt, x0, level, eps_standard, eps_cholesky, num_periods,
-            num_draws, period, k, payoffs_ex_ante, edu_max, edu_start, emax,
-            states_all, mapping_state_idx, delta):
+        num_draws, period, k, payoffs_ex_ante, edu_max, edu_start, emax,
+        states_all, mapping_state_idx, delta):
     """ Some manipulations for test battery
     """
     # Check applicability
@@ -103,8 +103,7 @@ def _correct_debugging(opt, x0, level, eps_standard, eps_cholesky, num_periods,
         eps_relevant[:, j] = np.exp(eps_relevant[:, j])
 
     simulated, payoffs_ex_post, future_payoffs = \
-                simulate_emax(num_periods, num_draws, period, k,
-                                 eps_relevant,
+                simulate_emax(num_periods, num_draws, period, k, eps_relevant,
                     payoffs_ex_ante, edu_max, edu_start, emax, states_all,
                     mapping_state_idx, delta)
 
@@ -230,6 +229,7 @@ def _prep_absolute(level, debug):
 
     # Finishing
     return bounds
+
 
 def checks_ambiguity(str_, *args):
     """ This checks the integrity of the objects related to the
