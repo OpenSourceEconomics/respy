@@ -1,4 +1,4 @@
-# Development Tests
+# Testing Infrastructure
 
 This directory contains the main testing infrastructure for the ***RobuPy*** package
 
