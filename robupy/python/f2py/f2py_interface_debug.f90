@@ -6,6 +6,60 @@
 !
 !******************************************************************************
 !******************************************************************************
+SUBROUTINE wrapper_rosenbrock_derivative(rslt, x, dim)
+
+    !/* external libraries    */
+
+    USE robufort_library
+
+    !/* setup    */
+
+    IMPLICIT NONE
+
+    !/* external objects    */
+
+    DOUBLE PRECISION, INTENT(OUT)   :: rslt(dim)
+    DOUBLE PRECISION, INTENT(IN)    :: x(dim)
+
+    INTEGER, INTENT(IN)             :: dim
+
+!------------------------------------------------------------------------------ 
+! Algorithm
+!------------------------------------------------------------------------------ 
+    
+    ! Calculate derivative information
+    CALL rosenbrock_derivative(rslt, x)
+
+END SUBROUTINE 
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE wrapper_rosenbrock(rslt, x, dim)
+
+    !/* external libraries    */
+
+    USE robufort_library
+
+    !/* setup    */
+
+    IMPLICIT NONE
+
+    !/* external objects    */
+
+    DOUBLE PRECISION, INTENT(OUT)   :: rslt
+    DOUBLE PRECISION, INTENT(IN)    :: x(dim)
+
+    INTEGER, INTENT(IN)             :: dim
+
+!------------------------------------------------------------------------------ 
+! Algorithm
+!------------------------------------------------------------------------------ 
+    
+    ! Evaluate Rosenbrock function
+    CALL rosenbrock(rslt, x)
+
+END SUBROUTINE 
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE wrapper_divergence_approx_gradient(rslt, x, cov, level, eps)
 
     !/* external libraries    */

@@ -28,6 +28,10 @@ MODULE robufort_program_constants
     REAL(our_dble), PARAMETER :: three_dble     = 3.00_our_dble
     REAL(our_dble), PARAMETER :: four_dble      = 4.00_our_dble
 
+    REAL(our_dble), PARAMETER :: two_hundred_dble  = 200_our_dble
+    REAL(our_dble), PARAMETER :: four_hundred_dble = 400_our_dble
+    REAL(our_dble), PARAMETER :: huge_dble         = HUGE(zero_dble)
+
     REAL(our_dble), PARAMETER :: tiny_dble = 1.0e-20_our_dble
     REAL(our_dble), PARAMETER :: pi        = 3.141592653589793238462643383279502884197_our_dble
     

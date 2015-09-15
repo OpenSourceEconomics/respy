@@ -11,6 +11,79 @@ MODULE robufort_auxiliary
 CONTAINS
 !******************************************************************************
 !******************************************************************************
+SUBROUTINE rosenbrock_derivative(rslt, x)
+
+    !/* external objects    */
+
+    REAL(our_dble), INTENT(OUT)     :: rslt(:)
+    REAL(our_dble), INTENT(IN)      :: x(:)
+
+    !/* internals objects    */
+
+    INTEGER(our_int)                :: dim
+
+    REAL(our_dble), ALLOCATABLE     :: xm(:)
+    REAL(our_dble), ALLOCATABLE     :: xm_m1(:)
+    REAL(our_dble), ALLOCATABLE     :: xm_p1(:)
+
+!------------------------------------------------------------------------------ 
+! Algorithm
+!------------------------------------------------------------------------------ 
+
+    ! Auxiliary information
+    dim = SIZE(x, 1)
+        
+    ! Allocate containers
+    ALLOCATE(xm(dim - 2)); ALLOCATE(xm_m1(dim - 2)); ALLOCATE(xm_p1(dim - 2))
+
+    ! Extract sets of evaluation points
+    xm = x(2:(dim - 1))
+
+    xm_m1 = x(:(dim - 2))
+
+    xm_p1 = x(3:)
+
+    ! Construct derivative information
+    rslt(1) = -four_hundred_dble * x(1) * (x(2) - x(1) ** 2) - 2 * (1 - x(1))
+
+    rslt(2:(dim - 1)) =  (two_hundred_dble * (xm - xm_m1 ** 2) - &
+            four_hundred_dble * (xm_p1 - xm ** 2) * xm - 2 * (1 - xm))
+
+    rslt(dim) = two_hundred_dble * (x(dim) - x(dim - 1) ** 2) 
+
+END SUBROUTINE 
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE rosenbrock(rslt, x)
+
+    !/* external objects    */
+
+    REAL(our_dble), INTENT(OUT)     :: rslt
+    REAL(our_dble), INTENT(IN)      :: x(:)
+
+    !/* internals objects    */
+
+    INTEGER                         :: dim
+    INTEGER                         :: i
+
+!------------------------------------------------------------------------------ 
+! Algorithm
+!------------------------------------------------------------------------------ 
+    
+    ! Determine size of optimization task
+    dim = SIZE(x)
+
+    ! Initialize containers
+    rslt = zero_dble
+
+    DO i = 2, dim
+        rslt = rslt + 100.00 * (x(i) - x(i - 1)**2)**2 
+        rslt = rslt + (1.0 - x(i - 1))**2
+    END DO
+
+END SUBROUTINE 
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE divergence_approx_gradient(rslt, x, cov, level, eps)
     
     !/* external objects    */

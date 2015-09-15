@@ -14,6 +14,7 @@
       <w>nosetests</w>
       <w>restud</w>
       <w>robufort</w>
+      <w>rosenbrock</w>
       <w>vals</w>
     </words>
   </dictionary>

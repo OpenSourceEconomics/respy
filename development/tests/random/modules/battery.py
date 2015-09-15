@@ -6,6 +6,8 @@ long-run development tests.
 # standard library
 from pandas.util.testing import assert_frame_equal
 from scipy.optimize import approx_fprime
+from scipy.optimize import rosen_der
+from scipy.optimize import rosen
 import pandas as pd
 import numpy as np
 import sys
@@ -67,7 +69,7 @@ def test_97():
     for _ in range(1000):
 
         # Draw random requests for testing purposes.
-        num_draws = np.random.random_integers(1, 1000)
+        num_draws = np.random.random_integers(2, 1000)
         dim = np.random.random_integers(1, 6)
         mean = np.random.uniform(-0.5, 0.5, (dim))
 
@@ -102,6 +104,17 @@ def test_97():
         fort.wrapper_standard_normal(num_draws)
         fort.wrapper_multivariate_normal(mean, cov, num_draws, dim)
 
+        # Evaluation of Rosenbrock function. We are using the FORTRAN version
+        # in the development of the optimization routines.
+        x0 = np.random.randn(num_draws)
+
+        f90 = fort.wrapper_rosenbrock(x0, num_draws)
+        py = rosen(x0)
+        np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
+
+        py = rosen_der(x0)
+        f90 = fort.wrapper_rosenbrock_derivative(x0, len(x0))
+        np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
 def test_98():
     """  Compare results from the RESTUD program and the ROBUPY package.
