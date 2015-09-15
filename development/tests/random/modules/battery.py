@@ -5,22 +5,54 @@ long-run development tests.
 
 # standard library
 from pandas.util.testing import assert_frame_equal
+from scipy.optimize import approx_fprime
 import pandas as pd
 import numpy as np
 import sys
 import os
 
-# project library
+# testing library
 from modules.auxiliary import compile_package, transform_robupy_to_restud, \
     write_disturbances
 
 # ROBUPY import
 sys.path.insert(0, os.environ['ROBUPY'])
 from robupy.tests.random_init import generate_random_dict, print_random_dict
+from robupy.python.py.ambiguity import _divergence
 from robupy import read, solve, simulate
+
 
 ''' Main
 '''
+def test_96():
+    """ Compare results between FORTRAN and PYTHON of selected
+    hand-crafted functions. In test_97() we test FORTRAN implementations
+    against PYTHON intrinsic routines.
+    """
+    # Ensure that fast solution methods are available
+    compile_package('fast')
+
+    import robupy.python.f2py.f2py_debug as fort
+
+    for _ in range(1000):
+
+        # Draw random request for testing purposes
+        matrix = (np.random.multivariate_normal(np.zeros(4), np.identity(
+            4), 4))
+        cov = np.dot(matrix, matrix.T)
+        x = np.random.rand(2)
+        level = np.random.random(1)
+        eps = np.random.rand()**2
+
+        # Kullback-Leibler (KL) divergence
+        py = _divergence(x, cov, level)
+        f90 = fort.wrapper_divergence(x, cov, level)
+        np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
+
+        # Gradient approximation of KL divergence
+        py = approx_fprime(x, _divergence, eps, cov, level)
+        f90 = fort.wrapper_divergence_approx_gradient(x, cov, level, eps)
+        np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
 
 def test_97():

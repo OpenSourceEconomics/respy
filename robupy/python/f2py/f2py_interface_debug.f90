@@ -6,6 +6,34 @@
 !
 !******************************************************************************
 !******************************************************************************
+SUBROUTINE wrapper_divergence_approx_gradient(rslt, x, cov, level, eps)
+
+    !/* external libraries    */
+
+    USE robufort_library
+
+    !/* setup    */
+
+    IMPLICIT NONE
+
+    !/* external objects    */
+
+    DOUBLE PRECISION, INTENT(OUT)  :: rslt(2)
+    DOUBLE PRECISION, INTENT(IN)   :: x(2)
+    DOUBLE PRECISION, INTENT(IN)   :: eps
+    DOUBLE PRECISION, INTENT(IN)   :: cov(4,4)
+    DOUBLE PRECISION, INTENT(IN)   :: level
+
+!------------------------------------------------------------------------------ 
+! Algorithm
+!------------------------------------------------------------------------------ 
+    
+    ! Approximate the gradient of the KL divergence
+    CALL divergence_approx_gradient(rslt, x, cov, level, eps)
+
+END SUBROUTINE 
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE wrapper_multivariate_normal(draws, mean, covariance, num_draws, dim)
 
     !/* external libraries    */
