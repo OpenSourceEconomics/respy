@@ -76,15 +76,14 @@ def test_implementations():
     np.random.seed(345)
 
     for _ in range(1000):
-
-        # Sample test case
+        # Sample basic test case
         is_upgraded = np.random.choice([True, False])
         maxiter = np.random.random_integers(1, 100)
         num_dim = np.random.random_integers(2, 4)
         ftol = np.random.uniform(0.000000, 1e-5)
         x0 = np.random.normal(size=num_dim)
 
-        # Create bounds
+        # Add bounds
         shift = np.random.normal(size=2)**2
         bounds = np.vstack(( x0 - shift[0], x0 + shift[1])).T
 
@@ -109,38 +108,54 @@ def test_implementations():
 
         #np.testing.assert_allclose(py, f, rtol=1e-05, atol=1e-06)
 
+#test_implementations()
 
 
-#compile_tools()
+       # Sample basic test case
+
+np.random.seed(123)
+is_upgraded = np.random.choice([True, False])
+maxiter = 1000#np.random.random_integers(1, 100)
+num_dim = np.random.random_integers(2, 4)
+ftol = np.random.uniform(0.000000, 1e-5)
+x0 = np.random.normal(size=num_dim)
+
+# Add bounds
+shift = np.random.normal(size=2)**2
+bounds = np.vstack(( x0 - shift[0], x0 + shift[1])).T
 
 
-test_implementations()
 
-if False:
-    import f2py_slsqp_debug as fort
+def test_constraint_derivative(x):
 
-
-    for _ in range(10000):
-        print()
-        print(_)
-        num_dim = np.random.random_integers(2, 3)
-
-        x0 = np.random.normal(size=num_dim)
-        maxiter = np.random.random_integers(1, 100)
-        ftol = np.random.uniform(0.000000, 1e-5)
-
-        xl = x0 - np.random.normal(size=1)**2
-        xu = x0 + np.random.normal(size=1)**2
-
-        bounds = np.vstack((xl, xu)).T
+    return np.ones(len(x))
 
 
-        if True:
-            py = _minimize_slsqp(rosen, x0, jac=rosen_der, maxiter=maxiter,
-                        ftol=ftol, bounds = bounds)['x']
-            print('Python ', py)
+def test_constraint(x):
+    """ This constraint imposes that the sum of the parameters  needs to
+        be larger than 10.
+    """
+    return np.sum(x) - 5
 
-            f = fort.wrapper_slsqp_debug(x0, bounds, True, maxiter, ftol, num_dim)
-            print('Fortran ', f)
 
-            np.testing.assert_allclose(py, f, rtol=1e-05, atol=1e-06)
+constraint = dict()
+
+constraint['type'] = 'ineq'
+
+constraint['fun'] = test_constraint
+
+constraint['jac'] = test_constraint_derivative
+
+constraint['args'] = ()
+
+print(x0)
+#py = _minimize_slsqp(rosen, x0, jac=rosen_der, maxiter=maxiter,
+#               ftol=ftol, bounds=bounds, constraints=constraint)
+
+compile_tools()
+
+import f2py_slsqp_debug as fort
+
+f = fort.wrapper_slsqp_debug(x0, bounds, is_upgraded, maxiter, ftol,
+                                     num_dim)
+#print(py)

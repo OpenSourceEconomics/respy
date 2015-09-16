@@ -1,5 +1,5 @@
-!******************************************************************************
-!******************************************************************************
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE wrapper_slsqp_debug(x_internal, x_start, x_bounds, is_upgraded, &
                 maxiter, ftol, num_dim)
 
@@ -124,6 +124,8 @@ SUBROUTINE wrapper_slsqp_debug(x_internal, x_start, x_bounds, is_upgraded, &
             CALL rosenbrock_derivative(g, x_internal)
         END IF
 
+        CALL test_function()
+
         !SLSQP Interface
         IF (is_upgraded) THEN
             CALL slsqp(m, meq, n, x_internal, xl, xu, f, c, g, a, acc, iter, &
@@ -141,3 +143,10 @@ SUBROUTINE wrapper_slsqp_debug(x_internal, x_start, x_bounds, is_upgraded, &
     END DO
 
 END SUBROUTINE 
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE test_function()
+
+    PRINT *, "hello"
+
+END SUBROUTINE
