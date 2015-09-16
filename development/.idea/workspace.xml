@@ -6,11 +6,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="56803c1c-81e4-4070-9cf6-fc7503291db5" name="Default" comment="82333.99728503">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/package/development/working/slsqp/robufort_slsqp.f90" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/package/development/working/slsqp/slsqp_optmz_upgraded.f90" afterPath="" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/working/slsqp/slsqp_optmz.f" afterPath="$PROJECT_DIR$/package/development/working/slsqp/original_slsqp.f" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/working/slsqp/driver.py" afterPath="$PROJECT_DIR$/package/development/working/slsqp/driver.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/working/slsqp/f2py_interface_slsqp.f90" afterPath="$PROJECT_DIR$/package/development/working/slsqp/f2py_interface_slsqp.f90" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/package/development/working/slsqp/driver.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/package/development/working/slsqp/f2py_interface_slsqp.f90" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/package/development/working/slsqp/original_slsqp.f" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/package/development/working/slsqp/robufort_auxiliary.f90" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/package/development/working/slsqp/robufort_program_constants.f90" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/package/development/working/slsqp/robufort_slsqp.f90" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/package/development/working/slsqp/slsqp.py" afterPath="" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/slsqp/driver.py" afterPath="$PROJECT_DIR$/package/development/slsqp/driver.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/slsqp/f2py_interface_slsqp.f90" afterPath="$PROJECT_DIR$/package/development/slsqp/f2py_interface_slsqp.f90" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/.idea/dictionaries/peisenha.xml" afterPath="$PROJECT_DIR$/package/development/.idea/dictionaries/peisenha.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/slsqp/robufort_slsqp.f90" afterPath="$PROJECT_DIR$/package/development/slsqp/robufort_slsqp.f90" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../../../../structRobust/.idea/structRobust.iml" afterPath="$PROJECT_DIR$/../../../../structRobust/.idea/structRobust.iml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/.idea/workspace.xml" afterPath="$PROJECT_DIR$/package/development/.idea/workspace.xml" />
     </list>
@@ -41,14 +47,40 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="driver.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/package/development/working/slsqp/driver.py">
+      <file leaf-file-name="driver.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/package/development/slsqp/driver.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="1.2288135">
-              <caret line="84" column="43" selection-start-line="84" selection-start-column="43" selection-end-line="84" selection-end-column="43" />
+            <state vertical-scroll-proportion="0.0">
+              <caret line="93" column="8" selection-start-line="93" selection-start-column="8" selection-end-line="93" selection-end-column="8" />
               <folding>
-                <element signature="e#97#110#0" expanded="true" />
+                <element signature="e#113#126#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="f2py_interface_slsqp.f90" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/package/development/slsqp/f2py_interface_slsqp.f90">
+          <provider editor-type-id="com.intellij.database.editor.CsvTableFileEditorProvider">
+            <state />
+          </provider>
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="-0.97938144">
+              <caret line="69" column="4" selection-start-line="69" selection-start-column="4" selection-end-line="69" selection-end-column="18" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="robufort_slsqp.f90" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/package/development/slsqp/robufort_slsqp.f90">
+          <provider editor-type-id="com.intellij.database.editor.CsvTableFileEditorProvider">
+            <state />
+          </provider>
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="-0.43243244">
+              <caret line="49" column="31" selection-start-line="49" selection-start-column="31" selection-end-line="49" selection-end-column="34" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -68,9 +100,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/package/development/restud/testing/modules/auxiliary.py" />
-        <option value="$PROJECT_DIR$/package/development/restud/testing/run" />
-        <option value="$PROJECT_DIR$/package/development/restud/simulation/create.py" />
         <option value="$PROJECT_DIR$/package/robupy/checks/checks_solve.py" />
         <option value="$PROJECT_DIR$/package/robupy/performance/fortran/robupy_main.f90" />
         <option value="$PROJECT_DIR$/package/robupy/performance/fortran/fortran_core.f90" />
@@ -119,6 +148,9 @@
         <option value="$PROJECT_DIR$/package/development/working/slsqp/slsqp.py" />
         <option value="$PROJECT_DIR$/package/development/tests/random/modules/battery.py" />
         <option value="$PROJECT_DIR$/package/development/working/slsqp/driver.py" />
+        <option value="$PROJECT_DIR$/package/development/slsqp/driver.py" />
+        <option value="$PROJECT_DIR$/package/development/slsqp/f2py_interface_slsqp.f90" />
+        <option value="$PROJECT_DIR$/package/development/slsqp/robufort_slsqp.f90" />
       </list>
     </option>
   </component>
@@ -435,6 +467,28 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="modules" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="robustToolbox" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="robustToolbox" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="package" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="development" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="slsqp" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -780,7 +834,7 @@
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.11935484" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.20860215" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.27470276" sideWeight="0.5442279" order="0" side_tool="true" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.27470276" sideWeight="0.5442279" order="0" side_tool="true" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.27470276" sideWeight="0.4557721" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -837,13 +891,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/package/development/tests/random/modules/battery.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="53" column="0" selection-start-line="53" selection-start-column="0" selection-end-line="53" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/../../../../structRobust/scripts/push.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.38914028">
@@ -1144,13 +1191,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/working/slsqp/slsqp.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-9.32258">
-          <caret line="359" column="69" selection-start-line="359" selection-start-column="62" selection-end-line="359" selection-end-column="69" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/package/development/tests/random/investigate">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.6907675">
@@ -1196,13 +1236,35 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/working/slsqp/driver.py">
+    <entry file="file://$PROJECT_DIR$/package/development/slsqp/driver.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="1.2288135">
-          <caret line="84" column="43" selection-start-line="84" selection-start-column="43" selection-end-line="84" selection-end-column="43" />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="93" column="8" selection-start-line="93" selection-start-column="8" selection-end-line="93" selection-end-column="8" />
           <folding>
-            <element signature="e#97#110#0" expanded="true" />
+            <element signature="e#113#126#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/development/slsqp/robufort_slsqp.f90">
+      <provider editor-type-id="com.intellij.database.editor.CsvTableFileEditorProvider">
+        <state />
+      </provider>
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-0.43243244">
+          <caret line="49" column="31" selection-start-line="49" selection-start-column="31" selection-end-line="49" selection-end-column="34" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/development/slsqp/f2py_interface_slsqp.f90">
+      <provider editor-type-id="com.intellij.database.editor.CsvTableFileEditorProvider">
+        <state />
+      </provider>
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-0.97938144">
+          <caret line="69" column="4" selection-start-line="69" selection-start-column="4" selection-end-line="69" selection-end-column="18" />
+          <folding />
         </state>
       </provider>
     </entry>
