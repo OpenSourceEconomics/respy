@@ -1,94 +1,146 @@
 """ This module contains the testing infrastructure for the refactoring of the
 SLSQP optimization algorithm.
 """
-import shutil
-import os
-import sys
-import glob
+
+# standard library
+from numpy.testing.utils import assert_array_almost_equal
+from scipy.optimize import rosen_der, rosen
 
 import numpy as np
 
-sys.path.insert(0, os.environ['ROBUPY'])
+import shutil
+import glob
+import sys
+import os
 
-from numpy.testing.utils import assert_array_almost_equal
+
 
 # project library
+sys.path.insert(0, os.environ['ROBUPY'])
 from robupy import *
-
-from scipy.optimize import rosen_der, rosen
-
-# Cleanup function?
-for files in glob.glob('*.so'):
-    os.unlink(files)
-
-
-# Cleaup
-for dir_ in ['include', 'lib']:
-    try:
-        shutil.rmtree(dir_)
-    except:
-        pass
-
-    os.mkdir(dir_)
-
 
 
 from slsqp import _minimize_slsqp
 
-# Create the SLSQP library
-files = ['robufort_program_constants.f90', 'robufort_auxiliary.f90', 'robufort_slsqp.f90']
-for file_ in files:
-    os.system('gfortran -c  -fPIC ' + file_)
+def compile_tools():
+     # Cleanup function?
+    for files in glob.glob('*.so'):
+        os.unlink(files)
 
-os.system('gfortran -c   -fPIC --fixed-form original_slsqp.f')
-os.system('ar crs libslsqp_debug.a *.o *.mod')
 
-module_files = glob.glob('*.mod')
-for file_ in module_files:
-    shutil.move(file_, 'include/')
+    # Cleaup
+    for dir_ in ['include', 'lib']:
+        try:
+            shutil.rmtree(dir_)
+        except:
+            pass
 
-shutil.move('libslsqp_debug.a', 'lib/')
-
-# Compile interface
-os.system(
-      'f2py3 -c -m  f2py_slsqp_debug f2py_interface_slsqp.f90 -Iinclude -Llib '
-        '-lslsqp_debug')
+        os.mkdir(dir_)
 
 
 
-# Import 
-import f2py_slsqp_debug as fort
 
-    
+    # Create the SLSQP library
+    files = ['robufort_program_constants.f90', 'robufort_auxiliary.f90', 'robufort_slsqp.f90']
+    for file_ in files:
+        os.system('gfortran -c  -fPIC ' + file_)
 
-# TODO NOSE test repeatedly, to get an automated count of failed tests...
+    os.system('gfortran -c   -fPIC --fixed-form original_slsqp.f')
+    os.system('ar crs libslsqp_debug.a *.o *.mod')
 
-# Ensure recomputability
-np.random.seed(123)
+    module_files = glob.glob('*.mod')
+    for file_ in module_files:
+        shutil.move(file_, 'include/')
 
-for _ in range(1000):
+    shutil.move('libslsqp_debug.a', 'lib/')
 
-    # Sample test case
-    is_upgraded = np.random.choice([True, False])
-    maxiter = np.random.random_integers(1, 100)
-    num_dim = np.random.random_integers(2, 4)
-    ftol = np.random.uniform(0.000000, 1e-5)
-    x0 = np.random.normal(size=num_dim)
+    # Compile interface
+    os.system(
+          'f2py3 -c -m  f2py_slsqp_debug f2py_interface_slsqp.f90 -Iinclude -Llib '
+            '-lslsqp_debug')
 
-    # Test the upgraded FORTRAN version against the original code. This is 
-    # expected to never fail.
-    f_upgraded = fort.wrapper_slsqp_debug(x0, True, maxiter, ftol, num_dim)    
-    f_original = fort.wrapper_slsqp_debug(x0, False, maxiter, ftol, num_dim)     
 
-    np.testing.assert_array_equal(f_upgraded, f_original)
+def test_implementations():
 
-    # Test the FORTRAN codes against the PYTHON implementation. This is
-    # expected to fail sometimes due to differences in precision between the
-    # two implementations. In particular, as updating steps of the optimizer
-    # are very sensitive to just small differences in the derivative
-    # information.
-    f = fort.wrapper_slsqp_debug(x0, is_upgraded, maxiter, ftol, num_dim)
-    py = _minimize_slsqp(rosen, x0, jac=rosen_der, maxiter=maxiter, 
-            ftol=ftol)['x']
 
-    #   np.testing.assert_allclose(py, f, rtol=1e-05, atol=1e-06)
+    compile_tools()
+
+    # Import
+    import f2py_slsqp_debug as fort
+
+
+
+    # TODO NOSE test repeatedly, to get an automated count of failed tests...
+
+    # Ensure recomputability
+    np.random.seed(345)
+
+    for _ in range(1000):
+
+        # Sample test case
+        is_upgraded = np.random.choice([True, False])
+        maxiter = np.random.random_integers(1, 100)
+        num_dim = np.random.random_integers(2, 4)
+        ftol = np.random.uniform(0.000000, 1e-5)
+        x0 = np.random.normal(size=num_dim)
+
+        # Create bounds
+        shift = np.random.normal(size=2)**2
+        bounds = np.vstack(( x0 - shift[0], x0 + shift[1])).T
+
+        # Test the upgraded FORTRAN version against the original code. This is
+        # expected to never fail.
+        f_upgraded = fort.wrapper_slsqp_debug(x0, bounds, True, maxiter, ftol,
+                                              num_dim)
+        f_original = fort.wrapper_slsqp_debug(x0, bounds, False, maxiter, ftol,
+                                              num_dim)
+
+        np.testing.assert_array_equal(f_upgraded, f_original)
+
+        # Test the FORTRAN codes against the PYTHON implementation. This is
+        # expected to fail sometimes due to differences in precision between the
+        # two implementations. In particular, as updating steps of the optimizer
+        # are very sensitive to just small differences in the derivative
+        # information.
+        f = fort.wrapper_slsqp_debug(x0, bounds, is_upgraded, maxiter, ftol,
+                                     num_dim)
+        py = _minimize_slsqp(rosen, x0, jac=rosen_der, maxiter=maxiter,
+                ftol=ftol, bounds=bounds)['x']
+
+        #np.testing.assert_allclose(py, f, rtol=1e-05, atol=1e-06)
+
+
+
+#compile_tools()
+
+
+test_implementations()
+
+if False:
+    import f2py_slsqp_debug as fort
+
+
+    for _ in range(10000):
+        print()
+        print(_)
+        num_dim = np.random.random_integers(2, 3)
+
+        x0 = np.random.normal(size=num_dim)
+        maxiter = np.random.random_integers(1, 100)
+        ftol = np.random.uniform(0.000000, 1e-5)
+
+        xl = x0 - np.random.normal(size=1)**2
+        xu = x0 + np.random.normal(size=1)**2
+
+        bounds = np.vstack((xl, xu)).T
+
+
+        if True:
+            py = _minimize_slsqp(rosen, x0, jac=rosen_der, maxiter=maxiter,
+                        ftol=ftol, bounds = bounds)['x']
+            print('Python ', py)
+
+            f = fort.wrapper_slsqp_debug(x0, bounds, True, maxiter, ftol, num_dim)
+            print('Fortran ', f)
+
+            np.testing.assert_allclose(py, f, rtol=1e-05, atol=1e-06)

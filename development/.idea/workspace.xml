@@ -6,17 +6,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="56803c1c-81e4-4070-9cf6-fc7503291db5" name="Default" comment="82333.99728503">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/package/development/working/slsqp/driver.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/package/development/working/slsqp/f2py_interface_slsqp.f90" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/package/development/working/slsqp/original_slsqp.f" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/package/development/working/slsqp/robufort_auxiliary.f90" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/package/development/working/slsqp/robufort_program_constants.f90" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/package/development/working/slsqp/robufort_slsqp.f90" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/package/development/working/slsqp/slsqp.py" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/slsqp/driver.py" afterPath="$PROJECT_DIR$/package/development/slsqp/driver.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/slsqp/f2py_interface_slsqp.f90" afterPath="$PROJECT_DIR$/package/development/slsqp/f2py_interface_slsqp.f90" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/.idea/dictionaries/peisenha.xml" afterPath="$PROJECT_DIR$/package/development/.idea/dictionaries/peisenha.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/slsqp/robufort_slsqp.f90" afterPath="$PROJECT_DIR$/package/development/slsqp/robufort_slsqp.f90" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../../../../structRobust/.idea/structRobust.iml" afterPath="$PROJECT_DIR$/../../../../structRobust/.idea/structRobust.iml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/.idea/workspace.xml" afterPath="$PROJECT_DIR$/package/development/.idea/workspace.xml" />
     </list>
@@ -47,26 +38,26 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="driver.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="driver.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/package/development/slsqp/driver.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="93" column="8" selection-start-line="93" selection-start-column="8" selection-end-line="93" selection-end-column="8" />
+            <state vertical-scroll-proportion="0.11248074">
+              <caret line="78" column="0" selection-start-line="78" selection-start-column="0" selection-end-line="78" selection-end-column="0" />
               <folding>
-                <element signature="e#113#126#0" expanded="true" />
+                <element signature="e#133#190#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="f2py_interface_slsqp.f90" pinned="false" current-in-tab="true">
+      <file leaf-file-name="f2py_interface_slsqp.f90" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/package/development/slsqp/f2py_interface_slsqp.f90">
           <provider editor-type-id="com.intellij.database.editor.CsvTableFileEditorProvider">
             <state />
           </provider>
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-0.97938144">
-              <caret line="69" column="4" selection-start-line="69" selection-start-column="4" selection-end-line="69" selection-end-column="18" />
+            <state vertical-scroll-proportion="5.189189">
+              <caret line="93" column="41" selection-start-line="93" selection-start-column="41" selection-end-line="93" selection-end-column="41" />
               <folding />
             </state>
           </provider>
@@ -78,8 +69,8 @@
             <state />
           </provider>
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-0.43243244">
-              <caret line="49" column="31" selection-start-line="49" selection-start-column="31" selection-end-line="49" selection-end-column="34" />
+            <state vertical-scroll-proportion="-8.540541">
+              <caret line="362" column="12" selection-start-line="362" selection-start-column="12" selection-end-line="362" selection-end-column="12" />
               <folding />
             </state>
           </provider>
@@ -148,9 +139,9 @@
         <option value="$PROJECT_DIR$/package/development/working/slsqp/slsqp.py" />
         <option value="$PROJECT_DIR$/package/development/tests/random/modules/battery.py" />
         <option value="$PROJECT_DIR$/package/development/working/slsqp/driver.py" />
-        <option value="$PROJECT_DIR$/package/development/slsqp/driver.py" />
-        <option value="$PROJECT_DIR$/package/development/slsqp/f2py_interface_slsqp.f90" />
         <option value="$PROJECT_DIR$/package/development/slsqp/robufort_slsqp.f90" />
+        <option value="$PROJECT_DIR$/package/development/slsqp/f2py_interface_slsqp.f90" />
+        <option value="$PROJECT_DIR$/package/development/slsqp/driver.py" />
       </list>
     </option>
   </component>
@@ -1177,13 +1168,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/robupy/python/py/ambiguity.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.189099">
-          <caret line="136" column="0" selection-start-line="136" selection-start-column="0" selection-end-line="161" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/package/development/tests/random/modules/clsMail.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -1236,13 +1220,11 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/slsqp/driver.py">
+    <entry file="file://$PROJECT_DIR$/package/robupy/python/py/ambiguity.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="93" column="8" selection-start-line="93" selection-start-column="8" selection-end-line="93" selection-end-column="8" />
-          <folding>
-            <element signature="e#113#126#0" expanded="true" />
-          </folding>
+        <state vertical-scroll-proportion="-13.945946">
+          <caret line="41" column="36" selection-start-line="41" selection-start-column="23" selection-end-line="41" selection-end-column="36" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -1251,8 +1233,8 @@
         <state />
       </provider>
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-0.43243244">
-          <caret line="49" column="31" selection-start-line="49" selection-start-column="31" selection-end-line="49" selection-end-column="34" />
+        <state vertical-scroll-proportion="-8.540541">
+          <caret line="362" column="12" selection-start-line="362" selection-start-column="12" selection-end-line="362" selection-end-column="12" />
           <folding />
         </state>
       </provider>
@@ -1262,9 +1244,19 @@
         <state />
       </provider>
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-0.97938144">
-          <caret line="69" column="4" selection-start-line="69" selection-start-column="4" selection-end-line="69" selection-end-column="18" />
+        <state vertical-scroll-proportion="5.189189">
+          <caret line="93" column="41" selection-start-line="93" selection-start-column="41" selection-end-line="93" selection-end-column="41" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/development/slsqp/driver.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.11248074">
+          <caret line="78" column="0" selection-start-line="78" selection-start-column="0" selection-end-line="78" selection-end-column="0" />
+          <folding>
+            <element signature="e#133#190#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

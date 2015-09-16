@@ -1,6 +1,7 @@
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE wrapper_slsqp_debug(x_internal, x_start, is_upgraded, maxiter, ftol, num_dim)
+SUBROUTINE wrapper_slsqp_debug(x_internal, x_start, x_bounds, is_upgraded, &
+                maxiter, ftol, num_dim)
 
     !/* external libraries    */
 
@@ -15,7 +16,8 @@ SUBROUTINE wrapper_slsqp_debug(x_internal, x_start, is_upgraded, maxiter, ftol, 
 
     DOUBLE PRECISION, INTENT(OUT)   :: x_internal(num_dim)
     DOUBLE PRECISION, INTENT(IN)    :: x_start(num_dim)    
-    DOUBLE PRECISION, INTENT(IN)    :: ftol    
+    DOUBLE PRECISION, INTENT(IN)    :: x_bounds(num_dim, 2)
+    DOUBLE PRECISION, INTENT(IN)    :: ftol
 
     INTEGER, INTENT(IN)             :: num_dim
     INTEGER, INTENT(IN)             :: maxiter
@@ -82,14 +84,14 @@ SUBROUTINE wrapper_slsqp_debug(x_internal, x_start, is_upgraded, maxiter, ftol, 
 
     ALLOCATE(w(len_w)); w = zero_dble
     ALLOCATE(jw(len_jw)); jw = zero_int
-    ALLOCATE(a(1, n + 1)); a = zero_dble
+    ALLOCATE(a(la, n + 1)); a = zero_dble
 
     ALLOCATE(g(n))
     ALLOCATE(c(0))
 
     ! Decompose upper and lower bounds
     ALLOCATE(xl(n)); ALLOCATE(xu(n))
-    xl = -huge_dble; xu = huge_dble
+    xl = x_bounds(:,1); xu = x_bounds(:,2)
 
     ! Initialize the iteration counter and mode value
     acc  = ftol
@@ -124,7 +126,7 @@ SUBROUTINE wrapper_slsqp_debug(x_internal, x_start, is_upgraded, maxiter, ftol, 
 
         !SLSQP Interface
         IF (is_upgraded) THEN
-            CALL slsqp(m, meq, la, n, x_internal, xl, xu, f, c, g, a, acc, iter, & 
+            CALL slsqp(m, meq, n, x_internal, xl, xu, f, c, g, a, acc, iter, &
                     mode, w, l_w)!
         ELSE
             CALL slsqp_original(m, meq, la, n, x_internal, xl, xu, f, c, g, a, acc, iter, & 
