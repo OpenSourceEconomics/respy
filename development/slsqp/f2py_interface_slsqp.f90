@@ -56,6 +56,11 @@ SUBROUTINE wrapper_slsqp_debug(x_internal, x_start, x_bounds, is_upgraded, &
     
     LOGICAL                         :: is_finished
 
+    ! Debug
+    DOUBLE PRECISION                :: rslt_constr_function
+    DOUBLE PRECISION                :: rslt_constr_gradient(num_dim)
+
+
 !------------------------------------------------------------------------------ 
 ! Algorithm
 !------------------------------------------------------------------------------ 
@@ -65,7 +70,7 @@ SUBROUTINE wrapper_slsqp_debug(x_internal, x_start, x_bounds, is_upgraded, &
 
     ! Set
     meq = 0         ! Number of equality constraints
-    mieq = 0        ! Number of inequality constraints
+    mieq = 1        ! Number of inequality constraints
     
     ! Define workspace for SLSQP
     m = meq + mieq  ! Total number of constraints
@@ -86,8 +91,8 @@ SUBROUTINE wrapper_slsqp_debug(x_internal, x_start, x_bounds, is_upgraded, &
     ALLOCATE(jw(len_jw)); jw = zero_int
     ALLOCATE(a(la, n + 1)); a = zero_dble
 
-    ALLOCATE(g(n))
-    ALLOCATE(c(0))
+    ALLOCATE(g(n + 1))
+    ALLOCATE(c(la))
 
     ! Decompose upper and lower bounds
     ALLOCATE(xl(n)); ALLOCATE(xu(n))
@@ -114,24 +119,33 @@ SUBROUTINE wrapper_slsqp_debug(x_internal, x_start, x_bounds, is_upgraded, &
 
     CALL rosenbrock_derivative(g, x_internal)
 
+    CALL test_constraint(c, x_internal, n, la)
+
+    CALL test_derivative(g, x_internal, n)
+
     ! Iterate until completion
     DO WHILE (.NOT. is_finished)
         
-        ! Update information 
+        ! Evaluate criterion function and constraints
         IF (mode == one_int) THEN
-            CALL rosenbrock(f, x_internal)
-        ELSEIF (mode == -one_int) THEN      
-            CALL rosenbrock_derivative(g, x_internal)
-        END IF
 
-        CALL test_function()
+            CALL rosenbrock(f, x_internal)
+            CALL test_constraint(c, x_internal, n, la)
+
+        ! Evaluate gradient of criterion function and constraints
+        ELSEIF (mode == -one_int) THEN      
+
+            CALL rosenbrock_derivative(g, x_internal)
+            CALL test_derivative(a, x_internal, n)
+
+        END IF
 
         !SLSQP Interface
         IF (is_upgraded) THEN
             CALL slsqp(m, meq, n, x_internal, xl, xu, f, c, g, a, acc, iter, &
-                    mode, w, l_w)!
+                    mode, w, l_w)
         ELSE
-            CALL slsqp_original(m, meq, la, n, x_internal, xl, xu, f, c, g, a, acc, iter, & 
+            CALL slsqp_original(m, meq, la, n, x_internal, xl, xu, f, c, g, a, acc, iter, &
                             mode, w, l_w, jw, l_jw)
         END IF
 
@@ -142,11 +156,28 @@ SUBROUTINE wrapper_slsqp_debug(x_internal, x_start, x_bounds, is_upgraded, &
 
     END DO
 
-END SUBROUTINE 
+    PRINT *, 'FORTRAN ', mode, iter
+
+END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE test_function()
+SUBROUTINE test_constraint(c, x, n, la)
 
-    PRINT *, "hello"
+    DOUBLE PRECISION, INTENT(IN) :: x(n)
+    INTEGER, INTENT(IN)         :: n, la
+    DOUBLE PRECISION, INTENT(OUT) :: c(la)
 
+    c(:) = SUM(x) - 10
+
+END SUBROUTINE
+
+SUBROUTINE test_derivative(rslt, x, n)
+
+    DOUBLE PRECISION, INTENT(IN) :: x(n)
+    INTEGER, INTENT(IN)         :: n
+    DOUBLE PRECISION, INTENT(OUT) :: rslt(n + 1)
+
+    rslt = 1
+
+    rslt(n + 1) = 0.0
 END SUBROUTINE

@@ -14,6 +14,10 @@ import sys
 import os
 
 
+DEBUG_OPTIONS = ' -O2 -fimplicit-none  -Wall  -Wline-truncation ' \
+                ' -Wcharacter-truncation  -Wsurprising  -Waliasing' \
+                ' -Wimplicit-interface  -Wunused-parameter  -fwhole-file ' \
+                ' -fcheck=all  -std=f2008  -pedantic  -fbacktrace'
 
 # project library
 sys.path.insert(0, os.environ['ROBUPY'])
@@ -43,6 +47,7 @@ def compile_tools():
     # Create the SLSQP library
     files = ['robufort_program_constants.f90', 'robufort_auxiliary.f90', 'robufort_slsqp.f90']
     for file_ in files:
+        #os.system('gfortran -c  -fPIC ' + DEBUG_OPTIONS +  ' ' + file_)
         os.system('gfortran -c  -fPIC ' + file_)
 
     os.system('gfortran -c   -fPIC --fixed-form original_slsqp.f')
@@ -113,18 +118,6 @@ def test_implementations():
 
        # Sample basic test case
 
-np.random.seed(123)
-is_upgraded = np.random.choice([True, False])
-maxiter = 1000#np.random.random_integers(1, 100)
-num_dim = np.random.random_integers(2, 4)
-ftol = np.random.uniform(0.000000, 1e-5)
-x0 = np.random.normal(size=num_dim)
-
-# Add bounds
-shift = np.random.normal(size=2)**2
-bounds = np.vstack(( x0 - shift[0], x0 + shift[1])).T
-
-
 
 def test_constraint_derivative(x):
 
@@ -133,9 +126,9 @@ def test_constraint_derivative(x):
 
 def test_constraint(x):
     """ This constraint imposes that the sum of the parameters  needs to
-        be larger than 10.
+        be larger than zero
     """
-    return np.sum(x) - 5
+    return np.sum(x) - 10
 
 
 constraint = dict()
@@ -148,14 +141,46 @@ constraint['jac'] = test_constraint_derivative
 
 constraint['args'] = ()
 
-print(x0)
-#py = _minimize_slsqp(rosen, x0, jac=rosen_der, maxiter=maxiter,
-#               ftol=ftol, bounds=bounds, constraints=constraint)
 
+
+np.random.seed(423)
 compile_tools()
-
 import f2py_slsqp_debug as fort
 
-f = fort.wrapper_slsqp_debug(x0, bounds, is_upgraded, maxiter, ftol,
-                                     num_dim)
-#print(py)
+for _ in range(2):
+
+    is_upgraded = np.random.choice([True, False])
+    maxiter = 8#np.random.random_integers(1, 100)
+    num_dim = np.random.random_integers(2, 4)
+    ftol = np.random.uniform(0.000000, 1e-5)
+    x0 = np.random.normal(size=num_dim)
+
+    # Add bounds
+    shift = np.random.normal(size=2)**2
+    bounds = np.vstack(( x0 - shift[0], x0 + shift[1])).T
+
+    print(" ")
+    #print(test_constraint(x0))
+
+    # Test both FORTRAN codes
+    if True:
+        f_upgraded = fort.wrapper_slsqp_debug(x0, bounds, True, maxiter, ftol,
+                                                  num_dim)
+        f_original = fort.wrapper_slsqp_debug(x0, bounds, False, maxiter, ftol,
+                                                  num_dim)
+        np.testing.assert_array_equal(f_upgraded, f_original)
+
+
+
+    f = fort.wrapper_slsqp_debug(x0, bounds, False, maxiter, ftol,
+                                         num_dim)
+
+
+    py = _minimize_slsqp(rosen, x0, jac=rosen_der, maxiter=maxiter,
+                   ftol=ftol, bounds=bounds, constraints=constraint)
+
+
+
+    print(py)
+    #print(f)
+    print(rosen(f) - rosen(py["x"]))
