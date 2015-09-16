@@ -22,7 +22,7 @@ DEBUG_OPTIONS = ' -O2 -fimplicit-none  -Wall  -Wline-truncation ' \
 # project library
 sys.path.insert(0, os.environ['ROBUPY'])
 from robupy import *
-
+from robupy.python.py.ambiguity import _divergence
 
 from slsqp import _minimize_slsqp
 
@@ -88,15 +88,11 @@ def test_implementations():
         ftol = np.random.uniform(0.000000, 1e-5)
         x0 = np.random.normal(size=num_dim)
 
-        # Add bounds
-        shift = np.random.normal(size=2)**2
-        bounds = np.vstack(( x0 - shift[0], x0 + shift[1])).T
-
         # Test the upgraded FORTRAN version against the original code. This is
         # expected to never fail.
-        f_upgraded = fort.wrapper_slsqp_debug(x0, bounds, True, maxiter, ftol,
+        f_upgraded = fort.wrapper_slsqp_debug(x0, True, maxiter, ftol,
                                               num_dim)
-        f_original = fort.wrapper_slsqp_debug(x0, bounds, False, maxiter, ftol,
+        f_original = fort.wrapper_slsqp_debug(x0, False, maxiter, ftol,
                                               num_dim)
 
         np.testing.assert_array_equal(f_upgraded, f_original)
@@ -106,10 +102,10 @@ def test_implementations():
         # two implementations. In particular, as updating steps of the optimizer
         # are very sensitive to just small differences in the derivative
         # information.
-        f = fort.wrapper_slsqp_debug(x0, bounds, is_upgraded, maxiter, ftol,
+        f = fort.wrapper_slsqp_debug(x0, is_upgraded, maxiter, ftol,
                                      num_dim)
         py = _minimize_slsqp(rosen, x0, jac=rosen_der, maxiter=maxiter,
-                ftol=ftol, bounds=bounds)['x']
+                ftol=ftol)['x']
 
         #np.testing.assert_allclose(py, f, rtol=1e-05, atol=1e-06)
 
@@ -131,56 +127,57 @@ def test_constraint(x):
     return np.sum(x) - 10
 
 
+compile_tools()
+#test_implementations()
+
+import f2py_slsqp_debug as fort
+
+cov = np.identity(4)
+level = 0.2
+
 constraint = dict()
 
 constraint['type'] = 'ineq'
 
-constraint['fun'] = test_constraint
+constraint['fun'] = _divergence
+#constraint['jac'] = None
+constraint['args'] = (cov, level)
 
-constraint['jac'] = test_constraint_derivative
-
-constraint['args'] = ()
+#constraint['fun'] = test_constraint
+#constraint['jac'] = test_constraint_derivative
+#constraint['args'] = ()
 
 
 
 np.random.seed(423)
-compile_tools()
-import f2py_slsqp_debug as fort
 
-for _ in range(2):
+for _ in range(20):
+
+    num_dim = 2
 
     is_upgraded = np.random.choice([True, False])
-    maxiter = 8#np.random.random_integers(1, 100)
-    num_dim = np.random.random_integers(2, 4)
+    maxiter = np.random.random_integers(1, 100)
     ftol = np.random.uniform(0.000000, 1e-5)
     x0 = np.random.normal(size=num_dim)
 
-    # Add bounds
-    shift = np.random.normal(size=2)**2
-    bounds = np.vstack(( x0 - shift[0], x0 + shift[1])).T
+    cov = np.identity(4)*np.random.normal(size=1)**2
+    level = np.random.normal(size=1)**2
 
-    print(" ")
-    #print(test_constraint(x0))
+    constraint = dict()
 
-    # Test both FORTRAN codes
-    if True:
-        f_upgraded = fort.wrapper_slsqp_debug(x0, bounds, True, maxiter, ftol,
-                                                  num_dim)
-        f_original = fort.wrapper_slsqp_debug(x0, bounds, False, maxiter, ftol,
-                                                  num_dim)
-        np.testing.assert_array_equal(f_upgraded, f_original)
-
-
-
-    f = fort.wrapper_slsqp_debug(x0, bounds, False, maxiter, ftol,
-                                         num_dim)
+    constraint['type'] = 'ineq'
+    constraint['fun'] = _divergence
+    constraint['args'] = (cov, level)
 
 
     py = _minimize_slsqp(rosen, x0, jac=rosen_der, maxiter=maxiter,
-                   ftol=ftol, bounds=bounds, constraints=constraint)
+                   ftol=ftol,  constraints=constraint)['x']
+
+    f = fort.wrapper_slsqp_robufort(x0, maxiter, ftol, cov,
+                                             level, num_dim)
+    np.testing.assert_allclose(py, f, rtol=1e-05, atol=1e-06)
 
 
-
+    print("")
     print(py)
-    #print(f)
-    print(rosen(f) - rosen(py["x"]))
+    print(f)

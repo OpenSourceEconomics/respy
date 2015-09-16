@@ -6,6 +6,55 @@
 !
 !******************************************************************************
 !******************************************************************************
+SUBROUTINE wrapper_criterion(emax_simulated, payoffs_ex_post, future_payoffs, &
+                x, num_draws, eps_standard, period, k, payoffs_ex_ante, &
+                edu_max, edu_start, mapping_state_idx, states_all, &
+                num_periods, periods_emax, eps_cholesky, delta, debug)
+
+    !/* external libraries    */
+
+    USE robufort_development
+
+    !/* setup    */
+
+    IMPLICIT NONE
+
+    !/* external objects    */
+
+    DOUBLE PRECISION, INTENT(OUT)   :: payoffs_ex_post(4)
+    DOUBLE PRECISION, INTENT(OUT)   :: future_payoffs(4)
+    DOUBLE PRECISION, INTENT(OUT)   :: emax_simulated
+
+    DOUBLE PRECISION, INTENT(IN)    :: eps_cholesky(:, :)
+    DOUBLE PRECISION, INTENT(IN)    :: eps_standard(:, :)
+    DOUBLE PRECISION, INTENT(IN)    :: payoffs_ex_ante(:)
+    DOUBLE PRECISION, INTENT(IN)    :: periods_emax(:,:)
+    DOUBLE PRECISION, INTENT(IN)    :: delta
+    DOUBLE PRECISION, INTENT(IN)    :: x(:)
+
+    INTEGER , INTENT(IN)            :: mapping_state_idx(:,:,:,:,:)
+    INTEGER , INTENT(IN)            :: states_all(:,:,:)
+    INTEGER, INTENT(IN)             :: num_periods
+    INTEGER, INTENT(IN)             :: num_draws
+    INTEGER, INTENT(IN)             :: edu_start
+    INTEGER, INTENT(IN)             :: edu_max
+    INTEGER, INTENT(IN)             :: period
+    INTEGER, INTENT(IN)             :: k
+
+    LOGICAL, INTENT(IN)             :: debug
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    CALL criterion(emax_simulated, payoffs_ex_post, future_payoffs, &
+                x, num_draws, eps_standard, period, k, payoffs_ex_ante, &
+                edu_max, edu_start, mapping_state_idx, states_all, &
+                num_periods, periods_emax, eps_cholesky, delta, debug)
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE wrapper_rosenbrock_derivative(rslt, x, dim)
 
     !/* external libraries    */

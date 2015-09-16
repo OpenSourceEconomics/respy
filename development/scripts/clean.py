@@ -58,7 +58,7 @@ def remove_nuisances():
 
         remove(file_)
 
-    # Iterate for directories
+    # Iterate for directories and
     for root, dir_, file_names in os.walk('.'):
 
         if '.bld' in root:
@@ -70,6 +70,14 @@ def remove_nuisances():
             shutil.rmtree(root)
 
         if 'ipynb_checkpoints' in root:
+
+            shutil.rmtree(root)
+
+        if 'include' in root:
+
+            shutil.rmtree(root)
+
+        if 'lib' in root:
 
             shutil.rmtree(root)
 

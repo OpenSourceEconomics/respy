@@ -109,7 +109,7 @@ SUBROUTINE divergence_approx_gradient(rslt, x, cov, level, eps)
 !-------------------------------------------------------------------------------
     
     ! Initialize containers
-    ei = zero_int
+    ei = zero_dble
 
     ! Evaluate baseline
     CALL divergence(f0, x, cov, level)

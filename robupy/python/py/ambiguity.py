@@ -17,8 +17,8 @@ HUGE_FLOAT = 10e10
 
 
 def get_payoffs_ambiguity(num_draws, eps_standard, period, k, payoffs_ex_ante,
-        edu_max, edu_start, mapping_state_idx, states_all, num_periods, emax,
-        delta, debug, eps_cholesky, level, measure):
+        edu_max, edu_start, mapping_state_idx, states_all, num_periods,
+        periods_emax, delta, debug, eps_cholesky, level, measure):
     """ Get worst case
     """
     # Initialize options.
@@ -30,7 +30,7 @@ def get_payoffs_ambiguity(num_draws, eps_standard, period, k, payoffs_ex_ante,
 
     # Collect arguments
     args = (num_draws, eps_standard, period, k, payoffs_ex_ante, edu_max,
-            edu_start, mapping_state_idx, states_all, num_periods, emax,
+            edu_start, mapping_state_idx, states_all, num_periods, periods_emax,
             eps_cholesky, delta, debug)
 
     # Run optimization
@@ -55,7 +55,7 @@ def get_payoffs_ambiguity(num_draws, eps_standard, period, k, payoffs_ex_ante,
         if debug:
             opt = _correct_debugging(opt, x0, level, eps_standard, eps_cholesky,
                         num_periods, num_draws, period, k, payoffs_ex_ante,
-                        edu_max, edu_start, emax, states_all,
+                        edu_max, edu_start, periods_emax, states_all,
                         mapping_state_idx, delta)
 
     # Write result to file
@@ -70,7 +70,7 @@ def get_payoffs_ambiguity(num_draws, eps_standard, period, k, payoffs_ex_ante,
 
     simulated, payoffs_ex_post, future_payoffs = \
         simulate_emax(num_periods, num_draws, period, k, eps_relevant,
-            payoffs_ex_ante, edu_max, edu_start, emax, states_all,
+            payoffs_ex_ante, edu_max, edu_start, periods_emax, states_all,
             mapping_state_idx, delta)
 
     # Debugging
@@ -85,8 +85,8 @@ def get_payoffs_ambiguity(num_draws, eps_standard, period, k, payoffs_ex_ante,
 
 
 def _correct_debugging(opt, x0, level, eps_standard, eps_cholesky, num_periods,
-        num_draws, period, k, payoffs_ex_ante, edu_max, edu_start, emax,
-        states_all, mapping_state_idx, delta):
+        num_draws, period, k, payoffs_ex_ante, edu_max, edu_start,
+        periods_emax, states_all, mapping_state_idx, delta):
     """ Some manipulations for test battery
     """
     # Check applicability
@@ -104,8 +104,8 @@ def _correct_debugging(opt, x0, level, eps_standard, eps_cholesky, num_periods,
 
     simulated, payoffs_ex_post, future_payoffs = \
                 simulate_emax(num_periods, num_draws, period, k, eps_relevant,
-                    payoffs_ex_ante, edu_max, edu_start, emax, states_all,
-                    mapping_state_idx, delta)
+                    payoffs_ex_ante, edu_max, edu_start, periods_emax,
+                    states_all, mapping_state_idx, delta)
 
     opt['fun'] = simulated
 
@@ -162,7 +162,7 @@ def _divergence(x, cov, level):
 
 
 def _criterion(x, num_draws, eps_standard, period, k, payoffs_ex_ante, edu_max,
-        edu_start, mapping_state_idx, states_all, num_periods, emax,
+        edu_start, mapping_state_idx, states_all, num_periods, periods_emax,
         eps_cholesky, delta, debug):
     """ Simulate expected future value for alternative shock distributions.
     """
@@ -177,7 +177,7 @@ def _criterion(x, num_draws, eps_standard, period, k, payoffs_ex_ante, edu_max,
     # Simulate the expected future value for a given parametrization.
     simulated, _, _ = simulate_emax(num_periods, num_draws, period, k,
                         eps_relevant, payoffs_ex_ante, edu_max, edu_start,
-                        emax, states_all, mapping_state_idx, delta)
+                        periods_emax, states_all, mapping_state_idx, delta)
     # Debugging
     if debug is True:
         checks_ambiguity('_criterion', simulated)

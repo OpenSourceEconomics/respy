@@ -19,13 +19,89 @@ from modules.auxiliary import compile_package, transform_robupy_to_restud, \
 
 # ROBUPY import
 sys.path.insert(0, os.environ['ROBUPY'])
-from robupy.tests.random_init import generate_random_dict, print_random_dict
+from robupy.tests.random_init import generate_random_dict, print_random_dict,\
+    generate_init
 from robupy.python.py.ambiguity import _divergence
 from robupy import read, solve, simulate
-
+from robupy.python.py.ambiguity import _criterion
 
 ''' Main
 '''
+def test_95():
+    """ Compare the evaluation of the criterion function for the ambiguity
+    optimization under the different implementations.
+    """
+
+    # Ensure that fast solution methods are available
+    compile_package('fast')
+
+    import robupy.python.f2py.f2py_debug as fort
+
+    for _ in range(10):
+
+        # Generate constraint periods
+        constraints = dict()
+        constraints['version'] = 'PYTHON'
+
+        # Generate random initialization file
+        generate_init(constraints)
+
+        # Perform toolbox actions
+        robupy_obj = read('test.robupy.ini')
+
+        robupy_obj = solve(robupy_obj)
+
+        # Extract relevant information
+        periods_payoffs_ex_ante = robupy_obj.get_attr('periods_payoffs_ex_ante')
+
+        states_number_period = robupy_obj.get_attr('states_number_period')
+
+        mapping_state_idx = robupy_obj.get_attr('mapping_state_idx')
+
+        periods_emax = robupy_obj.get_attr('periods_emax')
+
+        eps_cholesky = robupy_obj.get_attr('eps_cholesky')
+
+        num_periods = robupy_obj.get_attr('num_periods')
+
+        states_all = robupy_obj.get_attr('states_all')
+
+        num_draws = robupy_obj.get_attr('num_draws')
+
+        edu_start = robupy_obj.get_attr('edu_start')
+
+        edu_max = robupy_obj.get_attr('edu_max')
+
+        delta = robupy_obj.get_attr('delta')
+
+        debug = False
+
+        # Sample disturbances
+        eps_standard = np.random.multivariate_normal(np.zeros(4),
+                            np.identity(4), (num_draws,))
+
+        # Sampling of random period and admissable state index
+        period = np.random.choice(range(num_periods))
+        k = np.random.choice(range(states_number_period[period]))
+
+        # Select ex ante payoffs
+        payoffs_ex_ante = periods_payoffs_ex_ante[period, k, :]
+
+        # Evaluation point
+        x = np.random.random(size=2)
+        emax = periods_emax
+
+        py = _criterion(x, num_draws, eps_standard, period, k, payoffs_ex_ante,
+                edu_max, edu_start, mapping_state_idx, states_all, num_periods,
+                emax, eps_cholesky, delta, debug)
+
+        f90, _, _ = fort.wrapper_criterion(x, num_draws, eps_standard,
+            period, k, payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,
+            states_all, num_periods, periods_emax, eps_cholesky, delta, debug)
+
+        np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
+
+
 def test_96():
     """ Compare results between FORTRAN and PYTHON of selected
     hand-crafted functions. In test_97() we test FORTRAN implementations
