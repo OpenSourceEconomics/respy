@@ -1,3 +1,16 @@
+MODULE slsqp_updated
+  
+  !/* external modules  */
+
+  !/* setup */
+
+  IMPLICIT NONE
+
+  PRIVATE
+
+  PUBLIC :: slsqp
+
+CONTAINS
 !C
 !C      ALGORITHM 733, COLLECTED ALGORITHMS FROM ACM.
 !C      TRANSACTIONS ON MATHEMATICAL SOFTWARE,
@@ -779,7 +792,7 @@
       INTEGER          jw(*),i,ie,IF,ig,iw,j,k,krank,l,lc,LE,lg, &
                       mc,mc1,me,mg,mode,n
       DOUBLE PRECISION c(lc,n),e(LE,n),g(lg,n),d(lc),f(LE),h(lg),x(n), &
-                      w(*),t,ddot_sl,xnrm,dnrm2_,epmach,ZERO
+                      w(*),t,ddot_sl,xnrm,dnrm2_,epmach,ZERO, xnrm_rank_1(1)
       DATA             epmach/2.22d-16/,ZERO/0.0d+00/
 !
       mode=2
@@ -829,7 +842,11 @@
       mode=7
       k=MAX(LE,n)
       t=SQRT(epmach)
-      CALL hfti (w(ie),me,me,l,w(IF),k,1,t,krank,xnrm,w,w(l+1),jw)
+
+      xnrm_rank_1(1) = xnrm
+      CALL hfti (w(ie),me,me,l,w(IF),k,1,t,krank,xnrm_rank_1,w,w(l+1),jw)
+      xnrm = xnrm_rank_1(1)
+
       CALL dcopy_(l,w(IF),1,x(mc1),1)
       IF(krank.NE.l)                   GOTO 75
       mode=1
@@ -2118,3 +2135,4 @@
          end if
       end do
       end subroutine bound
+END MODULE

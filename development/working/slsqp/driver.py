@@ -19,7 +19,6 @@ from numpy.testing.utils import assert_array_equal, assert_array_almost_equal
 
 # project library
 from robupy import *
-import robupy.python.f2py.f2py_debug as f2py
 
 from scipy.optimize import rosen_der, rosen
 
@@ -76,7 +75,7 @@ import f2py_slsqp as fort
 
 np.random.seed(123)
 
-for _ in range(1000):
+for _ in range(10):
 
     ftol = np.random.uniform(0.000000, 1e-5)
     maxiter = np.random.random_integers(1, 100)
