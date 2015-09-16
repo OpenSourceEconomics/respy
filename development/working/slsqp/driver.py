@@ -82,9 +82,9 @@ for _ in range(10):
     num_dim = np.random.random_integers(2, 4)
     x0 = np.random.normal(size=num_dim)
 
-    f90 = fort.wrapper_slsqp_f90(x0, maxiter, ftol, num_dim)
+    f90 = fort.wrapper_slsqp_upgraded(x0, maxiter, ftol, num_dim)
 
-    f = fort.wrapper_slsqp(x0, maxiter, ftol, num_dim)
+    f = fort.wrapper_slsqp_original(x0, maxiter, ftol, num_dim)
     py = _minimize_slsqp(rosen, x0, jac=rosen_der,
             maxiter=maxiter, ftol=ftol)['x']
 

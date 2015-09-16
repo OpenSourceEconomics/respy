@@ -1,6 +1,6 @@
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE wrapper_slsqp_f90(x_internal, x_start, maxiter, ftol, num_dim)
+SUBROUTINE wrapper_slsqp_upgraded(x_internal, x_start, maxiter, ftol, num_dim)
 
     !/* external libraries    */
 
@@ -135,7 +135,7 @@ SUBROUTINE wrapper_slsqp_f90(x_internal, x_start, maxiter, ftol, num_dim)
 END SUBROUTINE 
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE wrapper_slsqp(x_internal, x_start, maxiter, ftol, num_dim)
+SUBROUTINE wrapper_slsqp_original(x_internal, x_start, maxiter, ftol, num_dim)
 
     !/* external libraries    */
 
