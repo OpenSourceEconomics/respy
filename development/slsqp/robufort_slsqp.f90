@@ -1,6 +1,8 @@
-MODULE slsqp_updated
+MODULE robufort_slsqp
   
   !/* external modules  */
+
+  USE robufort_auxiliary
 
   !/* setup */
 
@@ -45,7 +47,7 @@ CONTAINS
 !*                              optimizer                               *
 !************************************************************************
 !
-      SUBROUTINE slsqp_f90(m, meq, la, n, x, xl, xu, f, c, g, a, &
+      SUBROUTINE slsqp(m, meq, la, n, x, xl, xu, f, c, g, a, &
                        acc, iter, mode, w, l_w, jw, l_jw)
 !
 !C   SLSQP       S EQUENTIAL  L EAST  SQ UARES  P ROGRAMMING
@@ -2079,25 +2081,36 @@ CONTAINS
       db = z
       RETURN
       END
-!
-      SUBROUTINE  dscal_sl(n,da,dx,incx)
-!
-!C     SCALES A VECTOR BY A CONSTANT.
-!C     USES UNROLLED LOOPS FOR INCREMENT EQUAL TO ONE.
-!C     JACK DONGARRA, LINPACK, 3/11/78.
-!
-      DOUBLE PRECISION da,dx(*)
-      INTEGER i,incx,m,mp1,n,nincx
-!
-      IF(n.LE.0)RETURN
-      IF(incx.EQ.1)GO TO 20
-!
-!
-!C        CODE FOR INCREMENT NOT EQUAL TO 1
-!
-      nincx = n*incx
-      DO 10 i = 1,nincx,incx
-        dx(i) = da*dx(i)
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE dscal_sl(n,da,dx,incx)
+
+    !/* external objects    */
+
+    REAL(our_dble), INTENT(IN)      :: da
+    REAL(our_dble), INTENT(INOUT)   :: dx(*)
+    
+    INTEGER(our_int), INTENT(IN)    :: n
+    INTEGER(our_int), INTENT(IN)    :: incx
+
+    !/* internal objects    */
+
+    INTEGER(our_int)                :: i
+    INTEGER(our_int)                :: m
+    INTEGER(our_int)                :: mp1
+    INTEGER(our_int)                :: nincx
+
+!------------------------------------------------------------------------------- 
+! Algorithm
+!------------------------------------------------------------------------------- 
+    
+    IF(n.LE.0)RETURN
+
+    IF(incx.EQ.1)GO TO 20
+
+    nincx = n*incx
+    DO 10 i = 1,nincx,incx
+      dx(i) = da*dx(i)
    10 CONTINUE
       RETURN
 !
@@ -2121,16 +2134,38 @@ CONTAINS
    50 CONTINUE
       RETURN
       END
-!
-      subroutine bound(n, x, xl, xu)
-      integer n, i
-      double precision x(n), xl(n), xu(n)
-      do i = 1, n
-         if(x(i) < xl(i))then
-            x(i) = xl(i)
-         else if(x(i) > xu(i))then
-            x(i) = xu(i)
-         end if
-      end do
-      end subroutine bound
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE bound(n, x, xl, xu)
+    
+    !/* external objects    */
+
+    REAL(our_dble), INTENT(INOUT)   :: x(n)
+
+    REAL(our_dble), INTENT(IN)      :: xl(n)
+    REAL(our_dble), INTENT(IN)      :: xu(n)
+
+    INTEGER(our_int), INTENT(IN)    :: n
+
+    !/* internal objects    */
+
+    INTEGER(our_int)                :: i
+
+!------------------------------------------------------------------------------- 
+! Algorithm
+!------------------------------------------------------------------------------- 
+
+    DO i = 1, n
+
+      IF(x(i) < xl(i)) THEN
+        x(i) = xl(i)
+      ELSE IF(x(i) > xu(i)) THEN
+        x(i) = xu(i)
+      END IF
+
+    END DO
+
+END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
 END MODULE

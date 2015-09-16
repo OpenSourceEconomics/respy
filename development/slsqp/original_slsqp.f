@@ -34,7 +34,7 @@ C
 *                              optimizer                               *
 ************************************************************************
 
-      SUBROUTINE slsqp (m, meq, la, n, x, xl, xu, f, c, g, a,
+      SUBROUTINE slsqp_original (m, meq, la, n, x, xl, xu, f, c, g, a,
      *                  acc, iter, mode, w, l_w, jw, l_jw)
 
 C   SLSQP       S EQUENTIAL  L EAST  SQ UARES  P ROGRAMMING
