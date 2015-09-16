@@ -43,7 +43,7 @@ for dir_ in ['include', 'lib']:
 
 
 # Create the SLSQP library
-files = ['robufort_program_constants.f90', 'robufort_auxiliary.f90']
+files = ['robufort_program_constants.f90', 'robufort_auxiliary.f90', 'slsqp_optmz_upgraded.f90']
 for file_ in files:
     os.system('gfortran -c  -fPIC ' + file_)
 
@@ -82,9 +82,12 @@ for _ in range(10):
     num_dim = np.random.random_integers(2, 4)
     x0 = np.random.normal(size=num_dim)
 
-    f90 = fort.wrapper_slsqp(x0, maxiter, ftol, num_dim)
+    f90 = fort.wrapper_slsqp_f90(x0, maxiter, ftol, num_dim)
+
+    f = fort.wrapper_slsqp(x0, maxiter, ftol, num_dim)
     py = _minimize_slsqp(rosen, x0, jac=rosen_der,
             maxiter=maxiter, ftol=ftol)['x']
 
-    print(max(f90 - py))
+    print(max(f90 - f))
     np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
+    np.testing.assert_array_equal(f, f90)

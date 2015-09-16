@@ -6,9 +6,7 @@ MODULE slsqp_updated
 
   IMPLICIT NONE
 
-  PRIVATE
-
-  PUBLIC :: slsqp
+  PUBLIC
 
 CONTAINS
 !C
@@ -47,7 +45,7 @@ CONTAINS
 !*                              optimizer                               *
 !************************************************************************
 !
-      SUBROUTINE slsqp (m, meq, la, n, x, xl, xu, f, c, g, a, &
+      SUBROUTINE slsqp_f90(m, meq, la, n, x, xl, xu, f, c, g, a, &
                        acc, iter, mode, w, l_w, jw, l_jw)
 !
 !C   SLSQP       S EQUENTIAL  L EAST  SQ UARES  P ROGRAMMING
