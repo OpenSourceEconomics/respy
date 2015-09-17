@@ -17,8 +17,56 @@ MODULE robufort_development
   IMPLICIT NONE
 
 CONTAINS
-!******************************************************************************
-!******************************************************************************
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE divergence_approx_gradient(rslt, x, cov, level, eps)
+
+    !/* external objects    */
+
+    REAL(our_dble), INTENT(OUT)     :: rslt(2)
+
+    REAL(our_dble), INTENT(IN)      :: x(2)
+    REAL(our_dble), INTENT(IN)      :: eps
+    REAL(our_dble), INTENT(IN)      :: cov(4,4)
+    REAL(our_dble), INTENT(IN)      :: level
+
+    !/* internals objects    */
+
+    INTEGER(our_int)                :: k
+
+    REAL(our_dble)                  :: ei(2)
+    REAL(our_dble)                  :: d(2)
+    REAL(our_dble)                  :: f0
+    REAL(our_dble)                  :: f1
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+
+    ! Initialize containers
+    ei = zero_dble
+
+    ! Evaluate baseline
+    CALL divergence(f0, x, cov, level)
+
+    ! Iterate over increments
+    DO k = 1, 2
+
+        ei(k) = one_dble
+
+        d = eps * ei
+
+        CALL divergence(f1, x + d, cov, level)
+
+        rslt(k) = (f1 - f0) / d(k)
+
+        ei(k) = zero_dble
+
+    END DO
+
+END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE criterion(emax_simulated, payoffs_ex_post, future_payoffs, &
                 x, num_draws, eps_standard, period, k, payoffs_ex_ante, &
                 edu_max, edu_start, mapping_state_idx, states_all, &
@@ -55,9 +103,9 @@ SUBROUTINE criterion(emax_simulated, payoffs_ex_post, future_payoffs, &
 
     REAL(our_dble)                  ::eps_relevant(num_draws, 4)
 
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
     ! Transform disturbances
     DO i = 1, num_draws

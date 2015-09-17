@@ -64,7 +64,6 @@ def compile_tools():
           'f2py3 -c -m  f2py_slsqp_debug f2py_interface_slsqp.f90 -Iinclude -Llib '
             '-lslsqp_debug')
 
-
 def test_implementations():
 
 
@@ -73,14 +72,12 @@ def test_implementations():
     # Import
     import f2py_slsqp_debug as fort
 
-
-
-    # TODO NOSE test repeatedly, to get an automated count of failed tests...
-
     # Ensure recomputability
     np.random.seed(345)
 
     for _ in range(1000):
+        print(_)
+
         # Sample basic test case
         is_upgraded = np.random.choice([True, False])
         maxiter = np.random.random_integers(1, 100)
@@ -89,42 +86,38 @@ def test_implementations():
         x0 = np.random.normal(size=num_dim)
 
         # Test the upgraded FORTRAN version against the original code. This is
-        # expected to never fail.
-        f_upgraded = fort.wrapper_slsqp_debug(x0, True, maxiter, ftol,
-                                              num_dim)
-        f_original = fort.wrapper_slsqp_debug(x0, False, maxiter, ftol,
-                                              num_dim)
-
+        # expected to NEVER fail.
+        f_upgraded = fort.wrapper_slsqp_debug(x0, True, maxiter, ftol, num_dim)
+        f_original = fort.wrapper_slsqp_debug(x0, False, maxiter, ftol, num_dim)
         np.testing.assert_array_equal(f_upgraded, f_original)
 
         # Test the FORTRAN codes against the PYTHON implementation. This is
         # expected to fail sometimes due to differences in precision between the
         # two implementations. In particular, as updating steps of the optimizer
         # are very sensitive to just small differences in the derivative
-        # information.
-        f = fort.wrapper_slsqp_debug(x0, is_upgraded, maxiter, ftol,
-                                     num_dim)
+        # information. The same functions are available as a FORTRAN
+        # implementations.
+        def debug_constraint_derivative(x):
+            return np.ones(len(x))
+        def debug_constraint_function(x):
+            return np.sum(x) - 10.0
+
+        # Setting up PYTHON SLSQP interface
+        constraint = dict()
+        constraint['type'] = 'ineq'
+        constraint['args'] = ()
+        constraint['fun'] = debug_constraint_function
+        constraint['jac'] = debug_constraint_derivative
+
+        # Evaluate both implementations
+        f = fort.wrapper_slsqp_debug(x0, is_upgraded, maxiter, ftol, num_dim)
         py = _minimize_slsqp(rosen, x0, jac=rosen_der, maxiter=maxiter,
-                ftol=ftol)['x']
+                   ftol=ftol,  constraints=constraint)['x']
+        np.testing.assert_allclose(py, f, rtol=1e-05, atol=1e-06)
 
-        #np.testing.assert_allclose(py, f, rtol=1e-05, atol=1e-06)
-
-#test_implementations()
-
-
-       # Sample basic test case
-
-
-def test_constraint_derivative(x):
-
-    return np.ones(len(x))
-
-
-def test_constraint(x):
-    """ This constraint imposes that the sum of the parameters  needs to
-        be larger than zero
-    """
-    return np.sum(x) - 10
+print('\n')
+test_implementations()
+sys.exit('\n Cleaning up the SLSQP test infrastructure ... \n')
 
 
 compile_tools()
@@ -151,7 +144,7 @@ constraint['args'] = (cov, level)
 
 np.random.seed(423)
 
-for _ in range(20):
+for _ in range(0):
 
     num_dim = 2
 

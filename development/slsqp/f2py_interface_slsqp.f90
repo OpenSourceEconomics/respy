@@ -1,7 +1,7 @@
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_slsqp_debug(x_internal, x_start, is_upgraded, &
-                maxiter, ftol, num_dim)
+SUBROUTINE wrapper_slsqp_debug(x_internal, x_start, is_upgraded, maxiter, &
+                ftol, num_dim)
 
     !/* external libraries    */
 
@@ -53,14 +53,9 @@ SUBROUTINE wrapper_slsqp_debug(x_internal, x_start, is_upgraded, &
     
     LOGICAL                         :: is_finished
 
-    ! Debug
-    DOUBLE PRECISION                :: rslt_constr_function
-    DOUBLE PRECISION                :: rslt_constr_gradient(num_dim)
-
-
-!------------------------------------------------------------------------------ 
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------ 
+!-------------------------------------------------------------------------------
 
     !---------------------------------------------------------------------------
     ! This is hard-coded for the ROBUPY package requirements
@@ -99,7 +94,7 @@ SUBROUTINE wrapper_slsqp_debug(x_internal, x_start, is_upgraded, &
     xl = - huge_dble; xu = huge_dble
 
     ! Initialize the iteration counter and mode value
-    acc  = ftol
+    acc = ftol
     iter = maxiter
 
     ! Transformations to match interface, deleted later
@@ -111,36 +106,32 @@ SUBROUTINE wrapper_slsqp_debug(x_internal, x_start, is_upgraded, &
 
     is_finished = .False.
 
-    CALL rosenbrock(f, x_internal)
+    CALL debug_criterion_function(f, x_internal, n)
+    CALL debug_criterion_derivative(g, x_internal, n)
 
-    CALL rosenbrock_derivative(g, x_internal)
-
-    CALL test_constraint(c, x_internal, n, la)
-
-    CALL test_derivative(a, x_internal, n)
+    CALL debug_constraint_function(c, x_internal, n, la)
+    CALL debug_constraint_derivative(a, x_internal, n)
 
     ! Iterate until completion
     DO WHILE (.NOT. is_finished)
         
         ! Evaluate criterion function and constraints
         IF (mode == one_int) THEN
-            CALL rosenbrock(f, x_internal)
-            CALL test_constraint(c, x_internal, n, la)
+            CALL debug_criterion_function(f, x_internal, n)
+            CALL debug_constraint_function(c, x_internal, n, la)
         ! Evaluate gradient of criterion function and constraints
-        ELSEIF (mode == -one_int) THEN
-            CALL rosenbrock_derivative(g, x_internal)
-            CALL test_derivative(a, x_internal, n)
+        ELSEIF (mode == - one_int) THEN
+            CALL debug_criterion_derivative(g, x_internal, n)
+            CALL debug_constraint_derivative(a, x_internal, n)
         END IF
-
-        ! TODO: Remember that the a needs to be appended
 
         !SLSQP Interface
         IF (is_upgraded) THEN
             CALL slsqp(m, meq, n, x_internal, xl, xu, f, c, g, a, acc, iter, &
                     mode, w, l_w)
         ELSE
-            CALL slsqp_original(m, meq, la, n, x_internal, xl, xu, f, c, g, a, acc, iter, &
-                            mode, w, l_w, jw, l_jw)
+            CALL slsqp_original(m, meq, la, n, x_internal, xl, xu, f, c, g, &
+                    a, acc, iter, mode, w, l_w, jw, l_jw)
         END IF
 
         ! Check if SLSQP has completed
@@ -151,30 +142,121 @@ SUBROUTINE wrapper_slsqp_debug(x_internal, x_start, is_upgraded, &
     END DO
 
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE test_constraint(c, x, n, la)
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE debug_criterion_function(rslt, x, n)
 
-    DOUBLE PRECISION, INTENT(IN) :: x(n)
-    INTEGER, INTENT(IN)         :: n, la
-    DOUBLE PRECISION, INTENT(OUT) :: c(la)
+    !/* external libraries    */
 
-    c(:) = SUM(x) - 10
+    USE robufort_program_constants
+
+    !/* external objects    */
+
+    INTEGER, INTENT(IN)             :: n
+
+    DOUBLE PRECISION, INTENT(OUT)   :: rslt
+    DOUBLE PRECISION, INTENT(IN)    :: x(n)
+
+    !/* internal objects    */
+
+    INTEGER                         :: i
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    ! Initialize containers
+    rslt = zero_dble
+
+    DO i = 2, n
+        rslt = rslt + one_hundred_dble * (x(i) - x(i - 1)**2)**2
+        rslt = rslt + (one_dble - x(i - 1))**2
+    END DO
 
 END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE debug_criterion_derivative(rslt, x, n)
 
-SUBROUTINE test_derivative(rslt, x, n)
+    !/* external libraries    */
 
-    DOUBLE PRECISION, INTENT(IN) :: x(n)
-    INTEGER, INTENT(IN)         :: n
-    DOUBLE PRECISION, INTENT(OUT) :: rslt(n + 1)
+    USE robufort_program_constants
+
+    !/* external objects    */
+
+    INTEGER, INTENT(IN)             :: n
+
+    DOUBLE PRECISION, INTENT(OUT)   :: rslt(n + 1)
+    DOUBLE PRECISION, INTENT(IN)    :: x(n)
+
+    !/* internals objects    */
+
+    DOUBLE PRECISION                :: xm(n - 2)
+    DOUBLE PRECISION                :: xm_m1(n - 2)
+    DOUBLE PRECISION                :: xm_p1(n - 2)
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+
+    ! Extract sets of evaluation points
+    xm = x(2:(n - 1))
+
+    xm_m1 = x(:(n - 2))
+
+    xm_p1 = x(3:)
+
+    ! Construct derivative information
+    rslt(1) = -four_hundred_dble * x(1) * (x(2) - x(1) ** 2) - 2 * (1 - x(1))
+
+    rslt(2:(n - 1)) =  (two_hundred_dble * (xm - xm_m1 ** 2) - &
+            four_hundred_dble * (xm_p1 - xm ** 2) * xm - 2 * (1 - xm))
+
+    rslt(n) = two_hundred_dble * (x(n) - x(n - 1) ** 2)
+
+END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE debug_constraint_function(rslt, x, n, la)
+
+    !/* external objects    */
+
+    DOUBLE PRECISION, INTENT(OUT)   :: rslt(la)
+
+    DOUBLE PRECISION, INTENT(IN)    :: x(n)
+
+    INTEGER, INTENT(IN)             :: n
+    INTEGER, INTENT(IN)             :: la
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+
+    rslt(:) = SUM(x) - 10.0
+
+END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE debug_constraint_derivative(rslt, x, n, la)
+
+    !/* external objects    */
+
+    DOUBLE PRECISION, INTENT(OUT)   :: rslt(n + 1)
+
+    DOUBLE PRECISION, INTENT(IN)    :: x(n)
+
+    INTEGER, INTENT(IN)             :: n
+    INTEGER, INTENT(IN)             :: la
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
 
     rslt = 1
 
     rslt(n + 1) = 0.0
+
 END SUBROUTINE
-
-
 !*******************************************************************************
 !*******************************************************************************
 !
@@ -187,9 +269,8 @@ SUBROUTINE wrapper_slsqp_robufort(x_internal, x_start, &
 
     !/* external libraries    */
 
-    USE robufort_auxiliary
     USE robufort_slsqp
-
+    USE robufort_auxiliary
     !/* setup    */
 
     IMPLICIT NONE
@@ -233,9 +314,9 @@ SUBROUTINE wrapper_slsqp_robufort(x_internal, x_start, &
     DOUBLE PRECISION                :: rslt_constr_gradient(num_dim)
 
 
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
     !---------------------------------------------------------------------------
     ! This is hard-coded for the ROBUPY package requirements. What follows below
@@ -272,8 +353,13 @@ SUBROUTINE wrapper_slsqp_robufort(x_internal, x_start, &
 
     ! Initialization of SLSQP
     is_finished = .False.
-    CALL rosenbrock(f, x_internal)
-    CALL rosenbrock_derivative(g, x_internal)
+
+    CALL debug_criterion_function(f, x_internal, n)
+    CALL debug_criterion_derivative(g, x_internal, n)
+
+    !CALL rosenbrock(f, x_internal)
+    !CALL rosenbrock_derivative(g, x_internal)
+
     CALL divergence_dev(c, x_internal, cov, level)
 
     eps = 1e-6
@@ -284,13 +370,13 @@ SUBROUTINE wrapper_slsqp_robufort(x_internal, x_start, &
 
         ! Evaluate criterion function and constraints.
         IF (mode == one_int) THEN
-            CALL rosenbrock(f, x_internal)
+            CALL debug_criterion_function(f, x_internal, n)
             CALL divergence_dev(c, x_internal, cov, level)
         ! Evaluate gradient of criterion function and constraints. Note that the
         ! a is of dimension (1, n + 1) and the last element needs to always
         ! be zero.
         ELSEIF (mode == - one_int) THEN
-            CALL rosenbrock_derivative(g, x_internal)
+            CALL debug_criterion_derivative(g, x_internal, n)
             CALL divergence_approx_gradient_dev(a, x_internal, cov, level, eps)
         END IF
 
@@ -306,8 +392,8 @@ SUBROUTINE wrapper_slsqp_robufort(x_internal, x_start, &
     END DO
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE divergence_approx_gradient_dev(rslt, x, cov, level, eps)
 
     !/* external objects    */
