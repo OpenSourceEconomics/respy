@@ -400,3 +400,47 @@ SUBROUTINE wrapper_divergence(div, x, cov, level)
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
+SUBROUTINE wrapper_debug_criterion_function(rslt, x, n)
+
+    !/* external libraries    */
+
+    USE robufort_development
+
+    !/* external objects    */
+
+    INTEGER, INTENT(IN)             :: n
+
+    DOUBLE PRECISION, INTENT(OUT)   :: rslt
+    DOUBLE PRECISION, INTENT(IN)    :: x(n)
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+   CALL debug_criterion_function(rslt, x, n)
+
+END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE wrapper_debug_criterion_derivative(rslt, x, n)
+
+    !/* external libraries    */
+
+    USE robufort_development
+
+    !/* external objects    */
+
+    INTEGER, INTENT(IN)             :: n
+
+    DOUBLE PRECISION, INTENT(OUT)   :: rslt(n + 1)
+    DOUBLE PRECISION, INTENT(IN)    :: x(n)
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+
+    CALL debug_criterion_derivative(rslt, x, n)
+
+END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************

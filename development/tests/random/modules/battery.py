@@ -260,13 +260,13 @@ def test_97():
         # in the development of the optimization routines.
         x0 = np.random.randn(num_draws)
 
-        f90 = fort.wrapper_rosenbrock(x0, num_draws)
+        f90 = fort.wrapper_debug_criterion_function(x0, num_draws)
         py = rosen(x0)
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
         py = rosen_der(x0)
-        f90 = fort.wrapper_rosenbrock_derivative(x0, len(x0))
-        np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
+        f90 = fort.wrapper_debug_criterion_derivative(x0, len(x0))
+        np.testing.assert_allclose(py, f90[:-1], rtol=1e-05, atol=1e-06)
 
 def test_98():
     """  Compare results from the RESTUD program and the ROBUPY package.
