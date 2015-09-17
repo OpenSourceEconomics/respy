@@ -1,37 +1,48 @@
-
-""" This modules contains some additional tests that are only used in
-long-run development tests.
+""" This modules contains some additional tests that are only used in long-run
+development tests.
 """
 
 # standard library
 from pandas.util.testing import assert_frame_equal
+
 from scipy.optimize import approx_fprime
 from scipy.optimize import rosen_der
 from scipy.optimize import rosen
+
 import pandas as pd
 import numpy as np
+
 import sys
 import os
 
 # testing library
-from modules.auxiliary import compile_package, transform_robupy_to_restud, \
-    write_disturbances
+from modules.auxiliary import transform_robupy_to_restud
+from modules.auxiliary import write_disturbances
+from modules.auxiliary import compile_package
 
 # ROBUPY import
 sys.path.insert(0, os.environ['ROBUPY'])
-from robupy.tests.random_init import generate_random_dict, print_random_dict,\
-    generate_init
-from robupy.python.py.ambiguity import _divergence
 from robupy import read, solve, simulate
+
+from robupy.tests.random_init import generate_random_dict
+from robupy.tests.random_init import print_random_dict
+from robupy.tests.random_init import generate_init
+
+from robupy.python.py.auxiliary import simulate_emax
+from robupy.python.py.ambiguity import _divergence
 from robupy.python.py.ambiguity import _criterion
+
 
 ''' Main
 '''
+
+
 def test_95():
     """ Compare the evaluation of the criterion function for the ambiguity
-    optimization under the different implementations.
+    optimization and the simulated expected future value between the FORTRAN
+    and PYTHON implementations. These tests are set up a separate test case
+    due to the large setup cost to construct the ingredients for the interface.
     """
-
     # Ensure that fast solution methods are available
     compile_package('fast')
 
@@ -89,11 +100,23 @@ def test_95():
 
         # Evaluation point
         x = np.random.random(size=2)
-        emax = periods_emax
 
+        # Evaluation of simulated expected future values
+        py, _, _ = simulate_emax(num_periods, num_draws, period, k,
+                        eps_standard, payoffs_ex_ante, edu_max, edu_start,
+                        periods_emax, states_all, mapping_state_idx, delta)
+
+        f90, _, _ = fort.wrapper_simulate_emax(num_periods, num_draws,
+                        period, k, eps_standard, payoffs_ex_ante, edu_max,
+                        edu_start, periods_emax, states_all,
+                        mapping_state_idx, delta)
+
+        np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
+
+        # Criterion function for the determination of the worst case outcomes
         py = _criterion(x, num_draws, eps_standard, period, k, payoffs_ex_ante,
                 edu_max, edu_start, mapping_state_idx, states_all, num_periods,
-                emax, eps_cholesky, delta, debug)
+                periods_emax, eps_cholesky, delta, debug)
 
         f90, _, _ = fort.wrapper_criterion(x, num_draws, eps_standard,
             period, k, payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,
