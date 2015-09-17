@@ -6,6 +6,58 @@
 !
 !*******************************************************************************
 !*******************************************************************************
+SUBROUTINE wrapper_criterion_approx_gradient(rslt, x, num_draws, &
+eps_standard, period, k, payoffs_ex_ante, &
+                edu_max, edu_start, mapping_state_idx, states_all, &
+                num_periods, periods_emax, eps_cholesky, delta, debug, eps)
+
+    !/* external libraries    */
+
+    USE robufort_development
+
+    !/* setup    */
+
+    IMPLICIT NONE
+
+    !/* external objects    */
+
+
+    !/* external objects    */
+
+    DOUBLE PRECISION, INTENT(OUT)     :: rslt(2)
+
+    DOUBLE PRECISION, INTENT(IN)      :: eps_cholesky(:, :)
+    DOUBLE PRECISION, INTENT(IN)      :: eps_standard(:, :)
+    DOUBLE PRECISION, INTENT(IN)      :: payoffs_ex_ante(:)
+    DOUBLE PRECISION, INTENT(IN)      :: periods_emax(:,:)
+    DOUBLE PRECISION, INTENT(IN)      :: delta
+    DOUBLE PRECISION, INTENT(IN)      :: x(:)
+    DOUBLE PRECISION, INTENT(IN)      :: eps
+
+    INTEGER , INTENT(IN)   :: mapping_state_idx(:,:,:,:,:)
+    INTEGER  , INTENT(IN)   :: states_all(:,:,:)
+    INTEGER , INTENT(IN)    :: num_periods
+    INTEGER , INTENT(IN)    :: num_draws
+    INTEGER , INTENT(IN)    :: edu_start
+    INTEGER , INTENT(IN)    :: edu_max
+    INTEGER , INTENT(IN)    :: period
+    INTEGER , INTENT(IN)    :: k
+
+    LOGICAL, INTENT(IN)             :: debug
+
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+
+
+CALL criterion_approx_gradient(rslt, x, num_draws, &
+    eps_standard, period, k, payoffs_ex_ante, &
+                edu_max, edu_start, mapping_state_idx, states_all, &
+                num_periods, periods_emax, eps_cholesky, delta, debug, eps)
+END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE wrapper_simulate_emax(emax_simulated, payoffs_ex_post, &
                 future_payoffs, num_periods, num_draws, period, k, &
                 eps_relevant, payoffs_ex_ante, edu_max, edu_start, &
@@ -100,65 +152,11 @@ SUBROUTINE wrapper_criterion(emax_simulated, payoffs_ex_post, future_payoffs, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_rosenbrock_derivative(rslt, x, dim)
-
-    !/* external libraries    */
-
-    USE robufort_library
-
-    !/* setup    */
-
-    IMPLICIT NONE
-
-    !/* external objects    */
-
-    DOUBLE PRECISION, INTENT(OUT)   :: rslt(dim)
-    DOUBLE PRECISION, INTENT(IN)    :: x(dim)
-
-    INTEGER, INTENT(IN)             :: dim
-
-!-------------------------------------------------------------------------------
-! Algorithm
-!-------------------------------------------------------------------------------
-    
-    ! Calculate derivative information
-    CALL rosenbrock_derivative(rslt, x)
-
-END SUBROUTINE 
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE wrapper_rosenbrock(rslt, x, dim)
-
-    !/* external libraries    */
-
-    USE robufort_library
-
-    !/* setup    */
-
-    IMPLICIT NONE
-
-    !/* external objects    */
-
-    DOUBLE PRECISION, INTENT(OUT)   :: rslt
-    DOUBLE PRECISION, INTENT(IN)    :: x(dim)
-
-    INTEGER, INTENT(IN)             :: dim
-
-!-------------------------------------------------------------------------------
-! Algorithm
-!-------------------------------------------------------------------------------
-    
-    ! Evaluate Rosenbrock function
-    CALL rosenbrock(rslt, x)
-
-END SUBROUTINE 
-!*******************************************************************************
-!*******************************************************************************
 SUBROUTINE wrapper_divergence_approx_gradient(rslt, x, cov, level, eps)
 
     !/* external libraries    */
 
-    USE robufort_library
+    USE robufort_development
 
     !/* setup    */
 

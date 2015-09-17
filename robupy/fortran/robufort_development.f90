@@ -10,6 +10,7 @@ MODULE robufort_development
 
 	!/*	external modules	*/
 
+    USE robufort_program_constants
     USE robufort_library
 
  	!/*	setup	*/
@@ -19,48 +20,78 @@ MODULE robufort_development
 CONTAINS
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE divergence_approx_gradient(rslt, x, cov, level, eps)
+SUBROUTINE criterion_approx_gradient(rslt, x, num_draws, eps_standard, &
+                period, k, payoffs_ex_ante, edu_max, edu_start, &
+                mapping_state_idx, states_all, num_periods, periods_emax, &
+                eps_cholesky, delta, debug, eps)
 
     !/* external objects    */
 
-    REAL(our_dble), INTENT(OUT)     :: rslt(2)
+    DOUBLE PRECISION, INTENT(OUT)     :: rslt(2)
 
-    REAL(our_dble), INTENT(IN)      :: x(2)
-    REAL(our_dble), INTENT(IN)      :: eps
-    REAL(our_dble), INTENT(IN)      :: cov(4,4)
-    REAL(our_dble), INTENT(IN)      :: level
+    DOUBLE PRECISION, INTENT(IN)      :: eps_cholesky(:, :)
+    DOUBLE PRECISION, INTENT(IN)      :: eps_standard(:, :)
+    DOUBLE PRECISION, INTENT(IN)      :: payoffs_ex_ante(:)
+    DOUBLE PRECISION, INTENT(IN)      :: periods_emax(:,:)
+    DOUBLE PRECISION, INTENT(IN)      :: delta
+    DOUBLE PRECISION, INTENT(IN)      :: x(:)
+    DOUBLE PRECISION, INTENT(IN)      :: eps
+
+    INTEGER , INTENT(IN)   :: mapping_state_idx(:,:,:,:,:)
+    INTEGER  , INTENT(IN)   :: states_all(:,:,:)
+    INTEGER , INTENT(IN)    :: num_periods
+    INTEGER , INTENT(IN)    :: num_draws
+    INTEGER , INTENT(IN)    :: edu_start
+    INTEGER , INTENT(IN)    :: edu_max
+    INTEGER , INTENT(IN)    :: period
+    INTEGER , INTENT(IN)    :: k
+
+    LOGICAL, INTENT(IN)             :: debug
+
 
     !/* internals objects    */
 
-    INTEGER(our_int)                :: k
 
-    REAL(our_dble)                  :: ei(2)
-    REAL(our_dble)                  :: d(2)
-    REAL(our_dble)                  :: f0
-    REAL(our_dble)                  :: f1
+    DOUBLE PRECISION      :: payoffs_ex_post(4)
+    DOUBLE PRECISION     :: future_payoffs(4)
+
+    INTEGER              :: j
+
+    DOUBLE PRECISION                  :: ei(2)
+    DOUBLE PRECISION                  :: d(2)
+    DOUBLE PRECISION                  :: f0
+    DOUBLE PRECISION                 :: f1
 
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
 
+
     ! Initialize containers
     ei = zero_dble
 
     ! Evaluate baseline
-    CALL divergence(f0, x, cov, level)
+    CALL criterion(f0, payoffs_ex_post, future_payoffs, &
+                x, num_draws, eps_standard, period, k, payoffs_ex_ante, &
+                edu_max, edu_start, mapping_state_idx, states_all, &
+                num_periods, periods_emax, eps_cholesky, delta, debug)
 
     ! Iterate over increments
-    DO k = 1, 2
+    DO j = 1, 2
 
-        ei(k) = one_dble
+        ei(j) = one_dble
 
         d = eps * ei
 
-        CALL divergence(f1, x + d, cov, level)
+        CALL criterion(f1, payoffs_ex_post, future_payoffs, &
+                x + d, num_draws, eps_standard, period, k, payoffs_ex_ante, &
+                edu_max, edu_start, mapping_state_idx, states_all, &
+                num_periods, periods_emax, eps_cholesky, delta, debug)
 
-        rslt(k) = (f1 - f0) / d(k)
 
-        ei(k) = zero_dble
+        rslt(j) = (f1 - f0) / d(j)
+
+        ei(j) = zero_dble
 
     END DO
 

@@ -264,13 +264,17 @@ END SUBROUTINE
 ! for testing
 !
 
-SUBROUTINE wrapper_slsqp_robufort(x_internal, x_start, &
-                maxiter, ftol, cov, level, num_dim)
+SUBROUTINE wrapper_slsqp_robufort(x_internal, x_start, maxiter, ftol, cov, &
+            level, num_draws, eps_standard, period, k, payoffs_ex_ante, &
+            edu_max, edu_start, mapping_state_idx, states_all, num_periods, &
+            periods_emax, eps_cholesky, delta, debug, num_dim)
 
     !/* external libraries    */
 
     USE robufort_slsqp
     USE robufort_auxiliary
+    USE robufort_development
+
     !/* setup    */
 
     IMPLICIT NONE
@@ -283,6 +287,23 @@ SUBROUTINE wrapper_slsqp_robufort(x_internal, x_start, &
 
     INTEGER, INTENT(IN)             :: num_dim
     INTEGER, INTENT(IN)             :: maxiter
+
+    DOUBLE PRECISION, INTENT(IN)      :: eps_cholesky(:, :)
+    DOUBLE PRECISION, INTENT(IN)      :: eps_standard(:, :)
+    DOUBLE PRECISION, INTENT(IN)      :: payoffs_ex_ante(:)
+    DOUBLE PRECISION, INTENT(IN)      :: periods_emax(:,:)
+    DOUBLE PRECISION, INTENT(IN)      :: delta
+
+    INTEGER, INTENT(IN)     :: mapping_state_idx(:,:,:,:,:)
+    INTEGER, INTENT(IN)     :: states_all(:,:,:)
+    INTEGER, INTENT(IN)    :: num_periods
+    INTEGER, INTENT(IN)    :: num_draws
+    INTEGER, INTENT(IN)    :: edu_start
+    INTEGER, INTENT(IN)    :: edu_max
+    INTEGER, INTENT(IN)    :: period
+    INTEGER, INTENT(IN)    :: k
+
+    LOGICAL, INTENT(IN)             :: debug
 
     !/* internal objects    */
 
@@ -305,14 +326,10 @@ SUBROUTINE wrapper_slsqp_robufort(x_internal, x_start, &
     DOUBLE PRECISION, ALLOCATABLE   :: a(:,:)
     DOUBLE PRECISION, ALLOCATABLE   :: w(:)
 
-    DOUBLE PRECISION                :: f, eps
+    DOUBLE PRECISION                :: f, eps, payoffs_ex_post(4), &
+    future_payoffs(4)
 
     LOGICAL                         :: is_finished
-
-    ! Debug
-    DOUBLE PRECISION                :: rslt_constr_function
-    DOUBLE PRECISION                :: rslt_constr_gradient(num_dim)
-
 
 !-------------------------------------------------------------------------------
 ! Algorithm
@@ -354,15 +371,24 @@ SUBROUTINE wrapper_slsqp_robufort(x_internal, x_start, &
     ! Initialization of SLSQP
     is_finished = .False.
 
-    CALL debug_criterion_function(f, x_internal, n)
-    CALL debug_criterion_derivative(g, x_internal, n)
 
-    !CALL rosenbrock(f, x_internal)
-    !CALL rosenbrock_derivative(g, x_internal)
+    eps = 1e-6
+    ! TODO: REPLACE WITH CRITERION FUNCTION
+    CALL criterion(f, payoffs_ex_post, future_payoffs, &
+                x_internal, num_draws, eps_standard, period, k, &
+                payoffs_ex_ante, &
+                edu_max, edu_start, mapping_state_idx, states_all, &
+                num_periods, periods_emax, eps_cholesky, delta, debug)
+
+    CALL criterion_approx_gradient(g, x_internal, num_draws, &
+                eps_standard, period, k, payoffs_ex_ante, &
+                edu_max, edu_start, mapping_state_idx, states_all, &
+                num_periods, periods_emax, eps_cholesky, delta, debug, eps)
+
+
 
     CALL divergence_dev(c, x_internal, cov, level)
 
-    eps = 1e-6
     CALL divergence_approx_gradient_dev(a, x_internal, cov, level, eps)
 
     ! Iterate until completion
@@ -370,13 +396,27 @@ SUBROUTINE wrapper_slsqp_robufort(x_internal, x_start, &
 
         ! Evaluate criterion function and constraints.
         IF (mode == one_int) THEN
-            CALL debug_criterion_function(f, x_internal, n)
+            ! TODO: REPLACE WITH CRITERION FUNCTION
+             CALL criterion(f, payoffs_ex_post, future_payoffs, &
+                x_internal, num_draws, eps_standard, period, k, &
+                payoffs_ex_ante, &
+                edu_max, edu_start, mapping_state_idx, states_all, &
+                num_periods, periods_emax, eps_cholesky, delta, debug)
+
+
+
             CALL divergence_dev(c, x_internal, cov, level)
         ! Evaluate gradient of criterion function and constraints. Note that the
         ! a is of dimension (1, n + 1) and the last element needs to always
         ! be zero.
         ELSEIF (mode == - one_int) THEN
-            CALL debug_criterion_derivative(g, x_internal, n)
+            CALL criterion_approx_gradient(g, x_internal, num_draws, &
+                eps_standard, period, k, payoffs_ex_ante, &
+                edu_max, edu_start, mapping_state_idx, states_all, &
+                num_periods, periods_emax, eps_cholesky, delta, debug, eps)
+
+
+
             CALL divergence_approx_gradient_dev(a, x_internal, cov, level, eps)
         END IF
 
