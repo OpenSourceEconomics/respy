@@ -6,10 +6,8 @@
 !
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_criterion_approx_gradient(rslt, x, num_draws, &
-eps_standard, period, k, payoffs_ex_ante, &
-                edu_max, edu_start, mapping_state_idx, states_all, &
-                num_periods, periods_emax, eps_cholesky, delta, debug, eps)
+SUBROUTINE wrapper_slsqp_debug(x_internal, x_start, is_upgraded, maxiter, &
+                ftol, num_dim)
 
     !/* external libraries    */
 
@@ -21,40 +19,70 @@ eps_standard, period, k, payoffs_ex_ante, &
 
     !/* external objects    */
 
+    DOUBLE PRECISION, INTENT(OUT)   :: x_internal(num_dim)
+    DOUBLE PRECISION, INTENT(IN)    :: x_start(num_dim)
+    DOUBLE PRECISION, INTENT(IN)    :: ftol
 
-    !/* external objects    */
+    INTEGER, INTENT(IN)             :: num_dim
+    INTEGER, INTENT(IN)             :: maxiter
 
-    DOUBLE PRECISION, INTENT(OUT)     :: rslt(2)
-
-    DOUBLE PRECISION, INTENT(IN)      :: eps_cholesky(:, :)
-    DOUBLE PRECISION, INTENT(IN)      :: eps_standard(:, :)
-    DOUBLE PRECISION, INTENT(IN)      :: payoffs_ex_ante(:)
-    DOUBLE PRECISION, INTENT(IN)      :: periods_emax(:,:)
-    DOUBLE PRECISION, INTENT(IN)      :: delta
-    DOUBLE PRECISION, INTENT(IN)      :: x(:)
-    DOUBLE PRECISION, INTENT(IN)      :: eps
-
-    INTEGER , INTENT(IN)   :: mapping_state_idx(:,:,:,:,:)
-    INTEGER  , INTENT(IN)   :: states_all(:,:,:)
-    INTEGER , INTENT(IN)    :: num_periods
-    INTEGER , INTENT(IN)    :: num_draws
-    INTEGER , INTENT(IN)    :: edu_start
-    INTEGER , INTENT(IN)    :: edu_max
-    INTEGER , INTENT(IN)    :: period
-    INTEGER , INTENT(IN)    :: k
-
-    LOGICAL, INTENT(IN)             :: debug
-
+    LOGICAL, INTENT(IN)             :: is_upgraded
 
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
 
+    CALL slsqp_debug(x_internal, x_start, is_upgraded, maxiter, ftol, num_dim)
 
-CALL criterion_approx_gradient(rslt, x, num_draws, &
-    eps_standard, period, k, payoffs_ex_ante, &
-                edu_max, edu_start, mapping_state_idx, states_all, &
-                num_periods, periods_emax, eps_cholesky, delta, debug, eps)
+END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE wrapper_criterion_approx_gradient(rslt, x, eps, num_draws, &
+                eps_standard, period, k, payoffs_ex_ante, edu_max, &
+                edu_start, mapping_state_idx, states_all, num_periods, &
+                periods_emax, eps_cholesky, delta, debug)
+
+    !/* external libraries    */
+
+    USE robufort_library
+
+    !/* setup    */
+
+    IMPLICIT NONE
+
+    !/* external objects    */
+
+    DOUBLE PRECISION, INTENT(OUT)   :: rslt(2)
+
+    DOUBLE PRECISION, INTENT(IN)    :: eps_cholesky(:, :)
+    DOUBLE PRECISION, INTENT(IN)    :: eps_standard(:, :)
+    DOUBLE PRECISION, INTENT(IN)    :: payoffs_ex_ante(:)
+    DOUBLE PRECISION, INTENT(IN)    :: periods_emax(:,:)
+    DOUBLE PRECISION, INTENT(IN)    :: delta
+    DOUBLE PRECISION, INTENT(IN)    :: x(:)
+    DOUBLE PRECISION, INTENT(IN)    :: eps
+
+    INTEGER, INTENT(IN)             :: mapping_state_idx(:,:,:,:,:)
+    INTEGER, INTENT(IN)             :: states_all(:,:,:)
+    INTEGER, INTENT(IN)             :: num_periods
+    INTEGER, INTENT(IN)             :: num_draws
+    INTEGER, INTENT(IN)             :: edu_start
+    INTEGER, INTENT(IN)             :: edu_max
+    INTEGER, INTENT(IN)             :: period
+    INTEGER, INTENT(IN)             :: k
+
+    LOGICAL, INTENT(IN)             :: debug
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+
+    ! Approximate the gradient of the criterion function
+    CALL criterion_approx_gradient(rslt, x, eps, num_draws, eps_standard, &
+            period, k, payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
+            states_all, num_periods, periods_emax, eps_cholesky, delta, &
+            debug)
+
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
@@ -95,6 +123,7 @@ SUBROUTINE wrapper_simulate_emax(emax_simulated, payoffs_ex_post, &
 ! Algorithm
 !-------------------------------------------------------------------------------
 
+    ! Simulate expected future value
     CALL simulate_emax(emax_simulated, payoffs_ex_post, future_payoffs, &
             num_periods, num_draws, period, k, eps_relevant, payoffs_ex_ante, &
             edu_max, edu_start, periods_emax, states_all, mapping_state_idx, &
@@ -110,7 +139,7 @@ SUBROUTINE wrapper_criterion(emax_simulated, payoffs_ex_post, future_payoffs, &
 
     !/* external libraries    */
 
-    USE robufort_development
+    USE robufort_library
 
     !/* setup    */
 
@@ -156,7 +185,7 @@ SUBROUTINE wrapper_divergence_approx_gradient(rslt, x, cov, level, eps)
 
     !/* external libraries    */
 
-    USE robufort_development
+    USE robufort_library
 
     !/* setup    */
 
@@ -355,7 +384,7 @@ SUBROUTINE wrapper_divergence(div, x, cov, level)
 
     !/* external objects    */
 
-    DOUBLE PRECISION, INTENT(OUT)   :: div
+    DOUBLE PRECISION, INTENT(OUT)   :: div(1)
 
     DOUBLE PRECISION, INTENT(IN)    :: x(2)
     DOUBLE PRECISION, INTENT(IN)    :: cov(4,4)

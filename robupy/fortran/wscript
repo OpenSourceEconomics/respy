@@ -40,10 +40,13 @@ class CreateRobufortLibrary(Task):
         compiler_options = '-O3 -fpic'
 
         files = ['robufort_program_constants.f90', 'robufort_auxiliary.f90',
-                 'robufort_core.f90', 'robufort_development.f90']
+                 'robufort_slsqp.f90', 'robufort_development.f90',
+                 'robufort_core.f90']
 
         for file_ in files:
             os.system('gfortran ' + compiler_options + ' -c ' + file_)
+
+        os.system('gfortran ' + compiler_options + ' --fixed-form -c original_slsqp.f')
 
         os.system('ar crs libfort_robufort.a *.o *.mod')
 

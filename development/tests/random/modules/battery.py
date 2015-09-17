@@ -5,6 +5,7 @@ development tests.
 # standard library
 from pandas.util.testing import assert_frame_equal
 
+from scipy.optimize.slsqp import _minimize_slsqp
 from scipy.optimize import approx_fprime
 from scipy.optimize import rosen_der
 from scipy.optimize import rosen
@@ -35,6 +36,53 @@ from robupy.python.py.ambiguity import _criterion
 
 ''' Main
 '''
+
+
+def test_94():
+    """ This test case compare the results of a debugging setup for the SLSQP
+    algorithm's PYTHON and FORTRAN implementation
+    """
+    # Ensure that fast solution methods are available
+    compile_package('fast')
+
+    import robupy.python.f2py.f2py_debug as fort
+
+    # Sample basic test case
+    is_upgraded = np.random.choice([True, False])
+    maxiter = np.random.random_integers(1, 100)
+    num_dim = np.random.random_integers(2, 4)
+    ftol = np.random.uniform(0.000000, 1e-5)
+    x0 = np.random.normal(size=num_dim)
+
+    # Test the upgraded FORTRAN version against the original code. This is
+    # expected to NEVER fail.
+    f_upgraded = fort.wrapper_slsqp_debug(x0, True, maxiter, ftol, num_dim)
+    f_original = fort.wrapper_slsqp_debug(x0, False, maxiter, ftol, num_dim)
+    np.testing.assert_array_equal(f_upgraded, f_original)
+
+    # Test the FORTRAN codes against the PYTHON implementation. This is
+    # expected to fail sometimes due to differences in precision between the
+    # two implementations. In particular, as updating steps of the optimizer
+    # are very sensitive to just small differences in the derivative
+    # information. The same functions are available as a FORTRAN
+    # implementations.
+    def debug_constraint_derivative(x):
+        return np.ones(len(x))
+    def debug_constraint_function(x):
+        return np.sum(x) - 10.0
+
+    # Setting up PYTHON SLSQP interface for constraints
+    constraint = dict()
+    constraint['type'] = 'ineq'
+    constraint['args'] = ()
+    constraint['fun'] = debug_constraint_function
+    constraint['jac'] = debug_constraint_derivative
+
+    # Evaluate both implementations
+    f = fort.wrapper_slsqp_debug(x0, is_upgraded, maxiter, ftol, num_dim)
+    py = _minimize_slsqp(rosen, x0, jac=rosen_der, maxiter=maxiter,
+            ftol=ftol,  constraints=constraint)['x']
+    np.testing.assert_allclose(py, f, rtol=1e-05, atol=1e-06)
 
 
 def test_95():
@@ -91,7 +139,7 @@ def test_95():
         eps_standard = np.random.multivariate_normal(np.zeros(4),
                             np.identity(4), (num_draws,))
 
-        # Sampling of random period and admissable state index
+        # Sampling of random period and admissible state index
         period = np.random.choice(range(num_periods))
         k = np.random.choice(range(states_number_period[period]))
 
@@ -114,14 +162,19 @@ def test_95():
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
         # Criterion function for the determination of the worst case outcomes
-        py = _criterion(x, num_draws, eps_standard, period, k, payoffs_ex_ante,
+        args = (num_draws, eps_standard, period, k, payoffs_ex_ante,
                 edu_max, edu_start, mapping_state_idx, states_all, num_periods,
                 periods_emax, eps_cholesky, delta, debug)
 
-        f90, _, _ = fort.wrapper_criterion(x, num_draws, eps_standard,
-            period, k, payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,
-            states_all, num_periods, periods_emax, eps_cholesky, delta, debug)
+        py = _criterion(x, *args)
+        f90, _, _ = fort.wrapper_criterion(x, *args)
+        np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
+        # Evaluation of derivative of criterion function
+        eps = np.random.uniform(0.000000, 0.5)
+
+        py = approx_fprime(x, _criterion, eps, *args)
+        f90 = fort.wrapper_criterion_approx_gradient(x, eps, *args)
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
 

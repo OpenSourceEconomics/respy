@@ -15,7 +15,7 @@ SUBROUTINE divergence(div, x, cov, level)
 
     !/* external objects    */
 
-    REAL(our_dble), INTENT(OUT)     :: div
+    REAL(our_dble), INTENT(OUT)     :: div(1)
 
     REAL(our_dble), INTENT(IN)      :: x(2)
     REAL(our_dble), INTENT(IN)      :: cov(4,4)
@@ -84,8 +84,8 @@ SUBROUTINE divergence_approx_gradient(rslt, x, cov, level, eps)
 
     REAL(our_dble)                  :: ei(2)
     REAL(our_dble)                  :: d(2)
-    REAL(our_dble)                  :: f0
-    REAL(our_dble)                  :: f1
+    REAL(our_dble)                  :: f0(1)
+    REAL(our_dble)                  :: f1(1)
 
 !-------------------------------------------------------------------------------
 ! Algorithm
@@ -106,7 +106,7 @@ SUBROUTINE divergence_approx_gradient(rslt, x, cov, level, eps)
 
         CALL divergence(f1, x + d, cov, level)
 
-        rslt(k) = (f1 - f0) / d(k)
+        rslt(k) = (f1(1) - f0(1)) / d(k)
 
         ei(k) = zero_dble
 
