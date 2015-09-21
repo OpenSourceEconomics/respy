@@ -37,7 +37,104 @@ from robupy.python.py.ambiguity import _criterion
 
 ''' Main
 '''
+def test_93():
+    """ This test case compares the results from the SLSQP implementations in
+    PYTHON and FORTRAN for the actual optimization problem.
+    """
+    # Ensure interface is available
+    build_f2py_testing()
+    import modules.f2py_testing as fort
 
+    # Sample problem parameters
+    for _ in range(10):
+        print(_)
+        maxiter = np.random.random_integers(1, 100)
+        ftol = np.random.uniform(0.000000, 1e-5)
+        x0 = np.random.normal(size=2)
+
+        eps = 1e-6
+
+        cov = np.identity(4)*np.random.normal(size=1)**2
+        level = np.random.normal(size=1)**2
+
+        # Setting up PYTHON SLSQP interface for constraints
+        constraint = dict()
+        constraint['type'] = 'ineq'
+        constraint['args'] = (cov, level)
+        constraint['fun'] = _divergence
+
+        # Generate constraint periods
+        constraints = dict()
+        constraints['version'] = 'PYTHON'
+
+        # Generate random initialization file
+        generate_init(constraints)
+
+        # Perform toolbox actions
+        robupy_obj = read('test.robupy.ini')
+
+        robupy_obj = solve(robupy_obj)
+
+        # Extract relevant information
+        periods_payoffs_ex_ante = robupy_obj.get_attr('periods_payoffs_ex_ante')
+
+        states_number_period = robupy_obj.get_attr('states_number_period')
+
+        mapping_state_idx = robupy_obj.get_attr('mapping_state_idx')
+
+        periods_emax = robupy_obj.get_attr('periods_emax')
+
+        eps_cholesky = robupy_obj.get_attr('eps_cholesky')
+
+        num_periods = robupy_obj.get_attr('num_periods')
+
+        states_all = robupy_obj.get_attr('states_all')
+
+        num_draws = robupy_obj.get_attr('num_draws')
+
+        edu_start = robupy_obj.get_attr('edu_start')
+
+        edu_max = robupy_obj.get_attr('edu_max')
+
+        delta = robupy_obj.get_attr('delta')
+
+        debug = False
+
+        # Sample disturbances
+        eps_standard = np.random.multivariate_normal(np.zeros(4),
+                                np.identity(4), (num_draws,))
+
+        # Sampling of random period and admissible state index
+        period = np.random.choice(range(num_periods))
+        k = np.random.choice(range(states_number_period[period]))
+
+        # Select ex ante payoffs
+        payoffs_ex_ante = periods_payoffs_ex_ante[period, k, :]
+
+        # Evaluation point
+        x = np.random.random(size=2)
+
+        args = (num_draws, eps_standard, period, k, payoffs_ex_ante, edu_max,
+            edu_start, mapping_state_idx, states_all, num_periods, periods_emax,
+            eps_cholesky, delta, debug)
+
+        py = _minimize_slsqp(_criterion, x0, args, maxiter=maxiter,
+                       ftol=ftol, constraints=constraint)['x']
+
+        f = fort.wrapper_slsqp_robufort(x0, maxiter, ftol, eps, num_draws,
+                eps_standard, period, k, payoffs_ex_ante, edu_max, edu_start,
+                mapping_state_idx, states_all, num_periods, periods_emax,
+                eps_cholesky, delta, debug, cov, level)
+
+        # Check equality. If not equal up to the tolerance, I also check
+        # whether the result from the FORTRAN implementation is even better.
+        try:
+            np.testing.assert_allclose(py, f, rtol=1e-05, atol=1e-06)
+        except AssertionError:
+            if _criterion(f) < _criterion(py):
+                pass
+            else:
+                raise AssertionError
 
 def test_94():
     """ This test case compare the results of a debugging setup for the SLSQP

@@ -25,7 +25,8 @@ def build_f2py_testing():
     # Build static library
     compiler_options = '-O3 -fpic'
 
-    files = ['robufort_program_constants.f90', 'robufort_testing.f90']
+    files = ['robufort_program_constants.f90', 'robufort_auxiliary.f90',
+             'robufort_core.f90', 'robufort_testing.f90']
 
     for file_ in files:
         os.system('gfortran ' + compiler_options + ' -c ' + file_)
