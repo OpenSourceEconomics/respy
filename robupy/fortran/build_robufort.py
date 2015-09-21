@@ -20,7 +20,7 @@ DEBUG_OPTIONS = ' -O2 -fimplicit-none  -Wall  -Wline-truncation ' \
 PRODUCTION_OPTIONS = '-O3'
 
 
-def robufort_build(self, is_debug=False):
+def robufort_build(self, is_debug=False, is_inlining=False):
     """ Building the ROBUFORT executable for high speed execution.
     """
     # Compilation of executable for fastest performance
@@ -30,6 +30,63 @@ def robufort_build(self, is_debug=False):
 
     os.chdir(path + '/fortran')
 
+    # Set compilation options
+    if is_debug:
+        compiler_options = DEBUG_OPTIONS
+    else:
+        compiler_options = PRODUCTION_OPTIONS
+
+    # This branches the build process into two parts, depending on whether
+    # manual inlining is required due to speed considerations or not.
+    # Refraining from manual inlining is useful during development and
+    # working on extensions.
+    if is_inlining:
+        _with_inlining(compiler_options)
+    else:
+        _without_inlining(compiler_options)
+
+    os.unlink('robufort_extended.f90')
+
+    shutil.move('robufort', 'bin/robufort')
+
+    os.chdir(current_directory)
+
+
+def _without_inlining(compiler_options):
+    """ This function creates the executable without the inlining. Minor
+    preparations are required to add the import of the robufort library to
+    the main program. This is not done in the actual code as it otherwise
+    does not allow for the compilation of the inlined code.
+    """
+
+    # Create blank slate
+    shutil.copy('robufort.f90', 'robufort_extended.f90')
+    # Read current content
+    with open('robufort_extended.f90', 'r') as infile:
+        old_content = infile.readlines()
+
+    # Extend content to import the robufort library
+    with open('robufort_extended.f90', 'w') as outfile:
+        for line in old_content:
+            outfile.write(line)
+            # Check for additional import
+            list_ = shlex.split(line)
+            is_relevant = (list_[:2] == ['USE', 'robufort_extension'])
+            if is_relevant:
+                outfile.write('\n USE robufort_library \n')
+
+    # Compile resulting extended file
+    cmd = 'gfortran ' + compiler_options + ' -o robufort ' \
+          'robufort_program_constants.f90  robufort_auxiliary.f90 ' \
+          'robufort_slsqp.f robufort_library.f90 ' \
+          'robufort_extended.f90'
+
+    os.system(cmd)
+
+
+def _with_inlining(compiler_options):
+    """ This function performs the manual inlining.
+    """
     # Performance considerations require an automatic inlining of the core
     # subroutines in a single file. Prepare starting version of extended
     # ROBUFORT code. At first the module containing the program constants is
@@ -46,7 +103,7 @@ def robufort_build(self, is_debug=False):
     # This loop iteratively marks subroutines for inlinings and then replaces
     # them with the relevant code lines. The loop stops once no subroutines
     # are marked for further inlining. The original code of the subroutines
-    # is read in directly from the robufort_core.f90 file.
+    # is read in directly from the robufort_library.f90 file.
     subroutines = _read_subroutines()
 
     while True:
@@ -84,22 +141,8 @@ def robufort_build(self, is_debug=False):
 
     os.remove('.robufort_inlining.f90')
 
-    # Compile the executable
-    if is_debug:
-        compiler_options = DEBUG_OPTIONS
-    else:
-        compiler_options = PRODUCTION_OPTIONS
-
     os.system('gfortran ' + compiler_options + ' -o robufort ' \
-                'robufort_extended.f90')
-
-    shutil.move('robufort', 'bin/robufort')
-
-    os.unlink('robufort_extended.f90')
-
-    os.unlink('robufort_program_constants.mod')
-
-    os.chdir(current_directory)
+                    'robufort_extended.f90')
 
 
 def _read_backward_induction_code():
@@ -396,11 +439,11 @@ def _read_subroutines():
     name = None
 
     # Determine number of lines
-    with open('robufort_core.f90', 'r') as old_file:
+    with open('robufort_library.f90', 'r') as old_file:
         num_lines = len(old_file.readlines())
 
     # Extract information
-    with open('robufort_core.f90') as file_:
+    with open('robufort_library.f90') as file_:
 
         for _ in range(num_lines):
 

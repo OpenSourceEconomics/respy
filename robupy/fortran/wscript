@@ -40,12 +40,10 @@ class CreateRobufortLibrary(Task):
         compiler_options = '-O3 -fpic'
 
         files = ['robufort_program_constants.f90', 'robufort_auxiliary.f90',
-                 'robufort_core.f90']
+                 'robufort_slsqp.f', 'robufort_library.f90']
 
         for file_ in files:
             os.system('gfortran ' + compiler_options + ' -c ' + file_)
-
-        os.system('gfortran ' + compiler_options + ' --fixed-form -c robufort_slsqp.f')
 
         os.system('ar crs libfort_robufort.a *.o *.mod')
 
@@ -64,11 +62,13 @@ class CreateRobufortExecutable(Task):
 
     def run(self):
 
+        is_inlining = self.is_inlining
+
         is_debug = self.is_debug
 
         from fortran.build_robufort import robufort_build
 
-        robufort_build(self, is_debug)
+        robufort_build(self, is_debug, is_inlining)
 
 
 class CreateF2pyInterface(Task):
@@ -110,6 +110,8 @@ def build(bld):
     # Distribute class attributes
     is_debug = bld.options.debug
 
+    is_inlining = bld.options.inlining
+
     # Initialize directory structure
     task_1 = CreateDirectoryStructure(env=bld.env)
 
@@ -126,6 +128,8 @@ def build(bld):
 
     # Create the ROBUFORT executable
     task_3 = CreateRobufortExecutable(env=bld.env)
+
+    task_3.is_inlining = is_inlining
 
     task_3.is_debug = is_debug
 

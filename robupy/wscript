@@ -30,6 +30,9 @@ def options(opt):
     opt.add_option('--debug', action='store_true', dest='debug', default=False,
                    help='use debug compiler options')
 
+    opt.add_option('--inlining', action='store_true', dest='inlining',
+                   default=False, help='perform manual inlining')
+
 
 def configure(conf):
 

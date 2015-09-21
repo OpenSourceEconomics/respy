@@ -47,7 +47,7 @@ def test_93():
 
     # Sample problem parameters
     for _ in range(10):
-        print(_)
+
         maxiter = np.random.random_integers(1, 100)
         ftol = np.random.uniform(0.000000, 1e-5)
         x0 = np.random.normal(size=2)

@@ -13,8 +13,8 @@ SUBROUTINE wrapper_slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, &
 
     !/* external libraries    */
 
-    USE robufort_testing
-
+    USE robufort_library 
+    
     !/* setup    */
 
     IMPLICIT NONE

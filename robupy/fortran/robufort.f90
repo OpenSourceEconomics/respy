@@ -1,6 +1,6 @@
 !******************************************************************************
 !******************************************************************************
-MODULE robufort_library
+MODULE robufort_extension
 
     !/* external modules    */
 
@@ -308,10 +308,9 @@ END MODULE
 !******************************************************************************* 
 PROGRAM robufort
 
-
     !/* external modules    */
 
-    USE robufort_library
+    USE robufort_extension
 
     USE robufort_program_constants
 
