@@ -166,7 +166,7 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
         END IF
 
         !Call to SLSQP code
-        CALL slsqp_original(m, meq, la, n, x_internal, xl, xu, f, c, g, a, ftol, &
+        CALL slsqp(m, meq, la, n, x_internal, xl, xu, f, c, g, a, ftol, &
                 iter, mode, w, l_w, jw, l_jw)
 
         ! Check if SLSQP has completed
@@ -294,7 +294,7 @@ SUBROUTINE slsqp_debug(x_internal, x_start, maxiter, ftol, &
         END IF
 
         !SLSQP Interface
-        CALL slsqp_original(m, meq, la, n, x_internal, xl, xu, f, c, g, &
+        CALL slsqp(m, meq, la, n, x_internal, xl, xu, f, c, g, &
                     a, acc, iter, mode, w, l_w, jw, l_jw)
         
         ! Check if SLSQP has completed
