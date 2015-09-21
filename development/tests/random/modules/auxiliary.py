@@ -200,7 +200,7 @@ def compile_package(which):
     if which == 'fast':
         cmd += ' --fast'
 
-    #cmd += ' > /dev/null 2>&1'
+    cmd += ' > /dev/null 2>&1'
 
     os.system(cmd)
 
