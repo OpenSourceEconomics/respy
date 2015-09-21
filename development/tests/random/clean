@@ -58,6 +58,8 @@ files += glob.glob('modules/include')
 
 files += glob.glob('modules/*.so')
 
+files += glob.glob('*.dat')
+
 files += glob.glob('modules/*.o')
 
 files += glob.glob('modules/__pycache__')

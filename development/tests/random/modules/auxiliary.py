@@ -25,14 +25,13 @@ def build_f2py_testing():
     # Build static library
     compiler_options = '-O3 -fpic'
 
-    files = ['robufort_program_constants.f90', 'robufort_auxiliary.f90',
-                 'robufort_slsqp.f90', 'robufort_testing.f90']
+    files = ['robufort_program_constants.f90', 'robufort_testing.f90']
 
     for file_ in files:
         os.system('gfortran ' + compiler_options + ' -c ' + file_)
 
     os.system('gfortran ' + compiler_options + ' --fixed-form -c '
-            'original_slsqp.f > /dev/null 2>&1')
+            'robufort_slsqp.f > /dev/null 2>&1')
 
     os.system('ar crs libfort_testing.a *.o *.mod')
 
@@ -201,7 +200,7 @@ def compile_package(which):
     if which == 'fast':
         cmd += ' --fast'
 
-    cmd += ' > /dev/null 2>&1'
+    #cmd += ' > /dev/null 2>&1'
 
     os.system(cmd)
 

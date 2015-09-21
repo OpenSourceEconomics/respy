@@ -6,12 +6,12 @@
 !
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_slsqp_debug(x_internal, x_start, is_upgraded, maxiter, &
+SUBROUTINE wrapper_slsqp_debug(x_internal, x_start, maxiter, &
                 ftol, num_dim)
 
     !/* external libraries    */
 
-    USE robufort_development
+    USE robufort_testing
 
     !/* setup    */
 
@@ -26,13 +26,11 @@ SUBROUTINE wrapper_slsqp_debug(x_internal, x_start, is_upgraded, maxiter, &
     INTEGER, INTENT(IN)             :: num_dim
     INTEGER, INTENT(IN)             :: maxiter
 
-    LOGICAL, INTENT(IN)             :: is_upgraded
-
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
 
-    CALL slsqp_debug(x_internal, x_start, is_upgraded, maxiter, ftol, num_dim)
+    CALL slsqp_debug(x_internal, x_start, maxiter, ftol, num_dim)
 
 END SUBROUTINE
 
@@ -42,7 +40,7 @@ SUBROUTINE wrapper_debug_criterion_function(rslt, x, n)
 
     !/* external libraries    */
 
-    USE robufort_development
+    USE robufort_testing
 
     !/* external objects    */
 
@@ -64,7 +62,7 @@ SUBROUTINE wrapper_debug_criterion_derivative(rslt, x, n)
 
     !/* external libraries    */
 
-    USE robufort_development
+    USE robufort_testing
 
     !/* external objects    */
 

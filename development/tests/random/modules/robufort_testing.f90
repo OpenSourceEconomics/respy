@@ -1,10 +1,8 @@
-MODULE robufort_development
+MODULE robufort_testing
 
 	!/*	external modules	*/
 
     USE robufort_program_constants
-    USE robufort_auxiliary
-    USE robufort_slsqp
 
 	!/*	setup	*/
 
@@ -13,47 +11,45 @@ MODULE robufort_development
 CONTAINS
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE slsqp_debug(x_internal, x_start, is_upgraded, maxiter, ftol, &
+SUBROUTINE slsqp_debug(x_internal, x_start, maxiter, ftol, &
                 num_dim)
 
     !/* external objects    */
 
-    DOUBLE PRECISION, INTENT(OUT)   :: x_internal(num_dim)
-    DOUBLE PRECISION, INTENT(IN)    :: x_start(num_dim)
-    DOUBLE PRECISION, INTENT(IN)    :: ftol
+    REAL(our_dble), INTENT(OUT)     :: x_internal(num_dim)
+    REAL(our_dble), INTENT(IN)      :: x_start(num_dim)
+    REAL(our_dble), INTENT(IN)      :: ftol
 
-    INTEGER, INTENT(IN)             :: num_dim
-    INTEGER, INTENT(IN)             :: maxiter
-
-    LOGICAL, INTENT(IN)             :: is_upgraded
+    INTEGER(our_int), INTENT(IN)    :: num_dim
+    INTEGER(our_int), INTENT(IN)    :: maxiter
 
     !/* internal objects    */
 
-    INTEGER                         :: m
-    INTEGER                         :: meq
-    INTEGER                         :: la
-    INTEGER                         :: n
-    INTEGER                         :: len_w
-    INTEGER                         :: len_jw
-    INTEGER                         :: mode
-    INTEGER                         :: iter
-    INTEGER                         :: n1
-    INTEGER                         :: mieq
-    INTEGER                         :: mineq
-    INTEGER                         :: l_jw
-    INTEGER                         :: l_w
+    INTEGER(our_int)                :: m
+    INTEGER(our_int)                :: meq
+    INTEGER(our_int)                :: la
+    INTEGER(our_int)                :: n
+    INTEGER(our_int)                :: len_w
+    INTEGER(our_int)                :: len_jw
+    INTEGER(our_int)                :: mode
+    INTEGER(our_int)                :: iter
+    INTEGER(our_int)                :: n1
+    INTEGER(our_int)                :: mieq
+    INTEGER(our_int)                :: mineq
+    INTEGER(our_int)                :: l_jw
+    INTEGER(our_int)                :: l_w
 
-    INTEGER, ALLOCATABLE            :: jw(:)
+    INTEGER(our_int), ALLOCATABLE   :: jw(:)
 
-    DOUBLE PRECISION, ALLOCATABLE   :: xl(:)
-    DOUBLE PRECISION, ALLOCATABLE   :: xu(:)
-    DOUBLE PRECISION, ALLOCATABLE   :: c(:)
-    DOUBLE PRECISION, ALLOCATABLE   :: g(:)
-    DOUBLE PRECISION, ALLOCATABLE   :: a(:,:)
-    DOUBLE PRECISION, ALLOCATABLE   :: w(:)
+    REAL(our_dble), ALLOCATABLE     :: xl(:)
+    REAL(our_dble), ALLOCATABLE     :: xu(:)
+    REAL(our_dble), ALLOCATABLE     :: c(:)
+    REAL(our_dble), ALLOCATABLE     :: g(:)
+    REAL(our_dble), ALLOCATABLE     :: a(:,:)
+    REAL(our_dble), ALLOCATABLE     :: w(:)
 
-    DOUBLE PRECISION                :: f
-    DOUBLE PRECISION                :: acc
+    REAL(our_dble)                  :: f
+    REAL(our_dble)                  :: acc
 
     LOGICAL                         :: is_finished
 
@@ -130,14 +126,9 @@ SUBROUTINE slsqp_debug(x_internal, x_start, is_upgraded, maxiter, ftol, &
         END IF
 
         !SLSQP Interface
-        IF (is_upgraded) THEN
-            CALL slsqp(m, meq, n, x_internal, xl, xu, f, c, g, a, acc, iter, &
-                    mode, w, l_w)
-        ELSE
-            CALL slsqp_original(m, meq, la, n, x_internal, xl, xu, f, c, g, &
+        CALL slsqp_original(m, meq, la, n, x_internal, xl, xu, f, c, g, &
                     a, acc, iter, mode, w, l_w, jw, l_jw)
-        END IF
-
+        
         ! Check if SLSQP has completed
         IF (.NOT. ABS(mode) == one_int) THEN
             is_finished = .True.
@@ -156,14 +147,14 @@ SUBROUTINE debug_criterion_function(rslt, x, n)
 
     !/* external objects    */
 
-    INTEGER, INTENT(IN)             :: n
+    INTEGER(our_int), INTENT(IN)    :: n
 
-    DOUBLE PRECISION, INTENT(OUT)   :: rslt
-    DOUBLE PRECISION, INTENT(IN)    :: x(n)
+    REAL(our_dble), INTENT(OUT)     :: rslt
+    REAL(our_dble), INTENT(IN)      :: x(n)
 
     !/* internal objects    */
 
-    INTEGER                         :: i
+    INTEGER(our_int)                :: i
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -188,16 +179,16 @@ SUBROUTINE debug_criterion_derivative(rslt, x, n)
 
     !/* external objects    */
 
-    INTEGER, INTENT(IN)             :: n
+    INTEGER(our_int), INTENT(IN)    :: n
 
-    DOUBLE PRECISION, INTENT(OUT)   :: rslt(n + 1)
-    DOUBLE PRECISION, INTENT(IN)    :: x(n)
+    REAL(our_dble), INTENT(OUT)     :: rslt(n + 1)
+    REAL(our_dble), INTENT(IN)      :: x(n)
 
     !/* internals objects    */
 
-    DOUBLE PRECISION                :: xm(n - 2)
-    DOUBLE PRECISION                :: xm_m1(n - 2)
-    DOUBLE PRECISION                :: xm_p1(n - 2)
+    REAL(our_dble)                  :: xm(n - 2)
+    REAL(our_dble)                  :: xm_m1(n - 2)
+    REAL(our_dble)                  :: xm_p1(n - 2)
 
 !-------------------------------------------------------------------------------
 ! Algorithm
@@ -225,12 +216,12 @@ SUBROUTINE debug_constraint_function(rslt, x, n, la)
 
     !/* external objects    */
 
-    DOUBLE PRECISION, INTENT(OUT)   :: rslt(la)
+    REAL(our_dble), INTENT(OUT)     :: rslt(la)
 
-    DOUBLE PRECISION, INTENT(IN)    :: x(n)
+    REAL(our_dble), INTENT(IN)      :: x(n)
 
-    INTEGER, INTENT(IN)             :: n
-    INTEGER, INTENT(IN)             :: la
+    INTEGER(our_int), INTENT(IN)    :: n
+    INTEGER(our_int), INTENT(IN)    :: la
 
 !-------------------------------------------------------------------------------
 ! Algorithm
@@ -245,12 +236,12 @@ SUBROUTINE debug_constraint_derivative(rslt, x, n, la)
 
     !/* external objects    */
 
-    DOUBLE PRECISION, INTENT(OUT)   :: rslt(n + 1)
+    REAL(our_dble), INTENT(OUT)     :: rslt(n + 1)
 
-    DOUBLE PRECISION, INTENT(IN)    :: x(n)
+    REAL(our_dble), INTENT(IN)      :: x(n)
 
-    INTEGER, INTENT(IN)             :: n
-    INTEGER, INTENT(IN)             :: la
+    INTEGER(our_int), INTENT(IN)    :: n
+    INTEGER(our_int), INTENT(IN)    :: la
 
 !-------------------------------------------------------------------------------
 ! Algorithm

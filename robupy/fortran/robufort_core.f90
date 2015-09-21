@@ -13,8 +13,6 @@ MODULE robufort_library
 
     USE robufort_auxiliary
 
-    USE robufort_slsqp
-
 	!/*	setup	*/
 
 	IMPLICIT NONE

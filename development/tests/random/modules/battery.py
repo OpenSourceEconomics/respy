@@ -48,7 +48,6 @@ def test_94():
     import modules.f2py_testing as fort
 
     # Sample basic test case
-    is_upgraded = np.random.choice([True, False])
     maxiter = np.random.random_integers(1, 100)
     num_dim = np.random.random_integers(2, 4)
     ftol = np.random.uniform(0.000000, 1e-5)
@@ -63,12 +62,6 @@ def test_94():
     py = rosen_der(x0)
     f90 = fort.wrapper_debug_criterion_derivative(x0, len(x0))
     np.testing.assert_allclose(py, f90[:-1], rtol=1e-05, atol=1e-06)
-
-    # Test the upgraded FORTRAN version against the original code. This is
-    # expected to NEVER fail.
-    f_upgraded = fort.wrapper_slsqp_debug(x0, True, maxiter, ftol, num_dim)
-    f_original = fort.wrapper_slsqp_debug(x0, False, maxiter, ftol, num_dim)
-    np.testing.assert_array_equal(f_upgraded, f_original)
 
     # Test the FORTRAN codes against the PYTHON implementation. This is
     # expected to fail sometimes due to differences in precision between the
@@ -89,7 +82,7 @@ def test_94():
     constraint['jac'] = debug_constraint_derivative
 
     # Evaluate both implementations
-    f = fort.wrapper_slsqp_debug(x0, is_upgraded, maxiter, ftol, num_dim)
+    f = fort.wrapper_slsqp_debug(x0, maxiter, ftol, num_dim)
     py = _minimize_slsqp(rosen, x0, jac=rosen_der, maxiter=maxiter,
             ftol=ftol,  constraints=constraint)['x']
     np.testing.assert_allclose(py, f, rtol=1e-05, atol=1e-06)
