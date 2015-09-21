@@ -23,7 +23,7 @@ from modules.auxiliary import *
 
 ''' Request
 '''
-label, seed = '97', 24425
+label, seed = '94', 33381
 
 ''' Error Reproduction
 '''
@@ -31,7 +31,7 @@ label, seed = '97', 24425
 if True:
 
 
-    np.random.seed(seed)
+    #np.random.seed(seed)
 
     #compile_package('fast')
     test = getattr(Tests, 'test_' + label)

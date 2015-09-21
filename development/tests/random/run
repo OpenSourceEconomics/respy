@@ -19,8 +19,12 @@ import sys
 import os
 
 # project
-from modules.auxiliary import compile_package, cleanup, distribute_input
-from modules.auxiliary import start_logging, finish
+from modules.auxiliary import compile_package
+from modules.auxiliary import distribute_input
+from modules.auxiliary import start_logging
+from modules.auxiliary import cleanup
+from modules.auxiliary import finish
+
 import modules.battery as development_tests
 
 # ROBUPY import

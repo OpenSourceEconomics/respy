@@ -19,6 +19,7 @@ import os
 # testing library
 from modules.auxiliary import transform_robupy_to_restud
 from modules.auxiliary import write_disturbances
+from modules.auxiliary import build_f2py_testing
 from modules.auxiliary import compile_package
 
 # ROBUPY import
@@ -42,10 +43,9 @@ def test_94():
     """ This test case compare the results of a debugging setup for the SLSQP
     algorithm's PYTHON and FORTRAN implementation
     """
-    # Ensure that fast solution methods are available
-    compile_package('fast')
-
-    import robupy.python.f2py.f2py_debug as fort
+    # Ensure interface is available
+    build_f2py_testing()
+    import modules.f2py_testing as fort
 
     # Sample basic test case
     is_upgraded = np.random.choice([True, False])
@@ -53,6 +53,16 @@ def test_94():
     num_dim = np.random.random_integers(2, 4)
     ftol = np.random.uniform(0.000000, 1e-5)
     x0 = np.random.normal(size=num_dim)
+
+    # Evaluation of Rosenbrock function. We are using the FORTRAN version
+    # in the development of the optimization routines.
+    f90 = fort.wrapper_debug_criterion_function(x0, num_dim)
+    py = rosen(x0)
+    np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
+
+    py = rosen_der(x0)
+    f90 = fort.wrapper_debug_criterion_derivative(x0, len(x0))
+    np.testing.assert_allclose(py, f90[:-1], rtol=1e-05, atol=1e-06)
 
     # Test the upgraded FORTRAN version against the original code. This is
     # expected to NEVER fail.
@@ -256,17 +266,6 @@ def test_97():
         fort.wrapper_standard_normal(num_draws)
         fort.wrapper_multivariate_normal(mean, cov, num_draws, dim)
 
-        # Evaluation of Rosenbrock function. We are using the FORTRAN version
-        # in the development of the optimization routines.
-        x0 = np.random.randn(num_draws)
-
-        f90 = fort.wrapper_debug_criterion_function(x0, num_draws)
-        py = rosen(x0)
-        np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
-
-        py = rosen_der(x0)
-        f90 = fort.wrapper_debug_criterion_derivative(x0, len(x0))
-        np.testing.assert_allclose(py, f90[:-1], rtol=1e-05, atol=1e-06)
 
 def test_98():
     """  Compare results from the RESTUD program and the ROBUPY package.

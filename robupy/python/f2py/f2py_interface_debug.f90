@@ -6,37 +6,6 @@
 !
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_slsqp_debug(x_internal, x_start, is_upgraded, maxiter, &
-                ftol, num_dim)
-
-    !/* external libraries    */
-
-    USE robufort_development
-
-    !/* setup    */
-
-    IMPLICIT NONE
-
-    !/* external objects    */
-
-    DOUBLE PRECISION, INTENT(OUT)   :: x_internal(num_dim)
-    DOUBLE PRECISION, INTENT(IN)    :: x_start(num_dim)
-    DOUBLE PRECISION, INTENT(IN)    :: ftol
-
-    INTEGER, INTENT(IN)             :: num_dim
-    INTEGER, INTENT(IN)             :: maxiter
-
-    LOGICAL, INTENT(IN)             :: is_upgraded
-
-!-------------------------------------------------------------------------------
-! Algorithm
-!-------------------------------------------------------------------------------
-
-    CALL slsqp_debug(x_internal, x_start, is_upgraded, maxiter, ftol, num_dim)
-
-END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
 SUBROUTINE wrapper_criterion_approx_gradient(rslt, x, eps, num_draws, &
                 eps_standard, period, k, payoffs_ex_ante, edu_max, &
                 edu_start, mapping_state_idx, states_all, num_periods, &
@@ -396,50 +365,6 @@ SUBROUTINE wrapper_divergence(div, x, cov, level)
     
     ! Calculate divergence
     CALL divergence(div, x, cov, level)
-
-END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE wrapper_debug_criterion_function(rslt, x, n)
-
-    !/* external libraries    */
-
-    USE robufort_development
-
-    !/* external objects    */
-
-    INTEGER, INTENT(IN)             :: n
-
-    DOUBLE PRECISION, INTENT(OUT)   :: rslt
-    DOUBLE PRECISION, INTENT(IN)    :: x(n)
-
-!------------------------------------------------------------------------------
-! Algorithm
-!------------------------------------------------------------------------------
-
-   CALL debug_criterion_function(rslt, x, n)
-
-END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE wrapper_debug_criterion_derivative(rslt, x, n)
-
-    !/* external libraries    */
-
-    USE robufort_development
-
-    !/* external objects    */
-
-    INTEGER, INTENT(IN)             :: n
-
-    DOUBLE PRECISION, INTENT(OUT)   :: rslt(n + 1)
-    DOUBLE PRECISION, INTENT(IN)    :: x(n)
-
-!-------------------------------------------------------------------------------
-! Algorithm
-!-------------------------------------------------------------------------------
-
-    CALL debug_criterion_derivative(rslt, x, n)
 
 END SUBROUTINE
 !*******************************************************************************

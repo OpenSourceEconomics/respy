@@ -17,6 +17,48 @@ from modules.clsMail import MailCls
 ''' Auxiliary functions.
 '''
 
+def build_f2py_testing():
+    """ Build the F2PY testing interface for testing.
+    """
+    os.chdir('modules')
+
+    # Build static library
+    compiler_options = '-O3 -fpic'
+
+    files = ['robufort_program_constants.f90', 'robufort_auxiliary.f90',
+                 'robufort_slsqp.f90', 'robufort_testing.f90']
+
+    for file_ in files:
+        os.system('gfortran ' + compiler_options + ' -c ' + file_)
+
+    os.system('gfortran ' + compiler_options + ' --fixed-form -c original_slsqp.f')
+
+    os.system('ar crs libfort_testing.a *.o *.mod')
+
+    # Prepare directory structure
+    for dir_ in ['include', 'lib']:
+        try:
+            shutil.rmtree(dir_)
+        except OSError:
+                pass
+        try:
+            os.makedirs(dir_)
+        except OSError:
+            pass
+
+    # Finalize static library
+    module_files = glob.glob('*.mod')
+    for file_ in module_files:
+        shutil.move(file_, 'include/')
+    shutil.move('libfort_testing.a', 'lib/')
+
+    # Build interface
+    os.system('f2py3 -c -m  f2py_testing f2py_interface_testing.f90 -Iinclude -Llib '
+            '-lfort_testing')
+
+    # Finish
+    os.chdir('../')
+
 
 def write_disturbances(init_dict):
     """ Write out disturbances to potentially align the different
@@ -135,39 +177,8 @@ def finish(dict_, HOURS, notification):
 def cleanup():
     """ Cleanup after test battery.
     '"""
-    files = []
 
-    files = files + glob.glob('*.robupy.*')
-
-    files = files + glob.glob('*.ini')
-
-    files = files + glob.glob('*.pkl')
-
-    files = files + glob.glob('*.txt')
-
-    files = files + glob.glob('*.dat')
-
-    files = files + glob.glob('modules/dp3asim')
-
-    files = files + glob.glob('.write_out')
-
-    for file_ in files:
-
-        try:
-
-            os.remove(file_)
-
-        except OSError:
-
-            pass
-
-        try:
-
-            shutil.rmtree(file_)
-
-        except OSError:
-
-            pass
+    os.system('./clean')
 
 def compile_package(which):
     """ Compile toolbox
@@ -189,7 +200,7 @@ def compile_package(which):
     if which == 'fast':
         cmd += ' --fast'
 
-    cmd += ' > /dev/null 2>&1'
+    #cmd += ' > /dev/null 2>&1'
 
     os.system(cmd)
 
