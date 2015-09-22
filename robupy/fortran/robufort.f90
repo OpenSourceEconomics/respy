@@ -216,8 +216,8 @@ SUBROUTINE read_specification(num_periods, delta, level, measure, coeffs_A, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE get_disturbances(periods_eps_relevant, level, eps_cholesky, shocks, seed, &
-                is_debug, is_zero) 
+SUBROUTINE get_disturbances(periods_eps_relevant, level, eps_cholesky, & 
+                shocks, seed, is_debug, is_zero) 
 
     !/* external objects    */
 
@@ -241,9 +241,6 @@ SUBROUTINE get_disturbances(periods_eps_relevant, level, eps_cholesky, shocks, s
     INTEGER(our_int)                :: period
     INTEGER(our_int)                :: j
     INTEGER(our_int)                :: i
-
-    REAL(our_dble)                  :: mean(4)
-    REAL(our_dble)                  :: cov(4, 4)
     
     LOGICAL                         :: READ_IN
 
@@ -285,46 +282,55 @@ SUBROUTINE get_disturbances(periods_eps_relevant, level, eps_cholesky, shocks, s
 
     ELSE
 
-        mean = zero_dble
- 
-        cov = zero_dble
-        DO j = 1, 4
-            cov(j, j) = one_dble
-        END DO
- 
-
         DO period = 1, num_periods
-            CALL multivariate_normal(periods_eps_relevant(period, :, :), mean, & 
-                        cov)
+
+            CALL multivariate_normal(periods_eps_relevant(period, :, :))
+        
         END DO
 
     END IF
 
     ! Transformation in case of risk-only
     IF (level .EQ. zero_dble) THEN
+        
         DO period = 1, num_periods
+        
             ! Apply variance change
             DO i = 1, num_draws
+        
                 periods_eps_relevant(period, i:i, :) = &
                     TRANSPOSE(MATMUL(eps_cholesky, TRANSPOSE(periods_eps_relevant(period, i:i, :))))
+        
             END DO
+        
             ! Transform disturbance for occupations
             DO j = 1, 2
+        
                 periods_eps_relevant(period, :, j) = &
                     EXP(periods_eps_relevant(period, :, j))
+        
             END DO
+        
         END DO
+    
     END IF
 
     ! Special case of absence randomness. Note that the disturbances for the 
     ! two occupations are set to one instead of zero.
     IF (is_zero) THEN
+
         periods_eps_relevant = zero_dble
+
         DO period = 1, num_periods
+
             DO j = 1, 2
+
                 periods_eps_relevant(period, :, j) = one_dble
+
             END DO
+
         END DO
+
     END IF
 
 END SUBROUTINE

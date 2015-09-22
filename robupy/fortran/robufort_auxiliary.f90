@@ -582,27 +582,59 @@ SUBROUTINE multivariate_normal(draws, mean, covariance)
 
     !/* external objects    */
 
-    REAL(our_dble), INTENT(OUT)     :: draws(:, :)
-    REAL(our_dble), INTENT(IN)      :: mean(:)
-    REAL(our_dble), INTENT(IN)      :: covariance(:, :)
+    REAL(our_dble), INTENT(OUT)           :: draws(:, :)
+    REAL(our_dble), INTENT(IN), OPTIONAL  :: mean(:)
+    REAL(our_dble), INTENT(IN), OPTIONAL  :: covariance(:, :)
     
     !/* internal objects    */
     
-    INTEGER(our_int)                :: i
     INTEGER(our_int)                :: num_draws
     INTEGER(our_int)                :: dim
-    
-    REAL(our_dble), ALLOCATABLE     :: z(:, :)
+    INTEGER(our_int)                :: i
+    INTEGER(our_int)                :: j  
+
+    REAL(our_dble), ALLOCATABLE     :: covariance_internal(:, :)
+    REAL(our_dble), ALLOCATABLE     :: mean_internal(:)
     REAL(our_dble), ALLOCATABLE     :: ch(:, :)
+    REAL(our_dble), ALLOCATABLE     :: z(:, :)
 
 !------------------------------------------------------------------------------- 
 ! Algorithm
 !------------------------------------------------------------------------------- 
-  
+
     ! Auxiliary objects
     num_draws = SIZE(draws, 1)
 
     dim       = SIZE(draws, 2)
+
+    ! Handle optional arguments
+    ALLOCATE(mean_internal(dim)); ALLOCATE(covariance_internal(dim, dim))
+
+    IF (PRESENT(mean)) THEN
+
+      mean_internal = mean
+
+    ELSE
+
+      mean_internal = zero_dble
+
+    END IF
+
+    IF (PRESENT(covariance)) THEN
+
+      covariance_internal = covariance
+
+    ELSE
+
+      covariance_internal = zero_dble
+
+      DO j = 1, dim
+
+        covariance_internal(j, j) = one_dble
+
+      END DO
+
+    END IF
 
     ! Allocate containers
     ALLOCATE(z(dim, 1)); ALLOCATE(ch(dim, dim))
@@ -611,14 +643,14 @@ SUBROUTINE multivariate_normal(draws, mean, covariance)
     ch = zero_dble
 
     ! Construct Cholesky decomposition
-    CALL cholesky(ch, covariance) 
+    CALL cholesky(ch, covariance_internal) 
 
     ! Draw deviates
     DO i = 1, num_draws   
        
        CALL standard_normal(z(:, 1))
        
-       draws(i, :) = MATMUL(ch, z(:, 1)) + mean(:)  
+       draws(i, :) = MATMUL(ch, z(:, 1)) + mean_internal(:)  
     
     END DO
 
