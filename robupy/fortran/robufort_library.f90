@@ -101,7 +101,7 @@ SUBROUTINE get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
 
     ! Transform disturbances
     DO i = 1, num_draws
-        eps_relevant(i:i, :) = MATMUL(eps_cholesky, TRANSPOSE(eps_standard(i:i,:)))
+        eps_relevant(i:i, :) = TRANSPOSE(MATMUL(eps_cholesky, TRANSPOSE(eps_standard(i:i,:))))
         eps_relevant(i, :2) = eps_relevant(i, :2) + x_internal
     END DO
 
@@ -325,7 +325,7 @@ SUBROUTINE criterion(emax_simulated, payoffs_ex_post, future_payoffs, &
 
     ! Transform disturbances
     DO i = 1, num_draws
-        eps_relevant(i:i, :) = MATMUL(eps_cholesky, TRANSPOSE(eps_standard(i:i,:)))
+        eps_relevant(i:i, :) = TRANSPOSE(MATMUL(eps_cholesky, TRANSPOSE(eps_standard(i:i,:))))
         eps_relevant(i, :2) = eps_relevant(i, :2) + x
     END DO
 

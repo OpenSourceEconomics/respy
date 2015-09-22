@@ -517,7 +517,8 @@ def test_99():
     constraints['debug'] = 'True'
     constraints['measure'] = 'kl'
 
-    # Just making sure that it also works for this special case.
+    # Just making sure that it also works for this special case. Note that
+    # this special case is currently only working in the risk case.
     if np.random.choice([True, False, False, False]):
         constraints['level'] = 0.00
         constraints['eps_zero'] = True

@@ -306,7 +306,7 @@ SUBROUTINE get_disturbances(periods_eps_relevant, level, eps_cholesky, shocks, s
             ! Apply variance change
             DO i = 1, num_draws
                 periods_eps_relevant(period, i:i, :) = &
-                    MATMUL(eps_cholesky, TRANSPOSE(periods_eps_relevant(period, i:i, :)))
+                    TRANSPOSE(MATMUL(eps_cholesky, TRANSPOSE(periods_eps_relevant(period, i:i, :))))
             END DO
             ! Transform disturbance for occupations
             DO j = 1, 2
