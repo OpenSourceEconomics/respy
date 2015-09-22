@@ -316,13 +316,13 @@ SUBROUTINE get_disturbances(periods_eps_relevant, level, eps_cholesky, shocks, s
         END DO
     END IF
 
-    ! Special case of absence randomness
+    ! Special case of absence randomness. Note that the disturbances for the 
+    ! two occupations are set to one instead of zero.
     IF (is_zero) THEN
         periods_eps_relevant = zero_dble
         DO period = 1, num_periods
             DO j = 1, 2
-                periods_eps_relevant(period, :, j) = &
-                    EXP(periods_eps_relevant(period, :, j))
+                periods_eps_relevant(period, :, j) = one_dble
             END DO
         END DO
     END IF

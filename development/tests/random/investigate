@@ -32,7 +32,7 @@ label, seed = '99', 8466
 ''' Error Reproduction
 '''
 
-if False:
+if True:
 
 
     np.random.seed(seed)
@@ -55,10 +55,10 @@ from robupy.tests.random_init import generate_random_dict
 from robupy.tests.random_init import print_random_dict
 from robupy.tests.random_init import generate_init
 
-if True:
+if False:
 
     compile_package('fast', False)
-    
+
     os.system('robupy-solve --model f2py.robupy.ini')
 
     f2py_data = pd.read_csv('data.robupy.dat', delim_whitespace=True)
