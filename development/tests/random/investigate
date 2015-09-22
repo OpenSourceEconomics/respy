@@ -16,19 +16,23 @@ sys.path.insert(0, os.environ['ROBUPY'])
 #from robupy.tests.tests import Tests
 import modules.battery as Tests
 
-from robupy import *
+from robupy import read, solve, simulate
+import pandas as pd
+from robupy.tests.random_init import generate_random_dict
+from robupy.tests.random_init import print_random_dict
+from robupy.tests.random_init import generate_init
 
 # project library
 from modules.auxiliary import *
 
 ''' Request
 '''
-label, seed = '99', 74566
+label, seed = '99', 8466
 
 ''' Error Reproduction
 '''
 
-if True:
+if False:
 
 
     np.random.seed(seed)
@@ -41,17 +45,20 @@ if True:
         test()
         count = count + 1
 
-        if count == 2:
-            break
+#        if count == 10:
+#            break
 
     #check_ambiguity_optimization()
+from pandas.util.testing import assert_frame_equal
 
 if True:
-    pass
 
-    #robupy_obj = read('test.robupy.ini')
+    os.system('robupy-solve --model f2py.robupy.ini')
 
-    #robupy_obj = solve(robupy_obj)
+    f2py_data = pd.read_csv('data.robupy.dat', delim_whitespace=True)
 
-    #simulate(robupy_obj)
+    os.system('robupy-solve --model fortran.robupy.ini')
 
+    fortran_data = pd.read_csv('data.robupy.dat', delim_whitespace=True)
+
+    assert_frame_equal(f2py_data, fortran_data)

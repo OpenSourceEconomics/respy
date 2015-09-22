@@ -41,6 +41,7 @@ def create_disturbances(robupy_obj, is_simulation):
     # we draw a new set of standard deviations
     if debug and os.path.isfile('disturbances.txt'):
         standard_deviates = read_disturbances(robupy_obj)
+        standard_deviates = standard_deviates[:num_periods, :num_draws, :]
     else:
         np.random.seed(seed)
         standard_deviates = np.random.multivariate_normal(np.zeros(4),

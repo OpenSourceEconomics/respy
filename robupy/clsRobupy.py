@@ -175,6 +175,8 @@ class RobupyCls(MetaCls):
 
         num_draws = self.attr['num_draws']
 
+        eps_zero = self.attr['eps_zero']
+
         measure = self.attr['measure']
 
         edu_max = self.attr['edu_max']
@@ -203,6 +205,8 @@ class RobupyCls(MetaCls):
         # Constraints
         if is_ambiguous and version in ['F2PY', 'FORTRAN']:
             assert (measure in ['kl'])
+        if is_ambiguous:
+            assert (eps_zero is False)
 
         # Seeds
         for seed in [seed_solution, seed_simulation]:

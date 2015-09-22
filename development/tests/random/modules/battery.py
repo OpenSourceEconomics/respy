@@ -518,9 +518,9 @@ def test_99():
     constraints['measure'] = 'kl'
 
     # Just making sure that it also works for this special case.
-    # TODO: Is this working with FORTRAN as well?, SPECIAL for AMBIG?
-    #if np.random.choice([True, False]):
-    #    constraints['eps_zero'] = True
+    if np.random.choice([True, False, False, False]):
+        constraints['level'] = 0.00
+        constraints['eps_zero'] = True
 
     # Generate random initialization file. Since this exercise is only for
     # debugging purposes, the codes uses the same disturbances for the
@@ -542,7 +542,7 @@ def test_99():
     base = None
 
     for version in ['PYTHON', 'F2PY', 'FORTRAN']:
-        print(version, init_dict['AMBIGUITY']['level'])
+
         # Prepare initialization file
         init_dict['PROGRAM']['version'] = version
 
@@ -561,4 +561,3 @@ def test_99():
             base = data_frame.copy()
 
         assert_frame_equal(base, data_frame)
-        print('passed')

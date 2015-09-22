@@ -211,7 +211,7 @@ SUBROUTINE read_specification(num_periods, delta, level, measure, coeffs_A, &
         ! AUXILIARY
         READ(1, *) is_zero
 
-    CLOSE(1, STATUS='delete')
+    !CLOSE(1, STATUS='delete')
 
 END SUBROUTINE
 !*******************************************************************************
@@ -234,22 +234,23 @@ SUBROUTINE get_disturbances(periods_eps_relevant, level, eps_cholesky, shocks, s
 
     !/* internal objects    */
 
+    INTEGER(our_int)                :: seed_inflated(15)
     INTEGER(our_int)                :: num_periods
+    INTEGER(our_int)                :: seed_size
     INTEGER(our_int)                :: num_draws
     INTEGER(our_int)                :: period
-    INTEGER(our_int)                :: j, i
+    INTEGER(our_int)                :: j
+    INTEGER(our_int)                :: i
 
     REAL(our_dble)                  :: mean(4)
     REAL(our_dble)                  :: cov(4, 4)
     
     LOGICAL                         :: READ_IN
 
-    INTEGER(our_int)                :: seed_size
-    INTEGER(our_int)                :: seed_inflated(15)
-
 !------------------------------------------------------------------------------- 
 ! Algorithm
 !------------------------------------------------------------------------------- 
+
     ! Auxiliary objects
     num_periods = SIZE(periods_eps_relevant, 1)
 
@@ -262,102 +263,64 @@ SUBROUTINE get_disturbances(periods_eps_relevant, level, eps_cholesky, shocks, s
 
     CALL RANDOM_SEED(put=seed_inflated)
 
-
-    ! Initialize mean 
-    IF (is_zero .EQV. .True.) THEN
-
-        periods_eps_relevant = zero_dble
-
-    ELSE
-        
-        mean = zero_dble
-        
-        IF (level .GT. zero_dble) THEN
-            cov = shocks
-        ELSE
-            cov = zero_dble
-            DO j = 1, 4
-            cov(j, j) = one_dble
-            END DO
- 
-        END IF
-        
-
-        DO period = 1, num_periods
-           
-               CALL multivariate_normal(periods_eps_relevant(period, :, :), mean, & 
-                        cov)
-            
-        END DO
-
-
-    END IF
-
-    ! Transform for occupations
-    ! Transform for occupations
-    IF (level .GT. zero_dble) THEN
-
-    ELSE
-    DO j = 1, 2
-        periods_eps_relevant(:, :, j) = EXP(periods_eps_relevant(:, :, j))
-    END DO
-END IF
-
-    ! Check applicability
-    PRINT *, 'NEEDS CLEANUP AND RIST ONLY TODO'
-    ! TODO: THIS NEEDS ADJUSTED TO TRANSOFRM TO RELEVANT DISTURBANCES IN CASE
-    ! OF RISK ONLY
+    ! Create standard deviates
     INQUIRE(FILE='disturbances.txt', EXIST=READ_IN)
 
     IF ((READ_IN .EQV. .True.)  .AND. (is_debug .EQV. .True.)) THEN
 
-      OPEN(12, file='disturbances.txt')
-
-      DO period = 1, num_periods
-        PRINT *, ' I AM READING'
-        DO j = 1, num_draws
-        
-          2000 FORMAT(4(1x,f15.10))
-          READ(12,2000) periods_eps_relevant(period, j, :)
-        
-        END DO
-      
-      END DO
-
-      CLOSE(12)
-    ! Transform for occupations
-    IF (level .GT. zero_dble) THEN
-
-    ELSE
+        OPEN(12, file='disturbances.txt')
 
         DO period = 1, num_periods
 
-        ! Transform disturbances
-        DO i = 1, num_draws
-    !        eps_relevant(i:i, :) = MATMUL(eps_cholesky, TRANSPOSE(eps_standard(i:i,:)))
-
-        periods_eps_relevant(period, i:i, :) = MATMUL(eps_cholesky, TRANSPOSE(periods_eps_relevant(period, i:i, :)))
-
+            DO j = 1, num_draws
+        
+                2000 FORMAT(4(1x,f15.10))
+                READ(12,2000) periods_eps_relevant(period, j, :)
+        
+            END DO
+      
         END DO
 
-        ! Transform disturbance for occupations
-        DO j = 1, 2
+        CLOSE(12)
 
-            periods_eps_relevant(period, :, j) = EXP(periods_eps_relevant(period, :, j))
+    ELSE
 
+        mean = zero_dble
+ 
+        cov = zero_dble
+        DO j = 1, 4
+            cov(j, j) = one_dble
         END DO
+ 
 
-
+        DO period = 1, num_periods
+            CALL multivariate_normal(periods_eps_relevant(period, :, :), mean, & 
+                        cov)
         END DO
-
-
-
-
 
     END IF
+
+    ! Transformation in case of risk-only
+    IF (level .EQ. zero_dble) THEN
+        DO period = 1, num_periods
+            ! Apply variance change
+            DO i = 1, num_draws
+                periods_eps_relevant(period, i:i, :) = &
+                    MATMUL(eps_cholesky, TRANSPOSE(periods_eps_relevant(period, i:i, :)))
+            END DO
+            ! Transform disturbance for occupations
+            DO j = 1, 2
+                periods_eps_relevant(period, :, j) = &
+                    EXP(periods_eps_relevant(period, :, j))
+            END DO
+        END DO
     END IF
 
-    
+    ! Special case of absence randomness
+    IF (is_zero) THEN
+        periods_eps_relevant = zero_dble
+    END IF
+
 END SUBROUTINE
 !******************************************************************************* 
 !******************************************************************************* 
