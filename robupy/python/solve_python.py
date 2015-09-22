@@ -14,10 +14,6 @@ from robupy.auxiliary import create_disturbances
 from robupy.auxiliary import read_disturbances
 
 import robupy.python.py.python_library as python_library
-try:
-    import robupy.python.f2py.f2py_library as f2py_library
-except ImportError:
-    pass
 
 # Logging
 logger = logging.getLogger('ROBUPY_SOLVE')
@@ -155,6 +151,7 @@ def _wrapper_calculate_payoffs_ex_ante(robupy_obj):
             num_periods, states_number_period, states_all, edu_start,
             coeffs_a, coeffs_b, coeffs_edu, coeffs_home, max_states_period)
     else:
+        import robupy.python.f2py.f2py_library as f2py_library
         periods_payoffs_ex_ante = \
             f2py_library.wrapper_calculate_payoffs_ex_ante(num_periods,
             states_number_period, states_all, edu_start, coeffs_a, coeffs_b,
@@ -189,6 +186,7 @@ def _wrapper_create_state_space(robupy_obj):
             python_library.create_state_space(num_periods, edu_start, edu_max,
                 min_idx)
     else:
+        import robupy.python.f2py.f2py_library as f2py_library
         states_all, states_number_period, mapping_state_idx = \
             f2py_library.wrapper_create_state_space(num_periods, edu_start,
                 edu_max, min_idx)
@@ -246,6 +244,7 @@ def _wrapper_backward_induction_procedure(robupy_obj, periods_eps_relevant,
                 periods_payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,
                 states_all, delta, is_debug, eps_cholesky, level, measure)
     else:
+        import robupy.python.f2py.f2py_library as f2py_library
         periods_emax, periods_payoffs_ex_post, periods_future_payoffs = \
             f2py_library.wrapper_backward_induction(num_periods,
                 max_states_period, periods_eps_relevant, num_draws,

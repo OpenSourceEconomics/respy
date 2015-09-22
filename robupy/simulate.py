@@ -24,10 +24,6 @@ from robupy.auxiliary import replace_missing_values
 from robupy.auxiliary import create_disturbances
 
 import robupy.python.py.python_library as python_library
-try:
-    import robupy.python.f2py.f2py_library as f2py_library
-except ImportError:
-    pass
 
 # Logging
 logger = logging.getLogger('ROBUPY_SIMULATE')
@@ -103,6 +99,7 @@ def _wrapper_simulate_sample(robupy_obj, periods_eps_relevant):
             num_periods, mapping_state_idx, periods_payoffs_ex_ante,
             periods_eps_relevant, edu_max, edu_start, periods_emax, delta)
     else:
+        import robupy.python.f2py.f2py_library as f2py_library
         data_frame = f2py_library.wrapper_simulate_sample(num_agents,
             states_all, num_periods, mapping_state_idx, periods_payoffs_ex_ante,
             periods_eps_relevant, edu_max, edu_start, periods_emax, delta)

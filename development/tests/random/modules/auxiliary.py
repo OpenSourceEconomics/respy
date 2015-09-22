@@ -189,17 +189,27 @@ def compile_package(which, hidden=True):
     # Compile package
     os.chdir(package_dir)
 
-    os.system('./waf distclean > /dev/null 2>&1')
+    while True:
 
-    cmd = './waf configure build '
+        os.system('./waf distclean > /dev/null 2>&1')
 
-    if which == 'fast':
-        cmd += ' --fortran --debug'
+        cmd = './waf configure build '
 
-    if hidden:
-        cmd += ' > /dev/null 2>&1'
+        if which == 'fast':
+            cmd += ' --fortran --debug'
 
-    os.system(cmd)
+        if hidden:
+            cmd += ' > /dev/null 2>&1'
+
+        os.system(cmd)
+
+        # In a small number of cases the build process seems to fail for no
+        # reason.
+        try:
+            import robupy.python.f2py.f2py_library
+            break
+        except ImportError:
+            pass
 
     os.chdir(tests_dir)
 
