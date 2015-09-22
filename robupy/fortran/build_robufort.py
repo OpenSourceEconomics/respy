@@ -12,15 +12,15 @@ import copy
 import os
 
 # module-wide variables
-DEBUG_OPTIONS = ' -O2 -fimplicit-none  -Wall  -Wline-truncation ' \
+DEBUG_OPTIONS = ' -O2 -fimplicit-none  -Wall -Wline-truncation' \
                 ' -Wcharacter-truncation  -Wsurprising  -Waliasing' \
-                ' -Wimplicit-interface  -Wunused-parameter  -fwhole-file ' \
-                ' -fcheck=all  -std=f2008  -pedantic  -fbacktrace'
+                ' -Wimplicit-interface  -Wunused-parameter  -fwhole-file' \
+                ' -fcheck=all  -fbacktrace '
 
 PRODUCTION_OPTIONS = '-O3'
 
 
-def robufort_build(self, is_debug=False, is_inlining=False):
+def robufort_build(self, is_debug=False, is_optimization=False):
     """ Building the ROBUFORT executable for high speed execution.
     """
     # Compilation of executable for fastest performance
@@ -40,10 +40,10 @@ def robufort_build(self, is_debug=False, is_inlining=False):
     # manual inlining is required due to speed considerations or not.
     # Refraining from manual inlining is useful during development and
     # working on extensions.
-    if is_inlining:
-        _with_inlining(compiler_options)
+    if is_optimization:
+        _with_optimization(compiler_options)
     else:
-        _without_inlining(compiler_options)
+        _without_optimization(compiler_options)
 
     os.unlink('robufort_extended.f90')
 
@@ -52,7 +52,7 @@ def robufort_build(self, is_debug=False, is_inlining=False):
     os.chdir(current_directory)
 
 
-def _without_inlining(compiler_options):
+def _without_optimization(compiler_options):
     """ This function creates the executable without the inlining. Minor
     preparations are required to add the import of the robufort library to
     the main program. This is not done in the actual code as it otherwise
@@ -84,7 +84,7 @@ def _without_inlining(compiler_options):
     os.system(cmd)
 
 
-def _with_inlining(compiler_options):
+def _with_optimization(compiler_options):
     """ This function performs the manual inlining.
     """
     # Performance considerations require an automatic inlining of the core

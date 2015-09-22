@@ -21,48 +21,58 @@ def options(opt):
 
     opt.load('compiler_fc')
 
-    opt.add_option('--fast', action='store_true', dest='fast', default=False,
-                   help='compile FORTRAN library')
+    opt.add_option('--fortran', action='store_true', dest='is_fortran',
+                   default=False, help='build FORTRAN implementations')
 
-    opt.add_option('--test', action='store_true', dest='test', default=False,
-                   help='run test battery')
+    opt.add_option('--test', action='store_true', dest='is_test',
+                   default=False,help='run test battery')
 
-    opt.add_option('--debug', action='store_true', dest='debug', default=False,
-                   help='use debug compiler options')
+    opt.add_option('--debug', action='store_true', dest='is_debug',
+                   default=False, help='use debug compiler options')
 
-    opt.add_option('--inlining', action='store_true', dest='inlining',
-                   default=False, help='perform manual inlining')
+    opt.add_option('--optimization', action='store_true',
+                   dest='is_optimization', default=False,
+                   help='perform manual code optimization')
 
 
 def configure(conf):
 
     # Distribute options
-    fast = conf.options.fast
+    is_fortran = conf.options.is_fortran
+    is_optimization = conf.options.is_optimization
+    is_debug = conf.options.is_debug
+
+    # Check options
+    if is_debug or is_optimization:
+        assert (is_fortran is True)
+
+    if is_optimization:
+        raise NotImplementedError('... feature currently not implemented')
 
     # Construct environment variables
     conf.env.project_paths = dict()
 
     conf.env.project_paths['ROBUPY'] = os.getcwd()
 
-    if fast:
+    if is_fortran:
         conf.load('compiler_fc')
 
 
 def build(bld):
 
     # Distribute options
-    fast = bld.options.fast
+    is_fortran = bld.options.is_fortran
 
-    test = bld.options.test
+    is_test = bld.options.is_test
 
     # Start from a clean slate
     distclean(all_=False)
 
-    if fast:
+    if is_fortran:
 
         bld.recurse('fortran')
 
-    if test:
+    if is_test:
 
         os.chdir('tests')
 

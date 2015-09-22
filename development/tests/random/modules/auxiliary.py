@@ -194,7 +194,7 @@ def compile_package(which, hidden=True):
     cmd = './waf configure build '
 
     if which == 'fast':
-        cmd += ' --fast'
+        cmd += ' --fortran --debug'
 
     if hidden:
         cmd += ' > /dev/null 2>&1'
