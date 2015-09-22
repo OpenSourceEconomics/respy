@@ -203,12 +203,12 @@ def test_93():
                 mapping_state_idx, states_all, num_periods, periods_emax,
                 eps_cholesky, delta, debug, cov, level)
 
-        # Check equality. If not equal up to the tolerance, I also check
+        # Check equality. If not equal up to the tolerance, also check
         # whether the result from the FORTRAN implementation is even better.
         try:
             np.testing.assert_allclose(py, f, rtol=1e-05, atol=1e-06)
         except AssertionError:
-            if _criterion(f) < _criterion(py):
+            if _criterion(f, *args) < _criterion(py, *args):
                 pass
             else:
                 raise AssertionError

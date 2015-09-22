@@ -169,6 +169,7 @@ class Tests(object):
         constraints = dict()
         constraints['eps_zero'] = True
         constraints['version'] = 'PYTHON'
+        constraints['level'] = 0.0
 
         # The calculation of the KL does not work for this case.
         constraints['measure'] = 'absolute'

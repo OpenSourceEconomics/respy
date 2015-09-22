@@ -13,21 +13,13 @@ if not hasattr(sys, 'real_prefix'):
 # project library
 sys.path.insert(0, os.environ['ROBUPY'])
 
-#from robupy.tests.tests import Tests
-import modules.battery as Tests
-
-from robupy import read, solve, simulate
-import pandas as pd
-from robupy.tests.random_init import generate_random_dict
-from robupy.tests.random_init import print_random_dict
-from robupy.tests.random_init import generate_init
 
 # project library
 from modules.auxiliary import *
 
 ''' Request
 '''
-label, seed = '98', 49
+label, seed = '93', 49336
 
 ''' Error Reproduction
 '''
@@ -38,33 +30,18 @@ if True:
     np.random.seed(seed)
 
     #compile_package('fast')
-    test = getattr(Tests, 'test_' + label)
+    try:
+        import modules.battery as Tests
+        test = getattr(Tests, 'test_' + label)
+    except AttributeError:
+        from robupy.tests.tests import Tests
+        test = getattr(Tests, 'test_' + label)
+
     count = 0
     while True:
         print('investigate ', count)
         test()
         count = count + 1
 
-        if count == 1000:
+        if count == 1:
             break
-
-    #check_ambiguity_optimization()
-from pandas.util.testing import assert_frame_equal
-from modules.auxiliary import compile_package
-from robupy.tests.random_init import generate_random_dict
-from robupy.tests.random_init import print_random_dict
-from robupy.tests.random_init import generate_init
-
-if False:
-
-    compile_package('fast', False)
-
-    os.system('robupy-solve --model f2py.robupy.ini')
-
-    f2py_data = pd.read_csv('data.robupy.dat', delim_whitespace=True)
-
-    os.system('robupy-solve --model fortran.robupy.ini')
-
-    fortran_data = pd.read_csv('data.robupy.dat', delim_whitespace=True)
-
-    assert_frame_equal(f2py_data, fortran_data)
