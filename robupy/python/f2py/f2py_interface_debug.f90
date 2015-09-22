@@ -9,7 +9,7 @@
 SUBROUTINE wrapper_get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
                 future_payoffs, num_draws, eps_standard, period, k, &
                 payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
-                states_all, num_periods, periods_emax, delta, debug, &
+                states_all, num_periods, periods_emax, delta, is_debug, &
                 eps_cholesky, level, measure)
 
     !/* external libraries    */
@@ -42,7 +42,7 @@ SUBROUTINE wrapper_get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
     DOUBLE PRECISION, INTENT(IN)    :: delta
     DOUBLE PRECISION, INTENT(IN)    :: level
 
-    LOGICAL, INTENT(IN)             :: debug
+    LOGICAL, INTENT(IN)             :: is_debug
 
     CHARACTER, INTENT(IN)           :: measure
 
@@ -54,7 +54,7 @@ SUBROUTINE wrapper_get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
     CALL get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
                 future_payoffs, num_draws, eps_standard, period, k, & 
                 payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
-                states_all, num_periods, periods_emax, delta, debug, & 
+                states_all, num_periods, periods_emax, delta, is_debug, &
                 eps_cholesky, level, measure)
 
 END SUBROUTINE
@@ -63,7 +63,7 @@ END SUBROUTINE
 SUBROUTINE wrapper_criterion_approx_gradient(rslt, x, eps, num_draws, &
                 eps_standard, period, k, payoffs_ex_ante, edu_max, &
                 edu_start, mapping_state_idx, states_all, num_periods, &
-                periods_emax, eps_cholesky, delta, debug)
+                periods_emax, eps_cholesky, delta, is_debug)
 
     !/* external libraries    */
 
@@ -94,7 +94,7 @@ SUBROUTINE wrapper_criterion_approx_gradient(rslt, x, eps, num_draws, &
     INTEGER, INTENT(IN)             :: period
     INTEGER, INTENT(IN)             :: k
 
-    LOGICAL, INTENT(IN)             :: debug
+    LOGICAL, INTENT(IN)             :: is_debug
 
 !-------------------------------------------------------------------------------
 ! Algorithm
@@ -104,7 +104,7 @@ SUBROUTINE wrapper_criterion_approx_gradient(rslt, x, eps, num_draws, &
     CALL criterion_approx_gradient(rslt, x, eps, num_draws, eps_standard, &
             period, k, payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
             states_all, num_periods, periods_emax, eps_cholesky, delta, &
-            debug)
+            is_debug)
 
 END SUBROUTINE
 !*******************************************************************************
@@ -158,7 +158,7 @@ END SUBROUTINE
 SUBROUTINE wrapper_criterion(emax_simulated, payoffs_ex_post, future_payoffs, &
                 x, num_draws, eps_standard, period, k, payoffs_ex_ante, &
                 edu_max, edu_start, mapping_state_idx, states_all, &
-                num_periods, periods_emax, eps_cholesky, delta, debug)
+                num_periods, periods_emax, eps_cholesky, delta, is_debug)
 
     !/* external libraries    */
 
@@ -190,7 +190,7 @@ SUBROUTINE wrapper_criterion(emax_simulated, payoffs_ex_post, future_payoffs, &
     INTEGER, INTENT(IN)             :: period
     INTEGER, INTENT(IN)             :: k
 
-    LOGICAL, INTENT(IN)             :: debug
+    LOGICAL, INTENT(IN)             :: is_debug
 
 !-------------------------------------------------------------------------------
 ! Algorithm
@@ -199,7 +199,7 @@ SUBROUTINE wrapper_criterion(emax_simulated, payoffs_ex_post, future_payoffs, &
     CALL criterion(emax_simulated, payoffs_ex_post, future_payoffs, &
                 x, num_draws, eps_standard, period, k, payoffs_ex_ante, &
                 edu_max, edu_start, mapping_state_idx, states_all, &
-                num_periods, periods_emax, eps_cholesky, delta, debug)
+                num_periods, periods_emax, eps_cholesky, delta, is_debug)
 
 END SUBROUTINE
 !*******************************************************************************

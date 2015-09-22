@@ -38,6 +38,8 @@ class RobupyCls(MetaCls):
 
         self.attr['edu_start'] = None
 
+        self.attr['is_debug'] = None
+
         self.attr['edu_max'] = None
 
         self.attr['shocks'] = None
@@ -47,8 +49,6 @@ class RobupyCls(MetaCls):
         self.attr['delta'] = None
 
         self.attr['store'] = None
-
-        self.attr['debug'] = None
 
         # Auxiliary object
         self.attr['min_idx'] = None
@@ -113,13 +113,13 @@ class RobupyCls(MetaCls):
 
             self.attr['version'] = init_dict['PROGRAM']['version']
 
+            self.attr['is_debug'] = init_dict['PROGRAM']['debug']
+
             self.attr['level'] = init_dict['AMBIGUITY']['level']
 
             self.attr['edu_max'] = init_dict['EDUCATION']['max']
 
             self.attr['store'] = init_dict['SOLUTION']['store']
-
-            self.attr['debug'] = init_dict['PROGRAM']['debug']
 
             self.attr['delta'] = init_dict['BASICS']['delta']
 
@@ -155,7 +155,7 @@ class RobupyCls(MetaCls):
         time the class is locked and if the package is running in debug mode.
         """
         # Check applicability
-        if (not self.is_first) and (not self.attr['debug']):
+        if (not self.is_first) and (not self.attr['is_debug']):
             return
 
         # Distribute class attributes
@@ -175,6 +175,8 @@ class RobupyCls(MetaCls):
 
         num_draws = self.attr['num_draws']
 
+        is_debug = self.attr['is_debug']
+
         eps_zero = self.attr['eps_zero']
 
         measure = self.attr['measure']
@@ -182,8 +184,6 @@ class RobupyCls(MetaCls):
         edu_max = self.attr['edu_max']
 
         shocks = self.attr['shocks']
-
-        debug = self.attr['debug']
 
         delta = self.attr['delta']
 
@@ -194,7 +194,7 @@ class RobupyCls(MetaCls):
         is_first = self.is_first
 
         # Debug status
-        assert (debug in [True, False])
+        assert (is_debug in [True, False])
 
         # Ambiguity in environment
         assert (is_ambiguous in [True, False])
@@ -252,7 +252,7 @@ class RobupyCls(MetaCls):
         assert (edu_max >= edu_start)
 
         # Debugging mode
-        assert (debug in [True, False])
+        assert (is_debug in [True, False])
 
         # Discount factor
         assert (np.isfinite(delta))

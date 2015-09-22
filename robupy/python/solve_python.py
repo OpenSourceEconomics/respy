@@ -31,9 +31,9 @@ def solve_python(robupy_obj):
 
     is_ambiguous = robupy_obj.get_attr('is_ambiguous')
 
-    measure = robupy_obj.get_attr('measure')
+    is_debug = robupy_obj.get_attr('is_debug')
 
-    debug = robupy_obj.get_attr('debug')
+    measure = robupy_obj.get_attr('measure')
 
     level = robupy_obj.get_attr('level')
 
@@ -102,7 +102,7 @@ def solve_python(robupy_obj):
 
     # Summarize optimizations in case of ambiguity.
     # TODO: Work back in ..
-    #if debug and is_ambiguous:
+    #if is_debug and is_ambiguous:
     #    _summarize_ambiguity(robupy_obj)
 
     # Set flag that object includes the solution objects.
@@ -229,11 +229,11 @@ def _wrapper_backward_induction_procedure(robupy_obj, periods_eps_relevant,
 
     is_python = robupy_obj.get_attr('is_python')
 
+    is_debug = robupy_obj.get_attr('is_debug')
+
     edu_max = robupy_obj.get_attr('edu_max')
 
     delta = robupy_obj.get_attr('delta')
-
-    debug = robupy_obj.get_attr('debug')
 
     # Auxiliary objects
     max_states_period = max(states_number_period)
@@ -244,13 +244,13 @@ def _wrapper_backward_induction_procedure(robupy_obj, periods_eps_relevant,
             python_library.backward_induction(num_periods, max_states_period,
                 periods_eps_relevant, num_draws, states_number_period,
                 periods_payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,
-                states_all, delta, debug, eps_cholesky, level, measure)
+                states_all, delta, is_debug, eps_cholesky, level, measure)
     else:
         periods_emax, periods_payoffs_ex_post, periods_future_payoffs = \
             f2py_library.wrapper_backward_induction(num_periods,
                 max_states_period, periods_eps_relevant, num_draws,
                 states_number_period, periods_payoffs_ex_ante, edu_max,
-                edu_start, mapping_state_idx, states_all, delta, debug,
+                edu_start, mapping_state_idx, states_all, delta, is_debug,
                 eps_cholesky, level, measure)
 
     # Replace missing values
@@ -284,7 +284,7 @@ def _create_eps(robupy_obj):
 
     seed = robupy_obj.get_attr('seed_solution')
 
-    debug = robupy_obj.get_attr('debug')
+    is_debug = robupy_obj.get_attr('is_debug')
 
     # Initialize container
     periods_eps_relevant = np.tile(-99.00, (num_periods, num_draws, 4))
@@ -301,7 +301,7 @@ def _create_eps(robupy_obj):
     # development process.
     # TODO: UPdate comment, is also used for ROBUFORT, I alwas read in the
     # standard normal
-    if debug and os.path.isfile('disturbances.txt'):
+    if is_debug and os.path.isfile('disturbances.txt'):
         standard_deviates = read_disturbances(robupy_obj)
 
     if is_ambiguous:
@@ -403,12 +403,12 @@ def _start_ambiguity_logging(robupy_obj):
     # Distribute class attributes
     is_ambiguous = robupy_obj.get_attr('is_ambiguous')
 
-    debug = robupy_obj.get_attr('debug')
+    is_debug = robupy_obj.get_attr('is_debug')
 
     # Start logging if required
     if os.path.exists('ambiguity.robupy.log'):
         os.remove('ambiguity.robupy.log')
 
-    if debug and is_ambiguous:
+    if is_debug and is_ambiguous:
         open('ambiguity.robupy.log', 'w').close()
 

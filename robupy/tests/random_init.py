@@ -99,10 +99,10 @@ def generate_random_dict(constraints=None):
     dict_['SIMULATION']['agents'] = np.random.random_integers(1, MAX_AGENTS)
 
     # Shocks
-    cov = np.identity(4)
+    shocks = np.identity(4)
     for i, val in enumerate(np.random.uniform(0.05, 1, 4)):
-        cov[i, i] = val
-    dict_['SHOCKS'] = cov
+        shocks[i, i] = val
+    dict_['SHOCKS'] = shocks
 
     # Replace education
     if 'edu' in constraints.keys():

@@ -18,7 +18,7 @@ HUGE_FLOAT = 10e10
 
 def get_payoffs_ambiguity(num_draws, eps_standard, period, k, payoffs_ex_ante,
         edu_max, edu_start, mapping_state_idx, states_all, num_periods,
-        periods_emax, delta, debug, eps_cholesky, level, measure):
+        periods_emax, delta, is_debug, eps_cholesky, level, measure):
     """ Get worst case
     """
     # Initialize options.
@@ -26,17 +26,17 @@ def get_payoffs_ambiguity(num_draws, eps_standard, period, k, payoffs_ex_ante,
     options['maxiter'] = 100000000
 
     # Initialize optimization problem.
-    x0 = _get_start(debug)
+    x0 = _get_start(is_debug)
 
     # Collect arguments
     args = (num_draws, eps_standard, period, k, payoffs_ex_ante, edu_max,
             edu_start, mapping_state_idx, states_all, num_periods, periods_emax,
-            eps_cholesky, delta, debug)
+            eps_cholesky, delta, is_debug)
 
     # Run optimization
     if measure == 'absolute':
 
-        bounds = _prep_absolute(level, debug)
+        bounds = _prep_absolute(level, is_debug)
 
         opt = minimize(_criterion, x0, args, method='SLSQP', options=options,
                        bounds=bounds)
@@ -52,14 +52,14 @@ def get_payoffs_ambiguity(num_draws, eps_standard, period, k, payoffs_ex_ante,
         # is not satisfied, even though success is indicated. To ensure
         # a smooth and informative run of TEST_F in the random development
         # test battery the following checks are performed.
-        if debug:
+        if is_debug:
             opt = _correct_debugging(opt, x0, level, eps_standard, eps_cholesky,
                         num_periods, num_draws, period, k, payoffs_ex_ante,
                         edu_max, edu_start, periods_emax, states_all,
                         mapping_state_idx, delta)
 
     # Write result to file
-    if debug:
+    if is_debug:
         _write_result(period, k, opt)
 
     # Transformation of standard normal deviates to relevant distributions.
@@ -74,7 +74,7 @@ def get_payoffs_ambiguity(num_draws, eps_standard, period, k, payoffs_ex_ante,
             mapping_state_idx, delta)
 
     # Debugging
-    if debug:
+    if is_debug:
         checks_ambiguity('get_payoffs_ambiguity', simulated, opt)
 
     # Finishing
@@ -117,7 +117,7 @@ def _prep_kl(eps_cholesky, level):
     """ Construct Kullback-Leibler constraint for optimization.
     """
     # Construct covariances
-    cov = np.dot(eps_cholesky, eps_cholesky.T)
+    shocks = np.dot(eps_cholesky, eps_cholesky.T)
 
     # Construct constraint
     constraint_divergence = dict()
@@ -126,7 +126,7 @@ def _prep_kl(eps_cholesky, level):
 
     constraint_divergence['fun'] = _divergence
 
-    constraint_divergence['args'] = (cov, level)
+    constraint_divergence['args'] = (shocks, level)
 
     # Collection.
     constraints = [constraint_divergence, ]
@@ -135,7 +135,7 @@ def _prep_kl(eps_cholesky, level):
     return constraints
 
 
-def _divergence(x, cov, level):
+def _divergence(x, shocks, level):
     """ Calculate the relevant Kullback-Leibler distance of evaluation points
         from center.
     """
@@ -163,7 +163,7 @@ def _divergence(x, cov, level):
 
 def _criterion(x, num_draws, eps_standard, period, k, payoffs_ex_ante, edu_max,
         edu_start, mapping_state_idx, states_all, num_periods, periods_emax,
-        eps_cholesky, delta, debug):
+        eps_cholesky, delta, is_debug):
     """ Simulate expected future value for alternative shock distributions.
     """
 
@@ -179,7 +179,7 @@ def _criterion(x, num_draws, eps_standard, period, k, payoffs_ex_ante, edu_max,
                         eps_relevant, payoffs_ex_ante, edu_max, edu_start,
                         periods_emax, states_all, mapping_state_idx, delta)
     # Debugging
-    if debug is True:
+    if is_debug:
         checks_ambiguity('_criterion', simulated)
 
     # Finishing
@@ -203,28 +203,28 @@ def _write_result(period, k, opt):
         file_.write('    Message ' + opt['message'] + '\n\n\n')
 
 
-def _get_start(debug):
+def _get_start(is_debug):
     """ Get starting values.
     """
     # Get appropriate starting values
     x0 = [0.00, 0.00]
 
     # Debugging
-    if debug is True:
+    if is_debug:
         checks_ambiguity('_get_start', x0)
 
     # Finishing
     return x0
 
 
-def _prep_absolute(level, debug):
+def _prep_absolute(level, is_debug):
     """ Get bounds.
     """
     # Construct appropriate bounds
     bounds = [[-level, level], [-level, level]]
 
     # Debugging
-    if debug is True:
+    if is_debug:
         checks_ambiguity('_prep_absolute', bounds)
 
     # Finishing

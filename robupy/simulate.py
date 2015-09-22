@@ -91,11 +91,11 @@ def _wrapper_simulate_sample(robupy_obj, periods_eps_relevant):
 
     is_python = robupy_obj.get_attr('is_python')
 
+    is_debug = robupy_obj.get_attr('is_debug')
+
     edu_max = robupy_obj.get_attr('edu_max')
 
     delta = robupy_obj.get_attr('delta')
-
-    debug = robupy_obj.get_attr('debug')
 
     # Interface to core functions
     if is_python:
@@ -114,7 +114,7 @@ def _wrapper_simulate_sample(robupy_obj, periods_eps_relevant):
     data_frame = pd.DataFrame(data_frame)
 
     # Run checks on data frame
-    if debug:
+    if is_debug:
         _check_dataset(data_frame, robupy_obj)
 
     # Finishing

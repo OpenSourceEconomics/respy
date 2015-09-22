@@ -31,7 +31,7 @@ def create_disturbances(robupy_obj, is_simulation):
 
         seed = robupy_obj.get_attr('seed_solution')
 
-    debug = robupy_obj.get_attr('debug')
+    is_debug = robupy_obj.get_attr('is_debug')
 
     # Initialize container
     periods_eps_relevant = np.tile(-99.00, (num_periods, num_draws, 4))
@@ -39,7 +39,7 @@ def create_disturbances(robupy_obj, is_simulation):
     # This allows to use the same random disturbances across the different
     # implementations of the mode, including the RESTUD program. Otherwise,
     # we draw a new set of standard deviations
-    if debug and os.path.isfile('disturbances.txt'):
+    if is_debug and os.path.isfile('disturbances.txt'):
         standard_deviates = read_disturbances(robupy_obj)
         standard_deviates = standard_deviates[:num_periods, :num_draws, :]
     else:

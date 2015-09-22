@@ -38,7 +38,7 @@ CONTAINS
 SUBROUTINE get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
                 future_payoffs, num_draws, eps_standard, period, k, & 
                 payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
-                states_all, num_periods, periods_emax, delta, debug, & 
+                states_all, num_periods, periods_emax, delta, is_debug, &
                 eps_cholesky, level, measure)
 
     !/* external objects    */
@@ -63,7 +63,7 @@ SUBROUTINE get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
     REAL(our_dble), INTENT(IN)      :: delta
     REAL(our_dble), INTENT(IN)      :: level
 
-    LOGICAL, INTENT(IN)             :: debug
+    LOGICAL, INTENT(IN)             :: is_debug
 
     CHARACTER, INTENT(IN)           :: measure
 
@@ -76,7 +76,7 @@ SUBROUTINE get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
     REAL(our_dble)                  :: eps_relevant(num_draws, 4)
     REAL(our_dble)                  :: x_internal(2)
     REAL(our_dble)                  :: x_start(2)
-    REAL(our_dble)                  :: cov(4, 4)
+    REAL(our_dble)                  :: shocks(4, 4)
     REAL(our_dble)                  :: ftol
     REAL(our_dble)                  :: eps
     
@@ -91,13 +91,13 @@ SUBROUTINE get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
     eps = 1.4901161193847656e-08
 
     ! Auxiliary objects
-    cov = MATMUL(eps_cholesky, TRANSPOSE(eps_cholesky))
+    shocks = MATMUL(eps_cholesky, TRANSPOSE(eps_cholesky))
 
     ! Determine worst case scenario
     CALL slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
             eps_standard, period, k, payoffs_ex_ante, edu_max, edu_start, &
             mapping_state_idx, states_all, num_periods, periods_emax, &
-            eps_cholesky, delta, debug, cov, level)
+            eps_cholesky, delta, is_debug, shocks, level)
 
     ! Transform disturbances
     DO i = 1, num_draws
@@ -122,13 +122,13 @@ END SUBROUTINE
 SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
             eps_standard, period, k, payoffs_ex_ante, edu_max, edu_start, &
             mapping_state_idx, states_all, num_periods, periods_emax, &
-            eps_cholesky, delta, debug, cov, level)
+            eps_cholesky, delta, is_debug, shocks, level)
 
     !/* external objects    */
 
     REAL(our_dble), INTENT(OUT)     :: x_internal(2)
     REAL(our_dble), INTENT(IN)      :: x_start(2)
-    REAL(our_dble), INTENT(IN)      :: cov(4,4)
+    REAL(our_dble), INTENT(IN)      :: shocks(4,4)
     REAL(our_dble), INTENT(IN)      :: level
     REAL(our_dble), INTENT(IN)      :: ftol
 
@@ -151,7 +151,7 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
     INTEGER(our_int), INTENT(IN)    :: period
     INTEGER(our_int), INTENT(IN)    :: k
 
-    LOGICAL, INTENT(IN)             :: debug
+    LOGICAL, INTENT(IN)             :: is_debug
 
     !/* internal objects    */
 
@@ -230,16 +230,16 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
     CALL criterion(f, payoffs_ex_post, future_payoffs, x_internal, &
             num_draws, eps_standard, period, k, payoffs_ex_ante, edu_max, &
             edu_start, mapping_state_idx, states_all, num_periods, &
-            periods_emax, eps_cholesky, delta, debug)
+            periods_emax, eps_cholesky, delta, is_debug)
 
     CALL criterion_approx_gradient(g, x_internal, eps, num_draws, &
             eps_standard, period, k, payoffs_ex_ante, edu_max, edu_start, &
             mapping_state_idx, states_all, num_periods, periods_emax, &
-            eps_cholesky, delta, debug)
+            eps_cholesky, delta, is_debug)
 
     ! Initialize constraint at starting values
-    CALL divergence(c, x_internal, cov, level)
-    CALL divergence_approx_gradient(a, x_internal, cov, level, eps)
+    CALL divergence(c, x_internal, shocks, level)
+    CALL divergence_approx_gradient(a, x_internal, shocks, level, eps)
 
     ! Iterate until completion
     DO WHILE (.NOT. is_finished)
@@ -251,9 +251,9 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
                     x_internal, num_draws, eps_standard, period, k, &
                     payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
                     states_all, num_periods, periods_emax, eps_cholesky, &
-                    delta, debug)
+                    delta, is_debug)
 
-            CALL divergence(c, x_internal, cov, level)
+            CALL divergence(c, x_internal, shocks, level)
 
         ! Evaluate gradient of criterion function and constraints. Note that the
         ! a is of dimension (1, n + 1) and the last element needs to always
@@ -263,9 +263,9 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
             CALL criterion_approx_gradient(g, x_internal, eps, num_draws, &
                     eps_standard, period, k, payoffs_ex_ante, edu_max, &
                     edu_start, mapping_state_idx, states_all, num_periods, &
-                    periods_emax, eps_cholesky, delta, debug)
+                    periods_emax, eps_cholesky, delta, is_debug)
 
-            CALL divergence_approx_gradient(a, x_internal, cov, level, eps)
+            CALL divergence_approx_gradient(a, x_internal, shocks, level, eps)
 
         END IF
 
@@ -286,7 +286,7 @@ END SUBROUTINE
 SUBROUTINE criterion(emax_simulated, payoffs_ex_post, future_payoffs, &
                 x, num_draws, eps_standard, period, k, payoffs_ex_ante, &
                 edu_max, edu_start, mapping_state_idx, states_all, &
-                num_periods, periods_emax, eps_cholesky, delta, debug)
+                num_periods, periods_emax, eps_cholesky, delta, is_debug)
 
     !/* external objects    */
 
@@ -310,7 +310,7 @@ SUBROUTINE criterion(emax_simulated, payoffs_ex_post, future_payoffs, &
     INTEGER(our_int), INTENT(IN)    :: period
     INTEGER(our_int), INTENT(IN)    :: k
 
-    LOGICAL, INTENT(IN)             :: debug
+    LOGICAL, INTENT(IN)             :: is_debug
 
     !/* internal objects    */
 
@@ -346,7 +346,7 @@ END SUBROUTINE
 SUBROUTINE criterion_approx_gradient(rslt, x, eps, num_draws, eps_standard, &
                 period, k, payoffs_ex_ante, edu_max, edu_start, &
                 mapping_state_idx, states_all, num_periods, periods_emax, &
-                eps_cholesky, delta, debug)
+                eps_cholesky, delta, is_debug)
 
     !/* external objects    */
 
@@ -369,7 +369,7 @@ SUBROUTINE criterion_approx_gradient(rslt, x, eps, num_draws, eps_standard, &
     INTEGER(our_int), INTENT(IN)    :: period
     INTEGER(our_int), INTENT(IN)    :: k
 
-    LOGICAL, INTENT(IN)             :: debug
+    LOGICAL, INTENT(IN)             :: is_debug
 
     !/* internals objects    */
 
@@ -393,7 +393,7 @@ SUBROUTINE criterion_approx_gradient(rslt, x, eps, num_draws, eps_standard, &
     CALL criterion(f0, payoffs_ex_post, future_payoffs, x, num_draws, &
             eps_standard, period, k, payoffs_ex_ante, edu_max, edu_start, &
             mapping_state_idx, states_all, num_periods, periods_emax, &
-            eps_cholesky, delta, debug)
+            eps_cholesky, delta, is_debug)
 
     ! Iterate over increments
     DO j = 1, 2
@@ -405,7 +405,7 @@ SUBROUTINE criterion_approx_gradient(rslt, x, eps, num_draws, eps_standard, &
         CALL criterion(f1, payoffs_ex_post, future_payoffs, x + d, &
                 num_draws, eps_standard, period, k, payoffs_ex_ante, &
                 edu_max, edu_start, mapping_state_idx, states_all, &
-                num_periods, periods_emax, eps_cholesky, delta, debug)
+                num_periods, periods_emax, eps_cholesky, delta, is_debug)
 
         rslt(j) = (f1 - f0) / d(j)
 
@@ -643,7 +643,7 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
                 periods_future_payoffs, num_periods, max_states_period, &
                 periods_eps_relevant, num_draws, states_number_period, & 
                 periods_payoffs_ex_ante, edu_max, edu_start, &
-                mapping_state_idx, states_all, delta, debug, eps_cholesky, &
+                mapping_state_idx, states_all, delta, is_debug, eps_cholesky, &
                 level, measure)
 
     !/* external objects    */
@@ -667,7 +667,7 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
     INTEGER(our_int), INTENT(IN)    :: max_states_period
     INTEGER(our_int), INTENT(IN)    :: states_all(:, :, :)
 
-    LOGICAL, INTENT(IN)             :: debug
+    LOGICAL, INTENT(IN)             :: is_debug
 
     CHARACTER, INTENT(IN)           :: measure
 
@@ -708,7 +708,7 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
                         future_payoffs, num_draws, eps_relevant, period, k, & 
                         payoffs_ex_ante, edu_max, edu_start, &
                         mapping_state_idx, states_all, num_periods, &
-                        periods_emax, delta, debug, eps_cholesky, level, &
+                        periods_emax, delta, is_debug, eps_cholesky, level, &
                         measure)
             ELSE
                 CALL get_payoffs_risk(emax_simulated, payoffs_ex_post, & 
