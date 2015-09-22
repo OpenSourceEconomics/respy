@@ -94,7 +94,7 @@ class CreateF2pyInterface(Task):
             os.symlink('../../fortran/' + dir_, dir_)
 
         os.system(
-            'f2py3 -c -m  f2py_core f2py_interface_core.f90 -Iinclude -Llib '
+            'f2py3 -c -m  f2py_library f2py_interface_library.f90 -Iinclude -Llib '
             '-lfort_robufort')
 
         os.system(

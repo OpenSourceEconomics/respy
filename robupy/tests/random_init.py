@@ -155,6 +155,15 @@ def generate_random_dict(constraints=None):
         # Replace in initialization file
         dict_['AMBIGUITY']['level'] = level
 
+    # Replace measure of ambiguity
+    if 'measure' in constraints.keys():
+        # Extract objects
+        measure = constraints['measure']
+        # Checks
+        assert (measure in ['kl', 'absolute'])
+        # Replace in initialization file
+        dict_['AMBIGUITY']['measure'] = measure
+
     # Replace number of periods
     if 'periods' in constraints.keys():
         # Extract objects
@@ -182,14 +191,16 @@ def generate_random_dict(constraints=None):
         # Replace in initialization files
         dict_['SHOCKS'] = np.zeros((4, 4))
 
-    # Ambiguity only of a particular type
-    if 'measure' in constraints.keys():
+    # Number of draws
+    if 'draws' in constraints.keys():
         # Extract object
-        measure = constraints['measure']
+        num_draws = constraints['draws']
         # Checks
-        assert (measure in ['kl', 'absolute'])
+        assert (num_draws > 0)
+        assert (isinstance(num_draws, int))
+        assert (np.isfinite(num_draws))
         # Replace in initialization files
-        dict_['AMBIGUITY']['measure'] = measure
+        dict_['SOLUTION']['draws'] = num_draws
 
     # Finishing.
     return dict_

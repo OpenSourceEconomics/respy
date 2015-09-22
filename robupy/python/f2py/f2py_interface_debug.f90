@@ -6,6 +6,60 @@
 !
 !*******************************************************************************
 !*******************************************************************************
+SUBROUTINE wrapper_get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
+                future_payoffs, num_draws, eps_standard, period, k, &
+                payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
+                states_all, num_periods, periods_emax, delta, debug, &
+                eps_cholesky, level, measure)
+
+    !/* external libraries    */
+
+    USE robufort_library
+
+    !/* setup    */
+
+    IMPLICIT NONE
+
+    !/* external objects    */
+
+    DOUBLE PRECISION, INTENT(OUT)   :: payoffs_ex_post(4)
+    DOUBLE PRECISION, INTENT(OUT)   :: future_payoffs(4)
+    DOUBLE PRECISION, INTENT(OUT)   :: emax_simulated
+
+    INTEGER, INTENT(IN)             :: mapping_state_idx(:,:,:,:,:)
+    INTEGER, INTENT(IN)             :: states_all(:,:,:)
+    INTEGER, INTENT(IN)             :: num_periods
+    INTEGER, INTENT(IN)             :: edu_start
+    INTEGER, INTENT(IN)             :: num_draws
+    INTEGER, INTENT(IN)             :: edu_max
+    INTEGER, INTENT(IN)             :: period
+    INTEGER, INTENT(IN)             :: k
+
+    DOUBLE PRECISION, INTENT(IN)    :: payoffs_ex_ante(:)
+    DOUBLE PRECISION, INTENT(IN)    :: eps_cholesky(:, :)
+    DOUBLE PRECISION, INTENT(IN)    :: eps_standard(:, :)
+    DOUBLE PRECISION, INTENT(IN)    :: periods_emax(:,:)
+    DOUBLE PRECISION, INTENT(IN)    :: delta
+    DOUBLE PRECISION, INTENT(IN)    :: level
+
+    LOGICAL, INTENT(IN)             :: debug
+
+    CHARACTER, INTENT(IN)           :: measure
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+    
+    ! Get the expected payoffs under ambiguity
+    CALL get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
+                future_payoffs, num_draws, eps_standard, period, k, & 
+                payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
+                states_all, num_periods, periods_emax, delta, debug, & 
+                eps_cholesky, level, measure)
+
+END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE wrapper_criterion_approx_gradient(rslt, x, eps, num_draws, &
                 eps_standard, period, k, payoffs_ex_ante, edu_max, &
                 edu_start, mapping_state_idx, states_all, num_periods, &

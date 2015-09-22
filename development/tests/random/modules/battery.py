@@ -30,6 +30,7 @@ from robupy.tests.random_init import generate_random_dict
 from robupy.tests.random_init import print_random_dict
 from robupy.tests.random_init import generate_init
 
+from robupy.python.py.ambiguity import get_payoffs_ambiguity
 from robupy.python.py.auxiliary import simulate_emax
 from robupy.python.py.ambiguity import _divergence
 from robupy.python.py.ambiguity import _criterion
@@ -37,6 +38,84 @@ from robupy.python.py.ambiguity import _criterion
 
 ''' Main
 '''
+def test_92():
+    """ This test compares the functions calculating the payoffs under
+    ambiguity.
+    """
+    # Ensure that fast solution methods are available
+    compile_package('fast')
+    import robupy.python.f2py.f2py_debug as fort
+
+    # Iterate over random test cases
+    for _ in range(10):
+
+        # Generate constraint periods
+        constraints = dict()
+        constraints['level'] = 0.0
+        constraints['version'] = 'PYTHON'
+        constraints['measure'] = 'kl'
+
+        # Generate random initialization file
+        generate_init(constraints)
+
+        # Perform toolbox actions
+        robupy_obj = read('test.robupy.ini')
+
+        robupy_obj = solve(robupy_obj)
+
+        # Extract relevant information
+        periods_payoffs_ex_ante = robupy_obj.get_attr('periods_payoffs_ex_ante')
+
+        states_number_period = robupy_obj.get_attr('states_number_period')
+
+        mapping_state_idx = robupy_obj.get_attr('mapping_state_idx')
+
+        periods_emax = robupy_obj.get_attr('periods_emax')
+
+        eps_cholesky = robupy_obj.get_attr('eps_cholesky')
+
+        num_periods = robupy_obj.get_attr('num_periods')
+
+        states_all = robupy_obj.get_attr('states_all')
+
+        num_draws = robupy_obj.get_attr('num_draws')
+
+        edu_start = robupy_obj.get_attr('edu_start')
+
+        edu_max = robupy_obj.get_attr('edu_max')
+
+        delta = robupy_obj.get_attr('delta')
+
+        measure = robupy_obj.get_attr('measure')
+
+        debug = False
+
+        # Sample disturbances
+        eps_standard = np.random.multivariate_normal(np.zeros(4),
+                        np.identity(4), (num_draws,))
+
+        # Sampling of random period and admissible state index
+        period = np.random.choice(range(num_periods))
+        k = np.random.choice(range(states_number_period[period]))
+
+        # Select ex ante payoffs
+        payoffs_ex_ante = periods_payoffs_ex_ante[period, k, :]
+
+        # Set up optimization task
+        level = np.random.uniform(0.01, 1.00)
+
+        args = (num_draws, eps_standard, period, k, payoffs_ex_ante,
+            edu_max, edu_start, mapping_state_idx, states_all, num_periods,
+            periods_emax, debug, delta, eps_cholesky, level, measure)
+
+        f = fort.wrapper_get_payoffs_ambiguity(*args)[0]
+        py = get_payoffs_ambiguity(*args)[0]
+
+        print(py, f)
+
+        np.testing.assert_allclose(py, f, rtol=1e-05, atol=1e-06)
+
+
 def test_93():
     """ This test case compares the results from the SLSQP implementations in
     PYTHON and FORTRAN for the actual optimization problem.
@@ -435,12 +514,13 @@ def test_99():
 
     # Constraint to risk model
     constraints = dict()
-    constraints['level'] = 0.0
     constraints['debug'] = 'True'
+    constraints['measure'] = 'kl'
 
     # Just making sure that it also works for this special case.
-    if np.random.choice([True, False]):
-        constraints['eps_zero'] = True
+    # TODO: Is this working with FORTRAN as well?, SPECIAL for AMBIG?
+    #if np.random.choice([True, False]):
+    #    constraints['eps_zero'] = True
 
     # Generate random initialization file. Since this exercise is only for
     # debugging purposes, the codes uses the same disturbances for the
@@ -450,8 +530,8 @@ def test_99():
 
     num_agents = init_dict['SIMULATION']['agents']
     num_draws = init_dict['SOLUTION']['draws']
-    if num_draws < num_agents:
-        init_dict['SOLUTION']['draws'] = num_agents
+    if num_agents > num_draws:
+        init_dict['SIMULATION']['agents'] = num_draws
 
     print_random_dict(init_dict)
 
@@ -462,7 +542,7 @@ def test_99():
     base = None
 
     for version in ['PYTHON', 'F2PY', 'FORTRAN']:
-
+        print(version, init_dict['AMBIGUITY']['level'])
         # Prepare initialization file
         init_dict['PROGRAM']['version'] = version
 
@@ -481,3 +561,4 @@ def test_99():
             base = data_frame.copy()
 
         assert_frame_equal(base, data_frame)
+        print('passed')

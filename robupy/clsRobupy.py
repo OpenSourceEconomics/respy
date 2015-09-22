@@ -24,11 +24,17 @@ class RobupyCls(MetaCls):
 
         self.attr['seed_solution'] = None
 
+        self.attr['is_ambiguous'] = None
+
+        self.attr['eps_cholesky'] = None
+
         self.attr['num_periods'] = None
 
         self.attr['num_agents'] = None
 
         self.attr['num_draws'] = None
+
+        self.attr['is_python'] = None
 
         self.attr['edu_start'] = None
 
@@ -60,8 +66,6 @@ class RobupyCls(MetaCls):
         self.attr['mapping_state_idx'] = None
 
         self.attr['periods_emax'] = None
-
-        self.attr['eps_cholesky'] = False
 
         self.attr['states_all'] = None
 
@@ -134,6 +138,15 @@ class RobupyCls(MetaCls):
 
             self.attr['eps_zero'] = (np.count_nonzero(shocks) == 0)
 
+            if self.attr['eps_zero']:
+                self.attr['eps_cholesky'] = np.zeros((4, 4))
+            else:
+                self.attr['eps_cholesky'] = np.linalg.cholesky(shocks)
+
+            self.attr['is_ambiguous'] = (self.attr['level'] > 0.00)
+
+            self.attr['is_python'] = (self.attr['version'] == 'PYTHON')
+
             # Update status indicator
             self.is_first = False
 
@@ -150,11 +163,15 @@ class RobupyCls(MetaCls):
 
         seed_solution = self.attr['seed_solution']
 
+        is_ambiguous = self.attr['is_ambiguous']
+
         num_agents = self.attr['num_agents']
 
         num_periods = self.attr['num_periods']
 
         edu_start = self.attr['edu_start']
+
+        is_python = self.attr['is_python']
 
         num_draws = self.attr['num_draws']
 
@@ -177,10 +194,15 @@ class RobupyCls(MetaCls):
         # Debug status
         assert (debug in [True, False])
 
+        # Ambiguity in environment
+        assert (is_ambiguous in [True, False])
+
+        # Version of implementation
+        assert (is_python in [True, False])
+
         # Constraints
-        with_ambiguity = (level > 0.00)
-        if with_ambiguity:
-            assert (version in ['PYTHON'])
+        if is_ambiguous and version in ['F2PY', 'FORTRAN']:
+            assert (measure in ['kl'])
 
         # Seeds
         for seed in [seed_solution, seed_simulation]:

@@ -233,7 +233,7 @@ def _check_integrity_read(dict_):
     if dict_['PROGRAM']['version'] == 'F2PY':
         package_dir = os.path.dirname(os.path.realpath(__file__))
         assert (len(glob.glob(package_dir +
-                              '/python/f2py/f2py_core.*.so')) == 1)
+                              '/python/f2py/f2py_library.*.so')) == 1)
 
     if dict_['PROGRAM']['version'] == 'FORTRAN':
         package_dir = os.path.dirname(os.path.realpath(__file__))

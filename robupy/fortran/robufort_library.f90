@@ -19,6 +19,7 @@ MODULE robufort_library
 
     !/* core functions */
 
+    PUBLIC :: get_payoffs_ambiguity
     PUBLIC :: backward_induction 
     PUBLIC :: create_state_space 
     PUBLIC :: simulate_sample 
@@ -32,6 +33,90 @@ MODULE robufort_library
     PUBLIC :: stabilize_myopic
 
 CONTAINS
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
+                future_payoffs, num_draws, eps_standard, period, k, & 
+                payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
+                states_all, num_periods, periods_emax, delta, debug, & 
+                eps_cholesky, level, measure)
+
+    !/* external objects    */
+
+    REAL(our_dble), INTENT(OUT)     :: payoffs_ex_post(4)
+    REAL(our_dble), INTENT(OUT)     :: future_payoffs(4)
+    REAL(our_dble), INTENT(OUT)     :: emax_simulated
+
+    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:,:,:,:,:)
+    INTEGER(our_int), INTENT(IN)    :: states_all(:,:,:)
+    INTEGER(our_int), INTENT(IN)    :: num_periods
+    INTEGER(our_int), INTENT(IN)    :: edu_start
+    INTEGER(our_int), INTENT(IN)    :: num_draws
+    INTEGER(our_int), INTENT(IN)    :: edu_max
+    INTEGER(our_int), INTENT(IN)    :: period
+    INTEGER(our_int), INTENT(IN)    :: k
+
+    REAL(our_dble), INTENT(IN)      :: payoffs_ex_ante(:)
+    REAL(our_dble), INTENT(IN)      :: eps_cholesky(:, :)
+    REAL(our_dble), INTENT(IN)      :: eps_standard(:, :)
+    REAL(our_dble), INTENT(IN)      :: periods_emax(:,:)
+    REAL(our_dble), INTENT(IN)      :: delta
+    REAL(our_dble), INTENT(IN)      :: level
+
+    LOGICAL, INTENT(IN)             :: debug
+
+    CHARACTER, INTENT(IN)           :: measure
+
+    !/* internal objects    */
+
+    INTEGER(our_int)                :: maxiter
+    INTEGER(our_int)                :: j
+    INTEGER(our_int)                :: i
+
+    REAL(our_dble)                  :: eps_relevant(num_draws, 4)
+    REAL(our_dble)                  :: x_internal(2)
+    REAL(our_dble)                  :: x_start(2)
+    REAL(our_dble)                  :: cov(4, 4)
+    REAL(our_dble)                  :: ftol
+    REAL(our_dble)                  :: eps
+    
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+    
+    ! Parameterizations for optimizations
+    x_start = zero_dble
+    maxiter = 1000
+    ftol = 1e-06
+    eps = 1.4901161193847656e-08
+
+    ! Auxiliary objects
+    cov = MATMUL(eps_cholesky, TRANSPOSE(eps_cholesky))
+
+    ! Determine worst case scenario
+    CALL slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
+            eps_standard, period, k, payoffs_ex_ante, edu_max, edu_start, &
+            mapping_state_idx, states_all, num_periods, periods_emax, &
+            eps_cholesky, delta, debug, cov, level)
+
+    ! Transform disturbances
+    DO i = 1, num_draws
+        eps_relevant(i:i, :) = MATMUL(eps_cholesky, TRANSPOSE(eps_standard(i:i,:)))
+        eps_relevant(i, :2) = eps_relevant(i, :2) + x_internal
+    END DO
+
+    ! Transform disturbance for occupations
+    DO j = 1, 2
+        eps_relevant(:, j) = EXP(eps_relevant(:, j))
+    END DO
+
+    ! Evaluate expected future value for perturbed values
+    CALL simulate_emax(emax_simulated, payoffs_ex_post, future_payoffs, &
+            num_periods, num_draws, period, k, eps_relevant, &
+            payoffs_ex_ante, edu_max, edu_start, periods_emax, states_all, &
+            mapping_state_idx, delta)
+
+END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
@@ -558,7 +643,8 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
                 periods_future_payoffs, num_periods, max_states_period, &
                 periods_eps_relevant, num_draws, states_number_period, & 
                 periods_payoffs_ex_ante, edu_max, edu_start, &
-                mapping_state_idx, states_all, delta)
+                mapping_state_idx, states_all, delta, debug, eps_cholesky, &
+                level, measure)
 
     !/* external objects    */
 
@@ -568,7 +654,9 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
 
     REAL(our_dble), INTENT(IN)      :: periods_eps_relevant(:, :, :)
     REAL(our_dble), INTENT(IN)      :: periods_payoffs_ex_ante(:, :, :   )
+    REAL(our_dble), INTENT(IN)      :: eps_cholesky(4, 4)
     REAL(our_dble), INTENT(IN)      :: delta
+    REAL(our_dble), INTENT(IN)      :: level
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:, :, :, :, :)    
     INTEGER(our_int), INTENT(IN)    :: num_periods
@@ -578,6 +666,10 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
     INTEGER(our_int), INTENT(IN)    :: num_draws
     INTEGER(our_int), INTENT(IN)    :: max_states_period
     INTEGER(our_int), INTENT(IN)    :: states_all(:, :, :)
+
+    LOGICAL, INTENT(IN)             :: debug
+
+    CHARACTER, INTENT(IN)           :: measure
 
     !/* internals objects    */
 
@@ -593,7 +685,7 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
-        
+
     ! Set to missing value
     periods_emax = missing_dble
     periods_future_payoffs = missing_dble
@@ -611,11 +703,21 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
             ! Extract payoffs
             payoffs_ex_ante = periods_payoffs_ex_ante(period + 1, k + 1, :)
 
-            CALL get_payoffs_risk(emax_simulated, payoffs_ex_post, & 
-                    future_payoffs, num_draws, eps_relevant, period, k, & 
-                    payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, & 
-                    states_all, num_periods, periods_emax, delta)
-
+            IF (level .GT. zero_dble) THEN
+                CALL get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
+                        future_payoffs, num_draws, eps_relevant, period, k, & 
+                        payoffs_ex_ante, edu_max, edu_start, &
+                        mapping_state_idx, states_all, num_periods, &
+                        periods_emax, delta, debug, eps_cholesky, level, &
+                        measure)
+            ELSE
+                CALL get_payoffs_risk(emax_simulated, payoffs_ex_post, & 
+                        future_payoffs, num_draws, eps_relevant, period, k, & 
+                        payoffs_ex_ante, edu_max, edu_start, & 
+                        mapping_state_idx, states_all, num_periods, &
+                        periods_emax, delta)
+            END IF
+            
             ! Collect information            
             periods_payoffs_ex_post(period + 1, k + 1, :) = payoffs_ex_post
             periods_future_payoffs(period + 1, k + 1, :) = future_payoffs

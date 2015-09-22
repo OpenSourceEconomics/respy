@@ -49,7 +49,8 @@ SUBROUTINE wrapper_backward_induction(periods_emax, periods_payoffs_ex_post, &
                 periods_future_payoffs, num_periods, max_states_period, &
                 periods_eps_relevant, num_draws, states_number_period, &
                 periods_payoffs_ex_ante, edu_max, edu_start, & 
-                mapping_state_idx, states_all, delta)
+                mapping_state_idx, states_all, delta, debug, eps_cholesky, &
+                level, measure)
 
     !/* external libraries    */
 
@@ -67,7 +68,9 @@ SUBROUTINE wrapper_backward_induction(periods_emax, periods_payoffs_ex_post, &
 
     DOUBLE PRECISION, INTENT(IN)    :: periods_eps_relevant(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_payoffs_ex_ante(:, :, :   )
+    DOUBLE PRECISION, INTENT(IN)    :: eps_cholesky(4, 4)
     DOUBLE PRECISION, INTENT(IN)    :: delta
+    DOUBLE PRECISION, INTENT(IN)    :: level
 
     INTEGER, INTENT(IN)             :: mapping_state_idx(:, :, :, :, :)    
     INTEGER, INTENT(IN)             :: num_periods
@@ -78,6 +81,11 @@ SUBROUTINE wrapper_backward_induction(periods_emax, periods_payoffs_ex_post, &
     INTEGER, INTENT(IN)             :: max_states_period
     INTEGER, INTENT(IN)             :: states_all(:, :, :)
 
+
+    LOGICAL, INTENT(IN)             :: debug
+
+    CHARACTER, INTENT(IN)           :: measure
+
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
@@ -86,7 +94,8 @@ SUBROUTINE wrapper_backward_induction(periods_emax, periods_payoffs_ex_post, &
             periods_future_payoffs, num_periods, max_states_period, &
             periods_eps_relevant, num_draws, states_number_period, &
             periods_payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
-            states_all, delta)
+            states_all, delta, debug, eps_cholesky, level, measure)
+
 
 END SUBROUTINE
 !*******************************************************************************

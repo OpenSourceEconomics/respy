@@ -124,9 +124,9 @@ SUBROUTINE store_results(mapping_state_idx, states_all, periods_payoffs_ex_ante,
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE read_specification(num_periods, delta, coeffs_A, coeffs_B, & 
-                coeffs_edu, edu_start, edu_max, coeffs_home, shocks, & 
-                num_draws, seed_solution, num_agents, &
+SUBROUTINE read_specification(num_periods, delta, level, measure, coeffs_A, &
+                coeffs_B, coeffs_edu, edu_start, edu_max, coeffs_home, &
+                shocks, num_draws, seed_solution, num_agents, &
                 seed_simulation, is_debug, is_zero) 
 
     !/* external objects    */
@@ -145,6 +145,9 @@ SUBROUTINE read_specification(num_periods, delta, coeffs_A, coeffs_B, &
     REAL(our_dble), INTENT(OUT)     :: coeffs_A(6)
     REAL(our_dble), INTENT(OUT)     :: coeffs_B(6)
     REAL(our_dble), INTENT(OUT)     :: delta
+    REAL(our_dble), INTENT(OUT)     :: level
+
+    CHARACTER(15), INTENT(OUT)      :: measure
 
     LOGICAL, INTENT(OUT)            :: is_debug
     LOGICAL, INTENT(OUT)            :: is_zero
@@ -165,12 +168,18 @@ SUBROUTINE read_specification(num_periods, delta, coeffs_A, coeffs_B, &
     1505 FORMAT(i10)
     1515 FORMAT(i10,1x,i10)
 
+    !1520 FORMAT(15)
+
     ! Read model specification
     OPEN(UNIT=1, FILE='.model.robufort.ini')
 
         ! BASICS
         READ(1, 1505) num_periods
         READ(1, 1510) delta
+
+        ! AMBIGUITY
+        READ(1, 1510) level
+        READ(1, *) measure
 
         ! WORK
         READ(1, 1500) coeffs_A
@@ -202,20 +211,21 @@ SUBROUTINE read_specification(num_periods, delta, coeffs_A, coeffs_B, &
         ! AUXILIARY
         READ(1, *) is_zero
 
-        
     CLOSE(1, STATUS='delete')
 
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE get_disturbances(periods_eps_relevant, shocks, seed, is_debug, & 
-                is_zero) 
+SUBROUTINE get_disturbances(periods_eps_relevant, level, eps_cholesky, shocks, seed, &
+                is_debug, is_zero) 
 
     !/* external objects    */
 
     REAL(our_dble), INTENT(OUT)     :: periods_eps_relevant(:, :, :)
 
     REAL(our_dble), INTENT(IN)      :: shocks(4, 4)
+    REAL(our_dble), INTENT(IN)      :: eps_cholesky(4, 4)
+    REAL(our_dble), INTENT(IN)      :: level
 
     INTEGER(our_int),INTENT(IN)     :: seed 
 
@@ -227,10 +237,10 @@ SUBROUTINE get_disturbances(periods_eps_relevant, shocks, seed, is_debug, &
     INTEGER(our_int)                :: num_periods
     INTEGER(our_int)                :: num_draws
     INTEGER(our_int)                :: period
-    INTEGER(our_int)                :: j
+    INTEGER(our_int)                :: j, i
 
     REAL(our_dble)                  :: mean(4)
-
+    REAL(our_dble)                  :: cov(4, 4)
     
     LOGICAL                         :: READ_IN
 
@@ -259,25 +269,44 @@ SUBROUTINE get_disturbances(periods_eps_relevant, shocks, seed, is_debug, &
         periods_eps_relevant = zero_dble
 
     ELSE
-    
+        
         mean = zero_dble
+        
+        IF (level .GT. zero_dble) THEN
+            cov = shocks
+        ELSE
+            cov = zero_dble
+            DO j = 1, 4
+            cov(j, j) = one_dble
+            END DO
+ 
+        END IF
+        
 
         DO period = 1, num_periods
-       
-            CALL multivariate_normal(periods_eps_relevant(period, :, :), mean, & 
-                    shocks)
-        
+           
+               CALL multivariate_normal(periods_eps_relevant(period, :, :), mean, & 
+                        cov)
+            
         END DO
+
 
     END IF
 
     ! Transform for occupations
+    ! Transform for occupations
+    IF (level .GT. zero_dble) THEN
+
+    ELSE
     DO j = 1, 2
         periods_eps_relevant(:, :, j) = EXP(periods_eps_relevant(:, :, j))
     END DO
-
+END IF
 
     ! Check applicability
+    PRINT *, 'NEEDS CLEANUP AND RIST ONLY TODO'
+    ! TODO: THIS NEEDS ADJUSTED TO TRANSOFRM TO RELEVANT DISTURBANCES IN CASE
+    ! OF RISK ONLY
     INQUIRE(FILE='disturbances.txt', EXIST=READ_IN)
 
     IF ((READ_IN .EQV. .True.)  .AND. (is_debug .EQV. .True.)) THEN
@@ -285,7 +314,7 @@ SUBROUTINE get_disturbances(periods_eps_relevant, shocks, seed, is_debug, &
       OPEN(12, file='disturbances.txt')
 
       DO period = 1, num_periods
-
+        PRINT *, ' I AM READING'
         DO j = 1, num_draws
         
           2000 FORMAT(4(1x,f15.10))
@@ -296,9 +325,39 @@ SUBROUTINE get_disturbances(periods_eps_relevant, shocks, seed, is_debug, &
       END DO
 
       CLOSE(12)
+    ! Transform for occupations
+    IF (level .GT. zero_dble) THEN
+
+    ELSE
+
+        DO period = 1, num_periods
+
+        ! Transform disturbances
+        DO i = 1, num_draws
+    !        eps_relevant(i:i, :) = MATMUL(eps_cholesky, TRANSPOSE(eps_standard(i:i,:)))
+
+        periods_eps_relevant(period, i:i, :) = MATMUL(eps_cholesky, TRANSPOSE(periods_eps_relevant(period, i:i, :)))
+
+        END DO
+
+        ! Transform disturbance for occupations
+        DO j = 1, 2
+
+            periods_eps_relevant(period, :, j) = EXP(periods_eps_relevant(period, :, j))
+
+        END DO
+
+
+        END DO
+
+
+
+
 
     END IF
+    END IF
 
+    
 END SUBROUTINE
 !******************************************************************************* 
 !******************************************************************************* 
@@ -353,6 +412,7 @@ PROGRAM robufort
     
     REAL(our_dble)                  :: payoffs_ex_post(4)
     REAL(our_dble)                  :: payoffs_ex_ante(4)
+    REAL(our_dble)                  :: eps_cholesky(4, 4)
     REAL(our_dble)                  :: future_payoffs(4)
     REAL(our_dble)                  :: total_payoffs(4)
     REAL(our_dble)                  :: disturbances(4)
@@ -365,20 +425,24 @@ PROGRAM robufort
     REAL(our_dble)                  :: maximum
     REAL(our_dble)                  :: payoff
     REAL(our_dble)                  :: delta
-    
+    REAL(our_dble)                  :: level
+
     LOGICAL                         :: is_myopic
     LOGICAL                         :: is_debug
     LOGICAL                         :: is_huge
     LOGICAL                         :: is_zero
+
+    CHARACTER(15)                   :: measure
 
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
 
     ! Read specification of model
-    CALL read_specification(num_periods, delta, coeffs_A, coeffs_B, & 
-            coeffs_edu, edu_start, edu_max, coeffs_home, shocks, num_draws, & 
-            seed_solution, num_agents, seed_simulation, is_debug, is_zero) 
+    CALL read_specification(num_periods, delta, level, measure, coeffs_A, &
+            coeffs_B, coeffs_edu, edu_start, edu_max, coeffs_home, shocks, &
+            num_draws, seed_solution, num_agents, seed_simulation, &
+            is_debug, is_zero) 
 
     ! Auxiliary objects
     min_idx = MIN(num_periods, (edu_max - edu_start + 1))
@@ -394,7 +458,8 @@ PROGRAM robufort
 
     ! Auxiliary objects
     max_states_period = MAXVAL(states_number_period)
-
+    CALL cholesky(eps_cholesky, shocks)
+    
     ! Allocate arrays
     ALLOCATE(periods_payoffs_ex_ante(num_periods, max_states_period, 4))
 
@@ -412,16 +477,17 @@ PROGRAM robufort
 
     ! Draw random disturbances. For is_debugging purposes, these might also be 
     ! read in from disk or set to zero/one.
-    CALL get_disturbances(periods_eps_relevant, shocks, seed_solution, & 
-            is_debug, is_zero)
+    CALL get_disturbances(periods_eps_relevant, level, eps_cholesky, shocks, &
+            seed_solution, is_debug, is_zero)
 
-    ! Perform backward induction.
+    ! Perform backward backward_inductiontion.
     CALL backward_induction(periods_emax, periods_payoffs_ex_post, &
             periods_future_payoffs, num_periods, max_states_period, &
             periods_eps_relevant, num_draws, states_number_period, & 
             periods_payoffs_ex_ante, edu_max, edu_start, &
-            mapping_state_idx, states_all, delta)
-
+            mapping_state_idx, states_all, delta, is_debug, &
+            eps_cholesky, level, measure)
+   
     ! Store results. These are read in by the PYTHON wrapper and added 
     ! to the clsRobupy instance.
     CALL store_results(mapping_state_idx, states_all, periods_payoffs_ex_ante, &

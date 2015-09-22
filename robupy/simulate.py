@@ -20,12 +20,12 @@ import logging
 import os
 
 # project library
-from robupy.auxiliary import read_disturbances
 from robupy.auxiliary import replace_missing_values
+from robupy.auxiliary import create_disturbances
 
-import robupy.python.py.python_core as python_core
+import robupy.python.py.python_library as python_library
 try:
-    import robupy.python.f2py.f2py_core as f2py_core
+    import robupy.python.f2py.f2py_library as f2py_library
 except ImportError:
     pass
 
@@ -48,7 +48,7 @@ def simulate(robupy_obj):
     seed = robupy_obj.get_attr('num_agents')
 
     # Draw disturbances for the simulation.
-    periods_eps_relevant = _create_eps(robupy_obj)
+    periods_eps_relevant = create_disturbances(robupy_obj, True)
 
     # Simulate a dataset with the results from the solution and write out the
     # dataset to a text file. In addition a file summarizing the dataset is
@@ -89,25 +89,22 @@ def _wrapper_simulate_sample(robupy_obj, periods_eps_relevant):
 
     edu_start = robupy_obj.get_attr('edu_start')
 
-    edu_max = robupy_obj.get_attr('edu_max')
+    is_python = robupy_obj.get_attr('is_python')
 
-    fast = robupy_obj.get_attr('version')
+    edu_max = robupy_obj.get_attr('edu_max')
 
     delta = robupy_obj.get_attr('delta')
 
     debug = robupy_obj.get_attr('debug')
 
-    # Auxiliary object
-    is_f2py = (fast == 'F2PY')
-
     # Interface to core functions
-    if is_f2py:
-        data_frame = f2py_core.wrapper_simulate_sample(num_agents,
-            states_all, num_periods, mapping_state_idx, periods_payoffs_ex_ante,
+    if is_python:
+        data_frame = python_library.simulate_sample(num_agents, states_all,
+            num_periods, mapping_state_idx, periods_payoffs_ex_ante,
             periods_eps_relevant, edu_max, edu_start, periods_emax, delta)
     else:
-        data_frame = python_core.simulate_sample(num_agents, states_all,
-            num_periods, mapping_state_idx, periods_payoffs_ex_ante,
+        data_frame = f2py_library.wrapper_simulate_sample(num_agents,
+            states_all, num_periods, mapping_state_idx, periods_payoffs_ex_ante,
             periods_eps_relevant, edu_max, edu_start, periods_emax, delta)
 
     # Replace missing values
@@ -189,42 +186,6 @@ def _check_dataset(data_frame, robupy_obj):
             assert (data_frame[3][count] > 0.00)
         else:
             assert (np.isfinite(data_frame[3][count]) == False)
-
-
-def _create_eps(robupy_obj):
-    """ Create relevant disturbances.
-    """
-    # Distribute class attributes
-    num_periods = robupy_obj.get_attr('num_periods')
-
-    num_agents = robupy_obj.get_attr('num_agents')
-
-    seed = robupy_obj.get_attr('seed_simulation')
-
-    shocks = robupy_obj.get_attr('shocks')
-
-    debug = robupy_obj.get_attr('debug')
-
-    # Set random seed
-    np.random.seed(seed)
-
-    # Draw random disturbances and adjust them for the two occupations
-    np.random.seed(seed)
-    periods_eps_relevant = np.random.multivariate_normal(np.zeros(4),
-        shocks, (num_periods, num_agents))
-    for period in range(num_periods):
-        for j in [0, 1]:
-            periods_eps_relevant[period, :, j] = np.exp(periods_eps_relevant[
-                                                  period, :, j])
-
-    # This is useful for debugging purposes as it allows to align the
-    # disturbances across the different implementations. This is particularly
-    # useful for the ROBUFORT and RESTUD program.
-    if debug and os.path.isfile('disturbances.txt'):
-        periods_eps_relevant = read_disturbances(robupy_obj)
-
-    # Finishing
-    return periods_eps_relevant
 
 
 def _write_info(robupy_obj, data_frame):

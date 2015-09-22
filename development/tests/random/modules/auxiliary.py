@@ -69,21 +69,17 @@ def write_disturbances(init_dict):
     # between the alternative implementations
     num_draws = init_dict['SOLUTION']['draws']
     num_periods = init_dict['BASICS']['periods']
-    shocks = init_dict['SHOCKS']
 
-    periods_eps_relevant = np.random.multivariate_normal(np.zeros(4),
-                            shocks, (num_periods, num_draws))
+    # Draw standard deviates
+    standard_deviates = np.random.multivariate_normal(np.zeros(4),
+        np.identity(4), (num_periods, num_draws))
 
-    for period in range(num_periods):
-        for j in [0, 1]:
-            periods_eps_relevant[period, :, j] = \
-                np.exp(periods_eps_relevant[period, :, j])
-
+    # Write to file to they can be read in by the different implementations.
     with open('disturbances.txt', 'w') as file_:
         for period in range(num_periods):
             for i in range(num_draws):
                 line = ' {0:15.10f} {1:15.10f} {2:15.10f} {3:15.10f}\n'.format(
-                    *periods_eps_relevant[period, i, :])
+                    *standard_deviates[period, i, :])
                 file_.write(line)
 
 
@@ -180,7 +176,7 @@ def cleanup():
 
     os.system('./clean')
 
-def compile_package(which):
+def compile_package(which, hidden=True):
     """ Compile toolbox
     """
     # Antibugging
@@ -200,7 +196,8 @@ def compile_package(which):
     if which == 'fast':
         cmd += ' --fast'
 
-    cmd += ' > /dev/null 2>&1'
+    if hidden:
+        cmd += ' > /dev/null 2>&1'
 
     os.system(cmd)
 
