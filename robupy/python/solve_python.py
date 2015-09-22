@@ -296,11 +296,8 @@ def _create_eps(robupy_obj):
     standard_deviates = np.random.multivariate_normal(np.zeros(4),
         np.identity(4), (num_periods, num_draws))
 
-    # This is only used to compare the RESTUD program to the ROBUPY package.
-    # It aligns the random components between the two. It is only used in the
-    # development process.
-    # TODO: UPdate comment, is also used for ROBUFORT, I alwas read in the
-    # standard normal
+    # This is only used to compare the different implementations of the
+    # ROBUPY package.
     if is_debug and os.path.isfile('disturbances.txt'):
         standard_deviates = read_disturbances(robupy_obj)
 

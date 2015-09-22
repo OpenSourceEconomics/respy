@@ -682,9 +682,14 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
     REAL(our_dble)                  :: future_payoffs(4)
     REAL(our_dble)                  :: emax_simulated
 
+    LOGICAL                         :: is_ambiguous
+
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
+
+    ! Auxiliary objects
+    is_ambiguous = level .GT. zero_dble
 
     ! Set to missing value
     periods_emax = missing_dble
@@ -703,7 +708,7 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
             ! Extract payoffs
             payoffs_ex_ante = periods_payoffs_ex_ante(period + 1, k + 1, :)
 
-            IF (level .GT. zero_dble) THEN
+            IF (is_ambiguous) THEN
                 CALL get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
                         future_payoffs, num_draws, eps_relevant, period, k, & 
                         payoffs_ex_ante, edu_max, edu_start, &

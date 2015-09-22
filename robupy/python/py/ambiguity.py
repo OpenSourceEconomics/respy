@@ -135,7 +135,7 @@ def _prep_kl(eps_cholesky, level):
     return constraints
 
 
-def _divergence(x, shocks, level):
+def _divergence(x, cov, level):
     """ Calculate the relevant Kullback-Leibler distance of evaluation points
         from center.
     """

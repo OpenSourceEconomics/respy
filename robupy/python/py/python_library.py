@@ -22,7 +22,7 @@ def backward_induction(num_periods, max_states_period, periods_eps_relevant,
     """ Backward iteration procedure.
     """
     # Auxiliary objects
-    with_ambiguity = (level > 0.00)
+    is_ambiguous = (level > 0.00)
 
     # Initialize containers with missing values
     periods_emax = np.tile(-99.00, (num_periods, max_states_period))
@@ -47,7 +47,7 @@ def backward_induction(num_periods, max_states_period, periods_eps_relevant,
             payoffs_ex_ante = periods_payoffs_ex_ante[period, k, :]
 
             # Simulate the expected future value.
-            if with_ambiguity:
+            if is_ambiguous:
                 emax, payoffs_ex_post, future_payoffs = \
                     get_payoffs_ambiguity(num_draws, eps_relevant, period, k,
                         payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,

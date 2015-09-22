@@ -224,8 +224,8 @@ SUBROUTINE get_disturbances(periods_eps_relevant, level, eps_cholesky, &
 
     REAL(our_dble), INTENT(OUT)     :: periods_eps_relevant(:, :, :)
 
-    REAL(our_dble), INTENT(IN)      :: shocks(4, 4)
     REAL(our_dble), INTENT(IN)      :: eps_cholesky(4, 4)
+    REAL(our_dble), INTENT(IN)      :: shocks(4, 4)
     REAL(our_dble), INTENT(IN)      :: level
 
     INTEGER(our_int),INTENT(IN)     :: seed 
