@@ -111,8 +111,6 @@ def test_92():
         f = fort.wrapper_get_payoffs_ambiguity(*args)[0]
         py = get_payoffs_ambiguity(*args)[0]
 
-        print(py, f)
-
         np.testing.assert_allclose(py, f, rtol=1e-05, atol=1e-06)
 
 
@@ -532,8 +530,6 @@ def test_99():
     num_draws = init_dict['SOLUTION']['draws']
     if num_agents > num_draws:
         init_dict['SIMULATION']['agents'] = num_draws
-
-    print_random_dict(init_dict)
 
     # Write out disturbances to align the three implementations.
     write_disturbances(init_dict)
