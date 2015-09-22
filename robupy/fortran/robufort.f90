@@ -319,6 +319,12 @@ SUBROUTINE get_disturbances(periods_eps_relevant, level, eps_cholesky, shocks, s
     ! Special case of absence randomness
     IF (is_zero) THEN
         periods_eps_relevant = zero_dble
+        DO period = 1, num_periods
+            DO j = 1, 2
+                periods_eps_relevant(period, :, j) = &
+                    EXP(periods_eps_relevant(period, :, j))
+            END DO
+        END DO
     END IF
 
 END SUBROUTINE
