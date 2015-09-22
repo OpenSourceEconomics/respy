@@ -20,8 +20,9 @@ MODULE robufort_extension
 CONTAINS
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE store_results(mapping_state_idx, states_all, periods_payoffs_ex_ante, & 
-    states_number_period, periods_emax, num_periods, min_idx, max_states_period) 
+SUBROUTINE store_results(mapping_state_idx, states_all, &
+                periods_payoffs_ex_ante, states_number_period, periods_emax, &
+                num_periods, min_idx, max_states_period) 
 
     !/* external objects    */
 
@@ -455,7 +456,7 @@ PROGRAM robufort
     CALL get_disturbances(periods_eps_relevant, level, eps_cholesky, shocks, &
             seed_solution, is_debug, is_zero)
 
-    ! Perform backward backward_inductiontion.
+    ! Perform backward induction procedure.
     CALL backward_induction(periods_emax, periods_payoffs_ex_post, &
             periods_future_payoffs, num_periods, max_states_period, &
             periods_eps_relevant, num_draws, states_number_period, & 
