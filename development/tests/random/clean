@@ -60,6 +60,8 @@ files += glob.glob('modules/*.so')
 
 files += glob.glob('*.dat')
 
+files += glob.glob('.restud.testing.scratch')
+
 files += glob.glob('modules/*.o')
 
 files += glob.glob('modules/__pycache__')

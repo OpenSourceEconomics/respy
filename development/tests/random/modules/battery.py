@@ -446,17 +446,19 @@ def test_98():
     # Prepare RESTUD program
     os.chdir('modules')
     os.system(' gfortran -fcheck=bounds -o dp3asim dp3asim.f95 >'
-              ' /dev/null 2>&1 ')
+              ' /dev/null 2>&1')
     os.remove('pei_additions.mod')
     os.remove('imsl_replacements.mod')
     os.chdir('../')
 
     # Impose some constraints on the initialization file which ensures that
-    # the problem can be solved by the RESTUD code.
+    # the problem can be solved by the RESTUD code. The code is adjusted to
+    # run with zero disturbances.
     constraints = dict()
     constraints['edu'] = (10, 20)
     constraints['level'] = 0.00
     constraints['debug'] = 'True'
+    constraints['eps_zero'] = True
 
     version = np.random.choice(['FORTRAN', 'F2PY', 'PYTHON'])
     constraints['version'] = version
@@ -473,8 +475,8 @@ def test_98():
 
     print_random_dict(init_dict)
 
-    # Write out disturbances to align the three implementations.
-    write_disturbances(init_dict)
+    # Indicate RESTUD code the special case of zero disturbance.
+    open('.restud.testing.scratch', 'a').close()
 
     # Perform toolbox actions
     robupy_obj = read('test.robupy.ini')
@@ -500,9 +502,6 @@ def test_98():
             missing_values='.'), ndmin=2)[:, -4:])
 
     assert_frame_equal(py, fort)
-
-    # Cleanup
-    os.unlink('disturbances.txt')
 
 
 def test_99():

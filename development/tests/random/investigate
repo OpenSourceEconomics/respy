@@ -27,7 +27,7 @@ from modules.auxiliary import *
 
 ''' Request
 '''
-label, seed = '99', 8466
+label, seed = '98', 49
 
 ''' Error Reproduction
 '''
@@ -45,8 +45,8 @@ if True:
         test()
         count = count + 1
 
-#        if count == 10:
-#            break
+        if count == 1000:
+            break
 
     #check_ambiguity_optimization()
 from pandas.util.testing import assert_frame_equal

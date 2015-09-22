@@ -211,7 +211,7 @@ SUBROUTINE read_specification(num_periods, delta, level, measure, coeffs_A, &
         ! AUXILIARY
         READ(1, *) is_zero
 
-    !CLOSE(1, STATUS='delete')
+    CLOSE(1, STATUS='delete')
 
 END SUBROUTINE
 !*******************************************************************************
