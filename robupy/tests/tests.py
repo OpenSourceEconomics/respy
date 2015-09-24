@@ -3,8 +3,6 @@
 
 # standard library
 import numpy as np
-import shutil
-import glob
 import sys
 import os
 
@@ -235,7 +233,7 @@ class Tests(object):
         """
         # Generate random initialization dictionary
         constraints = dict()
-        constraints['debug'] = 'True'
+        constraints['debug'] = True
         constraints['version'] = 'PYTHON'
 
         init_dict = generate_random_dict(constraints)

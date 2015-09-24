@@ -249,7 +249,7 @@ def print_random_dict(dict_):
                 file_.write(' ' + flag.upper() + '\n\n')
 
                 for keys_ in dict_[flag]:
-                    file_.write(str_.format(keys_, dict_[flag][keys_]))
+                    file_.write(str_.format(keys_, str(dict_[flag][keys_])))
 
                 file_.write('\n')
 

@@ -50,6 +50,9 @@ def read(file_):
         else:
             raise AssertionError
 
+    # Type conversion for Shocks
+    dict_['SHOCKS'] = np.array(dict_['SHOCKS'])
+
     # Cleanup dictionary
     del dict_['WORK']
 
@@ -241,12 +244,10 @@ def _check_integrity_read(dict_):
                               '/fortran/bin/robufo*')) == 1)
 
     # Check SHOCKS
-    assert (len(dict_['SHOCKS']) == 4)
-    assert (np.array(dict_['SHOCKS']).shape == (4, 4))
-    assert (np.all(np.isfinite(np.array(dict_['SHOCKS']))))
-    assert (np.all(np.diag(np.array(dict_['SHOCKS']) >= 0)))
-    assert ((np.array(dict_['SHOCKS']).transpose() ==
-             np.array(dict_['SHOCKS'])).all())
+    assert (dict_['SHOCKS']).shape == (4, 4)
+    assert (np.all(np.isfinite(dict_['SHOCKS'])))
+    assert (np.all(np.diag(dict_['SHOCKS']) >= 0))
+    assert ((dict_['SHOCKS'].transpose() == dict_['SHOCKS']).all())
     if not (np.count_nonzero(dict_['SHOCKS']) == 0):
         assert(np.linalg.det(dict_['SHOCKS']) > 0)
 

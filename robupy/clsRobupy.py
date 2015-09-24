@@ -263,9 +263,9 @@ class RobupyCls(MetaCls):
         assert (version in ['FORTRAN', 'F2PY', 'PYTHON'])
 
         # Shock distribution
-        assert (isinstance(shocks, list))
+        assert (isinstance(shocks, np.ndarray))
         assert (np.all(np.isfinite(shocks)))
-        assert (np.array(shocks).shape == (4, 4))
+        assert (shocks.shape == (4, 4))
 
         # Check integrity of results as well
         self._check_integrity_results()

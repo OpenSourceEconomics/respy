@@ -4,6 +4,8 @@ of alternative degrees of ambiguity.
 """
 
 # standard library
+from multiprocessing import Pool
+
 import argparse
 import shutil
 import glob
@@ -11,14 +13,35 @@ import sys
 import os
 
 # PYTHONPATH
-sys.path.insert(0, os.environ['ROBUPY'])
-sys.path.insert(0, os.environ['ROBUPY'] + '/development/tests/random')
 sys.path.insert(0, os.environ['ROBUPY'] + '/development/working/keane_economy/fort')
+sys.path.insert(0, os.environ['ROBUPY'] + '/development/tests/random')
+sys.path.insert(0, os.environ['ROBUPY'])
 
 # Import function to that a fast version of the toolbox is available.
 from robupy.tests.random_init import print_random_dict
 from modules.auxiliary import compile_package
 from robupy import *
+
+
+''' Functions
+'''
+
+
+def distribute_arguments(parser):
+    """ Distribute command line arguments.
+    """
+    # Process command line arguments
+    args = parser.parse_args()
+
+    # Extract arguments
+    is_clean, is_create = args.is_clean, args.is_create
+
+    # Check arguments
+    assert (is_clean in [True, False])
+    assert (is_create in [True, False])
+
+    # Finishing
+    return is_clean, is_create
 
 
 def clean():
@@ -37,39 +60,52 @@ def clean():
         except IsADirectoryError:
             shutil.rmtree(file_)
 
-def  create():
 
-    # Compile fast version of ROBUPY package
-    compile_package('fast')
+def solve_ambiguous_economy(level):
+    """ Solve an economy in a subdirectory.
+    """
 
-
+    # Process baseline file
     robupy_obj = read('model.robupy.ini')
 
     init_dict = robupy_obj.get_attr('init_dict')
 
+    # Create directory
+    os.mkdir(str(level))
+
+    # Solve
+    os.chdir(str(level))
+
+    # Update level of ambiguity
+    init_dict['AMBIGUITY']['level'] = level
+
+    # Write initialization file
+    print_random_dict(init_dict)
+
+    # Solve requested model
+    robupy_obj = read('test.robupy.ini')
+
+    solve(robupy_obj)
+
+    # Finishing
+    os.chdir('../')
+
+
+def create():
+    """ Solve the RESTUD economies for different levels of ambiguity.
+    """
+    # Compile fast version of ROBUPY package
+    compile_package('fast')
+
     # Cleanup
     clean()
 
-    for level in [0.0, 0.1, 0.2]:
+    # Run multiple economies in parallel
+    #p = Pool(3)
 
-        # Create directory
-        os.mkdir(str(level))
+    #p.map(solve_ambiguous_economy,  [0.0, 0.1, 0.2, 0.4])
 
-        # Solve
-        os.chdir(str(level))
-
-        init_dict['AMBIGUITY']['level'] = level
-        init_dict['PROGRAM']['debug'] = 'TRUE'
-        init_dict['SOLUTION']['store'] = 'FALSE'
-
-        print_random_dict(init_dict)
-
-        robupy_obj = read('test.robupy.ini')
-
-        solve(robupy_obj)
-
-        # Finishing
-        os.chdir('../')
+    solve_ambiguous_economy(0.0)
 
 ''' Execution of module as script.
 '''
@@ -85,11 +121,7 @@ if __name__ == '__main__':
     parser.add_argument('--create', action='store_true', dest='is_create',
                         help='create results')
 
-    # Process command line arguments
-    args = parser.parse_args()
-
-    is_clean = args.is_clean
-    is_create = args.is_create
+    is_clean, is_create = distribute_arguments(parser)
 
     # Run function
     if is_clean: clean()
