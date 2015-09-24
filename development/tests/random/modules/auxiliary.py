@@ -17,6 +17,7 @@ from modules.clsMail import MailCls
 ''' Auxiliary functions.
 '''
 
+
 def build_f2py_testing():
     """ Build the F2PY testing interface for testing.f
     """
@@ -30,10 +31,8 @@ def build_f2py_testing():
              'robufort_testing.f90']
 
     for file_ in files:
-        os.system('gfortran ' + compiler_options + ' -c ' + file_)
-
-#        os.system('gfortran ' + compiler_options + ' -c ' + file_ +
-#                  ' > /dev/null 2>&1')
+        os.system('gfortran ' + compiler_options + ' -c ' + file_ +
+                  ' > /dev/null 2>&1')
 
     os.system('ar crs libfort_testing.a *.o *.mod')
 
@@ -55,10 +54,8 @@ def build_f2py_testing():
     shutil.move('libfort_testing.a', 'lib/')
 
     # Build interface
-    #os.system('f2py3 -c -m  f2py_testing f2py_interface_testing.f90 -Iinclude -Llib '
-    #        '-lfort_testing > /dev/null 2>&1')
     os.system('f2py3 -c -m  f2py_testing f2py_interface_testing.f90 -Iinclude -Llib '
-            '-lfort_testing')
+            '-lfort_testing > /dev/null 2>&1')
 
 
     # Finish

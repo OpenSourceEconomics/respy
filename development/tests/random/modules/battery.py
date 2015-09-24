@@ -480,7 +480,7 @@ def test_98():
     constraints = dict()
     constraints['edu'] = (10, 20)
     constraints['level'] = 0.00
-    constraints['debug'] = 'True'
+    constraints['debug'] = True
     constraints['eps_zero'] = True
 
     version = np.random.choice(['FORTRAN', 'F2PY', 'PYTHON'])
