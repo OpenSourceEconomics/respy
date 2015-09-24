@@ -176,6 +176,7 @@ def cleanup():
 
     os.system('./clean')
 
+
 def compile_package(which, hidden=True):
     """ Compile toolbox
     """

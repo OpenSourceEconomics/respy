@@ -363,7 +363,9 @@ def test_96():
     # Ensure that fast solution methods are available
     compile_package('fast')
 
-    import robupy.python.f2py.f2py_debug as fort
+    import robupy.python.f2py.f2py_debug as fort_debug
+    import robupy.python.f2py.f2py_library as fort_lib
+    import robupy.python.py.python_library as py_lib
 
     for _ in range(1000):
 
@@ -377,13 +379,36 @@ def test_96():
 
         # Kullback-Leibler (KL) divergence
         py = _divergence(x, cov, level)
-        f90 = fort.wrapper_divergence(x, cov, level)
+        f90 = fort_debug.wrapper_divergence(x, cov, level)
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
         # Gradient approximation of KL divergence
         py = approx_fprime(x, _divergence, eps, cov, level)
-        f90 = fort.wrapper_divergence_approx_gradient(x, cov, level, eps)
+        f90 = fort_debug.wrapper_divergence_approx_gradient(x, cov, level, eps)
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
+
+    for _ in range(25):
+
+        # Create grid of admissible state space values.
+        num_periods = np.random.random_integers(1, 15)
+        edu_start = np.random.random_integers(1, 5)
+        edu_max = edu_start + np.random.random_integers(1, 5)
+
+        # Prepare interface
+        min_idx = min(num_periods, (edu_max - edu_start + 1))
+
+        # FORTRAN
+        fort_a, fort_b, fort_c = fort_lib.wrapper_create_state_space(
+            num_periods, edu_start, edu_max, min_idx)
+
+        # PYTHON
+        py_a, py_b, py_c = py_lib.create_state_space(num_periods, edu_start,
+            edu_max, min_idx)
+
+        # Ensure equivalence
+        for obj in [[fort_a, py_a], [fort_b, py_b], [fort_c, py_c]]:
+            np.testing.assert_allclose(obj[0], obj[1])
+
 
 
 def test_97():
