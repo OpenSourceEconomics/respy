@@ -1,0 +1,97 @@
+#!/usr/bin/env python
+""" This script solves and simulates the first RESTUD economy for a variety
+of alternative degrees of ambiguity.
+"""
+
+# standard library
+import argparse
+import shutil
+import glob
+import sys
+import os
+
+# PYTHONPATH
+sys.path.insert(0, os.environ['ROBUPY'])
+sys.path.insert(0, os.environ['ROBUPY'] + '/development/tests/random')
+sys.path.insert(0, os.environ['ROBUPY'] + '/development/working/keane_economy/fort')
+
+# Import function to that a fast version of the toolbox is available.
+from robupy.tests.random_init import print_random_dict
+from modules.auxiliary import compile_package
+from robupy import *
+
+
+def clean():
+    """ Clean directory.
+    """
+
+    files = glob.glob('*')
+
+    for file_ in files:
+
+        if file_ in ['model.robupy.ini', 'run']:
+            continue
+
+        try:
+            os.unlink(file_)
+        except IsADirectoryError:
+            shutil.rmtree(file_)
+
+def  create():
+
+    # Compile fast version of ROBUPY package
+    compile_package('fast')
+
+
+    robupy_obj = read('model.robupy.ini')
+
+    init_dict = robupy_obj.get_attr('init_dict')
+
+    # Cleanup
+    clean()
+
+    for level in [0.0, 0.1, 0.2]:
+
+        # Create directory
+        os.mkdir(str(level))
+
+        # Solve
+        os.chdir(str(level))
+
+        init_dict['AMBIGUITY']['level'] = level
+        init_dict['PROGRAM']['debug'] = 'TRUE'
+        init_dict['SOLUTION']['store'] = 'FALSE'
+
+        print_random_dict(init_dict)
+
+        robupy_obj = read('test.robupy.ini')
+
+        solve(robupy_obj)
+
+        # Finishing
+        os.chdir('../')
+
+''' Execution of module as script.
+'''
+if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser(
+        description='Solve RESTUD economy for varying level of ambiguity.',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    parser.add_argument('--clean', action='store_true', dest='is_clean',
+                        help='clean directory')
+
+    parser.add_argument('--create', action='store_true', dest='is_create',
+                        help='create results')
+
+    # Process command line arguments
+    args = parser.parse_args()
+
+    is_clean = args.is_clean
+    is_create = args.is_create
+
+    # Run function
+    if is_clean: clean()
+
+    if is_create: create()

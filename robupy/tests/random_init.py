@@ -255,6 +255,9 @@ def print_random_dict(dict_):
 
             if flag in ['SHOCKS']:
 
+                # Type conversion
+                dict_[flag] = np.array(dict_[flag])
+
                 str_ = ' {0:15.2f} {1:15.2f} {2:15.2f} {3:15.2f}\n'
 
                 file_.write(' ' + flag.upper() + '\n\n')

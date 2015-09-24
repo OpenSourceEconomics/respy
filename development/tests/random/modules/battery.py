@@ -38,6 +38,8 @@ from robupy.python.py.ambiguity import _criterion
 
 ''' Main
 '''
+
+
 def test_92():
     """ This test compares the functions calculating the payoffs under
     ambiguity.
@@ -187,9 +189,6 @@ def test_93():
 
         # Select ex ante payoffs
         payoffs_ex_ante = periods_payoffs_ex_ante[period, k, :]
-
-        # Evaluation point
-        x = np.random.random(size=2)
 
         args = (num_draws, eps_standard, period, k, payoffs_ex_ante, edu_max,
             edu_start, mapping_state_idx, states_all, num_periods, periods_emax,
