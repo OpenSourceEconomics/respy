@@ -131,7 +131,7 @@ def generate_random_dict(constraints=None):
         # Extract objects
         store = constraints['store']
         # Checks
-        assert (store in ['True', 'False'])
+        assert (store in [True, False])
         # Replace in initialization file
         dict_['SOLUTION']['store'] = store
 
@@ -140,7 +140,7 @@ def generate_random_dict(constraints=None):
         # Extract objects
         debug = constraints['debug']
         # Checks
-        assert (debug in ['True', 'False'])
+        assert (debug in [True, False])
         # Replace in initialization file
         dict_['PROGRAM']['debug'] = debug
 

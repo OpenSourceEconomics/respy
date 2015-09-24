@@ -511,7 +511,7 @@ def test_99():
 
     # Constraint to risk model
     constraints = dict()
-    constraints['debug'] = 'True'
+    constraints['debug'] = True
     constraints['measure'] = 'kl'
 
     # Just making sure that it also works for this special case. Note that
