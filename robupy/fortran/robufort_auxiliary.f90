@@ -11,6 +11,78 @@ MODULE robufort_auxiliary
 CONTAINS
 !*******************************************************************************
 !*******************************************************************************
+SUBROUTINE logging_ambiguity(x_internal, mode, period, k)
+
+    !/* external objects    */
+
+    REAL(our_dble), INTENT(IN)      :: x_internal(2)
+
+    INTEGER(our_int), INTENT(IN)    :: mode
+    INTEGER(our_int), INTENT(IN)    :: k
+    INTEGER(our_int), INTENT(IN)    :: period
+
+    !/* internal objects    */
+
+    LOGICAL                         :: is_success
+
+    CHARACTER(55)                   :: message_optimizer
+    CHARACTER(5)                    :: message_success
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+    
+    ! Success message
+    is_success = (mode == zero_int)
+    IF(is_success) THEN
+        message_success = 'True'
+    ELSE
+        message_success = 'False'
+    END IF
+
+    ! Optimizer message
+    IF (mode == -1) THEN
+        message_optimizer = 'Gradient evaluation required (g & a)'
+    ELSEIF (mode == 0) THEN
+        message_optimizer = 'Optimization terminated successfully.'
+    ELSEIF (mode == 1) THEN
+        message_optimizer = 'Function evaluation required (f & c)'
+    ELSEIF (mode == 2) THEN
+        message_optimizer = 'More equality constraints than independent variables'
+    ELSEIF (mode == 3) THEN
+        message_optimizer = 'More than 3*n iterations in LSQ subproblem'
+    ELSEIF (mode == 4) THEN
+        message_optimizer = 'Inequality constraints incompatible'
+    ELSEIF (mode == 5) THEN
+        message_optimizer = 'Singular matrix E in LSQ subproblem'
+    ELSEIF (mode == 6) THEN
+        message_optimizer = 'Singular matrix C in LSQ subproblem'
+    ELSEIF (mode == 7) THEN
+        message_optimizer = 'Rank-deficient equality constraint subproblem HFTI'
+    ELSEIF (mode == 8) THEN
+        message_optimizer = 'Positive directional derivative for linesearch'
+    ELSEIF (mode == 8) THEN
+        message_optimizer = 'Iteration limit exceeded'
+    END IF
+
+    ! Write to file
+    OPEN(UNIT=1, FILE='ambiguity.robupy.log', ACCESS='APPEND')
+
+        1000 FORMAT(A,i7,A,i7)
+        1010 FORMAT(A10,(2(1x,f10.4)))
+        WRITE(1, 1000) " PERIOD", period, "  STATE", k
+        WRITE(1, *) ""
+        WRITE(1, 1010) "    Result ", x_internal
+        WRITE(1, *) ""
+        WRITE(1, *) "   Success ", message_success
+        WRITE(1, *) "   Message ", message_optimizer
+        WRITE(1, *) ""
+
+    CLOSE(1)
+
+END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE divergence(div, x, cov, level)
 
     !/* external objects    */

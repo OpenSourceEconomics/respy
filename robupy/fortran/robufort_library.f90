@@ -279,6 +279,8 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
         END IF
 
     END DO
+    
+    IF (is_debug) CALL logging_ambiguity(x_internal, mode, period, k)
 
 END SUBROUTINE
 !*******************************************************************************
