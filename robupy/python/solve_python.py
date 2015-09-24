@@ -266,53 +266,6 @@ def _wrapper_backward_induction_procedure(robupy_obj, periods_eps_relevant,
 ''' Auxiliary functions
 '''
 
-
-def _create_eps(robupy_obj):
-    """ Create disturbances.  Handle special case of zero variances as this
-    case is useful for hand-based testing. The disturbances are drawn from a
-    standard normal distribution and transformed later in the code.
-    """
-    # Distribute class attributes
-    eps_cholesky = robupy_obj.get_attr('eps_cholesky')
-
-    is_ambiguous = robupy_obj.get_attr('is_ambiguous')
-
-    num_periods = robupy_obj.get_attr('num_periods')
-
-    num_draws = robupy_obj.get_attr('num_draws')
-
-    seed = robupy_obj.get_attr('seed_solution')
-
-    is_debug = robupy_obj.get_attr('is_debug')
-
-    # Initialize container
-    periods_eps_relevant = np.tile(-99.00, (num_periods, num_draws, 4))
-
-    # Draw standard normal disturbances. These are transformed in the
-    # relevant disturbances below, the process differs depending on whether
-    # the environment is ambiguous or not.
-    np.random.seed(seed)
-    standard_deviates = np.random.multivariate_normal(np.zeros(4),
-        np.identity(4), (num_periods, num_draws))
-
-    # This is only used to compare the different implementations of the
-    # ROBUPY package.
-    if is_debug and os.path.isfile('disturbances.txt'):
-        standard_deviates = read_disturbances(robupy_obj)
-
-    if is_ambiguous:
-        periods_eps_relevant = standard_deviates
-    else:
-        for period in range(num_periods):
-            periods_eps_relevant[period, :, :] = np.dot(eps_cholesky,
-                standard_deviates[period, :, :].T).T
-            for j in [0, 1]:
-                periods_eps_relevant[period, :, j] = np.exp(periods_eps_relevant[
-                                                      period, :, j])
-    # Finishing
-    return periods_eps_relevant
-
-
 def _summarize_ambiguity(robupy_obj):
     """ Summarize optimizations in case of ambiguity.
     """

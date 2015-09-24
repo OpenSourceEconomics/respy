@@ -213,6 +213,7 @@ def test_93():
             else:
                 raise AssertionError
 
+
 def test_94():
     """ This test case compare the results of a debugging setup for the SLSQP
     algorithm's PYTHON and FORTRAN implementation
