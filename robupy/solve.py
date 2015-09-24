@@ -42,7 +42,6 @@ def solve(robupy_obj):
 
         robupy_obj = solve_python(robupy_obj)
 
-
     # Summarize optimizations in case of ambiguity.
     if is_debug and is_ambiguous:
         _summarize_ambiguity(robupy_obj)

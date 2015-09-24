@@ -83,6 +83,52 @@ SUBROUTINE logging_ambiguity(x_internal, mode, period, k)
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
+SUBROUTINE logging_solution(indicator, period)
+
+    !/* external objects    */
+
+    INTEGER(our_int), INTENT(IN)            :: indicator
+    INTEGER(our_int), INTENT(IN), OPTIONAL  :: period
+
+    !/* internals objects    */
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+
+    
+    IF (indicator == 0) THEN
+        OPEN(UNIT=99, FILE='logging.robupy.sol.log', ACCESS='APPEND')
+
+    ! State space creation
+    ELSEIF (indicator == 1) THEN
+            WRITE(99, *) " Starting state space creation   "
+            WRITE(99, *) ""
+
+    ! Ex Ante Payoffs
+    ELSEIF (indicator == 2) THEN
+            WRITE(99, *) " Starting calculation of ex ante payoffs  "
+            WRITE(99, *) ""
+
+    ! Backward induction procedure
+    ELSEIF (indicator == 3) THEN
+            WRITE(99, *) " Starting backward induction procedure "
+            WRITE(99, *) ""
+    ELSEIF (indicator == 4) THEN
+            WRITE(99, *) " ... solving period ", period
+            WRITE(99, *) ""
+
+    ! Finishing
+    ELSEIF (indicator == -1) THEN
+            WRITE(99, *) " ... finished "
+            WRITE(99, *) ""
+            WRITE(99, *) ""
+        CLOSE(99)
+    END IF
+  
+END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE divergence(div, x, cov, level)
 
     !/* external objects    */

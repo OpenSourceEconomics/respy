@@ -581,6 +581,9 @@ SUBROUTINE calculate_payoffs_ex_ante(periods_payoffs_ex_ante, num_periods, &
 ! Algorithm
 !------------------------------------------------------------------------------
     
+    ! Logging
+    CALL logging_solution(0); CALL logging_solution(2)
+
     ! Initialize missing value
     periods_payoffs_ex_ante = missing_dble
 
@@ -637,6 +640,9 @@ SUBROUTINE calculate_payoffs_ex_ante(periods_payoffs_ex_ante, num_periods, &
         END DO
 
     END DO
+
+    ! Logging
+    CALL logging_solution(-1)
 
 END SUBROUTINE
 !*******************************************************************************
@@ -697,9 +703,15 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
     periods_emax = missing_dble
     periods_future_payoffs = missing_dble
     periods_payoffs_ex_post = missing_dble
+    
+    ! Logging
+    CALL logging_solution(0); CALL logging_solution(3)
 
     ! Backward induction
     DO period = (num_periods - 1), 0, -1
+    
+        ! Logging
+        CALL logging_solution(4, period)
 
         ! Extract disturbances
         eps_relevant = periods_eps_relevant(period + 1, :, :)
@@ -734,9 +746,12 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
 
     END DO
 
+    ! Logging
+    CALL logging_solution(-1)
+
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE create_state_space(states_all, states_number_period, &
                 mapping_state_idx, num_periods, edu_start, edu_max, min_idx)
 
@@ -762,14 +777,17 @@ SUBROUTINE create_state_space(states_all, states_number_period, &
     INTEGER(our_int)                :: edu
     INTEGER(our_int)                :: k
  
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
     
     ! Initialize output 
     states_number_period = missing_int
     mapping_state_idx    = missing_int
     states_all           = missing_int
+
+    ! Logging
+    CALL logging_solution(0); CALL logging_solution(1)
 
     ! Construct state space by periods
     DO period = 0, (num_periods - 1)
@@ -862,6 +880,9 @@ SUBROUTINE create_state_space(states_all, states_number_period, &
 
       END DO
 
+      ! Logging
+      CALL logging_solution(-1)
+
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
@@ -900,8 +921,8 @@ SUBROUTINE get_payoffs_risk(emax_simulated, payoffs_ex_post, future_payoffs, &
             edu_start, periods_emax, states_all, mapping_state_idx, delta)
     
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, future_payoffs, & 
                 num_periods, num_draws, period, k, eps_relevant, & 
                 payoffs_ex_ante, edu_max, edu_start, periods_emax, states_all, & 
@@ -935,9 +956,9 @@ SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, future_payoffs, &
     REAL(our_dble)                  :: disturbances(4)
     REAL(our_dble)                  :: maximum
 
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
     ! Initialize containers
     payoffs_ex_post = zero_dble
@@ -966,8 +987,8 @@ SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, future_payoffs, &
     emax_simulated = emax_simulated / num_draws
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE get_total_value(total_payoffs, payoffs_ex_post, future_payoffs, &
                 period, num_periods, delta, payoffs_ex_ante, & 
                 disturbances, edu_max, edu_start, mapping_state_idx, & 
@@ -1001,9 +1022,9 @@ SUBROUTINE get_total_value(total_payoffs, payoffs_ex_post, future_payoffs, &
 
     LOGICAL                         :: is_myopic
     
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
     
     ! Initialize containers
     payoffs_ex_post = zero_dble
@@ -1036,8 +1057,8 @@ SUBROUTINE get_total_value(total_payoffs, payoffs_ex_post, future_payoffs, &
     END IF
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE get_future_payoffs(future_payoffs, edu_max, edu_start, &
                 mapping_state_idx, period, periods_emax, k, states_all)
 
@@ -1062,9 +1083,9 @@ SUBROUTINE get_future_payoffs(future_payoffs, edu_max, edu_start, &
     INTEGER(our_int)    			:: edu_lagged
     INTEGER(our_int)    			:: future_idx
 
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
     ! Distribute state space
     exp_A = states_all(period + 1, k + 1, 1)
@@ -1099,8 +1120,8 @@ SUBROUTINE get_future_payoffs(future_payoffs, edu_max, edu_start, &
     future_payoffs(4) = periods_emax(period + 1 + 1, future_idx + 1)
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE stabilize_myopic(total_payoffs, future_payoffs)
 
 
@@ -1113,9 +1134,9 @@ SUBROUTINE stabilize_myopic(total_payoffs, future_payoffs)
 
     LOGICAL                         :: is_huge
 
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
     
     ! Determine NAN
     is_huge = (future_payoffs(3) == -HUGE(future_payoffs))
@@ -1125,6 +1146,6 @@ SUBROUTINE stabilize_myopic(total_payoffs, future_payoffs)
     END IF
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
+!*******************************************************************************
+!*******************************************************************************
 END MODULE  

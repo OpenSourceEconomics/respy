@@ -34,13 +34,12 @@ import logging
 
 logging.captureWarnings(True)
 
-formatter = logging.Formatter(' %(asctime)s     %(message)s \n',
-                              datefmt='%I:%M:%S %p')
+formatter = logging.Formatter('%(message)s \n')
 
 # This log file contains information about the progress in solving the model.
 logger = logging.getLogger('ROBUPY_SOLVE')
 
-handler = logging.FileHandler('logging.robupy.sol.log', mode='w', delay=True)
+handler = logging.FileHandler('logging.robupy.sol.log', mode='w')
 
 handler.setFormatter(formatter)
 
