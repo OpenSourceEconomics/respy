@@ -50,7 +50,9 @@ def create_disturbances(robupy_obj, is_simulation):
     # In the case of ambiguous world, the standard deviates are used in the
     # solution part of the program.
     if is_ambiguous and not is_simulation:
-        periods_eps_relevant = standard_deviates
+        for period in range(num_periods):
+            periods_eps_relevant[period, :, :] = np.dot(eps_cholesky,
+                    standard_deviates[period, :, :].T).T
     else:
         # Transform disturbances to relevant distribution
         for period in range(num_periods):

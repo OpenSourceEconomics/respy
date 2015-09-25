@@ -291,26 +291,28 @@ SUBROUTINE get_disturbances(periods_eps_relevant, level, eps_cholesky, &
 
     END IF
 
-    ! Transformation in case of risk-only
+    ! Transformations
+    DO period = 1, num_periods
+        
+        ! Apply variance change
+        DO i = 1, num_draws
+        
+            periods_eps_relevant(period, i:i, :) = &
+                TRANSPOSE(MATMUL(eps_cholesky, TRANSPOSE(periods_eps_relevant(period, i:i, :))))
+        
+        END DO
+
+    END DO
+
+    ! Transformation in case of risk-only. In the case of ambiguity, this 
+    ! transformation is later as it needs adjustment for the switched means.
     IF (level .EQ. zero_dble) THEN
         
-        DO period = 1, num_periods
+        ! Transform disturbance for occupations
+        DO j = 1, 2
         
-            ! Apply variance change
-            DO i = 1, num_draws
-        
-                periods_eps_relevant(period, i:i, :) = &
-                    TRANSPOSE(MATMUL(eps_cholesky, TRANSPOSE(periods_eps_relevant(period, i:i, :))))
-        
-            END DO
-        
-            ! Transform disturbance for occupations
-            DO j = 1, 2
-        
-                periods_eps_relevant(period, :, j) = &
+            periods_eps_relevant(period, :, j) = &
                     EXP(periods_eps_relevant(period, :, j))
-        
-            END DO
         
         END DO
     

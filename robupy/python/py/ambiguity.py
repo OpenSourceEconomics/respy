@@ -63,7 +63,7 @@ def get_payoffs_ambiguity(num_draws, eps_standard, period, k, payoffs_ex_ante,
         _write_result(period, k, opt)
 
     # Transformation of standard normal deviates to relevant distributions.
-    transform_disturbances_ambiguity(eps_standard, eps_cholesky, opt['x'])
+    eps_relevant = transform_disturbances_ambiguity(eps_standard, opt['x'])
 
     simulated, payoffs_ex_post, future_payoffs = \
         simulate_emax(num_periods, num_draws, period, k, eps_relevant,
@@ -79,10 +79,15 @@ def get_payoffs_ambiguity(num_draws, eps_standard, period, k, payoffs_ex_ante,
 
 ''' Private functions
 '''
-def transform_disturbances_ambiguity(eps_standard, eps_cholesky, x):
 
-    eps_relevant = np.dot(eps_cholesky, eps_standard.T).T
+
+def transform_disturbances_ambiguity(eps_standard, x):
+    """ Transform disturbances
+    """
+
+    eps_relevant = eps_standard.copy()
     eps_relevant[:, :2] = eps_relevant[:, :2] + x
+
     for j in [0, 1]:
         eps_relevant[:, j] = np.exp(eps_relevant[:, j])
 
@@ -101,7 +106,7 @@ def _correct_debugging(opt, x0, level, eps_standard, eps_cholesky, num_periods,
     opt['x'] = x0
 
     # Correct final function value
-    transform_disturbances_ambiguity(eps_standard, eps_cholesky, opt['x'])
+    eps_relevant = transform_disturbances_ambiguity(eps_standard, opt['x'])
 
     simulated, payoffs_ex_post, future_payoffs = \
                 simulate_emax(num_periods, num_draws, period, k, eps_relevant,
@@ -169,11 +174,7 @@ def _criterion(x, num_draws, eps_standard, period, k, payoffs_ex_ante, edu_max,
     """
 
     # Transformation of standard normal deviates to relevant distributions.
-    eps_relevant = np.dot(eps_cholesky, eps_standard.T).T
-    eps_relevant[:, :2] = eps_relevant[:, :2] + x
-    for j in [0, 1]:
-        eps_relevant[:, j] = np.clip(np.exp(eps_relevant[:, j]), 0.0,
-                                     HUGE_FLOAT)
+    eps_relevant = transform_disturbances_ambiguity(eps_standard, x)
 
     # Simulate the expected future value for a given parametrization.
     simulated, _, _ = simulate_emax(num_periods, num_draws, period, k,
