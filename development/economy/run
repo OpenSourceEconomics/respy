@@ -111,8 +111,9 @@ def create(is_parallel):
         p = Pool(3)
         p.map(solve_ambiguous_economy, grid)
     else:
-        grid = [0.1]
-        solve_ambiguous_economy(grid[0])
+        grid = [0.0, 0.1]
+        for level in grid:
+            solve_ambiguous_economy(level)
 
 ''' Execution of module as script.
 '''
