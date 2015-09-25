@@ -582,7 +582,7 @@ SUBROUTINE calculate_payoffs_ex_ante(periods_payoffs_ex_ante, num_periods, &
 !------------------------------------------------------------------------------
     
     ! Logging
-    CALL logging_solution(0); CALL logging_solution(2)
+    CALL logging_solution(2)
 
     ! Initialize missing value
     periods_payoffs_ex_ante = missing_dble
@@ -705,7 +705,7 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
     periods_payoffs_ex_post = missing_dble
     
     ! Logging
-    CALL logging_solution(0); CALL logging_solution(3)
+    CALL logging_solution(3)
 
     ! Backward induction
     DO period = (num_periods - 1), 0, -1
@@ -787,7 +787,7 @@ SUBROUTINE create_state_space(states_all, states_number_period, &
     states_all           = missing_int
 
     ! Logging
-    CALL logging_solution(0); CALL logging_solution(1)
+    CALL logging_solution(1)
 
     ! Construct state space by periods
     DO period = 0, (num_periods - 1)

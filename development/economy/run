@@ -38,12 +38,15 @@ def distribute_arguments(parser):
     # Extract arguments
     is_clean, is_create = args.is_clean, args.is_create
 
+    is_parallel = args.is_parallel
+
     # Check arguments
     assert (is_clean in [True, False])
     assert (is_create in [True, False])
+    assert (is_parallel in [True, False])
 
     # Finishing
-    return is_clean, is_create
+    return is_clean, is_create, is_parallel
 
 
 def clean():
@@ -93,23 +96,23 @@ def solve_ambiguous_economy(level):
     os.chdir('../')
 
 
-def create():
+def create(is_parallel):
     """ Solve the RESTUD economies for different levels of ambiguity.
     """
-    # Compile fast version of ROBUPY package
-    compile_package('fast')
-
-    # Auxiliary objects
-    grid = np.linspace(0.00, 1.0, num=21)
-
     # Cleanup
     clean()
 
+    # Compile fast version of ROBUPY package
+    compile_package('fast')
+
     # Run multiple economies in parallel
-    p = Pool(3)
-
-    p.map(solve_ambiguous_economy, grid)
-
+    if is_parallel:
+        grid = np.linspace(0.00, 1.0, num=21)
+        p = Pool(3)
+        p.map(solve_ambiguous_economy, grid)
+    else:
+        grid = [0.1]
+        solve_ambiguous_economy(grid[0])
 
 ''' Execution of module as script.
 '''
@@ -125,9 +128,12 @@ if __name__ == '__main__':
     parser.add_argument('--create', action='store_true', dest='is_create',
                         help='create results')
 
-    is_clean, is_create = distribute_arguments(parser)
+    parser.add_argument('--parallel', action='store_true', dest='is_parallel',
+                        help='parallel execution')
+
+    is_clean, is_create, is_parallel = distribute_arguments(parser)
 
     # Run function
     if is_clean: clean()
 
-    if is_create: create()
+    if is_create: create(is_parallel)
