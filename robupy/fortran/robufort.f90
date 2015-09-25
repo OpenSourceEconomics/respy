@@ -309,13 +309,17 @@ SUBROUTINE get_disturbances(periods_eps_relevant, level, shocks, seed, &
     IF (level .EQ. zero_dble) THEN
         
         ! Transform disturbance for occupations
-        DO j = 1, 2
-        
-            periods_eps_relevant(period, :, j) = &
-                    EXP(periods_eps_relevant(period, :, j))
-        
+        DO period = 1, num_periods
+
+            DO j = 1, 2
+            
+                periods_eps_relevant(period, :, j) = &
+                        EXP(periods_eps_relevant(period, :, j))
+            
+            END DO
+
         END DO
-    
+        
     END IF
 
     ! Special case of absence randomness. Note that the disturbances for the 
