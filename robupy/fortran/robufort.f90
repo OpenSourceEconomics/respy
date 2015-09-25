@@ -217,14 +217,13 @@ SUBROUTINE read_specification(num_periods, delta, level, measure, coeffs_A, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE get_disturbances(periods_eps_relevant, level, eps_cholesky, & 
-                shocks, seed, is_debug, is_zero) 
+SUBROUTINE get_disturbances(periods_eps_relevant, level, shocks, seed, &
+                is_debug, is_zero) 
 
     !/* external objects    */
 
     REAL(our_dble), INTENT(OUT)     :: periods_eps_relevant(:, :, :)
 
-    REAL(our_dble), INTENT(IN)      :: eps_cholesky(4, 4)
     REAL(our_dble), INTENT(IN)      :: shocks(4, 4)
     REAL(our_dble), INTENT(IN)      :: level
 
@@ -234,6 +233,8 @@ SUBROUTINE get_disturbances(periods_eps_relevant, level, eps_cholesky, &
     LOGICAL, INTENT(IN)             :: is_zero
 
     !/* internal objects    */
+
+    REAL(our_dble)                  :: eps_cholesky(4, 4)
 
     INTEGER(our_int)                :: seed_inflated(15)
     INTEGER(our_int)                :: num_periods
@@ -253,6 +254,8 @@ SUBROUTINE get_disturbances(periods_eps_relevant, level, eps_cholesky, &
     num_periods = SIZE(periods_eps_relevant, 1)
 
     num_draws = SIZE(periods_eps_relevant, 2)
+
+    CALL cholesky(eps_cholesky, shocks)
 
     ! Set random seed
     seed_inflated(:) = seed
@@ -390,7 +393,6 @@ PROGRAM robufort
     
     REAL(our_dble)                  :: payoffs_ex_post(4)
     REAL(our_dble)                  :: payoffs_ex_ante(4)
-    REAL(our_dble)                  :: eps_cholesky(4, 4)
     REAL(our_dble)                  :: future_payoffs(4)
     REAL(our_dble)                  :: total_payoffs(4)
     REAL(our_dble)                  :: disturbances(4)
@@ -436,7 +438,6 @@ PROGRAM robufort
 
     ! Auxiliary objects
     max_states_period = MAXVAL(states_number_period)
-    CALL cholesky(eps_cholesky, shocks)
     
     ! Allocate arrays
     ALLOCATE(periods_payoffs_ex_ante(num_periods, max_states_period, 4))
@@ -455,16 +456,16 @@ PROGRAM robufort
 
     ! Draw random disturbances. For is_debugging purposes, these might also be 
     ! read in from disk or set to zero/one.
-    CALL get_disturbances(periods_eps_relevant, level, eps_cholesky, shocks, &
-            seed_solution, is_debug, is_zero)
+    CALL get_disturbances(periods_eps_relevant, level, shocks, seed_solution, &
+            is_debug, is_zero)
 
     ! Perform backward induction procedure.
     CALL backward_induction(periods_emax, periods_payoffs_ex_post, &
             periods_future_payoffs, num_periods, max_states_period, &
             periods_eps_relevant, num_draws, states_number_period, & 
             periods_payoffs_ex_ante, edu_max, edu_start, &
-            mapping_state_idx, states_all, delta, is_debug, &
-            eps_cholesky, level, measure)
+            mapping_state_idx, states_all, delta, is_debug, shocks, &
+            level, measure)
    
     ! Store results. These are read in by the PYTHON wrapper and added 
     ! to the clsRobupy instance.

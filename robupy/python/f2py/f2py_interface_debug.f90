@@ -10,7 +10,7 @@ SUBROUTINE wrapper_get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
                 future_payoffs, num_draws, eps_standard, period, k, &
                 payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
                 states_all, num_periods, periods_emax, delta, is_debug, &
-                eps_cholesky, level, measure)
+                shocks, level, measure)
 
     !/* external libraries    */
 
@@ -36,7 +36,7 @@ SUBROUTINE wrapper_get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
     INTEGER, INTENT(IN)             :: k
 
     DOUBLE PRECISION, INTENT(IN)    :: payoffs_ex_ante(:)
-    DOUBLE PRECISION, INTENT(IN)    :: eps_cholesky(:, :)
+    DOUBLE PRECISION, INTENT(IN)    :: shocks(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: eps_standard(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_emax(:,:)
     DOUBLE PRECISION, INTENT(IN)    :: delta
@@ -55,7 +55,7 @@ SUBROUTINE wrapper_get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
                 future_payoffs, num_draws, eps_standard, period, k, & 
                 payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
                 states_all, num_periods, periods_emax, delta, is_debug, &
-                eps_cholesky, level, measure)
+                shocks, level, measure)
 
 END SUBROUTINE
 !*******************************************************************************
@@ -63,7 +63,7 @@ END SUBROUTINE
 SUBROUTINE wrapper_criterion_approx_gradient(rslt, x, eps, num_draws, &
                 eps_standard, period, k, payoffs_ex_ante, edu_max, &
                 edu_start, mapping_state_idx, states_all, num_periods, &
-                periods_emax, eps_cholesky, delta, is_debug)
+                periods_emax, delta, is_debug)
 
     !/* external libraries    */
 
@@ -77,7 +77,6 @@ SUBROUTINE wrapper_criterion_approx_gradient(rslt, x, eps, num_draws, &
 
     DOUBLE PRECISION, INTENT(OUT)   :: rslt(2)
 
-    DOUBLE PRECISION, INTENT(IN)    :: eps_cholesky(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: eps_standard(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: payoffs_ex_ante(:)
     DOUBLE PRECISION, INTENT(IN)    :: periods_emax(:,:)
@@ -103,8 +102,7 @@ SUBROUTINE wrapper_criterion_approx_gradient(rslt, x, eps, num_draws, &
     ! Approximate the gradient of the criterion function
     CALL criterion_approx_gradient(rslt, x, eps, num_draws, eps_standard, &
             period, k, payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
-            states_all, num_periods, periods_emax, eps_cholesky, delta, &
-            is_debug)
+            states_all, num_periods, periods_emax, delta, is_debug)
 
 END SUBROUTINE
 !*******************************************************************************
@@ -158,7 +156,7 @@ END SUBROUTINE
 SUBROUTINE wrapper_criterion(emax_simulated, payoffs_ex_post, future_payoffs, &
                 x, num_draws, eps_standard, period, k, payoffs_ex_ante, &
                 edu_max, edu_start, mapping_state_idx, states_all, &
-                num_periods, periods_emax, eps_cholesky, delta, is_debug)
+                num_periods, periods_emax, delta, is_debug)
 
     !/* external libraries    */
 
@@ -174,7 +172,6 @@ SUBROUTINE wrapper_criterion(emax_simulated, payoffs_ex_post, future_payoffs, &
     DOUBLE PRECISION, INTENT(OUT)   :: future_payoffs(4)
     DOUBLE PRECISION, INTENT(OUT)   :: emax_simulated
 
-    DOUBLE PRECISION, INTENT(IN)    :: eps_cholesky(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: eps_standard(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: payoffs_ex_ante(:)
     DOUBLE PRECISION, INTENT(IN)    :: periods_emax(:,:)
@@ -199,7 +196,7 @@ SUBROUTINE wrapper_criterion(emax_simulated, payoffs_ex_post, future_payoffs, &
     CALL criterion(emax_simulated, payoffs_ex_post, future_payoffs, &
                 x, num_draws, eps_standard, period, k, payoffs_ex_ante, &
                 edu_max, edu_start, mapping_state_idx, states_all, &
-                num_periods, periods_emax, eps_cholesky, delta, is_debug)
+                num_periods, periods_emax, delta, is_debug)
 
 END SUBROUTINE
 !*******************************************************************************

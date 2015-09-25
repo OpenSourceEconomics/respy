@@ -49,7 +49,7 @@ SUBROUTINE wrapper_backward_induction(periods_emax, periods_payoffs_ex_post, &
                 periods_future_payoffs, num_periods, max_states_period, &
                 periods_eps_relevant, num_draws, states_number_period, &
                 periods_payoffs_ex_ante, edu_max, edu_start, & 
-                mapping_state_idx, states_all, delta, is_debug, eps_cholesky, &
+                mapping_state_idx, states_all, delta, is_debug, shocks, &
                 level, measure)
 
     !/* external libraries    */
@@ -68,7 +68,7 @@ SUBROUTINE wrapper_backward_induction(periods_emax, periods_payoffs_ex_post, &
 
     DOUBLE PRECISION, INTENT(IN)    :: periods_eps_relevant(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_payoffs_ex_ante(:, :, :   )
-    DOUBLE PRECISION, INTENT(IN)    :: eps_cholesky(4, 4)
+    DOUBLE PRECISION, INTENT(IN)    :: shocks(4, 4)
     DOUBLE PRECISION, INTENT(IN)    :: delta
     DOUBLE PRECISION, INTENT(IN)    :: level
 
@@ -94,7 +94,7 @@ SUBROUTINE wrapper_backward_induction(periods_emax, periods_payoffs_ex_post, &
             periods_future_payoffs, num_periods, max_states_period, &
             periods_eps_relevant, num_draws, states_number_period, &
             periods_payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
-            states_all, delta, is_debug, eps_cholesky, level, measure)
+            states_all, delta, is_debug, shocks, level, measure)
 
 
 END SUBROUTINE
