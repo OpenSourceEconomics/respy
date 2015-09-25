@@ -100,15 +100,8 @@ SUBROUTINE get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
             eps_cholesky, delta, is_debug, shocks, level)
 
     ! Transform disturbances
-    DO i = 1, num_draws
-        eps_relevant(i:i, :) = TRANSPOSE(MATMUL(eps_cholesky, TRANSPOSE(eps_standard(i:i,:))))
-        eps_relevant(i, :2) = eps_relevant(i, :2) + x_internal
-    END DO
-
-    ! Transform disturbance for occupations
-    DO j = 1, 2
-        eps_relevant(:, j) = EXP(eps_relevant(:, j))
-    END DO
+    CALL transform_disturbances_ambiguity(eps_relevant, eps_standard, &
+            eps_cholesky, x_internal, num_draws)
 
     ! Evaluate expected future value for perturbed values
     CALL simulate_emax(emax_simulated, payoffs_ex_post, future_payoffs, &
