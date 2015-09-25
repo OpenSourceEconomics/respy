@@ -70,8 +70,6 @@ SUBROUTINE get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
     !/* internal objects    */
 
     INTEGER(our_int)                :: maxiter
-    INTEGER(our_int)                :: j
-    INTEGER(our_int)                :: i
 
     REAL(our_dble)                  :: eps_relevant(num_draws, 4)
     REAL(our_dble)                  :: x_internal(2)
@@ -218,12 +216,12 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
     CALL criterion(f, payoffs_ex_post, future_payoffs, x_internal, &
             num_draws, eps_standard, period, k, payoffs_ex_ante, edu_max, &
             edu_start, mapping_state_idx, states_all, num_periods, &
-            periods_emax, delta, is_debug)
+            periods_emax, delta)
 
     CALL criterion_approx_gradient(g, x_internal, eps, num_draws, &
             eps_standard, period, k, payoffs_ex_ante, edu_max, edu_start, &
             mapping_state_idx, states_all, num_periods, periods_emax, &
-            delta, is_debug)
+            delta)
 
     ! Initialize constraint at starting values
     CALL divergence(c, x_internal, shocks, level)
@@ -238,7 +236,7 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
             CALL criterion(f, payoffs_ex_post, future_payoffs, &
                     x_internal, num_draws, eps_standard, period, k, &
                     payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
-                    states_all, num_periods, periods_emax, delta, is_debug)
+                    states_all, num_periods, periods_emax, delta)
 
             CALL divergence(c, x_internal, shocks, level)
 
@@ -250,7 +248,7 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
             CALL criterion_approx_gradient(g, x_internal, eps, num_draws, &
                     eps_standard, period, k, payoffs_ex_ante, edu_max, &
                     edu_start, mapping_state_idx, states_all, num_periods, &
-                    periods_emax, delta, is_debug)
+                    periods_emax, delta)
 
             CALL divergence_approx_gradient(a, x_internal, shocks, level, eps)
 
@@ -275,7 +273,7 @@ END SUBROUTINE
 SUBROUTINE criterion(emax_simulated, payoffs_ex_post, future_payoffs, &
                 x, num_draws, eps_standard, period, k, payoffs_ex_ante, &
                 edu_max, edu_start, mapping_state_idx, states_all, &
-                num_periods, periods_emax, delta, is_debug)
+                num_periods, periods_emax, delta)
 
     !/* external objects    */
 
@@ -298,14 +296,9 @@ SUBROUTINE criterion(emax_simulated, payoffs_ex_post, future_payoffs, &
     INTEGER(our_int), INTENT(IN)    :: period
     INTEGER(our_int), INTENT(IN)    :: k
 
-    LOGICAL, INTENT(IN)             :: is_debug
-
     !/* internal objects    */
 
-    INTEGER(our_int)                :: i
-    INTEGER(our_int)                :: j
-
-    REAL(our_dble)                  ::eps_relevant(num_draws, 4)
+    REAL(our_dble)                  :: eps_relevant(num_draws, 4)
 
 !-------------------------------------------------------------------------------
 ! Algorithm
@@ -327,7 +320,7 @@ END SUBROUTINE
 SUBROUTINE criterion_approx_gradient(rslt, x, eps, num_draws, eps_standard, &
                 period, k, payoffs_ex_ante, edu_max, edu_start, &
                 mapping_state_idx, states_all, num_periods, periods_emax, &
-                delta, is_debug)
+                delta)
 
     !/* external objects    */
 
@@ -340,16 +333,14 @@ SUBROUTINE criterion_approx_gradient(rslt, x, eps, num_draws, eps_standard, &
     REAL(our_dble), INTENT(IN)      :: x(:)
     REAL(our_dble), INTENT(IN)      :: eps
 
-    INTEGER(our_int), INTENT(IN)   :: mapping_state_idx(:,:,:,:,:)
-    INTEGER(our_int), INTENT(IN)   :: states_all(:,:,:)
+    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:,:,:,:,:)
+    INTEGER(our_int), INTENT(IN)    :: states_all(:,:,:)
     INTEGER(our_int), INTENT(IN)    :: num_periods
     INTEGER(our_int), INTENT(IN)    :: num_draws
     INTEGER(our_int), INTENT(IN)    :: edu_start
     INTEGER(our_int), INTENT(IN)    :: edu_max
     INTEGER(our_int), INTENT(IN)    :: period
     INTEGER(our_int), INTENT(IN)    :: k
-
-    LOGICAL, INTENT(IN)             :: is_debug
 
     !/* internals objects    */
 
@@ -373,7 +364,7 @@ SUBROUTINE criterion_approx_gradient(rslt, x, eps, num_draws, eps_standard, &
     CALL criterion(f0, payoffs_ex_post, future_payoffs, x, num_draws, &
             eps_standard, period, k, payoffs_ex_ante, edu_max, edu_start, &
             mapping_state_idx, states_all, num_periods, periods_emax, &
-            delta, is_debug)
+            delta)
 
     ! Iterate over increments
     DO j = 1, 2
@@ -385,7 +376,7 @@ SUBROUTINE criterion_approx_gradient(rslt, x, eps, num_draws, eps_standard, &
         CALL criterion(f1, payoffs_ex_post, future_payoffs, x + d, &
                 num_draws, eps_standard, period, k, payoffs_ex_ante, &
                 edu_max, edu_start, mapping_state_idx, states_all, &
-                num_periods, periods_emax, delta, is_debug)
+                num_periods, periods_emax, delta)
 
         rslt(j) = (f1 - f0) / d(j)
 

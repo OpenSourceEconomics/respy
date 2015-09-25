@@ -18,7 +18,7 @@ HUGE_FLOAT = 10e10
 
 def get_payoffs_ambiguity(num_draws, eps_standard, period, k, payoffs_ex_ante,
         edu_max, edu_start, mapping_state_idx, states_all, num_periods,
-        periods_emax, delta, is_debug, eps_cholesky, level, measure):
+        periods_emax, delta, is_debug, shocks, level, measure):
     """ Get worst case
     """
     # Initialize options.
@@ -31,7 +31,7 @@ def get_payoffs_ambiguity(num_draws, eps_standard, period, k, payoffs_ex_ante,
     # Collect arguments
     args = (num_draws, eps_standard, period, k, payoffs_ex_ante, edu_max,
             edu_start, mapping_state_idx, states_all, num_periods, periods_emax,
-            eps_cholesky, delta, is_debug)
+            delta, is_debug)
 
     # Run optimization
     if measure == 'absolute':
@@ -43,7 +43,7 @@ def get_payoffs_ambiguity(num_draws, eps_standard, period, k, payoffs_ex_ante,
 
     else:
 
-        constraints = _prep_kl(eps_cholesky, level)
+        constraints = _prep_kl(shocks, level)
 
         opt = minimize(_criterion, x0, args, method='SLSQP', options=options,
                        constraints=constraints)
@@ -53,7 +53,7 @@ def get_payoffs_ambiguity(num_draws, eps_standard, period, k, payoffs_ex_ante,
         # a smooth and informative run of TEST_F in the random development
         # test battery the following checks are performed.
         if is_debug:
-            opt = _correct_debugging(opt, x0, level, eps_standard, eps_cholesky,
+            opt = _correct_debugging(opt, x0, level, eps_standard,
                         num_periods, num_draws, period, k, payoffs_ex_ante,
                         edu_max, edu_start, periods_emax, states_all,
                         mapping_state_idx, delta)
@@ -93,7 +93,8 @@ def transform_disturbances_ambiguity(eps_standard, x):
 
     return eps_relevant
 
-def _correct_debugging(opt, x0, level, eps_standard, eps_cholesky, num_periods,
+
+def _correct_debugging(opt, x0, level, eps_standard, num_periods,
         num_draws, period, k, payoffs_ex_ante, edu_max, edu_start,
         periods_emax, states_all, mapping_state_idx, delta):
     """ Some manipulations for test battery
@@ -119,12 +120,9 @@ def _correct_debugging(opt, x0, level, eps_standard, eps_cholesky, num_periods,
     return opt
 
 
-def _prep_kl(eps_cholesky, level):
+def _prep_kl(shocks, level):
     """ Construct Kullback-Leibler constraint for optimization.
     """
-    # Construct covariances
-    shocks = np.dot(eps_cholesky, eps_cholesky.T)
-
     # Construct constraint
     constraint_divergence = dict()
 
@@ -169,7 +167,7 @@ def _divergence(x, cov, level):
 
 def _criterion(x, num_draws, eps_standard, period, k, payoffs_ex_ante, edu_max,
         edu_start, mapping_state_idx, states_all, num_periods, periods_emax,
-        eps_cholesky, delta, is_debug):
+        delta, is_debug):
     """ Simulate expected future value for alternative shock distributions.
     """
 

@@ -100,8 +100,8 @@ SUBROUTINE wrapper_backward_induction(periods_emax, periods_payoffs_ex_post, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_create_state_space(states_all, states_number_period, mapping_state_idx, & 
-                num_periods, edu_start, edu_max, min_idx)
+SUBROUTINE wrapper_create_state_space(states_all, states_number_period, &
+                mapping_state_idx, num_periods, edu_start, edu_max, min_idx)
     
     !/* external libraries    */
 

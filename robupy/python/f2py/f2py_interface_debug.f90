@@ -63,7 +63,7 @@ END SUBROUTINE
 SUBROUTINE wrapper_criterion_approx_gradient(rslt, x, eps, num_draws, &
                 eps_standard, period, k, payoffs_ex_ante, edu_max, &
                 edu_start, mapping_state_idx, states_all, num_periods, &
-                periods_emax, delta, is_debug)
+                periods_emax, delta)
 
     !/* external libraries    */
 
@@ -93,8 +93,6 @@ SUBROUTINE wrapper_criterion_approx_gradient(rslt, x, eps, num_draws, &
     INTEGER, INTENT(IN)             :: period
     INTEGER, INTENT(IN)             :: k
 
-    LOGICAL, INTENT(IN)             :: is_debug
-
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
@@ -102,7 +100,7 @@ SUBROUTINE wrapper_criterion_approx_gradient(rslt, x, eps, num_draws, &
     ! Approximate the gradient of the criterion function
     CALL criterion_approx_gradient(rslt, x, eps, num_draws, eps_standard, &
             period, k, payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
-            states_all, num_periods, periods_emax, delta, is_debug)
+            states_all, num_periods, periods_emax, delta)
 
 END SUBROUTINE
 !*******************************************************************************
@@ -156,7 +154,7 @@ END SUBROUTINE
 SUBROUTINE wrapper_criterion(emax_simulated, payoffs_ex_post, future_payoffs, &
                 x, num_draws, eps_standard, period, k, payoffs_ex_ante, &
                 edu_max, edu_start, mapping_state_idx, states_all, &
-                num_periods, periods_emax, delta, is_debug)
+                num_periods, periods_emax, delta)
 
     !/* external libraries    */
 
@@ -187,8 +185,6 @@ SUBROUTINE wrapper_criterion(emax_simulated, payoffs_ex_post, future_payoffs, &
     INTEGER, INTENT(IN)             :: period
     INTEGER, INTENT(IN)             :: k
 
-    LOGICAL, INTENT(IN)             :: is_debug
-
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
@@ -196,7 +192,7 @@ SUBROUTINE wrapper_criterion(emax_simulated, payoffs_ex_post, future_payoffs, &
     CALL criterion(emax_simulated, payoffs_ex_post, future_payoffs, &
                 x, num_draws, eps_standard, period, k, payoffs_ex_ante, &
                 edu_max, edu_start, mapping_state_idx, states_all, &
-                num_periods, periods_emax, delta, is_debug)
+                num_periods, periods_emax, delta)
 
 END SUBROUTINE
 !*******************************************************************************

@@ -21,9 +21,9 @@ def solve_python(robupy_obj):
     """ Solve using PYTHON and F2PY functions
     """
     # Distribute class attributes
-    eps_cholesky = robupy_obj.get_attr('eps_cholesky')
-
     measure = robupy_obj.get_attr('measure')
+
+    shocks = robupy_obj.get_attr('shocks')
 
     level = robupy_obj.get_attr('level')
 
@@ -76,7 +76,7 @@ def solve_python(robupy_obj):
 
     periods_emax, periods_payoffs_ex_post, periods_future_payoffs = \
         _wrapper_backward_induction_procedure(robupy_obj, periods_eps_relevant,
-            eps_cholesky, level, measure)
+            shocks, level, measure)
 
     logger.info('... finished \n')
 
@@ -196,7 +196,7 @@ def _wrapper_create_state_space(robupy_obj):
 
 
 def _wrapper_backward_induction_procedure(robupy_obj, periods_eps_relevant,
-        eps_cholesky, level, measure):
+        shocks, level, measure):
     """ Wrapper for backward induction procedure.
     """
     # Distribute class attributes
@@ -231,7 +231,7 @@ def _wrapper_backward_induction_procedure(robupy_obj, periods_eps_relevant,
             python_library.backward_induction(num_periods, max_states_period,
                 periods_eps_relevant, num_draws, states_number_period,
                 periods_payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,
-                states_all, delta, is_debug, eps_cholesky, level, measure)
+                states_all, delta, is_debug, shocks, level, measure)
     else:
         import robupy.python.f2py.f2py_library as f2py_library
         periods_emax, periods_payoffs_ex_post, periods_future_payoffs = \
@@ -239,7 +239,7 @@ def _wrapper_backward_induction_procedure(robupy_obj, periods_eps_relevant,
                 max_states_period, periods_eps_relevant, num_draws,
                 states_number_period, periods_payoffs_ex_ante, edu_max,
                 edu_start, mapping_state_idx, states_all, delta, is_debug,
-                eps_cholesky, level, measure)
+                shocks, level, measure)
 
     # Replace missing values
     periods_emax = replace_missing_values(periods_emax)

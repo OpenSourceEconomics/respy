@@ -17,7 +17,7 @@ logger = logging.getLogger('ROBUPY_SOLVE')
 
 def backward_induction(num_periods, max_states_period, periods_eps_relevant,
         num_draws, states_number_period, periods_payoffs_ex_ante, edu_max,
-        edu_start, mapping_state_idx, states_all, delta, is_debug, eps_cholesky,
+        edu_start, mapping_state_idx, states_all, delta, is_debug, shocks,
         level, measure):
     """ Backward iteration procedure.
     """
@@ -52,7 +52,7 @@ def backward_induction(num_periods, max_states_period, periods_eps_relevant,
                     get_payoffs_ambiguity(num_draws, eps_relevant, period, k,
                         payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,
                         states_all, num_periods, periods_emax, delta, is_debug,
-                        eps_cholesky, level, measure)
+                        shocks, level, measure)
             else:
                 emax, payoffs_ex_post, future_payoffs = \
                     get_payoffs_risk(num_draws, eps_relevant, period, k,

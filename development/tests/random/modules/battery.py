@@ -133,13 +133,13 @@ def test_93():
 
         eps = 1e-6
 
-        cov = np.identity(4)*np.random.normal(size=1)**2
+        shocks = np.identity(4)*np.random.normal(size=1)**2
         level = np.random.normal(size=1)**2
 
         # Setting up PYTHON SLSQP interface for constraints
         constraint = dict()
         constraint['type'] = 'ineq'
-        constraint['args'] = (cov, level)
+        constraint['args'] = (shocks, level)
         constraint['fun'] = _divergence
 
         # Generate constraint periods
@@ -163,8 +163,6 @@ def test_93():
 
         periods_emax = robupy_obj.get_attr('periods_emax')
 
-        eps_cholesky = robupy_obj.get_attr('eps_cholesky')
-
         num_periods = robupy_obj.get_attr('num_periods')
 
         states_all = robupy_obj.get_attr('states_all')
@@ -177,7 +175,7 @@ def test_93():
 
         delta = robupy_obj.get_attr('delta')
 
-        debug = False
+        is_debug = False
 
         # Sample disturbances
         eps_standard = np.random.multivariate_normal(np.zeros(4),
@@ -192,7 +190,7 @@ def test_93():
 
         args = (num_draws, eps_standard, period, k, payoffs_ex_ante, edu_max,
             edu_start, mapping_state_idx, states_all, num_periods, periods_emax,
-            eps_cholesky, delta, debug)
+            delta, is_debug)
 
         py = _minimize_slsqp(_criterion, x0, args, maxiter=maxiter,
                        ftol=ftol, constraints=constraint)['x']
@@ -200,7 +198,7 @@ def test_93():
         f = fort.wrapper_slsqp_robufort(x0, maxiter, ftol, eps, num_draws,
                 eps_standard, period, k, payoffs_ex_ante, edu_max, edu_start,
                 mapping_state_idx, states_all, num_periods, periods_emax,
-                eps_cholesky, delta, debug, cov, level)
+                delta, is_debug, shocks, level)
 
         # Check equality. If not equal up to the tolerance, also check
         # whether the result from the FORTRAN implementation is even better.
