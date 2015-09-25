@@ -50,7 +50,7 @@ SUBROUTINE wrapper_backward_induction(periods_emax, periods_payoffs_ex_post, &
                 periods_eps_relevant, num_draws, states_number_period, &
                 periods_payoffs_ex_ante, edu_max, edu_start, & 
                 mapping_state_idx, states_all, delta, is_debug, shocks, &
-                level, measure)
+                level)
 
     !/* external libraries    */
 
@@ -84,8 +84,6 @@ SUBROUTINE wrapper_backward_induction(periods_emax, periods_payoffs_ex_post, &
 
     LOGICAL, INTENT(IN)             :: is_debug
 
-    CHARACTER, INTENT(IN)           :: measure
-
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
@@ -94,7 +92,7 @@ SUBROUTINE wrapper_backward_induction(periods_emax, periods_payoffs_ex_post, &
             periods_future_payoffs, num_periods, max_states_period, &
             periods_eps_relevant, num_draws, states_number_period, &
             periods_payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
-            states_all, delta, is_debug, shocks, level, measure)
+            states_all, delta, is_debug, shocks, level)
 
 
 END SUBROUTINE

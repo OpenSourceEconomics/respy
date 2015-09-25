@@ -239,7 +239,7 @@ def _wrapper_backward_induction_procedure(robupy_obj, periods_eps_relevant,
                 max_states_period, periods_eps_relevant, num_draws,
                 states_number_period, periods_payoffs_ex_ante, edu_max,
                 edu_start, mapping_state_idx, states_all, delta, is_debug,
-                shocks, level, measure)
+                shocks, level)
 
     # Replace missing values
     periods_emax = replace_missing_values(periods_emax)

@@ -74,8 +74,6 @@ def test_92():
 
         periods_emax = robupy_obj.get_attr('periods_emax')
 
-        eps_cholesky = robupy_obj.get_attr('eps_cholesky')
-
         num_periods = robupy_obj.get_attr('num_periods')
 
         states_all = robupy_obj.get_attr('states_all')
@@ -86,9 +84,11 @@ def test_92():
 
         edu_max = robupy_obj.get_attr('edu_max')
 
-        delta = robupy_obj.get_attr('delta')
-
         measure = robupy_obj.get_attr('measure')
+
+        shocks = robupy_obj.get_attr('shocks')
+
+        delta = robupy_obj.get_attr('delta')
 
         debug = False
 
@@ -106,11 +106,13 @@ def test_92():
         # Set up optimization task
         level = np.random.uniform(0.01, 1.00)
 
-        args = (num_draws, eps_standard, period, k, payoffs_ex_ante,
+        args = [num_draws, eps_standard, period, k, payoffs_ex_ante,
             edu_max, edu_start, mapping_state_idx, states_all, num_periods,
-            periods_emax, debug, delta, eps_cholesky, level, measure)
+            periods_emax, debug, delta, shocks, level]
 
         f = fort.wrapper_get_payoffs_ambiguity(*args)[0]
+
+        args = args + [measure]
         py = get_payoffs_ambiguity(*args)[0]
 
         np.testing.assert_allclose(py, f, rtol=1e-05, atol=1e-06)
@@ -190,7 +192,7 @@ def test_93():
 
         args = (num_draws, eps_standard, period, k, payoffs_ex_ante, edu_max,
             edu_start, mapping_state_idx, states_all, num_periods, periods_emax,
-            delta, is_debug)
+            delta)
 
         py = _minimize_slsqp(_criterion, x0, args, maxiter=maxiter,
                        ftol=ftol, constraints=constraint)['x']
@@ -294,8 +296,6 @@ def test_95():
 
         periods_emax = robupy_obj.get_attr('periods_emax')
 
-        eps_cholesky = robupy_obj.get_attr('eps_cholesky')
-
         num_periods = robupy_obj.get_attr('num_periods')
 
         states_all = robupy_obj.get_attr('states_all')
@@ -339,7 +339,7 @@ def test_95():
         # Criterion function for the determination of the worst case outcomes
         args = (num_draws, eps_standard, period, k, payoffs_ex_ante,
                 edu_max, edu_start, mapping_state_idx, states_all, num_periods,
-                periods_emax, eps_cholesky, delta, debug)
+                periods_emax, delta)
 
         py = _criterion(x, *args)
         f90, _, _ = fort.wrapper_criterion(x, *args)

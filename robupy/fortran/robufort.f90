@@ -125,7 +125,7 @@ SUBROUTINE store_results(mapping_state_idx, states_all, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE read_specification(num_periods, delta, level, measure, coeffs_A, &
+SUBROUTINE read_specification(num_periods, delta, level, coeffs_A, &
                 coeffs_B, coeffs_edu, edu_start, edu_max, coeffs_home, &
                 shocks, num_draws, seed_solution, num_agents, &
                 seed_simulation, is_debug, is_zero) 
@@ -147,8 +147,6 @@ SUBROUTINE read_specification(num_periods, delta, level, measure, coeffs_A, &
     REAL(our_dble), INTENT(OUT)     :: coeffs_B(6)
     REAL(our_dble), INTENT(OUT)     :: delta
     REAL(our_dble), INTENT(OUT)     :: level
-
-    CHARACTER(15), INTENT(OUT)      :: measure
 
     LOGICAL, INTENT(OUT)            :: is_debug
     LOGICAL, INTENT(OUT)            :: is_zero
@@ -180,7 +178,6 @@ SUBROUTINE read_specification(num_periods, delta, level, measure, coeffs_A, &
 
         ! AMBIGUITY
         READ(1, 1510) level
-        READ(1, *) measure
 
         ! WORK
         READ(1, 1500) coeffs_A
@@ -412,16 +409,14 @@ PROGRAM robufort
     LOGICAL                         :: is_huge
     LOGICAL                         :: is_zero
 
-    CHARACTER(15)                   :: measure
-
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
 
     ! Read specification of model
-    CALL read_specification(num_periods, delta, level, measure, coeffs_A, &
-            coeffs_B, coeffs_edu, edu_start, edu_max, coeffs_home, shocks, &
-            num_draws, seed_solution, num_agents, seed_simulation, &
+    CALL read_specification(num_periods, delta, level, coeffs_A, coeffs_B, & 
+            coeffs_edu, edu_start, edu_max, coeffs_home, shocks, num_draws, &
+            seed_solution, num_agents, seed_simulation, &
             is_debug, is_zero) 
 
     ! Auxiliary objects
@@ -465,7 +460,7 @@ PROGRAM robufort
             periods_eps_relevant, num_draws, states_number_period, & 
             periods_payoffs_ex_ante, edu_max, edu_start, &
             mapping_state_idx, states_all, delta, is_debug, shocks, &
-            level, measure)
+            level)
    
     ! Store results. These are read in by the PYTHON wrapper and added 
     ! to the clsRobupy instance.

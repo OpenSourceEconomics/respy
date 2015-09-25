@@ -11,14 +11,14 @@ MODULE robufort_auxiliary
 CONTAINS
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE transform_disturbances_ambiguity(eps_relevant, eps_standard, x, & 
+SUBROUTINE transform_disturbances_ambiguity(eps_relevant, eps_input, x, & 
              num_draws)
 
     !/* external objects    */
 
     REAL(our_dble), INTENT(OUT)     :: eps_relevant(:, :)
 
-    REAL(our_dble), INTENT(IN)      :: eps_standard(:, :)  
+    REAL(our_dble), INTENT(IN)      :: eps_input(:, :)  
     REAL(our_dble), INTENT(IN)      :: x(:)
 
     INTEGER(our_int), INTENT(IN)    :: num_draws
@@ -33,9 +33,9 @@ SUBROUTINE transform_disturbances_ambiguity(eps_relevant, eps_standard, x, &
 !-------------------------------------------------------------------------------
 
     ! Shift disturbances
-    eps_relevant = eps_standard
+    eps_relevant = eps_input
 
-    eps_relevant(:, :2) = eps_standard(:, :2) + SPREAD(x, 1, num_draws)
+    eps_relevant(:, :2) = eps_input(:, :2) + SPREAD(x, 1, num_draws)
 
     ! Transform disturbance for occupations
     DO j = 1, 2

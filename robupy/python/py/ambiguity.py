@@ -16,7 +16,7 @@ HUGE_FLOAT = 10e10
 '''
 
 
-def get_payoffs_ambiguity(num_draws, eps_standard, period, k, payoffs_ex_ante,
+def get_payoffs_ambiguity(num_draws, eps_input, period, k, payoffs_ex_ante,
         edu_max, edu_start, mapping_state_idx, states_all, num_periods,
         periods_emax, delta, is_debug, shocks, level, measure):
     """ Get worst case
@@ -29,9 +29,9 @@ def get_payoffs_ambiguity(num_draws, eps_standard, period, k, payoffs_ex_ante,
     x0 = _get_start(is_debug)
 
     # Collect arguments
-    args = (num_draws, eps_standard, period, k, payoffs_ex_ante, edu_max,
+    args = (num_draws, eps_input, period, k, payoffs_ex_ante, edu_max,
             edu_start, mapping_state_idx, states_all, num_periods, periods_emax,
-            delta, is_debug)
+            delta)
 
     # Run optimization
     if measure == 'absolute':
@@ -53,7 +53,7 @@ def get_payoffs_ambiguity(num_draws, eps_standard, period, k, payoffs_ex_ante,
         # a smooth and informative run of TEST_F in the random development
         # test battery the following checks are performed.
         if is_debug:
-            opt = _correct_debugging(opt, x0, level, eps_standard,
+            opt = _correct_debugging(opt, x0, level, eps_input,
                         num_periods, num_draws, period, k, payoffs_ex_ante,
                         edu_max, edu_start, periods_emax, states_all,
                         mapping_state_idx, delta)
@@ -63,7 +63,7 @@ def get_payoffs_ambiguity(num_draws, eps_standard, period, k, payoffs_ex_ante,
         _write_result(period, k, opt)
 
     # Transformation of standard normal deviates to relevant distributions.
-    eps_relevant = transform_disturbances_ambiguity(eps_standard, opt['x'])
+    eps_relevant = transform_disturbances_ambiguity(eps_input, opt['x'])
 
     simulated, payoffs_ex_post, future_payoffs = \
         simulate_emax(num_periods, num_draws, period, k, eps_relevant,
@@ -81,11 +81,11 @@ def get_payoffs_ambiguity(num_draws, eps_standard, period, k, payoffs_ex_ante,
 '''
 
 
-def transform_disturbances_ambiguity(eps_standard, x):
+def transform_disturbances_ambiguity(eps_input, x):
     """ Transform disturbances
     """
 
-    eps_relevant = eps_standard.copy()
+    eps_relevant = eps_input.copy()
     eps_relevant[:, :2] = eps_relevant[:, :2] + x
 
     for j in [0, 1]:
@@ -94,7 +94,7 @@ def transform_disturbances_ambiguity(eps_standard, x):
     return eps_relevant
 
 
-def _correct_debugging(opt, x0, level, eps_standard, num_periods,
+def _correct_debugging(opt, x0, level, eps_input, num_periods,
         num_draws, period, k, payoffs_ex_ante, edu_max, edu_start,
         periods_emax, states_all, mapping_state_idx, delta):
     """ Some manipulations for test battery
@@ -107,7 +107,7 @@ def _correct_debugging(opt, x0, level, eps_standard, num_periods,
     opt['x'] = x0
 
     # Correct final function value
-    eps_relevant = transform_disturbances_ambiguity(eps_standard, opt['x'])
+    eps_relevant = transform_disturbances_ambiguity(eps_input, opt['x'])
 
     simulated, payoffs_ex_post, future_payoffs = \
                 simulate_emax(num_periods, num_draws, period, k, eps_relevant,
@@ -165,22 +165,21 @@ def _divergence(x, cov, level):
     return level - rslt
 
 
-def _criterion(x, num_draws, eps_standard, period, k, payoffs_ex_ante, edu_max,
+def _criterion(x, num_draws, eps_input, period, k, payoffs_ex_ante, edu_max,
         edu_start, mapping_state_idx, states_all, num_periods, periods_emax,
-        delta, is_debug):
+        delta):
     """ Simulate expected future value for alternative shock distributions.
     """
 
     # Transformation of standard normal deviates to relevant distributions.
-    eps_relevant = transform_disturbances_ambiguity(eps_standard, x)
+    eps_relevant = transform_disturbances_ambiguity(eps_input, x)
 
     # Simulate the expected future value for a given parametrization.
     simulated, _, _ = simulate_emax(num_periods, num_draws, period, k,
                         eps_relevant, payoffs_ex_ante, edu_max, edu_start,
                         periods_emax, states_all, mapping_state_idx, delta)
     # Debugging
-    if is_debug:
-        checks_ambiguity('_criterion', simulated)
+    checks_ambiguity('_criterion', simulated)
 
     # Finishing
     return simulated

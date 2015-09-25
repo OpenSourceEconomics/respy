@@ -36,10 +36,10 @@ CONTAINS
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
-                future_payoffs, num_draws, eps_standard, period, k, & 
+                future_payoffs, num_draws, eps_input, period, k, & 
                 payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
                 states_all, num_periods, periods_emax, delta, is_debug, &
-                shocks, level, measure)
+                shocks, level)
 
     !/* external objects    */
 
@@ -57,15 +57,13 @@ SUBROUTINE get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
     INTEGER(our_int), INTENT(IN)    :: k
 
     REAL(our_dble), INTENT(IN)      :: payoffs_ex_ante(:)
-    REAL(our_dble), INTENT(IN)      :: eps_standard(:, :)
+    REAL(our_dble), INTENT(IN)      :: eps_input(:, :)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:,:)
     REAL(our_dble), INTENT(IN)      :: shocks(:, :)
     REAL(our_dble), INTENT(IN)      :: delta
     REAL(our_dble), INTENT(IN)      :: level
 
     LOGICAL, INTENT(IN)             :: is_debug
-
-    CHARACTER, INTENT(IN)           :: measure
 
     !/* internal objects    */
 
@@ -89,12 +87,12 @@ SUBROUTINE get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
 
     ! Determine worst case scenario
     CALL slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
-            eps_standard, period, k, payoffs_ex_ante, edu_max, edu_start, &
+            eps_input, period, k, payoffs_ex_ante, edu_max, edu_start, &
             mapping_state_idx, states_all, num_periods, periods_emax, &
             delta, is_debug, shocks, level)
 
     ! Transform disturbances
-    CALL transform_disturbances_ambiguity(eps_relevant, eps_standard, &
+    CALL transform_disturbances_ambiguity(eps_relevant, eps_input, &
             x_internal, num_draws)
 
     ! Evaluate expected future value for perturbed values
@@ -107,7 +105,7 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
-            eps_standard, period, k, payoffs_ex_ante, edu_max, edu_start, &
+            eps_input, period, k, payoffs_ex_ante, edu_max, edu_start, &
             mapping_state_idx, states_all, num_periods, periods_emax, &
             delta, is_debug, shocks, level)
 
@@ -122,7 +120,7 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
 
     INTEGER(our_int), INTENT(IN)    :: maxiter
 
-    REAL(our_dble), INTENT(IN)      :: eps_standard(:, :)
+    REAL(our_dble), INTENT(IN)      :: eps_input(:, :)
     REAL(our_dble), INTENT(IN)      :: payoffs_ex_ante(:)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:,:)
     REAL(our_dble), INTENT(IN)      :: delta
@@ -214,12 +212,12 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
 
     ! Initialize criterion function at starting values
     CALL criterion(f, payoffs_ex_post, future_payoffs, x_internal, &
-            num_draws, eps_standard, period, k, payoffs_ex_ante, edu_max, &
+            num_draws, eps_input, period, k, payoffs_ex_ante, edu_max, &
             edu_start, mapping_state_idx, states_all, num_periods, &
             periods_emax, delta)
 
     CALL criterion_approx_gradient(g, x_internal, eps, num_draws, &
-            eps_standard, period, k, payoffs_ex_ante, edu_max, edu_start, &
+            eps_input, period, k, payoffs_ex_ante, edu_max, edu_start, &
             mapping_state_idx, states_all, num_periods, periods_emax, &
             delta)
 
@@ -234,7 +232,7 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
         IF (mode == one_int) THEN
 
             CALL criterion(f, payoffs_ex_post, future_payoffs, &
-                    x_internal, num_draws, eps_standard, period, k, &
+                    x_internal, num_draws, eps_input, period, k, &
                     payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
                     states_all, num_periods, periods_emax, delta)
 
@@ -246,7 +244,7 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
         ELSEIF (mode == - one_int) THEN
 
             CALL criterion_approx_gradient(g, x_internal, eps, num_draws, &
-                    eps_standard, period, k, payoffs_ex_ante, edu_max, &
+                    eps_input, period, k, payoffs_ex_ante, edu_max, &
                     edu_start, mapping_state_idx, states_all, num_periods, &
                     periods_emax, delta)
 
@@ -271,7 +269,7 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE criterion(emax_simulated, payoffs_ex_post, future_payoffs, &
-                x, num_draws, eps_standard, period, k, payoffs_ex_ante, &
+                x, num_draws, eps_input, period, k, payoffs_ex_ante, &
                 edu_max, edu_start, mapping_state_idx, states_all, &
                 num_periods, periods_emax, delta)
 
@@ -281,7 +279,7 @@ SUBROUTINE criterion(emax_simulated, payoffs_ex_post, future_payoffs, &
     REAL(our_dble), INTENT(OUT)     :: future_payoffs(4)
     REAL(our_dble), INTENT(OUT)     :: emax_simulated
 
-    REAL(our_dble), INTENT(IN)      :: eps_standard(:, :)
+    REAL(our_dble), INTENT(IN)      :: eps_input(:, :)
     REAL(our_dble), INTENT(IN)      :: payoffs_ex_ante(:)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:,:)
     REAL(our_dble), INTENT(IN)      :: delta
@@ -305,7 +303,7 @@ SUBROUTINE criterion(emax_simulated, payoffs_ex_post, future_payoffs, &
 !-------------------------------------------------------------------------------
 
     ! Transform disturbances
-    CALL transform_disturbances_ambiguity(eps_relevant, eps_standard, &
+    CALL transform_disturbances_ambiguity(eps_relevant, eps_input, &
                 x, num_draws)
 
     ! Evaluate expected future value
@@ -317,7 +315,7 @@ SUBROUTINE criterion(emax_simulated, payoffs_ex_post, future_payoffs, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE criterion_approx_gradient(rslt, x, eps, num_draws, eps_standard, &
+SUBROUTINE criterion_approx_gradient(rslt, x, eps, num_draws, eps_input, &
                 period, k, payoffs_ex_ante, edu_max, edu_start, &
                 mapping_state_idx, states_all, num_periods, periods_emax, &
                 delta)
@@ -326,7 +324,7 @@ SUBROUTINE criterion_approx_gradient(rslt, x, eps, num_draws, eps_standard, &
 
     REAL(our_dble), INTENT(OUT)     :: rslt(2)
 
-    REAL(our_dble), INTENT(IN)      :: eps_standard(:, :)
+    REAL(our_dble), INTENT(IN)      :: eps_input(:, :)
     REAL(our_dble), INTENT(IN)      :: payoffs_ex_ante(:)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:,:)
     REAL(our_dble), INTENT(IN)      :: delta
@@ -362,7 +360,7 @@ SUBROUTINE criterion_approx_gradient(rslt, x, eps, num_draws, eps_standard, &
 
     ! Evaluate baseline
     CALL criterion(f0, payoffs_ex_post, future_payoffs, x, num_draws, &
-            eps_standard, period, k, payoffs_ex_ante, edu_max, edu_start, &
+            eps_input, period, k, payoffs_ex_ante, edu_max, edu_start, &
             mapping_state_idx, states_all, num_periods, periods_emax, &
             delta)
 
@@ -374,7 +372,7 @@ SUBROUTINE criterion_approx_gradient(rslt, x, eps, num_draws, eps_standard, &
         d = eps * ei
 
         CALL criterion(f1, payoffs_ex_post, future_payoffs, x + d, &
-                num_draws, eps_standard, period, k, payoffs_ex_ante, &
+                num_draws, eps_input, period, k, payoffs_ex_ante, &
                 edu_max, edu_start, mapping_state_idx, states_all, &
                 num_periods, periods_emax, delta)
 
@@ -621,7 +619,7 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
                 periods_eps_relevant, num_draws, states_number_period, & 
                 periods_payoffs_ex_ante, edu_max, edu_start, &
                 mapping_state_idx, states_all, delta, is_debug, shocks, &
-                level, measure)
+                level)
 
     !/* external objects    */
 
@@ -645,8 +643,6 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
     INTEGER(our_int), INTENT(IN)    :: states_all(:, :, :)
 
     LOGICAL, INTENT(IN)             :: is_debug
-
-    CHARACTER, INTENT(IN)           :: measure
 
     !/* internals objects    */
 
@@ -696,8 +692,7 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
                         future_payoffs, num_draws, eps_relevant, period, k, & 
                         payoffs_ex_ante, edu_max, edu_start, &
                         mapping_state_idx, states_all, num_periods, &
-                        periods_emax, delta, is_debug, shocks, level, &
-                        measure)
+                        periods_emax, delta, is_debug, shocks, level)
             ELSE
                 CALL get_payoffs_risk(emax_simulated, payoffs_ex_post, & 
                         future_payoffs, num_draws, eps_relevant, period, k, & 

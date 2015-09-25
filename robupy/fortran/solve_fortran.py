@@ -127,9 +127,6 @@ def write_robufort_initialization(robupy_obj):
         line = '{0:15.10f}\n'.format(init_dict['AMBIGUITY']['level'])
         file_.write(line)
 
-        line = '{0:<15}\n'.format(init_dict['AMBIGUITY']['measure'])
-        file_.write(line)
-
         # WORK
         for label in ['A', 'B']:
             num = [init_dict[label]['int']] + init_dict[label]['coeff']
