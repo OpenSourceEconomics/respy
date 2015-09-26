@@ -179,7 +179,7 @@ def cleanup():
     os.system('./clean')
 
 
-def compile_package(which, hidden=True):
+def compile_package(which, hidden=True, debug=True):
     """ Compile toolbox
     """
     # Antibugging
@@ -192,14 +192,17 @@ def compile_package(which, hidden=True):
     # Compile package
     os.chdir(package_dir)
 
-    while True:
+    for i in range(10):
 
         os.system('./waf distclean > /dev/null 2>&1')
 
         cmd = './waf configure build '
 
         if which == 'fast':
-            cmd += ' --fortran --debug'
+            cmd += ' --fortran'
+
+        if debug:
+            cmd += ' --debug'
 
         if hidden:
             cmd += ' > /dev/null 2>&1'
@@ -213,6 +216,9 @@ def compile_package(which, hidden=True):
             break
         except ImportError:
             pass
+
+        if i == 10:
+            raise AssertionError
 
     os.chdir(tests_dir)
 
