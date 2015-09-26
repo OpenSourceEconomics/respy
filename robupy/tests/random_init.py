@@ -258,7 +258,7 @@ def print_random_dict(dict_):
                 # Type conversion
                 dict_[flag] = np.array(dict_[flag])
 
-                str_ = ' {0:15.2f} {1:15.2f} {2:15.2f} {3:15.2f}\n'
+                str_ = ' {0:15.4f} {1:15.4f} {2:15.4f} {3:15.4f}\n'
 
                 file_.write(' ' + flag.upper() + '\n\n')
 
@@ -293,7 +293,7 @@ def print_random_dict(dict_):
     # Adding WORK
     with open('test.robupy.ini', 'a') as file_:
 
-        str_ = ' {0:<15} {1:15.2f} {2:15.2f} \n'
+        str_ = ' {0:<15} {1:15.4f} {2:15.4f} \n'
 
         file_.write(' WORK \n\n')
 

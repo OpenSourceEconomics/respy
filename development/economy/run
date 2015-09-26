@@ -103,7 +103,7 @@ def create(is_parallel):
     clean()
 
     # Compile fast version of ROBUPY package
-    compile_package('fast')
+    compile_package('fast', debug=False)
 
     # Run multiple economies in parallel
     if is_parallel:
@@ -111,9 +111,10 @@ def create(is_parallel):
         p = Pool(3)
         p.map(solve_ambiguous_economy, grid)
     else:
-        grid = [0.0, 0.1]
+        grid = [0.0]
         for level in grid:
             solve_ambiguous_economy(level)
+
 
 ''' Execution of module as script.
 '''
