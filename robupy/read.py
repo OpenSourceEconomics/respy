@@ -241,7 +241,7 @@ def _check_integrity_read(dict_):
     if dict_['PROGRAM']['version'] == 'FORTRAN':
         package_dir = os.path.dirname(os.path.realpath(__file__))
         assert (len(glob.glob(package_dir +
-                              '/fortran/bin/robufo*')) == 1)
+                              '/fortran/bin/robufo*')) == 2)
 
     # Check SHOCKS
     assert (dict_['SHOCKS']).shape == (4, 4)

@@ -253,8 +253,8 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
         END IF
 
         !Call to SLSQP code
-        CALL slsqp(m, meq, la, n, x_internal, xl, xu, f, c, g, a, ftol, &
-                iter, mode, w, l_w, jw, l_jw)
+        !CALL slsqp(m, meq, la, n, x_internal, xl, xu, f, c, g, a, ftol, &
+        !        iter, mode, w, l_w, jw, l_jw)
 
         ! Check if SLSQP has completed
         IF (.NOT. ABS(mode) == one_int) THEN
@@ -687,19 +687,19 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
             ! Extract payoffs
             payoffs_ex_ante = periods_payoffs_ex_ante(period + 1, k + 1, :)
 
-            IF (is_ambiguous) THEN
-                CALL get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
-                        future_payoffs, num_draws, eps_relevant, period, k, & 
-                        payoffs_ex_ante, edu_max, edu_start, &
-                        mapping_state_idx, states_all, num_periods, &
-                        periods_emax, delta, is_debug, shocks, level)
-            ELSE
+            !IF (is_ambiguous) THEN
+            !    CALL get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
+            !            future_payoffs, num_draws, eps_relevant, period, k, & 
+            !            payoffs_ex_ante, edu_max, edu_start, &
+            !            mapping_state_idx, states_all, num_periods, &
+            !            periods_emax, delta, is_debug, shocks, level)
+            !ELSE
                 CALL get_payoffs_risk(emax_simulated, payoffs_ex_post, & 
                         future_payoffs, num_draws, eps_relevant, period, k, & 
                         payoffs_ex_ante, edu_max, edu_start, & 
                         mapping_state_idx, states_all, num_periods, &
                         periods_emax, delta)
-            END IF
+            !END IF
             
             ! Collect information            
             periods_payoffs_ex_post(period + 1, k + 1, :) = payoffs_ex_post

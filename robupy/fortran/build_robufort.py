@@ -45,9 +45,15 @@ def robufort_build(self, is_debug=False, is_optimization=False):
     else:
         _without_optimization(compiler_options)
 
-    os.unlink('robufort_extended.f90')
+    # TODO: Comment back in later
+    #for file_ in ['risk', 'ambiguity']:
+    #    try:
+    #        os.unlink('robufort_' + file_ +'_extended.f90')
+    #    except FileNotFoundError:
+    #        pass
 
-    shutil.move('robufort', 'bin/robufort')
+    for file_ in ['risk', 'ambiguity']:
+        shutil.move('robufort_' + file_, 'bin/robufort_' + file_)
 
     os.chdir(current_directory)
 
@@ -60,13 +66,13 @@ def _without_optimization(compiler_options):
     """
 
     # Create blank slate
-    shutil.copy('robufort.f90', 'robufort_extended.f90')
+    shutil.copy('robufort.f90', 'robufort_risk_extended.f90')
     # Read current content
-    with open('robufort_extended.f90', 'r') as infile:
+    with open('robufort_risk_extended.f90', 'r') as infile:
         old_content = infile.readlines()
 
     # Extend content to import the robufort library
-    with open('robufort_extended.f90', 'w') as outfile:
+    with open('robufort_risk_extended.f90', 'w') as outfile:
         for line in old_content:
             outfile.write(line)
             # Check for additional import
@@ -75,13 +81,16 @@ def _without_optimization(compiler_options):
             if is_relevant:
                 outfile.write('\n USE robufort_library \n')
 
-    # Compile resulting extended file
-    cmd = 'gfortran ' + compiler_options + ' -o robufort ' \
+    # Compile resulting extended file and create executable for model under
+    # risk and ambiguity.
+    cmd = 'gfortran ' + compiler_options + ' -o robufort_risk ' \
           'robufort_program_constants.f90  robufort_auxiliary.f90 ' \
           'robufort_slsqp.f robufort_library.f90 ' \
-          'robufort_extended.f90'
+          'robufort_risk_extended.f90'
 
     os.system(cmd)
+
+    shutil.copy('robufort_risk', 'robufort_ambiguity')
 
 
 def _with_optimization(compiler_options):
@@ -91,9 +100,20 @@ def _with_optimization(compiler_options):
     # subroutines in a single file. Prepare starting version of extended
     # ROBUFORT code. At first the module containing the program constants is
     # inserted as well as the auxiliary functions. Then the code tailored for
-    # the inlinings is added.
-    with open('robufort_extended.f90', 'w') as outfile:
-        for fname in ['robufort_program_constants.f90', 'robufort_auxiliary.f90',
+    # the inlinings is added. Separate versions for the model under ambiguity
+    #  and risk are created.
+    with open('robufort_risk_extended.f90', 'w') as outfile:
+        for fname in ['robufort_program_constants.f90',
+                      'robufort_auxiliary.f90', 'robufort_library.f90',
+                      'robufort.f90']:
+            with open(fname) as infile:
+                for line in infile:
+                    outfile.write(line)
+            outfile.write('\n')
+
+    with open('robufort_ambiguity_extended.f90', 'w') as outfile:
+        for fname in ['robufort_program_constants.f90',
+                      'robufort_auxiliary.f90', 'robufort_library.f90',
                       'robufort.f90']:
             with open(fname) as infile:
                 for line in infile:
@@ -106,11 +126,14 @@ def _with_optimization(compiler_options):
     # is read in directly from the robufort_library.f90 file.
     subroutines = _read_subroutines()
 
+    # TODO: Integrate ambiguity
+    which = 'risk'
+
     while True:
 
-        _mark_inlinings(subroutines)
+        _mark_inlinings(subroutines, which)
 
-        count = _replace_inlinings(subroutines)
+        count = _replace_inlinings(subroutines, which)
 
         # Check for further applicability and cleaning.
         if count == 0:
@@ -124,7 +147,7 @@ def _with_optimization(compiler_options):
     # IF-CLAUSE in the get_future_payoffs that distinguished between the last
     # and all other periods. Then we write the code back into the extended
     # ROBUFORT program, and again inline the get_future_payoff subroutine.
-    code_lines = _read_backward_induction_code()
+    code_lines = _read_backward_induction_code(which)
 
     code_lines = _split_backward_induction_loops(code_lines)
 
@@ -135,22 +158,25 @@ def _with_optimization(compiler_options):
     # function a couple of lines down.
     code_lines = _replace_vectorization_obstacle(code_lines)
 
-    _write_to_main(code_lines)
+    _write_to_main(code_lines, which)
 
-    _replace_inlinings(subroutines)
+    _replace_inlinings(subroutines, which)
 
-    os.remove('.robufort_inlining.f90')
+    #os.remove('.robufort_inlining.f90')
 
-    os.system('gfortran ' + compiler_options + ' -o robufort ' \
-                    'robufort_extended.f90')
+    os.system('gfortran ' + compiler_options + ' -o robufort_risk ' \
+                    'robufort_risk_extended.f90')
+
+    # TODO: This needs removed
+    shutil.copy('robufort_risk', 'robufort_ambiguity')
 
 
-def _read_backward_induction_code():
+def _read_backward_induction_code(which):
     """ This function reads in the fully inlined backward induction procedure.
     """
 
     # Determine number of lines
-    with open('robufort_extended.f90', 'r') as old_file:
+    with open('robufort_' + which + '_extended.f90', 'r') as old_file:
         num_lines = len(old_file.readlines())
 
     # Extract information
@@ -158,7 +184,7 @@ def _read_backward_induction_code():
     code_lines['original'] = []
 
     # Read in information from fully extended ROBUFORT codes.
-    with open('robufort_extended.f90') as file_:
+    with open('robufort_' + which + '_extended.f90') as file_:
 
         for _ in range(num_lines):
 
@@ -281,12 +307,12 @@ def _replace_vectorization_obstacle(code_lines):
     return code_lines
 
 
-def _write_to_main(code_lines):
+def _write_to_main(code_lines, which):
     """ Replace the initial inlining of the backward induction procedure with
     the two independent code blocks.
     """
     # Insert second backward induction
-    with open('robufort_extended.f90', 'r') as file_:
+    with open('robufort_' + which + '_extended.f90', 'r') as file_:
         old_file = file_.readlines()
 
     # Indicator for baseline inlining block
@@ -331,7 +357,7 @@ def _write_to_main(code_lines):
                     new_file.write(line_)
 
 
-def _mark_inlinings(subroutines):
+def _mark_inlinings(subroutines, which):
     """ This function marks the subroutines for which inlining
     information is available.
     """
@@ -339,13 +365,13 @@ def _mark_inlinings(subroutines):
     inlining_routines = subroutines.keys()
 
     # Read file with pre-inlining code
-    with open('robufort_extended.f90', 'r') as old_file:
+    with open('robufort_' + which + '_extended.f90', 'r') as old_file:
         num_lines = len(old_file.readlines())
 
     # Initialize logical variables
     is_program = False
 
-    with open('robufort_extended.f90', 'r') as old_file:
+    with open('robufort_' + which + '_extended.f90', 'r') as old_file:
         with open('.robufort_inlining.f90', 'w') as new_file:
 
             for _ in range(num_lines):
@@ -391,7 +417,7 @@ def _mark_inlinings(subroutines):
                     old_list = shlex.split(old_file.readline())
 
 
-def _replace_inlinings(subroutines):
+def _replace_inlinings(subroutines, which):
     """ This function replaces subroutines marked for inlining with the
     relevant code.
     """
@@ -403,7 +429,7 @@ def _replace_inlinings(subroutines):
         old_lines = old_file.readlines()
 
     # Construct new FORTRAN file.
-    with open('robufort_extended.f90', 'w') as new_file:
+    with open('robufort_' + which + '_extended.f90', 'w') as new_file:
         for old_line in old_lines:
 
             # Check for subroutines marked for replacement

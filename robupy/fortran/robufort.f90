@@ -355,6 +355,9 @@ PROGRAM robufort
 
     USE robufort_program_constants
 
+    ! TODO: REMOVE
+    USE robufort_library
+
     !/* setup   */
 
     IMPLICIT NONE
@@ -412,7 +415,8 @@ PROGRAM robufort
     LOGICAL                         :: is_debug
     LOGICAL                         :: is_huge
     LOGICAL                         :: is_zero
-
+    LOGICAL                         :: is_ambiguous
+    
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------

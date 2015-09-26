@@ -179,7 +179,7 @@ def cleanup():
     os.system('./clean')
 
 
-def compile_package(which, hidden=True, debug=True):
+def compile_package(which, hidden=True, debug=True, optimization=False):
     """ Compile toolbox
     """
     # Antibugging
@@ -192,7 +192,7 @@ def compile_package(which, hidden=True, debug=True):
     # Compile package
     os.chdir(package_dir)
 
-    for i in range(10):
+    for i in range(1):
 
         os.system('./waf distclean > /dev/null 2>&1')
 
@@ -203,6 +203,9 @@ def compile_package(which, hidden=True, debug=True):
 
         if debug:
             cmd += ' --debug'
+
+        if optimization:
+            cmd += ' --optimization'
 
         if hidden:
             cmd += ' > /dev/null 2>&1'

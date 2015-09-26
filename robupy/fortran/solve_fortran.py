@@ -18,10 +18,17 @@ from robupy.auxiliary import replace_missing_values
 def solve_fortran(robupy_obj):
     """ Solve dynamic programming using FORTRAN.
     """
+
+    # Extract class attributes
+    is_ambiguous = robupy_obj.get_attr('is_ambiguous')
+
     # Prepare and execute ROBUFORT
     write_robufort_initialization(robupy_obj)
 
-    os.system('"' + PACKAGE_PATH + '/bin/robufort"')
+    if is_ambiguous:
+        os.system('"' + PACKAGE_PATH + '/bin/robufort_ambiguity"')
+    else:
+        os.system('"' + PACKAGE_PATH + '/bin/robufort_risk"')
 
     # Add results
     add_results(robupy_obj)

@@ -46,9 +46,6 @@ def configure(conf):
     if is_debug or is_optimization:
         assert (is_fortran is True)
 
-    if is_optimization:
-        raise NotImplementedError('... feature currently not implemented')
-
     # Construct environment variables
     conf.env.project_paths = dict()
 
