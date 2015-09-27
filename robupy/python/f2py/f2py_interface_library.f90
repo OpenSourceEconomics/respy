@@ -166,3 +166,5 @@ SUBROUTINE wrapper_calculate_payoffs_ex_ante(periods_payoffs_ex_ante, num_period
               coeffs_B, coeffs_edu, coeffs_home, max_states_period)
 
 END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************

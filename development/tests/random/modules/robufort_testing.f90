@@ -2,6 +2,10 @@ MODULE robufort_testing
 
 	!/*	external modules	*/
 
+    USE robufort_program_constants
+
+    USE robufort_ambiguity
+
     USE robufort_library
 
 	!/*	setup	*/

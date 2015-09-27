@@ -13,7 +13,9 @@ SUBROUTINE wrapper_slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, &
 
     !/* external libraries    */
 
-    USE robufort_library 
+    USE robufort_ambiguity
+
+    !USE robufort_library 
     
     !/* setup    */
 
@@ -49,7 +51,7 @@ SUBROUTINE wrapper_slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, &
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
-
+    
     CALL slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
             eps_standard, period, k, payoffs_ex_ante, edu_max, edu_start, &
             mapping_state_idx, states_all, num_periods, periods_emax, &

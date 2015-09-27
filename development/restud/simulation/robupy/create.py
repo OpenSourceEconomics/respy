@@ -15,7 +15,7 @@ sys.path.insert(0, os.environ['ROBUPY'] + '/development/tests/random')
 from modules.auxiliary import compile_package
 
 # Compile fast version of ROBUPY package
-compile_package('fast', hidden=True, debug=False)
+compile_package('--fortran', True)
 
 # Start model solution and simulation
 for dir_ in ['one', 'two', 'three']:

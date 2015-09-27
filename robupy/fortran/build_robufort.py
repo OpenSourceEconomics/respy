@@ -85,7 +85,8 @@ def _without_optimization(compiler_options):
     # risk and ambiguity.
     cmd = 'gfortran ' + compiler_options + ' -o robufort_risk ' \
           'robufort_program_constants.f90  robufort_auxiliary.f90 ' \
-          'robufort_slsqp.f robufort_library.f90 ' \
+          'robufort_slsqp.f robufort_emax.f90 robufort_risk.f90  ' \
+          'robufort_ambiguity.f90 robufort_library.f90 ' \
           'robufort_risk_extended.f90'
 
     os.system(cmd)

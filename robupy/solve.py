@@ -66,6 +66,7 @@ def solve(robupy_obj):
 ''' Auxiliary functions
 '''
 
+
 def _summarize_ambiguity(robupy_obj):
     """ Summarize optimizations in case of ambiguity.
     """

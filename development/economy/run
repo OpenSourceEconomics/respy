@@ -103,7 +103,7 @@ def create(is_parallel):
     clean()
 
     # Compile fast version of ROBUPY package
-    compile_package('fast', debug=False)
+    compile_package('--fortran --debug', True)
 
     # Run multiple economies in parallel
     if is_parallel:

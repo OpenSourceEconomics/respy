@@ -45,7 +45,7 @@ def test_92():
     ambiguity.
     """
     # Ensure that fast solution methods are available
-    compile_package('fast')
+    compile_package('--fortran --debug', True)
     import robupy.python.f2py.f2py_debug as fort
 
     # Iterate over random test cases
@@ -123,7 +123,7 @@ def test_93():
     PYTHON and FORTRAN for the actual optimization problem.
     """
     # Ensure interface is available
-    build_f2py_testing()
+    build_f2py_testing(is_hidden=True)
     import modules.f2py_testing as fort
 
     # Sample problem parameters
@@ -218,7 +218,7 @@ def test_94():
     algorithm's PYTHON and FORTRAN implementation
     """
     # Ensure interface is available
-    build_f2py_testing()
+    build_f2py_testing(is_hidden=True)
     import modules.f2py_testing as fort
 
     # Sample basic test case
@@ -269,7 +269,7 @@ def test_95():
     due to the large setup cost to construct the ingredients for the interface.
     """
     # Ensure that fast solution methods are available
-    compile_package('fast')
+    compile_package('--fortran --debug', True)
 
     import robupy.python.f2py.f2py_debug as fort
 
@@ -307,8 +307,6 @@ def test_95():
         edu_max = robupy_obj.get_attr('edu_max')
 
         delta = robupy_obj.get_attr('delta')
-
-        debug = False
 
         # Sample disturbances
         eps_standard = np.random.multivariate_normal(np.zeros(4),
@@ -359,7 +357,7 @@ def test_96():
     against PYTHON intrinsic routines.
     """
     # Ensure that fast solution methods are available
-    compile_package('fast')
+    compile_package('--fortran --debug', True)
 
     import robupy.python.f2py.f2py_debug as fort_debug
     import robupy.python.f2py.f2py_library as fort_lib
@@ -414,7 +412,7 @@ def test_97():
     file python/f2py/debug_interface.f90 provides the F2PY bindings.
     """
     # Ensure that fast solution methods are available
-    compile_package('fast')
+    compile_package('--fortran --debug', True)
 
     import robupy.python.f2py.f2py_debug as fort
 
@@ -462,7 +460,7 @@ def test_98():
     """
 
     # Ensure that fast solution methods are available
-    compile_package('fast')
+    compile_package('--fortran --debug', True)
 
     # Prepare RESTUD program
     os.chdir('modules')
@@ -530,7 +528,7 @@ def test_99():
     code result in identical simulate datasets.
     """
     # Ensure that fast solution methods are available
-    compile_package('fast')
+    compile_package('--fortran --debug', True)
 
     # Constraint to risk model
     constraints = dict()

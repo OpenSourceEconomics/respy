@@ -14,7 +14,7 @@ SUBROUTINE wrapper_get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
 
     !/* external libraries    */
 
-    USE robufort_library
+    USE robufort_ambiguity
 
     !/* setup    */
 
@@ -65,7 +65,7 @@ SUBROUTINE wrapper_criterion_approx_gradient(rslt, x, eps, num_draws, &
 
     !/* external libraries    */
 
-    USE robufort_library
+    USE robufort_ambiguity
 
     !/* setup    */
 
@@ -110,7 +110,7 @@ SUBROUTINE wrapper_simulate_emax(emax_simulated, payoffs_ex_post, &
 
     !/* external libraries    */
 
-    USE robufort_library
+    USE robufort_emax
 
     !/* setup    */
 
@@ -156,7 +156,7 @@ SUBROUTINE wrapper_criterion(emax_simulated, payoffs_ex_post, future_payoffs, &
 
     !/* external libraries    */
 
-    USE robufort_library
+    USE robufort_ambiguity
 
     !/* setup    */
 
@@ -199,7 +199,7 @@ SUBROUTINE wrapper_divergence_approx_gradient(rslt, x, cov, level, eps)
 
     !/* external libraries    */
 
-    USE robufort_library
+    USE robufort_ambiguity
 
     !/* setup    */
 
@@ -227,7 +227,7 @@ SUBROUTINE wrapper_multivariate_normal(draws, mean, covariance, num_draws, dim)
 
     !/* external libraries    */
 
-    USE robufort_library
+    USE robufort_auxiliary
 
     !/* setup    */
 
@@ -256,7 +256,7 @@ SUBROUTINE wrapper_standard_normal(draw, dim)
 
     !/* external libraries    */
 
-    USE robufort_library
+    USE robufort_auxiliary
 
     !/* setup    */
 
@@ -282,7 +282,7 @@ SUBROUTINE wrapper_determinant(det, A)
 
     !/* external libraries    */
 
-    USE robufort_library
+    USE robufort_auxiliary
 
     !/* setup    */
 
@@ -308,8 +308,8 @@ SUBROUTINE wrapper_cholesky(factor, matrix, n)
 
     !/* external libraries    */
 
-    USE robufort_library
-
+    USE robufort_auxiliary
+    
     !/* setup    */
 
     IMPLICIT NONE
@@ -336,7 +336,7 @@ SUBROUTINE wrapper_inverse(inv, A, n)
 
     !/* external libraries    */
 
-    USE robufort_library
+    USE robufort_auxiliary
 
     !/* setup    */
 
@@ -364,7 +364,7 @@ SUBROUTINE wrapper_trace(rslt, A)
 
     !/* external libraries    */
 
-    USE robufort_library
+    USE robufort_auxiliary
 
     !/* setup    */
 
@@ -390,7 +390,7 @@ SUBROUTINE wrapper_divergence(div, x, cov, level)
 
     !/* external libraries    */
 
-    USE robufort_library
+    USE robufort_ambiguity
 
     !/* setup    */
 

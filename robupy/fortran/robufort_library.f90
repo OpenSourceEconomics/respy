@@ -1,10 +1,14 @@
-!******************************************************************************
-!******************************************************************************
+!*******************************************************************************
+!*******************************************************************************
 !
-!   Interface to ROBUPY library.
+!   Interface to ROBUPY library. This is the front-end to all functionality. 
+!   Subroutines and functions for the case of risk-only case are in the 
+!   robufort_risk module. Building on the risk-only functionality, the module
+!   robufort_ambugity provided the required subroutines and functions for the 
+!   case of ambiguity.
 !
-!******************************************************************************
-!******************************************************************************
+!*******************************************************************************
+!*******************************************************************************
 MODULE robufort_library
 
 	!/*	external modules	*/
@@ -13,378 +17,31 @@ MODULE robufort_library
 
     USE robufort_auxiliary
 
+    USE robufort_emax
+
+    USE robufort_risk
+
+    USE robufort_ambiguity
+
 	!/*	setup	*/
 
 	IMPLICIT NONE
 
+    PRIVATE
+
     !/* core functions */
 
-    PUBLIC :: get_payoffs_ambiguity
     PUBLIC :: backward_induction 
     PUBLIC :: create_state_space 
     PUBLIC :: simulate_sample 
-    PUBLIC :: criterion
 
     !/* auxiliary functions */
 
-    PUBLIC :: get_future_payoffs 
-    PUBLIC :: get_payoffs_risk 
-    PUBLIC :: simulate_emax 
-    PUBLIC :: stabilize_myopic
+    PUBLIC :: calculate_payoffs_ex_ante
 
 CONTAINS
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
-                future_payoffs, num_draws, eps_input, period, k, & 
-                payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
-                states_all, num_periods, periods_emax, delta, is_debug, &
-                shocks, level)
-
-    !/* external objects    */
-
-    REAL(our_dble), INTENT(OUT)     :: payoffs_ex_post(4)
-    REAL(our_dble), INTENT(OUT)     :: future_payoffs(4)
-    REAL(our_dble), INTENT(OUT)     :: emax_simulated
-
-    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:,:,:,:,:)
-    INTEGER(our_int), INTENT(IN)    :: states_all(:,:,:)
-    INTEGER(our_int), INTENT(IN)    :: num_periods
-    INTEGER(our_int), INTENT(IN)    :: edu_start
-    INTEGER(our_int), INTENT(IN)    :: num_draws
-    INTEGER(our_int), INTENT(IN)    :: edu_max
-    INTEGER(our_int), INTENT(IN)    :: period
-    INTEGER(our_int), INTENT(IN)    :: k
-
-    REAL(our_dble), INTENT(IN)      :: payoffs_ex_ante(:)
-    REAL(our_dble), INTENT(IN)      :: eps_input(:, :)
-    REAL(our_dble), INTENT(IN)      :: periods_emax(:,:)
-    REAL(our_dble), INTENT(IN)      :: shocks(:, :)
-    REAL(our_dble), INTENT(IN)      :: delta
-    REAL(our_dble), INTENT(IN)      :: level
-
-    LOGICAL, INTENT(IN)             :: is_debug
-
-    !/* internal objects    */
-
-    INTEGER(our_int)                :: maxiter
-
-    REAL(our_dble)                  :: eps_relevant(num_draws, 4)
-    REAL(our_dble)                  :: x_internal(2)
-    REAL(our_dble)                  :: x_start(2)
-    REAL(our_dble)                  :: ftol
-    REAL(our_dble)                  :: eps
-    
-!-------------------------------------------------------------------------------
-! Algorithm
-!-------------------------------------------------------------------------------
-    
-    ! Parameterizations for optimizations
-    x_start = zero_dble
-    maxiter = 1000
-    ftol = 1e-06
-    eps = 1.4901161193847656e-08
-
-    ! Determine worst case scenario
-    CALL slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
-            eps_input, period, k, payoffs_ex_ante, edu_max, edu_start, &
-            mapping_state_idx, states_all, num_periods, periods_emax, &
-            delta, is_debug, shocks, level)
-
-    ! Transform disturbances
-    CALL transform_disturbances_ambiguity(eps_relevant, eps_input, &
-            x_internal, num_draws)
-
-    ! Evaluate expected future value for perturbed values
-    CALL simulate_emax(emax_simulated, payoffs_ex_post, future_payoffs, &
-            num_periods, num_draws, period, k, eps_relevant, &
-            payoffs_ex_ante, edu_max, edu_start, periods_emax, states_all, &
-            mapping_state_idx, delta)
-
-END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
-            eps_input, period, k, payoffs_ex_ante, edu_max, edu_start, &
-            mapping_state_idx, states_all, num_periods, periods_emax, &
-            delta, is_debug, shocks, level)
-
-    !/* external objects    */
-
-    REAL(our_dble), INTENT(OUT)     :: x_internal(2)
-    REAL(our_dble), INTENT(IN)      :: x_start(2)
-    REAL(our_dble), INTENT(IN)      :: shocks(4,4)
-    REAL(our_dble), INTENT(IN)      :: level
-    REAL(our_dble), INTENT(IN)      :: ftol
-
-
-    INTEGER(our_int), INTENT(IN)    :: maxiter
-
-    REAL(our_dble), INTENT(IN)      :: eps_input(:, :)
-    REAL(our_dble), INTENT(IN)      :: payoffs_ex_ante(:)
-    REAL(our_dble), INTENT(IN)      :: periods_emax(:,:)
-    REAL(our_dble), INTENT(IN)      :: delta
-    REAL(our_dble), INTENT(IN)      :: eps
-
-    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:,:,:,:,:)
-    INTEGER(our_int), INTENT(IN)    :: states_all(:,:,:)
-    INTEGER(our_int), INTENT(IN)    :: num_periods
-    INTEGER(our_int), INTENT(IN)    :: num_draws
-    INTEGER(our_int), INTENT(IN)    :: edu_start
-    INTEGER(our_int), INTENT(IN)    :: edu_max
-    INTEGER(our_int), INTENT(IN)    :: period
-    INTEGER(our_int), INTENT(IN)    :: k
-
-    LOGICAL, INTENT(IN)             :: is_debug
-
-    !/* internal objects    */
-
-    INTEGER(our_int)                :: m
-    INTEGER(our_int)                :: meq
-    INTEGER(our_int)                :: n
-    INTEGER(our_int)                :: mode
-    INTEGER(our_int)                :: iter
-    INTEGER(our_int)                :: n1
-    INTEGER(our_int)                :: mieq
-    INTEGER(our_int)                :: mineq
-    INTEGER(our_int)                :: l_w
-    INTEGER(our_int)                :: l_jw
-    INTEGER(our_int)                :: la
-
-    INTEGER(our_int), ALLOCATABLE   :: jw(:)
-
-    REAL(our_dble), ALLOCATABLE     :: a(:,:)
-    REAL(our_dble), ALLOCATABLE     :: xl(:)
-    REAL(our_dble), ALLOCATABLE     :: xu(:)
-    REAL(our_dble), ALLOCATABLE     :: c(:)
-    REAL(our_dble), ALLOCATABLE     :: g(:)
-    REAL(our_dble), ALLOCATABLE     :: w(:)
-
-
-    REAL(our_dble)                  :: payoffs_ex_post(4)
-    REAL(our_dble)                  :: future_payoffs(4)
-    REAL(our_dble)                  :: f
-
-    LOGICAL                         :: is_finished
-
-!-------------------------------------------------------------------------------
-! Algorithm
-!-------------------------------------------------------------------------------
-
-    !---------------------------------------------------------------------------
-    ! This is hard-coded for the ROBUPY package requirements. What follows below
-    ! is based on this being 0, 1.
-    !---------------------------------------------------------------------------
-    meq = 0         ! Number of equality constraints
-    mieq = 1        ! Number of inequality constraints
-    !---------------------------------------------------------------------------
-    !---------------------------------------------------------------------------
-
-    ! Initialize starting values
-    x_internal = x_start
-
-    ! Derived attributes
-    m = meq + mieq
-    n = SIZE(x_internal)
-    la = MAX(1, m)
-    n1 = n + 1
-    mineq = m - meq + n1 + n1
-
-    l_w =  (3 * n1 + m) * (n1 + 1) + (n1 - meq + 1) * (mineq + 2) + &
-           2 * mineq + (n1 + mineq) * (n1 - meq) + 2 * meq + n1 + &
-           ((n + 1) * n) / two_dble + 2 * m + 3 * n + 3 * n1 + 1
-
-    l_jw = mineq
-    
-    ! Allocate and initialize containers
-    ALLOCATE(w(l_w)); ALLOCATE(jw(l_jw)); ALLOCATE(a(m, n + 1))
-    ALLOCATE(g(n + 1)); ALLOCATE(c(m)); ALLOCATE(xl(n)); ALLOCATE(xu(n))
-
-    ! Decompose upper and lower bounds
-    xl = - huge_dble; xu = huge_dble
-
-    ! Initialize the iteration counter and mode value
-    iter = maxiter
-    mode = zero_int
-
-    ! Initialization of SLSQP
-    is_finished = .False.
-
-    ! Initialize criterion function at starting values
-    CALL criterion(f, payoffs_ex_post, future_payoffs, x_internal, &
-            num_draws, eps_input, period, k, payoffs_ex_ante, edu_max, &
-            edu_start, mapping_state_idx, states_all, num_periods, &
-            periods_emax, delta)
-
-    CALL criterion_approx_gradient(g, x_internal, eps, num_draws, &
-            eps_input, period, k, payoffs_ex_ante, edu_max, edu_start, &
-            mapping_state_idx, states_all, num_periods, periods_emax, &
-            delta)
-
-    ! Initialize constraint at starting values
-    CALL divergence(c, x_internal, shocks, level)
-    CALL divergence_approx_gradient(a, x_internal, shocks, level, eps)
-
-    ! Iterate until completion
-    DO WHILE (.NOT. is_finished)
-
-        ! Evaluate criterion function and constraints
-        IF (mode == one_int) THEN
-
-            CALL criterion(f, payoffs_ex_post, future_payoffs, &
-                    x_internal, num_draws, eps_input, period, k, &
-                    payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
-                    states_all, num_periods, periods_emax, delta)
-
-            CALL divergence(c, x_internal, shocks, level)
-
-        ! Evaluate gradient of criterion function and constraints. Note that the
-        ! a is of dimension (1, n + 1) and the last element needs to always
-        ! be zero.
-        ELSEIF (mode == - one_int) THEN
-
-            CALL criterion_approx_gradient(g, x_internal, eps, num_draws, &
-                    eps_input, period, k, payoffs_ex_ante, edu_max, &
-                    edu_start, mapping_state_idx, states_all, num_periods, &
-                    periods_emax, delta)
-
-            CALL divergence_approx_gradient(a, x_internal, shocks, level, eps)
-
-        END IF
-
-        !Call to SLSQP code
-        !CALL slsqp(m, meq, la, n, x_internal, xl, xu, f, c, g, a, ftol, &
-        !        iter, mode, w, l_w, jw, l_jw)
-
-        ! Check if SLSQP has completed
-        IF (.NOT. ABS(mode) == one_int) THEN
-            is_finished = .True.
-        END IF
-
-    END DO
-    
-    IF (is_debug) CALL logging_ambiguity(x_internal, mode, period, k)
-
-END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE criterion(emax_simulated, payoffs_ex_post, future_payoffs, &
-                x, num_draws, eps_input, period, k, payoffs_ex_ante, &
-                edu_max, edu_start, mapping_state_idx, states_all, &
-                num_periods, periods_emax, delta)
-
-    !/* external objects    */
-
-    REAL(our_dble), INTENT(OUT)     :: payoffs_ex_post(4)
-    REAL(our_dble), INTENT(OUT)     :: future_payoffs(4)
-    REAL(our_dble), INTENT(OUT)     :: emax_simulated
-
-    REAL(our_dble), INTENT(IN)      :: eps_input(:, :)
-    REAL(our_dble), INTENT(IN)      :: payoffs_ex_ante(:)
-    REAL(our_dble), INTENT(IN)      :: periods_emax(:,:)
-    REAL(our_dble), INTENT(IN)      :: delta
-    REAL(our_dble), INTENT(IN)      :: x(:)
-
-    INTEGER(our_int) , INTENT(IN)   :: mapping_state_idx(:,:,:,:,:)
-    INTEGER(our_int) , INTENT(IN)   :: states_all(:,:,:)
-    INTEGER(our_int), INTENT(IN)    :: num_periods
-    INTEGER(our_int), INTENT(IN)    :: num_draws
-    INTEGER(our_int), INTENT(IN)    :: edu_start
-    INTEGER(our_int), INTENT(IN)    :: edu_max
-    INTEGER(our_int), INTENT(IN)    :: period
-    INTEGER(our_int), INTENT(IN)    :: k
-
-    !/* internal objects    */
-
-    REAL(our_dble)                  :: eps_relevant(num_draws, 4)
-
-!-------------------------------------------------------------------------------
-! Algorithm
-!-------------------------------------------------------------------------------
-
-    ! Transform disturbances
-    CALL transform_disturbances_ambiguity(eps_relevant, eps_input, &
-                x, num_draws)
-
-    ! Evaluate expected future value
-    CALL simulate_emax(emax_simulated, payoffs_ex_post, future_payoffs, &
-            num_periods, num_draws, period, k, eps_relevant, &
-            payoffs_ex_ante, edu_max, edu_start, periods_emax, states_all, &
-            mapping_state_idx, delta)
-
-END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE criterion_approx_gradient(rslt, x, eps, num_draws, eps_input, &
-                period, k, payoffs_ex_ante, edu_max, edu_start, &
-                mapping_state_idx, states_all, num_periods, periods_emax, &
-                delta)
-
-    !/* external objects    */
-
-    REAL(our_dble), INTENT(OUT)     :: rslt(2)
-
-    REAL(our_dble), INTENT(IN)      :: eps_input(:, :)
-    REAL(our_dble), INTENT(IN)      :: payoffs_ex_ante(:)
-    REAL(our_dble), INTENT(IN)      :: periods_emax(:,:)
-    REAL(our_dble), INTENT(IN)      :: delta
-    REAL(our_dble), INTENT(IN)      :: x(:)
-    REAL(our_dble), INTENT(IN)      :: eps
-
-    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:,:,:,:,:)
-    INTEGER(our_int), INTENT(IN)    :: states_all(:,:,:)
-    INTEGER(our_int), INTENT(IN)    :: num_periods
-    INTEGER(our_int), INTENT(IN)    :: num_draws
-    INTEGER(our_int), INTENT(IN)    :: edu_start
-    INTEGER(our_int), INTENT(IN)    :: edu_max
-    INTEGER(our_int), INTENT(IN)    :: period
-    INTEGER(our_int), INTENT(IN)    :: k
-
-    !/* internals objects    */
-
-    REAL(our_dble)                  :: payoffs_ex_post(4)
-    REAL(our_dble)                  :: future_payoffs(4)
-    REAL(our_dble)                  :: ei(2)
-    REAL(our_dble)                  :: d(2)
-    REAL(our_dble)                  :: f0
-    REAL(our_dble)                  :: f1
-
-    INTEGER(our_int)                :: j
-
-!-------------------------------------------------------------------------------
-! Algorithm
-!-------------------------------------------------------------------------------
-
-    ! Initialize containers
-    ei = zero_dble
-
-    ! Evaluate baseline
-    CALL criterion(f0, payoffs_ex_post, future_payoffs, x, num_draws, &
-            eps_input, period, k, payoffs_ex_ante, edu_max, edu_start, &
-            mapping_state_idx, states_all, num_periods, periods_emax, &
-            delta)
-
-    ! Iterate over increments
-    DO j = 1, 2
-
-        ei(j) = one_dble
-
-        d = eps * ei
-
-        CALL criterion(f1, payoffs_ex_post, future_payoffs, x + d, &
-                num_draws, eps_input, period, k, payoffs_ex_ante, &
-                edu_max, edu_start, mapping_state_idx, states_all, &
-                num_periods, periods_emax, delta)
-
-        rslt(j) = (f1 - f0) / d(j)
-
-        ei(j) = zero_dble
-
-    END DO
-
-END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
 SUBROUTINE simulate_sample(dataset, num_agents, states_all, num_periods, &
                 mapping_state_idx, periods_payoffs_ex_ante, &
                 periods_eps_relevant, edu_max, edu_start, periods_emax, delta)
@@ -511,8 +168,8 @@ SUBROUTINE simulate_sample(dataset, num_agents, states_all, num_periods, &
     END DO
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE calculate_payoffs_ex_ante(periods_payoffs_ex_ante, num_periods, &
               states_number_period, states_all, edu_start, coeffs_A, coeffs_B, & 
               coeffs_edu, coeffs_home, max_states_period)
@@ -544,9 +201,9 @@ SUBROUTINE calculate_payoffs_ex_ante(periods_payoffs_ex_ante, num_periods, &
 
     REAL(our_dble)                  :: payoff
 
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
     
     ! Logging
     CALL logging_solution(2)
@@ -687,19 +344,19 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
             ! Extract payoffs
             payoffs_ex_ante = periods_payoffs_ex_ante(period + 1, k + 1, :)
 
-            !IF (is_ambiguous) THEN
-            !    CALL get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
-            !            future_payoffs, num_draws, eps_relevant, period, k, & 
-            !            payoffs_ex_ante, edu_max, edu_start, &
-            !            mapping_state_idx, states_all, num_periods, &
-            !            periods_emax, delta, is_debug, shocks, level)
-            !ELSE
+            IF (is_ambiguous) THEN
+                CALL get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
+                        future_payoffs, num_draws, eps_relevant, period, k, & 
+                        payoffs_ex_ante, edu_max, edu_start, &
+                        mapping_state_idx, states_all, num_periods, &
+                        periods_emax, delta, is_debug, shocks, level)
+            ELSE
                 CALL get_payoffs_risk(emax_simulated, payoffs_ex_post, & 
                         future_payoffs, num_draws, eps_relevant, period, k, & 
                         payoffs_ex_ante, edu_max, edu_start, & 
                         mapping_state_idx, states_all, num_periods, &
                         periods_emax, delta)
-            !END IF
+            END IF
             
             ! Collect information            
             periods_payoffs_ex_post(period + 1, k + 1, :) = payoffs_ex_post
@@ -846,268 +503,6 @@ SUBROUTINE create_state_space(states_all, states_number_period, &
 
       ! Logging
       CALL logging_solution(-1)
-
-END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE get_payoffs_risk(emax_simulated, payoffs_ex_post, future_payoffs, &
-                num_draws, eps_relevant, period, k, payoffs_ex_ante, & 
-                edu_max, edu_start, mapping_state_idx, states_all, num_periods, & 
-                periods_emax, delta)
-
-    !/* external objects    */
-
-    REAL(our_dble), INTENT(OUT)     :: emax_simulated
-    REAL(our_dble), INTENT(OUT)     :: payoffs_ex_post(4)
-    REAL(our_dble), INTENT(OUT)     :: future_payoffs(4)
-
-    INTEGER(our_int), INTENT(IN)    :: num_draws
-    INTEGER(our_int), INTENT(IN)    :: period
-    INTEGER(our_int), INTENT(IN)    :: k 
-    INTEGER(our_int), INTENT(IN)    :: edu_max
-    INTEGER(our_int), INTENT(IN)    :: edu_start
-    INTEGER(our_int), INTENT(IN)    :: num_periods
-    INTEGER(our_int), INTENT(IN)    :: states_all(:, :, :)
-    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:, :, :, :, :)
-
-    REAL(our_dble), INTENT(IN)      :: eps_relevant(:, :)
-    REAL(our_dble), INTENT(IN)      :: payoffs_ex_ante(:)
-    REAL(our_dble), INTENT(IN)      :: delta
-    REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
-
-!------------------------------------------------------------------------------
-! Algorithm
-!------------------------------------------------------------------------------
-
-    ! Simulated expected future value
-    CALL simulate_emax(emax_simulated, payoffs_ex_post, future_payoffs, num_periods, & 
-            num_draws, period, k, eps_relevant, payoffs_ex_ante, edu_max, & 
-            edu_start, periods_emax, states_all, mapping_state_idx, delta)
-    
-END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, future_payoffs, & 
-                num_periods, num_draws, period, k, eps_relevant, & 
-                payoffs_ex_ante, edu_max, edu_start, periods_emax, states_all, & 
-                mapping_state_idx, delta)
-
-    !/* external objects    */
-
-    REAL(our_dble), INTENT(OUT)     :: payoffs_ex_post(4)
-    REAL(our_dble), INTENT(OUT)     :: emax_simulated
-    REAL(our_dble), INTENT(OUT)     :: future_payoffs(4)
-
-    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:,:,:,:,:)
-    INTEGER(our_int), INTENT(IN)    :: states_all(:,:,:)
-    INTEGER(our_int), INTENT(IN)    :: period
-    INTEGER(our_int), INTENT(IN)    :: num_periods
-    INTEGER(our_int), INTENT(IN)    :: num_draws
-    INTEGER(our_int), INTENT(IN)    :: k
-    INTEGER(our_int), INTENT(IN)    :: edu_max
-    INTEGER(our_int), INTENT(IN)    :: edu_start
-
-    REAL(our_dble), INTENT(IN)      :: payoffs_ex_ante(:)
-    REAL(our_dble), INTENT(IN)      :: eps_relevant(:,:)
-    REAL(our_dble), INTENT(IN)      :: periods_emax(:,:)
-    REAL(our_dble), INTENT(IN)      :: delta
-
-    !/* internals objects    */
-
-    INTEGER(our_int)                :: i
-
-    REAL(our_dble)                  :: total_payoffs(4)
-    REAL(our_dble)                  :: disturbances(4)
-    REAL(our_dble)                  :: maximum
-
-!-------------------------------------------------------------------------------
-! Algorithm
-!-------------------------------------------------------------------------------
-
-    ! Initialize containers
-    payoffs_ex_post = zero_dble
-    emax_simulated = zero_dble
-
-    ! Iterate over Monte Carlo draws
-    DO i = 1, num_draws 
-
-        ! Select disturbances for this draw
-        disturbances = eps_relevant(i, :)
-
-        ! Calculate total value
-        CALL get_total_value(total_payoffs, payoffs_ex_post, future_payoffs, &
-                period, num_periods, delta, payoffs_ex_ante, disturbances, &
-                edu_max, edu_start, mapping_state_idx, periods_emax, k, states_all)
-        
-        ! Determine optimal choice
-        maximum = MAXVAL(total_payoffs)
-
-        ! Recording expected future value
-        emax_simulated = emax_simulated + maximum
-
-    END DO
-
-    ! Scaling
-    emax_simulated = emax_simulated / num_draws
-
-END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE get_total_value(total_payoffs, payoffs_ex_post, future_payoffs, &
-                period, num_periods, delta, payoffs_ex_ante, & 
-                disturbances, edu_max, edu_start, mapping_state_idx, & 
-                periods_emax, k, states_all)
-
-    !   Development Note:
-    !   
-    !       The VECTORIZATION supports the inlining and vectorization
-    !       preparations in the build process.
-
-    !/* external objects    */
-
-    REAL(our_dble), INTENT(OUT)     :: total_payoffs(4)
-    REAL(our_dble), INTENT(OUT)     :: payoffs_ex_post(4)
-    REAL(our_dble), INTENT(OUT)     :: future_payoffs(4)
-
-    INTEGER(our_int), INTENT(IN)    :: k
-    INTEGER(our_int), INTENT(IN)    :: period
-    INTEGER(our_int), INTENT(IN)    :: num_periods
-    INTEGER(our_int), INTENT(IN)    :: edu_max
-    INTEGER(our_int), INTENT(IN)    :: edu_start
-    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:, :, :, :, :)
-    INTEGER(our_int), INTENT(IN)    :: states_all(:, :, :)
-
-    REAL(our_dble), INTENT(IN)      :: delta
-    REAL(our_dble), INTENT(IN)      :: payoffs_ex_ante(:)
-    REAL(our_dble), INTENT(IN)      :: disturbances(:)
-    REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
-
-    !/* internals objects    */
-
-    LOGICAL                         :: is_myopic
-    
-!-------------------------------------------------------------------------------
-! Algorithm
-!-------------------------------------------------------------------------------
-    
-    ! Initialize containers
-    payoffs_ex_post = zero_dble
-
-    ! Auxiliary objects
-    is_myopic = (delta .EQ. zero_dble)
-
-    ! Calculate ex post payoffs
-    payoffs_ex_post(1) = payoffs_ex_ante(1) * disturbances(1)
-    payoffs_ex_post(2) = payoffs_ex_ante(2) * disturbances(2)
-    payoffs_ex_post(3) = payoffs_ex_ante(3) + disturbances(3)
-    payoffs_ex_post(4) = payoffs_ex_ante(4) + disturbances(4)
-
-    ! Get future values
-    ! BEGIN VECTORIZATION A
-    IF (period .NE. (num_periods - one_int)) THEN
-        CALL get_future_payoffs(future_payoffs, edu_max, edu_start, & 
-                mapping_state_idx, period,  periods_emax, k, states_all)
-        ELSE
-            future_payoffs = zero_dble
-    END IF
-    ! END VECTORIZATION A
-
-    ! Calculate total utilities
-    total_payoffs = payoffs_ex_post + delta * future_payoffs
-
-    ! Stabilization in case of myopic agents
-    IF (is_myopic .EQV. .TRUE.) THEN
-        CALL stabilize_myopic(total_payoffs, future_payoffs)
-    END IF
-
-END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE get_future_payoffs(future_payoffs, edu_max, edu_start, &
-                mapping_state_idx, period, periods_emax, k, states_all)
-
-    !/* external objects    */
-
-    REAL(our_dble), INTENT(OUT)     :: future_payoffs(4)
-
-    INTEGER(our_int), INTENT(IN)    :: k
-    INTEGER(our_int), INTENT(IN)    :: period
-    INTEGER(our_int), INTENT(IN)    :: edu_max
-    INTEGER(our_int), INTENT(IN)    :: edu_start
-    INTEGER(our_int), INTENT(IN)    :: states_all(:, :, :)
-    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:, :, :, :, :)
-
-    REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
-
-    !/* internals objects    */
-
-    INTEGER(our_int)    			:: exp_A
-    INTEGER(our_int)    			:: exp_B
-    INTEGER(our_int)    			:: edu
-    INTEGER(our_int)    			:: edu_lagged
-    INTEGER(our_int)    			:: future_idx
-
-!-------------------------------------------------------------------------------
-! Algorithm
-!-------------------------------------------------------------------------------
-
-    ! Distribute state space
-    exp_A = states_all(period + 1, k + 1, 1)
-    exp_B = states_all(period + 1, k + 1, 2)
-    edu = states_all(period + 1, k + 1, 3)
-    edu_lagged = states_all(period + 1, k + 1, 4)
-
-	! Working in occupation A
-    future_idx = mapping_state_idx(period + 1 + 1, exp_A + 1 + 1, & 
-                    exp_B + 1, edu + 1, 1)
-    future_payoffs(1) = periods_emax(period + 1 + 1, future_idx + 1)
-
-	!Working in occupation B
-    future_idx = mapping_state_idx(period + 1 + 1, exp_A + 1, &
-                    exp_B + 1 + 1, edu + 1, 1)
-    future_payoffs(2) = periods_emax(period + 1 + 1, future_idx + 1)
-
-	! Increasing schooling. Note that adding an additional year
-	! of schooling is only possible for those that have strictly
-	! less than the maximum level of additional education allowed.
-    IF (edu < edu_max - edu_start) THEN
-        future_idx = mapping_state_idx(period + 1 + 1, exp_A + 1, &
-                        exp_B + 1, edu + 1 + 1, 2)
-        future_payoffs(3) = periods_emax(period + 1 + 1, future_idx + 1)
-    ELSE
-        future_payoffs(3) = -HUGE(future_payoffs)
-    END IF
-
-	! Staying at home
-    future_idx = mapping_state_idx(period + 1 + 1, exp_A + 1, & 
-                    exp_B + 1, edu + 1, 1)
-    future_payoffs(4) = periods_emax(period + 1 + 1, future_idx + 1)
-
-END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE stabilize_myopic(total_payoffs, future_payoffs)
-
-
-    !/* external objects    */
-
-    REAL(our_dble), INTENT(INOUT)   :: total_payoffs(:)
-    REAL(our_dble), INTENT(IN)      :: future_payoffs(:)
-
-    !/* internals objects    */
-
-    LOGICAL                         :: is_huge
-
-!-------------------------------------------------------------------------------
-! Algorithm
-!-------------------------------------------------------------------------------
-    
-    ! Determine NAN
-    is_huge = (future_payoffs(3) == -HUGE(future_payoffs))
-
-    IF (is_huge .EQV. .True.) THEN
-        total_payoffs(3) = -HUGE(future_payoffs)
-    END IF
 
 END SUBROUTINE
 !*******************************************************************************

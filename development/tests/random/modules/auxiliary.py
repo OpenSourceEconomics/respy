@@ -18,7 +18,7 @@ from modules.clsMail import MailCls
 '''
 
 
-def build_f2py_testing():
+def build_f2py_testing(is_hidden):
     """ Build the F2PY testing interface for testing.f
     """
     os.chdir('modules')
@@ -27,12 +27,17 @@ def build_f2py_testing():
     compiler_options = '-O3 -fpic'
 
     files = ['robufort_program_constants.f90', 'robufort_auxiliary.f90',
-             'robufort_slsqp.f', 'robufort_library.f90',
+             'robufort_slsqp.f', 'robufort_emax.f90', 'robufort_risk.f90',
+             'robufort_ambiguity.f90', 'robufort_library.f90',
              'robufort_testing.f90']
 
     for file_ in files:
-        os.system('gfortran ' + compiler_options + ' -c ' + file_ +
-                  ' > /dev/null 2>&1')
+
+        cmd = 'gfortran ' + compiler_options + ' -c ' + file_
+
+        if is_hidden:
+            cmd += ' > /dev/null 2>&1'
+        os.system(cmd)
 
     os.system('ar crs libfort_testing.a *.o *.mod')
 
@@ -54,9 +59,13 @@ def build_f2py_testing():
     shutil.move('libfort_testing.a', 'lib/')
 
     # Build interface
-    os.system('f2py3 -c -m  f2py_testing f2py_interface_testing.f90 -Iinclude -Llib '
-            '-lfort_testing > /dev/null 2>&1')
+    cmd = 'f2py3 -c -m  f2py_testing f2py_interface_testing.f90 -Iinclude ' \
+          ' -Llib -lfort_testing'
 
+    if is_hidden:
+        cmd += ' > /dev/null 2>&1'
+
+    os.system(cmd)
 
     # Finish
     os.chdir('../')
@@ -179,12 +188,9 @@ def cleanup():
     os.system('./clean')
 
 
-def compile_package(which, hidden=True, debug=True, optimization=False):
+def compile_package(options, is_hidden):
     """ Compile toolbox
     """
-    # Antibugging
-    assert (which in ['fast', 'slow'])
-
     # Auxiliary objects
     package_dir = os.environ['ROBUPY'] + '/robupy'
     tests_dir = os.getcwd()
@@ -198,16 +204,9 @@ def compile_package(which, hidden=True, debug=True, optimization=False):
 
         cmd = './waf configure build '
 
-        if which == 'fast':
-            cmd += ' --fortran'
+        cmd += options
 
-        if debug:
-            cmd += ' --debug'
-
-        if optimization:
-            cmd += ' --optimization'
-
-        if hidden:
+        if is_hidden:
             cmd += ' > /dev/null 2>&1'
 
         os.system(cmd)
