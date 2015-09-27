@@ -84,13 +84,17 @@ def get_payoffs_ambiguity(num_draws, eps_input, period, k, payoffs_ex_ante,
 def transform_disturbances_ambiguity(eps_input, x):
     """ Transform disturbances
     """
-
+    # Initialize clean slate
     eps_relevant = eps_input.copy()
+
+    # Mean shift due to ambiguity
     eps_relevant[:, :2] = eps_relevant[:, :2] + x
 
+    # Exponentiation for occupations
     for j in [0, 1]:
-        eps_relevant[:, j] = np.exp(eps_relevant[:, j])
+        eps_relevant[:, j] = np.clip(np.exp(eps_relevant[:, j]), 0.0, HUGE_FLOAT)
 
+    # Finishing
     return eps_relevant
 
 
