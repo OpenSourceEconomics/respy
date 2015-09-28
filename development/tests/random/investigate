@@ -19,7 +19,7 @@ from modules.auxiliary import *
 
 ''' Request
 '''
-label, seed = '96', 75195
+label, seed = '96', 456
 
 ''' Error Reproduction
 '''

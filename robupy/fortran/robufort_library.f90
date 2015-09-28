@@ -344,6 +344,7 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
             ! Extract payoffs
             payoffs_ex_ante = periods_payoffs_ex_ante(period + 1, k + 1, :)
 
+            ! BEGIN VECTORIZATION SPLIT
             IF (is_ambiguous) THEN
                 CALL get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
                         future_payoffs, num_draws, eps_relevant, period, k, & 
@@ -351,12 +352,15 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
                         mapping_state_idx, states_all, num_periods, &
                         periods_emax, delta, is_debug, shocks, level)
             ELSE
+
                 CALL get_payoffs_risk(emax_simulated, payoffs_ex_post, & 
                         future_payoffs, num_draws, eps_relevant, period, k, & 
                         payoffs_ex_ante, edu_max, edu_start, & 
                         mapping_state_idx, states_all, num_periods, &
                         periods_emax, delta)
             END IF
+            ! END VECTORIZATION SPLIT
+            
             
             ! Collect information            
             periods_payoffs_ex_post(period + 1, k + 1, :) = payoffs_ex_post

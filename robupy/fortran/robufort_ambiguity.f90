@@ -269,7 +269,7 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
 
     END DO
     
-    IF (is_debug) CALL logging_ambiguity(x_internal, mode, period, k)
+!    IF (is_debug) CALL logging_ambiguity(x_internal, mode, period, k)
 
 END SUBROUTINE
 !*******************************************************************************
@@ -391,7 +391,7 @@ SUBROUTINE criterion_approx_gradient(rslt, x, eps, num_draws, eps_input, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE transform_disturbances_ambiguity(eps_relevant, eps_input, x, & 
+SUBROUTINE transform_disturbances_ambiguity(eps_relevant, eps_input, x_internal, & 
              num_draws)
 
     !/* external objects    */
@@ -399,7 +399,7 @@ SUBROUTINE transform_disturbances_ambiguity(eps_relevant, eps_input, x, &
     REAL(our_dble), INTENT(OUT)     :: eps_relevant(:, :)
 
     REAL(our_dble), INTENT(IN)      :: eps_input(:, :)  
-    REAL(our_dble), INTENT(IN)      :: x(:)
+    REAL(our_dble), INTENT(IN)      :: x_internal(:)
 
     INTEGER(our_int), INTENT(IN)    :: num_draws
 
@@ -415,7 +415,7 @@ SUBROUTINE transform_disturbances_ambiguity(eps_relevant, eps_input, x, &
     ! Shift disturbances
     eps_relevant = eps_input
 
-    eps_relevant(:, :2) = eps_input(:, :2) + SPREAD(x, 1, num_draws)
+    eps_relevant(:, :2) = eps_input(:, :2) + SPREAD(x_internal, 1, num_draws)
 
     ! Transform disturbance for occupations
     DO j = 1, 2
@@ -497,14 +497,14 @@ SUBROUTINE logging_ambiguity(x_internal, mode, period, k)
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE divergence(div, x, cov, level)
+SUBROUTINE divergence(div, x_internal, shocks, level)
 
     !/* external objects    */
 
     REAL(our_dble), INTENT(OUT)     :: div(1)
 
-    REAL(our_dble), INTENT(IN)      :: x(2)
-    REAL(our_dble), INTENT(IN)      :: cov(4,4)
+    REAL(our_dble), INTENT(IN)      :: x_internal(2)
+    REAL(our_dble), INTENT(IN)      :: shocks(4,4)
     REAL(our_dble), INTENT(IN)      :: level
 
     !/* internals objects    */
@@ -524,12 +524,12 @@ SUBROUTINE divergence(div, x, cov, level)
 !-------------------------------------------------------------------------------
 
     ! Construct alternative distribution
-    alt_mean(1,1) = x(1)
-    alt_mean(2,1) = x(2)
-    alt_cov = cov
+    alt_mean(1,1) = x_internal(1)
+    alt_mean(2,1) = x_internal(2)
+    alt_cov = shocks
 
     ! Construct baseline distribution
-    old_cov = cov
+    old_cov = shocks
 
     ! Construct auxiliary objects.
     inv_old_cov = inverse(old_cov, 4)

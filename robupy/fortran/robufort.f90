@@ -355,8 +355,10 @@ PROGRAM robufort
 
     USE robufort_program_constants
 
-    ! TODO: REMOVE
+    ! TODO: Remove
     USE robufort_library
+
+    USE robufort_ambiguity
 
     !/* setup   */
 
@@ -378,6 +380,7 @@ PROGRAM robufort
     INTEGER(our_int)                :: edu_start
     INTEGER(our_int)                :: num_draws
     INTEGER(our_int)                :: covars(6)
+    INTEGER(our_int)                :: maxiter
     INTEGER(our_int)                :: edu_max
     INTEGER(our_int)                :: min_idx
     INTEGER(our_int)                :: period
@@ -387,6 +390,7 @@ PROGRAM robufort
     INTEGER(our_int)                :: edu
     INTEGER(our_int)                :: i
     INTEGER(our_int)                :: k
+    INTEGER(our_int)                :: j
 
     REAL(our_dble), ALLOCATABLE     :: periods_payoffs_ex_ante(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_payoffs_ex_post(:, :, :)
@@ -394,6 +398,7 @@ PROGRAM robufort
     REAL(our_dble), ALLOCATABLE     :: periods_eps_relevant(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: eps_relevant(:, :)
     REAL(our_dble), ALLOCATABLE     :: periods_emax(:, :)
+    REAL(our_dble), ALLOCATABLE     :: eps_input(:, :)
     
     REAL(our_dble)                  :: payoffs_ex_post(4)
     REAL(our_dble)                  :: payoffs_ex_ante(4)
@@ -403,20 +408,64 @@ PROGRAM robufort
     REAL(our_dble)                  :: emax_simulated
     REAL(our_dble)                  :: coeffs_home(1)
     REAL(our_dble)                  :: coeffs_edu(3)
+    REAL(our_dble)                  :: x_internal(2)    
     REAL(our_dble)                  :: shocks(4, 4)
     REAL(our_dble)                  :: coeffs_A(6)
     REAL(our_dble)                  :: coeffs_B(6)
-    REAL(our_dble)                  :: maximum
+    REAL(our_dble)                  :: x_start(2)
+    REAL(our_dble)                  :: maximum    
     REAL(our_dble)                  :: payoff
     REAL(our_dble)                  :: delta
     REAL(our_dble)                  :: level
+    REAL(our_dble)                  :: ftol
+    REAL(our_dble)                  :: eps
 
     LOGICAL                         :: is_myopic
     LOGICAL                         :: is_debug
     LOGICAL                         :: is_huge
     LOGICAL                         :: is_zero
     LOGICAL                         :: is_ambiguous
-    
+
+
+
+    INTEGER(our_int)                :: m
+    INTEGER(our_int)                :: meq
+    INTEGER(our_int)                :: n
+    INTEGER(our_int)                :: mode
+    INTEGER(our_int)                :: iter
+    INTEGER(our_int)                :: n1
+    INTEGER(our_int)                :: mieq
+    INTEGER(our_int)                :: mineq
+    INTEGER(our_int)                :: l_w
+    INTEGER(our_int)                :: l_jw
+    INTEGER(our_int)                :: la
+    REAL(our_dble)                  :: f
+
+    INTEGER(our_int), ALLOCATABLE   :: jw(:)
+
+    REAL(our_dble), ALLOCATABLE     :: a(:,:)
+    REAL(our_dble), ALLOCATABLE     :: xl(:)
+    REAL(our_dble), ALLOCATABLE     :: xu(:)
+    REAL(our_dble), ALLOCATABLE     :: c(:)
+    REAL(our_dble), ALLOCATABLE     :: g(:)
+    REAL(our_dble), ALLOCATABLE     :: w(:)
+
+    LOGICAL                         :: is_finished
+
+    REAL(our_dble)                  :: alt_mean(4, 1) = zero_dble
+    REAL(our_dble)                  :: old_mean(4, 1) = zero_dble
+    REAL(our_dble)                  :: alt_cov(4,4)
+    REAL(our_dble)                  :: old_cov(4,4)
+    REAL(our_dble)                  :: inv_old_cov(4,4)
+    REAL(our_dble)                  :: comp_a
+    REAL(our_dble)                  :: comp_b(1, 1)
+    REAL(our_dble)                  :: comp_c
+    REAL(our_dble)                  :: rslt
+
+    REAL(our_dble)                  :: f0 
+
+    REAL(our_dble)                  :: ei(2)
+    REAL(our_dble)                  :: d(2)
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
@@ -456,6 +505,7 @@ PROGRAM robufort
     ALLOCATE(periods_eps_relevant(num_periods, num_draws, 4))
     ALLOCATE(periods_emax(num_periods, max_states_period))
     ALLOCATE(eps_relevant(num_draws, 4))
+    ALLOCATE(eps_input(num_draws, 4))
 
     ! Draw random disturbances. For is_debugging purposes, these might also be 
     ! read in from disk or set to zero/one.

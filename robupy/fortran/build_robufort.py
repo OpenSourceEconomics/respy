@@ -91,55 +91,80 @@ def _without_optimization(compiler_options):
 
     os.system(cmd)
 
+    # There will be a separate executable for the risk and ambiguity case.
+    # The separation is required for optimal performance in the case of
+    # optimization.
     shutil.copy('robufort_risk', 'robufort_ambiguity')
 
 
 def _with_optimization(compiler_options):
     """ This function performs the manual inlining.
     """
+    # TODO: Review all comments
     # Performance considerations require an automatic inlining of the core
     # subroutines in a single file. Prepare starting version of extended
     # ROBUFORT code. At first the module containing the program constants is
     # inserted as well as the auxiliary functions. Then the code tailored for
     # the inlinings is added. Separate versions for the model under ambiguity
     #  and risk are created.
-    with open('robufort_risk_extended.f90', 'w') as outfile:
-        for fname in ['robufort_program_constants.f90',
-                      'robufort_auxiliary.f90', 'robufort_library.f90',
-                      'robufort.f90']:
-            with open(fname) as infile:
-                for line in infile:
-                    outfile.write(line)
-            outfile.write('\n')
+    for which in ['risk', 'ambiguity']:
+        with open('robufort_' + which + '_extended.f90', 'w') as outfile:
 
-    with open('robufort_ambiguity_extended.f90', 'w') as outfile:
-        for fname in ['robufort_program_constants.f90',
-                      'robufort_auxiliary.f90', 'robufort_library.f90',
-                      'robufort.f90']:
-            with open(fname) as infile:
-                for line in infile:
-                    outfile.write(line)
-            outfile.write('\n')
+            files = ['robufort_program_constants.f90',
+                          'robufort_auxiliary.f90', 'robufort_emax.f90',
+                          'robufort_risk.f90',                           'robufort_library.f90',
+                          'robufort.f90']
+
+            if which == 'ambiguity':
+                files.insert(4, 'robufort_ambiguity.f90')
+
+
+            for fname in files:
+                with open(fname) as infile:
+                    for line in infile:
+                        outfile.write(line)
+                outfile.write('\n')
+
+    # Remove the case distinction from the backward induction procedure and
+    # also remove the other call. Two steps are performed, first the IF
+    # construct is removed and then the obsolete payoff construction removed.
+    for which in ['risk', 'ambiguity']:
+        _split_backward_induction(which)
 
     # This loop iteratively marks subroutines for inlinings and then replaces
     # them with the relevant code lines. The loop stops once no subroutines
     # are marked for further inlining. The original code of the subroutines
     # is read in directly from the robufort_library.f90 file.
-    subroutines = _read_subroutines()
 
-    # TODO: Integrate ambiguity
-    which = 'risk'
+    for which in ['risk', 'ambiguity']:
+        subroutines = _read_subroutines(which)
 
-    while True:
+        # Remove selected subroutines that are not of speed
+        del subroutines['get_disturbances']
+        del subroutines['read_specification']
+        del subroutines['store_results']
+        del subroutines['logging_solution']
 
-        _mark_inlinings(subroutines, which)
+        if which == 'ambiguity':
+            del subroutines['logging_ambiguity']
+            #del subroutines['slsqp_robufort']
+            del subroutines['criterion']
+            del subroutines['divergence']
+            del subroutines['criterion_approx_gradient']
+            del subroutines['divergence_approx_gradient']
 
-        count = _replace_inlinings(subroutines, which)
+        print(subroutines.keys())
+        # TODO: Integrate ambiguity
+        while True:
 
-        # Check for further applicability and cleaning.
-        if count == 0:
-            os.remove('.robufort_inlining.f90')
-            break
+            _mark_inlinings(subroutines, which)
+
+            count = _replace_inlinings(subroutines, which)
+
+            # Check for further applicability and cleaning.
+            if count == 0:
+                os.remove('.robufort_inlining.f90')
+                break
 
     # The compiler's vectorization efforts fail due to the case distinction
     # in the get_future_payoffs function. Reading in the fully inlined code for
@@ -148,28 +173,135 @@ def _with_optimization(compiler_options):
     # IF-CLAUSE in the get_future_payoffs that distinguished between the last
     # and all other periods. Then we write the code back into the extended
     # ROBUFORT program, and again inline the get_future_payoff subroutine.
-    code_lines = _read_backward_induction_code(which)
-
-    code_lines = _split_backward_induction_loops(code_lines)
-
     # The replacement of the code lines for the last period is
     # straightforward. For all other periods, an inlining marker is placed
     # in the file, which is later replaced with a new insertion of the
     # get_future_payoffs subroutine when calling the replace_inlinings
     # function a couple of lines down.
-    code_lines = _replace_vectorization_obstacle(code_lines)
 
-    _write_to_main(code_lines, which)
+    for which in ['risk', 'ambiguity']:
 
-    _replace_inlinings(subroutines, which)
+        code_lines = _read_backward_induction_code(which)
+
+        code_lines = _split_backward_induction_loops(code_lines)
+
+        code_lines = _replace_vectorization_obstacle(code_lines)
+
+        _write_to_main(code_lines, which)
+
+    #_replace_inlinings(subroutines, 'risk')
 
     #os.remove('.robufort_inlining.f90')
+
+
+
 
     os.system('gfortran ' + compiler_options + ' -o robufort_risk ' \
                     'robufort_risk_extended.f90')
 
-    # TODO: This needs removed
-    shutil.copy('robufort_risk', 'robufort_ambiguity')
+    os.system('gfortran ' + compiler_options + ' -o robufort_ambiguity ' \
+                    'robufort_slsqp.f robufort_ambiguity_extended.f90')
+
+
+def _remove_other_payoff_call(which):
+
+    name_relevant = 'get_payoffs_ambiguity'
+    if which == 'ambiguity':
+        name_relevant = 'get_payoffs_risk'
+
+    is_relevant = False
+    end_relevant = False
+
+    with open('robufort_' + which + '_extended.f90', 'r') as file_:
+        old_file = file_.readlines()
+
+    is_vectorization = False
+    with open('robufort_' + which + '_extended.f90', 'w') as outfile:
+
+        for line in old_file:
+            # Check for vectorization block that indicates the case
+            # distinction to be removed.
+            start_vectorization = ('! BEGIN VECTORIZATION SPLIT' in line)
+            end_vectorization = ('! END VECTORIZATION SPLIT' in line)
+
+            if start_vectorization:
+                is_vectorization = True
+
+            if end_vectorization:
+                is_vectorization = False
+
+            if is_vectorization:
+
+                start_relevant = (name_relevant in line)
+
+                if start_relevant:
+                    is_relevant = True
+
+                if is_relevant and (')' in line):
+                    end_relevant = True
+
+                if is_relevant:
+                    line = ''
+                # Update relevant
+                if end_relevant:
+                    is_relevant = False
+
+
+            else:
+                pass
+
+            outfile.write(line)
+
+
+def _split_backward_induction(which):
+    """ This function removes the case distinction between an economic
+    environment which is risky or also ambiguous. For the risk-only
+    executable, also the import of the ambiguity module is removed.
+    """
+    with open('robufort_' + which + '_extended.f90', 'r') as file_:
+        old_file = file_.readlines()
+
+    # Remove the
+    is_vectorization = False
+
+    with open('robufort_' + which + '_extended.f90', 'w') as outfile:
+
+        for line in old_file:
+            old_list = shlex.split(line)
+
+            # Remove import of ambiguity module
+            if which == 'risk':
+                try:
+                    if old_list[1] == 'robufort_ambiguity':
+                        line = ''
+                except IndexError:
+                    pass
+
+            # Check for vectorization block that indicates the case
+            # distinction to be removed.
+            start_vectorization = ('! BEGIN VECTORIZATION SPLIT' in line)
+            end_vectorization = ('! END VECTORIZATION SPLIT' in line)
+
+            if start_vectorization:
+                is_vectorization = True
+
+            if end_vectorization:
+                is_vectorization = False
+
+            # Special case of vectorization block, note that this setup
+            # requires that there is at least one space after the IF statement.
+            if is_vectorization:
+                try:
+                    if ('IF' in old_list) or ('ELSE') in old_list:
+                        line = ''
+                except IndexError:
+                    pass
+
+            # Write relevant line to the file
+            outfile.write(line)
+
+    # Remove the alternative payoff construction
+    _remove_other_payoff_call(which)
 
 
 def _read_backward_induction_code(which):
@@ -455,7 +587,7 @@ def _replace_inlinings(subroutines, which):
     return count
 
 
-def _read_subroutines():
+def _read_subroutines(which):
     """ Read information on all subroutines which are candidates for
     inlining.
     """
@@ -466,11 +598,13 @@ def _read_subroutines():
     name = None
 
     # Determine number of lines
-    with open('robufort_library.f90', 'r') as old_file:
+    with open('robufort_' + which + '_extended.f90', 'r') as old_file:
         num_lines = len(old_file.readlines())
 
     # Extract information
-    with open('robufort_library.f90') as file_:
+    is_function = False
+
+    with open('robufort_' + which + '_extended.f90') as file_:
 
         for _ in range(num_lines):
 
@@ -479,6 +613,21 @@ def _read_subroutines():
             # Skip all empty lines
             if not list_:
                 continue
+
+            if list_[0] in ['FUNCTION', 'PURE']:
+                is_function = True
+
+            if list_[:2] == ['END', 'FUNCTION']:
+                is_function = False
+
+
+            if is_function:
+                continue
+
+
+            # Finished reading candidate subroutines when program starts.
+            if list_[0] in ['PROGRAM']:
+                break
 
             # Initialize container for new subroutine
             new_subroutine = (list_[0] == 'SUBROUTINE')
@@ -493,6 +642,7 @@ def _read_subroutines():
             # the subroutine ends.
             if is_algorithm:
                 while True:
+
                     code_line = file_.readline()
                     list_ = shlex.split(code_line)
 
