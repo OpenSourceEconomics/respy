@@ -213,9 +213,11 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
     is_finished = .False.
 
     ! Initialize criterion function at starting values
-    CALL criterion(f, x_internal, num_draws, eps_relevant, period, k, &
+    CALL criterion(rslt_crit, x_internal, num_draws, eps_relevant, period, k, &
             payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
             states_all, num_periods, periods_emax, delta)
+
+    f = rslt_crit
 
     CALL criterion_approx_gradient(g, x_internal, eps, num_draws, &
             eps_relevant, period, k, payoffs_ex_ante, edu_max, edu_start, &
@@ -232,9 +234,11 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
         ! Evaluate criterion function and constraints
         IF (mode == one_int) THEN
 
-            CALL criterion(f, x_internal, num_draws, eps_relevant, period, k, &
+            CALL criterion(rslt_crit, x_internal, num_draws, eps_relevant, period, k, &
                     payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
                     states_all, num_periods, periods_emax, delta)
+
+            f = rslt_crit
 
             CALL divergence(c, x_internal, shocks, level)
 
@@ -268,19 +272,19 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE criterion(emax_simulated, x, num_draws, eps_relevant, period, k, &
+SUBROUTINE criterion(rslt_crit, x_internal, num_draws, eps_relevant, period, k, &
                 payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
                 states_all, num_periods, periods_emax, delta)
 
     !/* external objects    */
 
-    REAL(our_dble), INTENT(OUT)     :: emax_simulated
+    REAL(our_dble), INTENT(OUT)     :: rslt_crit
 
     REAL(our_dble), INTENT(IN)      :: eps_relevant(:, :)
     REAL(our_dble), INTENT(IN)      :: payoffs_ex_ante(:)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:,:)
+    REAL(our_dble), INTENT(IN)      :: x_internal(:)
     REAL(our_dble), INTENT(IN)      :: delta
-    REAL(our_dble), INTENT(IN)      :: x(:)
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:,:,:,:,:)
     INTEGER(our_int), INTENT(IN)    :: states_all(:,:,:)
@@ -296,6 +300,7 @@ SUBROUTINE criterion(emax_simulated, x, num_draws, eps_relevant, period, k, &
     REAL(our_dble)                  :: eps_relevant_emax(num_draws, 4)
     REAL(our_dble)                  :: payoffs_ex_post(4)
     REAL(our_dble)                  :: future_payoffs(4)
+    REAL(our_dble)                  :: emax_simulated
 
 !-------------------------------------------------------------------------------
 ! Algorithm
@@ -303,7 +308,7 @@ SUBROUTINE criterion(emax_simulated, x, num_draws, eps_relevant, period, k, &
 
     ! Transform disturbances
     CALL transform_disturbances_ambiguity(eps_relevant_emax, eps_relevant, &
-                x, num_draws)
+                x_internal, num_draws)
 
     ! Evaluate expected future value
     CALL simulate_emax(emax_simulated, payoffs_ex_post, future_payoffs, &
@@ -311,10 +316,12 @@ SUBROUTINE criterion(emax_simulated, x, num_draws, eps_relevant, period, k, &
             payoffs_ex_ante, edu_max, edu_start, periods_emax, states_all, &
             mapping_state_idx, delta)
 
+    rslt_crit = emax_simulated
+
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE criterion_approx_gradient(rslt, x, eps, num_draws, eps_relevant, &
+SUBROUTINE criterion_approx_gradient(rslt, x_internal, eps, num_draws, eps_relevant, &
                 period, k, payoffs_ex_ante, edu_max, edu_start, &
                 mapping_state_idx, states_all, num_periods, periods_emax, &
                 delta)
@@ -326,8 +333,8 @@ SUBROUTINE criterion_approx_gradient(rslt, x, eps, num_draws, eps_relevant, &
     REAL(our_dble), INTENT(IN)      :: eps_relevant(:, :)
     REAL(our_dble), INTENT(IN)      :: payoffs_ex_ante(:)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:,:)
+    REAL(our_dble), INTENT(IN)      :: x_internal(:)
     REAL(our_dble), INTENT(IN)      :: delta
-    REAL(our_dble), INTENT(IN)      :: x(:)
     REAL(our_dble), INTENT(IN)      :: eps
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:,:,:,:,:)
@@ -343,6 +350,7 @@ SUBROUTINE criterion_approx_gradient(rslt, x, eps, num_draws, eps_relevant, &
 
     REAL(our_dble)                  :: payoffs_ex_post(4)
     REAL(our_dble)                  :: future_payoffs(4)
+    REAL(our_dble)                  :: rslt_crit
     REAL(our_dble)                  :: ei(2)
     REAL(our_dble)                  :: d(2)
     REAL(our_dble)                  :: f0
@@ -358,9 +366,11 @@ SUBROUTINE criterion_approx_gradient(rslt, x, eps, num_draws, eps_relevant, &
     ei = zero_dble
 
     ! Evaluate baseline
-    CALL criterion(f0, x, num_draws, eps_relevant, period, k, &
+    CALL criterion(rslt_crit, x_internal, num_draws, eps_relevant, period, k, &
             payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, & 
             states_all, num_periods, periods_emax, delta)
+
+    f0 = rslt_crit
 
     ! Iterate over increments
     DO j = 1, 2
@@ -369,9 +379,11 @@ SUBROUTINE criterion_approx_gradient(rslt, x, eps, num_draws, eps_relevant, &
 
         d = eps * ei
 
-        CALL criterion(f1, x + d, num_draws, eps_relevant, period, k, &
+        CALL criterion(rslt_crit, x_internal + d, num_draws, eps_relevant, period, k, &
                 payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
                 states_all, num_periods, periods_emax, delta)
+
+        f1 = rslt_crit
 
         rslt(j) = (f1 - f0) / d(j)
 
