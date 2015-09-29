@@ -45,13 +45,10 @@ def robufort_build(self, is_debug=False, is_optimization=False):
     else:
         _without_optimization(compiler_options)
 
-    # TODO: Comment back in later
-    #for file_ in ['risk', 'ambiguity']:
-    #    try:
-    #        os.unlink('robufort_' + file_ +'_extended.f90')
-    #    except FileNotFoundError:
-    #        pass
-
+    for file_ in ['risk', 'ambiguity']:
+        #os.unlink('robufort_' + file_ +'_extended.f90')
+        pass
+    
     for file_ in ['risk', 'ambiguity']:
         shutil.move('robufort_' + file_, 'bin/robufort_' + file_)
 
@@ -67,6 +64,7 @@ def _without_optimization(compiler_options):
 
     # Create blank slate
     shutil.copy('robufort.f90', 'robufort_risk_extended.f90')
+
     # Read current content
     with open('robufort_risk_extended.f90', 'r') as infile:
         old_content = infile.readlines()
@@ -147,14 +145,11 @@ def _with_optimization(compiler_options):
 
         if which == 'ambiguity':
             del subroutines['logging_ambiguity']
-            #del subroutines['slsqp_robufort']
             del subroutines['criterion']
             del subroutines['divergence']
             del subroutines['criterion_approx_gradient']
             del subroutines['divergence_approx_gradient']
 
-        print(subroutines.keys())
-        # TODO: Integrate ambiguity
         while True:
 
             _mark_inlinings(subroutines, which)
@@ -189,12 +184,9 @@ def _with_optimization(compiler_options):
 
         _write_to_main(code_lines, which)
 
-    #_replace_inlinings(subroutines, 'risk')
+        _replace_inlinings(subroutines, which)
 
-    #os.remove('.robufort_inlining.f90')
-
-
-
+    os.remove('.robufort_inlining.f90')
 
     os.system('gfortran ' + compiler_options + ' -o robufort_risk ' \
                     'robufort_risk_extended.f90')
@@ -485,8 +477,8 @@ def _write_to_main(code_lines, which):
             if not is_start:
                 continue
 
-            for which in ['final_period', 'other_periods']:
-                for line_ in code_lines[which]:
+            for period in ['final_period', 'other_periods']:
+                for line_ in code_lines[period]:
                     new_file.write(line_)
 
 

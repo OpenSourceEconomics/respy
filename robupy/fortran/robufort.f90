@@ -427,28 +427,26 @@ PROGRAM robufort
     LOGICAL                         :: is_ambiguous
 
 
-
     INTEGER(our_int)                :: m
     INTEGER(our_int)                :: meq
     INTEGER(our_int)                :: n
     INTEGER(our_int)                :: mode
     INTEGER(our_int)                :: iter
-    INTEGER(our_int)                :: n1
     INTEGER(our_int)                :: mieq
     INTEGER(our_int)                :: mineq
-    INTEGER(our_int)                :: l_w
+    INTEGER(our_int)                :: jw(7)
     INTEGER(our_int)                :: l_jw
+    INTEGER(our_int)                :: l_w
     INTEGER(our_int)                :: la
+
+    REAL(our_dble)                  :: a(1, 3)
+    REAL(our_dble)                  :: xl(2)
+    REAL(our_dble)                  :: xu(2)
+    REAL(our_dble)                  :: c(1)
+    REAL(our_dble)                  :: g(3)
+    REAL(our_dble)                  :: w(144)
     REAL(our_dble)                  :: f
 
-    INTEGER(our_int), ALLOCATABLE   :: jw(:)
-
-    REAL(our_dble), ALLOCATABLE     :: a(:,:)
-    REAL(our_dble), ALLOCATABLE     :: xl(:)
-    REAL(our_dble), ALLOCATABLE     :: xu(:)
-    REAL(our_dble), ALLOCATABLE     :: c(:)
-    REAL(our_dble), ALLOCATABLE     :: g(:)
-    REAL(our_dble), ALLOCATABLE     :: w(:)
 
     LOGICAL                         :: is_finished
 
@@ -466,6 +464,7 @@ PROGRAM robufort
 
     REAL(our_dble)                  :: ei(2)
     REAL(our_dble)                  :: d(2)
+
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------

@@ -33,10 +33,10 @@ MODULE robufort_ambiguity
 
     PUBLIC :: criterion_approx_gradient
     PUBLIC :: divergence_approx_gradient
+    PUBLIC :: logging_ambiguity
     PUBLIC :: slsqp_robufort
     PUBLIC :: divergence
     PUBLIC :: criterion
-
 
 CONTAINS
 !*******************************************************************************
@@ -150,21 +150,21 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
     INTEGER(our_int)                :: n
     INTEGER(our_int)                :: mode
     INTEGER(our_int)                :: iter
-    INTEGER(our_int)                :: n1
     INTEGER(our_int)                :: mieq
     INTEGER(our_int)                :: mineq
     INTEGER(our_int)                :: l_w
     INTEGER(our_int)                :: l_jw
     INTEGER(our_int)                :: la
 
-    INTEGER(our_int), ALLOCATABLE   :: jw(:)
 
-    REAL(our_dble), ALLOCATABLE     :: a(:,:)
-    REAL(our_dble), ALLOCATABLE     :: xl(:)
-    REAL(our_dble), ALLOCATABLE     :: xu(:)
-    REAL(our_dble), ALLOCATABLE     :: c(:)
-    REAL(our_dble), ALLOCATABLE     :: g(:)
-    REAL(our_dble), ALLOCATABLE     :: w(:)
+    INTEGER(our_int)                :: jw(7)
+
+    REAL(our_dble)                  :: a(1, 3)
+    REAL(our_dble)                  :: xl(2)
+    REAL(our_dble)                  :: xu(2)
+    REAL(our_dble)                  :: c(1)
+    REAL(our_dble)                  :: g(3)
+    REAL(our_dble)                  :: w(144)
 
 
     REAL(our_dble)                  :: payoffs_ex_post(4)
@@ -193,18 +193,13 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
     m = meq + mieq
     n = SIZE(x_internal)
     la = MAX(1, m)
-    n1 = n + 1
-    mineq = m - meq + n1 + n1
+    mineq = m - meq + (n + 1) + (n + 1)
 
-    l_w =  (3 * n1 + m) * (n1 + 1) + (n1 - meq + 1) * (mineq + 2) + &
-           2 * mineq + (n1 + mineq) * (n1 - meq) + 2 * meq + n1 + &
-           ((n + 1) * n) / two_dble + 2 * m + 3 * n + 3 * n1 + 1
+    l_w =  (3 * (n + 1) + m) * ((n + 1) + 1) + ((n + 1) - meq + 1) * (mineq + 2) + &
+           2 * mineq + ((n + 1) + mineq) * ((n + 1) - meq) + 2 * meq + (n + 1) + &
+           ((n + 1) * n) / two_dble + 2 * m + 3 * n + 3 * (n + 1) + 1
 
     l_jw = mineq
-    
-    ! Allocate and initialize containers
-    ALLOCATE(w(l_w)); ALLOCATE(jw(l_jw)); ALLOCATE(a(m, n + 1))
-    ALLOCATE(g(n + 1)); ALLOCATE(c(m)); ALLOCATE(xl(n)); ALLOCATE(xu(n))
 
     ! Decompose upper and lower bounds
     xl = - huge_dble; xu = huge_dble
@@ -269,7 +264,7 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
 
     END DO
     
-!    IF (is_debug) CALL logging_ambiguity(x_internal, mode, period, k)
+    IF (is_debug) CALL logging_ambiguity(x_internal, mode, period, k)
 
 END SUBROUTINE
 !*******************************************************************************
