@@ -6,7 +6,7 @@ implementations of the core functions.
 import numpy as np
 
 
-def simulate_emax(num_periods, num_draws, period, k, eps_relevant,
+def simulate_emax(num_periods, num_draws, period, k, eps_relevant_emax,
         payoffs_ex_ante, edu_max, edu_start, periods_emax, states_all,
         mapping_state_idx, delta):
     """ Simulate expected future value.
@@ -18,7 +18,7 @@ def simulate_emax(num_periods, num_draws, period, k, eps_relevant,
     for i in range(num_draws):
 
         # Select disturbances for this draw
-        disturbances = eps_relevant[i, :]
+        disturbances = eps_relevant_emax[i, :]
 
         # Get total value of admissible states
         total_payoffs, payoffs_ex_post, future_payoffs = get_total_value(period,

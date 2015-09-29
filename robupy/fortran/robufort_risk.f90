@@ -54,13 +54,20 @@ SUBROUTINE get_payoffs_risk(emax_simulated, payoffs_ex_post, future_payoffs, &
     REAL(our_dble), INTENT(IN)      :: delta
     REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
 
+    !/* internal  objects    */
+
+    REAL(our_dble)                  :: eps_relevant_emax(num_draws, 4)
+
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
+    
+    ! Renaming for optimization step
+    eps_relevant_emax = eps_relevant
 
     ! Simulated expected future value
     CALL simulate_emax(emax_simulated, payoffs_ex_post, future_payoffs, num_periods, & 
-            num_draws, period, k, eps_relevant, payoffs_ex_ante, edu_max, & 
+            num_draws, period, k, eps_relevant_emax, payoffs_ex_ante, edu_max, & 
             edu_start, periods_emax, states_all, mapping_state_idx, delta)
     
 END SUBROUTINE

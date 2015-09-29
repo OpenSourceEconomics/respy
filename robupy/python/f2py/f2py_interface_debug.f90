@@ -7,7 +7,7 @@
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE wrapper_get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
-                future_payoffs, num_draws, eps_input, period, k, &
+                future_payoffs, num_draws, eps_relevant, period, k, &
                 payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
                 states_all, num_periods, periods_emax, delta, is_debug, &
                 shocks, level)
@@ -37,7 +37,7 @@ SUBROUTINE wrapper_get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
 
     DOUBLE PRECISION, INTENT(IN)    :: payoffs_ex_ante(:)
     DOUBLE PRECISION, INTENT(IN)    :: shocks(:, :)
-    DOUBLE PRECISION, INTENT(IN)    :: eps_input(:, :)
+    DOUBLE PRECISION, INTENT(IN)    :: eps_relevant(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_emax(:,:)
     DOUBLE PRECISION, INTENT(IN)    :: delta
     DOUBLE PRECISION, INTENT(IN)    :: level
@@ -50,7 +50,7 @@ SUBROUTINE wrapper_get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
     
     ! Get the expected payoffs under ambiguity
     CALL get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
-                future_payoffs, num_draws, eps_input, period, k, & 
+                future_payoffs, num_draws, eps_relevant, period, k, & 
                 payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
                 states_all, num_periods, periods_emax, delta, is_debug, &
                 shocks, level)
@@ -59,7 +59,7 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE wrapper_criterion_approx_gradient(rslt, x, eps, num_draws, &
-                eps_input, period, k, payoffs_ex_ante, edu_max, &
+                eps_relevant, period, k, payoffs_ex_ante, edu_max, &
                 edu_start, mapping_state_idx, states_all, num_periods, &
                 periods_emax, delta)
 
@@ -75,7 +75,7 @@ SUBROUTINE wrapper_criterion_approx_gradient(rslt, x, eps, num_draws, &
 
     DOUBLE PRECISION, INTENT(OUT)   :: rslt(2)
 
-    DOUBLE PRECISION, INTENT(IN)    :: eps_input(:, :)
+    DOUBLE PRECISION, INTENT(IN)    :: eps_relevant(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: payoffs_ex_ante(:)
     DOUBLE PRECISION, INTENT(IN)    :: periods_emax(:,:)
     DOUBLE PRECISION, INTENT(IN)    :: delta
@@ -96,7 +96,7 @@ SUBROUTINE wrapper_criterion_approx_gradient(rslt, x, eps, num_draws, &
 !-------------------------------------------------------------------------------
 
     ! Approximate the gradient of the criterion function
-    CALL criterion_approx_gradient(rslt, x, eps, num_draws, eps_input, &
+    CALL criterion_approx_gradient(rslt, x, eps, num_draws, eps_relevant, &
             period, k, payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
             states_all, num_periods, periods_emax, delta)
 
@@ -105,7 +105,7 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE wrapper_simulate_emax(emax_simulated, payoffs_ex_post, &
                 future_payoffs, num_periods, num_draws, period, k, &
-                eps_relevant, payoffs_ex_ante, edu_max, edu_start, &
+                eps_relevant_emax, payoffs_ex_ante, edu_max, edu_start, &
                 periods_emax, states_all, mapping_state_idx, delta)
 
     !/* external libraries    */
@@ -122,8 +122,8 @@ SUBROUTINE wrapper_simulate_emax(emax_simulated, payoffs_ex_post, &
     DOUBLE PRECISION, INTENT(OUT)   :: future_payoffs(4)
     DOUBLE PRECISION, INTENT(OUT)   :: emax_simulated
 
+    DOUBLE PRECISION, INTENT(IN)    :: eps_relevant_emax(:,:)
     DOUBLE PRECISION, INTENT(IN)    :: payoffs_ex_ante(:)
-    DOUBLE PRECISION, INTENT(IN)    :: eps_relevant(:,:)
     DOUBLE PRECISION, INTENT(IN)    :: periods_emax(:,:)
     DOUBLE PRECISION, INTENT(IN)    :: delta
 
@@ -142,15 +142,15 @@ SUBROUTINE wrapper_simulate_emax(emax_simulated, payoffs_ex_post, &
 
     ! Simulate expected future value
     CALL simulate_emax(emax_simulated, payoffs_ex_post, future_payoffs, &
-            num_periods, num_draws, period, k, eps_relevant, payoffs_ex_ante, &
-            edu_max, edu_start, periods_emax, states_all, mapping_state_idx, &
-            delta)
+            num_periods, num_draws, period, k, eps_relevant_emax, & 
+            payoffs_ex_ante, edu_max, edu_start, periods_emax, states_all, &
+            mapping_state_idx, delta)
 
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE wrapper_criterion(emax_simulated, payoffs_ex_post, future_payoffs, &
-                x, num_draws, eps_input, period, k, payoffs_ex_ante, &
+                x, num_draws, eps_relevant, period, k, payoffs_ex_ante, &
                 edu_max, edu_start, mapping_state_idx, states_all, &
                 num_periods, periods_emax, delta)
 
@@ -168,7 +168,7 @@ SUBROUTINE wrapper_criterion(emax_simulated, payoffs_ex_post, future_payoffs, &
     DOUBLE PRECISION, INTENT(OUT)   :: future_payoffs(4)
     DOUBLE PRECISION, INTENT(OUT)   :: emax_simulated
 
-    DOUBLE PRECISION, INTENT(IN)    :: eps_input(:, :)
+    DOUBLE PRECISION, INTENT(IN)    :: eps_relevant(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: payoffs_ex_ante(:)
     DOUBLE PRECISION, INTENT(IN)    :: periods_emax(:,:)
     DOUBLE PRECISION, INTENT(IN)    :: delta
@@ -188,7 +188,7 @@ SUBROUTINE wrapper_criterion(emax_simulated, payoffs_ex_post, future_payoffs, &
 !-------------------------------------------------------------------------------
 
     CALL criterion(emax_simulated, payoffs_ex_post, future_payoffs, &
-                x, num_draws, eps_input, period, k, payoffs_ex_ante, &
+                x, num_draws, eps_relevant, period, k, payoffs_ex_ante, &
                 edu_max, edu_start, mapping_state_idx, states_all, &
                 num_periods, periods_emax, delta)
 

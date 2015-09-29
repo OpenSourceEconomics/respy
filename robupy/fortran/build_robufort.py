@@ -48,7 +48,7 @@ def robufort_build(self, is_debug=False, is_optimization=False):
     for file_ in ['risk', 'ambiguity']:
         #os.unlink('robufort_' + file_ +'_extended.f90')
         pass
-    
+
     for file_ in ['risk', 'ambiguity']:
         shutil.move('robufort_' + file_, 'bin/robufort_' + file_)
 

@@ -27,17 +27,18 @@ MODULE robufort_library
 
 	IMPLICIT NONE
 
-    PRIVATE
-
+    !PRIVATE
+    PUBLIC
+    
     !/* core functions */
 
-    PUBLIC :: backward_induction 
-    PUBLIC :: create_state_space 
-    PUBLIC :: simulate_sample 
+    !PUBLIC :: backward_induction 
+    !PUBLIC :: create_state_space 
+    !PUBLIC :: simulate_sample 
 
     !/* auxiliary functions */
 
-    PUBLIC :: calculate_payoffs_ex_ante
+    !PUBLIC :: calculate_payoffs_ex_ante
 
 CONTAINS
 !*******************************************************************************

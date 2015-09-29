@@ -558,7 +558,13 @@ def test_99():
     # Initialize containers
     base = None
 
-    for version in ['PYTHON', 'F2PY', 'FORTRAN']:
+    for version in ['PYTHON', 'F2PY', 'FORTRAN', 'OPTIMIZATION']:
+
+        # This ensures that the optimized version agrees with all other
+        # implementations as well.
+        if version in ['OPTIMIZATION']:
+            compile_package('--fortran --debug --optimization', True)
+            version = 'FORTRAN'
 
         # Prepare initialization file
         init_dict['PROGRAM']['version'] = version

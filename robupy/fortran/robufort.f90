@@ -396,9 +396,8 @@ PROGRAM robufort
     REAL(our_dble), ALLOCATABLE     :: periods_payoffs_ex_post(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_future_payoffs(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_eps_relevant(:, :, :)
-    REAL(our_dble), ALLOCATABLE     :: eps_relevant(:, :)
     REAL(our_dble), ALLOCATABLE     :: periods_emax(:, :)
-    REAL(our_dble), ALLOCATABLE     :: eps_input(:, :)
+    REAL(our_dble), ALLOCATABLE     :: eps_relevant(:, :), eps_relevant_emax(: ,:)
     
     REAL(our_dble)                  :: payoffs_ex_post(4)
     REAL(our_dble)                  :: payoffs_ex_ante(4)
@@ -460,7 +459,7 @@ PROGRAM robufort
     REAL(our_dble)                  :: comp_c
     REAL(our_dble)                  :: rslt
 
-    REAL(our_dble)                  :: f0 
+    REAL(our_dble)                  :: f0
 
     REAL(our_dble)                  :: ei(2)
     REAL(our_dble)                  :: d(2)
@@ -504,7 +503,7 @@ PROGRAM robufort
     ALLOCATE(periods_eps_relevant(num_periods, num_draws, 4))
     ALLOCATE(periods_emax(num_periods, max_states_period))
     ALLOCATE(eps_relevant(num_draws, 4))
-    ALLOCATE(eps_input(num_draws, 4))
+    ALLOCATE(eps_relevant_emax(num_draws, 4))
 
     ! Draw random disturbances. For is_debugging purposes, these might also be 
     ! read in from disk or set to zero/one.
