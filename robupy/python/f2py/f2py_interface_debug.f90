@@ -149,10 +149,10 @@ SUBROUTINE wrapper_simulate_emax(emax_simulated, payoffs_ex_post, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_criterion(emax_simulated, payoffs_ex_post, future_payoffs, &
-                x, num_draws, eps_relevant, period, k, payoffs_ex_ante, &
-                edu_max, edu_start, mapping_state_idx, states_all, &
-                num_periods, periods_emax, delta)
+SUBROUTINE wrapper_criterion(emax_simulated, x, num_draws, eps_relevant, &
+                period, k, payoffs_ex_ante, edu_max, edu_start, & 
+                mapping_state_idx, states_all, num_periods, periods_emax, & 
+                delta)
 
     !/* external libraries    */
 
@@ -164,8 +164,6 @@ SUBROUTINE wrapper_criterion(emax_simulated, payoffs_ex_post, future_payoffs, &
 
     !/* external objects    */
 
-    DOUBLE PRECISION, INTENT(OUT)   :: payoffs_ex_post(4)
-    DOUBLE PRECISION, INTENT(OUT)   :: future_payoffs(4)
     DOUBLE PRECISION, INTENT(OUT)   :: emax_simulated
 
     DOUBLE PRECISION, INTENT(IN)    :: eps_relevant(:, :)
@@ -187,10 +185,9 @@ SUBROUTINE wrapper_criterion(emax_simulated, payoffs_ex_post, future_payoffs, &
 ! Algorithm
 !-------------------------------------------------------------------------------
 
-    CALL criterion(emax_simulated, payoffs_ex_post, future_payoffs, &
-                x, num_draws, eps_relevant, period, k, payoffs_ex_ante, &
-                edu_max, edu_start, mapping_state_idx, states_all, &
-                num_periods, periods_emax, delta)
+    CALL criterion(emax_simulated, x, num_draws, eps_relevant, period, &
+                k, payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, & 
+                states_all, num_periods, periods_emax, delta)
 
 END SUBROUTINE
 !*******************************************************************************

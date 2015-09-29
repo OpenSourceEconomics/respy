@@ -213,10 +213,9 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
     is_finished = .False.
 
     ! Initialize criterion function at starting values
-    CALL criterion(f, payoffs_ex_post, future_payoffs, x_internal, &
-            num_draws, eps_relevant, period, k, payoffs_ex_ante, edu_max, &
-            edu_start, mapping_state_idx, states_all, num_periods, &
-            periods_emax, delta)
+    CALL criterion(f, x_internal, num_draws, eps_relevant, period, k, &
+            payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
+            states_all, num_periods, periods_emax, delta)
 
     CALL criterion_approx_gradient(g, x_internal, eps, num_draws, &
             eps_relevant, period, k, payoffs_ex_ante, edu_max, edu_start, &
@@ -233,8 +232,7 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
         ! Evaluate criterion function and constraints
         IF (mode == one_int) THEN
 
-            CALL criterion(f, payoffs_ex_post, future_payoffs, &
-                    x_internal, num_draws, eps_relevant, period, k, &
+            CALL criterion(f, x_internal, num_draws, eps_relevant, period, k, &
                     payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
                     states_all, num_periods, periods_emax, delta)
 
@@ -270,15 +268,12 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE criterion(emax_simulated, payoffs_ex_post, future_payoffs, &
-                x, num_draws, eps_relevant, period, k, payoffs_ex_ante, &
-                edu_max, edu_start, mapping_state_idx, states_all, &
-                num_periods, periods_emax, delta)
+SUBROUTINE criterion(emax_simulated, x, num_draws, eps_relevant, period, k, &
+                payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
+                states_all, num_periods, periods_emax, delta)
 
     !/* external objects    */
 
-    REAL(our_dble), INTENT(OUT)     :: payoffs_ex_post(4)
-    REAL(our_dble), INTENT(OUT)     :: future_payoffs(4)
     REAL(our_dble), INTENT(OUT)     :: emax_simulated
 
     REAL(our_dble), INTENT(IN)      :: eps_relevant(:, :)
@@ -287,8 +282,8 @@ SUBROUTINE criterion(emax_simulated, payoffs_ex_post, future_payoffs, &
     REAL(our_dble), INTENT(IN)      :: delta
     REAL(our_dble), INTENT(IN)      :: x(:)
 
-    INTEGER(our_int) , INTENT(IN)   :: mapping_state_idx(:,:,:,:,:)
-    INTEGER(our_int) , INTENT(IN)   :: states_all(:,:,:)
+    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:,:,:,:,:)
+    INTEGER(our_int), INTENT(IN)    :: states_all(:,:,:)
     INTEGER(our_int), INTENT(IN)    :: num_periods
     INTEGER(our_int), INTENT(IN)    :: num_draws
     INTEGER(our_int), INTENT(IN)    :: edu_start
@@ -299,6 +294,8 @@ SUBROUTINE criterion(emax_simulated, payoffs_ex_post, future_payoffs, &
     !/* internal objects    */
 
     REAL(our_dble)                  :: eps_relevant_emax(num_draws, 4)
+    REAL(our_dble)                  :: payoffs_ex_post(4)
+    REAL(our_dble)                  :: future_payoffs(4)
 
 !-------------------------------------------------------------------------------
 ! Algorithm
@@ -361,10 +358,9 @@ SUBROUTINE criterion_approx_gradient(rslt, x, eps, num_draws, eps_relevant, &
     ei = zero_dble
 
     ! Evaluate baseline
-    CALL criterion(f0, payoffs_ex_post, future_payoffs, x, num_draws, &
-            eps_relevant, period, k, payoffs_ex_ante, edu_max, edu_start, &
-            mapping_state_idx, states_all, num_periods, periods_emax, &
-            delta)
+    CALL criterion(f0, x, num_draws, eps_relevant, period, k, &
+            payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, & 
+            states_all, num_periods, periods_emax, delta)
 
     ! Iterate over increments
     DO j = 1, 2
@@ -373,10 +369,9 @@ SUBROUTINE criterion_approx_gradient(rslt, x, eps, num_draws, eps_relevant, &
 
         d = eps * ei
 
-        CALL criterion(f1, payoffs_ex_post, future_payoffs, x + d, &
-                num_draws, eps_relevant, period, k, payoffs_ex_ante, &
-                edu_max, edu_start, mapping_state_idx, states_all, &
-                num_periods, periods_emax, delta)
+        CALL criterion(f1, x + d, num_draws, eps_relevant, period, k, &
+                payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
+                states_all, num_periods, periods_emax, delta)
 
         rslt(j) = (f1 - f0) / d(j)
 
