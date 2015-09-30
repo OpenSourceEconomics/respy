@@ -6,8 +6,8 @@ well-organized code without any loss of performance.
 """
 
 # standard library
-import shlex
 import shutil
+import shlex
 import copy
 import os
 
@@ -45,10 +45,15 @@ def robufort_build(self, is_debug=False, is_optimization=False):
     else:
         _without_optimization(compiler_options)
 
+    # Cleanup auxiliary files. The exception is required as in the case
+    # without optimization on the extended file for the risk case is created.
     for file_ in ['risk', 'ambiguity']:
-        #os.unlink('robufort_' + file_ +'_extended.f90')
-        pass
+        try:
+            os.unlink('robufort_' + file_ +'_extended.f90')
+        except FileNotFoundError:
+            pass
 
+    # Maintaining directory structure.
     for file_ in ['risk', 'ambiguity']:
         shutil.move('robufort_' + file_, 'bin/robufort_' + file_)
 
@@ -98,7 +103,6 @@ def _without_optimization(compiler_options):
 def _with_optimization(compiler_options):
     """ This function performs the manual inlining.
     """
-    # TODO: Review all comments
     # Performance considerations require an automatic inlining of the core
     # subroutines in a single file. Prepare starting version of extended
     # ROBUFORT code. At first the module containing the program constants is
@@ -109,13 +113,12 @@ def _with_optimization(compiler_options):
         with open('robufort_' + which + '_extended.f90', 'w') as outfile:
 
             files = ['robufort_program_constants.f90',
-                          'robufort_auxiliary.f90', 'robufort_emax.f90',
-                          'robufort_risk.f90',                           'robufort_library.f90',
-                          'robufort.f90']
+                     'robufort_auxiliary.f90', 'robufort_emax.f90',
+                     'robufort_risk.f90', 'robufort_library.f90',
+                     'robufort.f90']
 
             if which == 'ambiguity':
                 files.insert(4, 'robufort_ambiguity.f90')
-
 
             for fname in files:
                 with open(fname) as infile:
@@ -133,29 +136,21 @@ def _with_optimization(compiler_options):
     # them with the relevant code lines. The loop stops once no subroutines
     # are marked for further inlining. The original code of the subroutines
     # is read in directly from the robufort_library.f90 file.
-
+    subroutines = None
     for which in ['risk', 'ambiguity']:
+        # Read in all candidate subroutines for inlining.
         subroutines = _read_subroutines(which)
-
-        # Remove selected subroutines that are not of speed
+        # Remove selected subroutines that are not of concern for speed.
         del subroutines['get_disturbances']
         del subroutines['read_specification']
         del subroutines['store_results']
         del subroutines['logging_solution']
-
         if which == 'ambiguity':
             del subroutines['logging_ambiguity']
-            del subroutines['criterion']
-            del subroutines['divergence']
-            del subroutines['criterion_approx_gradient']
-            del subroutines['divergence_approx_gradient']
 
         while True:
-
             _mark_inlinings(subroutines, which)
-
             count = _replace_inlinings(subroutines, which)
-
             # Check for further applicability and cleaning.
             if count == 0:
                 os.remove('.robufort_inlining.f90')
@@ -173,17 +168,11 @@ def _with_optimization(compiler_options):
     # in the file, which is later replaced with a new insertion of the
     # get_future_payoffs subroutine when calling the replace_inlinings
     # function a couple of lines down.
-
     for which in ['risk', 'ambiguity']:
-
         code_lines = _read_backward_induction_code(which)
-
         code_lines = _split_backward_induction_loops(code_lines)
-
         code_lines = _replace_vectorization_obstacle(code_lines)
-
         _write_to_main(code_lines, which)
-
         _replace_inlinings(subroutines, which)
 
     os.remove('.robufort_inlining.f90')
@@ -237,8 +226,6 @@ def _remove_other_payoff_call(which):
                 # Update relevant
                 if end_relevant:
                     is_relevant = False
-
-
             else:
                 pass
 
@@ -284,7 +271,7 @@ def _split_backward_induction(which):
             # requires that there is at least one space after the IF statement.
             if is_vectorization:
                 try:
-                    if ('IF' in old_list) or ('ELSE') in old_list:
+                    if ('IF' in old_list) or ('ELSE' in old_list):
                         line = ''
                 except IndexError:
                     pass
@@ -371,12 +358,22 @@ def _split_backward_induction_loops(code_lines):
 
         # Make sure that the initialization of the outcome variables is not
         # redone when moving from the last to previous periods.
-        if ('periods_emax' in element) and ('missing_dble' in element):
+        if ('periods_emax' in element) and \
+                ('missing_dble' in element):
             code_lines['other_periods'][-1] = ''
-        if ('periods_future_payoffs' in element) and ('missing_dble' in element):
+        if ('periods_future_payoffs' in element) and \
+                ('missing_dble' in element):
             code_lines['other_periods'][-1] = ''
-        if ('periods_payoffs_ex_post' in element) and ('missing_dble' in element):
+        if ('periods_payoffs_ex_post' in element) and \
+                ('missing_dble' in element):
             code_lines['other_periods'][-1] = ''
+
+        # Ensure that there is no wrong logging messages as the loop is split
+        # up.
+        if 'CALL logging_solution(3)' in element:
+            code_lines['other_periods'][-1] = ''
+        if 'CALL logging_solution(-1)' in element:
+            code_lines['final_period'][-1] = ''
 
     # Finishing
     return code_lines

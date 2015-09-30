@@ -351,14 +351,13 @@ PROGRAM robufort
 
     !/* external modules    */
 
-    USE robufort_extension
-
     USE robufort_program_constants
 
-    ! TODO: Remove
-    USE robufort_library
+    USE robufort_extension
 
     USE robufort_ambiguity
+
+    USE robufort_library
 
     !/* setup   */
 
@@ -375,94 +374,82 @@ PROGRAM robufort
     INTEGER(our_int)                :: seed_solution 
     INTEGER(our_int)                :: num_periods
     INTEGER(our_int)                :: num_agents
-    INTEGER(our_int)                :: edu_lagged
-    INTEGER(our_int)                :: future_idx
     INTEGER(our_int)                :: edu_start
     INTEGER(our_int)                :: num_draws
-    INTEGER(our_int)                :: covars(6)
-    INTEGER(our_int)                :: maxiter
     INTEGER(our_int)                :: edu_max
     INTEGER(our_int)                :: min_idx
-    INTEGER(our_int)                :: period
-    INTEGER(our_int)                :: total
-    INTEGER(our_int)                :: exp_A
-    INTEGER(our_int)                :: exp_B
-    INTEGER(our_int)                :: edu
-    INTEGER(our_int)                :: i
-    INTEGER(our_int)                :: k
-    INTEGER(our_int)                :: j
 
     REAL(our_dble), ALLOCATABLE     :: periods_payoffs_ex_ante(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_payoffs_ex_post(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_future_payoffs(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_eps_relevant(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_emax(:, :)
-    REAL(our_dble), ALLOCATABLE     :: eps_relevant(:, :), eps_relevant_emax(: ,:)
-    
+
+    REAL(our_dble)                  :: coeffs_home(1)
+    REAL(our_dble)                  :: coeffs_edu(3)
+    REAL(our_dble)                  :: shocks(4, 4)
+    REAL(our_dble)                  :: coeffs_A(6)
+    REAL(our_dble)                  :: coeffs_B(6)
+    REAL(our_dble)                  :: delta
+    REAL(our_dble)                  :: level
+
+    LOGICAL                         :: is_debug
+    LOGICAL                         :: is_zero
+
+    ! The following two containers are only useful in case of manual 
+    ! preprocessing.
+
+    INTEGER(our_int)                :: edu_lagged
+    INTEGER(our_int)                :: future_idx
+    INTEGER(our_int)                :: covars(6)
+    INTEGER(our_int)                :: maxiter
+    INTEGER(our_int)                :: period
+    INTEGER(our_int)                :: total
+    INTEGER(our_int)                :: exp_A
+    INTEGER(our_int)                :: exp_B
+    INTEGER(our_int)                :: mineq
+    INTEGER(our_int)                :: jw(7)
+    INTEGER(our_int)                :: mode
+    INTEGER(our_int)                :: iter
+    INTEGER(our_int)                :: mieq
+    INTEGER(our_int)                :: l_jw
+    INTEGER(our_int)                :: edu
+    INTEGER(our_int)                :: meq
+    INTEGER(our_int)                :: l_w
+    INTEGER(our_int)                :: la
+    INTEGER(our_int)                :: i
+    INTEGER(our_int)                :: k
+    INTEGER(our_int)                :: j
+    INTEGER(our_int)                :: m
+    INTEGER(our_int)                :: n
+
+    REAL(our_dble), ALLOCATABLE     :: eps_relevant_emax(:, :)
+    REAL(our_dble), ALLOCATABLE     :: eps_relevant(:, :)
+
     REAL(our_dble)                  :: payoffs_ex_post(4)
     REAL(our_dble)                  :: payoffs_ex_ante(4)
     REAL(our_dble)                  :: future_payoffs(4)
     REAL(our_dble)                  :: total_payoffs(4)
     REAL(our_dble)                  :: disturbances(4)
     REAL(our_dble)                  :: emax_simulated
-    REAL(our_dble)                  :: coeffs_home(1)
-    REAL(our_dble)                  :: coeffs_edu(3)
     REAL(our_dble)                  :: x_internal(2)    
-    REAL(our_dble)                  :: shocks(4, 4)
-    REAL(our_dble)                  :: coeffs_A(6)
-    REAL(our_dble)                  :: coeffs_B(6)
     REAL(our_dble)                  :: x_start(2)
+    REAL(our_dble)                  :: a(1, 3)
     REAL(our_dble)                  :: maximum    
     REAL(our_dble)                  :: payoff
-    REAL(our_dble)                  :: delta
-    REAL(our_dble)                  :: level
-    REAL(our_dble)                  :: ftol
-    REAL(our_dble)                  :: eps
-
-    LOGICAL                         :: is_myopic
-    LOGICAL                         :: is_debug
-    LOGICAL                         :: is_huge
-    LOGICAL                         :: is_zero
-    LOGICAL                         :: is_ambiguous
-
-
-    INTEGER(our_int)                :: m
-    INTEGER(our_int)                :: meq
-    INTEGER(our_int)                :: n
-    INTEGER(our_int)                :: mode
-    INTEGER(our_int)                :: iter
-    INTEGER(our_int)                :: mieq
-    INTEGER(our_int)                :: mineq
-    INTEGER(our_int)                :: jw(7)
-    INTEGER(our_int)                :: l_jw
-    INTEGER(our_int)                :: l_w
-    INTEGER(our_int)                :: la
-
-    REAL(our_dble)                  :: a(1, 3)
+    REAL(our_dble)                  :: w(144)
     REAL(our_dble)                  :: xl(2)
     REAL(our_dble)                  :: xu(2)
+    REAL(our_dble)                  :: ftol
     REAL(our_dble)                  :: c(1)
     REAL(our_dble)                  :: g(3)
-    REAL(our_dble)                  :: w(144)
+    REAL(our_dble)                  :: eps
     REAL(our_dble)                  :: f
 
-
+    LOGICAL                         :: is_ambiguous
     LOGICAL                         :: is_finished
-
-    REAL(our_dble)                  :: alt_mean(4, 1) = zero_dble
-    REAL(our_dble)                  :: old_mean(4, 1) = zero_dble
-    REAL(our_dble)                  :: alt_cov(4,4)
-    REAL(our_dble)                  :: old_cov(4,4)
-    REAL(our_dble)                  :: inv_old_cov(4,4)
-    REAL(our_dble)                  :: comp_a
-    REAL(our_dble)                  :: comp_b(1, 1)
-    REAL(our_dble)                  :: comp_c
-    REAL(our_dble)                  :: rslt
-
-    REAL(our_dble)                  :: f0
-
-    REAL(our_dble)                  :: ei(2)
-    REAL(our_dble)                  :: d(2)
+    LOGICAL                         :: is_myopic
+    LOGICAL                         :: is_huge
 
 !-------------------------------------------------------------------------------
 ! Algorithm
@@ -502,6 +489,9 @@ PROGRAM robufort
     ALLOCATE(periods_future_payoffs(num_periods, max_states_period, 4))
     ALLOCATE(periods_eps_relevant(num_periods, num_draws, 4))
     ALLOCATE(periods_emax(num_periods, max_states_period))
+
+    ! The following two containers are only useful in case of manual 
+    ! preprocessing.
     ALLOCATE(eps_relevant(num_draws, 4))
     ALLOCATE(eps_relevant_emax(num_draws, 4))
 
@@ -514,9 +504,8 @@ PROGRAM robufort
     CALL backward_induction(periods_emax, periods_payoffs_ex_post, &
             periods_future_payoffs, num_periods, max_states_period, &
             periods_eps_relevant, num_draws, states_number_period, & 
-            periods_payoffs_ex_ante, edu_max, edu_start, &
-            mapping_state_idx, states_all, delta, is_debug, shocks, &
-            level)
+            periods_payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
+            states_all, delta, is_debug, shocks, level)
    
     ! Store results. These are read in by the PYTHON wrapper and added 
     ! to the clsRobupy instance.

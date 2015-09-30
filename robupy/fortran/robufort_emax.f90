@@ -16,9 +16,9 @@ MODULE robufort_emax
 
 	!/*	setup	*/
 
-	IMPLICIT NONE
+    IMPLICIT NONE
 
-	PRIVATE
+    PRIVATE
 
     !/* core functions */
 

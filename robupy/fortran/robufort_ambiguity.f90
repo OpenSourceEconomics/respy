@@ -166,10 +166,6 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
     REAL(our_dble)                  :: c(1)
     REAL(our_dble)                  :: g(3)
     REAL(our_dble)                  :: w(144)
-
-
-    REAL(our_dble)                  :: payoffs_ex_post(4)
-    REAL(our_dble)                  :: future_payoffs(4)
     REAL(our_dble)                  :: f
 
     LOGICAL                         :: is_finished
@@ -213,20 +209,19 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
     is_finished = .False.
 
     ! Initialize criterion function at starting values
-    CALL criterion(rslt_crit, x_internal, num_draws, eps_relevant, period, k, &
+    f = criterion(x_internal, num_draws, eps_relevant, period, k, &
             payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
             states_all, num_periods, periods_emax, delta)
 
-    f = rslt_crit
 
-    CALL criterion_approx_gradient(g, x_internal, eps, num_draws, &
+    g(:2) = criterion_approx_gradient(x_internal, eps, num_draws, &
             eps_relevant, period, k, payoffs_ex_ante, edu_max, edu_start, &
             mapping_state_idx, states_all, num_periods, periods_emax, &
             delta)
 
     ! Initialize constraint at starting values
-    CALL divergence(c, x_internal, shocks, level)
-    CALL divergence_approx_gradient(a, x_internal, shocks, level, eps)
+    c = divergence(x_internal, shocks, level)
+    a(1,:2) = divergence_approx_gradient(x_internal, shocks, level, eps)
 
     ! Iterate until completion
     DO WHILE (.NOT. is_finished)
@@ -234,25 +229,23 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
         ! Evaluate criterion function and constraints
         IF (mode == one_int) THEN
 
-            CALL criterion(rslt_crit, x_internal, num_draws, eps_relevant, period, k, &
+            f = criterion(x_internal, num_draws, eps_relevant, period, k, &
                     payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
                     states_all, num_periods, periods_emax, delta)
 
-            f = rslt_crit
-
-            CALL divergence(c, x_internal, shocks, level)
+            c = divergence(x_internal, shocks, level)
 
         ! Evaluate gradient of criterion function and constraints. Note that the
         ! a is of dimension (1, n + 1) and the last element needs to always
         ! be zero.
         ELSEIF (mode == - one_int) THEN
 
-            CALL criterion_approx_gradient(g, x_internal, eps, num_draws, &
+            g(:2) = criterion_approx_gradient(x_internal, eps, num_draws, &
                     eps_relevant, period, k, payoffs_ex_ante, edu_max, &
                     edu_start, mapping_state_idx, states_all, num_periods, &
                     periods_emax, delta)
 
-            CALL divergence_approx_gradient(a, x_internal, shocks, level, eps)
+            a(1,:2) = divergence_approx_gradient(x_internal, shocks, level, eps)
 
         END IF
 
@@ -272,13 +265,13 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE criterion(rslt_crit, x_internal, num_draws, eps_relevant, period, k, &
+FUNCTION criterion(x_internal, num_draws, eps_relevant, period, k, &
                 payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
                 states_all, num_periods, periods_emax, delta)
 
     !/* external objects    */
 
-    REAL(our_dble), INTENT(OUT)     :: rslt_crit
+    REAL(our_dble)                  :: criterion
 
     REAL(our_dble), INTENT(IN)      :: eps_relevant(:, :)
     REAL(our_dble), INTENT(IN)      :: payoffs_ex_ante(:)
@@ -316,19 +309,19 @@ SUBROUTINE criterion(rslt_crit, x_internal, num_draws, eps_relevant, period, k, 
             payoffs_ex_ante, edu_max, edu_start, periods_emax, states_all, &
             mapping_state_idx, delta)
 
-    rslt_crit = emax_simulated
+    criterion = emax_simulated
 
-END SUBROUTINE
+END FUNCTION
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE criterion_approx_gradient(rslt, x_internal, eps, num_draws, eps_relevant, &
+FUNCTION criterion_approx_gradient(x_internal, eps, num_draws, eps_relevant, &
                 period, k, payoffs_ex_ante, edu_max, edu_start, &
                 mapping_state_idx, states_all, num_periods, periods_emax, &
                 delta)
 
     !/* external objects    */
 
-    REAL(our_dble), INTENT(OUT)     :: rslt(2)
+    REAL(our_dble)                  :: criterion_approx_gradient(2)
 
     REAL(our_dble), INTENT(IN)      :: eps_relevant(:, :)
     REAL(our_dble), INTENT(IN)      :: payoffs_ex_ante(:)
@@ -348,9 +341,6 @@ SUBROUTINE criterion_approx_gradient(rslt, x_internal, eps, num_draws, eps_relev
 
     !/* internals objects    */
 
-    REAL(our_dble)                  :: payoffs_ex_post(4)
-    REAL(our_dble)                  :: future_payoffs(4)
-    REAL(our_dble)                  :: rslt_crit
     REAL(our_dble)                  :: ei(2)
     REAL(our_dble)                  :: d(2)
     REAL(our_dble)                  :: f0
@@ -366,11 +356,9 @@ SUBROUTINE criterion_approx_gradient(rslt, x_internal, eps, num_draws, eps_relev
     ei = zero_dble
 
     ! Evaluate baseline
-    CALL criterion(rslt_crit, x_internal, num_draws, eps_relevant, period, k, &
+    f0 = criterion(x_internal, num_draws, eps_relevant, period, k, &
             payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, & 
             states_all, num_periods, periods_emax, delta)
-
-    f0 = rslt_crit
 
     ! Iterate over increments
     DO j = 1, 2
@@ -379,19 +367,17 @@ SUBROUTINE criterion_approx_gradient(rslt, x_internal, eps, num_draws, eps_relev
 
         d = eps * ei
 
-        CALL criterion(rslt_crit, x_internal + d, num_draws, eps_relevant, period, k, &
+        f1 = criterion(x_internal + d, num_draws, eps_relevant, period, k, &
                 payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
                 states_all, num_periods, periods_emax, delta)
 
-        f1 = rslt_crit
-
-        rslt(j) = (f1 - f0) / d(j)
+        criterion_approx_gradient(j) = (f1 - f0) / d(j)
 
         ei(j) = zero_dble
 
     END DO
 
-END SUBROUTINE
+END FUNCTION
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE transform_disturbances_ambiguity(eps_relevant_emax, eps_relevant, x_internal, & 
@@ -408,7 +394,6 @@ SUBROUTINE transform_disturbances_ambiguity(eps_relevant_emax, eps_relevant, x_i
 
     !/* internal objects    */
 
-    INTEGER                         :: i
     INTEGER                         :: j
 
 !-------------------------------------------------------------------------------
@@ -500,11 +485,11 @@ SUBROUTINE logging_ambiguity(x_internal, mode, period, k)
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE divergence(div, x_internal, shocks, level)
+FUNCTION divergence(x_internal, shocks, level)
 
     !/* external objects    */
 
-    REAL(our_dble), INTENT(OUT)     :: div(1)
+    REAL(our_dble)                  :: divergence 
 
     REAL(our_dble), INTENT(IN)      :: x_internal(2)
     REAL(our_dble), INTENT(IN)      :: shocks(4,4)
@@ -551,16 +536,16 @@ SUBROUTINE divergence(div, x_internal, shocks, level)
     rslt = half_dble * (comp_a + comp_b(1,1) - four_dble + comp_c)
 
     ! Divergence
-    div = level - rslt
+    divergence = level - rslt
 
-END SUBROUTINE
+END FUNCTION
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE divergence_approx_gradient(rslt, x, cov, level, eps)
+FUNCTION divergence_approx_gradient(x, cov, level, eps)
 
     !/* external objects    */
 
-    REAL(our_dble), INTENT(OUT)     :: rslt(2)
+    REAL(our_dble)                  :: divergence_approx_gradient(2)
 
     REAL(our_dble), INTENT(IN)      :: x(2)
     REAL(our_dble), INTENT(IN)      :: eps
@@ -573,8 +558,8 @@ SUBROUTINE divergence_approx_gradient(rslt, x, cov, level, eps)
 
     REAL(our_dble)                  :: ei(2)
     REAL(our_dble)                  :: d(2)
-    REAL(our_dble)                  :: f0(1)
-    REAL(our_dble)                  :: f1(1)
+    REAL(our_dble)                  :: f0 
+    REAL(our_dble)                  :: f1 
 
 !-------------------------------------------------------------------------------
 ! Algorithm
@@ -584,7 +569,7 @@ SUBROUTINE divergence_approx_gradient(rslt, x, cov, level, eps)
     ei = zero_dble
 
     ! Evaluate baseline
-    CALL divergence(f0, x, cov, level)
+    f0 = divergence(x, cov, level)
 
     ! Iterate over increments
     DO k = 1, 2
@@ -593,15 +578,15 @@ SUBROUTINE divergence_approx_gradient(rslt, x, cov, level, eps)
 
         d = eps * ei
 
-        CALL divergence(f1, x + d, cov, level)
+        f1 = divergence(x + d, cov, level)
 
-        rslt(k) = (f1(1) - f0(1)) / d(k)
+        divergence_approx_gradient(k) = (f1 - f0) / d(k)
 
         ei(k) = zero_dble
 
     END DO
 
-END SUBROUTINE
+END FUNCTION
 !*******************************************************************************
 !*******************************************************************************
 END MODULE

@@ -96,7 +96,7 @@ SUBROUTINE wrapper_criterion_approx_gradient(rslt, x, eps, num_draws, &
 !-------------------------------------------------------------------------------
 
     ! Approximate the gradient of the criterion function
-    CALL criterion_approx_gradient(rslt, x, eps, num_draws, eps_relevant, &
+    rslt = criterion_approx_gradient(x, eps, num_draws, eps_relevant, &
             period, k, payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
             states_all, num_periods, periods_emax, delta)
 
@@ -185,9 +185,10 @@ SUBROUTINE wrapper_criterion(emax_simulated, x, num_draws, eps_relevant, &
 ! Algorithm
 !-------------------------------------------------------------------------------
 
-    CALL criterion(emax_simulated, x, num_draws, eps_relevant, period, &
-                k, payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, & 
-                states_all, num_periods, periods_emax, delta)
+    emax_simulated = criterion(x, num_draws, eps_relevant, period, k, &
+                        payoffs_ex_ante, edu_max, edu_start, &
+                        mapping_state_idx, states_all, num_periods, &
+                        periods_emax, delta)
 
 END SUBROUTINE
 !*******************************************************************************
@@ -215,7 +216,7 @@ SUBROUTINE wrapper_divergence_approx_gradient(rslt, x, cov, level, eps)
 !-------------------------------------------------------------------------------
     
     ! Approximate the gradient of the KL divergence
-    CALL divergence_approx_gradient(rslt, x, cov, level, eps)
+    rslt = divergence_approx_gradient(x, cov, level, eps)
 
 END SUBROUTINE 
 !*******************************************************************************
@@ -406,7 +407,7 @@ SUBROUTINE wrapper_divergence(div, x, cov, level)
 !-------------------------------------------------------------------------------
     
     ! Calculate divergence
-    CALL divergence(div, x, cov, level)
+    div = divergence(x, cov, level)
 
 END SUBROUTINE
 !*******************************************************************************

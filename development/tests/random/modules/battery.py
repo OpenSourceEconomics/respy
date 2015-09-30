@@ -340,7 +340,7 @@ def test_95():
                 periods_emax, delta)
 
         py = _criterion(x, *args)
-        f90, _, _ = fort.wrapper_criterion(x, *args)
+        f90 = fort.wrapper_criterion(x, *args)
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
         # Evaluation of derivative of criterion function
