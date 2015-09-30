@@ -50,8 +50,7 @@ logger.addHandler(handler)
 # This log file contains information about the progress of data simulations.
 logger = logging.getLogger('ROBUPY_SIMULATE')
 
-handler = logging.FileHandler('logging.robupy.sim.log', mode='w',
-                              delay=True)
+handler = logging.FileHandler('logging.robupy.sim.log', mode='w')
 
 handler.setFormatter(formatter)
 

@@ -24,6 +24,8 @@ from robupy.tests.random_init import print_random_dict
 from modules.auxiliary import compile_package
 from robupy import *
 
+# Import clean
+from clean import cleanup
 
 ''' Functions
 '''
@@ -36,34 +38,13 @@ def distribute_arguments(parser):
     args = parser.parse_args()
 
     # Extract arguments
-    is_clean, is_create = args.is_clean, args.is_create
-
-    is_parallel = args.is_parallel
+    num_procs = args.num_procs
 
     # Check arguments
-    assert (is_clean in [True, False])
-    assert (is_create in [True, False])
-    assert (is_parallel in [True, False])
+    assert (num_procs > 0)
 
     # Finishing
-    return is_clean, is_create, is_parallel
-
-
-def clean():
-    """ Clean directory.
-    """
-
-    files = glob.glob('*')
-
-    for file_ in files:
-
-        if file_ in ['model.robupy.ini', 'run']:
-            continue
-
-        try:
-            os.unlink(file_)
-        except IsADirectoryError:
-            shutil.rmtree(file_)
+    return num_procs
 
 
 def solve_ambiguous_economy(level):
@@ -90,30 +71,31 @@ def solve_ambiguous_economy(level):
     # Solve requested model
     robupy_obj = read('test.robupy.ini')
 
+    import time
+
+    start_time = time.time()
+
     solve(robupy_obj)
+
+    print(time.time() - start_time)
 
     # Finishing
     os.chdir('../')
 
 
-def create(is_parallel):
+def create(num_procs):
     """ Solve the RESTUD economies for different levels of ambiguity.
     """
     # Cleanup
-    clean()
+    cleanup()
 
     # Compile fast version of ROBUPY package
-    compile_package('--fortran --debug', True)
+    compile_package('--fortran', True)
 
-    # Run multiple economies in parallel
-    if is_parallel:
-        grid = np.linspace(0.00, 1.0, num=21)
-        p = Pool(3)
-        p.map(solve_ambiguous_economy, grid)
-    else:
-        grid = [0.0]
-        for level in grid:
-            solve_ambiguous_economy(level)
+    # Solve numerous economies
+    grid = [0.1]
+    p = Pool(num_procs)
+    p.map(solve_ambiguous_economy, grid)
 
 
 ''' Execution of module as script.
@@ -124,18 +106,10 @@ if __name__ == '__main__':
         description='Solve RESTUD economy for varying level of ambiguity.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    parser.add_argument('--clean', action='store_true', dest='is_clean',
-                        help='clean directory')
+    parser.add_argument('--procs', action='store', type=int, dest='num_procs',
+                        default=1, help='number of available processors')
 
-    parser.add_argument('--create', action='store_true', dest='is_create',
-                        help='create results')
-
-    parser.add_argument('--parallel', action='store_true', dest='is_parallel',
-                        help='parallel execution')
-
-    is_clean, is_create, is_parallel = distribute_arguments(parser)
+    num_procs = distribute_arguments(parser)
 
     # Run function
-    if is_clean: clean()
-
-    if is_create: create(is_parallel)
+    create(num_procs)
