@@ -8,6 +8,4 @@
 #PBS -M eisenhauer@policy-lab.org
 
 cd $PBS_O_WORKDIR
-alias python="/mnt/ide0/home/eisenhauer/.envs/robustToolbox3/bin/python"
-which python
 mpiexec -n 1 python -O /home/eisenhauer/robustToolbox/package/development/economy/create --procs 11 --grid 0 1 11
