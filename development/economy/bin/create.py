@@ -38,13 +38,19 @@ def distribute_arguments(parser):
     args = parser.parse_args()
 
     # Extract arguments
-    num_procs = args.num_procs
+    num_procs, grid = args.num_procs,  args.grid
 
     # Check arguments
     assert (num_procs > 0)
 
+    if grid != 0:
+        assert (len(grid) == 3)
+        assert (all(isinstance(element, int) for element in grid))
+        assert (grid[2] > 0.0)
+        assert (grid[0] < grid[1]) or ((grid[0] == 0) and (grid[1] == 0))
+
     # Finishing
-    return num_procs
+    return num_procs, grid
 
 
 def solve_ambiguous_economy(level):
@@ -71,19 +77,13 @@ def solve_ambiguous_economy(level):
     # Solve requested model
     robupy_obj = read('test.robupy.ini')
 
-    import time
-
-    start_time = time.time()
-
     solve(robupy_obj)
-
-    print(time.time() - start_time)
 
     # Finishing
     os.chdir('../')
 
 
-def create(num_procs):
+def create(num_procs, grid):
     """ Solve the RESTUD economies for different levels of ambiguity.
     """
     # Cleanup
@@ -92,8 +92,13 @@ def create(num_procs):
     # Compile fast version of ROBUPY package
     compile_package('--fortran', True)
 
+    # Construct grid
+    if grid == 0:
+        grid = [0.0]
+    else:
+        grid = np.linspace(start=grid[0], stop=grid[1], num=grid[2])
+
     # Solve numerous economies
-    grid = [0.1]
     p = Pool(num_procs)
     p.map(solve_ambiguous_economy, grid)
 
@@ -107,9 +112,13 @@ if __name__ == '__main__':
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('--procs', action='store', type=int, dest='num_procs',
-                        default=1, help='number of available processors')
+        default=1, help='use multiple processors')
 
-    num_procs = distribute_arguments(parser)
+    parser.add_argument('--grid', action='store', type=int, dest='grid',
+        default=[0, 0, 1], nargs='+',
+        help='construct grid using np.linspace (start, stop, num)')
+
+    num_procs, grid = distribute_arguments(parser)
 
     # Run function
-    create(num_procs)
+    create(num_procs, grid)

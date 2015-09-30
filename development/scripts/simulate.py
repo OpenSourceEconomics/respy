@@ -48,8 +48,7 @@ def simulate(solution, num_agents, seed):
     # Modifications
     with_modifications = (num_agents is not None) or (seed is not None)
 
-    # Update agents
-
+    # Update attributes
     if with_modifications:
         robupy_obj.unlock()
 
