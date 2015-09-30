@@ -535,7 +535,7 @@ FUNCTION divergence_approx_gradient(x, cov, level, eps)
 
     REAL(our_dble), INTENT(IN)      :: x(:)
     REAL(our_dble), INTENT(IN)      :: eps
-    REAL(our_dble), INTENT(IN)      :: cov(:,;)
+    REAL(our_dble), INTENT(IN)      :: cov(:,:)
     REAL(our_dble), INTENT(IN)      :: level
 
     !/* internals objects    */
