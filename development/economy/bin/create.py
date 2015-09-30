@@ -90,7 +90,7 @@ def create(num_procs, grid):
     cleanup()
 
     # Compile fast version of ROBUPY package
-    compile_package('--fortran', True)
+    compile_package('--fortran --optimization', True)
 
     # Construct grid
     if grid == 0:

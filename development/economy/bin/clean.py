@@ -21,7 +21,7 @@ def cleanup():
 
     for file_ in files:
 
-        if file_ in ['model.robupy.ini', 'bin', 'clean', 'create']:
+        if file_ in ['acropolis.pbs', 'model.robupy.ini', 'bin', 'clean', 'create']:
             continue
 
         try:
