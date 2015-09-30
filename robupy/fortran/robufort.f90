@@ -4,7 +4,7 @@ MODULE robufort_extension
 
     !/* external modules    */
 
-    USE robufort_program_constants
+    USE robufort_constants
     USE robufort_auxiliary
 
     !/* setup   */
@@ -351,7 +351,7 @@ PROGRAM robufort
 
     !/* external modules    */
 
-    USE robufort_program_constants
+    USE robufort_constants
 
     USE robufort_extension
 

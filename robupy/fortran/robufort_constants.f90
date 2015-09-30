@@ -1,9 +1,9 @@
-MODULE robufort_program_constants
+MODULE robufort_constants
 
 	!/*	setup	*/
 
     IMPLICIT NONE
-
+    
 !------------------------------------------------------------------------------- 
 !	Parameters and Types
 !------------------------------------------------------------------------------- 

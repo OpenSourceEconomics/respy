@@ -26,7 +26,7 @@ def build_f2py_testing(is_hidden):
     # Build static library
     compiler_options = '-O3 -fpic'
 
-    files = ['robufort_program_constants.f90', 'robufort_auxiliary.f90',
+    files = ['robufort_constants.f90', 'robufort_auxiliary.f90',
              'robufort_slsqp.f', 'robufort_emax.f90', 'robufort_risk.f90',
              'robufort_ambiguity.f90', 'robufort_library.f90',
              'robufort_testing.f90']

@@ -13,7 +13,7 @@ MODULE robufort_library
 
 	!/*	external modules	*/
 
-    USE robufort_program_constants
+    USE robufort_constants
 
     USE robufort_auxiliary
 

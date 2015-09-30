@@ -2,13 +2,13 @@ MODULE robufort_auxiliary
 
 	!/*	external modules	*/
 
-    USE robufort_program_constants
+    USE robufort_constants
 
 	!/*	setup	*/
 
-  IMPLICIT NONE
+    IMPLICIT NONE
 
-  PUBLIC
+    PUBLIC
 
 CONTAINS
 !*******************************************************************************
@@ -64,55 +64,55 @@ FUNCTION inverse(A, k)
 
     !/* external objects    */
 
-  INTEGER(our_int), INTENT(IN)  :: k
+    INTEGER(our_int), INTENT(IN)  :: k
 
-  REAL(our_dble), INTENT(IN)    :: A(k, k)
+    REAL(our_dble), INTENT(IN)    :: A(k, k)
 
     !/* internal objects    */
   
-  REAL(our_dble), ALLOCATABLE   :: y(:, :)
-  REAL(our_dble), ALLOCATABLE   :: B(:, :)
-  REAL(our_dble)                :: d
-  REAL(our_dble)                :: inverse(k, k)
+    REAL(our_dble), ALLOCATABLE   :: y(:, :)
+    REAL(our_dble), ALLOCATABLE   :: B(:, :)
+    REAL(our_dble)                :: d
+    REAL(our_dble)                :: inverse(k, k)
 
-  INTEGER(our_int), ALLOCATABLE :: indx(:)  
-  INTEGER(our_int)              :: n
-  INTEGER(our_int)              :: i
-  INTEGER(our_int)              :: j
+    INTEGER(our_int), ALLOCATABLE :: indx(:)  
+    INTEGER(our_int)              :: n
+    INTEGER(our_int)              :: i
+    INTEGER(our_int)              :: j
 
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
   
-  ! Auxiliary objects
-  n  = size(A, 1)
+    ! Auxiliary objects
+    n  = size(A, 1)
 
-  ! Allocate containers
-  ALLOCATE(y(n, n))
-  ALLOCATE(B(n, n))
-  ALLOCATE(indx(n))
+    ! Allocate containers
+    ALLOCATE(y(n, n))
+    ALLOCATE(B(n, n))
+    ALLOCATE(indx(n))
 
-  ! Initialize containers
-  y = zero_dble
-  B = A
+    ! Initialize containers
+    y = zero_dble
+    B = A
 
-  ! Main
-  DO i = 1, n
+    ! Main
+    DO i = 1, n
   
-     y(i, i) = 1
+        y(i, i) = 1
   
-  END DO
+    END DO
 
-  CALL ludcmp(B, d, indx)
+    CALL ludcmp(B, d, indx)
 
-  DO j = 1, n
+    DO j = 1, n
   
-     CALL lubksb(B, y(:, j), indx)
+        CALL lubksb(B, y(:, j), indx)
   
-  END DO
+    END DO
   
-  ! Collect result
-  inverse = y
+    ! Collect result
+    inverse = y
 
 END FUNCTION
 !*******************************************************************************
