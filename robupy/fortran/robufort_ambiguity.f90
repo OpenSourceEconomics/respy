@@ -24,21 +24,7 @@ MODULE robufort_ambiguity
 	IMPLICIT NONE
 
     PUBLIC 
-    !PRIVATE
-
-    !/* core functions */
-
-    !PUBLIC :: get_payoffs_ambiguity 
-
-    !/* auxiliary functions */
-
-    !PUBLIC :: criterion_approx_gradient
-    !PUBLIC :: divergence_approx_gradient
-    !PUBLIC :: logging_ambiguity
-    !PUBLIC :: slsqp_robufort
-    !PUBLIC :: divergence
-    !PUBLIC :: criterion
-
+    
 CONTAINS
 !*******************************************************************************
 !*******************************************************************************

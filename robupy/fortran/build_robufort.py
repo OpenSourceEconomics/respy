@@ -37,21 +37,17 @@ def robufort_build(self, is_debug=False, is_optimization=False):
         compiler_options = PRODUCTION_OPTIONS
 
     # This branches the build process into two parts, depending on whether
-    # manual inlining is required due to speed considerations or not.
-    # Refraining from manual inlining is useful during development and
-    # working on extensions.
+    # manual preprocessing is required due to speed considerations or not.
     if is_optimization:
         _with_optimization(compiler_options)
     else:
         _without_optimization(compiler_options)
 
-    # Cleanup auxiliary files. The exception is required as in the case
-    # without optimization on the extended file for the risk case is created.
-    for file_ in ['risk', 'ambiguity']:
-        try:
+    # Cleanup auxiliary files. Extended files are created in the case of
+    # preprocessing.
+    if is_optimization:
+        for file_ in ['risk', 'ambiguity']:
             os.unlink('robufort_extended_' + file_ + '.f90')
-        except FileNotFoundError:
-            pass
 
     # Maintaining directory structure.
     for file_ in ['risk', 'ambiguity']:
@@ -61,36 +57,16 @@ def robufort_build(self, is_debug=False, is_optimization=False):
 
 
 def _without_optimization(compiler_options):
-    """ This function creates the executable without the inlining. Minor
-    preparations are required to add the import of the robufort library to
-    the main program. This is not done in the actual code as it otherwise
-    does not allow for the compilation of the inlined code.
+    """ This function creates the executable without any manual preprocessing
+    for optimization. Even though not required here, two separate exectuables
+    are created. This keeps it aligned with the optimized case.
     """
-
-    # Create blank slate
-    shutil.copy('robufort.f90', 'robufort_risk_extended.f90')
-
-    # Read current content
-    with open('robufort_extended_risk.f90', 'r') as infile:
-        old_content = infile.readlines()
-
-    # Extend content to import the robufort library
-    with open('robufort_extended_risk.f90', 'w') as outfile:
-        for line in old_content:
-            outfile.write(line)
-            # Check for additional import
-            list_ = shlex.split(line)
-            is_relevant = (list_[:2] == ['USE', 'robufort_extension'])
-            if is_relevant:
-                outfile.write('\n USE robufort_library \n')
-
-    # Compile resulting extended file and create executable for model under
-    # risk and ambiguity.
+    # Compile robufort file according to selected options.
     cmd = 'gfortran ' + compiler_options + ' -o robufort_risk ' \
           'robufort_constants.f90  robufort_auxiliary.f90 ' \
           'robufort_slsqp.f robufort_emax.f90 robufort_risk.f90  ' \
           'robufort_ambiguity.f90 robufort_library.f90 ' \
-          'robufort_risk_extended.f90'
+          'robufort.f90'
 
     os.system(cmd)
 
@@ -104,30 +80,28 @@ def _with_optimization(compiler_options):
     """ This function performs the manual inlining.
     """
     # Performance considerations require an automatic inlining of the core
-    # subroutines in a single file. Prepare starting version of extended
-    # ROBUFORT code. At first the module containing the program constants is
-    # inserted as well as the auxiliary functions. Then the code tailored for
-    # the inlinings is added. Separate versions for the model under ambiguity
-    #  and risk are created.
+    # subroutines in a single file. Prepare a starting version of extended
+    # ROBUFORT code. Separate versions for the model under ambiguity and risk
+    # are created.
     for which in ['risk', 'ambiguity']:
         with open('robufort_extended_' + which + '.f90', 'w') as outfile:
-
+            # Assemble relevant set of files. The set of files for the risk
+            # only model is a subset of the model with ambiguity.
             files = ['robufort_constants.f90', 'robufort_auxiliary.f90',
                      'robufort_emax.f90', 'robufort_risk.f90',
                      'robufort_library.f90', 'robufort.f90']
-
             if which == 'ambiguity':
                 files.insert(4, 'robufort_ambiguity.f90')
 
-            for fname in files:
-                with open(fname) as infile:
+            for file_ in files:
+                with open(file_) as infile:
                     for line in infile:
                         outfile.write(line)
                 outfile.write('\n')
 
-    # Remove the case distinction from the backward induction procedure and
-    # also remove the other call. Two steps are performed, first the IF
-    # construct is removed and then the obsolete payoff construction removed.
+    # (1) Remove case distinction for the future payoffs in the last and all
+    # other periods. (2) Remove obsolete payoff function from now separate
+    # ambiguity and risk code.
     for which in ['risk', 'ambiguity']:
         _split_backward_induction(which)
 
@@ -156,17 +130,8 @@ def _with_optimization(compiler_options):
                 break
 
     # The compiler's vectorization efforts fail due to the case distinction
-    # in the get_future_payoffs function. Reading in the fully inlined code for
-    # the backward induction routine. Then modify it by splitting the loop
-    # over all periods into the last period and all other periods. Remove the
-    # IF-CLAUSE in the get_future_payoffs that distinguished between the last
-    # and all other periods. Then we write the code back into the extended
-    # ROBUFORT program, and again inline the get_future_payoff subroutine.
-    # The replacement of the code lines for the last period is
-    # straightforward. For all other periods, an inlining marker is placed
-    # in the file, which is later replaced with a new insertion of the
-    # get_future_payoffs subroutine when calling the replace_inlinings
-    # function a couple of lines down.
+    # in the get_future_payoffs function. We separate the backward induction
+    # for the last period from all other periods.
     for which in ['risk', 'ambiguity']:
         code_lines = _read_backward_induction_code(which)
         code_lines = _split_backward_induction_loops(code_lines)
@@ -176,6 +141,8 @@ def _with_optimization(compiler_options):
 
     os.remove('.robufort_inlining.f90')
 
+    # Compile two separate executables. Note that the SLSQP code is added
+    # in its original form for the case of ambiguous returns.
     os.system('gfortran ' + compiler_options + ' -o robufort_risk ' \
                     'robufort_extended_risk.f90')
 
@@ -184,20 +151,22 @@ def _with_optimization(compiler_options):
 
 
 def _remove_other_payoff_call(which):
-
+    """ We split the code for the risk and ambiguity case. Thus we can
+    purge the other get_payoff function from the code.
+    """
+    # Select relevant subroutine for removal.
     name_relevant = 'get_payoffs_ambiguity'
     if which == 'ambiguity':
         name_relevant = 'get_payoffs_risk'
 
-    is_relevant = False
-    end_relevant = False
-
+    # Baseline file
     with open('robufort_extended_' + which + '.f90', 'r') as file_:
         old_file = file_.readlines()
 
-    is_vectorization = False
-    with open('robufort_extended_' + which + '.f90', 'w') as outfile:
+    # Initialize indicators
+    is_vectorization, is_relevant, end_relevant = False, False, False
 
+    with open('robufort_extended_' + which + '.f90', 'w') as outfile:
         for line in old_file:
             # Check for vectorization block that indicates the case
             # distinction to be removed.
@@ -206,20 +175,15 @@ def _remove_other_payoff_call(which):
 
             if start_vectorization:
                 is_vectorization = True
-
             if end_vectorization:
                 is_vectorization = False
 
             if is_vectorization:
-
                 start_relevant = (name_relevant in line)
-
                 if start_relevant:
                     is_relevant = True
-
                 if is_relevant and (')' in line):
                     end_relevant = True
-
                 if is_relevant:
                     line = ''
                 # Update relevant
@@ -228,6 +192,7 @@ def _remove_other_payoff_call(which):
             else:
                 pass
 
+            # Write updated line
             outfile.write(line)
 
 

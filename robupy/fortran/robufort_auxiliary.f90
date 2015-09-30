@@ -1,10 +1,10 @@
 MODULE robufort_auxiliary
 
-	!/*	external modules	*/
+	 !/*	external modules	*/
 
     USE robufort_constants
 
-	!/*	setup	*/
+	 !/*	setup	*/
 
     IMPLICIT NONE
 

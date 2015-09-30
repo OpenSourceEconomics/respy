@@ -17,30 +17,19 @@ MODULE robufort_library
 
     USE robufort_auxiliary
 
+    USE robufort_ambiguity
+
     USE robufort_emax
 
     USE robufort_risk
-
-    USE robufort_ambiguity
 
 	!/*	setup	*/
 
 	IMPLICIT NONE
 
-    !PRIVATE
     PUBLIC
     
-    !/* core functions */
-
-    !PUBLIC :: backward_induction 
-    !PUBLIC :: create_state_space 
-    !PUBLIC :: simulate_sample 
-
-    !/* auxiliary functions */
-
-    !PUBLIC :: calculate_payoffs_ex_ante
-
-CONTAINS
+ CONTAINS
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE simulate_sample(dataset, num_agents, states_all, num_periods, &

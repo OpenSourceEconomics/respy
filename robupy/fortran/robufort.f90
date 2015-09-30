@@ -1,20 +1,25 @@
-!******************************************************************************
-!******************************************************************************
+!*******************************************************************************
+!*******************************************************************************
 MODULE robufort_extension
 
     !/* external modules    */
 
     USE robufort_constants
+
     USE robufort_auxiliary
 
     !/* setup   */
 
     IMPLICIT NONE
 
+    PRIVATE
+
     !/* core functions */
 
     PUBLIC :: read_specification
+
     PUBLIC :: get_disturbances
+    
     PUBLIC :: store_results
 
 CONTAINS
@@ -125,10 +130,10 @@ SUBROUTINE store_results(mapping_state_idx, states_all, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE read_specification(num_periods, delta, level, coeffs_A, &
-                coeffs_B, coeffs_edu, edu_start, edu_max, coeffs_home, &
-                shocks, num_draws, seed_solution, num_agents, &
-                seed_simulation, is_debug, is_zero) 
+SUBROUTINE read_specification(num_periods, delta, level, coeffs_A, coeffs_B, &
+                coeffs_edu, edu_start, edu_max, coeffs_home, shocks, & 
+                num_draws, seed_solution, num_agents, seed_simulation, & 
+                is_debug, is_zero) 
 
     !/* external objects    */
 
@@ -351,11 +356,7 @@ PROGRAM robufort
 
     !/* external modules    */
 
-    USE robufort_constants
-
     USE robufort_extension
-
-    USE robufort_ambiguity
 
     USE robufort_library
 

@@ -20,11 +20,7 @@ MODULE robufort_risk
 
 	IMPLICIT NONE
 
-	PRIVATE
-
-    !/* core functions */
-
-    PUBLIC :: get_payoffs_risk 
+	PUBLIC
  
 CONTAINS
 !*******************************************************************************

@@ -18,16 +18,7 @@ MODULE robufort_emax
 
     IMPLICIT NONE
 
-    PRIVATE
-
-    !/* core functions */
-
-    PUBLIC :: simulate_emax 
-
-   	!/* auxiliary functions */
-
-    PUBLIC :: get_future_payoffs
-    PUBLIC :: get_total_value  
+    PUBLIC
 
 CONTAINS
 !*******************************************************************************
