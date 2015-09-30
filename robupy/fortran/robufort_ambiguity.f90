@@ -105,8 +105,8 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
     !/* external objects    */
 
     REAL(our_dble), INTENT(OUT)     :: x_internal(2)
-    REAL(our_dble), INTENT(IN)      :: x_start(2)
-    REAL(our_dble), INTENT(IN)      :: shocks(4,4)
+    REAL(our_dble), INTENT(IN)      :: x_start(:)
+    REAL(our_dble), INTENT(IN)      :: shocks(:,:)
     REAL(our_dble), INTENT(IN)      :: level
     REAL(our_dble), INTENT(IN)      :: ftol
 
@@ -403,7 +403,7 @@ SUBROUTINE logging_ambiguity(x_internal, mode, period, k)
 
     !/* external objects    */
 
-    REAL(our_dble), INTENT(IN)      :: x_internal(2)
+    REAL(our_dble), INTENT(IN)      :: x_internal(:)
 
     INTEGER(our_int), INTENT(IN)    :: mode
     INTEGER(our_int), INTENT(IN)    :: k
@@ -477,8 +477,8 @@ FUNCTION divergence(x_internal, shocks, level)
 
     REAL(our_dble)                  :: divergence 
 
-    REAL(our_dble), INTENT(IN)      :: x_internal(2)
-    REAL(our_dble), INTENT(IN)      :: shocks(4,4)
+    REAL(our_dble), INTENT(IN)      :: x_internal(:)
+    REAL(our_dble), INTENT(IN)      :: shocks(:,:)
     REAL(our_dble), INTENT(IN)      :: level
 
     !/* internals objects    */
@@ -533,9 +533,9 @@ FUNCTION divergence_approx_gradient(x, cov, level, eps)
 
     REAL(our_dble)                  :: divergence_approx_gradient(2)
 
-    REAL(our_dble), INTENT(IN)      :: x(2)
+    REAL(our_dble), INTENT(IN)      :: x(:)
     REAL(our_dble), INTENT(IN)      :: eps
-    REAL(our_dble), INTENT(IN)      :: cov(4,4)
+    REAL(our_dble), INTENT(IN)      :: cov(:,;)
     REAL(our_dble), INTENT(IN)      :: level
 
     !/* internals objects    */

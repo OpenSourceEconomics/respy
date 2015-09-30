@@ -6,15 +6,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="56803c1c-81e4-4070-9cf6-fc7503291db5" name="Default" comment="82333.99728503">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/fortran/build_robufort.py" afterPath="$PROJECT_DIR$/package/robupy/fortran/build_robufort.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/.idea/dictionaries/peisenha.xml" afterPath="$PROJECT_DIR$/package/development/.idea/dictionaries/peisenha.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/fortran/robufort.f90" afterPath="$PROJECT_DIR$/package/robupy/fortran/robufort.f90" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/fortran/robufort_ambiguity.f90" afterPath="$PROJECT_DIR$/package/robupy/fortran/robufort_ambiguity.f90" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/fortran/robufort_auxiliary.f90" afterPath="$PROJECT_DIR$/package/robupy/fortran/robufort_auxiliary.f90" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/fortran/robufort_emax.f90" afterPath="$PROJECT_DIR$/package/robupy/fortran/robufort_emax.f90" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/fortran/robufort_library.f90" afterPath="$PROJECT_DIR$/package/robupy/fortran/robufort_library.f90" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/fortran/robufort_risk.f90" afterPath="$PROJECT_DIR$/package/robupy/fortran/robufort_risk.f90" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../../../../structRobust/.idea/structRobust.iml" afterPath="$PROJECT_DIR$/../../../../structRobust/.idea/structRobust.iml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/tests/tests.py" afterPath="$PROJECT_DIR$/package/robupy/tests/tests.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/.idea/workspace.xml" afterPath="$PROJECT_DIR$/package/development/.idea/workspace.xml" />
     </list>
     <ignored path="robustToolbox.iws" />
@@ -43,7 +36,18 @@
     <favorites_list name="robustToolbox" />
   </component>
   <component name="FileEditorManager">
-    <leaf />
+    <leaf>
+      <file leaf-file-name="tests.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/package/robupy/tests/tests.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="-0.04044409">
+              <caret line="76" column="8" selection-start-line="76" selection-start-column="8" selection-end-line="76" selection-end-column="8" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -103,12 +107,12 @@
         <option value="$PROJECT_DIR$/package/robupy/python/py/auxiliary.py" />
         <option value="$PROJECT_DIR$/package/robupy/python/py/risk.py" />
         <option value="$PROJECT_DIR$/package/development/working/driver.py" />
-        <option value="$PROJECT_DIR$/package/robupy/tests/tests.py" />
         <option value="$PROJECT_DIR$/package/development/tests/random/modules/battery.py" />
         <option value="$PROJECT_DIR$/package/development/tests/random/investigate" />
         <option value="$PROJECT_DIR$/package/robupy/fortran/wscript" />
         <option value="$PROJECT_DIR$/package/development/tests/random/modules/auxiliary.py" />
         <option value="$PROJECT_DIR$/package/robupy/fortran/build_robufort.py" />
+        <option value="$PROJECT_DIR$/package/robupy/tests/tests.py" />
       </list>
     </option>
   </component>
@@ -695,12 +699,12 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="2625" y="24" width="2495" height="1416" extended-state="6" />
-    <editor active="false" />
+    <editor active="true" />
     <layout>
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.11935484" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.20775028" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2697827" sideWeight="0.5922039" order="0" side_tool="true" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2697827" sideWeight="0.5922039" order="0" side_tool="true" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2697827" sideWeight="0.4077961" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -1082,14 +1086,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/robupy/tests/tests.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="267" column="8" selection-start-line="267" selection-start-column="8" selection-end-line="267" selection-end-column="8" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/package/development/tests/random/modules/battery.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-0.049306627">
@@ -1129,6 +1125,14 @@
           <folding>
             <element signature="e#371#384#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/robupy/tests/tests.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-0.04044409">
+          <caret line="76" column="8" selection-start-line="76" selection-start-column="8" selection-end-line="76" selection-end-column="8" />
+          <folding />
         </state>
       </provider>
     </entry>

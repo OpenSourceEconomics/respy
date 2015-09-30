@@ -73,8 +73,8 @@ class Tests(object):
 
     @staticmethod
     def test_2():
-        """ Testing ten admissible realizations of state space
-        for the first three periods.
+        """ Testing ten admissible realizations of state space for the first
+        three periods.
         """
         for i in range(10):
 

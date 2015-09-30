@@ -66,7 +66,7 @@ FUNCTION inverse(A, k)
 
     INTEGER(our_int), INTENT(IN)  :: k
 
-    REAL(our_dble), INTENT(IN)    :: A(k, k)
+    REAL(our_dble), INTENT(IN)    :: A(:, :)
 
     !/* internal objects    */
   
