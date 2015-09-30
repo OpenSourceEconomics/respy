@@ -3,8 +3,6 @@
 
 # standard library
 import numpy as np
-import shutil
-import glob
 import sys
 import os
 
@@ -75,8 +73,8 @@ class Tests(object):
 
     @staticmethod
     def test_2():
-        """ Testing ten admissible realizations of state space
-        for the first three periods.
+        """ Testing ten admissible realizations of state space for the first
+        three periods.
         """
         for i in range(10):
 
@@ -169,6 +167,7 @@ class Tests(object):
         constraints = dict()
         constraints['eps_zero'] = True
         constraints['version'] = 'PYTHON'
+        constraints['level'] = 0.0
 
         # The calculation of the KL does not work for this case.
         constraints['measure'] = 'absolute'
@@ -234,7 +233,7 @@ class Tests(object):
         """
         # Generate random initialization dictionary
         constraints = dict()
-        constraints['debug'] = 'True'
+        constraints['debug'] = True
         constraints['version'] = 'PYTHON'
 
         init_dict = generate_random_dict(constraints)

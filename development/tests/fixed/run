@@ -2,12 +2,16 @@
 """ This module implements some fixed tests.
 """
 
-# project library
+# standard library
 import numpy as np
 import shutil
 import glob
 import sys
 import os
+
+# testing library
+sys.path.insert(0, os.environ['ROBUPY'] + '/development/tests/random')
+from modules.auxiliary import compile_package
 
 # project library
 sys.path.insert(0, os.environ['ROBUPY'])
@@ -15,39 +19,12 @@ sys.path.insert(0, os.environ['ROBUPY'])
 # virtual environment
 if not hasattr(sys, 'real_prefix'):
     raise AssertionError('Please use a virtual environment for testing')
-
 from robupy import *
+
+
 
 ''' Auxiliary functions
 '''
-
-
-def compile_package(which):
-    """ Compile toolbox
-    """
-    # Antibugging
-    assert (which in ['fast', 'slow'])
-
-    # Auxiliary objects
-    package_dir = os.environ['ROBUPY'] + '/robupy'
-    tests_dir = os.getcwd()
-
-    # Compile package
-    os.chdir(package_dir)
-
-    os.system('./waf distclean > /dev/null 2>&1')
-
-    cmd = './waf configure build'
-
-    if which == 'fast':
-        cmd += ' --fast'
-
-    cmd += ' > /dev/null 2>&1'
-
-    os.system(cmd)
-
-    os.chdir(tests_dir)
-
 
 def cleanup():
     """ Cleanup after test battery.
@@ -211,41 +188,7 @@ def test_4():
 
     # Assert unchanged value
     np.testing.assert_allclose(robupy_obj.get_attr('periods_emax')[0, :1],
-                               44.843587)
-
-
-def test_5():
-    """ Ensure that state space is the same regardless of PYTHON and FORTRAN
-        implementation.
-    """
-
-    compile_package('fast')
-
-    import robupy.python.f2py.f2py_core as fort
-    import robupy.python.py.python_core as py
-
-    for _ in range(25):
-
-        # Create grid of admissible state space values.
-        num_periods = np.random.random_integers(1, 15)
-        edu_start = np.random.random_integers(1, 5)
-        edu_max = edu_start + np.random.random_integers(1, 5)
-
-        # Prepare interface
-        min_idx = min(num_periods, (edu_max - edu_start + 1))
-
-        # FORTRAN
-        fort_a, fort_b, fort_c = fort.wrapper_create_state_space(num_periods, 
-                                    edu_start, edu_max, min_idx)
-
-        # PYTHON
-        py_a, py_b, py_c = py.create_state_space(num_periods, edu_start,
-                                                         edu_max, min_idx)
-
-        # Ensure equivalence
-        for obj in [[fort_a, py_a], [fort_b, py_b], [fort_c, py_c]]:
-            np.testing.assert_allclose(obj[0], obj[1])
-
+                               72.026643)
 
 ''' Main
 '''
@@ -258,5 +201,3 @@ test_2()
 test_3()
 
 test_4()
-
-test_5()

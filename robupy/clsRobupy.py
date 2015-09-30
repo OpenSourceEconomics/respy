@@ -24,13 +24,21 @@ class RobupyCls(MetaCls):
 
         self.attr['seed_solution'] = None
 
+        self.attr['is_ambiguous'] = None
+
+        self.attr['eps_cholesky'] = None
+
         self.attr['num_periods'] = None
 
         self.attr['num_agents'] = None
 
         self.attr['num_draws'] = None
 
+        self.attr['is_python'] = None
+
         self.attr['edu_start'] = None
+
+        self.attr['is_debug'] = None
 
         self.attr['edu_max'] = None
 
@@ -41,8 +49,6 @@ class RobupyCls(MetaCls):
         self.attr['delta'] = None
 
         self.attr['store'] = None
-
-        self.attr['debug'] = None
 
         # Auxiliary object
         self.attr['min_idx'] = None
@@ -60,8 +66,6 @@ class RobupyCls(MetaCls):
         self.attr['mapping_state_idx'] = None
 
         self.attr['periods_emax'] = None
-
-        self.attr['eps_cholesky'] = False
 
         self.attr['states_all'] = None
 
@@ -109,13 +113,13 @@ class RobupyCls(MetaCls):
 
             self.attr['version'] = init_dict['PROGRAM']['version']
 
+            self.attr['is_debug'] = init_dict['PROGRAM']['debug']
+
             self.attr['level'] = init_dict['AMBIGUITY']['level']
 
             self.attr['edu_max'] = init_dict['EDUCATION']['max']
 
             self.attr['store'] = init_dict['SOLUTION']['store']
-
-            self.attr['debug'] = init_dict['PROGRAM']['debug']
 
             self.attr['delta'] = init_dict['BASICS']['delta']
 
@@ -134,6 +138,15 @@ class RobupyCls(MetaCls):
 
             self.attr['eps_zero'] = (np.count_nonzero(shocks) == 0)
 
+            if self.attr['eps_zero']:
+                self.attr['eps_cholesky'] = np.zeros((4, 4))
+            else:
+                self.attr['eps_cholesky'] = np.linalg.cholesky(shocks)
+
+            self.attr['is_ambiguous'] = (self.attr['level'] > 0.00)
+
+            self.attr['is_python'] = (self.attr['version'] == 'PYTHON')
+
             # Update status indicator
             self.is_first = False
 
@@ -142,7 +155,7 @@ class RobupyCls(MetaCls):
         time the class is locked and if the package is running in debug mode.
         """
         # Check applicability
-        if (not self.is_first) and (not self.attr['debug']):
+        if (not self.is_first) and (not self.attr['is_debug']):
             return
 
         # Distribute class attributes
@@ -150,21 +163,27 @@ class RobupyCls(MetaCls):
 
         seed_solution = self.attr['seed_solution']
 
+        is_ambiguous = self.attr['is_ambiguous']
+
         num_agents = self.attr['num_agents']
 
         num_periods = self.attr['num_periods']
 
         edu_start = self.attr['edu_start']
 
+        is_python = self.attr['is_python']
+
         num_draws = self.attr['num_draws']
+
+        is_debug = self.attr['is_debug']
+
+        eps_zero = self.attr['eps_zero']
 
         measure = self.attr['measure']
 
         edu_max = self.attr['edu_max']
 
         shocks = self.attr['shocks']
-
-        debug = self.attr['debug']
 
         delta = self.attr['delta']
 
@@ -175,12 +194,19 @@ class RobupyCls(MetaCls):
         is_first = self.is_first
 
         # Debug status
-        assert (debug in [True, False])
+        assert (is_debug in [True, False])
+
+        # Ambiguity in environment
+        assert (is_ambiguous in [True, False])
+
+        # Version of implementation
+        assert (is_python in [True, False])
 
         # Constraints
-        with_ambiguity = (level > 0.00)
-        if with_ambiguity:
-            assert (version in ['PYTHON'])
+        if is_ambiguous and version in ['F2PY', 'FORTRAN']:
+            assert (measure in ['kl'])
+        if is_ambiguous:
+            assert (eps_zero is False)
 
         # Seeds
         for seed in [seed_solution, seed_simulation]:
@@ -226,7 +252,7 @@ class RobupyCls(MetaCls):
         assert (edu_max >= edu_start)
 
         # Debugging mode
-        assert (debug in [True, False])
+        assert (is_debug in [True, False])
 
         # Discount factor
         assert (np.isfinite(delta))
@@ -237,9 +263,9 @@ class RobupyCls(MetaCls):
         assert (version in ['FORTRAN', 'F2PY', 'PYTHON'])
 
         # Shock distribution
-        assert (isinstance(shocks, list))
+        assert (isinstance(shocks, np.ndarray))
         assert (np.all(np.isfinite(shocks)))
-        assert (np.array(shocks).shape == (4, 4))
+        assert (shocks.shape == (4, 4))
 
         # Check integrity of results as well
         self._check_integrity_results()

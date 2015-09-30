@@ -16,9 +16,9 @@ HUGE_FLOAT = 10e10
 '''
 
 
-def get_payoffs_ambiguity(num_draws, eps_standard, period, k, payoffs_ex_ante,
-        edu_max, edu_start, mapping_state_idx, states_all, num_periods, emax,
-        delta, debug, eps_cholesky, level, measure):
+def get_payoffs_ambiguity(num_draws, eps_relevant, period, k, payoffs_ex_ante,
+        edu_max, edu_start, mapping_state_idx, states_all, num_periods,
+        periods_emax, delta, is_debug, shocks, level, measure):
     """ Get worst case
     """
     # Initialize options.
@@ -26,24 +26,24 @@ def get_payoffs_ambiguity(num_draws, eps_standard, period, k, payoffs_ex_ante,
     options['maxiter'] = 100000000
 
     # Initialize optimization problem.
-    x0 = _get_start(debug)
+    x0 = _get_start(is_debug)
 
     # Collect arguments
-    args = (num_draws, eps_standard, period, k, payoffs_ex_ante, edu_max,
-            edu_start, mapping_state_idx, states_all, num_periods, emax,
-            eps_cholesky, delta, debug)
+    args = (num_draws, eps_relevant, period, k, payoffs_ex_ante, edu_max,
+            edu_start, mapping_state_idx, states_all, num_periods, periods_emax,
+            delta)
 
     # Run optimization
     if measure == 'absolute':
 
-        bounds = _prep_absolute(level, debug)
+        bounds = _prep_absolute(level, is_debug)
 
         opt = minimize(_criterion, x0, args, method='SLSQP', options=options,
                        bounds=bounds)
 
     else:
 
-        constraints = _prep_kl(eps_cholesky, level)
+        constraints = _prep_kl(shocks, level)
 
         opt = minimize(_criterion, x0, args, method='SLSQP', options=options,
                        constraints=constraints)
@@ -52,29 +52,26 @@ def get_payoffs_ambiguity(num_draws, eps_standard, period, k, payoffs_ex_ante,
         # is not satisfied, even though success is indicated. To ensure
         # a smooth and informative run of TEST_F in the random development
         # test battery the following checks are performed.
-        if debug:
-            opt = _correct_debugging(opt, x0, level, eps_standard, eps_cholesky,
+        if is_debug:
+            opt = _correct_debugging(opt, x0, level, eps_relevant,
                         num_periods, num_draws, period, k, payoffs_ex_ante,
-                        edu_max, edu_start, emax, states_all,
+                        edu_max, edu_start, periods_emax, states_all,
                         mapping_state_idx, delta)
 
     # Write result to file
-    if debug:
+    if is_debug:
         _write_result(period, k, opt)
 
     # Transformation of standard normal deviates to relevant distributions.
-    eps_relevant = np.dot(eps_cholesky, eps_standard.T).T
-    eps_relevant[:, :2] = eps_relevant[:, :2] + opt['x']
-    for j in [0, 1]:
-        eps_relevant[:, j] = np.exp(eps_relevant[:, j])
+    eps_relevant_emax = transform_disturbances_ambiguity(eps_relevant, opt['x'])
 
     simulated, payoffs_ex_post, future_payoffs = \
-        simulate_emax(num_periods, num_draws, period, k, eps_relevant,
-            payoffs_ex_ante, edu_max, edu_start, emax, states_all,
+        simulate_emax(num_periods, num_draws, period, k, eps_relevant_emax,
+            payoffs_ex_ante, edu_max, edu_start, periods_emax, states_all,
             mapping_state_idx, delta)
 
     # Debugging
-    if debug:
+    if is_debug:
         checks_ambiguity('get_payoffs_ambiguity', simulated, opt)
 
     # Finishing
@@ -84,9 +81,27 @@ def get_payoffs_ambiguity(num_draws, eps_standard, period, k, payoffs_ex_ante,
 '''
 
 
-def _correct_debugging(opt, x0, level, eps_standard, eps_cholesky, num_periods,
-        num_draws, period, k, payoffs_ex_ante, edu_max, edu_start, emax,
-        states_all, mapping_state_idx, delta):
+def transform_disturbances_ambiguity(eps_relevant, x):
+    """ Transform disturbances
+    """
+    # Initialize clean slate
+    eps_relevant_emax = eps_relevant.copy()
+
+    # Mean shift due to ambiguity
+    eps_relevant_emax[:, :2] = eps_relevant_emax[:, :2] + x
+
+    # Exponentiation for occupations
+    for j in [0, 1]:
+        eps_relevant_emax[:, j] = np.clip(np.exp(eps_relevant_emax[:, j]),
+                                          0.0, HUGE_FLOAT)
+
+    # Finishing
+    return eps_relevant_emax
+
+
+def _correct_debugging(opt, x0, level, eps_relevant, num_periods,
+        num_draws, period, k, payoffs_ex_ante, edu_max, edu_start,
+        periods_emax, states_all, mapping_state_idx, delta):
     """ Some manipulations for test battery
     """
     # Check applicability
@@ -97,15 +112,13 @@ def _correct_debugging(opt, x0, level, eps_standard, eps_cholesky, num_periods,
     opt['x'] = x0
 
     # Correct final function value
-    eps_relevant = np.dot(eps_cholesky, eps_standard.T).T
-    eps_relevant[:, :2] = eps_relevant[:, :2] + opt['x']
-    for j in [0, 1]:
-        eps_relevant[:, j] = np.exp(eps_relevant[:, j])
+    eps_relevant_emax = transform_disturbances_ambiguity(eps_relevant, opt['x'])
 
     simulated, payoffs_ex_post, future_payoffs = \
-                simulate_emax(num_periods, num_draws, period, k, eps_relevant,
-                    payoffs_ex_ante, edu_max, edu_start, emax, states_all,
-                    mapping_state_idx, delta)
+                simulate_emax(num_periods, num_draws, period, k,
+                              eps_relevant_emax,
+                    payoffs_ex_ante, edu_max, edu_start, periods_emax,
+                    states_all, mapping_state_idx, delta)
 
     opt['fun'] = simulated
 
@@ -113,12 +126,9 @@ def _correct_debugging(opt, x0, level, eps_standard, eps_cholesky, num_periods,
     return opt
 
 
-def _prep_kl(eps_cholesky, level):
+def _prep_kl(shocks, level):
     """ Construct Kullback-Leibler constraint for optimization.
     """
-    # Construct covariances
-    cov = np.dot(eps_cholesky, eps_cholesky.T)
-
     # Construct constraint
     constraint_divergence = dict()
 
@@ -126,7 +136,7 @@ def _prep_kl(eps_cholesky, level):
 
     constraint_divergence['fun'] = _divergence
 
-    constraint_divergence['args'] = (cov, level)
+    constraint_divergence['args'] = (shocks, level)
 
     # Collection.
     constraints = [constraint_divergence, ]
@@ -161,26 +171,21 @@ def _divergence(x, cov, level):
     return level - rslt
 
 
-def _criterion(x, num_draws, eps_standard, period, k, payoffs_ex_ante, edu_max,
-        edu_start, mapping_state_idx, states_all, num_periods, emax,
-        eps_cholesky, delta, debug):
+def _criterion(x, num_draws, eps_relevant, period, k, payoffs_ex_ante, edu_max,
+        edu_start, mapping_state_idx, states_all, num_periods, periods_emax,
+        delta):
     """ Simulate expected future value for alternative shock distributions.
     """
 
     # Transformation of standard normal deviates to relevant distributions.
-    eps_relevant = np.dot(eps_cholesky, eps_standard.T).T
-    eps_relevant[:, :2] = eps_relevant[:, :2] + x
-    for j in [0, 1]:
-        eps_relevant[:, j] = np.clip(np.exp(eps_relevant[:, j]), 0.0,
-                                     HUGE_FLOAT)
+    eps_relevant_emax = transform_disturbances_ambiguity(eps_relevant, x)
 
     # Simulate the expected future value for a given parametrization.
     simulated, _, _ = simulate_emax(num_periods, num_draws, period, k,
-                        eps_relevant, payoffs_ex_ante, edu_max, edu_start,
-                        emax, states_all, mapping_state_idx, delta)
+                        eps_relevant_emax, payoffs_ex_ante, edu_max, edu_start,
+                        periods_emax, states_all, mapping_state_idx, delta)
     # Debugging
-    if debug is True:
-        checks_ambiguity('_criterion', simulated)
+    checks_ambiguity('_criterion', simulated)
 
     # Finishing
     return simulated
@@ -190,41 +195,40 @@ def _write_result(period, k, opt):
     """ Write result of optimization problem to loggging file.
     """
 
-    string = '''{0[0]:>10} {0[1]:10.4f} {0[2]:10.4f}\n\n'''
-
     with open('ambiguity.robupy.log', 'a') as file_:
 
-        file_.write('PERIOD ' + str(period) + '    State ' + str(k) + '\n' +
-                        '-------------------\n\n')
+        string = ' PERIOD{0[0]:>7}  STATE{0[1]:>7}\n\n'
+        file_.write(string.format([period, k]))
 
+        string = '{0[0]:>10} {0[1]:10.4f} {0[2]:10.4f}\n\n'
         file_.write(string.format(['Result', opt['x'][0], opt['x'][0]]))
 
         file_.write('    Success ' + str(opt['success']) + '\n')
-        file_.write('    Message ' + opt['message'] + '\n\n\n')
+        file_.write('    Message ' + opt['message'] + '\n\n')
 
 
-def _get_start(debug):
+def _get_start(is_debug):
     """ Get starting values.
     """
     # Get appropriate starting values
     x0 = [0.00, 0.00]
 
     # Debugging
-    if debug is True:
+    if is_debug:
         checks_ambiguity('_get_start', x0)
 
     # Finishing
     return x0
 
 
-def _prep_absolute(level, debug):
+def _prep_absolute(level, is_debug):
     """ Get bounds.
     """
     # Construct appropriate bounds
     bounds = [[-level, level], [-level, level]]
 
     # Debugging
-    if debug is True:
+    if is_debug:
         checks_ambiguity('_prep_absolute', bounds)
 
     # Finishing

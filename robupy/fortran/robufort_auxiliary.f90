@@ -1,69 +1,62 @@
 MODULE robufort_auxiliary
 
-	!/*	external modules	*/
+	 !/*	external modules	*/
 
-    USE robufort_program_constants
+    USE robufort_constants
 
-	!/*	setup	*/
+	 !/*	setup	*/
 
-  IMPLICIT NONE
+    IMPLICIT NONE
+
+    PUBLIC
 
 CONTAINS
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE divergence(div, x, cov, level)
+SUBROUTINE logging_solution(indicator, period)
 
     !/* external objects    */
 
-    REAL(our_dble), INTENT(OUT)     :: div
-
-    REAL(our_dble), INTENT(IN)      :: x(2)
-    REAL(our_dble), INTENT(IN)      :: cov(4,4)
-    REAL(our_dble), INTENT(IN)      :: level
+    INTEGER(our_int), INTENT(IN)            :: indicator
+    INTEGER(our_int), INTENT(IN), OPTIONAL  :: period
 
     !/* internals objects    */
-
-    REAL(our_dble)                  :: alt_mean(4, 1) = zero_dble
-    REAL(our_dble)                  :: old_mean(4, 1) = zero_dble
-    REAL(our_dble)                  :: alt_cov(4,4)
-    REAL(our_dble)                  :: old_cov(4,4)
-    REAL(our_dble)                  :: inv_old_cov(4,4)
-    REAL(our_dble)                  :: comp_a
-    REAL(our_dble)                  :: comp_b(1, 1)
-    REAL(our_dble)                  :: comp_c
-    REAL(our_dble)                  :: rslt
 
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
 
-    ! Construct alternative distribution
-    alt_mean(1,1) = x(1)
-    alt_mean(2,1) = x(2)
-    alt_cov = cov
+    OPEN(UNIT=99, FILE='logging.robupy.sol.log', ACCESS='APPEND')
+    
+    ! State space creation
+    IF (indicator == 1) THEN
+      WRITE(99, *) " Starting state space creation   "
+      WRITE(99, *) ""
 
-    ! Construct baseline distribution
-    old_cov = cov
+    ! Ex Ante Payoffs
+    ELSEIF (indicator == 2) THEN
+      WRITE(99, *) " Starting calculation of ex ante payoffs  "
+      WRITE(99, *) ""
 
-    ! Construct auxiliary objects.
-    inv_old_cov = inverse(old_cov, 4)
-
-    ! Calculate first component
-    comp_a = trace_fun(MATMUL(inv_old_cov, alt_cov))
-
-    ! Calculate second component
-    comp_b = MATMUL(MATMUL(TRANSPOSE(old_mean - alt_mean), inv_old_cov), &
-                old_mean - alt_mean)
-
-    ! Calculate third component
-    comp_c = LOG(determinant(alt_cov) / determinant(old_cov))
-
-    ! Statistic
-    rslt = half_dble * (comp_a + comp_b(1,1) - four_dble + comp_c)
-
-    ! Divergence
-    div = level - rslt
-
+    ! Backward induction procedure
+    ELSEIF (indicator == 3) THEN
+      WRITE(99, *) " Starting backward induction procedure "
+      WRITE(99, *) ""
+    
+    ELSEIF (indicator == 4) THEN
+      WRITE(99, *) " ... solving period ", period
+      WRITE(99, *) ""
+   
+    ! Finishing
+    ELSEIF (indicator == -1) THEN
+        WRITE(99, *) " ... finished "
+        WRITE(99, *) ""
+        WRITE(99, *) ""
+        
+    END IF
+  
+  CLOSE(99)
+    
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
@@ -71,55 +64,55 @@ FUNCTION inverse(A, k)
 
     !/* external objects    */
 
-  INTEGER(our_int), INTENT(IN)  :: k
+    INTEGER(our_int), INTENT(IN)  :: k
 
-  REAL(our_dble), INTENT(IN)    :: A(k, k)
+    REAL(our_dble), INTENT(IN)    :: A(:, :)
 
     !/* internal objects    */
   
-  REAL(our_dble), ALLOCATABLE   :: y(:, :)
-  REAL(our_dble), ALLOCATABLE   :: B(:, :)
-  REAL(our_dble)                :: d
-  REAL(our_dble)                :: inverse(k, k)
+    REAL(our_dble), ALLOCATABLE   :: y(:, :)
+    REAL(our_dble), ALLOCATABLE   :: B(:, :)
+    REAL(our_dble)                :: d
+    REAL(our_dble)                :: inverse(k, k)
 
-  INTEGER(our_int), ALLOCATABLE :: indx(:)  
-  INTEGER(our_int)              :: n
-  INTEGER(our_int)              :: i
-  INTEGER(our_int)              :: j
+    INTEGER(our_int), ALLOCATABLE :: indx(:)  
+    INTEGER(our_int)              :: n
+    INTEGER(our_int)              :: i
+    INTEGER(our_int)              :: j
 
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
   
-  ! Auxiliary objects
-  n  = size(A, 1)
+    ! Auxiliary objects
+    n  = size(A, 1)
 
-  ! Allocate containers
-  ALLOCATE(y(n, n))
-  ALLOCATE(B(n, n))
-  ALLOCATE(indx(n))
+    ! Allocate containers
+    ALLOCATE(y(n, n))
+    ALLOCATE(B(n, n))
+    ALLOCATE(indx(n))
 
-  ! Initialize containers
-  y = zero_dble
-  B = A
+    ! Initialize containers
+    y = zero_dble
+    B = A
 
-  ! Main
-  DO i = 1, n
+    ! Main
+    DO i = 1, n
   
-     y(i, i) = 1
+        y(i, i) = 1
   
-  END DO
+    END DO
 
-  CALL ludcmp(B, d, indx)
+    CALL ludcmp(B, d, indx)
 
-  DO j = 1, n
+    DO j = 1, n
   
-     CALL lubksb(B, y(:, j), indx)
+        CALL lubksb(B, y(:, j), indx)
   
-  END DO
+    END DO
   
-  ! Collect result
-  inverse = y
+    ! Collect result
+    inverse = y
 
 END FUNCTION
 !*******************************************************************************
@@ -534,27 +527,59 @@ SUBROUTINE multivariate_normal(draws, mean, covariance)
 
     !/* external objects    */
 
-    REAL(our_dble), INTENT(OUT)     :: draws(:, :)
-    REAL(our_dble), INTENT(IN)      :: mean(:)
-    REAL(our_dble), INTENT(IN)      :: covariance(:, :)
+    REAL(our_dble), INTENT(OUT)           :: draws(:, :)
+    REAL(our_dble), INTENT(IN), OPTIONAL  :: mean(:)
+    REAL(our_dble), INTENT(IN), OPTIONAL  :: covariance(:, :)
     
     !/* internal objects    */
     
-    INTEGER(our_int)                :: i
     INTEGER(our_int)                :: num_draws
     INTEGER(our_int)                :: dim
-    
-    REAL(our_dble), ALLOCATABLE     :: z(:, :)
+    INTEGER(our_int)                :: i
+    INTEGER(our_int)                :: j  
+
+    REAL(our_dble), ALLOCATABLE     :: covariance_internal(:, :)
+    REAL(our_dble), ALLOCATABLE     :: mean_internal(:)
     REAL(our_dble), ALLOCATABLE     :: ch(:, :)
+    REAL(our_dble), ALLOCATABLE     :: z(:, :)
 
 !------------------------------------------------------------------------------- 
 ! Algorithm
 !------------------------------------------------------------------------------- 
-  
+
     ! Auxiliary objects
     num_draws = SIZE(draws, 1)
 
     dim       = SIZE(draws, 2)
+
+    ! Handle optional arguments
+    ALLOCATE(mean_internal(dim)); ALLOCATE(covariance_internal(dim, dim))
+
+    IF (PRESENT(mean)) THEN
+
+      mean_internal = mean
+
+    ELSE
+
+      mean_internal = zero_dble
+
+    END IF
+
+    IF (PRESENT(covariance)) THEN
+
+      covariance_internal = covariance
+
+    ELSE
+
+      covariance_internal = zero_dble
+
+      DO j = 1, dim
+
+        covariance_internal(j, j) = one_dble
+
+      END DO
+
+    END IF
 
     ! Allocate containers
     ALLOCATE(z(dim, 1)); ALLOCATE(ch(dim, dim))
@@ -563,14 +588,14 @@ SUBROUTINE multivariate_normal(draws, mean, covariance)
     ch = zero_dble
 
     ! Construct Cholesky decomposition
-    CALL cholesky(ch, covariance) 
+    CALL cholesky(ch, covariance_internal) 
 
     ! Draw deviates
     DO i = 1, num_draws   
        
        CALL standard_normal(z(:, 1))
        
-       draws(i, :) = MATMUL(ch, z(:, 1)) + mean(:)  
+       draws(i, :) = MATMUL(ch, z(:, 1)) + mean_internal(:)  
     
     END DO
 

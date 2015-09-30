@@ -1,26 +1,410 @@
-
-""" This modules contains some additional tests that are only used in
-long-run development tests.
+""" This modules contains some additional tests that are only used in long-run
+development tests.
 """
 
 # standard library
 from pandas.util.testing import assert_frame_equal
+
+from scipy.optimize.slsqp import _minimize_slsqp
+from scipy.optimize import approx_fprime
+from scipy.optimize import rosen_der
+from scipy.optimize import rosen
+
 import pandas as pd
 import numpy as np
+
 import sys
 import os
 
-# project library
-from modules.auxiliary import compile_package, transform_robupy_to_restud, \
-    write_disturbances
+# testing library
+from modules.auxiliary import transform_robupy_to_restud
+from modules.auxiliary import write_disturbances
+from modules.auxiliary import build_f2py_testing
+from modules.auxiliary import compile_package
 
 # ROBUPY import
 sys.path.insert(0, os.environ['ROBUPY'])
-from robupy.tests.random_init import generate_random_dict, print_random_dict
 from robupy import read, solve, simulate
+
+from robupy.tests.random_init import generate_random_dict
+from robupy.tests.random_init import print_random_dict
+from robupy.tests.random_init import generate_init
+
+from robupy.python.py.ambiguity import get_payoffs_ambiguity
+from robupy.python.py.auxiliary import simulate_emax
+from robupy.python.py.ambiguity import _divergence
+from robupy.python.py.ambiguity import _criterion
+
 
 ''' Main
 '''
+
+
+def test_92():
+    """ This test compares the functions calculating the payoffs under
+    ambiguity.
+    """
+    # Ensure that fast solution methods are available
+    compile_package('--fortran --debug', True)
+    import robupy.python.f2py.f2py_debug as fort
+
+    # Iterate over random test cases
+    for _ in range(10):
+
+        # Generate constraint periods
+        constraints = dict()
+        constraints['level'] = 0.0
+        constraints['version'] = 'PYTHON'
+        constraints['measure'] = 'kl'
+
+        # Generate random initialization file
+        generate_init(constraints)
+
+        # Perform toolbox actions
+        robupy_obj = read('test.robupy.ini')
+
+        robupy_obj = solve(robupy_obj)
+
+        # Extract relevant information
+        periods_payoffs_ex_ante = robupy_obj.get_attr('periods_payoffs_ex_ante')
+
+        states_number_period = robupy_obj.get_attr('states_number_period')
+
+        mapping_state_idx = robupy_obj.get_attr('mapping_state_idx')
+
+        periods_emax = robupy_obj.get_attr('periods_emax')
+
+        num_periods = robupy_obj.get_attr('num_periods')
+
+        states_all = robupy_obj.get_attr('states_all')
+
+        num_draws = robupy_obj.get_attr('num_draws')
+
+        edu_start = robupy_obj.get_attr('edu_start')
+
+        edu_max = robupy_obj.get_attr('edu_max')
+
+        measure = robupy_obj.get_attr('measure')
+
+        shocks = robupy_obj.get_attr('shocks')
+
+        delta = robupy_obj.get_attr('delta')
+
+        debug = False
+
+        # Sample disturbances
+        eps_standard = np.random.multivariate_normal(np.zeros(4),
+                        np.identity(4), (num_draws,))
+
+        # Sampling of random period and admissible state index
+        period = np.random.choice(range(num_periods))
+        k = np.random.choice(range(states_number_period[period]))
+
+        # Select ex ante payoffs
+        payoffs_ex_ante = periods_payoffs_ex_ante[period, k, :]
+
+        # Set up optimization task
+        level = np.random.uniform(0.01, 1.00)
+
+        args = [num_draws, eps_standard, period, k, payoffs_ex_ante,
+            edu_max, edu_start, mapping_state_idx, states_all, num_periods,
+            periods_emax, debug, delta, shocks, level]
+
+        f = fort.wrapper_get_payoffs_ambiguity(*args)[0]
+
+        args = args + [measure]
+        py = get_payoffs_ambiguity(*args)[0]
+
+        np.testing.assert_allclose(py, f, rtol=1e-05, atol=1e-06)
+
+
+def test_93():
+    """ This test case compares the results from the SLSQP implementations in
+    PYTHON and FORTRAN for the actual optimization problem.
+    """
+    # Ensure interface is available
+    build_f2py_testing(is_hidden=True)
+    import modules.f2py_testing as fort
+
+    # Sample problem parameters
+    for _ in range(10):
+
+        maxiter = np.random.random_integers(1, 100)
+        ftol = np.random.uniform(0.000000, 1e-5)
+        x0 = np.random.normal(size=2)
+
+        eps = 1e-6
+
+        shocks = np.identity(4)*np.random.normal(size=1)**2
+        level = np.random.normal(size=1)**2
+
+        # Setting up PYTHON SLSQP interface for constraints
+        constraint = dict()
+        constraint['type'] = 'ineq'
+        constraint['args'] = (shocks, level)
+        constraint['fun'] = _divergence
+
+        # Generate constraint periods
+        constraints = dict()
+        constraints['version'] = 'PYTHON'
+
+        # Generate random initialization file
+        generate_init(constraints)
+
+        # Perform toolbox actions
+        robupy_obj = read('test.robupy.ini')
+
+        robupy_obj = solve(robupy_obj)
+
+        # Extract relevant information
+        periods_payoffs_ex_ante = robupy_obj.get_attr('periods_payoffs_ex_ante')
+
+        states_number_period = robupy_obj.get_attr('states_number_period')
+
+        mapping_state_idx = robupy_obj.get_attr('mapping_state_idx')
+
+        periods_emax = robupy_obj.get_attr('periods_emax')
+
+        num_periods = robupy_obj.get_attr('num_periods')
+
+        states_all = robupy_obj.get_attr('states_all')
+
+        num_draws = robupy_obj.get_attr('num_draws')
+
+        edu_start = robupy_obj.get_attr('edu_start')
+
+        edu_max = robupy_obj.get_attr('edu_max')
+
+        delta = robupy_obj.get_attr('delta')
+
+        is_debug = False
+
+        # Sample disturbances
+        eps_standard = np.random.multivariate_normal(np.zeros(4),
+                                np.identity(4), (num_draws,))
+
+        # Sampling of random period and admissible state index
+        period = np.random.choice(range(num_periods))
+        k = np.random.choice(range(states_number_period[period]))
+
+        # Select ex ante payoffs
+        payoffs_ex_ante = periods_payoffs_ex_ante[period, k, :]
+
+        args = (num_draws, eps_standard, period, k, payoffs_ex_ante, edu_max,
+            edu_start, mapping_state_idx, states_all, num_periods, periods_emax,
+            delta)
+
+        py = _minimize_slsqp(_criterion, x0, args, maxiter=maxiter,
+                       ftol=ftol, constraints=constraint)['x']
+
+        f = fort.wrapper_slsqp_robufort(x0, maxiter, ftol, eps, num_draws,
+                eps_standard, period, k, payoffs_ex_ante, edu_max, edu_start,
+                mapping_state_idx, states_all, num_periods, periods_emax,
+                delta, is_debug, shocks, level)
+
+        # Check equality. If not equal up to the tolerance, also check
+        # whether the result from the FORTRAN implementation is even better.
+        try:
+            np.testing.assert_allclose(py, f, rtol=1e-05, atol=1e-06)
+        except AssertionError:
+            if _criterion(f, *args) < _criterion(py, *args):
+                pass
+            else:
+                raise AssertionError
+
+
+def test_94():
+    """ This test case compare the results of a debugging setup for the SLSQP
+    algorithm's PYTHON and FORTRAN implementation
+    """
+    # Ensure interface is available
+    build_f2py_testing(is_hidden=True)
+    import modules.f2py_testing as fort
+
+    # Sample basic test case
+    maxiter = np.random.random_integers(1, 100)
+    num_dim = np.random.random_integers(2, 4)
+    ftol = np.random.uniform(0.000000, 1e-5)
+    x0 = np.random.normal(size=num_dim)
+
+    # Evaluation of Rosenbrock function. We are using the FORTRAN version
+    # in the development of the optimization routines.
+    f90 = fort.wrapper_debug_criterion_function(x0, num_dim)
+    py = rosen(x0)
+    np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
+
+    py = rosen_der(x0)
+    f90 = fort.wrapper_debug_criterion_derivative(x0, len(x0))
+    np.testing.assert_allclose(py, f90[:-1], rtol=1e-05, atol=1e-06)
+
+    # Test the FORTRAN codes against the PYTHON implementation. This is
+    # expected to fail sometimes due to differences in precision between the
+    # two implementations. In particular, as updating steps of the optimizer
+    # are very sensitive to just small differences in the derivative
+    # information. The same functions are available as a FORTRAN
+    # implementations.
+    def debug_constraint_derivative(x):
+        return np.ones(len(x))
+    def debug_constraint_function(x):
+        return np.sum(x) - 10.0
+
+    # Setting up PYTHON SLSQP interface for constraints
+    constraint = dict()
+    constraint['type'] = 'ineq'
+    constraint['args'] = ()
+    constraint['fun'] = debug_constraint_function
+    constraint['jac'] = debug_constraint_derivative
+
+    # Evaluate both implementations
+    f = fort.wrapper_slsqp_debug(x0, maxiter, ftol, num_dim)
+    py = _minimize_slsqp(rosen, x0, jac=rosen_der, maxiter=maxiter,
+            ftol=ftol,  constraints=constraint)['x']
+    np.testing.assert_allclose(py, f, rtol=1e-05, atol=1e-06)
+
+
+def test_95():
+    """ Compare the evaluation of the criterion function for the ambiguity
+    optimization and the simulated expected future value between the FORTRAN
+    and PYTHON implementations. These tests are set up a separate test case
+    due to the large setup cost to construct the ingredients for the interface.
+    """
+    # Ensure that fast solution methods are available
+    compile_package('--fortran --debug', True)
+
+    import robupy.python.f2py.f2py_debug as fort
+
+    for _ in range(10):
+
+        # Generate constraint periods
+        constraints = dict()
+        constraints['version'] = 'PYTHON'
+
+        # Generate random initialization file
+        generate_init(constraints)
+
+        # Perform toolbox actions
+        robupy_obj = read('test.robupy.ini')
+
+        robupy_obj = solve(robupy_obj)
+
+        # Extract relevant information
+        periods_payoffs_ex_ante = robupy_obj.get_attr('periods_payoffs_ex_ante')
+
+        states_number_period = robupy_obj.get_attr('states_number_period')
+
+        mapping_state_idx = robupy_obj.get_attr('mapping_state_idx')
+
+        periods_emax = robupy_obj.get_attr('periods_emax')
+
+        num_periods = robupy_obj.get_attr('num_periods')
+
+        states_all = robupy_obj.get_attr('states_all')
+
+        num_draws = robupy_obj.get_attr('num_draws')
+
+        edu_start = robupy_obj.get_attr('edu_start')
+
+        edu_max = robupy_obj.get_attr('edu_max')
+
+        delta = robupy_obj.get_attr('delta')
+
+        # Sample disturbances
+        eps_standard = np.random.multivariate_normal(np.zeros(4),
+                            np.identity(4), (num_draws,))
+
+        # Sampling of random period and admissible state index
+        period = np.random.choice(range(num_periods))
+        k = np.random.choice(range(states_number_period[period]))
+
+        # Select ex ante payoffs
+        payoffs_ex_ante = periods_payoffs_ex_ante[period, k, :]
+
+        # Evaluation point
+        x = np.random.random(size=2)
+
+        # Evaluation of simulated expected future values
+        py, _, _ = simulate_emax(num_periods, num_draws, period, k,
+                        eps_standard, payoffs_ex_ante, edu_max, edu_start,
+                        periods_emax, states_all, mapping_state_idx, delta)
+
+        f90, _, _ = fort.wrapper_simulate_emax(num_periods, num_draws,
+                        period, k, eps_standard, payoffs_ex_ante, edu_max,
+                        edu_start, periods_emax, states_all,
+                        mapping_state_idx, delta)
+
+        np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
+
+        # Criterion function for the determination of the worst case outcomes
+        args = (num_draws, eps_standard, period, k, payoffs_ex_ante,
+                edu_max, edu_start, mapping_state_idx, states_all, num_periods,
+                periods_emax, delta)
+
+        py = _criterion(x, *args)
+        f90 = fort.wrapper_criterion(x, *args)
+        np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
+
+        # Evaluation of derivative of criterion function
+        eps = np.random.uniform(0.000000, 0.5)
+
+        py = approx_fprime(x, _criterion, eps, *args)
+        f90 = fort.wrapper_criterion_approx_gradient(x, eps, *args)
+        np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
+
+
+def test_96():
+    """ Compare results between FORTRAN and PYTHON of selected
+    hand-crafted functions. In test_97() we test FORTRAN implementations
+    against PYTHON intrinsic routines.
+    """
+    # Ensure that fast solution methods are available
+    compile_package('--fortran --debug', True)
+
+    import robupy.python.f2py.f2py_debug as fort_debug
+    import robupy.python.f2py.f2py_library as fort_lib
+    import robupy.python.py.python_library as py_lib
+
+    for _ in range(1000):
+
+        # Draw random request for testing purposes
+        matrix = (np.random.multivariate_normal(np.zeros(4), np.identity(
+            4), 4))
+        cov = np.dot(matrix, matrix.T)
+        x = np.random.rand(2)
+        level = np.random.random(1)
+        eps = np.random.rand()**2
+
+        # Kullback-Leibler (KL) divergence
+        py = _divergence(x, cov, level)
+        f90 = fort_debug.wrapper_divergence(x, cov, level)
+        np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
+
+        # Gradient approximation of KL divergence
+        py = approx_fprime(x, _divergence, eps, cov, level)
+        f90 = fort_debug.wrapper_divergence_approx_gradient(x, cov, level, eps)
+        np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
+
+    for _ in range(25):
+
+        # Create grid of admissible state space values.
+        num_periods = np.random.random_integers(1, 15)
+        edu_start = np.random.random_integers(1, 5)
+        edu_max = edu_start + np.random.random_integers(1, 5)
+
+        # Prepare interface
+        min_idx = min(num_periods, (edu_max - edu_start + 1))
+
+        # FORTRAN
+        fort_a, fort_b, fort_c = fort_lib.wrapper_create_state_space(
+            num_periods, edu_start, edu_max, min_idx)
+
+        # PYTHON
+        py_a, py_b, py_c = py_lib.create_state_space(num_periods, edu_start,
+            edu_max, min_idx)
+
+        # Ensure equivalence
+        for obj in [[fort_a, py_a], [fort_b, py_b], [fort_c, py_c]]:
+            np.testing.assert_allclose(obj[0], obj[1])
+
 
 
 def test_97():
@@ -28,14 +412,14 @@ def test_97():
     file python/f2py/debug_interface.f90 provides the F2PY bindings.
     """
     # Ensure that fast solution methods are available
-    compile_package('fast')
+    compile_package('--fortran --debug', True)
 
     import robupy.python.f2py.f2py_debug as fort
 
     for _ in range(1000):
 
         # Draw random requests for testing purposes.
-        num_draws = np.random.random_integers(1, 1000)
+        num_draws = np.random.random_integers(2, 1000)
         dim = np.random.random_integers(1, 6)
         mean = np.random.uniform(-0.5, 0.5, (dim))
 
@@ -76,22 +460,24 @@ def test_98():
     """
 
     # Ensure that fast solution methods are available
-    compile_package('fast')
+    compile_package('--fortran --debug', True)
 
     # Prepare RESTUD program
     os.chdir('modules')
     os.system(' gfortran -fcheck=bounds -o dp3asim dp3asim.f95 >'
-              ' /dev/null 2>&1 ')
+              ' /dev/null 2>&1')
     os.remove('pei_additions.mod')
     os.remove('imsl_replacements.mod')
     os.chdir('../')
 
     # Impose some constraints on the initialization file which ensures that
-    # the problem can be solved by the RESTUD code.
+    # the problem can be solved by the RESTUD code. The code is adjusted to
+    # run with zero disturbances.
     constraints = dict()
     constraints['edu'] = (10, 20)
     constraints['level'] = 0.00
-    constraints['debug'] = 'True'
+    constraints['debug'] = True
+    constraints['eps_zero'] = True
 
     version = np.random.choice(['FORTRAN', 'F2PY', 'PYTHON'])
     constraints['version'] = version
@@ -108,8 +494,8 @@ def test_98():
 
     print_random_dict(init_dict)
 
-    # Write out disturbances to align the three implementations.
-    write_disturbances(init_dict)
+    # Indicate RESTUD code the special case of zero disturbance.
+    open('.restud.testing.scratch', 'a').close()
 
     # Perform toolbox actions
     robupy_obj = read('test.robupy.ini')
@@ -136,24 +522,23 @@ def test_98():
 
     assert_frame_equal(py, fort)
 
-    # Cleanup
-    os.unlink('disturbances.txt')
-
 
 def test_99():
     """ Testing whether the results from a fast and slow execution of the
     code result in identical simulate datasets.
     """
     # Ensure that fast solution methods are available
-    compile_package('fast')
+    compile_package('--fortran --debug', True)
 
     # Constraint to risk model
     constraints = dict()
-    constraints['level'] = 0.0
-    constraints['debug'] = 'True'
+    constraints['debug'] = True
+    constraints['measure'] = 'kl'
 
-    # Just making sure that it also works for this special case.
-    if np.random.choice([True, False]):
+    # Just making sure that it also works for this special case. Note that
+    # this special case is currently only working in the risk case.
+    if np.random.choice([True, False, False, False]):
+        constraints['level'] = 0.00
         constraints['eps_zero'] = True
 
     # Generate random initialization file. Since this exercise is only for
@@ -164,10 +549,8 @@ def test_99():
 
     num_agents = init_dict['SIMULATION']['agents']
     num_draws = init_dict['SOLUTION']['draws']
-    if num_draws < num_agents:
-        init_dict['SOLUTION']['draws'] = num_agents
-
-    print_random_dict(init_dict)
+    if num_agents > num_draws:
+        init_dict['SIMULATION']['agents'] = num_draws
 
     # Write out disturbances to align the three implementations.
     write_disturbances(init_dict)
@@ -175,7 +558,13 @@ def test_99():
     # Initialize containers
     base = None
 
-    for version in ['PYTHON', 'F2PY', 'FORTRAN']:
+    for version in ['PYTHON', 'F2PY', 'FORTRAN', 'OPTIMIZATION']:
+
+        # This ensures that the optimized version agrees with all other
+        # implementations as well.
+        if version in ['OPTIMIZATION']:
+            compile_package('--fortran --debug --optimization', True)
+            version = 'FORTRAN'
 
         # Prepare initialization file
         init_dict['PROGRAM']['version'] = version

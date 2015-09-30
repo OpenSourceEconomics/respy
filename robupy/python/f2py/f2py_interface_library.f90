@@ -49,7 +49,8 @@ SUBROUTINE wrapper_backward_induction(periods_emax, periods_payoffs_ex_post, &
                 periods_future_payoffs, num_periods, max_states_period, &
                 periods_eps_relevant, num_draws, states_number_period, &
                 periods_payoffs_ex_ante, edu_max, edu_start, & 
-                mapping_state_idx, states_all, delta)
+                mapping_state_idx, states_all, delta, is_debug, shocks, &
+                level)
 
     !/* external libraries    */
 
@@ -67,7 +68,9 @@ SUBROUTINE wrapper_backward_induction(periods_emax, periods_payoffs_ex_post, &
 
     DOUBLE PRECISION, INTENT(IN)    :: periods_eps_relevant(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_payoffs_ex_ante(:, :, :   )
+    DOUBLE PRECISION, INTENT(IN)    :: shocks(4, 4)
     DOUBLE PRECISION, INTENT(IN)    :: delta
+    DOUBLE PRECISION, INTENT(IN)    :: level
 
     INTEGER, INTENT(IN)             :: mapping_state_idx(:, :, :, :, :)    
     INTEGER, INTENT(IN)             :: num_periods
@@ -78,6 +81,9 @@ SUBROUTINE wrapper_backward_induction(periods_emax, periods_payoffs_ex_post, &
     INTEGER, INTENT(IN)             :: max_states_period
     INTEGER, INTENT(IN)             :: states_all(:, :, :)
 
+
+    LOGICAL, INTENT(IN)             :: is_debug
+
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
@@ -86,13 +92,14 @@ SUBROUTINE wrapper_backward_induction(periods_emax, periods_payoffs_ex_post, &
             periods_future_payoffs, num_periods, max_states_period, &
             periods_eps_relevant, num_draws, states_number_period, &
             periods_payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
-            states_all, delta)
+            states_all, delta, is_debug, shocks, level)
+
 
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_create_state_space(states_all, states_number_period, mapping_state_idx, & 
-                num_periods, edu_start, edu_max, min_idx)
+SUBROUTINE wrapper_create_state_space(states_all, states_number_period, &
+                mapping_state_idx, num_periods, edu_start, edu_max, min_idx)
     
     !/* external libraries    */
 
@@ -159,3 +166,5 @@ SUBROUTINE wrapper_calculate_payoffs_ex_ante(periods_payoffs_ex_ante, num_period
               coeffs_B, coeffs_edu, coeffs_home, max_states_period)
 
 END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************

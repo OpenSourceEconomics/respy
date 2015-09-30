@@ -15,7 +15,7 @@ MODULE PEI_ADDITIONS
 
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE READ_IN_DISTURBANCES(EU1, EU2, C, B, NPER, DRAW)
+SUBROUTINE READ_IN_DISTURBANCES(EU1, EU2, C, B)
 
   !/* external objects    */
 
@@ -23,54 +23,33 @@ SUBROUTINE READ_IN_DISTURBANCES(EU1, EU2, C, B, NPER, DRAW)
   REAL, INTENT(INOUT)           :: EU2(:, :)
   REAL, INTENT(INOUT)           :: C(:, :)
   REAL, INTENT(INOUT)           :: B(:, :)
-  REAL, INTENT(IN)              :: DRAW
-
-  INTEGER, INTENT(IN)           :: NPER
 
   !/* internal objects    */
-
-  INTEGER                       :: J
-  INTEGER                       :: T
-
-  REAL                          :: PERIODS_EPS_RELEVANT(40, 5000, 4)
 
   LOGICAL                       :: READ_IN
 
 !------------------------------------------------------------------------------- 
 ! Algorithm
 !------------------------------------------------------------------------------- 
+   
+  ! Check applicability
+  INQUIRE(FILE='.restud.testing.scratch', EXIST=READ_IN)
 
-    PERIODS_EPS_RELEVANT = -99.00
+  IF (READ_IN) THEN
+
+    OPEN(12, file='.restud.testing.scratch')
     
-    ! Check applicability
-    INQUIRE(FILE='disturbances.txt', EXIST=READ_IN)
+    CLOSE(12, STATUS='delete')
+    
+    EU1 = 1.0 
+    
+    EU2 = 1.0
+    
+    C   = 0.0
+    
+    B   = 0.0
 
-    IF (READ_IN .EQV. .True.) THEN
-
-      OPEN(12, file='disturbances.txt')
-      
-      DO T = 1, NPER
-
-        DO J = 1, DRAW
-        
-          2000 FORMAT(4(1x,f15.10))
-          READ(12,2000) PERIODS_EPS_RELEVANT(T, J, :)
-        
-        END DO
-      
-      END DO
-
-      ! Replacements
-      EU1 = TRANSPOSE(PERIODS_EPS_RELEVANT(:, :, 1))
-
-      EU2 = TRANSPOSE(PERIODS_EPS_RELEVANT(:, :, 2))
-      
-      C = TRANSPOSE(PERIODS_EPS_RELEVANT(:, :, 3))
-      
-      B = TRANSPOSE(PERIODS_EPS_RELEVANT(:, :, 4))
-
-
-    END IF
+  END IF
 
 END SUBROUTINE 
 !*******************************************************************************
@@ -400,9 +379,8 @@ PROGRAM dp3asim
    31 CONTINUE
 !C  30 CONTINUE
  
-  ! PEI: Read in random components (if requested for debugging). Replacement
-  ! of the disturbances originally created inside the RESTUD program.
-  CALL READ_IN_DISTURBANCES(EU1, EU2, C, B, NPER, DRAW)
+  ! PEI: Create zero disturbances.
+  CALL READ_IN_DISTURBANCES(EU1, EU2, C, B)
 
 !*****************************************************************
 !*  CONSTRUCT THE EXPECTED MAX OF THE TIME NPER VALUE FUNCTIONS  *

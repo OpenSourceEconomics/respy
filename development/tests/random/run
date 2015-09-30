@@ -19,8 +19,12 @@ import sys
 import os
 
 # project
-from modules.auxiliary import compile_package, cleanup, distribute_input
-from modules.auxiliary import start_logging, finish
+from modules.auxiliary import compile_package
+from modules.auxiliary import distribute_input
+from modules.auxiliary import start_logging
+from modules.auxiliary import cleanup
+from modules.auxiliary import finish
+
 import modules.battery as development_tests
 
 # ROBUPY import
@@ -43,7 +47,7 @@ def run(hours):
 
     package_labels = ['1', '2', '3', '4', '5', '6', '7']
 
-    development_labels = ['97', '98', '99']
+    development_labels = ['92', '93', '94', '95', '96', '97', '98', '99']
 
     labels = package_labels + development_labels
 
@@ -65,11 +69,7 @@ def run(hours):
 
     logger.info(msg)
 
-    # Compile package. I also test the equality of results between the fast
-    # and slow compilation in Test H.
-    compile_package('fast')
-
-    # # Evaluation loop.
+    # Evaluation loop.
     while True:
 
         # Setup of test case.

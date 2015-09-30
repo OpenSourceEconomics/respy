@@ -20,18 +20,16 @@ def _distribute_inputs(parser):
     args = parser.parse_args()
 
     # Distribute arguments.
-    simulate = args.simulate
     model = args.model
 
-    # Assertions.
-    assert (simulate in [True, False])
+    # Assertions
     assert (os.path.exists(model))
 
     # Finishing.
-    return model, simulate
+    return model
 
 
-def solve(model, simulate):
+def solve(model):
     """ Solve and simulate the dynamic programming model.
     """
 
@@ -52,9 +50,6 @@ if __name__ == '__main__':
                         default='model.robupy.ini',
                         help='model initialization file')
 
-    parser.add_argument('--simulate', action='store_true', dest='simulate',
-                        default=False, help='simulate')
+    model = _distribute_inputs(parser)
 
-    model, simulate = _distribute_inputs(parser)
-
-    solve(model, simulate)
+    solve(model)

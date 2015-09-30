@@ -50,6 +50,9 @@ def read(file_):
         else:
             raise AssertionError
 
+    # Type conversion for Shocks
+    dict_['SHOCKS'] = np.array(dict_['SHOCKS'])
+
     # Cleanup dictionary
     del dict_['WORK']
 
@@ -233,20 +236,18 @@ def _check_integrity_read(dict_):
     if dict_['PROGRAM']['version'] == 'F2PY':
         package_dir = os.path.dirname(os.path.realpath(__file__))
         assert (len(glob.glob(package_dir +
-                              '/python/f2py/f2py_core.*.so')) == 1)
+                              '/python/f2py/f2py_library.*.so')) == 1)
 
     if dict_['PROGRAM']['version'] == 'FORTRAN':
         package_dir = os.path.dirname(os.path.realpath(__file__))
         assert (len(glob.glob(package_dir +
-                              '/fortran/bin/robufo*')) == 1)
+                              '/fortran/bin/robufo*')) == 2)
 
     # Check SHOCKS
-    assert (len(dict_['SHOCKS']) == 4)
-    assert (np.array(dict_['SHOCKS']).shape == (4, 4))
-    assert (np.all(np.isfinite(np.array(dict_['SHOCKS']))))
-    assert (np.all(np.diag(np.array(dict_['SHOCKS']) >= 0)))
-    assert ((np.array(dict_['SHOCKS']).transpose() ==
-             np.array(dict_['SHOCKS'])).all())
+    assert (dict_['SHOCKS']).shape == (4, 4)
+    assert (np.all(np.isfinite(dict_['SHOCKS'])))
+    assert (np.all(np.diag(dict_['SHOCKS']) >= 0))
+    assert ((dict_['SHOCKS'].transpose() == dict_['SHOCKS']).all())
     if not (np.count_nonzero(dict_['SHOCKS']) == 0):
         assert(np.linalg.det(dict_['SHOCKS']) > 0)
 

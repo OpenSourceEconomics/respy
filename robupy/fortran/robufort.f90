@@ -1,27 +1,33 @@
-!******************************************************************************
-!******************************************************************************
-MODULE robufort_library
+!*******************************************************************************
+!*******************************************************************************
+MODULE robufort_extension
 
     !/* external modules    */
 
-    USE robufort_program_constants
+    USE robufort_constants
+
     USE robufort_auxiliary
 
     !/* setup   */
 
     IMPLICIT NONE
 
+    PRIVATE
+
     !/* core functions */
 
     PUBLIC :: read_specification
+
     PUBLIC :: get_disturbances
+    
     PUBLIC :: store_results
 
 CONTAINS
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE store_results(mapping_state_idx, states_all, periods_payoffs_ex_ante, & 
-    states_number_period, periods_emax, num_periods, min_idx, max_states_period) 
+SUBROUTINE store_results(mapping_state_idx, states_all, &
+                periods_payoffs_ex_ante, states_number_period, periods_emax, &
+                num_periods, min_idx, max_states_period) 
 
     !/* external objects    */
 
@@ -124,10 +130,10 @@ SUBROUTINE store_results(mapping_state_idx, states_all, periods_payoffs_ex_ante,
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE read_specification(num_periods, delta, coeffs_A, coeffs_B, & 
+SUBROUTINE read_specification(num_periods, delta, level, coeffs_A, coeffs_B, &
                 coeffs_edu, edu_start, edu_max, coeffs_home, shocks, & 
-                num_draws, seed_solution, num_agents, &
-                seed_simulation, is_debug, is_zero) 
+                num_draws, seed_solution, num_agents, seed_simulation, & 
+                is_debug, is_zero) 
 
     !/* external objects    */
 
@@ -145,6 +151,7 @@ SUBROUTINE read_specification(num_periods, delta, coeffs_A, coeffs_B, &
     REAL(our_dble), INTENT(OUT)     :: coeffs_A(6)
     REAL(our_dble), INTENT(OUT)     :: coeffs_B(6)
     REAL(our_dble), INTENT(OUT)     :: delta
+    REAL(our_dble), INTENT(OUT)     :: level
 
     LOGICAL, INTENT(OUT)            :: is_debug
     LOGICAL, INTENT(OUT)            :: is_zero
@@ -165,12 +172,17 @@ SUBROUTINE read_specification(num_periods, delta, coeffs_A, coeffs_B, &
     1505 FORMAT(i10)
     1515 FORMAT(i10,1x,i10)
 
+    !1520 FORMAT(15)
+
     ! Read model specification
     OPEN(UNIT=1, FILE='.model.robufort.ini')
 
         ! BASICS
         READ(1, 1505) num_periods
         READ(1, 1510) delta
+
+        ! AMBIGUITY
+        READ(1, 1510) level
 
         ! WORK
         READ(1, 1500) coeffs_A
@@ -202,20 +214,20 @@ SUBROUTINE read_specification(num_periods, delta, coeffs_A, coeffs_B, &
         ! AUXILIARY
         READ(1, *) is_zero
 
-        
     CLOSE(1, STATUS='delete')
 
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE get_disturbances(periods_eps_relevant, shocks, seed, is_debug, & 
-                is_zero) 
+SUBROUTINE get_disturbances(periods_eps_relevant, level, shocks, seed, &
+                is_debug, is_zero) 
 
     !/* external objects    */
 
     REAL(our_dble), INTENT(OUT)     :: periods_eps_relevant(:, :, :)
 
     REAL(our_dble), INTENT(IN)      :: shocks(4, 4)
+    REAL(our_dble), INTENT(IN)      :: level
 
     INTEGER(our_int),INTENT(IN)     :: seed 
 
@@ -224,26 +236,28 @@ SUBROUTINE get_disturbances(periods_eps_relevant, shocks, seed, is_debug, &
 
     !/* internal objects    */
 
+    REAL(our_dble)                  :: eps_cholesky(4, 4)
+
+    INTEGER(our_int)                :: seed_inflated(15)
     INTEGER(our_int)                :: num_periods
+    INTEGER(our_int)                :: seed_size
     INTEGER(our_int)                :: num_draws
     INTEGER(our_int)                :: period
     INTEGER(our_int)                :: j
-
-    REAL(our_dble)                  :: mean(4)
-
+    INTEGER(our_int)                :: i
     
     LOGICAL                         :: READ_IN
-
-    INTEGER(our_int)                :: seed_size
-    INTEGER(our_int)                :: seed_inflated(15)
 
 !------------------------------------------------------------------------------- 
 ! Algorithm
 !------------------------------------------------------------------------------- 
+
     ! Auxiliary objects
     num_periods = SIZE(periods_eps_relevant, 1)
 
     num_draws = SIZE(periods_eps_relevant, 2)
+
+    CALL cholesky(eps_cholesky, shocks)
 
     ! Set random seed
     seed_inflated(:) = seed
@@ -252,50 +266,82 @@ SUBROUTINE get_disturbances(periods_eps_relevant, shocks, seed, is_debug, &
 
     CALL RANDOM_SEED(put=seed_inflated)
 
+    ! Create standard deviates
+    INQUIRE(FILE='disturbances.txt', EXIST=READ_IN)
 
-    ! Initialize mean 
-    IF (is_zero .EQV. .True.) THEN
+    IF ((READ_IN .EQV. .True.)  .AND. (is_debug .EQV. .True.)) THEN
 
-        periods_eps_relevant = zero_dble
-
-    ELSE
-    
-        mean = zero_dble
+        OPEN(12, file='disturbances.txt')
 
         DO period = 1, num_periods
-       
-            CALL multivariate_normal(periods_eps_relevant(period, :, :), mean, & 
-                    shocks)
+
+            DO j = 1, num_draws
+        
+                2000 FORMAT(4(1x,f15.10))
+                READ(12,2000) periods_eps_relevant(period, j, :)
+        
+            END DO
+      
+        END DO
+
+        CLOSE(12)
+
+    ELSE
+
+        DO period = 1, num_periods
+
+            CALL multivariate_normal(periods_eps_relevant(period, :, :))
         
         END DO
 
     END IF
 
-    ! Transform for occupations
-    DO j = 1, 2
-        periods_eps_relevant(:, :, j) = EXP(periods_eps_relevant(:, :, j))
-    END DO
-
-
-    ! Check applicability
-    INQUIRE(FILE='disturbances.txt', EXIST=READ_IN)
-
-    IF ((READ_IN .EQV. .True.)  .AND. (is_debug .EQV. .True.)) THEN
-
-      OPEN(12, file='disturbances.txt')
-
-      DO period = 1, num_periods
-
-        DO j = 1, num_draws
+    ! Transformations
+    DO period = 1, num_periods
         
-          2000 FORMAT(4(1x,f15.10))
-          READ(12,2000) periods_eps_relevant(period, j, :)
+        ! Apply variance change
+        DO i = 1, num_draws
+        
+            periods_eps_relevant(period, i:i, :) = &
+                TRANSPOSE(MATMUL(eps_cholesky, TRANSPOSE(periods_eps_relevant(period, i:i, :))))
         
         END DO
-      
-      END DO
 
-      CLOSE(12)
+    END DO
+
+    ! Transformation in case of risk-only. In the case of ambiguity, this 
+    ! transformation is later as it needs adjustment for the switched means.
+    IF (level .EQ. zero_dble) THEN
+        
+        ! Transform disturbance for occupations
+        DO period = 1, num_periods
+
+            DO j = 1, 2
+            
+                periods_eps_relevant(period, :, j) = &
+                        EXP(periods_eps_relevant(period, :, j))
+            
+            END DO
+
+        END DO
+        
+    END IF
+
+    ! Special case of absence randomness. Note that the disturbances for the 
+    ! two occupations are set to one instead of zero.
+    IF (is_zero) THEN
+
+        periods_eps_relevant = zero_dble
+
+        DO period = 1, num_periods
+
+            DO j = 1, 2
+
+                periods_eps_relevant(period, :, j) = one_dble
+
+            END DO
+
+        END DO
 
     END IF
 
@@ -308,12 +354,11 @@ END MODULE
 !******************************************************************************* 
 PROGRAM robufort
 
-
     !/* external modules    */
 
-    USE robufort_library
+    USE robufort_extension
 
-    USE robufort_program_constants
+    USE robufort_library
 
     !/* setup   */
 
@@ -330,56 +375,92 @@ PROGRAM robufort
     INTEGER(our_int)                :: seed_solution 
     INTEGER(our_int)                :: num_periods
     INTEGER(our_int)                :: num_agents
-    INTEGER(our_int)                :: edu_lagged
-    INTEGER(our_int)                :: future_idx
     INTEGER(our_int)                :: edu_start
     INTEGER(our_int)                :: num_draws
-    INTEGER(our_int)                :: covars(6)
     INTEGER(our_int)                :: edu_max
     INTEGER(our_int)                :: min_idx
-    INTEGER(our_int)                :: period
-    INTEGER(our_int)                :: total
-    INTEGER(our_int)                :: exp_A
-    INTEGER(our_int)                :: exp_B
-    INTEGER(our_int)                :: edu
-    INTEGER(our_int)                :: i
-    INTEGER(our_int)                :: k
 
     REAL(our_dble), ALLOCATABLE     :: periods_payoffs_ex_ante(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_payoffs_ex_post(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_future_payoffs(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_eps_relevant(:, :, :)
-    REAL(our_dble), ALLOCATABLE     :: eps_relevant(:, :)
     REAL(our_dble), ALLOCATABLE     :: periods_emax(:, :)
-    
+
+    REAL(our_dble)                  :: coeffs_home(1)
+    REAL(our_dble)                  :: coeffs_edu(3)
+    REAL(our_dble)                  :: shocks(4, 4)
+    REAL(our_dble)                  :: coeffs_A(6)
+    REAL(our_dble)                  :: coeffs_B(6)
+    REAL(our_dble)                  :: delta
+    REAL(our_dble)                  :: level
+
+    LOGICAL                         :: is_debug
+    LOGICAL                         :: is_zero
+
+    ! The following two containers are only useful in case of manual 
+    ! preprocessing.
+
+    INTEGER(our_int)                :: edu_lagged
+    INTEGER(our_int)                :: future_idx
+    INTEGER(our_int)                :: covars(6)
+    INTEGER(our_int)                :: maxiter
+    INTEGER(our_int)                :: period
+    INTEGER(our_int)                :: total
+    INTEGER(our_int)                :: exp_A
+    INTEGER(our_int)                :: exp_B
+    INTEGER(our_int)                :: mineq
+    INTEGER(our_int)                :: jw(7)
+    INTEGER(our_int)                :: mode
+    INTEGER(our_int)                :: iter
+    INTEGER(our_int)                :: mieq
+    INTEGER(our_int)                :: l_jw
+    INTEGER(our_int)                :: edu
+    INTEGER(our_int)                :: meq
+    INTEGER(our_int)                :: l_w
+    INTEGER(our_int)                :: la
+    INTEGER(our_int)                :: i
+    INTEGER(our_int)                :: k
+    INTEGER(our_int)                :: j
+    INTEGER(our_int)                :: m
+    INTEGER(our_int)                :: n
+
+    REAL(our_dble), ALLOCATABLE     :: eps_relevant_emax(:, :)
+    REAL(our_dble), ALLOCATABLE     :: eps_relevant(:, :)
+
     REAL(our_dble)                  :: payoffs_ex_post(4)
     REAL(our_dble)                  :: payoffs_ex_ante(4)
     REAL(our_dble)                  :: future_payoffs(4)
     REAL(our_dble)                  :: total_payoffs(4)
     REAL(our_dble)                  :: disturbances(4)
     REAL(our_dble)                  :: emax_simulated
-    REAL(our_dble)                  :: coeffs_home(1)
-    REAL(our_dble)                  :: coeffs_edu(3)
-    REAL(our_dble)                  :: shocks(4, 4)
-    REAL(our_dble)                  :: coeffs_A(6)
-    REAL(our_dble)                  :: coeffs_B(6)
-    REAL(our_dble)                  :: maximum
+    REAL(our_dble)                  :: x_internal(2)    
+    REAL(our_dble)                  :: x_start(2)
+    REAL(our_dble)                  :: a(1, 3)
+    REAL(our_dble)                  :: maximum    
     REAL(our_dble)                  :: payoff
-    REAL(our_dble)                  :: delta
-    
+    REAL(our_dble)                  :: w(144)
+    REAL(our_dble)                  :: xl(2)
+    REAL(our_dble)                  :: xu(2)
+    REAL(our_dble)                  :: ftol
+    REAL(our_dble)                  :: c(1)
+    REAL(our_dble)                  :: g(3)
+    REAL(our_dble)                  :: eps
+    REAL(our_dble)                  :: f
+
+    LOGICAL                         :: is_ambiguous
+    LOGICAL                         :: is_finished
     LOGICAL                         :: is_myopic
-    LOGICAL                         :: is_debug
     LOGICAL                         :: is_huge
-    LOGICAL                         :: is_zero
 
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
 
     ! Read specification of model
-    CALL read_specification(num_periods, delta, coeffs_A, coeffs_B, & 
-            coeffs_edu, edu_start, edu_max, coeffs_home, shocks, num_draws, & 
-            seed_solution, num_agents, seed_simulation, is_debug, is_zero) 
+    CALL read_specification(num_periods, delta, level, coeffs_A, coeffs_B, & 
+            coeffs_edu, edu_start, edu_max, coeffs_home, shocks, num_draws, &
+            seed_solution, num_agents, seed_simulation, &
+            is_debug, is_zero) 
 
     ! Auxiliary objects
     min_idx = MIN(num_periods, (edu_max - edu_start + 1))
@@ -395,7 +476,7 @@ PROGRAM robufort
 
     ! Auxiliary objects
     max_states_period = MAXVAL(states_number_period)
-
+    
     ! Allocate arrays
     ALLOCATE(periods_payoffs_ex_ante(num_periods, max_states_period, 4))
 
@@ -409,20 +490,24 @@ PROGRAM robufort
     ALLOCATE(periods_future_payoffs(num_periods, max_states_period, 4))
     ALLOCATE(periods_eps_relevant(num_periods, num_draws, 4))
     ALLOCATE(periods_emax(num_periods, max_states_period))
+
+    ! The following two containers are only useful in case of manual 
+    ! preprocessing.
     ALLOCATE(eps_relevant(num_draws, 4))
+    ALLOCATE(eps_relevant_emax(num_draws, 4))
 
     ! Draw random disturbances. For is_debugging purposes, these might also be 
     ! read in from disk or set to zero/one.
-    CALL get_disturbances(periods_eps_relevant, shocks, seed_solution, & 
+    CALL get_disturbances(periods_eps_relevant, level, shocks, seed_solution, &
             is_debug, is_zero)
 
-    ! Perform backward induction.
+    ! Perform backward induction procedure.
     CALL backward_induction(periods_emax, periods_payoffs_ex_post, &
             periods_future_payoffs, num_periods, max_states_period, &
             periods_eps_relevant, num_draws, states_number_period, & 
-            periods_payoffs_ex_ante, edu_max, edu_start, &
-            mapping_state_idx, states_all, delta)
-
+            periods_payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
+            states_all, delta, is_debug, shocks, level)
+   
     ! Store results. These are read in by the PYTHON wrapper and added 
     ! to the clsRobupy instance.
     CALL store_results(mapping_state_idx, states_all, periods_payoffs_ex_ante, &

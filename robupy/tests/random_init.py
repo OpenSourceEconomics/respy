@@ -99,10 +99,10 @@ def generate_random_dict(constraints=None):
     dict_['SIMULATION']['agents'] = np.random.random_integers(1, MAX_AGENTS)
 
     # Shocks
-    cov = np.identity(4)
+    shocks = np.identity(4)
     for i, val in enumerate(np.random.uniform(0.05, 1, 4)):
-        cov[i, i] = val
-    dict_['SHOCKS'] = cov
+        shocks[i, i] = val
+    dict_['SHOCKS'] = shocks
 
     # Replace education
     if 'edu' in constraints.keys():
@@ -131,7 +131,7 @@ def generate_random_dict(constraints=None):
         # Extract objects
         store = constraints['store']
         # Checks
-        assert (store in ['True', 'False'])
+        assert (store in [True, False])
         # Replace in initialization file
         dict_['SOLUTION']['store'] = store
 
@@ -140,7 +140,7 @@ def generate_random_dict(constraints=None):
         # Extract objects
         debug = constraints['debug']
         # Checks
-        assert (debug in ['True', 'False'])
+        assert (debug in [True, False])
         # Replace in initialization file
         dict_['PROGRAM']['debug'] = debug
 
@@ -154,6 +154,15 @@ def generate_random_dict(constraints=None):
         assert (isinstance(level, float))
         # Replace in initialization file
         dict_['AMBIGUITY']['level'] = level
+
+    # Replace measure of ambiguity
+    if 'measure' in constraints.keys():
+        # Extract objects
+        measure = constraints['measure']
+        # Checks
+        assert (measure in ['kl', 'absolute'])
+        # Replace in initialization file
+        dict_['AMBIGUITY']['measure'] = measure
 
     # Replace number of periods
     if 'periods' in constraints.keys():
@@ -182,14 +191,16 @@ def generate_random_dict(constraints=None):
         # Replace in initialization files
         dict_['SHOCKS'] = np.zeros((4, 4))
 
-    # Ambiguity only of a particular type
-    if 'measure' in constraints.keys():
+    # Number of draws
+    if 'draws' in constraints.keys():
         # Extract object
-        measure = constraints['measure']
+        num_draws = constraints['draws']
         # Checks
-        assert (measure in ['kl', 'absolute'])
+        assert (num_draws > 0)
+        assert (isinstance(num_draws, int))
+        assert (np.isfinite(num_draws))
         # Replace in initialization files
-        dict_['AMBIGUITY']['measure'] = measure
+        dict_['SOLUTION']['draws'] = num_draws
 
     # Finishing.
     return dict_
@@ -238,13 +249,16 @@ def print_random_dict(dict_):
                 file_.write(' ' + flag.upper() + '\n\n')
 
                 for keys_ in dict_[flag]:
-                    file_.write(str_.format(keys_, dict_[flag][keys_]))
+                    file_.write(str_.format(keys_, str(dict_[flag][keys_])))
 
                 file_.write('\n')
 
             if flag in ['SHOCKS']:
 
-                str_ = ' {0:15.2f} {1:15.2f} {2:15.2f} {3:15.2f}\n'
+                # Type conversion
+                dict_[flag] = np.array(dict_[flag])
+
+                str_ = ' {0:15.4f} {1:15.4f} {2:15.4f} {3:15.4f}\n'
 
                 file_.write(' ' + flag.upper() + '\n\n')
 
@@ -279,7 +293,7 @@ def print_random_dict(dict_):
     # Adding WORK
     with open('test.robupy.ini', 'a') as file_:
 
-        str_ = ' {0:<15} {1:15.2f} {2:15.2f} \n'
+        str_ = ' {0:<15} {1:15.4f} {2:15.4f} \n'
 
         file_.write(' WORK \n\n')
 

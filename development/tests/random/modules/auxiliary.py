@@ -18,6 +18,59 @@ from modules.clsMail import MailCls
 '''
 
 
+def build_f2py_testing(is_hidden):
+    """ Build the F2PY testing interface for testing.f
+    """
+    os.chdir('modules')
+
+    # Build static library
+    compiler_options = '-O3 -fpic'
+
+    files = ['robufort_constants.f90', 'robufort_auxiliary.f90',
+             'robufort_slsqp.f', 'robufort_emax.f90', 'robufort_risk.f90',
+             'robufort_ambiguity.f90', 'robufort_library.f90',
+             'robufort_testing.f90']
+
+    for file_ in files:
+
+        cmd = 'gfortran ' + compiler_options + ' -c ' + file_
+
+        if is_hidden:
+            cmd += ' > /dev/null 2>&1'
+        os.system(cmd)
+
+    os.system('ar crs libfort_testing.a *.o *.mod')
+
+    # Prepare directory structure
+    for dir_ in ['include', 'lib']:
+        try:
+            shutil.rmtree(dir_)
+        except OSError:
+                pass
+        try:
+            os.makedirs(dir_)
+        except OSError:
+            pass
+
+    # Finalize static library
+    module_files = glob.glob('*.mod')
+    for file_ in module_files:
+        shutil.move(file_, 'include/')
+    shutil.move('libfort_testing.a', 'lib/')
+
+    # Build interface
+    cmd = 'f2py3 -c -m  f2py_testing f2py_interface_testing.f90 -Iinclude ' \
+          ' -Llib -lfort_testing'
+
+    if is_hidden:
+        cmd += ' > /dev/null 2>&1'
+
+    os.system(cmd)
+
+    # Finish
+    os.chdir('../')
+
+
 def write_disturbances(init_dict):
     """ Write out disturbances to potentially align the different
     implementations of the model
@@ -27,21 +80,17 @@ def write_disturbances(init_dict):
     # between the alternative implementations
     num_draws = init_dict['SOLUTION']['draws']
     num_periods = init_dict['BASICS']['periods']
-    shocks = init_dict['SHOCKS']
 
-    periods_eps_relevant = np.random.multivariate_normal(np.zeros(4),
-                            shocks, (num_periods, num_draws))
+    # Draw standard deviates
+    standard_deviates = np.random.multivariate_normal(np.zeros(4),
+        np.identity(4), (num_periods, num_draws))
 
-    for period in range(num_periods):
-        for j in [0, 1]:
-            periods_eps_relevant[period, :, j] = \
-                np.exp(periods_eps_relevant[period, :, j])
-
+    # Write to file to they can be read in by the different implementations.
     with open('disturbances.txt', 'w') as file_:
         for period in range(num_periods):
             for i in range(num_draws):
                 line = ' {0:15.10f} {1:15.10f} {2:15.10f} {3:15.10f}\n'.format(
-                    *periods_eps_relevant[period, i, :])
+                    *standard_deviates[period, i, :])
                 file_.write(line)
 
 
@@ -135,46 +184,13 @@ def finish(dict_, HOURS, notification):
 def cleanup():
     """ Cleanup after test battery.
     '"""
-    files = []
 
-    files = files + glob.glob('*.robupy.*')
+    os.system('./clean')
 
-    files = files + glob.glob('*.ini')
 
-    files = files + glob.glob('*.pkl')
-
-    files = files + glob.glob('*.txt')
-
-    files = files + glob.glob('*.dat')
-
-    files = files + glob.glob('modules/dp3asim')
-
-    files = files + glob.glob('.write_out')
-
-    for file_ in files:
-
-        try:
-
-            os.remove(file_)
-
-        except OSError:
-
-            pass
-
-        try:
-
-            shutil.rmtree(file_)
-
-        except OSError:
-
-            pass
-
-def compile_package(which):
+def compile_package(options, is_hidden):
     """ Compile toolbox
     """
-    # Antibugging
-    assert (which in ['fast', 'slow'])
-
     # Auxiliary objects
     package_dir = os.environ['ROBUPY'] + '/robupy'
     tests_dir = os.getcwd()
@@ -182,16 +198,29 @@ def compile_package(which):
     # Compile package
     os.chdir(package_dir)
 
-    os.system('./waf distclean > /dev/null 2>&1')
+    for i in range(1):
 
-    cmd = './waf configure build --debug'
+        os.system('./waf distclean > /dev/null 2>&1')
 
-    if which == 'fast':
-        cmd += ' --fast'
+        cmd = './waf configure build '
 
-    cmd += ' > /dev/null 2>&1'
+        cmd += options
 
-    os.system(cmd)
+        if is_hidden:
+            cmd += ' > /dev/null 2>&1'
+
+        os.system(cmd)
+
+        # In a small number of cases the build process seems to fail for no
+        # reason.
+        try:
+            import robupy.python.f2py.f2py_library
+            break
+        except ImportError:
+            pass
+
+        if i == 10:
+            raise AssertionError
 
     os.chdir(tests_dir)
 

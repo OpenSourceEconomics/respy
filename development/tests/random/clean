@@ -52,6 +52,21 @@ files += glob.glob('modules/*.mod')
 
 files += glob.glob('modules/dp3asim')
 
+files += glob.glob('modules/lib')
+
+files += glob.glob('modules/include')
+
+files += glob.glob('modules/*.so')
+
+files += glob.glob('*.dat')
+
+files += glob.glob('.restud.testing.scratch')
+
+files += glob.glob('modules/*.o')
+
+files += glob.glob('modules/__pycache__')
+
+
 for file_ in files:
 
     try:
