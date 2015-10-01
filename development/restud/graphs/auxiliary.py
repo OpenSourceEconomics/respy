@@ -2,12 +2,16 @@
 RESTUD economy.
 """
 
-from numpy import nan, linspace, array, hstack
-from matplotlib import cm
+# standard library
+import matplotlib.pylab as plt
+import numpy as np
+
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.ticker import FuncFormatter
+from matplotlib import cm
 
-import matplotlib.pylab as plt
+""" Plotting functions
+"""
 
 
 def plot_dimension_state_space(num_states):
@@ -29,6 +33,12 @@ def plot_dimension_state_space(num_states):
     ax.set_yticklabels(yticks, fontsize=18)
     ax.set_ylabel('Number of States', fontsize=18)
 
+    # Write out to
+    plt.savefig('restud_state_space.pdf', bbox_inches='tight',
+                format="pdf")
+
+    # Finishing
+    return plt
 
 def plot_return_experience(x, y, z):
     """ Function to produce plot for the return to experience.
@@ -50,7 +60,7 @@ def plot_return_experience(x, y, z):
 
     # Z axis ticks
     pad = 0.07*(ax.get_zlim()[1] - ax.get_zlim()[0])
-    #ax.set_zlim([ax.get_zlim()[0], ax.get_zlim()[1]])
+    ax.set_zlim([ax.get_zlim()[0], ax.get_zlim()[1]])
     #if zlim is not None:
     #    ax.set_zlim(zlim)
     ax.zaxis.set_major_formatter(
@@ -60,6 +70,13 @@ def plot_return_experience(x, y, z):
     ax.w_xaxis.set_pane_color((0.8, 0.8, 0.8, 1.0))
     ax.w_yaxis.set_pane_color((0.6, 0.6, 0.6, 1.0))
     ax.w_zaxis.set_pane_color((0.68, 0.68, 0.68, 1.0))
+
+    # Write out to
+    plt.savefig('restud_returns_experience.pdf', bbox_inches='tight',
+                format="pdf")
+
+    # Finishing
+    return plt
 
 
 def plot_return_education(xvals, yvals):
@@ -88,6 +105,10 @@ def plot_return_education(xvals, yvals):
     handles, labels = ax.get_legend_handles_labels()
     plt.legend(handles, labels, ncol=2, frameon=False, fontsize=16)
 
+    # Write out to
+    plt.savefig('restud_returns_education.pdf', bbox_inches='tight',
+                format="pdf")
+
     # Finishing
     return plt
 
@@ -101,10 +122,10 @@ def plot_choice_patterns(choice_probabilities):
 
     deciles = range(40)
 
-    colors = [(0, k, 1) for k in linspace(0, 1, int(rows/3.))] + \
-                [(0, 1, 1 - k) for k in linspace(0, 1, int(rows/3.) + 1)[1:]] + \
-                [(0, 1, 1 - k) for k in linspace(0, 1, int(rows/3.) + 1)[1:]] + \
-        [(k, 1 - k, 0) for k in linspace(0, 1, int(rows/3.) + 1)[1:]]
+    colors = [(0, k, 1) for k in np.linspace(0, 1, int(rows/3.))] + \
+                [(0, 1, 1 - k) for k in np.linspace(0, 1, int(rows/3.) + 1)[1:]] + \
+                [(0, 1, 1 - k) for k in np.linspace(0, 1, int(rows/3.) + 1)[1:]] + \
+        [(k, 1 - k, 0) for k in np.linspace(0, 1, int(rows/3.) + 1)[1:]]
 
     width = 0.9
 
@@ -140,5 +161,12 @@ def plot_choice_patterns(choice_probabilities):
     ax.set_ylabel('Share', fontsize=18)
 
     # Legend
-    lg = plt.legend(labels, loc='upper center', bbox_to_anchor=(0.5, 1.1), \
+    plt.legend(labels, loc='upper center', bbox_to_anchor=(0.5, 1.1), \
                    fancybox=True, ncol=rows, fontsize=10)
+
+    # Write out to
+    plt.savefig('restud_choice_patterns.pdf', bbox_inches='tight',
+                format="pdf")
+
+    # Finishing
+    return plt
