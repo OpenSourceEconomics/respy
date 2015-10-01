@@ -147,14 +147,16 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
     INTEGER(our_int)                :: jw(7)
 
     REAL(our_dble)                  :: a(1, 3)
+    REAL(our_dble)                  :: w(144)
     REAL(our_dble)                  :: xl(2)
     REAL(our_dble)                  :: xu(2)
     REAL(our_dble)                  :: c(1)
     REAL(our_dble)                  :: g(3)
-    REAL(our_dble)                  :: w(144)
+    REAL(our_dble)                  :: div
     REAL(our_dble)                  :: f
 
     LOGICAL                         :: is_finished
+    LOGICAL                         :: is_success
 
 !-------------------------------------------------------------------------------
 ! Algorithm
@@ -246,7 +248,23 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
 
     END DO
     
-    IF (is_debug) CALL logging_ambiguity(x_internal, mode, period, k)
+    ! Stabilization. If the optimization fails the starting values are
+    ! used otherwise it happens that the constraint is not satisfied by far.
+    is_success = (mode == zero_int)
+
+    IF(.NOT. is_success) THEN
+        x_internal = x_start
+    END IF
+
+    ! Logging.
+    IF (is_debug) THEN
+
+        ! Evaluate divergence at final value
+        div = divergence(x_internal, shocks, level) - level
+        ! Write to logging file
+        CALL logging_ambiguity(x_internal, div, mode, period, k, is_success)
+
+    END IF
 
 END SUBROUTINE
 !*******************************************************************************
@@ -399,19 +417,20 @@ SUBROUTINE transform_disturbances_ambiguity(eps_relevant_emax, eps_relevant, x_i
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE logging_ambiguity(x_internal, mode, period, k)
+SUBROUTINE logging_ambiguity(x_internal, div, mode, period, k, is_success)
 
     !/* external objects    */
 
     REAL(our_dble), INTENT(IN)      :: x_internal(:)
+    REAL(our_dble), INTENT(IN)      :: div
 
     INTEGER(our_int), INTENT(IN)    :: mode
     INTEGER(our_int), INTENT(IN)    :: k
     INTEGER(our_int), INTENT(IN)    :: period
 
-    !/* internal objects    */
+    LOGICAL, INTENT(IN)             :: is_success
 
-    LOGICAL                         :: is_success
+    !/* internal objects    */
 
     CHARACTER(55)                   :: message_optimizer
     CHARACTER(5)                    :: message_success
@@ -421,7 +440,6 @@ SUBROUTINE logging_ambiguity(x_internal, mode, period, k)
 !-------------------------------------------------------------------------------
     
     ! Success message
-    is_success = (mode == zero_int)
     IF(is_success) THEN
         message_success = 'True'
     ELSE
@@ -457,10 +475,11 @@ SUBROUTINE logging_ambiguity(x_internal, mode, period, k)
     OPEN(UNIT=1, FILE='ambiguity.robupy.log', ACCESS='APPEND')
 
         1000 FORMAT(A,i7,A,i7)
-        1010 FORMAT(A10,(2(1x,f10.4)))
+        1010 FORMAT(A17,(2(1x,f10.4)))
         WRITE(1, 1000) " PERIOD", period, "  STATE", k
         WRITE(1, *) ""
-        WRITE(1, 1010) "    Result ", x_internal
+        WRITE(1, 1010) "    Result       ", x_internal
+        WRITE(1, 1010) "    Divergence   ", div
         WRITE(1, *) ""
         WRITE(1, *) "   Success ", message_success
         WRITE(1, *) "   Message ", message_optimizer

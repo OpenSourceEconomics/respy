@@ -120,9 +120,12 @@ def _summarize_ambiguity(robupy_obj):
             dict_[period] = {}
             dict_[period]['success'] = 0
             dict_[period]['failure'] = 0
+            dict_[period]['total'] = 0
 
         # Collect success indicator
         if list_[0] == 'Success':
+            dict_[period]['total'] += 1
+
             is_success = (list_[1] == 'True')
             if is_success:
                 dict_[period]['success'] += 1
@@ -131,19 +134,20 @@ def _summarize_ambiguity(robupy_obj):
 
     with open('ambiguity.robupy.log', 'a') as file_:
 
-        file_.write('SUMMARY\n\n')
+        file_.write('\nSUMMARY\n\n')
 
         string = '''{0[0]:>10} {0[1]:>10} {0[2]:>10} {0[3]:>10}\n'''
-
         file_.write(string.format(['Period', 'Total', 'Success', 'Failure']))
 
         file_.write('\n')
 
         for period in range(num_periods):
-            success = dict_[period]['success']
-            failure = dict_[period]['failure']
-            total = success + failure
+            total = dict_[period]['total']
 
+            success = dict_[period]['success']/total
+            failure = dict_[period]['failure']/total
+
+            string = '''{0[0]:>10} {0[1]:>10} {0[2]:10.2f} {0[3]:10.2f}\n'''
             file_.write(string.format([period, total, success, failure]))
 
 

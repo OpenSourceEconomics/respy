@@ -444,11 +444,13 @@ PROGRAM robufort
     REAL(our_dble)                  :: ftol
     REAL(our_dble)                  :: c(1)
     REAL(our_dble)                  :: g(3)
+    REAL(our_dble)                  :: div
     REAL(our_dble)                  :: eps
     REAL(our_dble)                  :: f
 
     LOGICAL                         :: is_ambiguous
     LOGICAL                         :: is_finished
+    LOGICAL                         :: is_success
     LOGICAL                         :: is_myopic
     LOGICAL                         :: is_huge
 

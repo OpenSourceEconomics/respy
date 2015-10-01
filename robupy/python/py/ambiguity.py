@@ -48,19 +48,16 @@ def get_payoffs_ambiguity(num_draws, eps_relevant, period, k, payoffs_ex_ante,
         opt = minimize(_criterion, x0, args, method='SLSQP', options=options,
                        constraints=constraints)
 
-        # This is not very satisfactory, but it occurs that the constraint
-        # is not satisfied, even though success is indicated. To ensure
-        # a smooth and informative run of TEST_F in the random development
-        # test battery the following checks are performed.
-        if is_debug:
-            opt = _correct_debugging(opt, x0, level, eps_relevant,
-                        num_periods, num_draws, period, k, payoffs_ex_ante,
-                        edu_max, edu_start, periods_emax, states_all,
-                        mapping_state_idx, delta)
+        # Stabilization. If the optimization fails the starting values are
+        # used otherwise it happens that the constraint is not satisfied by far.
+        if not opt['success']:
+            opt['x'] = x0
 
-    # Write result to file
+    # Logging result to file
     if is_debug:
-        _write_result(period, k, opt)
+        # Evaluate divergence at final value.
+        div = _divergence(opt['x'], shocks, level) - level
+        _write_result(period, k, opt, div)
 
     # Transformation of standard normal deviates to relevant distributions.
     eps_relevant_emax = transform_disturbances_ambiguity(eps_relevant, opt['x'])
@@ -70,8 +67,9 @@ def get_payoffs_ambiguity(num_draws, eps_relevant, period, k, payoffs_ex_ante,
             payoffs_ex_ante, edu_max, edu_start, periods_emax, states_all,
             mapping_state_idx, delta)
 
-    # Debugging
-    if is_debug:
+    # Debugging. This only works in the case of success, as otherwise
+    # opt['fun'] is not equivalent to simulated.
+    if is_debug and opt['success']:
         checks_ambiguity('get_payoffs_ambiguity', simulated, opt)
 
     # Finishing
@@ -97,33 +95,6 @@ def transform_disturbances_ambiguity(eps_relevant, x):
 
     # Finishing
     return eps_relevant_emax
-
-
-def _correct_debugging(opt, x0, level, eps_relevant, num_periods,
-        num_draws, period, k, payoffs_ex_ante, edu_max, edu_start,
-        periods_emax, states_all, mapping_state_idx, delta):
-    """ Some manipulations for test battery
-    """
-    # Check applicability
-    if not (level < 0.1e-10):
-        return opt
-
-    # Correct resulting values
-    opt['x'] = x0
-
-    # Correct final function value
-    eps_relevant_emax = transform_disturbances_ambiguity(eps_relevant, opt['x'])
-
-    simulated, payoffs_ex_post, future_payoffs = \
-                simulate_emax(num_periods, num_draws, period, k,
-                              eps_relevant_emax,
-                    payoffs_ex_ante, edu_max, edu_start, periods_emax,
-                    states_all, mapping_state_idx, delta)
-
-    opt['fun'] = simulated
-
-    # Finishing
-    return opt
 
 
 def _prep_kl(shocks, level):
@@ -191,7 +162,7 @@ def _criterion(x, num_draws, eps_relevant, period, k, payoffs_ex_ante, edu_max,
     return simulated
 
 
-def _write_result(period, k, opt):
+def _write_result(period, k, opt, div):
     """ Write result of optimization problem to loggging file.
     """
 
@@ -200,8 +171,10 @@ def _write_result(period, k, opt):
         string = ' PERIOD{0[0]:>7}  STATE{0[1]:>7}\n\n'
         file_.write(string.format([period, k]))
 
-        string = '{0[0]:>10} {0[1]:10.4f} {0[2]:10.4f}\n\n'
+        string = '    {0[0]:<13} {0[1]:10.4f} {0[2]:10.4f}\n'
         file_.write(string.format(['Result', opt['x'][0], opt['x'][0]]))
+        string = '    {0[0]:<13} {0[1]:10.4f}\n\n'
+        file_.write(string.format(['Divergence', div]))
 
         file_.write('    Success ' + str(opt['success']) + '\n')
         file_.write('    Message ' + opt['message'] + '\n\n')
