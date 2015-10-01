@@ -26,7 +26,8 @@ sys.path.insert(0, os.environ['ROBUPY'])
 # Import function to that a fast version of the toolbox is available.
 from robupy.tests.random_init import print_random_dict
 from modules.auxiliary import compile_package
-from robupy import *
+from robupy import read
+from robupy import solve
 
 # Import clean
 from clean import cleanup
