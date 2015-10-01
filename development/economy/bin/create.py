@@ -50,7 +50,7 @@ def distribute_arguments(parser):
 
     if grid != 0:
         assert (len(grid) == 3)
-        assert (all(isinstance(element, int) for element in grid))
+        assert (isinstance(grid[-1], int))
         assert (grid[2] > 0.0)
         assert (grid[0] < grid[1]) or ((grid[0] == 0) and (grid[1] == 0))
 
@@ -119,7 +119,7 @@ if __name__ == '__main__':
     parser.add_argument('--procs', action='store', type=int, dest='num_procs',
         default=1, help='use multiple processors')
 
-    parser.add_argument('--grid', action='store', type=int, dest='grid',
+    parser.add_argument('--grid', action='store', type=float, dest='grid',
         default=[0, 0, 1], nargs='+',
         help='construct grid using np.linspace (start, stop, num)')
 
