@@ -50,7 +50,6 @@ def distribute_arguments(parser):
 
     if grid != 0:
         assert (len(grid) == 3)
-        assert (isinstance(grid[-1], int))
         assert (grid[2] > 0.0)
         assert (grid[0] < grid[1]) or ((grid[0] == 0) and (grid[1] == 0))
 
@@ -101,7 +100,7 @@ def create(num_procs, grid):
     if grid == 0:
         grid = [0.0]
     else:
-        grid = np.linspace(start=grid[0], stop=grid[1], num=grid[2])
+        grid = np.linspace(start=grid[0], stop=grid[1], num=int(grid[2]))
 
     # Solve numerous economies
     p = Pool(num_procs)
