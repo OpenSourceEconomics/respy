@@ -14,8 +14,12 @@ import glob
 import sys
 import os
 
+# Check for Python 3
+import sys
+if not (sys.version_info[0] == 3):
+    raise AssertionError('Please use Python 3')
+
 # PYTHONPATH
-sys.path.insert(0, os.environ['ROBUPY'] + '/development/working/keane_economy/fort')
 sys.path.insert(0, os.environ['ROBUPY'] + '/development/tests/random')
 sys.path.insert(0, os.environ['ROBUPY'])
 

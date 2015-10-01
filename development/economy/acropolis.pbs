@@ -8,4 +8,6 @@
 #PBS -M eisenhauer@policy-lab.org
 
 cd $PBS_O_WORKDIR
-mpiexec -n 1 python -O /home/eisenhauer/robustToolbox/package/development/economy/create --procs 11 --grid 0 1 11
+source $HOME/.local/bin/virtualenvwrapper.sh
+workon robustToolbox3
+python -O /home/eisenhauer/robustToolbox/package/development/economy/create --procs 11 --grid 0 1 11
