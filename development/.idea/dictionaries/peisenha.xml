@@ -21,6 +21,7 @@
       <w>rosenbrock</w>
       <w>slsqp</w>
       <w>vals</w>
+      <w>yticks</w>
     </words>
   </dictionary>
 </component>
