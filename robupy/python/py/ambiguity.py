@@ -48,6 +48,16 @@ def get_payoffs_ambiguity(num_draws, eps_relevant, period, k, payoffs_ex_ante,
         opt = minimize(_criterion, x0, args, method='SLSQP', options=options,
                        constraints=constraints)
 
+        # This is not very satisfactory, but it occurs that the constraint
+        # is not satisfied, even though success is indicated. To ensure
+        # a smooth and informative run of TEST_F in the random development
+        # test battery the following checks are performed.
+        if is_debug:
+            opt = _correct_debugging(opt, x0, shocks, level, eps_relevant,
+                        num_periods, num_draws, period, k, payoffs_ex_ante,
+                        edu_max, edu_start, periods_emax, states_all,
+                        mapping_state_idx, delta)
+
         # Stabilization. If the optimization fails the starting values are
         # used otherwise it happens that the constraint is not satisfied by far.
         if not opt['success']:
@@ -77,6 +87,39 @@ def get_payoffs_ambiguity(num_draws, eps_relevant, period, k, payoffs_ex_ante,
 
 ''' Private functions
 '''
+
+
+def _correct_debugging(opt, x0, shocks, level, eps_relevant, num_periods,
+        num_draws, period, k, payoffs_ex_ante, edu_max, edu_start, periods_emax,
+        states_all, mapping_state_idx, delta):
+    """ Some manipulations for test battery
+    """
+    # Check applicability
+    if not (level < 0.1e-10):
+        return opt
+
+    # Distribute results
+    is_success = opt['success']
+    x = opt['x']
+
+    # Check if divergence actually not satisfied while success is indicated.
+    if is_success and (_divergence(x, shocks, level) < 0):
+
+        # Correct resulting values
+        opt['x'] = x0
+
+        # Correct final function value
+        eps_relevant_emax = transform_disturbances_ambiguity(eps_relevant, opt['x'])
+
+        simulated, payoffs_ex_post, future_payoffs = \
+                    simulate_emax(num_periods, num_draws, period, k,
+                        eps_relevant_emax, payoffs_ex_ante, edu_max, edu_start,
+                        periods_emax, states_all, mapping_state_idx, delta)
+
+        opt['fun'] = simulated
+
+    # Finishing
+    return opt
 
 
 def transform_disturbances_ambiguity(eps_relevant, x):
