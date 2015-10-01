@@ -194,8 +194,14 @@ def test_93():
             edu_start, mapping_state_idx, states_all, num_periods, periods_emax,
             delta)
 
-        py = _minimize_slsqp(_criterion, x0, args, maxiter=maxiter,
-                       ftol=ftol, constraints=constraint)['x']
+        opt = _minimize_slsqp(_criterion, x0, args, maxiter=maxiter,
+                       ftol=ftol, constraints=constraint)
+
+        # Stabilization. This is done as part of the fortran implementation.
+        if opt['success']:
+            py = opt['x']
+        else:
+            py = x0
 
         f = fort.wrapper_slsqp_robufort(x0, maxiter, ftol, eps, num_draws,
                 eps_standard, period, k, payoffs_ex_ante, edu_max, edu_start,
