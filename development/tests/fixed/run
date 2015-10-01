@@ -175,7 +175,7 @@ def test_4():
 
     # Assert unchanged value
     np.testing.assert_allclose(robupy_obj.get_attr('periods_emax')[0, :1],
-                               74747.851153)
+                               76675.492098)
 
     # Absolute Criterion
     robupy_obj = read('fourth.robupy.ini')
