@@ -66,11 +66,14 @@ def solve_ambiguous_economy(level):
 
     init_dict = robupy_obj.get_attr('init_dict')
 
+    # Formatting directory name
+    name = str('%0.3f' % level)
+
     # Create directory
-    os.mkdir(str(level))
+    os.mkdir(name)
 
     # Solve
-    os.chdir(str(level))
+    os.chdir(name)
 
     # Update level of ambiguity
     init_dict['AMBIGUITY']['level'] = level
@@ -122,6 +125,7 @@ if __name__ == '__main__':
         default=[0, 0, 1], nargs='+',
         help='construct grid using np.linspace (start, stop, num)')
 
+    # Process command line arguments
     num_procs, grid = distribute_arguments(parser)
 
     # Run function

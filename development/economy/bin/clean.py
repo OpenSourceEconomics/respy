@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-""" This script solves and simulates the first RESTUD economy for a variety
-of alternative degrees of ambiguity.
+""" This script cleans the directory.
 """
 
 # standard library
@@ -26,7 +25,10 @@ def cleanup():
 
     for file_ in files:
 
-        if file_ in ['graphs', 'acropolis.pbs', 'model.robupy.ini', 'bin', 'clean', 'create']:
+        if file_ in ['graphs', 'acropolis.pbs', 'model.robupy.ini']:
+            continue
+
+        if file_ in ['bin', 'clean', 'create', 'update']:
             continue
 
         try:
