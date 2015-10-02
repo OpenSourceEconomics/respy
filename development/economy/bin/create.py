@@ -67,7 +67,7 @@ def solve_ambiguous_economy(level):
     init_dict = robupy_obj.get_attr('init_dict')
 
     # Formatting directory name
-    name = str('%0.3f' % level)
+    name = '{0:0.3f}'.format(level)
 
     # Create directory
     os.mkdir(name)
