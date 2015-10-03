@@ -1,5 +1,5 @@
-development/economy/graphs/*.pdf
-development/economy/rslts
+development/analyses/ectra//graphs/rslts
+development/analyses/restud/graphs/rslts
 development/working
 dist
 __pycache__

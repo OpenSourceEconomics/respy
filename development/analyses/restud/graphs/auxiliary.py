@@ -87,7 +87,7 @@ def plot_dimension_state_space(num_states):
     ax.set_ylabel('Number of States', fontsize=18)
 
     # Write out to
-    plt.savefig('restud_state_space.pdf', bbox_inches='tight',
+    plt.savefig('rslts/state_space.pdf', bbox_inches='tight',
                 format="pdf")
 
 
@@ -123,11 +123,11 @@ def plot_return_experience(x, y, z, which, spec):
     ax.w_zaxis.set_pane_color((0.68, 0.68, 0.68, 1.0))
 
     # Write out to
-    plt.savefig('restud_spec_' + spec.lower() + '_returns_experience_' +
+    plt.savefig('rslts/data_' + spec.lower() + '/returns_experience_' +
                 which.lower() +'.pdf', bbox_inches='tight', format="pdf")
 
 
-def plot_return_education(xvals, yvals):
+def plot_return_education(xvals, yvals, spec):
     """ Function to produce plot for the return to education.
     """
     # Initialize plot
@@ -154,14 +154,11 @@ def plot_return_education(xvals, yvals):
     plt.legend(handles, labels, ncol=2, frameon=False, fontsize=16)
 
     # Write out to
-    plt.savefig('restud_returns_education.pdf', bbox_inches='tight',
-                format="pdf")
-
-    # Finishing
-    return plt
+    plt.savefig('rslts/data_' + spec.lower() + '/returns_education.pdf',
+                bbox_inches='tight', format="pdf")
 
 
-def plot_choice_patterns(choice_probabilities):
+def plot_choice_patterns(choice_probabilities, spec):
     """ Function to produce plot for choice patterns.
     """
     labels = ['Occupation A', 'Occupation B', 'Education', 'Home']
@@ -213,8 +210,5 @@ def plot_choice_patterns(choice_probabilities):
                    fancybox=True, ncol=rows, fontsize=10)
 
     # Write out to
-    plt.savefig('restud_choice_patterns.pdf', bbox_inches='tight',
-                format="pdf")
-
-    # Finishing
-    return plt
+    plt.savefig('rslts/data_' + spec.lower() + '/choice_patterns.pdf',
+                bbox_inches='tight', format="pdf")
