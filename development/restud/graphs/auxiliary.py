@@ -10,6 +10,45 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.ticker import FuncFormatter
 from matplotlib import cm
 
+#
+EDU = 15
+
+""" Auxiliary function
+"""
+def wage_function(edu, exp_A, exp_B, coeffs):
+    """ This function calculates the expected wage based on an agent's
+    covariates for a given parameterization.
+    """
+
+    # Intercept
+    wage = coeffs['int']
+
+    # Schooling
+    wage += coeffs['coeff'][0] * edu
+
+    # Experience A
+    wage += coeffs['coeff'][1] * exp_A
+    wage += coeffs['coeff'][2] * exp_A ** 2
+
+    # Experience B
+    wage += coeffs['coeff'][3] * exp_B
+    wage += coeffs['coeff'][4] * exp_B ** 2
+
+    # Transformation
+    wage = np.exp(wage)
+
+    # Finishing
+    return wage
+
+def return_to_experience(exp_A, exp_B, coeffs, which):
+    """ Wrapper to evaluate the wage function for varying levels of experience.
+    """
+    # Get wage
+    wage = wage_function(EDU, exp_A, exp_B, coeffs[which])
+
+    # Finishing
+    return wage
+
 """ Plotting functions
 """
 
@@ -37,10 +76,8 @@ def plot_dimension_state_space(num_states):
     plt.savefig('restud_state_space.pdf', bbox_inches='tight',
                 format="pdf")
 
-    # Finishing
-    return plt
 
-def plot_return_experience(x, y, z):
+def plot_return_experience(x, y, z, spec):
     """ Function to produce plot for the return to experience.
     """
 
@@ -72,11 +109,8 @@ def plot_return_experience(x, y, z):
     ax.w_zaxis.set_pane_color((0.68, 0.68, 0.68, 1.0))
 
     # Write out to
-    plt.savefig('restud_returns_experience.pdf', bbox_inches='tight',
-                format="pdf")
-
-    # Finishing
-    return plt
+    plt.savefig('restud_spec_' + spec.lower() + '_returns_experience.pdf',
+                bbox_inches='tight', format="pdf")
 
 
 def plot_return_education(xvals, yvals):
