@@ -67,4 +67,4 @@ for spec in ['One', 'Two', 'Three']:
                 z[i,j] = return_to_experience(i, j, coeffs[spec], which)
 
         # Create and show plot
-        plot_return_experience(x, y, z, spec)
+        plot_return_experience(x, y, z, which, spec)

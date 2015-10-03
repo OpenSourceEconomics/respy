@@ -6,9 +6,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="56803c1c-81e4-4070-9cf6-fc7503291db5" name="Default" comment="82333.99728503">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/package/development/restud/graphs/create.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/restud/graphs/graphs.ipynb" afterPath="$PROJECT_DIR$/package/development/restud/lecture.ipynb" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/restud/graphs/auxiliary.py" afterPath="$PROJECT_DIR$/package/development/restud/graphs/auxiliary.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/restud/graphs/create.py" afterPath="$PROJECT_DIR$/package/development/restud/graphs/create.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../../../../structRobust/doc/presentation/main.tex" afterPath="$PROJECT_DIR$/../../../../structRobust/doc/presentation/main.tex" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../../../../structRobust/doc/graphs/wage_function/plot.py" afterPath="$PROJECT_DIR$/../../../../structRobust/doc/graphs/wage_function/plot.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../../../../structRobust/doc/presentation/files/s-basics.tex" afterPath="$PROJECT_DIR$/../../../../structRobust/doc/presentation/files/s-basics.tex" />
@@ -54,8 +53,8 @@
       <file leaf-file-name="auxiliary.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/package/development/restud/graphs/auxiliary.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="1.6051168">
-              <caret line="116" column="34" selection-start-line="116" selection-start-column="34" selection-end-line="116" selection-end-column="34" />
+            <state vertical-scroll-proportion="0.6084538">
+              <caret line="112" column="39" selection-start-line="112" selection-start-column="39" selection-end-line="112" selection-end-column="39" />
               <folding>
                 <element signature="e#118#148#0" expanded="true" />
               </folding>
@@ -67,7 +66,7 @@
         <entry file="file://$PROJECT_DIR$/package/development/restud/graphs/create.py">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="69" column="44" selection-start-line="69" selection-start-column="40" selection-end-line="69" selection-end-column="44" />
+              <caret line="69" column="47" selection-start-line="69" selection-start-column="47" selection-end-line="69" selection-end-column="47" />
               <folding>
                 <element signature="e#102#115#0" expanded="true" />
               </folding>
@@ -138,8 +137,8 @@
         <option value="$PROJECT_DIR$/package/development/economy/model.robupy.ini" />
         <option value="$PROJECT_DIR$/package/development/economy/bin/create.py" />
         <option value="$PROJECT_DIR$/package/development/economy/bin/update.py" />
-        <option value="$PROJECT_DIR$/package/development/restud/graphs/create.py" />
         <option value="$PROJECT_DIR$/package/development/restud/lecture.ipynb" />
+        <option value="$PROJECT_DIR$/package/development/restud/graphs/create.py" />
         <option value="$PROJECT_DIR$/package/development/restud/graphs/auxiliary.py" />
       </list>
     </option>
@@ -1150,7 +1149,7 @@
     <entry file="file://$PROJECT_DIR$/package/development/restud/graphs/create.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="69" column="44" selection-start-line="69" selection-start-column="40" selection-end-line="69" selection-end-column="44" />
+          <caret line="69" column="47" selection-start-line="69" selection-start-column="47" selection-end-line="69" selection-end-column="47" />
           <folding>
             <element signature="e#102#115#0" expanded="true" />
           </folding>
@@ -1159,8 +1158,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/package/development/restud/graphs/auxiliary.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="1.6051168">
-          <caret line="116" column="34" selection-start-line="116" selection-start-column="34" selection-end-line="116" selection-end-column="34" />
+        <state vertical-scroll-proportion="0.6084538">
+          <caret line="112" column="39" selection-start-line="112" selection-start-column="39" selection-end-line="112" selection-end-column="39" />
           <folding>
             <element signature="e#118#148#0" expanded="true" />
           </folding>

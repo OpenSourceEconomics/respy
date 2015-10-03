@@ -77,7 +77,7 @@ def plot_dimension_state_space(num_states):
                 format="pdf")
 
 
-def plot_return_experience(x, y, z, spec):
+def plot_return_experience(x, y, z, which, spec):
     """ Function to produce plot for the return to experience.
     """
 
@@ -109,8 +109,8 @@ def plot_return_experience(x, y, z, spec):
     ax.w_zaxis.set_pane_color((0.68, 0.68, 0.68, 1.0))
 
     # Write out to
-    plt.savefig('restud_spec_' + spec.lower() + '_returns_experience.pdf',
-                bbox_inches='tight', format="pdf")
+    plt.savefig('restud_spec_' + spec.lower() + '_returns_experience_' +
+                which.lower() +'.pdf', bbox_inches='tight', format="pdf")
 
 
 def plot_return_education(xvals, yvals):
