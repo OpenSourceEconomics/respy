@@ -62,7 +62,7 @@ def solve_ambiguous_economy(level):
     """
 
     # Process baseline file
-    robupy_obj = read('model.robupy.ini')
+    robupy_obj = read('../model.robupy.ini')
 
     init_dict = robupy_obj.get_attr('init_dict')
 
@@ -70,10 +70,7 @@ def solve_ambiguous_economy(level):
     name = '{0:0.3f}'.format(level)
 
     # Create directory
-    os.mkdir(name)
-
-    # Solve
-    os.chdir(name)
+    os.mkdir(name), os.chdir(name)
 
     # Update level of ambiguity
     init_dict['AMBIGUITY']['level'] = level
@@ -104,6 +101,9 @@ def create(num_procs, grid):
         grid = [0.0]
     else:
         grid = np.linspace(start=grid[0], stop=grid[1], num=int(grid[2]))
+
+    # Prepare directory
+    os.mkdir('rslts'); os.chdir('rslts')
 
     # Solve numerous economies
     p = Pool(num_procs)

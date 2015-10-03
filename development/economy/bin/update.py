@@ -51,26 +51,29 @@ def get_results(is_all):
     sftp = paramiko.SFTPClient.from_transport(transport)
 
     # Get files
-    sftp.chdir(CLIENT_DIR)
+    sftp.chdir(CLIENT_DIR + '/rslts')
 
     # Determine available results
-    levels = []
+    names = []
 
     for candidate in sftp.listdir('.'):
         try:
             candidate = float(candidate)
         except ValueError:
             continue
-        levels += [str(candidate)]
+        names += ['{0:0.3f}'.format(candidate)]
+
+    # Enter results container
+    os.mkdir('rslts'), os.chdir('rslts')
 
     # Download files
-    for level in levels:
+    for name in names:
 
-        os.mkdir(level)
+        os.mkdir(name)
 
-        os.chdir(level)
+        os.chdir(name)
 
-        sftp.chdir(level)
+        sftp.chdir(name)
 
         # Select files
         files = ['data.robupy.info']
