@@ -11,10 +11,12 @@ from matplotlib.ticker import FuncFormatter
 from matplotlib import cm
 
 #
-EDU = 15
+EDU, EXP_A, EXP_B = 15, 15, 15
 
 """ Auxiliary function
 """
+
+
 def wage_function(edu, exp_A, exp_B, coeffs):
     """ This function calculates the expected wage based on an agent's
     covariates for a given parameterization.
@@ -40,11 +42,23 @@ def wage_function(edu, exp_A, exp_B, coeffs):
     # Finishing
     return wage
 
+
 def return_to_experience(exp_A, exp_B, coeffs, which):
     """ Wrapper to evaluate the wage function for varying levels of experience.
     """
     # Get wage
     wage = wage_function(EDU, exp_A, exp_B, coeffs[which])
+
+    # Finishing
+    return wage
+
+
+# Auxiliary function
+def return_to_education(edu, coeffs, which):
+    """ Wrapper to evaluate the wage function for varying levels of education
+    """
+    # Get wage
+    wage = wage_function(edu, EXP_A, EXP_B, coeffs[which])
 
     # Finishing
     return wage
