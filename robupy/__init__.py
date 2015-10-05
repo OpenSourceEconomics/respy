@@ -39,7 +39,7 @@ formatter = logging.Formatter('%(message)s \n')
 # This log file contains information about the progress in solving the model.
 logger = logging.getLogger('ROBUPY_SOLVE')
 
-handler = logging.FileHandler('logging.robupy.sol.log', mode='w')
+handler = logging.FileHandler('logging.robupy.sol.log', mode='w', delay=True)
 
 handler.setFormatter(formatter)
 
@@ -50,7 +50,7 @@ logger.addHandler(handler)
 # This log file contains information about the progress of data simulations.
 logger = logging.getLogger('ROBUPY_SIMULATE')
 
-handler = logging.FileHandler('logging.robupy.sim.log', mode='w')
+handler = logging.FileHandler('logging.robupy.sim.log', mode='w', delay=True)
 
 handler.setFormatter(formatter)
 
@@ -64,7 +64,7 @@ logger.addHandler(handler)
 logger = logging.getLogger('ROBUPY_INFO')
 
 handler = logging.FileHandler('logging.robupy.info.log', mode='w',
-                              delay=False)
+                              delay=True)
 
 handler.setFormatter(formatter)
 

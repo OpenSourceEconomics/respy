@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """ This module produces the graphs for the lecture on the RESTUD economies.
 """
 
@@ -17,7 +18,7 @@ import numpy as np
 from auxiliary import *
 
 # module-wide variables
-HOME = os.environ['ROBUPY'] + '/development/restud/graphs'
+HOME = os.environ['ROBUPY'] + '/development/analyses/restud/graphs'
 
 # PYTHONPATH
 sys.path.insert(0, os.environ['ROBUPY'])
@@ -46,7 +47,7 @@ coeffs = {}
 
 for spec in ['One', 'Two', 'Three']:
 
-    os.chdir('../simulation/robupy/data_' + spec.lower())
+    os.chdir('../simulations/robupy/data_' + spec.lower())
 
     coeffs[spec] = dict()
 
@@ -61,7 +62,7 @@ for spec in ['One', 'Two', 'Three']:
 
 # Read number of states from RESTUD output file
 num_states = []
-with open('../simulation/dp3asim/data_one/otest.txt', 'r') as output_file:
+with open('../simulations/dp3asim/data_one/otest.txt', 'r') as output_file:
     for line in output_file.readlines():
         if ('kmax(t)' in line):
             num_states += [int(shlex.split(line)[-1])]
@@ -95,7 +96,8 @@ for spec in ['One', 'Two', 'Three']:
 # Determine choice patterns over time
 for spec in ['One', 'Two', 'Three']:
     choice_probabilities = [[],[],[],[]]
-    with open('../simulation/dp3asim/data_' + spec.lower() + '/otest.txt', 'r') as \
+    with open('../simulations/dp3asim/data_' + spec.lower() + '/otest.txt',
+              'r') as \
             output_file:
         for line in output_file.readlines():
             if ('prob=' in line):
