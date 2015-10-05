@@ -6,9 +6,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="56803c1c-81e4-4070-9cf6-fc7503291db5" name="Default" comment="82333.99728503">
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/restud/graphs/auxiliary.py" afterPath="$PROJECT_DIR$/package/development/analyses/restud/graphs/modules/auxiliary.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/restud/graphs/create.py" afterPath="$PROJECT_DIR$/package/development/analyses/restud/graphs/modules/create.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/__init__.py" afterPath="$PROJECT_DIR$/package/robupy/__init__.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/analyses/restud/graphs/modules/auxiliary.py" afterPath="$PROJECT_DIR$/package/development/analyses/restud/graphs/modules/auxiliary.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/analyses/restud/lecture.ipynb" afterPath="$PROJECT_DIR$/package/development/analyses/restud/lecture.ipynb" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../../../../structRobust/doc/presentation/main.tex" afterPath="$PROJECT_DIR$/../../../../structRobust/doc/presentation/main.tex" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../../../../structRobust/doc/graphs/wage_function/plot.py" afterPath="$PROJECT_DIR$/../../../../structRobust/doc/graphs/wage_function/plot.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../../../../structRobust/doc/presentation/files/s-basics.tex" afterPath="$PROJECT_DIR$/../../../../structRobust/doc/presentation/files/s-basics.tex" />
@@ -42,11 +41,21 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="clean.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/package/development/analyses/restud/graphs/modules/clean.py">
+      <file leaf-file-name="create.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/package/development/analyses/restud/graphs/modules/create.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.29024944">
-              <caret line="10" column="52" selection-start-line="10" selection-start-column="52" selection-end-line="10" selection-end-column="52" />
+            <state vertical-scroll-proportion="0.56462586">
+              <caret line="85" column="30" selection-start-line="85" selection-start-column="30" selection-end-line="85" selection-end-column="30" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="auxiliary.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/package/development/analyses/restud/graphs/modules/auxiliary.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="219" column="68" selection-start-line="219" selection-start-column="68" selection-end-line="219" selection-end-column="68" />
               <folding />
             </state>
           </provider>
@@ -67,7 +76,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/package/robupy/python/f2py/f2py_interface_debug.f90" />
         <option value="$PROJECT_DIR$/package/robupy/fortran/robufort_library.f90" />
         <option value="$PROJECT_DIR$/package/development/tests/fixed/fourth.robupy.ini" />
         <option value="$PROJECT_DIR$/package/development/working/keane_economy/fort/create.py" />
@@ -115,9 +123,10 @@
         <option value="$PROJECT_DIR$/package/development/restud/lecture.ipynb" />
         <option value="$PROJECT_DIR$/package/development/restud/graphs/create.py" />
         <option value="$PROJECT_DIR$/package/development/analyses/restud/graphs/create.py" />
-        <option value="$PROJECT_DIR$/package/development/analyses/restud/graphs/modules/create.py" />
         <option value="$PROJECT_DIR$/package/robupy/__init__.py" />
         <option value="$PROJECT_DIR$/package/development/analyses/restud/graphs/modules/clean.py" />
+        <option value="$PROJECT_DIR$/package/development/analyses/restud/graphs/modules/create.py" />
+        <option value="$PROJECT_DIR$/package/development/analyses/restud/graphs/modules/auxiliary.py" />
       </list>
     </option>
   </component>
@@ -763,7 +772,7 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="65" y="233" width="1215" height="1028" extended-state="6" />
+    <frame x="65" y="233" width="1215" height="1028" extended-state="7" />
     <editor active="true" />
     <layout>
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.11935484" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -1114,14 +1123,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/analyses/restud/graphs/modules/create.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="21" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/package/robupy/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.7494331">
@@ -1132,8 +1133,24 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/package/development/analyses/restud/graphs/modules/clean.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.29024944">
-          <caret line="10" column="52" selection-start-line="10" selection-start-column="52" selection-end-line="10" selection-end-column="52" />
+        <state vertical-scroll-proportion="0.21768707">
+          <caret line="8" column="0" selection-start-line="8" selection-start-column="0" selection-end-line="8" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/development/analyses/restud/graphs/modules/auxiliary.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="219" column="68" selection-start-line="219" selection-start-column="68" selection-end-line="219" selection-end-column="68" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/development/analyses/restud/graphs/modules/create.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.56462586">
+          <caret line="85" column="30" selection-start-line="85" selection-start-column="30" selection-end-line="85" selection-end-column="30" />
           <folding />
         </state>
       </provider>

@@ -70,6 +70,9 @@ def return_to_education(edu, coeffs, which):
 def plot_dimension_state_space(num_states):
     """ Plot the dimension of the state space
     """
+
+    fig = plt.figure()
+
     ax = plt.subplot()
 
     ax.plot(range(40), num_states, '-k', )
@@ -87,8 +90,8 @@ def plot_dimension_state_space(num_states):
     ax.set_ylabel('Number of States', fontsize=18)
 
     # Write out to
-    plt.savefig('rslts/state_space.pdf', bbox_inches='tight',
-                format="pdf")
+    plt.savefig('rslts/state_space.png', bbox_inches='tight',
+                format='png')
 
 
 def plot_return_experience(x, y, z, which, spec):
@@ -124,13 +127,15 @@ def plot_return_experience(x, y, z, which, spec):
 
     # Write out to
     plt.savefig('rslts/data_' + spec.lower() + '/returns_experience_' +
-                which.lower() +'.pdf', bbox_inches='tight', format="pdf")
+                which.lower() + '.png', bbox_inches='tight', format='png')
 
 
 def plot_return_education(xvals, yvals, spec):
     """ Function to produce plot for the return to education.
     """
     # Initialize plot
+    plt.figure()
+
     ax = plt.subplot()
 
     # Draw lines
@@ -154,8 +159,8 @@ def plot_return_education(xvals, yvals, spec):
     plt.legend(handles, labels, ncol=2, frameon=False, fontsize=16)
 
     # Write out to
-    plt.savefig('rslts/data_' + spec.lower() + '/returns_education.pdf',
-                bbox_inches='tight', format="pdf")
+    plt.savefig('rslts/data_' + spec.lower() + '/returns_education.png',
+                bbox_inches='tight', format='png')
 
 
 def plot_choice_patterns(choice_probabilities, spec):
@@ -177,6 +182,8 @@ def plot_choice_patterns(choice_probabilities, spec):
     # Plotting
 
     bottom = [0]*40
+
+    fig = plt.figure()
 
     ax = plt.subplot()
 
@@ -210,5 +217,5 @@ def plot_choice_patterns(choice_probabilities, spec):
                    fancybox=True, ncol=rows, fontsize=10)
 
     # Write out to
-    plt.savefig('rslts/data_' + spec.lower() + '/choice_patterns.pdf',
-                bbox_inches='tight', format="pdf")
+    plt.savefig('rslts/data_' + spec.lower() + '/choice_patterns.png',
+                bbox_inches='tight', format='png')
