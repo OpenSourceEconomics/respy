@@ -4,18 +4,20 @@
 
 
 # standard library
+import numpy as np
+
 import shutil
+import shlex
 import sys
 import os
 
-# lexical analysis
-import shlex
-
-# numerical computing
-import numpy as np
-
 # hand-crafted plots
-from auxiliary import *
+from auxiliary import plot_dimension_state_space
+from auxiliary import plot_return_experience
+from auxiliary import plot_return_education
+from auxiliary import return_to_experience
+from auxiliary import return_to_education
+from auxiliary import plot_choice_patterns
 
 # module-wide variables
 HOME = os.environ['ROBUPY'] + '/development/analyses/restud/graphs'
