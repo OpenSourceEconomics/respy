@@ -16,7 +16,7 @@ from auxiliary import plot_choices_ambiguity
 # module-wide variables
 LABELS_SUBSET = ['0.000', '0.010', '0.020']
 MAX_PERIOD = 25
-HOME = os.environ['ROBUPY'] + '/development/analyses/ectra/graphs'
+HOME = os.environ['ROBUPY'] + '/development/analyses/robust/graphs'
 
 # Preparations, starting with a clean slate.
 if os.path.exists('rslts'):
