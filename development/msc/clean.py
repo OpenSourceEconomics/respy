@@ -56,6 +56,8 @@ def remove_nuisances():
 
         if 'requirements' in file_: continue
 
+        if 'rslts' in file_: continue
+
         remove(file_)
 
     # Iterate for directories and
