@@ -1,29 +1,46 @@
-# plotting
-%matplotlib inline
-
+#!/usr/bin/env python
+""" This module creates some graphs for the economy in the case of ambiguity.
+"""
 # standard library
+import numpy as np
+
 import shlex
 import glob
 import sys
 import os
 
+import matplotlib.pylab as plt
+from matplotlib.ticker import FuncFormatter
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib import cm
+
 # PYTHONPATH
 sys.path.insert(0, os.environ['ROBUPY'])
+
+
+HOME = os.environ['ROBUPY'] + '/development/analyses/ectra/graphs'
 
 # project package
 from robupy import read
 
 
-robupy_obj = read('../model.robupy.ini')
+robupy_obj = read('../simulations/model.robupy.ini')
 
 num_periods = robupy_obj.get_attr('num_periods')
+
+try:
+    os.mkdir('rslts')
+except:
+    pass
 
 
 def get_ambiguity_levels():
     """ Infer ambiguity levels from directory structure.
     """
 
-    os.chdir('../rslts')
+    os.chdir(HOME)
+
+    os.chdir('../simulations/rslts')
 
     levels = []
 
@@ -35,7 +52,7 @@ def get_ambiguity_levels():
         # Collect levels
         levels += [level]
 
-    os.chdir('../graphs')
+    os.chdir(HOME)
 
     # Finishing
     return sorted(levels)
@@ -53,7 +70,7 @@ for choice in choices:
     shares_ambiguity[choice] = []
 
 for level in levels:
-    with open('../rslts/' + level + '/data.robupy.info', 'r') as output_file:
+    with open('../simulations/rslts/' + level + '/data.robupy.info', 'r') as output_file:
         for line in output_file.readlines():
             # Split lines
             list_ = shlex.split(line)
@@ -65,8 +82,8 @@ for level in levels:
                 for i, choice in enumerate(choices):
                     shares_ambiguity[choice] += [float(list_[i + 1])]
 
-
-# Create dictionary which contains the simulated shares over time for varying levels of ambiguity.
+# Create dictionary which contains the simulated shares over time for
+# varying levels of ambiguity.
 shares_time = dict()
 
 for level in levels:
@@ -75,7 +92,8 @@ for level in levels:
     for choice in choices:
         shares_time[level][choice] = []
     # Process results
-    with open('../rslts/' + level + '/data.robupy.info', 'r') as output_file:
+    with open('../simulations/rslts/' + level + '/data.robupy.info', 'r') as \
+            output_file:
         for line in output_file.readlines():
 
             # Split lines
@@ -93,19 +111,10 @@ for level in levels:
             for i, choice in enumerate(choices):
                 shares_time[level][choice] += [float(list_[i + 1])]
 
-# This function
-
-import matplotlib.pylab as plt
-import numpy as np
-
-from matplotlib.ticker import FuncFormatter
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib import cm
-
 # Initialize plot
 ax = plt.figure(figsize=(12,8)).add_subplot(111)
 
-styles  = ['--k', '-k', '*k', ':k']
+styles = ['--k', '-k', '*k', ':k']
 # Draw lines
 for i, key_ in enumerate(shares_ambiguity.keys()):
     ax.plot(levels, shares_ambiguity[key_], styles[i], label=key_)
@@ -123,9 +132,10 @@ ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.10),
     fontsize=20)
 
 # Write out to
-plt.savefig('choices_ambiguity.pdf', bbox_inches='tight', format="pdf")
+plt.savefig('rslts/choices_ambiguity.pdf', bbox_inches='tight', format="pdf")
 
-# Here I investigate the evolution of schooling over time for different levels of ambiguity
+# Here I investigate the evolution of schooling over time for different
+# levels of ambiguity
 labels_subset = ['0.000', '0.010', '0.020']
 max_period = 25
 
@@ -162,4 +172,4 @@ for choice in ['Schooling']:
     file_name = choice.replace(' ', '_').lower() + '_ambiguity.pdf'
 
     # Write out to
-    plt.savefig(file_name, bbox_inches='tight', format='pdf')
+    plt.savefig('rslts/' + file_name, bbox_inches='tight', format='pdf')

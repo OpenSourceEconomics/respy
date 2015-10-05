@@ -70,7 +70,9 @@ def solve_ambiguous_economy(level):
     name = '{0:0.3f}'.format(level)
 
     # Create directory
-    os.mkdir(name), os.chdir(name)
+    os.mkdir(name)
+
+    os.chdir(name)
 
     # Update level of ambiguity
     init_dict['AMBIGUITY']['level'] = level
@@ -103,7 +105,9 @@ def create(num_procs, grid):
         grid = np.linspace(start=grid[0], stop=grid[1], num=int(grid[2]))
 
     # Prepare directory
-    os.mkdir('rslts'); os.chdir('rslts')
+    os.mkdir('rslts')
+
+    os.chdir('rslts')
 
     # Solve numerous economies
     p = Pool(num_procs)

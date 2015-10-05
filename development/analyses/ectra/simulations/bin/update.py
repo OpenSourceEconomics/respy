@@ -11,7 +11,7 @@ import os
 from clean import cleanup
 
 # module-wide variables
-CLIENT_DIR = '/home/eisenhauer/robustToolbox/package/development/economy'
+CLIENT_DIR = '/home/eisenhauer/robustToolbox/package/development/analyses/ectra/simulations'
 KEY_DIR = '/home/peisenha/.ssh/id_rsa'
 
 ''' Functions
@@ -51,6 +51,7 @@ def get_results(is_all):
     sftp = paramiko.SFTPClient.from_transport(transport)
 
     # Get files
+    print(CLIENT_DIR + '/rslts')
     sftp.chdir(CLIENT_DIR + '/rslts')
 
     # Determine available results
