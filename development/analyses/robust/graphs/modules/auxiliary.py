@@ -136,8 +136,8 @@ def plot_choices_ambiguity(levels, shares_ambiguity):
         fancybox=False, frameon=False, shadow=False, ncol=4, fontsize=20)
 
     # Write out to
-    plt.savefig('rslts/choices_ambiguity.pdf', bbox_inches='tight',
-                format="pdf")
+    plt.savefig('rslts/choices_ambiguity.png', bbox_inches='tight',
+                format='png')
 
 
 def plot_schooling_ambiguity(labels_subset, max_period, shares_time):
@@ -175,7 +175,7 @@ def plot_schooling_ambiguity(labels_subset, max_period, shares_time):
             fancybox=False, frameon=False, shadow=False,
             ncol=len(labels_subset), fontsize=20)
 
-        file_name = choice.replace(' ', '_').lower() + '_ambiguity.pdf'
+        file_name = choice.replace(' ', '_').lower() + '_ambiguity.png'
 
         # Write out to
-        plt.savefig('rslts/' + file_name, bbox_inches='tight', format='pdf')
+        plt.savefig('rslts/' + file_name, bbox_inches='tight', format='png')
