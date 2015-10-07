@@ -5,32 +5,35 @@
 # standard library
 import argparse
 import shutil
-import shlex
 import glob
 import os
 
-# automate minor increment
+# module-wide variables
+ROOT_DIR = os.getcwd()
 
-def publish(version):
-    """ Publish to package repository.
-    """
-
-    pass
-
-
-''' Execution of module as script
+''' Auxiliary functions
 '''
-if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser(description='Publish ROBUPY on PYPI.',
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    parser.add_argument('--version', action='store', dest='version',
-                        default=None, help='version to publish')
-
+def distribute_inputs(parser):
+    """ Process input arguments.
+    """
+    # Parse arguments.
     args = parser.parse_args()
 
-    ROOT_DIR = os.getcwd()
+    # Distribute arguments
+    is_local = args.local
+
+    # Assertions
+    assert (is_local in [True, False])
+
+    # Finishing
+    return is_local
+
+
+def publish(is_local):
+    """ Publish to package repository.
+    """
 
     # Cleanup
     os.chdir('package/robupy')
@@ -68,5 +71,29 @@ if __name__ == '__main__':
 
     # Publish
     os.chdir('package')
-    os.system('python setup.py sdist upload -r pypi')
+
+    if is_local:
+        os.system('python setup.py sdist')
+    else:
+        os.system('python setup.py sdist upload -r pypi')
+
     os.chdir(ROOT_DIR)
+
+
+''' Execution of module as script
+'''
+if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser(description='Publish ROBUPY on PYPI.',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    parser.add_argument('--version', action='store', dest='version',
+                        default=None, help='version to publish')
+
+    parser.add_argument('--local', action='store_true', dest='local',
+                        default=False, help='local test')
+
+    is_local = distribute_inputs(parser)
+
+    publish(is_local)
+

@@ -77,8 +77,9 @@ def track_final_choices(levels):
 
 
 def track_schooling_over_time(levels):
-    # Create dictionary which contains the simulated shares over time for
-    # varying levels of ambiguity.
+    """ Create dictionary which contains the simulated shares over time for
+    varying levels of ambiguity.
+    """
     shares_time = dict()
 
     for level in levels:
