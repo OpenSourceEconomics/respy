@@ -1,10 +1,9 @@
 from distutils.core import setup
 setup(
   name = 'robupy',
-  packages = ['robupy', 'robupy.checks', 'robupy.fort', 'robupy.tests'], # this
-  # must be the same as the name above
-    package_data = {'robupy': ['fort/*.f90'],},
-  version = '0.1.4',
+  packages = ['robupy', 'robupy.python', 'robupy.python.py', 'robupy.python.f2py', 'robupy.fortran'], # this
+  package_data = {'robupy': ['fortran/*.f90', 'fortran/*.f', 'python/f2py/*.f90'],},
+  version = "0.1.6" ,
   description = 'Toolbox to explore robust dynamic discrete choice models',
   author = 'Philipp Eisenhauer',
   author_email = 'eisenhauer@policy-lab.org',
