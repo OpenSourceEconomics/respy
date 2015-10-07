@@ -71,9 +71,8 @@ def plot_dimension_state_space(num_states):
     """ Plot the dimension of the state space
     """
 
-    fig = plt.figure()
-
-    ax = plt.subplot()
+    # Initialize plot
+    ax = plt.figure(figsize=(12, 8)).add_subplot(111)
 
     ax.plot(range(40), num_states, '-k', )
 
@@ -82,12 +81,12 @@ def plot_dimension_state_space(num_states):
 
     # x-axis
     ax.set_xticklabels(ax.get_xticks().astype(int), fontsize=18)
-    ax.set_xlabel('Periods', fontsize=24)
+    ax.set_xlabel('Periods', fontsize=16)
 
     # y-axis
     yticks = ['{:,.0f}'.format(y) for y in ax.get_yticks().astype(int)]
-    ax.set_yticklabels(yticks, fontsize=18)
-    ax.set_ylabel('Number of States', fontsize=18)
+    ax.set_yticklabels(yticks, fontsize=16)
+    ax.set_ylabel('Number of States', fontsize=16)
 
     # Write out to
     plt.savefig('rslts/state_space.png', bbox_inches='tight',
@@ -98,27 +97,32 @@ def plot_return_experience(x, y, z, which, spec):
     """ Function to produce plot for the return to experience.
     """
 
+    # Scaling
+    z = z / 1000
+
     fig = plt.figure()
 
-    ax = fig.gca(projection = '3d')
-    ax.view_init(azim = 180+40)
-    surf = ax.plot_surface(x, y, z, rstride=1, cstride=1, cmap=cm.jet,
-                linewidth=0, antialiased=False)
+    ax = fig.gca(projection='3d')
+    ax.view_init(azim=180+40)
+    ax.plot_surface(x, y, z, rstride=1, cstride=1, cmap=cm.jet,
+        linewidth=0, antialiased=False)
 
     # Axis labels.
     ax.set_ylabel('Experience A')
     ax.set_xlabel('Experience B')
 
     ax.zaxis.set_rotate_label(False)
-    #ax.set_zlabel(zlabel, rotation=90)
 
     # Z axis ticks
-    pad = 0.07*(ax.get_zlim()[1] - ax.get_zlim()[0])
     ax.set_zlim([ax.get_zlim()[0], ax.get_zlim()[1]])
-    #if zlim is not None:
-    #    ax.set_zlim(zlim)
-    ax.zaxis.set_major_formatter(
-            FuncFormatter('{:>4}'.format))
+    if spec == 'One':
+        ax.set_zlim([15, 55])
+    elif spec == 'Two':
+        ax.set_zlim([10, 50])
+    elif spec == 'Three':
+        ax.set_zlim([10, 700])
+
+    ax.zaxis.get_major_ticks()[0].set_visible(False)
 
     # Background Color (higher numbers are lighter)
     ax.w_xaxis.set_pane_color((0.8, 0.8, 0.8, 1.0))
@@ -133,30 +137,41 @@ def plot_return_experience(x, y, z, which, spec):
 def plot_return_education(xvals, yvals, spec):
     """ Function to produce plot for the return to education.
     """
-    # Initialize plot
-    plt.figure()
 
-    ax = plt.subplot()
+    labels = ['Occupation A', 'Occupation B']
+
+    # Initialize plot
+    ax = plt.figure(figsize=(12, 8)).add_subplot(111)
+
+    # Scaling
+    for occu in ['A', 'B']:
+        for i in range(len(xvals)):
+            yvals[occu][i] = yvals[occu][i] / 1000
 
     # Draw lines
-    ax.plot(xvals, yvals['A'], '-k', label='Occupation A')
-    ax.plot(xvals, yvals['B'], '--k', label='Occupation B')
+    ax.plot(xvals, yvals['A'], '-k', label='Occupation A', linewidth=5,
+            color='green')
+    ax.plot(xvals, yvals['B'], '-k', label='Occupation B', linewidth=5,
+            color='red')
 
     # Both axes
-    ax.tick_params(axis='both', right='off', top='off')
+    ax.tick_params(labelsize=16, direction='out', axis='both', top='off',
+        right='off')
 
     # x-axis
-    ax.set_xticklabels(ax.get_xticks().astype(int), fontsize=18)
-    ax.set_xlabel('Years of Education', fontsize=18)
+    ax.set_xticklabels(ax.get_xticks().astype(int))
+    ax.set_xlabel('Years of Education', fontsize=16)
 
     # y-axis
     yticks = ['{:,.0f}'.format(y) for y in ax.get_yticks().astype(int)]
-    ax.set_yticklabels(yticks, fontsize=18)
-    ax.set_ylabel('Rewards', fontsize=18)
+    ax.set_yticklabels(yticks, fontsize=16)
 
-    # legend
-    handles, labels = ax.get_legend_handles_labels()
-    plt.legend(handles, labels, ncol=2, frameon=False, fontsize=16)
+    ax.set_ylabel('Wages', fontsize=16)
+    ax.yaxis.get_major_ticks()[0].set_visible(False)
+
+    # Set up legend
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.10),
+        fancybox=False, frameon=False, shadow=False, ncol=2, fontsize=20)
 
     # Write out to
     plt.savefig('rslts/data_' + spec.lower() + '/returns_education.png',
@@ -166,56 +181,50 @@ def plot_return_education(xvals, yvals, spec):
 def plot_choice_patterns(choice_probabilities, spec):
     """ Function to produce plot for choice patterns.
     """
-    labels = ['Occupation A', 'Occupation B', 'Education', 'Home']
+    labels = ['Home', 'Education', 'Occupation A', 'Occupation B']
 
     rows, cols = 4, 40
 
     deciles = range(40)
 
-    colors = [(0, k, 1) for k in np.linspace(0, 1, int(rows/3.))] + \
-                [(0, 1, 1 - k) for k in np.linspace(0, 1, int(rows/3.) + 1)[1:]] + \
-                [(0, 1, 1 - k) for k in np.linspace(0, 1, int(rows/3.) + 1)[1:]] + \
-        [(k, 1 - k, 0) for k in np.linspace(0, 1, int(rows/3.) + 1)[1:]]
+    colors = ['blue', 'yellow', 'orange', 'red']
 
     width = 0.9
 
     # Plotting
-
     bottom = [0]*40
 
-    fig = plt.figure()
+    # Initialize plot
+    ax = plt.figure(figsize=(12, 8)).add_subplot(111)
 
-    ax = plt.subplot()
-
-    for row in range(rows):
+    for i, row in enumerate(labels):
 
         heights = choice_probabilities[row][:]
-        plt.bar(deciles, heights, width, bottom=bottom, color=colors[row])
+        plt.bar(deciles, heights, width, bottom=bottom, color=colors[i])
         bottom = [heights[i] + bottom[i] for i in range(40)]
 
     # Both Axes
-    ax.tick_params(labelsize=18, direction='out', axis='both', \
-                        top='off', right='off')
+    ax.tick_params(labelsize=16, direction='out', axis='both', top='off',
+        right='off')
+
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
     ax.spines['bottom'].set_visible(False)
     ax.spines['left'].set_visible(False)
 
     # X axis
-    xticks = [d + width/2. for d in deciles]
-    xticklabels = [str(d) for d in deciles]
-    ax.set_xticks(xticks)
-    ax.set_xticklabels(xticklabels, fontsize=18)
-    ax.set_xlabel('Decile', fontsize=18)
+    ax.set_xlabel('Periods', fontsize=16)
     ax.set_xlim([1, 40])
 
     # Y axis
-    ax.set_ylabel('Share', fontsize=18)
+    ax.set_ylabel('Share', fontsize=16)
+    ax.yaxis.get_major_ticks()[0].set_visible(False)
 
     # Legend
-    plt.legend(labels, loc='upper center', bbox_to_anchor=(0.5, 1.1), \
-                   fancybox=True, ncol=rows, fontsize=10)
+    plt.legend(labels, loc='upper center', bbox_to_anchor=(0.5, -0.10),
+        fancybox=False, frameon=False, shadow=False, ncol=4, fontsize=20)
 
     # Write out to
     plt.savefig('rslts/data_' + spec.lower() + '/choice_patterns.png',
                 bbox_inches='tight', format='png')
+

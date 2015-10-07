@@ -86,7 +86,7 @@ for spec in ['One', 'Two', 'Three']:
 
 # Determine wages for varying years of education in each occupation
 for spec in ['One', 'Two', 'Three']:
-    xvals, yvals = range(10, 20), dict()
+    xvals, yvals = range(10, 21), dict()
     for which in ['A', 'B']:
         yvals[which] = []
         for edu in xvals:
@@ -96,16 +96,24 @@ for spec in ['One', 'Two', 'Three']:
     plot_return_education(xvals, yvals, spec)
 
 # Determine choice patterns over time
+file_name = '../simulations/dp3asim/data_' + spec.lower() + '/otest.txt'
+keys = ['Occupation A', 'Occupation B', 'Education', 'Home']
+
 for spec in ['One', 'Two', 'Three']:
-    choice_probabilities = [[],[],[],[]]
-    with open('../simulations/dp3asim/data_' + spec.lower() + '/otest.txt',
-              'r') as \
+
+    # Results container
+    choice_probabilities = dict()
+    for key_ in keys:
+        choice_probabilities[key_] = []
+
+    # Process results file
+    with open(file_name, 'r') as \
             output_file:
         for line in output_file.readlines():
             if ('prob=' in line):
                 list_ = shlex.split(line)
-                for i in range(4):
-                    choice_probabilities[i] += [float(list_[i + 3])]
+                for i, key_ in enumerate(keys):
+                    choice_probabilities[key_] += [float(list_[i + 3])]
 
     # Create and save plot
     plot_choice_patterns(choice_probabilities, spec)

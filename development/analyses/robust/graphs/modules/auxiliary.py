@@ -46,7 +46,8 @@ def get_ambiguity_levels():
 
 
 def track_final_choices(levels):
-
+    """ Track the final choices from the ROBUPY output.
+    """
     robupy_obj = read('../simulations/model.robupy.ini')
 
     num_periods = robupy_obj.get_attr('num_periods')
@@ -159,7 +160,8 @@ def plot_schooling_ambiguity(labels_subset, max_period, shares_time):
                     label=theta[i], linewidth=5)
 
         # Both axes
-        ax.tick_params(axis='both', right='off', top='off')
+        ax.tick_params(labelsize=18, direction='out', axis='both', top='off',
+            right='off')
 
         # Remove first element on y-axis
         ax.yaxis.get_major_ticks()[0].set_visible(False)
@@ -167,8 +169,8 @@ def plot_schooling_ambiguity(labels_subset, max_period, shares_time):
         ax.set_xlim([1, max_period]), ax.set_ylim([0, 0.60])
 
         # labels
-        ax.set_xlabel('Periods', fontsize=20)
-        ax.set_ylabel('Share in ' + choice, fontsize=20)
+        ax.set_xlabel('Periods', fontsize=16)
+        ax.set_ylabel('Share in ' + choice, fontsize=16)
 
         # Set up legend
         ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.10),
