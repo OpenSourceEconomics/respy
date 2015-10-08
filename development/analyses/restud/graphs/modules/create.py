@@ -21,6 +21,7 @@ from auxiliary import plot_choice_patterns
 
 # module-wide variables
 HOME = os.environ['ROBUPY'] + '/development/analyses/restud/graphs'
+OCCUPATIONS = ['Occupation A', 'Occupation B', 'Education', 'Home']
 
 # PYTHONPATH
 sys.path.insert(0, os.environ['ROBUPY'])
@@ -96,23 +97,21 @@ for spec in ['One', 'Two', 'Three']:
     plot_return_education(xvals, yvals, spec)
 
 # Determine choice patterns over time
-file_name = '../simulations/dp3asim/data_' + spec.lower() + '/otest.txt'
-keys = ['Occupation A', 'Occupation B', 'Education', 'Home']
-
 for spec in ['One', 'Two', 'Three']:
 
     # Results container
     choice_probabilities = dict()
-    for key_ in keys:
+    for key_ in OCCUPATIONS:
         choice_probabilities[key_] = []
 
     # Process results file
+    file_name = '../simulations/dp3asim/data_' + spec.lower() + '/otest.txt'
     with open(file_name, 'r') as \
             output_file:
         for line in output_file.readlines():
             if ('prob=' in line):
                 list_ = shlex.split(line)
-                for i, key_ in enumerate(keys):
+                for i, key_ in enumerate(OCCUPATIONS):
                     choice_probabilities[key_] += [float(list_[i + 3])]
 
     # Create and save plot
