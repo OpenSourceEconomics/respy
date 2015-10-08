@@ -2,7 +2,6 @@
 """ This module produces the graphs for the lecture on the RESTUD economies.
 """
 
-
 # standard library
 import numpy as np
 
@@ -20,7 +19,7 @@ from auxiliary import return_to_education
 from auxiliary import plot_choice_patterns
 
 # module-wide variables
-HOME = os.environ['ROBUPY'] + '/development/analyses/restud/graphs'
+HOME = os.path.dirname(os.path.realpath(__file__))
 OCCUPATIONS = ['Occupation A', 'Occupation B', 'Education', 'Home']
 
 # PYTHONPATH
@@ -109,7 +108,7 @@ for spec in ['One', 'Two', 'Three']:
     with open(file_name, 'r') as \
             output_file:
         for line in output_file.readlines():
-            if ('prob=' in line):
+            if 'prob=' in line:
                 list_ = shlex.split(line)
                 for i, key_ in enumerate(OCCUPATIONS):
                     choice_probabilities[key_] += [float(list_[i + 3])]

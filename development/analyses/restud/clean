@@ -12,7 +12,7 @@ HOME = os.path.dirname(os.path.realpath(__file__))
 os.chdir(HOME)
 
 # module-wide variables
-DIRECTORIES = ['dp3asim', 'robupy']
+DIRECTORIES = ['simulations', 'graphs']
 
 # Iterate over the two directories and call the cleanup scripts
 for directory in DIRECTORIES:

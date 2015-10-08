@@ -6,11 +6,13 @@ original paper using the RESTUD program and the ROBUPY package.
 # standard library
 import os
 
+# module-wide variables
+HOME = os.path.dirname(os.path.realpath(__file__))
+DIRECTORIES = ['dp3asim', 'robupy']
 
-for dir_ in ['dp3asim', 'robupy']:
+# Setup
+os.chdir(HOME)
 
-    os.chdir(dir_)
-
-    os.system('python create.py')
-
-    os.chdir('../')
+# Iterate over directories
+for directory in DIRECTORIES:
+    os.chdir(directory), os.system('./create'), os.chdir('../')

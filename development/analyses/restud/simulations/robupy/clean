@@ -1,0 +1,56 @@
+#!/usr/bin/env python
+""" This script cleans the RESTUD directories.
+"""
+
+# standard library
+import glob
+import os
+
+# module-wide variables
+SPECIFICATIONS = ['data_one', 'data_two', 'data_three']
+SAVE_FILES = ['clean', 'create', 'model.robupy.ini']
+HOME = os.path.dirname(os.path.realpath(__file__))
+
+# Setup
+os.chdir(HOME)
+
+''' Auxiliary functions
+'''
+
+
+def remove(names):
+    """ Remove files or directories.
+    """
+    if not isinstance(names, list):
+        names = [names]
+
+    for name in names:
+        try:
+            os.remove(name)
+        except IsADirectoryError:
+            shutil.rmtree(name)
+
+''' Main 
+'''
+
+
+for name in glob.glob('*'):
+
+    if name in SAVE_FILES + SPECIFICATIONS:
+        pass
+    else:
+        remove(name)
+
+
+for spec in SPECIFICATIONS:
+
+    os.chdir(spec)
+
+    for name in glob.glob('*'):
+
+        if name in SAVE_FILES + SPECIFICATIONS:
+            pass
+        else:
+            remove(name)
+
+    os.chdir('../')

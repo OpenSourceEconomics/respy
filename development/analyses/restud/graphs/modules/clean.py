@@ -5,14 +5,20 @@
 # standard library
 import shutil
 import os
-import sys
 
+# module-wide variables
+DIRECTORIES = ['__pycache__', 'rslts', 'modules/__pycache__']
 
-dirs = ['__pycache__', 'rslts', 'modules/__pycache__']
+# module-wide variables
+HOME = os.path.dirname(os.path.realpath(__file__))
 
-for dir_ in dirs:
+# Setup
+os.chdir(HOME)
+
+# Remove directories
+for directory in DIRECTORIES:
     try:
-        shutil.rmtree(dir_)
+        shutil.rmtree(directory)
     except OSError:
         pass
 
