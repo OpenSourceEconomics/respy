@@ -11,6 +11,9 @@ import os
 sys.path.insert(0, os.environ['ROBUPY'])
 sys.path.insert(0, os.environ['ROBUPY'] + '/development/tests/random')
 
+# project library
+import robupy
+
 # Import function to that a fast version of the toolbox is available.
 from modules.auxiliary import compile_package
 
@@ -22,7 +25,9 @@ for dir_ in ['one', 'two', 'three']:
 
     os.chdir('data_' + dir_)
 
-    os.system('robupy-solve')
+    # Solve and simulate
+    robupy_obj = robupy.read('model.robupy.ini')
+    robupy.solve(robupy_obj)
 
     # Cleanup
     files = glob.glob('logging.*')
