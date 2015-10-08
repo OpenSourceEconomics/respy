@@ -87,6 +87,7 @@ def plot_dimension_state_space(num_states):
     yticks = ['{:,.0f}'.format(y) for y in ax.get_yticks().astype(int)]
     ax.set_yticklabels(yticks, fontsize=16)
     ax.set_ylabel('Number of States', fontsize=16)
+    ax.yaxis.get_major_ticks()[0].set_visible(False)
 
     # Write out to
     plt.savefig('rslts/state_space.png', bbox_inches='tight',

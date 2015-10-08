@@ -1,0 +1,40 @@
+#!/usr/bin/env python
+""" This script allows to produce the input material for the RESTUD lecture.
+"""
+
+# standard library
+import argparse
+import os
+
+
+def _distribute_inputs(parser):
+    """ Process input arguments.
+    """
+    # Parse arguments.
+    parser.parse_args()
+
+
+def create_material():
+    """ This function creates the material for the RESTUD lecture.
+    """
+
+    for dir_ in ['graphs', 'simulations']:
+
+        os.chdir(dir_)
+
+        os.system('./create')
+
+        os.chdir('../')
+
+''' Execution of module as script.
+'''
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(
+        description='Solves and simulates the RESTUD economies and creates '
+                    'several graphs.',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    _distribute_inputs(parser)
+
+    create_material()
