@@ -1,0 +1,19 @@
+#!/usr/bin/env python
+""" This script creates the COMPU material.
+"""
+
+# standard library
+import os
+
+# module-wide variables
+HOME = os.path.dirname(os.path.realpath(__file__))
+
+# Setup
+os.chdir(HOME)
+
+# module-wide variables
+DIRECTORIES = ['graphs']
+
+# Iterate over the directories and call the create scripts
+for directory in DIRECTORIES:
+    os.chdir(directory), os.system('./create'), os.chdir('../')
