@@ -4,19 +4,18 @@ aspects of the COMPU package.
 """
 
 # standard library
+import matplotlib.pylab as plt
+
 import matplotlib
 matplotlib.use('Agg')
 
-import matplotlib.pylab as plt
-
-from matplotlib.ticker import FuncFormatter
-from matplotlib import cm
-
 from multiprocessing import Array
 from multiprocessing import Pool
+from functools import partial
 
 import pickle as pkl
 
+import argparse
 import shutil
 import glob
 import time
@@ -30,29 +29,46 @@ os.chdir(os.path.dirname(os.path.realpath(__file__)))
 sys.path.insert(0, os.environ['ROBUPY'] + '/development/tests/random')
 sys.path.insert(0, os.environ['ROBUPY'])
 
+# project library
 from modules.auxiliary import compile_package
 
-# project library
 from robupy.tests.random_init import print_random_dict
-
-import robupy
-
+from robupy import read
+from robupy import solve
 
 # module-wide variables
 VERSIONS = ['PYTHON', 'F2PY', 'FORTRAN', 'FORTRAN_OPTIMIZATION']
 COLORS = ['red', 'orange', 'blue']
-PERIODS_GRID = range(1, 40)
-NUM_PROCS = 25
-
+PERIODS_GRID = range(1, 3)
+TIME_LIST = Array('d', len(PERIODS_GRID))
 
 ''' Auxiliary functions
 '''
 
 
+def distribute_arguments(parser):
+    """ Distribute command line arguments.
+    """
+    # Process command line arguments
+    args = parser.parse_args()
+
+    # Extract arguments
+    num_procs, is_graphs = args.num_procs,  args.graphs
+
+    # Check arguments
+    assert (num_procs > 0)
+    assert (is_graphs in [True, False])
+
+    if is_graphs:
+        assert (os.path.exists('rslts/rslt_profiling.pkl'))
+
+    # Finishing
+    return num_procs, is_graphs
+
+
 def plot_profiling(yvals, xvals, name):
     """ Plot profiling results.
     """
-
     # Auxiliary objects
     versions = xvals.keys()
 
@@ -88,13 +104,30 @@ def plot_profiling(yvals, xvals, name):
     plt.savefig(name + '.png', bbox_inches='tight', format='png')
 
 
+def plot_graphs(rslt, PERIODS_GRID):
+    """ Plot graphs
+    """
+    # Change to results directory, which already contains the serialized
+    # results.
+    os.chdir('rslts')
 
-time_list = Array('d', len(PERIODS_GRID))
+    # Plot the profiling results. First, we plot a comparison of pure FORTRAN to
+    # pure PYTHON code.
+    subset = dict()
+    for version in ['PYTHON', 'FORTRAN']:
+        subset[version] = rslt[version]
+    plot_profiling(PERIODS_GRID, subset, 'profiling')
+
+    # Plot the optimized implementations against each other.
+    subset = dict()
+    for version in ['F2PY', 'FORTRAN', 'FORTRAN_OPTIMIZATION']:
+        subset[version] = rslt[version]
+    plot_profiling(PERIODS_GRID, subset, 'profiling_fast')
 
 
-
-def timing_periods(periods):
-
+def timing_periods(init_dict, periods):
+    """ Record execution time for alternative lengths over the life-cycle.
+    """
     # Modify estimation request
     init_dict['BASICS']['periods'] = periods
 
@@ -109,74 +142,84 @@ def timing_periods(periods):
     print_random_dict(init_dict)
 
     # Measure execution time of for estimation
-    robupy_obj = robupy.read('test.robupy.ini')
+    robupy_obj = read('test.robupy.ini')
 
     start_time = time.time()
 
-    robupy.solve(robupy_obj)
+    solve(robupy_obj)
 
-    time_list[periods - 1] = time.time() - start_time
+    TIME_LIST[periods - 1] = time.time() - start_time
 
     # Cleanup
     os.chdir('../'), shutil.rmtree(name)
 
 
-# Process baseline model
-robupy_obj = robupy.read('model.robupy.ini')
-init_dict = robupy_obj.get_attr('init_dict')
+def create_results(num_procs):
+    """ Create the results from the benchmarking exercise.
+    """
+    # Process baseline model
+    robupy_obj = read('model.robupy.ini')
+    init_dict = robupy_obj.get_attr('init_dict')
 
-# Create benchmarking information by looping over all implementations and
-# storing the execution time for numerous number of periods.
-rslt = dict()
+    # Create benchmarking information by looping over all implementations and
+    # storing the execution time for numerous number of periods.
+    rslt = dict()
+    for count, version in enumerate(VERSIONS):
 
-for count, version in enumerate(VERSIONS):
+        # Compile the package for the standard and optimized FORTRAN version.
+        if count == 0:
+            compile_package('--fortran', True)
+        elif count == 3:
+            compile_package('--fortran --optimization', True)
+        else:
+            pass
 
-    # Compile the package for the standard and optimized FORTRAN version.
-    if count == 0:
-         compile_package('--fortran', True)
-    elif count == 3:
-        compile_package('--fortran --optimization', True)
-    else:
-        pass
+        # Modify baseline request
+        if version in ['FORTRAN_OPTIMIZATION']:
+            init_dict['PROGRAM']['version'] = 'FORTRAN'
+        else:
+            init_dict['PROGRAM']['version'] = version
 
-    # Modify baseline request
-    if version in ['FORTRAN_OPTIMIZATION']:
-        init_dict['PROGRAM']['version'] = 'FORTRAN'
-    else:
-        init_dict['PROGRAM']['version'] = version
+        # Benchmarking execution time using multiple processes
+        p = Pool(num_procs)
+        p.map(partial(timing_periods, init_dict), PERIODS_GRID)
 
-    # Benchmarking execution time using multiple processes
-    p = Pool(NUM_PROCS)
-    p.map(timing_periods, PERIODS_GRID)
+        # Collect information
+        rslt[version] = list(TIME_LIST)
 
-    # Collect information
-    rslt[version] = list(time_list)
+    # Cleanup and prepare results directory
+    for file_ in glob.glob('*.log'):
+        os.remove(file_)
 
-# Cleanup and prepare results directory.
-for file_ in glob.glob('*.log'):
-    os.remove(file_)
+    if not os.path.exists('rslts'):
+        os.mkdir('rslts')
 
-if not os.path.exists('rslts'):
-    os.mkdir('rslts')
+    # Store for future processing
+    pkl.dump(rslt, open('rslts/profiling.pkl', 'wb'))
 
-os.chdir('rslts')
 
-# Store for future processing
-pkl.dump(rslt, open('rslt_profiling.pkl', 'wb'))
+''' Execution of module as script.
+'''
+if __name__ == '__main__':
 
-rslt = pkl.load(open('rslt_profiling.pkl', 'rb'))
+    parser = argparse.ArgumentParser(
+        description='Create material for COMPU lecture.',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-# Plot the profiling results. First, we plot a comparison of pure FORTRAN to
-# pure PYTHON code.
-subset = dict()
-for version in ['PYTHON', 'FORTRAN']:
-    subset[version] = rslt[version]
+    parser.add_argument('--procs', action='store', type=int, dest='num_procs',
+        default=1, help='use multiple processors')
 
-plot_profiling(PERIODS_GRID, subset, 'profiling')
+    parser.add_argument('--graphs', action='store_true', dest='graphs',
+        default=False, help='create only graphs')
 
-# Plot the optimized implementations against each other.
-subset = dict()
-for version in ['F2PY', 'FORTRAN', 'FORTRAN_OPTIMIZATION']:
-    subset[version] = rslt[version]
+    # Process command line arguments
+    num_procs, is_graphs = distribute_arguments(parser)
 
-plot_profiling(PERIODS_GRID, subset, 'profiling_fast')
+    # Create results from benchmarking exercise
+    if not is_graphs:
+        os.system('./clean')
+        create_results(num_procs)
+
+    # Plot the graphs
+    rslt = pkl.load(open('rslts/profiling.pkl', 'rb'))
+    plot_graphs(rslt, PERIODS_GRID)
