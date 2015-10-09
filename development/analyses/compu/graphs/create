@@ -4,10 +4,11 @@ aspects of the COMPU package.
 """
 
 # standard library
-import matplotlib.pylab as plt
-
 import matplotlib
 matplotlib.use('Agg')
+
+import matplotlib.pylab as plt
+
 
 from multiprocessing import Array
 from multiprocessing import Pool
