@@ -8,7 +8,7 @@ import glob
 import os
 
 # module-wide variables
-SAVE_FILES = ['clean', 'create', 'model.robupy.ini']
+SAVE_FILES = ['clean', 'create', 'model.robupy.ini', 'acropolis.pbs']
 HOME = os.path.dirname(os.path.realpath(__file__))
 
 # Setup
