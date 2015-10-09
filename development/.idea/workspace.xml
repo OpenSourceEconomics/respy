@@ -7,7 +7,6 @@
   <component name="ChangeListManager">
     <list default="true" id="56803c1c-81e4-4070-9cf6-fc7503291db5" name="Default" comment="82333.99728503">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../../../../structRobust/doc/presentation/material/choice_patterns.png" afterPath="$PROJECT_DIR$/../../../../structRobust/doc/presentation/material/choice_patterns.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/analyses/compu/graphs/acropolis.pbs" afterPath="$PROJECT_DIR$/package/development/analyses/compu/graphs/acropolis.pbs" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/analyses/compu/graphs/create" afterPath="$PROJECT_DIR$/package/development/analyses/compu/graphs/create" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../../../../structRobust/doc/presentation/files/s-appendix.tex" afterPath="$PROJECT_DIR$/../../../../structRobust/doc/presentation/files/s-appendix.tex" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/.idea/workspace.xml" afterPath="$PROJECT_DIR$/package/development/.idea/workspace.xml" />
@@ -42,8 +41,8 @@
       <file leaf-file-name="create" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/package/development/analyses/compu/graphs/create">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.033136096">
-              <caret line="30" column="0" selection-start-line="30" selection-start-column="0" selection-end-line="30" selection-end-column="0" />
+            <state vertical-scroll-proportion="-5.666272">
+              <caret line="39" column="0" selection-start-line="39" selection-start-column="0" selection-end-line="39" selection-end-column="0" />
               <folding>
                 <element signature="e#148#178#0" expanded="true" />
               </folding>
@@ -1160,8 +1159,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/package/development/analyses/compu/graphs/create">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.033136096">
-          <caret line="30" column="0" selection-start-line="30" selection-start-column="0" selection-end-line="30" selection-end-column="0" />
+        <state vertical-scroll-proportion="-5.666272">
+          <caret line="39" column="0" selection-start-line="39" selection-start-column="0" selection-end-line="39" selection-end-column="0" />
           <folding>
             <element signature="e#148#178#0" expanded="true" />
           </folding>
