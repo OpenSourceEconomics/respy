@@ -62,13 +62,13 @@ def distribute_arguments(parser):
     assert (is_graphs in [True, False])
 
     if is_graphs:
-        assert (os.path.exists('rslts/rslt_profiling.pkl'))
+        assert (os.path.exists('rslts/profiling.pkl'))
 
     # Finishing
     return max_periods, num_procs, is_graphs
 
 
-def plot_profiling(yvals, xvals, name):
+def plot_profiling(yvals, xvals, name, labels):
     """ Plot profiling results.
     """
     # Auxiliary objects
@@ -87,12 +87,12 @@ def plot_profiling(yvals, xvals, name):
         right='off')
 
     # x-axis
-    #ax.set_xticklabels(ax.get_xticks().astype(int))
     ax.set_xlabel('Periods', fontsize=16)
+    ax.set_xlim([1, 40])
 
     # y-axis
-    #yticks = ['{:,.0f}'.format(y) for y in ax.get_yticks().astype(int)]
-    #ax.set_yticklabels(yticks, fontsize=16)
+    yticks = ['{:,.0f}'.format(y) for y in ax.get_yticks().astype(int)]
+    ax.set_yticklabels(yticks, fontsize=16)
 
     ax.set_ylabel('Seconds', fontsize=16)
     ax.yaxis.get_major_ticks()[0].set_visible(False)
@@ -100,7 +100,7 @@ def plot_profiling(yvals, xvals, name):
     # Set up legend
     ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.10),
         fancybox=False, frameon=False, shadow=False, ncol=len(versions),
-        fontsize=20)
+        fontsize=20, labels=labels)
 
     # Write out to
     plt.savefig(name + '.png', bbox_inches='tight', format='png')
@@ -118,16 +118,18 @@ def plot_graphs(rslt, max_periods):
 
     # Plot the profiling results. First, we plot a comparison of pure FORTRAN to
     # pure PYTHON code.
+    labels = ['Python', 'Fortran']
     subset = dict()
     for version in ['PYTHON', 'FORTRAN']:
         subset[version] = rslt[version]
-    plot_profiling(periods_grid, subset, 'profiling')
+    plot_profiling(periods_grid, subset, 'profiling', labels)
 
     # Plot the optimized implementations against each other.
+    labels = ['F2PY', 'Fortran']
     subset = dict()
-    for version in ['F2PY', 'FORTRAN', 'FORTRAN_OPTIMIZATION']:
+    for version in ['F2PY', 'FORTRAN_OPTIMIZATION']:
         subset[version] = rslt[version]
-    plot_profiling(periods_grid, subset, 'profiling_fast')
+    plot_profiling(periods_grid, subset, 'profiling_fast', labels)
 
 
 def timing_periods(init_dict, periods):
@@ -163,7 +165,7 @@ def create_results(max_periods, num_procs):
     """ Create the results from the benchmarking exercise.
     """
     # Auxiliary objects
-    periods_grid = range(1, max_periods)
+    periods_grid = range(1, max_periods + 1)
 
     # Process baseline model
     robupy_obj = read('model.robupy.ini')
