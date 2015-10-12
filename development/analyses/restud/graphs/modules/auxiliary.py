@@ -74,7 +74,7 @@ def plot_dimension_state_space(num_states):
     # Initialize plot
     ax = plt.figure(figsize=(12, 8)).add_subplot(111)
 
-    ax.plot(range(40), num_states, '-k', )
+    ax.plot(range(1, 41), num_states, '-k', )
 
     # Both axes
     ax.tick_params(axis='both', right='off', top='off')
@@ -82,6 +82,7 @@ def plot_dimension_state_space(num_states):
     # x-axis
     ax.set_xticklabels(ax.get_xticks().astype(int), fontsize=18)
     ax.set_xlabel('Periods', fontsize=16)
+    ax.set_xlim([1, 40])
 
     # y-axis
     yticks = ['{:,.0f}'.format(y) for y in ax.get_yticks().astype(int)]
