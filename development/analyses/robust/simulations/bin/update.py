@@ -52,7 +52,6 @@ def get_results(is_all):
     sftp = paramiko.SFTPClient.from_transport(transport)
 
     # Get files
-    print(CLIENT_DIR + '/rslts')
     sftp.chdir(CLIENT_DIR + '/rslts')
 
     # Determine available results
