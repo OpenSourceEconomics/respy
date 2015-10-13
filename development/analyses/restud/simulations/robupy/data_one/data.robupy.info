@@ -8,7 +8,7 @@
    Seed:                   132
 
 
-   Choices:  
+   Choices
 
        Period     Work A     Work B    Schooling   Home      
 
@@ -54,3 +54,10 @@
         40        0.1870     0.8010     0.0000     0.0120
 
 
+
+   Additional Information
+
+       Average Education               12.9440
+
+       Average Experience A            10.7660
+       Average Experience B            24.8250

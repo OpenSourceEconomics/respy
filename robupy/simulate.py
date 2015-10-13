@@ -207,7 +207,7 @@ def _write_info(robupy_obj, data_frame):
 
         file_.write('   Seed:                   ' + str(seed) + '\n\n\n')
 
-        file_.write('   Choices:  \n\n')
+        file_.write('   Choices\n\n')
 
         file_.write('       Period     Work A     Work B    Schooling   Home      \n\n')
 
@@ -229,7 +229,23 @@ def _write_info(robupy_obj, data_frame):
 
             file_.write(string.format([(t + 1), work_a, work_b, schooling, home]))
 
-        file_.write('\n\n')
+        file_.write('\n\n\n')
+
+        # Additional information about the simulated economy
+        string = '''       {0[0]:<25}    {0[1]:10.4f}\n'''
+
+        file_.write('   Additional Information\n\n')
+
+        stat = data_frame[data_frame.ix[:, 1] == (num_periods - 1)].ix[:, 6].mean()
+        file_.write(string.format(['Average Education', stat]))
+
+        file_.write('\n')
+
+        stat = data_frame[data_frame.ix[:, 1] == (num_periods - 1)].ix[:, 4].mean()
+        file_.write(string.format(['Average Experience A', stat]))
+
+        stat = data_frame[data_frame.ix[:, 1] == (num_periods - 1)].ix[:, 5].mean()
+        file_.write(string.format(['Average Experience B', stat]))
 
 
 def _write_out(data_frame):
