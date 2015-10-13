@@ -82,7 +82,7 @@ def plot_dimension_state_space(num_states):
     # x-axis
     ax.set_xticklabels(ax.get_xticks().astype(int), fontsize=18)
     ax.set_xlabel('Periods', fontsize=16)
-    ax.set_xlim([1, 40])
+    ax.set_xlim([1, 41])
 
     # y-axis
     yticks = ['{:,.0f}'.format(y) for y in ax.get_yticks().astype(int)]
