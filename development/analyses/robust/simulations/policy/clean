@@ -16,6 +16,14 @@ if not (sys.version_info[0] == 3):
 ''' Functions
 '''
 
+def remove(file_):
+    """ Remove directory.
+    """
+    try:
+        os.unlink(file_)
+    except IsADirectoryError:
+        shutil.rmtree(file_)    
+
 
 def cleanup():
     """ Clean directory.
@@ -25,16 +33,11 @@ def cleanup():
 
     for file_ in files:
 
-        if file_ in ['graphs', 'acropolis.pbs', 'model.robupy.ini']:
+        if file_ in ['clean', 'create', 'model.robupy.ini', 'acropolis.pbs']:
             continue
 
-        if file_ in ['bin', 'clean', 'create', 'update']:
-            continue
+        remove(file_)
 
-        try:
-            os.unlink(file_)
-        except IsADirectoryError:
-            shutil.rmtree(file_)
 
 ''' Execution of module as script.
 '''

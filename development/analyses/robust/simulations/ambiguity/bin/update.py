@@ -12,7 +12,7 @@ from clean import cleanup
 
 # module-wide variables
 CLIENT_DIR = '/home/eisenhauer/robustToolbox/package/development/analyses' \
-             '/robust/simulations'
+             '/robust/simulations/ambiguity'
 KEY_DIR = '/home/peisenha/.ssh/id_rsa'
 
 ''' Functions
