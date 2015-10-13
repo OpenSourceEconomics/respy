@@ -88,7 +88,7 @@ def plot_profiling(yvals, xvals, name, labels):
 
     # x-axis
     ax.set_xlabel('Periods', fontsize=16)
-    ax.set_xlim([1, 40])
+    ax.set_xlim([1, 41])
 
     # y-axis
     yticks = ['{:,.0f}'.format(y) for y in ax.get_yticks().astype(int)]
@@ -110,7 +110,7 @@ def plot_graphs(rslt, max_periods):
     """ Plot graphs
     """
     # Auxiliary objects
-    periods_grid = range(1, max_periods)
+    periods_grid = range(1, max_periods + 1)
 
     # Change to results directory, which already contains the serialized
     # results.
@@ -195,7 +195,7 @@ def create_results(max_periods, num_procs):
         p.map(partial(timing_periods, init_dict), periods_grid)
 
         # Collect information
-        rslt[version] = list(TIME_LIST[:max_periods - 1])
+        rslt[version] = list(TIME_LIST[:max_periods])
 
     # Cleanup and prepare results directory
     for file_ in glob.glob('*.log'):
