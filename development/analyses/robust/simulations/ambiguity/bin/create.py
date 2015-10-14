@@ -6,12 +6,12 @@ of alternative degrees of ambiguity.
 # standard library
 from multiprocessing import Pool
 
+import pickle as pkl
 import numpy as np
 
 import argparse
-import shutil
+import shlex
 import glob
-import sys
 import os
 
 # Check for Python 3
@@ -29,8 +29,9 @@ from modules.auxiliary import compile_package
 from robupy import solve
 from robupy import read
 
-# Import clean
-from clean import cleanup
+# module-wide variables
+OCCUPATIONS = ['Occupation A', 'Occupation B', 'Schooling', 'Home']
+
 
 ''' Functions
 '''
@@ -60,7 +61,6 @@ def distribute_arguments(parser):
 def solve_ambiguous_economy(level):
     """ Solve an economy in a subdirectory.
     """
-
     # Process baseline file
     robupy_obj = read('../model.robupy.ini')
 
@@ -93,10 +93,7 @@ def create(num_procs, grid):
     """ Solve the RESTUD economies for different levels of ambiguity.
     """
     # Cleanup
-    cleanup()
-
-    # Compile fast version of ROBUPY package
-    compile_package('--fortran --optimization', True)
+    os.system('./clean')
 
     # Construct grid
     if grid == 0:
@@ -113,13 +110,108 @@ def create(num_procs, grid):
     p = Pool(num_procs)
     p.map(solve_ambiguous_economy, grid)
 
+    os.chdir('../')
+
+    # Cleanup
+    for file_ in glob.glob('*.log'):
+        os.remove(file_)
+
+
+def get_levels():
+    """ Infer ambiguity levels from directory structure.
+    """
+    os.chdir('rslts')
+
+    levels = []
+
+    for level in glob.glob('*/'):
+        # Cleanup strings
+        level = level.replace('/', '')
+        # Collect levels
+        levels += [level]
+
+    os.chdir('../')
+
+    # Finishing
+    return sorted(levels)
+
+
+def track_final_choices():
+    """ Track the final choices from the ROBUPY output.
+    """
+    # Auxiliary objects
+    levels = get_levels()
+
+    # Process benchmark file
+    robupy_obj = read('model.robupy.ini')
+
+    num_periods = robupy_obj.get_attr('num_periods')
+
+    # Create dictionary with the final shares for varying level of ambiguity.
+    shares = dict()
+    for occu in OCCUPATIONS:
+        shares[occu] = []
+
+    # Iterate over all available ambiguity levels
+    for level in levels:
+        file_name = 'rslts/' + level + '/data.robupy.info'
+        with open(file_name, 'r') as output_file:
+            for line in output_file.readlines():
+                # Split lines
+                list_ = shlex.split(line)
+                # Skip empty lines
+                if not list_:
+                    continue
+                # Extract shares
+                if str(num_periods) in list_[0]:
+                    for i, occu in enumerate(OCCUPATIONS):
+                        shares[occu] += [float(list_[i + 1])]
+
+    # Finishing
+    pkl.dump(shares, open('rslts/ambiguity_shares_final.pkl', 'wb'))
+
+
+def track_schooling_over_time():
+    """ Create dictionary which contains the simulated shares over time for
+    varying levels of ambiguity.
+    """
+    # Auxiliary objects
+    levels = get_levels()
+
+    # Iterate over results
+    shares = dict()
+    for level in levels:
+        # Construct dictionary
+        shares[level] = dict()
+        for choice in OCCUPATIONS:
+            shares[level][choice] = []
+        # Process results
+        file_name = 'rslts/' + level + '/data.robupy.info'
+        with open(file_name, 'r') as output_file:
+            for line in output_file.readlines():
+                # Split lines
+                list_ = shlex.split(line)
+                # Check relevance
+                try:
+                    int(list_[0])
+                except ValueError:
+                    continue
+                except IndexError:
+                    continue
+                # Process line
+                for i, occu in enumerate(OCCUPATIONS):
+                    shares[level][occu] += [float(list_[i + 1])]
+
+    # Finishing
+    pkl.dump(shares, open('rslts/ambiguity_shares_time.pkl', 'wb'))
+
 
 ''' Execution of module as script.
 '''
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(
-        description='Solve RESTUD economy for varying level of ambiguity.',
+        description='Solve ROBUST economy for varying level of ambiguity.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('--procs', action='store', type=int, dest='num_procs',
@@ -132,5 +224,11 @@ if __name__ == '__main__':
     # Process command line arguments
     num_procs, grid = distribute_arguments(parser)
 
-    # Run function
+    # Run tasks
+    compile_package('--fortran --optimization', True)
+
     create(num_procs, grid)
+
+    track_final_choices()
+
+    track_schooling_over_time()

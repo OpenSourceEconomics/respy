@@ -1,5 +1,5 @@
 """ This module contains some auxiliary functions to create the graphs for
-the ECTRA economy.
+the ROBUST economy.
 """
 
 # standard library
@@ -13,105 +13,10 @@ import os
 # PYTHONPATH
 sys.path.insert(0, os.environ['ROBUPY'])
 
-# project package
-from robupy import read
-
 # module-wide variables
-OCCUPATIONS = ['Occupation A', 'Occupation B', 'Schooling', 'Home']
 STYLES = ['--k', '-k', '*k', ':k']
 
-""" Auxiliary function
-"""
-
-
-def get_ambiguity_levels():
-    """ Infer ambiguity levels from directory structure.
-    """
-    os.chdir('../simulations/rslts')
-
-    levels = []
-
-    for level in glob.glob('*/'):
-
-        # Cleanup strings
-        level = level.replace('/', '')
-
-        # Collect levels
-        levels += [level]
-
-    os.chdir('../../graphs')
-
-    # Finishing
-    return sorted(levels)
-
-
-def track_final_choices(levels):
-    """ Track the final choices from the ROBUPY output.
-    """
-    robupy_obj = read('../simulations/model.robupy.ini')
-
-    num_periods = robupy_obj.get_attr('num_periods')
-
-    # Create dictionary with the final shares for varying level of ambiguity.
-    shares_ambiguity = dict()
-    for occu in OCCUPATIONS:
-        shares_ambiguity[occu] = []
-
-    # Iterate over all available ambiguity levels
-    for level in levels:
-        file_name = '../simulations/rslts/' + level + '/data.robupy.info'
-        with open(file_name, 'r') as output_file:
-            for line in output_file.readlines():
-                # Split lines
-                list_ = shlex.split(line)
-                # Skip empty lines
-                if not list_:
-                    continue
-                # Extract shares
-                if str(num_periods) in list_[0]:
-                    for i, occu in enumerate(OCCUPATIONS):
-                        shares_ambiguity[occu] += [float(list_[i + 1])]
-
-    # Finishing
-    return shares_ambiguity
-
-
-def track_schooling_over_time(levels):
-    """ Create dictionary which contains the simulated shares over time for
-    varying levels of ambiguity.
-    """
-    shares_time = dict()
-
-    for level in levels:
-        # Construct dictionary
-        shares_time[level] = dict()
-        for choice in OCCUPATIONS:
-            shares_time[level][choice] = []
-        # Process results
-        file_name = '../simulations/rslts/' + level + '/data.robupy.info'
-        with open(file_name, 'r') as output_file:
-            for line in output_file.readlines():
-
-                # Split lines
-                list_ = shlex.split(line)
-
-                # Check relevance
-                try:
-                    int(list_[0])
-                except ValueError:
-                    continue
-                except IndexError:
-                    continue
-
-                # Process line
-                for i, occu in enumerate(OCCUPATIONS):
-                    shares_time[level][occu] += [float(list_[i + 1])]
-
-    # Finishing
-    return shares_time
-
-
-""" Plotting functions
+""" Plotting function
 """
 
 
