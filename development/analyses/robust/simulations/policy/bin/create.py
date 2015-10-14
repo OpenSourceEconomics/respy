@@ -165,9 +165,8 @@ if __name__ == '__main__':
     # Process command line arguments
     num_procs, num_points = distribute_arguments(parser)
 
-    # TODO: Comment back in, Update script, move formattting to auxiliary
-    # script --> change in update
-    #compile_package('--fortran --optimization', True)
+    # Run tasks
+    compile_package('--fortran --optimization', True)
 
     solve_models(num_procs, num_points)
 
