@@ -170,3 +170,5 @@ if __name__ == '__main__':
     #compile_package('--fortran --optimization', True)
 
     solve_models(num_procs, num_points)
+
+    process_models(num_points)
