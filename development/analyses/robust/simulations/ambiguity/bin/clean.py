@@ -16,6 +16,7 @@ if not (sys.version_info[0] == 3):
 ''' Functions
 '''
 
+
 def remove(file_):
     """ Remove directory.
     """
@@ -52,6 +53,8 @@ def cleanup():
         if '.pyc' in file_:
             remove(file_)
         continue
+
+    os.chdir('../')
 
 
 ''' Execution of module as script.

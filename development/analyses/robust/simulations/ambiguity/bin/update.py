@@ -8,12 +8,18 @@ import paramiko
 import os
 
 # project library
+from auxiliary import get_remote_material
 from clean import cleanup
 
 # module-wide variables
 CLIENT_DIR = '/home/eisenhauer/robustToolbox/package/development/analyses' \
              '/robust/simulations/ambiguity'
 KEY_DIR = '/home/peisenha/.ssh/id_rsa'
+
+RSLT_FILES = ['ambiguity_shares_final.pkl', 'ambiguity_shares_time.pkl']
+
+# Set baseline working directory on HOST
+os.chdir(os.path.dirname(os.path.realpath(__file__)).replace('bin', ''))
 
 ''' Functions
 '''
@@ -54,40 +60,14 @@ def get_results(is_all):
     # Get files
     sftp.chdir(CLIENT_DIR + '/rslts')
 
-    # Determine available results
-    names = []
-
-    for candidate in sftp.listdir('.'):
-        try:
-            candidate = float(candidate)
-        except ValueError:
-            continue
-        names += ['{0:0.3f}'.format(candidate)]
-
     # Enter results container
     os.mkdir('rslts'), os.chdir('rslts')
 
-    # Download files
-    for name in names:
-
-        os.mkdir(name)
-
-        os.chdir(name)
-
-        sftp.chdir(name)
-
-        # Select files
-        files = ['data.robupy.info']
-        if is_all:
-            files = sftp.listdir('.')
-
-        # Get files
-        for file_ in files:
+    if is_all:
+        get_remote_material(sftp)
+    else:
+        for file_ in RSLT_FILES:
             sftp.get(file_, file_)
-
-        sftp.chdir('../')
-
-        os.chdir('../')
 
     # Finishing
     sftp.close()
