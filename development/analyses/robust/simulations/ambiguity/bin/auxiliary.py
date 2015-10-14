@@ -3,17 +3,21 @@ responsiveness.
 """
 
 # standard library
-from stat import S_ISDIR
-
-import os
-import sys
-import glob
-import shlex
+import matplotlib.pylab as plt
 import pickle as pkl
 
-import matplotlib.pylab as plt
+from stat import S_ISDIR
 
+import shlex
+import glob
+import sys
+import os
+
+# PYTHONPATH
 sys.path.insert(0, os.environ['ROBUPY'])
+
+from robupy.tests.random_init import print_random_dict
+
 from robupy import solve
 from robupy import read
 
