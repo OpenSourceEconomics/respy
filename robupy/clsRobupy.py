@@ -155,7 +155,7 @@ class RobupyCls(MetaCls):
         time the class is locked and if the package is running in debug mode.
         """
         # Check applicability
-        if (not self.is_first) and (not self.attr['is_debug']):
+        if not self.is_first:
             return
 
         # Distribute class attributes
