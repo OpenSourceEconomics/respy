@@ -135,5 +135,3 @@ if __name__ == '__main__':
 
     rslt = pkl.load(open('rslts/ambiguity_shares_time.pkl', 'rb'))
     plot_schooling_ambiguity(rslt)
-
-    
