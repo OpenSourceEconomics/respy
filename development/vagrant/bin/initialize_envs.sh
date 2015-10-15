@@ -5,3 +5,5 @@ cd /home/vagrant/robustToolbox/package
 workon robustToolbox
 cat requirements.txt | xargs -n 1 pip install
 
+# Installation of some additional packages used when working with the toolbox.
+pip install matplotlib; pip install paramiko

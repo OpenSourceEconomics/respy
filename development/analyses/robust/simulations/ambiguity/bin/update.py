@@ -5,11 +5,19 @@
 # standard library
 import argparse
 import paramiko
+import socket
+import sys
 import os
 
 # project library
 from auxiliary import get_remote_material
 from clean import cleanup
+
+# Check for Python 3 and host
+if not (sys.version_info[0] == 3):
+    raise AssertionError('Please use Python 3')
+if not socket.gethostname() == 'pontos':
+    raise AssertionError('Please use @pontos as host')
 
 # module-wide variables
 CLIENT_DIR = '/home/eisenhauer/robustToolbox/package/development/analyses' \
