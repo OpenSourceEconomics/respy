@@ -3,6 +3,9 @@ responsiveness.
 """
 
 # standard library
+import matplotlib
+matplotlib.use('Agg')
+
 import matplotlib.pylab as plt
 import pickle as pkl
 
@@ -22,7 +25,6 @@ from robupy import solve
 from robupy import read
 
 # module-wide variables
-STYLES = ['--k', '-k', '*k', ':k']
 OCCUPATIONS = ['Occupation A', 'Occupation B', 'Schooling', 'Home']
 LABELS_SUBSET = ['0.000', '0.010', '0.020']
 MAX_PERIOD = 25
@@ -76,6 +78,7 @@ def track_final_choices():
 
     # Create dictionary with the final shares for varying level of ambiguity.
     shares = dict()
+    shares['levels'] = levels
     for occu in OCCUPATIONS:
         shares[occu] = []
 
@@ -107,6 +110,7 @@ def track_schooling_over_time():
 
     # Iterate over results
     shares = dict()
+    shares['levels'] = levels
     for level in levels:
         # Construct dictionary
         shares[level] = dict()
@@ -189,27 +193,37 @@ def get_remote_material(sftp):
 """
 
 
-def plot_choices_ambiguity(levels, shares_ambiguity):
+def plot_choices_ambiguity(shares_ambiguity):
     """ Plot the choices in the final periods under different levels of
     ambiguity.
     """
+    # Extract information
+    levels = shares_ambiguity['levels']
+
     # Initialize plot
     ax = plt.figure(figsize=(12, 8)).add_subplot(111)
 
     # Draw lines
-    for i, key_ in enumerate(shares_ambiguity.keys()):
-        ax.plot(levels, shares_ambiguity[key_], STYLES[i], label=key_)
+    for i, key_ in enumerate(OCCUPATIONS):
+        ax.plot(levels, shares_ambiguity[key_], linewidth=5, label=key_)
 
     # Both axes
-    ax.tick_params(axis='both', right='off', top='off')
+    ax.tick_params(labelsize=18, direction='out', axis='both', top='off',
+            right='off')
 
-    # labels
-    ax.set_xlabel('Ambiguity', fontsize=20)
-    ax.set_ylabel('Shares', fontsize=20)
+    # x axis
+    ax.set_xlim([float(levels[0]), float(levels[-1])])
+    ax.set_xlabel('Ambiguity', fontsize=16)
+
+    # y axis
+    ax.set_ylim([0, 1])
+    ax.yaxis.get_major_ticks()[0].set_visible(False)
+    ax.set_ylabel('Shares', fontsize=16)
 
     # Set up legend
     ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.10),
-        fancybox=False, frameon=False, shadow=False, ncol=4, fontsize=20)
+            fancybox=False, frameon=False, shadow=False,
+            ncol=4, fontsize=20)
 
     # Write out to
     plt.savefig('rslts/choices_ambiguity.png', bbox_inches='tight',

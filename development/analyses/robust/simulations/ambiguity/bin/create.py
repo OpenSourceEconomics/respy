@@ -109,7 +109,7 @@ if __name__ == '__main__':
         default=1, help='use multiple processors')
 
     parser.add_argument('--grid', action='store', type=float, dest='grid',
-        default=[0, 0, 1], nargs='+',
+        default=[0, 0.1, 2], nargs='+',
         help='construct grid using np.linspace (start, stop, num)')
 
     parser.add_argument('--graphs', action='store_true', dest='graphs',
@@ -128,10 +128,12 @@ if __name__ == '__main__':
         process_results()
 
     # Plotting
-    levels = get_levels()
-
     rslt = pkl.load(open('rslts/ambiguity_shares_final.pkl', 'rb'))
-    plot_choices_ambiguity(levels, rslt)
+
+    # TODO: Remove fix
+    #import numpy as np
+    #rslt['levels'] = np.linspace(0, 0.02, 11)
+    plot_choices_ambiguity(rslt)
 
     rslt = pkl.load(open('rslts/ambiguity_shares_time.pkl', 'rb'))
     plot_schooling_ambiguity(rslt)

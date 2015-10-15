@@ -10,7 +10,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.ticker import FuncFormatter
 from matplotlib import cm
 
-#
+# Evaluation points
 EDU, EXP_A, EXP_B = 15, 15, 15
 
 """ Auxiliary function
