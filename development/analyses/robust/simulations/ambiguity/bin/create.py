@@ -129,10 +129,6 @@ if __name__ == '__main__':
 
     # Plotting
     rslt = pkl.load(open('rslts/ambiguity_shares_final.pkl', 'rb'))
-
-    # TODO: Remove fix
-    #import numpy as np
-    #rslt['levels'] = np.linspace(0, 0.02, 11)
     plot_choices_ambiguity(rslt)
 
     rslt = pkl.load(open('rslts/ambiguity_shares_time.pkl', 'rb'))

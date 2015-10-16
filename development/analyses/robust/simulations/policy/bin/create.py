@@ -46,13 +46,15 @@ def distribute_arguments(parser):
 
     # Extract arguments
     num_procs, num_points = args.num_procs,  args.num_points
+    is_graphs = args.graphs
 
     # Check arguments
     assert (num_procs > 0)
     assert (num_points > 0)
+    assert (is_graphs in [True, False])
 
     # Finishing
-    return num_procs, num_points
+    return num_procs, num_points, is_graphs
 
 
 def process_models(num_points):
@@ -162,12 +164,16 @@ if __name__ == '__main__':
     parser.add_argument('--points', action='store', type=int, dest='num_points',
         default=1, help='number of evaluation points')
 
+    parser.add_argument('--graphs', action='store_true', dest='graphs',
+        default=False, help='create only graphs')
+
+
     # Process command line arguments
-    num_procs, num_points = distribute_arguments(parser)
+    num_procs, num_points, is_graphs = distribute_arguments(parser)
 
     # Run tasks
-    compile_package('--fortran --optimization', True)
+    if not is_graphs:
+        compile_package('--fortran --optimization', True)
+        solve_models(num_procs, num_points)
+        process_models(num_points)
 
-    solve_models(num_procs, num_points)
-
-    process_models(num_points)
