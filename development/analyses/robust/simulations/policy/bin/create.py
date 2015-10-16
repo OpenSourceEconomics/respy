@@ -18,6 +18,7 @@ import os
 
 # Auxiliary functions
 from auxiliary import formatting
+from auxiliary import plot_policy_responsiveness
 
 # PYTHONPATH
 sys.path.insert(0, os.environ['ROBUPY'] + '/development/tests/random')
@@ -29,7 +30,6 @@ from modules.auxiliary import compile_package
 
 from robupy import read
 from robupy import solve
-
 
 # module-wide variables
 AMBIGUITY_LEVELS = [0.00, 0.01, 0.02]
@@ -167,7 +167,6 @@ if __name__ == '__main__':
     parser.add_argument('--graphs', action='store_true', dest='graphs',
         default=False, help='create only graphs')
 
-
     # Process command line arguments
     num_procs, num_points, is_graphs = distribute_arguments(parser)
 
@@ -177,3 +176,6 @@ if __name__ == '__main__':
         solve_models(num_procs, num_points)
         process_models(num_points)
 
+    # Plotting
+    rslt = pkl.load(open('rslts/policy_responsiveness.pkl', 'rb'))
+    plot_policy_responsiveness(rslt)
