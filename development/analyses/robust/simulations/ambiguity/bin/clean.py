@@ -46,7 +46,7 @@ def cleanup():
     os.chdir('bin')
     try:
         shutil.rmtree('__pycache__')
-    except:
+    except FileNotFoundError:
         pass
 
     for file_ in glob.glob('*'):
