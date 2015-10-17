@@ -24,24 +24,13 @@ values = array([2.3, 8.7, 9.1])
 #-------------------------------------------------------------------------------
 # Potential Bug: Avoid nested loop joins
 #-------------------------------------------------------------------------------
-# search the corresponding organization for each person and print it
-#persons = ['Alex', 'Peter']
-#organizations = ['Harris', 'Econ']
-#for person in persons:
-#  for organization in organizations:
-#    if person.organization_id == organization.id:
-#       print("{person} belongs to {organization}".format({
-#           "person": person.name,
-#           "organization": organization.name
-#         }))
-
-# search if the user_input dict somewhere contains
-# a magic value and replace all those magic values.
-#for key in search_space.keys():
-#  for value in magic_values:
-#    if user_input[key] == value:
-#      user_input[key] = interpret_magic_value(user_input[key])
-
+def get_number():
+    while True:
+        try:
+            return int(input('Please enter a number: '))
+        except ValueError:
+            pass
+            
 #-------------------------------------------------------------------------------
 # Recommendation: Comma-separated imports
 #-------------------------------------------------------------------------------
