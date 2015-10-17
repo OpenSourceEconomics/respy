@@ -32,3 +32,11 @@ print(err_msg + i)
 # Recommendation: Comma-separated imports
 #-------------------------------------------------------------------------------
 from multiprocessing import Array, Pool
+
+#-------------------------------------------------------------------------------
+# Critical: Upgrade from `md5` to `hashlib`
+#-------------------------------------------------------------------------------
+import md5
+md5_hash = md5.new()
+md5_hash.update("This module is deprecated")
+md5_hash.digest()
