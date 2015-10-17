@@ -22,15 +22,12 @@ from math import floor # Overwrites already imported floor function
 values = array([2.3, 8.7, 9.1])
   
 #-------------------------------------------------------------------------------
-# Potential Bug: Avoid nested loop joins
+# Critical: Avoid concatenating different built-in types
 #-------------------------------------------------------------------------------
-def get_number():
-    while True:
-        try:
-            return int(input('Please enter a number: '))
-        except ValueError:
-            pass
-            
+i = 12
+err_msg= "Error Index: "
+
+print(err_msg + i)
 #-------------------------------------------------------------------------------
 # Recommendation: Comma-separated imports
 #-------------------------------------------------------------------------------
