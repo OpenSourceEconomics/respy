@@ -152,9 +152,9 @@ def plot_return_education(xvals, yvals, spec):
 
     # Draw lines
     ax.plot(xvals, yvals['A'], '-k', label='Occupation A', linewidth=5,
-            color='green')
-    ax.plot(xvals, yvals['B'], '-k', label='Occupation B', linewidth=5,
             color='red')
+    ax.plot(xvals, yvals['B'], '-k', label='Occupation B', linewidth=5,
+            color='orange')
 
     # Both axes
     ax.tick_params(labelsize=16, direction='out', axis='both', top='off',

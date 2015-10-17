@@ -28,7 +28,7 @@ from robupy import read
 OCCUPATIONS = ['Occupation A', 'Occupation B', 'Schooling', 'Home']
 LABELS_SUBSET = ['0.000', '0.010', '0.020']
 MAX_PERIOD = 25
-
+COLORS = ['red', 'orange', 'blue', 'yellow']
 
 """ Auxiliary functions
 """
@@ -205,7 +205,8 @@ def plot_choices_ambiguity(shares_ambiguity):
 
     # Draw lines
     for i, key_ in enumerate(OCCUPATIONS):
-        ax.plot(levels, shares_ambiguity[key_], linewidth=5, label=key_)
+        ax.plot(levels, shares_ambiguity[key_], linewidth=5, label=key_, 
+            color=COLORS[i])
 
     # Both axes
     ax.tick_params(labelsize=18, direction='out', axis='both', top='off',
@@ -247,7 +248,7 @@ def plot_schooling_ambiguity(shares_time):
         for i, label in enumerate(LABELS_SUBSET):
             ax.plot(range(1, MAX_PERIOD + 1), shares_time[label][choice][
                                          :MAX_PERIOD],
-                    label=theta[i], linewidth=5)
+                    label=theta[i], linewidth=5, color=COLORS[i])
 
         # Both axes
         ax.tick_params(labelsize=18, direction='out', axis='both', top='off',
