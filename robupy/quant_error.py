@@ -37,3 +37,6 @@ import md5
 md5_hash = md5.new()
 md5_hash.update("This module is deprecated")
 md5_hash.digest()
+
+
+from zope.component import getMultiAdapter, getSiteManager
