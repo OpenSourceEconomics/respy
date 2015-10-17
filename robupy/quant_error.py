@@ -39,4 +39,4 @@ md5_hash.update("This module is deprecated")
 md5_hash.digest()
 
 
-from zope.component import getMultiAdapter, getSiteManager
+from multiprocessing import Pool, Array
