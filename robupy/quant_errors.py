@@ -2,7 +2,8 @@
 to include an interesting dashboard in the presentation.
 """
 #-------------------------------------------------------------------------------
-# Minor Issue: Avoid untyped exception handlers
+# Recommendation: 	Consider documenting your functions.
+# Minor Issue: 		Avoid untyped exception handlers.
 #-------------------------------------------------------------------------------
 def divide(a, b):
     try:
@@ -28,10 +29,6 @@ i = 12
 err_msg= "Error Index: "
 
 print(err_msg + i)
-#-------------------------------------------------------------------------------
-# Recommendation: Comma-separated imports
-#-------------------------------------------------------------------------------
-from multiprocessing import Array, Pool
 
 #-------------------------------------------------------------------------------
 # Critical: Upgrade from `md5` to `hashlib`
