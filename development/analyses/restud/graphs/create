@@ -20,7 +20,7 @@ from modules.auxiliary import plot_choice_patterns
 
 # module-wide variables
 HOME = os.path.dirname(os.path.realpath(__file__))
-OCCUPATIONS = ['Occupation A', 'Occupation B', 'Education', 'Home']
+OCCUPATIONS = ['Occupation A', 'Occupation B', 'School', 'Home']
 
 # PYTHONPATH
 sys.path.insert(0, os.environ['ROBUPY'])

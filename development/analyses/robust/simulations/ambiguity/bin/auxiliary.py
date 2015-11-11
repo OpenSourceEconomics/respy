@@ -204,9 +204,12 @@ def plot_choices_ambiguity(shares_ambiguity):
     ax = plt.figure(figsize=(12, 8)).add_subplot(111)
 
     # Draw lines
-    for i, key_ in enumerate(OCCUPATIONS):
-        ax.plot(levels, shares_ambiguity[key_], linewidth=5, label=key_, 
+    # TODO: ECON edit
+    # for i, key_ in enumerate(OCCUPATIONS):
+    for i, key_ in enumerate(['Occupation A', 'Occupation B']):
+        ax.plot(levels, shares_ambiguity[key_], linewidth=5, label=key_,
             color=COLORS[i])
+
 
     # Both axes
     ax.tick_params(labelsize=18, direction='out', axis='both', top='off',
@@ -214,7 +217,8 @@ def plot_choices_ambiguity(shares_ambiguity):
 
     # x axis
     ax.set_xlim([float(levels[0]), float(levels[-1])])
-    ax.set_xlabel('Ambiguity', fontsize=16)
+    ax.set_xlabel('Level of Ambiguity', fontsize=16)
+    plt.xticks([0.00, 0.01, 0.02], [0.00, 0.01, 0.02])
 
     # y axis
     ax.set_ylim([0, 1])
@@ -224,7 +228,7 @@ def plot_choices_ambiguity(shares_ambiguity):
     # Set up legend
     ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.10),
             fancybox=False, frameon=False, shadow=False,
-            ncol=4, fontsize=20)
+            ncol=2, fontsize=20)
 
     # Write out to
     plt.savefig('rslts/choices_ambiguity.png', bbox_inches='tight',
@@ -236,7 +240,13 @@ def plot_schooling_ambiguity(shares_time):
     """
     plt.figure(figsize=(12, 8)).add_subplot(111)
 
-    theta = [r'$\theta$', r'$\theta^{\prime}$', r'$\theta^{\prime\prime}$']
+    # TODO: Special labels for Harris Talk
+    if False:
+        theta = [r'$\theta$', r'$\theta^{\prime}$', r'$\theta^{\\prime\prime}$']
+    elif True:
+        theta = ['Risk', 'Low Ambiguity', 'High Ambiguity']
+    else:
+        theta = [r'$\theta = 0.00$', r'$\theta^{\prime} = 0.01$', r'$\theta^{\prime\prime}  = 0.02$']
 
     # Initialize plot
     for choice in ['Schooling']:
@@ -246,9 +256,18 @@ def plot_schooling_ambiguity(shares_time):
 
         # Baseline
         for i, label in enumerate(LABELS_SUBSET):
-            ax.plot(range(1, MAX_PERIOD + 1), shares_time[label][choice][
-                                         :MAX_PERIOD],
-                    label=theta[i], linewidth=5, color=COLORS[i])
+            # TODO: Special labels for Harris Talk
+            if False:
+                yvalues, xvalues = range(1, MAX_PERIOD + 1), shares_time[label][choice][
+                                         :MAX_PERIOD]
+            else:
+                yvalues, xvalues = range(1 + 15, MAX_PERIOD + 1 + 15), \
+                                   shares_time[label][choice][
+                                         :MAX_PERIOD]
+
+
+            ax.plot(yvalues, xvalues, label=theta[i], linewidth=5,
+                    color=COLORS[i])
 
         # Both axes
         ax.tick_params(labelsize=18, direction='out', axis='both', top='off',
@@ -257,11 +276,15 @@ def plot_schooling_ambiguity(shares_time):
         # Remove first element on y-axis
         ax.yaxis.get_major_ticks()[0].set_visible(False)
 
-        ax.set_xlim([1, MAX_PERIOD]), ax.set_ylim([0, 0.60])
+        # TODO: Special labels for Harris Talk
+        if False:
+            ax.set_xlim([1, MAX_PERIOD]), ax.set_ylim([0, 0.60])
+        else:
+            ax.set_xlim([1 + 15, MAX_PERIOD + 15]), ax.set_ylim([0, 0.60])
 
         # labels
-        ax.set_xlabel('Periods', fontsize=16)
-        ax.set_ylabel('Share in ' + choice, fontsize=16)
+        ax.set_xlabel('Age', fontsize=16)
+        ax.set_ylabel('Share in School', fontsize=16)
 
         # Set up legend
         ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.10),

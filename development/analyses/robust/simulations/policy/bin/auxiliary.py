@@ -59,19 +59,19 @@ def plot_policy_responsiveness(rslt):
     for key_ in [0.00, 0.01, 0.02]:
         response += [(rslt[key_][-2] - 1.00) * 100]
 
-    fig, ax = plt.subplots()
+    ax = plt.figure(figsize=(1.05*12, 1.05*8)).add_subplot(111)
 
     bar_width = 0.35
     plt.bar(np.arange(3) + 0.5 * bar_width, response, bar_width,
         color=['red', 'orange', 'blue'])
 
     # x axis
-    ax.set_xlabel('Ambiguity', fontsize=16)
+    ax.set_xlabel('Level of Ambiguity', fontsize=16)
 
     # y axis
     ax.set_ylim([0, 4])
     ax.yaxis.get_major_ticks()[0].set_visible(False)
-    ax.set_ylabel('Increase in Average Eduation (in %)', fontsize=16)
+    ax.set_ylabel('Increase in Average Schooling (in %)', fontsize=16)
 
     plt.xticks(np.arange(3) + bar_width, ('0.00', '0.01', '0.02'))
 

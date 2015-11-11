@@ -15,6 +15,7 @@ from multiprocessing import Pool
 from functools import partial
 
 import pickle as pkl
+import numpy as np
 
 import argparse
 import shutil
@@ -118,14 +119,24 @@ def plot_graphs(rslt, max_periods):
 
     # Plot the profiling results. First, we plot a comparison of pure FORTRAN to
     # pure PYTHON code.
-    labels = ['Python', 'Fortran']
+    # TODO: Harris edit
+    if False:
+        labels = ['Python', 'Fortran']
+    else:
+        labels = ['Development', 'Performance']
+
     subset = dict()
     for version in ['PYTHON', 'FORTRAN']:
         subset[version] = rslt[version]
     plot_profiling(periods_grid, subset, 'profiling', labels)
 
     # Plot the optimized implementations against each other.
-    labels = ['F2PY', 'Fortran']
+    # TODO: Harris edit
+    if False:
+        labels = ['F2PY', 'Fortran']
+    else:
+        labels = ['Fortran Interface', 'Pure Fortran']
+
     subset = dict()
     for version in ['F2PY', 'FORTRAN_OPTIMIZATION']:
         subset[version] = rslt[version]

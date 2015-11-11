@@ -11,7 +11,7 @@ from matplotlib.ticker import FuncFormatter
 from matplotlib import cm
 
 # Evaluation points
-EDU, EXP_A, EXP_B = 15, 15, 15
+EDU, EXP_A, EXP_B = 15, 5, 5
 
 """ Auxiliary function
 """
@@ -74,7 +74,8 @@ def plot_dimension_state_space(num_states):
     # Initialize plot
     ax = plt.figure(figsize=(12, 8)).add_subplot(111)
 
-    ax.plot(range(1, 41), num_states, '-k', )
+    ax.plot(range(1, 41), num_states, '-k', color='red',
+                        linewidth=5)
 
     # Both axes
     ax.tick_params(axis='both', right='off', top='off')
@@ -162,7 +163,7 @@ def plot_return_education(xvals, yvals, spec):
 
     # x-axis
     ax.set_xticklabels(ax.get_xticks().astype(int))
-    ax.set_xlabel('Years of Education', fontsize=16)
+    ax.set_xlabel('Years of Schooling', fontsize=16)
 
     # y-axis
     yticks = ['{:,.0f}'.format(y) for y in ax.get_yticks().astype(int)]
@@ -176,14 +177,14 @@ def plot_return_education(xvals, yvals, spec):
         fancybox=False, frameon=False, shadow=False, ncol=2, fontsize=20)
 
     # Write out to
-    plt.savefig('rslts/data_' + spec.lower() + '/returns_education.png',
+    plt.savefig('rslts/data_' + spec.lower() + '/returns_schooling.png',
                 bbox_inches='tight', format='png')
 
 
 def plot_choice_patterns(choice_probabilities, spec):
     """ Function to produce plot for choice patterns.
     """
-    labels = ['Home', 'Education', 'Occupation A', 'Occupation B']
+    labels = ['Home', 'School', 'Occupation A', 'Occupation B']
 
     rows, cols = 4, 40
 
@@ -219,7 +220,7 @@ def plot_choice_patterns(choice_probabilities, spec):
     ax.set_xlim([1, 40])
 
     # Y axis
-    ax.set_ylabel('Share', fontsize=16)
+    ax.set_ylabel('Share of Population', fontsize=16)
     ax.yaxis.get_major_ticks()[0].set_visible(False)
 
     # Legend
