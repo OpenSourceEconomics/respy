@@ -5,7 +5,7 @@ Toolbox for the simulation and estimation of robust dynamic discrete choice mode
 
 > Michael P. Keane, Kenneth I. Wolpin (1994). [The Solution and Estimation of Discrete Choice Dynamic Programming Models by Simulation and Interpolation: Monte Carlo Evidence](http://www.jstor.org/stable/2109768). *The Review of Economics and Statistics*, 76(4): 648-672.
 
-Additional information about our research is available [online](http://www.policy-lab.org) and you can
+Additional information about our research is available [online](http://www.policy-lab.org/research/research-projects) and you can
 sign up for our mailing list [here](http://eepurl.com/RStEH). Please feel free to contact us directly: 
 
 [![Join the chat at https://gitter.im/robustToolbox/contact](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/robustToolbox/contact?utm_source=share-link&utm_medium=link&utm_campaign=share-link)
