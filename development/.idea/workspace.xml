@@ -6,12 +6,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="56803c1c-81e4-4070-9cf6-fc7503291db5" name="Default" comment="82333.99728503">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/package/robupy/quant_error.py" afterPath="" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../../../../structRobust/README" afterPath="$PROJECT_DIR$/../../../../structRobust/README" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/analyses/restud/graphs/modules/auxiliary.py" afterPath="$PROJECT_DIR$/package/development/analyses/restud/graphs/modules/auxiliary.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/analyses/robust/simulations/ambiguity/bin/auxiliary.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/simulations/ambiguity/bin/auxiliary.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/analyses/robust/simulations/policy/bin/auxiliary.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/simulations/policy/bin/auxiliary.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/analyses/compu/graphs/create" afterPath="$PROJECT_DIR$/package/development/analyses/compu/graphs/create" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/analyses/restud/graphs/create" afterPath="$PROJECT_DIR$/package/development/analyses/restud/graphs/create" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/analyses/restud/lecture.ipynb" afterPath="$PROJECT_DIR$/package/development/analyses/restud/lecture.ipynb" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/.idea/workspace.xml" afterPath="$PROJECT_DIR$/package/development/.idea/workspace.xml" />
     </list>
     <ignored path="robustToolbox.iws" />
@@ -28,8 +25,8 @@
   <component name="CoverageDataManager">
     <SUITE FILE_PATH="coverage/robustToolbox$driver.coverage" NAME="driver Coverage Results" MODIFIED="1434952212771" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/development" />
     <SUITE FILE_PATH="coverage/robustToolbox$_driver.coverage" NAME="@driver Coverage Results" MODIFIED="1435679132741" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/development" />
-    <SUITE FILE_PATH="coverage/robustToolbox$run.coverage" NAME="@driver Coverage Results" MODIFIED="1435588682887" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/development" />
     <SUITE FILE_PATH="coverage/robustToolbox$run_tests.coverage" NAME="run_tests Coverage Results" MODIFIED="1434545871477" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/development" />
+    <SUITE FILE_PATH="coverage/robustToolbox$run.coverage" NAME="@driver Coverage Results" MODIFIED="1435588682887" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/development" />
     <SUITE FILE_PATH="coverage/robustToolbox$_profiling.coverage" NAME="@profiling Coverage Results" MODIFIED="1436280366337" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/package/development/profiling" />
   </component>
   <component name="CreatePatchCommitExecutor">
@@ -40,18 +37,7 @@
     <favorites_list name="robustToolbox" />
   </component>
   <component name="FileEditorManager">
-    <leaf>
-      <file leaf-file-name="auxiliary.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/package/development/analyses/restud/graphs/modules/auxiliary.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="148" column="13" selection-start-line="148" selection-start-column="13" selection-end-line="148" selection-end-column="13" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-    </leaf>
+    <leaf />
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -112,10 +98,10 @@
         <option value="$PROJECT_DIR$/package/robupy/clsRobupy.py" />
         <option value="$PROJECT_DIR$/package/development/analyses/robust/simulations/ambiguity/bin/create.py" />
         <option value="$PROJECT_DIR$/package/development/analyses/robust/simulations/policy/bin/create.py" />
-        <option value="$PROJECT_DIR$/package/development/analyses/restud/graphs/create" />
         <option value="$PROJECT_DIR$/package/development/analyses/compu/graphs/create" />
         <option value="$PROJECT_DIR$/package/development/analyses/robust/simulations/policy/bin/auxiliary.py" />
         <option value="$PROJECT_DIR$/package/development/analyses/robust/simulations/ambiguity/bin/auxiliary.py" />
+        <option value="$PROJECT_DIR$/package/development/analyses/restud/graphs/create" />
         <option value="$PROJECT_DIR$/package/development/analyses/restud/graphs/modules/auxiliary.py" />
       </list>
     </option>
@@ -130,9 +116,9 @@
   </component>
   <component name="ProjectFrameBounds">
     <option name="x" value="89" />
-    <option name="y" value="-6" />
-    <option name="width" value="2471" />
-    <option name="height" value="1606" />
+    <option name="y" value="33" />
+    <option name="width" value="1591" />
+    <option name="height" value="1017" />
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
     <entry key="Project Default">
@@ -177,6 +163,7 @@
     </navigator>
     <panes>
       <pane id="Scratches" />
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -224,6 +211,28 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="development" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="robustToolbox" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="robustToolbox" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="package" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="development" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tests" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -341,7 +350,6 @@
           </PATH>
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -674,28 +682,28 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="89" y="-6" width="2471" height="1606" extended-state="6" />
+    <frame x="89" y="33" width="1591" height="1017" extended-state="6" />
     <editor active="false" />
     <layout>
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.11935484" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.20775028" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.16645962" sideWeight="0.69050896" order="0" side_tool="true" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.16645962" sideWeight="0.30949107" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.16938111" sideWeight="0.6935841" order="0" side_tool="true" content_ui="tabs" />
+      <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.16938111" sideWeight="0.30641592" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.320208" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.22637014" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
-      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32615715" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.1967742" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32615715" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
     </layout>
     <layout-to-restore>
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
@@ -714,9 +722,9 @@
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3313201" sideWeight="0.33821872" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.1967742" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32615715" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="3" side_tool="false" content_ui="combo" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32615715" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.1967742" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
     </layout-to-restore>
   </component>
   <component name="Vcs.Log.UiProperties">
@@ -1062,13 +1070,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/analyses/restud/graphs/create">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.022099448">
-          <caret line="18" column="34" selection-start-line="18" selection-start-column="34" selection-end-line="18" selection-end-column="34" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/package/development/analyses/compu/graphs/acropolis.pbs">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -1099,8 +1100,16 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/package/development/analyses/restud/graphs/modules/auxiliary.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="148" column="13" selection-start-line="148" selection-start-column="13" selection-end-line="148" selection-end-column="13" />
+        <state vertical-scroll-proportion="0.77496994">
+          <caret line="219" column="22" selection-start-line="219" selection-start-column="22" selection-end-line="219" selection-end-column="22" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/development/analyses/restud/graphs/create">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.83870965">
+          <caret line="117" column="0" selection-start-line="117" selection-start-column="0" selection-end-line="117" selection-end-column="0" />
           <folding />
         </state>
       </provider>

@@ -217,7 +217,7 @@ def plot_choice_patterns(choice_probabilities, spec):
 
     # X axis
     ax.set_xlabel('Periods', fontsize=16)
-    ax.set_xlim([1, 40])
+    ax.set_xlim([0, 40])
 
     # Y axis
     ax.set_ylabel('Share of Population', fontsize=16)
