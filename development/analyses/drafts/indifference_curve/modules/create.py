@@ -79,4 +79,4 @@ for i, ambi in enumerate(AMBIGUITY_GRID):
 # Write the information to file for visual inspection for now.
 write_logging(AMBIGUITY_GRID, COST_GRID, final)
 
-# TODO:  LOGGING, ACROPOLIS, ... CLEANUP AND BREAK GRAPH
+# TODO: ... CLEANUP AND BREAK GRAPH
