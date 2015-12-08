@@ -39,9 +39,9 @@ def simulate(robupy_obj):
     assert (robupy_obj.get_status())
 
     # Distribute class attributes
-    num_agents = robupy_obj.get_attr('seed_simulation')
+    seed = robupy_obj.get_attr('seed_simulation')
 
-    seed = robupy_obj.get_attr('num_agents')
+    num_agents = robupy_obj.get_attr('num_agents')
 
     # Draw disturbances for the simulation.
     periods_eps_relevant = create_disturbances(robupy_obj, True)
