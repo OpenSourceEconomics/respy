@@ -25,29 +25,6 @@ def get_random_string(n=10):
                 string.digits) for _ in range(n))
 
 
-def cleanup():
-    """ This function cleans the baseline directory to start with a cleaned
-    slate.
-    """
-    for candidate in glob.glob('*'):
-        # Skip required files
-        if 'driver' in candidate:
-            continue
-        if 'acropolis' in candidate:
-            continue
-        if 'model.robupy.ini' in candidate:
-            continue
-        if 'modules' in candidate:
-            continue
-        if 'create' in candidate:
-            continue
-        # Remove files
-        try:
-            os.remove(candidate)
-        except IsADirectoryError:
-            shutil.rmtree(candidate)
-
-
 def write_logging(AMBIGUITY_GRID, COST_GRID, final):
     """ Write out some information to monitor the construction of the figure.
     """

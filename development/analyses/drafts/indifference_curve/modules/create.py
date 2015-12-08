@@ -28,6 +28,7 @@ sys.path.insert(0, os.environ['ROBUPY'])
 
 # project library
 from auxiliary import *
+from clean import cleanup
 
 # Import function to that a fast version of the toolbox is available.
 from modules.auxiliary import compile_package
@@ -78,5 +79,6 @@ for i, ambi in enumerate(AMBIGUITY_GRID):
             final[i, j] = rslts[k]
 # Write the information to file for visual inspection for now.
 write_logging(AMBIGUITY_GRID, COST_GRID, final)
-
+# Cleanup intermediate files, but keep the output with results.
+cleanup(False)
 # TODO: ... CLEANUP AND BREAK GRAPH

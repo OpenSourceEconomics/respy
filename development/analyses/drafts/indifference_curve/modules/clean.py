@@ -8,11 +8,15 @@ import glob
 import os
 
 # module-wide variables
-SAVE_FILES = ['modules', 'clean', 'create', 'model.robupy.ini', 'acropolis.pbs']
 
 ''' Auxiliary functions
 '''
-def cleanup():
+def cleanup(all_=True):
+
+    SAVE_FILES = ['modules', 'clean', 'create', 'model.robupy.ini', 'acropolis.pbs']
+
+    if all_ is False:
+        SAVE_FILES += ['indifference.robupy.log']
 
     for name in glob.glob('*'):
 
