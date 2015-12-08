@@ -10,6 +10,4 @@
 cd $PBS_O_WORKDIR
 source $HOME/.local/bin/virtualenvwrapper.sh
 workon robustToolbox3
-python -O create
-
-echo "Total CPU count = $NP"
+python -O /home/eisenhauer/robustToolbox/package/development/analyses/drafts/indifference_curve/create --procs 5

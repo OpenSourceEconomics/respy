@@ -9,7 +9,6 @@ import random
 import string
 import shutil
 import shlex
-import glob
 import os
 
 # project library
@@ -88,7 +87,7 @@ def get_baseline():
     return base_choices
 
 
-def criterion_function(base_choices, x):
+def pair_evaluation(base_choices, x):
 
     # Distribute input arguments
     ambi, point = x

@@ -6,9 +6,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="56803c1c-81e4-4070-9cf6-fc7503291db5" name="Default" comment="82333.99728503">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/.idea/dictionaries/peisenha.xml" afterPath="$PROJECT_DIR$/package/development/.idea/dictionaries/peisenha.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/.idea/workspace.xml" afterPath="$PROJECT_DIR$/package/development/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/modules/auxiliary.py" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/modules/auxiliary.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/modules/clean.py" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/modules/clean.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/modules/create.py" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/modules/create.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../../../../structRobust/README" afterPath="$PROJECT_DIR$/../../../../structRobust/README" />
     </list>
@@ -42,20 +42,10 @@
       <file leaf-file-name="create.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/modules/create.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-1.6542056">
-              <caret line="14" column="0" selection-start-line="14" selection-start-column="0" selection-end-line="14" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="clean.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/modules/clean.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="20" column="0" selection-start-line="20" selection-start-column="0" selection-end-line="20" selection-end-column="0" />
+            <state vertical-scroll-proportion="-0.1588785">
+              <caret line="109" column="22" selection-start-line="109" selection-start-column="22" selection-end-line="109" selection-end-column="22" />
               <folding>
-                <element signature="e#92#105#0" expanded="true" />
+                <element signature="e#141#173#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -65,8 +55,10 @@
         <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/modules/auxiliary.py">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="75" column="18" selection-start-line="75" selection-start-column="18" selection-end-line="75" selection-end-column="18" />
-              <folding />
+              <caret line="89" column="19" selection-start-line="89" selection-start-column="19" selection-end-line="89" selection-end-column="19" />
+              <folding>
+                <element signature="e#123#141#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -134,9 +126,9 @@
         <option value="$PROJECT_DIR$/package/development/working/driver.py" />
         <option value="$PROJECT_DIR$/package/development/working/modules/auxiliary.py" />
         <option value="$PROJECT_DIR$/package/development/working/modules/create.py" />
+        <option value="$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/modules/clean.py" />
         <option value="$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/modules/auxiliary.py" />
         <option value="$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/modules/create.py" />
-        <option value="$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/modules/clean.py" />
       </list>
     </option>
   </component>
@@ -366,6 +358,7 @@
     <property name="settings.editor.splitter.proportion" value="0.29015085" />
     <property name="recentsLimit" value="5" />
     <property name="restartRequiresConfirmation" value="true" />
+    <property name="SearchEverywhereHistoryKey" value="&#9;FILE&#9;file:///home/peisenha/Dropbox/@office/workspace/software/repositories/organizations/robustToolbox/package/development/analyses/drafts/indifference_curve/modules/clean.py" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -758,8 +751,13 @@
           <line>5</line>
           <option name="timeStamp" value="29" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" type="python-line">
+          <url>file://$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/modules/auxiliary.py</url>
+          <line>5</line>
+          <option name="timeStamp" value="40" />
+        </line-breakpoint>
       </breakpoints>
-      <option name="time" value="40" />
+      <option name="time" value="41" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -1094,25 +1092,9 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/create">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/modules/auxiliary.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="75" column="18" selection-start-line="75" selection-start-column="18" selection-end-line="75" selection-end-column="18" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/modules/clean.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
+        <state vertical-scroll-proportion="0.11214953">
           <caret line="20" column="0" selection-start-line="20" selection-start-column="0" selection-end-line="20" selection-end-column="0" />
           <folding>
             <element signature="e#92#105#0" expanded="true" />
@@ -1120,11 +1102,31 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/create">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-1.0186915">
+          <caret line="69" column="21" selection-start-line="69" selection-start-column="21" selection-end-line="69" selection-end-column="21" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/modules/auxiliary.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="89" column="19" selection-start-line="89" selection-start-column="19" selection-end-line="89" selection-end-column="19" />
+          <folding>
+            <element signature="e#123#141#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/modules/create.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-1.6542056">
-          <caret line="14" column="0" selection-start-line="14" selection-start-column="0" selection-end-line="14" selection-end-column="0" />
-          <folding />
+        <state vertical-scroll-proportion="-0.1588785">
+          <caret line="109" column="22" selection-start-line="109" selection-start-column="22" selection-end-line="109" selection-end-column="22" />
+          <folding>
+            <element signature="e#141#173#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
