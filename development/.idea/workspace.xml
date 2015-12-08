@@ -6,10 +6,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="56803c1c-81e4-4070-9cf6-fc7503291db5" name="Default" comment="82333.99728503">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/clean" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/modules/clean.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/.idea/workspace.xml" afterPath="$PROJECT_DIR$/package/development/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/modules/create.py" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/modules/create.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../../../../structRobust/README" afterPath="$PROJECT_DIR$/../../../../structRobust/README" />
     </list>
     <ignored path="robustToolbox.iws" />
