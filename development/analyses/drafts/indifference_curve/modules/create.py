@@ -23,7 +23,7 @@ from auxiliary import write_logging
 from auxiliary import get_baseline
 from clean import cleanup
 
-# Import function to that a fast version of the toolbox is available.
+# Make sure that fast evaluation of the model is possible
 from modules.auxiliary import compile_package
 compile_package('--fortran --optimization', True)
 
@@ -62,7 +62,6 @@ def grid_search(AMBIGUITY_GRID, COST_GRID, num_procs):
                 if ambi != task[0] or point != task[1]:
                     continue
                 final[i, j] = rslts[k]
-
     # Finishing
     return final
 
