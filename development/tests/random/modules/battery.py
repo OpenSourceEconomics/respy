@@ -140,7 +140,7 @@ def test_93():
 
         # Setting up PYTHON SLSQP interface for constraints
         constraint = dict()
-        constraint['type'] = 'ineq'
+        constraint['type'] = 'eq'
         constraint['args'] = (shocks, level)
         constraint['fun'] = _divergence
 
@@ -256,7 +256,7 @@ def test_94():
 
     # Setting up PYTHON SLSQP interface for constraints
     constraint = dict()
-    constraint['type'] = 'ineq'
+    constraint['type'] = 'eq'
     constraint['args'] = ()
     constraint['fun'] = debug_constraint_function
     constraint['jac'] = debug_constraint_derivative
