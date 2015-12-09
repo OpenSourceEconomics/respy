@@ -146,7 +146,7 @@ def _prep_kl(shocks, level):
     # Construct constraint
     constraint_divergence = dict()
 
-    constraint_divergence['type'] = 'ineq'
+    constraint_divergence['type'] = 'eq'
 
     constraint_divergence['fun'] = _divergence
 

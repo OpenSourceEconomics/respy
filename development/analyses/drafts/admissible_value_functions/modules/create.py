@@ -5,13 +5,8 @@ and really making a decision.
 """
 
 # standard library
-from multiprocessing import Pool
-from functools import partial
 from scipy.optimize import minimize
-
 import numpy as np
-
-import argparse
 import sys
 import os
 
@@ -21,46 +16,31 @@ sys.path.insert(0, os.environ['ROBUPY'])
 
 # project library
 from robupy import *
+
 from robupy.python.py.auxiliary import simulate_emax
 from robupy.python.py.ambiguity import transform_disturbances_ambiguity
 from robupy.python.py.ambiguity import _prep_kl, _divergence
 
+from robupy.tests.random_init import print_random_dict
 from robupy.auxiliary import create_disturbances
 
-
+# Make sure that fast evaluation of the model is possible
+from modules.auxiliary import compile_package
+compile_package('--fortran --optimization', True)
 ################################################################################
 ################################################################################
-# Specify request
-period, k = 0, 0
-
-# Solve baseline distribution
-robupy_obj = read('model.robupy.ini')
-robupy_obj = solve(robupy_obj)
-
-# Distribute objects from solution
-periods_payoffs_ex_ante = robupy_obj.get_attr('periods_payoffs_ex_ante')
-mapping_state_idx = robupy_obj.get_attr('mapping_state_idx')
-periods_emax = robupy_obj.get_attr('periods_emax')
-is_ambiguous = robupy_obj.get_attr('is_ambiguous')
-num_periods = robupy_obj.get_attr('num_periods')
-states_all = robupy_obj.get_attr('states_all')
-num_draws = robupy_obj.get_attr('num_draws')
-edu_start = robupy_obj.get_attr('edu_start')
-edu_max = robupy_obj.get_attr('edu_max')
-shocks = robupy_obj.get_attr('shocks')
-delta = robupy_obj.get_attr('delta')
-level = robupy_obj.get_attr('level')
-
-# Extract subsets of information
-payoffs_ex_ante = periods_payoffs_ex_ante[period, k, :]
+# This is a slightly modified copy of the criterion function in the ambiguity
+# module. The ability to switch the sign was added to allow for maximization
+# as well as minimization.
 
 
-# TODO: Would be great to use the packaged version instead.
 def _criterion(x, num_draws, eps_relevant, period, k, payoffs_ex_ante, edu_max,
         edu_start, mapping_state_idx, states_all, num_periods, periods_emax,
-        delta):
+        delta, sign=1):
     """ Simulate expected future value for alternative shock distributions.
     """
+    # Checks
+    assert (sign in [1, -1])
 
     # Transformation of standard normal deviates to relevant distributions.
     eps_relevant_emax = transform_disturbances_ambiguity(eps_relevant, x)
@@ -71,52 +51,98 @@ def _criterion(x, num_draws, eps_relevant, period, k, payoffs_ex_ante, edu_max,
                         periods_emax, states_all, mapping_state_idx, delta)
 
     # Finishing
-    rslt = simulated
-    print(rslt, x, _divergence(x, shocks, level))
-    return rslt
+    return sign*simulated
+################################################################################
+################################################################################
+AMBIGUITY_GRID = [0.00, 0.01, 0.02, 0.03]
 
-
-
-# This is part of the code is different in the case with and without
-# ambiguity. Note that the expected future values will be different as one is
-# based on the worst case evaluation. This needs to be reproduced next.
-# TODO: INTEGRATE WORST CASE EVALUATION, THEN TWEAK IT FOR BEST CASE AS WELL.
-periods_eps_relevant = create_disturbances(robupy_obj, False)
-eps_relevant = periods_eps_relevant[period, :, :]
-
-if not is_ambiguous:
-    eps_relevant_emax = eps_relevant
-else:
-
-    args = (num_draws, eps_relevant, period, k, payoffs_ex_ante, edu_max,
-                edu_start, mapping_state_idx, states_all, num_periods, periods_emax,
-                delta)
-
-    # Initialize options.
-    import random
-    options = dict()
-    options['maxiter'] = 10000000
-
-    x0 = np.array([random.random(),  random.random()])*0.000001
-
-    constraints = _prep_kl(shocks, level)
-
-    opt = minimize(_criterion, x0, args, method='SLSQP', options=options,
-                           constraints=constraints)
-
-    print(opt['success'])
-
-    #assert (opt['success'] is True)
-    eps_relevant_emax = transform_disturbances_ambiguity(eps_relevant, opt['x'])
-
-
-
-rslt = simulate_emax(num_periods, num_draws, period, k, eps_relevant_emax,
-        payoffs_ex_ante, edu_max, edu_start, periods_emax, states_all,
-        mapping_state_idx, delta)
-
-emax_simulated, payoffs_ex_post, future_payoffs = rslt
-
-print(emax_simulated, periods_emax[period, k])
-
-assert (emax_simulated == periods_emax[period, k])
+# Initialize auxiliary objects
+period, rslt = 1, dict()
+# Iterate over the alternative levels of ambiguity.
+for ambi in AMBIGUITY_GRID:
+    # Initialize container
+    rslt[ambi] = []
+    # Solve the model for alternative values of ambiguity.
+    robupy_obj = read('model.robupy.ini')
+    init_dict = robupy_obj.get_attr('init_dict')
+    init_dict['AMBIGUITY']['level'] = ambi
+    print_random_dict(init_dict)
+    robupy_obj = read('test.robupy.ini')
+    robupy_obj = solve(robupy_obj)
+    # Distribute objects from solution. These are then used to reproduce the
+    # EMAX calculations from inside the toolbox.
+    periods_payoffs_ex_ante = robupy_obj.get_attr('periods_payoffs_ex_ante')
+    mapping_state_idx = robupy_obj.get_attr('mapping_state_idx')
+    periods_emax = robupy_obj.get_attr('periods_emax')
+    is_ambiguous = robupy_obj.get_attr('is_ambiguous')
+    num_periods = robupy_obj.get_attr('num_periods')
+    states_all = robupy_obj.get_attr('states_all')
+    num_draws = robupy_obj.get_attr('num_draws')
+    edu_start = robupy_obj.get_attr('edu_start')
+    edu_max = robupy_obj.get_attr('edu_max')
+    shocks = robupy_obj.get_attr('shocks')
+    delta = robupy_obj.get_attr('delta')
+    level = robupy_obj.get_attr('level')
+    # Iterate over the four alternative decisions for an agent at the
+    # beginning of a decision tree.
+    for state_indicator in range(4):
+        # Determine the maximum and minimum value of the value function.
+        bounds = []
+        for sign in [1, -1]:
+            # Extract subsets of information
+            payoffs_ex_ante = periods_payoffs_ex_ante[period, state_indicator, :]
+            periods_eps_relevant = create_disturbances(robupy_obj, False)
+            eps_relevant = periods_eps_relevant[period, :, :]
+            # In the risk-only case, no modification of the distribution of
+            # the disturbances is required. This case is only handled in this
+            # script for benchmarking purposes.
+            eps_relevant_emax = eps_relevant
+            # In the case of ambiguity, the upper and lower bounds for the
+            # value function are required.
+            if is_ambiguous:
+                # Set up the arguments for the optimization request.
+                args = (num_draws, eps_relevant, period, state_indicator,
+                        payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,
+                        states_all, num_periods, periods_emax, delta, sign)
+                constraints = _prep_kl(shocks, level)
+                x0, options = [0.0, 0.0], dict()
+                options['maxiter'] = 100000000
+                # Run the optimization to determine upper and lower bound
+                # depending on the sign variable.
+                opt = minimize(_criterion, x0, args, method='SLSQP', options=options,
+                        constraints=constraints)
+                # Check success
+                assert (opt['success'] == True)
+                # Transform relevant disturbances according to results from
+                # optimization step.
+                eps_relevant_emax = transform_disturbances_ambiguity(eps_relevant, opt['x'])
+            # Back out the relevant EMAX using the results from the
+            # optimization.
+            emax_simulated, _, _ = simulate_emax(num_periods, num_draws, period,
+                state_indicator, eps_relevant_emax, payoffs_ex_ante, edu_max,
+                edu_start, periods_emax, states_all, mapping_state_idx, delta)
+            # Collect results in tuples for each level of ambiguity.
+            bounds += [emax_simulated]
+            # This is a manual test as the results should be identical for
+            # risk-only case and the worst-case ambiguity evaluation. They
+            # will be different if the best-case evaluation is requested.
+            if sign == 1 or ambi == 0.0:
+                np.testing.assert_almost_equal(emax_simulated,
+                    periods_emax[period, state_indicator])
+        # Collect bounds
+        rslt[ambi] += [bounds]
+# Let us run some basic checks on the results object. This is also useful to
+# understand the structure of the object when revisiting the code later.
+assert (set(rslt.keys()) == set(AMBIGUITY_GRID))
+for ambi in AMBIGUITY_GRID:
+    assert (len(rslt[ambi]) == 4)
+    for bounds in rslt[ambi]:
+        if ambi == 0.00:
+            assert (bounds[0] == bounds[1])
+        else:
+            assert (bounds[0] < bounds[1])
+################################################################################
+# Further Processing
+################################################################################
+for ambi in AMBIGUITY_GRID:
+    print(ambi, rslt[ambi])
