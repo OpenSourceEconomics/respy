@@ -19,7 +19,10 @@ from modules.auxiliary import *
 
 ''' Request
 '''
-label, seed = '99', 88349
+# Failed seeds ...
+#91317, 61905, 14397, 39101, 11692, 62692
+
+label, seed = '94', 61905
 
 ''' Error Reproduction
 '''

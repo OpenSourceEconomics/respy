@@ -64,8 +64,8 @@ SUBROUTINE slsqp_debug(x_internal, x_start, maxiter, ftol, &
     !---------------------------------------------------------------------------
     ! This is hard-coded for the ROBUPY package requirements
     !---------------------------------------------------------------------------
-    meq = 0         ! Number of equality constraints
-    mieq = 1        ! Number of inequality constraints
+    meq = 1         ! Number of equality constraints
+    mieq = 0        ! Number of inequality constraints
     !---------------------------------------------------------------------------
     !---------------------------------------------------------------------------
 
