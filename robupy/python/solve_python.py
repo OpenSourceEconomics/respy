@@ -55,18 +55,18 @@ def solve_python(robupy_obj):
     # in the case of an ambiguous world.
     periods_eps_relevant = create_disturbances(robupy_obj, False)
 
-    # Calculate ex ante payoffs which are later used in the backward
+    # Calculate systematic payoffs which are later used in the backward
     # induction procedure. These are calculated without any reference
     # to the alternative shock distributions.
-    logger.info('Starting calculation of ex ante payoffs')
+    logger.info('Starting calculation of systematic payoffs')
 
-    periods_payoffs_ex_ante = _wrapper_calculate_payoffs_ex_ante(robupy_obj)
+    periods_payoffs_systematic = _wrapper_calculate_payoffs_systematic(robupy_obj)
 
     logger.info('... finished \n')
 
     robupy_obj.unlock()
 
-    robupy_obj.set_attr('periods_payoffs_ex_ante', periods_payoffs_ex_ante)
+    robupy_obj.set_attr('periods_payoffs_systematic', periods_payoffs_systematic)
 
     robupy_obj.lock()
 
@@ -108,8 +108,8 @@ def solve_python(robupy_obj):
 '''
 
 
-def _wrapper_calculate_payoffs_ex_ante(robupy_obj):
-    """ Calculate the ex ante payoffs.
+def _wrapper_calculate_payoffs_systematic(robupy_obj):
+    """ Calculate the systematic payoffs.
     """
     # Distribute class attributes
     states_number_period = robupy_obj.get_attr('states_number_period')
@@ -136,21 +136,21 @@ def _wrapper_calculate_payoffs_ex_ante(robupy_obj):
 
     # Interface to core functions
     if is_python:
-        periods_payoffs_ex_ante = python_library.calculate_payoffs_ex_ante(
+        periods_payoffs_systematic = python_library.calculate_payoffs_systematic(
             num_periods, states_number_period, states_all, edu_start,
             coeffs_a, coeffs_b, coeffs_edu, coeffs_home, max_states_period)
     else:
         import robupy.python.f2py.f2py_library as f2py_library
-        periods_payoffs_ex_ante = \
-            f2py_library.wrapper_calculate_payoffs_ex_ante(num_periods,
+        periods_payoffs_systematic = \
+            f2py_library.wrapper_calculate_payoffs_systematic(num_periods,
             states_number_period, states_all, edu_start, coeffs_a, coeffs_b,
             coeffs_edu, coeffs_home, max_states_period)
 
     # Set missing values to NAN
-    periods_payoffs_ex_ante = replace_missing_values(periods_payoffs_ex_ante)
+    periods_payoffs_systematic = replace_missing_values(periods_payoffs_systematic)
 
     # Finishing
-    return periods_payoffs_ex_ante
+    return periods_payoffs_systematic
 
 
 def _wrapper_create_state_space(robupy_obj):
@@ -200,7 +200,7 @@ def _wrapper_backward_induction_procedure(robupy_obj, periods_eps_relevant,
     """ Wrapper for backward induction procedure.
     """
     # Distribute class attributes
-    periods_payoffs_ex_ante = robupy_obj.get_attr('periods_payoffs_ex_ante')
+    periods_payoffs_systematic = robupy_obj.get_attr('periods_payoffs_systematic')
 
     states_number_period = robupy_obj.get_attr('states_number_period')
 
@@ -230,16 +230,16 @@ def _wrapper_backward_induction_procedure(robupy_obj, periods_eps_relevant,
         periods_emax, periods_payoffs_ex_post, periods_future_payoffs = \
             python_library.backward_induction(num_periods, max_states_period,
                 periods_eps_relevant, num_draws, states_number_period,
-                periods_payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,
+                periods_payoffs_systematic, edu_max, edu_start, mapping_state_idx,
                 states_all, delta, is_debug, shocks, level, measure)
     else:
         import robupy.python.f2py.f2py_library as f2py_library
         periods_emax, periods_payoffs_ex_post, periods_future_payoffs = \
             f2py_library.wrapper_backward_induction(num_periods,
                 max_states_period, periods_eps_relevant, num_draws,
-                states_number_period, periods_payoffs_ex_ante, edu_max,
-                edu_start, mapping_state_idx, states_all, delta, is_debug,
-                shocks, level)
+                states_number_period, periods_payoffs_systematic,
+                edu_max, edu_start, mapping_state_idx, states_all, delta,
+                is_debug, shocks, level)
 
     # Replace missing values
     periods_emax = replace_missing_values(periods_emax)

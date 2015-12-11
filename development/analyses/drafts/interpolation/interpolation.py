@@ -48,7 +48,7 @@ def interpolation():
     shifts = (shocks[0, 0]/2.0, shocks[1, 1]/2.0)
 
 
-    periods_payoffs_ex_ante = robupy_obj.get_attr('periods_payoffs_ex_ante')
+    periods_payoffs_systematic = robupy_obj.get_attr('periods_payoffs_systematic')
 
     delta = robupy_obj.get_attr('delta')
     edu_max = robupy_obj.get_attr('edu_max')
@@ -108,10 +108,10 @@ def interpolation():
 
             for i, k in enumerate(range(num_states)):
 
-                payoffs_ex_ante = periods_payoffs_ex_ante[period, k, :]
+                payoffs_systematic = periods_payoffs_systematic[period, k, :]
 
                 expected_values, _, _ = get_total_value(period, num_periods, delta,
-                    payoffs_ex_ante, [1.00, 1.00, 0.00, 0.00],
+                    payoffs_systematic, [1.00, 1.00, 0.00, 0.00],
                     edu_max, edu_start, mapping_state_idx, periods_emax, k,
                     states_all)
 
@@ -138,10 +138,10 @@ def interpolation():
                 if not is_simulated[i]:
                     continue
                 # Extract payoffs
-                payoffs_ex_ante = periods_payoffs_ex_ante[period, k, :]
+                payoffs_systematic = periods_payoffs_systematic[period, k, :]
                 # Simulate the expected future value.
                 emax, _, _ = get_payoffs_risk(num_draws, eps_relevant, period, k,
-                                payoffs_ex_ante, edu_max, edu_start,
+                                payoffs_systematic, edu_max, edu_start,
                                 mapping_state_idx, states_all, num_periods,
                                 periods_emax_int, delta)
                 # Construct dependent variable
@@ -172,12 +172,12 @@ def interpolation():
             for k in range(num_states):
 
                 # Extract payoffs
-                payoffs_ex_ante = periods_payoffs_ex_ante[period, k, :]
+                payoffs_systematic = periods_payoffs_systematic[period, k, :]
 
                 # Simulate the expected future value.
                 emax, _, _ = \
                     get_payoffs_risk(num_draws, eps_relevant, period, k,
-                        payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,
+                        payoffs_systematic, edu_max, edu_start, mapping_state_idx,
                         states_all, num_periods, periods_emax_int, delta)
 
                 # Collect

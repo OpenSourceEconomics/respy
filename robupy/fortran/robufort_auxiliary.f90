@@ -35,7 +35,7 @@ SUBROUTINE logging_solution(indicator, period)
 
     ! Ex Ante Payoffs
     ELSEIF (indicator == 2) THEN
-      WRITE(99, *) " Starting calculation of ex ante payoffs  "
+      WRITE(99, *) " Starting calculation of systematic payoffs  "
       WRITE(99, *) ""
 
     ! Backward induction procedure

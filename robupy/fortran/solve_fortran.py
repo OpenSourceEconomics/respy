@@ -65,7 +65,7 @@ def add_results(robupy_obj):
 
     labels += ['states_all']
 
-    labels += ['periods_payoffs_ex_ante']
+    labels += ['periods_payoffs_systematic']
 
     labels += ['periods_emax']
 

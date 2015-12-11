@@ -7,7 +7,7 @@ import numpy as np
 
 
 def simulate_emax(num_periods, num_draws, period, k, eps_relevant_emax,
-        payoffs_ex_ante, edu_max, edu_start, periods_emax, states_all,
+        payoffs_systematic, edu_max, edu_start, periods_emax, states_all,
         mapping_state_idx, delta):
     """ Simulate expected future value.
     """
@@ -22,7 +22,7 @@ def simulate_emax(num_periods, num_draws, period, k, eps_relevant_emax,
 
         # Get total value of admissible states
         total_payoffs, payoffs_ex_post, future_payoffs = get_total_value(period,
-            num_periods, delta, payoffs_ex_ante, disturbances, edu_max,
+            num_periods, delta, payoffs_systematic, disturbances, edu_max,
             edu_start, mapping_state_idx, periods_emax, k, states_all)
 
         # Determine optimal choice
@@ -38,7 +38,7 @@ def simulate_emax(num_periods, num_draws, period, k, eps_relevant_emax,
     return emax_simulated, payoffs_ex_post, future_payoffs
 
 
-def get_total_value(period, num_periods, delta, payoffs_ex_ante,
+def get_total_value(period, num_periods, delta, payoffs_systematic,
                     disturbances, edu_max, edu_start, mapping_state_idx,
                     periods_emax, k, states_all):
     """ Get total value of all possible states.
@@ -51,10 +51,10 @@ def get_total_value(period, num_periods, delta, payoffs_ex_ante,
 
     # Calculate ex post payoffs
     for j in [0, 1]:
-        payoffs_ex_post[j] = payoffs_ex_ante[j] * disturbances[j]
+        payoffs_ex_post[j] = payoffs_systematic[j] * disturbances[j]
 
     for j in [2, 3]:
-        payoffs_ex_post[j] = payoffs_ex_ante[j] + disturbances[j]
+        payoffs_ex_post[j] = payoffs_systematic[j] + disturbances[j]
 
     # Get future values
     if period != (num_periods - 1):

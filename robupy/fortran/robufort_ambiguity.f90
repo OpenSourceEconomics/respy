@@ -30,7 +30,7 @@ CONTAINS
 !*******************************************************************************
 SUBROUTINE get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
                 future_payoffs, num_draws, eps_relevant, period, k, & 
-                payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
+                payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
                 states_all, num_periods, periods_emax, delta, is_debug, &
                 shocks, level)
 
@@ -49,7 +49,7 @@ SUBROUTINE get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
     INTEGER(our_int), INTENT(IN)    :: period
     INTEGER(our_int), INTENT(IN)    :: k
 
-    REAL(our_dble), INTENT(IN)      :: payoffs_ex_ante(:)
+    REAL(our_dble), INTENT(IN)      :: payoffs_systematic(:)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:,:)
     REAL(our_dble), INTENT(IN)      :: shocks(:, :)
     REAL(our_dble), INTENT(IN)      :: eps_relevant(:, :)
@@ -80,7 +80,7 @@ SUBROUTINE get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
 
     ! Determine worst case scenario
     CALL slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
-            eps_relevant, period, k, payoffs_ex_ante, edu_max, edu_start, &
+            eps_relevant, period, k, payoffs_systematic, edu_max, edu_start, &
             mapping_state_idx, states_all, num_periods, periods_emax, &
             delta, is_debug, shocks, level)
 
@@ -91,14 +91,14 @@ SUBROUTINE get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
     ! Evaluate expected future value for perturbed values
     CALL simulate_emax(emax_simulated, payoffs_ex_post, future_payoffs, &
             num_periods, num_draws, period, k, eps_relevant_emax, &
-            payoffs_ex_ante, edu_max, edu_start, periods_emax, states_all, &
+            payoffs_systematic, edu_max, edu_start, periods_emax, states_all, &
             mapping_state_idx, delta)
 
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
-            eps_relevant, period, k, payoffs_ex_ante, edu_max, edu_start, &
+            eps_relevant, period, k, payoffs_systematic, edu_max, edu_start, &
             mapping_state_idx, states_all, num_periods, periods_emax, &
             delta, is_debug, shocks, level)
 
@@ -114,7 +114,7 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
     INTEGER(our_int), INTENT(IN)    :: maxiter
 
     REAL(our_dble), INTENT(IN)      :: eps_relevant(:, :)
-    REAL(our_dble), INTENT(IN)      :: payoffs_ex_ante(:)
+    REAL(our_dble), INTENT(IN)      :: payoffs_systematic(:)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:,:)
     REAL(our_dble), INTENT(IN)      :: delta
     REAL(our_dble), INTENT(IN)      :: eps
@@ -198,12 +198,12 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
 
     ! Initialize criterion function at starting values
     f = criterion(x_internal, num_draws, eps_relevant, period, k, &
-            payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
+            payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
             states_all, num_periods, periods_emax, delta)
 
 
     g(:2) = criterion_approx_gradient(x_internal, eps, num_draws, &
-            eps_relevant, period, k, payoffs_ex_ante, edu_max, edu_start, &
+            eps_relevant, period, k, payoffs_systematic, edu_max, edu_start, &
             mapping_state_idx, states_all, num_periods, periods_emax, &
             delta)
 
@@ -218,7 +218,7 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
         IF (mode == one_int) THEN
 
             f = criterion(x_internal, num_draws, eps_relevant, period, k, &
-                    payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
+                    payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
                     states_all, num_periods, periods_emax, delta)
 
             c = divergence(x_internal, shocks, level)
@@ -229,7 +229,7 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
         ELSEIF (mode == - one_int) THEN
 
             g(:2) = criterion_approx_gradient(x_internal, eps, num_draws, &
-                    eps_relevant, period, k, payoffs_ex_ante, edu_max, &
+                    eps_relevant, period, k, payoffs_systematic, edu_max, &
                     edu_start, mapping_state_idx, states_all, num_periods, &
                     periods_emax, delta)
 
@@ -270,7 +270,7 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 FUNCTION criterion(x_internal, num_draws, eps_relevant, period, k, &
-                payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
+                payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
                 states_all, num_periods, periods_emax, delta)
 
     !/* external objects    */
@@ -278,7 +278,7 @@ FUNCTION criterion(x_internal, num_draws, eps_relevant, period, k, &
     REAL(our_dble)                  :: criterion
 
     REAL(our_dble), INTENT(IN)      :: eps_relevant(:, :)
-    REAL(our_dble), INTENT(IN)      :: payoffs_ex_ante(:)
+    REAL(our_dble), INTENT(IN)      :: payoffs_systematic(:)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:,:)
     REAL(our_dble), INTENT(IN)      :: x_internal(:)
     REAL(our_dble), INTENT(IN)      :: delta
@@ -310,7 +310,7 @@ FUNCTION criterion(x_internal, num_draws, eps_relevant, period, k, &
     ! Evaluate expected future value
     CALL simulate_emax(emax_simulated, payoffs_ex_post, future_payoffs, &
             num_periods, num_draws, period, k, eps_relevant_emax, &
-            payoffs_ex_ante, edu_max, edu_start, periods_emax, states_all, &
+            payoffs_systematic, edu_max, edu_start, periods_emax, states_all, &
             mapping_state_idx, delta)
 
     criterion = emax_simulated
@@ -319,7 +319,7 @@ END FUNCTION
 !*******************************************************************************
 !*******************************************************************************
 FUNCTION criterion_approx_gradient(x_internal, eps, num_draws, eps_relevant, &
-                period, k, payoffs_ex_ante, edu_max, edu_start, &
+                period, k, payoffs_systematic, edu_max, edu_start, &
                 mapping_state_idx, states_all, num_periods, periods_emax, &
                 delta)
 
@@ -328,7 +328,7 @@ FUNCTION criterion_approx_gradient(x_internal, eps, num_draws, eps_relevant, &
     REAL(our_dble)                  :: criterion_approx_gradient(2)
 
     REAL(our_dble), INTENT(IN)      :: eps_relevant(:, :)
-    REAL(our_dble), INTENT(IN)      :: payoffs_ex_ante(:)
+    REAL(our_dble), INTENT(IN)      :: payoffs_systematic(:)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:,:)
     REAL(our_dble), INTENT(IN)      :: x_internal(:)
     REAL(our_dble), INTENT(IN)      :: delta
@@ -361,7 +361,7 @@ FUNCTION criterion_approx_gradient(x_internal, eps, num_draws, eps_relevant, &
 
     ! Evaluate baseline
     f0 = criterion(x_internal, num_draws, eps_relevant, period, k, &
-            payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, & 
+            payoffs_systematic, edu_max, edu_start, mapping_state_idx, & 
             states_all, num_periods, periods_emax, delta)
 
     ! Iterate over increments
@@ -372,7 +372,7 @@ FUNCTION criterion_approx_gradient(x_internal, eps, num_draws, eps_relevant, &
         d = eps * ei
 
         f1 = criterion(x_internal + d, num_draws, eps_relevant, period, k, &
-                payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
+                payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
                 states_all, num_periods, periods_emax, delta)
 
         criterion_approx_gradient(j) = (f1 - f0) / d(j)

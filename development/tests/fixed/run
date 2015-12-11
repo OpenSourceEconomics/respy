@@ -90,14 +90,15 @@ def test_2():
 
     ex_post = robupy_obj.get_attr('periods_payoffs_ex_post')
 
-    ex_ante = robupy_obj.get_attr('periods_payoffs_ex_ante')
+    systematic = robupy_obj.get_attr('periods_payoffs_systematic')
 
-    # GENERAL: As there are no random disturbances, the ex ante and
-    # ex post versions of the period payoffs should be identical.
+    # GENERAL: As there are no random disturbances (all disturbances set to
+    # zero), the systematic and ex post versions of the period payoffs should
+    # be identical.
     assert (np.ma.all(np.ma.masked_invalid(ex_post) ==
-                      np.ma.masked_invalid(ex_ante)))
+                      np.ma.masked_invalid(systematic)))
 
-    # PERIOD 3: Check the ex ante payoffs against hand calculations.
+    # PERIOD 3: Check the systematic payoffs against hand calculations.
     vals = [[2.7456010000000000, 07.5383250000000000, -3999.60, 1.140]]
     vals += [[3.0343583944356758, 09.2073308658822519, -3999.60, 1.140]]
     vals += [[3.0343583944356758, 09.2073308658822519, 0000.90, 1.140]]
@@ -112,7 +113,7 @@ def test_2():
     vals += [[4.5267307943142532, 18.5412874597468690, -3999.60, 1.140]]
     vals += [[5.5289614776240041, 27.6603505585167470, -3999.60, 1.140]]
     for i, val in enumerate(vals):
-        (np.testing.assert_allclose(ex_ante[2, i, :], val))
+        (np.testing.assert_allclose(systematic[2, i, :], val))
 
     # PERIOD 3: Check expected future values. As there are no
     # random disturbances, this corresponds to the maximum
@@ -124,23 +125,23 @@ def test_2():
     for i, val in enumerate(vals):
         (np.testing.assert_allclose(periods_emax[2, i], [val]))
 
-    # PERIOD 2: Check the ex ante payoffs against hand calculations.
+    # PERIOD 2: Check the systematic payoffs against hand calculations.
     vals = [[2.7456010150169163, 07.5383249336619222, -3999.60, 1.140]]
     vals += [[3.0343583944356758, 09.2073308658822519, 0000.90, 1.140]]
     vals += [[3.5966397255692826, 12.0612761204447200, -3999.60, 1.140]]
     vals += [[3.4556134647626764, 11.5883467192233920, -3999.60, 1.140]]
     for i, val in enumerate(vals):
-        (np.testing.assert_allclose(ex_ante[1, i, :], val))
+        (np.testing.assert_allclose(systematic[1, i, :], val))
 
     # PERIOD 2: Check expected future values.
     vals = [18.9965372481, 23.2024229903, 41.6888863803, 29.7329464954]
     for i, val in enumerate(vals):
         (np.testing.assert_allclose(periods_emax[1, i], [val]))
 
-    # PERIOD 1: Check the ex ante payoffs against hand calculations.
+    # PERIOD 1: Check the systematic payoffs against hand calculations.
     vals = [[2.7456010150169163, 7.5383249336619222, 0.90, 1.140]]
     for i, val in enumerate(vals):
-        (np.testing.assert_allclose(ex_ante[0, i, :], val))
+        (np.testing.assert_allclose(systematic[0, i, :], val))
 
     # PERIOD 1 Check expected future values.
     vals = [47.142766995]

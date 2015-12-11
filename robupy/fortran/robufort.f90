@@ -26,7 +26,7 @@ CONTAINS
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE store_results(mapping_state_idx, states_all, &
-                periods_payoffs_ex_ante, states_number_period, periods_emax, &
+                periods_payoffs_systematic, states_number_period, periods_emax, &
                 num_periods, min_idx, max_states_period) 
 
     !/* external objects    */
@@ -38,7 +38,7 @@ SUBROUTINE store_results(mapping_state_idx, states_all, &
     INTEGER(our_int), INTENT(IN)    :: states_all(:,:,:)
     INTEGER(our_int), INTENT(IN)    :: states_number_period(:)
     
-    REAL(our_dble), INTENT(IN)      :: periods_payoffs_ex_ante(:, :, :)
+    REAL(our_dble), INTENT(IN)      :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
 
     !/* internal objects    */
@@ -85,11 +85,11 @@ SUBROUTINE store_results(mapping_state_idx, states_all, &
 
     1900 FORMAT(4(1x,f25.15))
 
-    OPEN(UNIT=1, FILE='.periods_payoffs_ex_ante.robufort.dat')
+    OPEN(UNIT=1, FILE='.periods_payoffs_systematic.robufort.dat')
 
     DO period = 1, num_periods
         DO i = 1, max_states_period
-            WRITE(1, 1900) periods_payoffs_ex_ante(period, i, :)
+            WRITE(1, 1900) periods_payoffs_systematic(period, i, :)
         END DO
     END DO
 
@@ -327,8 +327,9 @@ SUBROUTINE get_disturbances(periods_eps_relevant, level, shocks, seed, &
         
     END IF
 
-    ! Special case of absence randomness. Note that the disturbances for the 
-    ! two occupations are set to one instead of zero.
+    ! Special case of absence randomness (all disturbances equal to zero). Note
+    ! that the disturbances for the two occupations are set to one instead of
+    ! zero.
     IF (is_zero) THEN
 
         periods_eps_relevant = zero_dble
@@ -380,7 +381,7 @@ PROGRAM robufort
     INTEGER(our_int)                :: edu_max
     INTEGER(our_int)                :: min_idx
 
-    REAL(our_dble), ALLOCATABLE     :: periods_payoffs_ex_ante(:, :, :)
+    REAL(our_dble), ALLOCATABLE     :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_payoffs_ex_post(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_future_payoffs(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_eps_relevant(:, :, :)
@@ -428,7 +429,7 @@ PROGRAM robufort
     REAL(our_dble), ALLOCATABLE     :: eps_relevant(:, :)
 
     REAL(our_dble)                  :: payoffs_ex_post(4)
-    REAL(our_dble)                  :: payoffs_ex_ante(4)
+    REAL(our_dble)                  :: payoffs_systematic(4)
     REAL(our_dble)                  :: future_payoffs(4)
     REAL(our_dble)                  :: total_payoffs(4)
     REAL(our_dble)                  :: disturbances(4)
@@ -480,10 +481,10 @@ PROGRAM robufort
     max_states_period = MAXVAL(states_number_period)
     
     ! Allocate arrays
-    ALLOCATE(periods_payoffs_ex_ante(num_periods, max_states_period, 4))
+    ALLOCATE(periods_payoffs_systematic(num_periods, max_states_period, 4))
 
-    ! Calculate the ex ante payoffs
-    CALL calculate_payoffs_ex_ante(periods_payoffs_ex_ante, num_periods, &
+    ! Calculate the systematic payoffs
+    CALL calculate_payoffs_systematic(periods_payoffs_systematic, num_periods, &
             states_number_period, states_all, edu_start, coeffs_A, coeffs_B, & 
             coeffs_edu, coeffs_home, max_states_period)
 
@@ -507,12 +508,12 @@ PROGRAM robufort
     CALL backward_induction(periods_emax, periods_payoffs_ex_post, &
             periods_future_payoffs, num_periods, max_states_period, &
             periods_eps_relevant, num_draws, states_number_period, & 
-            periods_payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
+            periods_payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
             states_all, delta, is_debug, shocks, level)
    
     ! Store results. These are read in by the PYTHON wrapper and added 
     ! to the clsRobupy instance.
-    CALL store_results(mapping_state_idx, states_all, periods_payoffs_ex_ante, &
+    CALL store_results(mapping_state_idx, states_all, periods_payoffs_systematic, &
             states_number_period, periods_emax, num_periods, min_idx, &
             max_states_period) 
 
