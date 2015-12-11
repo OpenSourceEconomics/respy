@@ -25,7 +25,7 @@ MODULE robufort_extension
 CONTAINS
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE store_results(mapping_state_idx, states_all, &
+SUBROUTINE store_results(mapping_state_idx, states_all, periods_payoffs_ex_post, &
                 periods_payoffs_systematic, states_number_period, periods_emax, &
                 num_periods, min_idx, max_states_period) 
 
@@ -37,8 +37,9 @@ SUBROUTINE store_results(mapping_state_idx, states_all, &
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:, :, :, :, :)
     INTEGER(our_int), INTENT(IN)    :: states_all(:,:,:)
     INTEGER(our_int), INTENT(IN)    :: states_number_period(:)
-    
+
     REAL(our_dble), INTENT(IN)      :: periods_payoffs_systematic(:, :, :)
+    REAL(our_dble), INTENT(IN)      :: periods_payoffs_ex_post(:, :, :)    
     REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
 
     !/* internal objects    */
@@ -90,6 +91,18 @@ SUBROUTINE store_results(mapping_state_idx, states_all, &
     DO period = 1, num_periods
         DO i = 1, max_states_period
             WRITE(1, 1900) periods_payoffs_systematic(period, i, :)
+        END DO
+    END DO
+
+    CLOSE(1)
+
+
+
+    OPEN(UNIT=1, FILE='.periods_payoffs_ex_post.robufort.dat')
+
+    DO period = 1, num_periods
+        DO i = 1, max_states_period
+            WRITE(1, 1900) periods_payoffs_ex_post(period, i, :)
         END DO
     END DO
 
@@ -513,9 +526,9 @@ PROGRAM robufort
    
     ! Store results. These are read in by the PYTHON wrapper and added 
     ! to the clsRobupy instance.
-    CALL store_results(mapping_state_idx, states_all, periods_payoffs_systematic, &
-            states_number_period, periods_emax, num_periods, min_idx, &
-            max_states_period) 
+    CALL store_results(mapping_state_idx, states_all, periods_payoffs_ex_post, & 
+            periods_payoffs_systematic, states_number_period, periods_emax, &
+            num_periods, min_idx, max_states_period) 
 
 !*******************************************************************************
 !*******************************************************************************

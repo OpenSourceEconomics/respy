@@ -67,6 +67,8 @@ def add_results(robupy_obj):
 
     labels += ['periods_payoffs_systematic']
 
+    labels += ['periods_payoffs_ex_post']
+
     labels += ['periods_emax']
 
     # Shapes for the final arrays
@@ -80,12 +82,14 @@ def add_results(robupy_obj):
 
     shapes += [(num_periods, max_states_period, 4)]
 
+    shapes += [(num_periods, max_states_period, 4)]
+
     shapes += [(num_periods, max_states_period)]
 
     # Add objects to class instance
     robupy_obj.unlock()
 
-    for i in range(5):
+    for i in range(6):
 
         label, shape = labels[i], shapes[i]
 

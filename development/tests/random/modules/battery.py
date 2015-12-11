@@ -40,6 +40,45 @@ from robupy.python.py.ambiguity import _criterion
 '''
 
 
+def test_91():
+    """ This test compares the expected future payoffs to the ex post payoffs
+    in the special case, where agents are myopic and there is no randomness
+    in the disturbances (all realizations are set to zero).
+    """
+    # Ensure that fast solution methods are available
+    compile_package('--fortran --debug', True)
+
+    # Iterate over random test cases
+    for _ in range(10):
+
+        # Generate constraint periods
+        constraints = dict()
+        constraints['level'] = 0.00
+        constraints['delta'] = 0.00
+        constraints['eps_zero'] = True
+        constraints['periods'] = np.random.random_integers(2, 5)
+
+        # Sample a random estimation request and write it to disk.
+        init_dict = generate_random_dict(constraints)
+        print_random_dict(init_dict)
+
+        # Run interpolation routine
+        robupy_obj = read('test.robupy.ini')
+
+        robupy_obj = solve(robupy_obj)
+
+        # Extract relevant information
+        payoffs_ex_post = robupy_obj.get_attr('periods_payoffs_ex_post')
+
+        emax = robupy_obj.get_attr('periods_emax')
+
+        # Collapse to maximum values in each period
+        emax_myopic = np.amax(payoffs_ex_post, axis=2)
+
+        # Ensure equivalence
+        np.testing.assert_array_almost_equal(emax_myopic, emax)
+
+
 def test_92():
     """ This test compares the functions calculating the payoffs under
     ambiguity.
