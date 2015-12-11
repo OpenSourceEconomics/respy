@@ -211,8 +211,7 @@ for count, _ in enumerate(range(10000)):
 
     # Additional testing in the absence of randomness, where the MAXE and
     # EMAX are identical
-    if np.random.choice([True, False]):
-        constraints['eps_zero'] = True
+    constraints['eps_zero'] = np.random.choice([True, False])
 
     # Sample a random estimation request and write it to disk.
     init_dict = generate_random_dict(constraints)
