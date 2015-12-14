@@ -21,6 +21,35 @@ def get_payoffs_ambiguity(num_draws, eps_relevant, period, k, payoffs_systematic
         periods_emax, delta, is_debug, shocks, level, measure):
     """ Get worst case
     """
+    opt = _determine_worst_case(num_draws, eps_relevant, period, k, payoffs_systematic,
+        edu_max, edu_start, mapping_state_idx, states_all, num_periods,
+        periods_emax, delta, is_debug, shocks, level, measure)
+
+    # Transformation of standard normal deviates to relevant distributions.
+    eps_relevant_emax = transform_disturbances_ambiguity(eps_relevant, opt['x'])
+
+    simulated, payoffs_ex_post, future_payoffs = \
+        simulate_emax(num_periods, num_draws, period, k, eps_relevant_emax,
+            payoffs_systematic, edu_max, edu_start, periods_emax, states_all,
+            mapping_state_idx, delta)
+
+    # Debugging. This only works in the case of success, as otherwise
+    # opt['fun'] is not equivalent to simulated.
+    if is_debug and opt['success']:
+        checks_ambiguity('get_payoffs_ambiguity', simulated, opt)
+
+    # Finishing
+    return simulated, payoffs_ex_post, future_payoffs
+
+''' Private functions
+'''
+
+
+def _determine_worst_case(num_draws, eps_relevant, period, k, payoffs_systematic,
+        edu_max, edu_start, mapping_state_idx, states_all, num_periods,
+        periods_emax, delta, is_debug, shocks, level, measure):
+    """ Determine the worst case outcome for the given parameterization.
+    """
     # Initialize options.
     options = dict()
     options['maxiter'] = 100000000
@@ -69,24 +98,8 @@ def get_payoffs_ambiguity(num_draws, eps_relevant, period, k, payoffs_systematic
         div = _divergence(opt['x'], shocks, level) - level
         _write_result(period, k, opt, div)
 
-    # Transformation of standard normal deviates to relevant distributions.
-    eps_relevant_emax = transform_disturbances_ambiguity(eps_relevant, opt['x'])
-
-    simulated, payoffs_ex_post, future_payoffs = \
-        simulate_emax(num_periods, num_draws, period, k, eps_relevant_emax,
-            payoffs_systematic, edu_max, edu_start, periods_emax, states_all,
-            mapping_state_idx, delta)
-
-    # Debugging. This only works in the case of success, as otherwise
-    # opt['fun'] is not equivalent to simulated.
-    if is_debug and opt['success']:
-        checks_ambiguity('get_payoffs_ambiguity', simulated, opt)
-
     # Finishing
-    return simulated, payoffs_ex_post, future_payoffs
-
-''' Private functions
-'''
+    return opt
 
 
 def _correct_debugging(opt, x0, shocks, level, eps_relevant, num_periods,

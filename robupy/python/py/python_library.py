@@ -3,6 +3,7 @@ where FORTRAN alternatives are available.
 """
 
 # standard library
+import statsmodels.api as sm
 import numpy as np
 import logging
 
@@ -18,11 +19,14 @@ logger = logging.getLogger('ROBUPY_SOLVE')
 def backward_induction(num_periods, max_states_period, periods_eps_relevant,
         num_draws, states_number_period, periods_payoffs_systematic, edu_max,
         edu_start, mapping_state_idx, states_all, delta, is_debug, shocks,
-        level, measure):
-    """ Backward iteration procedure.
+        level, measure, is_interpolated, num_points):
+    """ Backward induction procedure. There are two main threads to this
+    function depending on whether interpolation is requested or not.
     """
-    # Auxiliary objects
-    is_ambiguous = (level > 0.00)
+    # Auxiliary objects. These shifts are used to determine the expected
+    # values of the two labor market alternatives. These ar log normal
+    # distributed and thus the disturbances cannot simply set to zero.
+    shifts = [np.exp(shocks[0, 0]/2.0), np.exp(shocks[1, 1]/2.0), 0.0, 0.0]
 
     # Initialize containers with missing values
     periods_emax = np.tile(-99.00, (num_periods, max_states_period))
@@ -34,40 +38,165 @@ def backward_induction(num_periods, max_states_period, periods_eps_relevant,
     # Iterate backward through all periods
     for period in range(num_periods - 1, -1, -1):
 
-        # Logging.
-        logger.info('... solving period ' + str(period))
-
-        # Extract disturbances
+        # Extract auxiliary objects
         eps_relevant = periods_eps_relevant[period, :, :]
+        num_states = states_number_period[period]
 
-        # Loop over all possible states
-        for k in range(states_number_period[period]):
+        # Logging.
+        logger.info('... solving period ' + str(period) + ' with ' + str(
+            num_states) + ' states')
 
-            # Extract payoffs
-            payoffs_systematic = periods_payoffs_systematic[period, k, :]
+        # The number of interpolation points is the same for all periods.
+        # Thus, for some periods the number of interpolation points is
+        # larger than the actual number of states. In that case no
+        # interpolation is needed.
+        any_interpolated = (num_points <= num_states) and is_interpolated
 
-            # Simulate the expected future value.
-            if is_ambiguous:
+        # Case distinction
+        if any_interpolated:
+
+            # Drawing random interpolation points
+            interpolation_points = np.random.choice(range(num_states),
+                                        size=num_points, replace=False)
+
+            # Constructing an indicator whether a state will be simulated or
+            # interpolated.
+            is_simulated = np.tile(False, num_states)
+            is_simulated[interpolation_points] = True
+
+            # Constructing the dependent variable for all states, including the
+            # ones where simulation will take place. All information will be
+            # used in either the construction of the prediction model or the
+            # prediction step.
+            independent_variables = np.tile(np.nan, (num_states, 9))
+            maxe = np.tile(np.nan, num_states)
+
+            for i, k in enumerate(range(num_states)):
+
+                payoffs_systematic = periods_payoffs_systematic[period, k, :]
+                expected_values, _, _ = get_total_value(period, num_periods,
+                    delta, payoffs_systematic, shifts, edu_max, edu_start,
+                    mapping_state_idx, periods_emax, k, states_all)
+
+                maxe[i] = max(expected_values)
+
+                deviations = maxe[i] - expected_values
+
+                independent_variables[i, :8] = np.hstack((deviations,
+                                                    np.sqrt(deviations)))
+
+            # Add intercept to set of independent variables and replace
+            # infinite values.
+            independent_variables[:, 8] = 1
+
+            # TODO: Is this the best we can do? What are the exact consequences?
+            independent_variables[np.isinf(independent_variables)] = \
+                -50000
+
+            # Constructing the dependent variables for at the random subset of
+            # points where the EMAX is actually calculated.
+            dependent_variable = np.tile(np.nan, num_states)
+            for i, k in enumerate(range(num_states)):
+                # Skip over points that will be interpolated.
+                if not is_simulated[i]:
+                    continue
+
+                # Extract payoffs
+                payoffs_systematic = periods_payoffs_systematic[period, k, :]
+                # Simulate the expected future value.
+                emax, _, _ = get_payoffs(num_draws, eps_relevant, period,
+                                k, payoffs_systematic, edu_max, edu_start,
+                                mapping_state_idx, states_all, num_periods,
+                                periods_emax, delta, is_debug, shocks, level,
+                                measure)
+
+                # Construct dependent variable
+                dependent_variable[i] = emax - maxe[i]
+
+            # Create prediction model based on the random subset of points where
+            # the EMAX is actually simulated and thus dependent and
+            # independent variables are available.
+            model = sm.OLS(dependent_variable[is_simulated],
+                        independent_variables[is_simulated])
+
+            results = model.fit()
+
+            # Write out some basic information to spot problems easily
+            _logging_prediction_model(results)
+
+            # Use the model to predict EMAX for all states and subsequently
+            # replace the values where actual values are available. As in
+            # Keane & Wolpin (1994), negative predictions are truncated to zero.
+            predictions_diff = results.predict(independent_variables)
+            predictions_diff = np.clip(predictions_diff, 0.00, None)
+
+            # Construct predicted EMAX for all states and the replace
+            # interpolation points with simulated values.
+            predictions = predictions_diff + maxe
+            predictions[is_simulated] = dependent_variable[is_simulated] + \
+                                            maxe[is_simulated]
+
+            # Store results
+            periods_emax[period, :num_states] = predictions
+
+            # Checks
+            _check_prediction_model(predictions_diff, model, results,
+                                    num_points, num_states)
+
+        else:
+            # Loop over all possible states
+            for k in range(states_number_period[period]):
+
+                # Extract payoffs
+                payoffs_systematic = periods_payoffs_systematic[period, k, :]
+
+                # Simulate the expected future value.
                 emax, payoffs_ex_post, future_payoffs = \
-                    get_payoffs_ambiguity(num_draws, eps_relevant, period, k,
-                        payoffs_systematic, edu_max, edu_start, mapping_state_idx,
-                        states_all, num_periods, periods_emax, delta, is_debug,
-                        shocks, level, measure)
-            else:
-                emax, payoffs_ex_post, future_payoffs = \
-                    get_payoffs_risk(num_draws, eps_relevant, period, k,
-                        payoffs_systematic, edu_max, edu_start, mapping_state_idx,
-                        states_all, num_periods, periods_emax, delta)
+                        get_payoffs(num_draws, eps_relevant, period,
+                            k, payoffs_systematic, edu_max, edu_start,
+                            mapping_state_idx, states_all, num_periods,
+                            periods_emax, delta, is_debug, shocks, level,
+                            measure)
 
-            # Collect information
-            periods_payoffs_ex_post[period, k, :] = payoffs_ex_post
-            periods_future_payoffs[period, k, :] = future_payoffs
+                # Collect information
+                periods_payoffs_ex_post[period, k, :] = payoffs_ex_post
+                periods_future_payoffs[period, k, :] = future_payoffs
 
-            # Collect
-            periods_emax[period, k] = emax
+                # Collect
+                periods_emax[period, k] = emax
+
+    # Finishing. Note that the last two return arguments are not available in
+    # for periods, where interpolation is required.
+    return periods_emax, periods_payoffs_ex_post, periods_future_payoffs
+
+
+def get_payoffs(num_draws, eps_relevant, period, k, payoffs_systematic, edu_max,
+                edu_start, mapping_state_idx, states_all, num_periods,
+                periods_emax, delta, is_debug, shocks, level=None,
+                measure=None):
+    """ Get payoffs for a particular state.
+    """
+    # Auxiliary objects
+    is_ambiguous = (level > 0.00)
+
+    # Payoffs require different machinery depending on whether there is
+    # ambiguity or not.
+    if is_ambiguous:
+        emax, payoffs_ex_post, future_payoffs = \
+                        get_payoffs_ambiguity(num_draws, eps_relevant, period,
+                            k, payoffs_systematic, edu_max, edu_start,
+                            mapping_state_idx, states_all, num_periods,
+                            periods_emax, delta, is_debug, shocks, level,
+                            measure)
+    else:
+        emax, payoffs_ex_post, future_payoffs = \
+                        get_payoffs_risk(num_draws, eps_relevant, period, k,
+                            payoffs_systematic, edu_max, edu_start,
+                            mapping_state_idx, states_all, num_periods,
+                            periods_emax, delta)
 
     # Finishing
-    return periods_emax, periods_payoffs_ex_post, periods_future_payoffs
+    return emax, payoffs_ex_post, future_payoffs
 
 
 def create_state_space(num_periods, edu_start, edu_max, min_idx):
@@ -280,3 +409,30 @@ def simulate_sample(num_agents, states_all, num_periods,
 
     # Finishing
     return dataset
+
+''' Private functions
+'''
+
+
+def _logging_prediction_model(results):
+    """ Write out some basic information to the solutions log file.
+    """
+    logger.info('    Information about Prediction Model ')
+
+    string = '''{0:>18}    {1:10.4f} {2:10.4f} {3:10.4f} {4:10.4f}'''
+    string += '''{5:10.4f} {6:10.4f} {7:10.4f} {8:10.4f} {9:10.4f}'''
+
+    logger.info(string.format('Coefficients', *results.params))
+    string = '''{0:>17}     {1:10.4f}\n'''
+
+    logger.info(string.format('R-squared', results.rsquared))
+
+
+def _check_prediction_model(predictions_diff, model, results, num_points,
+                            num_states):
+    """ Perform some basic consistency checks for the prediction model.
+    """
+    assert (np.all(predictions_diff >= 0.00))
+    assert (model.nobs == min(num_points, num_states))
+    assert (results.params.shape == (9,))
+    assert (np.all(np.isfinite(results.params)))

@@ -133,7 +133,7 @@ class Tests(object):
     @staticmethod
     def test_3():
         """ Testing whether the systematic and ex post payoffs are identical if
-        there is no random variation in the payoffs (all distrubances set to
+        there is no random variation in the payoffs (all disturbances set to
         zero).
         """
         for i in range(10):

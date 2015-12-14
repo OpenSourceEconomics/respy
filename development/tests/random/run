@@ -45,9 +45,9 @@ def run(hours):
 
     start, timeout = datetime.now(), timedelta(hours=hours)
 
-    package_labels = ['1', '2', '3', '4', '5', '6', '7']
+    package_labels = list(range(1, 8))
 
-    development_labels = ['91', '92', '93', '94', '95', '96', '97', '98', '99']
+    development_labels = list(range(89, 100))
 
     labels = package_labels + development_labels
 
@@ -75,9 +75,9 @@ def run(hours):
         # Setup of test case.
         label = np.random.choice(labels)
         if label in development_labels:
-            test = getattr(development_tests, 'test_' + label)
+            test = getattr(development_tests, 'test_' + str(label))
         else:
-            test = getattr(package_tests, 'test_' + label)
+            test = getattr(package_tests, 'test_' + str(label))
 
         # Set seed.
         seed = random.randrange(1, 100000)
@@ -94,7 +94,7 @@ def run(hours):
 
             dict_[label]['failure'] += 1
 
-            msg = 'Failure for test ' + label + ' with seed ' + str(seed)
+            msg = 'Failure for test ' + str(label) + ' with seed ' + str(seed)
 
             logger.info(msg)
 

@@ -21,6 +21,10 @@ def solve_python(robupy_obj):
     """ Solve using PYTHON and F2PY functions
     """
     # Distribute class attributes
+    is_interpolated = robupy_obj.get_attr('is_interpolated')
+
+    num_points = robupy_obj.get_attr('num_points')
+
     measure = robupy_obj.get_attr('measure')
 
     shocks = robupy_obj.get_attr('shocks')
@@ -76,7 +80,7 @@ def solve_python(robupy_obj):
 
     periods_emax, periods_payoffs_ex_post, periods_future_payoffs = \
         _wrapper_backward_induction_procedure(robupy_obj, periods_eps_relevant,
-            shocks, level, measure)
+            shocks, level, measure, is_interpolated, num_points)
 
     logger.info('... finished \n')
 
@@ -196,7 +200,7 @@ def _wrapper_create_state_space(robupy_obj):
 
 
 def _wrapper_backward_induction_procedure(robupy_obj, periods_eps_relevant,
-        shocks, level, measure):
+        shocks, level, measure, is_interpolated, num_points):
     """ Wrapper for backward induction procedure.
     """
     # Distribute class attributes
@@ -228,10 +232,12 @@ def _wrapper_backward_induction_procedure(robupy_obj, periods_eps_relevant,
     # Interface to core functions
     if is_python:
         periods_emax, periods_payoffs_ex_post, periods_future_payoffs = \
-            python_library.backward_induction(num_periods, max_states_period,
-                periods_eps_relevant, num_draws, states_number_period,
-                periods_payoffs_systematic, edu_max, edu_start, mapping_state_idx,
-                states_all, delta, is_debug, shocks, level, measure)
+            python_library.backward_induction(num_periods,
+                max_states_period, periods_eps_relevant, num_draws,
+                states_number_period, periods_payoffs_systematic, edu_max,
+                edu_start, mapping_state_idx, states_all, delta, is_debug,
+                shocks, level, measure, is_interpolated, num_points)
+
     else:
         import robupy.python.f2py.f2py_library as f2py_library
         periods_emax, periods_payoffs_ex_post, periods_future_payoffs = \
