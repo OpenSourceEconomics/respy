@@ -98,11 +98,23 @@ def generate_random_dict(constraints=None):
     dict_['SIMULATION']['seed'] = np.random.random_integers(1, 10000)
     dict_['SIMULATION']['agents'] = np.random.random_integers(1, MAX_AGENTS)
 
-    # Shocks
+    # SHOCKS
     shocks = np.identity(4)
     for i, val in enumerate(np.random.uniform(0.05, 1, 4)):
         shocks[i, i] = val
     dict_['SHOCKS'] = shocks
+
+    # INTERPOLATION
+    dict_['INTERPOLATION'] = {}
+    dict_['INTERPOLATION']['apply'] = np.random.choice([True, False])
+    dict_['INTERPOLATION']['points'] = np.random.random_integers(10, 100)
+
+    # Replace interpolation
+    if 'apply' in constraints.keys():
+        # Checks
+        assert (constraints['apply'] in [True, False])
+        # Replace in initialization files
+        dict_['INTERPOLATION']['apply'] = constraints['apply']
 
     # Replace education
     if 'edu' in constraints.keys():
@@ -243,7 +255,8 @@ def print_random_dict(dict_):
 
                 file_.write('\n')
 
-            if flag in ['SOLUTION', 'AMBIGUITY', 'SIMULATION', 'PROGRAM']:
+            if flag in ['SOLUTION', 'AMBIGUITY', 'SIMULATION', 'PROGRAM',
+                        'INTERPOLATION']:
 
                 str_ = ' {0:<15} {1:<15} \n'
 

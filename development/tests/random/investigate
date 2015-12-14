@@ -3,6 +3,7 @@
 """
 # standard library
 import numpy as np
+import random
 import sys
 import os
 
@@ -22,14 +23,19 @@ from modules.auxiliary import *
 # Failed seeds ...
 #91317, 61905, 14397, 39101, 11692, 62692
 
-label, seed = '91', 28126
+label, seed = '89', 6465
 
 ''' Error Reproduction
 '''
 
-if True:
+#if True:
+count = 0
+while True:
 
+    seed = random.randint(0, 10000)
 
+    #count = count + 1
+    print(seed)
     np.random.seed(seed)
 
     try:
@@ -39,11 +45,4 @@ if True:
         from robupy.tests.tests import Tests
         test = getattr(Tests, 'test_' + label)
 
-    count = 0
-    while True:
-        print('investigate ', count)
-        test()
-        count = count + 1
-
-        if count == 1:
-            break
+    test()

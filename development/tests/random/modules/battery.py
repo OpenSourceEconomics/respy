@@ -2,6 +2,9 @@
 development tests.
 """
 
+# TODO: I am in a development push the version constraints need to be
+# TODO: revisited later.
+
 # standard library
 from pandas.util.testing import assert_frame_equal
 
@@ -40,6 +43,97 @@ from robupy.python.py.ambiguity import _criterion
 '''
 
 
+def test_89():
+    """ This is the special case where the EMAX better be equal to the MAXE.
+    """
+    # Ensure that fast solution methods are available
+    compile_package('--fortran --debug', True)
+
+    # Set initial constraints
+    # TODO: Should work for all versions.
+    constraints = dict()
+    constraints['apply'] = False
+    constraints['level'] = 0.00
+    constraints['periods'] = np.random.random_integers(2, 6)
+    constraints['version'] = 'PYTHON'
+    constraints['eps_zero'] = True
+
+    # Initialize request
+    init_dict = generate_random_dict(constraints)
+    baseline = None
+
+    # Solve with and without interpolation code
+    for _ in range(2):
+
+        # Write out request
+        print_random_dict(init_dict)
+
+        # Process and solve
+        robupy_obj = read('test.robupy.ini')
+        robupy_obj = solve(robupy_obj)
+
+        # Extract results
+        states_number_period = robupy_obj.get_attr('states_number_period')
+        emax = robupy_obj.get_attr('periods_emax')
+
+        # Store and check results
+        if baseline is None:
+            baseline = emax
+        else:
+            np.testing.assert_array_almost_equal(baseline, emax)
+
+        # Updates for second iteration. This ensures that there is at least
+        # one interpolation taking place.
+        init_dict['INTERPOLATION']['points'] = max(states_number_period) - 1
+        init_dict['INTERPOLATION']['apply'] = True
+
+
+def test_90():
+    """ This test compares the results from a solution using the
+    interpolation code for the special case where the number of interpolation
+    points is exactly the number of states in the final period. In this case
+    the interpolation code is run and then all predicted values replaced
+    with their actual values.
+    """
+    # Ensure that fast solution methods are available
+    compile_package('--fortran --debug', True)
+
+    # Set initial constraints
+    # TODO: Should work for all versions.
+    constraints = dict()
+    constraints['apply'] = False
+    constraints['level'] = 0.00
+    constraints['version'] = 'PYTHON'
+
+    # Initialize request
+    init_dict = generate_random_dict(constraints)
+    baseline = None
+
+    # Solve with and without interpolation code
+    for _ in range(2):
+
+        # Write out request
+        print_random_dict(init_dict)
+
+        # Process and solve
+        robupy_obj = read('test.robupy.ini')
+        robupy_obj = solve(robupy_obj)
+
+        # Extract results
+        states_number_period = robupy_obj.get_attr('states_number_period')
+        emax = robupy_obj.get_attr('periods_emax')
+
+        # Store and check results
+        if baseline is None:
+            baseline = emax
+        else:
+            np.testing.assert_array_almost_equal(baseline, emax)
+
+        # Updates for second iteration
+        init_dict['INTERPOLATION']['points'] = max(states_number_period)
+        init_dict['INTERPOLATION']['apply'] = True
+
+
 def test_91():
     """ This test compares the expected future payoffs to the ex post payoffs
     in the special case, where agents are myopic and there is no randomness
@@ -57,6 +151,10 @@ def test_91():
         constraints['delta'] = 0.00
         constraints['eps_zero'] = True
         constraints['periods'] = np.random.random_integers(2, 5)
+
+        # Ex post payoffs are not available for periods where interpolation
+        # is set up.
+        constraints['apply'] = False
 
         # Sample a random estimation request and write it to disk.
         init_dict = generate_random_dict(constraints)
@@ -585,6 +683,9 @@ def test_99():
     if np.random.choice([True, False, False, False]):
         constraints['level'] = 0.00
         constraints['eps_zero'] = True
+
+    # TODO: Comment back in
+    constraints['apply'] = False
 
     # Generate random initialization file. Since this exercise is only for
     # debugging purposes, the codes uses the same disturbances for the
