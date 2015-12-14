@@ -412,3 +412,118 @@ SUBROUTINE wrapper_divergence(div, x, cov, level)
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
+SUBROUTINE wrapper_get_clipped_vector(Y, X, lower_bound, upper_bound, num_values)
+
+    !/* external libraries    */
+
+    USE robufort_auxiliary
+
+    !/* setup    */
+
+    IMPLICIT NONE
+
+    !/* external objects    */
+
+    DOUBLE PRECISION, INTENT(OUT)   :: Y(num_values)
+
+    DOUBLE PRECISION, INTENT(IN)    :: X(num_values)
+    DOUBLE PRECISION, INTENT(IN)    :: lower_bound
+    DOUBLE PRECISION, INTENT(IN)    :: upper_bound 
+
+    INTEGER, INTENT(IN)             :: num_values
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+    
+    CALL get_clipped_vector(Y, X, lower_bound, upper_bound, num_values)
+
+
+END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE wrapper_get_r_squared(r_squared, Y, P, num_agents)
+
+    !/* external libraries    */
+
+    USE robufort_auxiliary
+
+    !/* setup    */
+
+    IMPLICIT NONE
+
+    !/* external objects    */
+
+    DOUBLE PRECISION, INTENT(OUT)   :: r_squared
+
+    DOUBLE PRECISION, INTENT(IN)    :: Y(num_agents)
+    DOUBLE PRECISION, INTENT(IN)    :: P(num_agents)
+    
+    INTEGER, INTENT(IN)              :: num_agents
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+    
+    CALL get_r_squared(r_squared, Y, P, num_agents)
+
+END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE wrapper_get_predictions(Y, X, coeffs, num_agents)
+
+    !/* external libraries    */
+
+    USE robufort_auxiliary
+
+    !/* setup    */
+
+    IMPLICIT NONE
+
+    !/* external objects    */
+
+    DOUBLE PRECISION, INTENT(OUT)       :: Y(num_agents)
+
+    DOUBLE PRECISION, INTENT(IN)        :: coeffs(:)
+    DOUBLE PRECISION, INTENT(IN)        :: X(:,:)
+    
+    INTEGER, INTENT(IN)                 :: num_agents
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+    
+    CALL get_predictions(Y, X, coeffs, num_agents)
+
+END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE wrapper_get_coefficients(coeffs, Y, X, num_covars, num_agents)
+
+    !/* external libraries    */
+
+    USE robufort_auxiliary
+
+    !/* setup    */
+
+    IMPLICIT NONE
+
+    !/* external objects    */
+
+    DOUBLE PRECISION, INTENT(OUT)   :: coeffs(num_covars)
+
+    DOUBLE PRECISION, INTENT(IN)    :: Y(:)
+    DOUBLE PRECISION, INTENT(IN)    :: X(:,:)
+    
+    INTEGER, INTENT(IN)             :: num_covars
+    INTEGER, INTENT(IN)             :: num_agents
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+    
+    CALL get_coefficients(coeffs, Y, X, num_covars, num_agents)
+
+END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************

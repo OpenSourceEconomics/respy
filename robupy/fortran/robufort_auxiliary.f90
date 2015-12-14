@@ -599,7 +599,163 @@ SUBROUTINE multivariate_normal(draws, mean, covariance)
     
     END DO
 
+END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE get_clipped_vector(Y, X, lower_bound, upper_bound, num_values)
+
+    !/* external objects    */
+
+
+    REAL(our_dble), INTENT(OUT)           :: Y(num_values)
+
+    REAL(our_dble), INTENT(IN)            :: X(num_values)
+    REAL(our_dble), INTENT(IN)            :: lower_bound
+    REAL(our_dble), INTENT(IN)            :: upper_bound
+    
+    INTEGER(our_int), INTENT(IN)          :: num_values
+
+    !/* internal objects    */
+    
+    INTEGER(our_int)                      :: i
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+    
+    DO i = 1, num_values
+
+        IF (X(i) .LT. lower_bound) THEN
+
+            Y(i) = lower_bound
+
+        ELSE IF (X(i) .GT. upper_bound) THEN
+
+            Y(i) = upper_bound
+
+        ELSE 
+
+            Y(i) = X(i)
+
+        END IF
+
+    END DO
+
+
 END SUBROUTINE 
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE get_predictions(Y, X, coeffs, num_agents)
+
+    !/* external objects    */
+
+    REAL(our_dble), INTENT(OUT)     :: Y(num_agents)
+
+    REAL(our_dble), INTENT(IN)      :: coeffs(:)
+    REAL(our_dble), INTENT(IN)      :: X(:,:)
+    
+    INTEGER(our_int), INTENT(IN)    :: num_agents
+
+    !/* internal objects    */
+
+    INTEGER(our_int)                 :: i
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+    
+    DO i = 1, num_agents
+
+        Y(i) = DOT_PRODUCT(coeffs, X(i, :))
+
+    END DO
+
+END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE get_coefficients(coeffs, Y, X, num_covars, num_agents)
+
+    !/* external objects    */
+
+    REAL(our_dble), INTENT(OUT)     :: coeffs(num_covars)
+
+    REAL(our_dble), INTENT(IN)      :: X(:, :)
+    REAL(our_dble), INTENT(IN)      :: Y(:)
+    
+    INTEGER, INTENT(IN)             :: num_covars
+    INTEGER, INTENT(IN)             :: num_agents
+
+    !/* internal objects    */
+
+    REAL(our_dble)                  :: A(num_covars, num_covars)
+    REAL(our_dble)                  :: C(num_covars, num_covars)
+    REAL(our_dble)                  :: D(num_covars, num_agents)
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+    
+   A = MATMUL(TRANSPOSE(X), X)
+
+   C =  inverse(A, num_covars)
+
+   D = MATMUL(C, TRANSPOSE(X))
+
+   coeffs = MATMUL(D, Y) 
+
+END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE get_r_squared(r_squared, Y, P, num_agents)
+
+    !/* external objects    */
+
+    REAL(our_dble), INTENT(OUT)     :: r_squared
+
+    REAL(our_dble), INTENT(IN)      :: Y(num_agents)
+    REAL(our_dble), INTENT(IN)      :: P(num_agents)
+    
+    INTEGER(our_int), INTENT(IN)    :: num_agents
+
+
+    !/* internal objects    */
+
+
+    REAL(our_dble)                  :: mean_observed
+    REAL(our_dble)                  :: ss_residuals
+    REAL(our_dble)                  :: ss_total
+ 
+    INTEGER(our_int)                :: i
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+    
+    ! Calculate mean of observed data
+    mean_observed = SUM(Y) / DBLE(num_agents)
+    
+    ! Sum of squared residuals
+    ss_residuals = zero_dble
+
+    DO i = 1, num_agents
+
+        ss_residuals = ss_residuals + (Y(i) - P(i))**2
+
+    END DO
+
+    ! Sum of squared residuals
+    ss_total = zero_dble
+
+    DO i = 1, num_agents
+
+        ss_total = ss_total + (Y(i) - mean_observed)**2
+
+    END DO
+
+    ! Construct result
+    r_squared = one_dble - ss_residuals / ss_total
+
+END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 END MODULE

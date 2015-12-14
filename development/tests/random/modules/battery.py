@@ -7,6 +7,7 @@ development tests.
 
 # standard library
 from pandas.util.testing import assert_frame_equal
+import statsmodels.api as sm
 
 from scipy.optimize.slsqp import _minimize_slsqp
 from scipy.optimize import approx_fprime
@@ -548,6 +549,37 @@ def test_96():
         for obj in [[fort_a, py_a], [fort_b, py_b], [fort_c, py_c]]:
             np.testing.assert_allclose(obj[0], obj[1])
 
+    for _ in range(100):
+
+        # Draw random request for testing purposes
+        num_covars = np.random.random_integers(1, 10)
+        num_agents = np.random.random_integers(100, 1000)
+        eps = np.random.normal(size=num_agents)
+        beta = np.random.normal(size=num_covars)
+
+        # Generate sample
+        exog = np.random.sample((num_agents, num_covars))
+        exog[:, 0] = 1
+        endog = np.dot(exog, beta) + eps
+
+        # Run statsmodels
+        results = sm.OLS(endog, exog).fit()
+
+        # Parameters
+        py = results.params
+        f90 = fort_debug.wrapper_get_coefficients(endog, exog, num_covars,
+                num_agents)
+        np.testing.assert_almost_equal(py, f90)
+
+        # Prediction
+        py = results.predict(exog)
+        f90 = fort_debug.wrapper_get_predictions(exog, f90, num_agents)
+        np.testing.assert_almost_equal(py, f90)
+
+        # r squared
+        py = results.rsquared
+        f90 = fort_debug.wrapper_get_r_squared(endog, f90, num_agents)
+        np.testing.assert_almost_equal(py, f90)
 
 
 def test_97():
@@ -596,6 +628,18 @@ def test_97():
         # visual inspection in IPYTHON notebook as well.
         fort.wrapper_standard_normal(num_draws)
         fort.wrapper_multivariate_normal(mean, cov, num_draws, dim)
+
+        # Clipping values below and above bounds.
+        num_values = np.random.random_integers(1, 10000)
+        lower_bound = np.random.randn()
+        upper_bound = lower_bound + np.random.ranf()
+        values = np.random.normal(size=num_values)
+
+        f90 = fort.wrapper_get_clipped_vector(values, lower_bound, upper_bound,
+                                         num_values)
+        py = np.clip(values, lower_bound, upper_bound)
+
+        np.testing.assert_almost_equal(py, f90)
 
 
 def test_98():
