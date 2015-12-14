@@ -54,6 +54,7 @@ def backward_induction(num_periods, max_states_period, periods_eps_relevant,
 
         # Case distinction
         if any_interpolated:
+
             # Drawing random interpolation points
             interpolation_points = np.random.choice(range(num_states),
                                         size=num_points, replace=False)
@@ -119,6 +120,9 @@ def backward_induction(num_periods, max_states_period, periods_eps_relevant,
                         independent_variables[is_simulated])
 
             results = model.fit()
+
+            # Write out some basic information to spot problems easily
+            _logging_prediction_model(results)
 
             # Use the model to predict EMAX for all states and subsequently
             # replace the values where actual values are available. As in
@@ -408,6 +412,21 @@ def simulate_sample(num_agents, states_all, num_periods,
 
 ''' Private functions
 '''
+
+
+def _logging_prediction_model(results):
+    """ Write out some basic information to the solutions log file.
+    """
+    logger.info('    Information about Prediction Model ')
+
+    string = '''{0:>18}    {1:10.4f} {2:10.4f} {3:10.4f} {4:10.4f}'''
+    string += '''{5:10.4f} {6:10.4f} {7:10.4f} {8:10.4f} {9:10.4f}'''
+
+    logger.info(string.format('Coefficients', *results.params))
+    string = '''{0:>17}     {1:10.4f}\n'''
+
+    logger.info(string.format('R-squared', results.rsquared))
+
 
 def _check_prediction_model(predictions_diff, model, results, num_points,
                             num_states):
