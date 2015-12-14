@@ -22,6 +22,8 @@ class RobupyCls(MetaCls):
         # Derived attributes
         self.attr['seed_simulation'] = None
 
+        self.attr['is_interpolated'] = None
+
         self.attr['seed_solution'] = None
 
         self.attr['is_ambiguous'] = None
@@ -31,6 +33,8 @@ class RobupyCls(MetaCls):
         self.attr['num_periods'] = None
 
         self.attr['num_agents'] = None
+
+        self.attr['num_points'] = None
 
         self.attr['num_draws'] = None
 
@@ -98,7 +102,11 @@ class RobupyCls(MetaCls):
         # auxiliary objects.
         if is_first:
 
+            self.attr['is_interpolated'] = init_dict['INTERPOLATION']['apply']
+
             self.attr['seed_simulation'] = init_dict['SIMULATION']['seed']
+
+            self.attr['num_points'] = init_dict['INTERPOLATION']['points']
 
             self.attr['num_agents'] = init_dict['SIMULATION']['agents']
 
@@ -162,6 +170,8 @@ class RobupyCls(MetaCls):
         # Distribute class attributes
         seed_simulation = self.attr['seed_simulation']
 
+        is_interpolated = self.attr['is_interpolated']
+
         seed_solution = self.attr['seed_solution']
 
         is_ambiguous = self.attr['is_ambiguous']
@@ -169,6 +179,8 @@ class RobupyCls(MetaCls):
         num_agents = self.attr['num_agents']
 
         num_periods = self.attr['num_periods']
+
+        num_points = self.attr['num_points']
 
         edu_start = self.attr['edu_start']
 
@@ -267,6 +279,11 @@ class RobupyCls(MetaCls):
         assert (isinstance(shocks, np.ndarray))
         assert (np.all(np.isfinite(shocks)))
         assert (shocks.shape == (4, 4))
+
+        # Interpolation
+        assert (is_interpolated in [True, False])
+        assert (isinstance(num_points, int))
+        assert (num_points > 0)
 
         # Check integrity of results as well
         self._check_integrity_results()

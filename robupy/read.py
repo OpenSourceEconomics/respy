@@ -130,11 +130,11 @@ def _process_standard(list_, dict_, keyword):
         dict_[keyword][name] = []
 
     # Type conversion
-    if name in ['agents', 'periods', 'start', 'max', 'draws', 'seed']:
+    if name in ['agents', 'periods', 'start', 'max', 'draws', 'seed', 'points']:
         val = int(val)
     elif name in ['measure']:
         val = str(val)
-    elif name in ['debug', 'store']:
+    elif name in ['debug', 'store', 'apply']:
         assert (val.upper() in ['TRUE', 'FALSE'])
         val = (val.upper() == 'TRUE')
     elif name in ['version']:
@@ -182,7 +182,7 @@ def _check_integrity_read(dict_):
     assert (isinstance(dict_, dict))
 
     # Check all keys
-    keys_ = ['BASICS', 'EDUCATION', 'A', 'B', 'HOME']
+    keys_ = ['BASICS', 'EDUCATION', 'A', 'B', 'HOME', 'INTERPOLATION']
     keys_ += ['SHOCKS', 'SOLUTION', 'AMBIGUITY', 'SIMULATION', 'PROGRAM']
 
     assert (set(keys_) == set(dict_.keys()))
@@ -262,6 +262,11 @@ def _check_integrity_read(dict_):
     assert (dict_['SIMULATION']['agents'] > 0)
     assert (isinstance(dict_['SIMULATION']['seed'], int))
     assert (dict_['SIMULATION']['seed'] >= 0)
+
+    # Check interpolation
+    assert (dict_['INTERPOLATION']['apply'] in [True, False])
+    assert (isinstance(dict_['INTERPOLATION']['points'], int))
+    assert (dict_['INTERPOLATION']['points'] > 0)
 
     # Temporary restrictions
     assert (dict_['AMBIGUITY']['level'] >= 0.00)
