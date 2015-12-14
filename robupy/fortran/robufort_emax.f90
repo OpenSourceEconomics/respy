@@ -25,7 +25,7 @@ CONTAINS
 !*******************************************************************************
 SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, future_payoffs, & 
                 num_periods, num_draws, period, k, eps_relevant_emax, & 
-                payoffs_ex_ante, edu_max, edu_start, periods_emax, states_all, & 
+                payoffs_systematic, edu_max, edu_start, periods_emax, states_all, & 
                 mapping_state_idx, delta)
 
     !/* external objects    */
@@ -44,7 +44,7 @@ SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, future_payoffs, &
     INTEGER(our_int), INTENT(IN)    :: edu_start
 
     REAL(our_dble), INTENT(IN)      :: eps_relevant_emax(:,:)
-    REAL(our_dble), INTENT(IN)      :: payoffs_ex_ante(:)
+    REAL(our_dble), INTENT(IN)      :: payoffs_systematic(:)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:,:)
     REAL(our_dble), INTENT(IN)      :: delta
 
@@ -72,7 +72,7 @@ SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, future_payoffs, &
 
         ! Calculate total value
         CALL get_total_value(total_payoffs, payoffs_ex_post, future_payoffs, &
-                period, num_periods, delta, payoffs_ex_ante, disturbances, &
+                period, num_periods, delta, payoffs_systematic, disturbances, &
                 edu_max, edu_start, mapping_state_idx, periods_emax, k, states_all)
         
         ! Determine optimal choice
@@ -90,7 +90,7 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE get_total_value(total_payoffs, payoffs_ex_post, future_payoffs, &
-                period, num_periods, delta, payoffs_ex_ante, & 
+                period, num_periods, delta, payoffs_systematic, & 
                 disturbances, edu_max, edu_start, mapping_state_idx, & 
                 periods_emax, k, states_all)
 
@@ -114,7 +114,7 @@ SUBROUTINE get_total_value(total_payoffs, payoffs_ex_post, future_payoffs, &
     INTEGER(our_int), INTENT(IN)    :: states_all(:, :, :)
 
     REAL(our_dble), INTENT(IN)      :: delta
-    REAL(our_dble), INTENT(IN)      :: payoffs_ex_ante(:)
+    REAL(our_dble), INTENT(IN)      :: payoffs_systematic(:)
     REAL(our_dble), INTENT(IN)      :: disturbances(:)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
 
@@ -133,10 +133,10 @@ SUBROUTINE get_total_value(total_payoffs, payoffs_ex_post, future_payoffs, &
     is_myopic = (delta .EQ. zero_dble)
 
     ! Calculate ex post payoffs
-    payoffs_ex_post(1) = payoffs_ex_ante(1) * disturbances(1)
-    payoffs_ex_post(2) = payoffs_ex_ante(2) * disturbances(2)
-    payoffs_ex_post(3) = payoffs_ex_ante(3) + disturbances(3)
-    payoffs_ex_post(4) = payoffs_ex_ante(4) + disturbances(4)
+    payoffs_ex_post(1) = payoffs_systematic(1) * disturbances(1)
+    payoffs_ex_post(2) = payoffs_systematic(2) * disturbances(2)
+    payoffs_ex_post(3) = payoffs_systematic(3) + disturbances(3)
+    payoffs_ex_post(4) = payoffs_systematic(4) + disturbances(4)
 
     ! Get future values
     ! BEGIN VECTORIZATION A

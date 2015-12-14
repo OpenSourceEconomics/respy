@@ -6,7 +6,7 @@
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE wrapper_simulate_sample(dataset, num_agents, states_all, num_periods, &
-                mapping_state_idx, periods_payoffs_ex_ante, &
+                mapping_state_idx, periods_payoffs_systematic, &
                 periods_eps_relevant, edu_max, edu_start, periods_emax, delta)
 
     !/* external libraries    */
@@ -22,7 +22,7 @@ SUBROUTINE wrapper_simulate_sample(dataset, num_agents, states_all, num_periods,
     DOUBLE PRECISION, INTENT(OUT)   :: dataset(num_agents*num_periods, 8)
 
     DOUBLE PRECISION, INTENT(IN)    :: periods_emax(:, :)
-    DOUBLE PRECISION, INTENT(IN)    :: periods_payoffs_ex_ante(:, :, :)
+    DOUBLE PRECISION, INTENT(IN)    :: periods_payoffs_systematic(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_eps_relevant(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: delta
 
@@ -39,7 +39,7 @@ SUBROUTINE wrapper_simulate_sample(dataset, num_agents, states_all, num_periods,
 !-------------------------------------------------------------------------------
 
     CALL simulate_sample(dataset, num_agents, states_all, num_periods, &
-                mapping_state_idx, periods_payoffs_ex_ante, &
+                mapping_state_idx, periods_payoffs_systematic, &
                 periods_eps_relevant, edu_max, edu_start, periods_emax, delta)
 
 END SUBROUTINE
@@ -48,7 +48,7 @@ END SUBROUTINE
 SUBROUTINE wrapper_backward_induction(periods_emax, periods_payoffs_ex_post, &
                 periods_future_payoffs, num_periods, max_states_period, &
                 periods_eps_relevant, num_draws, states_number_period, &
-                periods_payoffs_ex_ante, edu_max, edu_start, & 
+                periods_payoffs_systematic, edu_max, edu_start, & 
                 mapping_state_idx, states_all, delta, is_debug, shocks, &
                 level)
 
@@ -67,7 +67,7 @@ SUBROUTINE wrapper_backward_induction(periods_emax, periods_payoffs_ex_post, &
     DOUBLE PRECISION, INTENT(OUT)   :: periods_future_payoffs(num_periods, max_states_period, 4)
 
     DOUBLE PRECISION, INTENT(IN)    :: periods_eps_relevant(:, :, :)
-    DOUBLE PRECISION, INTENT(IN)    :: periods_payoffs_ex_ante(:, :, :   )
+    DOUBLE PRECISION, INTENT(IN)    :: periods_payoffs_systematic(:, :, :   )
     DOUBLE PRECISION, INTENT(IN)    :: shocks(4, 4)
     DOUBLE PRECISION, INTENT(IN)    :: delta
     DOUBLE PRECISION, INTENT(IN)    :: level
@@ -91,7 +91,7 @@ SUBROUTINE wrapper_backward_induction(periods_emax, periods_payoffs_ex_post, &
     CALL backward_induction(periods_emax, periods_payoffs_ex_post, &
             periods_future_payoffs, num_periods, max_states_period, &
             periods_eps_relevant, num_draws, states_number_period, &
-            periods_payoffs_ex_ante, edu_max, edu_start, mapping_state_idx, &
+            periods_payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
             states_all, delta, is_debug, shocks, level)
 
 
@@ -130,7 +130,7 @@ SUBROUTINE wrapper_create_state_space(states_all, states_number_period, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_calculate_payoffs_ex_ante(periods_payoffs_ex_ante, num_periods, &
+SUBROUTINE wrapper_calculate_payoffs_systematic(periods_payoffs_systematic, num_periods, &
               states_number_period, states_all, edu_start, coeffs_A, & 
               coeffs_B, coeffs_edu, coeffs_home, max_states_period)
 
@@ -144,7 +144,7 @@ SUBROUTINE wrapper_calculate_payoffs_ex_ante(periods_payoffs_ex_ante, num_period
 
     !/* external objects    */
 
-    DOUBLE PRECISION, INTENT(OUT)   :: periods_payoffs_ex_ante(num_periods, max_states_period, 4)
+    DOUBLE PRECISION, INTENT(OUT)   :: periods_payoffs_systematic(num_periods, max_states_period, 4)
 
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_A(:)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_B(:)
@@ -161,7 +161,7 @@ SUBROUTINE wrapper_calculate_payoffs_ex_ante(periods_payoffs_ex_ante, num_period
 ! Algorithm
 !-------------------------------------------------------------------------------
     
-    CALL calculate_payoffs_ex_ante(periods_payoffs_ex_ante, num_periods, &
+    CALL calculate_payoffs_systematic(periods_payoffs_systematic, num_periods, &
               states_number_period, states_all, edu_start, coeffs_A, & 
               coeffs_B, coeffs_edu, coeffs_home, max_states_period)
 

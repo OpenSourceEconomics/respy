@@ -187,9 +187,10 @@ def generate_random_dict(constraints=None):
     # No random component to payoffs
     if 'eps_zero' in constraints.keys():
         # Checks
-        assert (constraints['eps_zero'] is True)
+        assert (constraints['eps_zero'] in [True, False])
         # Replace in initialization files
-        dict_['SHOCKS'] = np.zeros((4, 4))
+        if constraints['eps_zero']:
+            dict_['SHOCKS'] = np.zeros((4, 4))
 
     # Number of draws
     if 'draws' in constraints.keys():

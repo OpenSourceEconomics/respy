@@ -40,6 +40,45 @@ from robupy.python.py.ambiguity import _criterion
 '''
 
 
+def test_91():
+    """ This test compares the expected future payoffs to the ex post payoffs
+    in the special case, where agents are myopic and there is no randomness
+    in the disturbances (all realizations are set to zero).
+    """
+    # Ensure that fast solution methods are available
+    compile_package('--fortran --debug', True)
+
+    # Iterate over random test cases
+    for _ in range(10):
+
+        # Generate constraint periods
+        constraints = dict()
+        constraints['level'] = 0.00
+        constraints['delta'] = 0.00
+        constraints['eps_zero'] = True
+        constraints['periods'] = np.random.random_integers(2, 5)
+
+        # Sample a random estimation request and write it to disk.
+        init_dict = generate_random_dict(constraints)
+        print_random_dict(init_dict)
+
+        # Run interpolation routine
+        robupy_obj = read('test.robupy.ini')
+
+        robupy_obj = solve(robupy_obj)
+
+        # Extract relevant information
+        payoffs_ex_post = robupy_obj.get_attr('periods_payoffs_ex_post')
+
+        emax = robupy_obj.get_attr('periods_emax')
+
+        # Collapse to maximum values in each period
+        emax_myopic = np.amax(payoffs_ex_post, axis=2)
+
+        # Ensure equivalence
+        np.testing.assert_array_almost_equal(emax_myopic, emax)
+
+
 def test_92():
     """ This test compares the functions calculating the payoffs under
     ambiguity.
@@ -66,7 +105,7 @@ def test_92():
         robupy_obj = solve(robupy_obj)
 
         # Extract relevant information
-        periods_payoffs_ex_ante = robupy_obj.get_attr('periods_payoffs_ex_ante')
+        periods_payoffs_systematic = robupy_obj.get_attr('periods_payoffs_systematic')
 
         states_number_period = robupy_obj.get_attr('states_number_period')
 
@@ -100,13 +139,13 @@ def test_92():
         period = np.random.choice(range(num_periods))
         k = np.random.choice(range(states_number_period[period]))
 
-        # Select ex ante payoffs
-        payoffs_ex_ante = periods_payoffs_ex_ante[period, k, :]
+        # Select systematic payoffs
+        payoffs_systematic = periods_payoffs_systematic[period, k, :]
 
         # Set up optimization task
         level = np.random.uniform(0.01, 1.00)
 
-        args = [num_draws, eps_standard, period, k, payoffs_ex_ante,
+        args = [num_draws, eps_standard, period, k, payoffs_systematic,
             edu_max, edu_start, mapping_state_idx, states_all, num_periods,
             periods_emax, debug, delta, shocks, level]
 
@@ -157,7 +196,7 @@ def test_93():
         robupy_obj = solve(robupy_obj)
 
         # Extract relevant information
-        periods_payoffs_ex_ante = robupy_obj.get_attr('periods_payoffs_ex_ante')
+        periods_payoffs_systematic = robupy_obj.get_attr('periods_payoffs_systematic')
 
         states_number_period = robupy_obj.get_attr('states_number_period')
 
@@ -187,10 +226,10 @@ def test_93():
         period = np.random.choice(range(num_periods))
         k = np.random.choice(range(states_number_period[period]))
 
-        # Select ex ante payoffs
-        payoffs_ex_ante = periods_payoffs_ex_ante[period, k, :]
+        # Select systematic payoffs
+        payoffs_systematic = periods_payoffs_systematic[period, k, :]
 
-        args = (num_draws, eps_standard, period, k, payoffs_ex_ante, edu_max,
+        args = (num_draws, eps_standard, period, k, payoffs_systematic, edu_max,
             edu_start, mapping_state_idx, states_all, num_periods, periods_emax,
             delta)
 
@@ -204,7 +243,7 @@ def test_93():
             py = x0
 
         f = fort.wrapper_slsqp_robufort(x0, maxiter, ftol, eps, num_draws,
-                eps_standard, period, k, payoffs_ex_ante, edu_max, edu_start,
+                eps_standard, period, k, payoffs_systematic, edu_max, edu_start,
                 mapping_state_idx, states_all, num_periods, periods_emax,
                 delta, is_debug, shocks, level)
 
@@ -294,7 +333,7 @@ def test_95():
         robupy_obj = solve(robupy_obj)
 
         # Extract relevant information
-        periods_payoffs_ex_ante = robupy_obj.get_attr('periods_payoffs_ex_ante')
+        periods_payoffs_systematic = robupy_obj.get_attr('periods_payoffs_systematic')
 
         states_number_period = robupy_obj.get_attr('states_number_period')
 
@@ -322,26 +361,26 @@ def test_95():
         period = np.random.choice(range(num_periods))
         k = np.random.choice(range(states_number_period[period]))
 
-        # Select ex ante payoffs
-        payoffs_ex_ante = periods_payoffs_ex_ante[period, k, :]
+        # Select systematic payoffs
+        payoffs_systematic = periods_payoffs_systematic[period, k, :]
 
         # Evaluation point
         x = np.random.random(size=2)
 
         # Evaluation of simulated expected future values
         py, _, _ = simulate_emax(num_periods, num_draws, period, k,
-                        eps_standard, payoffs_ex_ante, edu_max, edu_start,
+                        eps_standard, payoffs_systematic, edu_max, edu_start,
                         periods_emax, states_all, mapping_state_idx, delta)
 
         f90, _, _ = fort.wrapper_simulate_emax(num_periods, num_draws,
-                        period, k, eps_standard, payoffs_ex_ante, edu_max,
+                        period, k, eps_standard, payoffs_systematic, edu_max,
                         edu_start, periods_emax, states_all,
                         mapping_state_idx, delta)
 
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
         # Criterion function for the determination of the worst case outcomes
-        args = (num_draws, eps_standard, period, k, payoffs_ex_ante,
+        args = (num_draws, eps_standard, period, k, payoffs_systematic,
                 edu_max, edu_start, mapping_state_idx, states_all, num_periods,
                 periods_emax, delta)
 

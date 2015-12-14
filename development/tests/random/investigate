@@ -22,7 +22,7 @@ from modules.auxiliary import *
 # Failed seeds ...
 #91317, 61905, 14397, 39101, 11692, 62692
 
-label, seed = '93', 63493
+label, seed = '91', 28126
 
 ''' Error Reproduction
 '''

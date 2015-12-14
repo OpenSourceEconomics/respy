@@ -34,7 +34,7 @@ compile_package('--fortran --optimization', True)
 # as well as minimization.
 
 
-def _criterion(x, num_draws, eps_relevant, period, k, payoffs_ex_ante, edu_max,
+def _criterion(x, num_draws, eps_relevant, period, k, payoffs_systematic, edu_max,
         edu_start, mapping_state_idx, states_all, num_periods, periods_emax,
         delta, sign=1):
     """ Simulate expected future value for alternative shock distributions.
@@ -47,7 +47,7 @@ def _criterion(x, num_draws, eps_relevant, period, k, payoffs_ex_ante, edu_max,
 
     # Simulate the expected future value for a given parametrization.
     simulated, _, _ = simulate_emax(num_periods, num_draws, period, k,
-                        eps_relevant_emax, payoffs_ex_ante, edu_max, edu_start,
+                        eps_relevant_emax, payoffs_systematic, edu_max, edu_start,
                         periods_emax, states_all, mapping_state_idx, delta)
 
     # Finishing
@@ -71,7 +71,7 @@ for ambi in AMBIGUITY_GRID:
     robupy_obj = solve(robupy_obj)
     # Distribute objects from solution. These are then used to reproduce the
     # EMAX calculations from inside the toolbox.
-    periods_payoffs_ex_ante = robupy_obj.get_attr('periods_payoffs_ex_ante')
+    periods_payoffs_systematic = robupy_obj.get_attr('periods_payoffs_systematic')
     mapping_state_idx = robupy_obj.get_attr('mapping_state_idx')
     periods_emax = robupy_obj.get_attr('periods_emax')
     is_ambiguous = robupy_obj.get_attr('is_ambiguous')
@@ -90,7 +90,7 @@ for ambi in AMBIGUITY_GRID:
         bounds = []
         for sign in [1, -1]:
             # Extract subsets of information
-            payoffs_ex_ante = periods_payoffs_ex_ante[period, state_indicator, :]
+            payoffs_systematic = periods_payoffs_systematic[period, state_indicator, :]
             periods_eps_relevant = create_disturbances(robupy_obj, False)
             eps_relevant = periods_eps_relevant[period, :, :]
             # In the risk-only case, no modification of the distribution of
@@ -102,7 +102,7 @@ for ambi in AMBIGUITY_GRID:
             if is_ambiguous:
                 # Set up the arguments for the optimization request.
                 args = (num_draws, eps_relevant, period, state_indicator,
-                        payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,
+                        payoffs_systematic, edu_max, edu_start, mapping_state_idx,
                         states_all, num_periods, periods_emax, delta, sign)
                 constraints = _prep_kl(shocks, level)
                 x0, options = [0.0, 0.0], dict()
@@ -119,7 +119,7 @@ for ambi in AMBIGUITY_GRID:
             # Back out the relevant EMAX using the results from the
             # optimization.
             emax_simulated, _, _ = simulate_emax(num_periods, num_draws, period,
-                state_indicator, eps_relevant_emax, payoffs_ex_ante, edu_max,
+                state_indicator, eps_relevant_emax, payoffs_systematic, edu_max,
                 edu_start, periods_emax, states_all, mapping_state_idx, delta)
             # Collect results in tuples for each level of ambiguity.
             bounds += [emax_simulated]

@@ -16,7 +16,7 @@ logger = logging.getLogger('ROBUPY_SOLVE')
 
 
 def backward_induction(num_periods, max_states_period, periods_eps_relevant,
-        num_draws, states_number_period, periods_payoffs_ex_ante, edu_max,
+        num_draws, states_number_period, periods_payoffs_systematic, edu_max,
         edu_start, mapping_state_idx, states_all, delta, is_debug, shocks,
         level, measure):
     """ Backward iteration procedure.
@@ -44,19 +44,19 @@ def backward_induction(num_periods, max_states_period, periods_eps_relevant,
         for k in range(states_number_period[period]):
 
             # Extract payoffs
-            payoffs_ex_ante = periods_payoffs_ex_ante[period, k, :]
+            payoffs_systematic = periods_payoffs_systematic[period, k, :]
 
             # Simulate the expected future value.
             if is_ambiguous:
                 emax, payoffs_ex_post, future_payoffs = \
                     get_payoffs_ambiguity(num_draws, eps_relevant, period, k,
-                        payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,
+                        payoffs_systematic, edu_max, edu_start, mapping_state_idx,
                         states_all, num_periods, periods_emax, delta, is_debug,
                         shocks, level, measure)
             else:
                 emax, payoffs_ex_post, future_payoffs = \
                     get_payoffs_risk(num_draws, eps_relevant, period, k,
-                        payoffs_ex_ante, edu_max, edu_start, mapping_state_idx,
+                        payoffs_systematic, edu_max, edu_start, mapping_state_idx,
                         states_all, num_periods, periods_emax, delta)
 
             # Collect information
@@ -152,14 +152,14 @@ def create_state_space(num_periods, edu_start, edu_max, min_idx):
     return states_all, states_number_period, mapping_state_idx
 
 
-def calculate_payoffs_ex_ante(num_periods, states_number_period, states_all,
+def calculate_payoffs_systematic(num_periods, states_number_period, states_all,
                                 edu_start, coeffs_A, coeffs_B, coeffs_edu,
                                 coeffs_home, max_states_period):
-    """ Calculate ex ante payoffs.
+    """ Calculate ex systematic payoffs.
     """
 
     # Initialize
-    periods_payoffs_ex_ante = np.tile(-99.0, (num_periods, max_states_period,
+    periods_payoffs_systematic = np.tile(-99.0, (num_periods, max_states_period,
                                                   4))
 
     # Calculate systematic instantaneous payoffs
@@ -176,11 +176,11 @@ def calculate_payoffs_ex_ante(num_periods, states_number_period, states_all,
                           exp_B ** 2]
 
             # Calculate systematic part of wages in occupation A
-            periods_payoffs_ex_ante[period, k, 0] = np.exp(
+            periods_payoffs_systematic[period, k, 0] = np.exp(
                 np.dot(coeffs_A, covars))
 
             # Calculate systematic part pf wages in occupation B
-            periods_payoffs_ex_ante[period, k, 1] = np.exp(
+            periods_payoffs_systematic[period, k, 1] = np.exp(
                 np.dot(coeffs_B, covars))
 
             # Calculate systematic part of schooling utility
@@ -195,17 +195,17 @@ def calculate_payoffs_ex_ante(num_periods, states_number_period, states_all,
             if edu_lagged == 0:
                 payoff += coeffs_edu[2]
 
-            periods_payoffs_ex_ante[period, k, 2] = payoff
+            periods_payoffs_systematic[period, k, 2] = payoff
 
             # Calculate systematic part of HOME
-            periods_payoffs_ex_ante[period, k, 3] = coeffs_home[0]
+            periods_payoffs_systematic[period, k, 3] = coeffs_home[0]
 
     # Finishing
-    return periods_payoffs_ex_ante
+    return periods_payoffs_systematic
 
 
 def simulate_sample(num_agents, states_all, num_periods,
-        mapping_state_idx, periods_payoffs_ex_ante, periods_eps_relevant,
+        mapping_state_idx, periods_payoffs_systematic, periods_eps_relevant,
         edu_max, edu_start, periods_emax, delta):
     """ Sample simulation
     """
@@ -236,12 +236,12 @@ def simulate_sample(num_agents, states_all, num_periods,
             dataset[count, :2] = i, period
 
             # Select relevant subset
-            payoffs_ex_ante = periods_payoffs_ex_ante[period, k, :]
+            payoffs_systematic = periods_payoffs_systematic[period, k, :]
             disturbances = periods_eps_relevant[period, i, :]
 
             # Get total value of admissible states
             total_payoffs, payoffs_ex_post, _ = get_total_value(period,
-                num_periods, delta, payoffs_ex_ante, disturbances, edu_max,
+                num_periods, delta, payoffs_systematic, disturbances, edu_max,
                 edu_start, mapping_state_idx, periods_emax, k, states_all)
 
             # Determine optimal choice

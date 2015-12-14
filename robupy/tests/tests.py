@@ -132,8 +132,9 @@ class Tests(object):
 
     @staticmethod
     def test_3():
-        """ Testing whether the ex ante and ex post payoffs are identical if
-        there is no random variation in the payoffs
+        """ Testing whether the systematic and ex post payoffs are identical if
+        there is no random variation in the payoffs (all distrubances set to
+        zero).
         """
         for i in range(10):
             # Generate constraint periods
@@ -151,12 +152,12 @@ class Tests(object):
             robupy_obj = solve(robupy_obj)
 
             # Distribute class attributes
-            ex_ante = robupy_obj.get_attr('periods_payoffs_ex_ante')
+            systematic = robupy_obj.get_attr('periods_payoffs_systematic')
             ex_post = robupy_obj.get_attr('periods_payoffs_ex_post')
 
             # Check
             assert (np.ma.all(
-                np.ma.masked_invalid(ex_ante) == np.ma.masked_invalid(ex_post)))
+                np.ma.masked_invalid(systematic) == np.ma.masked_invalid(ex_post)))
 
     @staticmethod
     def test_4():
@@ -266,7 +267,7 @@ class Tests(object):
 
     @staticmethod
     def test_7():
-        """ Testing whether the ex ante benefit calculation is unaffected by
+        """ Testing whether the systematic payoff calculation is unaffected by
         the level of ambiguity.
         """
 
@@ -296,11 +297,11 @@ class Tests(object):
             robupy_obj = solve(robupy_obj)
 
             # Distribute class attributes
-            ex_ante = robupy_obj.get_attr('periods_payoffs_ex_ante')
+            systematic = robupy_obj.get_attr('periods_payoffs_systematic')
 
             if base is None:
-                base = ex_ante.copy()
+                base = systematic.copy()
 
             # Checks
-            np.testing.assert_allclose(base, ex_ante)
+            np.testing.assert_allclose(base, systematic)
 
