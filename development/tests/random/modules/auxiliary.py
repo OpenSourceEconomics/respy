@@ -18,6 +18,16 @@ from modules.clsMail import MailCls
 '''
 
 
+def write_interpolation_grid(num_candidates):
+    """ Write out an interpolation grid that can be used across
+    implementations.
+    """
+    with open('interpolation.txt', 'w') as file_:
+        for _ in range(num_candidates):
+            line = '{0}'.format(np.random.choice([True, False]))
+            file_.write(line + '\n')
+
+
 def build_f2py_testing(is_hidden):
     """ Build the F2PY testing interface for testing.f
     """

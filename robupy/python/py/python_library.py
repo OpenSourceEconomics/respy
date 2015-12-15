@@ -6,6 +6,8 @@ where FORTRAN alternatives are available.
 import statsmodels.api as sm
 import numpy as np
 import logging
+import shlex
+import os
 
 # project library
 from robupy.python.py.ambiguity import get_payoffs_ambiguity
@@ -55,14 +57,9 @@ def backward_induction(num_periods, max_states_period, periods_eps_relevant,
         # Case distinction
         if any_interpolated:
 
-            # Drawing random interpolation points
-            interpolation_points = np.random.choice(range(num_states),
-                                        size=num_points, replace=False)
-
-            # Constructing an indicator whether a state will be simulated or
-            # interpolated.
-            is_simulated = np.tile(False, num_states)
-            is_simulated[interpolation_points] = True
+            # Get indicator for interpolation and simulation of states
+            is_simulated = _get_simulated_indictor(num_points, num_states,
+                                is_debug)
 
             # Constructing the dependent variable for all states, including the
             # ones where simulation will take place. All information will be
@@ -71,20 +68,24 @@ def backward_induction(num_periods, max_states_period, periods_eps_relevant,
             independent_variables = np.tile(np.nan, (num_states, 9))
             maxe = np.tile(np.nan, num_states)
 
-            for i, k in enumerate(range(num_states)):
+            for k in range(num_states):
 
                 payoffs_systematic = periods_payoffs_systematic[period, k, :]
                 expected_values, _, _ = get_total_value(period, num_periods,
                     delta, payoffs_systematic, shifts, edu_max, edu_start,
                     mapping_state_idx, periods_emax, k, states_all)
 
-                maxe[i] = max(expected_values)
+                maxe[k] = max(expected_values)
 
-                deviations = maxe[i] - expected_values
+                deviations = maxe[k] - expected_values
 
-                independent_variables[i, :8] = np.hstack((deviations,
+                independent_variables[k, :8] = np.hstack((deviations,
                                                     np.sqrt(deviations)))
 
+                # TODO: Debug inspection ...
+                #print("independent variables")
+                #if k == num_states -1:
+                #    print(independent_variables[k, :])
             # Add intercept to set of independent variables and replace
             # infinite values.
             independent_variables[:, 8] = 1
@@ -96,11 +97,10 @@ def backward_induction(num_periods, max_states_period, periods_eps_relevant,
             # Constructing the dependent variables for at the random subset of
             # points where the EMAX is actually calculated.
             dependent_variable = np.tile(np.nan, num_states)
-            for i, k in enumerate(range(num_states)):
+            for k in range(num_states):
                 # Skip over points that will be interpolated.
-                if not is_simulated[i]:
+                if not is_simulated[k]:
                     continue
-
                 # Extract payoffs
                 payoffs_systematic = periods_payoffs_systematic[period, k, :]
                 # Simulate the expected future value.
@@ -111,8 +111,12 @@ def backward_induction(num_periods, max_states_period, periods_eps_relevant,
                                 measure)
 
                 # Construct dependent variable
-                dependent_variable[i] = emax - maxe[i]
+                dependent_variable[k] = emax - maxe[k]
 
+                # TODO: Debug inspection
+                #print("independent variables")
+                #if k == num_states -1:
+                #    print(dependent_variable[k])
             # Create prediction model based on the random subset of points where
             # the EMAX is actually simulated and thus dependent and
             # independent variables are available.
@@ -140,8 +144,9 @@ def backward_induction(num_periods, max_states_period, periods_eps_relevant,
             periods_emax[period, :num_states] = predictions
 
             # Checks
-            _check_prediction_model(predictions_diff, model, results,
-                                    num_points, num_states)
+            print(results.summary())
+            _check_prediction_model(predictions_diff, model, num_points,
+                                    num_states, is_debug)
 
         else:
             # Loop over all possible states
@@ -172,8 +177,7 @@ def backward_induction(num_periods, max_states_period, periods_eps_relevant,
 
 def get_payoffs(num_draws, eps_relevant, period, k, payoffs_systematic, edu_max,
                 edu_start, mapping_state_idx, states_all, num_periods,
-                periods_emax, delta, is_debug, shocks, level=None,
-                measure=None):
+                periods_emax, delta, is_debug, shocks, level, measure):
     """ Get payoffs for a particular state.
     """
     # Auxiliary objects
@@ -428,11 +432,48 @@ def _logging_prediction_model(results):
     logger.info(string.format('R-squared', results.rsquared))
 
 
-def _check_prediction_model(predictions_diff, model, results, num_points,
-                            num_states):
+def _check_prediction_model(predictions_diff, model, num_points, num_states,
+                            is_debug):
     """ Perform some basic consistency checks for the prediction model.
     """
+    # Construct auxiliary object
+    results = model.fit()
+    # Perform basic checks
     assert (np.all(predictions_diff >= 0.00))
-    assert (model.nobs == min(num_points, num_states))
     assert (results.params.shape == (9,))
     assert (np.all(np.isfinite(results.params)))
+
+    # Check for standardization as the following constraint is not
+    # necessarily satisfied in that case. For ease of application, we do not
+    # ensure that the same number of interpolation points is available.
+    if not (is_debug and os.path.isfile('interpolation.txt')):
+        assert (model.nobs == min(num_points, num_states))
+
+
+def _get_simulated_indictor(num_points, num_candidates, is_debug):
+    """ Get the indicator for points of interpolation and simulation.
+    """
+
+    # Drawing random interpolation points
+    interpolation_points = np.random.choice(range(num_candidates),
+                                size=num_points, replace=False)
+
+    # Constructing an indicator whether a state will be simulated or
+    # interpolated.
+    is_simulated = np.tile(False, num_candidates)
+    is_simulated[interpolation_points] = True
+
+    # Check for debugging cases.
+    is_standardized = is_debug and os.path.isfile('interpolation.txt')
+    if is_standardized:
+        with open('interpolation.txt', 'r') as file_:
+            indicators = []
+            for line in file_:
+                indicators += [(shlex.split(line)[0] == 'True')]
+        is_simulated = (indicators[:num_candidates])
+
+    # Type conversion
+    is_simulated = np.array(is_simulated)
+
+    # Finishing
+    return is_simulated

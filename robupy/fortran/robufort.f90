@@ -146,7 +146,7 @@ END SUBROUTINE
 SUBROUTINE read_specification(num_periods, delta, level, coeffs_A, coeffs_B, &
                 coeffs_edu, edu_start, edu_max, coeffs_home, shocks, & 
                 num_draws, seed_solution, num_agents, seed_simulation, & 
-                is_debug, is_zero) 
+                is_debug, is_zero, is_interpolated, num_points) 
 
     !/* external objects    */
 
@@ -154,6 +154,7 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_A, coeffs_B, &
     INTEGER(our_int), INTENT(OUT)   :: seed_solution 
     INTEGER(our_int), INTENT(OUT)   :: num_periods
     INTEGER(our_int), INTENT(OUT)   :: num_agents
+    INTEGER(our_int), INTENT(OUT)   :: num_points
     INTEGER(our_int), INTENT(OUT)   :: num_draws
     INTEGER(our_int), INTENT(OUT)   :: edu_start
     INTEGER(our_int), INTENT(OUT)   :: edu_max
@@ -166,6 +167,7 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_A, coeffs_B, &
     REAL(our_dble), INTENT(OUT)     :: delta
     REAL(our_dble), INTENT(OUT)     :: level
 
+    LOGICAL, INTENT(OUT)            :: is_interpolated
     LOGICAL, INTENT(OUT)            :: is_debug
     LOGICAL, INTENT(OUT)            :: is_zero
 
@@ -223,6 +225,10 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_A, coeffs_B, &
 
         ! PROGRAM
         READ(1, *) is_debug
+
+        ! INTERPOLATION
+        READ(1, *) is_interpolated
+        READ(1, 1505) num_points
 
         ! AUXILIARY
         READ(1, *) is_zero
@@ -389,6 +395,7 @@ PROGRAM robufort
     INTEGER(our_int)                :: seed_solution 
     INTEGER(our_int)                :: num_periods
     INTEGER(our_int)                :: num_agents
+    INTEGER(our_int)                :: num_points
     INTEGER(our_int)                :: edu_start
     INTEGER(our_int)                :: num_draws
     INTEGER(our_int)                :: edu_max
@@ -408,10 +415,11 @@ PROGRAM robufort
     REAL(our_dble)                  :: delta
     REAL(our_dble)                  :: level
 
+    LOGICAL                         :: is_interpolated
     LOGICAL                         :: is_debug
     LOGICAL                         :: is_zero
 
-    ! The following two containers are only useful in case of manual 
+    ! The following objects are only useful in case of manual 
     ! preprocessing.
 
     INTEGER(our_int)                :: edu_lagged
@@ -468,6 +476,11 @@ PROGRAM robufort
     LOGICAL                         :: is_myopic
     LOGICAL                         :: is_huge
 
+    ! The following objects are only useful during development and will be
+    ! removed later.
+
+    CHARACTER(10)                   :: measure = 'kl'
+
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
@@ -475,8 +488,8 @@ PROGRAM robufort
     ! Read specification of model
     CALL read_specification(num_periods, delta, level, coeffs_A, coeffs_B, & 
             coeffs_edu, edu_start, edu_max, coeffs_home, shocks, num_draws, &
-            seed_solution, num_agents, seed_simulation, &
-            is_debug, is_zero) 
+            seed_solution, num_agents, seed_simulation, is_debug, is_zero, &
+            is_interpolated, num_points) 
 
     ! Auxiliary objects
     min_idx = MIN(num_periods, (edu_max - edu_start + 1))
@@ -522,7 +535,8 @@ PROGRAM robufort
             periods_future_payoffs, num_periods, max_states_period, &
             periods_eps_relevant, num_draws, states_number_period, & 
             periods_payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
-            states_all, delta, is_debug, shocks, level)
+            states_all, delta, is_debug, shocks, level, measure, &
+            is_interpolated, num_points)
    
     ! Store results. These are read in by the PYTHON wrapper and added 
     ! to the clsRobupy instance.

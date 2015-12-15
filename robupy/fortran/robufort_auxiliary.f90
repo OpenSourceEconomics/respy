@@ -13,6 +13,66 @@ MODULE robufort_auxiliary
 CONTAINS
 !*******************************************************************************
 !*******************************************************************************
+SUBROUTINE random_choice(sample, candidates, num_candidates, num_points)
+
+    !
+    ! Source
+    ! ------
+    !
+    !   KNUTH, D. The art of computer programming. Vol II.
+    !     Seminumerical Algorithms. Reading, Mass: AddisonWesley, 1969
+    !
+
+    !/* external objects    */
+
+    INTEGER, INTENT(OUT)          :: sample(num_points)
+
+    INTEGER, INTENT(IN)           :: candidates(:)
+    INTEGER, INTENT(IN)           :: num_candidates
+    INTEGER, INTENT(IN)           :: num_points
+
+    !/* internal objects    */
+
+    INTEGER(our_int)              :: m
+    INTEGER(our_int)              :: j
+    INTEGER(our_int)              :: l
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+  
+    ! Initialize auxiliary objects
+    m = 0
+
+    ! Draw random points from candidates
+    DO j = 1, num_candidates
+
+        l = INT(DBLE(num_candidates - j + 1) * RAN(0)) + 1
+
+        IF (l .GT. (num_points - m)) THEN
+
+            CONTINUE
+
+        ELSE
+
+            m = m + 1
+
+            sample(m) = candidates(j)
+
+            IF (m .GE. num_points) THEN
+
+                RETURN
+
+            END IF
+
+        END IF
+
+    END DO
+
+
+END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE logging_solution(indicator, period)
 
     !/* external objects    */
@@ -58,6 +118,91 @@ SUBROUTINE logging_solution(indicator, period)
   CLOSE(99)
     
 END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
+FUNCTION get_simulated_indicator(num_points, num_candidates, is_debug)
+
+    !/* external objects    */
+
+    LOGICAL, INTENT(IN)               :: is_debug
+
+    INTEGER(our_int), INTENT(IN)      :: num_candidates
+    INTEGER(our_int), INTENT(IN)      :: num_points
+
+    !/* internal objects    */
+  
+    INTEGER(our_int)                  :: candidates(num_candidates)
+    INTEGER(our_int)                  :: sample(num_points)
+    INTEGER(our_int)                  :: i
+
+    LOGICAL                           :: get_simulated_indicator(num_candidates)
+    LOGICAL                           :: is_simulated(num_candidates)
+    LOGICAL                           :: is_standardized
+    LOGICAL                           :: READ_IN
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+    
+    ! Initialize set of candidate values
+    candidates = (/ (i, i = 1, num_candidates) /)
+
+    ! Check if standardization requested
+    IF (is_debug) THEN
+
+        INQUIRE(FILE='interpolation.txt', EXIST=READ_IN)
+
+        IF (READ_IN) THEN
+
+            OPEN(12, file='interpolation.txt')
+
+               DO i = 1, num_candidates
+            
+                    READ(12, *)  is_simulated(i)     
+              
+                END DO
+        
+            CLOSE(12)!
+
+        END IF
+
+        get_simulated_indicator = is_simulated
+
+        RETURN
+
+    END IF
+
+    ! Handle special cases
+    IF (num_points .EQ. num_candidates) THEN
+
+        get_simulated_indicator = .TRUE.
+
+        RETURN
+
+    ELSEIF (num_points .GT. num_candidates) THEN
+
+        PRINT *, ' Bad Request in interpolation code'
+
+        STOP
+
+    END IF
+
+    ! Draw a random sample
+    CALL random_choice(sample, candidates, num_candidates, num_points)
+    
+    ! Update information indicator
+    is_simulated = .False.
+
+    DO i = 1, num_points
+
+        is_simulated(sample(i)) = .True.
+
+    END DO
+
+    ! Finish
+    get_simulated_indicator = is_simulated
+
+END FUNCTION
 !*******************************************************************************
 !*******************************************************************************
 FUNCTION inverse(A, k)

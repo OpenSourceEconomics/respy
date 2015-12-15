@@ -498,6 +498,34 @@ SUBROUTINE wrapper_get_predictions(Y, X, coeffs, num_agents)
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
+SUBROUTINE wrapper_random_choice(sample, candidates, num_candidates, num_points)
+
+    !/* external libraries    */
+
+    USE robufort_auxiliary
+
+    !/* setup    */
+
+    IMPLICIT NONE
+
+    !/* external objects    */
+
+    INTEGER, INTENT(OUT)            :: sample(num_points)
+
+    INTEGER, INTENT(IN)             :: candidates(:)
+    INTEGER, INTENT(IN)             :: num_candidates
+    INTEGER, INTENT(IN)             :: num_points
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+
+     CALL random_choice(sample, candidates, num_candidates, num_points)
+
+
+END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE wrapper_get_coefficients(coeffs, Y, X, num_covars, num_agents)
 
     !/* external libraries    */
@@ -523,6 +551,34 @@ SUBROUTINE wrapper_get_coefficients(coeffs, Y, X, num_covars, num_agents)
 !-------------------------------------------------------------------------------
     
     CALL get_coefficients(coeffs, Y, X, num_covars, num_agents)
+
+END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE wrapper_get_simulated_indicator(is_simulated, num_points, &
+                num_candidates, is_debug)
+
+    !/* external libraries    */
+
+    USE robufort_auxiliary
+
+    !/* setup    */
+
+    IMPLICIT NONE
+
+    !/* external objects    */
+
+    LOGICAL, INTENT(OUT)            :: is_simulated(num_candidates)
+    LOGICAL, INTENT(IN)             :: is_debug
+
+    INTEGER, INTENT(IN)             :: num_candidates
+    INTEGER, INTENT(IN)             :: num_points
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+    
+    is_simulated = get_simulated_indicator(num_points, num_candidates, is_debug)
 
 END SUBROUTINE
 !*******************************************************************************

@@ -22,6 +22,7 @@ import os
 
 # testing library
 from modules.auxiliary import transform_robupy_to_restud
+from modules.auxiliary import write_interpolation_grid
 from modules.auxiliary import write_disturbances
 from modules.auxiliary import build_f2py_testing
 from modules.auxiliary import compile_package
@@ -29,6 +30,8 @@ from modules.auxiliary import compile_package
 # ROBUPY import
 sys.path.insert(0, os.environ['ROBUPY'])
 from robupy import read, solve, simulate
+
+from robupy.python.py.python_library import _get_simulated_indictor
 
 from robupy.tests.random_init import generate_random_dict
 from robupy.tests.random_init import print_random_dict
@@ -42,6 +45,57 @@ from robupy.python.py.ambiguity import _criterion
 
 ''' Main
 '''
+
+
+def test_88():
+    """ This is a special test for auxiliary functions related to the
+    interpolation setup.
+    """
+    # Ensure that fast solution methods are available
+    compile_package('--fortran --debug', True)
+
+    # Load interface to debugging library
+    import robupy.python.f2py.f2py_debug as fort
+
+    for _ in range(1000):
+
+        # Draw random request for testing
+        num_candidates = np.random.random_integers(1, 500)
+        num_points = np.random.random_integers(1, num_candidates)
+        candidates = list(range(num_candidates))
+
+        # Check function for random choice and make sure that there are no
+        # duplicates.
+        f90 = fort.wrapper_random_choice(candidates, num_candidates, num_points)
+        np.testing.assert_equal(len(set(f90)), len(f90))
+        np.testing.assert_equal(len(f90), num_points)
+
+        # Check the standard cases of the function.
+        f90 = fort.wrapper_get_simulated_indicator(num_points,
+                    num_candidates, False)
+        np.testing.assert_equal(len(f90), num_candidates)
+        np.testing.assert_equal(np.all(f90) in [0, 1], True)
+
+        # Test the standardization across PYTHON, F2PY, and FORTRAN
+        # implementations. This is possible as we write out an interpolation
+        # grid to disk which is used for both functions.
+        write_interpolation_grid(num_candidates)
+
+        py = _get_simulated_indictor(num_points, num_candidates, True)
+        f90 = fort.wrapper_get_simulated_indicator(num_points,
+                    num_candidates, True)
+
+        os.unlink('interpolation.txt')
+        np.testing.assert_array_equal(f90, 1*py)
+
+        # Special case where number of interpolation points are same as the
+        # number of candidates. In that case the returned indicator should be
+        # all TRUE.
+        num_points = num_candidates
+
+        f90 = fort.wrapper_get_simulated_indicator(num_points, num_candidates,
+                    False)
+        np.testing.assert_equal(sum(f90), num_candidates)
 
 
 def test_89():
@@ -591,7 +645,7 @@ def test_97():
 
     import robupy.python.f2py.f2py_debug as fort
 
-    for _ in range(1000):
+    for _ in range(100):
 
         # Draw random requests for testing purposes.
         num_draws = np.random.random_integers(2, 1000)

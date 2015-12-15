@@ -184,6 +184,13 @@ def write_robufort_initialization(robupy_obj):
         line = '{0}'.format(init_dict['PROGRAM']['debug'])
         file_.write(line + '\n')
 
+        # INTERPOLATION
+        line = '{0}'.format(init_dict['INTERPOLATION']['apply'])
+        file_.write(line + '\n')
+
+        line = '{0:10d}\n'.format(init_dict['INTERPOLATION']['points'])
+        file_.write(line)
+
         # Auxiliary
         line = '{0}'.format(eps_zero)
         file_.write(line + '\n')
