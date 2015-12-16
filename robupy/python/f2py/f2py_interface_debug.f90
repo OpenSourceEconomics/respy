@@ -10,7 +10,7 @@ SUBROUTINE wrapper_get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
                 future_payoffs, num_draws, eps_relevant, period, k, &
                 payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
                 states_all, num_periods, periods_emax, delta, is_debug, &
-                shocks, level)
+                shocks, level, measure)
 
     !/* external libraries    */
 
@@ -44,6 +44,8 @@ SUBROUTINE wrapper_get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
 
     LOGICAL, INTENT(IN)             :: is_debug
 
+    CHARACTER(10), INTENT(IN)       :: measure
+
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
@@ -53,7 +55,7 @@ SUBROUTINE wrapper_get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
                 future_payoffs, num_draws, eps_relevant, period, k, & 
                 payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
                 states_all, num_periods, periods_emax, delta, is_debug, &
-                shocks, level)
+                shocks, level, measure)
 
 END SUBROUTINE
 !*******************************************************************************
@@ -580,6 +582,90 @@ SUBROUTINE wrapper_get_simulated_indicator(is_simulated, num_points, &
     
     is_simulated = get_simulated_indicator(num_points, num_candidates, is_debug)
 
+END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE wrapper_get_payoffs(emax_simulated, payoffs_ex_post, future_payoffs, &
+                num_draws, eps_relevant, period, k, payoffs_systematic, & 
+                edu_max, edu_start, mapping_state_idx, states_all, num_periods, & 
+                periods_emax, delta, is_debug, shocks, level, measure)
+
+
+    !/* external libraries    */
+
+    USE robufort_auxiliary
+
+    USE robufort_risk
+
+    USE robufort_ambiguity
+
+    !/* setup    */
+
+    IMPLICIT NONE
+
+    !/* external objects    */
+
+    DOUBLE PRECISION, INTENT(OUT)       :: emax_simulated
+    DOUBLE PRECISION, INTENT(OUT)       :: payoffs_ex_post(4)
+    DOUBLE PRECISION, INTENT(OUT)       :: future_payoffs(4)
+
+    DOUBLE PRECISION, INTENT(IN)        :: payoffs_systematic(:)
+    DOUBLE PRECISION, INTENT(IN)        :: eps_relevant(:, :)
+    DOUBLE PRECISION, INTENT(IN)        :: periods_emax(:, :)
+    DOUBLE PRECISION, INTENT(IN)        :: shocks(:, :)
+    DOUBLE PRECISION, INTENT(IN)        :: delta
+    DOUBLE PRECISION, INTENT(IN)        :: level
+
+    INTEGER, INTENT(IN)                 :: mapping_state_idx(:, :, :, :, :)
+    INTEGER, INTENT(IN)                 :: states_all(:, :, :)
+    INTEGER, INTENT(IN)                 :: num_periods
+    INTEGER, INTENT(IN)                 :: num_draws
+    INTEGER, INTENT(IN)                 :: edu_max
+    INTEGER, INTENT(IN)                 :: edu_start
+    INTEGER, INTENT(IN)                 :: period
+    INTEGER, INTENT(IN)                 :: k 
+
+    LOGICAL, INTENT(IN)                 :: is_debug
+
+    CHARACTER(10), INTENT(IN)           :: measure
+
+    !/* external objects    */
+
+!    LOGICAL, INTENT(OUT)            :: is_simulated(num_candidates)
+!    LOGICAL, INTENT(IN)             :: is_debug
+
+!    INTEGER, INTENT(IN)             :: num_candidates
+!    INTEGER, INTENT(IN)             :: num_points
+     
+    LOGICAL                             :: is_ambiguous
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+    
+    ! Create auxiliary objects  
+    is_ambiguous = (level .GT. zero_dble)
+
+    ! Payoffs require different machinery depending on whether there is
+    ! ambiguity or not.
+    IF (is_ambiguous) THEN
+
+        CALL get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
+                future_payoffs, num_draws, eps_relevant, period, k, & 
+                payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
+                states_all, num_periods, periods_emax, delta, is_debug, &
+                shocks, level, measure)
+
+    ELSE 
+
+        CALL get_payoffs_risk(emax_simulated, payoffs_ex_post, &
+                future_payoffs, num_draws, eps_relevant, period, k, &
+                payoffs_systematic, edu_max, edu_start, mapping_state_idx, & 
+                states_all, num_periods, periods_emax, delta, is_debug, & 
+                shocks, level, measure)
+
+    END IF
+    
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************

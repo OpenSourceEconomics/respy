@@ -197,7 +197,8 @@ def get_payoffs(num_draws, eps_relevant, period, k, payoffs_systematic, edu_max,
                         get_payoffs_risk(num_draws, eps_relevant, period, k,
                             payoffs_systematic, edu_max, edu_start,
                             mapping_state_idx, states_all, num_periods,
-                            periods_emax, delta)
+                            periods_emax, delta, is_debug, shocks, level,
+                            measure)
 
     # Finishing
     return emax, payoffs_ex_post, future_payoffs

@@ -28,7 +28,7 @@ CONTAINS
 SUBROUTINE get_payoffs_risk(emax_simulated, payoffs_ex_post, future_payoffs, &
                 num_draws, eps_relevant, period, k, payoffs_systematic, & 
                 edu_max, edu_start, mapping_state_idx, states_all, num_periods, & 
-                periods_emax, delta)
+                periods_emax, delta, is_debug, shocks, level, measure)
 
     !/* external objects    */
 
@@ -49,6 +49,12 @@ SUBROUTINE get_payoffs_risk(emax_simulated, payoffs_ex_post, future_payoffs, &
     REAL(our_dble), INTENT(IN)      :: payoffs_systematic(:)
     REAL(our_dble), INTENT(IN)      :: delta
     REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
+    REAL(our_dble), INTENT(IN)      :: shocks(:, :)
+    REAL(our_dble), INTENT(IN)      :: level
+
+    LOGICAL, INTENT(IN)             :: is_debug
+
+    CHARACTER(10), INTENT(IN)       :: measure
 
     !/* internal  objects    */
 
@@ -62,9 +68,10 @@ SUBROUTINE get_payoffs_risk(emax_simulated, payoffs_ex_post, future_payoffs, &
     eps_relevant_emax = eps_relevant
 
     ! Simulated expected future value
-    CALL simulate_emax(emax_simulated, payoffs_ex_post, future_payoffs, num_periods, & 
-            num_draws, period, k, eps_relevant_emax, payoffs_systematic, edu_max, & 
-            edu_start, periods_emax, states_all, mapping_state_idx, delta)
+    CALL simulate_emax(emax_simulated, payoffs_ex_post, future_payoffs, & 
+            num_periods, num_draws, period, k, eps_relevant_emax, & 
+            payoffs_systematic, edu_max, edu_start, periods_emax, states_all, & 
+            mapping_state_idx, delta)
     
 END SUBROUTINE
 !*******************************************************************************

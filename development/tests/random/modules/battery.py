@@ -32,6 +32,7 @@ sys.path.insert(0, os.environ['ROBUPY'])
 from robupy import read, solve, simulate
 
 from robupy.python.py.python_library import _get_simulated_indictor
+from robupy.python.py.python_library import get_payoffs
 
 from robupy.tests.random_init import generate_random_dict
 from robupy.tests.random_init import print_random_dict
@@ -45,6 +46,80 @@ from robupy.python.py.ambiguity import _criterion
 
 ''' Main
 '''
+
+
+def test_87():
+    """ This function compares the results from the payoff functions across
+    implementations.
+    """
+    # Ensure that fast solution methods are available
+    # TODO: Comment back in ...
+    compile_package('--fortran --debug', False)
+
+    # Load interface to debugging library
+    import robupy.python.f2py.f2py_debug as fort
+    for _ in range(200):
+        # Generate random initialization file
+        generate_init()
+
+        # Perform toolbox actions
+        robupy_obj = read('test.robupy.ini')
+
+        robupy_obj = solve(robupy_obj)
+
+        # TODO: probably requires to align the disturbances ...
+
+
+        num_draws = robupy_obj.get_attr('num_draws')
+        num_periods = robupy_obj.get_attr('num_periods')
+        num_periods = robupy_obj.get_attr('num_periods')
+        edu_max = robupy_obj.get_attr('edu_max')
+        edu_start = robupy_obj.get_attr('edu_start')
+
+        mapping_state_idx = robupy_obj.get_attr('mapping_state_idx')
+        states_all = robupy_obj.get_attr('states_all')
+
+        periods_emax = robupy_obj.get_attr('periods_emax')
+
+        delta = robupy_obj.get_attr('delta')
+        is_debug = robupy_obj.get_attr('is_debug')
+        shocks = robupy_obj.get_attr('shocks')
+        periods_emax = robupy_obj.get_attr('periods_emax')
+        level = robupy_obj.get_attr('level')
+        measure = robupy_obj.get_attr('measure')
+        states_number_period = robupy_obj.get_attr('states_number_period')
+
+        period = np.random.choice(range(num_periods))
+        k = np.random.choice(range(states_number_period[period]))
+
+        periods_payoffs_systematic = robupy_obj.get_attr('periods_payoffs_systematic')
+
+        payoffs_systematic = periods_payoffs_systematic[period, k, :]
+
+        eps_relevant = np.random.multivariate_normal(np.zeros(4), np.identity(4),
+                                                     (num_draws,))
+
+        level = 0.1
+
+        # Extract payoffs using PYTHON and FORTRAN codes.
+        py = get_payoffs(num_draws, eps_relevant, period, k, payoffs_systematic,
+                edu_max, edu_start, mapping_state_idx, states_all, num_periods,
+                periods_emax, delta, is_debug, shocks, level, measure)
+
+        f90 = fort.wrapper_get_payoffs(num_draws, eps_relevant, period, k,
+                payoffs_systematic, edu_max, edu_start, mapping_state_idx,
+                states_all, num_periods, periods_emax, delta, is_debug,
+                shocks, level, measure)
+
+        # TODO: This will be fixed soon.
+        # The total future payoffs can be different due to treatment of
+        # inadmissible states.
+        print(f90)
+        print(py)
+
+        for i in range(2):
+            np.testing.assert_array_almost_equal(py[i], f90[i])
+
 
 
 def test_88():
