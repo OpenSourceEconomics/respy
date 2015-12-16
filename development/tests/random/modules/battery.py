@@ -31,7 +31,8 @@ from modules.auxiliary import compile_package
 sys.path.insert(0, os.environ['ROBUPY'])
 from robupy import read, solve, simulate
 
-from robupy.python.py.python_library import _get_simulated_indictor
+from robupy.python.py.python_library import _get_simulated_indicator
+from robupy.python.py.python_library import _get_exogenous_variables
 from robupy.python.py.python_library import get_payoffs
 
 from robupy.tests.random_init import generate_random_dict
@@ -47,18 +48,17 @@ from robupy.python.py.ambiguity import _criterion
 ''' Main
 '''
 
-
-def test_87():
-    """ This function compares the results from the payoff functions across
-    implementations.
+def test_86():
+    """ Further tests for the interpolation routines.
     """
     # Ensure that fast solution methods are available
-    # TODO: Comment back in ...
-    compile_package('--fortran --debug', False)
+    compile_package('--fortran --debug', True)
 
     # Load interface to debugging library
     import robupy.python.f2py.f2py_debug as fort
-    for _ in range(200):
+
+    for _ in range(1):
+
         # Generate random initialization file
         generate_init()
 
@@ -67,59 +67,123 @@ def test_87():
 
         robupy_obj = solve(robupy_obj)
 
-        # TODO: probably requires to align the disturbances ...
-
-
-        num_draws = robupy_obj.get_attr('num_draws')
+        # Extract ingredients for interface
         num_periods = robupy_obj.get_attr('num_periods')
-        num_periods = robupy_obj.get_attr('num_periods')
-        edu_max = robupy_obj.get_attr('edu_max')
-        edu_start = robupy_obj.get_attr('edu_start')
 
-        mapping_state_idx = robupy_obj.get_attr('mapping_state_idx')
-        states_all = robupy_obj.get_attr('states_all')
-
-        periods_emax = robupy_obj.get_attr('periods_emax')
-
-        delta = robupy_obj.get_attr('delta')
-        is_debug = robupy_obj.get_attr('is_debug')
-        shocks = robupy_obj.get_attr('shocks')
-        periods_emax = robupy_obj.get_attr('periods_emax')
-        level = robupy_obj.get_attr('level')
-        measure = robupy_obj.get_attr('measure')
         states_number_period = robupy_obj.get_attr('states_number_period')
 
-        period = np.random.choice(range(num_periods))
-        k = np.random.choice(range(states_number_period[period]))
+        delta = robupy_obj.get_attr('delta')
 
         periods_payoffs_systematic = robupy_obj.get_attr('periods_payoffs_systematic')
 
-        payoffs_systematic = periods_payoffs_systematic[period, k, :]
+        edu_max = robupy_obj.get_attr('edu_max')
 
-        eps_relevant = np.random.multivariate_normal(np.zeros(4), np.identity(4),
-                                                     (num_draws,))
+        edu_start = robupy_obj.get_attr('edu_start')
 
-        level = 0.1
+        mapping_state_idx = robupy_obj.get_attr('mapping_state_idx')
 
-        # Extract payoffs using PYTHON and FORTRAN codes.
-        py = get_payoffs(num_draws, eps_relevant, period, k, payoffs_systematic,
-                edu_max, edu_start, mapping_state_idx, states_all, num_periods,
-                periods_emax, delta, is_debug, shocks, level, measure)
+        periods_emax = robupy_obj.get_attr('periods_emax')
 
-        f90 = fort.wrapper_get_payoffs(num_draws, eps_relevant, period, k,
-                payoffs_systematic, edu_max, edu_start, mapping_state_idx,
-                states_all, num_periods, periods_emax, delta, is_debug,
-                shocks, level, measure)
+        states_all = robupy_obj.get_attr('states_all')
 
-        # TODO: This will be fixed soon.
-        # The total future payoffs can be different due to treatment of
-        # inadmissible states.
-        print(f90)
-        print(py)
+        # Auxilary request
+        period = np.random.choice(range(num_periods))
 
-        for i in range(2):
-            np.testing.assert_array_almost_equal(py[i], f90[i])
+        num_states = states_number_period[period]
 
+        shifts = [1.0, 1.0, 0.0, 0.0]
+
+        # Request
+        args = (period, num_periods, num_states, delta,
+                periods_payoffs_systematic, shifts, edu_max, edu_start,
+                mapping_state_idx, periods_emax, states_all)
+
+        _get_exogenous_variables(period, num_periods, num_states, delta,
+                periods_payoffs_systematic, shifts, edu_max, edu_start,
+                mapping_state_idx, periods_emax, states_all)
+#
+
+
+def test_87():
+    """ This function compares the results from the payoff functions across
+    implementations.
+    """
+    # Ensure that fast solution methods are available
+    compile_package('--fortran --debug', True)
+
+    # Load interface to debugging library
+    import robupy.python.f2py.f2py_debug as fort
+
+    for _ in range(10):
+
+        # Impose constraints
+        constraints = dict()
+        constraints['measure'] = 'kl'
+
+        # Generate random initialization file
+        generate_init(constraints)
+
+        # Perform toolbox actions
+        robupy_obj = read('test.robupy.ini')
+
+        robupy_obj = solve(robupy_obj)
+
+        # Extract ingredients for interface
+        periods_payoffs_systematic = robupy_obj.get_attr('periods_payoffs_systematic')
+
+        states_number_period = robupy_obj.get_attr('states_number_period')
+
+        mapping_state_idx = robupy_obj.get_attr('mapping_state_idx')
+
+        periods_emax = robupy_obj.get_attr('periods_emax')
+
+        num_periods = robupy_obj.get_attr('num_periods')
+
+        states_all = robupy_obj.get_attr('states_all')
+
+        num_draws = robupy_obj.get_attr('num_draws')
+
+        edu_start = robupy_obj.get_attr('edu_start')
+
+        is_debug = robupy_obj.get_attr('is_debug')
+
+        edu_max = robupy_obj.get_attr('edu_max')
+
+        shocks = robupy_obj.get_attr('shocks')
+
+        measure = robupy_obj.get_attr('measure')
+
+        delta = robupy_obj.get_attr('delta')
+
+        level = robupy_obj.get_attr('level')
+
+        # Iterate over a couple of admissible points
+        for _ in range(10):
+
+            # Select random points
+            period = np.random.choice(range(num_periods))
+            k = np.random.choice(range(states_number_period[period]))
+
+            # Finalize extraction of ingredients
+            payoffs_systematic = periods_payoffs_systematic[period, k, :]
+            eps_relevant = np.random.sample((num_draws, 4))
+
+            # Extract payoffs using PYTHON and FORTRAN codes.
+            py = get_payoffs(num_draws, eps_relevant, period, k,
+                    payoffs_systematic, edu_max, edu_start, mapping_state_idx,
+                    states_all, num_periods, periods_emax, delta, is_debug,
+                    shocks, level, measure)
+
+            f90 = fort.wrapper_get_payoffs(num_draws, eps_relevant, period, k,
+                    payoffs_systematic, edu_max, edu_start, mapping_state_idx,
+                    states_all, num_periods, periods_emax, delta, is_debug,
+                    shocks, level, measure)
+
+            # TODO: I want to fix this soon.
+            # The total future payoffs can be different due to treatment of
+            # inadmissible states.
+            for i in range(2):
+                np.testing.assert_array_almost_equal(py[i], f90[i])
 
 
 def test_88():
@@ -134,43 +198,61 @@ def test_88():
 
     for _ in range(1000):
 
+        # Cleanup
+        try:
+            os.unlink('interpolation.txt')
+        except FileNotFoundError:
+            pass
+
         # Draw random request for testing
-        num_candidates = np.random.random_integers(1, 500)
-        num_points = np.random.random_integers(1, num_candidates)
-        candidates = list(range(num_candidates))
+        num_states = np.random.random_integers(1, 500)
+        num_points = np.random.random_integers(1, num_states)
+        candidates = list(range(num_states))
+
+        num_periods = np.random.random_integers(4, 10)
+        period = np.random.random_integers(1, num_periods - 1)
+
+        states_number_period = np.random.random_integers(1, num_states,
+                                                         size=num_periods)
+
+        # The number of states has to part of this list for the tests to run.
+        idx = np.random.choice(range(num_periods))
+        states_number_period[idx] = num_states
+
+        is_debug = np.random.choice([True, False])
 
         # Check function for random choice and make sure that there are no
         # duplicates.
-        f90 = fort.wrapper_random_choice(candidates, num_candidates, num_points)
+        f90 = fort.wrapper_random_choice(candidates, num_states, num_points)
         np.testing.assert_equal(len(set(f90)), len(f90))
         np.testing.assert_equal(len(f90), num_points)
 
         # Check the standard cases of the function.
-        f90 = fort.wrapper_get_simulated_indicator(num_points,
-                    num_candidates, False)
-        np.testing.assert_equal(len(f90), num_candidates)
+        args = (num_points, num_states, period, num_periods, is_debug)
+        f90 = fort.wrapper_get_simulated_indicator(*args)
+
+        np.testing.assert_equal(len(f90), num_states)
         np.testing.assert_equal(np.all(f90) in [0, 1], True)
 
         # Test the standardization across PYTHON, F2PY, and FORTRAN
         # implementations. This is possible as we write out an interpolation
-        # grid to disk which is used for both functions.
-        write_interpolation_grid(num_candidates)
+        # grid to disk which is used for both functions. This only works if
+        # IS_DEBUG is set to true.
+        write_interpolation_grid(num_periods, num_points, states_number_period)
 
-        py = _get_simulated_indictor(num_points, num_candidates, True)
-        f90 = fort.wrapper_get_simulated_indicator(num_points,
-                    num_candidates, True)
+        args = (num_points, num_states, period, num_periods, True)
+        py = _get_simulated_indicator(*args)
+        f90 = fort.wrapper_get_simulated_indicator(*args)
 
-        os.unlink('interpolation.txt')
         np.testing.assert_array_equal(f90, 1*py)
+        os.unlink('interpolation.txt')
 
         # Special case where number of interpolation points are same as the
         # number of candidates. In that case the returned indicator should be
         # all TRUE.
-        num_points = num_candidates
-
-        f90 = fort.wrapper_get_simulated_indicator(num_points, num_candidates,
-                    False)
-        np.testing.assert_equal(sum(f90), num_candidates)
+        args = (num_states, num_states, period, num_periods, True)
+        f90 = fort.wrapper_get_simulated_indicator(*args)
+        np.testing.assert_equal(sum(f90), num_states)
 
 
 def test_89():
@@ -229,11 +311,8 @@ def test_90():
     compile_package('--fortran --debug', True)
 
     # Set initial constraints
-    # TODO: Should work for all versions.
     constraints = dict()
     constraints['apply'] = False
-    constraints['level'] = 0.00
-    constraints['version'] = 'PYTHON'
 
     # Initialize request
     init_dict = generate_random_dict(constraints)
@@ -695,9 +774,12 @@ def test_96():
         results = sm.OLS(endog, exog).fit()
 
         # Parameters
+        exog[:, -1] = 0
         py = results.params
         f90 = fort_debug.wrapper_get_coefficients(endog, exog, num_covars,
                 num_agents)
+
+        print(py, f90)
         np.testing.assert_almost_equal(py, f90)
 
         # Prediction
@@ -877,7 +959,8 @@ def test_99():
     # Initialize containers
     base = None
 
-    for version in ['PYTHON', 'F2PY', 'FORTRAN', 'OPTIMIZATION']:
+    # TODO: Add OPTIMIZATION to versions checked
+    for version in ['PYTHON', 'F2PY', 'FORTRAN']:
 
         # This ensures that the optimized version agrees with all other
         # implementations as well.

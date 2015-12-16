@@ -557,8 +557,8 @@ SUBROUTINE wrapper_get_coefficients(coeffs, Y, X, num_covars, num_agents)
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_get_simulated_indicator(is_simulated, num_points, &
-                num_candidates, is_debug)
+SUBROUTINE wrapper_get_simulated_indicator(is_simulated, num_points, & 
+                num_states, period, num_periods, is_debug)
 
     !/* external libraries    */
 
@@ -570,17 +570,21 @@ SUBROUTINE wrapper_get_simulated_indicator(is_simulated, num_points, &
 
     !/* external objects    */
 
-    LOGICAL, INTENT(OUT)            :: is_simulated(num_candidates)
-    LOGICAL, INTENT(IN)             :: is_debug
+    LOGICAL, INTENT(OUT)            :: is_simulated(num_states)
 
-    INTEGER, INTENT(IN)             :: num_candidates
+    INTEGER, INTENT(IN)             :: num_periods
+    INTEGER, INTENT(IN)             :: num_states
     INTEGER, INTENT(IN)             :: num_points
+    INTEGER, INTENT(IN)             :: period
+
+    LOGICAL, INTENT(IN)             :: is_debug
 
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
     
-    is_simulated = get_simulated_indicator(num_points, num_candidates, is_debug)
+    is_simulated = get_simulated_indicator(num_points, num_states, period, & 
+                        num_periods, is_debug)
 
 END SUBROUTINE
 !*******************************************************************************
@@ -593,11 +597,7 @@ SUBROUTINE wrapper_get_payoffs(emax_simulated, payoffs_ex_post, future_payoffs, 
 
     !/* external libraries    */
 
-    USE robufort_auxiliary
-
-    USE robufort_risk
-
-    USE robufort_ambiguity
+    USE robufort_library
 
     !/* setup    */
 
@@ -629,42 +629,15 @@ SUBROUTINE wrapper_get_payoffs(emax_simulated, payoffs_ex_post, future_payoffs, 
 
     CHARACTER(10), INTENT(IN)           :: measure
 
-    !/* external objects    */
-
-!    LOGICAL, INTENT(OUT)            :: is_simulated(num_candidates)
-!    LOGICAL, INTENT(IN)             :: is_debug
-
-!    INTEGER, INTENT(IN)             :: num_candidates
-!    INTEGER, INTENT(IN)             :: num_points
-     
-    LOGICAL                             :: is_ambiguous
-
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
     
-    ! Create auxiliary objects  
-    is_ambiguous = (level .GT. zero_dble)
-
-    ! Payoffs require different machinery depending on whether there is
-    ! ambiguity or not.
-    IF (is_ambiguous) THEN
-
-        CALL get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
-                future_payoffs, num_draws, eps_relevant, period, k, & 
-                payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
-                states_all, num_periods, periods_emax, delta, is_debug, &
-                shocks, level, measure)
-
-    ELSE 
-
-        CALL get_payoffs_risk(emax_simulated, payoffs_ex_post, &
-                future_payoffs, num_draws, eps_relevant, period, k, &
-                payoffs_systematic, edu_max, edu_start, mapping_state_idx, & 
-                states_all, num_periods, periods_emax, delta, is_debug, & 
-                shocks, level, measure)
-
-    END IF
+    CALL get_payoffs(emax_simulated, payoffs_ex_post, future_payoffs, &
+                num_draws, eps_relevant, period, k, payoffs_systematic, & 
+                edu_max, edu_start, mapping_state_idx, states_all, &
+                num_periods, periods_emax, delta, is_debug, shocks, level, &
+                measure)
     
 END SUBROUTINE
 !*******************************************************************************

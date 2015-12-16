@@ -23,16 +23,16 @@ from modules.auxiliary import *
 # Failed seeds ...
 #91317, 61905, 14397, 39101, 11692, 62692
 
-label, seed = '87', 6465
+label, seed = '86', 6465
 
 ''' Error Reproduction
 '''
 
 if True:
-    count = 0
+#    count = 0
 #while True:
 
-    seed = 5998#random.randint(0, 10000)
+    seed = 6465#random.randint(0, 10000)
 
     #count = count + 1
     print(seed)

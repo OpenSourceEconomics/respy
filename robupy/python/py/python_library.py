@@ -58,95 +58,42 @@ def backward_induction(num_periods, max_states_period, periods_eps_relevant,
         if any_interpolated:
 
             # Get indicator for interpolation and simulation of states
-            is_simulated = _get_simulated_indictor(num_points, num_states,
-                                is_debug)
+            is_simulated = _get_simulated_indicator(num_points, num_states,
+                                period, num_periods, is_debug)
 
             # Constructing the dependent variable for all states, including the
             # ones where simulation will take place. All information will be
             # used in either the construction of the prediction model or the
             # prediction step.
-            independent_variables = np.tile(np.nan, (num_states, 9))
-            maxe = np.tile(np.nan, num_states)
-
-            for k in range(num_states):
-
-                payoffs_systematic = periods_payoffs_systematic[period, k, :]
-                expected_values, _, _ = get_total_value(period, num_periods,
-                    delta, payoffs_systematic, shifts, edu_max, edu_start,
-                    mapping_state_idx, periods_emax, k, states_all)
-
-                maxe[k] = max(expected_values)
-
-                deviations = maxe[k] - expected_values
-
-                independent_variables[k, :8] = np.hstack((deviations,
-                                                    np.sqrt(deviations)))
-
-                # TODO: Debug inspection ...
-                #print("independent variables")
-                #if k == num_states -1:
-                #    print(independent_variables[k, :])
-            # Add intercept to set of independent variables and replace
-            # infinite values.
-            independent_variables[:, 8] = 1
-
-            # TODO: Is this the best we can do? What are the exact consequences?
-            independent_variables[np.isinf(independent_variables)] = \
-                -50000
+            exogenous_variables, maxe =_get_exogenous_variables(period,
+                num_periods, num_states, delta, periods_payoffs_systematic,
+                shifts, edu_max, edu_start, mapping_state_idx, periods_emax,
+                states_all)
 
             # Constructing the dependent variables for at the random subset of
             # points where the EMAX is actually calculated.
-            dependent_variable = np.tile(np.nan, num_states)
-            for k in range(num_states):
-                # Skip over points that will be interpolated.
-                if not is_simulated[k]:
-                    continue
-                # Extract payoffs
-                payoffs_systematic = periods_payoffs_systematic[period, k, :]
-                # Simulate the expected future value.
-                emax, _, _ = get_payoffs(num_draws, eps_relevant, period,
-                                k, payoffs_systematic, edu_max, edu_start,
-                                mapping_state_idx, states_all, num_periods,
-                                periods_emax, delta, is_debug, shocks, level,
-                                measure)
+            endogenous_variable = _get_endogenous_variable(period, num_periods,
+                    num_states, delta, periods_payoffs_systematic, shifts,
+                    edu_max, edu_start, mapping_state_idx, periods_emax,
+                    states_all, is_simulated, num_draws, shocks, level,
+                    is_debug, measure, maxe, eps_relevant)
 
-                # Construct dependent variable
-                dependent_variable[k] = emax - maxe[k]
-
-                # TODO: Debug inspection
-                #print("independent variables")
-                #if k == num_states -1:
-                #    print(dependent_variable[k])
             # Create prediction model based on the random subset of points where
             # the EMAX is actually simulated and thus dependent and
             # independent variables are available.
-            model = sm.OLS(dependent_variable[is_simulated],
-                        independent_variables[is_simulated])
+            predictions, results = _get_predictions(exogenous_variables,
+                endogenous_variable, maxe, is_simulated)
 
-            results = model.fit()
-
-            # Write out some basic information to spot problems easily
-            _logging_prediction_model(results)
-
-            # Use the model to predict EMAX for all states and subsequently
-            # replace the values where actual values are available. As in
-            # Keane & Wolpin (1994), negative predictions are truncated to zero.
-            predictions_diff = results.predict(independent_variables)
-            predictions_diff = np.clip(predictions_diff, 0.00, None)
-
-            # Construct predicted EMAX for all states and the replace
-            # interpolation points with simulated values.
-            predictions = predictions_diff + maxe
-            predictions[is_simulated] = dependent_variable[is_simulated] + \
+            # For the interpolation points, replace the predictions with
+            # their actual values.
+            predictions[is_simulated] = endogenous_variable[is_simulated] + \
                                             maxe[is_simulated]
 
             # Store results
             periods_emax[period, :num_states] = predictions
 
-            # Checks
-            print(results.summary())
-            _check_prediction_model(predictions_diff, model, num_points,
-                                    num_states, is_debug)
+            # Write out some basic information to spot problems easily.
+            _logging_prediction_model(results)
 
         else:
             # Loop over all possible states
@@ -451,7 +398,8 @@ def _check_prediction_model(predictions_diff, model, num_points, num_states,
         assert (model.nobs == min(num_points, num_states))
 
 
-def _get_simulated_indictor(num_points, num_candidates, is_debug):
+def _get_simulated_indicator(num_points, num_candidates, period, num_periods,
+                             is_debug):
     """ Get the indicator for points of interpolation and simulation.
     """
 
@@ -470,7 +418,7 @@ def _get_simulated_indictor(num_points, num_candidates, is_debug):
         with open('interpolation.txt', 'r') as file_:
             indicators = []
             for line in file_:
-                indicators += [(shlex.split(line)[0] == 'True')]
+                indicators += [(shlex.split(line)[period] == 'True')]
         is_simulated = (indicators[:num_candidates])
 
     # Type conversion
@@ -478,3 +426,99 @@ def _get_simulated_indictor(num_points, num_candidates, is_debug):
 
     # Finishing
     return is_simulated
+
+
+def _get_exogenous_variables(period, num_periods, num_states, delta,
+        periods_payoffs_systematic, shifts, edu_max, edu_start,
+        mapping_state_idx, periods_emax, states_all):
+    """ Get exogenous variables for interpolation scheme.
+    """
+    # Construct auxiliary objects
+    exogenous = np.tile(np.nan, (num_states, 9))
+    maxe = np.tile(np.nan, num_states)
+
+    # Iterate over all states.
+    for k in range(num_states):
+
+        # Extract systematic payoff
+        payoffs_systematic = periods_payoffs_systematic[period, k, :]
+
+        # Get total value
+        expected_values, _, _ = get_total_value(period, num_periods,
+                    delta, payoffs_systematic, shifts, edu_max, edu_start,
+                    mapping_state_idx, periods_emax, k, states_all)
+
+        maxe[k] = max(expected_values)
+
+        deviations = maxe[k] - expected_values
+
+        exogenous[k, :8] = np.hstack((deviations, np.sqrt(deviations)))
+
+        # Add intercept to set of independent variables and replace
+        # infinite values.
+        exogenous[:, 8] = 1
+
+        # TODO: Is this the best we can do? What are the exact consequences?
+        exogenous[np.isinf(exogenous)] =  -50000
+
+    # Finishing
+    return exogenous, maxe
+
+
+def _get_endogenous_variable(period, num_periods, num_states, delta,
+        periods_payoffs_systematic, shifts, edu_max, edu_start,
+        mapping_state_idx, periods_emax, states_all, is_simulated, num_draws,
+                             shocks, level, is_debug, measure, maxe,
+                             eps_relevant):
+    """ Construct endogenous variable for the subset of interpolation points.
+    """
+    # Construct auxiliary objects
+    dependent_variable = np.tile(np.nan, num_states)
+
+    for k in range(num_states):
+        # Skip over points that will be interpolated.
+        if not is_simulated[k]:
+            continue
+
+        # Extract payoffs
+        payoffs_systematic = periods_payoffs_systematic[period, k, :]
+        # Simulate the expected future value.
+        emax, _, _ = get_payoffs(num_draws, eps_relevant, period,
+                                k, payoffs_systematic, edu_max, edu_start,
+                                mapping_state_idx, states_all, num_periods,
+                                periods_emax, delta, is_debug, shocks, level,
+                                measure)
+
+        # Construct dependent variable
+        dependent_variable[k] = emax - maxe[k]
+
+    # Finishing
+    return dependent_variable
+
+
+def _get_predictions(exogenous_variables, endogenous_variable, maxe,
+        is_simulated):
+    """ Construct the predictions based on the results.
+    """
+    # Define ordinary least squares model.
+    model = sm.OLS(endogenous_variable[is_simulated],
+                        exogenous_variables[is_simulated])
+
+    results = model.fit()
+
+    # Use the model to predict EMAX for all states and subsequently
+    # replace the values where actual values are available. As in
+    # Keane & Wolpin (1994), negative predictions are truncated to zero.
+    predictions_diff = results.predict(exogenous_variables)
+    predictions_diff = np.clip(predictions_diff, 0.00, None)
+
+    # Construct predicted EMAX for all states and the replace
+    # interpolation points with simulated values.
+    predictions = predictions_diff + maxe
+
+    # Checks
+    #_check_prediction_model(predictions_diff, model, num_points, num_states,
+    #    is_debug)
+
+    # Finishing
+    return predictions, results

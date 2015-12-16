@@ -18,14 +18,36 @@ from modules.clsMail import MailCls
 '''
 
 
-def write_interpolation_grid(num_candidates):
+def write_interpolation_grid(num_periods, num_points, states_number_period):
     """ Write out an interpolation grid that can be used across
     implementations.
     """
-    with open('interpolation.txt', 'w') as file_:
-        for _ in range(num_candidates):
-            line = '{0}'.format(np.random.choice([True, False]))
-            file_.write(line + '\n')
+    # Construct auxiliary objects
+    max_states = max(states_number_period)
+    booleans = np.tile(True, (max_states, num_periods))
+
+    # Iterate over all periods
+    for period in range(num_periods):
+
+        # Construct auxiliary objects
+        num_states = states_number_period[period]
+        any_interpolation = (num_states - num_points) > 0
+
+        # Check applicability
+        if not any_interpolation:
+            continue
+
+        # Draw points for interpolation
+        indicators = np.random.choice(range(num_states),
+                            size=num_states - num_points, replace=False)
+
+        # Replace indicators
+        for i in range(num_states):
+            if i in indicators:
+                booleans[i, period] = False
+
+    # Write out to file
+    np.savetxt('interpolation.txt', booleans, fmt='%s')
 
 
 def build_f2py_testing(is_hidden):

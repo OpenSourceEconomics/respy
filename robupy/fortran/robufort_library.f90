@@ -322,15 +322,26 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
 
     REAL(our_dble), ALLOCATABLE     :: independent_variables(:, :)
     REAL(our_dble), ALLOCATABLE     :: maxe(:)
+    REAL(our_dble), ALLOCATABLE     :: dependent_variable(:)
+
+    REAL(our_dble), ALLOCATABLE     :: independent_is_available(:, :)
+    REAL(our_dble), ALLOCATABLE     ::  dependent_is_available(:), predictions(:)
+    REAL(our_dble), ALLOCATABLE     :: predictions_diff(:)
 
     LOGICAL                         :: any_interpolated
     LOGICAL                         :: is_ambiguous
 
     LOGICAL, ALLOCATABLE            :: is_simulated(:)
 
+    INTEGER(our_int)                :: num_covars = 9,max_states
+    REAL(our_dble)                  :: coeffs(9)
+
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
+
+!    PRINT *, '\n\n\n'
+!    PRINT *, periods_eps_relevant(num_periods , :, :)
 
     ! Shifts
     shifts = zero_dble
@@ -347,6 +358,8 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
     ! Logging
     CALL logging_solution(3)
 
+    max_states = MAXVAL(states_number_period)
+
     ! Backward induction
     DO period = (num_periods - 1), 0, -1
 
@@ -360,22 +373,25 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
         any_interpolated = (num_points .LE. num_states) .AND. is_interpolated
 
 
-        ! Distinguish 
+        ! Distinguish case with and without interpolation
         IF (any_interpolated) THEN
-
-            !PRINT *, 'inside interpolation code'
 
             ! Constructing indicator for simulation points
             ALLOCATE(is_simulated(num_states))
             ALLOCATE(independent_variables(num_states, 9))
             ALLOCATE(maxe(num_states))
+            ALLOCATE(dependent_variable(num_states))
 
             !----------------------------------------------------------
             ! TODO: Add the revised logging of backward induction but also the 
             ! prediction model.
+            !
+            !   LOGGGING, PSUEDO INVERSE
+            !
+            !
             !----------------------------------------------------------
-            is_simulated = get_simulated_indicator(num_points, num_states, &
-                                is_debug)
+            is_simulated = get_simulated_indicator(num_points, num_states, & 
+                                period, num_periods, is_debug)
 
             ! Construct dependent variable for all states
             DO k = 0, (num_states - 1)
@@ -393,13 +409,7 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
 
                 ! Construct regressors
                 independent_variables(k + 1, 1:4) = deviations
-                independent_variables(k + 1, 5:8) = deviations**2
-
-
-                ! DEBUGGING, Removed Later
-                !IF (k .EQ. num_states - 1) THEN
-                !    PRINT *, independent_variables(k + 1, :)
-                !END IF
+                independent_variables(k + 1, 5:8) = DSQRT(deviations)
 
             END DO
 
@@ -412,31 +422,97 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
             !
             independent_variables(:, 9) = one_dble
             
-
             ! Construct dependent variables for the subset of interpolation 
             ! points.
             DO k = 0, (num_states - 1)
+
                 ! Skip over points that will be predicted
-                IF (is_simulated(k + 1)) THEN
-                    CONTINUE
+                IF (.NOT. is_simulated(k + 1)) THEN
+                    CYCLE
                 END IF
+
                 ! Extract payoffs 
                 payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
+                ! Get payoffs
+                CALL get_payoffs(emax_simulated, payoffs_ex_post, & 
+                        future_payoffs, num_draws, eps_relevant, period, k, &
+                        payoffs_systematic, edu_max, edu_start, & 
+                        mapping_state_idx, states_all, num_periods, & 
+                        periods_emax, delta, is_debug, shocks, level, measure)
+
+                ! Construct dependent variable
+                dependent_variable(k + 1) = emax_simulated - maxe(k + 1)
 
             END DO
 
+            ! Cleanup
+            ALLOCATE(dependent_is_available(num_points))
+            ALLOCATE(independent_is_available(num_points, num_covars))
+            ALLOCATE(predictions(num_states))
+            ALLOCATE(predictions_diff(num_states))
 
 
+            i = 1
+            DO k = 0, (num_states - 1) 
+
+                IF (is_simulated(k + 1)) THEN
+
+                    dependent_is_available(i) = dependent_variable(k + 1)
+                    independent_is_available(i, :) = independent_variables(k + 1, :)
+
+                    i = i + 1
+
+                END IF
+
+            END DO
+
+            CALL get_coefficients(coeffs, dependent_is_available, &
+                    independent_is_available, num_covars, num_points)
+
+            ! Use the model to predict EMAX for all states and subsequently
+            ! replace the values where actual values are available. As in
+            ! Keane & Wolpin (1994), negative predictions are truncated to zero.
+            CALL get_predictions(predictions_diff, independent_variables, coeffs, num_states)
+
+            CALL get_clipped_vector(predictions_diff, predictions_diff, &
+                    zero_dble, huge_dble, num_states)
+
+            ! Construct predicted EMAX for all states and the replace
+            ! interpolation points with simulated values.
+            
+            predictions = predictions_diff + maxe
+
+            i = 1
+            DO k = 0, (num_states - 1) 
+
+                IF (is_simulated(k + 1)) THEN
+
+                    predictions(i) = dependent_variable(k + 1) + maxe(k + 1)
+
+                    i = i + 1
+
+                END IF
+
+            END DO
+            ! Store results
+            periods_emax(period + 1, :num_states) = predictions
+
+
+            DEALLOCATE(dependent_is_available, independent_is_available, predictions, & 
+                predictions_diff)
 
 
             DEALLOCATE(is_simulated)
             DEALLOCATE(maxe)
             DEALLOCATE(independent_variables)
+            DEALLOCATE(dependent_variable)
 
-        END IF
+            ! Align in PYTHON?
+            !periods_payoffs_ex_post(period + 1, :num_states, :) = -huge_dble
+            !periods_future_payoffs(period + 1, :num_states, :) = - huge_dble
 
-        ! THIS IS ALWAYS RUN IN THE MOMENT ...
+        ELSE
 
             ! Loop over all possible states
             DO k = 0, (states_number_period(period + 1) - 1)
@@ -445,25 +521,11 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
                 payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
                 ! BEGIN VECTORIZATION SPLIT
-                IF (is_ambiguous) THEN
-                
-                    CALL get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
-                            future_payoffs, num_draws, eps_relevant, period, k, & 
-                            payoffs_systematic, edu_max, edu_start, &
-                            mapping_state_idx, states_all, num_periods, &
-                            periods_emax, delta, is_debug, shocks, level, & 
-                            measure)
-
-                ELSE
-
-                    CALL get_payoffs_risk(emax_simulated, payoffs_ex_post, & 
-                            future_payoffs, num_draws, eps_relevant, period, k, & 
-                            payoffs_systematic, edu_max, edu_start, & 
-                            mapping_state_idx, states_all, num_periods, &
-                            periods_emax, delta, is_debug, shocks, level, & 
-                            measure)
-
-                END IF
+                CALL get_payoffs(emax_simulated, payoffs_ex_post, & 
+                        future_payoffs, num_draws, eps_relevant, period, k, &
+                        payoffs_systematic, edu_max, edu_start, & 
+                        mapping_state_idx, states_all, num_periods, & 
+                        periods_emax, delta, is_debug, shocks, level, measure)
                 ! END VECTORIZATION SPLIT
                 
                 
@@ -474,7 +536,7 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
 
             END DO
 
-        !END IF
+        END IF
 
     END DO
 
@@ -615,6 +677,72 @@ SUBROUTINE create_state_space(states_all, states_number_period, &
       ! Logging
       CALL logging_solution(-1)
 
+END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE get_payoffs(emax_simulated, payoffs_ex_post, future_payoffs, &
+                num_draws, eps_relevant, period, k, payoffs_systematic, & 
+                edu_max, edu_start, mapping_state_idx, states_all, &
+                num_periods, periods_emax, delta, is_debug, shocks, level, &
+                measure)
+
+    !/* external objects    */
+
+    REAL(our_dble), INTENT(OUT)         :: emax_simulated
+    REAL(our_dble), INTENT(OUT)         :: payoffs_ex_post(4)
+    REAL(our_dble), INTENT(OUT)         :: future_payoffs(4)
+
+    REAL(our_dble), INTENT(IN)          :: payoffs_systematic(:)
+    REAL(our_dble), INTENT(IN)          :: eps_relevant(:, :)
+    REAL(our_dble), INTENT(IN)          :: periods_emax(:, :)
+    REAL(our_dble), INTENT(IN)          :: shocks(:, :)
+    REAL(our_dble), INTENT(IN)          :: delta
+    REAL(our_dble), INTENT(IN)          :: level
+
+    INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(:, :, :, :, :)
+    INTEGER(our_int), INTENT(IN)        :: states_all(:, :, :)
+    INTEGER(our_int), INTENT(IN)        :: num_periods
+    INTEGER(our_int), INTENT(IN)        :: num_draws
+    INTEGER(our_int), INTENT(IN)        :: edu_max
+    INTEGER(our_int), INTENT(IN)        :: edu_start
+    INTEGER(our_int), INTENT(IN)        :: period
+    INTEGER(our_int), INTENT(IN)        :: k 
+
+    LOGICAL, INTENT(IN)                 :: is_debug
+
+    CHARACTER(10), INTENT(IN)           :: measure
+
+    !/* external objects    */
+     
+    LOGICAL                             :: is_ambiguous
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+    
+    ! Create auxiliary objects  
+    is_ambiguous = (level .GT. zero_dble)
+
+    ! Payoffs require different machinery depending on whether there is
+    ! ambiguity or not.
+    IF (is_ambiguous) THEN
+
+        CALL get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
+                future_payoffs, num_draws, eps_relevant, period, k, & 
+                payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
+                states_all, num_periods, periods_emax, delta, is_debug, &
+                shocks, level, measure)
+
+    ELSE 
+
+        CALL get_payoffs_risk(emax_simulated, payoffs_ex_post, &
+                future_payoffs, num_draws, eps_relevant, period, k, &
+                payoffs_systematic, edu_max, edu_start, mapping_state_idx, & 
+                states_all, num_periods, periods_emax, delta, is_debug, & 
+                shocks, level, measure)
+
+    END IF
+    
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************

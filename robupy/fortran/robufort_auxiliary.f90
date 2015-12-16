@@ -120,24 +120,27 @@ SUBROUTINE logging_solution(indicator, period)
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-FUNCTION get_simulated_indicator(num_points, num_candidates, is_debug)
+FUNCTION get_simulated_indicator(num_points, num_states, period, num_periods, &
+            is_debug)
 
     !/* external objects    */
 
-    LOGICAL, INTENT(IN)               :: is_debug
-
-    INTEGER(our_int), INTENT(IN)      :: num_candidates
+    INTEGER(our_int), INTENT(IN)      :: num_periods
+    INTEGER(our_int), INTENT(IN)      :: num_states
     INTEGER(our_int), INTENT(IN)      :: num_points
+    INTEGER(our_int), INTENT(IN)      :: period
+
+    LOGICAL, INTENT(IN)               :: is_debug
 
     !/* internal objects    */
   
-    INTEGER(our_int)                  :: candidates(num_candidates)
+    INTEGER(our_int)                  :: candidates(num_states)
     INTEGER(our_int)                  :: sample(num_points)
     INTEGER(our_int)                  :: i
 
-    LOGICAL                           :: get_simulated_indicator(num_candidates)
-    LOGICAL                           :: is_simulated(num_candidates)
-    LOGICAL                           :: is_standardized
+    LOGICAL                           :: is_simulated_container(num_states, num_periods)
+    LOGICAL                           :: get_simulated_indicator(num_states)
+    LOGICAL                           :: is_simulated(num_states)
     LOGICAL                           :: READ_IN
 
 !-------------------------------------------------------------------------------
@@ -145,7 +148,7 @@ FUNCTION get_simulated_indicator(num_points, num_candidates, is_debug)
 !-------------------------------------------------------------------------------
     
     ! Initialize set of candidate values
-    candidates = (/ (i, i = 1, num_candidates) /)
+    candidates = (/ (i, i = 1, num_states) /)
 
     ! Check if standardization requested
     IF (is_debug) THEN
@@ -156,30 +159,30 @@ FUNCTION get_simulated_indicator(num_points, num_candidates, is_debug)
 
             OPEN(12, file='interpolation.txt')
 
-               DO i = 1, num_candidates
+               DO i = 1, num_states
             
-                    READ(12, *)  is_simulated(i)     
+                    READ(12, *)  is_simulated_container(i, :)     
               
                 END DO
         
-            CLOSE(12)!
+            CLOSE(12)
+
+            get_simulated_indicator = is_simulated_container(:, period + 1)
+
+            RETURN
 
         END IF
-
-        get_simulated_indicator = is_simulated
-
-        RETURN
 
     END IF
 
     ! Handle special cases
-    IF (num_points .EQ. num_candidates) THEN
+    IF (num_points .EQ. num_states) THEN
 
         get_simulated_indicator = .TRUE.
 
         RETURN
 
-    ELSEIF (num_points .GT. num_candidates) THEN
+    ELSEIF (num_points .GT. num_states) THEN
 
         PRINT *, ' Bad Request in interpolation code'
 
@@ -188,7 +191,7 @@ FUNCTION get_simulated_indicator(num_points, num_candidates, is_debug)
     END IF
 
     ! Draw a random sample
-    CALL random_choice(sample, candidates, num_candidates, num_points)
+    CALL random_choice(sample, candidates, num_states, num_points)
     
     ! Update information indicator
     is_simulated = .False.

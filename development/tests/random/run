@@ -47,7 +47,7 @@ def run(hours):
 
     package_labels = list(range(1, 8))
 
-    development_labels = list(range(87, 100))
+    development_labels = list(range(86, 100))
 
     labels = package_labels + development_labels
 
