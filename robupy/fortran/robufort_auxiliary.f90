@@ -13,15 +13,97 @@ MODULE robufort_auxiliary
 CONTAINS
 !*******************************************************************************
 !*******************************************************************************
+SUBROUTINE get_predictions(predictions, endogenous, exogenous, maxe, & 
+              is_simulated, num_points, num_states)
+
+    !/* external objects    */
+
+    REAL(our_dble), INTENT(OUT)       ::  predictions(num_states)
+    REAL(our_dble), INTENT(IN)        :: exogenous(:, :)
+    REAL(our_dble), INTENT(IN)        :: endogenous(:)
+    REAL(our_dble), INTENT(IN)        :: maxe(:)
+
+    INTEGER, INTENT(IN)               :: num_states
+    INTEGER, INTENT(IN)               :: num_points
+
+    LOGICAL, INTENT(IN)               :: is_simulated(:)
+
+    !/* internal objects    */
+
+    REAL(our_dble)                    :: exogenous_is_available(num_points, 9)
+    REAL(our_dble)                    :: endogenous_is_available(num_points)
+    REAL(our_dble)                    :: endogenous_predicted(num_states)
+    REAL(our_dble)                    :: coeffs(9)
+    REAL(our_dble)                    :: r_squared
+
+    INTEGER(our_int)                  :: i
+    INTEGER(our_int)                  :: k
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+    
+    ! Select pairs where both endogenous and exogenous information is available.
+    i = 1
+            
+    DO k = 0, (num_states - 1) 
+
+        IF (is_simulated(k + 1)) THEN
+
+            endogenous_is_available(i) = endogenous(k + 1)
+            exogenous_is_available(i, :) = exogenous(k + 1, :)
+
+            i = i + 1
+
+        END IF
+
+    END DO
+
+    ! Fit the prediction model on interpolation points.
+    CALL get_coefficients(coeffs, endogenous_is_available, & 
+            exogenous_is_available, 9, num_points)
+
+    ! Use the model to predict EMAX for all states and subsequently
+    ! replace the values where actual values are available. As in
+    ! Keane & Wolpin (1994), negative predictions are truncated to zero.
+    CALL point_predictions(endogenous_predicted, exogenous, coeffs, num_states)
+
+    ! Construct coefficient of determination
+    CALL get_r_squared(r_squared, endogenous_is_available, &
+            endogenous_predicted, num_points) 
+            
+    CALL get_clipped_vector(endogenous_predicted, endogenous_predicted, & 
+            zero_dble, huge_dble, num_states)
+
+    ! Construct predicted EMAX for all states and the replace
+    ! interpolation points with simulated values.
+    predictions = endogenous_predicted + maxe
+            
+    DO k = 0, (num_states - 1) 
+
+        IF (is_simulated(k + 1)) THEN
+
+            predictions(k + 1) = endogenous(k + 1) + maxe(k + 1)
+
+        END IF
+
+    END DO
+
+    ! Perform some basic logging to spot problems early.
+    CALL logging_prediction_model(coeffs, r_squared)
+
+END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE random_choice(sample, candidates, num_candidates, num_points)
 
-    !
-    ! Source
-    ! ------
-    !
-    !   KNUTH, D. The art of computer programming. Vol II.
-    !     Seminumerical Algorithms. Reading, Mass: AddisonWesley, 1969
-    !
+  !
+  ! Source
+  ! ------
+  !
+  !   KNUTH, D. The art of computer programming. Vol II.
+  !     Seminumerical Algorithms. Reading, Mass: AddisonWesley, 1969
+  !
 
     !/* external objects    */
 
@@ -73,14 +155,50 @@ SUBROUTINE random_choice(sample, candidates, num_candidates, num_points)
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
+SUBROUTINE logging_prediction_model(coeffs, r_squared)
+
+    !/* external objects    */
+
+    REAL(our_dble), INTENT(IN)            :: coeffs(:)
+    REAL(our_dble), INTENT(IN)            :: r_squared
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+    
+    ! Define format for coefficients and R-squared
+    1900 FORMAT(A18,4x,9(1x,f10.4))
+
+    2900 FORMAT(A18,4x,f10.4)
+
+    ! Write to file
+    OPEN(UNIT=99, FILE='logging.robupy.sol.log', ACCESS='APPEND')
+
+        WRITE(99, *) "     Information about Prediction Model"
+
+        WRITE(99, *) " "
+
+        WRITE(99, 1900) 'Coefficients', coeffs
+
+        WRITE(99, *) " "
+
+        WRITE(99, 2900) 'R-squared', r_squared    
+
+        WRITE(99, *) " "
+
+        WRITE(99, *) " "
+
+    CLOSE(99)
+    
+END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE logging_solution(indicator, period)
 
     !/* external objects    */
 
     INTEGER(our_int), INTENT(IN)            :: indicator
     INTEGER(our_int), INTENT(IN), OPTIONAL  :: period
-
-    !/* internals objects    */
 
 !-------------------------------------------------------------------------------
 ! Algorithm
@@ -793,7 +911,7 @@ SUBROUTINE get_clipped_vector(Y, X, lower_bound, upper_bound, num_values)
 END SUBROUTINE 
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE get_predictions(Y, X, coeffs, num_agents)
+SUBROUTINE point_predictions(Y, X, coeffs, num_agents)
 
     !/* external objects    */
 

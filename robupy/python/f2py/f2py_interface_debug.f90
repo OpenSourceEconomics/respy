@@ -472,7 +472,7 @@ SUBROUTINE wrapper_get_r_squared(r_squared, Y, P, num_agents)
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_get_predictions(Y, X, coeffs, num_agents)
+SUBROUTINE wrapper_point_predictions(Y, X, coeffs, num_agents)
 
     !/* external libraries    */
 
@@ -495,7 +495,41 @@ SUBROUTINE wrapper_get_predictions(Y, X, coeffs, num_agents)
 ! Algorithm
 !-------------------------------------------------------------------------------
     
-    CALL get_predictions(Y, X, coeffs, num_agents)
+    CALL point_predictions(Y, X, coeffs, num_agents)
+
+END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE wrapper_get_predictions(predictions, endogenous, exogenous, maxe, & 
+                is_simulated, num_points, num_states)
+
+    !/* external libraries    */
+
+    USE robufort_auxiliary
+
+    !/* setup    */
+
+    IMPLICIT NONE
+
+    !/* external objects    */
+
+    DOUBLE PRECISION, INTENT(OUT)               :: predictions(num_states)
+
+    DOUBLE PRECISION, INTENT(IN)                :: exogenous(:, :)
+    DOUBLE PRECISION, INTENT(IN)                :: endogenous(:)
+    DOUBLE PRECISION, INTENT(IN)                :: maxe(:)
+
+    INTEGER, INTENT(IN)                         :: num_states
+    INTEGER, INTENT(IN)                         :: num_points
+
+    LOGICAL, INTENT(IN)                         :: is_simulated(:)
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+
+    CALL get_predictions(predictions, endogenous, exogenous, maxe, & 
+            is_simulated, num_points, num_states)
 
 END SUBROUTINE
 !*******************************************************************************

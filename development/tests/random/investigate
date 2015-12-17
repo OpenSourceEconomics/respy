@@ -32,7 +32,7 @@ if True:
 #    count = 0
 #while True:
 
-    seed = 789#6465#random.randint(0, 10000)
+    seed = random.randint(0, 10000)
 
     #count = count + 1
     print(seed)

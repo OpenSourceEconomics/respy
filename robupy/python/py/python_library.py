@@ -65,14 +65,13 @@ def backward_induction(num_periods, max_states_period, periods_eps_relevant,
             # ones where simulation will take place. All information will be
             # used in either the construction of the prediction model or the
             # prediction step.
-            exogenous_variables, maxe =_get_exogenous_variables(period,
-                num_periods, num_states, delta, periods_payoffs_systematic,
-                shifts, edu_max, edu_start, mapping_state_idx, periods_emax,
-                states_all)
+            exogenous, maxe =_get_exogenous_variables(period, num_periods,
+                num_states, delta, periods_payoffs_systematic, shifts,
+                edu_max, edu_start, mapping_state_idx, periods_emax, states_all)
 
             # Constructing the dependent variables for at the random subset of
             # points where the EMAX is actually calculated.
-            endogenous_variable = _get_endogenous_variable(period, num_periods,
+            endogenous = _get_endogenous_variable(period, num_periods,
                 num_states, delta, periods_payoffs_systematic, shifts,
                 edu_max, edu_start, mapping_state_idx, periods_emax,
                 states_all, is_simulated, num_draws, shocks, level, is_debug,
@@ -80,23 +79,16 @@ def backward_induction(num_periods, max_states_period, periods_eps_relevant,
 
             # Create prediction model based on the random subset of points where
             # the EMAX is actually simulated and thus dependent and
-            # independent variables are available.
-            predictions, results = _get_predictions(exogenous_variables,
-                endogenous_variable, maxe, is_simulated, num_points, num_states,
-                is_debug)
-
-            # For the interpolation points, replace the predictions with
-            # their actual values.
-            predictions[is_simulated] = endogenous_variable[is_simulated] + \
-                maxe[is_simulated]
+            # independent variables are available. For the interpolation
+            # points, the actual values are used.
+            predictions, results = _get_predictions(endogenous, exogenous,
+                maxe, is_simulated, num_points, num_states, is_debug)
 
             # Store results
             periods_emax[period, :num_states] = predictions
 
-            # Write out some basic information to spot problems easily.
-            _logging_prediction_model(results)
-
         else:
+
             # Loop over all possible states
             for k in range(states_number_period[period]):
 
@@ -482,43 +474,46 @@ def _get_endogenous_variable(period, num_periods, num_states, delta,
 
         # Extract payoffs
         payoffs_systematic = periods_payoffs_systematic[period, k, :]
+
         # Simulate the expected future value.
-        emax, _, _ = get_payoffs(num_draws, eps_relevant, period,
+        emax_simulated, _, _ = get_payoffs(num_draws, eps_relevant, period,
             k, payoffs_systematic, edu_max, edu_start, mapping_state_idx,
             states_all, num_periods, periods_emax, delta, is_debug, shocks,
             level, measure)
 
         # Construct dependent variable
-        endogenous_variable[k] = emax - maxe[k]
+        endogenous_variable[k] = emax_simulated - maxe[k]
 
     # Finishing
     return endogenous_variable
 
 
-def _get_predictions(exogenous_variables, endogenous_variable, maxe,
-        is_simulated, num_points, num_states, is_debug):
+def _get_predictions(endogenous, exogenous, maxe, is_simulated, num_points,
+        num_states, is_debug):
     """ Fit an OLS regression of the exogenous variables on the endogenous
     variables and use the results to predict the endogenous variables for all
     points in the state space.
     """
     # Define ordinary least squares model and fit to the data.
-    model = sm.OLS(endogenous_variable[is_simulated],
-                        exogenous_variables[is_simulated])
-
+    model = sm.OLS(endogenous[is_simulated], exogenous[is_simulated])
     results = model.fit()
 
     # Use the model to predict EMAX for all states. As in
     # Keane & Wolpin (1994), negative predictions are truncated to zero.
-    predictions_diff = results.predict(exogenous_variables)
-    predictions_diff = np.clip(predictions_diff, 0.00, None)
+    endogenous_predicted = results.predict(exogenous)
+    endogenous_predicted = np.clip(endogenous_predicted, 0.00, None)
 
     # Construct predicted EMAX for all states and the replace
     # interpolation points with simulated values.
-    predictions = predictions_diff + maxe
+    predictions = endogenous_predicted + maxe
+    predictions[is_simulated] = endogenous[is_simulated] + maxe[is_simulated]
 
     # Checks
-    _check_prediction_model(predictions_diff, model, num_points, num_states,
+    _check_prediction_model(endogenous_predicted, model, num_points, num_states,
         is_debug)
+
+    # Write out some basic information to spot problems easily.
+    _logging_prediction_model(results)
 
     # Finishing
     return predictions, results
