@@ -59,8 +59,7 @@ def get_total_value(period, num_periods, delta, payoffs_systematic,
     # Get future values
     if period != (num_periods - 1):
         future_payoffs = _get_future_payoffs(edu_max, edu_start,
-                            mapping_state_idx, period, periods_emax, k,
-                            states_all)
+            mapping_state_idx, period, periods_emax, k, states_all)
     else:
         future_payoffs = np.tile(0.0, 4)
 
@@ -83,7 +82,6 @@ def _get_future_payoffs(edu_max, edu_start, mapping_state_idx, period,
         periods_emax, k, states_all):
     """ Get future payoffs for additional choices.
     """
-
     # Distribute state space
     exp_A, exp_B, edu, edu_lagged = states_all[period, k, :]
 

@@ -33,6 +33,8 @@ from robupy import read, solve, simulate
 
 from robupy.python.py.python_library import _get_simulated_indicator
 from robupy.python.py.python_library import _get_exogenous_variables
+from robupy.python.py.python_library import _get_endogenous_variable
+from robupy.python.py.python_library import _get_predictions
 from robupy.python.py.python_library import get_payoffs
 
 from robupy.tests.random_init import generate_random_dict
@@ -45,22 +47,32 @@ from robupy.python.py.ambiguity import _divergence
 from robupy.python.py.ambiguity import _criterion
 
 
+from robupy.auxiliary import replace_missing_values
+from robupy.auxiliary import create_disturbances
+
 ''' Main
 '''
+
 
 def test_86():
     """ Further tests for the interpolation routines.
     """
     # Ensure that fast solution methods are available
-    compile_package('--fortran --debug', True)
+    # TODO: Get back in ...
+    compile_package('--fortran --debug', False)
 
     # Load interface to debugging library
     import robupy.python.f2py.f2py_debug as fort
 
-    for _ in range(1):
+    for k in range(100):
+        print(' ', k)
+        # Constraints
+        # TODO: Why is this constraint required ...
+        constraints = dict()
+#        constraints['version'] = 'PYTHON'
 
         # Generate random initialization file
-        generate_init()
+        generate_init(constraints)
 
         # Perform toolbox actions
         robupy_obj = read('test.robupy.ini')
@@ -68,40 +80,92 @@ def test_86():
         robupy_obj = solve(robupy_obj)
 
         # Extract ingredients for interface
-        num_periods = robupy_obj.get_attr('num_periods')
-
-        states_number_period = robupy_obj.get_attr('states_number_period')
-
-        delta = robupy_obj.get_attr('delta')
-
         periods_payoffs_systematic = robupy_obj.get_attr('periods_payoffs_systematic')
 
-        edu_max = robupy_obj.get_attr('edu_max')
-
-        edu_start = robupy_obj.get_attr('edu_start')
+        states_number_period = robupy_obj.get_attr('states_number_period')
 
         mapping_state_idx = robupy_obj.get_attr('mapping_state_idx')
 
         periods_emax = robupy_obj.get_attr('periods_emax')
 
+        num_periods = robupy_obj.get_attr('num_periods')
+
         states_all = robupy_obj.get_attr('states_all')
 
-        # Auxilary request
+        num_points = robupy_obj.get_attr('num_points')
+
+        edu_start = robupy_obj.get_attr('edu_start')
+
+        num_draws = robupy_obj.get_attr('num_draws')
+
+        is_debug = robupy_obj.get_attr('is_debug')
+
+        measure = robupy_obj.get_attr('measure')
+
+        edu_max = robupy_obj.get_attr('edu_max')
+
+        shocks = robupy_obj.get_attr('shocks')
+
+        delta = robupy_obj.get_attr('delta')
+
+        level = robupy_obj.get_attr('level')
+
+        # Add some additional objects required for the interfaces to the
+        # functions.
         period = np.random.choice(range(num_periods))
+
+        periods_eps_relevant = create_disturbances(robupy_obj, False)
+
+        eps_relevant = periods_eps_relevant[period, :, :]
 
         num_states = states_number_period[period]
 
-        shifts = [1.0, 1.0, 0.0, 0.0]
+        shifts = np.random.randn(4)
 
-        # Request
-        args = (period, num_periods, num_states, delta,
-                periods_payoffs_systematic, shifts, edu_max, edu_start,
-                mapping_state_idx, periods_emax, states_all)
+        # Slight modification of request which assures that the interpolation
+        # code is working.
+        num_points = min(num_points, num_states)
 
-        _get_exogenous_variables(period, num_periods, num_states, delta,
+        # Get the IS_SIMULATED indicator for the subset of points which are
+        # used for the predication model. The integrity of the corresponding
+        # FORTRAN function is tested in test_88().
+        args = (num_points, num_states, period, num_periods, is_debug)
+        is_simulated = _get_simulated_indicator(*args)
+
+        # Construct the exogenous variables for all points of the state space.
+        args = [period, num_periods, num_states, delta,
                 periods_payoffs_systematic, shifts, edu_max, edu_start,
-                mapping_state_idx, periods_emax, states_all)
-#
+                mapping_state_idx, periods_emax, states_all]
+
+        py = _get_exogenous_variables(*args)
+        f90 = fort.wrapper_get_exogenous_variables(*args)
+
+        np.testing.assert_equal(py, f90)
+
+        # Distribute validated results for further functions.
+        exogenous, maxe = py
+
+        # Construct endogenous variable so that the prediction model can be
+        # fitted.
+        args += [is_simulated, num_draws, shocks, level, is_debug, measure,
+                 maxe, eps_relevant]
+
+        py = _get_endogenous_variable(*args)
+        f90 = fort.wrapper_get_endogenous_variable(*args)
+
+        # Standardize treatment of missing values
+        f90 = replace_missing_values(f90)
+
+        np.testing.assert_equal(py, f90)
+
+        # Distribute validated results for further functions.
+        endogenous = py
+
+        # Use all the acquired information to get the predictions.
+        args = (exogenous, endogenous, maxe, is_simulated, num_points,
+                num_states, is_debug)
+        # TODO: Does this align with the FORTRAN counterpart
+        predictions, _ = _get_predictions(*args)
 
 
 def test_87():

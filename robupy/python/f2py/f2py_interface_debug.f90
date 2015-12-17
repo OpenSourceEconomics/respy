@@ -557,6 +557,104 @@ SUBROUTINE wrapper_get_coefficients(coeffs, Y, X, num_covars, num_agents)
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
+SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, &
+                num_periods, num_states, delta, periods_payoffs_systematic, &
+                shifts, edu_max, edu_start, mapping_state_idx, periods_emax, &
+                states_all, is_simulated, num_draws, shocks, level, is_debug, & 
+                measure, maxe, eps_relevant)
+
+    !/* external libraries    */
+
+    USE robufort_library
+
+    !/* setup    */
+
+    IMPLICIT NONE
+
+    !/* external objects    */
+
+    DOUBLE PRECISION, INTENT(OUT)       :: exogenous_variable(num_states)
+
+    DOUBLE PRECISION, INTENT(IN)        :: periods_payoffs_systematic(:, :, :)
+    DOUBLE PRECISION, INTENT(IN)        :: periods_emax(:, :)
+    DOUBLE PRECISION, INTENT(IN)        :: eps_relevant(:, :)
+    DOUBLE PRECISION, INTENT(IN)        :: shocks(4, 4)
+    DOUBLE PRECISION, INTENT(IN)        :: shifts(:)
+    DOUBLE PRECISION, INTENT(IN)        :: maxe(:)
+    DOUBLE PRECISION, INTENT(IN)        :: delta
+    DOUBLE PRECISION, INTENT(IN)        :: level
+ 
+    INTEGER, INTENT(IN)                 :: mapping_state_idx(:, :, :, :, :)    
+    INTEGER, INTENT(IN)                 :: states_all(:, :, :)    
+    INTEGER, INTENT(IN)                 :: num_periods
+    INTEGER, INTENT(IN)                 :: num_states
+    INTEGER, INTENT(IN)                 :: edu_start
+    INTEGER, INTENT(IN)                 :: num_draws
+    INTEGER, INTENT(IN)                 :: edu_max
+    INTEGER, INTENT(IN)                 :: period
+
+    LOGICAL, INTENT(IN)                 :: is_simulated(:)
+    LOGICAL, INTENT(IN)                 :: is_debug
+    
+    CHARACTER(10), INTENT(IN)           :: measure
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+    
+    CALL get_endogenous_variable(exogenous_variable, period, num_periods, &
+            num_states, delta, periods_payoffs_systematic, shifts, edu_max, &
+            edu_start, mapping_state_idx, periods_emax, states_all, &
+            is_simulated, num_draws, shocks, level, is_debug, measure, maxe, &
+            eps_relevant)
+
+END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE wrapper_get_exogenous_variables(independent_variables, maxe, &
+                period, num_periods, num_states, delta, & 
+                periods_payoffs_systematic, shifts, edu_max, edu_start, &
+                mapping_state_idx, periods_emax, states_all)
+
+    !/* external libraries    */
+
+    USE robufort_emax
+
+    !/* setup    */
+
+    IMPLICIT NONE
+
+    !/* external objects    */
+
+    DOUBLE PRECISION, INTENT(OUT)        :: independent_variables(num_states, 9)
+    DOUBLE PRECISION, INTENT(OUT)        :: maxe(num_states)
+
+
+    DOUBLE PRECISION, INTENT(IN)        :: periods_payoffs_systematic(:, :, :)
+    DOUBLE PRECISION, INTENT(IN)        :: periods_emax(:, :)
+    DOUBLE PRECISION, INTENT(IN)        :: shifts(:)
+    DOUBLE PRECISION, INTENT(IN)        :: delta
+ 
+    INTEGER, INTENT(IN)                 :: mapping_state_idx(:, :, :, :, :)    
+    INTEGER, INTENT(IN)                 :: states_all(:, :, :)    
+    INTEGER, INTENT(IN)                 :: num_periods
+    INTEGER, INTENT(IN)                 :: num_states
+    INTEGER, INTENT(IN)                 :: edu_start
+    INTEGER, INTENT(IN)                 :: edu_max
+    INTEGER, INTENT(IN)                 :: period
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+    
+    CALL get_exogenous_variables(independent_variables, maxe,  period, &
+            num_periods, num_states, delta, periods_payoffs_systematic, &
+            shifts, edu_max, edu_start, mapping_state_idx, periods_emax, &
+            states_all)
+            
+END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE wrapper_get_simulated_indicator(is_simulated, num_points, & 
                 num_states, period, num_periods, is_debug)
 
