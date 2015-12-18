@@ -38,7 +38,7 @@ label, seed = '85', 6465
 #    count = 0
 while True:
 
-    seed = 8639#random.randint(0, 10000)
+    seed = random.randint(0, 10000)
 
     #count = count + 1
     print(seed)

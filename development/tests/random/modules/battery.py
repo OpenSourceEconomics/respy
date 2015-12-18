@@ -116,10 +116,9 @@ def test_85():
     # Initialize containers
     base = None
 
-    # TODO: Add OPTIMIZATION to versions checked, also F2PY does not work .
+    # TODO: Add OPTIMIZATION to versions checked.
     for version in ['PYTHON', 'F2PY', 'FORTRAN']:
 
-        print(version)
         # This ensures that the optimized version agrees with all other
         # implementations as well.
         if version in ['OPTIMIZATION']:
@@ -136,8 +135,6 @@ def test_85():
 
         solve(robupy_obj)
 
-        # TODO: EXtract emax for debugging, Why are first tests running
-        # without standardization.
         # Load simulated data frame
         data_frame = pd.read_csv('data.robupy.dat', delim_whitespace=True)
 
