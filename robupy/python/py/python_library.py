@@ -45,8 +45,9 @@ def backward_induction(num_periods, max_states_period, periods_eps_relevant,
         num_states = states_number_period[period]
 
         # Logging.
-        logger.info('... solving period ' + str(period) + ' with ' + str(
-            num_states) + ' states')
+        string = '''{0[0]:>18}{0[1]:>3}{0[2]:>5}{0[3]:>6}{0[4]:>7}'''
+        logger.info(string.format(['... solving period', period, 'with',
+                num_states, 'states']))
 
         # The number of interpolation points is the same for all periods.
         # Thus, for some periods the number of interpolation points is
@@ -106,7 +107,7 @@ def backward_induction(num_periods, max_states_period, periods_eps_relevant,
                 periods_payoffs_ex_post[period, k, :] = payoffs_ex_post
                 periods_future_payoffs[period, k, :] = future_payoffs
 
-                # Collect
+                # Store results
                 periods_emax[period, k] = emax
 
     # Finishing. Note that the last two return arguments are not available in
@@ -364,10 +365,10 @@ def _logging_prediction_model(results):
     logger.info('    Information about Prediction Model ')
 
     string = '''{0:>18}    {1:10.4f} {2:10.4f} {3:10.4f} {4:10.4f}'''
-    string += '''{5:10.4f} {6:10.4f} {7:10.4f} {8:10.4f} {9:10.4f}'''
+    string += ''' {5:10.4f} {6:10.4f} {7:10.4f} {8:10.4f} {9:10.4f}'''
 
     logger.info(string.format('Coefficients', *results.params))
-    string = '''{0:>17}     {1:10.4f}\n'''
+    string = '''{0:>18}    {1:10.4f}\n'''
 
     logger.info(string.format('R-squared', results.rsquared))
 

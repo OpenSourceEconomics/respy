@@ -111,7 +111,13 @@ def write_disturbances(init_dict):
     # Let us write out the disturbances to a file so that they can be aligned
     # between the alternative implementations
     num_draws = init_dict['SOLUTION']['draws']
+    num_agents = init_dict['SIMULATION']['agents']
     num_periods = init_dict['BASICS']['periods']
+
+    # Check that the number of agents is less or equal than the number of
+    # draws as the same disturbances can be used in the solution and
+    # simulation step.
+    assert (num_agents <= num_draws)
 
     # Draw standard deviates
     standard_deviates = np.random.multivariate_normal(np.zeros(4),

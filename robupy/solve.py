@@ -116,7 +116,7 @@ def _summarize_ambiguity(robupy_obj):
 
             if period in dict_.keys():
                 continue
-
+    
             dict_[period] = {}
             dict_[period]['success'] = 0
             dict_[period]['failure'] = 0

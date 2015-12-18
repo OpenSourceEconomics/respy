@@ -76,7 +76,7 @@ def solve_python(robupy_obj):
 
     # Backward iteration procedure. There is a PYTHON and FORTRAN
     # implementation available.
-    logger.info('Staring backward induction procedure')
+    logger.info('Starting backward induction procedure')
 
     periods_emax, periods_payoffs_ex_post, periods_future_payoffs = \
         _wrapper_backward_induction_procedure(robupy_obj, periods_eps_relevant,

@@ -346,17 +346,19 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
     ! Backward induction
     DO period = (num_periods - 1), 0, -1
 
-         ! Logging
-        CALL logging_solution(4, period)
-
-        ! Extract disturbances
+        ! Extract disturbances and construct auxiliary objects
         eps_relevant = periods_eps_relevant(period + 1, :, :)
         num_states = states_number_period(period + 1)
+
+        ! Logging
+        CALL logging_solution(4, period, num_states)
 
         ! Distinguish case with and without interpolation
         any_interpolated = (num_points .LE. num_states) .AND. is_interpolated
 
         IF (any_interpolated) THEN
+
+            PRINT *, any_interpolated, num_states, num_points
 
             ! Allocate period-specific containers
             ALLOCATE(is_simulated(num_states)); ALLOCATE(endogenous(num_states))
@@ -364,18 +366,12 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
             ALLOCATE(predictions(num_states))
 
             !----------------------------------------------------------
-            ! TODO: Add the revised logging of backward induction but also the 
-            ! prediction model.
             !
-            !   LOGGGING, PSUEDO INVERSE
+            !   PSUEDO INVERSE
             !
-            !
-            ! Add intercept to set of independent variables and replace
-            ! infinite values.
             !
             ! TODO: Have to deal with the outside of allowed education.
-            !       First, construct unit tests that should work for this
-            !       restricted case.
+            !
             ! TODO: Remeber zero trunction in case of ambiguity, how 
             !       treated in Python at the moment?
             !

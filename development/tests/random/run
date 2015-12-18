@@ -43,11 +43,14 @@ def run(hours):
     """ Run test battery.
     """
 
+    # Start with a clean slate
+    cleanup()
+
     start, timeout = datetime.now(), timedelta(hours=hours)
 
     package_labels = list(range(1, 8))
 
-    development_labels = list(range(86, 100))
+    development_labels = list(range(85, 100))
 
     labels = package_labels + development_labels
 

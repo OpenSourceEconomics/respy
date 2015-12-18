@@ -26,6 +26,7 @@ from modules.auxiliary import write_interpolation_grid
 from modules.auxiliary import write_disturbances
 from modules.auxiliary import build_f2py_testing
 from modules.auxiliary import compile_package
+from modules.auxiliary import cleanup
 
 # ROBUPY import
 sys.path.insert(0, os.environ['ROBUPY'])
@@ -54,12 +55,109 @@ from robupy.auxiliary import create_disturbances
 '''
 
 
+def test_85():
+    """ This test compares the simulated datasets for solutions that involve
+    interpolation in PYTHON and FORTRAN versions.
+    """
+    # Ensure that fast solution methods are available
+    compile_package('--fortran --debug', True)
+
+    # Constraints
+    constraints = dict()
+    constraints['debug'] = True
+    constraints['measure'] = 'kl'
+
+    # TODO: This needs to be aligned ...
+    constraints['edu'] = (10, 200)
+
+    # This ensures that interpolation is actually run.
+    num_periods = np.random.random_integers(5, 10)
+    num_points = np.random.random_integers(40, 54)
+
+    constraints['periods'] = num_periods
+    constraints['points'] = num_points
+    constraints['apply'] = True
+
+    # We need to ensure that the number of agents is less or equal than the
+    # number of draws so that we can standardize the disturbances across
+    # implementations.
+    num_draws = np.random.random_integers(1, 100)
+    num_agents = np.random.random_integers(1, num_draws)
+
+    constraints['agents'] = num_agents
+    constraints['draws'] = num_draws
+
+    # Just making sure that it also works for this special case. Note that
+    # this special case is currently only working in the risk case.
+    if np.random.choice([True, False, False, False]):
+        constraints['level'] = 0.00
+        constraints['eps_zero'] = True
+
+    # Generate random initialization file.
+    init_dict = generate_random_dict(constraints)
+
+    # Write out disturbances to align the three implementations.
+    write_disturbances(init_dict)
+
+    # Test the standardization across PYTHON, F2PY, and FORTRAN
+    # implementations. This is possible as we write out an interpolation
+    # grid to disk which is used for both functions. This only works if
+    # IS_DEBUG is set to true.
+    print_random_dict(init_dict)
+
+    robupy_obj = read('test.robupy.ini')
+
+    solve(robupy_obj)
+
+    states_number_period = robupy_obj.get_attr('states_number_period')
+
+    write_interpolation_grid(num_periods, num_points, states_number_period)
+
+    # Initialize containers
+    base = None
+
+    # TODO: Add OPTIMIZATION to versions checked, also F2PY does not work .
+    for version in ['PYTHON', 'F2PY', 'FORTRAN']:
+
+        print(version)
+        # This ensures that the optimized version agrees with all other
+        # implementations as well.
+        if version in ['OPTIMIZATION']:
+            compile_package('--fortran --debug --optimization', True)
+            version = 'FORTRAN'
+
+        # Prepare initialization file
+        init_dict['PROGRAM']['version'] = version
+
+        print_random_dict(init_dict)
+
+        # Simulate the ROBUPY package
+        robupy_obj = read('test.robupy.ini')
+
+        solve(robupy_obj)
+
+        # TODO: EXtract emax for debugging, Why are first tests running
+        # without standardization.
+        # Load simulated data frame
+        data_frame = pd.read_csv('data.robupy.dat', delim_whitespace=True)
+
+        data_frame.to_csv(version + '.dat')
+
+        # Compare
+        if base is None:
+            base = data_frame.copy()
+
+        assert_frame_equal(base, data_frame)
+
+    # Cleanup
+    cleanup()
+
+
 def test_86():
     """ Further tests for the interpolation routines.
     """
     # Ensure that fast solution methods are available
-    # TODO: Get back in ...
-    compile_package('--fortran --debug', False)
+    compile_package('--fortran --debug', True)
 
     # Load interface to debugging library
     import robupy.python.f2py.f2py_debug as fort
@@ -154,15 +252,10 @@ def test_86():
 
         np.testing.assert_equal(py, replace_missing_values(f90))
 
-        # TODO: Construct a amenable request, later this needs to run with
-        # whatever the input for exo and endo is.
-
         # Distribute validated results for further functions.
         endogenous = py
 
-        exogenous = np.random.sample((num_states, 9))
-        endogenous = np.random.sample(num_states)
-
+        # Get predictions for expected future values
         args = [endogenous, exogenous, maxe, is_simulated, num_points,
                 num_states, is_debug]
 
@@ -170,6 +263,9 @@ def test_86():
         f90 = fort.wrapper_get_predictions(*args[:-1])
 
         np.testing.assert_array_almost_equal(py, f90)
+
+    # Cleanup
+    cleanup()
 
 
 def test_87():
@@ -253,6 +349,9 @@ def test_87():
             for i in range(2):
                 np.testing.assert_array_almost_equal(py[i], f90[i])
 
+    # Cleanup
+    cleanup()
+
 
 def test_88():
     """ This is a special test for auxiliary functions related to the
@@ -322,6 +421,9 @@ def test_88():
         f90 = fort.wrapper_get_simulated_indicator(*args)
         np.testing.assert_equal(sum(f90), num_states)
 
+    # Cleanup
+    cleanup()
+
 
 def test_89():
     """ This is the special case where the EMAX better be equal to the MAXE.
@@ -367,6 +469,9 @@ def test_89():
         init_dict['INTERPOLATION']['points'] = max(states_number_period) - 1
         init_dict['INTERPOLATION']['apply'] = True
 
+    # Cleanup
+    cleanup()
+
 
 def test_90():
     """ This test compares the results from a solution using the
@@ -409,6 +514,9 @@ def test_90():
         # Updates for second iteration
         init_dict['INTERPOLATION']['points'] = max(states_number_period)
         init_dict['INTERPOLATION']['apply'] = True
+
+    # Cleanup
+    cleanup()
 
 
 def test_91():
@@ -453,13 +561,16 @@ def test_91():
         # Ensure equivalence
         np.testing.assert_array_almost_equal(emax_myopic, emax)
 
+    # Cleanup
+    cleanup()
+
 
 def test_92():
     """ This test compares the functions calculating the payoffs under
     ambiguity.
     """
     # Ensure that fast solution methods are available
-    compile_package('--fortran --debug', False)
+    compile_package('--fortran --debug', True)
     import robupy.python.f2py.f2py_debug as fort
 
     # Iterate over random test cases
@@ -528,6 +639,9 @@ def test_92():
         py = get_payoffs_ambiguity(*args)[0]
 
         np.testing.assert_allclose(py, f, rtol=1e-05, atol=1e-06)
+
+    # Cleanup
+    cleanup()
 
 
 def test_93():
@@ -630,6 +744,9 @@ def test_93():
             else:
                 raise AssertionError
 
+    # Cleanup
+    cleanup()
+
 
 def test_94():
     """ This test case compare the results of a debugging setup for the SLSQP
@@ -678,6 +795,9 @@ def test_94():
     py = _minimize_slsqp(rosen, x0, jac=rosen_der, maxiter=maxiter,
             ftol=ftol,  constraints=constraint)['x']
     np.testing.assert_allclose(py, f, rtol=1e-05, atol=1e-06)
+
+    # Cleanup
+    cleanup()
 
 
 def test_95():
@@ -767,6 +887,9 @@ def test_95():
         f90 = fort.wrapper_criterion_approx_gradient(x, eps, *args)
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
+    # Cleanup
+    cleanup()
+
 
 def test_96():
     """ Compare results between FORTRAN and PYTHON of selected
@@ -774,7 +897,7 @@ def test_96():
     against PYTHON intrinsic routines.
     """
     # Ensure that fast solution methods are available
-    compile_package('--fortran --debug', True)
+    compile_package('--fortran --debug', False)
 
     import robupy.python.f2py.f2py_debug as fort_debug
     import robupy.python.f2py.f2py_library as fort_lib
@@ -825,7 +948,7 @@ def test_96():
     for _ in range(100):
 
         # Draw random request for testing purposes
-        num_covars = np.random.random_integers(1, 10)
+        num_covars = np.random.random_integers(2, 10)
         num_agents = np.random.random_integers(100, 1000)
         eps = np.random.normal(size=num_agents)
         beta = np.random.normal(size=num_covars)
@@ -838,25 +961,24 @@ def test_96():
         # Run statsmodels
         results = sm.OLS(endog, exog).fit()
 
-        # TODO: Once the Generalized Inverse is set up, this needs to go back
-        # in.
-        # Parameters
-        # exog[:, -1] = 0
-        # py = results.params
-        # f90 = fort_debug.wrapper_get_coefficients(endog, exog, num_covars,
-        #         num_agents)
-        #
-        # np.testing.assert_almost_equal(py, f90)
-        #
-        # # Prediction
-        # py = results.predict(exog)
-        # f90 = fort_debug.wrapper_point_predictions(exog, f90, num_agents)
-        # np.testing.assert_almost_equal(py, f90)
-        #
-        # # r squared
-        # py = results.rsquared
-        # f90 = fort_debug.wrapper_get_r_squared(endog, f90, num_agents)
-        # np.testing.assert_almost_equal(py, f90)
+        # Check parameters
+        py = results.params
+        f90 = fort_debug.wrapper_get_coefficients(endog, exog, num_covars,
+                num_agents)
+        np.testing.assert_almost_equal(py, f90)
+
+        # Check prediction
+        py = results.predict(exog)
+        f90 = fort_debug.wrapper_point_predictions(exog, f90, num_agents)
+        np.testing.assert_almost_equal(py, f90)
+
+        # Check coefficient of determination
+        py = results.rsquared
+        f90 = fort_debug.wrapper_get_r_squared(endog, f90, num_agents)
+        np.testing.assert_almost_equal(py, f90)
+
+    # Cleanup
+    cleanup()
 
 
 def test_97():
@@ -917,6 +1039,9 @@ def test_97():
         py = np.clip(values, lower_bound, upper_bound)
 
         np.testing.assert_almost_equal(py, f90)
+
+    # Cleanup
+    cleanup()
 
 
 def test_98():
@@ -986,6 +1111,9 @@ def test_98():
 
     assert_frame_equal(py, fort)
 
+    # Cleanup
+    cleanup()
+
 
 def test_99():
     """ Testing whether the results from a fast and slow execution of the
@@ -999,27 +1127,25 @@ def test_99():
     constraints['debug'] = True
     constraints['measure'] = 'kl'
 
+    # We need to ensure that the number of agents is less or equal than the
+    # number of draws so that we can standardize the disturbances across
+    # implementations.
+    num_draws = np.random.random_integers(1, 100)
+    num_agents = np.random.random_integers(1, num_draws)
+
+    constraints['agents'] = num_agents
+    constraints['draws'] = num_draws
+
     # Just making sure that it also works for this special case. Note that
     # this special case is currently only working in the risk case.
     if np.random.choice([True, False, False, False]):
         constraints['level'] = 0.00
         constraints['eps_zero'] = True
 
-    # TODO: Comment back in
-    constraints['apply'] = False
-
-    # Generate random initialization file. Since this exercise is only for
-    # debugging purposes, the codes uses the same disturbances for the
-    # simulation and solution of the model. Thus, the number of agents cannot
-    # be larger than the number of draws.
+    # Generate random initialization file.
     init_dict = generate_random_dict(constraints)
 
-    num_agents = init_dict['SIMULATION']['agents']
-    num_draws = init_dict['SOLUTION']['draws']
-    if num_agents > num_draws:
-        init_dict['SIMULATION']['agents'] = num_draws
-
-    # Write out disturbances to align the three implementations.
+    # Ensure standardization across implementations.
     write_disturbances(init_dict)
 
     # Initialize containers
@@ -1052,3 +1178,6 @@ def test_99():
             base = data_frame.copy()
 
         assert_frame_equal(base, data_frame)
+
+    # Cleanup
+    cleanup()

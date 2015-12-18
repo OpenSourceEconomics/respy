@@ -33,6 +33,7 @@ SUBROUTINE get_predictions(predictions, endogenous, exogenous, maxe, &
     REAL(our_dble)                    :: exogenous_is_available(num_points, 9)
     REAL(our_dble)                    :: endogenous_is_available(num_points)
     REAL(our_dble)                    :: endogenous_predicted(num_states)
+    REAL(our_dble)                    :: endogenous_predicted_available(num_points)
     REAL(our_dble)                    :: coeffs(9)
     REAL(our_dble)                    :: r_squared
 
@@ -62,15 +63,30 @@ SUBROUTINE get_predictions(predictions, endogenous, exogenous, maxe, &
     ! Fit the prediction model on interpolation points.
     CALL get_coefficients(coeffs, endogenous_is_available, & 
             exogenous_is_available, 9, num_points)
-
+ 
     ! Use the model to predict EMAX for all states and subsequently
     ! replace the values where actual values are available. As in
     ! Keane & Wolpin (1994), negative predictions are truncated to zero.
     CALL point_predictions(endogenous_predicted, exogenous, coeffs, num_states)
 
-    ! Construct coefficient of determination
+    ! Construct coefficient of determination for the subset of interpolation 
+    ! points.
+    i = 1
+            
+    DO k = 0, (num_states - 1) 
+
+        IF (is_simulated(k + 1)) THEN
+
+            endogenous_predicted_available(i) = endogenous_predicted(k + 1)
+           
+            i = i + 1
+
+        END IF
+
+    END DO
+
     CALL get_r_squared(r_squared, endogenous_is_available, &
-            endogenous_predicted, num_points) 
+            endogenous_predicted_available, num_points) 
             
     CALL get_clipped_vector(endogenous_predicted, endogenous_predicted, & 
             zero_dble, huge_dble, num_states)
@@ -167,9 +183,9 @@ SUBROUTINE logging_prediction_model(coeffs, r_squared)
 !-------------------------------------------------------------------------------
     
     ! Define format for coefficients and R-squared
-    1900 FORMAT(A18,4x,9(1x,f10.4))
+    1900 FORMAT(2x,A18,3x,9(1x,f10.4))
 
-    2900 FORMAT(A18,4x,f10.4)
+    2900 FORMAT(2x,A18,4x,f10.4)
 
     ! Write to file
     OPEN(UNIT=99, FILE='logging.robupy.sol.log', ACCESS='APPEND')
@@ -193,11 +209,12 @@ SUBROUTINE logging_prediction_model(coeffs, r_squared)
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE logging_solution(indicator, period)
+SUBROUTINE logging_solution(indicator, period, num_states)
 
     !/* external objects    */
 
     INTEGER(our_int), INTENT(IN)            :: indicator
+    INTEGER(our_int), INTENT(IN), OPTIONAL  :: num_states
     INTEGER(our_int), INTENT(IN), OPTIONAL  :: period
 
 !-------------------------------------------------------------------------------
@@ -208,25 +225,36 @@ SUBROUTINE logging_solution(indicator, period)
     
     ! State space creation
     IF (indicator == 1) THEN
-      WRITE(99, *) " Starting state space creation   "
-      WRITE(99, *) ""
+    
+        ! Delete  any previous versions
+        CLOSE(99, STATUS ='DELETE')
+        OPEN(UNIT=99, FILE='logging.robupy.sol.log', ACCESS='APPEND')
+
+        WRITE(99, *) " Starting state space creation   "
+        WRITE(99, *) ""
 
     ! Ex Ante Payoffs
     ELSEIF (indicator == 2) THEN
+
       WRITE(99, *) " Starting calculation of systematic payoffs  "
       WRITE(99, *) ""
 
     ! Backward induction procedure
     ELSEIF (indicator == 3) THEN
+
       WRITE(99, *) " Starting backward induction procedure "
       WRITE(99, *) ""
     
     ELSEIF (indicator == 4) THEN
-      WRITE(99, *) " ... solving period ", period
-      WRITE(99, *) ""
+
+        1900 FORMAT(2x,A18,1x,i2,1x,A4,1x,i5,1x,A6)
+
+        WRITE(99, 1900) "... solving period", period, 'with', num_states, 'states'
+        WRITE(99, *) ""
    
     ! Finishing
     ELSEIF (indicator == -1) THEN
+
         WRITE(99, *) " ... finished "
         WRITE(99, *) ""
         WRITE(99, *) ""
@@ -957,6 +985,8 @@ SUBROUTINE get_coefficients(coeffs, Y, X, num_covars, num_agents)
     REAL(our_dble)                  :: C(num_covars, num_covars)
     REAL(our_dble)                  :: D(num_covars, num_agents)
 
+    INTEGER :: i
+
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
@@ -969,23 +999,54 @@ SUBROUTINE get_coefficients(coeffs, Y, X, num_covars, num_agents)
 
    coeffs = MATMUL(D, Y) 
 
+   ! Write out matrices
+    1900 FORMAT(40(1x,f25.15))
+
+    OPEN(UNIT=1, FILE='exogenous_variables.robupy.txt')
+
+    DO i = 1, num_agents
+            WRITE(1, 1900) X(i, :)
+    END DO
+
+    CLOSE(1)
+
+    OPEN(UNIT=1, FILE='endogenous_variables.robupy.txt')
+
+    DO i = 1, num_agents
+            WRITE(1, 1900) Y(i)
+    END DO
+
+    CLOSE(1)
+
+    ! Call Python Script
+    CALL system('/home/peisenha/bin/get_coefficients.py')
+
+    ! Read coefficients
+    1510 FORMAT(f15.10)
+
+    OPEN(UNIT=1, FILE='coeffs.robupy.txt')
+
+    DO i = 1, num_covars
+        READ(1, 1510) coeffs(i)
+    END DO
+
+    CLOSE(1, STATUS ='DELETE')
+
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE get_r_squared(r_squared, Y, P, num_agents)
+SUBROUTINE get_r_squared(r_squared, observed, predicted, num_agents)
 
     !/* external objects    */
 
     REAL(our_dble), INTENT(OUT)     :: r_squared
 
-    REAL(our_dble), INTENT(IN)      :: Y(num_agents)
-    REAL(our_dble), INTENT(IN)      :: P(num_agents)
+    REAL(our_dble), INTENT(IN)      :: predicted(num_agents)
+    REAL(our_dble), INTENT(IN)      :: observed(num_agents)
     
     INTEGER(our_int), INTENT(IN)    :: num_agents
 
-
     !/* internal objects    */
-
 
     REAL(our_dble)                  :: mean_observed
     REAL(our_dble)                  :: ss_residuals
@@ -998,14 +1059,14 @@ SUBROUTINE get_r_squared(r_squared, Y, P, num_agents)
 !-------------------------------------------------------------------------------
     
     ! Calculate mean of observed data
-    mean_observed = SUM(Y) / DBLE(num_agents)
+    mean_observed = SUM(observed) / DBLE(num_agents)
     
     ! Sum of squared residuals
     ss_residuals = zero_dble
 
     DO i = 1, num_agents
 
-        ss_residuals = ss_residuals + (Y(i) - P(i))**2
+        ss_residuals = ss_residuals + (observed(i) - predicted(i))**2
 
     END DO
 
@@ -1014,7 +1075,7 @@ SUBROUTINE get_r_squared(r_squared, Y, P, num_agents)
 
     DO i = 1, num_agents
 
-        ss_total = ss_total + (Y(i) - mean_observed)**2
+        ss_total = ss_total + (observed(i) - mean_observed)**2
 
     END DO
 

@@ -116,6 +116,16 @@ def generate_random_dict(constraints=None):
         # Replace in initialization files
         dict_['INTERPOLATION']['apply'] = constraints['apply']
 
+    # Replace number of periods
+    if 'points' in constraints.keys():
+        # Extract objects
+        points = constraints['points']
+        # Checks
+        assert (isinstance(points, int))
+        assert (points > 0)
+        # Replace in initialization files
+        dict_['INTERPOLATION']['points'] = points
+
     # Replace education
     if 'edu' in constraints.keys():
         # Extract objects
@@ -214,6 +224,17 @@ def generate_random_dict(constraints=None):
         assert (np.isfinite(num_draws))
         # Replace in initialization files
         dict_['SOLUTION']['draws'] = num_draws
+
+    # Number of agents
+    if 'agents' in constraints.keys():
+        # Extract object
+        num_agents = constraints['agents']
+        # Checks
+        assert (num_agents > 0)
+        assert (isinstance(num_agents, int))
+        assert (np.isfinite(num_agents))
+        # Replace in initialization files
+        dict_['SIMULATION']['agents'] = num_agents
 
     # Finishing.
     return dict_
