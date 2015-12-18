@@ -5,6 +5,9 @@ implementations of the core functions.
 # standard library
 import numpy as np
 
+# project library
+from robupy.constants import HUGE_DBLE
+
 
 def simulate_emax(num_periods, num_draws, period, k, eps_relevant_emax,
         payoffs_systematic, edu_max, edu_start, periods_emax, states_all,
@@ -103,7 +106,7 @@ def _get_future_payoffs(edu_max, edu_start, mapping_state_idx, period,
         future_idx = mapping_state_idx[period + 1, exp_A, exp_B, edu + 1, 1]
         future_payoffs[2] = periods_emax[period + 1, future_idx]
     else:
-        future_payoffs[2] = -np.inf
+        future_payoffs[2] = -HUGE_DBLE
 
     # Staying at home
     future_idx = mapping_state_idx[period + 1, exp_A, exp_B, edu, 0]

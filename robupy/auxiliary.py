@@ -6,6 +6,8 @@ and simulation modules.
 import numpy as np
 import os
 
+# project library
+from robupy.constants import MISSING_DBLE
 
 def create_disturbances(robupy_obj, is_simulation):
     """ Create disturbances.  Handle special case of zero variances as this
@@ -34,7 +36,7 @@ def create_disturbances(robupy_obj, is_simulation):
     is_debug = robupy_obj.get_attr('is_debug')
 
     # Initialize container
-    periods_eps_relevant = np.tile(-99.00, (num_periods, num_draws, 4))
+    periods_eps_relevant = np.tile(MISSING_DBLE, (num_periods, num_draws, 4))
 
     # This allows to use the same random disturbances across the different
     # implementations of the mode, including the RESTUD program. Otherwise,
@@ -65,12 +67,13 @@ def create_disturbances(robupy_obj, is_simulation):
     # Finishing
     return periods_eps_relevant
 
+
 def replace_missing_values(argument):
-    """ Replace missing value -99 with NAN. Note that the output argument is
+    """ Replace missing value MISSING_DBLE with NAN. Note that the output argument is
     of type float.
     """
     # Determine missing values
-    is_missing = (argument == -99)
+    is_missing = (argument == MISSING_DBLE)
 
     # Transform to float array
     argument = np.asfarray(argument)

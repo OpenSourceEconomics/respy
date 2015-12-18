@@ -20,6 +20,9 @@ MODULE robufort_constants
     INTEGER(our_int), PARAMETER :: four_int     = 4_our_int
 
     REAL(our_dble), PARAMETER :: missing_dble   = -99_our_dble
+    REAL(our_dble), PARAMETER :: huge_dble      = 1.0e10_our_dble
+    REAL(our_dble), PARAMETER :: tiny_dble      = 1.0e-20_our_dble
+
     REAL(our_dble), PARAMETER :: zero_dble      = 0.00_our_dble
     REAL(our_dble), PARAMETER :: quarter_dble   = 0.25_our_dble
     REAL(our_dble), PARAMETER :: half_dble      = 0.50_our_dble
@@ -31,9 +34,7 @@ MODULE robufort_constants
     REAL(our_dble), PARAMETER :: one_hundred_dble  = 100_our_dble
     REAL(our_dble), PARAMETER :: two_hundred_dble  = 200_our_dble
     REAL(our_dble), PARAMETER :: four_hundred_dble = 400_our_dble
-    REAL(our_dble), PARAMETER :: huge_dble         = HUGE(zero_dble)
 
-    REAL(our_dble), PARAMETER :: tiny_dble = 1.0e-20_our_dble
     REAL(our_dble), PARAMETER :: pi        = 3.141592653589793238462643383279502884197_our_dble
     
 !*******************************************************************************

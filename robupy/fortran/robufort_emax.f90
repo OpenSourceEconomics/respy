@@ -211,7 +211,7 @@ SUBROUTINE get_future_payoffs(future_payoffs, edu_max, edu_start, &
                         exp_B + 1, edu + 1 + 1, 2)
         future_payoffs(3) = periods_emax(period + 1 + 1, future_idx + 1)
     ELSE
-        future_payoffs(3) = -HUGE(future_payoffs)
+        future_payoffs(3) = -huge_dble
     END IF
 
 	! Staying at home
@@ -238,10 +238,10 @@ SUBROUTINE stabilize_myopic(total_payoffs, future_payoffs)
 !-------------------------------------------------------------------------------
     
     ! Determine NAN
-    is_huge = (future_payoffs(3) == -HUGE(future_payoffs))
+    is_huge = (future_payoffs(3) == -huge_dble)
 
     IF (is_huge .EQV. .True.) THEN
-        total_payoffs(3) = -HUGE(future_payoffs)
+        total_payoffs(3) = -huge_dble
     END IF
 
 END SUBROUTINE

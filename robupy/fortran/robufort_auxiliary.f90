@@ -1000,12 +1000,12 @@ SUBROUTINE get_coefficients(coeffs, Y, X, num_covars, num_agents)
    coeffs = MATMUL(D, Y) 
 
    ! Write out matrices
-    1900 FORMAT(40(1x,f25.15))
+    1900 FORMAT(40(1x,f35.15))
 
     OPEN(UNIT=1, FILE='exogenous_variables.robupy.txt')
 
     DO i = 1, num_agents
-            WRITE(1, 1900) X(i, :)
+        WRITE(1, 1900) X(i, :)
     END DO
 
     CLOSE(1)
@@ -1013,7 +1013,7 @@ SUBROUTINE get_coefficients(coeffs, Y, X, num_covars, num_agents)
     OPEN(UNIT=1, FILE='endogenous_variables.robupy.txt')
 
     DO i = 1, num_agents
-            WRITE(1, 1900) Y(i)
+        WRITE(1, 1900) Y(i)
     END DO
 
     CLOSE(1)

@@ -9,8 +9,7 @@ import numpy as np
 # project library
 from robupy.python.py.auxiliary import simulate_emax
 
-# module wide variables
-HUGE_FLOAT = 10e10
+from robupy.constants import HUGE_DBLE
 
 ''' Public functions
 '''
@@ -147,7 +146,7 @@ def transform_disturbances_ambiguity(eps_relevant, x):
     # Exponentiation for occupations
     for j in [0, 1]:
         eps_relevant_emax[:, j] = np.clip(np.exp(eps_relevant_emax[:, j]),
-                                          0.0, HUGE_FLOAT)
+                                          0.0, HUGE_DBLE)
 
     # Finishing
     return eps_relevant_emax

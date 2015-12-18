@@ -373,10 +373,6 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
             ! TODO: Remeber zero trunction in case of ambiguity, how 
             !       treated in Python at the moment?
             !
-            ! TODO: WHy do I allocate exogeneous for all states with missing
-            !        values and not just the interpolation points?
-            ! 
-            !
             !   TODO; Set up documentation for writing on the fly.
             !
             !
@@ -415,13 +411,8 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
             periods_emax(period + 1, :num_states) = predictions
 
             ! Deallocate containers
-            DEALLOCATE(is_simulated); DEALLOCATE(exogenous)
-            DEALLOCATE(maxe); DEALLOCATE(endogenous); DEALLOCATE(predictions)
-
-
-            ! Align in PYTHON? This might be a good idea ...? 
-            !periods_payoffs_ex_post(period + 1, :num_states, :) = -missing_dble
-            !periods_future_payoffs(period + 1, :num_states, :) = - missing_dble
+            DEALLOCATE(is_simulated); DEALLOCATE(exogenous); DEALLOCATE(maxe); 
+            DEALLOCATE(endogenous); DEALLOCATE(predictions)
 
         ELSE
 
@@ -440,9 +431,12 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
                 ! END VECTORIZATION SPLIT
                 
                 ! Collect information            
+                periods_emax(period + 1, k + 1) = emax_simulated
+
+                ! This information is only available if no interpolation is 
+                ! used. Otherwise all remain set to missing values (see above). 
                 periods_payoffs_ex_post(period + 1, k + 1, :) = payoffs_ex_post
                 periods_future_payoffs(period + 1, k + 1, :) = future_payoffs
-                periods_emax(period + 1, k + 1) = emax_simulated
 
             END DO
 

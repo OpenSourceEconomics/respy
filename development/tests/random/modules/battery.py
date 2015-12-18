@@ -67,8 +67,8 @@ def test_85():
     constraints['debug'] = True
     constraints['measure'] = 'kl'
 
-    # TODO: This needs to be aligned ...
-    constraints['edu'] = (10, 200)
+    # TODO: THis is not required once done ..
+    constraints['edu'] = (10, 1000)
 
     # This ensures that interpolation is actually run.
     num_periods = np.random.random_integers(5, 10)
@@ -116,8 +116,8 @@ def test_85():
     # Initialize containers
     base = None
 
-    # TODO: Add OPTIMIZATION to versions checked.
-    for version in ['PYTHON', 'F2PY', 'FORTRAN']:
+    # TODO: Add OPTIMIZATION to versions checked. F2PY
+    for version in ['FORTRAN', 'F2PY']:
 
         # This ensures that the optimized version agrees with all other
         # implementations as well.
@@ -134,6 +134,8 @@ def test_85():
         robupy_obj = read('test.robupy.ini')
 
         solve(robupy_obj)
+
+        print(robupy_obj.get_attr('periods_emax')[-1, :5])
 
         # Load simulated data frame
         data_frame = pd.read_csv('data.robupy.dat', delim_whitespace=True)
