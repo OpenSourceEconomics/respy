@@ -358,8 +358,6 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
 
         IF (any_interpolated) THEN
 
-            PRINT *, any_interpolated, num_states, num_points
-
             ! Allocate period-specific containers
             ALLOCATE(is_simulated(num_states)); ALLOCATE(endogenous(num_states))
             ALLOCATE(maxe(num_states)); ALLOCATE(exogenous(num_states, 9))
