@@ -237,7 +237,7 @@ SUBROUTINE stabilize_myopic(total_payoffs, future_payoffs)
 ! Algorithm
 !-------------------------------------------------------------------------------
     
-    ! Determine NAN
+    ! Determine inadmissible state
     is_huge = (future_payoffs(3) == -huge_dble)
 
     IF (is_huge .EQV. .True.) THEN
@@ -285,7 +285,7 @@ SUBROUTINE get_exogenous_variables(independent_variables, maxe, &
 ! Algorithm
 !-------------------------------------------------------------------------------
 
-    ! Construct dependent variable for all states
+    ! Construct exogenous variable for all states
     DO k = 0, (num_states - 1)
 
         payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
