@@ -148,7 +148,7 @@ def plot_return_education(xvals, yvals, spec):
 
     # Scaling
     for occu in ['A', 'B']:
-        for i in range(len(xvals)):
+        for i, _ in enumerate(xvals):
             yvals[occu][i] = yvals[occu][i] / 1000
 
     # Draw lines

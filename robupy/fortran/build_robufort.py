@@ -407,7 +407,7 @@ def _write_to_main(code_lines, which):
     # Note that I write to inlining again
     with open('.robufort_inlining.f90', 'w') as new_file:
 
-        for i in range(len(old_file)):
+        for i, _ in enumerate(old_file):
 
             old_line = old_file[i]
 
