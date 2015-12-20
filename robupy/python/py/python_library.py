@@ -398,7 +398,9 @@ def _check_prediction_model(predictions_diff, model, num_points, num_states,
 
 def _get_simulated_indicator(num_points, num_candidates, period, num_periods,
                              is_debug):
-    """ Get the indicator for points of interpolation and simulation.
+    """ Get the indicator for points of interpolation and simulation. The
+    unused argument is present to align the interface between the PYTHON and
+    FORTRAN implementations.
     """
 
     # Drawing random interpolation points
@@ -429,7 +431,9 @@ def _get_simulated_indicator(num_points, num_candidates, period, num_periods,
 def _get_exogenous_variables(period, num_periods, num_states, delta,
         periods_payoffs_systematic, shifts, edu_max, edu_start,
         mapping_state_idx, periods_emax, states_all):
-    """ Get exogenous variables for interpolation scheme.
+    """ Get exogenous variables for interpolation scheme. The unused argument
+    is present to align the interface between the PYTHON and FORTRAN
+    implementations.
     """
     # Construct auxiliary objects
     exogenous = np.tile(np.nan, (num_states, 9))
