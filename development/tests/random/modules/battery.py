@@ -30,7 +30,9 @@ from modules.auxiliary import cleanup
 
 # ROBUPY import
 sys.path.insert(0, os.environ['ROBUPY'])
-from robupy import read, solve, simulate
+from robupy import simulate
+from robupy import read
+from robupy import solve
 
 from robupy.python.py.python_library import _get_simulated_indicator
 from robupy.python.py.python_library import _get_exogenous_variables

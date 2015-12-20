@@ -18,8 +18,9 @@ sys.path.insert(0, os.environ['ROBUPY'])
 from robupy import *
 
 from robupy.python.py.auxiliary import simulate_emax
+
 from robupy.python.py.ambiguity import transform_disturbances_ambiguity
-from robupy.python.py.ambiguity import _prep_kl, _divergence
+from robupy.python.py.ambiguity import _prep_kl
 
 from robupy.tests.random_init import print_random_dict
 from robupy.auxiliary import create_disturbances

@@ -15,8 +15,8 @@ from robupy.python.py.auxiliary import get_total_value
 from robupy.python.py.risk import get_payoffs_risk
 
 from robupy.constants import INTERPOLATION_INADMISSIBLE_STATES
-from robupy.constants import MISSING_DBLE
-from robupy.constants import HUGE_DBLE
+from robupy.constants import MISSING_FLOAT
+from robupy.constants import HUGE_FLOAT
 
 # Logging
 logger = logging.getLogger('ROBUPY_SOLVE')
@@ -35,10 +35,10 @@ def backward_induction(num_periods, max_states_period, periods_eps_relevant,
     shifts = [np.exp(shocks[0, 0]/2.0), np.exp(shocks[1, 1]/2.0), 0.0, 0.0]
 
     # Initialize containers with missing values
-    periods_emax = np.tile(MISSING_DBLE, (num_periods, max_states_period))
-    periods_payoffs_ex_post = np.tile(MISSING_DBLE, (num_periods,
+    periods_emax = np.tile(MISSING_FLOAT, (num_periods, max_states_period))
+    periods_payoffs_ex_post = np.tile(MISSING_FLOAT, (num_periods,
                                                max_states_period, 4))
-    periods_future_payoffs = np.tile(MISSING_DBLE, (num_periods,
+    periods_future_payoffs = np.tile(MISSING_FLOAT, (num_periods,
                                                max_states_period, 4))
 
     # Iterate backward through all periods
@@ -153,15 +153,15 @@ def create_state_space(num_periods, edu_start, edu_max, min_idx):
     """ Create grid for state space.
     """
     # Array for possible realization of state space by period
-    states_all = np.tile(MISSING_DBLE, (num_periods, 100000, 4))
+    states_all = np.tile(MISSING_FLOAT, (num_periods, 100000, 4))
 
     # Array for the mapping of state space values to indices in variety
     # of matrices.
-    mapping_state_idx = np.tile(MISSING_DBLE, (num_periods, num_periods, num_periods,
+    mapping_state_idx = np.tile(MISSING_FLOAT, (num_periods, num_periods, num_periods,
                                          min_idx, 2))
 
     # Array for maximum number of realizations of state space by period
-    states_number_period = np.tile(MISSING_DBLE, num_periods)
+    states_number_period = np.tile(MISSING_FLOAT, num_periods)
 
     # Construct state space by periods
     for period in range(num_periods):
@@ -238,7 +238,7 @@ def calculate_payoffs_systematic(num_periods, states_number_period, states_all,
     """
 
     # Initialize
-    periods_payoffs_systematic = np.tile(MISSING_DBLE, (num_periods, max_states_period,
+    periods_payoffs_systematic = np.tile(MISSING_FLOAT, (num_periods, max_states_period,
                                                   4))
 
     # Calculate systematic instantaneous payoffs
@@ -291,7 +291,7 @@ def simulate_sample(num_agents, states_all, num_periods,
     count = 0
 
     # Initialize data
-    dataset = np.tile(MISSING_DBLE, (num_agents * num_periods, 8))
+    dataset = np.tile(MISSING_FLOAT, (num_agents * num_periods, 8))
 
     for i in range(num_agents):
 
@@ -330,7 +330,7 @@ def simulate_sample(num_agents, states_all, num_periods,
             dataset[count, 2] = max_idx + 1
 
             # Record earnings
-            dataset[count, 3] = MISSING_DBLE
+            dataset[count, 3] = MISSING_FLOAT
             if max_idx in [0, 1]:
                 dataset[count, 3] = payoffs_ex_post[max_idx]
 
@@ -448,7 +448,7 @@ def _get_exogenous_variables(period, num_periods, num_states, delta,
 
         # Treatment of inadmissible states, which will show up in the
         # regression in some way.
-        is_inadmissible = (future_payoffs[2] == -HUGE_DBLE)
+        is_inadmissible = (future_payoffs[2] == -HUGE_FLOAT)
 
         if is_inadmissible:
             expected_values[2] = INTERPOLATION_INADMISSIBLE_STATES

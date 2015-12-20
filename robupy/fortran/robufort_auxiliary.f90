@@ -89,7 +89,7 @@ SUBROUTINE get_predictions(predictions, endogenous, exogenous, maxe, &
             endogenous_predicted_available, num_points) 
             
     CALL get_clipped_vector(endogenous_predicted, endogenous_predicted, & 
-            zero_dble, huge_dble, num_states)
+            zero_dble, HUGE_FLOAT, num_states)
 
     ! Construct predicted EMAX for all states and the replace
     ! interpolation points with simulated values.
@@ -514,7 +514,7 @@ SUBROUTINE ludcmp(A, d, indx)
 !-------------------------------------------------------------------------------
     
     ! Initialize containers
-    imax = missing_int 
+    imax = MISSING_INT 
     
     ! Auxiliary objects
     n = SIZE(A, DIM = 1)

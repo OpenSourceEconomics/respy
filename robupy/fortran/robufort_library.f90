@@ -76,7 +76,7 @@ SUBROUTINE simulate_sample(dataset, num_agents, states_all, num_periods, &
 ! Algorithm
 !-------------------------------------------------------------------------------
     ! Initialize containers
-    dataset = missing_dble
+    dataset = MISSING_FLOAT
 
     ! Iterate over agents and periods
     count = 0
@@ -199,7 +199,7 @@ SUBROUTINE calculate_payoffs_systematic(periods_payoffs_systematic, num_periods,
     CALL logging_solution(2)
 
     ! Initialize missing value
-    periods_payoffs_systematic = missing_dble
+    periods_payoffs_systematic = MISSING_FLOAT
 
     ! Calculate systematic instantaneous payoffs
     DO period = num_periods, 1, -1
@@ -336,9 +336,9 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
     shifts(:2) = (/ EXP(shocks(1, 1)/two_dble), EXP(shocks(2, 2)/two_dble) /)
 
     ! Set to missing value
-    periods_emax = missing_dble
-    periods_future_payoffs = missing_dble
-    periods_payoffs_ex_post = missing_dble
+    periods_emax = MISSING_FLOAT
+    periods_future_payoffs = MISSING_FLOAT
+    periods_payoffs_ex_post = MISSING_FLOAT
     
     ! Logging
     CALL logging_solution(3)
@@ -480,9 +480,9 @@ SUBROUTINE create_state_space(states_all, states_number_period, &
 !-------------------------------------------------------------------------------
     
     ! Initialize output 
-    states_number_period = missing_int
-    mapping_state_idx    = missing_int
-    states_all           = missing_int
+    states_number_period = MISSING_INT
+    mapping_state_idx    = MISSING_INT
+    states_all           = MISSING_INT
 
     ! Logging
     CALL logging_solution(1)
@@ -698,7 +698,7 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_periods, &
 !-------------------------------------------------------------------------------
     
     ! Initialize missing values
-    endogenous = missing_dble
+    endogenous = MISSING_FLOAT
 
     ! Construct dependent variables for the subset of interpolation 
     ! points.

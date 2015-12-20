@@ -6,7 +6,7 @@ implementations of the core functions.
 import numpy as np
 
 # project library
-from robupy.constants import HUGE_DBLE
+from robupy.constants import HUGE_FLOAT
 
 
 def simulate_emax(num_periods, num_draws, period, k, eps_relevant_emax,
@@ -106,7 +106,7 @@ def _get_future_payoffs(edu_max, edu_start, mapping_state_idx, period,
         future_idx = mapping_state_idx[period + 1, exp_A, exp_B, edu + 1, 1]
         future_payoffs[2] = periods_emax[period + 1, future_idx]
     else:
-        future_payoffs[2] = -HUGE_DBLE
+        future_payoffs[2] = -HUGE_FLOAT
 
     # Staying at home
     future_idx = mapping_state_idx[period + 1, exp_A, exp_B, edu, 0]
@@ -123,11 +123,11 @@ def _stabilize_myopic(total_payoffs, future_payoffs):
     value when calling np.argmax.
     """
     # Determine NAN
-    is_huge = (future_payoffs[2] == -HUGE_DBLE)
+    is_huge = (future_payoffs[2] == -HUGE_FLOAT)
 
     # Replace with negative infinity
     if is_huge:
-        total_payoffs[2] = -HUGE_DBLE
+        total_payoffs[2] = -HUGE_FLOAT
 
     # Finishing
     return total_payoffs

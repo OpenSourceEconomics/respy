@@ -189,7 +189,7 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
     l_jw = mineq
 
     ! Decompose upper and lower bounds
-    xl = - huge_dble; xu = huge_dble
+    xl = - HUGE_FLOAT; xu = HUGE_FLOAT
 
     ! Initialize the iteration counter and mode value
     iter = maxiter
@@ -315,6 +315,7 @@ FUNCTION criterion(x_internal, num_draws, eps_relevant, period, k, &
             payoffs_systematic, edu_max, edu_start, periods_emax, states_all, &
             mapping_state_idx, delta)
 
+    ! Finishing
     criterion = emax_simulated
 
 END FUNCTION
