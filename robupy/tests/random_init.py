@@ -242,7 +242,9 @@ def generate_random_dict(constraints=None):
 
 def print_random_dict(dict_):
     """ Print initialization dictionary to file. The different formatting
-    makes the file rather involved.
+    makes the file rather involved. The resulting initialization files are
+    read by PYTHON and FORTRAN routines. Thus, the formatting with respect to
+    the number of decimal places is rather small.
     """
     # Antibugging.
     assert (isinstance(dict_, dict))
@@ -266,18 +268,24 @@ def print_random_dict(dict_):
 
                 file_.write('\n')
 
-            if flag in ['HOME']:
+            if flag in ['HOME', 'AMBIGUITY']:
 
-                file_.write(' HOME \n\n')
+                file_.write(' ' + flag.upper() + '\n\n')
 
-                str_ = ' {0:<15} {1:15.2f} \n'
+                for keys_ in dict_[flag]:
 
-                file_.write(str_.format('int', dict_[flag]['int']))
+                    str_ = ' {0:<15} {1:15.2f} \n'
+
+                    # Special treatment of ambiguity measure. which is a simple
+                    #  string.
+                    if keys_ in ['measure']:
+                        str_ = ' {0:<15} {1:<15} \n'
+
+                    file_.write(str_.format(keys_, dict_[flag][keys_]))
 
                 file_.write('\n')
 
-            if flag in ['SOLUTION', 'AMBIGUITY', 'SIMULATION', 'PROGRAM',
-                        'INTERPOLATION']:
+            if flag in ['SOLUTION', 'SIMULATION', 'PROGRAM', 'INTERPOLATION']:
 
                 str_ = ' {0:<15} {1:<15} \n'
 
