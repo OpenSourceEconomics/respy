@@ -37,6 +37,10 @@ MODULE robufort_constants
 
     REAL(our_dble), PARAMETER :: pi        = 3.141592653589793238462643383279502884197_our_dble
     
+
+    ! Interpolation
+    REAL(our_dble), PARAMETER :: interpolation_inadmissible_states = -50000.00_our_dble
+
 !*******************************************************************************
 !*******************************************************************************
 END MODULE 

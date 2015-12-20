@@ -281,6 +281,8 @@ SUBROUTINE get_exogenous_variables(independent_variables, maxe, &
 
     INTEGER(our_int)                    :: k
 
+    LOGICAL                             :: is_inadmissible
+
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
@@ -295,6 +297,17 @@ SUBROUTINE get_exogenous_variables(independent_variables, maxe, &
                 edu_max, edu_start, mapping_state_idx, periods_emax, k, &
                 states_all)
 
+        ! Treatment of inadmissible states, which will show up in the regression 
+        ! in some way
+        is_inadmissible = (future_payoffs(3) == -HUGE_DBLE)
+
+        IF (is_inadmissible) THEN
+
+            expected_values(3) = interpolation_inadmissible_states
+
+        END IF
+
+        ! Implement level shifts
         maxe(k + 1) = MAXVAL(expected_values)
 
         deviations = maxe(k + 1) - expected_values

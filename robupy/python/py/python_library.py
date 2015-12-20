@@ -14,7 +14,9 @@ from robupy.python.py.ambiguity import get_payoffs_ambiguity
 from robupy.python.py.auxiliary import get_total_value
 from robupy.python.py.risk import get_payoffs_risk
 
-from robupy.auxiliary import MISSING_DBLE
+from robupy.constants import INTERPOLATION_INADMISSIBLE_STATES
+from robupy.constants import MISSING_DBLE
+from robupy.constants import HUGE_DBLE
 
 # Logging
 logger = logging.getLogger('ROBUPY_SOLVE')
@@ -440,10 +442,18 @@ def _get_exogenous_variables(period, num_periods, num_states, delta,
         payoffs_systematic = periods_payoffs_systematic[period, k, :]
 
         # Get total value
-        expected_values, _, _ = get_total_value(period, num_periods,
+        expected_values, _, future_payoffs = get_total_value(period, num_periods,
                     delta, payoffs_systematic, shifts, edu_max, edu_start,
                     mapping_state_idx, periods_emax, k, states_all)
 
+        # Treatment of inadmissible states, which will show up in the
+        # regression in some way.
+        is_inadmissible = (future_payoffs[2] == -HUGE_DBLE)
+
+        if is_inadmissible:
+            expected_values[2] = INTERPOLATION_INADMISSIBLE_STATES
+
+        # Implement level shifts
         maxe[k] = max(expected_values)
 
         deviations = maxe[k] - expected_values
@@ -453,9 +463,6 @@ def _get_exogenous_variables(period, num_periods, num_states, delta,
         # Add intercept to set of independent variables and replace
         # infinite values.
         exogenous[:, 8] = 1
-
-        # TODO: Is this the best we can do? What are the exact consequences?
-        exogenous[np.isinf(exogenous)] = -50000
 
     # Finishing
     return exogenous, maxe
