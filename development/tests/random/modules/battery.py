@@ -335,10 +335,9 @@ def test_87():
                     states_all, num_periods, periods_emax, delta, is_debug,
                     shocks, level, measure)
 
-            # TODO: I want to fix this soon.
-            # The total future payoffs can be different due to treatment of
-            # inadmissible states.
-            for i in range(2):
+            # Compare returned array on expected future values, ex post
+            # payoffs, and future payoffs.
+            for i in range(3):
                 np.testing.assert_array_almost_equal(py[i], f90[i])
 
     # Cleanup
@@ -424,12 +423,10 @@ def test_89():
     compile_package('--fortran --debug', True)
 
     # Set initial constraints
-    # TODO: Should work for all versions.
     constraints = dict()
     constraints['apply'] = False
     constraints['level'] = 0.00
     constraints['periods'] = np.random.random_integers(2, 6)
-#    constraints['version'] = 'PYTHON'
     constraints['eps_zero'] = True
 
     # Initialize request
