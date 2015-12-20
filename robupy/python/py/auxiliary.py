@@ -123,10 +123,11 @@ def _stabilize_myopic(total_payoffs, future_payoffs):
     value when calling np.argmax.
     """
     # Determine NAN
-    is_inf = np.isneginf(future_payoffs)
+    is_huge = (future_payoffs[2] == -HUGE_DBLE)
 
     # Replace with negative infinity
-    total_payoffs[is_inf] = -np.inf
+    if is_huge:
+        total_payoffs[2] = -HUGE_DBLE
 
     # Finishing
     return total_payoffs

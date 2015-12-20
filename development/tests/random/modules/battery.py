@@ -67,9 +67,6 @@ def test_85():
     constraints['debug'] = True
     constraints['measure'] = 'kl'
 
-    # TODO: THis is not required once done ..
-    constraints['edu'] = (10, 1000)
-
     # This ensures that interpolation is actually run.
     num_periods = np.random.random_integers(5, 10)
     num_points = np.random.random_integers(40, 54)
@@ -115,9 +112,7 @@ def test_85():
 
     # Initialize containers
     base = None
-
-    # TODO: Add OPTIMIZATION to versions checked. F2PY
-    for version in ['FORTRAN', 'F2PY']:
+    for version in ['PYTHON', 'FORTRAN', 'F2PY']:
 
         # This ensures that the optimized version agrees with all other
         # implementations as well.
@@ -134,8 +129,6 @@ def test_85():
         robupy_obj = read('test.robupy.ini')
 
         solve(robupy_obj)
-
-        print(robupy_obj.get_attr('periods_emax')[-1, :5])
 
         # Load simulated data frame
         data_frame = pd.read_csv('data.robupy.dat', delim_whitespace=True)
@@ -436,7 +429,7 @@ def test_89():
     constraints['apply'] = False
     constraints['level'] = 0.00
     constraints['periods'] = np.random.random_integers(2, 6)
-    constraints['version'] = 'PYTHON'
+#    constraints['version'] = 'PYTHON'
     constraints['eps_zero'] = True
 
     # Initialize request
@@ -896,7 +889,7 @@ def test_96():
     against PYTHON intrinsic routines.
     """
     # Ensure that fast solution methods are available
-    compile_package('--fortran --debug', False)
+    compile_package('--fortran --debug', True)
 
     import robupy.python.f2py.f2py_debug as fort_debug
     import robupy.python.f2py.f2py_library as fort_lib
@@ -1150,7 +1143,6 @@ def test_99():
     # Initialize containers
     base = None
 
-    # TODO: Add OPTIMIZATION to versions checked
     for version in ['PYTHON', 'F2PY', 'FORTRAN']:
 
         # This ensures that the optimized version agrees with all other
