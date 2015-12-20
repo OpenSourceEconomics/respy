@@ -11,7 +11,9 @@ from robupy.clsMeta import MetaCls
 
 
 class RobupyCls(MetaCls):
-    
+    """ This class manages the distribution of the use requests throughout
+    the toolbox.
+    """
     def __init__(self):
         """ Initialization of hand-crafted class for package management.
         """

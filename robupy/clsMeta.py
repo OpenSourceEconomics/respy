@@ -6,7 +6,9 @@ import pickle as pkl
 
 
 class MetaCls(object):
-
+    """ This class provides some methods that are used repeatedly in classes
+    throughout the project.
+    """
     def __init__(self):
         """ Initialization of hand-crafted base class.
         """
