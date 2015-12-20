@@ -15,7 +15,8 @@ sys.path.insert(0, os.environ['ROBUPY'] + '/development/tests/random')
 sys.path.insert(0, os.environ['ROBUPY'])
 
 # project library
-from robupy import *
+from robupy import solve
+from robupy import read
 
 from robupy.python.py.auxiliary import simulate_emax
 

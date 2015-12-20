@@ -13,7 +13,8 @@ import os
 
 # project library
 from robupy.tests.random_init import print_random_dict
-from robupy import *
+from robupy import solve
+from robupy import read
 
 
 def get_random_string(n=10):

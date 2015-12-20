@@ -11,8 +11,11 @@ import os
 
 ''' Auxiliary functions
 '''
-def cleanup(all_=True):
 
+
+def cleanup(all_=True):
+    """ Cleanup during development.
+    """
     SAVE_FILES = ['modules', 'clean', 'create', 'model.robupy.ini', 'acropolis.pbs']
 
     if all_ is False:
