@@ -4,6 +4,7 @@ python:
 sudo: required
 bundler_args: --retry 3
 before_install:
+  - sudo apt-get update -qq
   - sudo apt-get install gfortran -y
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install: travis_retry travis_wait pip install -r requirements.txt
