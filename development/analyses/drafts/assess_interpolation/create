@@ -116,10 +116,9 @@ def process_tasks(task):
 
     init_dict = robupy_obj.get_attr('init_dict')
 
+    # Modification from baseline initialization file
     init_dict['SOLUTION']['store'] = True
-
-    # TODO: Comment back in ... need to set ambiguity level
-    init_dict['AMBIGUITY']['level'] = 0.00
+    init_dict['AMBIGUITY']['level'] = 0.01
 
     # Decide for interpolation or full solution
     is_full = (solution == 'full')
