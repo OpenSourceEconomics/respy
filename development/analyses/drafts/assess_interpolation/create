@@ -8,6 +8,7 @@ from multiprocessing import Pool
 import pickle as pkl
 import numpy as np
 
+import socket
 import sys
 import os
 
@@ -25,6 +26,8 @@ from modules.auxiliary import compile_package
 from robupy import solve
 from robupy import read
 
+# module wide variable
+HOSTNAME = socket.gethostname()
 
 def assess_approximation(num_agents, states_all, num_periods, mapping_state_idx,
         periods_payoffs_systematic, periods_eps_relevant, edu_max, edu_start,
@@ -136,7 +139,12 @@ def process_tasks(task):
 # Ensure that fast version of package is available
 os.system('./clean')
 
-compile_package('--fortran --debug', True)
+if HOSTNAME == 'acropolis':
+    # The compiler on acropolis does use other debugging flags and thus no
+    # debugging is requested.
+    compile_package('--fortran', True)
+else:
+    compile_package('--fortran --debug', True)
 
 # Set up tasks by combining all specifications with a full and approximate
 # solution request.
