@@ -363,22 +363,6 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
             ALLOCATE(maxe(num_states)); ALLOCATE(exogenous(num_states, 9))
             ALLOCATE(predictions(num_states))
 
-            !----------------------------------------------------------
-            !
-            !   PSUEDO INVERSE
-            !
-            !
-            ! TODO: Have to deal with the outside of allowed education.
-            !
-            ! TODO: Remeber zero trunction in case of ambiguity, how 
-            !       treated in Python at the moment?
-            !
-            !   TODO; Set up documentation for writing on the fly.
-            !
-            !
-            !
-            !----------------------------------------------------------
-
             ! Constructing indicator for simulation points
             is_simulated = get_simulated_indicator(num_points, num_states, & 
                                 period, num_periods, is_debug)
