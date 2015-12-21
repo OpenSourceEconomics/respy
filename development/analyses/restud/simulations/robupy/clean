@@ -3,10 +3,12 @@
 """
 
 # standard library
+import shutil
 import glob
 import os
 
 # module-wide variables
+SOLUTION_METHODS = ['full_solution', 'interpolation']
 SPECIFICATIONS = ['data_one', 'data_two', 'data_three']
 SAVE_FILES = ['clean', 'create', 'model.robupy.ini']
 HOME = os.path.dirname(os.path.realpath(__file__))
@@ -33,24 +35,28 @@ def remove(names):
 ''' Main 
 '''
 
-
 for name in glob.glob('*'):
 
-    if name in SAVE_FILES + SPECIFICATIONS:
+    if name in SAVE_FILES + SPECIFICATIONS + SOLUTION_METHODS:
         pass
     else:
         remove(name)
 
+for method in SOLUTION_METHODS:
 
-for spec in SPECIFICATIONS:
+    os.chdir(method)
 
-    os.chdir(spec)
+    for spec in SPECIFICATIONS:
 
-    for name in glob.glob('*'):
+        os.chdir(spec)
 
-        if name in SAVE_FILES + SPECIFICATIONS:
-            pass
-        else:
-            remove(name)
+        for name in glob.glob('*'):
+
+            if name in SAVE_FILES + SPECIFICATIONS:
+                pass
+            else:
+                remove(name)
+
+        os.chdir('../')
 
     os.chdir('../')

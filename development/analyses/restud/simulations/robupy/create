@@ -20,18 +20,27 @@ from modules.auxiliary import compile_package
 # Compile fast version of ROBUPY package
 compile_package('--fortran', True)
 
-# Start model solution and simulation
-for dir_ in ['one', 'two', 'three']:
 
-    os.chdir('data_' + dir_)
+# Step into directories with alternative solution methods
 
-    # Solve and simulate
-    robupy_obj = robupy.read('model.robupy.ini')
-    robupy.solve(robupy_obj)
+for method in ['full_solution', 'interpolation']:
 
-    # Cleanup
-    files = glob.glob('logging.*')
-    for file_ in files:
-        os.unlink(file_)
+    os.chdir(method)
+
+    # Start model solution and simulation
+    for dir_ in ['one', 'two', 'three']:
+
+        os.chdir('data_' + dir_)
+
+        # Solve and simulate
+        robupy_obj = robupy.read('model.robupy.ini')
+        robupy.solve(robupy_obj)
+
+        # Cleanup
+        files = glob.glob('logging.*')
+        for file_ in files:
+            os.unlink(file_)
+
+        os.chdir('..')
 
     os.chdir('..')
