@@ -139,7 +139,7 @@ def process_tasks(task):
 # Ensure that fast version of package is available
 os.system('./clean')
 
-if HOSTNAME == 'acropolis':
+if 'acropolis' in HOSTNAME:
     # The compiler on acropolis does use other debugging flags and thus no
     # debugging is requested.
     compile_package('--fortran', True)
