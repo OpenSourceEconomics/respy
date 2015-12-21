@@ -985,6 +985,8 @@ SUBROUTINE get_coefficients(coeffs, Y, X, num_covars, num_agents)
     REAL(our_dble)                  :: C(num_covars, num_covars)
     REAL(our_dble)                  :: D(num_covars, num_agents)
 
+    CHARACTER(20)                   :: HOME
+
     INTEGER :: i
 
 !-------------------------------------------------------------------------------
@@ -1019,7 +1021,8 @@ SUBROUTINE get_coefficients(coeffs, Y, X, num_covars, num_agents)
     CLOSE(1)
 
     ! Call Python Script
-    CALL system('/home/peisenha/bin/get_coefficients.py')
+    CALL get_environment_variable('HOME', HOME)
+    CALL system(TRIM(HOME) // '/bin/get_coefficients.py')
 
     ! Read coefficients
     1510 FORMAT(f15.10)
