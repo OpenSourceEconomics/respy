@@ -117,6 +117,7 @@ def process_tasks(task):
     init_dict = robupy_obj.get_attr('init_dict')
 
     # Modification from baseline initialization file
+    init_dict['PROGRAM']['debug'] = True
     init_dict['SOLUTION']['store'] = True
     init_dict['AMBIGUITY']['level'] = 0.01
 
