@@ -20,6 +20,7 @@ from robupy.tests.random_init import print_random_dict
 
 from robupy.python.py.auxiliary import get_total_value
 from robupy.auxiliary import create_disturbances
+from modules.auxiliary import compile_package
 
 from robupy import solve
 from robupy import read
@@ -116,7 +117,7 @@ def process_tasks(task):
 
     # TODO: Comment back in ... need to set ambiguity level
     init_dict['AMBIGUITY']['level'] = 0.00
- 
+
     # Decide for interpolation or full solution
     is_full = (solution == 'full')
     if is_full:
@@ -131,6 +132,11 @@ def process_tasks(task):
     solve(robupy_obj)
 
     os.chdir('../../')
+
+# Ensure that fast version of package is available
+os.system('./clean')
+
+compile_package('--fortran --debug', True)
 
 # Set up tasks by combining all specifications with a full and approximate
 # solution request.
