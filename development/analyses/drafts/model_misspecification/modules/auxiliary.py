@@ -16,12 +16,32 @@ from robupy import solve
 from robupy import read
 
 
+def distribute_arguments(parser):
+    """ Distribute command line arguments.
+    """
+    # Process command line arguments
+    args = parser.parse_args()
+
+    # Extract arguments
+    level = args.level
+
+    # Check arguments
+    assert (isinstance(level, float))
+    assert (level >= 0.00)
+
+    # Finishing
+    return level
+
+
 def solve_true_economy(level):
 
     os.mkdir('true'), os.chdir('true')
     robupy_obj = read('../model.robupy.ini')
     init_dict = robupy_obj.get_attr('init_dict')
     init_dict['AMBIGUITY']['level'] = level
+    # TODO: Remove later
+    init_dict['BASICS']['periods'] = 5
+
     print_random_dict(init_dict)
     shutil.move('test.robupy.ini', 'model.robupy.ini')
     base_choices = get_baseline('model.robupy.ini')
@@ -50,6 +70,9 @@ def criterion_function(point, base_choices):
     init_dict = robupy_obj.get_attr('init_dict')
     # Set relevant values
     init_dict['EDUCATION']['int'] = float(point)
+    # TODO: Remove later
+    init_dict['BASICS']['periods'] = 5
+
     # Write to file
     print_random_dict(init_dict)
     # Solve requested model
@@ -103,9 +126,13 @@ def solve_estimated_economy(opt):
 
     # Update initialization file with result from estimation and write to disk
     init_dict['EDUCATION']['int'] = float(opt['x'])
+    # TODO: Remove later
+    init_dict['BASICS']['periods'] = 5
+
     print_random_dict(init_dict)
 
     # Start solution and estimation of resulting economy
     shutil.move('test.robupy.ini', 'model.robupy.ini')
     solve(read('model.robupy.ini'))
-    
+
+    os.chdir('../')

@@ -9,7 +9,16 @@ import pickle as pkl
 import numpy as np
 
 import shutil
+import sys
 import os
+
+# module-wide variable
+ROBUPY_DIR = os.environ['ROBUPY']
+SPEC_DIR = ROBUPY_DIR + '/development/analyses/restud/specifications'
+
+# PYTHONPATH
+sys.path.insert(0, ROBUPY_DIR + '/development/tests/random')
+sys.path.insert(0, ROBUPY_DIR)
 
 # project library
 from robupy.python.py.auxiliary import get_total_value
@@ -18,10 +27,6 @@ from robupy.auxiliary import create_disturbances
 
 from robupy import solve
 from robupy import read
-
-# module-wide variable
-ROBUPY_DIR = os.environ['ROBUPY']
-SPEC_DIR = ROBUPY_DIR + '/development/analyses/restud/specifications'
 
 
 def distribute_arguments(parser):

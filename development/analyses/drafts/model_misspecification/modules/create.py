@@ -1,22 +1,30 @@
 #!/usr/bin/env python
 """ This module allows to assess the implications of model misspecification
-for estimates of psychic costs.
+for estimates of psychic costs. We generate a simulated sample with some
+level of ambiguity and then fit a risk-only model.
 """
 
 # standard library
 from scipy.optimize import minimize
 
+import argparse
 import socket
 import shutil
+import glob
 import sys
 import os
 
+# module-wide variable
+ROBUPY_DIR = os.environ['ROBUPY']
+SPEC_DIR = ROBUPY_DIR + '/development/analyses/restud/specifications'
+
 # PYTHONPATH
-sys.path.insert(0, os.environ['ROBUPY'] + '/development/tests/random')
-sys.path.insert(0, os.environ['ROBUPY'])
+sys.path.insert(0, ROBUPY_DIR + '/development/tests/random')
+sys.path.insert(0, ROBUPY_DIR)
 
 # project library
 from auxiliary import solve_estimated_economy
+from auxiliary import distribute_arguments
 from auxiliary import solve_true_economy
 from auxiliary import criterion_function
 
@@ -25,13 +33,14 @@ from modules.auxiliary import compile_package
 
 from robupy import read
 
-# module-wide variable
-ROBUPY_DIR = os.environ['ROBUPY']
-SPEC_DIR = ROBUPY_DIR + '/development/analyses/restud/specifications'
+
+''' Core function
+'''
 
 
 def run(level):
-    """ Determine
+    """ Inspect the implications of model misspecification for the estimates
+    of psychic costs.
     """
     # Ensure that fast version of package is available. This is a little more
     # complicated than usual as the compiler on acropolis does use other
@@ -59,6 +68,8 @@ def run(level):
 
     # Modification from baseline initialization file
     init_dict['AMBIGUITY']['level'] = 0.00
+    # TODO: Remove later
+    init_dict['BASICS']['periods'] = 5
 
     # Finalize initialization file and solve model
     print_random_dict(init_dict)
@@ -69,14 +80,41 @@ def run(level):
     opt = minimize(criterion_function, x0, args=(base_choices,),
                    method="Nelder-Mead")
 
+    # Write out some basic information to a file.
+    with open('misspecification.robupy.log', 'a') as file_:
+
+        file_.write('    Model Misspecification \n')
+        file_.write('    ---------------------- \n\n')
+
+        string = '    {0[0]:<5} {0[1]:7.4f}\n\n'
+        file_.write(string.format(['Result', opt['x'][0]]))
+
+        file_.write('    Success ' + str(opt['success']) + '\n')
+        file_.write('    Message ' + opt['message'] + '\n\n')
+
     # Solve the estimated economy to compare
     solve_estimated_economy(opt)
 
-# cleanup ... integreate in one fulnction with distinctio between before and
-# after, depends on wheterh to delte true and estimated.
+    # Cleanup files generated during estimation
+    for file_ in glob.glob('*.robupy.*'):
+        # Keep information about optimization
+        if 'misspecification' in file_:
+            continue
+        os.unlink(file_)
 
-# Need some basic logging, which writes out difference in estimates in
-# addition to optimization report.
 
-level = 0.01
-run(level)
+''' Execution of module as script.
+'''
+
+if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser(
+        description='Assess implications of model misspecification.',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    parser.add_argument('--level', action='store', type=float, dest='level',
+         default=0.00, help='level of ambiguity in true economy')
+
+    level = distribute_arguments(parser)
+
+    run(level)

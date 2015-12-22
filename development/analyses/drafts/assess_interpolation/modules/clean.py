@@ -15,7 +15,7 @@ def cleanup(all_=True):
     """ Cleanup during development.
     """
     SAVE_FILES = ['create', 'clean', 'acropolis.pbs', 'modules', 'clean.py',
-                  'create.py', 'auxiliary.py']
+                  'create.py', 'auxiliary.py', 'update', 'update.py']
 
     for name in glob.glob('*'):
         if name in SAVE_FILES:
