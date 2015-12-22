@@ -2,13 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="39b3d67a-e664-4cff-aba7-2a9ae5eaeb87" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/assess_interpolation/modules/update.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/assess_interpolation/update" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/model_misspecification/modules/update.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/model_misspecification/update" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/.idea/workspace.xml" afterPath="$PROJECT_DIR$/package/development/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/assess_interpolation/modules/auxiliary.py" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/assess_interpolation/modules/auxiliary.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/assess_interpolation/modules/clean.py" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/assess_interpolation/modules/clean.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/model_misspecification/modules/auxiliary.py" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/model_misspecification/modules/auxiliary.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/model_misspecification/modules/create.py" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/model_misspecification/modules/create.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/assess_interpolation/modules/update.py" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/assess_interpolation/modules/update.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/model_misspecification/modules/clean.py" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/model_misspecification/modules/clean.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../../../../structRobust/README" afterPath="$PROJECT_DIR$/../../../../structRobust/README" />
     </list>
     <ignored path="robustToolbox.iws" />
@@ -31,13 +29,25 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="update.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="update.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/assess_interpolation/modules/update.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-2.410915">
-              <caret line="38" column="0" selection-start-line="38" selection-start-column="0" selection-end-line="38" selection-end-column="0" />
+            <state vertical-scroll-proportion="0.0">
+              <caret line="138" column="0" selection-start-line="138" selection-start-column="0" selection-end-line="138" selection-end-column="0" />
               <folding>
                 <element signature="e#99#123#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="clean.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/model_misspecification/modules/clean.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.19743179">
+              <caret line="17" column="67" selection-start-line="17" selection-start-column="67" selection-end-line="17" selection-end-column="67" />
+              <folding>
+                <element signature="e#86#99#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -96,13 +106,13 @@
         <option value="$PROJECT_DIR$/package/development/analyses/restud/clean" />
         <option value="$PROJECT_DIR$/package/development/analyses/restud/simulations/robupy/create" />
         <option value="$PROJECT_DIR$/package/development/analyses/drafts/assess_interpolation/modules/create.py" />
-        <option value="$PROJECT_DIR$/package/development/analyses/drafts/model_misspecification/modules/clean.py" />
         <option value="$PROJECT_DIR$/package/development/analyses/drafts/model_misspecification/modules/auxiliary.py" />
         <option value="$PROJECT_DIR$/package/development/analyses/drafts/model_misspecification/modules/create.py" />
         <option value="$PROJECT_DIR$/package/development/analyses/drafts/assess_interpolation/update" />
         <option value="$PROJECT_DIR$/package/development/analyses/drafts/assess_interpolation/modules/clean.py" />
         <option value="$PROJECT_DIR$/package/development/analyses/drafts/assess_interpolation/modules/auxiliary.py" />
         <option value="$PROJECT_DIR$/package/development/analyses/drafts/assess_interpolation/modules/update.py" />
+        <option value="$PROJECT_DIR$/package/development/analyses/drafts/model_misspecification/modules/clean.py" />
       </list>
     </option>
   </component>
@@ -241,34 +251,8 @@
               <option name="myItemId" value="drafts" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
-          </PATH>
-          <PATH>
             <PATH_ELEMENT>
-              <option name="myItemId" value="robustToolbox" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="robustToolbox" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="package" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="development" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="analyses" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="drafts" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="assess_interpolation" />
+              <option name="myItemId" value="model_misspecification" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -298,11 +282,37 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="assess_interpolation" />
+              <option name="myItemId" value="model_misspecification" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="modules" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="robustToolbox" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="robustToolbox" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="package" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="development" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="analyses" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="drafts" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -896,13 +906,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/model_misspecification/modules/clean.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="41" column="0" selection-start-line="41" selection-start-column="0" selection-end-line="41" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/model_misspecification/modules/auxiliary.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="1.143581">
@@ -988,10 +991,20 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/assess_interpolation/modules/update.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-2.410915">
-          <caret line="38" column="0" selection-start-line="38" selection-start-column="0" selection-end-line="38" selection-end-column="0" />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="138" column="0" selection-start-line="138" selection-start-column="0" selection-end-line="138" selection-end-column="0" />
           <folding>
             <element signature="e#99#123#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/model_misspecification/modules/clean.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.19743179">
+          <caret line="17" column="67" selection-start-line="17" selection-start-column="67" selection-end-line="17" selection-end-column="67" />
+          <folding>
+            <element signature="e#86#99#0" expanded="true" />
           </folding>
         </state>
       </provider>
