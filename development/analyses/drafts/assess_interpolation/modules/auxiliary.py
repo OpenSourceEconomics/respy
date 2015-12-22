@@ -67,9 +67,6 @@ def process_tasks(task):
     init_dict['SOLUTION']['store'] = True
     init_dict['PROGRAM']['debug'] = True
 
-    # TODO: Remove
-    init_dict['BASICS']['periods'] = 5
-
     # Decide for interpolation or full solution
     is_full = (solution == 'full')
     if is_full:
