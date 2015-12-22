@@ -3,13 +3,18 @@
 """
 
 # standard library
+import shutil
 import glob
 import sys
 import os
 
+# module  wide variable
+ROBUPY_DIR = os.environ['ROBUPY']
+SPEC_DIR = ROBUPY_DIR + '/development/analyses/restud/specifications'
+
 # PYTHONPATH
-sys.path.insert(0, os.environ['ROBUPY'])
-sys.path.insert(0, os.environ['ROBUPY'] + '/development/tests/random')
+sys.path.insert(0, ROBUPY_DIR)
+sys.path.insert(0, ROBUPY_DIR + '/development/tests/random')
 
 # project library
 import robupy
@@ -20,9 +25,7 @@ from modules.auxiliary import compile_package
 # Compile fast version of ROBUPY package
 compile_package('--fortran', True)
 
-
 # Step into directories with alternative solution methods
-
 for method in ['full_solution', 'interpolation']:
 
     os.chdir(method)
@@ -31,6 +34,12 @@ for method in ['full_solution', 'interpolation']:
     for dir_ in ['one', 'two', 'three']:
 
         os.chdir('data_' + dir_)
+
+        # Copy relevant initialization file
+        src = SPEC_DIR + '/data_' + dir_ + '.robupy.ini'
+        tgt = 'model.robupy.ini'
+
+        shutil.copy(src, tgt)
 
         # Solve and simulate
         robupy_obj = robupy.read('model.robupy.ini')
