@@ -40,7 +40,7 @@ def solve_true_economy(level):
     init_dict = robupy_obj.get_attr('init_dict')
     init_dict['AMBIGUITY']['level'] = level
     # TODO: Remove later
-    init_dict['BASICS']['periods'] = 5
+    #init_dict['BASICS']['periods'] = 5
 
     print_random_dict(init_dict)
     shutil.move('test.robupy.ini', 'model.robupy.ini')
@@ -71,7 +71,7 @@ def criterion_function(point, base_choices):
     # Set relevant values
     init_dict['EDUCATION']['int'] = float(point)
     # TODO: Remove later
-    init_dict['BASICS']['periods'] = 5
+    #init_dict['BASICS']['periods'] = 5
 
     # Write to file
     print_random_dict(init_dict)
@@ -127,7 +127,7 @@ def solve_estimated_economy(opt):
     # Update initialization file with result from estimation and write to disk
     init_dict['EDUCATION']['int'] = float(opt['x'])
     # TODO: Remove later
-    init_dict['BASICS']['periods'] = 5
+    #init_dict['BASICS']['periods'] = 5
 
     print_random_dict(init_dict)
 

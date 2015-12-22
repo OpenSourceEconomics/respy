@@ -69,7 +69,7 @@ def run(level):
     # Modification from baseline initialization file
     init_dict['AMBIGUITY']['level'] = 0.00
     # TODO: Remove later
-    init_dict['BASICS']['periods'] = 5
+    #init_dict['BASICS']['periods'] = 5
 
     # Finalize initialization file and solve model
     print_random_dict(init_dict)

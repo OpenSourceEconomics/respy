@@ -22,9 +22,10 @@ if not socket.gethostname() == 'pontos':
 
 # module-wide variables
 ROBUPY_DIR = os.environ['ROBUPY']
-CLIENT_DIR = ROBUPY_DIR + '/development/analyses/drafts/assess_interpolation'
+CLIENT_DIR = '/home/eisenhauer/robustToolbox/package/development/analyses' \
+             '/drafts/model_misspecification'
 KEY_DIR = '/home/peisenha/.ssh/id_rsa'
-RSLT_FILES = ['rslts.quality.pkl']
+RSLT_FILES = ['misspecification.robupy.log']
 
 HOST = os.path.dirname(os.path.realpath(__file__)).replace('modules', '')
 
