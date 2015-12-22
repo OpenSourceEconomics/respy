@@ -1,5 +1,7 @@
 """ Module that contains the auxiliary functions that help assessing the
-quality of interpolation methods.
+quality of interpolation methods by soling the model using a full solution
+and approximate approach. Then we compare implied optimal decisions for a
+synthetic set of agents.
 """
 
 # standard library
