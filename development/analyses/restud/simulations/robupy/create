@@ -8,7 +8,7 @@ import glob
 import sys
 import os
 
-# module  wide variable
+# module -wide variable
 ROBUPY_DIR = os.environ['ROBUPY']
 SPEC_DIR = ROBUPY_DIR + '/development/analyses/restud/specifications'
 

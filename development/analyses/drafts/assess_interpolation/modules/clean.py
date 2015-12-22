@@ -14,10 +14,8 @@ import os
 def cleanup(all_=True):
     """ Cleanup during development.
     """
-    SAVE_FILES = ['full', 'approximate', 'create', 'model.robupy.ini',
-                  'data_one', 'data_two', 'data_three', 'clean',
-                  'acropolis.pbs', 'modules', 'clean', 'create', 'clean.py',
-                  'create.py']
+    SAVE_FILES = ['create', 'clean', 'acropolis.pbs', 'modules', 'clean.py',
+                  'create.py', 'auxiliary.py']
 
     for name in glob.glob('*'):
         if name in SAVE_FILES:
