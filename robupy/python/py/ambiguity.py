@@ -227,7 +227,7 @@ def _write_result(period, k, opt, div):
         file_.write(string.format([period, k]))
 
         string = '    {0[0]:<13} {0[1]:10.4f} {0[2]:10.4f}\n'
-        file_.write(string.format(['Result', opt['x'][0], opt['x'][0]]))
+        file_.write(string.format(['Result', opt['x'][0], opt['x'][1]]))
         string = '    {0[0]:<13} {0[1]:10.4f}\n\n'
         file_.write(string.format(['Divergence', div]))
 
