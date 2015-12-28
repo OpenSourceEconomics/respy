@@ -12,9 +12,42 @@ import shlex
 import os
 
 # project library
-from robupy.tests.random_init import print_random_dict
+from robupy.clsRobupy import RobupyCls
 from robupy import solve
-from robupy import read
+
+
+def check_grid(AMBIGUITY_GRID, COST_GRID):
+    """ Check the manual specification of the grid.
+    """
+    # Auxiliary objects
+    num_eval_points = len(COST_GRID[0])
+    # Check that points for all levels of ambiguity levels are defined
+    assert (set(COST_GRID.keys()) == set(AMBIGUITY_GRID))
+    # Check that the same number of points is requested. This ensures the
+    # symmetry of the evaluation grid for the parallelization request.
+    for key_ in AMBIGUITY_GRID:
+        assert (len(COST_GRID[key_]) == num_eval_points)
+    # Make sure that there are no duplicates in the grid.
+    for key_ in AMBIGUITY_GRID:
+        assert (len(COST_GRID[key_]) == len(set(COST_GRID[key_])))
+
+
+def distribute_arguments(parser):
+    """ Distribute command line arguments.
+    """
+    # Process command line arguments
+    args = parser.parse_args()
+
+    # Extract arguments
+    num_procs = args.num_procs
+    is_debug = args.is_debug
+
+    # Check arguments
+    assert (num_procs > 0)
+    assert (is_debug in [True, False])
+
+    # Finishing
+    return num_procs, is_debug
 
 
 def get_random_string(n=10):
@@ -71,45 +104,54 @@ def get_period_choices():
     return choices
 
 
-def get_baseline():
+def get_baseline(init_dict):
     """ Get the baseline distribution.
     """
-    # Solve baseline distribution
-    robupy_obj = read('model.robupy.ini')
-    solve(robupy_obj)
+    name = get_random_string()
+    # Move to random directory and get baseline model specification
+    os.mkdir(name), os.chdir(name)
+    solve(_get_robupy_obj(init_dict))
     # Get baseline choice distributions
     base_choices = get_period_choices()
+    # Cleanup
+    os.chdir('../'), shutil.rmtree(name)
     # Finishing
     return base_choices
 
 
-def pair_evaluation(base_choices, x):
+def pair_evaluation(init_dict, base_choices, x):
     """ Evaluate criterion function for alternative pairs of ambiguity and
     point.
     """
     # Distribute input arguments
     ambi, point = x
     # Auxiliary objects
+    scaling = 100000.00
     name = get_random_string()
     # Move to random directory and get baseline model specification
     os.mkdir(name), os.chdir(name)
-    shutil.copy('../model.robupy.ini', 'model.robupy.ini')
-    # Write out the modified baseline initialization.
-    robupy_obj = read('model.robupy.ini')
-    init_dict = robupy_obj.get_attr('init_dict')
     # Set relevant values
     init_dict['AMBIGUITY']['level'] = ambi
-    init_dict['A']['int'] = point
-    # Write to file
-    print_random_dict(init_dict)
+    # Set relevant values
+    init_dict['EDUCATION']['int'] = float(point)*scaling
     # Solve requested model
-    robupy_obj = read('test.robupy.ini')
-    solve(robupy_obj)
+    solve(_get_robupy_obj(init_dict))
     # Get choice probabilities
     alternative_choices = get_period_choices()
     # Calculate squared mean-deviation of transition probabilites
-    crit = np.mean(np.sum((base_choices[:, 3] - alternative_choices[:, 3])**2))
+    crit = np.mean(np.sum((base_choices[:, :] - alternative_choices[:, :])**2))
     # Cleanup
     os.chdir('../'), shutil.rmtree(name)
     # Finishing
     return crit
+
+
+def _get_robupy_obj(init_dict):
+    """ Get the object to pass in the solution method.
+    """
+    # Initialize and process class
+    robupy_obj = RobupyCls()
+    robupy_obj.set_attr('init_dict', init_dict)
+    robupy_obj.lock()
+    # Finishing
+    return robupy_obj

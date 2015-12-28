@@ -1,13 +1,11 @@
 #!/usr/bin/env python
-""" This script cleans the COMPU directories.
+""" This script cleans the directories.
 """
 
 # standard library
 import shutil
 import glob
 import os
-
-# module-wide variables
 
 ''' Auxiliary functions
 '''
@@ -16,7 +14,8 @@ import os
 def cleanup(all_=True):
     """ Cleanup during development.
     """
-    SAVE_FILES = ['modules', 'clean', 'create', 'model.robupy.ini', 'acropolis.pbs']
+    SAVE_FILES = ['modules', 'clean', 'create', 'acropolis.pbs', 'clean.py',
+                  'create.py', 'auxiliary.py']
 
     if all_ is False:
         SAVE_FILES += ['indifference.robupy.log']
@@ -42,5 +41,14 @@ def remove(names):
 
 ''' Main
 '''
+''' Main
+'''
 if __name__ =='__main__':
-    cleanup()
+
+    root_dir = os.getcwd()
+
+    for subdir, _, _ in os.walk('.'):
+
+        os.chdir(subdir)
+        cleanup()
+        os.chdir(root_dir)

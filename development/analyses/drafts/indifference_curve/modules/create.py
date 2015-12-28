@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """ This module is used to create an indifference curve that outlines the
-modeling trade-offs.
+modeling trade-offs between psychic costs and ambiguity.
 """
 
 # standard library
@@ -10,37 +10,56 @@ from functools import partial
 import numpy as np
 
 import argparse
+import socket
+import shutil
 import sys
 import os
 
+# module-wide variable
+ROBUPY_DIR = os.environ['ROBUPY']
+SPEC_DIR = ROBUPY_DIR + '/development/analyses/restud/specifications'
+
 # PYTHONPATH
-sys.path.insert(0, os.environ['ROBUPY'] + '/development/tests/random')
-sys.path.insert(0, os.environ['ROBUPY'])
+sys.path.insert(0, ROBUPY_DIR + '/development/tests/random')
+sys.path.insert(0, ROBUPY_DIR)
 
 # project library
+from auxiliary import distribute_arguments
 from auxiliary import pair_evaluation
 from auxiliary import write_logging
 from auxiliary import get_baseline
+from auxiliary import check_grid
+
 from clean import cleanup
+from robupy import read
 
 # Make sure that fast evaluation of the model is possible
 from modules.auxiliary import compile_package
-compile_package('--fortran --optimization', True)
 
 ''' Main functions
 '''
 
 
-def grid_search(AMBIGUITY_GRID, COST_GRID, num_procs):
+def grid_search(AMBIGUITY_GRID, COST_GRID, num_procs, is_debug):
     """ Perform a grid search with all possible combinations.
     """
+    # Check input
+    check_grid(AMBIGUITY_GRID, COST_GRID)
     # Auxiliary objects
     num_eval_points = len(COST_GRID[AMBIGUITY_GRID[0]])
     num_ambi_points = len(AMBIGUITY_GRID)
     #  Starting with a clean slate
     cleanup()
+    # Process baseline initialization dictionary.
+    shutil.copy(SPEC_DIR + '/data_one.robupy.ini', 'model.robupy.ini')
+    init_dict = read('model.robupy.ini').get_attr('init_dict')
+    # For debugging purposes, the number of periods is set to three.
+    # TODO: Remove
+    init_dict['PROGRAM']['version'] = 'PYTHON'
+    if is_debug:
+        init_dict['BASICS']['periods'] = 3
     # Determine the baseline distribution
-    base_choices = get_baseline()
+    base_choices = get_baseline(init_dict)
     # Create the grid of the tasks. This collapses the hierarchical parallelism
     # into one level.
     tasks = []
@@ -48,10 +67,11 @@ def grid_search(AMBIGUITY_GRID, COST_GRID, num_procs):
         for point in COST_GRID[ambi]:
             tasks += [(ambi, point)]
     # Prepare the function for multiprocessing by modifying interface.
-    criterion_function = partial(pair_evaluation, base_choices)
+    criterion_function = partial(pair_evaluation, init_dict, base_choices)
     # Run multiprocessing module
-    p = Pool(num_procs)
-    rslts = p.map(criterion_function, tasks)
+    #p = Pool(num_procs)
+    #rslts = p.map(criterion_function, tasks)
+    rslts = [criterion_function(tasks[0])]
     # Mapping the results from each evaluation back to an interpretable array.
     # The first dimension corresponds to the level of ambiguity while the second
     # dimension refers to the evaluation of the other point.
@@ -66,48 +86,30 @@ def grid_search(AMBIGUITY_GRID, COST_GRID, num_procs):
     return final
 
 
-def check_grid(AMBIGUITY_GRID, COST_GRID):
-    """ Check the manual specification of the grid.
-    """
-    # Auxiliary objects
-    num_eval_points = len(COST_GRID[0])
-    # Check that points for all levels of ambiguity levels are defined
-    assert (set(COST_GRID.keys()) == set(AMBIGUITY_GRID))
-    # Check that the same number of points is requested. This ensures the
-    # symmetry of the evaluation grid for the parallelization request.
-    for key_ in AMBIGUITY_GRID:
-        assert (len(COST_GRID[key_]) == num_eval_points)
-    # Make sure that there are no duplicates in the grid.
-    for key_ in AMBIGUITY_GRID:
-        assert (len(COST_GRID[key_]) == len(set(COST_GRID[key_])))
-
-
-def distribute_arguments(parser):
-    """ Distribute command line arguments.
-    """
-    # Process command line arguments
-    args = parser.parse_args()
-
-    # Extract arguments
-    num_procs = args.num_procs
-
-    # Check arguments
-    assert (num_procs > 0)
-
-    # Finishing
-    return num_procs
-
 ''' Execution of module as script.
 '''
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(
-         description='Create indifference curve to illustrate modeling '
-                     'trade-offs.',
-         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+        description='Create indifference curve to illustrate modeling '
+        'trade-offs.', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('--procs', action='store', type=int, dest='num_procs',
          default=1, help='use multiple processors')
+
+    parser.add_argument('--debug', action='store_true', dest='is_debug',
+        help='only three periods')
+
+    # Process command line arguments
+    num_procs, is_debug = distribute_arguments(parser)
+
+    # Ensure that fast version of package is available. This is a little more
+    # complicated than usual as the compiler on acropolis does use other
+    # debugging flags and thus no debugging is requested.
+    if 'acropolis' in socket.gethostname():
+        compile_package('--fortran', True)
+    else:
+        compile_package('--fortran --debug', True)
 
     ############################################################################
     # Manual parametrization of grid search.
@@ -118,17 +120,21 @@ if __name__ == '__main__':
     COST_GRID[0.00] = [9.21, 9.22, 9.23, 9.24, 9.25]
     COST_GRID[0.01] = [9.21, 9.22, 9.23, 9.24, 9.25]
     COST_GRID[0.02] = [9.21, 9.22, 9.23, 9.24, 9.25]
+
+    AMBIGUITY_GRID = [0.00]
+
+    COST_GRID = dict()
+    COST_GRID[0.00] = [9.21]
+
     ############################################################################
     ############################################################################
 
-    # Process command line arguments
-    num_procs = distribute_arguments(parser)
     # Evaluate points on grid
-    evals = grid_search(AMBIGUITY_GRID, COST_GRID, num_procs)
+    evals = grid_search(AMBIGUITY_GRID, COST_GRID, num_procs, is_debug)
     # Write the information to file for visual inspection for now.
-    write_logging(AMBIGUITY_GRID, COST_GRID, evals)
+    #write_logging(AMBIGUITY_GRID, COST_GRID, evals)
     # Cleanup intermediate files, but keep the output with results.
-    cleanup(False)
+    #cleanup(False)
 
-    # TODO: ... CLEANUP AND BREAK GRAPH
+    # TODO: ... AND BREAK GRAPH
 
