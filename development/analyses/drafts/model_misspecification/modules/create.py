@@ -7,6 +7,8 @@ level of ambiguity and then fit a risk-only model.
 # standard library
 from scipy.optimize import minimize
 
+import pickle as pkl
+
 import argparse
 import socket
 import shutil
@@ -27,6 +29,7 @@ from auxiliary import solve_estimated_economy
 from auxiliary import distribute_arguments
 from auxiliary import solve_true_economy
 from auxiliary import criterion_function
+from auxiliary import prepare_directory
 
 from robupy.tests.random_init import print_random_dict
 from modules.auxiliary import compile_package
@@ -38,10 +41,13 @@ from robupy import read
 '''
 
 
-def run(level):
+def run(level, is_restart, is_debug):
     """ Inspect the implications of model misspecification for the estimates
     of psychic costs.
     """
+    # Auxiliary objects
+    name = '%03.3f' % level
+
     # Ensure that fast version of package is available. This is a little more
     # complicated than usual as the compiler on acropolis does use other
     # debugging flags and thus no debugging is requested.
@@ -50,17 +56,23 @@ def run(level):
     else:
         compile_package('--fortran --debug', True)
 
-    # Create a new directory with the level of ambiguity which houses the
-    # estimation process and copy a baseline initialization file.
-    name = '%03.3f' % level
-    if os.path.exists(name):
-        shutil.rmtree(name)
-    os.mkdir(name), os.chdir(name)
+    # Prepare the directory structure. We initialize a fresh directory named
+    # by the level of ambiguity in the baseline economy. If restart, then the
+    # existing directory is cleaned and just the information on the true
+    # economy is retained.
+    prepare_directory(is_restart, name)
+
+    # Now we move into the prepared subdirectory.
+    os.chdir(name)
     shutil.copy(SPEC_DIR + '/data_one.robupy.ini', 'model.robupy.ini')
 
     # Store the information about the true underlying data generating process in
-    # a subdirectory.
-    base_choices = solve_true_economy(level)
+    # a subdirectory and read in base choices. Or just read it in from a
+    # previous run.
+    if not is_restart:
+        solve_true_economy(level, is_debug)
+
+    base_choices = pkl.load(open('true/base_choices.pkl', 'rb'))
 
     # Prepare initialization file
     robupy_obj = read('model.robupy.ini')
@@ -68,8 +80,6 @@ def run(level):
 
     # Modification from baseline initialization file
     init_dict['AMBIGUITY']['level'] = 0.00
-    # TODO: Remove later
-    #init_dict['BASICS']['periods'] = 5
 
     # Finalize initialization file and solve model
     print_random_dict(init_dict)
@@ -77,7 +87,7 @@ def run(level):
     # Criterion function uses update. We optimize over the intercept in the
     # reward function.
     x0 = init_dict['EDUCATION']['int']
-    opt = minimize(criterion_function, x0, args=(base_choices,),
+    opt = minimize(criterion_function, x0, args=(base_choices, is_debug),
                    method="Nelder-Mead")
 
     # Write out some basic information to a file.
@@ -113,8 +123,14 @@ if __name__ == '__main__':
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('--level', action='store', type=float, dest='level',
-         default=0.00, help='level of ambiguity in true economy')
+        default=0.00, help='level of ambiguity in true economy')
 
-    level = distribute_arguments(parser)
+    parser.add_argument('--restart', action='store_true', dest='is_restart',
+        help='restart using existing results')
 
-    run(level)
+    parser.add_argument('--debug', action='store_true', dest='is_debug',
+        help='only five periods')
+
+    level, is_restart, is_debug = distribute_arguments(parser)
+
+    run(level, is_restart, is_debug)

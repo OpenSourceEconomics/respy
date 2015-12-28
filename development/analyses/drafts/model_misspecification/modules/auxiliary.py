@@ -3,10 +3,12 @@ misspecification.
 """
 
 # standard library
+import pickle as pkl
 import numpy as np
 
 import shutil
 import shlex
+import glob
 import os
 
 # project library
@@ -23,31 +25,67 @@ def distribute_arguments(parser):
     args = parser.parse_args()
 
     # Extract arguments
+    is_restart = args.is_restart
+    is_debug = args.is_debug
     level = args.level
 
     # Check arguments
     assert (isinstance(level, float))
     assert (level >= 0.00)
+    assert (is_restart in [True, False])
+    assert (is_debug in [True, False])
+
+    # Check for restart material
+    if is_restart:
+        assert (os.path.exists('%03.3f/true/base_choices.pkl' % level))
 
     # Finishing
-    return level
+    return level, is_restart, is_debug
 
 
-def solve_true_economy(level):
+def prepare_directory(is_restart, name):
+    # Deal with restarted estimations as well
+    if not is_restart:
+        if os.path.exists(name):
+            shutil.rmtree(name)
+
+        os.mkdir(name)
+    else:
+
+        os.chdir(name)
+
+        for obj in glob.glob('*'):
+            # Retain results from previous run
+            if 'true' in obj:
+                continue
+            # Delete files and directories
+            try:
+                shutil.rmtree(obj)
+            except OSError:
+                os.unlink(obj)
+
+        os.chdir('../')
+
+
+def solve_true_economy(level, is_debug):
 
     os.mkdir('true'), os.chdir('true')
     robupy_obj = read('../model.robupy.ini')
     init_dict = robupy_obj.get_attr('init_dict')
     init_dict['AMBIGUITY']['level'] = level
-    # TODO: Remove later
-    #init_dict['BASICS']['periods'] = 5
+
+    if is_debug:
+        init_dict['BASICS']['periods'] = 5
 
     print_random_dict(init_dict)
     shutil.move('test.robupy.ini', 'model.robupy.ini')
     base_choices = get_baseline('model.robupy.ini')
+
+    # Store material required for restarting an estimation run
+    pkl.dump(base_choices, open('base_choices.pkl', 'wb'))
+
     os.chdir('../')
-    # Finishing
-    return base_choices
+
 
 
 def get_baseline(name):
@@ -62,7 +100,7 @@ def get_baseline(name):
     return base_choices
 
 
-def criterion_function(point, base_choices):
+def criterion_function(point, base_choices, is_debug):
     """ Get the baseline distribution.
     """
     # Write out the modified baseline initialization.
@@ -70,8 +108,9 @@ def criterion_function(point, base_choices):
     init_dict = robupy_obj.get_attr('init_dict')
     # Set relevant values
     init_dict['EDUCATION']['int'] = float(point)
-    # TODO: Remove later
-    #init_dict['BASICS']['periods'] = 5
+
+    if is_debug:
+        init_dict['BASICS']['periods'] = 5
 
     # Write to file
     print_random_dict(init_dict)
@@ -127,7 +166,7 @@ def solve_estimated_economy(opt):
     # Update initialization file with result from estimation and write to disk
     init_dict['EDUCATION']['int'] = float(opt['x'])
     # TODO: Remove later
-    #init_dict['BASICS']['periods'] = 5
+    init_dict['BASICS']['periods'] = 5
 
     print_random_dict(init_dict)
 
