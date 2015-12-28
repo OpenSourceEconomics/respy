@@ -75,12 +75,13 @@ def solve_true_economy(level, init_dict, is_debug):
     init_dict['AMBIGUITY']['level'] = level
     if is_debug:
         init_dict['BASICS']['periods'] = 5
-    # Solve economy choices
+    # Solve economy
     solve(_get_robupy_obj(init_dict))
     # Get baseline choice distributions
     base_choices = get_period_choices()
     # Store material required for restarting an estimation run
     pkl.dump(base_choices, open('base_choices.pkl', 'wb'))
+    # Return to root directory
     os.chdir('../')
 
 
@@ -150,6 +151,7 @@ def solve_estimated_economy(opt, init_dict, is_debug):
 def _get_robupy_obj(init_dict):
     """ Get the object to pass in the solution method.
     """
+    # Initialize and process class
     robupy_obj = RobupyCls()
     robupy_obj.set_attr('init_dict', init_dict)
     robupy_obj.lock()
