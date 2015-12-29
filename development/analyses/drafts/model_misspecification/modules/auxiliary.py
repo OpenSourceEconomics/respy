@@ -3,6 +3,7 @@ misspecification.
 """
 
 # standard library
+import matplotlib.pylab as plt
 import pickle as pkl
 import numpy as np
 
@@ -14,6 +15,29 @@ import os
 # project library
 from robupy.clsRobupy import RobupyCls
 from robupy import solve
+
+
+def plot_model_misspecification(yvalues, xvalues):
+    """ Plot the results from the model misspecification exercise.
+    """
+
+    ax = plt.figure(figsize=(12, 8)).add_subplot(111)
+
+    ax.plot(yvalues, xvalues, '-k', color='red', linewidth=5)
+
+    # X axis
+    ax.set_xlabel('Level of Ambiguity', fontsize=16)
+
+    # Y axis
+    ax.set_ylabel('Intercept', fontsize=16)
+    ax.yaxis.get_major_ticks()[0].set_visible(False)
+
+    #bar_width = 0.35
+    #plt.xticks(np.arange(3) + bar_width, ('0.00', '0.01', '0.02'))
+
+    plt.savefig('rslts/model_misspecification.png', bbox_inches='tight',
+                format='png')
+
 
 
 def distribute_arguments(parser):
