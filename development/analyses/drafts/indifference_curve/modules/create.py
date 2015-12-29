@@ -120,8 +120,8 @@ if __name__ == '__main__':
         AMBIGUITY_GRID = [0.00, 0.01]
 
         COST_GRID = dict()
-        COST_GRID[0.00] = np.linspace(0, -10000, num=1)
-        COST_GRID[0.01] = np.linspace(0, -10000, num=1)
+        COST_GRID[0.00] = np.linspace(0, -10000, num=2)
+        COST_GRID[0.01] = np.linspace(0, -10000, num=2)
 
     else:
 
