@@ -16,7 +16,8 @@ import os
 def cleanup(all_=True):
     """ Cleanup during development.
     """
-    SAVE_FILES = ['modules', 'clean', 'create', 'model.robupy.ini', 'acropolis.pbs']
+    SAVE_FILES = ['modules', 'clean', 'create', 'acropolis.pbs',
+                  'auxiliary.py', 'clean.py', 'create.py']
 
     if all_ is False:
         SAVE_FILES += ['indifference.robupy.log']
@@ -43,4 +44,11 @@ def remove(names):
 ''' Main
 '''
 if __name__ =='__main__':
-    cleanup()
+
+    root_dir = os.getcwd()
+
+    for subdir, _, _ in os.walk('.'):
+
+        os.chdir(subdir)
+        cleanup()
+        os.chdir(root_dir)
