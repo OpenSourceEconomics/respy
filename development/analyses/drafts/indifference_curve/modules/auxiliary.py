@@ -126,19 +126,18 @@ def pair_evaluation(init_dict, base_choices, x):
     # Distribute input arguments
     ambi, point = x
     # Auxiliary objects
-    scaling = 100000.00
     name = get_random_string()
     # Move to random directory and get baseline model specification
     os.mkdir(name), os.chdir(name)
     # Set relevant values
     init_dict['AMBIGUITY']['level'] = ambi
     # Set relevant values
-    init_dict['EDUCATION']['int'] = float(point)*scaling
+    init_dict['EDUCATION']['int'] = float(point)
     # Solve requested model
     solve(_get_robupy_obj(init_dict))
     # Get choice probabilities
     alternative_choices = get_period_choices()
-    # Calculate squared mean-deviation of transition probabilites
+    # Calculate squared mean-deviation of transition probabilities
     crit = np.mean(np.sum((base_choices[:, :] - alternative_choices[:, :])**2))
     # Cleanup
     os.chdir('../'), shutil.rmtree(name)

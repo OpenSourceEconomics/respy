@@ -3,6 +3,7 @@ solve the model.
 """
 
 # standard library
+import logging
 import shlex
 import os
 
@@ -21,8 +22,8 @@ def solve(robupy_obj):
     # Antibugging
     assert (robupy_obj.get_status())
 
-    # Cleanup
-    cleanup()
+    # Cleanup and start logger
+    cleanup(), _start_logging_solution()
 
     # Distribute class attributes
     is_ambiguous = robupy_obj.get_attr('is_ambiguous')
@@ -65,6 +66,24 @@ def solve(robupy_obj):
 
 ''' Auxiliary functions
 '''
+
+
+def _start_logging_solution():
+    """ Initialize logging setup for the solution of the model.
+    """
+
+    formatter = logging.Formatter('  %(message)s \n')
+
+    logger = logging.getLogger('ROBUPY_SOLVE')
+
+    handler = logging.FileHandler('logging.robupy.sol.log', mode='w',
+                                  delay=False)
+
+    handler.setFormatter(formatter)
+
+    logger.setLevel(logging.INFO)
+
+    logger.addHandler(handler)
 
 
 def _summarize_ambiguity(robupy_obj):

@@ -38,6 +38,9 @@ def simulate(robupy_obj):
     # Antibugging
     assert (robupy_obj.get_status())
 
+    # Set up logging
+    _start_logging_simulation()
+
     # Distribute class attributes
     seed = robupy_obj.get_attr('seed_simulation')
 
@@ -120,6 +123,23 @@ def _wrapper_simulate_sample(robupy_obj, periods_eps_relevant):
 
 ''' Auxiliary functions
 '''
+
+
+def _start_logging_simulation():
+    """ Start logging of simulation steps.
+    """
+    formatter = logging.Formatter('  %(message)s \n')
+
+    logger = logging.getLogger('ROBUPY_SIMULATE')
+
+    handler = logging.FileHandler('logging.robupy.sim.log', mode='w',
+                                  delay=False)
+
+    handler.setFormatter(formatter)
+
+    logger.setLevel(logging.INFO)
+
+    logger.addHandler(handler)
 
 
 def _check_dataset(data_frame, robupy_obj):

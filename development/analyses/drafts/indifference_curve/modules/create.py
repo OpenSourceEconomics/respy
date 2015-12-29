@@ -54,8 +54,6 @@ def grid_search(AMBIGUITY_GRID, COST_GRID, num_procs, is_debug):
     shutil.copy(SPEC_DIR + '/data_one.robupy.ini', 'model.robupy.ini')
     init_dict = read('model.robupy.ini').get_attr('init_dict')
     # For debugging purposes, the number of periods is set to three.
-    # TODO: Remove
-    init_dict['PROGRAM']['version'] = 'PYTHON'
     if is_debug:
         init_dict['BASICS']['periods'] = 3
     # Determine the baseline distribution
@@ -69,9 +67,8 @@ def grid_search(AMBIGUITY_GRID, COST_GRID, num_procs, is_debug):
     # Prepare the function for multiprocessing by modifying interface.
     criterion_function = partial(pair_evaluation, init_dict, base_choices)
     # Run multiprocessing module
-    #p = Pool(num_procs)
-    #rslts = p.map(criterion_function, tasks)
-    rslts = [criterion_function(tasks[0])]
+    p = Pool(num_procs)
+    rslts = p.map(criterion_function, tasks)
     # Mapping the results from each evaluation back to an interpretable array.
     # The first dimension corresponds to the level of ambiguity while the second
     # dimension refers to the evaluation of the other point.
@@ -114,17 +111,22 @@ if __name__ == '__main__':
     ############################################################################
     # Manual parametrization of grid search.
     ############################################################################
-    AMBIGUITY_GRID = [0.00, 0.01, 0.02]
+    if False:
 
-    COST_GRID = dict()
-    COST_GRID[0.00] = [9.21, 9.22, 9.23, 9.24, 9.25]
-    COST_GRID[0.01] = [9.21, 9.22, 9.23, 9.24, 9.25]
-    COST_GRID[0.02] = [9.21, 9.22, 9.23, 9.24, 9.25]
+        AMBIGUITY_GRID = [0.00, 0.01, 0.02]
 
-    AMBIGUITY_GRID = [0.00]
+        COST_GRID = dict()
+        COST_GRID[0.00] = [9.21, 9.22, 9.23, 9.24, 9.25]
+        COST_GRID[0.01] = [9.21, 9.22, 9.23, 9.24, 9.25]
+        COST_GRID[0.02] = [9.21, 9.22, 9.23, 9.24, 9.25]
 
-    COST_GRID = dict()
-    COST_GRID[0.00] = [9.21]
+    else:
+
+        AMBIGUITY_GRID = [0.00, 0.01]
+
+        COST_GRID = dict()
+        COST_GRID[0.00] = [9.22]
+        COST_GRID[0.01] = [9.22]
 
     ############################################################################
     ############################################################################
@@ -132,9 +134,9 @@ if __name__ == '__main__':
     # Evaluate points on grid
     evals = grid_search(AMBIGUITY_GRID, COST_GRID, num_procs, is_debug)
     # Write the information to file for visual inspection for now.
-    #write_logging(AMBIGUITY_GRID, COST_GRID, evals)
+    write_logging(AMBIGUITY_GRID, COST_GRID, evals)
     # Cleanup intermediate files, but keep the output with results.
-    #cleanup(False)
+    cleanup(False)
 
     # TODO: ... AND BREAK GRAPH
 
