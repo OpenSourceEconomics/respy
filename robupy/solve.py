@@ -23,7 +23,7 @@ def solve(robupy_obj):
     assert (robupy_obj.get_status())
 
     # Cleanup and start logger
-    cleanup(), _start_logging_solution()
+    cleanup(), _start_logging()
 
     # Distribute class attributes
     is_ambiguous = robupy_obj.get_attr('is_ambiguous')
@@ -62,7 +62,7 @@ def solve(robupy_obj):
         robupy_obj.store('solution.robupy.pkl')
 
     # Orderly shutdown of logging capability.
-    logging.shutdown()
+    _stop_logging()
 
     # Finishing
     return robupy_obj
@@ -71,7 +71,23 @@ def solve(robupy_obj):
 '''
 
 
-def _start_logging_solution():
+def _stop_logging():
+    """ Ensure orderly shutdown of logging capabilities.
+    """
+    # Collect all loggers for shutdown.
+    loggers = []
+    loggers += [logging.getLogger('ROBUPY_SOLVE')]
+    loggers += [logging.getLogger('ROBUPY_SIMULATE')]
+
+    # Close file handlers
+    for logger in loggers:
+        handlers = logger.handlers[:]
+        for handler in handlers:
+            handler.close()
+            logger.removeHandler(handler)
+
+
+def _start_logging():
     """ Initialize logging setup for the solution of the model.
     """
 
@@ -80,6 +96,18 @@ def _start_logging_solution():
     logger = logging.getLogger('ROBUPY_SOLVE')
 
     handler = logging.FileHandler('logging.robupy.sol.log', mode='w',
+                                  delay=False)
+
+    handler.setFormatter(formatter)
+
+    logger.setLevel(logging.INFO)
+
+    logger.addHandler(handler)
+
+
+    logger = logging.getLogger('ROBUPY_SIMULATE')
+
+    handler = logging.FileHandler('logging.robupy.sim.log', mode='w',
                                   delay=False)
 
     handler.setFormatter(formatter)

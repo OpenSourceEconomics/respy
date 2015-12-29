@@ -6,6 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="39b3d67a-e664-4cff-aba7-2a9ae5eaeb87" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/.idea/workspace.xml" afterPath="$PROJECT_DIR$/package/development/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/modules/auxiliary.py" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/modules/auxiliary.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/simulate.py" afterPath="$PROJECT_DIR$/package/robupy/simulate.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/solve.py" afterPath="$PROJECT_DIR$/package/robupy/solve.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../../../../structRobust/README" afterPath="$PROJECT_DIR$/../../../../structRobust/README" />
     </list>
@@ -46,7 +48,7 @@
         <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/modules/auxiliary.py">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="141" column="25" selection-start-line="141" selection-start-column="25" selection-end-line="141" selection-end-column="25" />
+              <caret line="114" column="23" selection-start-line="114" selection-start-column="23" selection-end-line="114" selection-end-column="23" />
               <folding>
                 <element signature="e#124#142#0" expanded="true" />
               </folding>
@@ -57,10 +59,22 @@
       <file leaf-file-name="solve.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/package/robupy/solve.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.24077046">
-              <caret line="63" column="22" selection-start-line="63" selection-start-column="22" selection-end-line="63" selection-end-column="22" />
+            <state vertical-scroll-proportion="0.9197432">
+              <caret line="88" column="0" selection-start-line="88" selection-start-column="0" selection-end-line="88" selection-end-column="0" />
               <folding>
                 <element signature="e#119#133#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="simulate.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/package/robupy/simulate.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="-12.903226">
+              <caret line="122" column="0" selection-start-line="122" selection-start-column="0" selection-end-line="122" selection-end-column="0" />
+              <folding>
+                <element signature="e#415#434#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -116,7 +130,6 @@
         <option value="$PROJECT_DIR$/package/robupy/read.py" />
         <option value="$PROJECT_DIR$/package/development/analyses/drafts/model_misspecification/modules/clean.py" />
         <option value="$PROJECT_DIR$/package/robupy/__init__.py" />
-        <option value="$PROJECT_DIR$/package/robupy/simulate.py" />
         <option value="$PROJECT_DIR$/package/development/analyses/drafts/model_misspecification/modules/graphs.py" />
         <option value="$PROJECT_DIR$/package/development/analyses/drafts/model_misspecification/acropolis.pbs" />
         <option value="$PROJECT_DIR$/package/development/analyses/drafts/model_misspecification/graphs" />
@@ -124,6 +137,7 @@
         <option value="$PROJECT_DIR$/package/development/analyses/drafts/model_misspecification/modules/auxiliary.py" />
         <option value="$PROJECT_DIR$/package/development/analyses/drafts/model_misspecification/modules/create.py" />
         <option value="$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/modules/create.py" />
+        <option value="$PROJECT_DIR$/package/robupy/simulate.py" />
         <option value="$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/modules/auxiliary.py" />
         <option value="$PROJECT_DIR$/package/robupy/solve.py" />
       </list>
@@ -1067,13 +1081,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/robupy/simulate.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="3.9708266">
-          <caret line="128" column="42" selection-start-line="128" selection-start-column="42" selection-end-line="128" selection-end-column="42" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/model_misspecification/modules/graphs.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -1145,17 +1152,27 @@
     <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/modules/auxiliary.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="141" column="25" selection-start-line="141" selection-start-column="25" selection-end-line="141" selection-end-column="25" />
+          <caret line="114" column="23" selection-start-line="114" selection-start-column="23" selection-end-line="114" selection-end-column="23" />
           <folding>
             <element signature="e#124#142#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/package/robupy/simulate.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-12.903226">
+          <caret line="122" column="0" selection-start-line="122" selection-start-column="0" selection-end-line="122" selection-end-column="0" />
+          <folding>
+            <element signature="e#415#434#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/package/robupy/solve.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.24077046">
-          <caret line="63" column="22" selection-start-line="63" selection-start-column="22" selection-end-line="63" selection-end-column="22" />
+        <state vertical-scroll-proportion="0.9197432">
+          <caret line="88" column="0" selection-start-line="88" selection-start-column="0" selection-end-line="88" selection-end-column="0" />
           <folding>
             <element signature="e#119#133#0" expanded="true" />
           </folding>
