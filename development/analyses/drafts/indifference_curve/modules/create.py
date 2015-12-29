@@ -111,22 +111,23 @@ if __name__ == '__main__':
     ############################################################################
     # Manual parametrization of grid search.
     ############################################################################
-    if False:
-
-        AMBIGUITY_GRID = [0.00, 0.01, 0.02]
-
-        COST_GRID = dict()
-        COST_GRID[0.00] = [9.21, 9.22, 9.23, 9.24, 9.25]
-        COST_GRID[0.01] = [9.21, 9.22, 9.23, 9.24, 9.25]
-        COST_GRID[0.02] = [9.21, 9.22, 9.23, 9.24, 9.25]
-
-    else:
+    if is_debug:
 
         AMBIGUITY_GRID = [0.00, 0.01]
 
         COST_GRID = dict()
-        COST_GRID[0.00] = [9.22]
-        COST_GRID[0.01] = [9.22]
+        COST_GRID[0.00] = np.linspace(0, -10000, num=1)
+        COST_GRID[0.01] = np.linspace(0, -10000, num=1)
+
+    else:
+
+        AMBIGUITY_GRID = [0.00, 0.01, 0.02, 0.03]
+
+        COST_GRID = dict()
+        COST_GRID[0.00] = np.linspace(0, -10000, num=21)
+        COST_GRID[0.01] = np.linspace(0, -10000, num=21)
+        COST_GRID[0.02] = np.linspace(0, -10000, num=21)
+        COST_GRID[0.03] = np.linspace(0, -10000, num=21)
 
     ############################################################################
     ############################################################################
@@ -137,6 +138,3 @@ if __name__ == '__main__':
     write_logging(AMBIGUITY_GRID, COST_GRID, evals)
     # Cleanup intermediate files, but keep the output with results.
     cleanup(False)
-
-    # TODO: ... AND BREAK GRAPH
-

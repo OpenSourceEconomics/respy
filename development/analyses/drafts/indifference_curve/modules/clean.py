@@ -41,8 +41,6 @@ def remove(names):
 
 ''' Main
 '''
-''' Main
-'''
 if __name__ =='__main__':
 
     root_dir = os.getcwd()
