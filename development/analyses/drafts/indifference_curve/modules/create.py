@@ -97,16 +97,20 @@ if __name__ == '__main__':
     parser.add_argument('--debug', action='store_true', dest='is_debug',
         help='only three periods')
 
+    parser.add_argument('--recompile', action='store_true', default=False,
+        dest='is_recompile', help='recompile package')
+
     # Process command line arguments
-    num_procs, is_debug = distribute_arguments(parser)
+    num_procs, is_recompile, is_debug = distribute_arguments(parser)
 
     # Ensure that fast version of package is available. This is a little more
     # complicated than usual as the compiler on acropolis does use other
     # debugging flags and thus no debugging is requested.
-    if 'acropolis' in socket.gethostname():
-        compile_package('--fortran', True)
-    else:
-        compile_package('--fortran --debug', True)
+    if is_recompile:
+        if 'acropolis' in socket.gethostname():
+            compile_package('--fortran', True)
+        else:
+            compile_package('--fortran --debug', True)
 
     ############################################################################
     # Manual parametrization of grid search.

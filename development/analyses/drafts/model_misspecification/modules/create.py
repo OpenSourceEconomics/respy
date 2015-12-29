@@ -118,6 +118,9 @@ if __name__ == '__main__':
     parser.add_argument('--restart', action='store_true', dest='is_restart',
         help='restart using existing results')
 
+    parser.add_argument('--recompile', action='store_true', default=False,
+        dest='is_recompile', help='recompile package')
+
     parser.add_argument('--debug', action='store_true', dest='is_debug',
         help='only five periods')
 
@@ -125,15 +128,17 @@ if __name__ == '__main__':
          default=1, help='use multiple processors')
 
     # Distribute attributes
-    levels, num_procs, is_restart, is_debug = distribute_arguments(parser)
+    levels, num_procs, is_restart, is_recompile, is_debug = \
+        distribute_arguments(parser)
 
     # Ensure that fast version of package is available. This is a little more
     # complicated than usual as the compiler on acropolis does use other
     # debugging flags and thus no debugging is requested.
-    if 'acropolis' in socket.gethostname():
-        compile_package('--fortran', True)
-    else:
-        compile_package('--fortran --debug', True)
+    if is_recompile:
+        if 'acropolis' in socket.gethostname():
+            compile_package('--fortran', True)
+        else:
+            compile_package('--fortran --debug', True)
 
     # Set up pool for processors for parallel execution.
     process_tasks = partial(run, is_restart, is_debug)

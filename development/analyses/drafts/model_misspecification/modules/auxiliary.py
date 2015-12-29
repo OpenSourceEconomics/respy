@@ -47,6 +47,7 @@ def distribute_arguments(parser):
     args = parser.parse_args()
 
     # Extract arguments
+    is_recompile = args.is_recompile
     is_restart = args.is_restart
     num_procs = args.num_procs
     is_debug = args.is_debug
@@ -56,6 +57,7 @@ def distribute_arguments(parser):
     assert (isinstance(levels, list))
     assert (np.all(levels) >= 0.00)
     assert (is_restart in [True, False])
+    assert (is_recompile in [True, False])
     assert (is_debug in [True, False])
     assert (isinstance(num_procs, int))
     assert (num_procs > 0)
@@ -66,7 +68,7 @@ def distribute_arguments(parser):
             assert (os.path.exists('%03.3f/true/base_choices.pkl' % level))
 
     # Finishing
-    return levels, num_procs, is_restart, is_debug
+    return levels, num_procs, is_restart, is_recompile, is_debug
 
 
 def prepare_directory(is_restart, name):

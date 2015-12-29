@@ -39,15 +39,17 @@ def distribute_arguments(parser):
     args = parser.parse_args()
 
     # Extract arguments
+    is_recompile = args.is_recompile
     num_procs = args.num_procs
     is_debug = args.is_debug
 
     # Check arguments
     assert (num_procs > 0)
     assert (is_debug in [True, False])
+    assert (is_recompile in [True, False])
 
     # Finishing
-    return num_procs, is_debug
+    return num_procs, is_recompile, is_debug
 
 
 def get_random_string(n=10):
