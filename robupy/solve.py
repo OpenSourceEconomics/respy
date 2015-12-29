@@ -61,6 +61,9 @@ def solve(robupy_obj):
     if store:
         robupy_obj.store('solution.robupy.pkl')
 
+    # Orderly shutdown of logging capability.
+    logging.shutdown()
+
     # Finishing
     return robupy_obj
 
