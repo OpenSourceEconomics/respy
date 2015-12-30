@@ -66,16 +66,16 @@ def write_logging(AMBIGUITY_GRID, COST_GRID, final):
     str_ = '''{0[0]:10.4f}     {0[1]:10.4f}\n'''
     # Write to file
     with open('indifference.robupy.log', 'w') as file_:
-        for i, ambi in enumerate(AMBIGUITY_GRID):
+        for ambi in AMBIGUITY_GRID:
             # Determine optimal point
-            parameter = str(COST_GRID[ambi][np.argmin(final[i,:])])
+            parameter = str(COST_GRID[ambi][np.argmin(final[ambi])])
             # Structure output
             file_.write('\n Ambiguity ' + str(ambi) + '  Parameter ' +
                         parameter + '\n\n')
             file_.write('     Point      Criterion \n\n')
             # Provide additional information about all checked values.
             for j, point in enumerate(COST_GRID[ambi]):
-                file_.write(str_.format([point, final[i, j]]))
+                file_.write(str_.format([point, final[ambi][j]]))
             file_.write('\n')
 
 

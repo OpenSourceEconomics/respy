@@ -18,7 +18,7 @@ def cleanup(all_=True):
                   'create.py', 'auxiliary.py']
 
     if all_ is False:
-        SAVE_FILES += ['indifference.robupy.log']
+        SAVE_FILES += ['indifference.robupy.log', 'indifference.robupy.pkl']
 
     for name in glob.glob('*'):
 
