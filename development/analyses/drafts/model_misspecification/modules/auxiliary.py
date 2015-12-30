@@ -169,10 +169,14 @@ def solve_estimated_economy(opt, init_dict, is_debug):
     if is_debug:
         init_dict['BASICS']['periods'] = 5
     # Solve the basic economy
-    solve(_get_robupy_obj(init_dict))
+    robupy_obj = solve(_get_robupy_obj(init_dict))
+    # Extract result
+    init_dict = robupy_obj.get_attr('init_dict')
+    rslt = init_dict['EDUCATION']['int']
     # Return to root dictionary
     os.chdir('../')
-
+    # Finishing
+    return rslt
 
 def _get_robupy_obj(init_dict):
     """ Get the object to pass in the solution method.

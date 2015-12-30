@@ -25,7 +25,7 @@ ROBUPY_DIR = os.environ['ROBUPY']
 CLIENT_DIR = '/home/eisenhauer/robustToolbox/package/development/analyses' \
              '/drafts/model_misspecification'
 KEY_DIR = '/home/peisenha/.ssh/id_rsa'
-RSLT_FILES = ['misspecification.robupy.log']
+RSLT_FILES = ['misspecification.robupy.pkl']
 
 HOST = os.path.dirname(os.path.realpath(__file__)).replace('modules', '')
 
@@ -108,14 +108,14 @@ def get_results(is_all):
             results += [candidate]
 
     # Get all material from the results directories.
-    for result in results:
-        os.mkdir(result), os.chdir(result), sftp.chdir(result)
-        if is_all:
+    for file_ in RSLT_FILES:
+        sftp.get(file_, file_)
+
+    if is_all:
+        for result in results:
+            os.mkdir(result), os.chdir(result), sftp.chdir(result)
             get_remote_material(sftp)
-        else:
-            for file_ in RSLT_FILES:
-                sftp.get(file_, file_)
-        sftp.chdir('../'), os.chdir('../')
+            sftp.chdir('../'), os.chdir('../')
 
     # Finishing
     sftp.close(), transport.close()

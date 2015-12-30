@@ -42,7 +42,7 @@ from robupy import read
 '''
 
 
-def run(is_restart, is_debug, level):
+def run(init_dict, is_restart, is_debug, level):
     """ Inspect the implications of model misspecification for the estimates
     of psychic costs.
     """
@@ -52,16 +52,9 @@ def run(is_restart, is_debug, level):
     # Prepare the directory structure. We initialize a fresh directory named
     # by the level of ambiguity in the baseline economy. If restart, then the
     # existing directory is cleaned and just the information on the true
-    # economy is retained.
+    # economy is retained. Finally, we move into the subdirectory.
     prepare_directory(is_restart, name)
-
-    # Now we move into the prepared subdirectory and obtain the parametrization
-    # of the baseline economies.
     os.chdir(name)
-    shutil.copy(SPEC_DIR + '/data_one.robupy.ini', 'model.robupy.ini')
-
-    # Process baseline initialization dictionary.
-    init_dict = read('model.robupy.ini').get_attr('init_dict')
 
     # Store the information about the true underlying data generating process in
     # a subdirectory and read in base choices. Or just read it in from a
@@ -93,15 +86,19 @@ def run(is_restart, is_debug, level):
         file_.write('    Message ' + opt['message'] + '\n\n')
 
     # Solve the estimated economy to compare
-    solve_estimated_economy(opt, init_dict, is_debug)
+    interpect = solve_estimated_economy(opt, init_dict, is_debug)
 
-    # Cleanup files generated during estimation
+    # Cleanup scratch files generated during estimation. Other useful
+    # material is retained in subdirectories.
     for file_ in glob.glob('*.robupy.*'):
         # Keep information about optimization
         if 'misspecification' in file_:
             continue
         os.unlink(file_)
     os.chdir('../')
+
+    # Finishing
+    return interpect
 
 ''' Execution of module as script.
 '''
@@ -131,6 +128,11 @@ if __name__ == '__main__':
     levels, num_procs, is_restart, is_recompile, is_debug = \
         distribute_arguments(parser)
 
+    # Read the baseline specification and obtain the initialization dictionary.
+    shutil.copy(SPEC_DIR + '/data_one.robupy.ini', 'model.robupy.ini')
+    init_dict = read('model.robupy.ini').get_attr('init_dict')
+    os.unlink('model.robupy.ini')
+
     # Ensure that fast version of package is available. This is a little more
     # complicated than usual as the compiler on acropolis does use other
     # debugging flags and thus no debugging is requested.
@@ -141,5 +143,14 @@ if __name__ == '__main__':
             compile_package('--fortran --debug', True)
 
     # Set up pool for processors for parallel execution.
-    process_tasks = partial(run, is_restart, is_debug)
-    Pool(num_procs).map(process_tasks, levels)
+    process_tasks = partial(run, init_dict, is_restart, is_debug)
+    intercepts = Pool(num_procs).map(process_tasks, levels)
+
+    # Restructure return arguments for better interpretability and further
+    # processing.
+    rslt = dict()
+    for i, level in enumerate(levels):
+        rslt[level] = intercepts[i]
+
+    # Store for further processing
+    pkl.dump(rslt, open('misspecification.robupy.pkl', 'wb'))
