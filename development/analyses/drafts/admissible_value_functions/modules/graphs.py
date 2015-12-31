@@ -7,8 +7,6 @@ of admissible value functions.
 import pickle as pkl
 
 import argparse
-import shutil
-import shlex
 import sys
 import os
 
@@ -28,28 +26,13 @@ from auxiliary import plot_admissible_values
 
 
 def create():
-    """ Create a visual representation of the results from the model
-    misspecification exercise.
+    """ Create a visual representation of all admissible value functions.
     """
     # Read results
     rslts = pkl.load(open('admissible.robupy.pkl', 'rb'))
 
-    # Prepare results for plotting, redo scaling
-    xvals= sorted(rslts.keys())
-
-    # TODO: Getting readdy
-#    rslts[0.00] = 0.00
-#    rslts[0.01] = -0.03
-#    rslts[0.02] = -0.05
-#    rslts[0.03] = -0.06
-
-#    yvals = []
-#    for value in xvals:
-#        yvals += [rslts[value] ]
-
     # Plot the results from the model misspecification exercise.
-    print(rslts)
-    plot_admissible_values()
+    plot_admissible_values(rslts)
 
 
 ''' Execution of module as script.

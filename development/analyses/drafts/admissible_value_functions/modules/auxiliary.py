@@ -14,54 +14,82 @@ from robupy.python.py.ambiguity import transform_disturbances_ambiguity
 from robupy.python.py.auxiliary import simulate_emax
 from robupy.clsRobupy import RobupyCls
 
+AMBIGUITY_GRID = [0.0, 0.01, 0.02]
+CHOICE_LIST = ['Occupation A', 'Occupation B', 'School', 'Home']
+BOUNDS_LIST = ['lower', 'upper']
 
-def _extract_results(level, choice, rslt, which):
 
-    subset = rslt[level]
-
-
-def plot_admissible_values():
+def _extract_results(level, choice, rslts, which):
+    """ Extract results from dictionary.
     """
-    """
+    # Antibugging
+    assert (level in AMBIGUITY_GRID)
+    assert (choice in CHOICE_LIST)
+    assert (which in BOUNDS_LIST)
 
-    ind = np.arange(3) + 0.125   # the x locations for the groups
-    width = 0.125           # the width of the bars
+    # Determine position in list
+    idx_choice = CHOICE_LIST.index(choice)
+    idx_bounds = BOUNDS_LIST.index(which)
+
+    # Finishing
+    return rslts[level][idx_choice][idx_bounds]
+
+
+def get_elements(choice, rslts):
+    """  Construct all elements required for the plot of admissible value
+    functions.
+    """
+    lower, upper = [], []
+
+    for which in BOUNDS_LIST:
+        rslt = []
+        for level in AMBIGUITY_GRID:
+            rslt += [_extract_results(level, choice, rslts, which)]
+
+        if which in ['upper']:
+            upper = np.array(rslt)
+        else:
+            lower = np.array(rslt)
+
+    # Calculate increments
+    increments = upper - lower
+
+    # Finishing
+    return upper, lower, increments
+
+
+def plot_admissible_values(rslts):
+    """ Plot all admissible value functions.
+    """
+    # Fine tuning parameters that allow to shift the box plots.
+    ind = np.arange(3) + 0.125
+    width = 0.125
+
+    # Initialize clean canvas
     ax = plt.figure(figsize=(12, 8)).add_subplot(111)
 
-    # First we plot all the lowest admissible values.
-    lower_values = [1200, 1200, 1200]
-    ax.bar(ind, lower_values, width, color='orange',
-           label='Occupation A')
-
-    increments = [0, 200, 200]
-    ax.bar(ind, increments, width, color='orange',
-           bottom=lower_values, hatch='//')
+    # Values of Occupation A
+    upper, lower, increments = get_elements('Occupation A', rslts)
+    ax.bar(ind, lower, width, color='orange', label='Occupation A')
+    ax.bar(ind, increments, width, color='orange', bottom=lower, hatch='//')
 
     # Values of Occupation B
-    lower_values = [1200, 1200, 1200]
-    ax.bar(ind + width * 1, lower_values, width, color='red',
-           label='Occupation B')
+    upper, lower, increments = get_elements('Occupation B', rslts)
+    ax.bar(ind + width * 1, lower, width, color='red', label='Occupation B')
+    ax.bar(ind + width * 1, increments, width, color='red', bottom=lower,
+           hatch='//')
 
-    increments = [0, 200, 200]
-    ax.bar(ind + width * 1, increments, width, color='red',
-           bottom=lower_values, hatch='//')
-
-    # Values of Schooling
-    lower_values = [1200, 1200, 1200]
-    ax.bar(ind + width * 2, lower_values, width, color='yellow',
-           label='School')
-
-    increments = [0, 200, 200]
-    ax.bar(ind + width * 2, increments, width, color='yellow',
-           bottom=lower_values, hatch='//')
+    # Values of School
+    upper, lower, increments = get_elements('School', rslts)
+    ax.bar(ind + width * 2, lower, width, color='yellow', label='School')
+    ax.bar(ind + width * 2, increments, width, color='yellow', bottom=lower,
+           hatch='//')
 
     # Values of Home
-    lower_values = [1200, 1200, 1200]
-    ax.bar(ind + width * 3, lower_values, width, color='blue', label='Home')
-
-    increments = [0, 200, 200]
-    ax.bar(ind + width * 3, increments, width, color='green',
-           bottom=lower_values, hatch='//')
+    upper, lower, increments = get_elements('Home', rslts)
+    ax.bar(ind + width * 3, lower, width, color='blue', label='Home')
+    ax.bar(ind + width * 3, increments, width, color='blue', bottom=lower,
+           hatch='//')
 
     # X Label
     ax.set_xlabel('Level of Ambiguity', fontsize=16)
@@ -73,10 +101,11 @@ def plot_admissible_values():
     # Y Label
     ax.set_ylabel('Expected Future Values', fontsize=16)
     ax.yaxis.get_major_ticks()[0].set_visible(False)
-    ax.set_ylim([0.0, 1700])
+    ax.set_ylim([340000, 380000])
 
-    ax.get_yaxis().set_major_formatter(matplotlib.ticker.FuncFormatter(lambda
-        x, p: format(int(x), ',')))
+    # Formatting of labels
+    func = matplotlib.ticker.FuncFormatter(lambda x, p: format(int(x), ','))
+    ax.get_yaxis().set_major_formatter(func)
 
     # Both Axes
     ax.tick_params(labelsize=16, direction='out', axis='both', top='off',
@@ -92,8 +121,7 @@ def plot_admissible_values():
     os.mkdir('rslts')
 
     # Store figure as *.png
-    plt.savefig('rslts/admissible_values.png', bbox_inches='tight',
-                format='png')
+    plt.savefig('rslts/admissible.png', bbox_inches='tight', format='png')
 
 
 def distribute_arguments(parser):
