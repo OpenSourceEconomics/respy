@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-""" This module contains the functions to plot the results from the model
-misspecification exercises.
+""" This module contains the functions to plot the results exploring the set
+of admissible value functions.
 """
 
 # standard library
@@ -20,7 +20,7 @@ SPEC_DIR = ROBUPY_DIR + '/development/analyses/restud/specifications'
 sys.path.insert(0, ROBUPY_DIR)
 
 # project library
-from auxiliary import plot_model_misspecification
+from auxiliary import plot_admissible_values
 
 
 ''' Core function
@@ -32,23 +32,24 @@ def create():
     misspecification exercise.
     """
     # Read results
-    rslts = pkl.load(open('misspecification.robupy.pkl', 'rb'))
+    rslts = pkl.load(open('admissible.robupy.pkl', 'rb'))
 
     # Prepare results for plotting, redo scaling
     xvals= sorted(rslts.keys())
 
     # TODO: Getting readdy
-    rslts[0.00] = 0.00
-    rslts[0.01] = -0.03
-    rslts[0.02] = -0.05
-    rslts[0.03] = -0.06
+#    rslts[0.00] = 0.00
+#    rslts[0.01] = -0.03
+#    rslts[0.02] = -0.05
+#    rslts[0.03] = -0.06
 
-    yvals = []
-    for value in xvals:
-        yvals += [rslts[value] * 100000.00]
+#    yvals = []
+#    for value in xvals:
+#        yvals += [rslts[value] ]
 
     # Plot the results from the model misspecification exercise.
-    plot_model_misspecification(yvals, xvals)
+    print(rslts)
+    plot_admissible_values()
 
 
 ''' Execution of module as script.

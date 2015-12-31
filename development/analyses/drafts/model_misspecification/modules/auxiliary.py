@@ -3,7 +3,11 @@ misspecification.
 """
 
 # standard library
+from scipy.interpolate import interp1d
+
 import matplotlib.pylab as plt
+import matplotlib
+
 import pickle as pkl
 import numpy as np
 
@@ -21,19 +25,27 @@ def plot_model_misspecification(yvalues, xvalues):
     """ Plot the results from the model misspecification exercise.
     """
 
-    ax = plt.figure(figsize=(12, 8)).add_subplot(111)
+    # Set up interpolation
+    f = interp1d(xvalues, yvalues, kind='cubic')
+    x_new = np.linspace(0.00, 0.03, num=41, endpoint=True)
 
-    ax.plot(yvalues, xvalues, '-k', color='red', linewidth=5)
+    # Initialize canvas and basic plot.
+    ax = plt.figure(figsize=(12, 8)).add_subplot(111)
+    ax.plot(x_new, f(x_new), '-k', color='red', linewidth=5)
+
+    # Both axes
+    ax.tick_params(labelsize=18, direction='out', axis='both', top='off',
+            right='off')
 
     # X axis
     ax.set_xlabel('Level of Ambiguity', fontsize=16)
+    plt.xticks([0.00, 0.01, 0.02, 0.03], [0.00, 0.01, 0.02, 0.03])
 
     # Y axis
     ax.set_ylabel('Intercept', fontsize=16)
     ax.yaxis.get_major_ticks()[0].set_visible(False)
-
-    #bar_width = 0.35
-    #plt.xticks(np.arange(3) + bar_width, ('0.00', '0.01', '0.02'))
+    ax.get_yaxis().set_major_formatter(matplotlib.ticker.FuncFormatter(lambda
+        x, p: format(int(x), ',')))
 
     plt.savefig('rslts/model_misspecification.png', bbox_inches='tight',
                 format='png')

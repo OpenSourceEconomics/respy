@@ -18,7 +18,7 @@ def cleanup(all_=True):
     """
     SAVE_FILES = ['modules', 'clean', 'create', 'acropolis.pbs',
                   'auxiliary.py', 'clean.py', 'create.py', 'update',
-                  'update.py']
+                  'update.py', 'graphs.py', 'graphs']
 
     if all_ is False:
         SAVE_FILES += ['indifference.robupy.log']
