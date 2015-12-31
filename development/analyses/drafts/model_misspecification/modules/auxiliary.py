@@ -26,8 +26,8 @@ def plot_model_misspecification(yvalues, xvalues):
     """
 
     # Set up interpolation
-    f = interp1d(xvalues, yvalues, kind='cubic')
-    x_new = np.linspace(0.00, 0.03, num=41, endpoint=True)
+    f = interp1d(xvalues, yvalues, kind='quadratic')
+    x_new = np.linspace(0.00, 0.02, num=41, endpoint=True)
 
     # Initialize canvas and basic plot.
     ax = plt.figure(figsize=(12, 8)).add_subplot(111)
@@ -38,18 +38,25 @@ def plot_model_misspecification(yvalues, xvalues):
             right='off')
 
     # X axis
+    ax.set_xlim([0.00, 0.02])
     ax.set_xlabel('Level of Ambiguity', fontsize=16)
-    plt.xticks([0.00, 0.01, 0.02, 0.03], [0.00, 0.01, 0.02, 0.03])
+    plt.xticks([0.00, 0.01, 0.02], [0.00, 0.01, 0.02])
 
     # Y axis
     ax.set_ylabel('Intercept', fontsize=16)
     ax.yaxis.get_major_ticks()[0].set_visible(False)
-    ax.get_yaxis().set_major_formatter(matplotlib.ticker.FuncFormatter(lambda
-        x, p: format(int(x), ',')))
 
-    plt.savefig('rslts/model_misspecification.png', bbox_inches='tight',
+    # Formatting with comma for thousands.
+    func = matplotlib.ticker.FuncFormatter(lambda x, p: format(int(x), ','))
+    ax.get_yaxis().set_major_formatter(func)
+
+    # Prepare directory structure
+    if os.path.exists('rslts'):
+        shutil.rmtree('rslts')
+    os.mkdir('rslts')
+
+    plt.savefig('rslts/misspecification.png', bbox_inches='tight',
                 format='png')
-
 
 
 def distribute_arguments(parser):

@@ -7,8 +7,6 @@ misspecification exercises.
 import pickle as pkl
 
 import argparse
-import shutil
-import shlex
 import sys
 import os
 
@@ -35,14 +33,7 @@ def create():
     rslts = pkl.load(open('misspecification.robupy.pkl', 'rb'))
 
     # Prepare results for plotting, redo scaling
-    xvals= sorted(rslts.keys())
-
-    # TODO: Getting readdy
-    rslts[0.00] = 0.00
-    rslts[0.01] = -0.03
-    rslts[0.02] = -0.05
-    rslts[0.03] = -0.06
-
+    xvals = sorted(rslts.keys())
     yvals = []
     for value in xvals:
         yvals += [rslts[value] * 100000.00]
