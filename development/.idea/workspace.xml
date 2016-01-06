@@ -6,11 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="39b3d67a-e664-4cff-aba7-2a9ae5eaeb87" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/.idea/workspace.xml" afterPath="$PROJECT_DIR$/package/development/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/uncertainty_quantification/acropolis.pbs" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/uncertainty_quantification/acropolis.pbs" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/uncertainty_quantification/modules/auxiliary.py" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/uncertainty_quantification/modules/auxiliary.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/uncertainty_quantification/modules/create.py" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/uncertainty_quantification/modules/create.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/uncertainty_quantification/modules/graphs.py" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/uncertainty_quantification/modules/graphs.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/uncertainty_quantification/modules/update.py" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/uncertainty_quantification/modules/update.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/admissible_value_functions/modules/update.py" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/admissible_value_functions/modules/update.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../../../../structRobust/README" afterPath="$PROJECT_DIR$/../../../../structRobust/README" />
     </list>
     <ignored path="robustToolbox.iws" />
