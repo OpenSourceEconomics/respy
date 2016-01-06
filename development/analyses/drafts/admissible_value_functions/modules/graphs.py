@@ -29,7 +29,7 @@ def create():
     """ Create a visual representation of all admissible value functions.
     """
     # Read results
-    rslts = pkl.load(open('admissible.robupy.pkl', 'rb'))
+    rslts = pkl.load(open('rslts/admissible_values.robupy.pkl', 'rb'))
 
     # Plot the results from the model misspecification exercise.
     plot_admissible_values(rslts)

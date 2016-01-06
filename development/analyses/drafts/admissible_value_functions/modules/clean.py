@@ -13,15 +13,12 @@ import os
 '''
 
 
-def cleanup(all_=True):
+def cleanup():
     """ Cleanup during development.
     """
     SAVE_FILES = ['modules', 'clean', 'create', 'acropolis.pbs',
                   'auxiliary.py', 'clean.py', 'create.py', 'update',
                   'update.py', 'graphs.py', 'graphs']
-
-    if all_ is False:
-        SAVE_FILES += ['indifference.robupy.log']
 
     for name in glob.glob('*'):
 
@@ -29,6 +26,7 @@ def cleanup(all_=True):
             pass
         else:
             remove(name)
+
 
 def remove(names):
     """ Remove files or directories.

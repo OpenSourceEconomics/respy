@@ -1,7 +1,16 @@
 #!/usr/bin/env python
 """ This module creates a graphical illustration of all admissible values.
-The idea is to use this to split the discussion between all admissible values
-and really making a decision.
+The idea is to show an agent that is in the second to last period and
+contemplating the next move. This is the last period where the future payoffs
+are potentially uncertain due to the ambiguity of the economic environment.
+If ambiguity is present, I run two optimization problems. First, as usual,
+I determine the worst-case outcome. Then I also calculate the best case
+outcome.
+
+
+I analyse the second to last period's choice problem as in this case there is
+no accumulation of worst-cse evaluations from later periods. The set of
+admissible values is always a superset.
 """
 
 # standard library
@@ -51,7 +60,7 @@ def run(init_dict, is_debug, ambiguity_level):
 
     # Auxiliary objects
     name = '%03.3f' % ambiguity_level
-    period, rslt = 1, []
+    rslt = []
 
     # Prepare directory structure
     os.mkdir(name), os.chdir(name)
@@ -62,6 +71,7 @@ def run(init_dict, is_debug, ambiguity_level):
     # Restrict number of periods for debugging purposes.
     if is_debug:
         init_dict['BASICS']['periods'] = 3
+        init_dict['PROGRAM']['version'] = 'PYTHON'
 
     # Solve the basic economy
     robupy_obj = solve(get_robupy_obj(init_dict))
@@ -69,6 +79,7 @@ def run(init_dict, is_debug, ambiguity_level):
     # Distribute objects from solution. These are then used to reproduce the
     # EMAX calculations from inside the toolbox.
     periods_payoffs_systematic = robupy_obj.get_attr('periods_payoffs_systematic')
+    states_number_period = robupy_obj.get_attr('states_number_period')
     mapping_state_idx = robupy_obj.get_attr('mapping_state_idx')
     periods_emax = robupy_obj.get_attr('periods_emax')
     is_ambiguous = robupy_obj.get_attr('is_ambiguous')
@@ -82,56 +93,97 @@ def run(init_dict, is_debug, ambiguity_level):
     delta = robupy_obj.get_attr('delta')
     level = robupy_obj.get_attr('level')
 
+    # Derived attributes
+    current_period = num_periods - 3
+    current_index = int(states_number_period[current_period]*0.5)
+    future_period = current_period + 1
+
+    # Extract the agent characteristics from baseline state and then collect
+    # the indicators for all admissible future states. I choose the following
+    # order throughout the project: Occupation A, Occupation B, School, Home.
+    exp_A, exp_B, edu, edu_lagged = states_all[current_period, current_index, :]
+
+    future_indices = []
+    future_indices += [mapping_state_idx[future_period, exp_A + 1, exp_B, edu,
+                                           0]]
+    future_indices += [mapping_state_idx[future_period, exp_A, exp_B + 1, edu,
+                                           0]]
+    future_indices += [mapping_state_idx[future_period, exp_A, exp_B, edu + 1,
+                                           1]]
+    future_indices += [mapping_state_idx[future_period, exp_A, exp_B, edu,
+                                           0]]
+
+    # Construct current ex post payoffs. I choose these manually to generate
+    # a relevant, interesting choice problem.
+    payoff_systematic_current = \
+        periods_payoffs_systematic[current_period, current_index, :]
+
+    payoffs_ex_post_current = []
+    for j in [0, 1]:
+        payoffs_ex_post_current += [payoff_systematic_current[j] * np.exp(0)]
+    for j in [2, 3]:
+        payoffs_ex_post_current += [payoff_systematic_current[j] + 0]
+
     # Iterate over the four alternative decisions for an agent at the
     # beginning of a decision tree.
-    for state_indicator in range(4):
+    for future_index, state_indicator in enumerate(future_indices):
+        # Extract systematic components for the future components as these
+        # are relevant for the EMAX calculation.
+        payoffs_systematic_future = \
+            periods_payoffs_systematic[future_period, state_indicator, :]
         # Determine the maximum and minimum value of the value function.
         bounds = []
         for sign in [1, -1]:
-            # Extract subsets of information
-            payoffs_systematic = periods_payoffs_systematic[period, state_indicator, :]
+            # Select disturbances for next period, which are relevant for
+            # the EMAX calculation.
             periods_eps_relevant = create_disturbances(robupy_obj, False)
-            eps_relevant = periods_eps_relevant[period, :, :]
-
+            eps_relevant = periods_eps_relevant[future_period, :, :]
             # In the risk-only case, no modification of the distribution of
-            # the disturbances is required. This case is only handled in
-            # this script for benchmarking purposes.
+            # the disturbances is required.
             eps_relevant_emax = eps_relevant
-
             # In the case of ambiguity, the upper and lower bounds for the
             # value function are required.
             if is_ambiguous:
                 # Set up the arguments for the optimization request.
-                args = (num_draws, eps_relevant, period, state_indicator,
-                    payoffs_systematic, edu_max, edu_start, mapping_state_idx,
-                    states_all, num_periods, periods_emax, delta, sign)
-                constraints = _prep_kl(shocks, level)
                 x0, options = [0.0, 0.0], dict()
                 options['maxiter'] = 100000000
+                constraints = _prep_kl(shocks, level)
+                args = (num_draws, eps_relevant, future_period, state_indicator,
+                        payoffs_systematic_future, edu_max, edu_start,
+                        mapping_state_idx, states_all, num_periods,
+                        periods_emax, delta, sign)
                 # Run the optimization to determine upper and lower bound
                 # depending on the sign variable.
-                opt = minimize(criterion, x0, args, method='SLSQP', options=options,
-                            constraints=constraints)
+                opt = minimize(criterion, x0, args, method='SLSQP',
+                        options=options, constraints=constraints)
                 # Check success
                 assert (opt['success'] == True)
                 # Transform relevant disturbances according to results from
                 # optimization step.
-                eps_relevant_emax = transform_disturbances_ambiguity(eps_relevant, opt['x'])
+                eps_relevant_emax = \
+                    transform_disturbances_ambiguity(eps_relevant, opt['x'])
 
             # Back out the relevant EMAX using the results from the
             # optimization.
-            emax_simulated, _, _ = simulate_emax(num_periods, num_draws, period,
-                state_indicator, eps_relevant_emax, payoffs_systematic, edu_max,
-                edu_start, periods_emax, states_all, mapping_state_idx, delta)
+            emax_simulated, _, _ = simulate_emax(num_periods, num_draws,
+                future_period, state_indicator, eps_relevant_emax,
+                payoffs_systematic_future, edu_max, edu_start, periods_emax,
+                states_all, mapping_state_idx, delta)
+
+            # Construct total payoffs of admissible future states.
+            total_payoffs = payoffs_ex_post_current[future_index] + \
+                                delta * emax_simulated
+
             # Collect results in tuples for each level of ambiguity.
-            bounds += [emax_simulated]
-            # This is a manual test as the results should be identical for
-            # risk-only case and the worst-case ambiguity evaluation. They
-            # will be different if the best-case evaluation is requested.
-            if sign == 1 or ambiguity_level == 0.0:
-                if version == 'PYTHON':
-                    np.testing.assert_almost_equal(emax_simulated,
-                        periods_emax[period, state_indicator])
+            bounds += [total_payoffs]
+
+            # This is a manual test for the EMAX calculations. These should
+            # be identical for the standard worst-case evaluation. Only
+            # working for the PYTHON implementation as the disturbances need
+            # ot be aligned.
+            if sign == 1 and version == 'PYTHON':
+                np.testing.assert_almost_equal(emax_simulated,
+                    periods_emax[future_period, state_indicator])
 
         # Collect bounds
         rslt += [bounds]
@@ -194,7 +246,8 @@ if __name__ == '__main__':
         rslt[level] = bounds[i]
 
     # Store for further processing
-    pkl.dump(rslt, open('admissible.robupy.pkl', 'wb'))
+    os.mkdir('rslts')
+    pkl.dump(rslt, open('rslts/admissible_values.robupy.pkl', 'wb'))
 
 
 

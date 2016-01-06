@@ -115,13 +115,9 @@ def plot_admissible_values(rslts):
     plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.10),
         fancybox=False, frameon=False, shadow=False, ncol=4, fontsize=20)
 
-    # Create a results directory to store the resulting graph.
-    if os.path.exists('rslts'):
-        shutil.rmtree('rslts')
-    os.mkdir('rslts')
-
     # Store figure as *.png
-    plt.savefig('rslts/admissible.png', bbox_inches='tight', format='png')
+    plt.savefig('rslts/admissible_values.png', bbox_inches='tight',
+                format='png')
 
 
 def distribute_arguments(parser):
