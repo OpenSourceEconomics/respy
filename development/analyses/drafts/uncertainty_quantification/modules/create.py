@@ -26,7 +26,6 @@ sys.path.insert(0, ROBUPY_DIR)
 from robupy import solve
 from robupy import read
 
-
 from modules.auxiliary import compile_package
 
 from auxiliary import distribute_arguments
@@ -103,9 +102,6 @@ if __name__ == '__main__':
         else:
             compile_package('--fortran --debug', True)
 
-    # We express the uncertainty relative to a risk only model.
-    baseline = run(is_debug, 0.00)
-
     # Set up pool for processors for parallel execution.
     process_tasks = partial(run, is_debug)
     rslts = Pool(num_procs).map(process_tasks, levels)
@@ -113,7 +109,6 @@ if __name__ == '__main__':
     # Restructure return arguments for better interpretability and further
     # processing. Add the baseline number.
     rslt = dict()
-    rslt[0.0] = baseline
     for i, level in enumerate(levels):
         rslt[level] = rslts[i]
 
