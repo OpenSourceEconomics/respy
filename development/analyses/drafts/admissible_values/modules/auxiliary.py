@@ -101,7 +101,7 @@ def plot_admissible_values(rslts):
     # Y Label
     ax.set_ylabel('Expected Future Values', fontsize=16)
     ax.yaxis.get_major_ticks()[0].set_visible(False)
-    ax.set_ylim([340000, 380000])
+    ax.set_ylim([50000, 100000])
 
     # Formatting of labels
     func = matplotlib.ticker.FuncFormatter(lambda x, p: format(int(x), ','))

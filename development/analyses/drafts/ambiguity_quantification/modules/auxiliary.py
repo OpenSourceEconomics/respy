@@ -8,10 +8,10 @@ import numpy as np
 from robupy.clsRobupy import RobupyCls
 
 # standard library
-import matplotlib
-matplotlib.use('Agg')
-
 import matplotlib.pylab as plt
+import matplotlib
+
+matplotlib.use('Agg')
 
 
 def plot_lifetime_value(rslt):
@@ -25,21 +25,24 @@ def plot_lifetime_value(rslt):
     for key_ in [0.00, 0.01, 0.02]:
         response += [rslt[key_]]
 
-    ax = plt.figure(figsize=(1.05*12, 1.05*8)).add_subplot(111)
+    width = 0.125
 
-    bar_width = 0.35
-    plt.bar(np.arange(3) + 0.5 * bar_width, response, bar_width,
-        color=['red', 'orange', 'blue'])
+    plt.bar(0.5 * width, response[0], width, color='red')
+
+    plt.bar(2.5 * width, response[1], width, color='orange')
+
+    plt.bar(4.5 * width, response[2], width, color='blue')
 
     # Both Axes
     ax.tick_params(labelsize=16, direction='out', axis='both', top='off',
         right='off')
 
     # x axis
+    ax.set_xlim([0, 6 * width])
     ax.set_xlabel('Level of Ambiguity', fontsize=16)
 
     # y axis
-    ax.set_ylim([0, 380000])
+    ax.set_ylim([330000, 370000])
     ax.yaxis.get_major_ticks()[0].set_visible(False)
     ax.set_ylabel('Expected Lifetime Value', fontsize=16)
 
@@ -47,11 +50,11 @@ def plot_lifetime_value(rslt):
     func = matplotlib.ticker.FuncFormatter(lambda x, p: format(int(x), ','))
     ax.get_yaxis().set_major_formatter(func)
 
-    plt.xticks(np.arange(3) + bar_width, ('0.00', '0.01', '0.02'))
+    ax.set_xticks((1.0 * width, 3.0 * width, 5.0 * width))
+    ax.set_xticklabels(('0.00', '0.01', '0.02'))
 
     plt.savefig('rslts/ambiguity_quantification.png', bbox_inches='tight',
                 format='png')
-
 
 
 def get_robupy_obj(init_dict):
