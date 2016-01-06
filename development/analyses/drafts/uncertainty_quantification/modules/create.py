@@ -55,6 +55,9 @@ def run(is_debug, ambiguity_level):
     # Get the EMAX for further processing and extract relevant information.
     total_value = robupy_obj.get_attr('periods_emax')[0, 0]
 
+    # Back to root directory
+    os.chdir('../')
+
     # Finishing
     return total_value
 
