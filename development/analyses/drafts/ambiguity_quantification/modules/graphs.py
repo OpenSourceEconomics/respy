@@ -25,10 +25,10 @@ from auxiliary import plot_lifetime_value
 
 
 def create():
-    """ Create a visual representation of all admissible value functions.
+    """ Create a visual representation of ambiguity quantification
     """
     # Read results
-    rslts = pkl.load(open('rslts/uncertainty_quantification.robupy.pkl', 'rb'))
+    rslts = pkl.load(open('rslts/ambiguity_quantification.robupy.pkl', 'rb'))
 
     # Plot the results from the model misspecification exercise.
     plot_lifetime_value(rslts)
@@ -41,7 +41,7 @@ def create():
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(
-        description='Assess implications of model misspecification.',
+        description='Assess ambiguity quantification.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     create()

@@ -49,7 +49,7 @@ def plot_lifetime_value(rslt):
 
     plt.xticks(np.arange(3) + bar_width, ('0.00', '0.01', '0.02'))
 
-    plt.savefig('rslts/uncertainty_quantification.png', bbox_inches='tight',
+    plt.savefig('rslts/ambiguity_quantification.png', bbox_inches='tight',
                 format='png')
 
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" This script attempts to express the uncertainty quantification.
+""" This script attempts to express the ambiguity quantification.
 """
 
 # standard library
@@ -114,5 +114,5 @@ if __name__ == '__main__':
 
     # Store for further processing
     os.mkdir('rslts')
-    pkl.dump(rslt, open('rslts/uncertainty_quantification.robupy.pkl', 'wb'))
+    pkl.dump(rslt, open('rslts/ambiguity_quantification.robupy.pkl', 'wb'))
 

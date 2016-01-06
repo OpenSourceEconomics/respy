@@ -5,8 +5,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="39b3d67a-e664-4cff-aba7-2a9ae5eaeb87" name="Default" comment="">
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/uncertainty_quantification/acropolis.pbs" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_quantification/acropolis.pbs" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/uncertainty_quantification/clean" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_quantification/clean" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/uncertainty_quantification/create" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_quantification/create" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/uncertainty_quantification/graphs" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_quantification/graphs" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/uncertainty_quantification/modules/auxiliary.py" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_quantification/modules/auxiliary.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/uncertainty_quantification/modules/clean.py" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_quantification/modules/clean.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/uncertainty_quantification/modules/create.py" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_quantification/modules/create.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/uncertainty_quantification/modules/graphs.py" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_quantification/modules/graphs.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/uncertainty_quantification/modules/update.py" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_quantification/modules/update.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/uncertainty_quantification/update" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_quantification/update" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/.idea/workspace.xml" afterPath="$PROJECT_DIR$/package/development/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/admissible_value_functions/modules/update.py" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/admissible_value_functions/modules/update.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../../../../structRobust/README" afterPath="$PROJECT_DIR$/../../../../structRobust/README" />
     </list>
     <ignored path="robustToolbox.iws" />
@@ -32,38 +41,12 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="update.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/uncertainty_quantification/modules/update.py">
+      <file leaf-file-name="update.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_quantification/modules/update.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="119" column="24" selection-start-line="119" selection-start-column="24" selection-end-line="119" selection-end-column="24" />
-              <folding>
-                <element signature="e#99#123#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="create.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/uncertainty_quantification/modules/create.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.64003104">
-              <caret line="33" column="0" selection-start-line="33" selection-start-column="0" selection-end-line="33" selection-end-column="0" />
-              <folding>
-                <element signature="e#114#146#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="auxiliary.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/uncertainty_quantification/modules/auxiliary.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="35" column="20" selection-start-line="35" selection-start-column="20" selection-end-line="35" selection-end-column="20" />
-              <folding>
-                <element signature="e#118#136#0" expanded="true" />
-              </folding>
+            <state vertical-scroll-proportion="0.33306837">
+              <caret line="33" column="8" selection-start-line="33" selection-start-column="5" selection-end-line="33" selection-end-column="8" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -77,11 +60,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/package/robupy/python/py/risk.py" />
-        <option value="$PROJECT_DIR$/package/development/analyses/restud/simulations/robupy/clean" />
-        <option value="$PROJECT_DIR$/package/development/working/assess_approximation.py" />
-        <option value="$PROJECT_DIR$/package/development/analyses/restud/tables/assess_approximation.py" />
-        <option value="$PROJECT_DIR$/package/development/analyses/restud/tables/model.robupy.ini" />
         <option value="$PROJECT_DIR$/package/development/working/model.robupy.ini" />
         <option value="$USER_HOME$/robustToolbox/package/development/working/ambiguity_interpolation.py" />
         <option value="$PROJECT_DIR$/package/development/analyses/drafts/assess_interpolation/driver.py" />
@@ -128,6 +106,11 @@
         <option value="$PROJECT_DIR$/package/development/analyses/drafts/uncertainty_quantification/modules/auxiliary.py" />
         <option value="$PROJECT_DIR$/package/development/analyses/drafts/uncertainty_quantification/modules/update.py" />
         <option value="$PROJECT_DIR$/package/development/analyses/drafts/uncertainty_quantification/modules/create.py" />
+        <option value="$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_quantification/modules/create.py" />
+        <option value="$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_quantification/modules/graphs.py" />
+        <option value="$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_quantification/acropolis.pbs" />
+        <option value="$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_quantification/modules/auxiliary.py" />
+        <option value="$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_quantification/modules/update.py" />
       </list>
     </option>
   </component>
@@ -330,8 +313,34 @@
               <option name="myItemId" value="drafts" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
+          </PATH>
+          <PATH>
             <PATH_ELEMENT>
-              <option name="myItemId" value="uncertainty_quantification" />
+              <option name="myItemId" value="robustToolbox" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="robustToolbox" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="package" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="development" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="analyses" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="drafts" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="ambiguity_quantification" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -361,37 +370,11 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="uncertainty_quantification" />
+              <option name="myItemId" value="ambiguity_quantification" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="modules" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="robustToolbox" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="robustToolbox" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="package" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="development" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="analyses" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="drafts" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -732,13 +715,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/admissible_value_functions/clean">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-1.0064205">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/clean">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -931,13 +907,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/admissible_value_functions/modules/update.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="107" column="34" selection-start-line="107" selection-start-column="34" selection-end-line="107" selection-end-column="34" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/model_misspecification/create">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -1039,87 +1008,51 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/admissible_value_functions/modules/clean.py">
+    <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_quantification/modules/graphs.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.4375485">
-          <caret line="29" column="0" selection-start-line="29" selection-start-column="0" selection-end-line="29" selection-end-column="0" />
+        <state vertical-scroll-proportion="-13.709678">
+          <caret line="21" column="0" selection-start-line="21" selection-start-column="0" selection-end-line="21" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/admissible_value_functions/modules/auxiliary.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.8060512">
-          <caret line="116" column="0" selection-start-line="116" selection-start-column="0" selection-end-line="116" selection-end-column="0" />
-          <folding>
-            <element signature="e#133#150#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/admissible_value_functions/modules/create.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.8211447">
-          <caret line="249" column="31" selection-start-line="249" selection-start-column="31" selection-end-line="249" selection-end-column="31" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/admissible_value_functions/modules/graphs.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.52366173">
-          <caret line="31" column="33" selection-start-line="31" selection-start-column="33" selection-end-line="31" selection-end-column="33" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/uncertainty_quantification/modules/clean.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.24359968">
-          <caret line="20" column="41" selection-start-line="20" selection-start-column="41" selection-end-line="20" selection-end-column="41" />
-          <folding>
-            <element signature="e#92#105#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/uncertainty_quantification/modules/graphs.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.64003104">
-          <caret line="33" column="23" selection-start-line="33" selection-start-column="23" selection-end-line="33" selection-end-column="23" />
-          <folding>
-            <element signature="e#105#125#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/uncertainty_quantification/modules/auxiliary.py">
+    <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_quantification/clean">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="35" column="20" selection-start-line="35" selection-start-column="20" selection-end-line="35" selection-end-column="20" />
-          <folding>
-            <element signature="e#118#136#0" expanded="true" />
-          </folding>
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/uncertainty_quantification/modules/update.py">
+    <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_quantification/modules/auxiliary.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="119" column="24" selection-start-line="119" selection-start-column="24" selection-end-line="119" selection-end-column="24" />
-          <folding>
-            <element signature="e#99#123#0" expanded="true" />
-          </folding>
+        <state vertical-scroll-proportion="0.43243244">
+          <caret line="51" column="32" selection-start-line="51" selection-start-column="32" selection-end-line="51" selection-end-column="32" />
+          <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/uncertainty_quantification/modules/create.py">
+    <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_quantification/acropolis.pbs">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.64003104">
-          <caret line="33" column="0" selection-start-line="33" selection-start-column="0" selection-end-line="33" selection-end-column="0" />
-          <folding>
-            <element signature="e#114#146#0" expanded="true" />
-          </folding>
+        <state vertical-scroll-proportion="0.23273855">
+          <caret line="12" column="76" selection-start-line="12" selection-start-column="76" selection-end-line="12" selection-end-column="76" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_quantification/modules/create.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.01939488">
+          <caret line="1" column="49" selection-start-line="1" selection-start-column="49" selection-end-line="1" selection-end-column="49" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_quantification/modules/update.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.33306837">
+          <caret line="33" column="8" selection-start-line="33" selection-start-column="5" selection-end-line="33" selection-end-column="8" />
+          <folding />
         </state>
       </provider>
     </entry>
