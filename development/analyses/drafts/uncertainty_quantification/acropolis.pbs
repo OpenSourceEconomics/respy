@@ -11,4 +11,4 @@ cd $PBS_O_WORKDIR
 source $HOME/.local/bin/virtualenvwrapper.sh
 workon robustToolbox3
 python -O /home/eisenhauer/robustToolbox/package/development/analyses/drafts/uncertainty_quantification/create \
-    --level 0.01 0.02 0.03 --procs 3
+    --level 0.00 0.01 0.02 --procs 3
