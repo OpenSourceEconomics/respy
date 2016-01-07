@@ -3,11 +3,16 @@
 """
 
 # standard library
+from stat import S_ISDIR
+
 import argparse
 import paramiko
 import socket
 import sys
 import os
+
+# project library
+from clean import cleanup
 
 # Check for Python 3 and host
 if not (sys.version_info[0] == 3):
@@ -15,16 +20,53 @@ if not (sys.version_info[0] == 3):
 if not socket.gethostname() == 'pontos':
     raise AssertionError('Please use @pontos as host')
 
-
-from auxiliary import get_remote_material
-
 # module-wide variables
+ROBUPY_DIR = os.environ['ROBUPY']
 CLIENT_DIR = '/home/eisenhauer/robustToolbox/package/development/analyses' \
              '/robust/simulations/policy'
 KEY_DIR = '/home/peisenha/.ssh/id_rsa'
 
+HOST = os.path.dirname(os.path.realpath(__file__)).replace('modules', '')
+
+# Set baseline working directory on HOST
+os.chdir(HOST)
+
 ''' Functions
 '''
+
+
+def isdir(path, sftp):
+    """ Check whether path is a directory.
+    """
+    try:
+        return S_ISDIR(sftp.stat(path).st_mode)
+    except IOError:
+        return False
+
+
+def _get_remote_material(sftp):
+    """ Get all recursively all material from remote SFTP server. The
+    function checks for all material in the current remote directory,
+    determines the status of file or directory. Files are downloaded
+    directly, while directories are iterated through.
+    """
+    for candidate in sftp.listdir('.'):
+        # Determine status of directory or file
+        is_directory = isdir(candidate, sftp)
+        # Separate Treatment of files and directories
+        if not is_directory:
+            sftp.get(candidate, candidate)
+        else:
+            os.mkdir(candidate), os.chdir(candidate), sftp.chdir(candidate)
+            _get_remote_material(sftp)
+            sftp.chdir('../'), os.chdir('../')
+
+
+def get_directory(candidate, sftp):
+    """ Copy directory from remote to local machine.
+    """
+    os.mkdir(candidate), os.chdir(candidate), sftp.chdir(candidate)
+    _get_remote_material(sftp), sftp.chdir('../'), os.chdir('../')
 
 
 def distribute_arguments(parser):
@@ -47,33 +89,40 @@ def get_results(is_all):
     """ Get results from server.
     """
     # Starting with clean slate
-    os.system('./clean')
+    cleanup()
 
     # Read private keys
     key = paramiko.RSAKey.from_private_key_file(KEY_DIR)
 
     # Open a transport
     transport = paramiko.Transport(('acropolis.uchicago.edu', 22))
-    transport.connect(username='eisenhauer', pkey=key )
+    transport.connect(username='eisenhauer', pkey=key)
 
     # Initialize SFTP connection
     sftp = paramiko.SFTPClient.from_transport(transport)
 
     # Get files
-    sftp.chdir(CLIENT_DIR + '/rslts')
+    sftp.chdir(CLIENT_DIR)
 
-    # Enter results container
-    os.mkdir('rslts'), os.chdir('rslts')
+    # Get results directory, this is always downloaded.
+    get_directory('rslts', sftp)
 
+    # If requested, also download all intermediate results as well.
     if is_all:
-        get_remote_material(sftp)
-    else:
-        sftp.get('policy_responsiveness.pkl', 'policy_responsiveness.pkl')
+        for candidate in sftp.listdir('.'):
+            # Only directories are even potentially interesting.
+            if not isdir(candidate, sftp):
+                continue
+            # Check if directory name can be transformed into a float.
+            try:
+                float(candidate)
+            except ValueError:
+                continue
+            # Download if
+            get_directory(candidate, sftp)
 
     # Finishing
-    sftp.close()
-
-    transport.close()
+    sftp.close(), transport.close()
 
 
 ''' Execution of module as script.
