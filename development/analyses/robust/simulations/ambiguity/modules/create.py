@@ -77,17 +77,11 @@ def create_results(init_dict, num_procs, grid):
     else:
         grid = np.linspace(start=grid[0], stop=grid[1], num=int(grid[2]))
 
-    # Prepare directory
-    os.mkdir('rslts')
-
-    os.chdir('rslts')
-
     # Solve numerous economies
     process_tasks = partial(solve_ambiguous_economy, init_dict, is_debug)
     p = Pool(num_procs)
     p.map(process_tasks, grid)
 
-    os.chdir('../')
 
     # Cleanup
     for file_ in glob.glob('*.log'):
@@ -133,6 +127,9 @@ if __name__ == '__main__':
     init_dict = read('model.robupy.ini').get_attr('init_dict')
     os.unlink('model.robupy.ini')
 
+    # For a smooth graph, we increase the number of simulated agents to 10,000.
+    init_dict['SIMULATION']['agents'] = 10000
+
     # Ensure that fast version of package is available. This is a little more
     # complicated than usual as the compiler on acropolis does use other
     # debugging flags and thus no debugging is requested.
@@ -144,4 +141,7 @@ if __name__ == '__main__':
 
     # Run tasks
     create_results(init_dict, num_procs, grid)
+
+    # Process results
+    os.mkdir('rslts')
     process_results(init_dict, is_debug)

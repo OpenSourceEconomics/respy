@@ -89,7 +89,7 @@ def track_final_choices(init_dict, is_debug):
 
     # Iterate over all available ambiguity levels
     for level in levels:
-        file_name = 'rslts/' + level + '/data.robupy.info'
+        file_name = level + '/data.robupy.info'
         with open(file_name, 'r') as output_file:
             for line in output_file.readlines():
                 # Split lines
@@ -122,7 +122,7 @@ def track_schooling_over_time():
         for choice in OCCUPATIONS:
             shares[level][choice] = []
         # Process results
-        file_name = 'rslts/' + level + '/data.robupy.info'
+        file_name = level + '/data.robupy.info'
         with open(file_name, 'r') as output_file:
             for line in output_file.readlines():
                 # Split lines
@@ -174,25 +174,6 @@ def formatting(arg):
     """ Formatting of float input to standardized string.
     """
     return '{0:0.3f}'.format(arg)
-
-
-def get_remote_material(sftp):
-    """ Get all recursively all material from remote SFTP server. The
-    function checks for all material in the current remote directory,
-    determines the status of file or directory. Files are downloaded
-    directly, while directories are iterated through.
-    """
-    for candidate in sftp.listdir('.'):
-        # Determine status of directory or file
-        is_directory = isdir(candidate, sftp)
-        # Separate Treatment of files and directories
-        if not is_directory:
-            sftp.get(candidate, candidate)
-        else:
-            os.mkdir(candidate), os.chdir(candidate), sftp.chdir(candidate)
-            get_remote_material(sftp)
-            sftp.chdir('../'), os.chdir('../')
-
 
 """ Plotting function
 """
