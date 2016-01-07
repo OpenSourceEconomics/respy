@@ -40,7 +40,8 @@ def plot_model_misspecification(yvalues, xvalues):
     # X axis
     ax.set_xlim([0.00, 0.02])
     ax.set_xlabel('Level of Ambiguity', fontsize=16)
-    plt.xticks([0.00, 0.01, 0.02], [0.00, 0.01, 0.02])
+    ax.set_xticklabels(('Absent', 'Low', 'High'))
+    ax.set_xticks((0.00, 0.01, 0.02))
 
     # Y axis
     ax.set_ylabel('Intercept', fontsize=16)

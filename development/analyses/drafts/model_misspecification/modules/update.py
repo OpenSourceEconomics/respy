@@ -25,7 +25,6 @@ ROBUPY_DIR = os.environ['ROBUPY']
 CLIENT_DIR = '/home/eisenhauer/robustToolbox/package/development/analyses' \
              '/drafts/model_misspecification'
 KEY_DIR = '/home/peisenha/.ssh/id_rsa'
-RSLT_FILES = ['misspecification.robupy.pkl']
 
 HOST = os.path.dirname(os.path.realpath(__file__)).replace('modules', '')
 
@@ -45,7 +44,7 @@ def isdir(path, sftp):
         return False
 
 
-def get_remote_material(sftp):
+def _get_remote_material(sftp):
     """ Get all recursively all material from remote SFTP server. The
     function checks for all material in the current remote directory,
     determines the status of file or directory. Files are downloaded
@@ -59,8 +58,15 @@ def get_remote_material(sftp):
             sftp.get(candidate, candidate)
         else:
             os.mkdir(candidate), os.chdir(candidate), sftp.chdir(candidate)
-            get_remote_material(sftp)
+            _get_remote_material(sftp)
             sftp.chdir('../'), os.chdir('../')
+
+
+def get_directory(candidate, sftp):
+    """ Copy directory from remote to local machine.
+    """
+    os.mkdir(candidate), os.chdir(candidate), sftp.chdir(candidate)
+    _get_remote_material(sftp), sftp.chdir('../'), os.chdir('../')
 
 
 def distribute_arguments(parser):
@@ -98,24 +104,22 @@ def get_results(is_all):
     # Get files
     sftp.chdir(CLIENT_DIR)
 
-    # Get candidate directories that contain results on the server.
-    results = []
-    for candidate in sftp.listdir('.'):
-        # Determine status of directory or file
-        if isdir(candidate, sftp):
-            if 'module' in candidate:
-                continue
-            results += [candidate]
+    # Get results directory, this is always downloaded.
+    get_directory('rslts', sftp)
 
-    # Get all material from the results directories.
-    for file_ in RSLT_FILES:
-        sftp.get(file_, file_)
-
+    # If requested, also download all intermediate results as well.
     if is_all:
-        for result in results:
-            os.mkdir(result), os.chdir(result), sftp.chdir(result)
-            get_remote_material(sftp)
-            sftp.chdir('../'), os.chdir('../')
+        for candidate in sftp.listdir('.'):
+            # Only directories are even potentially interesting.
+            if not isdir(candidate, sftp):
+                continue
+            # Check if directory name can be transformed into a float.
+            try:
+                float(candidate)
+            except ValueError:
+                continue
+            # Download if
+            get_directory(candidate, sftp)
 
     # Finishing
     sftp.close(), transport.close()

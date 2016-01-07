@@ -82,8 +82,9 @@ def run(init_dict, is_restart, is_debug, level):
         string = '    {0[0]:<5} {0[1]:7.4f}\n\n'
         file_.write(string.format(['Result', opt['x'][0]]))
 
-        file_.write('    Success ' + str(opt['success']) + '\n')
-        file_.write('    Message ' + opt['message'] + '\n\n')
+        file_.write('    Function ' + str(opt['fun']) + '\n')
+        file_.write('    Success  ' + str(opt['success']) + '\n')
+        file_.write('    Message  ' + opt['message'] + '\n\n')
 
     # Solve the estimated economy to compare
     interpect = solve_estimated_economy(opt, init_dict, is_debug)

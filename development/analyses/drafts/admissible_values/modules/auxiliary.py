@@ -96,7 +96,7 @@ def plot_admissible_values(rslts):
     ax.set_xlim([0.0, ind[-1] + width * 5])
 
     ax.set_xticks((ind[0] + width * 2, ind[1] + width * 2, ind[2] + width * 2))
-    ax.set_xticklabels(('0.00', '0.01', '0.02'))
+    ax.set_xticklabels(('Absent', 'Low', 'High'))
 
     # Y Label
     ax.set_ylabel('Expected Future Values', fontsize=16)

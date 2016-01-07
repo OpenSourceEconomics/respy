@@ -49,7 +49,7 @@ coeffs = {}
 
 for spec in ['One', 'Two', 'Three']:
 
-    os.chdir('../simulations/robupy/data_' + spec.lower())
+    os.chdir('../simulations/robupy/full_solution/data_' + spec.lower())
 
     coeffs[spec] = dict()
 
