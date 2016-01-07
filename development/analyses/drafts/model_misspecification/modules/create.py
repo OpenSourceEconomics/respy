@@ -95,6 +95,7 @@ def run(init_dict, is_restart, is_debug, level):
         if 'misspecification' in file_:
             continue
         os.unlink(file_)
+
     os.chdir('../')
 
     # Finishing
@@ -153,4 +154,5 @@ if __name__ == '__main__':
         rslt[level] = intercepts[i]
 
     # Store for further processing
-    pkl.dump(rslt, open('misspecification.robupy.pkl', 'wb'))
+    os.mkdir('rslts')
+    pkl.dump(rslt, open('rslts/model_misspecification.robupy.pkl', 'wb'))

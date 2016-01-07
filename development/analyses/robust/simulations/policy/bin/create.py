@@ -155,27 +155,31 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(
         description='Create material for ROBUST lecture about policy '
-        'responsiveness.',
+        'effects.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('--procs', action='store', type=int, dest='num_procs',
         default=1, help='use multiple processors')
 
-    parser.add_argument('--points', action='store', type=int, dest='num_points',
-        default=1, help='number of evaluation points')
+    parser.add_argument('--recompile', action='store_true', default=False,
+        dest='is_recompile', help='recompile package')
 
-    parser.add_argument('--graphs', action='store_true', dest='graphs',
-        default=False, help='create only graphs')
+    parser.add_argument('--debug', action='store_true', dest='is_debug',
+        help='only five periods')
+
+    # In the first iteration of the code, I use the hardcoded results from
+    # the independent model misspecification exercise.
+    LEVELS, INTECEPT = [0.00, 0.01, 0.02], []
 
     # Process command line arguments
-    num_procs, num_points, is_graphs = distribute_arguments(parser)
+    #num_procs, num_points, is_graphs = distribute_arguments(parser)
 
     # Run tasks
-    if not is_graphs:
-        compile_package('--fortran --optimization', True)
-        solve_models(num_procs, num_points)
-        process_models(num_points)
+    #if not is_graphs:
+    #    compile_package('--fortran --optimization', True)
+    #    solve_models(num_procs, num_points)
+    #    process_models(num_points)
 
     # Plotting
-    rslt = pkl.load(open('rslts/policy_responsiveness.pkl', 'rb'))
-    plot_policy_responsiveness(rslt)
+    #rslt = pkl.load(open('rslts/policy_responsiveness.pkl', 'rb'))
+    #plot_policy_responsiveness(rslt)

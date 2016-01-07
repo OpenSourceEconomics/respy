@@ -50,12 +50,7 @@ def plot_model_misspecification(yvalues, xvalues):
     func = matplotlib.ticker.FuncFormatter(lambda x, p: format(int(x), ','))
     ax.get_yaxis().set_major_formatter(func)
 
-    # Prepare directory structure
-    if os.path.exists('rslts'):
-        shutil.rmtree('rslts')
-    os.mkdir('rslts')
-
-    plt.savefig('rslts/misspecification.png', bbox_inches='tight',
+    plt.savefig('rslts/model_misspecification.png', bbox_inches='tight',
                 format='png')
 
 

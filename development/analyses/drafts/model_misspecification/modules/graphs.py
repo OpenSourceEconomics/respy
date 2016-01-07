@@ -30,7 +30,7 @@ def create():
     misspecification exercise.
     """
     # Read results
-    rslts = pkl.load(open('misspecification.robupy.pkl', 'rb'))
+    rslts = pkl.load(open('rslts/model_misspecification.robupy.pkl', 'rb'))
 
     # Prepare results for plotting, redo scaling
     xvals = sorted(rslts.keys())
