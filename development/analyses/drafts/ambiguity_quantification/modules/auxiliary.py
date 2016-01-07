@@ -8,54 +8,6 @@ import numpy as np
 from robupy.clsRobupy import RobupyCls
 
 # standard library
-import matplotlib.pylab as plt
-import matplotlib
-
-matplotlib.use('Agg')
-
-
-def plot_lifetime_value(rslt):
-    """ Plot policy responsivenss.
-    """
-    # Initialize clean canvas
-    ax = plt.figure(figsize=(12, 8)).add_subplot(111)
-
-    # Collect relevant subset
-    response = []
-    for key_ in [0.00, 0.01, 0.02]:
-        response += [rslt[key_]]
-
-    width = 0.125
-
-    plt.bar(0.5 * width, response[0], width, color='red')
-
-    plt.bar(2.5 * width, response[1], width, color='orange')
-
-    plt.bar(4.5 * width, response[2], width, color='blue')
-
-    # Both Axes
-    ax.tick_params(labelsize=16, direction='out', axis='both', top='off',
-        right='off')
-
-    # x axis
-    ax.set_xlim([0, 6 * width])
-    ax.set_xlabel('Level of Ambiguity', fontsize=16)
-
-    # y axis
-    ax.set_ylim([330000, 370000])
-    ax.yaxis.get_major_ticks()[0].set_visible(False)
-    ax.set_ylabel('Expected Lifetime Value', fontsize=16)
-
-    # Formatting of labels
-    func = matplotlib.ticker.FuncFormatter(lambda x, p: format(int(x), ','))
-    ax.get_yaxis().set_major_formatter(func)
-
-    ax.set_xticks((1.0 * width, 3.0 * width, 5.0 * width))
-    ax.set_xticklabels(('0.00', '0.01', '0.02'))
-
-    plt.savefig('rslts/ambiguity_quantification.png', bbox_inches='tight',
-                format='png')
-
 
 def get_robupy_obj(init_dict):
     """ Get the object to pass in the solution method.
