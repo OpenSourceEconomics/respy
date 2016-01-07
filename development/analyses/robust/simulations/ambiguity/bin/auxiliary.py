@@ -16,13 +16,12 @@ import glob
 import sys
 import os
 
+from robupy.clsRobupy import RobupyCls
+
 # PYTHONPATH
 sys.path.insert(0, os.environ['ROBUPY'])
 
-from robupy.tests.random_init import print_random_dict
-
 from robupy import solve
-from robupy import read
 
 # module-wide variables
 OCCUPATIONS = ['Occupation A', 'Occupation B', 'Schooling', 'Home']
@@ -33,15 +32,20 @@ COLORS = ['red', 'orange', 'blue', 'yellow']
 """ Auxiliary functions
 """
 
+def get_robupy_obj(init_dict):
+    """ Get the object to pass in the solution method.
+    """
+    # Initialize and process class
+    robupy_obj = RobupyCls()
+    robupy_obj.set_attr('init_dict', init_dict)
+    robupy_obj.lock()
+    # Finishing
+    return robupy_obj
 
-def solve_ambiguous_economy(level):
+
+def solve_ambiguous_economy(init_dict, is_debug, level):
     """ Solve an economy in a subdirectory.
     """
-    # Process baseline file
-    robupy_obj = read('../model.robupy.ini')
-
-    init_dict = robupy_obj.get_attr('init_dict')
-
     # Formatting directory name
     name = '{0:0.3f}'.format(level)
 
@@ -53,28 +57,29 @@ def solve_ambiguous_economy(level):
     # Update level of ambiguity
     init_dict['AMBIGUITY']['level'] = level
 
-    # Write initialization file
-    print_random_dict(init_dict)
+    # Restrict number of periods for debugging purposes.
+    if is_debug:
+        init_dict['BASICS']['periods'] = 3
 
-    # Solve requested model
-    robupy_obj = read('test.robupy.ini')
-
-    solve(robupy_obj)
+    # Solve the basic economy
+    solve(get_robupy_obj(init_dict))
 
     # Finishing
     os.chdir('../')
 
 
-def track_final_choices():
+def track_final_choices(init_dict, is_debug):
     """ Track the final choices from the ROBUPY output.
     """
     # Auxiliary objects
     levels = get_levels()
 
     # Process benchmark file
-    robupy_obj = read('model.robupy.ini')
+    num_periods = init_dict['BASICS']['periods']
 
-    num_periods = robupy_obj.get_attr('num_periods')
+    # Restrict number of periods for debugging purposes.
+    if is_debug:
+        num_periods = 3
 
     # Create dictionary with the final shares for varying level of ambiguity.
     shares = dict()

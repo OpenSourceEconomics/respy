@@ -5,11 +5,14 @@ of alternative degrees of ambiguity.
 
 # standard library
 from multiprocessing import Pool
+from functools import partial
 
 import pickle as pkl
 import numpy as np
 
 import argparse
+import socket
+import shutil
 import sys
 import glob
 import os
@@ -18,22 +21,22 @@ import os
 if not (sys.version_info[0] == 3):
     raise AssertionError('Please use Python 3')
 
-# Auxiliary functions
-from auxiliary import plot_schooling_ambiguity
-from auxiliary import plot_choices_ambiguity
-
-from auxiliary import track_schooling_over_time
-from auxiliary import track_final_choices
-
-from auxiliary import solve_ambiguous_economy
-from auxiliary import get_levels
+# module-wide variable
+ROBUPY_DIR = os.environ['ROBUPY']
+SPEC_DIR = ROBUPY_DIR + '/development/analyses/restud/specifications'
 
 # PYTHONPATH
-sys.path.insert(0, os.environ['ROBUPY'] + '/development/tests/random')
+sys.path.insert(0, ROBUPY_DIR + '/development/tests/random')
+sys.path.insert(0, ROBUPY_DIR)
 
 # project library
 from modules.auxiliary import compile_package
+from robupy import read
 
+# Auxiliary functions
+from auxiliary import solve_ambiguous_economy
+from auxiliary import track_schooling_over_time
+from auxiliary import track_final_choices
 
 ''' Functions
 '''
@@ -46,7 +49,9 @@ def distribute_arguments(parser):
     args = parser.parse_args()
 
     # Extract arguments
-    num_procs, grid, is_graphs = args.num_procs,  args.grid, args.graphs
+    num_procs, grid = args.num_procs,  args.grid
+    is_recompile = args.is_recompile
+    is_debug = args.is_debug
 
     # Check arguments
     assert (num_procs > 0)
@@ -57,10 +62,10 @@ def distribute_arguments(parser):
         assert (grid[0] < grid[1]) or ((grid[0] == 0) and (grid[1] == 0))
 
     # Finishing
-    return num_procs, grid, is_graphs
+    return num_procs, grid, is_recompile, is_debug
 
 
-def create_results(num_procs, grid):
+def create_results(init_dict, num_procs, grid):
     """ Solve the RESTUD economies for different levels of ambiguity.
     """
     # Cleanup
@@ -78,8 +83,9 @@ def create_results(num_procs, grid):
     os.chdir('rslts')
 
     # Solve numerous economies
+    process_tasks = partial(solve_ambiguous_economy, init_dict, is_debug)
     p = Pool(num_procs)
-    p.map(solve_ambiguous_economy, grid)
+    p.map(process_tasks, grid)
 
     os.chdir('../')
 
@@ -88,11 +94,11 @@ def create_results(num_procs, grid):
         os.remove(file_)
 
 
-def process_results():
+def process_results(init_dict, is_debug):
     """ Process results from the models.
     """
 
-    track_final_choices()
+    track_final_choices(init_dict, is_debug)
 
     track_schooling_over_time()
 
@@ -112,24 +118,30 @@ if __name__ == '__main__':
         default=[0, 0.1, 2], nargs='+',
         help='construct grid using np.linspace (start, stop, num)')
 
-    parser.add_argument('--graphs', action='store_true', dest='graphs',
-        default=False, help='create only graphs')
+    parser.add_argument('--recompile', action='store_true', default=False,
+        dest='is_recompile', help='recompile package')
+
+    parser.add_argument('--debug', action='store_true', dest='is_debug',
+        help='only three periods')
 
     # Process command line arguments
-    num_procs, grid, is_graphs = distribute_arguments(parser)
+    num_procs, grid, is_recompile, is_debug = distribute_arguments(
+        parser)
+
+    # Read the baseline specification and obtain the initialization dictionary.
+    shutil.copy(SPEC_DIR + '/data_one.robupy.ini', 'model.robupy.ini')
+    init_dict = read('model.robupy.ini').get_attr('init_dict')
+    os.unlink('model.robupy.ini')
+
+    # Ensure that fast version of package is available. This is a little more
+    # complicated than usual as the compiler on acropolis does use other
+    # debugging flags and thus no debugging is requested.
+    if is_recompile:
+        if 'acropolis' in socket.gethostname():
+            compile_package('--fortran', True)
+        else:
+            compile_package('--fortran --debug', True)
 
     # Run tasks
-    if not is_graphs:
-
-        compile_package('--fortran --optimization', True)
-
-        create_results(num_procs, grid)
-
-        process_results()
-
-    # Plotting
-    rslt = pkl.load(open('rslts/ambiguity_shares_final.pkl', 'rb'))
-    plot_choices_ambiguity(rslt)
-
-    rslt = pkl.load(open('rslts/ambiguity_shares_time.pkl', 'rb'))
-    plot_schooling_ambiguity(rslt)
+    create_results(init_dict, num_procs, grid)
+    process_results(init_dict, is_debug)
