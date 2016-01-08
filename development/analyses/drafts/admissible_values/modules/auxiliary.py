@@ -47,9 +47,9 @@ def get_elements(choice, rslts):
             rslt += [_extract_results(level, choice, rslts, which)]
 
         if which in ['upper']:
-            upper = np.array(rslt)
+            upper = np.array(rslt) / 1000.00
         else:
-            lower = np.array(rslt)
+            lower = np.array(rslt) / 1000.00
 
     # Calculate increments
     increments = upper - lower
@@ -99,9 +99,9 @@ def plot_admissible_values(rslts):
     ax.set_xticklabels(('Absent', 'Low', 'High'))
 
     # Y Label
-    ax.set_ylabel('Expected Future Values', fontsize=16)
+    ax.set_ylabel('Expected Total Values (in \$1,000)', fontsize=16)
     ax.yaxis.get_major_ticks()[0].set_visible(False)
-    ax.set_ylim([50000, 100000])
+    ax.set_ylim([50, 100])
 
     # Formatting of labels
     func = matplotlib.ticker.FuncFormatter(lambda x, p: format(int(x), ','))

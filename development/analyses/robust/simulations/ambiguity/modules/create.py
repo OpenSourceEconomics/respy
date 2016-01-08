@@ -68,9 +68,6 @@ def distribute_arguments(parser):
 def create_results(init_dict, num_procs, grid):
     """ Solve the RESTUD economies for different levels of ambiguity.
     """
-    # Cleanup
-    os.system('./clean')
-
     # Construct grid
     if grid == 0:
         grid = [0.0]
@@ -121,6 +118,9 @@ if __name__ == '__main__':
     # Process command line arguments
     num_procs, grid, is_recompile, is_debug = distribute_arguments(
         parser)
+
+    # Start with a clean slate.
+    os.system('./clean')
 
     # Read the baseline specification and obtain the initialization dictionary.
     shutil.copy(SPEC_DIR + '/data_one.robupy.ini', 'model.robupy.ini')

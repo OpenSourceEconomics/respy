@@ -113,8 +113,10 @@ def plot_return_experience(x, y, z, which, spec):
     # Axis labels.
     ax.set_ylabel('Experience A')
     ax.set_xlabel('Experience B')
+    ax.set_zlabel('Wages')
 
     ax.zaxis.set_rotate_label(False)
+    ax.set_zlabel(r'Wages (in \$1,000)', rotation=90)
 
     # Z axis ticks
     ax.set_zlim([ax.get_zlim()[0], ax.get_zlim()[1]])
@@ -169,7 +171,7 @@ def plot_return_education(xvals, yvals, spec):
     yticks = ['{:,.0f}'.format(y) for y in ax.get_yticks().astype(int)]
     ax.set_yticklabels(yticks, fontsize=16)
 
-    ax.set_ylabel('Wages', fontsize=16)
+    ax.set_ylabel(r'Wages (in \$1,000)', fontsize=16)
     ax.yaxis.get_major_ticks()[0].set_visible(False)
 
     # Set up legend

@@ -145,17 +145,17 @@ def track_schooling_over_time():
 def get_levels():
     """ Infer ambiguity levels from directory structure.
     """
-    os.chdir('rslts')
 
     levels = []
 
-    for level in glob.glob('*/'):
-        # Cleanup strings
-        level = level.replace('/', '')
+    for level in glob.glob('*'):
+        # Check if directory name can be transformed into a float.
+        try:
+            float(level)
+        except ValueError:
+            continue
         # Collect levels
         levels += [level]
-
-    os.chdir('../')
 
     # Finishing
     return sorted(levels)
@@ -204,7 +204,8 @@ def plot_choices_ambiguity(shares_ambiguity):
     # x axis
     ax.set_xlim([float(levels[0]), float(levels[-1])])
     ax.set_xlabel('Level of Ambiguity', fontsize=16)
-    plt.xticks([0.00, 0.01, 0.02], [0.00, 0.01, 0.02])
+    ax.set_xticks((0.00, 0.01, 0.02))
+    ax.set_xticklabels(('Absent', 'Low', 'High'))
 
     # y axis
     ax.set_ylim([0, 1])
@@ -230,7 +231,7 @@ def plot_schooling_ambiguity(shares_time):
     if False:
         theta = [r'$\theta$', r'$\theta^{\prime}$', r'$\theta^{\\prime\prime}$']
     elif True:
-        theta = ['Risk', 'Low Ambiguity', 'High Ambiguity']
+        theta = ['Absent', 'Low', 'High']
     else:
         theta = [r'$\theta = 0.00$', r'$\theta^{\prime} = 0.01$', r'$\theta^{\prime\prime}  = 0.02$']
 
