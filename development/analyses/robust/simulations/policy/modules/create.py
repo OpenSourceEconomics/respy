@@ -6,6 +6,7 @@ different levels of ambiguity and subsidy.
 # standard library
 from multiprocessing import Pool
 from functools import partial
+from copy import deepcopy
 
 import pickle as pkl
 import argparse
@@ -27,6 +28,8 @@ sys.path.insert(0, ROBUPY_DIR)
 from modules.auxiliary import compile_package
 from auxiliary import get_robupy_obj
 from auxiliary import get_name
+
+from robupy.tests.random_init import print_random_dict
 
 from robupy import read
 from robupy import solve
@@ -95,7 +98,7 @@ def process_models(args):
     return rslt
 
 
-def run(init_dict, is_debug, args):
+def run(baseline_dict, is_debug, args):
     """ This function solves and simulates all requested models.
     """
     # Distribute input arguments
@@ -107,13 +110,19 @@ def run(init_dict, is_debug, args):
         os.makedirs(name)
     os.chdir(name)
 
+    # A deep copy is required other the subsidy increments accumulate.
+    init_dict = deepcopy(baseline_dict)
+
     # Construct request
     init_dict['AMBIGUITY']['level'] = level
-    init_dict['EDUCATION']['coeff'][1] -= subsidy
+    init_dict['EDUCATION']['coeff'][0] += subsidy
     init_dict['EDUCATION']['int'] = intercept
 
     if is_debug:
         init_dict['BASICS']['periods'] = 3
+
+    # Store some additional information for later debugging.
+    print_random_dict(init_dict)
 
     # Solve the basic economy
     solve(get_robupy_obj(init_dict))
