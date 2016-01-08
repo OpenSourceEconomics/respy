@@ -87,7 +87,7 @@ def run(init_dict, is_restart, is_debug, level):
         file_.write('    Message  ' + opt['message'] + '\n\n')
 
     # Solve the estimated economy to compare
-    interpect = solve_estimated_economy(opt, init_dict, is_debug)
+    interpect = solve_estimated_economy(opt, level, init_dict, is_debug)
 
     # Cleanup scratch files generated during estimation. Other useful
     # material is retained in subdirectories.
@@ -129,6 +129,9 @@ if __name__ == '__main__':
     # Distribute attributes
     levels, num_procs, is_restart, is_recompile, is_debug = \
         distribute_arguments(parser)
+
+    # Start with a clean slate
+    os.system('./clean')
 
     # Read the baseline specification and obtain the initialization dictionary.
     shutil.copy(SPEC_DIR + '/data_one.robupy.ini', 'model.robupy.ini')

@@ -17,8 +17,12 @@ import glob
 import os
 
 # project library
+from robupy.tests.random_init import print_random_dict
 from robupy.clsRobupy import RobupyCls
 from robupy import solve
+
+# module wide variables
+SCALING = 100000.00
 
 
 def plot_model_misspecification(yvalues, xvalues):
@@ -122,6 +126,7 @@ def solve_true_economy(level, init_dict, is_debug):
     base_choices = get_period_choices()
     # Store material required for restarting an estimation run
     pkl.dump(base_choices, open('base_choices.pkl', 'wb'))
+    print_random_dict(init_dict)
     # Return to root directory
     os.chdir('../')
 
@@ -129,10 +134,8 @@ def solve_true_economy(level, init_dict, is_debug):
 def criterion_function(point, base_choices, init_dict, is_debug):
     """ Get the baseline distribution.
     """
-    # Auxiliary objects
-    scaling = 100000.00
     # Set relevant values
-    init_dict['EDUCATION']['int'] = float(point)*scaling
+    init_dict['EDUCATION']['int'] = float(point)*SCALING
     if is_debug:
         init_dict['BASICS']['periods'] = 5
     # Solve requested model
@@ -172,7 +175,7 @@ def get_period_choices():
     return choices
 
 
-def solve_estimated_economy(opt, init_dict, is_debug):
+def solve_estimated_economy(opt, level, init_dict, is_debug):
     """ Collect information about estimated economy by updating an initialization
     file with the resulting estimate for the intercept and solving the
     resulting economy.
@@ -180,7 +183,7 @@ def solve_estimated_economy(opt, init_dict, is_debug):
     # Switch into extra directory to store the results
     os.mkdir('estimated'), os.chdir('estimated')
     # Update initialization file with result from estimation and write to disk
-    init_dict['EDUCATION']['int'] = float(opt['x'])
+    init_dict['EDUCATION']['int'] = float(opt['x']) * SCALING
     if is_debug:
         init_dict['BASICS']['periods'] = 5
     # Solve the basic economy
@@ -188,6 +191,8 @@ def solve_estimated_economy(opt, init_dict, is_debug):
     # Extract result
     init_dict = robupy_obj.get_attr('init_dict')
     rslt = init_dict['EDUCATION']['int']
+    # Store some material for debugging purposes
+    print_random_dict(init_dict)
     # Return to root dictionary
     os.chdir('../')
     # Finishing
