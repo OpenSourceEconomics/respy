@@ -151,7 +151,7 @@ if __name__ == '__main__':
 
     # In the first iteration of the code, I use the hardcoded results from
     # the independent model misspecification exercise and the policy schedule.
-    LEVELS, INTERCEPTS = [0.00, 0.01, 0.02], [0.00, -3000.00, -5000.00]
+    LEVELS, INTERCEPTS = [0.00, 0.01, 0.02], [0.00, -1000.00, -2450.00]
     SUBSIDIES = [0.00, 500.00, 1000.00]
 
     # Process command line arguments
