@@ -14,7 +14,6 @@ import argparse
 import socket
 import shutil
 import sys
-import glob
 import os
 
 # Check for Python 3
@@ -31,67 +30,41 @@ sys.path.insert(0, ROBUPY_DIR)
 
 # project library
 from modules.auxiliary import compile_package
+
+from robupy.tests.random_init import print_random_dict
+
 from robupy import read
+from robupy import solve
 
 # Auxiliary functions
-from auxiliary import solve_ambiguous_economy
-from auxiliary import track_schooling_over_time
-from auxiliary import track_final_choices
+from auxiliary import distribute_arguments
+from auxiliary import get_robupy_obj
+from auxiliary import get_results
 
 ''' Functions
 '''
 
 
-def distribute_arguments(parser):
-    """ Distribute command line arguments.
+def run(init_dict, is_debug, level):
+    """ Solve an economy in a subdirectory.
     """
-    # Process command line arguments
-    args = parser.parse_args()
+    # Formatting directory name
+    name = '{0:0.3f}'.format(level)
 
-    # Extract arguments
-    num_procs, grid = args.num_procs,  args.grid
-    is_recompile = args.is_recompile
-    is_debug = args.is_debug
+    # Create directory structure.
+    os.mkdir(name), os.chdir(name)
 
-    # Check arguments
-    assert (num_procs > 0)
+    # Update level of ambiguity
+    init_dict['AMBIGUITY']['level'] = level
 
-    if grid != 0:
-        assert (len(grid) == 3)
-        assert (grid[2] > 0.0)
-        assert (grid[0] < grid[1]) or ((grid[0] == 0) and (grid[1] == 0))
+    # For debugging purposes, write out initialization file.
+    print_random_dict(init_dict)
+
+    # Solve the basic economy
+    solve(get_robupy_obj(init_dict))
 
     # Finishing
-    return num_procs, grid, is_recompile, is_debug
-
-
-def create_results(init_dict, num_procs, grid):
-    """ Solve the RESTUD economies for different levels of ambiguity.
-    """
-    # Construct grid
-    if grid == 0:
-        grid = [0.0]
-    else:
-        grid = np.linspace(start=grid[0], stop=grid[1], num=int(grid[2]))
-
-    # Solve numerous economies
-    process_tasks = partial(solve_ambiguous_economy, init_dict, is_debug)
-    p = Pool(num_procs)
-    p.map(process_tasks, grid)
-
-
-    # Cleanup
-    for file_ in glob.glob('*.log'):
-        os.remove(file_)
-
-
-def process_results(init_dict, is_debug):
-    """ Process results from the models.
-    """
-
-    track_final_choices(init_dict, is_debug)
-
-    track_schooling_over_time()
+    os.chdir('../')
 
 
 ''' Execution of module as script.
@@ -116,19 +89,22 @@ if __name__ == '__main__':
         help='only three periods')
 
     # Process command line arguments
-    num_procs, grid, is_recompile, is_debug = distribute_arguments(
-        parser)
+    num_procs, grid, is_recompile, is_debug = distribute_arguments(parser)
 
     # Start with a clean slate.
     os.system('./clean')
 
     # Read the baseline specification and obtain the initialization dictionary.
     shutil.copy(SPEC_DIR + '/data_one.robupy.ini', 'model.robupy.ini')
-    init_dict = read('model.robupy.ini').get_attr('init_dict')
+    base_dict = read('model.robupy.ini').get_attr('init_dict')
     os.unlink('model.robupy.ini')
 
     # For a smooth graph, we increase the number of simulated agents to 10,000.
-    init_dict['SIMULATION']['agents'] = 10000
+    base_dict['SIMULATION']['agents'] = 10000
+
+    if is_debug:
+        base_dict['BASICS']['periods'] = 3
+        base_dict['SIMULATION']['agents'] = 100
 
     # Ensure that fast version of package is available. This is a little more
     # complicated than usual as the compiler on acropolis does use other
@@ -139,9 +115,17 @@ if __name__ == '__main__':
         else:
             compile_package('--fortran --debug', True)
 
-    # Run tasks
-    create_results(init_dict, num_procs, grid)
+    # Construct a grid for the evaluation.
+    start, stop, num = grid
+    grid = np.linspace(start, stop, num)
+
+    # Solve numerous economies
+    process_tasks = partial(run, base_dict, is_debug)
+    Pool(num_procs).map(process_tasks, grid)
+
+    # Construct results from the results file.
+    rslts = get_results(base_dict, is_debug)
 
     # Process results
     os.mkdir('rslts')
-    process_results(init_dict, is_debug)
+    pkl.dump(rslts, open('rslts/ambiguity_choices.robupy.pkl', 'wb'))

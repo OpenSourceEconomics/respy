@@ -2,27 +2,72 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="39b3d67a-e664-4cff-aba7-2a9ae5eaeb87" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/package/development/analyses/robust/clean" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/package/development/analyses/robust/lecture.ipynb" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/package/development/analyses/robust/simulations/clean" afterPath="" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/robust/simulations/ambiguity/acropolis.pbs" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_choices/acropolis.pbs" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/robust/simulations/ambiguity/clean" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/policy_interventions/clean" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/robust/simulations/ambiguity/create" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/policy_interventions/create" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/robust/simulations/ambiguity/graphs" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_choices/graphs" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/robust/simulations/ambiguity/modules/auxiliary.py" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_choices/modules/auxiliary.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/robust/simulations/ambiguity/modules/clean.py" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/policy_interventions/modules/clean.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/robust/simulations/ambiguity/modules/create.py" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_choices/modules/create.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/robust/simulations/ambiguity/modules/graphs.py" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_choices/modules/graphs.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/robust/simulations/ambiguity/modules/update.py" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_choices/modules/update.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/robust/simulations/ambiguity/update" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/policy_interventions/update" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/robust/simulations/policy/acropolis.pbs" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/policy_interventions/acropolis.pbs" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/robust/simulations/policy/clean" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_choices/clean" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/robust/simulations/policy/create" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_choices/create" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/robust/simulations/policy/modules/auxiliary.py" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/policy_interventions/modules/auxiliary.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/robust/simulations/policy/modules/clean.py" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_choices/modules/clean.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/robust/simulations/policy/modules/create.py" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/policy_interventions/modules/create.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/robust/simulations/policy/modules/update.py" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/policy_interventions/modules/update.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/robust/simulations/policy/update" afterPath="$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_choices/update" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/admissible_values/acropolis.pbs" afterPath="$PROJECT_DIR$/package/development/analyses/robust/admissible_values/acropolis.pbs" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/admissible_values/clean" afterPath="$PROJECT_DIR$/package/development/analyses/robust/policy_interventions/clean" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/admissible_values/create" afterPath="$PROJECT_DIR$/package/development/analyses/robust/policy_interventions/create" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/admissible_values/graphs" afterPath="$PROJECT_DIR$/package/development/analyses/robust/model_misspecification/graphs" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/admissible_values/modules/auxiliary.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/admissible_values/modules/auxiliary.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/admissible_values/modules/clean.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/policy_interventions/modules/clean.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/admissible_values/modules/create.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/admissible_values/modules/create.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/admissible_values/modules/graphs.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/admissible_values/modules/graphs.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/admissible_values/modules/update.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/admissible_values/modules/update.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/admissible_values/update" afterPath="$PROJECT_DIR$/package/development/analyses/robust/policy_interventions/update" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_choices/acropolis.pbs" afterPath="$PROJECT_DIR$/package/development/analyses/robust/ambiguity_choices/acropolis.pbs" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_choices/clean" afterPath="$PROJECT_DIR$/package/development/analyses/robust/model_misspecification/clean" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_choices/create" afterPath="$PROJECT_DIR$/package/development/analyses/robust/model_misspecification/create" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_choices/graphs" afterPath="$PROJECT_DIR$/package/development/analyses/robust/indifference_curve/graphs" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_choices/modules/auxiliary.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/ambiguity_choices/modules/auxiliary.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_choices/modules/clean.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/ambiguity_quantification/modules/clean.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_choices/modules/create.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/ambiguity_choices/modules/create.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_choices/modules/graphs.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/ambiguity_choices/modules/graphs.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_choices/modules/update.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/ambiguity_choices/modules/update.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_choices/update" afterPath="$PROJECT_DIR$/package/development/analyses/robust/model_misspecification/update" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_quantification/acropolis.pbs" afterPath="$PROJECT_DIR$/package/development/analyses/robust/ambiguity_quantification/acropolis.pbs" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_quantification/clean" afterPath="$PROJECT_DIR$/package/development/analyses/robust/indifference_curve/clean" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_quantification/create" afterPath="$PROJECT_DIR$/package/development/analyses/robust/indifference_curve/create" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_quantification/modules/auxiliary.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/ambiguity_quantification/modules/auxiliary.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_quantification/modules/clean.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/ambiguity_choices/modules/clean.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_quantification/modules/create.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/ambiguity_quantification/modules/create.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_quantification/modules/update.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/ambiguity_quantification/modules/update.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_quantification/update" afterPath="$PROJECT_DIR$/package/development/analyses/robust/indifference_curve/update" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/assess_interpolation/acropolis.pbs" afterPath="$PROJECT_DIR$/package/development/analyses/robust/assess_interpolation/acropolis.pbs" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/assess_interpolation/clean" afterPath="$PROJECT_DIR$/package/development/analyses/robust/assess_interpolation/clean" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/assess_interpolation/create" afterPath="$PROJECT_DIR$/package/development/analyses/robust/assess_interpolation/create" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/assess_interpolation/modules/auxiliary.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/assess_interpolation/modules/auxiliary.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/assess_interpolation/modules/clean.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/assess_interpolation/modules/clean.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/assess_interpolation/modules/create.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/assess_interpolation/modules/create.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/assess_interpolation/modules/update.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/assess_interpolation/modules/update.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/assess_interpolation/update" afterPath="$PROJECT_DIR$/package/development/analyses/robust/assess_interpolation/update" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/acropolis.pbs" afterPath="$PROJECT_DIR$/package/development/analyses/robust/indifference_curve/acropolis.pbs" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/aggregate" afterPath="$PROJECT_DIR$/package/development/analyses/robust/indifference_curve/aggregate" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/clean" afterPath="$PROJECT_DIR$/package/development/analyses/robust/ambiguity_quantification/clean" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/create" afterPath="$PROJECT_DIR$/package/development/analyses/robust/ambiguity_quantification/create" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/graphs" afterPath="$PROJECT_DIR$/package/development/analyses/robust/ambiguity_choices/graphs" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/modules/aggregate.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/indifference_curve/modules/aggregate.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/modules/auxiliary.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/indifference_curve/modules/auxiliary.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/modules/clean.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/indifference_curve/modules/clean.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/modules/create.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/indifference_curve/modules/create.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/modules/graphs.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/indifference_curve/modules/graphs.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/modules/update.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/indifference_curve/modules/update.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/update" afterPath="$PROJECT_DIR$/package/development/analyses/robust/ambiguity_quantification/update" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/model_misspecification/acropolis.pbs" afterPath="$PROJECT_DIR$/package/development/analyses/robust/model_misspecification/acropolis.pbs" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/model_misspecification/clean" afterPath="$PROJECT_DIR$/package/development/analyses/robust/ambiguity_choices/clean" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/model_misspecification/create" afterPath="$PROJECT_DIR$/package/development/analyses/robust/ambiguity_choices/create" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/model_misspecification/graphs" afterPath="$PROJECT_DIR$/package/development/analyses/robust/admissible_values/graphs" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/model_misspecification/modules/auxiliary.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/model_misspecification/modules/auxiliary.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/model_misspecification/modules/clean.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/model_misspecification/modules/clean.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/model_misspecification/modules/create.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/model_misspecification/modules/create.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/model_misspecification/modules/graphs.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/model_misspecification/modules/graphs.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/model_misspecification/modules/update.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/model_misspecification/modules/update.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/model_misspecification/update" afterPath="$PROJECT_DIR$/package/development/analyses/robust/ambiguity_choices/update" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/policy_interventions/acropolis.pbs" afterPath="$PROJECT_DIR$/package/development/analyses/robust/policy_interventions/acropolis.pbs" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/policy_interventions/clean" afterPath="$PROJECT_DIR$/package/development/analyses/robust/admissible_values/clean" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/policy_interventions/create" afterPath="$PROJECT_DIR$/package/development/analyses/robust/admissible_values/create" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/policy_interventions/modules/auxiliary.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/policy_interventions/modules/auxiliary.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/policy_interventions/modules/clean.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/admissible_values/modules/clean.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/policy_interventions/modules/create.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/policy_interventions/modules/create.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/policy_interventions/modules/update.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/policy_interventions/modules/update.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/drafts/policy_interventions/update" afterPath="$PROJECT_DIR$/package/development/analyses/robust/admissible_values/update" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/.idea/workspace.xml" afterPath="$PROJECT_DIR$/package/development/.idea/workspace.xml" />
     </list>
     <ignored path="robustToolbox.iws" />
@@ -54,7 +99,20 @@
     <favorites_list name="robustToolbox" />
   </component>
   <component name="FileEditorManager">
-    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300" />
+    <leaf>
+      <file leaf-file-name="create.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/package/development/analyses/robust/ambiguity_choices/modules/create.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.32818532">
+              <caret line="17" column="0" selection-start-line="17" selection-start-column="0" selection-end-line="17" selection-end-column="0" />
+              <folding>
+                <element signature="e#159#191#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
   </component>
   <component name="Git.Settings">
     <option name="ROOT_SYNC" value="DONT_SYNC" />
@@ -63,9 +121,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/package/robupy/read.py" />
-        <option value="$PROJECT_DIR$/package/development/analyses/drafts/model_misspecification/modules/clean.py" />
-        <option value="$PROJECT_DIR$/package/robupy/__init__.py" />
         <option value="$PROJECT_DIR$/package/development/analyses/drafts/model_misspecification/acropolis.pbs" />
         <option value="$PROJECT_DIR$/package/robupy/simulate.py" />
         <option value="$PROJECT_DIR$/package/robupy/solve.py" />
@@ -114,6 +169,9 @@
         <option value="$PROJECT_DIR$/package/development/analyses/drafts/model_misspecification/create" />
         <option value="$PROJECT_DIR$/package/development/analyses/drafts/model_misspecification/modules/auxiliary.py" />
         <option value="$PROJECT_DIR$/package/development/analyses/drafts/model_misspecification/modules/create.py" />
+        <option value="$PROJECT_DIR$/package/development/analyses/robust/ambiguity_choices/modules/graphs.py" />
+        <option value="$PROJECT_DIR$/package/development/analyses/robust/ambiguity_choices/modules/auxiliary.py" />
+        <option value="$PROJECT_DIR$/package/development/analyses/robust/ambiguity_choices/modules/create.py" />
       </list>
     </option>
   </component>
@@ -153,6 +211,8 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
+      <pane id="Scratches" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -224,30 +284,8 @@
               <option name="myItemId" value="analyses" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
-          </PATH>
-          <PATH>
             <PATH_ELEMENT>
-              <option name="myItemId" value="robustToolbox" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="robustToolbox" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="package" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="development" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="analyses" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="drafts" />
+              <option name="myItemId" value="robust" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -273,11 +311,11 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="drafts" />
+              <option name="myItemId" value="robust" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="model_misspecification" />
+              <option name="myItemId" value="ambiguity_quantification" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -303,11 +341,41 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="drafts" />
+              <option name="myItemId" value="robust" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="model_misspecification" />
+              <option name="myItemId" value="ambiguity_choices" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="robustToolbox" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="robustToolbox" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="package" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="development" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="analyses" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="robust" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="ambiguity_choices" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
@@ -315,10 +383,30 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="robustToolbox" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="robustToolbox" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="package" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="development" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="analyses" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
         </subPane>
       </pane>
-      <pane id="Scope" />
-      <pane id="Scratches" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -577,14 +665,14 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="2609" y="18" width="2511" height="1422" extended-state="6" />
-    <editor active="false" />
+    <frame x="2609" y="18" width="2511" height="1422" extended-state="7" />
+    <editor active="true" />
     <layout>
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32924962" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32993057" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.26855984" sideWeight="0.28679246" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.26855984" sideWeight="0.71320754" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.27099392" sideWeight="0.29056603" order="2" side_tool="true" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.27099392" sideWeight="0.709434" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32924962" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.24989875" sideWeight="0.506006" order="0" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="9" side_tool="true" content_ui="tabs" />
@@ -592,13 +680,13 @@
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Concurrent Activities Diagram" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.0" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32752085" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32752085" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
     </layout>
     <layout-to-restore>
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
@@ -617,9 +705,9 @@
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.26396495" sideWeight="0.7248841" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32924962" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
-      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
-      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
     </layout-to-restore>
   </component>
   <component name="Vcs.Log.UiProperties">
@@ -673,31 +761,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/model_misspecification/acropolis.pbs">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="13" column="17" selection-start-line="13" selection-start-column="17" selection-end-line="13" selection-end-column="17" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/package/robupy/fortran/solve_fortran.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="149" column="24" selection-start-line="149" selection-start-column="24" selection-end-line="149" selection-end-column="24" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/model_misspecification/modules/clean.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.32423756">
-          <caret line="18" column="38" selection-start-line="18" selection-start-column="38" selection-end-line="18" selection-end-column="38" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/model_misspecification/graphs">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.43820226">
-          <caret line="35" column="10" selection-start-line="35" selection-start-column="10" selection-end-line="35" selection-end-column="10" />
         </state>
       </provider>
     </entry>
@@ -765,80 +832,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_quantification/clean">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_quantification/acropolis.pbs">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.23273855">
-          <caret line="12" column="76" selection-start-line="12" selection-start-column="76" selection-end-line="12" selection-end-column="76" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_quantification/modules/create.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.01939488">
-          <caret line="1" column="49" selection-start-line="1" selection-start-column="49" selection-end-line="1" selection-end-column="49" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_quantification/modules/update.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.48487198">
-          <caret line="31" column="14" selection-start-line="31" selection-start-column="14" selection-end-line="31" selection-end-column="14" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/ambiguity_quantification/modules/auxiliary.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.4654771">
-          <caret line="24" column="7" selection-start-line="24" selection-start-column="7" selection-end-line="24" selection-end-column="7" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/assess_interpolation/modules/auxiliary.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-0.44608223">
-          <caret line="29" column="0" selection-start-line="29" selection-start-column="0" selection-end-line="29" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/admissible_values/modules/graphs.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/package/development/analyses/restud/graphs/create">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.43243244">
           <caret line="86" column="34" selection-start-line="86" selection-start-column="34" selection-end-line="86" selection-end-column="34" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/model_misspecification/modules/update.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="17" column="34" selection-start-line="17" selection-start-column="34" selection-end-line="17" selection-end-column="34" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/model_misspecification/modules/graphs.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="36" column="14" selection-start-line="36" selection-start-column="14" selection-end-line="36" selection-end-column="14" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/admissible_values/modules/auxiliary.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="98" column="4" selection-start-line="97" selection-start-column="4" selection-end-line="98" selection-end-column="4" />
         </state>
       </provider>
     </entry>
@@ -849,91 +846,87 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/modules/update.py">
+    <entry file="file://$PROJECT_DIR$/package/development/analyses/robust/indifference_curve/modules/auxiliary.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-13.580646">
+          <caret line="107" column="15" selection-start-line="107" selection-start-column="0" selection-end-line="108" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/development/analyses/robust/admissible_values/create">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.27027026">
+          <caret line="70" column="0" selection-start-line="70" selection-start-column="0" selection-end-line="74" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/development/analyses/robust/ambiguity_choices/acropolis.pbs">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.23166023">
+          <caret line="12" column="11" selection-start-line="12" selection-start-column="10" selection-end-line="12" selection-end-column="54" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/development/analyses/robust/model_misspecification/modules/create.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-1.6023166">
+          <caret line="37" column="18" selection-start-line="37" selection-start-column="18" selection-end-line="37" selection-end-column="18" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/development/analyses/robust/policy_interventions/create">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="3.2818532">
+          <caret line="170" column="20" selection-start-line="170" selection-start-column="20" selection-end-line="170" selection-end-column="20" />
+          <folding>
+            <element signature="e#151#183#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/development/analyses/robust/model_misspecification/create">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-2.2046332">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/development/analyses/robust/ambiguity_choices/modules/graphs.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <caret line="32" column="9" selection-start-line="32" selection-start-column="9" selection-end-line="32" selection-end-column="9" />
+          <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/modules/clean.py">
+    <entry file="file://$PROJECT_DIR$/package/development/analyses/robust/ambiguity_quantification/create">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.5948136">
-          <caret line="46" column="0" selection-start-line="46" selection-start-column="0" selection-end-line="46" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/graphs">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-1.3095624">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/acropolis.pbs">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.40053403">
-          <caret line="12" column="34" selection-start-line="12" selection-start-column="34" selection-end-line="12" selection-end-column="34" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/modules/graphs.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.6341789">
-          <caret line="38" column="36" selection-start-line="38" selection-start-column="36" selection-end-line="38" selection-end-column="36" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/modules/aggregate.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.55598456">
-          <caret line="60" column="15" selection-start-line="60" selection-start-column="15" selection-end-line="60" selection-end-column="15" />
+        <state vertical-scroll-proportion="-0.83243245">
+          <caret line="17" column="21" selection-start-line="17" selection-start-column="21" selection-end-line="17" selection-end-column="21" />
           <folding>
-            <element signature="e#102#122#0" expanded="false" />
+            <element signature="e#112#144#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/modules/create.py">
+    <entry file="file://$PROJECT_DIR$/package/development/analyses/robust/ambiguity_choices/modules/auxiliary.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.84555984">
-          <caret line="134" column="0" selection-start-line="134" selection-start-column="0" selection-end-line="134" selection-end-column="0" />
+        <state vertical-scroll-proportion="-4.709677">
+          <caret line="32" column="24" selection-start-line="32" selection-start-column="4" selection-end-line="32" selection-end-column="24" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/indifference_curve/modules/auxiliary.py">
+    <entry file="file://$PROJECT_DIR$/package/development/analyses/robust/ambiguity_choices/modules/create.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.74903476">
-          <caret line="90" column="15" selection-start-line="90" selection-start-column="15" selection-end-line="90" selection-end-column="15" />
+        <state vertical-scroll-proportion="0.32818532">
+          <caret line="17" column="0" selection-start-line="17" selection-start-column="0" selection-end-line="17" selection-end-column="0" />
           <folding>
-            <element signature="e#107#145#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/model_misspecification/create">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.44015443">
-          <caret line="126" column="40" selection-start-line="126" selection-start-column="40" selection-end-line="126" selection-end-column="40" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/model_misspecification/modules/auxiliary.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-17.612904">
-          <caret line="140" column="42" selection-start-line="140" selection-start-column="42" selection-end-line="140" selection-end-column="42" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/analyses/drafts/model_misspecification/modules/create.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.44620255">
-          <caret line="148" column="8" selection-start-line="148" selection-start-column="8" selection-end-line="148" selection-end-column="8" />
-          <folding>
-            <element signature="e#246#281#0" expanded="true" />
+            <element signature="e#159#191#0" expanded="true" />
           </folding>
         </state>
       </provider>

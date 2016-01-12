@@ -21,8 +21,6 @@ from robupy.clsRobupy import RobupyCls
 # PYTHONPATH
 sys.path.insert(0, os.environ['ROBUPY'])
 
-from robupy import solve
-
 # module-wide variables
 OCCUPATIONS = ['Occupation A', 'Occupation B', 'Schooling', 'Home']
 LABELS_SUBSET = ['0.000', '0.010', '0.020']
@@ -31,6 +29,29 @@ COLORS = ['red', 'orange', 'blue', 'yellow']
 
 """ Auxiliary functions
 """
+
+def distribute_arguments(parser):
+    """ Distribute command line arguments.
+    """
+    # Process command line arguments
+    args = parser.parse_args()
+
+    # Extract arguments
+    num_procs, grid = args.num_procs,  args.grid
+    is_recompile = args.is_recompile
+    is_debug = args.is_debug
+
+    # Check arguments
+    assert (num_procs > 0)
+
+    if grid != 0:
+        assert (len(grid) == 3)
+        assert (grid[2] > 0.0)
+        assert (grid[0] < grid[1]) or ((grid[0] == 0) and (grid[1] == 0))
+
+    # Finishing
+    return num_procs, grid, is_recompile, is_debug
+
 
 def get_robupy_obj(init_dict):
     """ Get the object to pass in the solution method.
@@ -43,29 +64,18 @@ def get_robupy_obj(init_dict):
     return robupy_obj
 
 
-def solve_ambiguous_economy(init_dict, is_debug, level):
-    """ Solve an economy in a subdirectory.
+def get_results(init_dict, is_debug):
+    """ Process results from the models.
     """
-    # Formatting directory name
-    name = '{0:0.3f}'.format(level)
 
-    # Create directory
-    os.mkdir(name)
+    rslts = dict()
 
-    os.chdir(name)
+    rslts['final_choices'] = track_final_choices(init_dict, is_debug)
 
-    # Update level of ambiguity
-    init_dict['AMBIGUITY']['level'] = level
-
-    # Restrict number of periods for debugging purposes.
-    if is_debug:
-        init_dict['BASICS']['periods'] = 3
-
-    # Solve the basic economy
-    solve(get_robupy_obj(init_dict))
+    rslts['education_period'] = track_schooling_over_time()
 
     # Finishing
-    os.chdir('../')
+    return rslts
 
 
 def track_final_choices(init_dict, is_debug):
@@ -103,7 +113,7 @@ def track_final_choices(init_dict, is_debug):
                         shares[occu] += [float(list_[i + 1])]
 
     # Finishing
-    pkl.dump(shares, open('rslts/ambiguity_shares_final.pkl', 'wb'))
+    return shares
 
 
 def track_schooling_over_time():
@@ -139,7 +149,7 @@ def track_schooling_over_time():
                     shares[level][occu] += [float(list_[i + 1])]
 
     # Finishing
-    pkl.dump(shares, open('rslts/ambiguity_shares_time.pkl', 'wb'))
+    return shares
 
 
 def get_levels():
