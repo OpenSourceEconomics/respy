@@ -29,7 +29,7 @@ from robupy import solve
 SCALING = 100000.00
 
 
-def plot_model_misspecification(yvalues, xvalues):
+def plot_indifference_curve(yvalues, xvalues):
     """ Plot the results from the model misspecification exercise.
     """
 
@@ -59,7 +59,7 @@ def plot_model_misspecification(yvalues, xvalues):
     func = matplotlib.ticker.FuncFormatter(lambda x, p: format(int(x), ','))
     ax.get_yaxis().set_major_formatter(func)
 
-    plt.savefig('rslts/model_misspecification.png', bbox_inches='tight',
+    plt.savefig('rslts/indifference_curve.png', bbox_inches='tight',
                 format='png')
 
 
@@ -193,7 +193,7 @@ def get_name(float_):
 def get_criterion_function():
     """ Process get value of criterion function.
     """
-    with open('misspecification.robupy.log', 'r') as output_file:
+    with open('indifference_curve.robupy.log', 'r') as output_file:
         for line in output_file.readlines():
             # Split lines
             list_ = shlex.split(line)

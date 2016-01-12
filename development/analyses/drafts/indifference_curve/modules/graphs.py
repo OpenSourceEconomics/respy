@@ -18,7 +18,7 @@ SPEC_DIR = ROBUPY_DIR + '/development/analyses/restud/specifications'
 sys.path.insert(0, ROBUPY_DIR)
 
 # project library
-from auxiliary import plot_model_misspecification
+from auxiliary import plot_indifference_curve
 
 
 ''' Core function
@@ -30,16 +30,18 @@ def create():
     misspecification exercise.
     """
     # Read results
-    rslts = pkl.load(open('rslts/model_misspecification.robupy.pkl', 'rb'))
+    rslts = pkl.load(open('rslts/indifference_curve.robupy.pkl', 'rb'))
 
     # Prepare results for plotting, redo scaling
-    xvals = sorted(rslts.keys())
+    xvals = sorted(rslts['opt'].keys())
     yvals = []
-    for value in xvals:
-        yvals += [rslts[value] * 100000.00]
+    for xval in xvals:
+        yvals += [rslts['opt'][xval]]
 
     # Plot the results from the model misspecification exercise.
-    plot_model_misspecification(yvals, xvals)
+    print(yvals, xvals)
+    plot_indifference_curve(yvals, xvals)
+
 
 
 ''' Execution of module as script.

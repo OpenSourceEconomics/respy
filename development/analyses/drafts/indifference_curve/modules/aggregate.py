@@ -21,43 +21,44 @@ from auxiliary import get_name
 
 
 def aggregate():
-    """ Aggregate results.
+    """ Aggregate results by processing the log files.
     """
-
+    # Get all directories that are contain information about the criterion
+    # function for selected pairs of ambiguity and psychic costs.
     levels = get_float_directories()
 
+    # Iterate over all ambiguity levels and intercepts.
     rslts = dict()
-
     for level in levels:
-
         os.chdir(get_name(level))
-
         rslts[level] = []
-
+        # For given level of ambiguity, get the intercepts.
         intercepts = get_float_directories()
-
         for intercept in intercepts:
-
             os.chdir(get_name(intercept))
-
-            crit = get_criterion_function()
-
-            rslts[level] += [(intercept, crit)]
-
+            # Another process might still be running.
+            if os.path.exists('indifference_curve.robupy.log'):
+                crit = get_criterion_function()
+                rslts[level] += [(intercept, crit)]
+            # Ready for a new candidate intercept.
             os.chdir('../')
-
+        # Back to root directory
         os.chdir('../')
 
-    # Construct extra key with optimal results.
+    # Construct extra key with optimal results to ease further processing.
     rslts['opt'] = dict()
     for level in levels:
-        rslts['opt'][level] = np.inf
-        candidates = rslts[level]
+        # Initialize loop
+        crit_opt, candidates = np.inf, rslts[level]
+        # Iterate over all candidate pairs and update if better pair found.
         for candidate in candidates:
             intercept, crit = candidate
-            if crit < rslts['opt'][level]:
+            is_update = crit < crit_opt
+            if is_update:
+                crit_opt = crit
                 rslts['opt'][level] = intercept
 
+    print(rslts)
     # Finishing
     return rslts
 

@@ -60,7 +60,7 @@ def run(base_dict, base_choices, is_debug, level, intercept):
     rslt = criterion_function(init_dict, base_choices)
 
     # Write out some basic information to a file.
-    with open('misspecification.robupy.log', 'a') as file_:
+    with open('indifference_curve.robupy.log', 'a') as file_:
 
         file_.write('    Indifference Curve \n')
         file_.write('    ------------------ \n\n')
@@ -132,3 +132,6 @@ if __name__ == '__main__':
     # Create pool of processors and send off requests.
     process_tasks = partial(run, base_dict, base_choices, is_debug, level)
     intercepts = Pool(num_procs).map(process_tasks, intercepts)
+
+    # Aggregate results. This include results from other existing runs.
+    os.chdir('../'), os.system('./aggregate')
