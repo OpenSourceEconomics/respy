@@ -67,59 +67,24 @@ def distribute_arguments(parser):
 
     # Extract arguments
     is_recompile = args.is_recompile
-    is_restart = args.is_restart
     num_procs = args.num_procs
     is_debug = args.is_debug
-    levels = args.levels
 
     # Check arguments
-    assert (isinstance(levels, list))
-    assert (np.all(levels) >= 0.00)
-    assert (is_restart in [True, False])
     assert (is_recompile in [True, False])
     assert (is_debug in [True, False])
     assert (isinstance(num_procs, int))
     assert (num_procs > 0)
 
-    # Check for restart material
-    if is_restart:
-        for level in levels:
-            assert (os.path.exists('%03.3f/true/base_choices.pkl' % level))
-
     # Finishing
-    return levels, num_procs, is_restart, is_recompile, is_debug
+    return num_procs, is_recompile, is_debug
 
-
-def prepare_directory(is_restart, name):
-    """ Prepare directory structure depending whether a fresh start or we are
-    building on existing results.
-    """
-    if not is_restart:
-        if os.path.exists(name):
-            shutil.rmtree(name)
-        os.mkdir(name)
-    else:
-        os.chdir(name)
-        for obj in glob.glob('*'):
-            # Retain results from previous run
-            if 'true' in obj: continue
-            # Delete files and directories
-            try:
-                shutil.rmtree(obj)
-            except OSError:
-                os.unlink(obj)
-        os.chdir('../')
-
-
-def solve_true_economy(level, init_dict, is_debug):
+def solve_true_economy(init_dict, is_debug):
     """ Solve and store true economy.
     """
     # Prepare directory structure
     os.mkdir('true'), os.chdir('true')
     # Modify initialization dictionary
-    init_dict['AMBIGUITY']['level'] = level
-    if is_debug:
-        init_dict['BASICS']['periods'] = 5
     # Solve economy
     solve(_get_robupy_obj(init_dict))
     # Get baseline choice distributions
@@ -136,8 +101,6 @@ def criterion_function(point, base_choices, init_dict, is_debug):
     """
     # Set relevant values
     init_dict['EDUCATION']['int'] = float(point)*SCALING
-    if is_debug:
-        init_dict['BASICS']['periods'] = 5
     # Solve requested model
     solve(_get_robupy_obj(init_dict))
     # Get choice probabilities
@@ -175,7 +138,7 @@ def get_period_choices():
     return choices
 
 
-def solve_estimated_economy(opt, level, init_dict, is_debug):
+def solve_estimated_economy(opt, init_dict):
     """ Collect information about estimated economy by updating an initialization
     file with the resulting estimate for the intercept and solving the
     resulting economy.
@@ -184,8 +147,6 @@ def solve_estimated_economy(opt, level, init_dict, is_debug):
     os.mkdir('estimated'), os.chdir('estimated')
     # Update initialization file with result from estimation and write to disk
     init_dict['EDUCATION']['int'] = float(opt['x']) * SCALING
-    if is_debug:
-        init_dict['BASICS']['periods'] = 5
     # Solve the basic economy
     robupy_obj = solve(_get_robupy_obj(init_dict))
     # Extract result
