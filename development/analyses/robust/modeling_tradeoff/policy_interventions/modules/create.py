@@ -129,7 +129,7 @@ if __name__ == '__main__':
     # Construct all estimation requests for the policy analysis.
     args = []
     for i in range(3):
-        intercept, level = specifications[i]
+        level, intercept = specifications[i]
         for j in range(3):
             subsidy = SUBSIDIES[j]
             args += [(intercept, level, subsidy)]
