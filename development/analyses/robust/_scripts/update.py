@@ -78,7 +78,7 @@ def distribute_arguments(parser):
     return is_all
 
 
-def get_results(is_all, directory):
+def get_results(is_all, directory, HOST_DIR):
     """ Get results from server.
     """
     # Starting with clean slate
@@ -97,8 +97,11 @@ def get_results(is_all, directory):
     # Get files
     sftp.chdir(CLIENT_DIR + '/' + directory)
 
-    # Get results directory, this is always downloaded.
-    get_directory('rslts', sftp)
+    # Get results directory, this is always downloaded (if present).
+    try:
+        get_directory('rslts', sftp)
+    except FileNotFoundError:
+        os.chdir(HOST_DIR), sftp.chdir(CLIENT_DIR + '/' + directory)
 
     # If requested, also download all intermediate results as well.
     if is_all:
@@ -134,7 +137,8 @@ if __name__ == '__main__':
 
     # Set baseline working directory on HOST
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
-    directory = os.getcwd().split('/')[-1]
+    HOST_DIR = os.getcwd()
+    directory = HOST_DIR.split('/')[-1]
 
     # Run function
-    get_results(is_all, directory)
+    get_results(is_all, directory, HOST_DIR)

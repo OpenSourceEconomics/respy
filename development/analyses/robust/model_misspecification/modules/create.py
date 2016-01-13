@@ -87,7 +87,7 @@ def run(base_dict, is_debug, is_restart, args):
 
     # Criterion function uses update. We optimize over the intercept in the
     # reward function.
-    x0 = intercept
+    x0 = intercept/SCALING
     opt = minimize(criterion_function, x0, args=(base_choices, base_dict,
                      is_debug), method="Nelder-Mead")
 
