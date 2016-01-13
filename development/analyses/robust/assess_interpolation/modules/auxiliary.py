@@ -20,6 +20,7 @@ SPEC_DIR = ROBUPY_DIR + '/development/analyses/restud/specifications'
 sys.path.insert(0, ROBUPY_DIR + '/development/tests/random')
 sys.path.insert(0, ROBUPY_DIR)
 
+
 # project library
 from robupy.python.py.auxiliary import get_total_value
 from robupy.tests.random_init import print_random_dict

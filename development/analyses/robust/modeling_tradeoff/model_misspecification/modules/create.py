@@ -24,8 +24,12 @@ ROBUPY_DIR = os.environ['ROBUPY']
 SPEC_DIR = ROBUPY_DIR + '/development/analyses/restud/specifications'
 
 # PYTHONPATH
+sys.path.insert(0, ROBUPY_DIR + '/development/analyses/robust/_scripts')
 sys.path.insert(0, ROBUPY_DIR + '/development/tests/random')
 sys.path.insert(0, ROBUPY_DIR)
+
+# _scripts
+from _auxiliary import get_indifference_points
 
 # project library
 from auxiliary import solve_estimated_economy
@@ -167,12 +171,16 @@ if __name__ == '__main__':
     # of psychic cost and ambiguity. Each tuple (level, intercept) describes
     # such an economy. The values are determined by results from the
     # indifference curve exercise.
-    SPECIFICATIONS = [(0.00, 0.00), (0.01, 650), (0.02, 900)]
-    if is_debug:
-        SPECIFICATIONS = [(0.00, 0.00)]
+    if not is_debug:
+        specifications = get_indifference_points()
 
+    else:
+        specifications = [(0.00, 0.00)]
+
+    # If baseline choices are requested, then better check that these are in
+    # fact available.
     if is_restart:
-        for spec in SPECIFICATIONS:
+        for spec in specifications:
             level, _ = spec
             assert (os.path.exists('%03.3f' % level + '/true/base_choices.pkl'))
 
@@ -183,12 +191,12 @@ if __name__ == '__main__':
 
     # Set up pool for processors for parallel execution.
     process_tasks = partial(run, base_dict, is_debug, is_restart)
-    intercepts = Pool(num_procs).map(process_tasks, SPECIFICATIONS)
+    intercepts = Pool(num_procs).map(process_tasks, specifications)
 
     # Restructure return arguments for better interpretability and further
     # processing.
     rslt = dict()
-    for i, args in enumerate(SPECIFICATIONS):
+    for i, args in enumerate(specifications):
         level, _ = args
         rslt[level] = intercepts[i]
 

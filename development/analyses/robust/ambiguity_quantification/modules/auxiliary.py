@@ -5,19 +5,11 @@ quantification of ambiguity.
 # standard library
 import numpy as np
 
+import sys
+import os
+
+# project library
 from robupy.clsRobupy import RobupyCls
-
-# standard library
-
-def get_robupy_obj(init_dict):
-    """ Get the object to pass in the solution method.
-    """
-    # Initialize and process class
-    robupy_obj = RobupyCls()
-    robupy_obj.set_attr('init_dict', init_dict)
-    robupy_obj.lock()
-    # Finishing
-    return robupy_obj
 
 
 def distribute_arguments(parser):

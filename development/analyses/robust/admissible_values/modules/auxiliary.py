@@ -19,6 +19,7 @@ CHOICE_LIST = ['Occupation A', 'Occupation B', 'School', 'Home']
 BOUNDS_LIST = ['lower', 'upper']
 
 
+
 def _extract_results(level, choice, rslts, which):
     """ Extract results from dictionary.
     """
@@ -165,13 +166,3 @@ def criterion(x, num_draws, eps_relevant, period, k, payoffs_systematic,
     # Finishing
     return sign*simulated
 
-
-def get_robupy_obj(init_dict):
-    """ Get the object to pass in the solution method.
-    """
-    # Initialize and process class
-    robupy_obj = RobupyCls()
-    robupy_obj.set_attr('init_dict', init_dict)
-    robupy_obj.lock()
-    # Finishing
-    return robupy_obj

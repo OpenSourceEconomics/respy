@@ -19,7 +19,11 @@ import os
 from robupy.clsRobupy import RobupyCls
 
 # PYTHONPATH
+sys.path.insert(0, os.environ['ROBUPY'] + '/development/analyses/robust/_scripts')
 sys.path.insert(0, os.environ['ROBUPY'])
+
+# _scripts
+from _auxiliary import get_robupy_obj
 
 # module-wide variables
 OCCUPATIONS = ['Occupation A', 'Occupation B', 'Schooling', 'Home']
@@ -51,17 +55,6 @@ def distribute_arguments(parser):
 
     # Finishing
     return num_procs, grid, is_recompile, is_debug
-
-
-def get_robupy_obj(init_dict):
-    """ Get the object to pass in the solution method.
-    """
-    # Initialize and process class
-    robupy_obj = RobupyCls()
-    robupy_obj.set_attr('init_dict', init_dict)
-    robupy_obj.lock()
-    # Finishing
-    return robupy_obj
 
 
 def get_results(init_dict, is_debug):

@@ -12,7 +12,6 @@ import pickle as pkl
 import argparse
 import shutil
 import socket
-import shlex
 import sys
 import os
 
@@ -21,12 +20,19 @@ ROBUPY_DIR = os.environ['ROBUPY']
 SPEC_DIR = ROBUPY_DIR + '/development/analyses/restud/specifications'
 
 # PYTHONPATH
+sys.path.insert(0, ROBUPY_DIR + '/development/analyses/robust/_scripts')
 sys.path.insert(0, ROBUPY_DIR + '/development/tests/random')
 sys.path.insert(0, ROBUPY_DIR)
 
+# _scripts
+from _auxiliary import get_indifference_points
+from _auxiliary import get_robupy_obj
+
 # Auxiliary functions
 from modules.auxiliary import compile_package
-from auxiliary import get_robupy_obj
+
+from auxiliary import distribute_arguments
+from auxiliary import process_models
 from auxiliary import get_name
 
 from robupy.tests.random_init import print_random_dict
@@ -36,66 +42,6 @@ from robupy import solve
 
 ''' Auxiliary functions
 '''
-
-
-def distribute_arguments(parser):
-    """ Distribute command line arguments.
-    """
-    # Process command line arguments
-    args = parser.parse_args()
-
-    # Extract arguments
-    is_recompile = args.is_recompile
-    num_procs = args.num_procs
-    is_debug = args.is_debug
-
-    # Check arguments
-    assert (num_procs > 0)
-    assert (is_debug in [True, False])
-    assert (is_recompile in [True, False])
-
-    # Finishing
-    return num_procs, is_recompile, is_debug
-
-
-def process_models(args):
-    """ This function processes the information from all simulated models.
-    """
-
-    # Prepare the resulting dictionary.
-    rslt = dict()
-    for arg in args:
-        # Distribute elements of request
-        _, level, subsidy = arg
-        # Create required keys in dictionary
-        if level not in rslt.keys():
-            rslt[level] = dict()
-        # Add levels
-        rslt[level][subsidy] = []
-
-    # Collect all results from the subdirectories.
-    for arg in args:
-        # Distribute elements of request
-        _, level, subsidy = arg
-        # Auxiliary objects
-        name = get_name(level, subsidy)
-        # Switch to results
-        os.chdir(name)
-        # Extract all results
-        with open('data.robupy.info', 'r') as rslt_file:
-            # Store results
-            for line in rslt_file:
-                list_ = shlex.split(line)
-                try:
-                    if 'Education' == list_[1]:
-                        rslt[level][subsidy] += [float(list_[2])]
-                except IndexError:
-                    pass
-        # Return to root directory.
-        os.chdir('../../')
-
-    # Finishing
-    return rslt
 
 
 def run(baseline_dict, is_debug, args):
@@ -149,9 +95,7 @@ if __name__ == '__main__':
     parser.add_argument('--debug', action='store_true', dest='is_debug',
         help='only five periods')
 
-    # In the first iteration of the code, I use the hardcoded results from
-    # the independent model misspecification exercise and the policy schedule.
-    LEVELS, INTERCEPTS = [0.00, 0.01, 0.02], [0.00, -1000.00, -2450.00]
+    # Hard-coded subsidy schedule
     SUBSIDIES = [0.00, 500.00, 1000.00]
 
     # Process command line arguments
@@ -159,6 +103,14 @@ if __name__ == '__main__':
 
     # Start with a clean slate.
     os.system('./clean')
+
+    # In the first iteration of the code, I use the hardcoded results from
+    # the independent model misspecification exercise and the policy schedule.
+    if not is_debug:
+        specifications = get_indifference_points()
+
+    else:
+        specifications = [(0.00, 0.00)]
 
     # Read the baseline specification and obtain the initialization dictionary.
     shutil.copy(SPEC_DIR + '/data_one.robupy.ini', 'model.robupy.ini')
@@ -177,7 +129,7 @@ if __name__ == '__main__':
     # Construct all estimation requests for the policy analysis.
     args = []
     for i in range(3):
-        intercept, level = INTERCEPTS[i], LEVELS[i]
+        intercept, level = specifications[i]
         for j in range(3):
             subsidy = SUBSIDIES[j]
             args += [(intercept, level, subsidy)]

@@ -10,26 +10,55 @@ import matplotlib
 
 import pickle as pkl
 import numpy as np
-import shlex
-import glob
-
 
 import shutil
 import shlex
 import glob
+import sys
 import os
 
-# project library
+# PYTHONPATH
+sys.path.insert(0, os.environ['ROBUPY'] + '/development/analyses/robust/_scripts')
 
+# _scripts
+from _auxiliary import check_indifference
+from _auxiliary import get_robupy_obj
+
+# project library
 from robupy.tests.random_init import print_random_dict
-from robupy.clsRobupy import RobupyCls
 from robupy import solve
 
 # module wide variables
-SCALING = 100000.00
+SCALING = 10000.00
 
 
-def plot_indifference_curve(yvalues, xvalues):
+def cleanup_directory(name):
+    """ Cleanup directory for a restart of the estimation.
+    """
+    os.chdir(name)
+
+    candidates = glob.glob('*')
+    for candidate in candidates:
+        if 'true' in candidate:
+            continue
+        _remove(candidate)
+    os.chdir('../')
+
+
+def _remove(names):
+    """ Remove files or directories.
+    """
+    if not isinstance(names, list):
+        names = [names]
+
+    for name in names:
+        try:
+            os.remove(name)
+        except IsADirectoryError:
+            shutil.rmtree(name)
+
+
+def plot_model_misspecification(yvalues, xvalues):
     """ Plot the results from the model misspecification exercise.
     """
 
@@ -59,7 +88,7 @@ def plot_indifference_curve(yvalues, xvalues):
     func = matplotlib.ticker.FuncFormatter(lambda x, p: format(int(x), ','))
     ax.get_yaxis().set_major_formatter(func)
 
-    plt.savefig('rslts/indifference_curve.png', bbox_inches='tight',
+    plt.savefig('rslts/model_misspecification.png', bbox_inches='tight',
                 format='png')
 
 
@@ -71,25 +100,23 @@ def distribute_arguments(parser):
 
     # Extract arguments
     is_recompile = args.is_recompile
+    is_restart = args.is_restart
     num_procs = args.num_procs
     is_debug = args.is_debug
-    level = args.level
-    grid = args.grid
 
     # Check arguments
-    assert (isinstance(level, float))
-    assert (level >= 0.00)
+    assert (is_restart in [True, False])
     assert (is_recompile in [True, False])
     assert (is_debug in [True, False])
     assert (isinstance(num_procs, int))
     assert (num_procs > 0)
 
-    # Check and process information about grid.
-    assert (len(grid) == 3)
-    grid = float(grid[0]), float(grid[1]), int(grid[2])
+    # If not a debugging run, then the indifference points need to be available.
+    if not is_debug:
+        check_indifference()
 
     # Finishing
-    return level, grid, num_procs, is_recompile, is_debug
+    return num_procs, is_recompile, is_debug, is_restart
 
 
 def solve_true_economy(init_dict, is_debug):
@@ -98,31 +125,30 @@ def solve_true_economy(init_dict, is_debug):
     # Prepare directory structure
     os.mkdir('true'), os.chdir('true')
     # Modify initialization dictionary
-    if is_debug:
-        init_dict['BASICS']['periods'] = 5
     # Solve economy
-    solve(_get_robupy_obj(init_dict))
+    solve(get_robupy_obj(init_dict))
     # Get baseline choice distributions
     base_choices = get_period_choices()
     # Store material required for restarting an estimation run
+    pkl.dump(base_choices, open('base_choices.pkl', 'wb'))
     print_random_dict(init_dict)
     # Return to root directory
     os.chdir('../')
-    # Finishing
-    return base_choices
 
 
-def criterion_function(init_dict, base_choices):
+def criterion_function(point, base_choices, init_dict, is_debug):
     """ Get the baseline distribution.
     """
+    # Set relevant values
+    init_dict['EDUCATION']['int'] = float(point)*SCALING
     # Solve requested model
-    solve(_get_robupy_obj(init_dict))
+    solve(get_robupy_obj(init_dict))
     # Get choice probabilities
     alternative_choices = get_period_choices()
     # Calculate squared mean-deviation of all transition probabilities
-    rslt = np.mean(np.sum((base_choices[:, :] - alternative_choices[:, :])**2))
+    crit = np.mean(np.sum((base_choices[:, :] - alternative_choices[:, :])**2))
     # Finishing
-    return rslt
+    return crit
 
 
 def get_period_choices():
@@ -152,57 +178,23 @@ def get_period_choices():
     return choices
 
 
-def _get_robupy_obj(init_dict):
-    """ Get the object to pass in the solution method.
+def solve_estimated_economy(opt, init_dict):
+    """ Collect information about estimated economy by updating an initialization
+    file with the resulting estimate for the intercept and solving the
+    resulting economy.
     """
-    # Initialize and process class
-    robupy_obj = RobupyCls()
-    robupy_obj.set_attr('init_dict', init_dict)
-    robupy_obj.lock()
+    # Switch into extra directory to store the results
+    os.mkdir('estimated'), os.chdir('estimated')
+    # Update initialization file with result from estimation and write to disk
+    init_dict['EDUCATION']['int'] = float(opt['x']) * SCALING
+    # Solve the basic economy
+    robupy_obj = solve(get_robupy_obj(init_dict))
+    # Extract result
+    init_dict = robupy_obj.get_attr('init_dict')
+    rslt = init_dict['EDUCATION']['int']
+    # Store some material for debugging purposes
+    print_random_dict(init_dict)
+    # Return to root dictionary
+    os.chdir('../')
     # Finishing
-    return robupy_obj
-
-
-def get_float_directories():
-    """ Get directories that have a float-type name.
-    """
-    # Get all possible files.
-    candidates = glob.glob('*')
-    directories = []
-    for candidate in candidates:
-        # Check if directory at all.
-        if not os.path.isdir(candidate):
-            continue
-        # Check if directory with float-type name.
-        try:
-            float(candidate)
-        except ValueError:
-            continue
-        # Collect survivors.
-        directories += [float(candidate)]
-    # Finishing
-    return directories
-
-
-def get_name(float_):
-    """ Construct directory label from float.
-    """
-    return '%03.3f' % float_
-
-
-def get_criterion_function():
-    """ Process get value of criterion function.
-    """
-    with open('indifference_curve.robupy.log', 'r') as output_file:
-        for line in output_file.readlines():
-            # Split lines
-            list_ = shlex.split(line)
-            # Skip all irrelevant lines.
-            if not len(list_) == 2:
-                continue
-            if not list_[0] == 'Criterion':
-                continue
-            # Finishing
-            return float(list_[1])
-
-
+    return rslt
