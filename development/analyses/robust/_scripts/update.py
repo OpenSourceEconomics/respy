@@ -21,15 +21,8 @@ if not socket.gethostname() == 'pontos':
     raise AssertionError('Please use @pontos as host')
 
 # module-wide variables
-ROBUPY_DIR = os.environ['ROBUPY']
-CLIENT_DIR = '/home/eisenhauer/robustToolbox/package/development/analyses' \
-             '/drafts/admissible_values'
+CLIENT_DIR = '/home/eisenhauer/robustToolbox/package/development/analyses/robust'
 KEY_DIR = '/home/peisenha/.ssh/id_rsa'
-
-HOST = os.path.dirname(os.path.realpath(__file__)).replace('modules', '')
-
-# Set baseline working directory on HOST
-os.chdir(HOST)
 
 ''' Functions
 '''
@@ -85,7 +78,7 @@ def distribute_arguments(parser):
     return is_all
 
 
-def get_results(is_all):
+def get_results(is_all, directory):
     """ Get results from server.
     """
     # Starting with clean slate
@@ -102,7 +95,7 @@ def get_results(is_all):
     sftp = paramiko.SFTPClient.from_transport(transport)
 
     # Get files
-    sftp.chdir(CLIENT_DIR)
+    sftp.chdir(CLIENT_DIR + '/' + directory)
 
     # Get results directory, this is always downloaded.
     get_directory('rslts', sftp)
@@ -139,5 +132,9 @@ if __name__ == '__main__':
     # Process command line arguments
     is_all = distribute_arguments(parser)
 
+    # Set baseline working directory on HOST
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
+    directory = os.getcwd().split('/')[-1]
+
     # Run function
-    get_results(is_all)
+    get_results(is_all, directory)

@@ -30,11 +30,10 @@ def create():
     """ Create a visual representation of all admissible value functions.
     """
 
-    rslts = pkl.load(open('rslts/ambiguity_choices.robupy.pkl', 'rb'))
+    rslt = pkl.load(open('rslts/ambiguity_choices.robupy.pkl', 'rb'))
+    plot_choices_ambiguity(rslt)
 
-    plot_choices_ambiguity(rslts['final_period'])
-
-    plot_schooling_ambiguity(rslts['education_period'])
+    plot_schooling_ambiguity(rslt)
 
 
 ''' Execution of module as script.

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" This script cleans the COMPU directories.
+""" This script cleans the directories.
 """
 
 # standard library
@@ -7,22 +7,23 @@ import shutil
 import glob
 import os
 
-# module-wide variables
+# module wide variables
+SAVE_FILES = ['modules', 'clean', 'create', 'acropolis.pbs',
+                  'auxiliary.py', 'clean.py', 'create.py', 'update',
+                  'update.py', 'graphs.py', 'graphs', 'aggregate',
+              'aggregate.py']
 
 ''' Auxiliary functions
 '''
 
 
-def cleanup():
+def cleanup(save_files=SAVE_FILES):
     """ Cleanup during development.
     """
-    SAVE_FILES = ['modules', 'clean', 'create', 'acropolis.pbs',
-                  'auxiliary.py', 'clean.py', 'create.py', 'update',
-                  'update.py', 'graphs.py', 'graphs']
 
     for name in glob.glob('*'):
 
-        if name in SAVE_FILES:
+        if name in save_files:
             pass
         else:
             remove(name)
@@ -48,6 +49,4 @@ if __name__ =='__main__':
 
     for subdir, _, _ in os.walk('.'):
 
-        os.chdir(subdir)
-        cleanup()
-        os.chdir(root_dir)
+        os.chdir(subdir), cleanup(SAVE_FILES), os.chdir(root_dir)

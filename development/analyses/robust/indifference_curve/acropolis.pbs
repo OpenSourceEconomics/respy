@@ -10,5 +10,4 @@
 cd $PBS_O_WORKDIR
 source $HOME/.local/bin/virtualenvwrapper.sh
 workon robustToolbox3
-python -O /home/eisenhauer/robustToolbox/package/development/analyses/robust/indifference_curve/create \
-    --level 0.01 --grid 500.00 900.00 9 --procs 9 
+python -O create --level 0.01 --grid 500.00 900.00 9 --procs $PBS_NUM_PPN
