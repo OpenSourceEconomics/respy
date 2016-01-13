@@ -148,8 +148,11 @@ if __name__ == '__main__':
     if not is_restart:
         os.system('./clean')
     else:
-        shutil.rmtree('rslts')
-
+        try:
+            shutil.rmtree('rslts')
+        except FileNotFoundError:
+            pass
+            
     # Ensure that fast version of package is available. This is a little more
     # complicated than usual as the compiler on acropolis does use other
     # debugging flags and thus no debugging is requested.
