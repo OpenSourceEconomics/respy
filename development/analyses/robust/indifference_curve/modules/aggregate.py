@@ -58,7 +58,6 @@ def aggregate():
                 crit_opt = crit
                 rslts['opt'][level] = intercept
 
-    print(rslts)
     # Finishing
     return rslts
 

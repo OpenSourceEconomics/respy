@@ -8,6 +8,7 @@ from stat import S_ISDIR
 import argparse
 import paramiko
 import socket
+import json
 import sys
 import os
 
@@ -20,13 +21,14 @@ if not (sys.version_info[0] == 3):
 if not socket.gethostname() == 'pontos':
     raise AssertionError('Please use @pontos as host')
 
+# Read configuration file
+config = json.load(open('../config.json'))
+
 # module-wide variables
 ROBUPY_DIR = os.environ['ROBUPY']
-CLIENT_DIR = '/home/eisenhauer/robustToolbox/package/development/analyses' \
-             '/drafts/model_misspecification'
-KEY_DIR = '/home/peisenha/.ssh/id_rsa'
-
 HOST = os.path.dirname(os.path.realpath(__file__)).replace('modules', '')
+CLIENT_DIR = config['CLIENT_DIR'] + '/model_misspecification'
+KEY_DIR = config['KEY_DIR']
 
 # Set baseline working directory on HOST
 os.chdir(HOST)

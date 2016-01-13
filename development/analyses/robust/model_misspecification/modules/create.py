@@ -38,6 +38,8 @@ from modules.auxiliary import compile_package
 from robupy import read
 
 
+from auxiliary import SCALING
+
 ''' Core function
 '''
 
@@ -89,7 +91,7 @@ def run(base_dict, is_debug, args):
 
         string = '    {0[0]:<5} {0[1]:7.4f}\n\n'
 
-        file_.write(string.format(['Result', opt['x'][0]]))
+        file_.write(string.format(['Result', opt['x'][0]*SCALING]))
         file_.write('    Function ' + str(opt['fun']) + '\n')
         file_.write('    Success  ' + str(opt['success']) + '\n')
         file_.write('    Message  ' + opt['message'] + '\n\n')
@@ -148,7 +150,7 @@ if __name__ == '__main__':
     # of psychic cost and ambiguity. Each tuple (level, intercept) describes
     # such an economy. The values are determined by results from the
     # indifference curve exercise.
-    SPECIFICATIONS = [(0.00, 0.00), (0.01, 300), (0.02, 600)]
+    SPECIFICATIONS = [(0.00, 0.00), (0.01, 700), (0.02, 900)]
     if is_debug:
         SPECIFICATIONS = [(0.00, 0.00)]
 
