@@ -2,36 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="39b3d67a-e664-4cff-aba7-2a9ae5eaeb87" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/package/development/analyses/robust/_scripts/_auxiliary.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/robust/indifference_curve/acropolis.pbs" afterPath="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/indifference_curve/acropolis.pbs" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/robust/indifference_curve/aggregate" afterPath="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/indifference_curve/aggregate" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/robust/indifference_curve/clean" afterPath="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/policy_interventions/clean" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/robust/indifference_curve/create" afterPath="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/policy_interventions/create" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/robust/indifference_curve/graphs" afterPath="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/model_misspecification/graphs" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/robust/indifference_curve/modules/aggregate.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/indifference_curve/modules/aggregate.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/robust/indifference_curve/modules/auxiliary.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/indifference_curve/modules/auxiliary.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/robust/indifference_curve/modules/create.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/indifference_curve/modules/create.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/robust/indifference_curve/modules/graphs.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/indifference_curve/modules/graphs.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/robust/indifference_curve/update" afterPath="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/policy_interventions/update" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/robust/model_misspecification/acropolis.pbs" afterPath="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/model_misspecification/acropolis.pbs" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/robust/model_misspecification/clean" afterPath="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/model_misspecification/clean" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/robust/model_misspecification/create" afterPath="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/model_misspecification/create" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/robust/model_misspecification/graphs" afterPath="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/indifference_curve/graphs" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/robust/model_misspecification/modules/auxiliary.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/model_misspecification/modules/auxiliary.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/robust/model_misspecification/modules/create.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/model_misspecification/modules/create.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/robust/model_misspecification/modules/graphs.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/model_misspecification/modules/graphs.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/robust/model_misspecification/update" afterPath="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/model_misspecification/update" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/robust/policy_interventions/acropolis.pbs" afterPath="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/policy_interventions/acropolis.pbs" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/robust/policy_interventions/clean" afterPath="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/indifference_curve/clean" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/robust/policy_interventions/create" afterPath="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/indifference_curve/create" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/robust/policy_interventions/modules/auxiliary.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/policy_interventions/modules/auxiliary.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/robust/policy_interventions/modules/create.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/policy_interventions/modules/create.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/development/analyses/robust/policy_interventions/update" afterPath="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/indifference_curve/update" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/.idea/workspace.xml" afterPath="$PROJECT_DIR$/package/development/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/analyses/robust/admissible_values/modules/auxiliary.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/admissible_values/modules/auxiliary.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/analyses/robust/ambiguity_choices/modules/auxiliary.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/ambiguity_choices/modules/auxiliary.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/analyses/robust/ambiguity_quantification/modules/auxiliary.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/ambiguity_quantification/modules/auxiliary.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/analyses/robust/assess_interpolation/modules/auxiliary.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/assess_interpolation/modules/auxiliary.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/analyses/robust/_scripts/update.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/_scripts/update.py" />
     </list>
     <ignored path="robustToolbox.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -63,25 +35,13 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="create.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/model_misspecification/modules/create.py">
+      <file leaf-file-name="update.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/package/development/analyses/robust/_scripts/update.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="31" column="46" selection-start-line="31" selection-start-column="23" selection-end-line="31" selection-end-column="46" />
+            <state vertical-scroll-proportion="0.4980695">
+              <caret line="124" column="3" selection-start-line="124" selection-start-column="3" selection-end-line="124" selection-end-column="3" />
               <folding>
-                <element signature="e#246#281#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="create.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/policy_interventions/modules/create.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.34362933">
-              <caret line="119" column="35" selection-start-line="119" selection-start-column="35" selection-end-line="119" selection-end-column="35" />
-              <folding>
-                <element signature="e#151#183#0" expanded="true" />
+                <element signature="e#99#123#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -137,7 +97,6 @@
         <option value="$PROJECT_DIR$/package/development/analyses/robust/assess_interpolation/clean" />
         <option value="$PROJECT_DIR$/package/development/analyses/robust/_scripts/clean.py" />
         <option value="$PROJECT_DIR$/package/development/analyses/robust/model_misspecification/modules/create.py" />
-        <option value="$PROJECT_DIR$/package/development/analyses/robust/_scripts/update.py" />
         <option value="$PROJECT_DIR$/package/development/analyses/robust/_scripts/auxiliary.py" />
         <option value="$PROJECT_DIR$/package/development/analyses/robust/model_misspecification/modules/auxiliary.py" />
         <option value="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/model_misspecification/create" />
@@ -147,6 +106,7 @@
         <option value="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/model_misspecification/modules/create.py" />
         <option value="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/indifference_curve/modules/auxiliary.py" />
         <option value="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/policy_interventions/modules/create.py" />
+        <option value="$PROJECT_DIR$/package/development/analyses/robust/_scripts/update.py" />
       </list>
     </option>
   </component>
@@ -959,16 +919,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/analyses/robust/_scripts/update.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="1.7602848">
-          <caret line="89" column="22" selection-start-line="89" selection-start-column="22" selection-end-line="89" selection-end-column="22" />
-          <folding>
-            <element signature="e#99#123#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/package/development/analyses/robust/_scripts/clean.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.24710424">
@@ -1035,9 +985,19 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/policy_interventions/modules/create.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.34362933">
+          <caret line="119" column="35" selection-start-line="119" selection-start-column="35" selection-end-line="119" selection-end-column="35" />
+          <folding>
+            <element signature="e#151#183#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/model_misspecification/modules/create.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
+        <state vertical-scroll-proportion="0.5984556">
           <caret line="31" column="46" selection-start-line="31" selection-start-column="23" selection-end-line="31" selection-end-column="46" />
           <folding>
             <element signature="e#246#281#0" expanded="true" />
@@ -1045,12 +1005,12 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/policy_interventions/modules/create.py">
+    <entry file="file://$PROJECT_DIR$/package/development/analyses/robust/_scripts/update.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.34362933">
-          <caret line="119" column="35" selection-start-line="119" selection-start-column="35" selection-end-line="119" selection-end-column="35" />
+        <state vertical-scroll-proportion="0.4980695">
+          <caret line="124" column="3" selection-start-line="124" selection-start-column="3" selection-end-line="124" selection-end-column="3" />
           <folding>
-            <element signature="e#151#183#0" expanded="true" />
+            <element signature="e#99#123#0" expanded="true" />
           </folding>
         </state>
       </provider>

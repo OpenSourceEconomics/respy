@@ -137,8 +137,11 @@ if __name__ == '__main__':
 
     # Set baseline working directory on HOST
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+    # Construct subdirectory.
     HOST_DIR = os.getcwd()
-    directory = HOST_DIR.split('/')[-1]
+    idx = HOST_DIR.split('/').index('robust')
+    directory = '/'.join(HOST_DIR.split('/')[idx + 1:])
 
     # Run function
     get_results(is_all, directory, HOST_DIR)
