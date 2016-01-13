@@ -36,7 +36,7 @@ def create():
     xvals = sorted(rslts.keys())
     yvals = []
     for value in xvals:
-        yvals += [rslts[value] * 100000.00]
+        yvals += [rslts[value]]
 
     # Plot the results from the model misspecification exercise.
     plot_model_misspecification(yvals, xvals)

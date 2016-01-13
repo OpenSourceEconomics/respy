@@ -22,8 +22,33 @@ from robupy.clsRobupy import RobupyCls
 from robupy import solve
 
 # module wide variables
-SCALING = 100000.00
+SCALING = 10000.00
 
+
+def cleanup_directory(name):
+    """ Cleanup directory for a restart of the estimation.
+    """
+    os.chdir(name)
+
+    candidates = glob.glob('*')
+    for candidate in candidates:
+        if 'true' in candidate:
+            continue
+        _remove(candidate)
+    os.chdir('../')
+
+
+def _remove(names):
+    """ Remove files or directories.
+    """
+    if not isinstance(names, list):
+        names = [names]
+
+    for name in names:
+        try:
+            os.remove(name)
+        except IsADirectoryError:
+            shutil.rmtree(name)
 
 def plot_model_misspecification(yvalues, xvalues):
     """ Plot the results from the model misspecification exercise.
@@ -67,17 +92,20 @@ def distribute_arguments(parser):
 
     # Extract arguments
     is_recompile = args.is_recompile
+    is_restart = args.is_restart
     num_procs = args.num_procs
     is_debug = args.is_debug
 
     # Check arguments
+    assert (is_restart in [True, False])
     assert (is_recompile in [True, False])
     assert (is_debug in [True, False])
     assert (isinstance(num_procs, int))
     assert (num_procs > 0)
 
     # Finishing
-    return num_procs, is_recompile, is_debug
+    return num_procs, is_recompile, is_debug, is_restart
+
 
 def solve_true_economy(init_dict, is_debug):
     """ Solve and store true economy.

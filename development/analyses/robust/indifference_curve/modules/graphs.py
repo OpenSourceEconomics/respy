@@ -39,7 +39,6 @@ def create():
         yvals += [rslts['opt'][xval]]
 
     # Plot the results from the model misspecification exercise.
-    print(yvals, xvals)
     plot_indifference_curve(yvals, xvals)
 
 

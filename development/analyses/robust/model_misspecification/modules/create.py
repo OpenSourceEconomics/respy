@@ -32,6 +32,7 @@ from auxiliary import solve_estimated_economy
 from auxiliary import distribute_arguments
 from auxiliary import solve_true_economy
 from auxiliary import criterion_function
+from auxiliary import cleanup_directory
 
 from modules.auxiliary import compile_package
 
@@ -44,7 +45,7 @@ from auxiliary import SCALING
 '''
 
 
-def run(base_dict, is_debug, args):
+def run(base_dict, is_debug, is_restart, args):
     """ Inspect the implications of model misspecification for the estimates
     of psychic costs.
     """
@@ -57,7 +58,11 @@ def run(base_dict, is_debug, args):
     # Prepare the directory structure. We initialize a fresh directory named
     # by the level of ambiguity in the baseline economy. Finally, we move into
     # the subdirectory
-    os.mkdir(name), os.chdir(name)
+    if not is_restart:
+        os.mkdir(name), os.chdir(name)
+    else:
+        cleanup_directory(name)
+        os.chdir(name)
 
     # Store the information about the true underlying data generating process in
     # a subdirectory and read in base choices. Or just read it in from a
@@ -68,18 +73,21 @@ def run(base_dict, is_debug, args):
     if is_debug:
         init_dict['BASICS']['periods'] = 5
 
-    solve_true_economy(init_dict, is_debug)
+    # Determine the baseline distribution of choices if required.
+    if not is_restart:
+        solve_true_economy(init_dict, is_debug)
+
     base_choices = pkl.load(open('true/base_choices.pkl', 'rb'))
 
     # Modification from baseline initialization file. This is not really
     # necessary but improves readability.
-    base_dict['AMBIGUITY']['level'] = 0.00
+    init_dict['AMBIGUITY']['level'] = 0.00
     if is_debug:
         base_dict['BASICS']['periods'] = 5
 
     # Criterion function uses update. We optimize over the intercept in the
     # reward function.
-    x0 = base_dict['EDUCATION']['int']
+    x0 = intercept
     opt = minimize(criterion_function, x0, args=(base_choices, base_dict,
                      is_debug), method="Nelder-Mead")
 
@@ -127,14 +135,20 @@ if __name__ == '__main__':
     parser.add_argument('--debug', action='store_true', dest='is_debug',
         help='only five periods')
 
+    parser.add_argument('--restart', action='store_true', dest='is_restart',
+        help='restart estimation', default=False)
+
     parser.add_argument('--procs', action='store', type=int, dest='num_procs',
          default=1, help='use multiple processors')
 
     # Distribute attributes
-    num_procs, is_recompile, is_debug = distribute_arguments(parser)
+    num_procs, is_recompile, is_debug, is_restart = distribute_arguments(parser)
 
     # Start with a clean slate
-    os.system('./clean')
+    if not is_restart:
+        os.system('./clean')
+    else:
+        shutil.rmtree('rslts')
 
     # Ensure that fast version of package is available. This is a little more
     # complicated than usual as the compiler on acropolis does use other
@@ -150,9 +164,14 @@ if __name__ == '__main__':
     # of psychic cost and ambiguity. Each tuple (level, intercept) describes
     # such an economy. The values are determined by results from the
     # indifference curve exercise.
-    SPECIFICATIONS = [(0.00, 0.00), (0.01, 700), (0.02, 900)]
+    SPECIFICATIONS = [(0.00, 0.00), (0.01, 650), (0.02, 900)]
     if is_debug:
         SPECIFICATIONS = [(0.00, 0.00)]
+
+    if is_restart:
+        for spec in SPECIFICATIONS:
+            level, _ = spec
+            assert (os.path.exists('%03.3f' % level + '/true/base_choices.pkl'))
 
     # Read the baseline specification and obtain the initialization dictionary.
     shutil.copy(SPEC_DIR + '/data_one.robupy.ini', 'model.robupy.ini')
@@ -160,7 +179,7 @@ if __name__ == '__main__':
     os.unlink('model.robupy.ini')
 
     # Set up pool for processors for parallel execution.
-    process_tasks = partial(run, base_dict, is_debug)
+    process_tasks = partial(run, base_dict, is_debug, is_restart)
     intercepts = Pool(num_procs).map(process_tasks, SPECIFICATIONS)
 
     # Restructure return arguments for better interpretability and further
