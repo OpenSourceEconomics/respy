@@ -141,6 +141,8 @@ def solve_true_economy(init_dict, is_debug):
 def criterion_function(init_dict, base_choices):
     """ Get the baseline distribution.
     """
+    # Print out initialization file for debugging.
+    print_random_dict(init_dict)
     # Solve requested model
     solve(get_robupy_obj(init_dict))
     # Get choice probabilities
