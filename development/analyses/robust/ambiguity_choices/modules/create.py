@@ -102,6 +102,9 @@ if __name__ == '__main__':
     # For a smooth graph, we increase the number of simulated agents to 10,000.
     base_dict['SIMULATION']['agents'] = 10000
 
+    # TODO: Explore effect of seed.
+    base_dict['SIMULATION']['seed'] = 46465
+
     if is_debug:
         base_dict['BASICS']['periods'] = 3
         base_dict['SIMULATION']['agents'] = 100
