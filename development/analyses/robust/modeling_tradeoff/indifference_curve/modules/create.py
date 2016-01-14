@@ -134,6 +134,8 @@ if __name__ == '__main__':
 
     # Create and switch directory. Then solve the true economy for the
     # baseline distribution.
+    base_dict['SIMULATION']['agents'] = 10000
+
     str_ = float_to_string(level)
     os.chdir('rslts'), os.mkdir(str_), os.chdir(str_)
     base_choices = solve_true_economy(base_dict, is_debug)
