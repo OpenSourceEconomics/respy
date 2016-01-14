@@ -30,6 +30,8 @@ def distribute_arguments(parser):
 def process_models(args):
     """ This function processes the information from all simulated models.
     """
+    # Switch subdirector
+    os.chdir('rslts')
 
     # Prepare the resulting dictionary.
     rslt = dict()
@@ -63,9 +65,11 @@ def process_models(args):
         # Return to root directory.
         os.chdir('../../')
 
+    # Back to root.
+    os.chdir('../')
+
     # Finishing
     return rslt
-
 
 
 def get_name(level, subsidy):

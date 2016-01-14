@@ -3,13 +3,7 @@ misspecification.
 """
 
 # standard library
-from scipy.interpolate import interp1d
-
-import matplotlib.pylab as plt
-import matplotlib
-
 import pickle as pkl
-import numpy as np
 
 import shutil
 import shlex
@@ -17,8 +11,21 @@ import glob
 import sys
 import os
 
+# scipy library
+from scipy.interpolate import interp1d
+import numpy as np
+try:
+    import matplotlib.pylab as plt
+    import matplotlib
+except ImportError:
+    pass
+
+# module-wide variables
+ROBUPY_DIR = os.environ['ROBUPY']
+SCALING = 10000.00
+
 # PYTHONPATH
-sys.path.insert(0, os.environ['ROBUPY'] + '/development/analyses/robust/_scripts')
+sys.path.insert(0, ROBUPY_DIR + '/development/analyses/robust/_scripts')
 
 # _scripts
 from _auxiliary import check_indifference
@@ -27,9 +34,6 @@ from _auxiliary import get_robupy_obj
 # project library
 from robupy.tests.random_init import print_random_dict
 from robupy import solve
-
-# module wide variables
-SCALING = 10000.00
 
 
 def cleanup_directory(name):

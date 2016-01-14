@@ -3,19 +3,21 @@ misspecification.
 """
 
 # standard library
-from scipy.interpolate import interp1d
-
-import matplotlib.pylab as plt
-import matplotlib
-
-import numpy as np
-
 import shlex
 import glob
 import sys
 import os
 
-# environment variables
+# scipy library
+from scipy.interpolate import interp1d
+import numpy as np
+try:
+    import matplotlib.pylab as plt
+    import matplotlib
+except ImportError:
+    pass
+
+# module-wide variables
 ROBUPY_DIR = os.environ['ROBUPY']
 
 # PYTHONPATH
@@ -24,12 +26,33 @@ sys.path.insert(0, ROBUPY_DIR + '/development/analyses/robust/_scripts')
 # _scripts
 from _auxiliary import get_robupy_obj
 
-# project library
+# robupy library
 from robupy.tests.random_init import print_random_dict
 from robupy import solve
 
 # module wide variables
 SCALING = 100000.00
+
+
+def get_float_directories():
+    """ Get directories that have a float-type name.
+    """
+    # Get all possible files.
+    candidates = glob.glob('*')
+    directories = []
+    for candidate in candidates:
+        # Check if directory at all.
+        if not os.path.isdir(candidate):
+            continue
+        # Check if directory with float-type name.
+        try:
+            float(candidate)
+        except ValueError:
+            continue
+        # Collect survivors.
+        directories += [float(candidate)]
+    # Finishing
+    return directories
 
 
 def plot_indifference_curve(yvalues, xvalues):
@@ -153,34 +176,6 @@ def get_period_choices():
     choices = np.array(choices)
     # Finishing
     return choices
-
-
-
-def get_float_directories():
-    """ Get directories that have a float-type name.
-    """
-    # Get all possible files.
-    candidates = glob.glob('*')
-    directories = []
-    for candidate in candidates:
-        # Check if directory at all.
-        if not os.path.isdir(candidate):
-            continue
-        # Check if directory with float-type name.
-        try:
-            float(candidate)
-        except ValueError:
-            continue
-        # Collect survivors.
-        directories += [float(candidate)]
-    # Finishing
-    return directories
-
-
-def get_name(float_):
-    """ Construct directory label from float.
-    """
-    return '%03.3f' % float_
 
 
 def get_criterion_function():

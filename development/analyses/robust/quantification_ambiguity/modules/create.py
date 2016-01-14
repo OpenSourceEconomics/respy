@@ -19,24 +19,32 @@ ROBUPY_DIR = os.environ['ROBUPY']
 SPEC_DIR = ROBUPY_DIR + '/development/analyses/restud/specifications'
 
 # PYTHONPATH
+sys.path.insert(0, ROBUPY_DIR + '/development/analyses/robust/_scripts')
 sys.path.insert(0, ROBUPY_DIR + '/development/tests/random')
 sys.path.insert(0, ROBUPY_DIR)
+
+# _scripts library
+from _auxiliary import float_to_string
+from _auxiliary import get_robupy_obj
 
 # project library
 from robupy import solve
 from robupy import read
 
+# testing library
 from modules.auxiliary import compile_package
 
+# local library
 from auxiliary import distribute_arguments
-from auxiliary import get_robupy_obj
 
 
 def run(is_debug, ambiguity_level):
     """ Extract expected lifetime value.
     """
+    os.chdir('rslts')
+
     # Auxiliary objects
-    name = '%03.3f' % ambiguity_level
+    name = float_to_string(ambiguity_level)
 
     # Prepare directory structure
     os.mkdir(name), os.chdir(name)
@@ -55,7 +63,7 @@ def run(is_debug, ambiguity_level):
     total_value = robupy_obj.get_attr('periods_emax')[0, 0]
 
     # Back to root directory
-    os.chdir('../')
+    os.chdir('../../')
 
     # Finishing
     return total_value
@@ -71,7 +79,7 @@ if __name__ == '__main__':
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('--levels', action='store', type=float, dest='levels',
-        required=True, nargs='+', help='level of ambiguity in true economy')
+        nargs='+', help='level of ambiguity in true economy', default=[0.00])
 
     parser.add_argument('--recompile', action='store_true', default=False,
         dest='is_recompile', help='recompile package')
@@ -83,7 +91,7 @@ if __name__ == '__main__':
          default=1, help='use multiple processors')
 
     # Cleanup
-    os.system('./clean')
+    os.system('./clean'), os.mkdir('rslts')
 
     # Distribute attributes
     levels, is_recompile, is_debug, num_procs = distribute_arguments(parser)
@@ -113,6 +121,5 @@ if __name__ == '__main__':
         rslt[level] = rslts[i]
 
     # Store for further processing
-    os.mkdir('rslts')
     pkl.dump(rslt, open('rslts/ambiguity_quantification.robupy.pkl', 'wb'))
 

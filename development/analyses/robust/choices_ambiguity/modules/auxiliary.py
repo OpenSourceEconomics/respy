@@ -3,27 +3,22 @@ responsiveness.
 """
 
 # standard library
-import matplotlib
-matplotlib.use('Agg')
-
-import matplotlib.pylab as plt
-import pickle as pkl
-
-from stat import S_ISDIR
-
 import shlex
 import glob
 import sys
 import os
 
-from robupy.clsRobupy import RobupyCls
+# scipy library
+try:
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pylab as plt
+except ImportError:
+    pass
 
 # PYTHONPATH
 sys.path.insert(0, os.environ['ROBUPY'] + '/development/analyses/robust/_scripts')
 sys.path.insert(0, os.environ['ROBUPY'])
-
-# _scripts
-from _auxiliary import get_robupy_obj
 
 # module-wide variables
 OCCUPATIONS = ['Occupation A', 'Occupation B', 'Schooling', 'Home']
@@ -33,6 +28,7 @@ COLORS = ['red', 'orange', 'blue', 'yellow']
 
 """ Auxiliary functions
 """
+
 
 def distribute_arguments(parser):
     """ Distribute command line arguments.
@@ -164,19 +160,6 @@ def get_levels():
     return sorted(levels)
 
 
-def isdir(path, sftp):
-    """ Check whether path is a directory.
-    """
-    try:
-        return S_ISDIR(sftp.stat(path).st_mode)
-    except IOError:
-        return False
-
-
-def formatting(arg):
-    """ Formatting of float input to standardized string.
-    """
-    return '{0:0.3f}'.format(arg)
 
 """ Plotting function
 """

@@ -2,11 +2,6 @@
 quantification of ambiguity.
 """
 
-# standard library
-import numpy as np
-
-# project library
-
 
 def distribute_arguments(parser):
     """ Distribute command line arguments.

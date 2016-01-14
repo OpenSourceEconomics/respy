@@ -8,8 +8,6 @@ level of ambiguity and then fit a risk-only model.
 from multiprocessing import Pool
 from functools import partial
 
-import numpy as np
-
 import argparse
 import socket
 import shutil
@@ -17,21 +15,30 @@ import copy
 import sys
 import os
 
+# scipy library
+import numpy as np
+
 # module-wide variable
 ROBUPY_DIR = os.environ['ROBUPY']
 SPEC_DIR = ROBUPY_DIR + '/development/analyses/restud/specifications'
 
 # PYTHONPATH
+sys.path.insert(0, ROBUPY_DIR + '/development/analyses/robust/_scripts')
 sys.path.insert(0, ROBUPY_DIR + '/development/tests/random')
 sys.path.insert(0, ROBUPY_DIR)
 
-# project library
+# _scripts
+from _auxiliary import float_to_string
+
+# local library
 from auxiliary import distribute_arguments
 from auxiliary import solve_true_economy
 from auxiliary import criterion_function
 
+# testing library
 from modules.auxiliary import compile_package
 
+# robupy library
 from robupy import read
 
 
@@ -44,7 +51,7 @@ def run(base_dict, base_choices, is_debug, level, intercept):
     of psychic costs.
     """
     # Prepare directory structure.
-    str_ = '%0.3f' % intercept
+    str_ = float_to_string(intercept)
     os.mkdir(str_), os.chdir(str_)
 
     # Modification from baseline initialization file. This is not really
@@ -86,11 +93,11 @@ if __name__ == '__main__':
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('--level', action='store', type=float, dest='level',
-        required=True, help='level of ambiguity in economy')
+        default=0.0, help='level of ambiguity in economy')
 
     parser.add_argument('--grid', action='store', type=float, dest='grid',
-        required=True, nargs=3, help='input for grid creation: lower, upper, '
-        'points')
+        default=[10, 20, 2], nargs=3,
+        help='input for grid creation: lower, upper, points')
 
     parser.add_argument('--recompile', action='store_true', default=False,
         dest='is_recompile', help='recompile package')
@@ -104,6 +111,12 @@ if __name__ == '__main__':
     # Distribute attributes
     level, grid, num_procs, is_recompile, is_debug = \
         distribute_arguments(parser)
+
+    # Prepare directory structure.
+    try:
+        os.mkdir('rslts')
+    except FileExistsError:
+        pass
 
     # Ensure that fast version of package is available. This is a little more
     # complicated than usual as the compiler on acropolis does use other
@@ -121,8 +134,8 @@ if __name__ == '__main__':
 
     # Create and switch directory. Then solve the true economy for the
     # baseline distribution.
-    str_ = '%03.3f' % level
-    os.mkdir(str_), os.chdir(str_)
+    str_ = float_to_string(level)
+    os.chdir('rslts'), os.mkdir(str_), os.chdir(str_)
     base_choices = solve_true_economy(base_dict, is_debug)
 
     # Here I need the grid creation for the mp processing.
@@ -131,7 +144,7 @@ if __name__ == '__main__':
 
     # Create pool of processors and send off requests.
     process_tasks = partial(run, base_dict, base_choices, is_debug, level)
-    intercepts = Pool(num_procs).map(process_tasks, intercepts)
+    Pool(num_procs).map(process_tasks, intercepts)
 
     # Aggregate results. This include results from other existing runs.
-    os.chdir('../'), os.system('./aggregate')
+    os.chdir('../../'), os.system('./aggregate')

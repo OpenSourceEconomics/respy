@@ -30,19 +30,20 @@ sys.path.insert(0, ROBUPY_DIR)
 
 # _scripts
 from _auxiliary import get_indifference_points
+from _auxiliary import float_to_string
 
-# project library
+# robupy library
+from robupy import read
+
+# testing library
+from modules.auxiliary import compile_package
+
+# local library
 from auxiliary import solve_estimated_economy
 from auxiliary import distribute_arguments
 from auxiliary import solve_true_economy
 from auxiliary import criterion_function
 from auxiliary import cleanup_directory
-
-from modules.auxiliary import compile_package
-
-from robupy import read
-
-
 from auxiliary import SCALING
 
 ''' Core function
@@ -53,11 +54,14 @@ def run(base_dict, is_debug, is_restart, args):
     """ Inspect the implications of model misspecification for the estimates
     of psychic costs.
     """
+    # Switch to results directory.
+    os.chdir('rslts')
+
     # Distribute arguments
     level, intercept = args
 
     # Auxiliary objects
-    name = '%03.3f' % level
+    name = float_to_string(level)
 
     # Prepare the directory structure. We initialize a fresh directory named
     # by the level of ambiguity in the baseline economy. Finally, we move into
@@ -119,7 +123,7 @@ def run(base_dict, is_debug, is_restart, args):
             continue
         os.unlink(file_)
 
-    os.chdir('../')
+    os.chdir('../../')
 
     # Finishing
     return intercept
@@ -150,13 +154,8 @@ if __name__ == '__main__':
 
     # Start with a clean slate
     if not is_restart:
-        os.system('./clean')
-    else:
-        try:
-            shutil.rmtree('rslts')
-        except FileNotFoundError:
-            pass
-            
+        os.system('./clean'), os.mkdir('rslts')
+
     # Ensure that fast version of package is available. This is a little more
     # complicated than usual as the compiler on acropolis does use other
     # debugging flags and thus no debugging is requested.
@@ -201,5 +200,4 @@ if __name__ == '__main__':
         rslt[level] = intercepts[i]
 
     # Store for further processing
-    os.mkdir('rslts')
     pkl.dump(rslt, open('rslts/model_misspecification.robupy.pkl', 'wb'))

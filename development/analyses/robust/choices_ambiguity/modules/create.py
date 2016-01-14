@@ -25,8 +25,12 @@ ROBUPY_DIR = os.environ['ROBUPY']
 SPEC_DIR = ROBUPY_DIR + '/development/analyses/restud/specifications'
 
 # PYTHONPATH
+sys.path.insert(0, ROBUPY_DIR + '/development/analyses/robust/_scripts')
 sys.path.insert(0, ROBUPY_DIR + '/development/tests/random')
 sys.path.insert(0, ROBUPY_DIR)
+
+# _scripts library
+from _auxiliary import get_robupy_obj
 
 # project library
 from modules.auxiliary import compile_package
@@ -38,7 +42,6 @@ from robupy import solve
 
 # Auxiliary functions
 from auxiliary import distribute_arguments
-from auxiliary import get_robupy_obj
 from auxiliary import get_results
 
 ''' Functions
@@ -48,6 +51,9 @@ from auxiliary import get_results
 def run(init_dict, is_debug, level):
     """ Solve an economy in a subdirectory.
     """
+
+    os.chdir('rslts')
+
     # Formatting directory name
     name = '{0:0.3f}'.format(level)
 
@@ -64,7 +70,7 @@ def run(init_dict, is_debug, level):
     solve(get_robupy_obj(init_dict))
 
     # Finishing
-    os.chdir('../')
+    os.chdir('../../')
 
 
 ''' Execution of module as script.
@@ -92,7 +98,7 @@ if __name__ == '__main__':
     num_procs, grid, is_recompile, is_debug = distribute_arguments(parser)
 
     # Start with a clean slate.
-    os.system('./clean')
+    os.system('./clean'), os.mkdir('rslts')
 
     # Read the baseline specification and obtain the initialization dictionary.
     shutil.copy(SPEC_DIR + '/data_one.robupy.ini', 'model.robupy.ini')
@@ -130,5 +136,4 @@ if __name__ == '__main__':
     rslts = get_results(base_dict, is_debug)
 
     # Process results
-    os.mkdir('rslts')
     pkl.dump(rslts, open('rslts/ambiguity_choices.robupy.pkl', 'wb'))

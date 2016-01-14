@@ -9,6 +9,7 @@ from functools import partial
 from copy import deepcopy
 
 import pickle as pkl
+
 import argparse
 import shutil
 import socket
@@ -28,15 +29,16 @@ sys.path.insert(0, ROBUPY_DIR)
 from _auxiliary import get_indifference_points
 from _auxiliary import get_robupy_obj
 
-# Auxiliary functions
+# testing library
 from modules.auxiliary import compile_package
 
+# local library
 from auxiliary import distribute_arguments
 from auxiliary import process_models
 from auxiliary import get_name
 
+# robupy library
 from robupy.tests.random_init import print_random_dict
-
 from robupy import read
 from robupy import solve
 
@@ -47,6 +49,9 @@ from robupy import solve
 def run(baseline_dict, is_debug, args):
     """ This function solves and simulates all requested models.
     """
+    # Switch to subdirectory
+    os.chdir('rslts')
+
     # Distribute input arguments
     intercept, level, subsidy = args
 
@@ -76,7 +81,7 @@ def run(baseline_dict, is_debug, args):
 
     # Return to root directory. This is useful when running only a scalar
     # process during debugging.
-    os.chdir('../../')
+    os.chdir('../../../')
 
 ''' Execution of module as script.
 '''
@@ -103,7 +108,7 @@ if __name__ == '__main__':
     num_procs, is_recompile, is_debug = distribute_arguments(parser)
 
     # Start with a clean slate.
-    os.system('./clean')
+    os.system('./clean'), os.mkdir('rslts')
 
     # In the first iteration of the code, I use the hardcoded results from
     # the independent model misspecification exercise and the policy schedule.
@@ -111,7 +116,7 @@ if __name__ == '__main__':
         specifications = get_indifference_points()
 
     else:
-        specifications = [(0.00, 0.00)]
+        specifications = [(0.00, 0.00), (0.00, 0.00), (0.00, 0.00)]
 
     # Read the baseline specification and obtain the initialization dictionary.
     shutil.copy(SPEC_DIR + '/data_one.robupy.ini', 'model.robupy.ini')
@@ -129,8 +134,8 @@ if __name__ == '__main__':
 
     # Construct all estimation requests for the policy analysis.
     args = []
-    for i in range(3):
-        level, intercept = specifications[i]
+    for i, specification in enumerate(specifications):
+        level, intercept = specification
         for j in range(3):
             subsidy = SUBSIDIES[j]
             args += [(intercept, level, subsidy)]
@@ -143,6 +148,5 @@ if __name__ == '__main__':
     rslt = process_models(args)
 
     # Store results for further processing
-    os.mkdir('rslts')
     pkl.dump(rslt, open('rslts/policy_intervention.robupy.pkl', 'wb'))
 

@@ -11,18 +11,22 @@ import os
 ROBUPY_DIR = os.environ['ROBUPY']
 
 # PYTHONPATH
-sys.path.insert(0, ROBUPY_DIR + '/development/tests/random')
-sys.path.insert(0, ROBUPY_DIR)
+sys.path.insert(0, ROBUPY_DIR + '/development/analyses/robust/_scripts')
+
+# _scripts
+from _auxiliary import float_to_string
 
 # project
 from auxiliary import get_criterion_function
 from auxiliary import get_float_directories
-from auxiliary import get_name
 
 
 def aggregate():
     """ Aggregate results by processing the log files.
     """
+    # Dive into results
+    os.chdir('rslts')
+
     # Get all directories that are contain information about the criterion
     # function for selected pairs of ambiguity and psychic costs.
     levels = get_float_directories()
@@ -30,12 +34,12 @@ def aggregate():
     # Iterate over all ambiguity levels and intercepts.
     rslts = dict()
     for level in levels:
-        os.chdir(get_name(level))
+        os.chdir(float_to_string(level))
         rslts[level] = []
         # For given level of ambiguity, get the intercepts.
         intercepts = get_float_directories()
         for intercept in intercepts:
-            os.chdir(get_name(intercept))
+            os.chdir(float_to_string(intercept))
             # Another process might still be running.
             if os.path.exists('indifference_curve.robupy.log'):
                 crit = get_criterion_function()
@@ -58,6 +62,9 @@ def aggregate():
                 crit_opt = crit
                 rslts['opt'][level] = intercept
 
+    # Back to root directory.
+    os.chdir('../')
+
     # Finishing
     return rslts
 
@@ -69,10 +76,6 @@ if __name__ == '__main__':
 
     # Process results from result files.
     rslts = aggregate()
-
-    # Create directory if not existing.
-    if not os.path.exists('rslts'):
-        os.mkdir('rslts')
 
     # Store results for further processing.
     pkl.dump(rslts, open('rslts/indifference_curve.robupy.pkl', 'wb'))
