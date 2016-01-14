@@ -8,26 +8,19 @@ synthetic set of agents.
 import pickle as pkl
 import numpy as np
 
-import shutil
 import sys
 import os
 
 # module-wide variable
 ROBUPY_DIR = os.environ['ROBUPY']
-SPEC_DIR = ROBUPY_DIR + '/development/analyses/restud/specifications'
 
 # PYTHONPATH
 sys.path.insert(0, ROBUPY_DIR + '/development/tests/random')
 sys.path.insert(0, ROBUPY_DIR)
 
-
-# project library
+# robupy library
 from robupy.python.py.auxiliary import get_total_value
-from robupy.tests.random_init import print_random_dict
 from robupy.auxiliary import create_disturbances
-
-from robupy import solve
-from robupy import read
 
 
 def distribute_arguments(parser):
@@ -37,8 +30,9 @@ def distribute_arguments(parser):
     args = parser.parse_args()
 
     # Extract arguments
+    is_recompile = args.is_recompile
     num_procs = args.num_procs
-
+    is_debug = args.is_debug
     level = args.level
 
     # Check arguments
@@ -47,49 +41,7 @@ def distribute_arguments(parser):
     assert (level >= 0.00)
 
     # Finishing
-    return level, num_procs
-
-
-def process_tasks(task):
-    """ Process tasks to simulate and solve.
-    """
-    # Distribute requested task
-    spec, solution, level = task
-
-    # Enter appropriate subdirectory
-    os.chdir(solution), os.chdir('data_' + spec)
-
-    # Copy relevant initialization file
-    src = SPEC_DIR + '/data_' + spec + '.robupy.ini'
-    tgt = 'model.robupy.ini'
-
-    shutil.copy(src, tgt)
-
-    # Prepare initialization file
-    robupy_obj = read('model.robupy.ini')
-
-    init_dict = robupy_obj.get_attr('init_dict')
-
-    # Modification from baseline initialization file
-    init_dict['AMBIGUITY']['level'] = level
-    init_dict['SOLUTION']['store'] = True
-    init_dict['PROGRAM']['debug'] = True
-
-    # Decide for interpolation or full solution
-    is_full = (solution == 'full')
-    if is_full:
-        init_dict['INTERPOLATION']['apply'] = False
-    else:
-        init_dict['INTERPOLATION']['apply'] = True
-
-    # Finalize initialization file and solve model
-    print_random_dict(init_dict)
-
-    robupy_obj = read('test.robupy.ini')
-
-    solve(robupy_obj)
-
-    os.chdir('../../')
+    return level, num_procs, is_recompile, is_debug
 
 
 def aggregate_results(SPECIFICATIONS, SOLUTIONS):

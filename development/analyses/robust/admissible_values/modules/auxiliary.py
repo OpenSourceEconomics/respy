@@ -16,7 +16,6 @@ CHOICE_LIST = ['Occupation A', 'Occupation B', 'School', 'Home']
 BOUNDS_LIST = ['lower', 'upper']
 
 
-
 def _extract_results(level, choice, rslts, which):
     """ Extract results from dictionary.
     """

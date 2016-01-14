@@ -11,10 +11,15 @@ import os
 ROBUPY_DIR = os.environ['ROBUPY']
 
 # PYTHONPATH
-sys.path.insert(0, ROBUPY_DIR + '/development/tests/random')
 sys.path.insert(0, ROBUPY_DIR)
 
 from robupy.clsRobupy import RobupyCls
+
+
+def float_to_string(float_):
+    """ Get string from a float.
+    """
+    return '%03.3f' % float_
 
 
 def get_robupy_obj(init_dict):

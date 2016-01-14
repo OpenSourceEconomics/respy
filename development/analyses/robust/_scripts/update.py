@@ -97,25 +97,18 @@ def get_results(is_all, directory, HOST_DIR):
     # Get files
     sftp.chdir(CLIENT_DIR + '/' + directory)
 
-    # Get results directory, this is always downloaded (if present).
-    try:
-        get_directory('rslts', sftp)
-    except FileNotFoundError:
-        os.chdir(HOST_DIR), sftp.chdir(CLIENT_DIR + '/' + directory)
-
-    # If requested, also download all intermediate results as well.
+    # Downloading all result files is straightforward.
     if is_all:
+        get_directory('rslts', sftp)
+    else:
+        os.mkdir('rslts'), os.chdir('rslts'), sftp.chdir('rslts')
         for candidate in sftp.listdir('.'):
-            # Only directories are even potentially interesting.
-            if not isdir(candidate, sftp):
+            # Only a file is downloaded.
+            if isdir(candidate, sftp):
                 continue
-            # Check if directory name can be transformed into a float.
-            try:
-                float(candidate)
-            except ValueError:
-                continue
-            # Download if
-            get_directory(candidate, sftp)
+            sftp.get(candidate, candidate)
+
+        sftp.chdir('../'), os.chdir('../')
 
     # Finishing
     sftp.close(), transport.close()

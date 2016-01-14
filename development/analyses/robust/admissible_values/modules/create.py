@@ -14,18 +14,20 @@ admissible values is always a superset.
 """
 
 # standard library
-from scipy.optimize import minimize
 from multiprocessing import Pool
 from functools import partial
-
-import pickle as pkl
-import numpy as np
 
 import argparse
 import shutil
 import socket
 import sys
 import os
+
+# scipy libraries
+from scipy.optimize import minimize
+
+import pickle as pkl
+import numpy as np
 
 # module-wide variable
 ROBUPY_DIR = os.environ['ROBUPY']
@@ -37,12 +39,14 @@ sys.path.insert(0, ROBUPY_DIR + '/development/tests/random')
 sys.path.insert(0, ROBUPY_DIR)
 
 # _scripts
+from _auxiliary import float_to_string
 from _auxiliary import get_robupy_obj
 
 # robupy library
 from robupy.python.py.ambiguity import transform_disturbances_ambiguity
 from robupy.python.py.auxiliary import simulate_emax
 from robupy.python.py.ambiguity import _prep_kl
+from robupy.tests.random_init import print_random_dict
 from robupy.auxiliary import create_disturbances
 
 from robupy import solve
@@ -61,9 +65,11 @@ from modules.auxiliary import compile_package
 
 def run(init_dict, is_debug, ambiguity_level):
 
+    # Switch to subdirectory to store results.
+    os.chdir('rslts')
+
     # Auxiliary objects
-    name = '%03.3f' % ambiguity_level
-    rslt = []
+    name, rslt = float_to_string(ambiguity_level), []
 
     # Prepare directory structure
     os.mkdir(name), os.chdir(name)
@@ -75,6 +81,9 @@ def run(init_dict, is_debug, ambiguity_level):
     if is_debug:
         init_dict['BASICS']['periods'] = 3
         init_dict['PROGRAM']['version'] = 'PYTHON'
+
+    # Print initialization file for debugging purposes.
+    print_random_dict(init_dict)
 
     # Solve the basic economy
     robupy_obj = solve(get_robupy_obj(init_dict))
@@ -192,7 +201,7 @@ def run(init_dict, is_debug, ambiguity_level):
         rslt += [bounds]
 
     # Cleanup
-    os.chdir('../')
+    os.chdir('../'), os.chdir('../')
 
     # Finishing
     return rslt
@@ -239,10 +248,8 @@ if __name__ == '__main__':
             compile_package('--fortran --debug', True)
 
     # Set up pool for processors for parallel execution.
-    os.chdir('rslts')
     process_tasks = partial(run, init_dict, is_debug)
     bounds = Pool(num_procs).map(process_tasks, levels)
-    os.chdir('../')
 
     # Restructure return arguments for better interpretability and further
     # processing.
