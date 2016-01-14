@@ -60,6 +60,7 @@ def run(baseline_dict, is_debug, args):
     init_dict = deepcopy(baseline_dict)
 
     # Construct request
+    init_dict['SIMULATION']['agents'] = 10000
     init_dict['AMBIGUITY']['level'] = level
     init_dict['EDUCATION']['coeff'][0] += subsidy
     init_dict['EDUCATION']['int'] = intercept
@@ -143,5 +144,5 @@ if __name__ == '__main__':
 
     # Store results for further processing
     os.mkdir('rslts')
-    pkl.dump(rslt, open('rslts/policy_impact.robupy.pkl', 'wb'))
+    pkl.dump(rslt, open('rslts/policy_intervention.robupy.pkl', 'wb'))
 
