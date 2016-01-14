@@ -31,9 +31,10 @@ def create():
     """
 
     rslt = pkl.load(open('rslts/ambiguity_choices.robupy.pkl', 'rb'))
-    plot_choices_ambiguity(rslt)
 
-    plot_schooling_ambiguity(rslt)
+    plot_choices_ambiguity(rslt['final_choices'])
+
+    plot_schooling_ambiguity(rslt['education_period'])
 
 
 ''' Execution of module as script.

@@ -57,11 +57,15 @@ def get_results(init_dict, is_debug):
     """ Process results from the models.
     """
 
+    os.chdir('rslts')
+
     rslts = dict()
 
     rslts['final_choices'] = track_final_choices(init_dict, is_debug)
 
     rslts['education_period'] = track_schooling_over_time()
+
+    os.chdir('../')
 
     # Finishing
     return rslts

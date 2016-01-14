@@ -110,6 +110,8 @@ if __name__ == '__main__':
 
     # TODO: Explore effect of seed.
     base_dict['SIMULATION']['seed'] = 46465
+    base_dict['PROGRAM']['debug'] = True
+
 
     if is_debug:
         base_dict['BASICS']['periods'] = 3
