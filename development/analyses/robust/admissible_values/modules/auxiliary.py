@@ -7,12 +7,9 @@ import matplotlib
 import matplotlib.pyplot as plt
 
 import numpy as np
-import shutil
-import os
 
 from robupy.python.py.ambiguity import transform_disturbances_ambiguity
 from robupy.python.py.auxiliary import simulate_emax
-from robupy.clsRobupy import RobupyCls
 
 AMBIGUITY_GRID = [0.0, 0.01, 0.02]
 CHOICE_LIST = ['Occupation A', 'Occupation B', 'School', 'Home']

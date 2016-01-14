@@ -18,8 +18,8 @@ from scipy.optimize import minimize
 from multiprocessing import Pool
 from functools import partial
 
-
 import pickle as pkl
+import numpy as np
 
 import argparse
 import shutil
@@ -32,30 +32,33 @@ ROBUPY_DIR = os.environ['ROBUPY']
 SPEC_DIR = ROBUPY_DIR + '/development/analyses/restud/specifications'
 
 # PYTHONPATH
+sys.path.insert(0, ROBUPY_DIR + '/development/analyses/robust/_scripts')
 sys.path.insert(0, ROBUPY_DIR + '/development/tests/random')
 sys.path.insert(0, ROBUPY_DIR)
 
-import numpy as np
+# _scripts
+from _auxiliary import get_robupy_obj
 
-# project library
-from robupy import solve
-from robupy import read
-
+# robupy library
 from robupy.python.py.ambiguity import transform_disturbances_ambiguity
 from robupy.python.py.auxiliary import simulate_emax
 from robupy.python.py.ambiguity import _prep_kl
-
 from robupy.auxiliary import create_disturbances
 
+from robupy import solve
+from robupy import read
+
+# local library
 from auxiliary import distribute_arguments
-from auxiliary import get_robupy_obj
 from auxiliary import criterion
 
+# testing library
 from modules.auxiliary import compile_package
 
+''' Main function
+'''
 
-################################################################################
-################################################################################
+
 def run(init_dict, is_debug, ambiguity_level):
 
     # Auxiliary objects
@@ -216,7 +219,7 @@ if __name__ == '__main__':
          default=1, help='use multiple processors')
 
     # Cleanup
-    os.system('./clean')
+    os.system('./clean'), os.mkdir('rslts')
 
     # Distribute attributes
     levels, is_recompile, is_debug, num_procs = distribute_arguments(parser)
@@ -236,8 +239,10 @@ if __name__ == '__main__':
             compile_package('--fortran --debug', True)
 
     # Set up pool for processors for parallel execution.
+    os.chdir('rslts')
     process_tasks = partial(run, init_dict, is_debug)
     bounds = Pool(num_procs).map(process_tasks, levels)
+    os.chdir('../')
 
     # Restructure return arguments for better interpretability and further
     # processing.
@@ -246,7 +251,6 @@ if __name__ == '__main__':
         rslt[level] = bounds[i]
 
     # Store for further processing
-    os.mkdir('rslts')
     pkl.dump(rslt, open('rslts/admissible_values.robupy.pkl', 'wb'))
 
 

@@ -5,11 +5,7 @@ quantification of ambiguity.
 # standard library
 import numpy as np
 
-import sys
-import os
-
 # project library
-from robupy.clsRobupy import RobupyCls
 
 
 def distribute_arguments(parser):
