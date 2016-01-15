@@ -149,6 +149,8 @@ def criterion_function(init_dict, base_choices):
     alternative_choices = get_period_choices()
     # Calculate squared mean-deviation of all transition probabilities
     rslt = np.mean(np.sum((base_choices[:, :] - alternative_choices[:, :])**2))
+    # I want to put a particular focus on educational choices.
+    rslt += np.mean(np.sum((base_choices[:, 2] - alternative_choices[:, 2])**2))
     # Finishing
     return rslt
 
