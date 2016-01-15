@@ -9,6 +9,8 @@ import sys
 import os
 
 # scipy library
+from scipy.interpolate import interp1d
+import numpy as np
 try:
     import matplotlib
     matplotlib.use('Agg')
@@ -16,13 +18,18 @@ try:
 except ImportError:
     pass
 
+# module-wide variables
+ROBUPY_DIR = os.environ['ROBUPY']
+
 # PYTHONPATH
-sys.path.insert(0, os.environ['ROBUPY'] + '/development/analyses/robust/_scripts')
-sys.path.insert(0, os.environ['ROBUPY'])
+sys.path.insert(0, ROBUPY_DIR+ '/development/analyses/robust/_scripts')
+sys.path.insert(0, ROBUPY_DIR)
+
+# _scripts
+from _auxiliary import float_to_string
 
 # module-wide variables
 OCCUPATIONS = ['Occupation A', 'Occupation B', 'Schooling', 'Home']
-LABELS_SUBSET = ['0.000', '0.010', '0.020']
 MAX_PERIOD = 25
 COLORS = ['red', 'orange', 'blue', 'yellow']
 
@@ -92,7 +99,7 @@ def track_final_choices(init_dict, is_debug):
 
     # Iterate over all available ambiguity levels
     for level in levels:
-        file_name = level + '/data.robupy.info'
+        file_name = float_to_string(level) + '/data.robupy.info'
         with open(file_name, 'r') as output_file:
             for line in output_file.readlines():
                 # Split lines
@@ -125,7 +132,7 @@ def track_schooling_over_time():
         for choice in OCCUPATIONS:
             shares[level][choice] = []
         # Process results
-        file_name = level + '/data.robupy.info'
+        file_name = float_to_string(level) + '/data.robupy.info'
         with open(file_name, 'r') as output_file:
             for line in output_file.readlines():
                 # Split lines
@@ -158,7 +165,7 @@ def get_levels():
         except ValueError:
             continue
         # Collect levels
-        levels += [level]
+        levels += [float(level)]
 
     # Finishing
     return sorted(levels)
@@ -173,26 +180,31 @@ def plot_choices_ambiguity(shares_ambiguity):
     """ Plot the choices in the final periods under different levels of
     ambiguity.
     """
-    # Extract information
-    levels = shares_ambiguity['levels']
+
+    levels = [0.0, 0.01, 0.02]
 
     # Initialize plot
     ax = plt.figure(figsize=(12, 8)).add_subplot(111)
 
-    # Draw lines
-    # TODO: ECON edit
-    # for i, key_ in enumerate(OCCUPATIONS):
     for i, key_ in enumerate(['Occupation A', 'Occupation B']):
-        ax.plot(levels, shares_ambiguity[key_], linewidth=5, label=key_,
-            color=COLORS[i])
 
+        # Extract relevant data points.
+        xvals = levels
+        yvals = shares_ambiguity[key_]
+
+        # Set up interpolation
+        f = interp1d(xvals, yvals, kind='quadratic')
+        x_new = np.linspace(0.00, 0.02, num=41, endpoint=True)
+
+        # Plot interpolation results
+        ax.plot(x_new, f(x_new), linewidth=5, label=key_, color=COLORS[i])
 
     # Both axes
     ax.tick_params(labelsize=18, direction='out', axis='both', top='off',
             right='off')
 
     # x axis
-    ax.set_xlim([float(levels[0]), float(levels[-1])])
+    ax.set_xlim([levels[0], levels[-1]])
     ax.set_xlabel('Level of Ambiguity', fontsize=16)
     ax.set_xticks((0.00, 0.01, 0.02))
     ax.set_xticklabels(('Absent', 'Low', 'High'))
@@ -217,58 +229,38 @@ def plot_schooling_ambiguity(shares_time):
     """
     plt.figure(figsize=(12, 8)).add_subplot(111)
 
-    # TODO: Special labels for Harris Talk
-    if False:
-        theta = [r'$\theta$', r'$\theta^{\prime}$', r'$\theta^{\\prime\prime}$']
-    elif True:
-        theta = ['Absent', 'Low', 'High']
-    else:
-        theta = [r'$\theta = 0.00$', r'$\theta^{\prime} = 0.01$', r'$\theta^{\prime\prime}  = 0.02$']
+    labels = ['Absent', 'Low', 'High']
 
     # Initialize plot
-    for choice in ['Schooling']:
+    ax = plt.figure(figsize=(12,8)).add_subplot(111)
 
-        # Initialize canvas
-        ax = plt.figure(figsize=(12,8)).add_subplot(111)
+    # Baseline
+    for i, label in enumerate([0.0, 0.01, 0.02]):
 
-        # Baseline
-        for i, label in enumerate(LABELS_SUBSET):
-            # TODO: Special labels for Harris Talk
-            if False:
-                yvalues, xvalues = range(1, MAX_PERIOD + 1), shares_time[label][choice][
-                                         :MAX_PERIOD]
-            else:
-                yvalues, xvalues = range(1 + 15, MAX_PERIOD + 1 + 15), \
-                                   shares_time[label][choice][
-                                         :MAX_PERIOD]
-
-
-            ax.plot(yvalues, xvalues, label=theta[i], linewidth=5,
+            yvalues = range(1 + 15, MAX_PERIOD + 1 + 15)
+            xvalues = shares_time[label]['Schooling'][:MAX_PERIOD]
+            ax.plot(yvalues, xvalues, label=labels[i], linewidth=5,
                     color=COLORS[i])
 
-        # Both axes
-        ax.tick_params(labelsize=18, direction='out', axis='both', top='off',
-            right='off')
+    # Both axes
+    ax.tick_params(labelsize=18, direction='out', axis='both', top='off',
+                   right='off')
 
-        # Remove first element on y-axis
-        ax.yaxis.get_major_ticks()[0].set_visible(False)
+    # Remove first element on y-axis
+    ax.yaxis.get_major_ticks()[0].set_visible(False)
 
-        # TODO: Special labels for Harris Talk
-        if False:
-            ax.set_xlim([1, MAX_PERIOD]), ax.set_ylim([0, 0.60])
-        else:
-            ax.set_xlim([1 + 15, MAX_PERIOD + 15]), ax.set_ylim([0, 0.60])
+    ax.set_xlim([1 + 15, MAX_PERIOD + 15]), ax.set_ylim([0, 0.60])
 
-        # labels
-        ax.set_xlabel('Age', fontsize=16)
-        ax.set_ylabel('Share in School', fontsize=16)
+    # labels
+    ax.set_xlabel('Age', fontsize=16)
+    ax.set_ylabel('Share in School', fontsize=16)
 
-        # Set up legend
-        ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.10),
-            fancybox=False, frameon=False, shadow=False,
-            ncol=len(LABELS_SUBSET), fontsize=20)
+    # Set up legend
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.10),
+        fancybox=False, frameon=False, shadow=False,
+        ncol=len(LABELS_SUBSET), fontsize=20)
 
-        file_name = choice.replace(' ', '_').lower() + '_ambiguity.png'
+    file_name = 'schooling_ambiguity.png'
 
-        # Write out to
-        plt.savefig('rslts/' + file_name, bbox_inches='tight', format='png')
+    # Write out to
+    plt.savefig('rslts/' + file_name, bbox_inches='tight', format='png')
