@@ -100,6 +100,7 @@ def distribute_arguments(parser):
     num_procs = args.num_procs
     is_debug = args.is_debug
     level = args.level
+    spec = args.spec
     grid = args.grid
 
     # Check arguments
@@ -109,13 +110,14 @@ def distribute_arguments(parser):
     assert (is_debug in [True, False])
     assert (isinstance(num_procs, int))
     assert (num_procs > 0)
+    assert (spec in ['one', 'two', 'three'])
 
     # Check and process information about grid.
     assert (len(grid) == 3)
     grid = float(grid[0]), float(grid[1]), int(grid[2])
 
     # Finishing
-    return level, grid, num_procs, is_recompile, is_debug
+    return level, grid, num_procs, is_recompile, is_debug, spec
 
 
 def solve_true_economy(init_dict, is_debug):
