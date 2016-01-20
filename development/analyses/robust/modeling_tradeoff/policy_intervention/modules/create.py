@@ -102,7 +102,7 @@ if __name__ == '__main__':
         help='only five periods')
 
     # Hard-coded subsidy schedule
-    SUBSIDIES = [0.00, 500.00, 1000.00]
+    SUBSIDIES = [0.00, 500.00, 1000.00, 1500.00, 2000.00]
 
     # Process command line arguments
     num_procs, is_recompile, is_debug = distribute_arguments(parser)
@@ -136,8 +136,7 @@ if __name__ == '__main__':
     args = []
     for i, specification in enumerate(specifications):
         level, intercept = specification
-        for j in range(3):
-            subsidy = SUBSIDIES[j]
+        for j, subsidy in enumerate(SUBSIDIES):
             args += [(intercept, level, subsidy)]
 
     # Set up pool for processors for parallel execution.
