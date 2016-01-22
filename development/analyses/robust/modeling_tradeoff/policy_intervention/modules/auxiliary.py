@@ -61,7 +61,7 @@ def process_models(args):
                 list_ = shlex.split(line)
                 try:
                     if 'Education' == list_[1]:
-                        rslt[level][subsidy] += [float(list_[2])]
+                        rslt[level][subsidy] = float(list_[2])
                 except IndexError:
                     pass
         # Return to root directory.

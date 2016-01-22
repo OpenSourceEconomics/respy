@@ -47,9 +47,11 @@ def distribute_arguments(parser):
     num_procs, grid = args.num_procs,  args.grid
     is_recompile = args.is_recompile
     is_debug = args.is_debug
+    spec = args.spec
 
     # Check arguments
     assert (num_procs > 0)
+    assert (spec in ['one', 'two', 'three'])
 
     if grid != 0:
         assert (len(grid) == 3)
@@ -57,7 +59,7 @@ def distribute_arguments(parser):
         assert (grid[0] < grid[1]) or ((grid[0] == 0) and (grid[1] == 0))
 
     # Finishing
-    return num_procs, grid, is_recompile, is_debug
+    return num_procs, grid, is_recompile, is_debug, spec
 
 
 def get_results(init_dict, is_debug):

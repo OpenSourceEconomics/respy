@@ -216,7 +216,10 @@ if __name__ == '__main__':
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('--levels', action='store', type=float, dest='levels',
-        required=True, nargs='+', help='level of ambiguity in true economy')
+        default=[0.0], nargs='+', help='level of ambiguity in true economy')
+
+    parser.add_argument('--spec', action='store', type=str, dest='spec',
+        default='one', help='baseline specification')
 
     parser.add_argument('--recompile', action='store_true', default=False,
         dest='is_recompile', help='recompile package')
@@ -231,10 +234,11 @@ if __name__ == '__main__':
     os.system('./clean'), os.mkdir('rslts')
 
     # Distribute attributes
-    levels, is_recompile, is_debug, num_procs = distribute_arguments(parser)
+    levels, is_recompile, is_debug, num_procs, spec = \
+        distribute_arguments(parser)
 
     # Read the baseline specification and obtain the initialization dictionary.
-    shutil.copy(SPEC_DIR + '/data_one.robupy.ini', 'model.robupy.ini')
+    shutil.copy(SPEC_DIR + '/data_' + spec + '.robupy.ini', 'model.robupy.ini')
     init_dict = read('model.robupy.ini').get_attr('init_dict')
     os.unlink('model.robupy.ini')
 

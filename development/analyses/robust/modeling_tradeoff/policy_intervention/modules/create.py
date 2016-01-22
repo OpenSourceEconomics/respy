@@ -119,7 +119,7 @@ if __name__ == '__main__':
         specifications = get_indifference_points()
 
     else:
-        specifications = [(0.00, 0.00), (0.00, 0.00), (0.00, 0.00)]
+        specifications = [(0.00, 0.00), (0.01, 0.00), (0.02, 0.00)]
 
     # Read the baseline specification and obtain the initialization dictionary.
     shutil.copy(SPEC_DIR + '/data_' + spec + '.robupy.ini', 'model.robupy.ini')

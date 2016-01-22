@@ -81,6 +81,9 @@ if __name__ == '__main__':
         description='Solve ROBUST economy for varying level of ambiguity.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
+    parser.add_argument('--spec', action='store', type=str, dest='spec',
+        default='one', help='baseline specification')
+
     parser.add_argument('--procs', action='store', type=int, dest='num_procs',
         default=1, help='use multiple processors')
 
@@ -95,23 +98,19 @@ if __name__ == '__main__':
         help='only three periods')
 
     # Process command line arguments
-    num_procs, grid, is_recompile, is_debug = distribute_arguments(parser)
+    num_procs, grid, is_recompile, is_debug, spec = \
+        distribute_arguments(parser)
 
     # Start with a clean slate.
     os.system('./clean'), os.mkdir('rslts')
 
     # Read the baseline specification and obtain the initialization dictionary.
-    shutil.copy(SPEC_DIR + '/data_one.robupy.ini', 'model.robupy.ini')
+    shutil.copy(SPEC_DIR + '/data_' + spec + '.robupy.ini', 'model.robupy.ini')
     base_dict = read('model.robupy.ini').get_attr('init_dict')
     os.unlink('model.robupy.ini')
 
     # For a smooth graph, we increase the number of simulated agents to 10,000.
     base_dict['SIMULATION']['agents'] = 10000
-
-    # TODO: Explore effect of seed.
-    base_dict['SIMULATION']['seed'] = 46465
-    base_dict['PROGRAM']['debug'] = True
-
 
     if is_debug:
         base_dict['BASICS']['periods'] = 3
