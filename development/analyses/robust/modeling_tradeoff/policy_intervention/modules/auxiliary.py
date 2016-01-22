@@ -17,14 +17,16 @@ def distribute_arguments(parser):
     is_recompile = args.is_recompile
     num_procs = args.num_procs
     is_debug = args.is_debug
+    spec = args.spec
 
     # Check arguments
     assert (num_procs > 0)
     assert (is_debug in [True, False])
     assert (is_recompile in [True, False])
+    assert (spec in ['one', 'two', 'three'])
 
     # Finishing
-    return num_procs, is_recompile, is_debug
+    return num_procs, is_recompile, is_debug, spec
 
 
 def process_models(args):

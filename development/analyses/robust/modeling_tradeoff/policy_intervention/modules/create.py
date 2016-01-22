@@ -92,6 +92,9 @@ if __name__ == '__main__':
         'effects.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
+    parser.add_argument('--spec', action='store', type=str, dest='spec',
+        default='one', help='baseline specification')
+
     parser.add_argument('--procs', action='store', type=int, dest='num_procs',
         default=1, help='use multiple processors')
 
@@ -105,7 +108,7 @@ if __name__ == '__main__':
     SUBSIDIES = [0.00, 500.00, 1000.00, 1500.00, 2000.00]
 
     # Process command line arguments
-    num_procs, is_recompile, is_debug = distribute_arguments(parser)
+    num_procs, is_recompile, is_debug, spec = distribute_arguments(parser)
 
     # Start with a clean slate.
     os.system('./clean'), os.mkdir('rslts')
@@ -119,7 +122,7 @@ if __name__ == '__main__':
         specifications = [(0.00, 0.00), (0.00, 0.00), (0.00, 0.00)]
 
     # Read the baseline specification and obtain the initialization dictionary.
-    shutil.copy(SPEC_DIR + '/data_one.robupy.ini', 'model.robupy.ini')
+    shutil.copy(SPEC_DIR + '/data_' + spec + '.robupy.ini', 'model.robupy.ini')
     init_dict = read('model.robupy.ini').get_attr('init_dict')
     os.unlink('model.robupy.ini')
 

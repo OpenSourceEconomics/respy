@@ -107,6 +107,7 @@ def distribute_arguments(parser):
     is_restart = args.is_restart
     num_procs = args.num_procs
     is_debug = args.is_debug
+    spec = args.spec
 
     # Check arguments
     assert (is_restart in [True, False])
@@ -114,13 +115,14 @@ def distribute_arguments(parser):
     assert (is_debug in [True, False])
     assert (isinstance(num_procs, int))
     assert (num_procs > 0)
+    assert (spec in ['one', 'two', 'three'])
 
     # If not a debugging run, then the indifference points need to be available.
     if not is_debug:
         check_indifference()
 
     # Finishing
-    return num_procs, is_recompile, is_debug, is_restart
+    return num_procs, is_recompile, is_debug, is_restart, spec
 
 
 def solve_true_economy(init_dict, is_debug):
