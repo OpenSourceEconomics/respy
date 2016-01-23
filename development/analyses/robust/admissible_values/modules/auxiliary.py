@@ -9,6 +9,7 @@ try:
 except ImportError:
     pass
 
+import pickle as pkl
 import numpy as np
 
 from robupy.python.py.ambiguity import transform_disturbances_ambiguity
@@ -17,6 +18,35 @@ from robupy.python.py.auxiliary import simulate_emax
 AMBIGUITY_GRID = [0.0, 0.01, 0.02]
 CHOICE_LIST = ['Occupation A', 'Occupation B', 'School', 'Home']
 BOUNDS_LIST = ['lower', 'upper']
+
+
+def store_rslts(rslt):
+    """ Summarize results in a readable format.
+    """
+    # Extract available levels of ambiguity.
+    levels = rslt.keys()
+
+    # Store results to file
+    pkl.dump(rslt, open('rslts/admissible_values.robupy.pkl', 'wb'))
+
+    with open('rslts/admissible_values.robupy.log', 'w') as out_file:
+        # Iterate over all available levels.
+        for level in levels:
+            # String for top level information.
+            fmt = ' {0:<7}{1:0.3f}        {2:<15}{3:<15}{4:<15}\n\n'
+            args = ('Level', level, 'Lower', 'Baseline', 'Upper')
+            out_file.write(fmt.format(*args))
+
+            for i, choice in enumerate(CHOICE_LIST):
+                # Extract information.
+                baseline = rslt[0.0][i][0]
+                lower, upper = rslt[level][i]
+                # String for low level information.
+                fmt = '  {0:<15}{1:15.5f}{2:15.5f}{3:15.5f}\n'
+                args = (choice, lower, baseline, upper)
+                # Write out to file.
+                out_file.write(fmt.format(*args))
+            out_file.write('\n\n')
 
 
 def _extract_results(level, choice, rslts, which):
@@ -116,7 +146,7 @@ def plot_admissible_values(rslts):
         fancybox=False, frameon=False, shadow=False, ncol=4, fontsize=20)
 
     # Store figure as *.png
-    plt.savefig('rslts/admissible_values.png', bbox_inches='tight',
+    plt.savefig('rslts/admissible_values.robupy.png', bbox_inches='tight',
                 format='png')
 
 

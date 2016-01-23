@@ -26,7 +26,6 @@ import os
 # scipy libraries
 from scipy.optimize import minimize
 
-import pickle as pkl
 import numpy as np
 
 # module-wide variable
@@ -54,6 +53,7 @@ from robupy import read
 
 # local library
 from auxiliary import distribute_arguments
+from auxiliary import store_rslts
 from auxiliary import criterion
 
 # testing library
@@ -261,8 +261,6 @@ if __name__ == '__main__':
     for i, level in enumerate(levels):
         rslt[level] = bounds[i]
 
-    # Store for further processing
-    pkl.dump(rslt, open('rslts/admissible_values.robupy.pkl', 'wb'))
-
-
+    # Store for further processing and write out results.
+    store_rslts(rslt)
 
