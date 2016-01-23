@@ -8,8 +8,6 @@ from multiprocessing import Pool
 from functools import partial
 from copy import deepcopy
 
-import pickle as pkl
-
 import argparse
 import shutil
 import socket
@@ -35,7 +33,9 @@ from modules.auxiliary import compile_package
 # local library
 from auxiliary import distribute_arguments
 from auxiliary import process_models
+from auxiliary import store_results
 from auxiliary import get_name
+
 
 # robupy library
 from robupy.tests.random_init import print_random_dict
@@ -150,5 +150,4 @@ if __name__ == '__main__':
     rslt = process_models(args)
 
     # Store results for further processing
-    pkl.dump(rslt, open('rslts/policy_intervention.robupy.pkl', 'wb'))
-
+    store_results(rslt)

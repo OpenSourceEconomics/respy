@@ -3,8 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="39b3d67a-e664-4cff-aba7-2a9ae5eaeb87" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/.idea/workspace.xml" afterPath="$PROJECT_DIR$/package/development/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/model_misspecification/modules/auxiliary.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/model_misspecification/modules/auxiliary.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/model_misspecification/modules/create.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/model_misspecification/modules/create.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/policy_intervention/modules/auxiliary.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/policy_intervention/modules/auxiliary.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/policy_intervention/modules/create.py" afterPath="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/policy_intervention/modules/create.py" />
     </list>
     <ignored path="robustToolbox.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -80,8 +80,6 @@
         <option value="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/indifference_curve/modules/create.py" />
         <option value="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/policy_intervention/create" />
         <option value="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/policy_intervention/acropolis.pbs" />
-        <option value="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/policy_intervention/modules/create.py" />
-        <option value="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/policy_intervention/modules/auxiliary.py" />
         <option value="$PROJECT_DIR$/package/development/analyses/robust/admissible_values/acropolis.pbs" />
         <option value="$PROJECT_DIR$/package/development/analyses/robust/choices_ambiguity/create" />
         <option value="$PROJECT_DIR$/package/development/analyses/robust/quantification_ambiguity/acropolis.pbs" />
@@ -95,6 +93,8 @@
         <option value="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/indifference_curve/modules/aggregate.py" />
         <option value="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/model_misspecification/modules/create.py" />
         <option value="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/model_misspecification/modules/auxiliary.py" />
+        <option value="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/policy_intervention/modules/create.py" />
+        <option value="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/policy_intervention/modules/auxiliary.py" />
       </list>
     </option>
   </component>
@@ -208,6 +208,150 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="robust" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="robustToolbox" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="robustToolbox" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="package" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="development" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="analyses" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="robust" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="modeling_tradeoff" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="policy_intervention" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="robustToolbox" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="robustToolbox" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="package" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="development" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="analyses" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="robust" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="modeling_tradeoff" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="policy_intervention" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="modules" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="robustToolbox" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="robustToolbox" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="package" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="development" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="analyses" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="robust" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="modeling_tradeoff" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="model_misspecification" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="robustToolbox" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="robustToolbox" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="package" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="development" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="analyses" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="robust" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="modeling_tradeoff" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="model_misspecification" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="modules" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -781,31 +925,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/model_misspecification/create">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-0.35521236">
-          <caret line="105" column="0" selection-start-line="105" selection-start-column="0" selection-end-line="105" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/package/development/analyses/robust/admissible_values/graphs">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/policy_intervention/modules/create.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="150" column="0" selection-start-line="150" selection-start-column="0" selection-end-line="150" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/policy_intervention/modules/auxiliary.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.6880309">
-          <caret line="63" column="62" selection-start-line="63" selection-start-column="62" selection-end-line="63" selection-end-column="62" />
         </state>
       </provider>
     </entry>
@@ -970,21 +1093,47 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/model_misspecification/modules/auxiliary.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.36293435">
-          <caret line="43" column="0" selection-start-line="43" selection-start-column="0" selection-end-line="43" selection-end-column="0" />
-          <folding>
-            <element signature="e#107#127#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/model_misspecification/modules/create.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.57528955">
           <caret line="46" column="35" selection-start-line="46" selection-start-column="35" selection-end-line="46" selection-end-column="35" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/model_misspecification/create">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="105" column="0" selection-start-line="105" selection-start-column="0" selection-end-line="105" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/model_misspecification/modules/auxiliary.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.5945946">
+          <caret line="61" column="0" selection-start-line="61" selection-start-column="0" selection-end-line="61" selection-end-column="73" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/policy_intervention/modules/auxiliary.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.5011583">
+          <caret line="26" column="0" selection-start-line="26" selection-start-column="0" selection-end-line="26" selection-end-column="0" />
+          <folding>
+            <element signature="e#115#135#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/policy_intervention/modules/create.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.8615506">
+          <caret line="152" column="22" selection-start-line="152" selection-start-column="22" selection-end-line="152" selection-end-column="22" />
+          <folding>
+            <element signature="e#151#183#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

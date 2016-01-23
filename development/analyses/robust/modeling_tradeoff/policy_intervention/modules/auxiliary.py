@@ -3,8 +3,37 @@ responsiveness.
 """
 
 # standard library
+import pickle as pkl
+
 import shlex
 import os
+
+
+def store_results(rslt):
+    """ Store result for further processing.
+    """
+
+    # Extract information.
+    levels = list(rslt.keys())
+    levels.sort()
+    # Write to readable file.
+    with open('rslts/policy_intervention.robupy.log', 'w') as out_file:
+        # Heading
+        fmt = ' {0:5}{1:>15}{2:>25}\n\n'
+        args = ('Level', 'Subsidy', 'Average Education')
+        out_file.write(fmt.format(*args))
+        for level in levels:
+            subsidies = list(rslt[level].keys())
+            subsidies.sort()
+            for subsidy in subsidies:
+                education = rslt[level][subsidy]
+                fmt = ' {0:<5.3f}{1:15.2f}{2:25.7f}\n'
+                args = (level, subsidy, education)
+                out_file.write(fmt.format(*args))
+            out_file.write('\n')
+
+    # Persistent storage.
+    pkl.dump(rslt, open('rslts/policy_intervention.robupy.pkl', 'wb'))
 
 
 def distribute_arguments(parser):
