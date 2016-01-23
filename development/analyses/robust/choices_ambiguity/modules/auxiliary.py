@@ -222,7 +222,7 @@ def plot_choices_ambiguity(shares_ambiguity):
             ncol=2, fontsize=20)
 
     # Write out to
-    plt.savefig('rslts/choices_ambiguity.png', bbox_inches='tight',
+    plt.savefig('rslts/choices_ambiguity.robupy.png', bbox_inches='tight',
                 format='png')
 
 
@@ -260,9 +260,9 @@ def plot_schooling_ambiguity(shares_time):
     # Set up legend
     ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.10),
         fancybox=False, frameon=False, shadow=False,
-        ncol=len(LABELS_SUBSET), fontsize=20)
+        ncol=3, fontsize=20)
 
-    file_name = 'schooling_ambiguity.png'
+    file_name = 'schooling_ambiguity.robupy.png'
 
     # Write out to
     plt.savefig('rslts/' + file_name, bbox_inches='tight', format='png')

@@ -6,8 +6,6 @@
 from multiprocessing import Pool
 from functools import partial
 
-import pickle as pkl
-
 import argparse
 import shutil
 import socket
@@ -31,11 +29,13 @@ from _auxiliary import get_robupy_obj
 from robupy import solve
 from robupy import read
 
-# testing library
+# robupy library
+from robupy.tests.random_init import print_random_dict
 from modules.auxiliary import compile_package
 
 # local library
 from auxiliary import distribute_arguments
+from auxiliary import store_results
 
 
 def run(is_debug, ambiguity_level):
@@ -55,6 +55,9 @@ def run(is_debug, ambiguity_level):
     # Restrict number of periods for debugging purposes.
     if is_debug:
         init_dict['BASICS']['periods'] = 3
+
+    # Print initialization file for debugging purposes.
+    print_random_dict(init_dict)
 
     # Solve the basic economy
     robupy_obj = solve(get_robupy_obj(init_dict))
@@ -125,5 +128,4 @@ if __name__ == '__main__':
         rslt[level] = rslts[i]
 
     # Store for further processing
-    pkl.dump(rslt, open('rslts/ambiguity_quantification.robupy.pkl', 'wb'))
-
+    store_results(rslt)
