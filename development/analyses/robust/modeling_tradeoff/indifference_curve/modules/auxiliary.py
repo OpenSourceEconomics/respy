@@ -85,7 +85,7 @@ def plot_indifference_curve(yvalues, xvalues):
     func = matplotlib.ticker.FuncFormatter(lambda x, p: format(int(x), ','))
     ax.get_yaxis().set_major_formatter(func)
 
-    plt.savefig('rslts/indifference_curve.png', bbox_inches='tight',
+    plt.savefig('rslts/indifference_curve.robupy.png', bbox_inches='tight',
                 format='png')
 
 
