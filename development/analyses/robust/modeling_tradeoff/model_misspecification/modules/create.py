@@ -44,6 +44,7 @@ from auxiliary import distribute_arguments
 from auxiliary import solve_true_economy
 from auxiliary import criterion_function
 from auxiliary import cleanup_directory
+from auxiliary import store_results
 from auxiliary import SCALING
 
 ''' Core function
@@ -204,4 +205,4 @@ if __name__ == '__main__':
         rslt[level] = intercepts[i]
 
     # Store for further processing
-    pkl.dump(rslt, open('rslts/model_misspecification.robupy.pkl', 'wb'))
+    store_results(rslt)

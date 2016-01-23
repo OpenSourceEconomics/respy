@@ -36,6 +36,32 @@ from robupy.tests.random_init import print_random_dict
 from robupy import solve
 
 
+def store_results(rslt):
+    """ Store results for further processing.
+    """
+    # Auxiliary objects.
+    levels = rslt.keys()
+
+    with open('rslts/model_misspecification.robupy.log', 'w') as out_file:
+
+        # Heading
+        fmt = ' {0:<15}{1:<15}\n\n'
+        args = ('Level', 'Intercept')
+        out_file.write(fmt.format(*args))
+
+        # Formatting for all remaining output.
+        for level in levels:
+            fmt = ' {0:<15.3f}{1:<15.3f}\n'
+            args = (level, rslt[level])
+
+            # Write out optimal information.
+            out_file.write(fmt.format(*args))
+
+        out_file.write('\n')
+
+    pkl.dump(rslt, open('rslts/model_misspecification.robupy.pkl', 'wb'))
+
+
 def cleanup_directory(name):
     """ Cleanup directory for a restart of the estimation.
     """
@@ -92,7 +118,7 @@ def plot_model_misspecification(yvalues, xvalues):
     func = matplotlib.ticker.FuncFormatter(lambda x, p: format(int(x), ','))
     ax.get_yaxis().set_major_formatter(func)
 
-    plt.savefig('rslts/model_misspecification.png', bbox_inches='tight',
+    plt.savefig('rslts/model_misspecification.robupy.png', bbox_inches='tight',
                 format='png')
 
 
