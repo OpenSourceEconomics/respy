@@ -36,7 +36,7 @@ def create():
     xvals = sorted(rslts['opt'].keys())
     yvals = []
     for xval in xvals:
-        yvals += [rslts['opt'][xval]]
+        yvals += [rslts['opt'][xval][0]]
 
     # Plot the results from the model misspecification exercise.
     plot_indifference_curve(yvals, xvals)

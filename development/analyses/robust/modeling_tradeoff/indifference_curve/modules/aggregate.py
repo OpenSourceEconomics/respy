@@ -30,6 +30,7 @@ def aggregate():
     # Get all directories that are contain information about the criterion
     # function for selected pairs of ambiguity and psychic costs.
     levels = get_float_directories()
+    levels.sort()
 
     # Iterate over all ambiguity levels and intercepts.
     rslts = dict()
