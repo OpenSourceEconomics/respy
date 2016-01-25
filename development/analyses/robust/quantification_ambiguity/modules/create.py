@@ -6,6 +6,8 @@
 from multiprocessing import Pool
 from functools import partial
 
+import numpy as np
+
 import argparse
 import shutil
 import socket
@@ -81,8 +83,9 @@ if __name__ == '__main__':
         description='Assess implications of model misspecification.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    parser.add_argument('--levels', action='store', type=float, dest='levels',
-        nargs='+', help='level of ambiguity in true economy', default=[0.00])
+    parser.add_argument('--grid', action='store', type=float, dest='grid',
+        default=[0, 0.01, 2], nargs=3,
+        help='input for grid creation: lower, upper, points')
 
     parser.add_argument('--spec', action='store', type=str, dest='spec',
         default='one', help='baseline specification')
@@ -100,7 +103,7 @@ if __name__ == '__main__':
     os.system('./clean'), os.mkdir('rslts')
 
     # Distribute attributes
-    levels, is_recompile, is_debug, num_procs, spec = \
+    grid, is_recompile, is_debug, num_procs, spec = \
         distribute_arguments(parser)
 
     # Read the baseline specification and obtain the initialization dictionary.
@@ -116,6 +119,10 @@ if __name__ == '__main__':
             compile_package('--fortran', True)
         else:
             compile_package('--fortran --debug', True)
+
+    # Here I need the grid creation for the mp processing.
+    start, end, num = grid
+    levels = np.linspace(start, end, num)
 
     # Set up pool for processors for parallel execution.
     process_tasks = partial(run, is_debug)

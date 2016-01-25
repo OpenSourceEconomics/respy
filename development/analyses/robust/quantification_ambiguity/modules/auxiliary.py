@@ -11,7 +11,8 @@ def store_results(rslt):
     """ Store results for further processing.
     """
     # Extract available levels of ambiguity.
-    levels = rslt.keys()
+    levels = list(rslt.keys())
+    levels.sort()
     # Store results to file
     pkl.dump(rslt, open('rslts/quantification_ambiguity.robupy.pkl', 'wb'))
     # Open file for logging purposes.
@@ -26,7 +27,7 @@ def store_results(rslt):
             value, baseline = rslt[level], rslt[0.0]
             difference = ((value / baseline) - 1.0) * 100
             # Format and print string.
-            fmt = ' {0:<15.3f}{1:<15.3f}{2:<15.5f}\n'
+            fmt = ' {0:<15.3f}{1:<15.3f}{2:<+15.5f}\n'
             args = (level, value, difference)
             # Write out file.
             out_file.write(fmt.format(*args))
@@ -43,17 +44,23 @@ def distribute_arguments(parser):
     is_recompile = args.is_recompile
     num_procs = args.num_procs
     is_debug = args.is_debug
-    levels = args.levels
+    grid = args.grid
     spec = args.spec
 
+    # Extend levels to include baseline.
+    if 0.0 not in grid:
+        grid += [0.0]
+
     # Check arguments
-    assert (isinstance(levels, list))
-    assert (np.all(levels) >= 0.00)
     assert (is_recompile in [True, False])
     assert (is_debug in [True, False])
     assert (isinstance(num_procs, int))
     assert (num_procs > 0)
     assert (spec in ['one', 'two', 'three'])
 
+    # Check and process information about grid.
+    assert (len(grid) == 3)
+    grid = float(grid[0]), float(grid[1]), int(grid[2])
+
     # Finishing
-    return levels, is_recompile, is_debug, num_procs, spec
+    return grid, is_recompile, is_debug, num_procs, spec
