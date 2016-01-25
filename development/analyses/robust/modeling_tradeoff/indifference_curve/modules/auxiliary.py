@@ -24,6 +24,7 @@ ROBUPY_DIR = os.environ['ROBUPY']
 sys.path.insert(0, ROBUPY_DIR + '/development/analyses/robust/_scripts')
 
 # _scripts
+from _auxiliary import float_to_string
 from _auxiliary import get_robupy_obj
 
 # robupy library
@@ -200,3 +201,51 @@ def get_criterion_function():
             return float(list_[1])
 
 
+def plot_choice_patterns(choice_probabilities, level):
+    """ Function to produce plot for choice patterns.
+    """
+    labels = ['Home', 'School', 'Occupation A', 'Occupation B']
+
+    deciles = range(40)
+
+    colors = ['blue', 'yellow', 'orange', 'red']
+
+    width = 0.9
+
+    # Plotting
+    bottom = [0]*40
+
+    # Initialize plot
+    ax = plt.figure(figsize=(12, 8)).add_subplot(111)
+
+    for i in [3, 2, 1, 0]:
+
+        heights = choice_probabilities[:, i]
+        plt.bar(deciles, heights, width, bottom=bottom, color=colors[i])
+        bottom = [heights[i] + bottom[i] for i in range(40)]
+
+    # Both Axes
+    ax.tick_params(labelsize=16, direction='out', axis='both', top='off',
+        right='off')
+
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['bottom'].set_visible(False)
+    ax.spines['left'].set_visible(False)
+
+    # X axis
+    ax.set_xlabel('Periods', fontsize=16)
+    ax.set_xlim([0, 40])
+
+    # Y axis
+    ax.set_ylabel('Share of Population', fontsize=16)
+    ax.yaxis.get_major_ticks()[0].set_visible(False)
+    ax.set_ylim([0, 1])
+
+    # Legend
+    plt.legend(labels, loc='upper center', bbox_to_anchor=(0.5, -0.10),
+        fancybox=False, frameon=False, shadow=False, ncol=4, fontsize=20)
+
+    # Write out to
+    plt.savefig('choice_patterns_' + float_to_string(level) + '.robupy.png',
+                bbox_inches='tight', format='png')
