@@ -56,7 +56,7 @@ def aggregate():
             value, baseline = rslts[level], rslts[0.0]
             difference = ((value / baseline) - 1.0) * 100
             # Format and print string.
-            fmt = ' {0:<15.3f}{1:<15.3f}{2:<+15.5f}\n'
+            fmt = ' {0:<15.4f}{1:<15.3f}{2:<+15.5f}\n'
             args = (level, value, difference)
             # Write out file.
             out_file.write(fmt.format(*args))

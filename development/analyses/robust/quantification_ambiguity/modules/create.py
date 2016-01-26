@@ -122,7 +122,7 @@ if __name__ == '__main__':
 
     # Here I need the grid creation for the mp processing.
     start, end, num = grid
-    levels = np.linspace(start, end, num)
+    levels = list(np.linspace(start, end, num))
 
     # Prepare directory structure for request. I create all directories here
     # as otherwise the check for the baseline is not working when it is in
