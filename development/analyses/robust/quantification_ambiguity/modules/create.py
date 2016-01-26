@@ -42,13 +42,7 @@ from auxiliary import distribute_arguments
 def run(is_debug, ambiguity_level):
     """ Extract expected lifetime value.
     """
-    os.chdir('rslts')
-
-    # Auxiliary objects
-    name = float_to_string(ambiguity_level)
-
-    # Prepare directory structure
-    os.mkdir(name), os.chdir(name)
+    os.chdir('rslts/' + float_to_string(ambiguity_level))
 
     # Initialize auxiliary objects
     init_dict['AMBIGUITY']['level'] = ambiguity_level
@@ -130,16 +124,20 @@ if __name__ == '__main__':
     start, end, num = grid
     levels = np.linspace(start, end, num)
 
-    # Check that baseline either is already available or requested.
-    if 0.0 not in levels and not os.path.exists('rslts/0.000'):
-        levels += [0.0]
-
-    # Prepare and check directory structure for request.
+    # Prepare directory structure for request. I create all directories here
+    # as otherwise the check for the baseline is not working when it is in
+    # fact requested but not started on. The directory creation will also
+    # fail if results are already available.
     if not os.path.exists('rslts'):
         os.mkdir('rslts')
-    else:
-        for level in levels:
-            assert not os.path.exists('rslts/' + float_to_string(level))
+    for level in levels:
+        os.mkdir('rslts/' + float_to_string(level))
+
+    # Check that baseline either is already available or requested.
+    if 0.0 not in levels:
+        if not os.path.exists('rslts/' + float_to_string(0.0)):
+            levels += [0.0]
+            os.mkdir('rslts/' + float_to_string(0.0))
 
     # Set up pool for processors for parallel execution.
     process_tasks = partial(run, is_debug)
