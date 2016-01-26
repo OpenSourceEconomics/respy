@@ -42,7 +42,7 @@ def get_float_directories():
 def float_to_string(float_):
     """ Get string from a float.
     """
-    return '%03.3f' % float_
+    return '%03.4f' % float_
 
 
 def get_robupy_obj(init_dict):
