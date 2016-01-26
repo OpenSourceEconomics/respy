@@ -37,7 +37,6 @@ from modules.auxiliary import compile_package
 
 # local library
 from auxiliary import distribute_arguments
-from auxiliary import store_results
 
 
 def run(is_debug, ambiguity_level):
@@ -67,11 +66,18 @@ def run(is_debug, ambiguity_level):
     # Get the EMAX for further processing and extract relevant information.
     total_value = robupy_obj.get_attr('periods_emax')[0, 0]
 
+    # Store results for aggregation.
+    with open('quantification_ambiguity.robupy.log', 'a') as file_:
+
+        file_.write('    Quantification of Ambiguity \n')
+        file_.write('    --------------------------- \n\n')
+
+        string = '    {0[0]:<15}     {0[1]:>15.4f}\n\n'
+        file_.write(string.format(['Level', ambiguity_level]))
+        file_.write(string.format(['Total Value', total_value]))
+
     # Back to root directory
     os.chdir('../../')
-
-    # Finishing
-    return total_value
 
 
 ''' Execution of module as script.
@@ -99,9 +105,6 @@ if __name__ == '__main__':
     parser.add_argument('--procs', action='store', type=int, dest='num_procs',
          default=1, help='use multiple processors')
 
-    # Cleanup
-    os.system('./clean'), os.mkdir('rslts')
-
     # Distribute attributes
     grid, is_recompile, is_debug, num_procs, spec = \
         distribute_arguments(parser)
@@ -110,6 +113,9 @@ if __name__ == '__main__':
     shutil.copy(SPEC_DIR + '/data_' + spec + '.robupy.ini', 'model.robupy.ini')
     init_dict = read('model.robupy.ini').get_attr('init_dict')
     os.unlink('model.robupy.ini')
+
+    # Ensure that detailed logfiles are produced.
+    init_dict['PROGRAM']['debug'] = True
 
     # Ensure that fast version of package is available. This is a little more
     # complicated than usual as the compiler on acropolis does use other
@@ -124,15 +130,20 @@ if __name__ == '__main__':
     start, end, num = grid
     levels = np.linspace(start, end, num)
 
+    # Check that baseline either is already available or requested.
+    if 0.0 not in levels and not os.path.exists('rslts/0.000'):
+        levels += [0.0]
+
+    # Prepare and check directory structure for request.
+    if not os.path.exists('rslts'):
+        os.mkdir('rslts')
+    else:
+        for level in levels:
+            assert not os.path.exists('rslts/' + float_to_string(level))
+
     # Set up pool for processors for parallel execution.
     process_tasks = partial(run, is_debug)
-    rslts = Pool(num_procs).map(process_tasks, levels)
+    Pool(num_procs).map(process_tasks, levels)
 
-    # Restructure return arguments for better interpretability and further
-    # processing. Add the baseline number.
-    rslt = dict()
-    for i, level in enumerate(levels):
-        rslt[level] = rslts[i]
-
-    # Store for further processing
-    store_results(rslt)
+    # Aggregate
+    os.system('./aggregate')

@@ -4,7 +4,6 @@ misspecification.
 
 # standard library
 import shlex
-import glob
 import sys
 import os
 
@@ -33,27 +32,6 @@ from robupy import solve
 
 # module wide variables
 SCALING = 100000.00
-
-
-def get_float_directories():
-    """ Get directories that have a float-type name.
-    """
-    # Get all possible files.
-    candidates = glob.glob('*')
-    directories = []
-    for candidate in candidates:
-        # Check if directory at all.
-        if not os.path.isdir(candidate):
-            continue
-        # Check if directory with float-type name.
-        try:
-            float(candidate)
-        except ValueError:
-            continue
-        # Collect survivors.
-        directories += [float(candidate)]
-    # Finishing
-    return directories
 
 
 def plot_indifference_curve(yvalues, xvalues):

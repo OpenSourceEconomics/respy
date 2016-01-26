@@ -14,11 +14,11 @@ ROBUPY_DIR = os.environ['ROBUPY']
 sys.path.insert(0, ROBUPY_DIR + '/development/analyses/robust/_scripts')
 
 # _scripts
+from _auxiliary import get_float_directories
 from _auxiliary import float_to_string
 
 # project
 from auxiliary import get_criterion_function
-from auxiliary import get_float_directories
 
 
 def aggregate():
