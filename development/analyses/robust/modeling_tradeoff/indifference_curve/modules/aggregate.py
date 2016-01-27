@@ -78,7 +78,7 @@ def aggregate():
             # Extract information.
             intercept, criterion = rslts['opt'][level]
             # Formatting for all remaining output.
-            fmt = ' {0:<15.3f}{1:<15.3f}{2:<15.3f}\n'
+            fmt = ' {0:<15.4f}{1:<15.3f}{2:<15.3f}\n'
             args = (level, intercept, criterion)
             # Write to file.
             out_file.write(fmt.format(*args))
