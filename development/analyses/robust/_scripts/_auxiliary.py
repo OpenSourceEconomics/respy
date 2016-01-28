@@ -72,7 +72,7 @@ def get_indifference_points():
     # Reorganize the tuples.
     specifications = []
     for level in pairs.keys():
-        specifications += [(level, pairs[level])]
+        specifications += [(level, pairs[level][0])]
 
     # Finishing
     return specifications
