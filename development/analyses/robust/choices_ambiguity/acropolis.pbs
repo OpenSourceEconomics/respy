@@ -10,4 +10,4 @@
 cd $PBS_O_WORKDIR
 source $HOME/.local/bin/virtualenvwrapper.sh
 workon robustToolbox3
-python -O create --procs $PBS_NUM_PPN --grid 0 0.02 3 --spec two
+python -O create --procs $PBS_NUM_PPN --grid 0 0.0142 3 --spec two
