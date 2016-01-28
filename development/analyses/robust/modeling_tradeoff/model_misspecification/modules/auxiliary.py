@@ -51,7 +51,7 @@ def store_results(rslt):
 
         # Formatting for all remaining output.
         for level in levels:
-            fmt = ' {0:<15.3f}{1:<15.3f}\n'
+            fmt = ' {0:<15.4f}{1:<15.3f}\n'
             args = (level, rslt[level])
 
             # Write out optimal information.

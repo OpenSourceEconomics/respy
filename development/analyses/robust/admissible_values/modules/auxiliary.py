@@ -33,7 +33,7 @@ def store_rslts(rslt):
         # Iterate over all available levels.
         for level in levels:
             # String for top level information.
-            fmt = ' {0:<7}{1:0.3f}        {2:<15}{3:<15}{4:<15}\n\n'
+            fmt = ' {0:<7}{1:0.4f}        {2:<15}{3:<15}{4:<15}\n\n'
             args = ('Level', level, 'Lower', 'Baseline', 'Upper')
             out_file.write(fmt.format(*args))
 

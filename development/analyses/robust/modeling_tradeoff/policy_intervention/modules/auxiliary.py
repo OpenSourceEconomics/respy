@@ -27,7 +27,7 @@ def store_results(rslt):
             subsidies.sort()
             for subsidy in subsidies:
                 education = rslt[level][subsidy]
-                fmt = ' {0:<5.3f}{1:15.2f}{2:25.7f}\n'
+                fmt = ' {0:<5.4f}{1:15.2f}{2:25.7f}\n'
                 args = (level, subsidy, education)
                 out_file.write(fmt.format(*args))
             out_file.write('\n')
