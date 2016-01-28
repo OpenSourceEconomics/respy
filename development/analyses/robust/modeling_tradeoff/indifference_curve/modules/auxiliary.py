@@ -11,8 +11,9 @@ import os
 from scipy.interpolate import interp1d
 import numpy as np
 try:
+    import matplotlib 
+    matplotlib.use('Agg')
     import matplotlib.pylab as plt
-    import matplotlib
 except ImportError:
     pass
 
@@ -40,7 +41,7 @@ def plot_indifference_curve(yvalues, xvalues):
 
     # Set up interpolation
     f = interp1d(xvalues, yvalues, kind='quadratic')
-    x_new = np.linspace(0.00, 0.02, num=41, endpoint=True)
+    x_new = np.linspace(0.00, max(xvalues), num=41, endpoint=True)
 
     # Initialize canvas and basic plot.
     ax = plt.figure(figsize=(12, 8)).add_subplot(111)

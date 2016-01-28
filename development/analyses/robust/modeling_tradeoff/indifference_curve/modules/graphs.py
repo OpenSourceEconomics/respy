@@ -47,7 +47,7 @@ def create():
 
     # If all detailed information was downloaded, then we can also have a
     # look at the distribution of choices for these economies.
-    for level in intercepts:
+    for level in levels:
         if not os.path.exists('rslts/' + float_to_string(level)):
             return
 
