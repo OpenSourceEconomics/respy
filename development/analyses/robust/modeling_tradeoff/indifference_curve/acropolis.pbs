@@ -2,7 +2,7 @@
 #PBS -N mpi 
 #PBS -j oe
 #PBS -l walltime=99:00:00
-#PBS -l nodes=1:ppn=17
+#PBS -l nodes=1:ppn=10
 #PBS -V          
 #PBS -m ae
 #PBS -M eisenhauer@policy-lab.org
@@ -10,4 +10,4 @@
 cd $PBS_O_WORKDIR
 source $HOME/.local/bin/virtualenvwrapper.sh
 workon robustToolbox3
-python -O create --level 0.0142 --grid 5000 6500 16 --procs $PBS_NUM_PPN --spec two
+python -O create --level 0.0142 --grid 5800 6000 9 --procs $PBS_NUM_PPN --spec two
