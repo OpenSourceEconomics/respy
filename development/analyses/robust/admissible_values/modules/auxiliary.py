@@ -15,7 +15,7 @@ import numpy as np
 from robupy.python.py.ambiguity import transform_disturbances_ambiguity
 from robupy.python.py.auxiliary import simulate_emax
 
-AMBIGUITY_GRID = [0.0, 0.01, 0.02]
+AMBIGUITY_GRID = [0.0, 0.0033, 0.0142]
 CHOICE_LIST = ['Occupation A', 'Occupation B', 'School', 'Home']
 BOUNDS_LIST = ['lower', 'upper']
 

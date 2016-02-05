@@ -30,6 +30,7 @@ sys.path.insert(0, ROBUPY_DIR + '/development/tests/random')
 sys.path.insert(0, ROBUPY_DIR)
 
 # _scripts library
+from _auxiliary import float_to_string
 from _auxiliary import get_robupy_obj
 
 # project library
@@ -55,7 +56,7 @@ def run(init_dict, is_debug, level):
     os.chdir('rslts')
 
     # Formatting directory name
-    name = '{0:0.3f}'.format(level)
+    name = float_to_string(level)
 
     # Create directory structure.
     os.mkdir(name), os.chdir(name)
@@ -87,9 +88,8 @@ if __name__ == '__main__':
     parser.add_argument('--procs', action='store', type=int, dest='num_procs',
         default=1, help='use multiple processors')
 
-    parser.add_argument('--grid', action='store', type=float, dest='grid',
-        default=[0, 0.1, 2], nargs='+',
-        help='construct grid using np.linspace (start, stop, num)')
+    parser.add_argument('--levels', action='store', type=float, dest='levels',
+        default=[0.0], nargs='+', help='level of ambiguity in economyy')
 
     parser.add_argument('--recompile', action='store_true', default=False,
         dest='is_recompile', help='recompile package')
@@ -98,7 +98,7 @@ if __name__ == '__main__':
         help='only three periods')
 
     # Process command line arguments
-    num_procs, grid, is_recompile, is_debug, spec = \
+    levels, num_procs, is_recompile, is_debug, spec = \
         distribute_arguments(parser)
 
     # Start with a clean slate.
@@ -125,13 +125,11 @@ if __name__ == '__main__':
         else:
             compile_package('--fortran --debug', True)
 
-    # Construct a grid for the evaluation.
-    start, stop, num = grid
-    grid = np.linspace(start, stop, num)
-
+    print(levels)
     # Solve numerous economies
     process_tasks = partial(run, base_dict, is_debug)
-    Pool(num_procs).map(process_tasks, grid)
+    #Pool(num_procs).map(process_tasks, levels)
+    process_tasks(0.00)
 
     # Construct results from the results file.
     rslts = get_results(base_dict, is_debug)
