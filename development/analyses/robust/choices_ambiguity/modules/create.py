@@ -125,11 +125,9 @@ if __name__ == '__main__':
         else:
             compile_package('--fortran --debug', True)
 
-    print(levels)
     # Solve numerous economies
     process_tasks = partial(run, base_dict, is_debug)
-    #Pool(num_procs).map(process_tasks, levels)
-    process_tasks(0.00)
+    Pool(num_procs).map(process_tasks, levels)
 
     # Construct results from the results file.
     rslts = get_results(base_dict, is_debug)
