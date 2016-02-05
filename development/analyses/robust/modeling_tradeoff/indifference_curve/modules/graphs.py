@@ -47,8 +47,10 @@ def create():
 
     # If all detailed information was downloaded, then we can also have a
     # look at the distribution of choices for these economies.
-    for level in intercepts:
-        if not os.path.exists('rslts/' + float_to_string(level)):
+    for i in range(len(levels)):
+        level_fmt = float_to_string(levels[i])
+        intercept_fmt = float_to_string(intercepts[i])
+        if not os.path.exists('rslts/' + level_fmt + '/' + intercept_fmt):
             return
 
     # Create graphs with choice probabilities over time.

@@ -186,7 +186,7 @@ def plot_choice_patterns(choice_probabilities, level):
 
     deciles = range(40)
 
-    colors = ['blue', 'yellow', 'orange', 'red']
+    colors = ['orange', 'red', 'yellow', 'blue']
 
     width = 0.9
 
@@ -196,7 +196,7 @@ def plot_choice_patterns(choice_probabilities, level):
     # Initialize plot
     ax = plt.figure(figsize=(12, 8)).add_subplot(111)
 
-    for i in [3, 2, 1, 0]:
+    for i in [3, 2, 0, 1]:
 
         heights = choice_probabilities[:, i]
         plt.bar(deciles, heights, width, bottom=bottom, color=colors[i])
