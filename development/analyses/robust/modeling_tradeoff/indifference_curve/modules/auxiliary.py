@@ -40,7 +40,7 @@ def plot_indifference_curve(yvalues, xvalues):
 
     # Set up interpolation
     f = interp1d(xvalues, yvalues, kind='quadratic')
-    x_new = np.linspace(0.00, 0.02, num=41, endpoint=True)
+    x_new = np.linspace(0.00, max(xvalues), num=41, endpoint=True)
 
     # Initialize canvas and basic plot.
     ax = plt.figure(figsize=(12, 8)).add_subplot(111)
@@ -51,10 +51,10 @@ def plot_indifference_curve(yvalues, xvalues):
             right='off')
 
     # X axis
-    ax.set_xlim([0.00, 0.02])
+    ax.set_xlim([0.00, max(xvalues)])
     ax.set_xlabel('Level of Ambiguity', fontsize=16)
     ax.set_xticklabels(('Absent', 'Low', 'High'))
-    ax.set_xticks((0.00, 0.01, 0.02))
+    ax.set_xticks(xvalues)
 
     # Y axis
     ax.set_ylabel('Intercept', fontsize=16)
