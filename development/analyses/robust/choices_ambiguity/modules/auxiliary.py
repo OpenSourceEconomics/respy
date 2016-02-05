@@ -44,22 +44,20 @@ def distribute_arguments(parser):
     args = parser.parse_args()
 
     # Extract arguments
-    num_procs, grid = args.num_procs,  args.grid
+    num_procs = args.num_procs
     is_recompile = args.is_recompile
     is_debug = args.is_debug
+    levels = args.levels
     spec = args.spec
 
     # Check arguments
     assert (num_procs > 0)
     assert (spec in ['one', 'two', 'three'])
-
-    if grid != 0:
-        assert (len(grid) == 3)
-        assert (grid[2] > 0.0)
-        assert (grid[0] < grid[1]) or ((grid[0] == 0) and (grid[1] == 0))
+    assert (isinstance(levels, list))
+    assert (np.all(levels) >= 0.00)
 
     # Finishing
-    return num_procs, grid, is_recompile, is_debug, spec
+    return levels, num_procs, is_recompile, is_debug, spec
 
 
 def get_results(init_dict, is_debug):
