@@ -181,7 +181,7 @@ def plot_choices_ambiguity(shares_ambiguity):
     ambiguity.
     """
 
-    levels = [0.0, 0.01, 0.02]
+    levels = [0.0, 0.0033, 0.0142]
 
     # Initialize plot
     ax = plt.figure(figsize=(12, 8)).add_subplot(111)
@@ -194,7 +194,7 @@ def plot_choices_ambiguity(shares_ambiguity):
 
         # Set up interpolation
         f = interp1d(xvals, yvals, kind='quadratic')
-        x_new = np.linspace(0.00, 0.02, num=41, endpoint=True)
+        x_new = np.linspace(0.00, max(levels), num=41, endpoint=True)
 
         # Plot interpolation results
         ax.plot(x_new, f(x_new), linewidth=5, label=key_, color=COLORS[i])
