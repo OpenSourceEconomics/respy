@@ -11,7 +11,7 @@ from matplotlib.ticker import FuncFormatter
 from matplotlib import cm
 
 # Evaluation points
-EDU, EXP_A, EXP_B = 15, 5, 5
+EDU, EXP_A, EXP_B = 12.4610, 22.8490, 11.3760
 
 """ Auxiliary function
 """
@@ -123,7 +123,7 @@ def plot_return_experience(x, y, z, which, spec):
     if spec == 'One':
         ax.set_zlim([15, 55])
     elif spec == 'Two':
-        ax.set_zlim([10, 50])
+        ax.set_zlim([10, 40])
     elif spec == 'Three':
         ax.set_zlim([10, 700])
 

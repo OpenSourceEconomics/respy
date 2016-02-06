@@ -75,10 +75,10 @@ plot_dimension_state_space(num_states)
 # Determine wages for varying level of experience in each occupation
 for spec in ['One', 'Two', 'Three']:
     for which in ['A', 'B']:
-        x, y = np.meshgrid(range(40), range(40))
-        z = np.tile(np.nan, (40,40))
-        for i in range(40):
-            for j in range(40):
+        x, y = np.meshgrid(range(20), range(20))
+        z = np.tile(np.nan, (20,20))
+        for i in range(20):
+            for j in range(20):
                 z[i,j] = return_to_experience(i, j, coeffs[spec], which)
 
         # Create and save plot

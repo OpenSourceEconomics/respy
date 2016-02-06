@@ -52,10 +52,10 @@ def plot_indifference_curve(yvalues, xvalues):
             right='off')
 
     # X axis
-    ax.set_xlim([0.00, 0.02])
+    ax.set_xlim([0.00, max(xvalues)])
     ax.set_xlabel('Level of Ambiguity', fontsize=16)
     ax.set_xticklabels(('Absent', 'Low', 'High'))
-    ax.set_xticks((0.00, 0.01, 0.02))
+    ax.set_xticks(xvalues)
 
     # Y axis
     ax.set_ylabel('Intercept', fontsize=16)
@@ -187,7 +187,7 @@ def plot_choice_patterns(choice_probabilities, level):
 
     deciles = range(40)
 
-    colors = ['blue', 'yellow', 'orange', 'red']
+    colors = ['orange', 'red', 'yellow', 'blue']
 
     width = 0.9
 
@@ -197,7 +197,7 @@ def plot_choice_patterns(choice_probabilities, level):
     # Initialize plot
     ax = plt.figure(figsize=(12, 8)).add_subplot(111)
 
-    for i in [3, 2, 1, 0]:
+    for i in [3, 2, 0, 1]:
 
         heights = choice_probabilities[:, i]
         plt.bar(deciles, heights, width, bottom=bottom, color=colors[i])
