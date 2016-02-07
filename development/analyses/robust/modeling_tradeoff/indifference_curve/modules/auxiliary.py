@@ -12,8 +12,9 @@ from scipy.interpolate import splrep, splev
 from scipy.interpolate import interp1d
 import numpy as np
 try:
+    import matplotlib 
+    matplotlib.use('Agg')
     import matplotlib.pylab as plt
-    import matplotlib
 except ImportError:
     pass
 
