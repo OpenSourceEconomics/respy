@@ -8,6 +8,7 @@ import sys
 import os
 
 # scipy library
+from scipy.interpolate import splrep, splev
 from scipy.interpolate import interp1d
 import numpy as np
 try:
@@ -39,12 +40,15 @@ def plot_indifference_curve(yvalues, xvalues):
     """
 
     # Set up interpolation
-    f = interp1d(xvalues, yvalues, kind='quadratic')
+    tck = splrep(xvalues, yvalues, k=2)#interp1d(xvalues, yvalues,
+    # kind='quadratic')
     x_new = np.linspace(0.00, max(xvalues), num=41, endpoint=True)
 
     # Initialize canvas and basic plot.
     ax = plt.figure(figsize=(12, 8)).add_subplot(111)
-    ax.plot(x_new, f(x_new), '-k', color='red', linewidth=5)
+    print()
+
+    ax.plot(x_new, splev(x_new, tck), '-k', color='red', linewidth=5)
 
     # Both axes
     ax.tick_params(labelsize=18, direction='out', axis='both', top='off',

@@ -206,11 +206,11 @@ def plot_choices_ambiguity(shares_ambiguity):
     # x axis
     ax.set_xlim([levels[0], levels[-1]])
     ax.set_xlabel('Level of Ambiguity', fontsize=16)
-    ax.set_xticks((0.00, 0.01, 0.02))
+    ax.set_xticks(levels)
     ax.set_xticklabels(('Absent', 'Low', 'High'))
 
     # y axis
-    ax.set_ylim([0, 1])
+    ax.set_ylim([0.3, 0.65])
     ax.yaxis.get_major_ticks()[0].set_visible(False)
     ax.set_ylabel('Shares', fontsize=16)
 
@@ -235,7 +235,7 @@ def plot_schooling_ambiguity(shares_time):
     ax = plt.figure(figsize=(12,8)).add_subplot(111)
 
     # Baseline
-    for i, label in enumerate([0.0, 0.01, 0.02]):
+    for i, label in enumerate([0.0, 0.0033, 0.0142]):
 
             yvalues = range(1 + 15, MAX_PERIOD + 1 + 15)
             xvalues = shares_time[label]['Schooling'][:MAX_PERIOD]
