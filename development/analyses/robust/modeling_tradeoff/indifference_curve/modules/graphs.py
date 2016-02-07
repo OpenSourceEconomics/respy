@@ -36,11 +36,13 @@ def create():
     # Read results
     rslts = pkl.load(open('rslts/indifference_curve.robupy.pkl', 'rb'))
 
-    # Prepare results for plotting, redo scaling
+    # Prepare results for plotting, redo scaling. The graph of the
+    # indifference curve thus shows the case for re-enrollment.
     levels = sorted(rslts['opt'].keys())
     intercepts = []
     for level in levels:
-        intercepts += [rslts['opt'][level][0]]
+        # TODO: This is hard-coded for the second specification at this point.
+        intercepts += [-(rslts['opt'][level][0] - 15000) ]
 
     # Plot the results from the model misspecification exercise.
     plot_indifference_curve(intercepts, levels)

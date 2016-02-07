@@ -47,7 +47,6 @@ def plot_indifference_curve(yvalues, xvalues):
 
     # Initialize canvas and basic plot.
     ax = plt.figure(figsize=(12, 8)).add_subplot(111)
-    print()
 
     ax.plot(x_new, splev(x_new, tck), '-k', color='red', linewidth=5)
 
@@ -62,7 +61,7 @@ def plot_indifference_curve(yvalues, xvalues):
     ax.set_xticks(xvalues)
 
     # Y axis
-    ax.set_ylabel('Intercept', fontsize=16)
+    ax.set_ylabel('Psychic Cost', fontsize=16)
     ax.yaxis.get_major_ticks()[0].set_visible(False)
 
     # Formatting with comma for thousands.
