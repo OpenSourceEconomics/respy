@@ -42,16 +42,18 @@ def create():
     intercepts = []
     for level in levels:
         # TODO: This is hard-coded for the second specification at this point.
-        intercepts += [-(rslts['opt'][level][0] - 15000) ]
+        intercepts += [-(rslts['opt'][level][0] - 15000)]
 
     # Plot the results from the model misspecification exercise.
     plot_indifference_curve(intercepts, levels)
 
     # If all detailed information was downloaded, then we can also have a
     # look at the distribution of choices for these economies.
+    # TODO: Cleanup the loop ... complicated due to psychic costs shift.
     for i in range(len(levels)):
+        level = levels[i]
         level_fmt = float_to_string(levels[i])
-        intercept_fmt = float_to_string(intercepts[i])
+        intercept_fmt = float_to_string(rslts['opt'][level][0])
         if not os.path.exists('rslts/' + level_fmt + '/' + intercept_fmt):
             return
 

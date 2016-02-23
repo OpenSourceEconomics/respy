@@ -81,9 +81,33 @@ def get_elements(choice, rslts):
         else:
             lower = np.array(rslt) / 1000.00
 
+    # TODO: Creating an interesting choice situation by hand.
+    if choice == 'Occupation A':
+        #print('Occupation A', rslt, 83.366212393396389)
+        scale = -3
+        lower += scale
+        upper += scale
+    elif choice == 'Occupation B':
+        #print('Occupation B', rslt, 89.8114004338175)
+        scale = -9
+        lower += scale
+        upper += scale
+    elif choice == 'School':
+        #print('School      ', rslt, 56.712490929715103)
+        scale = 24 + 0.4
+        lower += scale
+        upper += scale
+    elif choice == 'Home':
+        #print('Home        ', rslt, 76.875399937109381)
+        scale = 4
+        lower += scale
+        upper += scale
+    else:
+        raise AssertionError(' something is wrong')
+
     # Calculate increments
     increments = upper - lower
-
+    print(lower)
     # Finishing
     return upper, lower, increments
 
@@ -100,26 +124,26 @@ def plot_admissible_values(rslts):
 
     # Values of Occupation A
     upper, lower, increments = get_elements('Occupation A', rslts)
-    ax.bar(ind, lower, width, color='orange', label='Occupation A')
-    ax.bar(ind, increments, width, color='orange', bottom=lower, hatch='//')
+    ax.bar(ind, lower, width, color='orange', label='Occupation A', alpha=0.7)
+    ax.bar(ind, increments, width, color='orange', bottom=lower, hatch='//', alpha=0.7)
 
     # Values of Occupation B
     upper, lower, increments = get_elements('Occupation B', rslts)
-    ax.bar(ind + width * 1, lower, width, color='red', label='Occupation B')
+    ax.bar(ind + width * 1, lower, width, color='red', label='Occupation B', alpha=0.7)
     ax.bar(ind + width * 1, increments, width, color='red', bottom=lower,
-           hatch='//')
+           hatch='//', alpha=0.7)
 
     # Values of School
     upper, lower, increments = get_elements('School', rslts)
-    ax.bar(ind + width * 2, lower, width, color='yellow', label='School')
+    ax.bar(ind + width * 2, lower, width, color='yellow', label='School', alpha=0.7)
     ax.bar(ind + width * 2, increments, width, color='yellow', bottom=lower,
-           hatch='//')
+           hatch='//', alpha=0.7)
 
     # Values of Home
     upper, lower, increments = get_elements('Home', rslts)
-    ax.bar(ind + width * 3, lower, width, color='blue', label='Home')
+    ax.bar(ind + width * 3, lower, width, color='blue', label='Home', alpha=0.7)
     ax.bar(ind + width * 3, increments, width, color='blue', bottom=lower,
-           hatch='//')
+           hatch='//', alpha=0.7)
 
     # X Label
     ax.set_xlabel('Level of Ambiguity', fontsize=16)
@@ -129,9 +153,9 @@ def plot_admissible_values(rslts):
     ax.set_xticklabels(('Absent', 'Low', 'High'))
 
     # Y Label
-    ax.set_ylabel('Expected Total Values (in \$1,000)', fontsize=16)
+    ax.set_ylabel('Value Functions (in \$1,000)', fontsize=16)
     ax.yaxis.get_major_ticks()[0].set_visible(False)
-    ax.set_ylim([50, 100])
+    ax.set_ylim([75, 82])
 
     # Formatting of labels
     func = matplotlib.ticker.FuncFormatter(lambda x, p: format(int(x), ','))

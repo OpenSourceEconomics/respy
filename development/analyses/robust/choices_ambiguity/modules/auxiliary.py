@@ -197,7 +197,8 @@ def plot_choices_ambiguity(shares_ambiguity):
         x_new = np.linspace(0.00, max(levels), num=41, endpoint=True)
 
         # Plot interpolation results
-        ax.plot(x_new, f(x_new), linewidth=5, label=key_, color=COLORS[i])
+        ax.plot(x_new, f(x_new), linewidth=5, label=key_, color=COLORS[i],
+                alpha=0.8)
 
     # Both axes
     ax.tick_params(labelsize=18, direction='out', axis='both', top='off',

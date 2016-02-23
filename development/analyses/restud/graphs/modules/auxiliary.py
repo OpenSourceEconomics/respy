@@ -11,7 +11,7 @@ from matplotlib.ticker import FuncFormatter
 from matplotlib import cm
 
 # Evaluation points
-EDU, EXP_A, EXP_B = 12.4610, 22.8490, 11.3760
+EDU, EXP_A, EXP_B = 10.00, 22.8490, 11.3760
 
 """ Auxiliary function
 """
@@ -75,20 +75,20 @@ def plot_dimension_state_space(num_states):
     ax = plt.figure(figsize=(12, 8)).add_subplot(111)
 
     ax.plot(range(1, 41), num_states, '-k', color='red',
-                        linewidth=5)
+                        linewidth=5, alpha=0.8)
 
     # Both axes
     ax.tick_params(axis='both', right='off', top='off')
 
     # x-axis
     ax.set_xticklabels(ax.get_xticks().astype(int), fontsize=18)
-    ax.set_xlabel('Periods', fontsize=16)
+    ax.set_xlabel('Period', fontsize=16)
     ax.set_xlim([1, 41])
 
     # y-axis
     yticks = ['{:,.0f}'.format(y) for y in ax.get_yticks().astype(int)]
     ax.set_yticklabels(yticks, fontsize=16)
-    ax.set_ylabel('Number of States', fontsize=16)
+    ax.set_ylabel('Number of Nodes', fontsize=16)
     ax.yaxis.get_major_ticks()[0].set_visible(False)
 
     # Write out to
@@ -108,7 +108,7 @@ def plot_return_experience(x, y, z, which, spec):
     ax = fig.gca(projection='3d')
     ax.view_init(azim=180+40)
     ax.plot_surface(x, y, z, rstride=1, cstride=1, cmap=cm.jet,
-        linewidth=0, antialiased=False)
+        linewidth=0, antialiased=False, alpha=0.8)
 
     # Axis labels.
     ax.set_ylabel('Experience A')
@@ -123,7 +123,7 @@ def plot_return_experience(x, y, z, which, spec):
     if spec == 'One':
         ax.set_zlim([15, 55])
     elif spec == 'Two':
-        ax.set_zlim([10, 40])
+        ax.set_zlim([5, 30])
     elif spec == 'Three':
         ax.set_zlim([10, 700])
 
@@ -155,9 +155,9 @@ def plot_return_education(xvals, yvals, spec):
 
     # Draw lines
     ax.plot(xvals, yvals['A'], '-k', label='Occupation A', linewidth=5,
-            color='red')
+            color='red', alpha=0.8)
     ax.plot(xvals, yvals['B'], '-k', label='Occupation B', linewidth=5,
-            color='orange')
+            color='orange', alpha=0.8)
 
     # Both axes
     ax.tick_params(labelsize=16, direction='out', axis='both', top='off',
@@ -205,7 +205,8 @@ def plot_choice_patterns(choice_probabilities, spec):
     for i, row in enumerate(labels):
 
         heights = choice_probabilities[row][:]
-        plt.bar(deciles, heights, width, bottom=bottom, color=colors[i])
+        plt.bar(deciles, heights, width, bottom=bottom, color=colors[i],
+                alpha=0.70)
         bottom = [heights[i] + bottom[i] for i in range(40)]
 
     # Both Axes

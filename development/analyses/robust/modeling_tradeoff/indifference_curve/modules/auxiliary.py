@@ -9,7 +9,6 @@ import os
 
 # scipy library
 from scipy.interpolate import splrep, splev
-from scipy.interpolate import interp1d
 import numpy as np
 try:
     import matplotlib 
@@ -48,7 +47,7 @@ def plot_indifference_curve(yvalues, xvalues):
     # Initialize canvas and basic plot.
     ax = plt.figure(figsize=(12, 8)).add_subplot(111)
 
-    ax.plot(x_new, splev(x_new, tck), '-k', color='red', linewidth=5)
+    ax.plot(x_new, splev(x_new, tck), '-k', color='red', linewidth=5, alpha=0.8)
 
     # Both axes
     ax.tick_params(labelsize=18, direction='out', axis='both', top='off',
@@ -58,10 +57,12 @@ def plot_indifference_curve(yvalues, xvalues):
     ax.set_xlim([0.00, max(xvalues)])
     ax.set_xlabel('Level of Ambiguity', fontsize=16)
     ax.set_xticklabels(('Absent', 'Low', 'High'))
-    ax.set_xticks(xvalues)
+    ax.set_xticks((xvalues[0],xvalues[1],xvalues[3]))
+
+    print(xvalues, yvalues)
 
     # Y axis
-    ax.set_ylabel('Psychic Cost', fontsize=16)
+    ax.set_ylabel('Psychic Costs', fontsize=16)
     ax.yaxis.get_major_ticks()[0].set_visible(False)
 
     # Formatting with comma for thousands.
@@ -203,7 +204,8 @@ def plot_choice_patterns(choice_probabilities, level):
     for i in [3, 2, 0, 1]:
 
         heights = choice_probabilities[:, i]
-        plt.bar(deciles, heights, width, bottom=bottom, color=colors[i])
+        plt.bar(deciles, heights, width, bottom=bottom, color=colors[i],
+                alpha=0.80)
         bottom = [heights[i] + bottom[i] for i in range(40)]
 
     # Both Axes
