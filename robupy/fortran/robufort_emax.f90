@@ -139,14 +139,12 @@ SUBROUTINE get_total_value(total_payoffs, payoffs_ex_post, future_payoffs, &
     payoffs_ex_post(4) = payoffs_systematic(4) + disturbances(4)
 
     ! Get future values
-    ! BEGIN VECTORIZATION A
     IF (period .NE. (num_periods - one_int)) THEN
         CALL get_future_payoffs(future_payoffs, edu_max, edu_start, & 
                 mapping_state_idx, period,  periods_emax, k, states_all)
         ELSE
             future_payoffs = zero_dble
     END IF
-    ! END VECTORIZATION A
 
     ! Calculate total utilities
     total_payoffs = payoffs_ex_post + delta * future_payoffs

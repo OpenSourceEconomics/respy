@@ -406,15 +406,13 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
                 ! Extract payoffs
                 payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
-                ! BEGIN VECTORIZATION SPLIT
-                CALL get_payoffs(emax_simulated, payoffs_ex_post, & 
+                CALL get_payoffs(emax_simulated, payoffs_ex_post, &
                         future_payoffs, num_draws, eps_relevant, period, k, &
                         payoffs_systematic, edu_max, edu_start, & 
                         mapping_state_idx, states_all, num_periods, & 
                         periods_emax, delta, is_debug, shocks, level, measure)
-                ! END VECTORIZATION SPLIT
-                
-                ! Collect information            
+
+                ! Collect information
                 periods_emax(period + 1, k + 1) = emax_simulated
 
                 ! This information is only available if no interpolation is 
