@@ -92,7 +92,7 @@ def build_f2py_testing(is_hidden):
 
     # Build interface
     cmd = 'f2py3 -c -m  f2py_testing f2py_interface_testing.f90 -Iinclude ' \
-          ' -Llib -lfort_testing'
+          ' -Llib -lfort_testing -L/usr/lib/lapack -llapack'
 
     if is_hidden:
         cmd += ' > /dev/null 2>&1'

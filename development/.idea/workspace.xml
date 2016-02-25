@@ -3,7 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="39b3d67a-e664-4cff-aba7-2a9ae5eaeb87" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/.idea/workspace.xml" afterPath="$PROJECT_DIR$/package/development/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/fortran/build_robufort.py" afterPath="$PROJECT_DIR$/package/robupy/fortran/build_robufort.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/tests/random/investigate" afterPath="$PROJECT_DIR$/package/development/tests/random/investigate" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/tests/random/modules/auxiliary.py" afterPath="$PROJECT_DIR$/package/development/tests/random/modules/auxiliary.py" />
     </list>
     <ignored path="robustToolbox.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -35,23 +36,31 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="battery.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/package/development/tests/random/modules/battery.py">
+      <file leaf-file-name="auxiliary.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/package/development/tests/random/modules/auxiliary.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-177.06451">
-              <caret line="714" column="28" selection-start-line="714" selection-start-column="24" selection-end-line="714" selection-end-column="28" />
-              <folding>
-                <element signature="e#218#268#0" expanded="true" />
-              </folding>
+            <state vertical-scroll-proportion="0.7009346">
+              <caret line="94" column="59" selection-start-line="94" selection-start-column="59" selection-end-line="94" selection-end-column="59" />
+              <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="build_robufort.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="build_robufort.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/package/robupy/fortran/build_robufort.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.33286908">
-              <caret line="22" column="39" selection-start-line="22" selection-start-column="39" selection-end-line="22" selection-end-column="39" />
+            <state vertical-scroll-proportion="-7.709677">
+              <caret line="30" column="23" selection-start-line="30" selection-start-column="22" selection-end-line="30" selection-end-column="23" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="wscript" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/package/robupy/fortran/wscript">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="-12.548388">
+              <caret line="96" column="55" selection-start-line="96" selection-start-column="29" selection-end-line="96" selection-end-column="55" />
               <folding />
             </state>
           </provider>
@@ -66,7 +75,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/package/development/analyses/robust/model_misspecification/modules/update.py" />
         <option value="$PROJECT_DIR$/package/development/analyses/robust/ambiguity_choices/modules/clean.py" />
         <option value="$PROJECT_DIR$/package/development/analyses/robust/ambiguity_choices/clean" />
         <option value="$PROJECT_DIR$/package/development/analyses/robust/assess_interpolation/clean" />
@@ -117,6 +125,7 @@
         <option value="$PROJECT_DIR$/package/robupy/fortran/robufort_emax.f90" />
         <option value="$PROJECT_DIR$/package/robupy/fortran/robufort_library.f90" />
         <option value="$PROJECT_DIR$/package/robupy/fortran/build_robufort.py" />
+        <option value="$PROJECT_DIR$/package/development/tests/random/modules/auxiliary.py" />
       </list>
     </option>
   </component>
@@ -689,13 +698,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/policy_intervention/modules/create.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="152" column="22" selection-start-line="152" selection-start-column="22" selection-end-line="152" selection-end-column="22" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/policy_intervention/modules/auxiliary.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -1017,14 +1019,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/robupy/fortran/wscript">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.33844012">
-          <caret line="128" column="13" selection-start-line="128" selection-start-column="11" selection-end-line="128" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/package/robupy/fortran/robufort_library.f90">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.33286908">
@@ -1043,18 +1037,34 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/package/development/tests/random/modules/battery.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-177.06451">
-          <caret line="714" column="28" selection-start-line="714" selection-start-column="24" selection-end-line="714" selection-end-column="28" />
+        <state vertical-scroll-proportion="-2.104457">
+          <caret line="176" column="0" selection-start-line="176" selection-start-column="0" selection-end-line="176" selection-end-column="0" />
           <folding>
             <element signature="e#218#268#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/package/robupy/fortran/wscript">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-12.548388">
+          <caret line="96" column="55" selection-start-line="96" selection-start-column="29" selection-end-line="96" selection-end-column="55" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/package/robupy/fortran/build_robufort.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.33286908">
-          <caret line="22" column="39" selection-start-line="22" selection-start-column="39" selection-end-line="22" selection-end-column="39" />
+        <state vertical-scroll-proportion="-7.709677">
+          <caret line="30" column="23" selection-start-line="30" selection-start-column="22" selection-end-line="30" selection-end-column="23" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/development/tests/random/modules/auxiliary.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.7009346">
+          <caret line="94" column="59" selection-start-line="94" selection-start-column="59" selection-end-line="94" selection-end-column="59" />
           <folding />
         </state>
       </provider>
