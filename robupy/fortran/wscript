@@ -96,11 +96,11 @@ class CreateF2pyInterface(Task):
 
         os.system(
             'f2py3 -c -m  f2py_library f2py_interface_library.f90 -Iinclude -Llib '
-            '-lfort_robufort')
+            '-lfort_robufort -L/usr/lib/lapack -llapack')
 
         os.system(
             'f2py3 -c -m  f2py_debug f2py_interface_debug.f90 -Iinclude -Llib '
-            '-lfort_robufort')
+            '-lfort_robufort -L/usr/lib/lapack -llapack')
 
 ''' Build
 '''

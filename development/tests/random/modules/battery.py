@@ -17,6 +17,7 @@ from scipy.optimize import rosen
 import pandas as pd
 import numpy as np
 
+import scipy
 import sys
 import os
 
@@ -977,7 +978,7 @@ def test_97():
     file python/f2py/debug_interface.f90 provides the F2PY bindings.
     """
     # Ensure that fast solution methods are available
-    compile_package('--fortran --debug', True)
+    compile_package('--fortran --debug', False)
 
     import robupy.python.f2py.f2py_debug as fort
 
@@ -990,6 +991,19 @@ def test_97():
 
         matrix = (np.random.multivariate_normal(np.zeros(dim), np.identity(dim), dim))
         cov = np.dot(matrix, matrix.T)
+
+        # Singular Value Decomposition
+        py = scipy.linalg.svd(matrix)
+        f90 = fort.wrapper_svd(matrix, dim)
+
+        for i in range(3):
+            np.testing.assert_allclose(py[i], f90[i], rtol=1e-05, atol=1e-06)
+
+        # Pseudo-Inverse
+        py = np.linalg.pinv(matrix)
+        f90 = fort.wrapper_pinv(matrix, dim)
+
+        np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
         # Inverse
         py = np.linalg.inv(cov)

@@ -58,7 +58,7 @@ def robufort_build(self, is_debug=False, is_optimization=False):
 
 def _without_optimization(compiler_options):
     """ This function creates the executable without any manual preprocessing
-    for optimization. Even though not required here, two separate exectuables
+    for optimization. Even though not required here, two separate executables
     are created. This keeps it aligned with the optimized case.
     """
     # Compile robufort file according to selected options.
@@ -66,7 +66,7 @@ def _without_optimization(compiler_options):
           'robufort_constants.f90  robufort_auxiliary.f90 ' \
           'robufort_slsqp.f robufort_emax.f90 robufort_risk.f90  ' \
           'robufort_ambiguity.f90 robufort_library.f90 ' \
-          'robufort.f90'
+          'robufort.f90 -L/usr/lib/lapack -llapack'
 
     os.system(cmd)
 

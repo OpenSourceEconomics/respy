@@ -6,6 +6,64 @@
 !
 !*******************************************************************************
 !*******************************************************************************
+SUBROUTINE wrapper_pinv(rslt, A, m)
+
+    !/* external libraries    */
+
+    USE robufort_auxiliary
+
+    !/* setup    */
+
+    IMPLICIT NONE
+
+    !/* external objects    */
+
+    DOUBLE PRECISION, INTENT(OUT)   :: rslt(m, m)
+
+    DOUBLE PRECISION, INTENT(IN)    :: A(m, m)
+    
+    INTEGER, INTENT(IN)             :: m
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+
+    ! Get Pseudo-inverse
+    CALL pinv(rslt, A, m)
+    
+END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE wrapper_svd(U, S, VT, A, m)
+
+    !/* external libraries    */
+
+    USE robufort_auxiliary
+
+    !/* setup    */
+
+    IMPLICIT NONE
+
+    !/* external objects    */
+
+    DOUBLE PRECISION, INTENT(OUT)   :: S(m) 
+    DOUBLE PRECISION, INTENT(OUT)   :: U(m, m)
+    DOUBLE PRECISION, INTENT(OUT)   :: VT(m, m)
+
+    DOUBLE PRECISION, INTENT(IN)    :: A(m, m)
+    
+    INTEGER, INTENT(IN)             :: m
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+    
+    ! Get Singular-Value-Decomposition
+    CALL svd(U, S, VT, A, m)
+
+END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE wrapper_get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
                 future_payoffs, num_draws, eps_relevant, period, k, &
                 payoffs_systematic, edu_max, edu_start, mapping_state_idx, &

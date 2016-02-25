@@ -694,6 +694,98 @@ SUBROUTINE lubksb(A, B, indx)
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
+SUBROUTINE svd(U, S, VT, A, m)
+    
+    !/* external objects    */
+
+    REAL(our_dble), INTENT(OUT)     :: S(m) 
+    REAL(our_dble), INTENT(OUT)     :: U(m, m)
+    REAL(our_dble), INTENT(OUT)     :: VT(m, m)
+
+    REAL(our_dble), INTENT(IN)      :: A(m, m)
+    
+    INTEGER(our_int), INTENT(IN)    :: m
+
+    !/* internal objects    */
+
+    INTEGER(our_int)                :: LWORK
+    INTEGER(our_int)                :: INFO
+
+    REAL(our_dble), ALLOCATABLE     :: WORK(:)
+    REAL(our_dble), ALLOCATABLE     :: IWORK(:)
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+  
+    ! Auxiliary objects
+    LWORK =  M * (7 + 4 * M)
+
+    ! Allocate containers
+    ALLOCATE(WORK(LWORK)); ALLOCATE(IWORK(8 * M))
+
+    ! Call LAPACK routine
+    CALL DGESDD( 'A', m, m, A, m, S, U, m, VT, m, WORK, LWORK, IWORK, INFO)
+
+END SUBROUTINE 
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE pinv(rslt, A, m)
+
+    !/* external objects    */
+
+    REAL(our_dble), INTENT(OUT)     :: rslt(m, m)
+
+    REAL(our_dble), INTENT(IN)      :: A(m, m)
+    
+    INTEGER(our_int), INTENT(IN)    :: m
+
+
+    !/* internal objects    */
+
+    INTEGER(our_int)                :: i
+
+    REAL(our_dble)                  :: S(m) 
+    REAL(our_dble)                  :: U(m, m)
+    REAL(our_dble)                  :: UT(m,m) 
+    REAL(our_dble)                  :: VT(m, m)
+    REAL(our_dble)                  :: cutoff
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+
+    CALL svd(U, S, VT, A, m)
+
+    cutoff = 1e-15_our_dble * MAXVAL(S)
+
+    DO i = 1, M
+
+        IF (S(i) .GT. cutoff) THEN
+
+            S(i) = one_dble / S(i)
+
+        ELSE 
+
+            S(i) = zero_dble
+
+        END IF
+
+    END DO
+
+    UT = TRANSPOSE(U)
+
+    DO i = 1, M
+
+        rslt(i, :) = S(i) * UT(i,:)
+
+    END DO
+
+    rslt = MATMUL(TRANSPOSE(VT), rslt)
+
+END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE cholesky(factor, matrix)
 
     !/* external objects    */
