@@ -730,11 +730,11 @@ SUBROUTINE svd(U, S, VT, A, m)
 END SUBROUTINE 
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE pinv(rslt, A, m)
+FUNCTION pinv(A, m)
 
     !/* external objects    */
 
-    REAL(our_dble), INTENT(OUT)     :: rslt(m, m)
+    REAL(our_dble)                  :: pinv(m, m)
 
     REAL(our_dble), INTENT(IN)      :: A(m, m)
     
@@ -777,13 +777,13 @@ SUBROUTINE pinv(rslt, A, m)
 
     DO i = 1, M
 
-        rslt(i, :) = S(i) * UT(i,:)
+        pinv(i, :) = S(i) * UT(i,:)
 
     END DO
 
-    rslt = MATMUL(TRANSPOSE(VT), rslt)
+    pinv = MATMUL(TRANSPOSE(VT), pinv)
 
-END SUBROUTINE
+END FUNCTION
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE cholesky(factor, matrix)
@@ -1087,45 +1087,11 @@ SUBROUTINE get_coefficients(coeffs, Y, X, num_covars, num_agents)
     
    A = MATMUL(TRANSPOSE(X), X)
 
-   C =  inverse(A, num_covars)
+   C =  pinv(A, num_covars)
 
    D = MATMUL(C, TRANSPOSE(X))
 
-   coeffs = MATMUL(D, Y) 
-
-   ! Write out matrices
-    1900 FORMAT(40(1x,f35.15))
-
-    OPEN(UNIT=1, FILE='exogenous_variables.robupy.txt')
-
-    DO i = 1, num_agents
-        WRITE(1, 1900) X(i, :)
-    END DO
-
-    CLOSE(1)
-
-    OPEN(UNIT=1, FILE='endogenous_variables.robupy.txt')
-
-    DO i = 1, num_agents
-        WRITE(1, 1900) Y(i)
-    END DO
-
-    CLOSE(1)
-
-    ! Call Python Script
-    CALL get_environment_variable('HOME', HOME)
-    CALL system(TRIM(HOME) // '/bin/get_coefficients.py')
-
-    ! Read coefficients
-    1510 FORMAT(f15.10)
-
-    OPEN(UNIT=1, FILE='coeffs.robupy.txt')
-
-    DO i = 1, num_covars
-        READ(1, 1510) coeffs(i)
-    END DO
-
-    CLOSE(1, STATUS ='DELETE')
+   coeffs = MATMUL(D, Y)
 
 END SUBROUTINE
 !*******************************************************************************

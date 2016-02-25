@@ -978,7 +978,7 @@ def test_97():
     file python/f2py/debug_interface.f90 provides the F2PY bindings.
     """
     # Ensure that fast solution methods are available
-    compile_package('--fortran --debug', False)
+    compile_package('--fortran --debug', True)
 
     import robupy.python.f2py.f2py_debug as fort
 
