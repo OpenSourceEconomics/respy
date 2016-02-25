@@ -79,8 +79,7 @@ def solve_python(robupy_obj):
     logger.info('Starting backward induction procedure')
 
     periods_emax, periods_payoffs_ex_post, periods_future_payoffs = \
-        _wrapper_backward_induction_procedure(robupy_obj, periods_eps_relevant,
-            shocks, level, measure, is_interpolated, num_points)
+        _wrapper_backward_induction_procedure(robupy_obj, periods_eps_relevant)
 
     logger.info('... finished \n')
 
@@ -199,8 +198,7 @@ def _wrapper_create_state_space(robupy_obj):
     return states_all, states_number_period, mapping_state_idx
 
 
-def _wrapper_backward_induction_procedure(robupy_obj, periods_eps_relevant,
-        shocks, level, measure, is_interpolated, num_points):
+def _wrapper_backward_induction_procedure(robupy_obj, periods_eps_relevant):
     """ Wrapper for backward induction procedure.
     """
     # Distribute class attributes
@@ -210,7 +208,11 @@ def _wrapper_backward_induction_procedure(robupy_obj, periods_eps_relevant,
 
     mapping_state_idx = robupy_obj.get_attr('mapping_state_idx')
 
+    is_interpolated = robupy_obj.get_attr('is_interpolated')
+
     num_periods = robupy_obj.get_attr('num_periods')
+
+    num_points = robupy_obj.get_attr('num_points')
 
     states_all = robupy_obj.get_attr('states_all')
 
@@ -224,7 +226,13 @@ def _wrapper_backward_induction_procedure(robupy_obj, periods_eps_relevant,
 
     edu_max = robupy_obj.get_attr('edu_max')
 
+    measure = robupy_obj.get_attr('measure')
+
+    shocks = robupy_obj.get_attr('shocks')
+
     delta = robupy_obj.get_attr('delta')
+
+    level = robupy_obj.get_attr('level')
 
     # Auxiliary objects
     max_states_period = max(states_number_period)
