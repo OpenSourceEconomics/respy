@@ -76,7 +76,7 @@ SUBROUTINE simulate_sample(dataset, num_agents, states_all, num_periods, &
 ! Algorithm
 !-------------------------------------------------------------------------------
     ! Initialize containers
-    dataset = missing_dble
+    dataset = MISSING_FLOAT
 
     ! Iterate over agents and periods
     count = 0
@@ -199,7 +199,7 @@ SUBROUTINE calculate_payoffs_systematic(periods_payoffs_systematic, num_periods,
     CALL logging_solution(2)
 
     ! Initialize missing value
-    periods_payoffs_systematic = missing_dble
+    periods_payoffs_systematic = MISSING_FLOAT
 
     ! Calculate systematic instantaneous payoffs
     DO period = num_periods, 1, -1
@@ -266,98 +266,163 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
                 periods_eps_relevant, num_draws, states_number_period, & 
                 periods_payoffs_systematic, edu_max, edu_start, &
                 mapping_state_idx, states_all, delta, is_debug, shocks, &
-                level)
+                level, measure, is_interpolated, num_points)
+
+    !
+    ! Development Notes
+    ! -----------------
+    !
+    !   The input argument MEASURE is only present to align the interface 
+    !   between the FORTRAN and PYTHOM implementations.
+    !
 
     !/* external objects    */
 
-    REAL(our_dble), INTENT(OUT)     :: periods_emax(num_periods, max_states_period)
     REAL(our_dble), INTENT(OUT)     :: periods_payoffs_ex_post(num_periods, max_states_period, 4)
     REAL(our_dble), INTENT(OUT)     :: periods_future_payoffs(num_periods, max_states_period, 4)
+    REAL(our_dble), INTENT(OUT)     :: periods_emax(num_periods, max_states_period)
 
+    REAL(our_dble), INTENT(IN)      :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), INTENT(IN)      :: periods_eps_relevant(:, :, :)
-    REAL(our_dble), INTENT(IN)      :: periods_payoffs_systematic(:, :, :   )
+    REAL(our_dble), INTENT(IN)      :: shocks(:, :)
     REAL(our_dble), INTENT(IN)      :: delta
     REAL(our_dble), INTENT(IN)      :: level
-    REAL(our_dble), INTENT(IN)      :: shocks(:, :)
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:, :, :, :, :)    
+    INTEGER(our_int), INTENT(IN)    :: states_number_period(:)
+    INTEGER(our_int), INTENT(IN)    :: states_all(:, :, :)
+    INTEGER(our_int), INTENT(IN)    :: max_states_period
     INTEGER(our_int), INTENT(IN)    :: num_periods
     INTEGER(our_int), INTENT(IN)    :: edu_start
     INTEGER(our_int), INTENT(IN)    :: edu_max
-    INTEGER(our_int), INTENT(IN)    :: states_number_period(:)
     INTEGER(our_int), INTENT(IN)    :: num_draws
-    INTEGER(our_int), INTENT(IN)    :: max_states_period
-    INTEGER(our_int), INTENT(IN)    :: states_all(:, :, :)
+    INTEGER(our_int), INTENT(IN)    :: num_points
 
+    LOGICAL, INTENT(IN)             :: is_interpolated
     LOGICAL, INTENT(IN)             :: is_debug
+
+    CHARACTER(10), INTENT(IN)       :: measure
 
     !/* internals objects    */
 
+    INTEGER(our_int)                :: num_states
     INTEGER(our_int)                :: period
     INTEGER(our_int)                :: k
+    INTEGER(our_int)                :: i
 
     REAL(our_dble)                  :: eps_relevant(num_draws, 4)
     REAL(our_dble)                  :: payoffs_systematic(4)
     REAL(our_dble)                  :: payoffs_ex_post(4)
+    REAL(our_dble)                  :: expected_values(4)
     REAL(our_dble)                  :: future_payoffs(4)
     REAL(our_dble)                  :: emax_simulated
+    REAL(our_dble)                  :: shifts(4)
 
-    LOGICAL                         :: is_ambiguous
+    REAL(our_dble), ALLOCATABLE     :: exogenous(:, :)
+    REAL(our_dble), ALLOCATABLE     :: predictions(:)
+    REAL(our_dble), ALLOCATABLE     :: endogenous(:)
+    REAL(our_dble), ALLOCATABLE     :: maxe(:)
+
+    LOGICAL                         :: any_interpolated
+
+    LOGICAL, ALLOCATABLE            :: is_simulated(:)
 
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
 
-    ! Auxiliary objects
-    is_ambiguous = level .GT. zero_dble
+    ! Shifts
+    shifts = zero_dble
+    shifts(:2) = (/ EXP(shocks(1, 1)/two_dble), EXP(shocks(2, 2)/two_dble) /)
 
     ! Set to missing value
-    periods_emax = missing_dble
-    periods_future_payoffs = missing_dble
-    periods_payoffs_ex_post = missing_dble
+    periods_emax = MISSING_FLOAT
+    periods_future_payoffs = MISSING_FLOAT
+    periods_payoffs_ex_post = MISSING_FLOAT
     
     ! Logging
     CALL logging_solution(3)
 
     ! Backward induction
     DO period = (num_periods - 1), 0, -1
-    
-        ! Logging
-        CALL logging_solution(4, period)
 
-        ! Extract disturbances
+        ! Extract disturbances and construct auxiliary objects
         eps_relevant = periods_eps_relevant(period + 1, :, :)
+        num_states = states_number_period(period + 1)
 
-        ! Loop over all possible states
-        DO k = 0, (states_number_period(period + 1) - 1)
+        ! Logging
+        CALL logging_solution(4, period, num_states)
 
-            ! Extract payoffs
-            payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
+        ! Distinguish case with and without interpolation
+        any_interpolated = (num_points .LE. num_states) .AND. is_interpolated
 
-            ! BEGIN VECTORIZATION SPLIT
-            IF (is_ambiguous) THEN
-                CALL get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
-                        future_payoffs, num_draws, eps_relevant, period, k, & 
-                        payoffs_systematic, edu_max, edu_start, &
-                        mapping_state_idx, states_all, num_periods, &
-                        periods_emax, delta, is_debug, shocks, level)
-            ELSE
+        IF (any_interpolated) THEN
 
-                CALL get_payoffs_risk(emax_simulated, payoffs_ex_post, & 
-                        future_payoffs, num_draws, eps_relevant, period, k, & 
+            ! Allocate period-specific containers
+            ALLOCATE(is_simulated(num_states)); ALLOCATE(endogenous(num_states))
+            ALLOCATE(maxe(num_states)); ALLOCATE(exogenous(num_states, 9))
+            ALLOCATE(predictions(num_states))
+
+            ! Constructing indicator for simulation points
+            is_simulated = get_simulated_indicator(num_points, num_states, & 
+                                period, num_periods, is_debug)
+
+            ! Constructing the dependent variable for all states, including the
+            ! ones where simulation will take place. All information will be
+            ! used in either the construction of the prediction model or the
+            ! prediction step.
+            CALL get_exogenous_variables(exogenous, maxe, period, num_periods, &
+                    num_states, delta, periods_payoffs_systematic, shifts, &
+                    edu_max, edu_start, mapping_state_idx, periods_emax, &
+                    states_all)
+            
+            ! Construct endogenous variables for the subset of simulation points.
+            ! The rest is set to missing value.
+            CALL get_endogenous_variable(endogenous, period, num_periods, &
+                    num_states, delta, periods_payoffs_systematic, shifts, & 
+                    edu_max, edu_start, mapping_state_idx, periods_emax, &
+                    states_all, is_simulated, num_draws, shocks, level, & 
+                    is_debug, measure, maxe, eps_relevant)
+
+            ! Create prediction model based on the random subset of points where
+            ! the EMAX is actually simulated and thus endogenous and
+            ! exogenous variables are available. For the interpolation 
+            ! points, the actual values are used.
+            CALL get_predictions(predictions, endogenous, exogenous, maxe, & 
+                    is_simulated, num_points, num_states)
+            
+            ! Store results
+            periods_emax(period + 1, :num_states) = predictions
+
+            ! Deallocate containers
+            DEALLOCATE(is_simulated); DEALLOCATE(exogenous); DEALLOCATE(maxe); 
+            DEALLOCATE(endogenous); DEALLOCATE(predictions)
+
+        ELSE
+
+            ! Loop over all possible states
+            DO k = 0, (states_number_period(period + 1) - 1)
+
+                ! Extract payoffs
+                payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
+
+                CALL get_payoffs(emax_simulated, payoffs_ex_post, &
+                        future_payoffs, num_draws, eps_relevant, period, k, &
                         payoffs_systematic, edu_max, edu_start, & 
-                        mapping_state_idx, states_all, num_periods, &
-                        periods_emax, delta)
-            END IF
-            ! END VECTORIZATION SPLIT
-            
-            
-            ! Collect information            
-            periods_payoffs_ex_post(period + 1, k + 1, :) = payoffs_ex_post
-            periods_future_payoffs(period + 1, k + 1, :) = future_payoffs
-            periods_emax(period + 1, k + 1) = emax_simulated
+                        mapping_state_idx, states_all, num_periods, & 
+                        periods_emax, delta, is_debug, shocks, level, measure)
 
-        END DO
+                ! Collect information
+                periods_emax(period + 1, k + 1) = emax_simulated
+
+                ! This information is only available if no interpolation is 
+                ! used. Otherwise all remain set to missing values (see above). 
+                periods_payoffs_ex_post(period + 1, k + 1, :) = payoffs_ex_post
+                periods_future_payoffs(period + 1, k + 1, :) = future_payoffs
+
+            END DO
+
+        END IF
 
     END DO
 
@@ -397,9 +462,9 @@ SUBROUTINE create_state_space(states_all, states_number_period, &
 !-------------------------------------------------------------------------------
     
     ! Initialize output 
-    states_number_period = missing_int
-    mapping_state_idx    = missing_int
-    states_all           = missing_int
+    states_number_period = MISSING_INT
+    mapping_state_idx    = MISSING_INT
+    states_all           = MISSING_INT
 
     ! Logging
     CALL logging_solution(1)
@@ -498,6 +563,149 @@ SUBROUTINE create_state_space(states_all, states_number_period, &
       ! Logging
       CALL logging_solution(-1)
 
+END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE get_payoffs(emax_simulated, payoffs_ex_post, future_payoffs, &
+                num_draws, eps_relevant, period, k, payoffs_systematic, & 
+                edu_max, edu_start, mapping_state_idx, states_all, &
+                num_periods, periods_emax, delta, is_debug, shocks, level, &
+                measure)
+
+    !/* external objects    */
+
+    REAL(our_dble), INTENT(OUT)         :: emax_simulated
+    REAL(our_dble), INTENT(OUT)         :: payoffs_ex_post(4)
+    REAL(our_dble), INTENT(OUT)         :: future_payoffs(4)
+
+    REAL(our_dble), INTENT(IN)          :: payoffs_systematic(:)
+    REAL(our_dble), INTENT(IN)          :: eps_relevant(:, :)
+    REAL(our_dble), INTENT(IN)          :: periods_emax(:, :)
+    REAL(our_dble), INTENT(IN)          :: shocks(:, :)
+    REAL(our_dble), INTENT(IN)          :: delta
+    REAL(our_dble), INTENT(IN)          :: level
+
+    INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(:, :, :, :, :)
+    INTEGER(our_int), INTENT(IN)        :: states_all(:, :, :)
+    INTEGER(our_int), INTENT(IN)        :: num_periods
+    INTEGER(our_int), INTENT(IN)        :: num_draws
+    INTEGER(our_int), INTENT(IN)        :: edu_max
+    INTEGER(our_int), INTENT(IN)        :: edu_start
+    INTEGER(our_int), INTENT(IN)        :: period
+    INTEGER(our_int), INTENT(IN)        :: k 
+
+    LOGICAL, INTENT(IN)                 :: is_debug
+
+    CHARACTER(10), INTENT(IN)           :: measure
+
+    !/* external objects    */
+     
+    LOGICAL                             :: is_ambiguous
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+    
+    ! Create auxiliary objects  
+    is_ambiguous = (level .GT. zero_dble)
+
+    ! Payoffs require different machinery depending on whether there is
+    ! ambiguity or not.
+    IF (is_ambiguous) THEN
+
+        CALL get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
+                future_payoffs, num_draws, eps_relevant, period, k, & 
+                payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
+                states_all, num_periods, periods_emax, delta, is_debug, &
+                shocks, level, measure)
+
+    ELSE 
+
+        CALL get_payoffs_risk(emax_simulated, payoffs_ex_post, &
+                future_payoffs, num_draws, eps_relevant, period, k, &
+                payoffs_systematic, edu_max, edu_start, mapping_state_idx, & 
+                states_all, num_periods, periods_emax, delta, is_debug, & 
+                shocks, level, measure)
+
+    END IF
+    
+END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE get_endogenous_variable(endogenous, period, num_periods, &
+                num_states, delta, periods_payoffs_systematic, shifts, & 
+                edu_max, edu_start, mapping_state_idx, periods_emax, &
+                states_all, is_simulated, num_draws, shocks, level, is_debug, & 
+                measure, maxe, eps_relevant)
+
+    !/* external objects    */
+
+    REAL(our_dble), INTENT(OUT)         :: endogenous(num_states)
+
+    REAL(our_dble), INTENT(IN)          :: periods_payoffs_systematic(:, :, :)
+    REAL(our_dble), INTENT(IN)          :: periods_emax(:, :)
+    REAL(our_dble), INTENT(IN)          :: eps_relevant(:, :)
+    REAL(our_dble), INTENT(IN)          :: shocks(:, :)    
+    REAL(our_dble), INTENT(IN)          :: level
+    REAL(our_dble), INTENT(IN)          :: maxe(:)
+    REAL(our_dble), INTENT(IN)          :: shifts(:)
+    REAL(our_dble), INTENT(IN)          :: delta
+ 
+    INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(:, :, :, :, :)    
+    INTEGER(our_int), INTENT(IN)        :: states_all(:, :, :)    
+    INTEGER(our_int), INTENT(IN)        :: num_periods
+    INTEGER(our_int), INTENT(IN)        :: num_states
+    INTEGER(our_int), INTENT(IN)        :: num_draws
+    INTEGER(our_int), INTENT(IN)        :: edu_start
+    INTEGER(our_int), INTENT(IN)        :: edu_max
+    INTEGER(our_int), INTENT(IN)        :: period
+
+
+    LOGICAL, INTENT(IN)                 :: is_simulated(:)
+    LOGICAL, INTENT(IN)                 :: is_debug
+
+    CHARACTER(10), INTENT(IN)           :: measure
+
+    !/* internal objects    */
+
+    REAL(our_dble)                      :: payoffs_systematic(4)
+    REAL(our_dble)                      :: payoffs_ex_post(4)
+    REAL(our_dble)                      :: future_payoffs(4)
+    REAL(our_dble)                      :: emax_simulated
+
+    INTEGER(our_int)                    :: k
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+    
+    ! Initialize missing values
+    endogenous = MISSING_FLOAT
+
+    ! Construct dependent variables for the subset of interpolation 
+    ! points.
+    DO k = 0, (num_states - 1)
+
+        ! Skip over points that will be predicted
+        IF (.NOT. is_simulated(k + 1)) THEN
+            CYCLE
+        END IF
+
+        ! Extract payoffs 
+        payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
+
+        ! Get payoffs
+        CALL get_payoffs(emax_simulated, payoffs_ex_post, future_payoffs, &
+                num_draws, eps_relevant, period, k, payoffs_systematic, &
+                edu_max, edu_start, mapping_state_idx, states_all, & 
+                num_periods, periods_emax, delta, is_debug, shocks, level, &
+                measure)
+
+        ! Construct dependent variable
+        endogenous(k + 1) = emax_simulated - maxe(k + 1)
+
+    END DO
+            
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************

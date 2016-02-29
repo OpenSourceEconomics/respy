@@ -147,7 +147,7 @@ def write_robufort_initialization(robupy_obj):
 
         # EDUCATION
         num = [init_dict['EDUCATION']['int']] + init_dict['EDUCATION']['coeff']
-        line = ' {0:15.10f} {1:15.10f} {2:15.10f}\n'.format(*num)
+        line = ' {0:+15.9f} {1:+15.9f} {2:+15.9f}\n'.format(*num)
         file_.write(line)
 
         line = '{0:10d} '.format(init_dict['EDUCATION']['start'])
@@ -183,6 +183,13 @@ def write_robufort_initialization(robupy_obj):
         # PROGRAM
         line = '{0}'.format(init_dict['PROGRAM']['debug'])
         file_.write(line + '\n')
+
+        # INTERPOLATION
+        line = '{0}'.format(init_dict['INTERPOLATION']['apply'])
+        file_.write(line + '\n')
+
+        line = '{0:10d}\n'.format(init_dict['INTERPOLATION']['points'])
+        file_.write(line)
 
         # Auxiliary
         line = '{0}'.format(eps_zero)

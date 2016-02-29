@@ -18,6 +18,38 @@ from modules.clsMail import MailCls
 '''
 
 
+def write_interpolation_grid(num_periods, num_points, states_number_period):
+    """ Write out an interpolation grid that can be used across
+    implementations.
+    """
+    # Construct auxiliary objects
+    max_states = max(states_number_period)
+    booleans = np.tile(True, (max_states, num_periods))
+
+    # Iterate over all periods
+    for period in range(num_periods):
+
+        # Construct auxiliary objects
+        num_states = states_number_period[period]
+        any_interpolation = (num_states - num_points) > 0
+
+        # Check applicability
+        if not any_interpolation:
+            continue
+
+        # Draw points for interpolation
+        indicators = np.random.choice(range(num_states),
+                            size=num_states - num_points, replace=False)
+
+        # Replace indicators
+        for i in range(num_states):
+            if i in indicators:
+                booleans[i, period] = False
+
+    # Write out to file
+    np.savetxt('interpolation.txt', booleans, fmt='%s')
+
+
 def build_f2py_testing(is_hidden):
     """ Build the F2PY testing interface for testing.f
     """
@@ -60,7 +92,7 @@ def build_f2py_testing(is_hidden):
 
     # Build interface
     cmd = 'f2py3 -c -m  f2py_testing f2py_interface_testing.f90 -Iinclude ' \
-          ' -Llib -lfort_testing'
+          ' -Llib -lfort_testing -L/usr/lib/lapack -llapack'
 
     if is_hidden:
         cmd += ' > /dev/null 2>&1'
@@ -79,7 +111,13 @@ def write_disturbances(init_dict):
     # Let us write out the disturbances to a file so that they can be aligned
     # between the alternative implementations
     num_draws = init_dict['SOLUTION']['draws']
+    num_agents = init_dict['SIMULATION']['agents']
     num_periods = init_dict['BASICS']['periods']
+
+    # Check that the number of agents is less or equal than the number of
+    # draws as the same disturbances can be used in the solution and
+    # simulation step.
+    assert (num_agents <= num_draws)
 
     # Draw standard deviates
     standard_deviates = np.random.multivariate_normal(np.zeros(4),

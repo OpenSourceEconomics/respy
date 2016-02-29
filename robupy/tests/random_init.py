@@ -116,6 +116,16 @@ def generate_random_dict(constraints=None):
         # Replace in initialization files
         dict_['INTERPOLATION']['apply'] = constraints['apply']
 
+    # Replace number of periods
+    if 'points' in constraints.keys():
+        # Extract objects
+        points = constraints['points']
+        # Checks
+        assert (isinstance(points, int))
+        assert (points > 0)
+        # Replace in initialization files
+        dict_['INTERPOLATION']['points'] = points
+
     # Replace education
     if 'edu' in constraints.keys():
         # Extract objects
@@ -215,13 +225,26 @@ def generate_random_dict(constraints=None):
         # Replace in initialization files
         dict_['SOLUTION']['draws'] = num_draws
 
+    # Number of agents
+    if 'agents' in constraints.keys():
+        # Extract object
+        num_agents = constraints['agents']
+        # Checks
+        assert (num_agents > 0)
+        assert (isinstance(num_agents, int))
+        assert (np.isfinite(num_agents))
+        # Replace in initialization files
+        dict_['SIMULATION']['agents'] = num_agents
+
     # Finishing.
     return dict_
 
 
 def print_random_dict(dict_):
     """ Print initialization dictionary to file. The different formatting
-    makes the file rather involved.
+    makes the file rather involved. The resulting initialization files are
+    read by PYTHON and FORTRAN routines. Thus, the formatting with respect to
+    the number of decimal places is rather small.
     """
     # Antibugging.
     assert (isinstance(dict_, dict))
@@ -245,18 +268,24 @@ def print_random_dict(dict_):
 
                 file_.write('\n')
 
-            if flag in ['HOME']:
+            if flag in ['HOME', 'AMBIGUITY']:
 
-                file_.write(' HOME \n\n')
+                file_.write(' ' + flag.upper() + '\n\n')
 
-                str_ = ' {0:<15} {1:15.2f} \n'
+                for keys_ in dict_[flag]:
 
-                file_.write(str_.format('int', dict_[flag]['int']))
+                    str_ = ' {0:<15} {1:15.2f} \n'
+
+                    # Special treatment of ambiguity measure. which is a simple
+                    #  string.
+                    if keys_ in ['measure']:
+                        str_ = ' {0:<15} {1:<15} \n'
+
+                    file_.write(str_.format(keys_, dict_[flag][keys_]))
 
                 file_.write('\n')
 
-            if flag in ['SOLUTION', 'AMBIGUITY', 'SIMULATION', 'PROGRAM',
-                        'INTERPOLATION']:
+            if flag in ['SOLUTION', 'SIMULATION', 'PROGRAM', 'INTERPOLATION']:
 
                 str_ = ' {0:<15} {1:<15} \n'
 

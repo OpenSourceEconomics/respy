@@ -63,13 +63,11 @@ class CreateRobufortExecutable(Task):
 
     def run(self):
 
-        is_optimization = self.is_optimization
-
         is_debug = self.is_debug
 
         from fortran.build_robufort import robufort_build
 
-        robufort_build(self, is_debug, is_optimization)
+        robufort_build(self, is_debug)
 
 
 class CreateF2pyInterface(Task):
@@ -96,11 +94,11 @@ class CreateF2pyInterface(Task):
 
         os.system(
             'f2py3 -c -m  f2py_library f2py_interface_library.f90 -Iinclude -Llib '
-            '-lfort_robufort')
+            '-lfort_robufort -L/usr/lib/lapack -llapack')
 
         os.system(
             'f2py3 -c -m  f2py_debug f2py_interface_debug.f90 -Iinclude -Llib '
-            '-lfort_robufort')
+            '-lfort_robufort -L/usr/lib/lapack -llapack')
 
 ''' Build
 '''
@@ -110,8 +108,6 @@ def build(bld):
 
     # Distribute class attributes
     is_debug = bld.options.is_debug
-
-    is_optimization = bld.options.is_optimization
 
     # Initialize directory structure
     task_1 = CreateDirectoryStructure(env=bld.env)
@@ -129,8 +125,6 @@ def build(bld):
 
     # Create the ROBUFORT executable
     task_3 = CreateRobufortExecutable(env=bld.env)
-
-    task_3.is_optimization = is_optimization
 
     task_3.is_debug = is_debug
 

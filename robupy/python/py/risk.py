@@ -11,9 +11,11 @@ from robupy.python.py.auxiliary import simulate_emax
 
 
 def get_payoffs_risk(num_draws, eps_relevant, period, k, payoffs_systematic,
-        edu_max, edu_start, mapping_state_idx, states_all, num_periods, emax,
-        delta):
-    """ Simulate expected future value under risk.
+        edu_max, edu_start, mapping_state_idx, states_all, num_periods,
+        periods_emax, delta, is_debug, shocks, level, measure):
+    """ Simulate expected future value under risk. The unused argument is
+    present to align the interface between the PYTHON and FORTRAN
+    implementations.
     """
     # Renaming for optimization setup, alignment with ROBUFORT
     eps_relevant_emax = eps_relevant
@@ -21,7 +23,7 @@ def get_payoffs_risk(num_draws, eps_relevant, period, k, payoffs_systematic,
     # Simulate expected future value.
     simulated, payoffs_ex_post, future_payoffs = simulate_emax(num_periods,
         num_draws, period, k, eps_relevant_emax, payoffs_systematic, edu_max,
-        edu_start, emax, states_all, mapping_state_idx, delta)
+        edu_start, periods_emax, states_all, mapping_state_idx, delta)
 
     # Finishing
     return simulated, payoffs_ex_post, future_payoffs

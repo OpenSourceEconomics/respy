@@ -32,7 +32,7 @@ SUBROUTINE get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
                 future_payoffs, num_draws, eps_relevant, period, k, & 
                 payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
                 states_all, num_periods, periods_emax, delta, is_debug, &
-                shocks, level)
+                shocks, level, measure)
 
     !/* external objects    */
 
@@ -58,6 +58,8 @@ SUBROUTINE get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
 
     LOGICAL, INTENT(IN)             :: is_debug
 
+    CHARACTER(10), INTENT(IN)       :: measure
+
     !/* internal objects    */
 
     INTEGER(our_int)                :: maxiter
@@ -74,7 +76,7 @@ SUBROUTINE get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
     
     ! Parameterizations for optimizations
     x_start = zero_dble
-    maxiter = 1000
+    maxiter = 100000000
     ftol = 1e-06
     eps = 1.4901161193847656e-08
 
@@ -187,7 +189,7 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws, &
     l_jw = mineq
 
     ! Decompose upper and lower bounds
-    xl = - huge_dble; xu = huge_dble
+    xl = - HUGE_FLOAT; xu = HUGE_FLOAT
 
     ! Initialize the iteration counter and mode value
     iter = maxiter
@@ -313,6 +315,7 @@ FUNCTION criterion(x_internal, num_draws, eps_relevant, period, k, &
             payoffs_systematic, edu_max, edu_start, periods_emax, states_all, &
             mapping_state_idx, delta)
 
+    ! Finishing
     criterion = emax_simulated
 
 END FUNCTION

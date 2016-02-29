@@ -3,6 +3,7 @@ solve the model.
 """
 
 # standard library
+import logging
 import shlex
 import os
 
@@ -21,8 +22,8 @@ def solve(robupy_obj):
     # Antibugging
     assert (robupy_obj.get_status())
 
-    # Cleanup
-    cleanup()
+    # Cleanup and start logger
+    cleanup(), _start_logging()
 
     # Distribute class attributes
     is_ambiguous = robupy_obj.get_attr('is_ambiguous')
@@ -60,11 +61,60 @@ def solve(robupy_obj):
     if store:
         robupy_obj.store('solution.robupy.pkl')
 
+    # Orderly shutdown of logging capability.
+    _stop_logging()
+
     # Finishing
     return robupy_obj
 
 ''' Auxiliary functions
 '''
+
+
+def _stop_logging():
+    """ Ensure orderly shutdown of logging capabilities.
+    """
+    # Collect all loggers for shutdown.
+    loggers = []
+    loggers += [logging.getLogger('ROBUPY_SOLVE')]
+    loggers += [logging.getLogger('ROBUPY_SIMULATE')]
+
+    # Close file handlers
+    for logger in loggers:
+        handlers = logger.handlers[:]
+        for handler in handlers:
+            handler.close()
+            logger.removeHandler(handler)
+
+
+def _start_logging():
+    """ Initialize logging setup for the solution of the model.
+    """
+
+    formatter = logging.Formatter('  %(message)s \n')
+
+    logger = logging.getLogger('ROBUPY_SOLVE')
+
+    handler = logging.FileHandler('logging.robupy.sol.log', mode='w',
+                                  delay=False)
+
+    handler.setFormatter(formatter)
+
+    logger.setLevel(logging.INFO)
+
+    logger.addHandler(handler)
+
+
+    logger = logging.getLogger('ROBUPY_SIMULATE')
+
+    handler = logging.FileHandler('logging.robupy.sim.log', mode='w',
+                                  delay=False)
+
+    handler.setFormatter(formatter)
+
+    logger.setLevel(logging.INFO)
+
+    logger.addHandler(handler)
 
 
 def _summarize_ambiguity(robupy_obj):
@@ -116,7 +166,7 @@ def _summarize_ambiguity(robupy_obj):
 
             if period in dict_.keys():
                 continue
-
+    
             dict_[period] = {}
             dict_[period]['success'] = 0
             dict_[period]['failure'] = 0

@@ -1,6 +1,0 @@
-#!/bin/sh
-FILENV=assign.prg
-export FILENV 
-ja
-cf77 -Zv -o dp3asim -Wf"-e m" -F dp3asim.f -l imsl10
-cost

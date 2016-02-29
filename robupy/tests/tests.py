@@ -7,8 +7,9 @@ import sys
 import os
 
 # project library
-from robupy.tests.random_init import generate_init, generate_random_dict
+from robupy.tests.random_init import generate_random_dict
 from robupy.tests.random_init import print_random_dict
+from robupy.tests.random_init import generate_init
 
 # module variables
 FILE_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -18,7 +19,9 @@ TEST_PATH = os.getcwd()
 dir_ = FILE_PATH.replace('/tests', '')
 sys.path.insert(0, dir_)
 
-from robupy import read, solve, simulate
+from robupy import simulate
+from robupy import read
+from robupy import solve
 
 ''' Test class
 '''

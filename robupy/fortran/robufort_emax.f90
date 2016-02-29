@@ -139,14 +139,12 @@ SUBROUTINE get_total_value(total_payoffs, payoffs_ex_post, future_payoffs, &
     payoffs_ex_post(4) = payoffs_systematic(4) + disturbances(4)
 
     ! Get future values
-    ! BEGIN VECTORIZATION A
     IF (period .NE. (num_periods - one_int)) THEN
         CALL get_future_payoffs(future_payoffs, edu_max, edu_start, & 
                 mapping_state_idx, period,  periods_emax, k, states_all)
         ELSE
             future_payoffs = zero_dble
     END IF
-    ! END VECTORIZATION A
 
     ! Calculate total utilities
     total_payoffs = payoffs_ex_post + delta * future_payoffs
@@ -211,7 +209,7 @@ SUBROUTINE get_future_payoffs(future_payoffs, edu_max, edu_start, &
                         exp_B + 1, edu + 1 + 1, 2)
         future_payoffs(3) = periods_emax(period + 1 + 1, future_idx + 1)
     ELSE
-        future_payoffs(3) = -HUGE(future_payoffs)
+        future_payoffs(3) = -HUGE_FLOAT
     END IF
 
 	! Staying at home
@@ -223,7 +221,6 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE stabilize_myopic(total_payoffs, future_payoffs)
-
 
     !/* external objects    */
 
@@ -238,12 +235,89 @@ SUBROUTINE stabilize_myopic(total_payoffs, future_payoffs)
 ! Algorithm
 !-------------------------------------------------------------------------------
     
-    ! Determine NAN
-    is_huge = (future_payoffs(3) == -HUGE(future_payoffs))
+    ! Determine inadmissible state
+    is_huge = (future_payoffs(3) == -HUGE_FLOAT)
 
     IF (is_huge .EQV. .True.) THEN
-        total_payoffs(3) = -HUGE(future_payoffs)
+        total_payoffs(3) = -HUGE_FLOAT
     END IF
+
+END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE get_exogenous_variables(independent_variables, maxe, &
+                period, num_periods, num_states, delta, & 
+                periods_payoffs_systematic, shifts, edu_max, edu_start, &
+                mapping_state_idx, periods_emax, states_all)
+
+    !/* external objects    */
+
+    REAL(our_dble), INTENT(OUT)         :: independent_variables(num_states, 9)
+    REAL(our_dble), INTENT(OUT)         :: maxe(num_states)
+
+    REAL(our_dble), INTENT(IN)          :: periods_payoffs_systematic(:, :, :)
+    REAL(our_dble), INTENT(IN)          :: periods_emax(:, :)
+    REAL(our_dble), INTENT(IN)          :: shifts(:)
+    REAL(our_dble), INTENT(IN)          :: delta
+
+    INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(:, :, :, :, :)    
+    INTEGER(our_int), INTENT(IN)        :: states_all(:, :, :)    
+    INTEGER(our_int), INTENT(IN)        :: num_periods
+    INTEGER(our_int), INTENT(IN)        :: num_states
+    INTEGER(our_int), INTENT(IN)        :: edu_start
+    INTEGER(our_int), INTENT(IN)        :: edu_max
+    INTEGER(our_int), INTENT(IN)        :: period
+
+
+    !/* internal objects    */
+
+    REAL(our_dble)                      :: payoffs_systematic(4)
+    REAL(our_dble)                      :: expected_values(4)
+    REAL(our_dble)                      :: payoffs_ex_post(4)
+    REAL(our_dble)                      :: future_payoffs(4)
+    REAL(our_dble)                      :: deviations(4)
+
+    INTEGER(our_int)                    :: k
+
+    LOGICAL                             :: is_inadmissible
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+
+    ! Construct exogenous variable for all states
+    DO k = 0, (num_states - 1)
+
+        payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
+
+        CALL get_total_value(expected_values, payoffs_ex_post, future_payoffs, &
+                period, num_periods, delta, payoffs_systematic, shifts, &
+                edu_max, edu_start, mapping_state_idx, periods_emax, k, &
+                states_all)
+
+        ! Treatment of inadmissible states, which will show up in the regression 
+        ! in some way
+        is_inadmissible = (future_payoffs(3) == -HUGE_FLOAT)
+
+        IF (is_inadmissible) THEN
+
+            expected_values(3) = interpolation_inadmissible_states
+
+        END IF
+
+        ! Implement level shifts
+        maxe(k + 1) = MAXVAL(expected_values)
+
+        deviations = maxe(k + 1) - expected_values
+
+        ! Construct regressors
+        independent_variables(k + 1, 1:4) = deviations
+        independent_variables(k + 1, 5:8) = DSQRT(deviations)
+
+    END DO
+
+    ! Add intercept to set of independent variables
+    independent_variables(:, 9) = one_dble
 
 END SUBROUTINE
 !*******************************************************************************

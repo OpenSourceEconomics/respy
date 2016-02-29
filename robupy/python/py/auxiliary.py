@@ -5,6 +5,9 @@ implementations of the core functions.
 # standard library
 import numpy as np
 
+# project library
+from robupy.constants import HUGE_FLOAT
+
 
 def simulate_emax(num_periods, num_draws, period, k, eps_relevant_emax,
         payoffs_systematic, edu_max, edu_start, periods_emax, states_all,
@@ -59,8 +62,7 @@ def get_total_value(period, num_periods, delta, payoffs_systematic,
     # Get future values
     if period != (num_periods - 1):
         future_payoffs = _get_future_payoffs(edu_max, edu_start,
-                            mapping_state_idx, period, periods_emax, k,
-                            states_all)
+            mapping_state_idx, period, periods_emax, k, states_all)
     else:
         future_payoffs = np.tile(0.0, 4)
 
@@ -83,7 +85,6 @@ def _get_future_payoffs(edu_max, edu_start, mapping_state_idx, period,
         periods_emax, k, states_all):
     """ Get future payoffs for additional choices.
     """
-
     # Distribute state space
     exp_A, exp_B, edu, edu_lagged = states_all[period, k, :]
 
@@ -105,7 +106,7 @@ def _get_future_payoffs(edu_max, edu_start, mapping_state_idx, period,
         future_idx = mapping_state_idx[period + 1, exp_A, exp_B, edu + 1, 1]
         future_payoffs[2] = periods_emax[period + 1, future_idx]
     else:
-        future_payoffs[2] = -np.inf
+        future_payoffs[2] = -HUGE_FLOAT
 
     # Staying at home
     future_idx = mapping_state_idx[period + 1, exp_A, exp_B, edu, 0]
@@ -122,10 +123,11 @@ def _stabilize_myopic(total_payoffs, future_payoffs):
     value when calling np.argmax.
     """
     # Determine NAN
-    is_inf = np.isneginf(future_payoffs)
+    is_huge = (future_payoffs[2] == -HUGE_FLOAT)
 
     # Replace with negative infinity
-    total_payoffs[is_inf] = -np.inf
+    if is_huge:
+        total_payoffs[2] = -HUGE_FLOAT
 
     # Finishing
     return total_payoffs

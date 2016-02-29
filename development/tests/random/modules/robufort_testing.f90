@@ -95,7 +95,7 @@ SUBROUTINE slsqp_debug(x_internal, x_start, maxiter, ftol, &
 
     ! Decompose upper and lower bounds
     ALLOCATE(xl(n)); ALLOCATE(xu(n))
-    xl = - huge_dble; xu = huge_dble
+    xl = - HUGE_FLOAT; xu = HUGE_FLOAT
 
     ! Initialize the iteration counter and mode value
     acc = ftol

@@ -6,11 +6,17 @@ where FORTRAN alternatives are available.
 import statsmodels.api as sm
 import numpy as np
 import logging
+import shlex
+import os
 
 # project library
 from robupy.python.py.ambiguity import get_payoffs_ambiguity
 from robupy.python.py.auxiliary import get_total_value
 from robupy.python.py.risk import get_payoffs_risk
+
+from robupy.constants import INTERPOLATION_INADMISSIBLE_STATES
+from robupy.constants import MISSING_FLOAT
+from robupy.constants import HUGE_FLOAT
 
 # Logging
 logger = logging.getLogger('ROBUPY_SOLVE')
@@ -29,10 +35,10 @@ def backward_induction(num_periods, max_states_period, periods_eps_relevant,
     shifts = [np.exp(shocks[0, 0]/2.0), np.exp(shocks[1, 1]/2.0), 0.0, 0.0]
 
     # Initialize containers with missing values
-    periods_emax = np.tile(-99.00, (num_periods, max_states_period))
-    periods_payoffs_ex_post = np.tile(-99.00, (num_periods,
+    periods_emax = np.tile(MISSING_FLOAT, (num_periods, max_states_period))
+    periods_payoffs_ex_post = np.tile(MISSING_FLOAT, (num_periods,
                                                max_states_period, 4))
-    periods_future_payoffs = np.tile(-99.00, (num_periods,
+    periods_future_payoffs = np.tile(MISSING_FLOAT, (num_periods,
                                                max_states_period, 4))
 
     # Iterate backward through all periods
@@ -43,8 +49,9 @@ def backward_induction(num_periods, max_states_period, periods_eps_relevant,
         num_states = states_number_period[period]
 
         # Logging.
-        logger.info('... solving period ' + str(period) + ' with ' + str(
-            num_states) + ' states')
+        string = '''{0[0]:>18}{0[1]:>3}{0[2]:>5}{0[3]:>6}{0[4]:>7}'''
+        logger.info(string.format(['... solving period', period, 'with',
+                num_states, 'states']))
 
         # The number of interpolation points is the same for all periods.
         # Thus, for some periods the number of interpolation points is
@@ -55,95 +62,38 @@ def backward_induction(num_periods, max_states_period, periods_eps_relevant,
         # Case distinction
         if any_interpolated:
 
-            # Drawing random interpolation points
-            interpolation_points = np.random.choice(range(num_states),
-                                        size=num_points, replace=False)
+            # Get indicator for interpolation and simulation of states
+            is_simulated = _get_simulated_indicator(num_points, num_states,
+                period, num_periods, is_debug)
 
-            # Constructing an indicator whether a state will be simulated or
-            # interpolated.
-            is_simulated = np.tile(False, num_states)
-            is_simulated[interpolation_points] = True
-
-            # Constructing the dependent variable for all states, including the
+            # Constructing the exogenous variable for all states, including the
             # ones where simulation will take place. All information will be
             # used in either the construction of the prediction model or the
             # prediction step.
-            independent_variables = np.tile(np.nan, (num_states, 9))
-            maxe = np.tile(np.nan, num_states)
-
-            for i, k in enumerate(range(num_states)):
-
-                payoffs_systematic = periods_payoffs_systematic[period, k, :]
-                expected_values, _, _ = get_total_value(period, num_periods,
-                    delta, payoffs_systematic, shifts, edu_max, edu_start,
-                    mapping_state_idx, periods_emax, k, states_all)
-
-                maxe[i] = max(expected_values)
-
-                deviations = maxe[i] - expected_values
-
-                independent_variables[i, :8] = np.hstack((deviations,
-                                                    np.sqrt(deviations)))
-
-            # Add intercept to set of independent variables and replace
-            # infinite values.
-            independent_variables[:, 8] = 1
-
-            # TODO: Is this the best we can do? What are the exact consequences?
-            independent_variables[np.isinf(independent_variables)] = \
-                -50000
+            exogenous, maxe =_get_exogenous_variables(period, num_periods,
+                num_states, delta, periods_payoffs_systematic, shifts,
+                edu_max, edu_start, mapping_state_idx, periods_emax, states_all)
 
             # Constructing the dependent variables for at the random subset of
             # points where the EMAX is actually calculated.
-            dependent_variable = np.tile(np.nan, num_states)
-            for i, k in enumerate(range(num_states)):
-                # Skip over points that will be interpolated.
-                if not is_simulated[i]:
-                    continue
-
-                # Extract payoffs
-                payoffs_systematic = periods_payoffs_systematic[period, k, :]
-                # Simulate the expected future value.
-                emax, _, _ = get_payoffs(num_draws, eps_relevant, period,
-                                k, payoffs_systematic, edu_max, edu_start,
-                                mapping_state_idx, states_all, num_periods,
-                                periods_emax, delta, is_debug, shocks, level,
-                                measure)
-
-                # Construct dependent variable
-                dependent_variable[i] = emax - maxe[i]
+            endogenous = _get_endogenous_variable(period, num_periods,
+                num_states, delta, periods_payoffs_systematic, shifts,
+                edu_max, edu_start, mapping_state_idx, periods_emax,
+                states_all, is_simulated, num_draws, shocks, level, is_debug,
+                measure, maxe, eps_relevant)
 
             # Create prediction model based on the random subset of points where
             # the EMAX is actually simulated and thus dependent and
-            # independent variables are available.
-            model = sm.OLS(dependent_variable[is_simulated],
-                        independent_variables[is_simulated])
-
-            results = model.fit()
-
-            # Write out some basic information to spot problems easily
-            _logging_prediction_model(results)
-
-            # Use the model to predict EMAX for all states and subsequently
-            # replace the values where actual values are available. As in
-            # Keane & Wolpin (1994), negative predictions are truncated to zero.
-            predictions_diff = results.predict(independent_variables)
-            predictions_diff = np.clip(predictions_diff, 0.00, None)
-
-            # Construct predicted EMAX for all states and the replace
-            # interpolation points with simulated values.
-            predictions = predictions_diff + maxe
-            predictions[is_simulated] = dependent_variable[is_simulated] + \
-                                            maxe[is_simulated]
+            # independent variables are available. For the interpolation
+            # points, the actual values are used.
+            predictions, results = _get_predictions(endogenous, exogenous,
+                maxe, is_simulated, num_points, num_states, is_debug)
 
             # Store results
             periods_emax[period, :num_states] = predictions
 
-            # Checks
-            _check_prediction_model(predictions_diff, model, results,
-                                    num_points, num_states)
-
         else:
+
             # Loop over all possible states
             for k in range(states_number_period[period]):
 
@@ -152,18 +102,18 @@ def backward_induction(num_periods, max_states_period, periods_eps_relevant,
 
                 # Simulate the expected future value.
                 emax, payoffs_ex_post, future_payoffs = \
-                        get_payoffs(num_draws, eps_relevant, period,
-                            k, payoffs_systematic, edu_max, edu_start,
-                            mapping_state_idx, states_all, num_periods,
-                            periods_emax, delta, is_debug, shocks, level,
-                            measure)
+                    get_payoffs(num_draws, eps_relevant, period, k,
+                        payoffs_systematic, edu_max, edu_start,
+                        mapping_state_idx, states_all, num_periods,
+                        periods_emax, delta, is_debug, shocks, level, measure)
 
-                # Collect information
+                # Store results
+                periods_emax[period, k] = emax
+
+                # This information is only available if no interpolation is
+                # used. Otherwise all remain set to missing values (see above).
                 periods_payoffs_ex_post[period, k, :] = payoffs_ex_post
                 periods_future_payoffs[period, k, :] = future_payoffs
-
-                # Collect
-                periods_emax[period, k] = emax
 
     # Finishing. Note that the last two return arguments are not available in
     # for periods, where interpolation is required.
@@ -172,8 +122,7 @@ def backward_induction(num_periods, max_states_period, periods_eps_relevant,
 
 def get_payoffs(num_draws, eps_relevant, period, k, payoffs_systematic, edu_max,
                 edu_start, mapping_state_idx, states_all, num_periods,
-                periods_emax, delta, is_debug, shocks, level=None,
-                measure=None):
+                periods_emax, delta, is_debug, shocks, level, measure):
     """ Get payoffs for a particular state.
     """
     # Auxiliary objects
@@ -193,7 +142,8 @@ def get_payoffs(num_draws, eps_relevant, period, k, payoffs_systematic, edu_max,
                         get_payoffs_risk(num_draws, eps_relevant, period, k,
                             payoffs_systematic, edu_max, edu_start,
                             mapping_state_idx, states_all, num_periods,
-                            periods_emax, delta)
+                            periods_emax, delta, is_debug, shocks, level,
+                            measure)
 
     # Finishing
     return emax, payoffs_ex_post, future_payoffs
@@ -203,15 +153,15 @@ def create_state_space(num_periods, edu_start, edu_max, min_idx):
     """ Create grid for state space.
     """
     # Array for possible realization of state space by period
-    states_all = np.tile(-99.00, (num_periods, 100000, 4))
+    states_all = np.tile(MISSING_FLOAT, (num_periods, 100000, 4))
 
     # Array for the mapping of state space values to indices in variety
     # of matrices.
-    mapping_state_idx = np.tile(-99.00, (num_periods, num_periods, num_periods,
+    mapping_state_idx = np.tile(MISSING_FLOAT, (num_periods, num_periods, num_periods,
                                          min_idx, 2))
 
     # Array for maximum number of realizations of state space by period
-    states_number_period = np.tile(-99.00, num_periods)
+    states_number_period = np.tile(MISSING_FLOAT, num_periods)
 
     # Construct state space by periods
     for period in range(num_periods):
@@ -288,7 +238,7 @@ def calculate_payoffs_systematic(num_periods, states_number_period, states_all,
     """
 
     # Initialize
-    periods_payoffs_systematic = np.tile(-99.0, (num_periods, max_states_period,
+    periods_payoffs_systematic = np.tile(MISSING_FLOAT, (num_periods, max_states_period,
                                                   4))
 
     # Calculate systematic instantaneous payoffs
@@ -341,7 +291,7 @@ def simulate_sample(num_agents, states_all, num_periods,
     count = 0
 
     # Initialize data
-    dataset = np.tile(-99.00, (num_agents * num_periods, 8))
+    dataset = np.tile(MISSING_FLOAT, (num_agents * num_periods, 8))
 
     for i in range(num_agents):
 
@@ -380,7 +330,7 @@ def simulate_sample(num_agents, states_all, num_periods,
             dataset[count, 2] = max_idx + 1
 
             # Record earnings
-            dataset[count, 3] = -99.00
+            dataset[count, 3] = MISSING_FLOAT
             if max_idx in [0, 1]:
                 dataset[count, 3] = payoffs_ex_post[max_idx]
 
@@ -420,19 +370,165 @@ def _logging_prediction_model(results):
     logger.info('    Information about Prediction Model ')
 
     string = '''{0:>18}    {1:10.4f} {2:10.4f} {3:10.4f} {4:10.4f}'''
-    string += '''{5:10.4f} {6:10.4f} {7:10.4f} {8:10.4f} {9:10.4f}'''
+    string += ''' {5:10.4f} {6:10.4f} {7:10.4f} {8:10.4f} {9:10.4f}'''
 
     logger.info(string.format('Coefficients', *results.params))
-    string = '''{0:>17}     {1:10.4f}\n'''
+    string = '''{0:>18}    {1:10.4f}\n'''
 
     logger.info(string.format('R-squared', results.rsquared))
 
 
-def _check_prediction_model(predictions_diff, model, results, num_points,
-                            num_states):
+def _check_prediction_model(predictions_diff, model, num_points, num_states,
+                            is_debug):
     """ Perform some basic consistency checks for the prediction model.
     """
+    # Construct auxiliary object
+    results = model.fit()
+    # Perform basic checks
     assert (np.all(predictions_diff >= 0.00))
-    assert (model.nobs == min(num_points, num_states))
     assert (results.params.shape == (9,))
     assert (np.all(np.isfinite(results.params)))
+
+    # Check for standardization as the following constraint is not
+    # necessarily satisfied in that case. For ease of application, we do not
+    # ensure that the same number of interpolation points is available.
+    if not (is_debug and os.path.isfile('interpolation.txt')):
+        assert (model.nobs == min(num_points, num_states))
+
+
+def _get_simulated_indicator(num_points, num_candidates, period, num_periods,
+                             is_debug):
+    """ Get the indicator for points of interpolation and simulation. The
+    unused argument is present to align the interface between the PYTHON and
+    FORTRAN implementations.
+    """
+
+    # Drawing random interpolation points
+    interpolation_points = np.random.choice(range(num_candidates),
+                                size=num_points, replace=False)
+
+    # Constructing an indicator whether a state will be simulated or
+    # interpolated.
+    is_simulated = np.tile(False, num_candidates)
+    is_simulated[interpolation_points] = True
+
+    # Check for debugging cases.
+    is_standardized = is_debug and os.path.isfile('interpolation.txt')
+    if is_standardized:
+        with open('interpolation.txt', 'r') as file_:
+            indicators = []
+            for line in file_:
+                indicators += [(shlex.split(line)[period] == 'True')]
+        is_simulated = (indicators[:num_candidates])
+
+    # Type conversion
+    is_simulated = np.array(is_simulated)
+
+    # Finishing
+    return is_simulated
+
+
+def _get_exogenous_variables(period, num_periods, num_states, delta,
+        periods_payoffs_systematic, shifts, edu_max, edu_start,
+        mapping_state_idx, periods_emax, states_all):
+    """ Get exogenous variables for interpolation scheme. The unused argument
+    is present to align the interface between the PYTHON and FORTRAN
+    implementations.
+    """
+    # Construct auxiliary objects
+    exogenous = np.tile(np.nan, (num_states, 9))
+    maxe = np.tile(np.nan, num_states)
+
+    # Iterate over all states.
+    for k in range(num_states):
+
+        # Extract systematic payoff
+        payoffs_systematic = periods_payoffs_systematic[period, k, :]
+
+        # Get total value
+        expected_values, _, future_payoffs = get_total_value(period, num_periods,
+                    delta, payoffs_systematic, shifts, edu_max, edu_start,
+                    mapping_state_idx, periods_emax, k, states_all)
+
+        # Treatment of inadmissible states, which will show up in the
+        # regression in some way.
+        is_inadmissible = (future_payoffs[2] == -HUGE_FLOAT)
+
+        if is_inadmissible:
+            expected_values[2] = INTERPOLATION_INADMISSIBLE_STATES
+
+        # Implement level shifts
+        maxe[k] = max(expected_values)
+
+        deviations = maxe[k] - expected_values
+
+        exogenous[k, :8] = np.hstack((deviations, np.sqrt(deviations)))
+
+        # Add intercept to set of independent variables and replace
+        # infinite values.
+        exogenous[:, 8] = 1
+
+    # Finishing
+    return exogenous, maxe
+
+
+def _get_endogenous_variable(period, num_periods, num_states, delta,
+        periods_payoffs_systematic, shifts, edu_max, edu_start,
+        mapping_state_idx, periods_emax, states_all, is_simulated, num_draws,
+        shocks, level, is_debug, measure, maxe, eps_relevant):
+    """ Construct endogenous variable for the subset of interpolation points.
+    """
+    # Construct auxiliary objects
+    endogenous_variable = np.tile(np.nan, num_states)
+
+    for k in range(num_states):
+
+        # Skip over points that will be interpolated and not simulated.
+        if not is_simulated[k]:
+            continue
+
+        # Extract payoffs
+        payoffs_systematic = periods_payoffs_systematic[period, k, :]
+
+        # Simulate the expected future value.
+        emax_simulated, _, _ = get_payoffs(num_draws, eps_relevant, period,
+            k, payoffs_systematic, edu_max, edu_start, mapping_state_idx,
+            states_all, num_periods, periods_emax, delta, is_debug, shocks,
+            level, measure)
+
+        # Construct dependent variable
+        endogenous_variable[k] = emax_simulated - maxe[k]
+
+    # Finishing
+    return endogenous_variable
+
+
+def _get_predictions(endogenous, exogenous, maxe, is_simulated, num_points,
+        num_states, is_debug):
+    """ Fit an OLS regression of the exogenous variables on the endogenous
+    variables and use the results to predict the endogenous variables for all
+    points in the state space.
+    """
+    # Define ordinary least squares model and fit to the data.
+    model = sm.OLS(endogenous[is_simulated], exogenous[is_simulated])
+    results = model.fit()
+
+    # Use the model to predict EMAX for all states. As in
+    # Keane & Wolpin (1994), negative predictions are truncated to zero.
+    endogenous_predicted = results.predict(exogenous)
+    endogenous_predicted = np.clip(endogenous_predicted, 0.00, None)
+
+    # Construct predicted EMAX for all states and the replace
+    # interpolation points with simulated values.
+    predictions = endogenous_predicted + maxe
+    predictions[is_simulated] = endogenous[is_simulated] + maxe[is_simulated]
+
+    # Checks
+    _check_prediction_model(endogenous_predicted, model, num_points, num_states,
+        is_debug)
+
+    # Write out some basic information to spot problems easily.
+    _logging_prediction_model(results)
+
+    # Finishing
+    return predictions, results
