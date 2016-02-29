@@ -3,6 +3,7 @@
 
 # standard library
 import numpy as np
+import glob
 import sys
 import os
 
@@ -22,6 +23,17 @@ sys.path.insert(0, dir_)
 from robupy import simulate
 from robupy import read
 from robupy import solve
+
+# Check for available versions. This can be removed later when the PyPI
+# installation also includes the compilation step.
+F2PY_EXISTS = (len(glob.glob(dir_ + '/python/f2py/f2py_library.*.so')) == 1)
+FORT_EXISTS = (len(glob.glob(dir_ + '/fortran/bin/robufo*')) == 2)
+
+VERSIONS = ['PYTHON']
+if F2PY_EXISTS:
+    VERSIONS += ['F2PY']
+if FORT_EXISTS:
+    VERSIONS += ['FORTRAN']
 
 ''' Test class
 '''
@@ -62,7 +74,7 @@ class Tests(object):
 
             # Generate constraints
             constraints = dict()
-            constraints['version'] = 'PYTHON'
+            constraints['version'] = np.random.choice(VERSIONS)
 
             # Generate random initialization file
             generate_init(constraints)
@@ -84,7 +96,7 @@ class Tests(object):
             # Generate constraint periods
             constraints = dict()
             constraints['periods'] = np.random.randint(3, 10)
-            constraints['version'] = 'PYTHON'
+            constraints['version'] = np.random.choice(VERSIONS)
 
             # Generate random initialization file
             generate_init(constraints)
@@ -142,8 +154,8 @@ class Tests(object):
         for i in range(10):
             # Generate constraint periods
             constraints = dict()
+            constraints['version'] = np.random.choice(VERSIONS)
             constraints['eps_zero'] = True
-            constraints['version'] = 'PYTHON'
             constraints['level'] = 0.00
 
             # Generate random initialization file
@@ -170,7 +182,7 @@ class Tests(object):
         # Generate constraints
         constraints = dict()
         constraints['eps_zero'] = True
-        constraints['version'] = 'PYTHON'
+        constraints['version'] = np.random.choice(VERSIONS)
         constraints['level'] = 0.0
 
         # The calculation of the KL does not work for this case.
@@ -222,7 +234,7 @@ class Tests(object):
 
             # Initialize constraints
             constraints = dict()
-            constraints['version'] = 'PYTHON'
+            constraints['version'] = np.random.choice(VERSIONS)
 
             # Generate random initialization file
             generate_init(constraints)
@@ -238,7 +250,7 @@ class Tests(object):
         # Generate random initialization dictionary
         constraints = dict()
         constraints['debug'] = True
-        constraints['version'] = 'PYTHON'
+        constraints['version'] = np.random.choice(VERSIONS)
 
         init_dict = generate_random_dict(constraints)
 
@@ -276,7 +288,7 @@ class Tests(object):
 
         # Generate constraints
         constraints = dict()
-        constraints['version'] = 'PYTHON'
+        constraints['version'] = np.random.choice(VERSIONS)
 
         # Generate random initialization dictionary
         init_dict = generate_random_dict(constraints)
