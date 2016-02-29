@@ -14,9 +14,7 @@ ROBUPY_DIR = ROBUPY_DIR.replace('/travis-ci', '/robupy')
 
 # If the script is run on TRAVIS-CI, then I need to create a link to F2PY3. So
 # far I was unable to figure out why that is the case.
-print('TRAVIS' in os.environ.keys())
 if 'TRAVIS' in os.environ.keys():
-    print('I am in')
     os.system('ln -sf /home/travis/virtualenv/python3.4.2/bin/f2py /home/travis/virtualenv/python3.4.2/bin/f2py3')
 
 # Compile package as possible.
