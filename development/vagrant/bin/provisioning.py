@@ -30,17 +30,19 @@ os.chdir(GUEST)
 
 if not os.path.exists('robustToolbox'):
     
-    os.mkdir('robustToolbox'), os.chdir('robustToolbox')
+    os.mkdir('robustToolbox')
+
+    os.chdir('robustToolbox')
 
     os.system('git clone https://github.com/robustToolbox/package.git')
 
+    os.mkdir('documentation')
 
-    os.mkdir('documentation'), os.chdir('documentation')
+    os.chdir('documentation')
 
     os.system('git clone https://github.com/robustToolbox/documentation.git')
 
     os.system('git clone https://github.com/robustToolbox/robustToolbox.github.io.git')
-
 
     os.chdir('../../')
 

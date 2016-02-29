@@ -23,7 +23,9 @@ def solve(robupy_obj):
     assert (robupy_obj.get_status())
 
     # Cleanup and start logger
-    cleanup(), _start_logging()
+    cleanup()
+
+    _start_logging()
 
     # Distribute class attributes
     is_ambiguous = robupy_obj.get_attr('is_ambiguous')
