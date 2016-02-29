@@ -20,7 +20,7 @@ The last command runs several tests to check the integrity of the package. You c
 #### Quality Assurance
 
 [![Build Status](https://travis-ci.org/robustToolbox/package.svg?branch=master)](https://travis-ci.org/robustToolbox/package)
-[![Coverage Status](https://coveralls.io/repos/peisenha/robustToolbox/badge.svg?branch=development&service=github)](https://coveralls.io/github/peisenha/robustToolbox?branch=development)
+[![Coverage Status](https://coveralls.io/repos/github/robustToolbox/package/badge.svg?branch=master)](https://coveralls.io/github/robustToolbox/package?branch=master)
 [![Code Issues](http://www.quantifiedcode.com/api/v1/project/409a24d80b7145988ec12a35e94315bb/badge.svg)](http://www.quantifiedcode.com/app/project/409a24d80b7145988ec12a35e94315bb)
 [![Codacy Badge](https://www.codacy.com/project/badge/19e3f4eeb62e435ebd3f078fcae89cdb)](https://www.codacy.com/app/eisenhauer/robustToolbox_package)
 
