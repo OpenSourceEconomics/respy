@@ -20,6 +20,10 @@ os.chdir(CURRENT_DIR)
 os.system('f2py')
 os.system('f2py3')
 
+
+os.system('which f2py')
+os.system('which f2py3')
+
 # Tests
 os.system('nosetests --with-coverage --cover-package=robupy --exe')
 
