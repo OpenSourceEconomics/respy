@@ -17,6 +17,9 @@ os.chdir(ROBUPY_DIR)
 os.system('./waf configure build --fortran --debug')
 os.chdir(CURRENT_DIR)
 
+os.system('f2py')
+os.system('f2py3')
+
 # Tests
 os.system('nosetests --with-coverage --cover-package=robupy --exe')
 

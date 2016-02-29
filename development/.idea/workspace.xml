@@ -568,7 +568,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1024" height="768" extended-state="6" />
-    <editor active="true" />
+    <editor active="false" />
     <layout>
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.28879312" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
