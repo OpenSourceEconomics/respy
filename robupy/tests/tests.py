@@ -70,11 +70,18 @@ class Tests(object):
         """ Testing whether ten random initialization file can be
         solved and simulated.
         """
+
         for i in range(10):
+
+            # Select version
+            version = np.random.choice(VERSIONS)
 
             # Generate constraints
             constraints = dict()
-            constraints['version'] = np.random.choice(VERSIONS)
+            constraints['version'] = version
+
+            if version is not 'PYTHON':
+                constraints['measure'] = 'kl'
 
             # Generate random initialization file
             generate_init(constraints)
@@ -93,10 +100,16 @@ class Tests(object):
         """
         for i in range(10):
 
+            # Select version
+            version = np.random.choice(VERSIONS)
+
             # Generate constraint periods
             constraints = dict()
             constraints['periods'] = np.random.randint(3, 10)
-            constraints['version'] = np.random.choice(VERSIONS)
+            constraints['version'] = version
+
+            if version is not 'PYTHON':
+                constraints['measure'] = 'kl'
 
             # Generate random initialization file
             generate_init(constraints)
@@ -152,11 +165,18 @@ class Tests(object):
         zero).
         """
         for i in range(10):
+
+            # Select version
+            version = np.random.choice(VERSIONS)
+
             # Generate constraint periods
             constraints = dict()
-            constraints['version'] = np.random.choice(VERSIONS)
+            constraints['version'] = version
             constraints['eps_zero'] = True
             constraints['level'] = 0.00
+
+            if version is not 'PYTHON':
+                constraints['measure'] = 'kl'
 
             # Generate random initialization file
             generate_init(constraints)
@@ -179,11 +199,18 @@ class Tests(object):
         """ If there is no random variation in payoffs then the number of
         draws to simulate the expected future value should have no effect.
         """
+
+        # Select version
+        version = np.random.choice(VERSIONS)
+
         # Generate constraints
         constraints = dict()
         constraints['eps_zero'] = True
-        constraints['version'] = np.random.choice(VERSIONS)
+        constraints['version'] = version
         constraints['level'] = 0.0
+
+        if version is not 'PYTHON':
+            constraints['measure'] = 'kl'
 
         # The calculation of the KL does not work for this case.
         constraints['measure'] = 'absolute'
@@ -232,9 +259,15 @@ class Tests(object):
         """
         for i in range(1000):
 
+            # Select version
+            version = np.random.choice(VERSIONS)
+
             # Initialize constraints
             constraints = dict()
-            constraints['version'] = np.random.choice(VERSIONS)
+            constraints['version'] = version
+
+            if version is not 'PYTHON':
+                constraints['measure'] = 'kl'
 
             # Generate random initialization file
             generate_init(constraints)
@@ -247,10 +280,17 @@ class Tests(object):
         """ Testing whether the risk code is identical to the ambiguity code for
             very, very small levels of ambiguity.
         """
+
+        # Select version
+        version = np.random.choice(VERSIONS)
+
         # Generate random initialization dictionary
         constraints = dict()
         constraints['debug'] = True
-        constraints['version'] = np.random.choice(VERSIONS)
+        constraints['version'] = version
+
+        if version is not 'PYTHON':
+            constraints['measure'] = 'kl'
 
         init_dict = generate_random_dict(constraints)
 
@@ -286,9 +326,15 @@ class Tests(object):
         the level of ambiguity.
         """
 
+        # Select version
+        version = np.random.choice(VERSIONS)
+
         # Generate constraints
         constraints = dict()
-        constraints['version'] = np.random.choice(VERSIONS)
+        constraints['version'] = version
+
+        if version is not 'PYTHON':
+            constraints['measure'] = 'kl'
 
         # Generate random initialization dictionary
         init_dict = generate_random_dict(constraints)
