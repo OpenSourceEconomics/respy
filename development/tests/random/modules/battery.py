@@ -2,9 +2,6 @@
 development tests.
 """
 
-# TODO: I am in a development push the version constraints need to be
-# TODO: revisited later.
-
 # standard library
 from pandas.util.testing import assert_frame_equal
 import statsmodels.api as sm
