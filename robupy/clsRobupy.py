@@ -158,9 +158,6 @@ class RobupyCls(MetaCls):
 
             self.attr['is_python'] = (self.attr['version'] == 'PYTHON')
 
-            # Update status indicator
-            self.is_first = False
-
     def _check_integrity(self):
         """ Check integrity of class instance. This testing is done the first
         time the class is locked and if the package is running in debug mode.
@@ -289,6 +286,10 @@ class RobupyCls(MetaCls):
 
         # Check integrity of results as well
         self._check_integrity_results()
+
+
+        # Update status indicator
+        self.is_first = False
 
     def _check_integrity_results(self):
         """ This methods check the integrity of the results.
