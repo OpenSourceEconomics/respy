@@ -6,6 +6,7 @@ if not (sys.version_info[0] == 3):
 # Package structure
 from robupy.read import read
 from robupy.solve import solve
+from robupy.process import process
 from robupy.simulate import simulate
 
 
