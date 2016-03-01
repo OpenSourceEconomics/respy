@@ -93,6 +93,10 @@ def generate_random_dict(constraints=None):
     dict_['PROGRAM']['version'] = np.random.choice(['FORTRAN', 'F2PY',
                                                     'PYTHON'])
 
+    # TODO: This constraint will be removed as time goes by.
+    if dict_['PROGRAM']['version'] is not 'PYTHON':
+        dict_['AMBIGUITY']['measure'] = 'kl'
+
     # SIMULATION
     dict_['SIMULATION'] = {}
     dict_['SIMULATION']['seed'] = np.random.random_integers(1, 10000)

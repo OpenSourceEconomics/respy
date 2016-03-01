@@ -80,9 +80,6 @@ class Tests(object):
             constraints = dict()
             constraints['version'] = version
 
-            if version is not 'PYTHON':
-                constraints['measure'] = 'kl'
-
             # Generate random initialization file
             generate_init(constraints)
 
@@ -107,9 +104,6 @@ class Tests(object):
             constraints = dict()
             constraints['periods'] = np.random.randint(3, 10)
             constraints['version'] = version
-
-            if version is not 'PYTHON':
-                constraints['measure'] = 'kl'
 
             # Generate random initialization file
             generate_init(constraints)
@@ -175,9 +169,6 @@ class Tests(object):
             constraints['eps_zero'] = True
             constraints['level'] = 0.00
 
-            if version is not 'PYTHON':
-                constraints['measure'] = 'kl'
-
             # Generate random initialization file
             generate_init(constraints)
 
@@ -208,9 +199,6 @@ class Tests(object):
         constraints['eps_zero'] = True
         constraints['version'] = version
         constraints['level'] = 0.0
-
-        if version is not 'PYTHON':
-            constraints['measure'] = 'kl'
 
         # The calculation of the KL does not work for this case.
         constraints['measure'] = 'absolute'
@@ -266,9 +254,6 @@ class Tests(object):
             constraints = dict()
             constraints['version'] = version
 
-            if version is not 'PYTHON':
-                constraints['measure'] = 'kl'
-
             # Generate random initialization file
             generate_init(constraints)
 
@@ -288,9 +273,6 @@ class Tests(object):
         constraints = dict()
         constraints['debug'] = True
         constraints['version'] = version
-
-        if version is not 'PYTHON':
-            constraints['measure'] = 'kl'
 
         init_dict = generate_random_dict(constraints)
 
@@ -332,9 +314,6 @@ class Tests(object):
         # Generate constraints
         constraints = dict()
         constraints['version'] = version
-
-        if version is not 'PYTHON':
-            constraints['measure'] = 'kl'
 
         # Generate random initialization dictionary
         init_dict = generate_random_dict(constraints)
