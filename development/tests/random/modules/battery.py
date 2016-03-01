@@ -29,8 +29,9 @@ from modules.auxiliary import cleanup
 # ROBUPY import
 sys.path.insert(0, os.environ['ROBUPY'])
 from robupy import simulate
-from robupy import read
+from robupy import process
 from robupy import solve
+from robupy import read
 
 from robupy.python.py.python_library import _get_simulated_indicator
 from robupy.python.py.python_library import _get_exogenous_variables
@@ -1182,3 +1183,21 @@ def test_99():
 
     # Cleanup
     cleanup()
+
+
+def test_100():
+    """ Testing whether random datasets can be simulated and processed.
+    """
+
+    for i in range(10):
+
+        # Generate random initialization file
+        generate_init()
+
+        robupy_obj = read('test.robupy.ini')
+
+        solve(robupy_obj)
+
+        simulate(robupy_obj)
+
+        process('data.robupy.dat', robupy_obj)
