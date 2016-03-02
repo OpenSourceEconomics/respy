@@ -21,7 +21,6 @@ import logging
 # project library
 from robupy.auxiliary import replace_missing_values
 from robupy.auxiliary import create_disturbances
-from robupy.auxiliary import create_disturbances
 from robupy.auxiliary import check_dataset
 
 import robupy.python.py.python_library as python_library
@@ -44,8 +43,19 @@ def simulate(robupy_obj):
 
     num_agents = robupy_obj.get_attr('num_agents')
 
+    eps_cholesky = robupy_obj.get_attr('eps_cholesky')
+
+    is_ambiguous = robupy_obj.get_attr('is_ambiguous')
+
+    num_periods = robupy_obj.get_attr('num_periods')
+
+    is_debug = robupy_obj.get_attr('is_debug')
+
+    seed_simulation = robupy_obj.get_attr('seed_simulation')
+
     # Draw disturbances for the simulation.
-    periods_eps_relevant = create_disturbances(robupy_obj, 'simulation')
+    periods_eps_relevant = create_disturbances(num_agents, seed_simulation,
+        eps_cholesky, is_ambiguous, num_periods, is_debug, 'simulation')
 
     # Simulate a dataset with the results from the solution and write out the
     # dataset to a text file. In addition a file summarizing the dataset is

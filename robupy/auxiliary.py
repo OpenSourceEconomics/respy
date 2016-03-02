@@ -10,64 +10,35 @@ import os
 from robupy.constants import MISSING_FLOAT
 
 
-def create_disturbances(robupy_obj, which=None):
+def create_disturbances(num_draws, seed, eps_cholesky, is_ambiguous,
+        num_periods, is_debug, which):
     """ Create disturbances.  Handle special case of zero variances as this
     case is useful for hand-based testing. The disturbances are drawn from a
     standard normal distribution and transformed later in the code.
     """
-    # TODO: This needs to be cleaned up once settled on a setup that includes
-    # the estimation.
-
     # Antibugging.
-    if which is not None:
-        assert (which in ['simulation', 'estimation'])
+    assert (which in ['simulation', 'estimation', 'solution'])
 
     # Auxiliary objects
     is_simulation = (which == 'simulation')
 
     is_estimation = (which == 'estimation')
 
-    # Distribute class attributes
-    eps_cholesky = robupy_obj.get_attr('eps_cholesky')
-
-    is_ambiguous = robupy_obj.get_attr('is_ambiguous')
-
-    num_periods = robupy_obj.get_attr('num_periods')
-
-    if is_simulation:
-
-        num_draws = robupy_obj.get_attr('num_agents')
-
-        seed = robupy_obj.get_attr('seed_simulation')
-
-    elif is_estimation:
-
-        num_draws = robupy_obj.get_attr('num_sims')
-
-        seed = robupy_obj.get_attr('seed_estimation')
-
-    else:
-
-        num_draws = robupy_obj.get_attr('num_draws')
-
-        seed = robupy_obj.get_attr('seed_solution')
-
-    is_debug = robupy_obj.get_attr('is_debug')
-
     # Initialize container
     periods_eps_relevant = np.tile(MISSING_FLOAT, (num_periods, num_draws, 4))
 
+    # Draw standard normal deviates used to simulate the likelihood function.
     if is_estimation:
         np.random.seed(seed)
-        standard_deviates = np.random.multivariate_normal(np.zeros(4), np.identity(4),
-            (num_periods, num_draws))
+        standard_deviates = np.random.multivariate_normal(np.zeros(4),
+            np.identity(4), (num_periods, num_draws))
         return standard_deviates
 
     # This allows to use the same random disturbances across the different
     # implementations of the mode, including the RESTUD program. Otherwise,
     # we draw a new set of standard deviations
     if is_debug and os.path.isfile('disturbances.txt'):
-        standard_deviates = read_disturbances(robupy_obj)
+        standard_deviates = read_disturbances(num_periods, num_draws)
         standard_deviates = standard_deviates[:num_periods, :num_draws, :]
     else:
         np.random.seed(seed)
@@ -111,22 +82,17 @@ def replace_missing_values(argument):
     return argument
 
 
-def read_disturbances(robupy_obj):
+def read_disturbances(num_periods, num_draws):
     """ Red the disturbances from disk. This is only used in the development
     process.
     """
-    # Distribute class attributes
-    num_periods = robupy_obj.get_attr('num_periods')
-
-    num_draws = robupy_obj.get_attr('num_draws')
-
     # Initialize containers
     periods_eps_relevant = np.tile(np.nan, (num_periods, num_draws, 4))
 
     # Read and distribute disturbances
     disturbances = np.array(np.genfromtxt('disturbances.txt'), ndmin=2)
     for period in range(num_periods):
-        lower = 0 + num_draws*period
+        lower = 0 + num_draws * period
         upper = lower + num_draws
         periods_eps_relevant[period, :, :] = disturbances[lower:upper, :]
 

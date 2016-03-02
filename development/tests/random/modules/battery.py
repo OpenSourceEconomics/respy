@@ -177,13 +177,19 @@ def test_86():
 
         mapping_state_idx = robupy_obj.get_attr('mapping_state_idx')
 
+        eps_cholesky = robupy_obj.get_attr('eps_cholesky')
+
         periods_emax = robupy_obj.get_attr('periods_emax')
+
+        is_ambiguous = robupy_obj.get_attr('is_ambiguous')
 
         num_periods = robupy_obj.get_attr('num_periods')
 
         states_all = robupy_obj.get_attr('states_all')
 
         num_points = robupy_obj.get_attr('num_points')
+
+        seed = robupy_obj.get_attr('seed_estimation')
 
         edu_start = robupy_obj.get_attr('edu_start')
 
@@ -205,7 +211,8 @@ def test_86():
         # functions.
         period = np.random.choice(range(num_periods))
 
-        periods_eps_relevant = create_disturbances(robupy_obj, False)
+        periods_eps_relevant = create_disturbances(num_draws, seed,
+            eps_cholesky, is_ambiguous, num_periods, is_debug, 'estimation')
 
         eps_relevant = periods_eps_relevant[period, :, :]
 
@@ -1168,7 +1175,9 @@ def test_99():
         print_random_dict(init_dict)
 
         # Simulate the ROBUPY package
-        os.system('robupy-solve --model test.robupy.ini')
+        robupy_obj = read('test.robupy.ini')
+
+        solve(robupy_obj)
 
         # Load simulated data frame
         data_frame = pd.read_csv('data.robupy.dat', delim_whitespace=True)
