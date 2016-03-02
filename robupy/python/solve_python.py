@@ -59,7 +59,6 @@ def wrapper_solve_python(robupy_obj):
 
     seed_solution = robupy_obj.get_attr('seed_solution')
 
-
     # Construct auxiliary objects
     _start_ambiguity_logging(is_ambiguous, is_debug)
 
@@ -67,11 +66,10 @@ def wrapper_solve_python(robupy_obj):
     # TODO: Fix create disturbances and then remove robpy_obj from .
     mapping_state_idx, periods_emax, periods_future_payoffs, \
         periods_payoffs_ex_post, periods_payoffs_systematic, states_all, \
-        states_number_period = \
-            solve_python(edu_max, delta, edu_start, init_dict, is_debug,
-                is_interpolated, is_python, level, measure, min_idx,
-                num_draws, num_periods, num_points, eps_cholesky, is_ambiguous,
-                         seed_solution, robupy_obj, shocks)
+        states_number_period = solve_python(edu_max, delta, edu_start,
+            init_dict, is_debug, is_interpolated, is_python, level, measure,
+            min_idx, num_draws, num_periods, num_points, eps_cholesky, is_ambiguous,
+            seed_solution, shocks)
 
     # Update class attributes with solution
     robupy_obj.unlock()
@@ -102,22 +100,19 @@ def wrapper_solve_python(robupy_obj):
     return robupy_obj
 
 
-def solve_python(edu_max, delta, edu_start, init_dict, is_debug, is_interpolated,
+def solve_python(edu_max, delta, edu_start, init_dict, is_debug,
+                  is_interpolated,
                  is_python, level, measure, min_idx, num_draws, num_periods,
                  num_points, eps_cholesky, is_ambiguous, seed_solution,
-                 robupy_obj, shocks):
+                 shocks):
     # Creating the state space of the model and collect the results in the
     # package class.
     logger.info('Starting state space creation')
-    if False:
-        states_all, states_number_period, mapping_state_idx = \
-            _wrapper_create_state_space(robupy_obj)
 
-    else:
+    states_all, states_number_period, mapping_state_idx = \
+        _generic_create_state_space(num_periods, edu_start, is_python,
+        edu_max, min_idx)
 
-        states_all, states_number_period, mapping_state_idx = \
-            _generic_create_state_space(num_periods, edu_start, is_python,
-                                        edu_max, min_idx)
     logger.info('... finished \n')
 
     # Get the relevant set of disturbances. These are standard normal draws

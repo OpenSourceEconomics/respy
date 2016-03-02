@@ -15,7 +15,6 @@ from scipy.stats import norm
 from robupy.python.py.ambiguity import get_payoffs_ambiguity
 from robupy.python.py.auxiliary import update_parameters
 from robupy.python.py.auxiliary import get_total_value
-from robupy.python.py.auxiliary import get_total_value
 
 from robupy.python.py.risk import get_payoffs_risk
 
@@ -32,32 +31,32 @@ logger = logging.getLogger('ROBUPY_SOLVE')
 
 
 
-def evaluate_likelihood(x, robupy_obj, data_array, standard_deviates):
+def evaluate_likelihood(x, edu_max, delta, edu_start, init_dict, is_debug,
+        is_interpolated, is_python, level, measure, min_idx, num_draws,
+        num_periods, num_points, eps_cholesky, is_ambiguous, seed_solution,
+        shocks, data_array, standard_deviates):
     """ Evaluate likelihood function.
     """
-    # Antibugging
-    #assert (robupy_obj.get_attr('is_solved'))
-    #assert (robupy_obj.get_status())
 
+    # Auxiliary objects
+    num_agents = int(data_array.shape[0]/num_periods)
+    num_sims = standard_deviates.shape[1]
+
+    print(num_sims)
     # Update ro
-    robupy_obj, _ = update_parameters(x, robupy_obj)
+    init_dict = update_parameters(x)
 
     # TODO: This is a break in the structure, can this be avoided?
-    robupy.solve(robupy_obj)
+    args = robupy.solve_python(edu_max, delta, edu_start, init_dict, is_debug,
+                  is_interpolated,
+                 is_python, level, measure, min_idx, num_draws, num_periods,
+                 num_points, eps_cholesky, is_ambiguous, seed_solution,
+                 shocks)
 
-    # Extract required information
-    periods_payoffs_systematic = robupy_obj.get_attr('periods_payoffs_systematic')
-    mapping_state_idx = robupy_obj.get_attr('mapping_state_idx')
-    periods_emax = robupy_obj.get_attr('periods_emax')
-    eps_cholesky = robupy_obj.get_attr('eps_cholesky')
-    num_periods = robupy_obj.get_attr('num_periods')
-    num_agents = robupy_obj.get_attr('num_agents')
-    states_all = robupy_obj.get_attr('states_all')
-    edu_start = robupy_obj.get_attr('edu_start')
-    num_sims = robupy_obj.get_attr('num_sims')
-    edu_max = robupy_obj.get_attr('edu_max')
-    shocks = robupy_obj.get_attr('shocks')
-    delta = robupy_obj.get_attr('delta')
+    # Distribute return arguments
+    mapping_state_idx, periods_emax, periods_future_payoffs = args[:3]
+    periods_payoffs_ex_post, periods_payoffs_systematic, states_all = args[3:6]
+    states_number_period = args[6]
 
     # Initialize auxiliary objects
     likl, j = [], 0

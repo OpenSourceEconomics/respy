@@ -42,7 +42,7 @@ def get_parameters(robupy_obj):
     return x
 
 
-def update_parameters(x, robupy_obj):
+def update_parameters(x):
     """ Update parameter values.
     """
     # Antibugging
@@ -51,19 +51,23 @@ def update_parameters(x, robupy_obj):
     assert (x.shape == (26,))
     assert (np.all(np.isfinite(x)))
 
-    init_dict = robupy_obj.get_attr('init_dict')
+    init_dict = {}
 
     # Occupation A
+    init_dict['A'] = {}
     init_dict['A']['int'], init_dict['A']['coeff'] = x[0],  list(x[1:6])
 
     # Occupation B
+    init_dict['B'] = {}
     init_dict['B']['int'], init_dict['B']['coeff'] = x[6], list(x[7:12])
 
     # Education
+    init_dict['EDUCATION'] = {}
     init_dict['EDUCATION']['int'] = x[12]
     init_dict['EDUCATION']['coeff'] = list(x[13:15])
 
     # Home
+    init_dict['HOME'] = {}
     init_dict['HOME']['int'] = x[15]
 
     # Shocks
@@ -76,18 +80,8 @@ def update_parameters(x, robupy_obj):
 
     init_dict['SHOCKS'] = np.matmul(eps_cholesky, eps_cholesky.T)
 
-    # Update object
-    robupy_obj.unlock()
-
-    robupy_obj.set_attr('init_dict', init_dict)
-
-    robupy_obj.set_attr('is_solved', False)
-
-    robupy_obj.lock()
-
-
-    return robupy_obj, eps_cholesky
-
+    # Finishing
+    return init_dict
 
 def simulate_emax(num_periods, num_draws, period, k, eps_relevant_emax,
         payoffs_systematic, edu_max, edu_start, periods_emax, states_all,
