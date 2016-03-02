@@ -309,7 +309,6 @@ class RobupyCls(MetaCls):
     def _check_integrity_results(self):
         """ This methods check the integrity of the results.
         """
-
         # Distribute auxiliary objects
         is_interpolated = self.attr['is_interpolated']
 
