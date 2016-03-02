@@ -77,17 +77,6 @@ def solve_python(robupy_obj):
 
     logger.info('... finished \n')
 
-    robupy_obj.unlock()
-
-    #print(states_number_period, robupy_obj.attr['states_number_period'])
-    robupy_obj.set_attr('states_number_period', states_number_period)
-
-    robupy_obj.set_attr('mapping_state_idx', mapping_state_idx)
-
-    robupy_obj.set_attr('states_all', states_all)
-
-    robupy_obj.lock()
-
     # Get the relevant set of disturbances. These are standard normal draws
     # in the case of an ambiguous world.
     # TODO: requires special attention
@@ -108,11 +97,6 @@ def solve_python(robupy_obj):
 
     logger.info('... finished \n')
 
-    robupy_obj.unlock()
-
-    robupy_obj.set_attr('periods_payoffs_systematic', periods_payoffs_systematic)
-
-    robupy_obj.lock()
 
     # Backward iteration procedure. There is a PYTHON and FORTRAN
     # implementation available.
@@ -133,6 +117,12 @@ def solve_python(robupy_obj):
 
     robupy_obj.unlock()
 
+    robupy_obj.set_attr('periods_payoffs_systematic', periods_payoffs_systematic)
+
+    robupy_obj.set_attr('mapping_state_idx', mapping_state_idx)
+
+    robupy_obj.set_attr('states_all', states_all)
+
     robupy_obj.set_attr('states_number_period', states_number_period)
 
     robupy_obj.set_attr('periods_payoffs_ex_post', periods_payoffs_ex_post)
@@ -140,11 +130,6 @@ def solve_python(robupy_obj):
     robupy_obj.set_attr('periods_future_payoffs', periods_future_payoffs)
 
     robupy_obj.set_attr('periods_emax', periods_emax)
-
-    robupy_obj.lock()
-
-    # Set flag that object includes the solution objects.
-    robupy_obj.unlock()
 
     robupy_obj.set_attr('is_solved', True)
 
