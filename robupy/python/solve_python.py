@@ -17,12 +17,11 @@ import robupy.python.py.python_library as python_library
 logger = logging.getLogger('ROBUPY_SOLVE')
 
 
-def solve_python(robupy_obj):
-    """ Solve using PYTHON and F2PY functions
+def wrapper_solve_python(robupy_obj):
+    """ Solving the model using PYTHON/F2PY code. This purpose of this
+    wrapper is to extract all relevant information from the project class to
+    pass it on to the actual solution functions.
     """
-    # Distribute class attributes
-    store = robupy_obj.get_attr('store')
-
     # Distribute class attributes
     is_interpolated = robupy_obj.get_attr('is_interpolated')
 
@@ -57,79 +56,33 @@ def solve_python(robupy_obj):
     level = robupy_obj.get_attr('level')
 
     # Construct auxiliary objects
-    # TODO: Turn logging on and off ..
     _start_ambiguity_logging(is_ambiguous, is_debug)
 
-    # Creating the state space of the model and collect the results in the
-    # package class.
-    logger.info('Starting state space creation')
+    # Solve the model using PYTHON/F2PY implementation
+    # TODO: Fix create disturbances and then remove robpy_obj from .
+    mapping_state_idx, periods_emax, periods_future_payoffs, \
+        periods_payoffs_ex_post, periods_payoffs_systematic, states_all, \
+        states_number_period = \
+            solve_python(edu_max, delta, edu_start, init_dict, is_debug,
+                is_interpolated, is_python, level, measure, min_idx,
+                num_draws, num_periods, num_points, robupy_obj, shocks)
 
-    if False:
-        states_all, states_number_period, mapping_state_idx = \
-            _wrapper_create_state_space(robupy_obj)
-
-    else:
-
-        states_all, states_number_period, mapping_state_idx = \
-            _generic_create_state_space(num_periods, edu_start, is_python,
-                                    edu_max, min_idx)
-
-
-    logger.info('... finished \n')
-
-    # Get the relevant set of disturbances. These are standard normal draws
-    # in the case of an ambiguous world.
-    # TODO: requires special attention
-    periods_eps_relevant = create_disturbances(robupy_obj, None)
-
-    #print(periods_eps_relevant)
-    # Calculate systematic payoffs which are later used in the backward
-    # induction procedure. These are calculated without any reference
-    # to the alternative shock distributions.
-    logger.info('Starting calculation of systematic payoffs')
-
-    if False:
-        periods_payoffs_systematic = _wrapper_calculate_payoffs_systematic(robupy_obj)
-    else:
-        periods_payoffs_systematic = _generic_calculate_payoffs_systematic(states_number_period, num_periods,
-                                          states_all, is_python, init_dict,
-                                          edu_start)
-
-    logger.info('... finished \n')
-
-
-    # Backward iteration procedure. There is a PYTHON and FORTRAN
-    # implementation available.
-    logger.info('Starting backward induction procedure')
-    if False:
-        periods_emax, periods_payoffs_ex_post, periods_future_payoffs = \
-            _wrapper_backward_induction_procedure(robupy_obj, periods_eps_relevant)
-    else:
-        periods_emax, periods_payoffs_ex_post, periods_future_payoffs = \
-            _generic_backward_induction_procedure(periods_payoffs_systematic,
-                                          states_number_period,
-                                          mapping_state_idx,
-                                          is_interpolated, num_periods, num_points, states_all, num_draws,
-                                          edu_start, is_python, is_debug, edu_max, measure, shocks, delta, \
-                                          level, periods_eps_relevant)
-
-    logger.info('... finished \n')
-
+    # Update class attributes with solution
     robupy_obj.unlock()
 
     robupy_obj.set_attr('periods_payoffs_systematic', periods_payoffs_systematic)
-
-    robupy_obj.set_attr('mapping_state_idx', mapping_state_idx)
-
-    robupy_obj.set_attr('states_all', states_all)
-
-    robupy_obj.set_attr('states_number_period', states_number_period)
 
     robupy_obj.set_attr('periods_payoffs_ex_post', periods_payoffs_ex_post)
 
     robupy_obj.set_attr('periods_future_payoffs', periods_future_payoffs)
 
+    robupy_obj.set_attr('states_number_period', states_number_period)
+
+    robupy_obj.set_attr('mapping_state_idx', mapping_state_idx)
+
     robupy_obj.set_attr('periods_emax', periods_emax)
+
+    robupy_obj.set_attr('states_all', states_all)
 
     robupy_obj.set_attr('is_solved', True)
 
@@ -141,6 +94,61 @@ def solve_python(robupy_obj):
 
     # Finishing
     return robupy_obj
+
+
+def solve_python(edu_max, delta, edu_start, init_dict, is_debug, is_interpolated,
+                 is_python, level, measure, min_idx, num_draws, num_periods,
+                 num_points, robupy_obj, shocks):
+    # Creating the state space of the model and collect the results in the
+    # package class.
+    logger.info('Starting state space creation')
+    if False:
+        states_all, states_number_period, mapping_state_idx = \
+            _wrapper_create_state_space(robupy_obj)
+
+    else:
+
+        states_all, states_number_period, mapping_state_idx = \
+            _generic_create_state_space(num_periods, edu_start, is_python,
+                                        edu_max, min_idx)
+    logger.info('... finished \n')
+    # Get the relevant set of disturbances. These are standard normal draws
+    # in the case of an ambiguous world.
+    # TODO: requires special attention
+    periods_eps_relevant = create_disturbances(robupy_obj, None)
+    # print(periods_eps_relevant)
+    # Calculate systematic payoffs which are later used in the backward
+    # induction procedure. These are calculated without any reference
+    # to the alternative shock distributions.
+    logger.info('Starting calculation of systematic payoffs')
+
+    periods_payoffs_systematic = _generic_calculate_payoffs_systematic(
+            states_number_period, num_periods, states_all, is_python, init_dict,
+            edu_start)
+
+    logger.info('... finished \n')
+
+    # Backward iteration procedure. There is a PYTHON and FORTRAN
+    # implementation available.
+    logger.info('Starting backward induction procedure')
+
+    periods_emax, periods_payoffs_ex_post, periods_future_payoffs = \
+        _generic_backward_induction_procedure(periods_payoffs_systematic,
+            states_number_period, mapping_state_idx, is_interpolated,
+            num_periods, num_points, states_all, num_draws, edu_start,
+            is_python, is_debug, edu_max, measure, shocks, delta, level,
+            periods_eps_relevant)
+
+    logger.info('... finished \n')
+
+    # Collect return arguments
+    args = [mapping_state_idx, periods_emax, periods_future_payoffs]
+    args += [periods_payoffs_ex_post, periods_payoffs_systematic, states_all]
+    args += [states_number_period]
+
+    # Finishing
+    return args
+
 
 ''' Wrappers for core functions
 '''

@@ -9,7 +9,7 @@ import os
 
 # project library
 from robupy.fortran.solve_fortran import solve_fortran
-from robupy.python.solve_python import solve_python
+from robupy.python.solve_python import wrapper_solve_python
 from robupy.simulate import simulate
 
 ''' Public function
@@ -44,7 +44,7 @@ def solve(robupy_obj):
 
     else:
 
-        robupy_obj = solve_python(robupy_obj)
+        robupy_obj = wrapper_solve_python(robupy_obj)
 
     # Summarize optimizations in case of ambiguity.
     if is_debug and is_ambiguous:
