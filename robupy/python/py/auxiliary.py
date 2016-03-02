@@ -54,14 +54,14 @@ def update_parameters(x, robupy_obj):
     init_dict = robupy_obj.get_attr('init_dict')
 
     # Occupation A
-    init_dict['A']['int'], init_dict['A']['coeff'] = x[0],  x[1:6]
+    init_dict['A']['int'], init_dict['A']['coeff'] = x[0],  list(x[1:6])
 
     # Occupation B
-    init_dict['B']['int'], init_dict['B']['coeff'] = x[6], x[7:12]
+    init_dict['B']['int'], init_dict['B']['coeff'] = x[6], list(x[7:12])
 
     # Education
     init_dict['EDUCATION']['int'] = x[12]
-    init_dict['EDUCATION']['coeff'] = x[13:15]
+    init_dict['EDUCATION']['coeff'] = list(x[13:15])
 
     # Home
     init_dict['HOME']['int'] = x[15]

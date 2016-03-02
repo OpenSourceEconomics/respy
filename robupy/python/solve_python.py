@@ -93,6 +93,7 @@ def solve_python(robupy_obj):
     # TODO: requires special attention
     periods_eps_relevant = create_disturbances(robupy_obj, None)
 
+    #print(periods_eps_relevant)
     # Calculate systematic payoffs which are later used in the backward
     # induction procedure. These are calculated without any reference
     # to the alternative shock distributions.
@@ -131,8 +132,6 @@ def solve_python(robupy_obj):
     logger.info('... finished \n')
 
     robupy_obj.unlock()
-
-    print(states_number_period)
 
     robupy_obj.set_attr('states_number_period', states_number_period)
 
