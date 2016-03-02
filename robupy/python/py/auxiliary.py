@@ -9,6 +9,86 @@ import numpy as np
 from robupy.constants import HUGE_FLOAT
 
 
+
+def get_parameters(robupy_obj):
+    """ Get parameters.
+    """
+
+    init_dict = robupy_obj.get_attr('init_dict')
+    eps_cholesky = robupy_obj.get_attr('eps_cholesky')
+
+    x = np.tile(np.nan, 26)
+
+    # Occupation A
+    x[0], x[1:6] = init_dict['A']['int'], init_dict['A']['coeff']
+
+    # Occupation B
+    x[6], x[7:12] = init_dict['B']['int'], init_dict['B']['coeff']
+
+    # Education
+    x[12] = init_dict['EDUCATION']['int']
+    x[13:15] = init_dict['EDUCATION']['coeff']
+
+    # Home
+    x[15] = init_dict['HOME']['int']
+
+    # Shocks
+    x[16:20] = eps_cholesky[0:4, 0]
+    x[20:23] = eps_cholesky[1:4, 1]
+    x[23:25] = eps_cholesky[2:4, 2]
+    x[25:26] = eps_cholesky[3:4, 3]
+
+    # Finishing
+    return x
+
+
+def update_parameters(x, robupy_obj):
+    """ Update parameter values.
+    """
+    # Antibugging
+    assert (isinstance(x, np.ndarray))
+    assert (x.dtype == np.float)
+    assert (x.shape == (26,))
+    assert (np.all(np.isfinite(x)))
+
+    init_dict = robupy_obj.get_attr('init_dict')
+
+    # Occupation A
+    init_dict['A']['int'], init_dict['A']['coeff'] = x[0],  x[1:6]
+
+    # Occupation B
+    init_dict['B']['int'], init_dict['B']['coeff'] = x[6], x[7:12]
+
+    # Education
+    init_dict['EDUCATION']['int'] = x[12]
+    init_dict['EDUCATION']['coeff'] = x[13:15]
+
+    # Home
+    init_dict['HOME']['int'] = x[15]
+
+    # Shocks
+    eps_cholesky = np.tile(0.0, (4, 4))
+
+    eps_cholesky[0:4, 0] = x[16:20]
+    eps_cholesky[1:4, 1] = x[20:23]
+    eps_cholesky[2:4, 2] = x[23:25]
+    eps_cholesky[3:4, 3] = x[25]
+
+    init_dict['SHOCKS'] = np.matmul(eps_cholesky, eps_cholesky.T)
+
+    # Update object
+    robupy_obj.unlock()
+
+    robupy_obj.set_attr('init_dict', init_dict)
+
+    robupy_obj.set_attr('is_solved', False)
+
+    robupy_obj.lock()
+
+
+    return robupy_obj, eps_cholesky
+
+
 def simulate_emax(num_periods, num_draws, period, k, eps_relevant_emax,
         payoffs_systematic, edu_max, edu_start, periods_emax, states_all,
         mapping_state_idx, delta):
