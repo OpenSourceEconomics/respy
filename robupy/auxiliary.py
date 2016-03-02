@@ -10,11 +10,23 @@ import os
 from robupy.constants import MISSING_FLOAT
 
 
-def create_disturbances(robupy_obj, is_simulation):
+def create_disturbances(robupy_obj, which=None):
     """ Create disturbances.  Handle special case of zero variances as this
     case is useful for hand-based testing. The disturbances are drawn from a
     standard normal distribution and transformed later in the code.
     """
+    # TODO: This needs to be cleaned up once settled on a setup that includes
+    # the estimation.
+
+    # Antibugging.
+    if which is not None:
+        assert (which in ['simulation', 'estimation'])
+
+    # Auxiliary objects
+    is_simulation = (which == 'simulation')
+
+    is_estimation = (which == 'estimation')
+
     # Distribute class attributes
     eps_cholesky = robupy_obj.get_attr('eps_cholesky')
 
@@ -28,6 +40,12 @@ def create_disturbances(robupy_obj, is_simulation):
 
         seed = robupy_obj.get_attr('seed_simulation')
 
+    elif is_estimation:
+
+        num_draws = robupy_obj.get_attr('num_sims')
+
+        seed = robupy_obj.get_attr('seed_estimation')
+
     else:
 
         num_draws = robupy_obj.get_attr('num_draws')
@@ -38,6 +56,12 @@ def create_disturbances(robupy_obj, is_simulation):
 
     # Initialize container
     periods_eps_relevant = np.tile(MISSING_FLOAT, (num_periods, num_draws, 4))
+
+    if is_estimation:
+        np.random.seed(seed)
+        standard_deviates = np.random.multivariate_normal(np.zeros(4), np.identity(4),
+            (num_periods, num_draws))
+        return standard_deviates
 
     # This allows to use the same random disturbances across the different
     # implementations of the mode, including the RESTUD program. Otherwise,

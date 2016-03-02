@@ -45,6 +45,8 @@ class MetaCls(object):
         # Update class attributes
         self.is_locked = False
 
+        self.is_first = True
+
     def get_attr(self, key):
         """ Get attributes.
         """

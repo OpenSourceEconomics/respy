@@ -21,16 +21,6 @@ def solve_python(robupy_obj):
     """ Solve using PYTHON and F2PY functions
     """
     # Distribute class attributes
-    is_interpolated = robupy_obj.get_attr('is_interpolated')
-
-    num_points = robupy_obj.get_attr('num_points')
-
-    measure = robupy_obj.get_attr('measure')
-
-    shocks = robupy_obj.get_attr('shocks')
-
-    level = robupy_obj.get_attr('level')
-
     store = robupy_obj.get_attr('store')
 
     # Construct auxiliary objects
@@ -57,7 +47,7 @@ def solve_python(robupy_obj):
 
     # Get the relevant set of disturbances. These are standard normal draws
     # in the case of an ambiguous world.
-    periods_eps_relevant = create_disturbances(robupy_obj, False)
+    periods_eps_relevant = create_disturbances(robupy_obj, None)
 
     # Calculate systematic payoffs which are later used in the backward
     # induction procedure. These are calculated without any reference

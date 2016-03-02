@@ -45,7 +45,7 @@ def simulate(robupy_obj):
     num_agents = robupy_obj.get_attr('num_agents')
 
     # Draw disturbances for the simulation.
-    periods_eps_relevant = create_disturbances(robupy_obj, True)
+    periods_eps_relevant = create_disturbances(robupy_obj, 'simulation')
 
     # Simulate a dataset with the results from the solution and write out the
     # dataset to a text file. In addition a file summarizing the dataset is

@@ -26,6 +26,8 @@ class RobupyCls(MetaCls):
 
         self.attr['is_interpolated'] = None
 
+        self.attr['seed_estimation'] = None
+
         self.attr['seed_solution'] = None
 
         self.attr['is_ambiguous'] = None
@@ -45,6 +47,8 @@ class RobupyCls(MetaCls):
         self.attr['edu_start'] = None
 
         self.attr['is_debug'] = None
+
+        self.attr['num_sims'] = None
 
         self.attr['edu_max'] = None
 
@@ -108,6 +112,8 @@ class RobupyCls(MetaCls):
 
             self.attr['seed_simulation'] = init_dict['SIMULATION']['seed']
 
+            self.attr['seed_estimation'] = init_dict['ESTIMATION']['seed']
+
             self.attr['num_points'] = init_dict['INTERPOLATION']['points']
 
             self.attr['num_agents'] = init_dict['SIMULATION']['agents']
@@ -121,6 +127,8 @@ class RobupyCls(MetaCls):
             self.attr['edu_start'] = init_dict['EDUCATION']['start']
 
             self.attr['num_draws'] = init_dict['SOLUTION']['draws']
+
+            self.attr['num_sims'] = init_dict['ESTIMATION']['draws']
 
             self.attr['version'] = init_dict['PROGRAM']['version']
 
@@ -171,6 +179,8 @@ class RobupyCls(MetaCls):
 
         is_interpolated = self.attr['is_interpolated']
 
+        seed_estimation = self.attr['seed_estimation']
+
         seed_solution = self.attr['seed_solution']
 
         is_ambiguous = self.attr['is_ambiguous']
@@ -186,6 +196,8 @@ class RobupyCls(MetaCls):
         is_python = self.attr['is_python']
 
         num_draws = self.attr['num_draws']
+
+        num_sims = self.attr['num_sims']
 
         is_debug = self.attr['is_debug']
 
@@ -221,7 +233,7 @@ class RobupyCls(MetaCls):
             assert (eps_zero is False)
 
         # Seeds
-        for seed in [seed_solution, seed_simulation]:
+        for seed in [seed_solution, seed_simulation, seed_estimation]:
             assert (np.isfinite(seed))
             assert (isinstance(seed, int))
             assert (seed > 0)
@@ -284,9 +296,12 @@ class RobupyCls(MetaCls):
         assert (isinstance(num_points, int))
         assert (num_points > 0)
 
+        # Simulation of S-ML
+        assert (isinstance(num_sims, int))
+        assert (num_sims > 0)
+
         # Check integrity of results as well
         self._check_integrity_results()
-
 
         # Update status indicator
         self.is_first = False

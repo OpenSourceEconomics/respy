@@ -19,7 +19,7 @@ def generate_init(constraints=None):
     """ Get a random initialization file.
     """
 
-    # Antibugging. This interface is using a sentinal value.
+    # Antibugging. This interface is using a sentinel value.
     if constraints is not None:
         assert (isinstance(constraints, dict))
 
@@ -86,6 +86,11 @@ def generate_random_dict(constraints=None):
     dict_['SOLUTION']['draws'] = np.random.random_integers(1, MAX_DRAWS)
     dict_['SOLUTION']['seed'] = np.random.random_integers(1, 10000)
     dict_['SOLUTION']['store'] = np.random.choice(['True', 'False'])
+
+    # ESTIMATION
+    dict_['ESTIMATION'] = {}
+    dict_['ESTIMATION']['draws'] = np.random.random_integers(1, MAX_DRAWS)
+    dict_['ESTIMATION']['seed'] = np.random.random_integers(1, 10000)
 
     # PROGRAM
     dict_['PROGRAM'] = {}
@@ -289,7 +294,8 @@ def print_random_dict(dict_):
 
                 file_.write('\n')
 
-            if flag in ['SOLUTION', 'SIMULATION', 'PROGRAM', 'INTERPOLATION']:
+            if flag in ['SOLUTION', 'SIMULATION', 'PROGRAM', 'INTERPOLATION',
+                        'ESTIMATION']:
 
                 str_ = ' {0:<15} {1:<15} \n'
 

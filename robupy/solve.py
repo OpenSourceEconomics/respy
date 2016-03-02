@@ -20,6 +20,7 @@ def solve(robupy_obj):
     """ Solve dynamic programming problem by backward induction.
     """
     # Antibugging
+    assert (robupy_obj.get_attr('is_solved') is False)
     assert (robupy_obj.get_status())
 
     # Cleanup and start logger

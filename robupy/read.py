@@ -184,6 +184,7 @@ def _check_integrity_read(dict_):
     # Check all keys
     keys_ = ['BASICS', 'EDUCATION', 'A', 'B', 'HOME', 'INTERPOLATION']
     keys_ += ['SHOCKS', 'SOLUTION', 'AMBIGUITY', 'SIMULATION', 'PROGRAM']
+    keys_ += ['ESTIMATION']
 
     assert (set(keys_) == set(dict_.keys()))
 
@@ -221,6 +222,12 @@ def _check_integrity_read(dict_):
     # Check HOME
     assert (isinstance(dict_['HOME']['int'], float))
     assert (np.isfinite(dict_['HOME']['int']))
+
+    # Check ESTIMATION
+    assert (isinstance(dict_['ESTIMATION']['draws'], int))
+    assert (dict_['ESTIMATION']['draws'] >= 0)
+    assert (isinstance(dict_['ESTIMATION']['seed'], int))
+    assert (dict_['ESTIMATION']['seed'] >= 0)
 
     # Check SOLUTION
     assert (isinstance(dict_['SOLUTION']['draws'], int))
