@@ -311,6 +311,8 @@ class RobupyCls(MetaCls):
         """
 
         # Distribute auxiliary objects
+        is_interpolated = self.attr['is_interpolated']
+
         num_periods = self.attr['num_periods']
 
         edu_start = self.attr['edu_start']
@@ -467,16 +469,18 @@ class RobupyCls(MetaCls):
                         np.all(np.isfinite(periods_emax[is_infinite == False])) == False)
 
             # Check that the payoffs are finite for all admissible values and
-            # infinite for all others.
-            for period in range(num_periods - 1):
-                # Loop over all possible states
-                for k in range(states_number_period[period]):
-                    # Check for finite value at admissible state, infinite
-                    # values are allowed for the third column when the
-                    # maximum level of education is attained.
-                    assert (np.all(np.isfinite(periods_future_payoffs[period, k, :2])))
-                    assert (np.all(np.isfinite(periods_future_payoffs[period, k, 3])))
-                    # Special checks for infinite value due to
-                    # high education.
-                    if not np.isfinite(periods_future_payoffs[period, k, 2]):
-                        assert (states_all[period, k][2] == edu_max - edu_start)
+            # infinite for all others. This is only a valid request if no
+            # interpolation is performed.
+            if not is_interpolated:
+                for period in range(num_periods - 1):
+                    # Loop over all possible states
+                    for k in range(states_number_period[period]):
+                        # Check for finite value at admissible state, infinite
+                        # values are allowed for the third column when the
+                        # maximum level of education is attained.
+                        assert (np.all(np.isfinite(periods_future_payoffs[period, k, :2])))
+                        assert (np.all(np.isfinite(periods_future_payoffs[period, k, 3])))
+                        # Special checks for infinite value due to
+                        # high education.
+                        if not np.isfinite(periods_future_payoffs[period, k, 2]):
+                            assert (states_all[period, k][2] == edu_max - edu_start)

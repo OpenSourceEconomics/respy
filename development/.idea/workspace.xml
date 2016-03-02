@@ -3,19 +3,9 @@
   <component name="ChangeListManager">
     <list default="true" id="39b3d67a-e664-4cff-aba7-2a9ae5eaeb87" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/.idea/workspace.xml" afterPath="$PROJECT_DIR$/package/development/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/tests/fixed/first.robupy.ini" afterPath="$PROJECT_DIR$/package/development/tests/fixed/first.robupy.ini" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/tests/fixed/fourth.robupy.ini" afterPath="$PROJECT_DIR$/package/development/tests/fixed/fourth.robupy.ini" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/tests/fixed/second.robupy.ini" afterPath="$PROJECT_DIR$/package/development/tests/fixed/second.robupy.ini" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/tests/fixed/third.robupy.ini" afterPath="$PROJECT_DIR$/package/development/tests/fixed/third.robupy.ini" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/auxiliary.py" afterPath="$PROJECT_DIR$/package/robupy/auxiliary.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/clsMeta.py" afterPath="$PROJECT_DIR$/package/robupy/clsMeta.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/clsRobupy.py" afterPath="$PROJECT_DIR$/package/robupy/clsRobupy.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/constants.py" afterPath="$PROJECT_DIR$/package/robupy/constants.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/python/solve_python.py" afterPath="$PROJECT_DIR$/package/robupy/python/solve_python.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/read.py" afterPath="$PROJECT_DIR$/package/robupy/read.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/simulate.py" afterPath="$PROJECT_DIR$/package/robupy/simulate.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/solve.py" afterPath="$PROJECT_DIR$/package/robupy/solve.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/tests/random_init.py" afterPath="$PROJECT_DIR$/package/robupy/tests/random_init.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/tests/tests.py" afterPath="$PROJECT_DIR$/package/robupy/tests/tests.py" />
     </list>
     <ignored path="robustToolbox.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -47,13 +37,53 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="driver.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/analysis/working/driver.py">
+      <file leaf-file-name="tests.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/package/robupy/tests/tests.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="1.8023648">
-              <caret line="256" column="0" selection-start-line="256" selection-start-column="0" selection-end-line="256" selection-end-column="0" />
+            <state vertical-scroll-proportion="0.0">
+              <caret line="99" column="24" selection-start-line="99" selection-start-column="24" selection-end-line="99" selection-end-column="24" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="driver.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/analysis/inf_future/driver.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="19" column="0" selection-start-line="19" selection-start-column="0" selection-end-line="19" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="clsRobupy.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/package/robupy/clsRobupy.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.19763513">
+              <caret line="313" column="23" selection-start-line="313" selection-start-column="23" selection-end-line="313" selection-end-column="23" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="python_library.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/package/robupy/python/py/python_library.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="115" column="38" selection-start-line="115" selection-start-column="16" selection-end-line="115" selection-end-column="38" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="solve_python.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/package/robupy/python/solve_python.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="89" column="0" selection-start-line="89" selection-start-column="0" selection-end-line="89" selection-end-column="0" />
               <folding>
-                <element signature="e#152#180#0" expanded="true" />
+                <element signature="e#145#163#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -68,7 +98,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/package/development/analyses/robust/choices_ambiguity/modules/create.py" />
         <option value="$PROJECT_DIR$/package/development/analyses/robust/choices_ambiguity/modules/graphs.py" />
         <option value="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/indifference_curve/modules/create.py" />
         <option value="$PROJECT_DIR$/package/development/analyses/robust/modeling_tradeoff/policy_intervention/create" />
@@ -102,7 +131,6 @@
         <option value="$PROJECT_DIR$/package/robupy/fortran/build_robufort.py" />
         <option value="$PROJECT_DIR$/package/development/tests/random/modules/auxiliary.py" />
         <option value="$PROJECT_DIR$/package/development/vagrant/bin/provisioning.py" />
-        <option value="$PROJECT_DIR$/package/robupy/tests/tests.py" />
         <option value="$PROJECT_DIR$/package/development/tests/random/investigate" />
         <option value="$PROJECT_DIR$/package/development/tests/random/logging.log" />
         <option value="$PROJECT_DIR$/package/robupy/__init__.py" />
@@ -113,12 +141,14 @@
         <option value="$PROJECT_DIR$/package/robupy/read.py" />
         <option value="$PROJECT_DIR$/package/robupy/tests/random_init.py" />
         <option value="$PROJECT_DIR$/package/robupy/simulate.py" />
-        <option value="$PROJECT_DIR$/package/robupy/python/solve_python.py" />
         <option value="$PROJECT_DIR$/package/robupy/clsMeta.py" />
         <option value="$PROJECT_DIR$/package/robupy/solve.py" />
-        <option value="$PROJECT_DIR$/package/robupy/clsRobupy.py" />
         <option value="$PROJECT_DIR$/package/robupy/auxiliary.py" />
         <option value="$PROJECT_DIR$/analysis/working/driver.py" />
+        <option value="$PROJECT_DIR$/package/robupy/python/solve_python.py" />
+        <option value="$PROJECT_DIR$/package/robupy/tests/tests.py" />
+        <option value="$PROJECT_DIR$/analysis/inf_future/driver.py" />
+        <option value="$PROJECT_DIR$/package/robupy/clsRobupy.py" />
       </list>
     </option>
   </component>
@@ -158,6 +188,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -376,9 +407,26 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="robustToolbox" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="robustToolbox" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="analysis" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="inf_future" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
         </subPane>
       </pane>
-      <pane id="Scope" />
       <pane id="Scratches" />
     </panes>
   </component>
@@ -645,8 +693,8 @@
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.28879312" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32831" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.27556512" sideWeight="0.49004593" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.27556512" sideWeight="0.50995404" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.28202367" sideWeight="0.4961715" order="2" side_tool="true" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.28202367" sideWeight="0.50382847" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32924962" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32731378" sideWeight="0.40153846" order="0" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="9" side_tool="true" content_ui="tabs" />
@@ -675,9 +723,9 @@
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="9" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.28879312" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.27556512" sideWeight="0.49004593" order="2" side_tool="true" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.28202367" sideWeight="0.4961715" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.27556512" sideWeight="0.50995404" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.28202367" sideWeight="0.50382847" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32924962" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.39952436" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -734,6 +782,16 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/analysis/working/driver.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#152#180#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/package/robupy/solve.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -746,7 +804,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="15" column="17" selection-start-line="15" selection-start-column="0" selection-end-line="16" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -913,13 +970,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/robupy/tests/tests.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.7259843">
-          <caret line="204" column="0" selection-start-line="204" selection-start-column="0" selection-end-line="204" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/package/development/tests/random/investigate">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.7747748">
@@ -931,7 +981,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.3003003">
           <caret line="8" column="19" selection-start-line="8" selection-start-column="19" selection-end-line="8" selection-end-column="19" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -978,7 +1027,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-1.247191">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -986,7 +1034,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.32102728">
           <caret line="8" column="13" selection-start-line="8" selection-start-column="13" selection-end-line="8" selection-end-column="13" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -994,7 +1041,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-4.032258">
           <caret line="5" column="10" selection-start-line="5" selection-start-column="7" selection-end-line="5" selection-end-column="10" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1002,7 +1048,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-1.6789727">
           <caret line="297" column="35" selection-start-line="297" selection-start-column="35" selection-end-line="297" selection-end-column="35" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1010,7 +1055,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.04012841">
           <caret line="62" column="4" selection-start-line="62" selection-start-column="4" selection-end-line="62" selection-end-column="4" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1018,9 +1062,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="47" column="70" selection-start-line="47" selection-start-column="70" selection-end-line="47" selection-end-column="70" />
-          <folding>
-            <element signature="e#415#434#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1032,45 +1073,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/robupy/python/py/auxiliary.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="56" column="65" selection-start-line="56" selection-start-column="53" selection-end-line="56" selection-end-column="65" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/robupy/python/solve_python.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="148" column="4" selection-start-line="148" selection-start-column="4" selection-end-line="148" selection-end-column="4" />
-          <folding>
-            <element signature="e#145#163#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/robupy/python/py/python_library.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-5.3772073">
-          <caret line="258" column="31" selection-start-line="258" selection-start-column="23" selection-end-line="258" selection-end-column="31" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/package/robupy/auxiliary.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.48154092">
           <caret line="73" column="25" selection-start-line="73" selection-start-column="8" selection-end-line="73" selection-end-column="25" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/robupy/clsRobupy.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.3258427">
-          <caret line="162" column="16" selection-start-line="162" selection-start-column="16" selection-end-line="162" selection-end-column="16" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1084,11 +1090,61 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/analysis/working/driver.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="1.8023648">
-          <caret line="256" column="0" selection-start-line="256" selection-start-column="0" selection-end-line="256" selection-end-column="0" />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="110" column="0" selection-start-line="110" selection-start-column="0" selection-end-line="110" selection-end-column="0" />
           <folding>
             <element signature="e#152#180#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/robupy/tests/tests.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="99" column="24" selection-start-line="99" selection-start-column="24" selection-end-line="99" selection-end-column="24" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/analysis/inf_future/driver.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="19" column="0" selection-start-line="19" selection-start-column="0" selection-end-line="19" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/robupy/python/solve_python.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="89" column="0" selection-start-line="89" selection-start-column="0" selection-end-line="89" selection-end-column="0" />
+          <folding>
+            <element signature="e#145#163#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/robupy/python/py/auxiliary.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-0.6308186">
+          <caret line="43" column="4" selection-start-line="43" selection-start-column="4" selection-end-line="43" selection-end-column="4" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/robupy/python/py/python_library.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="115" column="38" selection-start-line="115" selection-start-column="16" selection-end-line="115" selection-end-column="38" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/robupy/clsRobupy.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.19763513">
+          <caret line="313" column="23" selection-start-line="313" selection-start-column="23" selection-end-line="313" selection-end-column="23" />
+          <folding />
         </state>
       </provider>
     </entry>
