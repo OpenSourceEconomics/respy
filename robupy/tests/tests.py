@@ -377,6 +377,7 @@ class Tests(object):
             # Start of unit test design.
             constraints = dict()
             constraints['debug'] = True
+            constraints['version'] = 'PYTHON'
 
             init_dict = generate_random_dict(constraints)
 

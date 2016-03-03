@@ -110,7 +110,7 @@ def solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
                  measure, min_idx, num_draws, num_periods, num_points,
                  is_ambiguous, seed_solution):
     """ This function is required to ensure a full analogy to a FORTRAN
-    impelentation.
+    implementation.
     """
     # Creating the state space of the model and collect the results in the
     # package class.

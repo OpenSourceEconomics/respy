@@ -39,11 +39,8 @@ def solve(robupy_obj):
 
     # Select appropriate interface
     if version == 'FORTRAN':
-
         robupy_obj = solve_fortran(robupy_obj)
-
     else:
-
         robupy_obj = solve_python(robupy_obj)
 
     # Summarize optimizations in case of ambiguity.
