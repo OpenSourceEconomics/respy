@@ -1,25 +1,26 @@
 
  Simulated Economy
 
-   Number of Agents:       388
+   Number of Agents:       100
 
-   Number of Periods:      2
+   Number of Periods:      3
 
-   Seed:                   2000
+   Seed:                   4310
 
 
    Choices
 
        Period     Work A     Work B    Schooling   Home      
 
-         1        0.4124     0.4588     0.1005     0.0284
-         2        0.4485     0.4356     0.0722     0.0438
+         1        0.2100     0.7900     0.0000     0.0000
+         2        0.2000     0.8000     0.0000     0.0000
+         3        0.1800     0.8200     0.0000     0.0000
 
 
 
    Additional Information
 
-       Average Education                6.1005
+       Average Education                9.0000
 
-       Average Experience A             0.4124
-       Average Experience B             0.4588
+       Average Experience A             0.4100
+       Average Experience B             1.5900

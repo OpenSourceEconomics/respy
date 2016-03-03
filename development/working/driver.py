@@ -163,11 +163,11 @@ constraints['debug'] = True
 init_dict = generate_random_dict(constraints)
 
 # Print to dictionary
-print_random_dict(init_dict)
+#print_random_dict(init_dict)
 
 # Perform toolbox actions
-robupy_obj = read('test.robupy.ini')
+#robupy_obj = read('test.robupy.ini')
 
-robupy_obj = solve(robupy_obj)
+#robupy_obj = solve(robupy_obj)
 
-simulate(robupy_obj)
+#simulate(robupy_obj)
