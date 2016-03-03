@@ -177,30 +177,30 @@ def _get_future_payoffs(edu_max, edu_start, mapping_state_idx, period,
     """ Get future payoffs for additional choices.
     """
     # Distribute state space
-    exp_A, exp_B, edu, edu_lagged = states_all[period, k, :]
+    exp_a, exp_b, edu, edu_lagged = states_all[period, k, :]
 
     # Future utilities
     future_payoffs = np.tile(np.nan, 4)
 
     # Working in occupation A
-    future_idx = mapping_state_idx[period + 1, exp_A + 1, exp_B, edu, 0]
+    future_idx = mapping_state_idx[period + 1, exp_a + 1, exp_b, edu, 0]
     future_payoffs[0] = periods_emax[period + 1, future_idx]
 
     # Working in occupation B
-    future_idx = mapping_state_idx[period + 1, exp_A, exp_B + 1, edu, 0]
+    future_idx = mapping_state_idx[period + 1, exp_a, exp_b + 1, edu, 0]
     future_payoffs[1] = periods_emax[period + 1, future_idx]
 
     # Increasing schooling. Note that adding an additional year
     # of schooling is only possible for those that have strictly
     # less than the maximum level of additional education allowed.
     if edu < edu_max - edu_start:
-        future_idx = mapping_state_idx[period + 1, exp_A, exp_B, edu + 1, 1]
+        future_idx = mapping_state_idx[period + 1, exp_a, exp_b, edu + 1, 1]
         future_payoffs[2] = periods_emax[period + 1, future_idx]
     else:
         future_payoffs[2] = -HUGE_FLOAT
 
     # Staying at home
-    future_idx = mapping_state_idx[period + 1, exp_A, exp_B, edu, 0]
+    future_idx = mapping_state_idx[period + 1, exp_a, exp_b, edu, 0]
     future_payoffs[3] = periods_emax[period + 1, future_idx]
 
     # Finishing

@@ -58,8 +58,8 @@ SUBROUTINE simulate_sample(dataset, num_agents, states_all, num_periods, &
     INTEGER(our_int)                :: i   
     INTEGER(our_int)                :: k
     INTEGER(our_int)                :: period
-    INTEGER(our_int)                :: exp_A
-    INTEGER(our_int)                :: exp_B
+    INTEGER(our_int)                :: exp_a
+    INTEGER(our_int)                :: exp_b
     INTEGER(our_int)                :: edu
     INTEGER(our_int)                :: edu_lagged
     INTEGER(our_int)                :: choice(1)
@@ -89,13 +89,13 @@ SUBROUTINE simulate_sample(dataset, num_agents, states_all, num_periods, &
         DO period = 0, (num_periods - 1)
             
             ! Distribute state space
-            exp_A = current_state(1)
-            exp_B = current_state(2)
+            exp_a = current_state(1)
+            exp_b = current_state(2)
             edu = current_state(3)
             edu_lagged = current_state(4)
             
             ! Getting state index
-            k = mapping_state_idx(period + 1, exp_A + 1, exp_B + 1, edu + 1, edu_lagged + 1)
+            k = mapping_state_idx(period + 1, exp_a + 1, exp_b + 1, edu + 1, edu_lagged + 1)
 
             ! Write agent identifier and current period to data frame
             dataset(count + 1, 1) = DBLE(i)
@@ -161,15 +161,15 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE calculate_payoffs_systematic(periods_payoffs_systematic, num_periods, &
-              states_number_period, states_all, edu_start, coeffs_A, coeffs_B, & 
+              states_number_period, states_all, edu_start, coeffs_a, coeffs_b, & 
               coeffs_edu, coeffs_home, max_states_period)
 
     !/* external objects    */
 
     REAL(our_dble), INTENT(OUT)     :: periods_payoffs_systematic(num_periods, max_states_period, 4)
 
-    REAL(our_dble), INTENT(IN)      :: coeffs_A(:)
-    REAL(our_dble), INTENT(IN)      :: coeffs_B(:)
+    REAL(our_dble), INTENT(IN)      :: coeffs_a(:)
+    REAL(our_dble), INTENT(IN)      :: coeffs_b(:)
     REAL(our_dble), INTENT(IN)      :: coeffs_edu(:)
     REAL(our_dble), INTENT(IN)      :: coeffs_home(:)
 
@@ -183,8 +183,8 @@ SUBROUTINE calculate_payoffs_systematic(periods_payoffs_systematic, num_periods,
 
     INTEGER(our_int)                :: period
     INTEGER(our_int)                :: k
-    INTEGER(our_int)                :: exp_A
-    INTEGER(our_int)                :: exp_B
+    INTEGER(our_int)                :: exp_a
+    INTEGER(our_int)                :: exp_b
     INTEGER(our_int)                :: edu
     INTEGER(our_int)                :: edu_lagged
     INTEGER(our_int)                :: covars(6)
@@ -208,26 +208,26 @@ SUBROUTINE calculate_payoffs_systematic(periods_payoffs_systematic, num_periods,
         DO k = 1, states_number_period(period)
 
             ! Distribute state space
-            exp_A = states_all(period, k, 1)
-            exp_B = states_all(period, k, 2)
+            exp_a = states_all(period, k, 1)
+            exp_b = states_all(period, k, 2)
             edu = states_all(period, k, 3)
             edu_lagged = states_all(period, k, 4)
 
             ! Auxiliary objects
             covars(1) = one_int
             covars(2) = edu + edu_start
-            covars(3) = exp_A
-            covars(4) = exp_A ** 2
-            covars(5) = exp_B
-            covars(6) = exp_B ** 2
+            covars(3) = exp_a
+            covars(4) = exp_a ** 2
+            covars(5) = exp_b
+            covars(6) = exp_b ** 2
 
             ! Calculate systematic part of payoff in occupation A
             periods_payoffs_systematic(period, k, 1) =  &
-                EXP(DOT_PRODUCT(covars, coeffs_A))
+                EXP(DOT_PRODUCT(covars, coeffs_a))
 
             ! Calculate systematic part of payoff in occupation B
             periods_payoffs_systematic(period, k, 2) = &
-                EXP(DOT_PRODUCT(covars, coeffs_B))
+                EXP(DOT_PRODUCT(covars, coeffs_b))
 
             ! Calculate systematic part of schooling utility
             payoff = coeffs_edu(1)
@@ -452,8 +452,8 @@ SUBROUTINE create_state_space(states_all, states_number_period, &
     INTEGER(our_int)                :: edu_lagged
     INTEGER(our_int)                :: period
     INTEGER(our_int)                :: total
-    INTEGER(our_int)                :: exp_A
-    INTEGER(our_int)                :: exp_B
+    INTEGER(our_int)                :: exp_a
+    INTEGER(our_int)                :: exp_b
     INTEGER(our_int)                :: edu
     INTEGER(our_int)                :: k
  
@@ -476,10 +476,10 @@ SUBROUTINE create_state_space(states_all, states_number_period, &
         k = 0
 
         ! Loop over all admissible work experiences for occupation A
-        DO exp_A = 0, num_periods
+        DO exp_a = 0, num_periods
 
             ! Loop over all admissible work experience for occupation B
-            DO exp_B = 0, num_periods
+            DO exp_b = 0, num_periods
                 
                 ! Loop over all admissible additional education levels
                 DO edu = 0, num_periods
@@ -524,7 +524,7 @@ SUBROUTINE create_state_space(states_all, states_number_period, &
                         END IF
 
                         ! Check if admissible for time constraints
-                        total = edu + exp_A + exp_B
+                        total = edu + exp_a + exp_b
 
                         ! Note that the total number of activities does not
                         ! have is less or equal to the total possible number of
@@ -535,13 +535,13 @@ SUBROUTINE create_state_space(states_all, states_number_period, &
                         END IF
                         
                         ! Collect all possible realizations of state space
-                        states_all(period + 1, k + 1, 1) = exp_A
-                        states_all(period + 1, k + 1, 2) = exp_B
+                        states_all(period + 1, k + 1, 1) = exp_a
+                        states_all(period + 1, k + 1, 2) = exp_b
                         states_all(period + 1, k + 1, 3) = edu
                         states_all(period + 1, k + 1, 4) = edu_lagged
 
                         ! Collect mapping of state space to array index.
-                        mapping_state_idx(period + 1, exp_A + 1, exp_B + 1, & 
+                        mapping_state_idx(period + 1, exp_a + 1, exp_b + 1, & 
                             edu + 1 , edu_lagged + 1) = k
 
                         ! Update count

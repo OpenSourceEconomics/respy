@@ -351,7 +351,7 @@ class Tests(object):
             np.testing.assert_allclose(base, systematic)
 
     @staticmethod
-    def test8():
+    def test_8():
         """ Testing whether back-and-forth transformation have no effect.
         """
         for _ in range(100):
@@ -368,7 +368,7 @@ class Tests(object):
             np.testing.assert_allclose(base, x)
 
     @staticmethod
-    def test9():
+    def test_9():
         """ Testing the evaluation of the likelihood  for random requests.
         """
         # TODO: Here I will also check the evaluation based on alternative

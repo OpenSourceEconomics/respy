@@ -90,7 +90,7 @@ def evaluate(robupy_obj, data_frame):
         for period in range(num_periods):
             # Extract observable components of state space as well as agent
             # decision.
-            exp_A, exp_B, edu, edu_lagged = data_array[j, 4:].astype(int)
+            exp_a, exp_b, edu, edu_lagged = data_array[j, 4:].astype(int)
             choice_indicator = data_array[j, 2].astype(int)
 
             # Transform total years of education to additional years of
@@ -100,7 +100,7 @@ def evaluate(robupy_obj, data_frame):
             # Get state indicator to obtain the systematic component of the
             # agents payoffs. These feed into the simulation of choice
             # probabilities.
-            k = mapping_state_idx[period, exp_A, exp_B, edu, edu_lagged]
+            k = mapping_state_idx[period, exp_a, exp_b, edu, edu_lagged]
             payoffs_systematic = periods_payoffs_systematic[period, k, :]
 
             # Extract relevant deviates from standard normal distribution.

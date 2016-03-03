@@ -134,8 +134,8 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE wrapper_calculate_payoffs_systematic(periods_payoffs_systematic, num_periods, &
-              states_number_period, states_all, edu_start, coeffs_A, & 
-              coeffs_B, coeffs_edu, coeffs_home, max_states_period)
+              states_number_period, states_all, edu_start, coeffs_a, & 
+              coeffs_b, coeffs_edu, coeffs_home, max_states_period)
 
     !/* external libraries    */
 
@@ -149,8 +149,8 @@ SUBROUTINE wrapper_calculate_payoffs_systematic(periods_payoffs_systematic, num_
 
     DOUBLE PRECISION, INTENT(OUT)   :: periods_payoffs_systematic(num_periods, max_states_period, 4)
 
-    DOUBLE PRECISION, INTENT(IN)    :: coeffs_A(:)
-    DOUBLE PRECISION, INTENT(IN)    :: coeffs_B(:)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(:)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(:)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_edu(:)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_home(:)
 
@@ -165,8 +165,8 @@ SUBROUTINE wrapper_calculate_payoffs_systematic(periods_payoffs_systematic, num_
 !-------------------------------------------------------------------------------
     
     CALL calculate_payoffs_systematic(periods_payoffs_systematic, num_periods, &
-              states_number_period, states_all, edu_start, coeffs_A, & 
-              coeffs_B, coeffs_edu, coeffs_home, max_states_period)
+              states_number_period, states_all, edu_start, coeffs_a, & 
+              coeffs_b, coeffs_edu, coeffs_home, max_states_period)
 
 END SUBROUTINE
 !*******************************************************************************

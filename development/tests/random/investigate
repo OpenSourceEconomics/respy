@@ -35,6 +35,6 @@ try:
     test = getattr(Tests, 'test_' + label)
 except AttributeError:
     from robupy.tests.tests import Tests
-    test = getattr(Tests, 'test' + label)
+    test = getattr(Tests, 'test_' + label)
 
 test()

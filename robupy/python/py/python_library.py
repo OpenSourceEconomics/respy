@@ -172,10 +172,10 @@ def create_state_space(num_periods, edu_start, edu_max, min_idx):
         k = 0
 
         # Loop over all admissible work experiences for occupation A
-        for exp_A in range(num_periods + 1):
+        for exp_a in range(num_periods + 1):
 
             # Loop over all admissible work experience for occupation B
-            for exp_B in range(num_periods + 1):
+            for exp_b in range(num_periods + 1):
 
                 # Loop over all admissible additional education levels
                 for edu in range(num_periods + 1):
@@ -206,7 +206,7 @@ def create_state_space(num_periods, edu_start, edu_max, min_idx):
                             continue
 
                         # Check if admissible for time constraints
-                        total = edu + exp_A + exp_B
+                        total = edu + exp_a + exp_b
 
                         # Note that the total number of activities does not
                         # have is less or equal to the total possible number of
@@ -216,11 +216,11 @@ def create_state_space(num_periods, edu_start, edu_max, min_idx):
                             continue
 
                         # Collect all possible realizations of state space
-                        states_all[period, k, :] = [exp_A, exp_B, edu,
+                        states_all[period, k, :] = [exp_a, exp_b, edu,
                                                     edu_lagged]
 
                         # Collect mapping of state space to array index.
-                        mapping_state_idx[period, exp_A, exp_B, edu,
+                        mapping_state_idx[period, exp_a, exp_b, edu,
                                           edu_lagged] = k
 
                         # Update count
@@ -234,8 +234,8 @@ def create_state_space(num_periods, edu_start, edu_max, min_idx):
 
 
 def calculate_payoffs_systematic(num_periods, states_number_period, states_all,
-                                edu_start, coeffs_A, coeffs_B, coeffs_edu,
-                                coeffs_home, max_states_period):
+                                 edu_start, coeffs_a, coeffs_b, coeffs_edu,
+                                 coeffs_home, max_states_period):
     """ Calculate ex systematic payoffs.
     """
 
@@ -250,19 +250,19 @@ def calculate_payoffs_systematic(num_periods, states_number_period, states_all,
         for k in range(states_number_period[period]):
 
             # Distribute state space
-            exp_A, exp_B, edu, edu_lagged = states_all[period, k, :]
+            exp_a, exp_b, edu, edu_lagged = states_all[period, k, :]
 
             # Auxiliary objects
-            covars = [1.0, edu + edu_start, exp_A, exp_A ** 2, exp_B,
-                          exp_B ** 2]
+            covars = [1.0, edu + edu_start, exp_a, exp_a ** 2, exp_b,
+                          exp_b ** 2]
 
             # Calculate systematic part of wages in occupation A
             periods_payoffs_systematic[period, k, 0] = np.exp(
-                np.dot(coeffs_A, covars))
+                np.dot(coeffs_a, covars))
 
             # Calculate systematic part pf wages in occupation B
             periods_payoffs_systematic[period, k, 1] = np.exp(
-                np.dot(coeffs_B, covars))
+                np.dot(coeffs_b, covars))
 
             # Calculate systematic part of schooling utility
             payoff = coeffs_edu[0]
@@ -309,9 +309,9 @@ def simulate_sample(num_agents, states_all, num_periods,
         for period in range(num_periods):
 
             # Distribute state space
-            exp_A, exp_B, edu, edu_lagged = current_state
+            exp_a, exp_b, edu, edu_lagged = current_state
 
-            k = mapping_state_idx[period, exp_A, exp_B, edu, edu_lagged]
+            k = mapping_state_idx[period, exp_a, exp_b, edu, edu_lagged]
 
             # Write agent identifier and current period to data frame
             dataset[count, :2] = i, period

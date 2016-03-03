@@ -143,7 +143,7 @@ SUBROUTINE store_results(mapping_state_idx, states_all, periods_payoffs_ex_post,
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE read_specification(num_periods, delta, level, coeffs_A, coeffs_B, &
+SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
                 coeffs_edu, edu_start, edu_max, coeffs_home, shocks, & 
                 num_draws, seed_solution, num_agents, seed_simulation, & 
                 is_debug, is_zero, is_interpolated, num_points) 
@@ -162,8 +162,8 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_A, coeffs_B, &
     REAL(our_dble), INTENT(OUT)     :: coeffs_home(1)
     REAL(our_dble), INTENT(OUT)     :: coeffs_edu(3)
     REAL(our_dble), INTENT(OUT)     :: shocks(4, 4)
-    REAL(our_dble), INTENT(OUT)     :: coeffs_A(6)
-    REAL(our_dble), INTENT(OUT)     :: coeffs_B(6)
+    REAL(our_dble), INTENT(OUT)     :: coeffs_a(6)
+    REAL(our_dble), INTENT(OUT)     :: coeffs_b(6)
     REAL(our_dble), INTENT(OUT)     :: delta
     REAL(our_dble), INTENT(OUT)     :: level
 
@@ -200,8 +200,8 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_A, coeffs_B, &
         READ(1, 1510) level
 
         ! WORK
-        READ(1, 1500) coeffs_A
-        READ(1, 1500) coeffs_B
+        READ(1, 1500) coeffs_a
+        READ(1, 1500) coeffs_b
 
         ! EDUCATION
         READ(1, 1500) coeffs_edu
@@ -410,8 +410,8 @@ PROGRAM robufort
     REAL(our_dble)                  :: coeffs_home(1)
     REAL(our_dble)                  :: coeffs_edu(3)
     REAL(our_dble)                  :: shocks(4, 4)
-    REAL(our_dble)                  :: coeffs_A(6)
-    REAL(our_dble)                  :: coeffs_B(6)
+    REAL(our_dble)                  :: coeffs_a(6)
+    REAL(our_dble)                  :: coeffs_b(6)
     REAL(our_dble)                  :: delta
     REAL(our_dble)                  :: level
 
@@ -428,8 +428,8 @@ PROGRAM robufort
     INTEGER(our_int)                :: maxiter
     INTEGER(our_int)                :: period
     INTEGER(our_int)                :: total
-    INTEGER(our_int)                :: exp_A
-    INTEGER(our_int)                :: exp_B
+    INTEGER(our_int)                :: exp_a
+    INTEGER(our_int)                :: exp_b
     INTEGER(our_int)                :: mineq
     INTEGER(our_int)                :: jw(7)
     INTEGER(our_int)                :: mode
@@ -486,7 +486,7 @@ PROGRAM robufort
 !-------------------------------------------------------------------------------
 
     ! Read specification of model
-    CALL read_specification(num_periods, delta, level, coeffs_A, coeffs_B, & 
+    CALL read_specification(num_periods, delta, level, coeffs_a, coeffs_b, & 
             coeffs_edu, edu_start, edu_max, coeffs_home, shocks, num_draws, &
             seed_solution, num_agents, seed_simulation, is_debug, is_zero, &
             is_interpolated, num_points) 
@@ -511,7 +511,7 @@ PROGRAM robufort
 
     ! Calculate the systematic payoffs
     CALL calculate_payoffs_systematic(periods_payoffs_systematic, num_periods, &
-            states_number_period, states_all, edu_start, coeffs_A, coeffs_B, & 
+            states_number_period, states_all, edu_start, coeffs_a, coeffs_b, & 
             coeffs_edu, coeffs_home, max_states_period)
 
     ! Allocate additional containers
