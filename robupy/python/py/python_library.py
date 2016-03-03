@@ -31,10 +31,11 @@ logger = logging.getLogger('ROBUPY_SOLVE')
 
 
 
-def likelihood_evaluation(x, edu_max, delta, edu_start, init_dict, is_debug,
-        is_interpolated, is_python, level, measure, min_idx, num_draws,
-        num_periods, num_points, eps_cholesky, is_ambiguous, seed_solution,
-        shocks, data_array, standard_deviates):
+def likelihood_evaluation(x, edu_max, delta, edu_start, is_debug,
+                          is_interpolated, is_python, level, measure, min_idx,
+                          num_draws, num_periods, num_points, eps_cholesky,
+                          is_ambiguous, seed_solution, shocks, data_array,
+                          standard_deviates):
     """ Evaluate likelihood function.
     """
     # Auxiliary objects
@@ -44,28 +45,11 @@ def likelihood_evaluation(x, edu_max, delta, edu_start, init_dict, is_debug,
     # Update parameters
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks = update_parameters(x)
 
-    # TODO: Initialization dict has to go.
-    # TODO: Why is the key coeff and knot coeffs?
-    init_dict['A'] = dict()
-    init_dict['A']['int'] = coeffs_a[0]
-    init_dict['A']['coeff'] = coeffs_a[1:]
-
-    init_dict['B'] = dict()
-    init_dict['B']['int'] = coeffs_b[0]
-    init_dict['B']['coeff'] = coeffs_b[1:]
-
-    init_dict['EDUCATION'] = dict()
-    init_dict['EDUCATION']['int'] = coeffs_edu[0]
-    init_dict['EDUCATION']['coeff'] = coeffs_edu[1:]
-
-    init_dict['HOME'] = dict()
-    init_dict['HOME']['int'] = coeffs_home
-
     # Solve the model for updated parametrization
-    args = robupy.solve_python(edu_max, delta, edu_start, init_dict, is_debug,
-                is_interpolated, is_python, level, measure, min_idx, num_draws,
-                num_periods, num_points, eps_cholesky, is_ambiguous,
-                seed_solution, shocks)
+    args = robupy.solve_python(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+                shocks, edu_max, delta, edu_start, is_debug, is_interpolated,
+                is_python, level, measure, min_idx, num_draws, num_periods,
+                num_points, eps_cholesky, is_ambiguous, seed_solution)
 
     # Distribute return arguments
     mapping_state_idx, periods_emax, periods_future_payoffs = args[:3]
@@ -149,6 +133,10 @@ def likelihood_evaluation(x, edu_max, delta, edu_start, init_dict, is_debug,
 
     # Scaling
     likl = -np.mean(np.log(np.clip(likl, TINY_FLOAT, np.inf)))
+
+    # Checks TODO: Refactor
+    assert (isinstance(likl, float))
+    assert (np.isfinite(likl))
 
     # Finishing
     return likl
@@ -409,6 +397,7 @@ def calculate_payoffs_systematic(num_periods, states_number_period, states_all,
             periods_payoffs_systematic[period, k, 2] = payoff
 
             # Calculate systematic part of HOME
+            print(coeffs_home)
             periods_payoffs_systematic[period, k, 3] = coeffs_home[0]
 
     # Finishing

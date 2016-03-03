@@ -49,6 +49,8 @@ def wrapper_solve_python(robupy_obj):
 
     min_idx = robupy_obj.get_attr('min_idx')
 
+    # TODO: Two ways to access schocks? This is potentially dangerous given
+    # the updatig during estimation.
     shocks = robupy_obj.get_attr('shocks')
 
     store = robupy_obj.get_attr('store')
@@ -66,12 +68,27 @@ def wrapper_solve_python(robupy_obj):
     # TODO: Fix create disturbances and then remove robpy_obj from .
     # TODO: Spend some time on design of interface, order of arguments coeffs
     #  in particular.
+    # TODO: Extract this part as a fuction when design starts to settle down.
+    #  This is then also useful for part of calculation in systematic _payoffs
+    coeffs_a = [init_dict['A']['int']] + init_dict['A']['coeff']
+    coeffs_b = [init_dict['B']['int']] + init_dict['B']['coeff']
+
+    coeffs_edu = [init_dict['EDUCATION']['int']] + init_dict['EDUCATION']['coeff']
+    coeffs_home = [init_dict['HOME']['int']]
+
+    shocks = init_dict['SHOCKS']
+
+
     mapping_state_idx, periods_emax, periods_future_payoffs, \
         periods_payoffs_ex_post, periods_payoffs_systematic, states_all, \
-        states_number_period = solve_python(edu_max, delta, edu_start,
-            init_dict, is_debug, is_interpolated, is_python, level, measure,
-            min_idx, num_draws, num_periods, num_points, eps_cholesky, is_ambiguous,
-            seed_solution, shocks)
+        states_number_period = solve_python(coeffs_a, coeffs_b, coeffs_edu,
+                                            coeffs_home, shocks, edu_max, delta,
+                                            edu_start, is_debug,
+                                            is_interpolated, is_python, level,
+                                            measure, min_idx, num_draws,
+                                            num_periods, num_points,
+                                            eps_cholesky, is_ambiguous,
+                                            seed_solution)
 
     # Update class attributes with solution
     robupy_obj.unlock()
@@ -102,11 +119,10 @@ def wrapper_solve_python(robupy_obj):
     return robupy_obj
 
 
-def solve_python(edu_max, delta, edu_start, init_dict, is_debug,
-                  is_interpolated,
-                 is_python, level, measure, min_idx, num_draws, num_periods,
-                 num_points, eps_cholesky, is_ambiguous, seed_solution,
-                 shocks):
+def solve_python(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, edu_max,
+                 delta, edu_start, is_debug, is_interpolated, is_python, level,
+                 measure, min_idx, num_draws, num_periods, num_points,
+                 eps_cholesky, is_ambiguous, seed_solution):
     # Creating the state space of the model and collect the results in the
     # package class.
     logger.info('Starting state space creation')
@@ -128,7 +144,8 @@ def solve_python(edu_max, delta, edu_start, init_dict, is_debug,
     logger.info('Starting calculation of systematic payoffs')
 
     periods_payoffs_systematic = _generic_calculate_payoffs_systematic(
-            states_number_period, num_periods, states_all, is_python, init_dict,
+        coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+            states_number_period, num_periods, states_all, is_python,
             edu_start)
 
     logger.info('... finished \n')
@@ -189,20 +206,14 @@ def _generic_create_state_space(num_periods, edu_start, is_python, edu_max,
     return states_all, states_number_period, mapping_state_idx
 
 
-def _generic_calculate_payoffs_systematic(states_number_period, num_periods,
-        states_all, is_python, init_dict, edu_start):
+def _generic_calculate_payoffs_systematic(coeffs_a, coeffs_b, coeffs_edu,
+                                          coeffs_home,states_number_period,
+                                          num_periods,
+        states_all, is_python, edu_start):
     """ Calculate the systematic payoffs.
     """
     # Auxiliary objects
     max_states_period = max(states_number_period)
-
-    print("init_dict", init_dict)
-    # Construct coefficients
-    coeffs_a = [init_dict['A']['int']] + init_dict['A']['coeff']
-    coeffs_b = [init_dict['B']['int']] + init_dict['B']['coeff']
-
-    coeffs_edu = [init_dict['EDUCATION']['int']] + init_dict['EDUCATION']['coeff']
-    coeffs_home = [init_dict['HOME']['int']]
 
     # Interface to core functions
     if is_python:

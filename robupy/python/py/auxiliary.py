@@ -74,9 +74,12 @@ def update_parameters(x):
     coeffs_edu = list(x[12:15])
 
     # Home
-    coeffs_home = x[15]
+    coeffs_home = list(x[15:16])
 
     # Shocks
+    # TODO: Maybe have this as an list as well, then all those are lists and
+    # not all lists but cholesky and shocks.
+    # TODO: Pass in cholesky directly?
     eps_cholesky = np.tile(0.0, (4, 4))
 
     eps_cholesky[0:4, 0] = x[16:20]
