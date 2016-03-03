@@ -9,10 +9,7 @@ import logging
 import shlex
 import os
 
-from scipy.stats import norm
-
 # project library
-from robupy.python.py.auxiliary import opt_get_model_parameters
 from robupy.python.py.ambiguity import get_payoffs_ambiguity
 from robupy.python.py.auxiliary import get_total_value
 
@@ -21,10 +18,6 @@ from robupy.python.py.risk import get_payoffs_risk
 from robupy.constants import INTERPOLATION_INADMISSIBLE_STATES
 from robupy.constants import MISSING_FLOAT
 from robupy.constants import HUGE_FLOAT
-
-from robupy.constants import TINY_FLOAT
-
-import robupy
 
 # Logging
 logger = logging.getLogger('ROBUPY_SOLVE')

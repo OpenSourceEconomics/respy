@@ -6,8 +6,8 @@ implementations of the core functions.
 import numpy as np
 
 # project library
+from robupy.auxiliary import check_model_parameters
 from robupy.constants import HUGE_FLOAT
-
 
 def _check_optimization_parameters(x):
     """ Check optimization parameters.
@@ -22,35 +22,6 @@ def _check_optimization_parameters(x):
     return True
 
 
-def _check_model_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-        shocks, eps_cholesky):
-    """ Check the integrity of all model parameters.
-    """
-    # Checks for all arguments
-    args = [coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, eps_cholesky]
-    for coeffs in args:
-        assert (isinstance(coeffs, np.ndarray))
-        assert (np.all(np.isfinite(coeffs)))
-        assert (coeffs.dtype == 'float')
-
-    # Checks for occupations
-    assert (coeffs_a.size == 6)
-    assert (coeffs_b.size == 6)
-    assert (coeffs_edu.size == 3)
-    assert (coeffs_home.size == 1)
-
-    # Check Cholesky decomposition
-    assert (eps_cholesky.shape == (4, 4))
-    aux = np.matmul(eps_cholesky, eps_cholesky.T)
-    np.testing.assert_array_almost_equal(shocks, aux)
-
-    # Checks shock matrix
-    assert (shocks.shape == (4, 4))
-    np.testing.assert_array_almost_equal(shocks, shocks.T)
-
-    # Finishing
-    return True
-
 
 def opt_get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
                              shocks, eps_cholesky, is_debug):
@@ -58,7 +29,7 @@ def opt_get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
     """
     if is_debug:
         args = coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, eps_cholesky
-        assert (_check_model_parameters(*args))
+        assert (check_model_parameters(*args))
 
     # Initialize container
     x = np.tile(np.nan, 26)
@@ -123,7 +94,7 @@ def opt_get_model_parameters(x, is_debug):
 
     if is_debug:
         args = coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, eps_cholesky
-        assert (_check_model_parameters(*args))
+        assert (check_model_parameters(*args))
 
     # Finishing
     return coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, eps_cholesky

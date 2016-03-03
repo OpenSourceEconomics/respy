@@ -232,6 +232,7 @@ def generate_random_dict(constraints=None):
         assert (isinstance(num_draws, int))
         assert (np.isfinite(num_draws))
         # Replace in initialization files
+        dict_['ESTIMATION']['draws'] = num_draws
         dict_['SOLUTION']['draws'] = num_draws
 
     # Number of agents

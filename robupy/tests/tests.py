@@ -25,6 +25,7 @@ dir_ = FILE_PATH.replace('/tests', '')
 sys.path.insert(0, dir_)
 
 from robupy import simulate
+from robupy import evaluate
 from robupy import read
 from robupy import solve
 
@@ -365,3 +366,28 @@ class Tests(object):
 
             # Checks
             np.testing.assert_allclose(base, x)
+
+    @staticmethod
+    def test9():
+        """ Testing the evaluation of the likelihood  for random requests.
+        """
+        # TODO: Here I will also check the evaluation based on alternative
+        # implementations.
+        for _ in range(10):
+            # Start of unit test design.
+            constraints = dict()
+            constraints['debug'] = True
+
+            init_dict = generate_random_dict(constraints)
+
+            # Print to dictionary
+            print_random_dict(init_dict)
+
+            # Perform toolbox actions
+            robupy_obj = read('test.robupy.ini')
+
+            robupy_obj = solve(robupy_obj)
+
+            data_frame = simulate(robupy_obj)
+
+            evaluate(robupy_obj, data_frame)

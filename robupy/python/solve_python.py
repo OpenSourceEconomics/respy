@@ -4,10 +4,12 @@ model with Python and F2PY capabilities.
 
 # standard library
 import numpy as np
+
 import logging
 import os
 
 # project library
+from robupy.auxiliary import distribute_model_paras
 from robupy.auxiliary import replace_missing_values
 from robupy.auxiliary import create_disturbances
 
@@ -17,7 +19,7 @@ import robupy.python.py.python_library as python_library
 logger = logging.getLogger('ROBUPY_SOLVE')
 
 
-def wrapper_solve_python(robupy_obj):
+def solve_python(robupy_obj):
     """ Solving the model using PYTHON/F2PY code. This purpose of this
     wrapper is to extract all relevant information from the project class to
     pass it on to the actual solution functions.
@@ -58,26 +60,20 @@ def wrapper_solve_python(robupy_obj):
     # Construct auxiliary objects
     _start_ambiguity_logging(is_ambiguous, is_debug)
 
-    # Solve the model using PYTHON/F2PY implementation
     # TODO: Spend some time on design of interface, order of arguments coeffs
-    #  in particular.
-    # TODO: Extract this part as a function when design starts to settle down.
-    #  This is then also useful for part of calculation in systematic _payoffs
-
-    # Extract relevant parametrization of model from dictionary.
-    coeffs_a, coeffs_b = model_paras['coeffs_a'], model_paras['coeffs_b']
-    coeffs_edu = model_paras['coeffs_edu']
-    coeffs_home = model_paras['coeffs_home']
-    shocks = model_paras['shocks']
-    eps_cholesky = model_paras['eps_cholesky']
-
     # TODO: How to deal with zero disturbances during estimations?
+
+    # Distribute model parameters
+    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, eps_cholesky = \
+        distribute_model_paras(model_paras, is_debug)
+
+    # Solve the model using PYTHON/F2PY implementation
     mapping_state_idx, periods_emax, periods_future_payoffs, \
         periods_payoffs_ex_post, periods_payoffs_systematic, states_all, \
-        states_number_period = solve_python(coeffs_a, coeffs_b, coeffs_edu,
-            coeffs_home, shocks, eps_cholesky, edu_max, delta, edu_start,
-            is_debug, is_interpolated, is_python, level, measure, min_idx,
-            num_draws, num_periods, num_points, is_ambiguous, seed_solution)
+        states_number_period = solve_python_bare(coeffs_a, coeffs_b, coeffs_edu,
+        coeffs_home, shocks, eps_cholesky, edu_max, delta, edu_start,
+        is_debug, is_interpolated, is_python, level, measure, min_idx,
+        num_draws, num_periods, num_points, is_ambiguous, seed_solution)
 
     # Update class attributes with solution
     robupy_obj.unlock()
@@ -108,11 +104,14 @@ def wrapper_solve_python(robupy_obj):
     return robupy_obj
 
 
-def solve_python(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
+def solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
                  eps_cholesky, edu_max,
                  delta, edu_start, is_debug, is_interpolated, is_python, level,
                  measure, min_idx, num_draws, num_periods, num_points,
                  is_ambiguous, seed_solution):
+    """ This function is required to ensure a full analogy to a FORTRAN
+    impelentation.
+    """
     # Creating the state space of the model and collect the results in the
     # package class.
     logger.info('Starting state space creation')

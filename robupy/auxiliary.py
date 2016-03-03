@@ -10,6 +10,55 @@ import os
 from robupy.constants import MISSING_FLOAT
 
 
+def check_model_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+        shocks, eps_cholesky):
+    """ Check the integrity of all model parameters.
+    """
+    # Checks for all arguments
+    args = [coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, eps_cholesky]
+    for coeffs in args:
+        assert (isinstance(coeffs, np.ndarray))
+        assert (np.all(np.isfinite(coeffs)))
+        assert (coeffs.dtype == 'float')
+
+    # Checks for occupations
+    assert (coeffs_a.size == 6)
+    assert (coeffs_b.size == 6)
+    assert (coeffs_edu.size == 3)
+    assert (coeffs_home.size == 1)
+
+    # Check Cholesky decomposition
+    assert (eps_cholesky.shape == (4, 4))
+    aux = np.matmul(eps_cholesky, eps_cholesky.T)
+    np.testing.assert_array_almost_equal(shocks, aux)
+
+    # Checks shock matrix
+    assert (shocks.shape == (4, 4))
+    np.testing.assert_array_almost_equal(shocks, shocks.T)
+
+    # Finishing
+    return True
+
+
+def distribute_model_paras(model_paras, is_debug):
+    """ Distribute model parameters.
+    """
+    coeffs_a = model_paras['coeffs_a']
+    coeffs_b = model_paras['coeffs_b']
+
+    coeffs_edu = model_paras['coeffs_edu']
+    coeffs_home = model_paras['coeffs_home']
+    shocks = model_paras['shocks']
+    eps_cholesky = model_paras['eps_cholesky']
+
+    if is_debug:
+        args = coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, eps_cholesky
+        assert (check_model_parameters(*args))
+
+    # Finishing
+    return coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, eps_cholesky
+
+
 def create_disturbances(num_draws, seed, eps_cholesky, is_ambiguous,
         num_periods, is_debug, which):
     """ Create disturbances.  Handle special case of zero variances as this

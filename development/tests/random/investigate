@@ -24,7 +24,7 @@ cleanup()
 
 ''' Request
 '''
-label, seed = '99', 76506
+label, seed = '9', 76506
 
 ''' Error Reproduction
 '''
@@ -35,6 +35,6 @@ try:
     test = getattr(Tests, 'test_' + label)
 except AttributeError:
     from robupy.tests.tests import Tests
-    test = getattr(Tests, 'test_' + label)
+    test = getattr(Tests, 'test' + label)
 
 test()

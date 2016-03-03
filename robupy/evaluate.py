@@ -4,69 +4,79 @@ an observed dataset.
 
 
 from scipy.stats import norm
+
 import numpy as np
 
-from robupy.python.py.auxiliary import opt_get_model_parameters
+from robupy.python.solve_python import solve_python_bare
 from robupy.python.py.auxiliary import get_total_value
+
+from robupy.auxiliary import distribute_model_paras
 from robupy.auxiliary import create_disturbances
 
-from robupy.python.solve_python import solve_python
-
-
 from robupy.constants import TINY_FLOAT
+from robupy.auxiliary import check_dataset
 
 
-def evaluate(robupy_obj, data_array):
+def evaluate(robupy_obj, data_frame):
     """ Evaluate likelihood function.
     """
-
-    edu_max = robupy_obj.get_attr('edu_max')
-    delta = robupy_obj.get_attr('delta')
-    edu_start = robupy_obj.get_attr('edu_start')
-    is_debug = robupy_obj.get_attr('is_debug')
+    # Distribute class attribute
     is_interpolated = robupy_obj.get_attr('is_interpolated')
-    is_python = robupy_obj.get_attr('is_python')
-    level = robupy_obj.get_attr('level')
-    measure = robupy_obj.get_attr('measure')
-    min_idx = robupy_obj.get_attr('min_idx')
-    num_draws = robupy_obj.get_attr('num_draws')
-    num_periods = robupy_obj.get_attr('num_periods')
-    num_points = robupy_obj.get_attr('num_points')
-    num_sims = robupy_obj.get_attr('num_sims')
 
-    is_ambiguous = robupy_obj.get_attr('is_ambiguous')
-    num_agents = robupy_obj.get_attr('num_agents')
+    seed_estimation = robupy_obj.get_attr('seed_estimation')
 
     seed_solution = robupy_obj.get_attr('seed_solution')
-    seed_estimation = robupy_obj.get_attr('seed_estimation')
+
+    is_ambiguous = robupy_obj.get_attr('is_ambiguous')
+
     model_paras = robupy_obj.get_attr('model_paras')
 
-    coeffs_a = model_paras['coeffs_a']
-    coeffs_b = model_paras['coeffs_b']
+    num_periods = robupy_obj.get_attr('num_periods')
 
-    coeffs_edu = model_paras['coeffs_edu']
-    coeffs_home = model_paras['coeffs_home']
+    num_points = robupy_obj.get_attr('num_points')
 
-    shocks = model_paras['shocks']
-    eps_cholesky = model_paras['eps_cholesky']
+    num_agents = robupy_obj.get_attr('num_agents')
 
+    is_python = robupy_obj.get_attr('is_python')
+
+    edu_start = robupy_obj.get_attr('edu_start')
+
+    num_draws = robupy_obj.get_attr('num_draws')
+
+    is_debug = robupy_obj.get_attr('is_debug')
+
+    num_sims = robupy_obj.get_attr('num_sims')
+
+    edu_max = robupy_obj.get_attr('edu_max')
+
+    measure = robupy_obj.get_attr('measure')
+
+    min_idx = robupy_obj.get_attr('min_idx')
+
+    level = robupy_obj.get_attr('level')
+
+    delta = robupy_obj.get_attr('delta')
+
+    # Check the dataset against the initialization files
+    if is_debug:
+        check_dataset(data_frame, robupy_obj)
+
+    # Transform dataset to array for easy access
+    data_array = data_frame.as_matrix()
+
+    # Distribute model parameters
+    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, eps_cholesky = \
+        distribute_model_paras(model_paras, is_debug)
 
     # Auxiliary objects
     standard_deviates = create_disturbances(num_sims, seed_estimation,
-                                               eps_cholesky,
-                                               is_ambiguous,
-                                               num_periods,
-                                               is_debug, 'estimation')
-
-    # Update parameters
-    #coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, eps_cholesky = \
-    #    opt_get_model_parameters(x, is_debug)
+        eps_cholesky, is_ambiguous, num_periods, is_debug, 'estimation')
 
     # Solve the model for updated parametrization
-    args = solve_python(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-                shocks, eps_cholesky, edu_max, delta, edu_start, is_debug,
-                is_interpolated, is_python, level, measure, min_idx,
-                num_draws, num_periods, num_points, is_ambiguous, seed_solution)
+    args = solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+        shocks, eps_cholesky, edu_max, delta, edu_start, is_debug,
+        is_interpolated, is_python, level, measure, min_idx, num_draws,
+        num_periods, num_points, is_ambiguous, seed_solution)
 
     # Distribute return arguments
     mapping_state_idx, periods_emax, periods_future_payoffs = args[:3]
@@ -151,9 +161,20 @@ def evaluate(robupy_obj, data_array):
     # Scaling
     likl = -np.mean(np.log(np.clip(likl, TINY_FLOAT, np.inf)))
 
-    # Checks TODO: Refactor
-    assert (isinstance(likl, float))
-    assert (np.isfinite(likl))
+    # Checks
+    _check_evaluation(likl)
 
     # Finishing
     return likl
+
+
+''' Private functions
+'''
+
+
+def _check_evaluation(likl):
+    """ Check likelihood calculation.
+    """
+
+    assert isinstance(likl, float)
+    assert np.isfinite(likl)
