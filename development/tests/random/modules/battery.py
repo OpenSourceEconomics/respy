@@ -193,6 +193,8 @@ def test_86():
 
         edu_start = robupy_obj.get_attr('edu_start')
 
+        init_dict = robupy_obj.get_attr('init_dict')
+
         num_draws = robupy_obj.get_attr('num_draws')
 
         is_debug = robupy_obj.get_attr('is_debug')
@@ -200,8 +202,6 @@ def test_86():
         measure = robupy_obj.get_attr('measure')
 
         edu_max = robupy_obj.get_attr('edu_max')
-
-        shocks = robupy_obj.get_attr('shocks')
 
         delta = robupy_obj.get_attr('delta')
 
@@ -219,6 +219,8 @@ def test_86():
         num_states = states_number_period[period]
 
         shifts = np.random.randn(4)
+
+        shocks = init_dict['SHOCKS']
 
         # Slight modification of request which assures that the interpolation
         # code is working.
@@ -305,6 +307,8 @@ def test_87():
 
         states_all = robupy_obj.get_attr('states_all')
 
+        init_dict = robupy_obj.get_attr('init_dict')
+
         num_draws = robupy_obj.get_attr('num_draws')
 
         edu_start = robupy_obj.get_attr('edu_start')
@@ -313,13 +317,14 @@ def test_87():
 
         edu_max = robupy_obj.get_attr('edu_max')
 
-        shocks = robupy_obj.get_attr('shocks')
-
         measure = robupy_obj.get_attr('measure')
 
         delta = robupy_obj.get_attr('delta')
 
         level = robupy_obj.get_attr('level')
+
+        # Extract auxiliary objects
+        shocks = init_dict['SHOCKS']
 
         # Iterate over a couple of admissible points
         for _ in range(10):
@@ -600,6 +605,8 @@ def test_92():
 
         states_all = robupy_obj.get_attr('states_all')
 
+        init_dict = robupy_obj.get_attr('init_dict')
+
         num_draws = robupy_obj.get_attr('num_draws')
 
         edu_start = robupy_obj.get_attr('edu_start')
@@ -608,11 +615,12 @@ def test_92():
 
         measure = robupy_obj.get_attr('measure')
 
-        shocks = robupy_obj.get_attr('shocks')
-
         delta = robupy_obj.get_attr('delta')
 
         debug = False
+
+        # Auxiliary objects
+        shocks = init_dict['SHOCKS']
 
         # Sample disturbances
         eps_standard = np.random.multivariate_normal(np.zeros(4),

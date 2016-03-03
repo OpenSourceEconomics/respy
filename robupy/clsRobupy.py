@@ -52,8 +52,6 @@ class RobupyCls(MetaCls):
 
         self.attr['edu_max'] = None
 
-        self.attr['shocks'] = None
-
         self.attr['version'] = None
 
         self.attr['delta'] = None
@@ -142,16 +140,16 @@ class RobupyCls(MetaCls):
 
             self.attr['delta'] = init_dict['BASICS']['delta']
 
-            self.attr['shocks'] = init_dict['SHOCKS']
-
             # Auxiliary objects
             num_periods = self.attr['num_periods']
 
             edu_start = self.attr['edu_start']
 
+            init_dict = self.attr['init_dict']
+
             edu_max = self.attr['edu_max']
 
-            shocks = self.attr['shocks']
+            shocks = init_dict['SHOCKS']
 
             self.attr['min_idx'] = min(num_periods, (edu_max - edu_start + 1))
 
@@ -185,9 +183,9 @@ class RobupyCls(MetaCls):
 
         is_ambiguous = self.attr['is_ambiguous']
 
-        num_agents = self.attr['num_agents']
-
         num_periods = self.attr['num_periods']
+
+        num_agents = self.attr['num_agents']
 
         num_points = self.attr['num_points']
 
@@ -196,6 +194,8 @@ class RobupyCls(MetaCls):
         is_python = self.attr['is_python']
 
         num_draws = self.attr['num_draws']
+
+        init_dict = self.attr['init_dict']
 
         num_sims = self.attr['num_sims']
 
@@ -207,8 +207,6 @@ class RobupyCls(MetaCls):
 
         edu_max = self.attr['edu_max']
 
-        shocks = self.attr['shocks']
-
         delta = self.attr['delta']
 
         level = self.attr['level']
@@ -216,6 +214,9 @@ class RobupyCls(MetaCls):
         version = self.attr['version']
 
         is_first = self.is_first
+
+        # Auxiliary objects
+        shocks = init_dict['SHOCKS']
 
         # Debug status
         assert (is_debug in [True, False])

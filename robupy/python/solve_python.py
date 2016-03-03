@@ -49,10 +49,6 @@ def wrapper_solve_python(robupy_obj):
 
     min_idx = robupy_obj.get_attr('min_idx')
 
-    # TODO: Two ways to access schocks? This is potentially dangerous given
-    # the updatig during estimation.
-    shocks = robupy_obj.get_attr('shocks')
-
     store = robupy_obj.get_attr('store')
 
     delta = robupy_obj.get_attr('delta')
@@ -69,6 +65,8 @@ def wrapper_solve_python(robupy_obj):
     #  in particular.
     # TODO: Extract this part as a fuction when design starts to settle down.
     #  This is then also useful for part of calculation in systematic _payoffs
+    # TODO: Why not have another name for this subset of elements that are
+    # themodel parameters, init_dict contains so much more?
     coeffs_a = [init_dict['A']['int']] + init_dict['A']['coeff']
     coeffs_b = [init_dict['B']['int']] + init_dict['B']['coeff']
 
@@ -77,7 +75,7 @@ def wrapper_solve_python(robupy_obj):
 
     shocks = init_dict['SHOCKS']
 
-
+    # TODO: How to deal with zero disturbances during estimations?
     mapping_state_idx, periods_emax, periods_future_payoffs, \
         periods_payoffs_ex_post, periods_payoffs_systematic, states_all, \
         states_number_period = solve_python(coeffs_a, coeffs_b, coeffs_edu,
