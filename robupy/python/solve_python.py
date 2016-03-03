@@ -61,7 +61,7 @@ def wrapper_solve_python(robupy_obj):
     # Solve the model using PYTHON/F2PY implementation
     # TODO: Spend some time on design of interface, order of arguments coeffs
     #  in particular.
-    # TODO: Extract this part as a fuction when design starts to settle down.
+    # TODO: Extract this part as a function when design starts to settle down.
     #  This is then also useful for part of calculation in systematic _payoffs
 
     # Extract relevant parametrization of model from dictionary.
