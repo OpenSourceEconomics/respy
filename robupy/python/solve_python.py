@@ -64,6 +64,8 @@ def wrapper_solve_python(robupy_obj):
 
     # Solve the model using PYTHON/F2PY implementation
     # TODO: Fix create disturbances and then remove robpy_obj from .
+    # TODO: Spend some time on design of interface, order of arguments coeffs
+    #  in particular.
     mapping_state_idx, periods_emax, periods_future_payoffs, \
         periods_payoffs_ex_post, periods_payoffs_systematic, states_all, \
         states_number_period = solve_python(edu_max, delta, edu_start,
@@ -194,6 +196,7 @@ def _generic_calculate_payoffs_systematic(states_number_period, num_periods,
     # Auxiliary objects
     max_states_period = max(states_number_period)
 
+    print("init_dict", init_dict)
     # Construct coefficients
     coeffs_a = [init_dict['A']['int']] + init_dict['A']['coeff']
     coeffs_b = [init_dict['B']['int']] + init_dict['B']['coeff']

@@ -42,7 +42,24 @@ def likelihood_evaluation(x, edu_max, delta, edu_start, init_dict, is_debug,
     num_sims = standard_deviates.shape[1]
 
     # Update parameters
-    init_dict = update_parameters(x)
+    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks = update_parameters(x)
+
+    # TODO: Initialization dict has to go.
+    # TODO: Why is the key coeff and knot coeffs?
+    init_dict['A'] = dict()
+    init_dict['A']['int'] = coeffs_a[0]
+    init_dict['A']['coeff'] = coeffs_a[1:]
+
+    init_dict['B'] = dict()
+    init_dict['B']['int'] = coeffs_b[0]
+    init_dict['B']['coeff'] = coeffs_b[1:]
+
+    init_dict['EDUCATION'] = dict()
+    init_dict['EDUCATION']['int'] = coeffs_edu[0]
+    init_dict['EDUCATION']['coeff'] = coeffs_edu[1:]
+
+    init_dict['HOME'] = dict()
+    init_dict['HOME']['int'] = coeffs_home
 
     # Solve the model for updated parametrization
     args = robupy.solve_python(edu_max, delta, edu_start, init_dict, is_debug,

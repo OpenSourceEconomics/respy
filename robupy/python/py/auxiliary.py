@@ -10,27 +10,30 @@ from robupy.constants import HUGE_FLOAT
 
 
 
-def get_parameters(robupy_obj):
+def get_optimization_arguments(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+                            shocks):
     """ Get parameters.
     """
 
-    init_dict = robupy_obj.get_attr('init_dict')
-    eps_cholesky = robupy_obj.get_attr('eps_cholesky')
+    # TODO: Incorporate function that checks integrity of init dict,
+    # TODO: How about passing in cholesky decomp directly?
 
+    eps_cholesky = np.linalg.cholesky(shocks)
+
+    # Initialize container
     x = np.tile(np.nan, 26)
 
     # Occupation A
-    x[0], x[1:6] = init_dict['A']['int'], init_dict['A']['coeff']
+    x[0:6] = coeffs_a
 
     # Occupation B
-    x[6], x[7:12] = init_dict['B']['int'], init_dict['B']['coeff']
+    x[6:12] = coeffs_b
 
     # Education
-    x[12] = init_dict['EDUCATION']['int']
-    x[13:15] = init_dict['EDUCATION']['coeff']
+    x[12:15] = coeffs_edu
 
     # Home
-    x[15] = init_dict['HOME']['int']
+    x[15:16] = coeffs_home
 
     # Shocks
     x[16:20] = eps_cholesky[0:4, 0]
@@ -38,37 +41,40 @@ def get_parameters(robupy_obj):
     x[23:25] = eps_cholesky[2:4, 2]
     x[25:26] = eps_cholesky[3:4, 3]
 
+    # TODO: To be extracted later.
+    # Checks
+    assert (isinstance(x, np.ndarray))
+    assert (np.all(np.isfinite(x)))
+    assert (x.dtype == 'float')
+    assert (x.shape == (26,))
+
     # Finishing
     return x
 
 
 def update_parameters(x):
-    """ Update parameter values.
+    """ Update parameter values. Note that it is crucial to transform the
+    subsets of the numpy array to lists. Otherwise, the code does produce
+    random output.
     """
     # Antibugging
+    # TODO: extract into check function once settled down on design.
     assert (isinstance(x, np.ndarray))
     assert (x.dtype == np.float)
     assert (x.shape == (26,))
     assert (np.all(np.isfinite(x)))
 
-    init_dict = {}
-
     # Occupation A
-    init_dict['A'] = {}
-    init_dict['A']['int'], init_dict['A']['coeff'] = x[0],  list(x[1:6])
+    coeffs_a = list(x[0:6])
 
     # Occupation B
-    init_dict['B'] = {}
-    init_dict['B']['int'], init_dict['B']['coeff'] = x[6], list(x[7:12])
+    coeffs_b = list(x[6:12])
 
     # Education
-    init_dict['EDUCATION'] = {}
-    init_dict['EDUCATION']['int'] = x[12]
-    init_dict['EDUCATION']['coeff'] = list(x[13:15])
+    coeffs_edu = list(x[12:15])
 
     # Home
-    init_dict['HOME'] = {}
-    init_dict['HOME']['int'] = x[15]
+    coeffs_home = x[15]
 
     # Shocks
     eps_cholesky = np.tile(0.0, (4, 4))
@@ -78,10 +84,14 @@ def update_parameters(x):
     eps_cholesky[2:4, 2] = x[23:25]
     eps_cholesky[3:4, 3] = x[25]
 
-    init_dict['SHOCKS'] = np.matmul(eps_cholesky, eps_cholesky.T)
+    shocks = np.matmul(eps_cholesky, eps_cholesky.T)
+
+    # TODO: Create function to check the integrity of the TYPES in particular
+    #  off return arguements
 
     # Finishing
-    return init_dict
+    return coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks
+
 
 def simulate_emax(num_periods, num_draws, period, k, eps_relevant_emax,
         payoffs_systematic, edu_max, edu_start, periods_emax, states_all,
