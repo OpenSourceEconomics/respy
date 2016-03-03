@@ -45,7 +45,7 @@ np.random.seed(123)
 # Generate random initialization file
 #generate_init()
 
-robupy_obj = read('test.robupy.ini')
+robupy_obj = read('original.robupy.ini')
 
 solve(robupy_obj)
 
@@ -163,7 +163,7 @@ constraints['debug'] = True
 init_dict = generate_random_dict(constraints)
 
 # Print to dictionary
-#print_random_dict(init_dict)
+print_random_dict(init_dict)
 
 # Perform toolbox actions
 #robupy_obj = read('test.robupy.ini')
