@@ -8,6 +8,7 @@ from robupy.read import read
 from robupy.solve import solve
 from robupy.process import process
 from robupy.simulate import simulate
+from robupy.evaluate import evaluate
 
 from robupy.python.solve_python import solve_python
 

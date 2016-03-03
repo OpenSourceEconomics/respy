@@ -8,7 +8,7 @@ development/analyses/robust/simulations/ambiguity/rslts
 
 development/analyses/restud/graphs/rslts
 
-development/working
+
 dist
 __pycache__
 *.pyc
