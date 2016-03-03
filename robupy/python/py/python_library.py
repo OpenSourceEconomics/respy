@@ -31,32 +31,28 @@ logger = logging.getLogger('ROBUPY_SOLVE')
 
 
 
-def evaluate_likelihood(x, edu_max, delta, edu_start, init_dict, is_debug,
+def likelihood_evaluation(x, edu_max, delta, edu_start, init_dict, is_debug,
         is_interpolated, is_python, level, measure, min_idx, num_draws,
         num_periods, num_points, eps_cholesky, is_ambiguous, seed_solution,
         shocks, data_array, standard_deviates):
     """ Evaluate likelihood function.
     """
-
     # Auxiliary objects
     num_agents = int(data_array.shape[0]/num_periods)
     num_sims = standard_deviates.shape[1]
 
-    print(num_sims)
-    # Update ro
+    # Update parameters
     init_dict = update_parameters(x)
 
-    # TODO: This is a break in the structure, can this be avoided?
+    # Solve the model for updated parametrization
     args = robupy.solve_python(edu_max, delta, edu_start, init_dict, is_debug,
-                  is_interpolated,
-                 is_python, level, measure, min_idx, num_draws, num_periods,
-                 num_points, eps_cholesky, is_ambiguous, seed_solution,
-                 shocks)
+                is_interpolated, is_python, level, measure, min_idx, num_draws,
+                num_periods, num_points, eps_cholesky, is_ambiguous,
+                seed_solution, shocks)
 
     # Distribute return arguments
     mapping_state_idx, periods_emax, periods_future_payoffs = args[:3]
     periods_payoffs_ex_post, periods_payoffs_systematic, states_all = args[3:6]
-    states_number_period = args[6]
 
     # Initialize auxiliary objects
     likl, j = [], 0
