@@ -12,8 +12,8 @@ import os
 from scipy.stats import norm
 
 # project library
+from robupy.python.py.auxiliary import opt_get_model_parameters
 from robupy.python.py.ambiguity import get_payoffs_ambiguity
-from robupy.python.py.auxiliary import get_model_parameters
 from robupy.python.py.auxiliary import get_total_value
 
 from robupy.python.py.risk import get_payoffs_risk
@@ -30,12 +30,10 @@ import robupy
 logger = logging.getLogger('ROBUPY_SOLVE')
 
 
-
 def likelihood_evaluation(x, edu_max, delta, edu_start, is_debug,
-                          is_interpolated, is_python, level, measure, min_idx,
-                          num_draws, num_periods, num_points, eps_cholesky,
-                          is_ambiguous, seed_solution, shocks, data_array,
-                          standard_deviates):
+        is_interpolated, is_python, level, measure, min_idx, num_draws,
+        num_periods, num_points, is_ambiguous, seed_solution, shocks,
+        data_array, standard_deviates):
     """ Evaluate likelihood function.
     """
     # Auxiliary objects
@@ -43,14 +41,14 @@ def likelihood_evaluation(x, edu_max, delta, edu_start, is_debug,
     num_sims = standard_deviates.shape[1]
 
     # Update parameters
-    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks = \
-        get_model_parameters(x, is_debug)
+    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, eps_cholesky = \
+        opt_get_model_parameters(x, is_debug)
 
     # Solve the model for updated parametrization
     args = robupy.solve_python(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-                shocks, edu_max, delta, edu_start, is_debug, is_interpolated,
-                is_python, level, measure, min_idx, num_draws, num_periods,
-                num_points, eps_cholesky, is_ambiguous, seed_solution)
+                shocks, eps_cholesky, edu_max, delta, edu_start, is_debug,
+                is_interpolated, is_python, level, measure, min_idx,
+                num_draws, num_periods, num_points, is_ambiguous, seed_solution)
 
     # Distribute return arguments
     mapping_state_idx, periods_emax, periods_future_payoffs = args[:3]

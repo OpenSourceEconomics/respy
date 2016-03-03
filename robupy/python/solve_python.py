@@ -25,9 +25,9 @@ def wrapper_solve_python(robupy_obj):
     # Distribute class attributes
     is_interpolated = robupy_obj.get_attr('is_interpolated')
 
-    is_ambiguous = robupy_obj.get_attr('is_ambiguous')
+    seed_solution = robupy_obj.get_attr('seed_solution')
 
-    eps_cholesky = robupy_obj.get_attr('eps_cholesky')
+    is_ambiguous = robupy_obj.get_attr('is_ambiguous')
 
     num_periods = robupy_obj.get_attr('num_periods')
 
@@ -55,8 +55,6 @@ def wrapper_solve_python(robupy_obj):
 
     level = robupy_obj.get_attr('level')
 
-    seed_solution = robupy_obj.get_attr('seed_solution')
-
     # Construct auxiliary objects
     _start_ambiguity_logging(is_ambiguous, is_debug)
 
@@ -71,18 +69,15 @@ def wrapper_solve_python(robupy_obj):
     coeffs_edu = model_paras['coeffs_edu']
     coeffs_home = model_paras['coeffs_home']
     shocks = model_paras['shocks']
+    eps_cholesky = model_paras['eps_cholesky']
 
     # TODO: How to deal with zero disturbances during estimations?
     mapping_state_idx, periods_emax, periods_future_payoffs, \
         periods_payoffs_ex_post, periods_payoffs_systematic, states_all, \
         states_number_period = solve_python(coeffs_a, coeffs_b, coeffs_edu,
-                                            coeffs_home, shocks, edu_max, delta,
-                                            edu_start, is_debug,
-                                            is_interpolated, is_python, level,
-                                            measure, min_idx, num_draws,
-                                            num_periods, num_points,
-                                            eps_cholesky, is_ambiguous,
-                                            seed_solution)
+            coeffs_home, shocks, eps_cholesky, edu_max, delta, edu_start,
+            is_debug, is_interpolated, is_python, level, measure, min_idx,
+            num_draws, num_periods, num_points, is_ambiguous, seed_solution)
 
     # Update class attributes with solution
     robupy_obj.unlock()
@@ -113,10 +108,11 @@ def wrapper_solve_python(robupy_obj):
     return robupy_obj
 
 
-def solve_python(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, edu_max,
+def solve_python(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
+                 eps_cholesky, edu_max,
                  delta, edu_start, is_debug, is_interpolated, is_python, level,
                  measure, min_idx, num_draws, num_periods, num_points,
-                 eps_cholesky, is_ambiguous, seed_solution):
+                 is_ambiguous, seed_solution):
     # Creating the state space of the model and collect the results in the
     # package class.
     logger.info('Starting state space creation')
@@ -164,6 +160,7 @@ def solve_python(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, edu_max,
 
     # Finishing
     return args
+
 
 ''' Generic versions for core functions
 '''

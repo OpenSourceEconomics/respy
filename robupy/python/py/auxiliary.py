@@ -9,16 +9,56 @@ import numpy as np
 from robupy.constants import HUGE_FLOAT
 
 
-def get_optimization_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-                                shocks, is_debug):
+def _check_optimization_parameters(x):
+    """ Check optimization parameters.
+    """
+    # Perform checks
+    assert (isinstance(x, np.ndarray))
+    assert (x.dtype == np.float)
+    assert (x.shape == (26,))
+    assert (np.all(np.isfinite(x)))
+
+    # Finishing
+    return True
+
+
+def _check_model_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+        shocks, eps_cholesky):
+    """ Check the integrity of all model parameters.
+    """
+    # Checks for all arguments
+    args = [coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, eps_cholesky]
+    for coeffs in args:
+        assert (isinstance(coeffs, np.ndarray))
+        assert (np.all(np.isfinite(coeffs)))
+        assert (coeffs.dtype == 'float')
+
+    # Checks for occupations
+    assert (coeffs_a.size == 6)
+    assert (coeffs_b.size == 6)
+    assert (coeffs_edu.size == 3)
+    assert (coeffs_home.size == 1)
+
+    # Check Cholesky decomposition
+    assert (eps_cholesky.shape == (4, 4))
+    aux = np.matmul(eps_cholesky, eps_cholesky.T)
+    np.testing.assert_array_almost_equal(shocks, aux)
+
+    # Checks shock matrix
+    assert (shocks.shape == (4, 4))
+    np.testing.assert_array_almost_equal(shocks, shocks.T)
+
+    # Finishing
+    return True
+
+
+def opt_get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+                             shocks, eps_cholesky, is_debug):
     """ Get parameters.
     """
-
-    # TODO: Incorporate function that checks integrity of input, ouptut,
-    # after you settled on the type of shocks, all other parameters are lists.
-    # arguments.
-
-    eps_cholesky = np.linalg.cholesky(shocks)
+    if is_debug:
+        args = coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, eps_cholesky
+        assert (_check_model_parameters(*args))
 
     # Initialize container
     x = np.tile(np.nan, 26)
@@ -41,44 +81,36 @@ def get_optimization_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
     x[23:25] = eps_cholesky[2:4, 2]
     x[25:26] = eps_cholesky[3:4, 3]
 
-    # TODO: To be extracted later.
     # Checks
-    assert (isinstance(x, np.ndarray))
-    assert (np.all(np.isfinite(x)))
-    assert (x.dtype == 'float')
-    assert (x.shape == (26,))
+    if is_debug:
+        _check_optimization_parameters(x)
 
     # Finishing
     return x
 
 
-def get_model_parameters(x, is_debug):
+def opt_get_model_parameters(x, is_debug):
     """ Update parameter values. Note that it is crucial to transform the
     subsets of the numpy array to lists. Otherwise, the code does produce
     random output.
     """
     # Antibugging
-    # TODO: extract into check function once settled down on design.
-    assert (isinstance(x, np.ndarray))
-    assert (x.dtype == np.float)
-    assert (x.shape == (26,))
-    assert (np.all(np.isfinite(x)))
+    if is_debug:
+        _check_optimization_parameters(x)
 
     # Occupation A
-    coeffs_a = list(x[0:6])
+    coeffs_a = x[0:6]
 
     # Occupation B
-    coeffs_b = list(x[6:12])
+    coeffs_b = x[6:12]
 
     # Education
-    coeffs_edu = list(x[12:15])
+    coeffs_edu = x[12:15]
 
     # Home
-    coeffs_home = list(x[15:16])
+    coeffs_home = x[15:16]
 
-    # Shocks
-    # TODO: Maybe have this as an list as well, then all those are lists and
-    # not all lists but cholesky and shocks.
+    # Cholesky
     eps_cholesky = np.tile(0.0, (4, 4))
 
     eps_cholesky[0:4, 0] = x[16:20]
@@ -86,13 +118,15 @@ def get_model_parameters(x, is_debug):
     eps_cholesky[2:4, 2] = x[23:25]
     eps_cholesky[3:4, 3] = x[25]
 
+    # Shocks
     shocks = np.matmul(eps_cholesky, eps_cholesky.T)
 
-    # TODO: Create function to check the integrity of the TYPES in particular
-    #  off return arguements
+    if is_debug:
+        args = coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, eps_cholesky
+        assert (_check_model_parameters(*args))
 
     # Finishing
-    return coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks
+    return coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, eps_cholesky
 
 
 def simulate_emax(num_periods, num_draws, period, k, eps_relevant_emax,

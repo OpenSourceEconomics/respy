@@ -32,8 +32,6 @@ class RobupyCls(MetaCls):
 
         self.attr['is_ambiguous'] = None
 
-        self.attr['eps_cholesky'] = None
-
         self.attr['num_periods'] = None
 
         self.attr['model_paras'] = None
@@ -160,6 +158,15 @@ class RobupyCls(MetaCls):
 
                 self.attr['model_paras']['shocks'] = init_dict['SHOCKS']
 
+                # Carry the Cholesky decomposition as part of the model
+                # parameters.
+                shocks = self.attr['model_paras']['shocks']
+                if np.count_nonzero(shocks) == 0:
+                    eps_cholesky = np.zeros((4, 4))
+                else:
+                    eps_cholesky = np.linalg.cholesky(shocks)
+                self.attr['model_paras']['eps_cholesky'] = eps_cholesky
+
                 # Ensure that all elements in the dictionary are of the same
                 # type.
                 keys = ['coeffs_a', 'coeffs_b', 'coeffs_edu', 'coeffs_home']
@@ -193,16 +200,9 @@ class RobupyCls(MetaCls):
 
             self.attr['eps_zero'] = (np.count_nonzero(shocks) == 0)
 
-            if self.attr['eps_zero']:
-                self.attr['eps_cholesky'] = np.zeros((4, 4))
-            else:
-                self.attr['eps_cholesky'] = np.linalg.cholesky(shocks)
-
             self.attr['is_ambiguous'] = (self.attr['level'] > 0.00)
 
             self.attr['is_python'] = (self.attr['version'] == 'PYTHON')
-
-            # Update status indicator
 
     def _check_integrity(self):
         """ Check integrity of class instance. This testing is done the first

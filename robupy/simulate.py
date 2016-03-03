@@ -39,17 +39,20 @@ def simulate(robupy_obj):
     assert (robupy_obj.get_status())
 
     # Distribute class attributes
-    seed = robupy_obj.get_attr('seed_simulation')
-
-    num_agents = robupy_obj.get_attr('num_agents')
-
-    eps_cholesky = robupy_obj.get_attr('eps_cholesky')
-
     is_ambiguous = robupy_obj.get_attr('is_ambiguous')
+
+    model_paras = robupy_obj.get_attr('model_paras')
 
     num_periods = robupy_obj.get_attr('num_periods')
 
+    num_agents = robupy_obj.get_attr('num_agents')
+
+    seed = robupy_obj.get_attr('seed_simulation')
+
     is_debug = robupy_obj.get_attr('is_debug')
+
+    # Auxiliary objects
+    eps_cholesky = model_paras['eps_cholesky']
 
     seed_simulation = robupy_obj.get_attr('seed_simulation')
 

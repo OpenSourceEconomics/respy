@@ -8,8 +8,8 @@ import sys
 import os
 
 # project library
-from robupy.python.py.auxiliary import get_optimization_parameters
-from robupy.python.py.auxiliary import get_model_parameters
+from robupy.python.py.auxiliary import opt_get_optim_parameters
+from robupy.python.py.auxiliary import opt_get_model_parameters
 
 from robupy.tests.random_init import generate_random_dict
 from robupy.tests.random_init import print_random_dict
@@ -360,8 +360,8 @@ class Tests(object):
 
             # Apply numerous transformations
             for _ in range(10):
-                args = get_model_parameters(x, is_debug=True)
-                x = get_optimization_parameters(*args, is_debug=True)
+                args = opt_get_model_parameters(x, is_debug=True)
+                x = opt_get_optim_parameters(*args, is_debug=True)
 
             # Checks
             np.testing.assert_allclose(base, x)

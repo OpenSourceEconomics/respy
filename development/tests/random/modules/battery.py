@@ -177,8 +177,6 @@ def test_86():
 
         mapping_state_idx = robupy_obj.get_attr('mapping_state_idx')
 
-        eps_cholesky = robupy_obj.get_attr('eps_cholesky')
-
         periods_emax = robupy_obj.get_attr('periods_emax')
 
         is_ambiguous = robupy_obj.get_attr('is_ambiguous')
@@ -206,6 +204,9 @@ def test_86():
         delta = robupy_obj.get_attr('delta')
 
         level = robupy_obj.get_attr('level')
+
+        # Auxiliary objects
+        eps_cholesky = model_paras['eps_cholesky']
 
         # Add some additional objects required for the interfaces to the
         # functions.
@@ -603,7 +604,7 @@ def test_92():
 
         num_periods = robupy_obj.get_attr('num_periods')
 
-        model_paras  = robupy_obj.get_attr('init_dict')
+        model_paras = robupy_obj.get_attr('model_paras')
 
         states_all = robupy_obj.get_attr('states_all')
 
