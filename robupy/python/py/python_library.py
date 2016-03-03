@@ -13,7 +13,7 @@ from scipy.stats import norm
 
 # project library
 from robupy.python.py.ambiguity import get_payoffs_ambiguity
-from robupy.python.py.auxiliary import update_parameters
+from robupy.python.py.auxiliary import get_model_parameters
 from robupy.python.py.auxiliary import get_total_value
 
 from robupy.python.py.risk import get_payoffs_risk
@@ -43,7 +43,8 @@ def likelihood_evaluation(x, edu_max, delta, edu_start, is_debug,
     num_sims = standard_deviates.shape[1]
 
     # Update parameters
-    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks = update_parameters(x)
+    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks = \
+        get_model_parameters(x, is_debug)
 
     # Solve the model for updated parametrization
     args = robupy.solve_python(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,

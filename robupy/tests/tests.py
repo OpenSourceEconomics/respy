@@ -8,9 +8,13 @@ import sys
 import os
 
 # project library
+from robupy.python.py.auxiliary import get_optimization_parameters
+from robupy.python.py.auxiliary import get_model_parameters
+
 from robupy.tests.random_init import generate_random_dict
 from robupy.tests.random_init import print_random_dict
 from robupy.tests.random_init import generate_init
+
 
 # module variables
 FILE_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -345,3 +349,19 @@ class Tests(object):
             # Checks
             np.testing.assert_allclose(base, systematic)
 
+    @staticmethod
+    def test8():
+        """ Testing whether back-and-forth transformation have no effect.
+        """
+        for _ in range(100):
+            # Create random parameter vector
+            base = np.random.uniform(size=26)
+            x = base.copy()
+
+            # Apply numerous transformations
+            for _ in range(10):
+                args = get_model_parameters(x, is_debug=True)
+                x = get_optimization_parameters(*args, is_debug=True)
+
+            # Checks
+            np.testing.assert_allclose(base, x)

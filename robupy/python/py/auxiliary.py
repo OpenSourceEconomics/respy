@@ -9,14 +9,14 @@ import numpy as np
 from robupy.constants import HUGE_FLOAT
 
 
-
-def get_optimization_arguments(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-                            shocks):
+def get_optimization_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+                                shocks, is_debug):
     """ Get parameters.
     """
 
-    # TODO: Incorporate function that checks integrity of init dict,
-    # TODO: How about passing in cholesky decomp directly?
+    # TODO: Incorporate function that checks integrity of input, ouptut,
+    # after you settled on the type of shocks, all other parameters are lists.
+    # arguments.
 
     eps_cholesky = np.linalg.cholesky(shocks)
 
@@ -52,7 +52,7 @@ def get_optimization_arguments(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
     return x
 
 
-def update_parameters(x):
+def get_model_parameters(x, is_debug):
     """ Update parameter values. Note that it is crucial to transform the
     subsets of the numpy array to lists. Otherwise, the code does produce
     random output.
@@ -79,7 +79,6 @@ def update_parameters(x):
     # Shocks
     # TODO: Maybe have this as an list as well, then all those are lists and
     # not all lists but cholesky and shocks.
-    # TODO: Pass in cholesky directly?
     eps_cholesky = np.tile(0.0, (4, 4))
 
     eps_cholesky[0:4, 0] = x[16:20]

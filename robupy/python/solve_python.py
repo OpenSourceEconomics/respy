@@ -65,7 +65,6 @@ def wrapper_solve_python(robupy_obj):
     _start_ambiguity_logging(is_ambiguous, is_debug)
 
     # Solve the model using PYTHON/F2PY implementation
-    # TODO: Fix create disturbances and then remove robpy_obj from .
     # TODO: Spend some time on design of interface, order of arguments coeffs
     #  in particular.
     # TODO: Extract this part as a fuction when design starts to settle down.
