@@ -36,6 +36,8 @@ class RobupyCls(MetaCls):
 
         self.attr['num_periods'] = None
 
+        self.attr['model_paras'] = None
+
         self.attr['num_agents'] = None
 
         self.attr['num_points'] = None
@@ -140,16 +142,52 @@ class RobupyCls(MetaCls):
 
             self.attr['delta'] = init_dict['BASICS']['delta']
 
+            # Initialize model parameters
+            if self.attr['model_paras'] is None:
+
+                self.attr['model_paras'] = dict()
+
+                self.attr['model_paras']['coeffs_a'] = [init_dict['A']['int']]
+                self.attr['model_paras']['coeffs_a'] += init_dict['A']['coeff']
+
+                self.attr['model_paras']['coeffs_b'] = [init_dict['B']['int']]
+                self.attr['model_paras']['coeffs_b'] += init_dict['B']['coeff']
+
+                self.attr['model_paras']['coeffs_edu'] = [init_dict['EDUCATION']['int']]
+                self.attr['model_paras']['coeffs_edu'] += init_dict['EDUCATION']['coeff']
+
+                self.attr['model_paras']['coeffs_home'] = [init_dict['HOME']['int']]
+
+                self.attr['model_paras']['shocks'] = init_dict['SHOCKS']
+
+                # Ensure that all elements in the dictionary are of the same
+                # type.
+                keys = ['coeffs_a', 'coeffs_b', 'coeffs_edu', 'coeffs_home']
+                keys += ['shocks']
+                for key_ in keys:
+                    self.attr['model_paras'][key_] = \
+                        np.array(self.attr['model_paras'][key_])
+
+                # Delete the duplicated information from the initialization
+                # dictionary. Special treatment of EDUCATION is required as it
+                # contains other information about education than just the
+                # payoff parametrization.
+                del init_dict['EDUCATION']['int']
+                del init_dict['EDUCATION']['coeff']
+
+                for key_ in ['A', 'B', 'HOME', 'SHOCKS']:
+                    del init_dict[key_]
+
             # Auxiliary objects
+            model_paras = self.attr['model_paras']
+
             num_periods = self.attr['num_periods']
 
             edu_start = self.attr['edu_start']
 
-            init_dict = self.attr['init_dict']
-
             edu_max = self.attr['edu_max']
 
-            shocks = init_dict['SHOCKS']
+            shocks = model_paras['shocks']
 
             self.attr['min_idx'] = min(num_periods, (edu_max - edu_start + 1))
 
@@ -163,6 +201,8 @@ class RobupyCls(MetaCls):
             self.attr['is_ambiguous'] = (self.attr['level'] > 0.00)
 
             self.attr['is_python'] = (self.attr['version'] == 'PYTHON')
+
+            # Update status indicator
 
     def _check_integrity(self):
         """ Check integrity of class instance. This testing is done the first
@@ -185,6 +225,8 @@ class RobupyCls(MetaCls):
 
         num_periods = self.attr['num_periods']
 
+        model_paras = self.attr['model_paras']
+
         num_agents = self.attr['num_agents']
 
         num_points = self.attr['num_points']
@@ -194,8 +236,6 @@ class RobupyCls(MetaCls):
         is_python = self.attr['is_python']
 
         num_draws = self.attr['num_draws']
-
-        init_dict = self.attr['init_dict']
 
         num_sims = self.attr['num_sims']
 
@@ -216,7 +256,7 @@ class RobupyCls(MetaCls):
         is_first = self.is_first
 
         # Auxiliary objects
-        shocks = init_dict['SHOCKS']
+        shocks = model_paras['shocks']
 
         # Debug status
         assert (is_debug in [True, False])

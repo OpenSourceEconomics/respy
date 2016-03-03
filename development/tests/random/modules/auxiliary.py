@@ -324,7 +324,7 @@ def check_ambiguity_optimization():
             raise AssertionError
 
 
-def transform_robupy_to_restud(init_dict):
+def transform_robupy_to_restud(model_paras, init_dict):
     """ Transform a ROBUPY initialization file to a RESTUD file.
     """
     # Ensure restrictions
@@ -343,8 +343,8 @@ def transform_robupy_to_restud(init_dict):
             500.0))
 
         # Write out coefficients for the two occupations.
-        for label in ['A', 'B']:
-            coeffs = [init_dict[label]['int']] + init_dict[label]['coeff']
+        coeffs_a, coeffs_b = model_paras['coeffs_a'], model_paras['coeffs_b']
+        for coeffs in [coeffs_a, coeffs_b]:
             line = ' {0:10.6f} {1:10.6f} {2:10.6f} {3:10.6f}  {4:10.6f}' \
                     ' {5:10.6f}\n'.format(*coeffs)
             file_.write(line)
@@ -352,10 +352,13 @@ def transform_robupy_to_restud(init_dict):
         # Write out coefficients for education and home payoffs as well as
         # the discount factor. The intercept is scaled. This is later undone
         # again in the original FORTRAN code.
-        edu_int = init_dict['EDUCATION']['int'] / 1000; edu_coeffs = [edu_int]
-        home = init_dict['HOME']['int'] / 1000
+        coeffs_edu = model_paras['coeffs_edu']
+        coeffs_home = model_paras['coeffs_home']
+
+        edu_int = coeffs_edu[0] / 1000; edu_coeffs = [edu_int]
+        home = coeffs_home[0] / 1000
         for j in range(2):
-            edu_coeffs += [-init_dict['EDUCATION']['coeff'][j] / 1000]
+            edu_coeffs += [-coeffs_edu[j + 1] / 1000]
         delta = init_dict['BASICS']['delta']
         coeffs = edu_coeffs + [home, delta]
         line = ' {0:10.6f} {1:10.6f} {2:10.6f} {3:10.6f}' \
@@ -364,7 +367,7 @@ def transform_robupy_to_restud(init_dict):
 
         # Write out coefficients of correlation, which need to be constructed
         # based on the covariance matrix.
-        shocks = init_dict['SHOCKS']; rho = np.identity(4)
+        shocks = model_paras['shocks']; rho = np.identity(4)
         rho_10 = shocks[1][0] / (np.sqrt(shocks[1][1]) * np.sqrt(shocks[0][0]))
         rho_20 = shocks[2][0] / (np.sqrt(shocks[2][2]) * np.sqrt(shocks[0][0]))
         rho_30 = shocks[3][0] / (np.sqrt(shocks[3][3]) * np.sqrt(shocks[0][0]))

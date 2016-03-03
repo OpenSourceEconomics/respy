@@ -31,9 +31,9 @@ def solve(robupy_obj):
     # Distribute class attributes
     is_ambiguous = robupy_obj.get_attr('is_ambiguous')
 
-    version = robupy_obj.get_attr('version')
-
     is_debug = robupy_obj.get_attr('is_debug')
+
+    version = robupy_obj.get_attr('version')
 
     store = robupy_obj.get_attr('store')
 
@@ -106,7 +106,6 @@ def _start_logging():
     logger.setLevel(logging.INFO)
 
     logger.addHandler(handler)
-
 
     logger = logging.getLogger('ROBUPY_SIMULATE')
 

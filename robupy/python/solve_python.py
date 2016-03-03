@@ -31,13 +31,13 @@ def wrapper_solve_python(robupy_obj):
 
     num_periods = robupy_obj.get_attr('num_periods')
 
+    model_paras = robupy_obj.get_attr('model_paras')
+
     num_points = robupy_obj.get_attr('num_points')
 
     num_draws = robupy_obj.get_attr('num_draws')
 
     edu_start = robupy_obj.get_attr('edu_start')
-
-    init_dict = robupy_obj.get_attr('init_dict')
 
     is_python = robupy_obj.get_attr('is_python')
 
@@ -65,15 +65,12 @@ def wrapper_solve_python(robupy_obj):
     #  in particular.
     # TODO: Extract this part as a fuction when design starts to settle down.
     #  This is then also useful for part of calculation in systematic _payoffs
-    # TODO: Why not have another name for this subset of elements that are
-    # themodel parameters, init_dict contains so much more?
-    coeffs_a = [init_dict['A']['int']] + init_dict['A']['coeff']
-    coeffs_b = [init_dict['B']['int']] + init_dict['B']['coeff']
 
-    coeffs_edu = [init_dict['EDUCATION']['int']] + init_dict['EDUCATION']['coeff']
-    coeffs_home = [init_dict['HOME']['int']]
-
-    shocks = init_dict['SHOCKS']
+    # Extract relevant parametrization of model from dictionary.
+    coeffs_a, coeffs_b = model_paras['coeffs_a'], model_paras['coeffs_b']
+    coeffs_edu = model_paras['coeffs_edu']
+    coeffs_home = model_paras['coeffs_home']
+    shocks = model_paras['shocks']
 
     # TODO: How to deal with zero disturbances during estimations?
     mapping_state_idx, periods_emax, periods_future_payoffs, \

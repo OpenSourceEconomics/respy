@@ -398,7 +398,6 @@ def calculate_payoffs_systematic(num_periods, states_number_period, states_all,
             periods_payoffs_systematic[period, k, 2] = payoff
 
             # Calculate systematic part of HOME
-            print(coeffs_home)
             periods_payoffs_systematic[period, k, 3] = coeffs_home[0]
 
     # Finishing

@@ -183,6 +183,8 @@ def test_86():
 
         is_ambiguous = robupy_obj.get_attr('is_ambiguous')
 
+        model_paras = robupy_obj.get_attr('model_paras')
+
         num_periods = robupy_obj.get_attr('num_periods')
 
         states_all = robupy_obj.get_attr('states_all')
@@ -192,8 +194,6 @@ def test_86():
         seed = robupy_obj.get_attr('seed_estimation')
 
         edu_start = robupy_obj.get_attr('edu_start')
-
-        init_dict = robupy_obj.get_attr('init_dict')
 
         num_draws = robupy_obj.get_attr('num_draws')
 
@@ -218,9 +218,9 @@ def test_86():
 
         num_states = states_number_period[period]
 
-        shifts = np.random.randn(4)
+        shocks = model_paras['shocks']
 
-        shocks = init_dict['SHOCKS']
+        shifts = np.random.randn(4)
 
         # Slight modification of request which assures that the interpolation
         # code is working.
@@ -303,11 +303,11 @@ def test_87():
 
         periods_emax = robupy_obj.get_attr('periods_emax')
 
+        model_paras = robupy_obj.get_attr('model_paras')
+
         num_periods = robupy_obj.get_attr('num_periods')
 
         states_all = robupy_obj.get_attr('states_all')
-
-        init_dict = robupy_obj.get_attr('init_dict')
 
         num_draws = robupy_obj.get_attr('num_draws')
 
@@ -324,7 +324,7 @@ def test_87():
         level = robupy_obj.get_attr('level')
 
         # Extract auxiliary objects
-        shocks = init_dict['SHOCKS']
+        shocks = model_paras['shocks']
 
         # Iterate over a couple of admissible points
         for _ in range(10):
@@ -603,9 +603,9 @@ def test_92():
 
         num_periods = robupy_obj.get_attr('num_periods')
 
-        states_all = robupy_obj.get_attr('states_all')
+        model_paras  = robupy_obj.get_attr('init_dict')
 
-        init_dict = robupy_obj.get_attr('init_dict')
+        states_all = robupy_obj.get_attr('states_all')
 
         num_draws = robupy_obj.get_attr('num_draws')
 
@@ -620,7 +620,7 @@ def test_92():
         debug = False
 
         # Auxiliary objects
-        shocks = init_dict['SHOCKS']
+        shocks = model_paras['shocks']
 
         # Sample disturbances
         eps_standard = np.random.multivariate_normal(np.zeros(4),
@@ -1110,9 +1110,11 @@ def test_98():
     # This flag aligns the random components between the RESTUD program and
     # ROBUPY package. The existence of the file leads to the RESTUD program
     # to write out the random components.
+    model_paras = robupy_obj.get_attr('model_paras')
+
     init_dict = robupy_obj.get_attr('init_dict')
 
-    transform_robupy_to_restud(init_dict)
+    transform_robupy_to_restud(model_paras, init_dict)
 
     # Solve model using RESTUD code.
     os.system('./modules/dp3asim > /dev/null 2>&1')

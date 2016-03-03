@@ -120,6 +120,8 @@ def write_robufort_initialization(robupy_obj):
     """
 
     # Distribute class attributes
+    model_paras = robupy_obj.get_attr('model_paras')
+
     init_dict = robupy_obj.get_attr('init_dict')
 
     # Auxiliary objects
@@ -139,14 +141,13 @@ def write_robufort_initialization(robupy_obj):
         file_.write(line)
 
         # WORK
-        for label in ['A', 'B']:
-            num = [init_dict[label]['int']] + init_dict[label]['coeff']
+        for num in [model_paras['coeffs_a'], model_paras['coeffs_b']]:
             line = ' {0:15.10f} {1:15.10f} {2:15.10f} {3:15.10f}  {4:15.10f}' \
                         ' {5:15.10f}\n'.format(*num)
             file_.write(line)
 
         # EDUCATION
-        num = [init_dict['EDUCATION']['int']] + init_dict['EDUCATION']['coeff']
+        num = model_paras['coeffs_edu']
         line = ' {0:+15.9f} {1:+15.9f} {2:+15.9f}\n'.format(*num)
         file_.write(line)
 
@@ -157,11 +158,11 @@ def write_robufort_initialization(robupy_obj):
         file_.write(line)
 
         # HOME
-        line = ' {0:15.10f}\n'.format(init_dict['HOME']['int'])
+        line = ' {0:15.10f}\n'.format(model_paras['coeffs_home'][0])
         file_.write(line)
 
         # SHOCKS
-        shocks = init_dict['SHOCKS']
+        shocks = model_paras['shocks']
         for j in range(4):
             line = ' {0:15.5f} {1:15.5f} {2:15.5f} {3:15.5f}\n'.format(*shocks[j])
             file_.write(line)
