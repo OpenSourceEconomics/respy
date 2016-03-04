@@ -10,8 +10,12 @@ import os
 from robupy.constants import MISSING_FLOAT
 
 
-def check_model_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-        shocks, eps_cholesky):
+''' Auxiliary functions
+'''
+
+
+def check_model_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
+        eps_cholesky):
     """ Check the integrity of all model parameters.
     """
     # Checks for all arguments
@@ -227,11 +231,12 @@ def check_optimization_parameters(x):
 
 def opt_get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
                              shocks, eps_cholesky, is_debug):
-    """ Get parameters.
+    """ Get optimization parameters.
     """
+    # Checks
     if is_debug:
         args = coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, eps_cholesky
-        assert (check_model_parameters(*args))
+        assert check_model_parameters(*args)
 
     # Initialize container
     x = np.tile(np.nan, 26)
@@ -263,11 +268,9 @@ def opt_get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
 
 
 def opt_get_model_parameters(x, is_debug):
-    """ Update parameter values. Note that it is crucial to transform the
-    subsets of the numpy array to lists. Otherwise, the code does produce
-    random output.
+    """ Update parameter values. The np.array type is maintained.
     """
-    # Antibugging
+    # Checks
     if is_debug:
         check_optimization_parameters(x)
 
@@ -294,9 +297,10 @@ def opt_get_model_parameters(x, is_debug):
     # Shocks
     shocks = np.matmul(eps_cholesky, eps_cholesky.T)
 
+    # Checks
     if is_debug:
         args = coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, eps_cholesky
-        assert (check_model_parameters(*args))
+        assert check_model_parameters(*args)
 
     # Finishing
     return coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, eps_cholesky

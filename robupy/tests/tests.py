@@ -3,6 +3,7 @@
 
 # standard library
 import numpy as np
+
 import glob
 import sys
 import os
@@ -49,14 +50,21 @@ class Tests(object):
 
     @staticmethod
     def setup_class():
-        """ Setup before any methods in this class.
+        """ Setup before any methods in this class are executed
         """
         os.chdir(FILE_PATH)
 
     @staticmethod
     def teardown_class():
-        """ Teardown after any methods in this class.
+        """ Teardown after all methods in this class are executed..
         """
+        # Cleanup testing directory
+        for file_ in glob.glob('*'):
+            if ('.py' in file_) or os.path.isdir(file_):
+                continue
+            os.unlink(file_)
+
+        # Return to package's root directory
         os.chdir(TEST_PATH)
 
     @staticmethod
@@ -71,14 +79,10 @@ class Tests(object):
 
     @staticmethod
     def test_1():
-        """ Testing whether ten random initialization file can be
-        solved and simulated.
+        """ Testing whether a random initialization file can be solved and
+        simulated.
         """
-
-        for i in range(10):
-
-            # Select version
-            version = np.random.choice(VERSIONS)
+        for version in VERSIONS:
 
             # Generate constraints
             constraints = dict()
@@ -100,7 +104,6 @@ class Tests(object):
         three periods.
         """
         for i in range(10):
-
             # Select version
             version = np.random.choice(VERSIONS)
 
@@ -162,32 +165,28 @@ class Tests(object):
         there is no random variation in the payoffs (all disturbances set to
         zero).
         """
-        for i in range(10):
+        version = np.random.choice(VERSIONS)
 
-            # Select version
-            version = np.random.choice(VERSIONS)
+        # Generate constraint periods
+        constraints = dict()
+        constraints['version'] = version
+        constraints['eps_zero'] = True
+        constraints['level'] = 0.00
 
-            # Generate constraint periods
-            constraints = dict()
-            constraints['version'] = version
-            constraints['eps_zero'] = True
-            constraints['level'] = 0.00
+        # Generate random initialization file
+        generate_init(constraints)
 
-            # Generate random initialization file
-            generate_init(constraints)
+        # Perform toolbox actions
+        robupy_obj = read('test.robupy.ini')
 
-            # Perform toolbox actions
-            robupy_obj = read('test.robupy.ini')
+        robupy_obj = solve(robupy_obj)
 
-            robupy_obj = solve(robupy_obj)
+        # Distribute class attributes
+        systematic = robupy_obj.get_attr('periods_payoffs_systematic')
+        ex_post = robupy_obj.get_attr('periods_payoffs_ex_post')
 
-            # Distribute class attributes
-            systematic = robupy_obj.get_attr('periods_payoffs_systematic')
-            ex_post = robupy_obj.get_attr('periods_payoffs_ex_post')
-
-            # Check
-            assert (np.ma.all(
-                np.ma.masked_invalid(systematic) ==
+        # Check
+        assert (np.ma.all(np.ma.masked_invalid(systematic) ==
                     np.ma.masked_invalid(ex_post)))
 
     @staticmethod
@@ -195,7 +194,6 @@ class Tests(object):
         """ If there is no random variation in payoffs then the number of
         draws to simulate the expected future value should have no effect.
         """
-
         # Select version
         version = np.random.choice(VERSIONS)
 
@@ -214,7 +212,7 @@ class Tests(object):
         # Initialize auxiliary objects
         base = None
 
-        for _ in range(10):
+        for _ in range(2):
 
             # Draw a random number of draws for
             # expected future value calculations.
@@ -247,10 +245,9 @@ class Tests(object):
 
     @staticmethod
     def test_5():
-        """ Testing whether thousand random initialization file can generated
-        and read.
+        """ Testing whether random initialization file can generated and read.
         """
-        for i in range(1000):
+        for i in range(10):
 
             # Select version
             version = np.random.choice(VERSIONS)
@@ -268,9 +265,8 @@ class Tests(object):
     @staticmethod
     def test_6():
         """ Testing whether the risk code is identical to the ambiguity code for
-            very, very small levels of ambiguity.
+        very, very small levels of ambiguity.
         """
-
         # Select version
         version = np.random.choice(VERSIONS)
 
@@ -312,7 +308,6 @@ class Tests(object):
         """ Testing whether the systematic payoff calculation is unaffected by
         the level of ambiguity.
         """
-
         # Select version
         version = np.random.choice(VERSIONS)
 
@@ -327,7 +322,7 @@ class Tests(object):
         base = None
 
         # Loop over different uncertain environments.
-        for _ in range(5):
+        for _ in range(2):
 
             # Set varying constraints
             init_dict['AMBIGUITY']['level'] = np.random.choice(
@@ -354,7 +349,7 @@ class Tests(object):
     def test_8():
         """ Testing whether back-and-forth transformation have no effect.
         """
-        for i in range(100):
+        for i in range(10):
             # Create random parameter vector
             base = np.random.uniform(size=26)
             x = base.copy()
@@ -373,7 +368,7 @@ class Tests(object):
         """
         # TODO: Here I will also check the evaluation based on alternative
         # implementations.
-        for _ in range(10):
+        for _ in range(2):
             # Start of unit test design.
             constraints = dict()
             constraints['debug'] = True

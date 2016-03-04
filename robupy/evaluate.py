@@ -1,4 +1,4 @@
-""" This module contains the interface to the evaluation of the criterion
+""" This module contains the interface for the evaluation of the criterion
 function.
 """
 
@@ -8,7 +8,6 @@ import numpy as np
 # project library
 from robupy.python.evaluate_python import evaluate_python
 from robupy.auxiliary import check_dataset
-
 
 ''' Main function
 '''
@@ -38,15 +37,14 @@ def evaluate(robupy_obj, data_frame):
     # Finishing
     return likl
 
-
 ''' Auxiliary functions
 '''
 
 
 def _check_evaluation(likl):
-    """ Check likelihood calculation.
+    """ Check integrity of criterion function.
     """
-
+    # Checks
     assert isinstance(likl, float)
     assert np.isfinite(likl)
 

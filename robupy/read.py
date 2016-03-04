@@ -1,9 +1,9 @@
-""" This module contains all the capabilities for the processing the model's
-initialization file.
+""" This module contains the interface to read an initialization file from disk.
 """
 
 # standard library
 import numpy as np
+
 import shlex
 import glob
 import os
@@ -11,13 +11,12 @@ import os
 # project library
 from robupy.clsRobupy import RobupyCls
 
-
 ''' Main function
 '''
 
 
 def read(file_):
-    """ Process
+    """ Read an initialization file from disk.
     """
     # Initialization
     dict_ = {}
@@ -68,7 +67,6 @@ def read(file_):
 
     # Finishing.
     return robupy_obj
-
 
 ''' Auxiliary functions
 '''
@@ -274,10 +272,6 @@ def _check_integrity_read(dict_):
     assert (dict_['INTERPOLATION']['apply'] in [True, False])
     assert (isinstance(dict_['INTERPOLATION']['points'], int))
     assert (dict_['INTERPOLATION']['points'] > 0)
-
-    # Temporary restrictions
-    assert (dict_['AMBIGUITY']['level'] >= 0.00)
-    assert (dict_['AMBIGUITY']['measure'] in ['absolute', 'kl'])
 
     # Finishing
     return True

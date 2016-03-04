@@ -1,4 +1,4 @@
-""" This module allows to process a dataset from disk.
+""" This module contains the interface to process a dataset from disk.
 """
 
 # standard library
@@ -37,9 +37,9 @@ def process(data_file, robupy_obj):
 
 
 def _check_process(data_file, robupy_obj):
-    """ Check likelihood calculation.
+    """ Check the validity of the request.
     """
-
+    # Checks
     assert (os.path.exists(data_file))
     assert (robupy_obj.get_status())
 

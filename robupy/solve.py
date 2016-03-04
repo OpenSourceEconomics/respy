@@ -1,5 +1,4 @@
-""" This module serves as the interface to the alternative implementations to
-solve the model.
+""" This module contains the interface to solve the model.
 """
 
 # standard library
@@ -20,7 +19,7 @@ def solve(robupy_obj):
     """ Solve dynamic programming problem by backward induction.
     """
     # Checks, cleanup, start logger
-    assert (_check_solve(robupy_obj))
+    assert _check_solve(robupy_obj)
 
     _cleanup()
 

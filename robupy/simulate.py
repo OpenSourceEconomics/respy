@@ -1,4 +1,5 @@
-""" This module contains all the capabilities to simulate from the model.
+""" This module contains the interface to simulate a dataset and write the
+information to disk.
 
     Structure of Dataset:
 
@@ -16,6 +17,7 @@
 # standard library
 import pandas as pd
 import numpy as np
+
 import logging
 
 # project library
@@ -33,10 +35,10 @@ logger = logging.getLogger('ROBUPY_SIMULATE')
 
 
 def simulate(robupy_obj):
-    """ Simulate from dynamic programming model.
+    """ Simulate dataset from model.
     """
-    # Antibugging
-    assert (robupy_obj.get_status())
+    # Checks
+    assert _check_simulation(robupy_obj)
 
     # Distribute class attributes
     is_ambiguous = robupy_obj.get_attr('is_ambiguous')
@@ -82,7 +84,7 @@ def simulate(robupy_obj):
 
 
 def _wrapper_simulate_sample(robupy_obj, periods_eps_relevant):
-    """ Wrapper for PYTHON and FORTRAN implementation of sample simulation.
+    """ Wrapper for PYTHON and F2PY implementation of sample simulation.
     """
     # Distribute class attributes
     periods_payoffs_systematic = robupy_obj.get_attr('periods_payoffs_systematic')
@@ -239,3 +241,14 @@ def _format_integer(x):
         return '    .'
     else:
         return '{0:<5}'.format(int(x))
+
+
+def _check_simulation(robupy_obj):
+    """ Check integrity of simulation request.
+    """
+    # Checks
+    assert (robupy_obj.get_attr('is_solved'))
+    assert (robupy_obj.get_status())
+
+    # Finishing
+    return True
