@@ -20,6 +20,10 @@ DEBUG_OPTIONS = ' -O2 -fimplicit-none  -Wall -Wline-truncation' \
 PRODUCTION_OPTIONS = '-O3'
 
 
+''' Main function
+'''
+
+
 def robufort_build(self, is_debug=False):
     """ Building the ROBUFORT executable for high speed execution.
     """

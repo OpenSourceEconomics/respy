@@ -1,5 +1,5 @@
 """ This module provides the interface to the functionality needed to solve the
-model with Python and F2PY capabilities.
+model with PYTHON and F2PY capabilities.
 """
 
 # standard library
@@ -116,7 +116,7 @@ def solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
         is_python, level, measure, min_idx, num_draws, num_periods, num_points,
         is_ambiguous, seed_solution):
     """ This function is required to ensure a full analogy to F2PY and
-    FORTRAN implementations. Thid function is not private to the module as it
+    FORTRAN implementations. This function is not private to the module as it
     is accessed in the evaluation and optimization modules as well.
     """
     # Creating the state space of the model and collect the results in the

@@ -1,9 +1,11 @@
-""" This module contains all the capabilities to solve the dynamic
-programming problem building the ROBUFORT executable.
+""" This module provides the interface to the functionality needed to solve the
+model with FORTRAN.
 """
+
 
 # standard library
 import numpy as np
+
 import os
 
 # module-wide variables
@@ -11,7 +13,7 @@ PACKAGE_PATH = os.path.dirname(os.path.realpath(__file__))
 
 from robupy.auxiliary import replace_missing_values
 
-''' Public function
+''' Main function
 '''
 
 
@@ -23,7 +25,7 @@ def solve_fortran(robupy_obj):
     is_ambiguous = robupy_obj.get_attr('is_ambiguous')
 
     # Prepare and execute ROBUFORT
-    write_robufort_initialization(robupy_obj)
+    _write_robufort_initialization(robupy_obj)
 
     if is_ambiguous:
         os.system('"' + PACKAGE_PATH + '/bin/robufort_ambiguity"')
@@ -31,17 +33,17 @@ def solve_fortran(robupy_obj):
         os.system('"' + PACKAGE_PATH + '/bin/robufort_risk"')
 
     # Add results
-    add_results(robupy_obj)
+    _add_results(robupy_obj)
 
     # Finishing
     return robupy_obj
 
 
-''' Auxiliary function
+''' Auxiliary functions
 '''
 
 
-def add_results(robupy_obj):
+def _add_results(robupy_obj):
     """ Add results to container.
     """
     # Distribute class attributes
@@ -115,7 +117,7 @@ def add_results(robupy_obj):
     return robupy_obj
 
 
-def write_robufort_initialization(robupy_obj):
+def _write_robufort_initialization(robupy_obj):
     """ Write out model request to hidden file .model.robufort.ini.
     """
 
