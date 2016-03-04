@@ -4,11 +4,11 @@ and simulation modules.
 
 # standard library
 import numpy as np
+
 import os
 
 # project library
 from robupy.constants import MISSING_FLOAT
-
 
 ''' Auxiliary functions
 '''
