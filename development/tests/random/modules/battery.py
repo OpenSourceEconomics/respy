@@ -248,8 +248,11 @@ def test_86():
 
         # Construct endogenous variable so that the prediction model can be
         # fitted.
-        args += [is_simulated, num_draws, shocks, level, is_debug, measure,
-                 maxe, eps_relevant]
+        args = [period, num_periods, num_states, delta,
+                periods_payoffs_systematic, edu_max, edu_start,
+                mapping_state_idx, periods_emax, states_all, is_simulated,
+                num_draws, shocks, level, is_debug, measure, maxe, eps_relevant]
+
         py = _get_endogenous_variable(*args)
         f90 = fort.wrapper_get_endogenous_variable(*args)
 

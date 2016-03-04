@@ -8,7 +8,7 @@ from scipy.stats import norm
 import numpy as np
 
 # project library
-from robupy.python.solve_python import _solve_python_bare
+from robupy.python.solve_python import solve_python_bare
 from robupy.python.py.auxiliary import get_total_value
 
 from robupy.auxiliary import distribute_model_paras
@@ -97,7 +97,7 @@ def _evaluate_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
     FORTRAN implementations.
     """
     # Solve the model for updated parametrization
-    args = _solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+    args = solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         shocks, eps_cholesky, edu_max, delta, edu_start, is_debug,
         is_interpolated, is_python, level, measure, min_idx, num_draws,
         num_periods, num_points, is_ambiguous, seed_solution)

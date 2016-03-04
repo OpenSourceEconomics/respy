@@ -1,7 +1,8 @@
-# Check for Python 3
+
+# standard library
+import logging
 import sys
-if not (sys.version_info[0] == 3):
-    raise AssertionError('Please use Python 3')
+import os
 
 # Package structure
 from robupy.simulate import simulate
@@ -10,10 +11,13 @@ from robupy.process import process
 from robupy.solve import solve
 from robupy.read import read
 
+# Check for Python 3
+if not (sys.version_info[0] == 3):
+    raise AssertionError('Please use Python 3')
+
 
 """ Testing functions
 """
-import os
 
 
 def test():
@@ -32,7 +36,6 @@ def test():
 
 """ Set up logging.
 """
-import logging
 
 logging.captureWarnings(True)
 

@@ -15,6 +15,8 @@ REPOS += ['documentation/robustToolbox.github.io']
 
 ''' Functions
 '''
+
+
 def push():
     """ Push all remote repositories.
     """
@@ -34,7 +36,7 @@ def push():
 
             os.chdir('../')
 
-        except Exception:
+        except OSError:
 
             pass
 
@@ -46,9 +48,9 @@ def push():
 '''
 if __name__ == '__main__':
 
-    parser  = argparse.ArgumentParser(description = \
-        'Push to all remote repositories.',
-        formatter_class = argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(description=
+        'Push to all remote repositories.', formatter_class=
+        argparse.ArgumentDefaultsHelpFormatter)
 
     args = parser.parse_args()
 

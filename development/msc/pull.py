@@ -9,13 +9,15 @@ import os
 # module-wide variables
 HOME = os.getcwd()
 
-REPOS = ['documentation/sources', 'package']
+REPOS = ['documentation/sources', 'package', 'analysis']
 
 REPOS += ['documentation/robustToolbox.github.io']
 
 
 ''' Functions
 '''
+
+
 def update():
     """ Update all remote repositories.
     """
@@ -30,7 +32,7 @@ def update():
 
             os.system('git pull')
 
-        except Exception:
+        except OSError:
 
             pass
 
@@ -42,9 +44,9 @@ def update():
 '''
 if __name__ == '__main__':
 
-    parser  = argparse.ArgumentParser(description = \
-        'Update all remote repositories.',
-        formatter_class = argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(description=
+        'Update all remote repositories.', formatter_class=
+        argparse.ArgumentDefaultsHelpFormatter)
 
     args = parser.parse_args()
 

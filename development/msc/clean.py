@@ -6,7 +6,6 @@
 # standard library
 import fnmatch
 import shutil
-import sys
 import os
 
 # module-wide variables
@@ -48,15 +47,20 @@ def remove_nuisances():
 
     for file_ in matches:
 
-        if 'ini' in file_: continue
+        if 'ini' in file_:
+            continue
 
-        if 'restud/simulation' in file_: continue
+        if 'restud/simulation' in file_:
+            continue
 
-        if 'restud/codes' in file_: continue
+        if 'restud/codes' in file_:
+            continue
 
-        if 'requirements' in file_: continue
+        if 'requirements' in file_:
+            continue
 
-        if 'rslts' in file_: continue
+        if 'rslts' in file_:
+            continue
 
         remove(file_)
 

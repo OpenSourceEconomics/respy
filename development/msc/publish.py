@@ -15,23 +15,23 @@ ROOT_DIR = os.getcwd()
 '''
 
 
-def distribute_inputs(parser):
+def distribute_inputs(parser_internal):
     """ Process input arguments.
     """
     # Parse arguments.
-    args = parser.parse_args()
+    args = parser_internal.parse_args()
 
     # Distribute arguments
-    is_local = args.local
+    is_local_internal = args.local
 
     # Assertions
-    assert (is_local in [True, False])
+    assert (is_local_internal in [True, False])
 
     # Finishing
-    return is_local
+    return is_local_internal
 
 
-def publish(is_local):
+def publish(is_local_internal):
     """ Publish to package repository.
     """
 
@@ -72,7 +72,7 @@ def publish(is_local):
     # Publish
     os.chdir('package')
 
-    if is_local:
+    if is_local_internal:
         os.system('python setup.py sdist')
     else:
         os.system('python setup.py sdist upload -r pypi')

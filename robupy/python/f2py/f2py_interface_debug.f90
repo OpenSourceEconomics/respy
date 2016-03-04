@@ -651,7 +651,7 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, &
                 num_periods, num_states, delta, periods_payoffs_systematic, &
-                shifts, edu_max, edu_start, mapping_state_idx, periods_emax, &
+                edu_max, edu_start, mapping_state_idx, periods_emax, &
                 states_all, is_simulated, num_draws, shocks, level, is_debug, & 
                 measure, maxe, eps_relevant)
 
@@ -671,7 +671,6 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, &
     DOUBLE PRECISION, INTENT(IN)        :: periods_emax(:, :)
     DOUBLE PRECISION, INTENT(IN)        :: eps_relevant(:, :)
     DOUBLE PRECISION, INTENT(IN)        :: shocks(4, 4)
-    DOUBLE PRECISION, INTENT(IN)        :: shifts(:)
     DOUBLE PRECISION, INTENT(IN)        :: maxe(:)
     DOUBLE PRECISION, INTENT(IN)        :: delta
     DOUBLE PRECISION, INTENT(IN)        :: level
@@ -695,7 +694,7 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, &
 !-------------------------------------------------------------------------------
     
     CALL get_endogenous_variable(exogenous_variable, period, num_periods, &
-            num_states, delta, periods_payoffs_systematic, shifts, edu_max, &
+            num_states, delta, periods_payoffs_systematic, edu_max, &
             edu_start, mapping_state_idx, periods_emax, states_all, &
             is_simulated, num_draws, shocks, level, is_debug, measure, maxe, &
             eps_relevant)

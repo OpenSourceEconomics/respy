@@ -74,17 +74,17 @@ def backward_induction(num_periods, max_states_period, periods_eps_relevant,
             # ones where simulation will take place. All information will be
             # used in either the construction of the prediction model or the
             # prediction step.
-            exogenous, maxe =_get_exogenous_variables(period, num_periods,
+            exogenous, maxe = _get_exogenous_variables(period, num_periods,
                 num_states, delta, periods_payoffs_systematic, shifts,
                 edu_max, edu_start, mapping_state_idx, periods_emax, states_all)
 
             # Constructing the dependent variables for at the random subset of
             # points where the EMAX is actually calculated.
             endogenous = _get_endogenous_variable(period, num_periods,
-                num_states, delta, periods_payoffs_systematic, shifts,
-                edu_max, edu_start, mapping_state_idx, periods_emax,
-                states_all, is_simulated, num_draws, shocks, level, is_debug,
-                measure, maxe, eps_relevant)
+                num_states, delta, periods_payoffs_systematic, edu_max,
+                edu_start, mapping_state_idx, periods_emax, states_all,
+                is_simulated, num_draws, shocks, level, is_debug, measure,
+                maxe, eps_relevant)
 
             # Create prediction model based on the random subset of points where
             # the EMAX is actually simulated and thus dependent and
@@ -254,7 +254,7 @@ def calculate_payoffs_systematic(num_periods, states_number_period, states_all,
 
             # Auxiliary objects
             covars = [1.0, edu + edu_start, exp_a, exp_a ** 2, exp_b,
-                          exp_b ** 2]
+                      exp_b ** 2]
 
             # Calculate systematic part of wages in occupation A
             periods_payoffs_systematic[period, k, 0] = np.exp(
@@ -447,9 +447,9 @@ def _get_exogenous_variables(period, num_periods, num_states, delta,
         payoffs_systematic = periods_payoffs_systematic[period, k, :]
 
         # Get total value
-        expected_values, _, future_payoffs = get_total_value(period, num_periods,
-                    delta, payoffs_systematic, shifts, edu_max, edu_start,
-                    mapping_state_idx, periods_emax, k, states_all)
+        expected_values, _, future_payoffs = get_total_value(period,
+            num_periods, delta, payoffs_systematic, shifts, edu_max, edu_start,
+            mapping_state_idx, periods_emax, k, states_all)
 
         # Treatment of inadmissible states, which will show up in the
         # regression in some way.
@@ -474,9 +474,9 @@ def _get_exogenous_variables(period, num_periods, num_states, delta,
 
 
 def _get_endogenous_variable(period, num_periods, num_states, delta,
-        periods_payoffs_systematic, shifts, edu_max, edu_start,
-        mapping_state_idx, periods_emax, states_all, is_simulated, num_draws,
-        shocks, level, is_debug, measure, maxe, eps_relevant):
+        periods_payoffs_systematic, edu_max, edu_start, mapping_state_idx,
+        periods_emax, states_all, is_simulated, num_draws, shocks, level,
+        is_debug, measure, maxe, eps_relevant):
     """ Construct endogenous variable for the subset of interpolation points.
     """
     # Construct auxiliary objects

@@ -25,7 +25,7 @@ def options(opt):
                    default=False, help='build FORTRAN implementations')
 
     opt.add_option('--test', action='store_true', dest='is_test',
-                   default=False,help='run test battery')
+                   default=False, help='run test battery')
 
     opt.add_option('--debug', action='store_true', dest='is_debug',
                    default=False, help='use debug compiler options')
@@ -127,7 +127,7 @@ def remove_filetypes_distclean(path):
 
     for root, _, filenames in os.walk(path):
 
-        for filetypes in ['*.aux','*.log','*.pyc', '*.so', '*~', '*tar',
+        for filetypes in ['*.aux', '*.log', '*.pyc', '*.so', '*~', '*tar',
                           '*.zip', '.waf*', '*lock*', '*.mod', '*.a',
                           '*.pkl', '*.out', '*.pyo', '*.info',
                           '__pycache__', '.coverage', '*.o']:

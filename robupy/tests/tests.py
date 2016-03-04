@@ -8,13 +8,17 @@ import sys
 import os
 
 # project library
+from robupy import simulate
+from robupy import evaluate
+from robupy import solve
+from robupy import read
+
 from robupy.auxiliary import opt_get_optim_parameters
 from robupy.auxiliary import opt_get_model_parameters
 
 from robupy.tests.random_init import generate_random_dict
 from robupy.tests.random_init import print_random_dict
 from robupy.tests.random_init import generate_init
-
 
 # module variables
 FILE_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -23,11 +27,6 @@ TEST_PATH = os.getcwd()
 # PYTHONPATH
 dir_ = FILE_PATH.replace('/tests', '')
 sys.path.insert(0, dir_)
-
-from robupy import simulate
-from robupy import evaluate
-from robupy import read
-from robupy import solve
 
 # Check for available versions. This can be removed later when the PyPI
 # installation also includes the compilation step.
@@ -188,7 +187,8 @@ class Tests(object):
 
             # Check
             assert (np.ma.all(
-                np.ma.masked_invalid(systematic) == np.ma.masked_invalid(ex_post)))
+                np.ma.masked_invalid(systematic) ==
+                    np.ma.masked_invalid(ex_post)))
 
     @staticmethod
     def test_4():

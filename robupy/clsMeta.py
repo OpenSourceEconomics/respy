@@ -14,6 +14,8 @@ class MetaCls(object):
         """
         self.is_locked = False
 
+        self.is_first = True
+
     ''' Meta methods.
     '''
 

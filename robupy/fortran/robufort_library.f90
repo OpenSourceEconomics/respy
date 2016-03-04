@@ -379,10 +379,10 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
             ! Construct endogenous variables for the subset of simulation points.
             ! The rest is set to missing value.
             CALL get_endogenous_variable(endogenous, period, num_periods, &
-                    num_states, delta, periods_payoffs_systematic, shifts, & 
-                    edu_max, edu_start, mapping_state_idx, periods_emax, &
-                    states_all, is_simulated, num_draws, shocks, level, & 
-                    is_debug, measure, maxe, eps_relevant)
+                    num_states, delta, periods_payoffs_systematic, edu_max, & 
+                    edu_start, mapping_state_idx, periods_emax, states_all, & 
+                    is_simulated, num_draws, shocks, level, is_debug, measure, & 
+                    maxe, eps_relevant)
 
             ! Create prediction model based on the random subset of points where
             ! the EMAX is actually simulated and thus endogenous and
@@ -633,10 +633,10 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE get_endogenous_variable(endogenous, period, num_periods, &
-                num_states, delta, periods_payoffs_systematic, shifts, & 
-                edu_max, edu_start, mapping_state_idx, periods_emax, &
-                states_all, is_simulated, num_draws, shocks, level, is_debug, & 
-                measure, maxe, eps_relevant)
+                num_states, delta, periods_payoffs_systematic, edu_max, & 
+                edu_start, mapping_state_idx, periods_emax, states_all, & 
+                is_simulated, num_draws, shocks, level, is_debug, measure, & 
+                maxe, eps_relevant)
 
     !/* external objects    */
 
@@ -648,7 +648,6 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_periods, &
     REAL(our_dble), INTENT(IN)          :: shocks(:, :)    
     REAL(our_dble), INTENT(IN)          :: level
     REAL(our_dble), INTENT(IN)          :: maxe(:)
-    REAL(our_dble), INTENT(IN)          :: shifts(:)
     REAL(our_dble), INTENT(IN)          :: delta
  
     INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(:, :, :, :, :)    

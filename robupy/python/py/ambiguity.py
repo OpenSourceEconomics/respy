@@ -15,14 +15,16 @@ from robupy.constants import HUGE_FLOAT
 '''
 
 
-def get_payoffs_ambiguity(num_draws, eps_relevant, period, k, payoffs_systematic,
-        edu_max, edu_start, mapping_state_idx, states_all, num_periods,
-        periods_emax, delta, is_debug, shocks, level, measure):
+def get_payoffs_ambiguity(num_draws, eps_relevant, period, k,
+        payoffs_systematic, edu_max, edu_start, mapping_state_idx,
+        states_all, num_periods, periods_emax, delta, is_debug, shocks,
+        level, measure):
     """ Get worst case
     """
-    opt = _determine_worst_case(num_draws, eps_relevant, period, k, payoffs_systematic,
-        edu_max, edu_start, mapping_state_idx, states_all, num_periods,
-        periods_emax, delta, is_debug, shocks, level, measure)
+    opt = _determine_worst_case(num_draws, eps_relevant, period, k,
+            payoffs_systematic, edu_max, edu_start, mapping_state_idx,
+            states_all, num_periods, periods_emax, delta, is_debug, shocks,
+            level, measure)
 
     # Transformation of standard normal deviates to relevant distributions.
     eps_relevant_emax = transform_disturbances_ambiguity(eps_relevant, opt['x'])
@@ -44,10 +46,11 @@ def get_payoffs_ambiguity(num_draws, eps_relevant, period, k, payoffs_systematic
 '''
 
 
-def _determine_worst_case(num_draws, eps_relevant, period, k, payoffs_systematic,
-        edu_max, edu_start, mapping_state_idx, states_all, num_periods,
-        periods_emax, delta, is_debug, shocks, level, measure):
-    """ Determine the worst case outcome for the given parameterization.
+def _determine_worst_case(num_draws, eps_relevant, period, k,
+        payoffs_systematic, edu_max, edu_start, mapping_state_idx,
+        states_all, num_periods, periods_emax, delta, is_debug, shocks,
+        level, measure):
+    """ Determine the worst case outcome for the given parametrization.
     """
     # Initialize options.
     options = dict()
@@ -102,8 +105,8 @@ def _determine_worst_case(num_draws, eps_relevant, period, k, payoffs_systematic
 
 
 def _correct_debugging(opt, x0, shocks, level, eps_relevant, num_periods,
-        num_draws, period, k, payoffs_systematic, edu_max, edu_start, periods_emax,
-        states_all, mapping_state_idx, delta):
+        num_draws, period, k, payoffs_systematic, edu_max, edu_start,
+        periods_emax, states_all, mapping_state_idx, delta):
     """ Some manipulations for test battery
     """
     # Check applicability
@@ -121,12 +124,13 @@ def _correct_debugging(opt, x0, shocks, level, eps_relevant, num_periods,
         opt['x'] = x0
 
         # Correct final function value
-        eps_relevant_emax = transform_disturbances_ambiguity(eps_relevant, opt['x'])
+        eps_relevant_emax = transform_disturbances_ambiguity(eps_relevant,
+                                opt['x'])
 
         simulated, payoffs_ex_post, future_payoffs = \
-                    simulate_emax(num_periods, num_draws, period, k,
-                        eps_relevant_emax, payoffs_systematic, edu_max, edu_start,
-                        periods_emax, states_all, mapping_state_idx, delta)
+            simulate_emax(num_periods, num_draws, period, k, eps_relevant_emax,
+                payoffs_systematic, edu_max, edu_start, periods_emax,
+                states_all, mapping_state_idx, delta)
 
         opt['fun'] = simulated
 
@@ -197,9 +201,9 @@ def _divergence(x, cov, level):
     return level - rslt
 
 
-def _criterion(x, num_draws, eps_relevant, period, k, payoffs_systematic, edu_max,
-        edu_start, mapping_state_idx, states_all, num_periods, periods_emax,
-        delta):
+def _criterion(x, num_draws, eps_relevant, period, k, payoffs_systematic,
+        edu_max, edu_start, mapping_state_idx, states_all, num_periods,
+        periods_emax, delta):
     """ Simulate expected future value for alternative shock distributions.
     """
 
@@ -208,8 +212,9 @@ def _criterion(x, num_draws, eps_relevant, period, k, payoffs_systematic, edu_ma
 
     # Simulate the expected future value for a given parametrization.
     simulated, _, _ = simulate_emax(num_periods, num_draws, period, k,
-                        eps_relevant_emax, payoffs_systematic, edu_max, edu_start,
-                        periods_emax, states_all, mapping_state_idx, delta)
+        eps_relevant_emax, payoffs_systematic, edu_max, edu_start,
+        periods_emax, states_all, mapping_state_idx, delta)
+
     # Debugging
     checks_ambiguity('_criterion', simulated)
 

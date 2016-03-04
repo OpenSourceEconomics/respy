@@ -69,7 +69,7 @@ def solve_python(robupy_obj):
         distribute_model_paras(model_paras, is_debug)
 
     # Solve the model using PYTHON/F2PY implementation
-    args = _solve_python_bare(coeffs_a, coeffs_b,  coeffs_edu, coeffs_home,
+    args = solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
                 shocks, eps_cholesky, edu_max, delta, edu_start, is_debug,
                 is_interpolated, is_python, level, measure, min_idx,
                 num_draws, num_periods, num_points, is_ambiguous, seed_solution)
@@ -111,12 +111,13 @@ def solve_python(robupy_obj):
 '''
 
 
-def _solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
+def solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
         eps_cholesky, edu_max, delta, edu_start, is_debug, is_interpolated,
         is_python, level, measure, min_idx, num_draws, num_periods, num_points,
         is_ambiguous, seed_solution):
     """ This function is required to ensure a full analogy to F2PY and
-    FORTRAN implementations.
+    FORTRAN implementations. Thid function is not private to the module as it
+    is accessed in the evaluation and optimization modules as well.
     """
     # Creating the state space of the model and collect the results in the
     # package class.

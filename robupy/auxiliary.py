@@ -98,16 +98,16 @@ def create_disturbances(num_draws, seed, eps_cholesky, is_ambiguous,
     # solution part of the program.
     if is_ambiguous and not is_simulation:
         for period in range(num_periods):
-            periods_eps_relevant[period, :, :] = np.dot(eps_cholesky,
-                    standard_deviates[period, :, :].T).T
+            periods_eps_relevant[period, :, :] = \
+                np.dot(eps_cholesky, standard_deviates[period, :, :].T).T
     else:
         # Transform disturbances to relevant distribution
         for period in range(num_periods):
-            periods_eps_relevant[period, :, :] = np.dot(eps_cholesky,
-                    standard_deviates[period, :, :].T).T
+            periods_eps_relevant[period, :, :] = \
+                np.dot(eps_cholesky, standard_deviates[period, :, :].T).T
             for j in [0, 1]:
-                periods_eps_relevant[period, :, j] = np.exp(periods_eps_relevant[
-                                                          period, :, j])
+                periods_eps_relevant[period, :, j] = \
+                    np.exp(periods_eps_relevant[period, :, j])
 
     # Finishing
     return periods_eps_relevant

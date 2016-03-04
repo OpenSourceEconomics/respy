@@ -92,9 +92,8 @@ class RobupyCls(MetaCls):
 
         self.is_first = True
 
-    def update_model_paras(self, coeffs_a, coeffs_b, coeffs_edu,
-                                coeffs_home, shocks, eps_cholesky):
-
+    def update_model_paras(self, coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+            shocks, eps_cholesky):
         """ Update model parameters.
         """
 
@@ -173,10 +172,13 @@ class RobupyCls(MetaCls):
                 self.attr['model_paras']['coeffs_b'] = [init_dict['B']['int']]
                 self.attr['model_paras']['coeffs_b'] += init_dict['B']['coeff']
 
-                self.attr['model_paras']['coeffs_edu'] = [init_dict['EDUCATION']['int']]
-                self.attr['model_paras']['coeffs_edu'] += init_dict['EDUCATION']['coeff']
+                self.attr['model_paras']['coeffs_edu'] = \
+                    [init_dict['EDUCATION']['int']]
+                self.attr['model_paras']['coeffs_edu'] += \
+                    init_dict['EDUCATION']['coeff']
 
-                self.attr['model_paras']['coeffs_home'] = [init_dict['HOME']['int']]
+                self.attr['model_paras']['coeffs_home'] = \
+                    [init_dict['HOME']['int']]
 
                 self.attr['model_paras']['shocks'] = init_dict['SHOCKS']
 
@@ -466,8 +468,7 @@ class RobupyCls(MetaCls):
                 for index in indices:
                     # Check for finite value at admissible state
                     assert (np.isfinite(mapping_state_idx[
-                                            period, index[0], index[1], index[2],
-                                            index[3]]))
+                            period, index[0], index[1], index[2], index[3]]))
                     # Record finite value
                     is_infinite[
                         period, index[0], index[1], index[2], index[3]] = True

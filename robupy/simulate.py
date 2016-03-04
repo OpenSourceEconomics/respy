@@ -115,8 +115,9 @@ def _wrapper_simulate_sample(robupy_obj, periods_eps_relevant):
     else:
         import robupy.python.f2py.f2py_library as f2py_library
         data_frame = f2py_library.wrapper_simulate_sample(num_agents,
-            states_all, num_periods, mapping_state_idx, periods_payoffs_systematic,
-            periods_eps_relevant, edu_max, edu_start, periods_emax, delta)
+            states_all, num_periods, mapping_state_idx,
+            periods_payoffs_systematic, periods_eps_relevant, edu_max,
+            edu_start, periods_emax, delta)
 
     # Replace missing values
     data_frame = replace_missing_values(data_frame)
@@ -160,25 +161,28 @@ def _write_info(robupy_obj, data_frame):
 
         file_.write('   Choices\n\n')
 
-        file_.write('       Period     Work A     Work B    Schooling   Home      \n\n')
+        file_.write('       Period     Work A     Work B    '
+                    'Schooling   Home      \n\n')
 
         for t in range(num_periods):
 
-            work_a = np.sum((data_frame[2] == 1) & (data_frame[1] ==
-                                                        t))/num_agents
+            work_a = np.sum((data_frame[2] == 1) &
+                            (data_frame[1] == t))/num_agents
 
             work_b = np.sum((data_frame[2] == 2) & (data_frame[1] ==
                                                     t))/num_agents
 
-            schooling = np.sum((data_frame[2] == 3) & (data_frame[1] ==
-                                                           t))/num_agents
+            schooling = np.sum((data_frame[2] == 3) &
+                               (data_frame[1] == t))/num_agents
 
             home = np.sum((data_frame[2] == 4) & (data_frame[1] ==
                                                   t))/num_agents
 
-            string = '''{0[0]:>10}    {0[1]:10.4f} {0[2]:10.4f} {0[3]:10.4f} {0[4]:10.4f}\n'''
+            string = '''{0[0]:>10}    {0[1]:10.4f} {0[2]:10.4f}
+             {0[3]:10.4f} {0[4]:10.4f}\n'''
 
-            file_.write(string.format([(t + 1), work_a, work_b, schooling, home]))
+            args = [(t + 1), work_a, work_b, schooling, home]
+            file_.write(string.format(args))
 
         file_.write('\n\n\n')
 
@@ -187,15 +191,18 @@ def _write_info(robupy_obj, data_frame):
 
         file_.write('   Additional Information\n\n')
 
-        stat = data_frame[data_frame.ix[:, 1] == (num_periods - 1)].ix[:, 6].mean()
+        stat = data_frame[data_frame.ix[:, 1] ==
+                (num_periods - 1)].ix[:, 6].mean()
         file_.write(string.format(['Average Education', stat]))
 
         file_.write('\n')
 
-        stat = data_frame[data_frame.ix[:, 1] == (num_periods - 1)].ix[:, 4].mean()
+        stat = data_frame[data_frame.ix[:, 1] ==
+                (num_periods - 1)].ix[:, 4].mean()
         file_.write(string.format(['Average Experience A', stat]))
 
-        stat = data_frame[data_frame.ix[:, 1] == (num_periods - 1)].ix[:, 5].mean()
+        stat = data_frame[data_frame.ix[:, 1] ==
+                (num_periods - 1)].ix[:, 5].mean()
         file_.write(string.format(['Average Experience B', stat]))
 
 

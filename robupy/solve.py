@@ -129,26 +129,26 @@ def _summarize_ambiguity(robupy_obj):
     """ Summarize optimizations in case of ambiguity.
     """
 
-    def _process_cases(list_):
+    def _process_cases(list_internal):
         """ Process cases and determine whether keyword or empty line.
         """
         # Antibugging
-        assert (isinstance(list_, list))
+        assert (isinstance(list_internal, list))
 
         # Get information
-        is_empty = (len(list_) == 0)
+        is_empt_internal = (len(list_internal) == 0)
 
-        if not is_empty:
-            is_block = list_[0].isupper()
+        if not is_empt_internal:
+            is_block_internal = list_internal[0].isupper()
         else:
-            is_block = False
+            is_block_internal = False
 
         # Antibugging
-        assert (is_block in [True, False])
-        assert (is_empty in [True, False])
+        assert (is_block_internal in [True, False])
+        assert (is_empt_internal in [True, False])
 
         # Finishing
-        return is_empty, is_block
+        return is_empt_internal, is_block_internal
 
     # Distribute class attributes
     num_periods = robupy_obj.get_attr('num_periods')

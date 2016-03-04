@@ -93,7 +93,7 @@ def add_results(robupy_obj):
 
         label, shape = labels[i], shapes[i]
 
-        file_ = '.' + label +'.robufort.dat'
+        file_ = '.' + label + '.robufort.dat'
 
         # This special treatment is required as it is crucial for this data
         # to stay of integer type. All other data is transformed to float in
@@ -164,7 +164,8 @@ def write_robufort_initialization(robupy_obj):
         # SHOCKS
         shocks = model_paras['shocks']
         for j in range(4):
-            line = ' {0:15.5f} {1:15.5f} {2:15.5f} {3:15.5f}\n'.format(*shocks[j])
+            line = ' {0:15.5f} {1:15.5f} {2:15.5f} ' \
+                   '{3:15.5f}\n'.format(*shocks[j])
             file_.write(line)
 
         # SOLUTION
