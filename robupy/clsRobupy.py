@@ -92,6 +92,28 @@ class RobupyCls(MetaCls):
 
         self.is_first = True
 
+    def update_model_paras(self, coeffs_a, coeffs_b, coeffs_edu,
+                                coeffs_home, shocks, eps_cholesky):
+
+        """ Update model parameters.
+        """
+
+        model_paras = self.attr['model_paras']
+
+        model_paras['coeffs_a'] = coeffs_a
+
+        model_paras['coeffs_b'] = coeffs_b
+
+        model_paras['coeffs_edu'] = coeffs_edu
+
+        model_paras['coeffs_home'] = coeffs_home
+
+        model_paras['shocks'] = shocks
+
+        model_paras['eps_cholesky'] = eps_cholesky
+
+        self.attr['model_paras'] = model_paras
+
     ''' Derived attributes
     '''
     def _derived_attributes(self):
@@ -203,33 +225,6 @@ class RobupyCls(MetaCls):
             self.attr['is_ambiguous'] = (self.attr['level'] > 0.00)
 
             self.attr['is_python'] = (self.attr['version'] == 'PYTHON')
-
-    def update_model_paras(self, coeffs_a, coeffs_b, coeffs_edu,
-                                coeffs_home, shocks, eps_cholesky):
-
-        """ Update model parameters.
-        """
-
-        model_paras = self.attr['model_paras']
-
-
-        model_paras['coeffs_a'] = coeffs_a
-
-        model_paras['coeffs_b'] = coeffs_b
-
-        model_paras['coeffs_edu'] = coeffs_edu
-
-        model_paras['coeffs_home'] = coeffs_home
-
-        model_paras['shocks'] = shocks
-
-        model_paras['eps_cholesky'] = eps_cholesky
-
-
-        self.attr['model_paras'] = model_paras
-
-
-
 
     def _check_integrity(self):
         """ Check integrity of class instance. This testing is done the first

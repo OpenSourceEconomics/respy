@@ -19,16 +19,16 @@ import numpy as np
 import logging
 
 # project library
+import robupy.python.py.python_library as python_library
+
 from robupy.auxiliary import replace_missing_values
 from robupy.auxiliary import create_disturbances
 from robupy.auxiliary import check_dataset
 
-import robupy.python.py.python_library as python_library
-
 # Logging
 logger = logging.getLogger('ROBUPY_SIMULATE')
 
-''' Public function
+''' Main function
 '''
 
 
@@ -77,7 +77,7 @@ def simulate(robupy_obj):
     # Finishing
     return data_frame
 
-''' Wrappers for core functions
+''' Auxiliary functions
 '''
 
 

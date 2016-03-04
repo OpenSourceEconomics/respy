@@ -8,8 +8,8 @@ import sys
 import os
 
 # project library
-from robupy.python.py.auxiliary import opt_get_optim_parameters
-from robupy.python.py.auxiliary import opt_get_model_parameters
+from robupy.auxiliary import opt_get_optim_parameters
+from robupy.auxiliary import opt_get_model_parameters
 
 from robupy.tests.random_init import generate_random_dict
 from robupy.tests.random_init import print_random_dict
@@ -354,13 +354,13 @@ class Tests(object):
     def test_8():
         """ Testing whether back-and-forth transformation have no effect.
         """
-        for _ in range(100):
+        for i in range(100):
             # Create random parameter vector
             base = np.random.uniform(size=26)
             x = base.copy()
 
             # Apply numerous transformations
-            for _ in range(10):
+            for j in range(10):
                 args = opt_get_model_parameters(x, is_debug=True)
                 x = opt_get_optim_parameters(*args, is_debug=True)
 

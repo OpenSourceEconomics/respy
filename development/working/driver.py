@@ -16,8 +16,8 @@ sys.path.insert(0, os.environ['ROBUPY'])
 # project library
 from robupy import *
 
-from robupy.python.py.auxiliary import opt_get_model_parameters
-from robupy.python.py.auxiliary import opt_get_optim_parameters
+from robupy.auxiliary import opt_get_model_parameters
+from robupy.auxiliary import opt_get_optim_parameters
 from robupy.auxiliary import distribute_model_paras
 
 # Read in baseline initialization file

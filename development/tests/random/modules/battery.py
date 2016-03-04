@@ -1208,7 +1208,6 @@ def test_99():
 def test_100():
     """ Testing whether random datasets can be simulated and processed.
     """
-
     for i in range(10):
 
         # Generate random initialization file

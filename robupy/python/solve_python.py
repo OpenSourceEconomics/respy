@@ -18,11 +18,15 @@ import robupy.python.py.python_library as python_library
 # Logging
 logger = logging.getLogger('ROBUPY_SOLVE')
 
+''' Main function
+'''
+
 
 def solve_python(robupy_obj):
     """ Solving the model using PYTHON/F2PY code. This purpose of this
     wrapper is to extract all relevant information from the project class to
-    pass it on to the actual solution functions.
+    pass it on to the actual solution functions. This is required to align
+    the functions across the PYTHON and F2PY implementations.
     """
     # Distribute class attributes
     is_interpolated = robupy_obj.get_attr('is_interpolated')
@@ -60,20 +64,20 @@ def solve_python(robupy_obj):
     # Construct auxiliary objects
     _start_ambiguity_logging(is_ambiguous, is_debug)
 
-    # TODO: Spend some time on design of interface, order of arguments coeffs
-    # TODO: How to deal with zero disturbances during estimations?
-
     # Distribute model parameters
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, eps_cholesky = \
         distribute_model_paras(model_paras, is_debug)
 
     # Solve the model using PYTHON/F2PY implementation
+    args = _solve_python_bare(coeffs_a, coeffs_b,  coeffs_edu, coeffs_home,
+                shocks, eps_cholesky, edu_max, delta, edu_start, is_debug,
+                is_interpolated, is_python, level, measure, min_idx,
+                num_draws, num_periods, num_points, is_ambiguous, seed_solution)
+
+    # Distribute return arguments
     mapping_state_idx, periods_emax, periods_future_payoffs, \
         periods_payoffs_ex_post, periods_payoffs_systematic, states_all, \
-        states_number_period = solve_python_bare(coeffs_a, coeffs_b, coeffs_edu,
-        coeffs_home, shocks, eps_cholesky, edu_max, delta, edu_start,
-        is_debug, is_interpolated, is_python, level, measure, min_idx,
-        num_draws, num_periods, num_points, is_ambiguous, seed_solution)
+        states_number_period = args
 
     # Update class attributes with solution
     robupy_obj.unlock()
@@ -103,22 +107,24 @@ def solve_python(robupy_obj):
     # Finishing
     return robupy_obj
 
+''' Auxiliary functions
+'''
 
-def solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
-                 eps_cholesky, edu_max,
-                 delta, edu_start, is_debug, is_interpolated, is_python, level,
-                 measure, min_idx, num_draws, num_periods, num_points,
-                 is_ambiguous, seed_solution):
-    """ This function is required to ensure a full analogy to a FORTRAN
-    implementation.
+
+def _solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
+        eps_cholesky, edu_max, delta, edu_start, is_debug, is_interpolated,
+        is_python, level, measure, min_idx, num_draws, num_periods, num_points,
+        is_ambiguous, seed_solution):
+    """ This function is required to ensure a full analogy to F2PY and
+    FORTRAN implementations.
     """
     # Creating the state space of the model and collect the results in the
     # package class.
     logger.info('Starting state space creation')
 
     states_all, states_number_period, mapping_state_idx = \
-        _generic_create_state_space(num_periods, edu_start, is_python,
-        edu_max, min_idx)
+        _create_state_space(num_periods, edu_start, is_python,
+                            edu_max, min_idx)
 
     logger.info('... finished \n')
 
@@ -132,10 +138,10 @@ def solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
     # to the alternative shock distributions.
     logger.info('Starting calculation of systematic payoffs')
 
-    periods_payoffs_systematic = _generic_calculate_payoffs_systematic(
-        coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-            states_number_period, num_periods, states_all, is_python,
-            edu_start)
+    periods_payoffs_systematic = \
+        _calculate_payoffs_systematic(coeffs_a, coeffs_b, coeffs_edu,
+            coeffs_home, states_number_period, num_periods, states_all,
+            is_python, edu_start)
 
     logger.info('... finished \n')
 
@@ -144,7 +150,7 @@ def solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
     logger.info('Starting backward induction procedure')
 
     periods_emax, periods_payoffs_ex_post, periods_future_payoffs = \
-        _generic_backward_induction_procedure(periods_payoffs_systematic,
+        _backward_induction_procedure(periods_payoffs_systematic,
             states_number_period, mapping_state_idx, is_interpolated,
             num_periods, num_points, states_all, num_draws, edu_start,
             is_python, is_debug, edu_max, measure, shocks, delta, level,
@@ -161,14 +167,9 @@ def solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
     return args
 
 
-''' Generic versions for core functions
-'''
-
-
-def _generic_create_state_space(num_periods, edu_start, is_python, edu_max,
-        min_idx):
+def _create_state_space(num_periods, edu_start, is_python, edu_max, min_idx):
     """ Create state space. This function is a wrapper around the PYTHON and
-    FORTRAN implementation.
+    F2PY implementation.
     """
     # Interface to core functions
     if is_python:
@@ -196,39 +197,41 @@ def _generic_create_state_space(num_periods, edu_start, is_python, edu_max,
     return states_all, states_number_period, mapping_state_idx
 
 
-def _generic_calculate_payoffs_systematic(coeffs_a, coeffs_b, coeffs_edu,
-                                          coeffs_home,states_number_period,
-                                          num_periods,
-        states_all, is_python, edu_start):
-    """ Calculate the systematic payoffs.
+def _calculate_payoffs_systematic(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+        states_number_period, num_periods, states_all, is_python, edu_start):
+    """ Calculate the systematic payoffs. This function is a wrapper around the
+    PYTHON and F2PY implementation.
     """
     # Auxiliary objects
     max_states_period = max(states_number_period)
 
     # Interface to core functions
     if is_python:
-        periods_payoffs_systematic = python_library.calculate_payoffs_systematic(
-            num_periods, states_number_period, states_all, edu_start,
-            coeffs_a, coeffs_b, coeffs_edu, coeffs_home, max_states_period)
+        periods_payoffs_systematic = \
+            python_library.calculate_payoffs_systematic(num_periods,
+                states_number_period, states_all, edu_start, coeffs_a,
+                coeffs_b, coeffs_edu, coeffs_home, max_states_period)
     else:
         import robupy.python.f2py.f2py_library as f2py_library
         periods_payoffs_systematic = \
             f2py_library.wrapper_calculate_payoffs_systematic(num_periods,
-            states_number_period, states_all, edu_start, coeffs_a, coeffs_b,
-            coeffs_edu, coeffs_home, max_states_period)
+                states_number_period, states_all, edu_start, coeffs_a, coeffs_b,
+                coeffs_edu, coeffs_home, max_states_period)
 
     # Set missing values to NAN
-    periods_payoffs_systematic = replace_missing_values(periods_payoffs_systematic)
+    periods_payoffs_systematic = \
+        replace_missing_values(periods_payoffs_systematic)
 
     # Finishing
     return periods_payoffs_systematic
 
 
-def _generic_backward_induction_procedure(periods_payoffs_systematic,
+def _backward_induction_procedure(periods_payoffs_systematic,
         states_number_period, mapping_state_idx, is_interpolated, num_periods,
         num_points, states_all, num_draws, edu_start, is_python, is_debug,
         edu_max, measure, shocks, delta, level, periods_eps_relevant):
-    """ Wrapper for backward induction procedure.
+    """ Perform backward induction procedure. This function is a wrapper
+    around the PYTHON and F2PY implementation.
     """
     # Auxiliary objects
     max_states_period = max(states_number_period)
@@ -260,17 +263,6 @@ def _generic_backward_induction_procedure(periods_payoffs_systematic,
 
     # Finishing
     return periods_emax, periods_payoffs_ex_post, periods_future_payoffs
-
-
-def _generic_evaluate_likelihood(robupy_obj, data_matrix):
-    """ Evaluate the likelihood of the observed sample.
-    """
-    # Distribute class attributes
-
-    pass
-
-''' Auxiliary functions
-'''
 
 
 def _start_ambiguity_logging(is_ambiguous, is_debug):

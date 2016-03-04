@@ -22,6 +22,8 @@ from robupy.constants import HUGE_FLOAT
 # Logging
 logger = logging.getLogger('ROBUPY_SOLVE')
 
+''' Main functions
+'''
 
 
 def backward_induction(num_periods, max_states_period, periods_eps_relevant,
@@ -123,8 +125,8 @@ def backward_induction(num_periods, max_states_period, periods_eps_relevant,
 
 
 def get_payoffs(num_draws, eps_relevant, period, k, payoffs_systematic, edu_max,
-                edu_start, mapping_state_idx, states_all, num_periods,
-                periods_emax, delta, is_debug, shocks, level, measure):
+        edu_start, mapping_state_idx, states_all, num_periods, periods_emax,
+        delta, is_debug, shocks, level, measure):
     """ Get payoffs for a particular state.
     """
     # Auxiliary objects
@@ -134,18 +136,16 @@ def get_payoffs(num_draws, eps_relevant, period, k, payoffs_systematic, edu_max,
     # ambiguity or not.
     if is_ambiguous:
         emax, payoffs_ex_post, future_payoffs = \
-                        get_payoffs_ambiguity(num_draws, eps_relevant, period,
-                            k, payoffs_systematic, edu_max, edu_start,
-                            mapping_state_idx, states_all, num_periods,
-                            periods_emax, delta, is_debug, shocks, level,
-                            measure)
+            get_payoffs_ambiguity(num_draws, eps_relevant, period, k,
+                payoffs_systematic, edu_max, edu_start, mapping_state_idx,
+                states_all, num_periods, periods_emax, delta, is_debug, shocks,
+                level, measure)
     else:
         emax, payoffs_ex_post, future_payoffs = \
-                        get_payoffs_risk(num_draws, eps_relevant, period, k,
-                            payoffs_systematic, edu_max, edu_start,
-                            mapping_state_idx, states_all, num_periods,
-                            periods_emax, delta, is_debug, shocks, level,
-                            measure)
+            get_payoffs_risk(num_draws, eps_relevant, period, k,
+                payoffs_systematic, edu_max, edu_start, mapping_state_idx,
+                states_all, num_periods, periods_emax, delta, is_debug,
+                shocks, level, measure)
 
     # Finishing
     return emax, payoffs_ex_post, future_payoffs
@@ -159,8 +159,8 @@ def create_state_space(num_periods, edu_start, edu_max, min_idx):
 
     # Array for the mapping of state space values to indices in variety
     # of matrices.
-    mapping_state_idx = np.tile(MISSING_FLOAT, (num_periods, num_periods, num_periods,
-                                         min_idx, 2))
+    mapping_state_idx = np.tile(MISSING_FLOAT, (num_periods, num_periods,
+        num_periods, min_idx, 2))
 
     # Array for maximum number of realizations of state space by period
     states_number_period = np.tile(MISSING_FLOAT, num_periods)
@@ -234,14 +234,14 @@ def create_state_space(num_periods, edu_start, edu_max, min_idx):
 
 
 def calculate_payoffs_systematic(num_periods, states_number_period, states_all,
-                                 edu_start, coeffs_a, coeffs_b, coeffs_edu,
-                                 coeffs_home, max_states_period):
+        edu_start, coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+        max_states_period):
     """ Calculate ex systematic payoffs.
     """
 
     # Initialize
-    periods_payoffs_systematic = np.tile(MISSING_FLOAT, (num_periods, max_states_period,
-                                                  4))
+    periods_payoffs_systematic = np.tile(MISSING_FLOAT,
+        (num_periods, max_states_period, 4))
 
     # Calculate systematic instantaneous payoffs
     for period in range(num_periods - 1, -1, -1):
@@ -285,9 +285,9 @@ def calculate_payoffs_systematic(num_periods, states_number_period, states_all,
     return periods_payoffs_systematic
 
 
-def simulate_sample(num_agents, states_all, num_periods,
-        mapping_state_idx, periods_payoffs_systematic, periods_eps_relevant,
-        edu_max, edu_start, periods_emax, delta):
+def simulate_sample(num_agents, states_all, num_periods, mapping_state_idx,
+        periods_payoffs_systematic, periods_eps_relevant, edu_max, edu_start,
+        periods_emax, delta):
     """ Sample simulation
     """
     count = 0
@@ -362,7 +362,7 @@ def simulate_sample(num_agents, states_all, num_periods,
     # Finishing
     return dataset
 
-''' Private functions
+''' Auxiliary functions
 '''
 
 
@@ -399,12 +399,11 @@ def _check_prediction_model(predictions_diff, model, num_points, num_states,
 
 
 def _get_simulated_indicator(num_points, num_candidates, period, num_periods,
-                             is_debug):
+        is_debug):
     """ Get the indicator for points of interpolation and simulation. The
     unused argument is present to align the interface between the PYTHON and
     FORTRAN implementations.
     """
-
     # Drawing random interpolation points
     interpolation_points = np.random.choice(range(num_candidates),
                                 size=num_points, replace=False)

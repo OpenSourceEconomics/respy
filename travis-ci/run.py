@@ -23,6 +23,8 @@ os.system('./waf distclean; ./waf configure build --fortran --debug')
 os.chdir(CURRENT_DIR)
 
 # Tests
-os.system('nosetests --with-coverage --cover-package=robupy --exe')
+return_ = os.system('nosetests --with-coverage --cover-package=robupy --exe')
+assert (return_ == 0)
 
-os.system('coveralls')
+return_ = os.system('coveralls')
+assert (return_ == 0)

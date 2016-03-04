@@ -1,4 +1,4 @@
-""" This module allows to process a dataset from disk
+""" This module allows to process a dataset from disk.
 """
 
 # standard library
@@ -10,7 +10,7 @@ import os
 # project library
 from robupy.auxiliary import check_dataset
 
-''' Public function
+''' Main function
 '''
 
 
@@ -19,8 +19,7 @@ def process(data_file, robupy_obj):
     """
 
     # Antibugging
-    assert (os.path.exists(data_file))
-    assert (robupy_obj.get_status())
+    assert _check_process(data_file, robupy_obj)
 
     # Process dataset from files.
     data_frame = pd.read_csv(data_file, delim_whitespace=True, header=-1,
@@ -32,3 +31,17 @@ def process(data_file, robupy_obj):
 
     # Finishing
     return data_frame
+
+''' Auxiliary functions
+'''
+
+
+def _check_process(data_file, robupy_obj):
+    """ Check likelihood calculation.
+    """
+
+    assert (os.path.exists(data_file))
+    assert (robupy_obj.get_status())
+
+    # Finishing
+    return True

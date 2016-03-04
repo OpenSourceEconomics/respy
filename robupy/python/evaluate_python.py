@@ -1,5 +1,5 @@
 """ This module provides the interface to the functionality needed to
-evaluate the likelihood function with PYTHON and F2PY capabilities.
+evaluate the likelihood function.
 """
 
 # standard library
@@ -8,16 +8,22 @@ from scipy.stats import norm
 import numpy as np
 
 # project library
+from robupy.python.solve_python import _solve_python_bare
 from robupy.python.py.auxiliary import get_total_value
-from robupy.python.solve_python import solve_python_bare
 
 from robupy.auxiliary import distribute_model_paras
 from robupy.auxiliary import create_disturbances
 from robupy.constants import TINY_FLOAT
 
+''' Main function
+'''
+
 
 def evaluate_python(robupy_obj, data_frame):
-    """ Evaluate likelihood function.
+    """ Evaluate the criterion function of the model using PYTHON/F2PY code.
+    This purpose of this wrapper is to extract all relevant information from
+    the project class to pass it on to the actual evaluation functions. This is
+    required to align the functions across the PYTHON and F2PY implementations.
     """
     # Distribute class attribute
     is_interpolated = robupy_obj.get_attr('is_interpolated')
@@ -63,30 +69,35 @@ def evaluate_python(robupy_obj, data_frame):
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, eps_cholesky = \
         distribute_model_paras(model_paras, is_debug)
 
-    # Auxiliary objects
+    # Draw standard normal deviates for S-ML approach
     standard_deviates = create_disturbances(num_sims, seed_estimation,
         eps_cholesky, is_ambiguous, num_periods, is_debug, 'estimation')
 
-    likl = evaluate_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-        shocks, eps_cholesky, edu_max, delta, edu_start, is_debug,
-        is_interpolated, is_python, level, measure, min_idx, num_agents,
-        num_draws, num_sims, num_periods, num_points, is_ambiguous,
-        seed_solution, data_array, standard_deviates)
+    # Evaluate the criterion function
+    likl = _evaluate_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+                shocks, eps_cholesky, edu_max, delta, edu_start, is_debug,
+                is_interpolated, is_python, level, measure, min_idx, num_agents,
+                num_draws, num_sims, num_periods, num_points, is_ambiguous,
+                seed_solution, data_array, standard_deviates)
 
     # Finishing
     return likl
 
 
-def evaluate_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-        shocks, eps_cholesky, edu_max, delta, edu_start, is_debug,
-        is_interpolated, is_python, level, measure, min_idx, num_agents,
-        num_draws, num_sims, num_periods, num_points, is_ambiguous,
-        seed_solution, data_array, standard_deviates):
-    """ This function is required to ensure a full analogy to a FORTRAN
-    implementation.
+''' Auxiliary functions
+'''
+
+
+def _evaluate_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
+        eps_cholesky, edu_max, delta, edu_start, is_debug, is_interpolated,
+        is_python, level, measure, min_idx, num_agents, num_draws, num_sims,
+        num_periods, num_points, is_ambiguous, seed_solution, data_array,
+        standard_deviates):
+    """ This function is required to ensure a full analogy to F2PY and
+    FORTRAN implementations.
     """
     # Solve the model for updated parametrization
-    args = solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+    args = _solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         shocks, eps_cholesky, edu_max, delta, edu_start, is_debug,
         is_interpolated, is_python, level, measure, min_idx, num_draws,
         num_periods, num_points, is_ambiguous, seed_solution)

@@ -12,19 +12,17 @@ from robupy.fortran.solve_fortran import solve_fortran
 from robupy.python.solve_python import solve_python
 from robupy.simulate import simulate
 
-''' Public function
+''' Main function
 '''
 
 
 def solve(robupy_obj):
     """ Solve dynamic programming problem by backward induction.
     """
-    # Antibugging
-    assert (robupy_obj.get_attr('is_solved') is False)
-    assert (robupy_obj.get_status())
+    # Checks, cleanup, start logger
+    assert (_check_solve(robupy_obj))
 
-    # Cleanup and start logger
-    cleanup()
+    _cleanup()
 
     _start_logging()
 
@@ -69,6 +67,17 @@ def solve(robupy_obj):
 
 ''' Auxiliary functions
 '''
+
+
+def _check_solve(robupy_obj):
+    """ Check likelihood calculation.
+    """
+
+    assert (robupy_obj.get_attr('is_solved') is False)
+    assert (robupy_obj.get_status())
+
+    # Finishing
+    return True
 
 
 def _stop_logging():
@@ -200,7 +209,7 @@ def _summarize_ambiguity(robupy_obj):
             file_.write(string.format([period, total, success, failure]))
 
 
-def cleanup():
+def _cleanup():
     """ Cleanup all selected files. Note that not simply all *.robupy.*
     files can be deleted as the blank logging files are already created.
     """

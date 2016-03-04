@@ -12,7 +12,7 @@ import os
 from robupy.clsRobupy import RobupyCls
 
 
-''' Public function
+''' Main function
 '''
 
 
@@ -70,7 +70,7 @@ def read(file_):
     return robupy_obj
 
 
-''' Private functions
+''' Auxiliary functions
 '''
 
 

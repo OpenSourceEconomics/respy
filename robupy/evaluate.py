@@ -1,5 +1,5 @@
-""" This module contains all the capabilities to evaluate the likelihood of
-an observed dataset.
+""" This module contains the interface to the evaluation of the criterion
+function.
 """
 
 # standard library
@@ -8,6 +8,10 @@ import numpy as np
 # project library
 from robupy.python.evaluate_python import evaluate_python
 from robupy.auxiliary import check_dataset
+
+
+''' Main function
+'''
 
 
 def evaluate(robupy_obj, data_frame):
@@ -35,7 +39,7 @@ def evaluate(robupy_obj, data_frame):
     return likl
 
 
-''' Private functions
+''' Auxiliary functions
 '''
 
 
