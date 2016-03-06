@@ -113,3 +113,6 @@ fort_emax = robupy_obj.get_attr('periods_emax')
 
 
 np.testing.assert_almost_equal(fort_emax, periods_emax)
+
+print(periods_emax)
+print(fort_emax)

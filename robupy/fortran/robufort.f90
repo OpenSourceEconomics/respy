@@ -8,8 +8,6 @@ MODULE robufort_extension
 
     USE robufort_auxiliary
 
-    USE robufort_library
-
     !/* setup   */
 
     IMPLICIT NONE
@@ -23,8 +21,6 @@ MODULE robufort_extension
     PUBLIC :: get_disturbances
     
     PUBLIC :: store_results
-
-    PUBLIC :: solve_fortran_bare
 
 CONTAINS
 !*******************************************************************************
@@ -372,37 +368,6 @@ SUBROUTINE get_disturbances(periods_eps_relevant, level, shocks, seed, &
 END SUBROUTINE
 !******************************************************************************* 
 !******************************************************************************* 
-! TODO: This has to go somewhere else of course, how about refactoring input to out
-SUBROUTINE solve_fortran_bare(mapping_state_idx, states_all, & 
-    states_number_period, num_periods, min_idx, edu_start, edu_max) 
-
-    !/* external objects    */
-
-    INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)   :: mapping_state_idx(:, :, :, :, :)
-    INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)   :: states_all(:, :, :)
-    INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)   :: states_number_period(:)
-
-
-    INTEGER(our_int), INTENT(IN)    :: num_periods, edu_start, edu_max, min_idx
- 
-    !REAL(our_dble), INTENT(IN)  :: coeffs_edu(:), coeffs_a(:), coeffs_b(:), coeffs_home(:)
-
-    !/* internal objects    */
-
-!-------------------------------------------------------------------------------
-! Algorithm
-!-------------------------------------------------------------------------------
-    
-    ALLOCATE(mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2))
-
-    ALLOCATE(states_all(num_periods, 100000, 4))
-    ALLOCATE(states_number_period(num_periods))
-
-    ! Create the state space of the model
-    CALL create_state_space(states_all, states_number_period, & 
-            mapping_state_idx, num_periods, edu_start, edu_max, min_idx)
-
-END SUBROUTINE
 END MODULE 
 
 !******************************************************************************* 
@@ -530,16 +495,24 @@ PROGRAM robufort
     min_idx = MIN(num_periods, (edu_max - edu_start + 1))
 
     ! Allocate arrays
+    ALLOCATE(mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2))
+    ALLOCATE(states_all(num_periods, 100000, 4))
+    ALLOCATE(states_number_period(num_periods))
 
-    CALL solve_fortran_bare(mapping_state_idx, states_all, &
-        states_number_period, num_periods, min_idx, edu_start, edu_max) 
+    ! Create the state space of the model
+    CALL create_state_space(states_all, states_number_period, & 
+            mapping_state_idx, num_periods, edu_start, edu_max, min_idx)
 
-
-    ! Auxiliary objects, this is only valid after the create state space call.
+    ! Auxiliary objects
     max_states_period = MAXVAL(states_number_period)
     
     ! Allocate arrays
     ALLOCATE(periods_payoffs_systematic(num_periods, max_states_period, 4))
+
+    ! Calculate the systematic payoffs
+    CALL calculate_payoffs_systematic(periods_payoffs_systematic, num_periods, &
+            states_number_period, states_all, edu_start, coeffs_a, coeffs_b, & 
+            coeffs_edu, coeffs_home, max_states_period)
 
     ! Allocate additional containers
     ALLOCATE(periods_payoffs_ex_post(num_periods, max_states_period, 4))
@@ -551,11 +524,6 @@ PROGRAM robufort
     ! preprocessing.
     ALLOCATE(eps_relevant(num_draws, 4))
     ALLOCATE(eps_relevant_emax(num_draws, 4))
-
-    ! Calculate the systematic payoffs
-    CALL calculate_payoffs_systematic(periods_payoffs_systematic, num_periods, &
-            states_number_period, states_all, edu_start, coeffs_a, coeffs_b, & 
-            coeffs_edu, coeffs_home, max_states_period)
 
     ! Draw random disturbances. For is_debugging purposes, these might also be 
     ! read in from disk or set to zero/one.
