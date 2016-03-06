@@ -102,6 +102,7 @@ states_number_period = robupy_obj.get_attr('states_number_period')
 
 max_states_period = max(states_number_period)
 
+is_zero = robupy_obj.get_attr('is_zero')
 
 
 # Distribute model parameters
@@ -124,5 +125,9 @@ np.testing.assert_almost_equal(fort_emax, periods_emax)
 print(periods_emax)
 print(fort_emax)
 
-args = [num_periods, min_idx, max_states_period, num_draws]
+args = [coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
+    eps_cholesky, edu_max, delta, edu_start, is_debug, is_interpolated,
+    level, measure, min_idx, num_draws, num_periods, num_points,
+    is_ambiguous, seed_solution, is_zero, max_states_period]
+
 fort.wrapper_solve_fortran_bare(*args)

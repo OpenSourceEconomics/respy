@@ -87,7 +87,10 @@ END SUBROUTINE
 SUBROUTINE wrapper_solve_fortran_bare(mapping_state_idx, states_number_period, & 
     states_all, periods_payoffs_systematic, periods_payoffs_ex_post, & 
     periods_future_payoffs, periods_emax, &
-    num_periods, min_idx, max_states_period, num_draws)
+    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, &
+    eps_cholesky, edu_max, delta, edu_start, is_debug, is_interpolated, &
+    level, measure, min_idx, num_draws, num_periods, num_points, &
+    is_ambiguous, seed_solution, is_zero, max_states_period)
 
     !/* external libraries    */
 
@@ -110,30 +113,30 @@ SUBROUTINE wrapper_solve_fortran_bare(mapping_state_idx, states_number_period, &
     DOUBLE PRECISION, INTENT(OUT)      :: periods_emax(num_periods, max_states_period)
 
 
-    !INTEGER(our_int), INTENT(IN)                    :: seed_solution
+    INTEGER, INTENT(IN)                    :: seed_solution
     INTEGER, INTENT(IN)                    :: num_periods, max_states_period
-    !INTEGER(our_int), INTENT(IN)                    :: num_points
-    !INTEGER(our_int), INTENT(IN)                    :: edu_start
+    INTEGER, INTENT(IN)                    :: num_points
+    INTEGER, INTENT(IN)                    :: edu_start
     INTEGER, INTENT(IN)                    :: num_draws
-    !INTEGER(our_int), INTENT(IN)                    :: edu_max
+    INTEGER, INTENT(IN)                    :: edu_max
     INTEGER, INTENT(IN)                    :: min_idx
 
-    !REAL(our_dble), INTENT(IN)                      :: coeffs_home(:)
-    !REAL(our_dble), INTENT(IN)                      :: coeffs_edu(:)
-    !!REAL(our_dble), INTENT(IN)                      :: coeffs_a(:)
-    !REAL(our_dble), INTENT(IN)                      :: coeffs_b(:)
-    !REAL(our_dble), INTENT(IN)                      :: level
-    !REAL(our_dble), INTENT(IN)                      :: delta
+    DOUBLE PRECISION, INTENT(IN)                      :: coeffs_home(:)
+    DOUBLE PRECISION, INTENT(IN)                      :: coeffs_edu(:)
+    DOUBLE PRECISION, INTENT(IN)                      :: coeffs_a(:)
+    DOUBLE PRECISION, INTENT(IN)                      :: coeffs_b(:)
+    DOUBLE PRECISION INTENT(IN)                      :: level
+    DOUBLE PRECISION, INTENT(IN)                      :: delta
 
-    !LOGICAL, INTENT(IN)                             :: is_interpolated
-    !LOGICAL, INTENT(IN)                             :: is_ambiguous
-    !LOGICAL, INTENT(IN)                             :: is_debug
+    LOGICAL, INTENT(IN)                             :: is_interpolated
+    LOGICAL, INTENT(IN)                             :: is_ambiguous
+    LOGICAL, INTENT(IN)                             :: is_debug
 
-    !CHARACTER(10), INTENT(IN)                       :: measure
+    CHARACTER(10), INTENT(IN)                       :: measure
 
     ! TEMPORARY PLACEHOLDERS, BREAKS IN DESIGN
-    !REAL(our_dble), INTENT(IN)                      :: eps_cholesky(:, :)
-    !LOGICAL, INTENT(IN)                             :: is_zero
+    DOUBLE PRECISION, INTENT(IN)                      :: eps_cholesky(:, :)
+    LOGICAL, INTENT(IN)                             :: is_zero
 
     ! THIS IS A BREAK IN DESIGN, BUT REQUIRED TO USE THE INTERFACE GENERATOR
 
