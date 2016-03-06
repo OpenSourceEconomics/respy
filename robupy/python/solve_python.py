@@ -71,8 +71,8 @@ def solve_python(robupy_obj):
     # Solve the model using PYTHON/F2PY implementation
     args = solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
                 shocks, eps_cholesky, edu_max, delta, edu_start, is_debug,
-                is_interpolated, is_python, level, measure, min_idx,
-                num_draws, num_periods, num_points, is_ambiguous, seed_solution)
+                is_interpolated, level, measure, min_idx, num_draws,
+                num_periods, num_points, is_ambiguous, seed_solution, is_python)
 
     # Distribute return arguments
     mapping_state_idx, periods_emax, periods_future_payoffs, \
@@ -113,8 +113,8 @@ def solve_python(robupy_obj):
 
 def solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
         eps_cholesky, edu_max, delta, edu_start, is_debug, is_interpolated,
-        is_python, level, measure, min_idx, num_draws, num_periods, num_points,
-        is_ambiguous, seed_solution):
+        level, measure, min_idx, num_draws, num_periods, num_points,
+        is_ambiguous, seed_solution, is_python):
     """ This function is required to ensure a full analogy to F2PY and
     FORTRAN implementations. This function is not private to the module as it
     is accessed in the evaluation and optimization modules as well.

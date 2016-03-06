@@ -30,6 +30,7 @@ from modules.auxiliary import compile_package
 # Read in baseline initialization file
 compile_package('--fortran --debug', False)
 
+
 np.random.seed(123)
 
 import robupy.python.f2py.f2py_debug as fort
@@ -105,8 +106,8 @@ mapping_state_idx, periods_emax, periods_future_payoffs, \
 periods_payoffs_ex_post, periods_payoffs_systematic, states_all, \
 states_number_period = solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
         eps_cholesky, edu_max, delta, edu_start, is_debug, is_interpolated,
-        is_python, level, measure, min_idx, num_draws, num_periods, num_points,
-        is_ambiguous, seed_solution)
+        level, measure, min_idx, num_draws, num_periods, num_points,
+        is_ambiguous, seed_solution, is_python)
 
 
 fort_emax = robupy_obj.get_attr('periods_emax')

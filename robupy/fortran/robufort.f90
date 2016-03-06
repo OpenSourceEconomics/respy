@@ -8,6 +8,9 @@ MODULE robufort_extension
 
     USE robufort_auxiliary
 
+    ! TODO: To be removed later, 
+    USE robufort_library
+
     !/* setup   */
 
     IMPLICIT NONE
@@ -21,6 +24,8 @@ MODULE robufort_extension
     PUBLIC :: get_disturbances
     
     PUBLIC :: store_results
+
+    PUBLIC :: solve_fortran_bare
 
 CONTAINS
 !*******************************************************************************
@@ -146,7 +151,7 @@ END SUBROUTINE
 SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
                 coeffs_edu, edu_start, edu_max, coeffs_home, shocks, & 
                 num_draws, seed_solution, num_agents, seed_simulation, & 
-                is_debug, is_zero, is_interpolated, num_points) 
+                is_debug, is_zero, is_interpolated, num_points, min_idx) 
 
     !/* external objects    */
 
@@ -158,6 +163,7 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
     INTEGER(our_int), INTENT(OUT)   :: num_draws
     INTEGER(our_int), INTENT(OUT)   :: edu_start
     INTEGER(our_int), INTENT(OUT)   :: edu_max
+    INTEGER(our_int), INTENT(OUT)   :: min_idx
 
     REAL(our_dble), INTENT(OUT)     :: coeffs_home(1)
     REAL(our_dble), INTENT(OUT)     :: coeffs_edu(3)
@@ -234,6 +240,9 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
         READ(1, *) is_zero
 
     CLOSE(1, STATUS='delete')
+
+    ! Construct auxiliary objects
+    min_idx = MIN(num_periods, (edu_max - edu_start + 1))
 
 END SUBROUTINE
 !*******************************************************************************
@@ -366,6 +375,94 @@ SUBROUTINE get_disturbances(periods_eps_relevant, level, shocks, seed, &
     END IF
 
 END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE solve_fortran_bare(periods_payoffs_ex_post, periods_future_payoffs, & 
+            periods_emax, periods_payoffs_systematic, states_all, states_number_period, & 
+            mapping_state_idx, num_periods, edu_start, edu_max, min_idx, coeffs_a, & 
+            coeffs_b, coeffs_edu, coeffs_home, level, shocks, seed_solution, &
+            is_debug, is_zero, measure, is_interpolated, num_points, num_draws, delta, & 
+            max_states_period)
+
+
+    INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: mapping_state_idx(:,:,:,:,:)
+    INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: states_number_period(:)
+    INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: states_all(:, :, :)
+
+    INTEGER(our_int), INTENT(IN)                    :: seed_solution
+    INTEGER(our_int), INTENT(IN)                    :: num_periods
+    INTEGER(our_int), INTENT(IN)                    :: num_points
+    INTEGER(our_int), INTENT(IN)                    :: edu_start
+    INTEGER(our_int), INTENT(IN)                    :: num_draws
+    INTEGER(our_int), INTENT(IN)                    :: edu_max
+    INTEGER(our_int), INTENT(IN)                    :: min_idx
+
+    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_payoffs_systematic(:, :, :)
+    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_payoffs_ex_post(:, :, :)
+    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_future_payoffs(:, :, :)
+    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_emax(:, :)
+
+    REAL(our_dble), INTENT(IN)                      :: coeffs_home(:)
+    REAL(our_dble), INTENT(IN)                      :: coeffs_edu(:)
+    REAL(our_dble), INTENT(IN)                      :: shocks(4, 4)
+    REAL(our_dble), INTENT(IN)                      :: coeffs_a(:)
+    REAL(our_dble), INTENT(IN)                      :: coeffs_b(:)
+    REAL(our_dble), INTENT(IN)                      :: level
+    REAL(our_dble), INTENT(IN)                      :: delta
+
+    LOGICAL, INTENT(IN)                             :: is_interpolated
+    LOGICAL, INTENT(IN)                             :: is_debug
+    LOGICAL, INTENT(IN)                             :: is_zero
+
+    CHARACTER(10), INTENT(IN)                       :: measure
+
+    !/* internal objects    */
+
+    INTEGER(our_int)                                :: max_states_period
+
+    REAL(our_dble), ALLOCATABLE                     :: periods_eps_relevant(:, :, :)
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+
+    ! Allocate arrays
+    ALLOCATE(mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2))
+    ALLOCATE(states_all(num_periods, 100000, 4))
+    ALLOCATE(states_number_period(num_periods))
+
+    ! Create the state space of the model
+    CALL create_state_space(states_all, states_number_period, & 
+            mapping_state_idx, num_periods, edu_start, edu_max, min_idx)
+
+    max_states_period = MAXVAL(states_number_period)
+
+    ! Allocate arrays
+    ALLOCATE(periods_payoffs_systematic(num_periods, max_states_period, 4))
+    ALLOCATE(periods_payoffs_ex_post(num_periods, max_states_period, 4))
+    ALLOCATE(periods_future_payoffs(num_periods, max_states_period, 4))
+    ALLOCATE(periods_eps_relevant(num_periods, num_draws, 4))
+    ALLOCATE(periods_emax(num_periods, max_states_period))
+
+    ! Calculate the systematic payoffs
+    CALL calculate_payoffs_systematic(periods_payoffs_systematic, num_periods, &
+            states_number_period, states_all, edu_start, coeffs_a, coeffs_b, & 
+            coeffs_edu, coeffs_home, max_states_period)
+
+    ! Draw random disturbances. For is_debugging purposes, these might also be 
+    ! read in from disk or set to zero/one.   
+    CALL get_disturbances(periods_eps_relevant, level, shocks, seed_solution, &
+            is_debug, is_zero)
+
+    ! Perform backward induction procedure.
+    CALL backward_induction(periods_emax, periods_payoffs_ex_post, &
+            periods_future_payoffs, num_periods, max_states_period, &
+            periods_eps_relevant, num_draws, states_number_period, & 
+            periods_payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
+            states_all, delta, is_debug, shocks, level, measure, &
+            is_interpolated, num_points)
+
+END SUBROUTINE   
 !******************************************************************************* 
 !******************************************************************************* 
 END MODULE 
@@ -401,10 +498,11 @@ PROGRAM robufort
     INTEGER(our_int)                :: edu_max
     INTEGER(our_int)                :: min_idx
 
+    ! TODO: A lot of the arguments here are probably not required anymore
+
     REAL(our_dble), ALLOCATABLE     :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_payoffs_ex_post(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_future_payoffs(:, :, :)
-    REAL(our_dble), ALLOCATABLE     :: periods_eps_relevant(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_emax(:, :)
 
     REAL(our_dble)                  :: coeffs_home(1)
@@ -428,56 +526,24 @@ PROGRAM robufort
 ! Algorithm
 !-------------------------------------------------------------------------------
 
-    ! Read specification of model
+    ! Read specification of model. This is the FORTRAN replacement for the 
+    ! clsRobupy instance that carries the model specification for the 
+    ! PYTHON/F2PY implementations.
     CALL read_specification(num_periods, delta, level, coeffs_a, coeffs_b, & 
             coeffs_edu, edu_start, edu_max, coeffs_home, shocks, num_draws, &
             seed_solution, num_agents, seed_simulation, is_debug, is_zero, &
-            is_interpolated, num_points) 
-
-    ! Auxiliary objects
-    min_idx = MIN(num_periods, (edu_max - edu_start + 1))
-
-    ! Allocate arrays
-    ALLOCATE(mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2))
-    ALLOCATE(states_all(num_periods, 100000, 4))
-    ALLOCATE(states_number_period(num_periods))
-
-    ! Create the state space of the model
-    CALL create_state_space(states_all, states_number_period, & 
-            mapping_state_idx, num_periods, edu_start, edu_max, min_idx)
-
-    ! Auxiliary objects
-    max_states_period = MAXVAL(states_number_period)
+            is_interpolated, num_points, min_idx) 
     
-    ! Allocate arrays
-    ALLOCATE(periods_payoffs_systematic(num_periods, max_states_period, 4))
+    ! Solve the model for a given parametrization.    
+    CALL solve_fortran_bare(periods_payoffs_ex_post, periods_future_payoffs, & 
+            periods_emax, periods_payoffs_systematic, states_all, states_number_period, & 
+            mapping_state_idx, num_periods, edu_start, edu_max, min_idx, coeffs_a, & 
+            coeffs_b, coeffs_edu, coeffs_home, level, shocks, seed_solution, &
+            is_debug, is_zero, measure, is_interpolated, num_points, & 
+            num_draws, delta, max_states_period)
 
-    ! Calculate the systematic payoffs
-    CALL calculate_payoffs_systematic(periods_payoffs_systematic, num_periods, &
-            states_number_period, states_all, edu_start, coeffs_a, coeffs_b, & 
-            coeffs_edu, coeffs_home, max_states_period)
-
-    ! Allocate additional containers
-    ALLOCATE(periods_payoffs_ex_post(num_periods, max_states_period, 4))
-    ALLOCATE(periods_future_payoffs(num_periods, max_states_period, 4))
-    ALLOCATE(periods_eps_relevant(num_periods, num_draws, 4))
-    ALLOCATE(periods_emax(num_periods, max_states_period))
-
-    ! Draw random disturbances. For is_debugging purposes, these might also be 
-    ! read in from disk or set to zero/one.
-    CALL get_disturbances(periods_eps_relevant, level, shocks, seed_solution, &
-            is_debug, is_zero)
-
-    ! Perform backward induction procedure.
-    CALL backward_induction(periods_emax, periods_payoffs_ex_post, &
-            periods_future_payoffs, num_periods, max_states_period, &
-            periods_eps_relevant, num_draws, states_number_period, & 
-            periods_payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
-            states_all, delta, is_debug, shocks, level, measure, &
-            is_interpolated, num_points)
-   
-    ! Store results. These are read in by the PYTHON wrapper and added 
-    ! to the clsRobupy instance.
+    ! Store results. These are read in by the PYTHON wrapper and added to the 
+    ! clsRobupy instance.
     CALL store_results(mapping_state_idx, states_all, periods_payoffs_ex_post, & 
             periods_payoffs_systematic, states_number_period, periods_emax, &
             num_periods, min_idx, max_states_period) 
