@@ -84,6 +84,97 @@ SUBROUTINE wrapper_svd(U, S, VT, A, m)
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
+SUBROUTINE wrapper_solve_fortran_bare(mapping_state_idx, states_number_period, & 
+    states_all, periods_payoffs_systematic, periods_payoffs_ex_post, & 
+    periods_future_payoffs, periods_emax, &
+    num_periods, min_idx, max_states_period, num_draws)
+
+    !/* external libraries    */
+
+    !USE robufort_ambiguity
+
+    !/* setup    */
+
+    IMPLICIT NONE
+
+    !/* external objects    */
+
+
+    INTEGER, INTENT(OUT)       :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
+    INTEGER, INTENT(OUT)       :: states_number_period(num_periods)
+    INTEGER, INTENT(OUT)       :: states_all(num_periods, 100000, 4)
+
+    DOUBLE PRECISION, INTENT(OUT)      :: periods_payoffs_systematic(num_periods, max_states_period, 4)
+    DOUBLE PRECISION, INTENT(OUT)      :: periods_payoffs_ex_post(num_periods, max_states_period, 4)
+    DOUBLE PRECISION, INTENT(OUT)      :: periods_future_payoffs(num_periods, num_draws, 4)
+    DOUBLE PRECISION, INTENT(OUT)      :: periods_emax(num_periods, max_states_period)
+
+
+    !INTEGER(our_int), INTENT(IN)                    :: seed_solution
+    INTEGER, INTENT(IN)                    :: num_periods, max_states_period
+    !INTEGER(our_int), INTENT(IN)                    :: num_points
+    !INTEGER(our_int), INTENT(IN)                    :: edu_start
+    INTEGER, INTENT(IN)                    :: num_draws
+    !INTEGER(our_int), INTENT(IN)                    :: edu_max
+    INTEGER, INTENT(IN)                    :: min_idx
+
+    !REAL(our_dble), INTENT(IN)                      :: coeffs_home(:)
+    !REAL(our_dble), INTENT(IN)                      :: coeffs_edu(:)
+    !!REAL(our_dble), INTENT(IN)                      :: coeffs_a(:)
+    !REAL(our_dble), INTENT(IN)                      :: coeffs_b(:)
+    !REAL(our_dble), INTENT(IN)                      :: level
+    !REAL(our_dble), INTENT(IN)                      :: delta
+
+    !LOGICAL, INTENT(IN)                             :: is_interpolated
+    !LOGICAL, INTENT(IN)                             :: is_ambiguous
+    !LOGICAL, INTENT(IN)                             :: is_debug
+
+    !CHARACTER(10), INTENT(IN)                       :: measure
+
+    ! TEMPORARY PLACEHOLDERS, BREAKS IN DESIGN
+    !REAL(our_dble), INTENT(IN)                      :: eps_cholesky(:, :)
+    !LOGICAL, INTENT(IN)                             :: is_zero
+
+    ! THIS IS A BREAK IN DESIGN, BUT REQUIRED TO USE THE INTERFACE GENERATOR
+
+    !DOUBLE PRECISION, INTENT(OUT)   :: payoffs_ex_post(4)
+    !DOUBLE PRECISION, INTENT(OUT)   :: future_payoffs(4)
+    !DOUBLE PRECISION, INTENT(OUT)   :: emax_simulated
+
+    !INTEGER, INTENT(IN)             :: mapping_state_idx(:,:,:,:,:)
+    !INTEGER, INTENT(IN)             :: states_all(:,:,:)
+    !INTEGER, INTENT(IN)             :: num_periods
+    !INTEGER, INTENT(IN)             :: edu_start
+    !INTEGER, INTENT(IN)             :: num_draws
+    !INTEGER, INTENT(IN)             :: edu_max
+    !INTEGER, INTENT(IN)             :: period
+    !INTEGER, INTENT(IN)             :: k
+
+    !DOUBLE PRECISION, INTENT(IN)    :: payoffs_systematic(:)
+    !DOUBLE PRECISION, INTENT(IN)    :: shocks(:, :)
+    !DOUBLE PRECISION, INTENT(IN)    :: eps_relevant(:, :)
+    !DOUBLE PRECISION, INTENT(IN)    :: periods_emax(:,:)
+    !DOUBLE PRECISION, INTENT(IN)    :: delta
+    !DOUBLE PRECISION, INTENT(IN)    :: level
+
+    !LOGICAL, INTENT(IN)             :: is_debug
+
+    !CHARACTER(10), INTENT(IN)       :: measure
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+    
+    ! Get the expected payoffs under ambiguity
+    !CALL get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
+    !            future_payoffs, num_draws, eps_relevant, period, k, & 
+    !            payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
+    !            states_all, num_periods, periods_emax, delta, is_debug, &
+    !            shocks, level, measure)
+
+END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE wrapper_get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
                 future_payoffs, num_draws, eps_relevant, period, k, &
                 payoffs_systematic, edu_max, edu_start, mapping_state_idx, &

@@ -32,11 +32,10 @@ CONTAINS
 !*******************************************************************************
 SUBROUTINE store_results(mapping_state_idx, states_all, periods_payoffs_ex_post, &
                 periods_payoffs_systematic, states_number_period, periods_emax, &
-                num_periods, min_idx, max_states_period) 
+                num_periods, min_idx) 
 
     !/* external objects    */
 
-    INTEGER(our_int), INTENT(IN)    :: max_states_period
     INTEGER(our_int), INTENT(IN)    :: num_periods
     INTEGER(our_int), INTENT(IN)    :: min_idx 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:, :, :, :, :)
@@ -49,15 +48,18 @@ SUBROUTINE store_results(mapping_state_idx, states_all, periods_payoffs_ex_post,
 
     !/* internal objects    */
 
+    INTEGER(our_int)                :: max_states_period
+    INTEGER(our_int)                :: period
     INTEGER(our_int)                :: i
     INTEGER(our_int)                :: j
     INTEGER(our_int)                :: k
-    INTEGER(our_int)                :: period
 
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
     
+    max_states_period = MAXVAL(states_number_period)
+
 
     1800 FORMAT(5(1x,i5))
 
@@ -151,7 +153,8 @@ END SUBROUTINE
 SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
                 coeffs_edu, edu_start, edu_max, coeffs_home, shocks, & 
                 num_draws, seed_solution, num_agents, seed_simulation, & 
-                is_debug, is_zero, is_interpolated, num_points, min_idx) 
+                is_debug, is_zero, is_interpolated, num_points, min_idx, & 
+                is_ambiguous) 
 
     !/* external objects    */
 
@@ -174,6 +177,7 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
     REAL(our_dble), INTENT(OUT)     :: level
 
     LOGICAL, INTENT(OUT)            :: is_interpolated
+    LOGICAL, INTENT(OUT)            :: is_ambiguous    
     LOGICAL, INTENT(OUT)            :: is_debug
     LOGICAL, INTENT(OUT)            :: is_zero
 
@@ -242,6 +246,7 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
     CLOSE(1, STATUS='delete')
 
     ! Construct auxiliary objects
+    is_ambiguous = (level .GT. zero_dble)
     min_idx = MIN(num_periods, (edu_max - edu_start + 1))
 
 END SUBROUTINE
@@ -377,17 +382,23 @@ SUBROUTINE get_disturbances(periods_eps_relevant, level, shocks, seed, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE solve_fortran_bare(periods_payoffs_ex_post, periods_future_payoffs, & 
-            periods_emax, periods_payoffs_systematic, states_all, states_number_period, & 
-            mapping_state_idx, num_periods, edu_start, edu_max, min_idx, coeffs_a, & 
-            coeffs_b, coeffs_edu, coeffs_home, level, shocks, seed_solution, &
-            is_debug, is_zero, measure, is_interpolated, num_points, num_draws, delta, & 
-            max_states_period)
+SUBROUTINE solve_fortran_bare(mapping_state_idx, periods_emax, & 
+    periods_future_payoffs, periods_payoffs_ex_post, & 
+    periods_payoffs_systematic, states_all, states_number_period, & 
+    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, &
+    eps_cholesky, edu_max, delta, edu_start, is_debug, is_interpolated, &
+    level, measure, min_idx, num_draws, num_periods, num_points, &
+    is_ambiguous, seed_solution, is_zero)
 
 
     INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: mapping_state_idx(:,:,:,:,:)
     INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: states_number_period(:)
     INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: states_all(:, :, :)
+
+    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_payoffs_systematic(:, :, :)
+    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_payoffs_ex_post(:, :, :)
+    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_future_payoffs(:, :, :)
+    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_emax(:, :)
 
     INTEGER(our_int), INTENT(IN)                    :: seed_solution
     INTEGER(our_int), INTENT(IN)                    :: num_periods
@@ -396,11 +407,6 @@ SUBROUTINE solve_fortran_bare(periods_payoffs_ex_post, periods_future_payoffs, &
     INTEGER(our_int), INTENT(IN)                    :: num_draws
     INTEGER(our_int), INTENT(IN)                    :: edu_max
     INTEGER(our_int), INTENT(IN)                    :: min_idx
-
-    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_payoffs_systematic(:, :, :)
-    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_payoffs_ex_post(:, :, :)
-    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_future_payoffs(:, :, :)
-    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_emax(:, :)
 
     REAL(our_dble), INTENT(IN)                      :: coeffs_home(:)
     REAL(our_dble), INTENT(IN)                      :: coeffs_edu(:)
@@ -411,14 +417,18 @@ SUBROUTINE solve_fortran_bare(periods_payoffs_ex_post, periods_future_payoffs, &
     REAL(our_dble), INTENT(IN)                      :: delta
 
     LOGICAL, INTENT(IN)                             :: is_interpolated
+    LOGICAL, INTENT(IN)                             :: is_ambiguous
     LOGICAL, INTENT(IN)                             :: is_debug
-    LOGICAL, INTENT(IN)                             :: is_zero
 
     CHARACTER(10), INTENT(IN)                       :: measure
 
+    ! TEMPORARY PLACEHOLDERS, BREAKS IN DESIGN
+    REAL(our_dble), INTENT(IN)                      :: eps_cholesky(:, :)
+    LOGICAL, INTENT(IN)                             :: is_zero
+
     !/* internal objects    */
 
-    INTEGER(our_int)                                :: max_states_period
+    INTEGER(our_int)                                 :: max_states_period
 
     REAL(our_dble), ALLOCATABLE                     :: periods_eps_relevant(:, :, :)
 
@@ -435,6 +445,7 @@ SUBROUTINE solve_fortran_bare(periods_payoffs_ex_post, periods_future_payoffs, &
     CALL create_state_space(states_all, states_number_period, & 
             mapping_state_idx, num_periods, edu_start, edu_max, min_idx)
 
+    ! Auxiliary objects
     max_states_period = MAXVAL(states_number_period)
 
     ! Allocate arrays
@@ -522,6 +533,12 @@ PROGRAM robufort
 
     CHARACTER(10)                   :: measure = 'kl'
 
+    ! This is newly added and needs to be integrated throughout the code to 
+    ! align FORTRAN and PYTHON. Some are only placeholders.
+    LOGICAL                         :: is_ambiguous
+    REAL(our_dble)                  :: eps_cholesky(4, 4) = zero_dble
+
+
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
@@ -532,21 +549,22 @@ PROGRAM robufort
     CALL read_specification(num_periods, delta, level, coeffs_a, coeffs_b, & 
             coeffs_edu, edu_start, edu_max, coeffs_home, shocks, num_draws, &
             seed_solution, num_agents, seed_simulation, is_debug, is_zero, &
-            is_interpolated, num_points, min_idx) 
-    
+            is_interpolated, num_points, min_idx, is_ambiguous) 
+
     ! Solve the model for a given parametrization.    
-    CALL solve_fortran_bare(periods_payoffs_ex_post, periods_future_payoffs, & 
-            periods_emax, periods_payoffs_systematic, states_all, states_number_period, & 
-            mapping_state_idx, num_periods, edu_start, edu_max, min_idx, coeffs_a, & 
-            coeffs_b, coeffs_edu, coeffs_home, level, shocks, seed_solution, &
-            is_debug, is_zero, measure, is_interpolated, num_points, & 
-            num_draws, delta, max_states_period)
+    CALL solve_fortran_bare(mapping_state_idx, periods_emax, & 
+        periods_future_payoffs, periods_payoffs_ex_post, & 
+        periods_payoffs_systematic, states_all, states_number_period, & 
+        coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, &
+        eps_cholesky, edu_max, delta, edu_start, is_debug, is_interpolated, &
+        level, measure, min_idx, num_draws, num_periods, num_points, &
+        is_ambiguous, seed_solution, is_zero)
 
     ! Store results. These are read in by the PYTHON wrapper and added to the 
     ! clsRobupy instance.
     CALL store_results(mapping_state_idx, states_all, periods_payoffs_ex_post, & 
             periods_payoffs_systematic, states_number_period, periods_emax, &
-            num_periods, min_idx, max_states_period) 
+            num_periods, min_idx) 
 
 !*******************************************************************************
 !*******************************************************************************
