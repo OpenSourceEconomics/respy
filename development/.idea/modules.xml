@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/robustToolbox.iml" filepath="$PROJECT_DIR$/.idea/robustToolbox.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../../../../structRobust/.idea/structRobust.iml" filepath="$PROJECT_DIR$/../../../../structRobust/.idea/structRobust.iml" />
     </modules>
   </component>
 </project>

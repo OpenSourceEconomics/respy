@@ -6,7 +6,6 @@
       <excludeFolder url="file://$MODULE_DIR$/.idea" />
       <excludeFolder url="file://$MODULE_DIR$/analysis" />
       <excludeFolder url="file://$MODULE_DIR$/documentation" />
-      <excludeFolder url="file://$MODULE_DIR$/package/development" />
       <excludeFolder url="file://$MODULE_DIR$/package/dist" />
       <excludeFolder url="file://$MODULE_DIR$/package/example" />
       <excludeFolder url="file://$MODULE_DIR$/package/travis-ci" />
