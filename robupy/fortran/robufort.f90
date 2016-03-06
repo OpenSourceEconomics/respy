@@ -243,29 +243,29 @@ SUBROUTINE get_disturbances(periods_eps_relevant, level, shocks, seed, &
 
     !/* external objects    */
 
-    REAL(our_dble), INTENT(OUT)     :: periods_eps_relevant(:, :, :)
+    REAL(our_dble), INTENT(INOUT)       :: periods_eps_relevant(:, :, :)
 
-    REAL(our_dble), INTENT(IN)      :: shocks(4, 4)
-    REAL(our_dble), INTENT(IN)      :: level
+    REAL(our_dble), INTENT(IN)          :: shocks(4, 4)
+    REAL(our_dble), INTENT(IN)          :: level
 
-    INTEGER(our_int),INTENT(IN)     :: seed 
+    INTEGER(our_int),INTENT(IN)         :: seed 
 
-    LOGICAL, INTENT(IN)             :: is_debug
-    LOGICAL, INTENT(IN)             :: is_zero
+    LOGICAL, INTENT(IN)                 :: is_debug
+    LOGICAL, INTENT(IN)                 :: is_zero
 
     !/* internal objects    */
 
-    REAL(our_dble)                  :: eps_cholesky(4, 4)
+    REAL(our_dble)                      :: eps_cholesky(4, 4)
 
-    INTEGER(our_int)                :: seed_inflated(15)
-    INTEGER(our_int)                :: num_periods
-    INTEGER(our_int)                :: seed_size
-    INTEGER(our_int)                :: num_draws
-    INTEGER(our_int)                :: period
-    INTEGER(our_int)                :: j
-    INTEGER(our_int)                :: i
+    INTEGER(our_int)                    :: seed_inflated(15)
+    INTEGER(our_int)                    :: num_periods
+    INTEGER(our_int)                    :: seed_size
+    INTEGER(our_int)                    :: num_draws
+    INTEGER(our_int)                    :: period
+    INTEGER(our_int)                    :: j
+    INTEGER(our_int)                    :: i
     
-    LOGICAL                         :: READ_IN
+    LOGICAL                             :: READ_IN
 
 !------------------------------------------------------------------------------- 
 ! Algorithm
@@ -419,63 +419,6 @@ PROGRAM robufort
     LOGICAL                         :: is_debug
     LOGICAL                         :: is_zero
 
-    ! The following objects are only useful in case of manual 
-    ! preprocessing.
-
-    INTEGER(our_int)                :: edu_lagged
-    INTEGER(our_int)                :: future_idx
-    INTEGER(our_int)                :: covars(6)
-    INTEGER(our_int)                :: maxiter
-    INTEGER(our_int)                :: period
-    INTEGER(our_int)                :: total
-    INTEGER(our_int)                :: exp_a
-    INTEGER(our_int)                :: exp_b
-    INTEGER(our_int)                :: mineq
-    INTEGER(our_int)                :: jw(7)
-    INTEGER(our_int)                :: mode
-    INTEGER(our_int)                :: iter
-    INTEGER(our_int)                :: mieq
-    INTEGER(our_int)                :: l_jw
-    INTEGER(our_int)                :: edu
-    INTEGER(our_int)                :: meq
-    INTEGER(our_int)                :: l_w
-    INTEGER(our_int)                :: la
-    INTEGER(our_int)                :: i
-    INTEGER(our_int)                :: k
-    INTEGER(our_int)                :: j
-    INTEGER(our_int)                :: m
-    INTEGER(our_int)                :: n
-
-    REAL(our_dble), ALLOCATABLE     :: eps_relevant_emax(:, :)
-    REAL(our_dble), ALLOCATABLE     :: eps_relevant(:, :)
-
-    REAL(our_dble)                  :: payoffs_ex_post(4)
-    REAL(our_dble)                  :: payoffs_systematic(4)
-    REAL(our_dble)                  :: future_payoffs(4)
-    REAL(our_dble)                  :: total_payoffs(4)
-    REAL(our_dble)                  :: disturbances(4)
-    REAL(our_dble)                  :: emax_simulated
-    REAL(our_dble)                  :: x_internal(2)    
-    REAL(our_dble)                  :: x_start(2)
-    REAL(our_dble)                  :: a(1, 3)
-    REAL(our_dble)                  :: maximum    
-    REAL(our_dble)                  :: payoff
-    REAL(our_dble)                  :: w(144)
-    REAL(our_dble)                  :: xl(2)
-    REAL(our_dble)                  :: xu(2)
-    REAL(our_dble)                  :: ftol
-    REAL(our_dble)                  :: c(1)
-    REAL(our_dble)                  :: g(3)
-    REAL(our_dble)                  :: div
-    REAL(our_dble)                  :: eps
-    REAL(our_dble)                  :: f
-
-    LOGICAL                         :: is_ambiguous
-    LOGICAL                         :: is_finished
-    LOGICAL                         :: is_success
-    LOGICAL                         :: is_myopic
-    LOGICAL                         :: is_huge
-
     ! The following objects are only useful during development and will be
     ! removed later.
 
@@ -519,11 +462,6 @@ PROGRAM robufort
     ALLOCATE(periods_future_payoffs(num_periods, max_states_period, 4))
     ALLOCATE(periods_eps_relevant(num_periods, num_draws, 4))
     ALLOCATE(periods_emax(num_periods, max_states_period))
-
-    ! The following two containers are only useful in case of manual 
-    ! preprocessing.
-    ALLOCATE(eps_relevant(num_draws, 4))
-    ALLOCATE(eps_relevant_emax(num_draws, 4))
 
     ! Draw random disturbances. For is_debugging purposes, these might also be 
     ! read in from disk or set to zero/one.

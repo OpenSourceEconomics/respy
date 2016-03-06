@@ -166,30 +166,30 @@ SUBROUTINE calculate_payoffs_systematic(periods_payoffs_systematic, num_periods,
 
     !/* external objects    */
 
-    REAL(our_dble), INTENT(OUT)     :: periods_payoffs_systematic(num_periods, max_states_period, 4)
+    REAL(our_dble), INTENT(INOUT)       :: periods_payoffs_systematic(num_periods, max_states_period, 4)
 
-    REAL(our_dble), INTENT(IN)      :: coeffs_a(:)
-    REAL(our_dble), INTENT(IN)      :: coeffs_b(:)
-    REAL(our_dble), INTENT(IN)      :: coeffs_edu(:)
-    REAL(our_dble), INTENT(IN)      :: coeffs_home(:)
+    REAL(our_dble), INTENT(IN)          :: coeffs_a(:)
+    REAL(our_dble), INTENT(IN)          :: coeffs_b(:)
+    REAL(our_dble), INTENT(IN)          :: coeffs_edu(:)
+    REAL(our_dble), INTENT(IN)          :: coeffs_home(:)
 
-    INTEGER(our_int), INTENT(IN)    :: num_periods
-    INTEGER(our_int), INTENT(IN)    :: states_number_period(:)
-    INTEGER(our_int), INTENT(IN)    :: states_all(:,:,:)
-    INTEGER(our_int), INTENT(IN)    :: edu_start
-    INTEGER(our_int), INTENT(IN)    :: max_states_period
+    INTEGER(our_int), INTENT(IN)        :: num_periods
+    INTEGER(our_int), INTENT(IN)        :: states_number_period(:)
+    INTEGER(our_int), INTENT(IN)        :: states_all(:,:,:)
+    INTEGER(our_int), INTENT(IN)        :: edu_start
+    INTEGER(our_int), INTENT(IN)        :: max_states_period
 
     !/* internals objects    */
 
-    INTEGER(our_int)                :: period
-    INTEGER(our_int)                :: k
-    INTEGER(our_int)                :: exp_a
-    INTEGER(our_int)                :: exp_b
-    INTEGER(our_int)                :: edu
-    INTEGER(our_int)                :: edu_lagged
-    INTEGER(our_int)                :: covars(6)
+    INTEGER(our_int)                    :: period
+    INTEGER(our_int)                    :: k
+    INTEGER(our_int)                    :: exp_a
+    INTEGER(our_int)                    :: exp_b
+    INTEGER(our_int)                    :: edu
+    INTEGER(our_int)                    :: edu_lagged
+    INTEGER(our_int)                    :: covars(6)
 
-    REAL(our_dble)                  :: payoff
+    REAL(our_dble)                      :: payoff
 
 !-------------------------------------------------------------------------------
 ! Algorithm
@@ -278,54 +278,54 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
 
     !/* external objects    */
 
-    REAL(our_dble), INTENT(OUT)     :: periods_payoffs_ex_post(num_periods, max_states_period, 4)
-    REAL(our_dble), INTENT(OUT)     :: periods_future_payoffs(num_periods, max_states_period, 4)
-    REAL(our_dble), INTENT(OUT)     :: periods_emax(num_periods, max_states_period)
+    REAL(our_dble), INTENT(INOUT)       :: periods_payoffs_ex_post(num_periods, max_states_period, 4)
+    REAL(our_dble), INTENT(INOUT)       :: periods_future_payoffs(num_periods, max_states_period, 4)
+    REAL(our_dble), INTENT(INOUT)       :: periods_emax(num_periods, max_states_period)
 
-    REAL(our_dble), INTENT(IN)      :: periods_payoffs_systematic(:, :, :)
-    REAL(our_dble), INTENT(IN)      :: periods_eps_relevant(:, :, :)
-    REAL(our_dble), INTENT(IN)      :: shocks(:, :)
-    REAL(our_dble), INTENT(IN)      :: delta
-    REAL(our_dble), INTENT(IN)      :: level
+    REAL(our_dble), INTENT(IN)          :: periods_payoffs_systematic(:, :, :)
+    REAL(our_dble), INTENT(IN)          :: periods_eps_relevant(:, :, :)
+    REAL(our_dble), INTENT(IN)          :: shocks(:, :)
+    REAL(our_dble), INTENT(IN)          :: delta
+    REAL(our_dble), INTENT(IN)          :: level
 
-    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:, :, :, :, :)    
-    INTEGER(our_int), INTENT(IN)    :: states_number_period(:)
-    INTEGER(our_int), INTENT(IN)    :: states_all(:, :, :)
-    INTEGER(our_int), INTENT(IN)    :: max_states_period
-    INTEGER(our_int), INTENT(IN)    :: num_periods
-    INTEGER(our_int), INTENT(IN)    :: edu_start
-    INTEGER(our_int), INTENT(IN)    :: edu_max
-    INTEGER(our_int), INTENT(IN)    :: num_draws
-    INTEGER(our_int), INTENT(IN)    :: num_points
+    INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(:, :, :, :, :)    
+    INTEGER(our_int), INTENT(IN)        :: states_number_period(:)
+    INTEGER(our_int), INTENT(IN)        :: states_all(:, :, :)
+    INTEGER(our_int), INTENT(IN)        :: max_states_period
+    INTEGER(our_int), INTENT(IN)        :: num_periods
+    INTEGER(our_int), INTENT(IN)        :: edu_start
+    INTEGER(our_int), INTENT(IN)        :: edu_max
+    INTEGER(our_int), INTENT(IN)        :: num_draws
+    INTEGER(our_int), INTENT(IN)        :: num_points
 
-    LOGICAL, INTENT(IN)             :: is_interpolated
-    LOGICAL, INTENT(IN)             :: is_debug
+    LOGICAL, INTENT(IN)                 :: is_interpolated
+    LOGICAL, INTENT(IN)                 :: is_debug
 
-    CHARACTER(10), INTENT(IN)       :: measure
+    CHARACTER(10), INTENT(IN)           :: measure
 
     !/* internals objects    */
 
-    INTEGER(our_int)                :: num_states
-    INTEGER(our_int)                :: period
-    INTEGER(our_int)                :: k
-    INTEGER(our_int)                :: i
+    INTEGER(our_int)                    :: num_states
+    INTEGER(our_int)                    :: period
+    INTEGER(our_int)                    :: k
+    INTEGER(our_int)                    :: i
 
-    REAL(our_dble)                  :: eps_relevant(num_draws, 4)
-    REAL(our_dble)                  :: payoffs_systematic(4)
-    REAL(our_dble)                  :: payoffs_ex_post(4)
-    REAL(our_dble)                  :: expected_values(4)
-    REAL(our_dble)                  :: future_payoffs(4)
-    REAL(our_dble)                  :: emax_simulated
-    REAL(our_dble)                  :: shifts(4)
+    REAL(our_dble)                      :: eps_relevant(num_draws, 4)
+    REAL(our_dble)                      :: payoffs_systematic(4)
+    REAL(our_dble)                      :: payoffs_ex_post(4)
+    REAL(our_dble)                      :: expected_values(4)
+    REAL(our_dble)                      :: future_payoffs(4)
+    REAL(our_dble)                      :: emax_simulated
+    REAL(our_dble)                      :: shifts(4)
 
-    REAL(our_dble), ALLOCATABLE     :: exogenous(:, :)
-    REAL(our_dble), ALLOCATABLE     :: predictions(:)
-    REAL(our_dble), ALLOCATABLE     :: endogenous(:)
-    REAL(our_dble), ALLOCATABLE     :: maxe(:)
+    REAL(our_dble), ALLOCATABLE         :: exogenous(:, :)
+    REAL(our_dble), ALLOCATABLE         :: predictions(:)
+    REAL(our_dble), ALLOCATABLE         :: endogenous(:)
+    REAL(our_dble), ALLOCATABLE         :: maxe(:)
 
-    LOGICAL                         :: any_interpolated
+    LOGICAL                             :: any_interpolated
 
-    LOGICAL, ALLOCATABLE            :: is_simulated(:)
+    LOGICAL, ALLOCATABLE                :: is_simulated(:)
 
 !-------------------------------------------------------------------------------
 ! Algorithm
@@ -437,25 +437,25 @@ SUBROUTINE create_state_space(states_all, states_number_period, &
 
     !/* external objects    */
 
-    INTEGER(our_int), INTENT(OUT)   :: states_all(num_periods, 100000, 4)
-    INTEGER(our_int), INTENT(OUT)   :: states_number_period(num_periods)
-    INTEGER(our_int), INTENT(OUT)   :: mapping_state_idx(num_periods, & 
-                                        num_periods, num_periods, min_idx, 2)
+    INTEGER(our_int), INTENT(INOUT)     :: states_all(num_periods, 100000, 4)
+    INTEGER(our_int), INTENT(INOUT)     :: states_number_period(num_periods)
+    INTEGER(our_int), INTENT(INOUT)     :: mapping_state_idx(num_periods, & 
+                                           num_periods, num_periods, min_idx, 2)
 
-    INTEGER(our_int), INTENT(IN)    :: num_periods
-    INTEGER(our_int), INTENT(IN)    :: edu_start
-    INTEGER(our_int), INTENT(IN)    :: edu_max
-    INTEGER(our_int), INTENT(IN)    :: min_idx
+    INTEGER(our_int), INTENT(IN)        :: num_periods
+    INTEGER(our_int), INTENT(IN)        :: edu_start
+    INTEGER(our_int), INTENT(IN)        :: edu_max
+    INTEGER(our_int), INTENT(IN)        :: min_idx
 
     !/* internals objects    */
 
-    INTEGER(our_int)                :: edu_lagged
-    INTEGER(our_int)                :: period
-    INTEGER(our_int)                :: total
-    INTEGER(our_int)                :: exp_a
-    INTEGER(our_int)                :: exp_b
-    INTEGER(our_int)                :: edu
-    INTEGER(our_int)                :: k
+    INTEGER(our_int)                    :: edu_lagged
+    INTEGER(our_int)                    :: period
+    INTEGER(our_int)                    :: total
+    INTEGER(our_int)                    :: exp_a
+    INTEGER(our_int)                    :: exp_b
+    INTEGER(our_int)                    :: edu
+    INTEGER(our_int)                    :: k
  
 !-------------------------------------------------------------------------------
 ! Algorithm
