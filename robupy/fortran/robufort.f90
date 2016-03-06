@@ -374,8 +374,7 @@ END SUBROUTINE
 !******************************************************************************* 
 ! TODO: This has to go somewhere else of course, how about refactoring input to out
 SUBROUTINE solve_fortran_bare(mapping_state_idx, states_all, & 
-    states_number_period, num_periods, min_idx, edu_start, edu_max, & 
-    coeffs_a, coeffs_b, coeffs_edu, coeffs_home) 
+    states_number_period, num_periods, min_idx, edu_start, edu_max) 
 
     !/* external objects    */
 
@@ -386,7 +385,7 @@ SUBROUTINE solve_fortran_bare(mapping_state_idx, states_all, &
 
     INTEGER(our_int), INTENT(IN)    :: num_periods, edu_start, edu_max, min_idx
  
-    REAL(our_dble), INTENT(IN)  :: coeffs_edu(:), coeffs_a(:), coeffs_b(:), coeffs_home(:)
+    !REAL(our_dble), INTENT(IN)  :: coeffs_edu(:), coeffs_a(:), coeffs_b(:), coeffs_home(:)
 
     !/* internal objects    */
 
@@ -533,8 +532,7 @@ PROGRAM robufort
     ! Allocate arrays
 
     CALL solve_fortran_bare(mapping_state_idx, states_all, &
-        states_number_period, num_periods, min_idx, edu_start, edu_max, &
-        coeffs_a, coeffs_b, coeffs_edu, coeffs_home) 
+        states_number_period, num_periods, min_idx, edu_start, edu_max) 
 
 
     ! Auxiliary objects, this is only valid after the create state space call.
