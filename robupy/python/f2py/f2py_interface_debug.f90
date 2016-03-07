@@ -108,7 +108,7 @@ SUBROUTINE wrapper_solve_fortran_bare(mapping_state_idx, periods_emax, &
 
     DOUBLE PRECISION, INTENT(OUT)   :: periods_payoffs_systematic(num_periods, max_states_period, 4)
     DOUBLE PRECISION, INTENT(OUT)   :: periods_payoffs_ex_post(num_periods, max_states_period, 4)
-    DOUBLE PRECISION, INTENT(OUT)   :: periods_future_payoffs(num_periods, num_draws, 4)
+    DOUBLE PRECISION, INTENT(OUT)   :: periods_future_payoffs(num_periods, max_states_period, 4)
     DOUBLE PRECISION, INTENT(OUT)   :: periods_emax(num_periods, max_states_period)
 
 

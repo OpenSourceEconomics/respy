@@ -124,6 +124,9 @@ SUBROUTINE get_disturbances(periods_eps_relevant, level, shocks, seed, &
 
     ! Transformation in case of risk-only. In the case of ambiguity, this 
     ! transformation is later as it needs adjustment for the switched means.
+
+    ! TODO: This is an is_ambiguious case.
+
     IF (level .EQ. zero_dble) THEN
         
         ! Transform disturbance for occupations
@@ -244,6 +247,8 @@ SUBROUTINE solve_fortran_bare(mapping_state_idx, periods_emax, &
     ! read in from disk or set to zero/one.   
     CALL get_disturbances(periods_eps_relevant, level, shocks, seed_solution, &
             is_debug, is_zero)
+    PRINT *, 'FORT'
+    PRINT *, periods_eps_relevant
 
     ! Perform backward induction procedure.
     CALL backward_induction(periods_emax, periods_payoffs_ex_post, &
