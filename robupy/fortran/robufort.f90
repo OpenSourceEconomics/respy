@@ -322,6 +322,9 @@ PROGRAM robufort
             seed_solution, num_agents, seed_simulation, is_debug, is_zero, &
             is_interpolated, num_points, min_idx, is_ambiguous, measure) 
 
+    ! This part creates (or reads from disk) the disturbances for the Monte 
+    ! Carlo integration of the EMAX.
+
     ! Solve the model for a given parametrization.    
     CALL solve_fortran_bare(mapping_state_idx, periods_emax, & 
             periods_future_payoffs, periods_payoffs_ex_post, & 
