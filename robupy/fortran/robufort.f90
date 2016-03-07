@@ -141,7 +141,7 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
                 coeffs_edu, edu_start, edu_max, coeffs_home, shocks, & 
                 num_draws, seed_solution, num_agents, seed_simulation, & 
                 is_debug, is_zero, is_interpolated, num_points, min_idx, & 
-                is_ambiguous, measure) 
+                is_ambiguous, measure, request) 
 
     !
     !   This function serves as the replacement for the clsRobupy and reads in 
@@ -175,6 +175,7 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
     LOGICAL, INTENT(OUT)            :: is_zero
 
     CHARACTER(10), INTENT(OUT)      :: measure 
+    CHARACTER(10), INTENT(OUT)      :: request
 
     !/* internal objects    */
 
@@ -203,7 +204,7 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
 
         ! AMBIGUITY
         READ(1, 1510) level
-        READ(1, *   ) measure
+        READ(1, *) measure
 
         ! WORK
         READ(1, 1500) coeffs_a
@@ -240,6 +241,9 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
         READ(1, 1505) min_idx
         READ(1, *) is_ambiguous
         READ(1, *) is_zero
+
+        ! REQUUEST
+        READ(1, *) request
 
     CLOSE(1, STATUS='delete')
 
@@ -428,6 +432,7 @@ PROGRAM robufort
     LOGICAL                         :: is_zero
 
     CHARACTER(10)                   :: measure 
+    CHARACTER(10)                   :: request
 
 !-------------------------------------------------------------------------------
 ! Algorithm
@@ -439,7 +444,8 @@ PROGRAM robufort
     CALL read_specification(num_periods, delta, level, coeffs_a, coeffs_b, & 
             coeffs_edu, edu_start, edu_max, coeffs_home, shocks, num_draws, &
             seed_solution, num_agents, seed_simulation, is_debug, is_zero, &
-            is_interpolated, num_points, min_idx, is_ambiguous, measure) 
+            is_interpolated, num_points, min_idx, is_ambiguous, measure, & 
+            request) 
 
     ! This part creates (or reads from disk) the disturbances for the Monte 
     ! Carlo integration of the EMAX. For is_debugging purposes, these might also be 
@@ -448,14 +454,18 @@ PROGRAM robufort
     CALL create_disturbances(periods_eps_relevant, shocks, seed_solution, &
             is_debug, is_zero, is_ambiguous)
 
-    ! Solve the model for a given parametrization.    
-    CALL solve_fortran_bare(mapping_state_idx, periods_emax, & 
-            periods_future_payoffs, periods_payoffs_ex_post, & 
-            periods_payoffs_systematic, states_all, states_number_period, & 
-            coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, edu_max, & 
-            delta, edu_start, is_debug, is_interpolated, level, measure, & 
-            min_idx, num_draws, num_periods, num_points, is_ambiguous, & 
-            periods_eps_relevant)
+    IF (request == 'solve') THEN
+
+        ! Solve the model for a given parametrization.    
+        CALL solve_fortran_bare(mapping_state_idx, periods_emax, & 
+                periods_future_payoffs, periods_payoffs_ex_post, & 
+                periods_payoffs_systematic, states_all, states_number_period, & 
+                coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, edu_max, & 
+                delta, edu_start, is_debug, is_interpolated, level, measure, & 
+                min_idx, num_draws, num_periods, num_points, is_ambiguous, & 
+                periods_eps_relevant)
+
+    END IF
 
     ! Store results. These are read in by the PYTHON wrapper and added to the 
     ! clsRobupy instance.

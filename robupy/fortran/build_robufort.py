@@ -41,7 +41,7 @@ def robufort_build(self, is_debug=False):
         compiler_options = PRODUCTION_OPTIONS
 
     # Compile robufort file according to selected options.
-    cmd = 'gfortran ' + compiler_options + ' -o robufort_risk ' \
+    cmd = 'gfortran ' + compiler_options + ' -o robufort ' \
           'robufort_constants.f90  robufort_auxiliary.f90 ' \
           'robufort_slsqp.f robufort_emax.f90 robufort_risk.f90  ' \
           'robufort_ambiguity.f90 robufort_library.f90 ' \
@@ -49,13 +49,7 @@ def robufort_build(self, is_debug=False):
 
     os.system(cmd)
 
-    # There will be a separate executable for the risk and ambiguity case.
-    # The separation is required for optimal performance in the case of
-    # optimization.
-    shutil.copy('robufort_risk', 'robufort_ambiguity')
-
     # Maintaining directory structure.
-    for file_ in ['risk', 'ambiguity']:
-        shutil.move('robufort_' + file_, 'bin/robufort_' + file_)
+    shutil.move('robufort', 'bin/robufort')
 
     os.chdir(current_directory)
