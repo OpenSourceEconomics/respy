@@ -56,7 +56,7 @@ for i in range(3):
 ''' F
 '''
 
-for _ in range(100):
+for _ in range(10):
 
     # Impose constraints
 
@@ -72,7 +72,8 @@ for _ in range(100):
     constraints['draws'] = num_draws
 
     # Generate random initialization file
-    generate_init(constraints)
+    # TODO: I am using the current one.
+    #generate_init(constraints)
 
     # Perform toolbox actions
     robupy_obj = read('test.robupy.ini')

@@ -142,6 +142,13 @@ def _write_robufort_initialization(robupy_obj):
         line = '{0:15.10f}\n'.format(init_dict['AMBIGUITY']['level'])
         file_.write(line)
 
+        measure = init_dict['AMBIGUITY']['measure']
+        if measure == 'kl':
+            line = '{0}'.format(init_dict['AMBIGUITY']['measure'])
+            file_.write(line + '\n')
+        else:
+            raise NotImplementedError
+
         # WORK
         for num in [model_paras['coeffs_a'], model_paras['coeffs_b']]:
             line = ' {0:15.10f} {1:15.10f} {2:15.10f} {3:15.10f}  {4:15.10f}' \

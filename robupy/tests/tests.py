@@ -20,6 +20,7 @@ from robupy.auxiliary import opt_get_model_parameters
 from robupy.tests.random_init import generate_random_dict
 from robupy.tests.random_init import print_random_dict
 from robupy.tests.random_init import generate_init
+from robupy.tests.random_init import MAX_PERIODS
 
 # module variables
 FILE_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -109,7 +110,7 @@ class Tests(object):
 
             # Generate constraint periods
             constraints = dict()
-            constraints['periods'] = np.random.randint(3, 10)
+            constraints['periods'] = np.random.randint(3, MAX_PERIODS)
             constraints['version'] = version
 
             # Generate random initialization file
@@ -202,9 +203,6 @@ class Tests(object):
         constraints['eps_zero'] = True
         constraints['version'] = version
         constraints['level'] = 0.0
-
-        # The calculation of the KL does not work for this case.
-        constraints['measure'] = 'absolute'
 
         # Generate random initialization file
         generate_init(constraints)

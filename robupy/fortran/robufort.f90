@@ -150,7 +150,7 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
                 coeffs_edu, edu_start, edu_max, coeffs_home, shocks, & 
                 num_draws, seed_solution, num_agents, seed_simulation, & 
                 is_debug, is_zero, is_interpolated, num_points, min_idx, & 
-                is_ambiguous) 
+                is_ambiguous, measure) 
 
     !
     !   This function serves as the replacement for the clsRobupy and reads in 
@@ -182,6 +182,8 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
     LOGICAL, INTENT(OUT)            :: is_debug
     LOGICAL, INTENT(OUT)            :: is_zero
 
+    CHARACTER(10), INTENT(OUT)      :: measure 
+
     !/* internal objects    */
 
     INTEGER(our_int)                :: j
@@ -209,6 +211,7 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
 
         ! AMBIGUITY
         READ(1, 1510) level
+        READ(1, *   ) measure
 
         ! WORK
         READ(1, 1500) coeffs_a
@@ -286,8 +289,6 @@ PROGRAM robufort
     INTEGER(our_int)                :: edu_max
     INTEGER(our_int)                :: min_idx
 
-    ! TODO: A lot of the arguments here are probably not required anymore
-
     REAL(our_dble), ALLOCATABLE     :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_payoffs_ex_post(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_future_payoffs(:, :, :)
@@ -305,10 +306,7 @@ PROGRAM robufort
     LOGICAL                         :: is_debug
     LOGICAL                         :: is_zero
 
-    ! The following objects are only useful during development and will be
-    ! removed later.
-
-    CHARACTER(10)                   :: measure = 'kl'
+    CHARACTER(10)                   :: measure 
 
     ! This is newly added and needs to be integrated throughout the code to 
     ! align FORTRAN and PYTHON. Some are only placeholders.
@@ -326,7 +324,7 @@ PROGRAM robufort
     CALL read_specification(num_periods, delta, level, coeffs_a, coeffs_b, & 
             coeffs_edu, edu_start, edu_max, coeffs_home, shocks, num_draws, &
             seed_solution, num_agents, seed_simulation, is_debug, is_zero, &
-            is_interpolated, num_points, min_idx, is_ambiguous) 
+            is_interpolated, num_points, min_idx, is_ambiguous, measure) 
 
     ! Solve the model for a given parametrization.    
     CALL solve_fortran_bare(mapping_state_idx, periods_emax, & 
