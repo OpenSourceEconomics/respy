@@ -164,10 +164,5 @@ for _ in range(100):
             is_ambiguous, seed_solution, is_python)
 
     for i in range(7):
-        # I have to decide on how to deal with states_all, cut to required size in
-        # PYTHON but not FORTRAN.
-        print(i)
-        if i == 5:
-            continue
         np.testing.assert_equal(py[i], replace_missing_values(f90[i]))
 

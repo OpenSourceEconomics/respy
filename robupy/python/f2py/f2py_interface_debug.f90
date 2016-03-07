@@ -104,7 +104,7 @@ SUBROUTINE wrapper_solve_fortran_bare(mapping_state_idx, periods_emax, &
 
     INTEGER, INTENT(OUT)            :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER, INTENT(OUT)            :: states_number_period(num_periods)
-    INTEGER, INTENT(OUT)            :: states_all(num_periods, 100000, 4)
+    INTEGER, INTENT(OUT)            :: states_all(num_periods, max_states_period, 4)
 
     DOUBLE PRECISION, INTENT(OUT)   :: periods_payoffs_systematic(num_periods, max_states_period, 4)
     DOUBLE PRECISION, INTENT(OUT)   :: periods_payoffs_ex_post(num_periods, max_states_period, 4)
@@ -171,7 +171,7 @@ SUBROUTINE wrapper_solve_fortran_bare(mapping_state_idx, periods_emax, &
     states_number_period = states_number_period_int 
     mapping_state_idx = mapping_state_idx_int 
     periods_emax = periods_emax_int 
-    states_all = states_all_int  
+    states_all = states_all_int
 
 END SUBROUTINE
 !*******************************************************************************

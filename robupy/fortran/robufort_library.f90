@@ -211,6 +211,8 @@ SUBROUTINE solve_fortran_bare(mapping_state_idx, periods_emax, &
 
     !/* internal objects    */
 
+    INTEGER(our_int), ALLOCATABLE    :: states_all_tmp(:, :, :)
+
     INTEGER(our_int)                                 :: max_states_period
 
     REAL(our_dble), ALLOCATABLE                     :: periods_eps_relevant(:, :, :)
@@ -221,15 +223,21 @@ SUBROUTINE solve_fortran_bare(mapping_state_idx, periods_emax, &
 
     ! Allocate arrays
     ALLOCATE(mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2))
-    ALLOCATE(states_all(num_periods, 100000, 4))
+    ALLOCATE(states_all_tmp(num_periods, 100000, 4))
     ALLOCATE(states_number_period(num_periods))
 
     ! Create the state space of the model
-    CALL create_state_space(states_all, states_number_period, & 
+    CALL create_state_space(states_all_tmp, states_number_period, & 
             mapping_state_idx, num_periods, edu_start, edu_max, min_idx)
 
     ! Auxiliary objects
     max_states_period = MAXVAL(states_number_period)
+
+    ! Cutting the states_all container to size. The required size is only known 
+    ! after the state space creation is completed.
+    ALLOCATE(states_all(num_periods, max_states_period, 4))
+    states_all = states_all_tmp(:, :max_states_period, :)
+    DEALLOCATE(states_all_tmp)
 
     ! Allocate arrays
     ALLOCATE(periods_payoffs_systematic(num_periods, max_states_period, 4))
@@ -247,8 +255,6 @@ SUBROUTINE solve_fortran_bare(mapping_state_idx, periods_emax, &
     ! read in from disk or set to zero/one.   
     CALL get_disturbances(periods_eps_relevant, level, shocks, seed_solution, &
             is_debug, is_zero)
-    PRINT *, 'FORT'
-    PRINT *, periods_eps_relevant
 
     ! Perform backward induction procedure.
     CALL backward_induction(periods_emax, periods_payoffs_ex_post, &
