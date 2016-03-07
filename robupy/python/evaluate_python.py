@@ -81,10 +81,10 @@ def evaluate_python(robupy_obj, data_frame):
 
     # Evaluate the criterion function
     likl = _evaluate_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-                shocks, eps_cholesky, edu_max, delta, edu_start, is_debug,
-                is_interpolated, is_python, level, measure, min_idx, num_agents,
-                num_draws, num_sims, num_periods, num_points, is_ambiguous,
-                data_array, standard_deviates, periods_eps_relevant)
+        shocks, edu_max, delta, edu_start, is_debug, is_interpolated, level,
+        measure, min_idx, num_draws, num_periods, num_points, is_ambiguous,
+        periods_eps_relevant, eps_cholesky, num_agents, num_sims,
+        data_array, standard_deviates, is_python)
 
     # Finishing
     return likl
@@ -95,14 +95,15 @@ def evaluate_python(robupy_obj, data_frame):
 
 
 def _evaluate_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
-        eps_cholesky, edu_max, delta, edu_start, is_debug, is_interpolated,
-        is_python, level, measure, min_idx, num_agents, num_draws, num_sims,
-        num_periods, num_points, is_ambiguous, data_array,
-        standard_deviates, periods_eps_relevant):
+        edu_max, delta, edu_start, is_debug, is_interpolated, level, measure,
+        min_idx, num_draws, num_periods, num_points, is_ambiguous,
+        periods_eps_relevant, eps_cholesky, num_agents, num_sims,
+        data_array, standard_deviates, is_python):
     """ This function is required to ensure a full analogy to F2PY and
-    FORTRAN implementations.
+    FORTRAN implementations. The first part of the interface is identical to
+    the solution request functions.
     """
-    # Solve the model for updated parametrization
+    # Solve the model for given parametrization
     args = solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         shocks, edu_max, delta, edu_start, is_debug, is_interpolated, level,
         measure, min_idx, num_draws, num_periods, num_points, is_ambiguous,
