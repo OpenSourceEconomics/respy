@@ -73,12 +73,18 @@ def evaluate_python(robupy_obj, data_frame):
     standard_deviates = create_disturbances(num_sims, seed_estimation,
         eps_cholesky, is_ambiguous, num_periods, is_debug, 'estimation')
 
+    # Get the relevant set of disturbances. These are standard normal draws
+    # in the case of an ambiguous world. This function is located outside the
+    # actual bare solution algorithm to ease testing across implementations.
+    periods_eps_relevant = create_disturbances(num_draws, seed_solution,
+        eps_cholesky, is_ambiguous, num_periods, is_debug, 'solution')
+
     # Evaluate the criterion function
     likl = _evaluate_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
                 shocks, eps_cholesky, edu_max, delta, edu_start, is_debug,
                 is_interpolated, is_python, level, measure, min_idx, num_agents,
                 num_draws, num_sims, num_periods, num_points, is_ambiguous,
-                seed_solution, data_array, standard_deviates)
+                data_array, standard_deviates, periods_eps_relevant)
 
     # Finishing
     return likl
@@ -91,16 +97,16 @@ def evaluate_python(robupy_obj, data_frame):
 def _evaluate_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
         eps_cholesky, edu_max, delta, edu_start, is_debug, is_interpolated,
         is_python, level, measure, min_idx, num_agents, num_draws, num_sims,
-        num_periods, num_points, is_ambiguous, seed_solution, data_array,
-        standard_deviates):
+        num_periods, num_points, is_ambiguous, data_array,
+        standard_deviates, periods_eps_relevant):
     """ This function is required to ensure a full analogy to F2PY and
     FORTRAN implementations.
     """
     # Solve the model for updated parametrization
     args = solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-        shocks, eps_cholesky, edu_max, delta, edu_start, is_debug,
-        is_interpolated, level, measure, min_idx, num_draws, num_periods,
-        num_points, is_ambiguous, seed_solution, is_python)
+        shocks, edu_max, delta, edu_start, is_debug, is_interpolated, level,
+        measure, min_idx, num_draws, num_periods, num_points, is_ambiguous,
+        periods_eps_relevant, is_python)
 
     # Distribute return arguments
     mapping_state_idx, periods_emax, periods_future_payoffs = args[:3]

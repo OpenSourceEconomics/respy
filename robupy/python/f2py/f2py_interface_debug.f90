@@ -88,9 +88,15 @@ SUBROUTINE wrapper_solve_fortran_bare(mapping_state_idx, periods_emax, &
     periods_future_payoffs, periods_payoffs_ex_post, & 
     periods_payoffs_systematic, states_all, states_number_period, & 
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, &
-    eps_cholesky, edu_max, delta, edu_start, is_debug, is_interpolated, &
+    edu_max, delta, edu_start, is_debug, is_interpolated, &
     level, measure, min_idx, num_draws, num_periods, num_points, &
-    is_ambiguous, seed_solution, is_zero, max_states_period)
+    is_ambiguous, periods_eps_relevant, max_states_period)
+    
+    !
+    ! The presence of max_states_period breaks the equality of interfaces. 
+    ! However, this is required so that the size of the return arguments is
+    ! known from the beginning.
+    !
 
     !/* external libraries    */
 
@@ -111,15 +117,18 @@ SUBROUTINE wrapper_solve_fortran_bare(mapping_state_idx, periods_emax, &
     DOUBLE PRECISION, INTENT(OUT)   :: periods_future_payoffs(num_periods, max_states_period, 4)
     DOUBLE PRECISION, INTENT(OUT)   :: periods_emax(num_periods, max_states_period)
 
+    ! TODO: Explain presence
+    INTEGER, INTENT(IN)             :: max_states_period
 
-    INTEGER, INTENT(IN)             :: seed_solution
-    INTEGER, INTENT(IN)             :: num_periods, max_states_period
+
+    INTEGER, INTENT(IN)             :: num_periods
     INTEGER, INTENT(IN)             :: num_points
     INTEGER, INTENT(IN)             :: edu_start
     INTEGER, INTENT(IN)             :: num_draws
     INTEGER, INTENT(IN)             :: edu_max
     INTEGER, INTENT(IN)             :: min_idx
 
+    DOUBLE PRECISION, INTENT(IN)    :: periods_eps_relevant(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_home(:)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_edu(:)
     DOUBLE PRECISION, INTENT(IN)    :: shocks(:, :)
@@ -133,11 +142,6 @@ SUBROUTINE wrapper_solve_fortran_bare(mapping_state_idx, periods_emax, &
     LOGICAL, INTENT(IN)             :: is_debug
 
     CHARACTER(10), INTENT(IN)       :: measure
-
-    LOGICAL, INTENT(IN)             :: is_zero
-
-    ! TODO: TEMPORARY PLACEHOLDERS, BREAKS IN DESIGN
-    DOUBLE PRECISION, INTENT(IN)    :: eps_cholesky(:, :)
 
     !/* internal objects    */
 
@@ -161,9 +165,9 @@ SUBROUTINE wrapper_solve_fortran_bare(mapping_state_idx, periods_emax, &
             periods_future_payoffs_int, periods_payoffs_ex_post_int, & 
             periods_payoffs_systematic_int, states_all_int, & 
             states_number_period_int, coeffs_a, coeffs_b, coeffs_edu, & 
-            coeffs_home, shocks, eps_cholesky, edu_max, delta, edu_start, & 
+            coeffs_home, shocks, edu_max, delta, edu_start, & 
             is_debug, is_interpolated, level, measure, min_idx, num_draws, & 
-            num_periods, num_points, is_ambiguous, seed_solution, is_zero)
+            num_periods, num_points, is_ambiguous, periods_eps_relevant)
 
     ! Assign to initial objects for return to PYTHON
     periods_payoffs_systematic = periods_payoffs_systematic_int   

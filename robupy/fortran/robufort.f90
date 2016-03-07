@@ -12,13 +12,7 @@ MODULE robufort_extension
 
     IMPLICIT NONE
 
-    PRIVATE
-
-    !/* core functions */
-
-    PUBLIC :: read_specification
-
-    PUBLIC :: store_results
+    PUBLIC
 
 CONTAINS
 !*******************************************************************************
@@ -250,10 +244,139 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
     CLOSE(1, STATUS='delete')
 
 END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE create_disturbances(periods_eps_relevant, shocks, seed, is_debug, & 
+                is_zero, is_ambiguous) 
+
+    !/* external objects    */
+
+    REAL(our_dble), INTENT(INOUT)       :: periods_eps_relevant(:, :, :)
+
+    REAL(our_dble), INTENT(IN)          :: shocks(4, 4)
+
+    INTEGER(our_int),INTENT(IN)         :: seed 
+
+    LOGICAL, INTENT(IN)                 :: is_ambiguous
+    LOGICAL, INTENT(IN)                 :: is_debug
+    LOGICAL, INTENT(IN)                 :: is_zero
+
+    !/* internal objects    */
+
+    REAL(our_dble)                      :: eps_cholesky(4, 4)
+
+    INTEGER(our_int)                    :: seed_inflated(15)
+    INTEGER(our_int)                    :: num_periods
+    INTEGER(our_int)                    :: seed_size
+    INTEGER(our_int)                    :: num_draws
+    INTEGER(our_int)                    :: period
+    INTEGER(our_int)                    :: j
+    INTEGER(our_int)                    :: i
+    
+    LOGICAL                             :: READ_IN
+
+!------------------------------------------------------------------------------- 
+! Algorithm
+!------------------------------------------------------------------------------- 
+
+    ! Auxiliary objects
+    num_periods = SIZE(periods_eps_relevant, 1)
+
+    num_draws = SIZE(periods_eps_relevant, 2)
+
+    CALL cholesky(eps_cholesky, shocks)
+
+    ! Set random seed
+    seed_inflated(:) = seed
+    
+    CALL RANDOM_SEED(size=seed_size)
+
+    CALL RANDOM_SEED(put=seed_inflated)
+
+    ! Create standard deviates
+    INQUIRE(FILE='disturbances.txt', EXIST=READ_IN)
+
+    IF ((READ_IN .EQV. .True.)  .AND. (is_debug .EQV. .True.)) THEN
+
+        OPEN(12, file='disturbances.txt')
+
+        DO period = 1, num_periods
+
+            DO j = 1, num_draws
+        
+                2000 FORMAT(4(1x,f15.10))
+                READ(12,2000) periods_eps_relevant(period, j, :)
+        
+            END DO
+      
+        END DO
+
+        CLOSE(12)
+
+    ELSE
+
+        DO period = 1, num_periods
+
+            CALL multivariate_normal(periods_eps_relevant(period, :, :))
+        
+        END DO
+
+    END IF
+
+    ! Transformations
+    DO period = 1, num_periods
+        
+        ! Apply variance change
+        DO i = 1, num_draws
+        
+            periods_eps_relevant(period, i:i, :) = &
+                TRANSPOSE(MATMUL(eps_cholesky, TRANSPOSE(periods_eps_relevant(period, i:i, :))))
+        
+        END DO
+
+    END DO
+
+    ! Transformation in case of risk-only. In the case of ambiguity, this 
+    ! transformation is later as it needs adjustment for the switched means.
+    IF (.NOT. is_ambiguous) THEN
+        
+        ! Transform disturbance for occupations
+        DO period = 1, num_periods
+
+            DO j = 1, 2
+            
+                periods_eps_relevant(period, :, j) = &
+                        EXP(periods_eps_relevant(period, :, j))
+            
+            END DO
+
+        END DO
+        
+    END IF
+
+    ! Special case of absence randomness (all disturbances equal to zero). Note
+    ! that the disturbances for the two occupations are set to one instead of
+    ! zero.
+    IF (is_zero) THEN
+
+        periods_eps_relevant = zero_dble
+
+        DO period = 1, num_periods
+
+            DO j = 1, 2
+
+                periods_eps_relevant(period, :, j) = one_dble
+
+            END DO
+
+        END DO
+
+    END IF
+
+END SUBROUTINE
 !******************************************************************************* 
 !******************************************************************************* 
 END MODULE 
-
 !******************************************************************************* 
 !******************************************************************************* 
 PROGRAM robufort
@@ -288,6 +411,7 @@ PROGRAM robufort
     REAL(our_dble), ALLOCATABLE     :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_payoffs_ex_post(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_future_payoffs(:, :, :)
+    REAL(our_dble), ALLOCATABLE     :: periods_eps_relevant(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_emax(:, :)
 
     REAL(our_dble)                  :: coeffs_home(1)
@@ -305,11 +429,6 @@ PROGRAM robufort
 
     CHARACTER(10)                   :: measure 
 
-    ! This is newly added and needs to be integrated throughout the code to 
-    ! align FORTRAN and PYTHON. Some are only placeholders.
-    REAL(our_dble)                  :: eps_cholesky(4, 4) = zero_dble
-
-
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
@@ -323,16 +442,20 @@ PROGRAM robufort
             is_interpolated, num_points, min_idx, is_ambiguous, measure) 
 
     ! This part creates (or reads from disk) the disturbances for the Monte 
-    ! Carlo integration of the EMAX.
+    ! Carlo integration of the EMAX. For is_debugging purposes, these might also be 
+    ! read in from disk or set to zero/one.   
+    ALLOCATE(periods_eps_relevant(num_periods, num_draws, 4))
+    CALL create_disturbances(periods_eps_relevant, shocks, seed_solution, &
+            is_debug, is_zero, is_ambiguous)
 
     ! Solve the model for a given parametrization.    
     CALL solve_fortran_bare(mapping_state_idx, periods_emax, & 
             periods_future_payoffs, periods_payoffs_ex_post, & 
             periods_payoffs_systematic, states_all, states_number_period, & 
-            coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, &
-            eps_cholesky, edu_max, delta, edu_start, is_debug, is_interpolated, &
-            level, measure, min_idx, num_draws, num_periods, num_points, &
-            is_ambiguous, seed_solution, is_zero)
+            coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, edu_max, & 
+            delta, edu_start, is_debug, is_interpolated, level, measure, & 
+            min_idx, num_draws, num_periods, num_points, is_ambiguous, & 
+            periods_eps_relevant)
 
     ! Store results. These are read in by the PYTHON wrapper and added to the 
     ! clsRobupy instance.
