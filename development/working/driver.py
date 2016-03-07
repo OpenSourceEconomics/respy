@@ -16,6 +16,7 @@ sys.path.insert(0, os.environ['ROBUPY'])
 
 # RobuPy library
 from robupy import *
+from robupy.auxiliary import replace_missing_values
 
 from robupy.auxiliary import opt_get_model_parameters
 from robupy.auxiliary import opt_get_optim_parameters
@@ -102,7 +103,6 @@ states_number_period = robupy_obj.get_attr('states_number_period')
 
 max_states_period = max(states_number_period)
 
-is_zero = robupy_obj.get_attr('is_zero')
 
 
 # Distribute model parameters
@@ -128,6 +128,29 @@ print(fort_emax)
 args = [coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
     eps_cholesky, edu_max, delta, edu_start, is_debug, is_interpolated,
     level, measure, min_idx, num_draws, num_periods, num_points,
-    is_ambiguous, seed_solution, is_zero, max_states_period]
+    is_ambiguous, seed_solution]
 
-fort.wrapper_solve_fortran_bare(*args)
+# Break in design, maybe remove later ...
+is_zero = True
+args += [is_zero, max_states_period]
+
+f90 = fort.wrapper_solve_fortran_bare(*args)
+
+py = solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
+        eps_cholesky, edu_max, delta, edu_start, is_debug, is_interpolated,
+        level, measure, min_idx, num_draws, num_periods, num_points,
+        is_ambiguous, seed_solution, is_python)
+
+
+print()
+print(py[0])
+print()
+print(f90[0])
+
+#for i in range(7):
+#    print(i)
+# TODO: Randomness still a problem, try further to fully align interface.
+np.testing.assert_equal(py[4], replace_missing_values(f90[4]))
+# Payoff ex post
+np.testing.assert_equal(py[3], replace_missing_values(f90[3]))
+

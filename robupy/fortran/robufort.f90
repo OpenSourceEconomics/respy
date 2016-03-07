@@ -21,11 +21,7 @@ MODULE robufort_extension
 
     PUBLIC :: read_specification
 
-    PUBLIC :: get_disturbances
-    
     PUBLIC :: store_results
-
-    PUBLIC :: solve_fortran_bare
 
 CONTAINS
 !*******************************************************************************
@@ -156,6 +152,11 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
                 is_debug, is_zero, is_interpolated, num_points, min_idx, & 
                 is_ambiguous) 
 
+    !
+    !   This function serves as the replacement for the clsRobupy and reads in 
+    !   all required information about the model parameterization.
+    !
+
     !/* external objects    */
 
     INTEGER(our_int), INTENT(OUT)   :: seed_simulation 
@@ -246,234 +247,10 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
     CLOSE(1, STATUS='delete')
 
     ! Construct auxiliary objects
-    is_ambiguous = (level .GT. zero_dble)
     min_idx = MIN(num_periods, (edu_max - edu_start + 1))
+    is_ambiguous = (level .GT. zero_dble)
 
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE get_disturbances(periods_eps_relevant, level, shocks, seed, &
-                is_debug, is_zero) 
-
-    !/* external objects    */
-
-    REAL(our_dble), INTENT(INOUT)       :: periods_eps_relevant(:, :, :)
-
-    REAL(our_dble), INTENT(IN)          :: shocks(4, 4)
-    REAL(our_dble), INTENT(IN)          :: level
-
-    INTEGER(our_int),INTENT(IN)         :: seed 
-
-    LOGICAL, INTENT(IN)                 :: is_debug
-    LOGICAL, INTENT(IN)                 :: is_zero
-
-    !/* internal objects    */
-
-    REAL(our_dble)                      :: eps_cholesky(4, 4)
-
-    INTEGER(our_int)                    :: seed_inflated(15)
-    INTEGER(our_int)                    :: num_periods
-    INTEGER(our_int)                    :: seed_size
-    INTEGER(our_int)                    :: num_draws
-    INTEGER(our_int)                    :: period
-    INTEGER(our_int)                    :: j
-    INTEGER(our_int)                    :: i
-    
-    LOGICAL                             :: READ_IN
-
-!------------------------------------------------------------------------------- 
-! Algorithm
-!------------------------------------------------------------------------------- 
-
-    ! Auxiliary objects
-    num_periods = SIZE(periods_eps_relevant, 1)
-
-    num_draws = SIZE(periods_eps_relevant, 2)
-
-    CALL cholesky(eps_cholesky, shocks)
-
-    ! Set random seed
-    seed_inflated(:) = seed
-    
-    CALL RANDOM_SEED(size=seed_size)
-
-    CALL RANDOM_SEED(put=seed_inflated)
-
-    ! Create standard deviates
-    INQUIRE(FILE='disturbances.txt', EXIST=READ_IN)
-
-    IF ((READ_IN .EQV. .True.)  .AND. (is_debug .EQV. .True.)) THEN
-
-        OPEN(12, file='disturbances.txt')
-
-        DO period = 1, num_periods
-
-            DO j = 1, num_draws
-        
-                2000 FORMAT(4(1x,f15.10))
-                READ(12,2000) periods_eps_relevant(period, j, :)
-        
-            END DO
-      
-        END DO
-
-        CLOSE(12)
-
-    ELSE
-
-        DO period = 1, num_periods
-
-            CALL multivariate_normal(periods_eps_relevant(period, :, :))
-        
-        END DO
-
-    END IF
-
-    ! Transformations
-    DO period = 1, num_periods
-        
-        ! Apply variance change
-        DO i = 1, num_draws
-        
-            periods_eps_relevant(period, i:i, :) = &
-                TRANSPOSE(MATMUL(eps_cholesky, TRANSPOSE(periods_eps_relevant(period, i:i, :))))
-        
-        END DO
-
-    END DO
-
-    ! Transformation in case of risk-only. In the case of ambiguity, this 
-    ! transformation is later as it needs adjustment for the switched means.
-    IF (level .EQ. zero_dble) THEN
-        
-        ! Transform disturbance for occupations
-        DO period = 1, num_periods
-
-            DO j = 1, 2
-            
-                periods_eps_relevant(period, :, j) = &
-                        EXP(periods_eps_relevant(period, :, j))
-            
-            END DO
-
-        END DO
-        
-    END IF
-
-    ! Special case of absence randomness (all disturbances equal to zero). Note
-    ! that the disturbances for the two occupations are set to one instead of
-    ! zero.
-    IF (is_zero) THEN
-
-        periods_eps_relevant = zero_dble
-
-        DO period = 1, num_periods
-
-            DO j = 1, 2
-
-                periods_eps_relevant(period, :, j) = one_dble
-
-            END DO
-
-        END DO
-
-    END IF
-
-END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE solve_fortran_bare(mapping_state_idx, periods_emax, & 
-    periods_future_payoffs, periods_payoffs_ex_post, & 
-    periods_payoffs_systematic, states_all, states_number_period, & 
-    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, &
-    eps_cholesky, edu_max, delta, edu_start, is_debug, is_interpolated, &
-    level, measure, min_idx, num_draws, num_periods, num_points, &
-    is_ambiguous, seed_solution, is_zero)
-
-
-    INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: mapping_state_idx(:,:,:,:,:)
-    INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: states_number_period(:)
-    INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: states_all(:, :, :)
-
-    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_payoffs_systematic(:, :, :)
-    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_payoffs_ex_post(:, :, :)
-    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_future_payoffs(:, :, :)
-    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_emax(:, :)
-
-    INTEGER(our_int), INTENT(IN)                    :: seed_solution
-    INTEGER(our_int), INTENT(IN)                    :: num_periods
-    INTEGER(our_int), INTENT(IN)                    :: num_points
-    INTEGER(our_int), INTENT(IN)                    :: edu_start
-    INTEGER(our_int), INTENT(IN)                    :: num_draws
-    INTEGER(our_int), INTENT(IN)                    :: edu_max
-    INTEGER(our_int), INTENT(IN)                    :: min_idx
-
-    REAL(our_dble), INTENT(IN)                      :: coeffs_home(:)
-    REAL(our_dble), INTENT(IN)                      :: coeffs_edu(:)
-    REAL(our_dble), INTENT(IN)                      :: shocks(4, 4)
-    REAL(our_dble), INTENT(IN)                      :: coeffs_a(:)
-    REAL(our_dble), INTENT(IN)                      :: coeffs_b(:)
-    REAL(our_dble), INTENT(IN)                      :: level
-    REAL(our_dble), INTENT(IN)                      :: delta
-
-    LOGICAL, INTENT(IN)                             :: is_interpolated
-    LOGICAL, INTENT(IN)                             :: is_ambiguous
-    LOGICAL, INTENT(IN)                             :: is_debug
-
-    CHARACTER(10), INTENT(IN)                       :: measure
-
-    ! TEMPORARY PLACEHOLDERS, BREAKS IN DESIGN
-    REAL(our_dble), INTENT(IN)                      :: eps_cholesky(:, :)
-    LOGICAL, INTENT(IN)                             :: is_zero
-
-    !/* internal objects    */
-
-    INTEGER(our_int)                                 :: max_states_period
-
-    REAL(our_dble), ALLOCATABLE                     :: periods_eps_relevant(:, :, :)
-
-!-------------------------------------------------------------------------------
-! Algorithm
-!-------------------------------------------------------------------------------
-
-    ! Allocate arrays
-    ALLOCATE(mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2))
-    ALLOCATE(states_all(num_periods, 100000, 4))
-    ALLOCATE(states_number_period(num_periods))
-
-    ! Create the state space of the model
-    CALL create_state_space(states_all, states_number_period, & 
-            mapping_state_idx, num_periods, edu_start, edu_max, min_idx)
-
-    ! Auxiliary objects
-    max_states_period = MAXVAL(states_number_period)
-
-    ! Allocate arrays
-    ALLOCATE(periods_payoffs_systematic(num_periods, max_states_period, 4))
-    ALLOCATE(periods_payoffs_ex_post(num_periods, max_states_period, 4))
-    ALLOCATE(periods_future_payoffs(num_periods, max_states_period, 4))
-    ALLOCATE(periods_eps_relevant(num_periods, num_draws, 4))
-    ALLOCATE(periods_emax(num_periods, max_states_period))
-
-    ! Calculate the systematic payoffs
-    CALL calculate_payoffs_systematic(periods_payoffs_systematic, num_periods, &
-            states_number_period, states_all, edu_start, coeffs_a, coeffs_b, & 
-            coeffs_edu, coeffs_home, max_states_period)
-
-    ! Draw random disturbances. For is_debugging purposes, these might also be 
-    ! read in from disk or set to zero/one.   
-    CALL get_disturbances(periods_eps_relevant, level, shocks, seed_solution, &
-            is_debug, is_zero)
-
-    ! Perform backward induction procedure.
-    CALL backward_induction(periods_emax, periods_payoffs_ex_post, &
-            periods_future_payoffs, num_periods, max_states_period, &
-            periods_eps_relevant, num_draws, states_number_period, & 
-            periods_payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
-            states_all, delta, is_debug, shocks, level, measure, &
-            is_interpolated, num_points)
-
-END SUBROUTINE   
 !******************************************************************************* 
 !******************************************************************************* 
 END MODULE 
@@ -544,7 +321,7 @@ PROGRAM robufort
 !-------------------------------------------------------------------------------
 
     ! Read specification of model. This is the FORTRAN replacement for the 
-    ! clsRobupy instance that carries the model specification for the 
+    ! clsRobupy instance that carries the model parametrization for the 
     ! PYTHON/F2PY implementations.
     CALL read_specification(num_periods, delta, level, coeffs_a, coeffs_b, & 
             coeffs_edu, edu_start, edu_max, coeffs_home, shocks, num_draws, &
@@ -553,12 +330,12 @@ PROGRAM robufort
 
     ! Solve the model for a given parametrization.    
     CALL solve_fortran_bare(mapping_state_idx, periods_emax, & 
-        periods_future_payoffs, periods_payoffs_ex_post, & 
-        periods_payoffs_systematic, states_all, states_number_period, & 
-        coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, &
-        eps_cholesky, edu_max, delta, edu_start, is_debug, is_interpolated, &
-        level, measure, min_idx, num_draws, num_periods, num_points, &
-        is_ambiguous, seed_solution, is_zero)
+            periods_future_payoffs, periods_payoffs_ex_post, & 
+            periods_payoffs_systematic, states_all, states_number_period, & 
+            coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, &
+            eps_cholesky, edu_max, delta, edu_start, is_debug, is_interpolated, &
+            level, measure, min_idx, num_draws, num_periods, num_points, &
+            is_ambiguous, seed_solution, is_zero)
 
     ! Store results. These are read in by the PYTHON wrapper and added to the 
     ! clsRobupy instance.

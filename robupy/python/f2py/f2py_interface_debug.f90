@@ -84,9 +84,9 @@ SUBROUTINE wrapper_svd(U, S, VT, A, m)
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_solve_fortran_bare(mapping_state_idx, states_number_period, & 
-    states_all, periods_payoffs_systematic, periods_payoffs_ex_post, & 
-    periods_future_payoffs, periods_emax, &
+SUBROUTINE wrapper_solve_fortran_bare(mapping_state_idx, periods_emax, & 
+    periods_future_payoffs, periods_payoffs_ex_post, & 
+    periods_payoffs_systematic, states_all, states_number_period, & 
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, &
     eps_cholesky, edu_max, delta, edu_start, is_debug, is_interpolated, &
     level, measure, min_idx, num_draws, num_periods, num_points, &
@@ -94,7 +94,7 @@ SUBROUTINE wrapper_solve_fortran_bare(mapping_state_idx, states_number_period, &
 
     !/* external libraries    */
 
-    !USE robufort_ambiguity
+    USE robufort_library
 
     !/* setup    */
 
@@ -102,78 +102,76 @@ SUBROUTINE wrapper_solve_fortran_bare(mapping_state_idx, states_number_period, &
 
     !/* external objects    */
 
+    INTEGER, INTENT(OUT)            :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
+    INTEGER, INTENT(OUT)            :: states_number_period(num_periods)
+    INTEGER, INTENT(OUT)            :: states_all(num_periods, 100000, 4)
 
-    INTEGER, INTENT(OUT)       :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
-    INTEGER, INTENT(OUT)       :: states_number_period(num_periods)
-    INTEGER, INTENT(OUT)       :: states_all(num_periods, 100000, 4)
-
-    DOUBLE PRECISION, INTENT(OUT)      :: periods_payoffs_systematic(num_periods, max_states_period, 4)
-    DOUBLE PRECISION, INTENT(OUT)      :: periods_payoffs_ex_post(num_periods, max_states_period, 4)
-    DOUBLE PRECISION, INTENT(OUT)      :: periods_future_payoffs(num_periods, num_draws, 4)
-    DOUBLE PRECISION, INTENT(OUT)      :: periods_emax(num_periods, max_states_period)
+    DOUBLE PRECISION, INTENT(OUT)   :: periods_payoffs_systematic(num_periods, max_states_period, 4)
+    DOUBLE PRECISION, INTENT(OUT)   :: periods_payoffs_ex_post(num_periods, max_states_period, 4)
+    DOUBLE PRECISION, INTENT(OUT)   :: periods_future_payoffs(num_periods, num_draws, 4)
+    DOUBLE PRECISION, INTENT(OUT)   :: periods_emax(num_periods, max_states_period)
 
 
-    INTEGER, INTENT(IN)                    :: seed_solution
-    INTEGER, INTENT(IN)                    :: num_periods, max_states_period
-    INTEGER, INTENT(IN)                    :: num_points
-    INTEGER, INTENT(IN)                    :: edu_start
-    INTEGER, INTENT(IN)                    :: num_draws
-    INTEGER, INTENT(IN)                    :: edu_max
-    INTEGER, INTENT(IN)                    :: min_idx
+    INTEGER, INTENT(IN)             :: seed_solution
+    INTEGER, INTENT(IN)             :: num_periods, max_states_period
+    INTEGER, INTENT(IN)             :: num_points
+    INTEGER, INTENT(IN)             :: edu_start
+    INTEGER, INTENT(IN)             :: num_draws
+    INTEGER, INTENT(IN)             :: edu_max
+    INTEGER, INTENT(IN)             :: min_idx
 
-    DOUBLE PRECISION, INTENT(IN)                      :: coeffs_home(:)
-    DOUBLE PRECISION, INTENT(IN)                      :: coeffs_edu(:)
-    DOUBLE PRECISION, INTENT(IN)                      :: coeffs_a(:)
-    DOUBLE PRECISION, INTENT(IN)                      :: coeffs_b(:)
-    DOUBLE PRECISION INTENT(IN)                      :: level
-    DOUBLE PRECISION, INTENT(IN)                      :: delta
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_home(:)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_edu(:)
+    DOUBLE PRECISION, INTENT(IN)    :: shocks(:, :)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(:)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(:)
+    DOUBLE PRECISION, INTENT(IN)    :: level
+    DOUBLE PRECISION, INTENT(IN)    :: delta 
+ 
+    LOGICAL, INTENT(IN)             :: is_interpolated
+    LOGICAL, INTENT(IN)             :: is_ambiguous
+    LOGICAL, INTENT(IN)             :: is_debug
 
-    LOGICAL, INTENT(IN)                             :: is_interpolated
-    LOGICAL, INTENT(IN)                             :: is_ambiguous
-    LOGICAL, INTENT(IN)                             :: is_debug
+    CHARACTER(10), INTENT(IN)       :: measure
 
-    CHARACTER(10), INTENT(IN)                       :: measure
+    ! TODO: TEMPORARY PLACEHOLDERS, BREAKS IN DESIGN
+    DOUBLE PRECISION, INTENT(IN)    :: eps_cholesky(:, :)
+    LOGICAL, INTENT(IN)             :: is_zero
 
-    ! TEMPORARY PLACEHOLDERS, BREAKS IN DESIGN
-    DOUBLE PRECISION, INTENT(IN)                      :: eps_cholesky(:, :)
-    LOGICAL, INTENT(IN)                             :: is_zero
+    !/* internal objects    */
 
-    ! THIS IS A BREAK IN DESIGN, BUT REQUIRED TO USE THE INTERFACE GENERATOR
+        ! This container are required as output arguments cannot be of 
+        ! assumed-shape type
+    
+    INTEGER, ALLOCATABLE            :: mapping_state_idx_int(:, :, :, :, :)
+    INTEGER, ALLOCATABLE            :: states_number_period_int(:)
+    INTEGER, ALLOCATABLE            :: states_all_int(:, :, :)
 
-    !DOUBLE PRECISION, INTENT(OUT)   :: payoffs_ex_post(4)
-    !DOUBLE PRECISION, INTENT(OUT)   :: future_payoffs(4)
-    !DOUBLE PRECISION, INTENT(OUT)   :: emax_simulated
-
-    !INTEGER, INTENT(IN)             :: mapping_state_idx(:,:,:,:,:)
-    !INTEGER, INTENT(IN)             :: states_all(:,:,:)
-    !INTEGER, INTENT(IN)             :: num_periods
-    !INTEGER, INTENT(IN)             :: edu_start
-    !INTEGER, INTENT(IN)             :: num_draws
-    !INTEGER, INTENT(IN)             :: edu_max
-    !INTEGER, INTENT(IN)             :: period
-    !INTEGER, INTENT(IN)             :: k
-
-    !DOUBLE PRECISION, INTENT(IN)    :: payoffs_systematic(:)
-    !DOUBLE PRECISION, INTENT(IN)    :: shocks(:, :)
-    !DOUBLE PRECISION, INTENT(IN)    :: eps_relevant(:, :)
-    !DOUBLE PRECISION, INTENT(IN)    :: periods_emax(:,:)
-    !DOUBLE PRECISION, INTENT(IN)    :: delta
-    !DOUBLE PRECISION, INTENT(IN)    :: level
-
-    !LOGICAL, INTENT(IN)             :: is_debug
-
-    !CHARACTER(10), INTENT(IN)       :: measure
+    DOUBLE PRECISION, ALLOCATABLE   :: periods_payoffs_systematic_int(:, :, :)
+    DOUBLE PRECISION, ALLOCATABLE   :: periods_payoffs_ex_post_int(:, :, : )
+    DOUBLE PRECISION, ALLOCATABLE   :: periods_future_payoffs_int(:, :, :)
+    DOUBLE PRECISION, ALLOCATABLE   :: periods_emax_int(:, :)
 
 !-------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
-    
-    ! Get the expected payoffs under ambiguity
-    !CALL get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
-    !            future_payoffs, num_draws, eps_relevant, period, k, & 
-    !            payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
-    !            states_all, num_periods, periods_emax, delta, is_debug, &
-    !            shocks, level, measure)
+!------------------------------------------------------------------------------- 
+   
+    CALL solve_fortran_bare(mapping_state_idx_int, periods_emax_int, & 
+            periods_future_payoffs_int, periods_payoffs_ex_post_int, & 
+            periods_payoffs_systematic_int, states_all_int, & 
+            states_number_period_int, coeffs_a, coeffs_b, coeffs_edu, & 
+            coeffs_home, shocks, eps_cholesky, edu_max, delta, edu_start, & 
+            is_debug, is_interpolated, level, measure, min_idx, num_draws, & 
+            num_periods, num_points, is_ambiguous, seed_solution, is_zero)
+
+    ! Assign to initial objects for return to PYTHON
+    periods_payoffs_systematic = periods_payoffs_systematic_int   
+    periods_payoffs_ex_post = periods_payoffs_ex_post_int  
+    periods_future_payoffs = periods_future_payoffs_int  
+    states_number_period = states_number_period_int 
+    mapping_state_idx = mapping_state_idx_int 
+    periods_emax = periods_emax_int 
+    states_all = states_all_int  
 
 END SUBROUTINE
 !*******************************************************************************
