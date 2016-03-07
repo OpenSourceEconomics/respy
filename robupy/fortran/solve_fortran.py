@@ -127,7 +127,12 @@ def _write_robufort_initialization(robupy_obj):
     init_dict = robupy_obj.get_attr('init_dict')
 
     # Auxiliary objects
+    is_ambiguous = robupy_obj.get_attr('is_ambiguous')
+
     eps_zero = robupy_obj.get_attr('eps_zero')
+
+    min_idx = robupy_obj.get_attr('min_idx')
+
 
     with open('.model.robufort.ini', 'w') as file_:
 
@@ -203,5 +208,13 @@ def _write_robufort_initialization(robupy_obj):
         file_.write(line)
 
         # Auxiliary
+        line = '{0:10d}\n'.format(min_idx)
+        file_.write(line)
+
+        line = '{0}'.format(is_ambiguous)
+        file_.write(line + '\n')
+
         line = '{0}'.format(eps_zero)
         file_.write(line + '\n')
+
+

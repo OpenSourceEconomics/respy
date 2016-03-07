@@ -251,7 +251,8 @@ def test_86():
         args = [period, num_periods, num_states, delta,
                 periods_payoffs_systematic, edu_max, edu_start,
                 mapping_state_idx, periods_emax, states_all, is_simulated,
-                num_draws, shocks, level, is_debug, measure, maxe, eps_relevant]
+                num_draws, shocks, level, is_ambiguous, is_debug, measure,
+                maxe, eps_relevant]
 
         py = _get_endogenous_variable(*args)
         f90 = fort.wrapper_get_endogenous_variable(*args)
@@ -305,6 +306,8 @@ def test_87():
 
         mapping_state_idx = robupy_obj.get_attr('mapping_state_idx')
 
+        is_ambiguous = robupy_obj.get_attr('is_ambiguous')
+
         periods_emax = robupy_obj.get_attr('periods_emax')
 
         model_paras = robupy_obj.get_attr('model_paras')
@@ -345,12 +348,12 @@ def test_87():
             py = get_payoffs(num_draws, eps_relevant, period, k,
                     payoffs_systematic, edu_max, edu_start, mapping_state_idx,
                     states_all, num_periods, periods_emax, delta, is_debug,
-                    shocks, level, measure)
+                    shocks, level, is_ambiguous, measure)
 
             f90 = fort.wrapper_get_payoffs(num_draws, eps_relevant, period, k,
                     payoffs_systematic, edu_max, edu_start, mapping_state_idx,
                     states_all, num_periods, periods_emax, delta, is_debug,
-                    shocks, level, measure)
+                    shocks, level, is_ambiguous, measure)
 
             # Compare returned array on expected future values, ex post
             # payoffs, and future payoffs.
@@ -1223,3 +1226,6 @@ def test_100():
         simulate(robupy_obj)
 
         process('data.robupy.dat', robupy_obj)
+
+    # Cleanup
+    cleanup()

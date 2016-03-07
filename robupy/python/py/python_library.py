@@ -29,7 +29,7 @@ logger = logging.getLogger('ROBUPY_SOLVE')
 def backward_induction(num_periods, max_states_period, periods_eps_relevant,
         num_draws, states_number_period, periods_payoffs_systematic, edu_max,
         edu_start, mapping_state_idx, states_all, delta, is_debug, shocks,
-        level, measure, is_interpolated, num_points):
+        level, is_ambiguous, measure, is_interpolated, num_points):
     """ Backward induction procedure. There are two main threads to this
     function depending on whether interpolation is requested or not.
     """
@@ -83,8 +83,8 @@ def backward_induction(num_periods, max_states_period, periods_eps_relevant,
             endogenous = _get_endogenous_variable(period, num_periods,
                 num_states, delta, periods_payoffs_systematic, edu_max,
                 edu_start, mapping_state_idx, periods_emax, states_all,
-                is_simulated, num_draws, shocks, level, is_debug, measure,
-                maxe, eps_relevant)
+                is_simulated, num_draws, shocks, level, is_ambiguous,
+                is_debug, measure, maxe, eps_relevant)
 
             # Create prediction model based on the random subset of points where
             # the EMAX is actually simulated and thus dependent and
@@ -109,7 +109,8 @@ def backward_induction(num_periods, max_states_period, periods_eps_relevant,
                     get_payoffs(num_draws, eps_relevant, period, k,
                         payoffs_systematic, edu_max, edu_start,
                         mapping_state_idx, states_all, num_periods,
-                        periods_emax, delta, is_debug, shocks, level, measure)
+                        periods_emax, delta, is_debug, shocks, level,
+                        is_ambiguous, measure)
 
                 # Store results
                 periods_emax[period, k] = emax
@@ -126,12 +127,9 @@ def backward_induction(num_periods, max_states_period, periods_eps_relevant,
 
 def get_payoffs(num_draws, eps_relevant, period, k, payoffs_systematic, edu_max,
         edu_start, mapping_state_idx, states_all, num_periods, periods_emax,
-        delta, is_debug, shocks, level, measure):
+        delta, is_debug, shocks, level, is_ambiguous, measure):
     """ Get payoffs for a particular state.
     """
-    # Auxiliary objects
-    is_ambiguous = (level > 0.00)
-
     # Payoffs require different machinery depending on whether there is
     # ambiguity or not.
     if is_ambiguous:
@@ -476,7 +474,7 @@ def _get_exogenous_variables(period, num_periods, num_states, delta,
 def _get_endogenous_variable(period, num_periods, num_states, delta,
         periods_payoffs_systematic, edu_max, edu_start, mapping_state_idx,
         periods_emax, states_all, is_simulated, num_draws, shocks, level,
-        is_debug, measure, maxe, eps_relevant):
+        is_ambiguous, is_debug, measure, maxe, eps_relevant):
     """ Construct endogenous variable for the subset of interpolation points.
     """
     # Construct auxiliary objects
@@ -495,7 +493,7 @@ def _get_endogenous_variable(period, num_periods, num_states, delta,
         emax_simulated, _, _ = get_payoffs(num_draws, eps_relevant, period,
             k, payoffs_systematic, edu_max, edu_start, mapping_state_idx,
             states_all, num_periods, periods_emax, delta, is_debug, shocks,
-            level, measure)
+            level, is_ambiguous, measure)
 
         # Construct dependent variable
         endogenous_variable[k] = emax_simulated - maxe[k]

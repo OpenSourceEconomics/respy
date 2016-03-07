@@ -134,9 +134,10 @@ SUBROUTINE wrapper_solve_fortran_bare(mapping_state_idx, periods_emax, &
 
     CHARACTER(10), INTENT(IN)       :: measure
 
+    LOGICAL, INTENT(IN)             :: is_zero
+
     ! TODO: TEMPORARY PLACEHOLDERS, BREAKS IN DESIGN
     DOUBLE PRECISION, INTENT(IN)    :: eps_cholesky(:, :)
-    LOGICAL, INTENT(IN)             :: is_zero
 
     !/* internal objects    */
 
@@ -764,8 +765,8 @@ END SUBROUTINE
 SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, &
                 num_periods, num_states, delta, periods_payoffs_systematic, &
                 edu_max, edu_start, mapping_state_idx, periods_emax, &
-                states_all, is_simulated, num_draws, shocks, level, is_debug, & 
-                measure, maxe, eps_relevant)
+                states_all, is_simulated, num_draws, shocks, level, & 
+                is_ambiguous, is_debug, measure, maxe, eps_relevant)
 
     !/* external libraries    */
 
@@ -797,6 +798,7 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, &
     INTEGER, INTENT(IN)                 :: period
 
     LOGICAL, INTENT(IN)                 :: is_simulated(:)
+    LOGICAL, INTENT(IN)                 :: is_ambiguous
     LOGICAL, INTENT(IN)                 :: is_debug
     
     CHARACTER(10), INTENT(IN)           :: measure
@@ -808,8 +810,8 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, &
     CALL get_endogenous_variable(exogenous_variable, period, num_periods, &
             num_states, delta, periods_payoffs_systematic, edu_max, &
             edu_start, mapping_state_idx, periods_emax, states_all, &
-            is_simulated, num_draws, shocks, level, is_debug, measure, maxe, &
-            eps_relevant)
+            is_simulated, num_draws, shocks, level, is_ambiguous, is_debug, & 
+            measure, maxe, eps_relevant)
 
 END SUBROUTINE
 !*******************************************************************************
@@ -893,7 +895,8 @@ END SUBROUTINE
 SUBROUTINE wrapper_get_payoffs(emax_simulated, payoffs_ex_post, future_payoffs, &
                 num_draws, eps_relevant, period, k, payoffs_systematic, & 
                 edu_max, edu_start, mapping_state_idx, states_all, num_periods, & 
-                periods_emax, delta, is_debug, shocks, level, measure)
+                periods_emax, delta, is_debug, shocks, level, is_ambiguous, & 
+                measure)
 
 
     !/* external libraries    */
@@ -926,6 +929,7 @@ SUBROUTINE wrapper_get_payoffs(emax_simulated, payoffs_ex_post, future_payoffs, 
     INTEGER, INTENT(IN)                 :: period
     INTEGER, INTENT(IN)                 :: k 
 
+    LOGICAL, INTENT(IN)                 :: is_ambiguous
     LOGICAL, INTENT(IN)                 :: is_debug
 
     CHARACTER(10), INTENT(IN)           :: measure
@@ -938,7 +942,7 @@ SUBROUTINE wrapper_get_payoffs(emax_simulated, payoffs_ex_post, future_payoffs, 
                 num_draws, eps_relevant, period, k, payoffs_systematic, & 
                 edu_max, edu_start, mapping_state_idx, states_all, &
                 num_periods, periods_emax, delta, is_debug, shocks, level, &
-                measure)
+                is_ambiguous, measure)
     
 END SUBROUTINE
 !*******************************************************************************

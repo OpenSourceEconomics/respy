@@ -8,9 +8,6 @@ MODULE robufort_extension
 
     USE robufort_auxiliary
 
-    ! TODO: To be removed later, 
-    USE robufort_library
-
     !/* setup   */
 
     IMPLICIT NONE
@@ -154,7 +151,8 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
 
     !
     !   This function serves as the replacement for the clsRobupy and reads in 
-    !   all required information about the model parameterization.
+    !   all required information about the model parameterization. It just 
+    !   reads in all required information. No auxiliary processing is intended.
     !
 
     !/* external objects    */
@@ -245,13 +243,11 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
         READ(1, 1505) num_points
 
         ! AUXILIARY
+        READ(1, 1505) min_idx
+        READ(1, *) is_ambiguous
         READ(1, *) is_zero
 
     CLOSE(1, STATUS='delete')
-
-    ! Construct auxiliary objects
-    min_idx = MIN(num_periods, (edu_max - edu_start + 1))
-    is_ambiguous = (level .GT. zero_dble)
 
 END SUBROUTINE
 !******************************************************************************* 
@@ -303,6 +299,7 @@ PROGRAM robufort
     REAL(our_dble)                  :: level
 
     LOGICAL                         :: is_interpolated
+    LOGICAL                         :: is_ambiguous
     LOGICAL                         :: is_debug
     LOGICAL                         :: is_zero
 
@@ -310,7 +307,6 @@ PROGRAM robufort
 
     ! This is newly added and needs to be integrated throughout the code to 
     ! align FORTRAN and PYTHON. Some are only placeholders.
-    LOGICAL                         :: is_ambiguous
     REAL(our_dble)                  :: eps_cholesky(4, 4) = zero_dble
 
 

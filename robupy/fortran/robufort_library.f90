@@ -32,18 +32,18 @@ MODULE robufort_library
  CONTAINS
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE get_disturbances(periods_eps_relevant, level, shocks, seed, &
-                is_debug, is_zero) 
+SUBROUTINE get_disturbances(periods_eps_relevant, shocks, seed, is_debug, & 
+                is_zero, is_ambiguous) 
 
     !/* external objects    */
 
     REAL(our_dble), INTENT(INOUT)       :: periods_eps_relevant(:, :, :)
 
     REAL(our_dble), INTENT(IN)          :: shocks(4, 4)
-    REAL(our_dble), INTENT(IN)          :: level
 
     INTEGER(our_int),INTENT(IN)         :: seed 
 
+    LOGICAL, INTENT(IN)                 :: is_ambiguous
     LOGICAL, INTENT(IN)                 :: is_debug
     LOGICAL, INTENT(IN)                 :: is_zero
 
@@ -124,10 +124,7 @@ SUBROUTINE get_disturbances(periods_eps_relevant, level, shocks, seed, &
 
     ! Transformation in case of risk-only. In the case of ambiguity, this 
     ! transformation is later as it needs adjustment for the switched means.
-
-    ! TODO: This is an is_ambiguious case.
-
-    IF (level .EQ. zero_dble) THEN
+    IF (.NOT. is_ambiguous) THEN
         
         ! Transform disturbance for occupations
         DO period = 1, num_periods
@@ -253,15 +250,15 @@ SUBROUTINE solve_fortran_bare(mapping_state_idx, periods_emax, &
 
     ! Draw random disturbances. For is_debugging purposes, these might also be 
     ! read in from disk or set to zero/one.   
-    CALL get_disturbances(periods_eps_relevant, level, shocks, seed_solution, &
-            is_debug, is_zero)
+    CALL get_disturbances(periods_eps_relevant, shocks, seed_solution, &
+            is_debug, is_zero, is_ambiguous)
 
     ! Perform backward induction procedure.
     CALL backward_induction(periods_emax, periods_payoffs_ex_post, &
             periods_future_payoffs, num_periods, max_states_period, &
             periods_eps_relevant, num_draws, states_number_period, & 
             periods_payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
-            states_all, delta, is_debug, shocks, level, measure, &
+            states_all, delta, is_debug, shocks, level, is_ambiguous, measure, &
             is_interpolated, num_points)
 
 END SUBROUTINE   
@@ -501,7 +498,7 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
                 periods_eps_relevant, num_draws, states_number_period, & 
                 periods_payoffs_systematic, edu_max, edu_start, &
                 mapping_state_idx, states_all, delta, is_debug, shocks, &
-                level, measure, is_interpolated, num_points)
+                level, is_ambiguous, measure, is_interpolated, num_points)
 
     !
     ! Development Notes
@@ -534,6 +531,7 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
     INTEGER(our_int), INTENT(IN)        :: num_points
 
     LOGICAL, INTENT(IN)                 :: is_interpolated
+    LOGICAL, INTENT(IN)                 :: is_ambiguous
     LOGICAL, INTENT(IN)                 :: is_debug
 
     CHARACTER(10), INTENT(IN)           :: measure
@@ -616,8 +614,8 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
             CALL get_endogenous_variable(endogenous, period, num_periods, &
                     num_states, delta, periods_payoffs_systematic, edu_max, & 
                     edu_start, mapping_state_idx, periods_emax, states_all, & 
-                    is_simulated, num_draws, shocks, level, is_debug, measure, & 
-                    maxe, eps_relevant)
+                    is_simulated, num_draws, shocks, level, is_ambiguous, & 
+                    is_debug, measure, maxe, eps_relevant)
 
             ! Create prediction model based on the random subset of points where
             ! the EMAX is actually simulated and thus endogenous and
@@ -645,7 +643,8 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
                         future_payoffs, num_draws, eps_relevant, period, k, &
                         payoffs_systematic, edu_max, edu_start, & 
                         mapping_state_idx, states_all, num_periods, & 
-                        periods_emax, delta, is_debug, shocks, level, measure)
+                        periods_emax, delta, is_debug, shocks, level, & 
+                        is_ambiguous, measure)
 
                 ! Collect information
                 periods_emax(period + 1, k + 1) = emax_simulated
@@ -805,7 +804,7 @@ SUBROUTINE get_payoffs(emax_simulated, payoffs_ex_post, future_payoffs, &
                 num_draws, eps_relevant, period, k, payoffs_systematic, & 
                 edu_max, edu_start, mapping_state_idx, states_all, &
                 num_periods, periods_emax, delta, is_debug, shocks, level, &
-                measure)
+                is_ambiguous, measure)
 
     !/* external objects    */
 
@@ -829,20 +828,14 @@ SUBROUTINE get_payoffs(emax_simulated, payoffs_ex_post, future_payoffs, &
     INTEGER(our_int), INTENT(IN)        :: period
     INTEGER(our_int), INTENT(IN)        :: k 
 
+    LOGICAL, INTENT(IN)                 :: is_ambiguous
     LOGICAL, INTENT(IN)                 :: is_debug
 
     CHARACTER(10), INTENT(IN)           :: measure
 
-    !/* external objects    */
-     
-    LOGICAL                             :: is_ambiguous
-
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
-    
-    ! Create auxiliary objects  
-    is_ambiguous = (level .GT. zero_dble)
 
     ! Payoffs require different machinery depending on whether there is
     ! ambiguity or not.
@@ -870,8 +863,8 @@ END SUBROUTINE
 SUBROUTINE get_endogenous_variable(endogenous, period, num_periods, &
                 num_states, delta, periods_payoffs_systematic, edu_max, & 
                 edu_start, mapping_state_idx, periods_emax, states_all, & 
-                is_simulated, num_draws, shocks, level, is_debug, measure, & 
-                maxe, eps_relevant)
+                is_simulated, num_draws, shocks, level, is_ambiguous, & 
+                is_debug, measure, maxe, eps_relevant)
 
     !/* external objects    */
 
@@ -896,6 +889,7 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_periods, &
 
 
     LOGICAL, INTENT(IN)                 :: is_simulated(:)
+    LOGICAL, INTENT(IN)                 :: is_ambiguous
     LOGICAL, INTENT(IN)                 :: is_debug
 
     CHARACTER(10), INTENT(IN)           :: measure
@@ -932,8 +926,8 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_periods, &
         CALL get_payoffs(emax_simulated, payoffs_ex_post, future_payoffs, &
                 num_draws, eps_relevant, period, k, payoffs_systematic, &
                 edu_max, edu_start, mapping_state_idx, states_all, & 
-                num_periods, periods_emax, delta, is_debug, shocks, level, &
-                measure)
+                num_periods, periods_emax, delta, is_debug, shocks, & 
+                level, is_ambiguous, measure)
 
         ! Construct dependent variable
         endogenous(k + 1) = emax_simulated - maxe(k + 1)

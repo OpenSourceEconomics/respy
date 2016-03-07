@@ -155,7 +155,7 @@ def solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
             states_number_period, mapping_state_idx, is_interpolated,
             num_periods, num_points, states_all, num_draws, edu_start,
             is_python, is_debug, edu_max, measure, shocks, delta, level,
-            periods_eps_relevant)
+            is_ambiguous, periods_eps_relevant)
 
     logger.info('... finished \n')
 
@@ -230,7 +230,8 @@ def _calculate_payoffs_systematic(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
 def _backward_induction_procedure(periods_payoffs_systematic,
         states_number_period, mapping_state_idx, is_interpolated, num_periods,
         num_points, states_all, num_draws, edu_start, is_python, is_debug,
-        edu_max, measure, shocks, delta, level, periods_eps_relevant):
+        edu_max, measure, shocks, delta, level, is_ambiguous,
+        periods_eps_relevant):
     """ Perform backward induction procedure. This function is a wrapper
     around the PYTHON and F2PY implementation.
     """
@@ -244,7 +245,8 @@ def _backward_induction_procedure(periods_payoffs_systematic,
                 max_states_period, periods_eps_relevant, num_draws,
                 states_number_period, periods_payoffs_systematic, edu_max,
                 edu_start, mapping_state_idx, states_all, delta, is_debug,
-                shocks, level, measure, is_interpolated, num_points)
+                shocks, level, is_ambiguous, measure, is_interpolated,
+                num_points)
 
     else:
         import robupy.python.f2py.f2py_library as f2py_library
@@ -253,7 +255,8 @@ def _backward_induction_procedure(periods_payoffs_systematic,
                 max_states_period, periods_eps_relevant, num_draws,
                 states_number_period, periods_payoffs_systematic,
                 edu_max, edu_start, mapping_state_idx, states_all, delta,
-                is_debug, shocks, level, measure, is_interpolated, num_points)
+                is_debug, shocks, level, is_ambiguous, measure,
+                is_interpolated, num_points)
 
     # Replace missing values
     periods_emax = replace_missing_values(periods_emax)
