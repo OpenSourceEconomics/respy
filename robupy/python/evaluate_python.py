@@ -219,3 +219,4 @@ def evaluate_criterion_function(mapping_state_idx, periods_emax,
 
     # Finishing
     return likl
+

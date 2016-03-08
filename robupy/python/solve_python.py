@@ -74,6 +74,8 @@ def solve_python(robupy_obj):
     periods_eps_relevant = create_disturbances(num_draws, seed_solution,
         eps_cholesky, is_ambiguous, num_periods, is_debug, 'solution')
 
+    # TODO: Extract interpolation ...
+
     # Solve the model using PYTHON/F2PY implementation
     args = solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
                 shocks, edu_max, delta, edu_start, is_debug, is_interpolated,

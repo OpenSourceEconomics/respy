@@ -203,7 +203,7 @@ SUBROUTINE evaluate_criterion_function(rslt, mapping_state_idx, periods_emax, &
         likl(i) = clip_value(likl(i), TINY_FLOAT, HUGE_FLOAT)
     END DO
 
-    rslt = -SUM(LOG(likl)) / num_agents * num_periods
+    rslt = -SUM(LOG(likl)) / (num_agents * num_periods)
 
 
 END SUBROUTINE

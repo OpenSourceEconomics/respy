@@ -38,9 +38,9 @@ from modules.auxiliary import compile_package
 print('not recompiling')
 #compile_package('--fortran --debug', False)
 
-np.random.seed(321)
+#np.random.seed(321)
 
-for _ in range(1):
+for _ in range(1000):
     constraints = dict()
 
     # THIS IS REQUIRED
@@ -52,9 +52,8 @@ for _ in range(1):
     constraints['draws'] = num_draws
     constraints['agents'] = np.random.random_integers(10, num_draws)
 
-    print('I am using the orginal test and disturbances')
-    #init_dict = generate_init(constraints)
-    #write_disturbances(init_dict)
+    init_dict = generate_init(constraints)
+    write_disturbances(init_dict)
 
     base = None
 
@@ -67,7 +66,6 @@ for _ in range(1):
 
         data_frame = simulate(robupy_obj)
 
-
         #robupy_obj.unlock()
 
         robupy_obj.attr['version'] = version
@@ -79,12 +77,11 @@ for _ in range(1):
         if base is None:
             base = eval
 
-        #np.testing.assert_allclose(base, 12.961976183368272)
         print('outside', version, eval)
-        #np.testing.assert_allclose(base, eval)
+        np.testing.assert_allclose(base, eval)
 
     try:
-        #os.unlink('disturbances.txt')
+        os.unlink('disturbances.txt')
         os.unlink('interpolation.txt')
     except:
         pass
