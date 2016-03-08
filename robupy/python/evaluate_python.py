@@ -94,7 +94,6 @@ def evaluate_python(robupy_obj, data_frame):
 ''' Auxiliary functions
 '''
 
-
 def _evaluate_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
         edu_max, delta, edu_start, is_debug, is_interpolated, level, measure,
         min_idx, num_draws, num_periods, num_points, is_ambiguous,
@@ -104,11 +103,42 @@ def _evaluate_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
     FORTRAN implementations. The first part of the interface is identical to
     the solution request functions.
     """
-    # Solve the model for given parametrization
+
+    if is_python:
+        likl = evaluate_criterion_function(coeffs_a, coeffs_b, coeffs_edu,
+                coeffs_home, shocks, edu_max, delta, edu_start, is_debug,
+                is_interpolated, level, measure, min_idx, num_draws,
+                num_periods, num_points, is_ambiguous, periods_eps_relevant,
+                eps_cholesky, num_agents, num_sims, data_array,
+                standard_deviates)
+
+    else:
+        import robupy.python.f2py.f2py_library as f2py_library
+        likl = f2py_library.wrapper_evaluate_criterion_function(coeffs_a,
+                coeffs_b, coeffs_edu, coeffs_home, shocks, edu_max, delta,
+                edu_start, is_debug, is_interpolated, level, measure,
+                min_idx, num_draws, num_periods, num_points, is_ambiguous,
+                periods_eps_relevant, eps_cholesky, num_agents, num_sims,
+                data_array, standard_deviates)
+
+    # TODO: CHECKS ...
+    # Finishing
+    return likl
+
+
+# Solve the model for given parametrization
+def evaluate_criterion_function(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+                             shocks,
+        edu_max, delta, edu_start, is_debug, is_interpolated, level, measure,
+        min_idx, num_draws, num_periods, num_points, is_ambiguous,
+        periods_eps_relevant, eps_cholesky, num_agents, num_sims,
+        data_array, standard_deviates):
+
+    # This call the PYTON VREIONS
     args = solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         shocks, edu_max, delta, edu_start, is_debug, is_interpolated, level,
         measure, min_idx, num_draws, num_periods, num_points, is_ambiguous,
-        periods_eps_relevant, is_python)
+        periods_eps_relevant, True)
 
     # Distribute return arguments
     mapping_state_idx, periods_emax, periods_future_payoffs = args[:3]

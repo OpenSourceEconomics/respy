@@ -5,9 +5,9 @@
 !
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_evaluate_fortran_bare(rslt, coeffs_a, coeffs_b, coeffs_edu, & 
-                coeffs_home, shocks, edu_max, delta, edu_start, is_debug, & 
-                is_interpolated, level, measure, min_idx, num_draws, & 
+SUBROUTINE wrapper_evaluate_criterion_function(rslt, coeffs_a, coeffs_b, &
+                coeffs_edu, coeffs_home, shocks, edu_max, delta, edu_start, & 
+                is_debug, is_interpolated, level, measure, min_idx, num_draws, & 
                 num_periods, num_points, is_ambiguous, periods_eps_relevant, & 
                 eps_cholesky, num_agents, num_sims, data_array, & 
                 standard_deviates)
@@ -55,7 +55,7 @@ SUBROUTINE wrapper_evaluate_fortran_bare(rslt, coeffs_a, coeffs_b, coeffs_edu, &
 ! Algorithm
 !-------------------------------------------------------------------------------
     
-    CALL evaluate_fortran_bare(rslt, coeffs_a, coeffs_b, coeffs_edu, & 
+    CALL evaluate_criterion_function(rslt, coeffs_a, coeffs_b, coeffs_edu, & 
             coeffs_home, shocks, edu_max, delta, edu_start, is_debug, & 
             is_interpolated, level, measure, min_idx, num_draws, & 
             num_periods, num_points, is_ambiguous, periods_eps_relevant, & 

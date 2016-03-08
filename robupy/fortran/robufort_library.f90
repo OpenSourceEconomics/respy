@@ -32,7 +32,7 @@ MODULE robufort_library
  CONTAINS
  !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE evaluate_fortran_bare(rslt, coeffs_a, coeffs_b, coeffs_edu, & 
+SUBROUTINE evaluate_criterion_function(rslt, coeffs_a, coeffs_b, coeffs_edu, & 
                 coeffs_home, shocks, edu_max, delta, edu_start, is_debug, & 
                 is_interpolated, level, measure, min_idx, num_draws, & 
                 num_periods, num_points, is_ambiguous, periods_eps_relevant, & 
