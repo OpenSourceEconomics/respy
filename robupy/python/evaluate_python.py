@@ -123,11 +123,12 @@ def _evaluate_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
             # Extract observable components of state space as well as agent
             # decision.
             exp_a, exp_b, edu, edu_lagged = data_array[j, 4:].astype(int)
-            choice_indicator = data_array[j, 2].astype(int)
+            choice = data_array[j, 2].astype(int)
+            is_working = choice in [1, 2]
 
             # Transform total years of education to additional years of
             # education and create an index from the choice.
-            edu, idx = edu - edu_start, choice_indicator - 1
+            edu, idx = edu - edu_start, choice - 1
 
             # Get state indicator to obtain the systematic component of the
             # agents payoffs. These feed into the simulation of choice
@@ -144,14 +145,14 @@ def _evaluate_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
             # If an agent is observed working, then the the labor market shocks
             # are observed and the conditional distribution is used to determine
             # the choice probabilities.
-            if choice_indicator in [1, 2]:
+            if is_working:
                 # Calculate the disturbance, which follows a normal
                 # distribution.
                 eps = np.log(data_array[j, 3].astype(float)) - \
                         np.log(payoffs_systematic[idx])
                 # Construct independent normal draws implied by the observed
                 # wages.
-                if choice_indicator == 1:
+                if choice == 1:
                     deviates[:, idx] = eps / np.sqrt(shocks[idx, idx])
                 else:
                     deviates[:, idx] = (eps - eps_cholesky[idx, 0] *

@@ -34,7 +34,7 @@ from modules.auxiliary import compile_package
 
 compile_package('--fortran --debug', False)
 
-import robupy.python.f2py.f2py_debug as fort
+import robupy.python.f2py.f2py_library as fort_lib
 
 np.random.seed(321)
 
@@ -103,7 +103,7 @@ for _ in range(1):
             data_array, standard_deviates, is_python)
 
     print('FORTRAN')
-    f90 = fort.wrapper_evaluate_fortran_bare(coeffs_a, coeffs_b, coeffs_edu,
+    f90 = fort_lib.wrapper_evaluate_fortran_bare(coeffs_a, coeffs_b, coeffs_edu,
             coeffs_home, shocks, edu_max, delta, edu_start, is_debug,
             is_interpolated, level, measure, min_idx, num_draws, num_periods,
             num_points, is_ambiguous, periods_eps_relevant, eps_cholesky,

@@ -5,6 +5,65 @@
 !
 !*******************************************************************************
 !*******************************************************************************
+SUBROUTINE wrapper_evaluate_fortran_bare(rslt, coeffs_a, coeffs_b, coeffs_edu, & 
+                coeffs_home, shocks, edu_max, delta, edu_start, is_debug, & 
+                is_interpolated, level, measure, min_idx, num_draws, & 
+                num_periods, num_points, is_ambiguous, periods_eps_relevant, & 
+                eps_cholesky, num_agents, num_sims, data_array, & 
+                standard_deviates)
+
+    !/* external libraries      */
+
+    USE robufort_library
+
+    !/* setup                   */
+
+    IMPLICIT NONE
+
+    !/* external objects        */
+
+    DOUBLE PRECISION, INTENT(OUT)   :: rslt 
+
+    INTEGER, INTENT(IN)             :: num_periods
+    INTEGER, INTENT(IN)             :: num_points
+    INTEGER, INTENT(IN)             :: edu_start
+    INTEGER, INTENT(IN)             :: num_draws
+    INTEGER, INTENT(IN)             :: edu_max
+    INTEGER, INTENT(IN)             :: min_idx
+    INTEGER, INTENT(IN)             :: num_agents, num_sims
+
+    DOUBLE PRECISION, INTENT(IN)    :: periods_eps_relevant(:, :, :)
+    DOUBLE PRECISION, INTENT(IN)    :: standard_deviates(:, :, :)
+    DOUBLE PRECISION, INTENT(IN)    :: data_array(:, :)
+
+    DOUBLE PRECISION, INTENT(IN)    :: eps_cholesky(:, :)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_home(:)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_edu(:)
+    DOUBLE PRECISION, INTENT(IN)    :: shocks(:, :)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(:)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(:)
+    DOUBLE PRECISION, INTENT(IN)    :: level
+    DOUBLE PRECISION, INTENT(IN)    :: delta 
+
+    LOGICAL, INTENT(IN)             :: is_interpolated
+    LOGICAL, INTENT(IN)             :: is_ambiguous
+    LOGICAL, INTENT(IN)             :: is_debug
+
+    CHARACTER(10), INTENT(IN)       :: measure
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+    
+    CALL evaluate_fortran_bare(rslt, coeffs_a, coeffs_b, coeffs_edu, & 
+            coeffs_home, shocks, edu_max, delta, edu_start, is_debug, & 
+            is_interpolated, level, measure, min_idx, num_draws, & 
+            num_periods, num_points, is_ambiguous, periods_eps_relevant, & 
+            eps_cholesky, num_agents, num_sims, data_array, standard_deviates)
+
+END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE wrapper_simulate_sample(dataset, num_agents, states_all, num_periods, &
                 mapping_state_idx, periods_payoffs_systematic, &
                 periods_eps_relevant, edu_max, edu_start, periods_emax, delta)

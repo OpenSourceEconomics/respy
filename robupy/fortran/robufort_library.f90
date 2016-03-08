@@ -30,6 +30,207 @@ MODULE robufort_library
     PUBLIC
     
  CONTAINS
+ !*******************************************************************************
+!*******************************************************************************
+SUBROUTINE evaluate_fortran_bare(rslt, coeffs_a, coeffs_b, coeffs_edu, & 
+                coeffs_home, shocks, edu_max, delta, edu_start, is_debug, & 
+                is_interpolated, level, measure, min_idx, num_draws, & 
+                num_periods, num_points, is_ambiguous, periods_eps_relevant, & 
+                eps_cholesky, num_agents, num_sims, data_array, & 
+                standard_deviates)
+
+    !/* external objects        */
+
+    REAL(our_dble), INTENT(INOUT)   :: rslt 
+
+    INTEGER(our_int), INTENT(IN)    :: num_periods
+    INTEGER(our_int), INTENT(IN)    :: num_agents
+    INTEGER(our_int), INTENT(IN)    :: num_points
+    INTEGER(our_int), INTENT(IN)    :: edu_start
+    INTEGER(our_int), INTENT(IN)    :: num_draws
+    INTEGER(our_int), INTENT(IN)    :: edu_max
+    INTEGER(our_int), INTENT(IN)    :: min_idx
+    INTEGER(our_int), INTENT(IN)    :: num_sims
+
+    REAL(our_dble), INTENT(IN)      :: periods_eps_relevant(:, :, :)
+    REAL(our_dble), INTENT(IN)      :: standard_deviates(:, :, :)
+    REAL(our_dble), INTENT(IN)      :: data_array(:, :)
+    REAL(our_dble), INTENT(IN)      :: eps_cholesky(:, :)
+    REAL(our_dble), INTENT(IN)      :: coeffs_home(:)
+    REAL(our_dble), INTENT(IN)      :: coeffs_edu(:)
+    REAL(our_dble), INTENT(IN)      :: shocks(:, :)
+    REAL(our_dble), INTENT(IN)      :: coeffs_a(:)
+    REAL(our_dble), INTENT(IN)      :: coeffs_b(:)
+    REAL(our_dble), INTENT(IN)      :: level
+    REAL(our_dble), INTENT(IN)      :: delta 
+
+    LOGICAL, INTENT(IN)             :: is_interpolated
+    LOGICAL, INTENT(IN)             :: is_ambiguous
+    LOGICAL, INTENT(IN)             :: is_debug
+
+    CHARACTER(10), INTENT(IN)       :: measure
+
+    !/* internal objects        */
+
+    INTEGER(our_int), ALLOCATABLE   :: mapping_state_idx(:, :, :, :, :)
+    INTEGER(our_int), ALLOCATABLE   :: states_number_period(:)
+    INTEGER(our_int), ALLOCATABLE   :: states_all(:, :, :)
+
+    REAL(our_dble), ALLOCATABLE     :: periods_payoffs_systematic(:, :, :)
+    REAL(our_dble), ALLOCATABLE     :: periods_payoffs_ex_post(:, :, :)
+    REAL(our_dble), ALLOCATABLE     :: periods_future_payoffs(:, :, :)
+    REAL(our_dble), ALLOCATABLE     :: periods_emax(:, :)
+    REAL(our_dble), ALLOCATABLE     :: likl(:)
+
+    INTEGER(our_int)                :: edu_lagged
+    INTEGER(our_int)                :: counts(4)
+    INTEGER(our_int)                :: choice
+    INTEGER(our_int)                :: period
+    INTEGER(our_int)                :: exp_a
+    INTEGER(our_int)                :: exp_b
+    INTEGER(our_int)                :: idx
+    INTEGER(our_int)                :: edu
+    INTEGER(our_int)                :: i
+    INTEGER(our_int)                :: s
+    INTEGER(our_int)                :: k
+    INTEGER(our_int)                :: j
+    
+    REAL(our_dble)                  :: conditional_deviates(num_sims, 4)
+    REAL(our_dble)                  :: choice_probabilities(4)
+    REAL(our_dble)                  :: payoffs_systematic(4)
+    REAL(our_dble)                  :: deviates(num_sims, 4)
+    REAL(our_dble)                  :: payoffs_ex_post(4)
+    REAL(our_dble)                  :: future_payoffs(4)
+    REAL(our_dble)                  :: total_payoffs(4)
+    REAL(our_dble)                  :: disturbances(4)
+    REAL(our_dble)                  :: likl_contrib
+    REAL(our_dble)                  :: eps
+
+    LOGICAL                         :: is_working
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+
+    ! Solve the model for given parametrization
+    CALL solve_fortran_bare(mapping_state_idx, periods_emax, & 
+            periods_future_payoffs, periods_payoffs_ex_post, & 
+            periods_payoffs_systematic, states_all, & 
+            states_number_period, coeffs_a, coeffs_b, coeffs_edu, & 
+            coeffs_home, shocks, edu_max, delta, edu_start, & 
+            is_debug, is_interpolated, level, measure, min_idx, num_draws, & 
+            num_periods, num_points, is_ambiguous, periods_eps_relevant)
+
+    ! Initialize container for likelihood contributions
+    ALLOCATE(likl(num_agents * num_periods)); likl = zero_dble
+
+    j = 1   
+
+    DO i = 0, num_agents - 1
+
+        DO period = 0, num_periods -1
+
+            ! Extract observable components of state space as well as agent
+            ! decision.
+            exp_a = INT(data_array(j, 5))
+            exp_b = INT(data_array(j, 6))
+            edu = INT(data_array(j, 7))
+            edu_lagged = INT(data_array(j, 8))
+
+            choice = INT(data_array(j, 3))
+            is_working = (choice == 1) .OR. (choice == 2)
+
+            ! Transform total years of education to additional years of
+            ! education and create an index from the choice.
+            edu = edu - edu_start
+
+            ! This is only done for alignment
+            idx = choice
+
+            ! Get state indicator to obtain the systematic component of the
+            ! agents payoffs. These feed into the simulation of choice
+            ! probabilities.
+            k = mapping_state_idx(period + 1, exp_a + 1, exp_b + 1, edu + 1, edu_lagged + 1)
+            payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
+
+            ! Extract relevant deviates from standard normal distribution.
+            deviates = standard_deviates(period + 1, :, :)
+
+            ! Prepare to calculate product of likelihood contributions.
+            likl_contrib = 1.0
+
+            ! If an agent is observed working, then the the labor market shocks
+            ! are observed and the conditional distribution is used to determine
+            ! the choice probabilities.
+            IF (is_working) THEN
+
+                ! Calculate the disturbance, which follows a normal
+                ! distribution.
+                eps = LOG(data_array(j, 4)) - LOG(payoffs_systematic(idx))
+                
+                ! Construct independent normal draws implied by the observed
+                ! wages.
+                IF (choice == 1) THEN
+                    deviates(:, idx) = eps / sqrt(shocks(idx, idx))
+                ELSE
+                    deviates(:, idx) = (eps - eps_cholesky(idx, 1) * deviates(:, 1)) / eps_cholesky(idx, idx)
+                END IF
+                
+                ! Record contribution of wage observation. REPLACE 0.0
+                likl_contrib =  likl_contrib * normal_pdf(eps, DBLE(0.0), sqrt(shocks(idx, idx)))
+
+            END IF
+
+            ! Determine conditional deviates. These correspond to the
+            ! unconditional draws if the agent did not work in the labor market.
+            DO s = 1, num_sims
+                conditional_deviates(s, :) = & 
+                    MATMUL(deviates(s, :), TRANSPOSE(eps_cholesky))
+            END DO
+
+            counts = 0
+
+            DO s = 1, num_sims
+                ! Extract deviates from (un-)conditional normal distributions.
+                disturbances = conditional_deviates(s, :)
+
+                disturbances(1) = exp(disturbances(1))
+                disturbances(2) = exp(disturbances(2))
+
+                ! Calculate total payoff.
+                CALL get_total_value(total_payoffs, payoffs_ex_post, & 
+                        future_payoffs, period, num_periods, delta, &
+                        payoffs_systematic, disturbances, edu_max, edu_start, & 
+                        mapping_state_idx, periods_emax, k, states_all)
+                
+                ! Record optimal choices
+                counts(MAXLOC(total_payoffs)) = counts(MAXLOC(total_payoffs)) + 1
+
+            END DO
+
+            ! Determine relative shares. Special care required due to integer 
+            ! arithmetic, transformed to mixed mode arithmetic.
+            choice_probabilities = counts / DBLE(num_sims)
+
+            ! Adjust  and record likelihood contribution
+            likl_contrib = likl_contrib * choice_probabilities(idx)
+            likl(j) = likl_contrib
+            
+            j = j + 1
+
+        END DO
+
+    END DO 
+
+    ! Scaling
+    DO i = 1, num_agents * num_periods
+        likl(i) = clip_value(likl(i), TINY_FLOAT, HUGE_FLOAT)
+    END DO
+
+    rslt = -SUM(LOG(likl)) / num_agents * num_periods
+
+
+END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE solve_fortran_bare(mapping_state_idx, periods_emax, & 
