@@ -175,14 +175,14 @@ def _create_state_space(num_periods, edu_start, is_python, edu_max, min_idx):
     """
     # Interface to core functions
     if is_python:
-        states_all, states_number_period, mapping_state_idx = \
-            python_library.create_state_space(num_periods, edu_start, edu_max,
-                min_idx)
+        create_state_space = python_library.create_state_space
     else:
         import robupy.python.f2py.f2py_library as f2py_library
-        states_all, states_number_period, mapping_state_idx = \
-            f2py_library.wrapper_create_state_space(num_periods, edu_start,
-                edu_max, min_idx)
+        create_state_space = f2py_library.wrapper_create_state_space
+
+    # Create state space
+    states_all, states_number_period, mapping_state_idx = \
+        create_state_space(num_periods, edu_start, edu_max, min_idx)
 
     # Type transformations
     states_number_period = np.array(states_number_period, dtype='int')

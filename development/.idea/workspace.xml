@@ -7,11 +7,7 @@
     <list default="true" id="39b3d67a-e664-4cff-aba7-2a9ae5eaeb87" name="Default" comment="">
       <change type="DELETED" beforePath="$PROJECT_DIR$/analysis/working/driver.py" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/.idea/workspace.xml" afterPath="$PROJECT_DIR$/package/development/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/working/driver.py" afterPath="$PROJECT_DIR$/package/development/working/driver.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/working/test.robupy.ini" afterPath="$PROJECT_DIR$/package/development/working/test.robupy.ini" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/fortran/robufort_library.f90" afterPath="$PROJECT_DIR$/package/robupy/fortran/robufort_library.f90" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/python/evaluate_python.py" afterPath="$PROJECT_DIR$/package/robupy/python/evaluate_python.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/python/f2py/f2py_interface_library.f90" afterPath="$PROJECT_DIR$/package/robupy/python/f2py/f2py_interface_library.f90" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/python/solve_python.py" afterPath="$PROJECT_DIR$/package/robupy/python/solve_python.py" />
     </list>
     <ignored path="robustToolbox.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -43,21 +39,21 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="battery.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="battery.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/package/development/tests/random/modules/battery.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-15.813805">
+            <state vertical-scroll-proportion="0.0">
               <caret line="918" column="25" selection-start-line="918" selection-start-column="0" selection-end-line="919" selection-end-column="0" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="solve_python.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="solve_python.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/package/robupy/python/solve_python.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="179" column="24" selection-start-line="179" selection-start-column="24" selection-end-line="179" selection-end-column="24" />
+            <state vertical-scroll-proportion="0.5216693">
+              <caret line="184" column="8" selection-start-line="184" selection-start-column="8" selection-end-line="184" selection-end-column="8" />
               <folding />
             </state>
           </provider>
@@ -146,7 +142,6 @@
         <option value="$PROJECT_DIR$/package/robupy/clsRobupy.py" />
         <option value="$PROJECT_DIR$/package/robupy/python/py/ambiguity.py" />
         <option value="$PROJECT_DIR$/package/robupy/tests/tests.py" />
-        <option value="$PROJECT_DIR$/package/robupy/python/solve_python.py" />
         <option value="$PROJECT_DIR$/package/development/tests/random/run" />
         <option value="$PROJECT_DIR$/package/robupy/fortran/build_robufort.py" />
         <option value="$PROJECT_DIR$/package/robupy/read.py" />
@@ -157,6 +152,7 @@
         <option value="$PROJECT_DIR$/package/robupy/python/py/python_library.py" />
         <option value="$PROJECT_DIR$/package/robupy/python/evaluate_python.py" />
         <option value="$PROJECT_DIR$/package/development/working/driver.py" />
+        <option value="$PROJECT_DIR$/package/robupy/python/solve_python.py" />
       </list>
     </option>
   </component>
@@ -1146,24 +1142,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/working/driver.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="98" column="30" selection-start-line="98" selection-start-column="9" selection-end-line="98" selection-end-column="30" />
-          <folding>
-            <element signature="e#152#180#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/robupy/python/solve_python.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="179" column="24" selection-start-line="179" selection-start-column="24" selection-end-line="179" selection-end-column="24" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/package/robupy/python/evaluate_python.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -1176,8 +1154,26 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/package/development/tests/random/modules/battery.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-15.813805">
+        <state vertical-scroll-proportion="0.0">
           <caret line="918" column="25" selection-start-line="918" selection-start-column="0" selection-end-line="919" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/development/working/driver.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="98" column="30" selection-start-line="98" selection-start-column="9" selection-end-line="98" selection-end-column="30" />
+          <folding>
+            <element signature="e#152#180#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/robupy/python/solve_python.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.5216693">
+          <caret line="184" column="8" selection-start-line="184" selection-start-column="8" selection-end-line="184" selection-end-column="8" />
           <folding />
         </state>
       </provider>
