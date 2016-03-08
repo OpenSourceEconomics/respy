@@ -139,14 +139,14 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
                 coeffs_edu, edu_start, edu_max, coeffs_home, shocks, & 
-                num_draws, seed_solution, num_agents, seed_simulation, & 
-                is_debug, is_zero, is_interpolated, num_points, min_idx, & 
-                is_ambiguous, measure, request) 
+                eps_cholesky, num_draws, seed_solution, num_agents, & 
+                seed_simulation, is_debug, is_zero, is_interpolated, & 
+                num_points, min_idx, is_ambiguous, measure, request, num_sims) 
 
     !
     !   This function serves as the replacement for the clsRobupy and reads in 
     !   all required information about the model parameterization. It just 
-    !   reads in all required information. No auxiliary processing is intended.
+    !   reads in all required information.  
     !
 
     !/* external objects    */
@@ -158,9 +158,11 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
     INTEGER(our_int), INTENT(OUT)   :: num_points
     INTEGER(our_int), INTENT(OUT)   :: num_draws
     INTEGER(our_int), INTENT(OUT)   :: edu_start
+    INTEGER(our_int), INTENT(OUT)   :: num_sims
     INTEGER(our_int), INTENT(OUT)   :: edu_max
     INTEGER(our_int), INTENT(OUT)   :: min_idx
 
+    REAL(our_dble), INTENT(OUT)     :: eps_cholesky(4, 4)
     REAL(our_dble), INTENT(OUT)     :: coeffs_home(1)
     REAL(our_dble), INTENT(OUT)     :: coeffs_edu(3)
     REAL(our_dble), INTENT(OUT)     :: shocks(4, 4)
@@ -192,8 +194,6 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
 
     1505 FORMAT(i10)
     1515 FORMAT(i10,1x,i10)
-
-    !1520 FORMAT(15)
 
     ! Read model specification
     OPEN(UNIT=1, FILE='.model.robufort.ini')
@@ -237,6 +237,9 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
         READ(1, *) is_interpolated
         READ(1, 1505) num_points
 
+        ! ESTIMATION
+        READ(1, 1505) num_sims
+
         ! AUXILIARY
         READ(1, 1505) min_idx
         READ(1, *) is_ambiguous
@@ -247,17 +250,20 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
 
     CLOSE(1, STATUS='delete')
 
+    ! Construct auxiliary objects
+    CALL cholesky(eps_cholesky, shocks)
+
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE create_disturbances(periods_eps_relevant, shocks, seed, is_debug, & 
-                is_zero, is_ambiguous) 
+SUBROUTINE create_disturbances(periods_eps_relevant, eps_cholesky, seed, & 
+                is_debug, is_zero, is_ambiguous) 
 
     !/* external objects    */
 
     REAL(our_dble), INTENT(INOUT)       :: periods_eps_relevant(:, :, :)
 
-    REAL(our_dble), INTENT(IN)          :: shocks(4, 4)
+    REAL(our_dble), INTENT(IN)          :: eps_cholesky(4, 4)
 
     INTEGER(our_int),INTENT(IN)         :: seed 
 
@@ -266,8 +272,6 @@ SUBROUTINE create_disturbances(periods_eps_relevant, shocks, seed, is_debug, &
     LOGICAL, INTENT(IN)                 :: is_zero
 
     !/* internal objects    */
-
-    REAL(our_dble)                      :: eps_cholesky(4, 4)
 
     INTEGER(our_int)                    :: seed_inflated(15)
     INTEGER(our_int)                    :: num_periods
@@ -287,8 +291,6 @@ SUBROUTINE create_disturbances(periods_eps_relevant, shocks, seed, is_debug, &
     num_periods = SIZE(periods_eps_relevant, 1)
 
     num_draws = SIZE(periods_eps_relevant, 2)
-
-    CALL cholesky(eps_cholesky, shocks)
 
     ! Set random seed
     seed_inflated(:) = seed
@@ -409,6 +411,7 @@ PROGRAM robufort
     INTEGER(our_int)                :: num_points
     INTEGER(our_int)                :: edu_start
     INTEGER(our_int)                :: num_draws
+    INTEGER(our_int)                :: num_sims
     INTEGER(our_int)                :: edu_max
     INTEGER(our_int)                :: min_idx
 
@@ -416,8 +419,12 @@ PROGRAM robufort
     REAL(our_dble), ALLOCATABLE     :: periods_payoffs_ex_post(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_future_payoffs(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_eps_relevant(:, :, :)
+    REAL(our_dble), ALLOCATABLE     :: standard_deviates(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_emax(:, :)
+    REAL(our_dble), ALLOCATABLE     :: data_array(:, :)
 
+
+    REAL(our_dble)                  :: eps_cholesky(4, 4)
     REAL(our_dble)                  :: coeffs_home(1)
     REAL(our_dble)                  :: coeffs_edu(3)
     REAL(our_dble)                  :: shocks(4, 4)
@@ -435,6 +442,8 @@ PROGRAM robufort
     CHARACTER(10)                   :: measure 
     CHARACTER(10)                   :: request
 
+    INTEGER(our_int)                :: k, j
+
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
@@ -443,17 +452,17 @@ PROGRAM robufort
     ! clsRobupy instance that carries the model parametrization for the 
     ! PYTHON/F2PY implementations.
     CALL read_specification(num_periods, delta, level, coeffs_a, coeffs_b, & 
-            coeffs_edu, edu_start, edu_max, coeffs_home, shocks, num_draws, &
-            seed_solution, num_agents, seed_simulation, is_debug, is_zero, &
-            is_interpolated, num_points, min_idx, is_ambiguous, measure, & 
-            request) 
+            coeffs_edu, edu_start, edu_max, coeffs_home, shocks, eps_cholesky, & 
+            num_draws, seed_solution, num_agents, seed_simulation, is_debug, & 
+            is_zero, is_interpolated, num_points, min_idx, is_ambiguous, &
+            measure, request, num_sims) 
 
     ! This part creates (or reads from disk) the disturbances for the Monte 
     ! Carlo integration of the EMAX. For is_debugging purposes, these might also be 
     ! read in from disk or set to zero/one.   
     ALLOCATE(periods_eps_relevant(num_periods, num_draws, 4))
-    CALL create_disturbances(periods_eps_relevant, shocks, seed_solution, &
-            is_debug, is_zero, is_ambiguous)
+    CALL create_disturbances(periods_eps_relevant, eps_cholesky, & 
+            seed_solution, is_debug, is_zero, is_ambiguous)
 
     IF (request == 'solve') THEN
 
@@ -468,18 +477,44 @@ PROGRAM robufort
 
     END IF
 
-    !IF (request == 'evaluate') THEN
+    IF (request == 'evaluate') THEN
+
+        ALLOCATE(data_array(num_periods * num_agents, 8))
+        ALLOCATE(standard_deviates(num_periods, num_sims, 4))
+
+        standard_deviates = zero_dble
+
+    ! Read model specification
+    OPEN(UNIT=1, FILE='.data.robufort.dat')
+
+        ! SHOCKS
+        DO j = 1, num_periods * num_agents
+            READ(1, *) (data_array(j, k), k=1, 8)
+            PRINT *, data_array(j, :)
+        END DO
+    
+    ! TODO: REMOVE STATUS LATER
+    CLOSE(1, STATUS='delete')
+
+        ! Solve the model for a given parametrization.    
+        CALL solve_fortran_bare(mapping_state_idx, periods_emax, & 
+                periods_future_payoffs, periods_payoffs_ex_post, & 
+                periods_payoffs_systematic, states_all, states_number_period, & 
+                coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, edu_max, & 
+                delta, edu_start, is_debug, is_interpolated, level, measure, & 
+                min_idx, num_draws, num_periods, num_points, is_ambiguous, & 
+                periods_eps_relevant)
         
-    !    CALL evaluate_criterion_function(rslt, coeffs_a, coeffs_b, coeffs_edu, & 
-    !            coeffs_home, shocks, edu_max, delta, edu_start, is_debug, & 
-    !            is_interpolated, level, measure, min_idx, num_draws, & 
-    !            num_periods, num_points, is_ambiguous, periods_eps_relevant, & 
-    !            eps_cholesky, num_agents, num_sims, data_array, & 
-    !            standard_deviates)
-    !
-    !    PRINT *, 'HERE I PRIUNT TO FILE'
-    !
-    !END IF
+        CALL evaluate_criterion_function(rslt, coeffs_a, coeffs_b, coeffs_edu, & 
+                coeffs_home, shocks, edu_max, delta, edu_start, is_debug, & 
+                is_interpolated, level, measure, min_idx, num_draws, & 
+                num_periods, num_points, is_ambiguous, periods_eps_relevant, & 
+                eps_cholesky, num_agents, num_sims, data_array, & 
+                standard_deviates)
+    
+    PRINT *, 'rslt', rslt    
+
+    END IF
 
     ! Store results. These are read in by the PYTHON wrapper and added to the 
     ! clsRobupy instance.

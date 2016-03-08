@@ -102,6 +102,8 @@ def _write_robufort_initialization(robupy_obj, request):
 
     min_idx = robupy_obj.get_attr('min_idx')
 
+    num_sims = robupy_obj.get_attr('num_sims')
+
     with open('.model.robufort.ini', 'w') as file_:
 
         # BASICS
@@ -173,6 +175,10 @@ def _write_robufort_initialization(robupy_obj, request):
         file_.write(line + '\n')
 
         line = '{0:10d}\n'.format(init_dict['INTERPOLATION']['points'])
+        file_.write(line)
+
+        # ESTIMATION
+        line = '{0:10d}\n'.format(num_sims)
         file_.write(line)
 
         # Auxiliary

@@ -38,11 +38,13 @@ robupy_obj = read('test.robupy.ini')
 
 robupy_obj = solve(robupy_obj)
 
+periods_emax = robupy_obj.get_attr('periods_emax')[0, 0]
+
+
+np.testing.assert_almost_equal(periods_emax, 1.429653495618082)
 data_frame = simulate(robupy_obj)
 
 evaluate(robupy_obj, data_frame)
-import sys
-sys.exit('evaluating fortran')
 
 import robupy.python.f2py.f2py_library as fort_lib
 
@@ -51,9 +53,11 @@ np.random.seed(321)
 for _ in range(1):
     constraints = dict()
     constraints['debug'] = True
+#    constraints['version'] = 'PYTHON'
 
 
     generate_init(constraints)
+
     # Perform toolbox actions
     robupy_obj = read('test.robupy.ini')
 

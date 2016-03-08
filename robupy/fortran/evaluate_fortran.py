@@ -3,6 +3,7 @@
 model with FORTRAN.
 """
 # standard library
+import pandas as pd
 import os
 
 # module-wide variables
@@ -22,11 +23,17 @@ def evaluate_fortran(robupy_obj, data_frame):
     # Prepare ROBUFORT execution
     _write_robufort_initialization(robupy_obj, 'evaluate')
 
+
+    with open('.data.robufort.dat', 'w') as file_:
+
+        data_frame.to_string(file_, index=False, header=None, na_rep='-99.0')
+
+
     # Call executable
     os.system('"' + PACKAGE_PATH + '/bin/robufort"')
-    print('hre I will be reading ... likelihood')
 
     rslt = 0.0
     # Finishing
     return rslt
+
 

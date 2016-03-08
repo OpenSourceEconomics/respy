@@ -28,7 +28,7 @@ def evaluate(robupy_obj, data_frame):
 
     # Select appropriate interface
     if version == 'FORTRAN':
-        likl = evaluate_fortran(robupy_obj, None)
+        likl = evaluate_fortran(robupy_obj, data_frame)
     else:
         likl = evaluate_python(robupy_obj, data_frame)
 
