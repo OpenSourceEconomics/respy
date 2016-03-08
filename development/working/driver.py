@@ -4,6 +4,8 @@ proposed in Keane & Wolpin (1994).
 """
 
 # standard library
+from scipy.stats import norm
+
 import numpy as np
 
 import scipy
@@ -31,14 +33,16 @@ from modules.auxiliary import compile_package
 
 compile_package('--fortran --debug', False)
 
+import robupy.python.f2py.f2py_debug as fort
+
+
+#generate_init()
 # Perform toolbox actions
 robupy_obj = read('test.robupy.ini')
 
 robupy_obj = solve(robupy_obj)
 
 data_frame = simulate(robupy_obj)
-
-import robupy.python.f2py.f2py_debug as fort
 
 model_paras = robupy_obj.get_attr('model_paras')
 is_debug = robupy_obj.get_attr('is_debug')
@@ -80,17 +84,19 @@ standard_deviates = create_disturbances(num_sims, seed_estimation,
 periods_eps_relevant = create_disturbances(num_draws, seed_solution,
         eps_cholesky, is_ambiguous, num_periods, is_debug, 'solution')
 
+print('PYTHON')
 py = _evaluate_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
         edu_max, delta, edu_start, is_debug, is_interpolated, level, measure,
         min_idx, num_draws, num_periods, num_points, is_ambiguous,
         periods_eps_relevant, eps_cholesky, num_agents, num_sims,
         data_array, standard_deviates, is_python)
 
+print('FORTRAN')
 f90 = fort.wrapper_evaluate_fortran_bare(coeffs_a, coeffs_b, coeffs_edu,
         coeffs_home, shocks, edu_max, delta, edu_start, is_debug,
         is_interpolated, level, measure, min_idx, num_draws, num_periods,
         num_points, is_ambiguous, periods_eps_relevant, eps_cholesky,
         num_agents, num_sims, data_array, standard_deviates, max_states_period)
 
-np.testing.assert_allclose(py, 2.1523954914546666)
+#np.testing.assert_allclose(py, 1.5524954903797965)
 np.testing.assert_allclose(py, f90)

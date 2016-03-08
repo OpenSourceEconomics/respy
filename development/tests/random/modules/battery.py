@@ -4,13 +4,14 @@ development tests.
 
 # standard library
 from pandas.util.testing import assert_frame_equal
-import statsmodels.api as sm
 
 from scipy.optimize.slsqp import _minimize_slsqp
 from scipy.optimize import approx_fprime
 from scipy.optimize import rosen_der
 from scipy.optimize import rosen
+from scipy.stats import norm
 
+import statsmodels.api as sm
 import pandas as pd
 import numpy as np
 
@@ -1014,6 +1015,15 @@ def test_97():
 
         matrix = (np.random.multivariate_normal(np.zeros(dim), np.identity(dim), dim))
         cov = np.dot(matrix, matrix.T)
+
+        # PDF of normal distribution
+        args = np.random.normal(size=3)
+        args[-1] **= 2
+
+        f90 = fort.wrapper_normal_pdf(*args)
+        py = norm.pdf(*args)
+
+        np.testing.assert_almost_equal(py, f90)
 
         # Singular Value Decomposition
         py = scipy.linalg.svd(matrix)

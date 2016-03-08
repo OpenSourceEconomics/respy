@@ -14,6 +14,7 @@ from robupy.python.py.auxiliary import get_total_value
 from robupy.auxiliary import distribute_model_paras
 from robupy.auxiliary import create_disturbances
 from robupy.constants import TINY_FLOAT
+from robupy.constants import HUGE_FLOAT
 
 ''' Main function
 '''
@@ -144,7 +145,7 @@ def _evaluate_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
             # are observed and the conditional distribution is used to determine
             # the choice probabilities.
             if choice_indicator in [1, 2]:
-                # Calculate the disturbance, which follows from a normal
+                # Calculate the disturbance, which follows a normal
                 # distribution.
                 eps = np.log(data_array[j, 3].astype(float)) - \
                         np.log(payoffs_systematic[idx])
@@ -155,6 +156,7 @@ def _evaluate_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
                 else:
                     deviates[:, idx] = (eps - eps_cholesky[idx, 0] *
                         deviates[:, 0]) / eps_cholesky[idx, idx]
+
                 # Record contribution of wage observation.
                 likl_contrib *= norm.pdf(eps, 0.0, np.sqrt(shocks[idx, idx]))
 
@@ -190,7 +192,7 @@ def _evaluate_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
             j += 1
 
     # Scaling
-    likl = -np.mean(np.log(np.clip(likl, TINY_FLOAT, np.inf)))
+    likl = -np.mean(np.log(np.clip(likl, TINY_FLOAT, HUGE_FLOAT)))
 
     # Finishing
     return likl
