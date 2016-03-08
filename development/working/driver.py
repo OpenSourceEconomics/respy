@@ -36,67 +36,68 @@ compile_package('--fortran --debug', False)
 import robupy.python.f2py.f2py_debug as fort
 
 
-#generate_init()
-# Perform toolbox actions
-robupy_obj = read('test.robupy.ini')
+while True:
+    #generate_init()
+    # Perform toolbox actions
+    robupy_obj = read('test.robupy.ini')
 
-robupy_obj = solve(robupy_obj)
+    robupy_obj = solve(robupy_obj)
 
-data_frame = simulate(robupy_obj)
+    data_frame = simulate(robupy_obj)
 
-model_paras = robupy_obj.get_attr('model_paras')
-is_debug = robupy_obj.get_attr('is_debug')
+    model_paras = robupy_obj.get_attr('model_paras')
+    is_debug = robupy_obj.get_attr('is_debug')
 
-# Distribute model parameters
-coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, eps_cholesky = \
-             distribute_model_paras(model_paras, is_debug)
+    # Distribute model parameters
+    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, eps_cholesky = \
+                 distribute_model_paras(model_paras, is_debug)
 
-# Distribute class attribute
-is_interpolated = robupy_obj.get_attr('is_interpolated')
-seed_estimation = robupy_obj.get_attr('seed_estimation')
-seed_solution = robupy_obj.get_attr('seed_solution')
-is_ambiguous = robupy_obj.get_attr('is_ambiguous')
-model_paras = robupy_obj.get_attr('model_paras')
-num_periods = robupy_obj.get_attr('num_periods')
-num_points = robupy_obj.get_attr('num_points')
-num_agents = robupy_obj.get_attr('num_agents')
-is_python = robupy_obj.get_attr('is_python')
-edu_start = robupy_obj.get_attr('edu_start')
-num_draws = robupy_obj.get_attr('num_draws')
-is_debug = robupy_obj.get_attr('is_debug')
-num_sims = robupy_obj.get_attr('num_sims')
-edu_max = robupy_obj.get_attr('edu_max')
-measure = robupy_obj.get_attr('measure')
-min_idx = robupy_obj.get_attr('min_idx')
-level = robupy_obj.get_attr('level')
-delta = robupy_obj.get_attr('delta')
+    # Distribute class attribute
+    is_interpolated = robupy_obj.get_attr('is_interpolated')
+    seed_estimation = robupy_obj.get_attr('seed_estimation')
+    seed_solution = robupy_obj.get_attr('seed_solution')
+    is_ambiguous = robupy_obj.get_attr('is_ambiguous')
+    model_paras = robupy_obj.get_attr('model_paras')
+    num_periods = robupy_obj.get_attr('num_periods')
+    num_points = robupy_obj.get_attr('num_points')
+    num_agents = robupy_obj.get_attr('num_agents')
+    is_python = robupy_obj.get_attr('is_python')
+    edu_start = robupy_obj.get_attr('edu_start')
+    num_draws = robupy_obj.get_attr('num_draws')
+    is_debug = robupy_obj.get_attr('is_debug')
+    num_sims = robupy_obj.get_attr('num_sims')
+    edu_max = robupy_obj.get_attr('edu_max')
+    measure = robupy_obj.get_attr('measure')
+    min_idx = robupy_obj.get_attr('min_idx')
+    level = robupy_obj.get_attr('level')
+    delta = robupy_obj.get_attr('delta')
 
-states_number_period = robupy_obj.get_attr('states_number_period')
-max_states_period = max(states_number_period)
+    states_number_period = robupy_obj.get_attr('states_number_period')
+    max_states_period = max(states_number_period)
 
-# Transform dataset to array for easy access
+    # Transform dataset to array for easy access
 
-data_array = data_frame.as_matrix()
-    # Draw standard normal deviates for S-ML approach
-standard_deviates = create_disturbances(num_sims, seed_estimation,
-        eps_cholesky, is_ambiguous, num_periods, is_debug, 'estimation')
+    data_array = data_frame.as_matrix()
+        # Draw standard normal deviates for S-ML approach
+    standard_deviates = create_disturbances(num_sims, seed_estimation,
+            eps_cholesky, is_ambiguous, num_periods, is_debug, 'estimation')
 
-periods_eps_relevant = create_disturbances(num_draws, seed_solution,
-        eps_cholesky, is_ambiguous, num_periods, is_debug, 'solution')
+    periods_eps_relevant = create_disturbances(num_draws, seed_solution,
+            eps_cholesky, is_ambiguous, num_periods, is_debug, 'solution')
 
-print('PYTHON')
-py = _evaluate_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
-        edu_max, delta, edu_start, is_debug, is_interpolated, level, measure,
-        min_idx, num_draws, num_periods, num_points, is_ambiguous,
-        periods_eps_relevant, eps_cholesky, num_agents, num_sims,
-        data_array, standard_deviates, is_python)
+    print('PYTHON')
+    py = _evaluate_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
+            edu_max, delta, edu_start, is_debug, is_interpolated, level, measure,
+            min_idx, num_draws, num_periods, num_points, is_ambiguous,
+            periods_eps_relevant, eps_cholesky, num_agents, num_sims,
+            data_array, standard_deviates, is_python)
 
-print('FORTRAN')
-f90 = fort.wrapper_evaluate_fortran_bare(coeffs_a, coeffs_b, coeffs_edu,
-        coeffs_home, shocks, edu_max, delta, edu_start, is_debug,
-        is_interpolated, level, measure, min_idx, num_draws, num_periods,
-        num_points, is_ambiguous, periods_eps_relevant, eps_cholesky,
-        num_agents, num_sims, data_array, standard_deviates, max_states_period)
+    print('FORTRAN')
+    f90 = fort.wrapper_evaluate_fortran_bare(coeffs_a, coeffs_b, coeffs_edu,
+            coeffs_home, shocks, edu_max, delta, edu_start, is_debug,
+            is_interpolated, level, measure, min_idx, num_draws, num_periods,
+            num_points, is_ambiguous, periods_eps_relevant, eps_cholesky,
+            num_agents, num_sims, data_array, standard_deviates, max_states_period)
 
-#np.testing.assert_allclose(py, 1.5524954903797965)
-np.testing.assert_allclose(py, f90)
+    #np.testing.assert_allclose(py, 1.5524954903797965)
+    np.testing.assert_allclose(py, f90)

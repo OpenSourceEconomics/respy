@@ -210,8 +210,7 @@ DOUBLE PRECISION :: payoffs_systematic(4), deviates(num_sims, 4), &
 
 
     END DO 
-
-    PRINT *, likl
+    
     
     ! Scaling
     DO i = 1, num_agents * num_periods
@@ -220,6 +219,7 @@ DOUBLE PRECISION :: payoffs_systematic(4), deviates(num_sims, 4), &
 
     likl = log(likl)
 
+    ! TODO: What is the rule for integer division
 
     rslt = -SUM(likl) / DBLE(num_agents * num_periods)
 
