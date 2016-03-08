@@ -191,6 +191,7 @@ def _evaluate_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
 
             j += 1
 
+    print(likl)
     # Scaling
     likl = -np.mean(np.log(np.clip(likl, TINY_FLOAT, HUGE_FLOAT)))
 

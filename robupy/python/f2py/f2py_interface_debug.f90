@@ -210,8 +210,8 @@ DOUBLE PRECISION :: payoffs_systematic(4), deviates(num_sims, 4), &
 
 
     END DO 
-    
-    
+
+    PRINT *, likl
     ! Scaling
     DO i = 1, num_agents * num_periods
         likl(i) = clip_value(likl(i), DBLE(1e-20), DBLE(1.0e10))
