@@ -159,7 +159,6 @@ def _evaluate_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
 
                 # Record contribution of wage observation.
                 likl_contrib *= norm.pdf(eps, 0.0, np.sqrt(shocks[idx, idx]))
-
             # Determine conditional deviates. These correspond to the
             # unconditional draws if the agent did not work in the labor market.
             conditional_deviates = np.dot(eps_cholesky, deviates.T).T
@@ -179,6 +178,7 @@ def _evaluate_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
                 total_payoffs, _, _ = get_total_value(period, num_periods,
                     delta, payoffs_systematic, disturbances, edu_max,
                     edu_start, mapping_state_idx, periods_emax, k, states_all)
+
                 # Record optimal choices
                 counts[np.argmax(total_payoffs)] += 1.0
 
@@ -191,7 +191,6 @@ def _evaluate_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
 
             j += 1
 
-    print(likl)
     # Scaling
     likl = -np.mean(np.log(np.clip(likl, TINY_FLOAT, HUGE_FLOAT)))
 

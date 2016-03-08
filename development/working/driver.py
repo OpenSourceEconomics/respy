@@ -22,6 +22,7 @@ from robupy import *
 from robupy.auxiliary import replace_missing_values
 from robupy.auxiliary import create_disturbances
 from robupy.auxiliary import distribute_model_paras
+from modules.auxiliary import write_interpolation_grid
 
 from robupy.python.solve_python import solve_python_bare
 from robupy.tests.random_init import generate_random_dict
@@ -35,9 +36,14 @@ compile_package('--fortran --debug', False)
 
 import robupy.python.f2py.f2py_debug as fort
 
+np.random.seed(321)
 
-while True:
-    #generate_init()
+for _ in range(1):
+    constraints = dict()
+    constraints['debug'] = True
+
+
+    generate_init(constraints)
     # Perform toolbox actions
     robupy_obj = read('test.robupy.ini')
 
@@ -47,6 +53,7 @@ while True:
 
     model_paras = robupy_obj.get_attr('model_paras')
     is_debug = robupy_obj.get_attr('is_debug')
+
 
     # Distribute model parameters
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, eps_cholesky = \
@@ -75,6 +82,9 @@ while True:
     states_number_period = robupy_obj.get_attr('states_number_period')
     max_states_period = max(states_number_period)
 
+    if is_interpolated:
+        write_interpolation_grid(num_periods, num_points, states_number_period)
+
     # Transform dataset to array for easy access
 
     data_array = data_frame.as_matrix()
@@ -97,7 +107,13 @@ while True:
             coeffs_home, shocks, edu_max, delta, edu_start, is_debug,
             is_interpolated, level, measure, min_idx, num_draws, num_periods,
             num_points, is_ambiguous, periods_eps_relevant, eps_cholesky,
-            num_agents, num_sims, data_array, standard_deviates, max_states_period)
+            num_agents, num_sims, data_array, standard_deviates)
 
-    #np.testing.assert_allclose(py, 1.5524954903797965)
+    np.testing.assert_allclose(py, 6.276720655476828)
     np.testing.assert_allclose(py, f90)
+
+    try:
+        os.unlink('interpolation.txt')
+
+    except:
+        pass

@@ -11,13 +11,7 @@ SUBROUTINE wrapper_evaluate_fortran_bare(rslt, coeffs_a, coeffs_b, coeffs_edu, &
                 is_interpolated, level, measure, min_idx, num_draws, & 
                 num_periods, num_points, is_ambiguous, periods_eps_relevant, & 
                 eps_cholesky, num_agents, num_sims, data_array, & 
-                standard_deviates, max_states_period)
-
-    !
-    ! The presence of max_states_period breaks the equality of interfaces. 
-    ! However, this is done for convenience reasons as it allows to allocate
-    ! the results containers directly.
-    !
+                standard_deviates)
 
     !/* external libraries      */
 
@@ -37,7 +31,7 @@ SUBROUTINE wrapper_evaluate_fortran_bare(rslt, coeffs_a, coeffs_b, coeffs_edu, &
     INTEGER, INTENT(IN)             :: num_draws
     INTEGER, INTENT(IN)             :: edu_max
     INTEGER, INTENT(IN)             :: min_idx
-    INTEGER, INTENT(IN)             :: num_agents, num_sims, max_states_period
+    INTEGER, INTENT(IN)             :: num_agents, num_sims
 
     DOUBLE PRECISION, INTENT(IN)    :: periods_eps_relevant(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: standard_deviates(:, :, :)
@@ -96,8 +90,6 @@ DOUBLE PRECISION :: payoffs_systematic(4), deviates(num_sims, 4), &
             coeffs_home, shocks, edu_max, delta, edu_start, & 
             is_debug, is_interpolated, level, measure, min_idx, num_draws, & 
             num_periods, num_points, is_ambiguous, periods_eps_relevant)
-
-
 
     ALLOCATE(likl(num_agents * num_periods))
     likl = 0.0 ! TO BE REPLACED WITH DOUBLE
@@ -211,7 +203,6 @@ DOUBLE PRECISION :: payoffs_systematic(4), deviates(num_sims, 4), &
 
     END DO 
 
-    PRINT *, likl
     ! Scaling
     DO i = 1, num_agents * num_periods
         likl(i) = clip_value(likl(i), DBLE(1e-20), DBLE(1.0e10))
@@ -220,7 +211,6 @@ DOUBLE PRECISION :: payoffs_systematic(4), deviates(num_sims, 4), &
     likl = log(likl)
 
     ! TODO: What is the rule for integer division
-
     rslt = -SUM(likl) / DBLE(num_agents * num_periods)
 
 

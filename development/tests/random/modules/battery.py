@@ -1308,12 +1308,17 @@ def test_101():
         periods_eps_relevant = create_disturbances(num_draws, seed_solution,
             eps_cholesky, is_ambiguous, num_periods, is_debug, 'solution')
 
+        # Align interpolation grid
+        if is_interpolated:
+            write_interpolation_grid(num_periods, num_points, states_number_period)
+
         # Baseline input arguments.
         base_args = [coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
             edu_max, delta, edu_start, is_debug, is_interpolated, level,
             measure, min_idx, num_draws, num_periods, num_points,
             is_ambiguous, periods_eps_relevant]
 
+        # Check for the equality of the solution routines.
         base = None
         for version in ['PYTHON', 'F2PY', 'FORTRAN']:
             if version in ['F2PY', 'PYTHON']:
