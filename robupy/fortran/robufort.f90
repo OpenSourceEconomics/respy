@@ -425,6 +425,7 @@ PROGRAM robufort
     REAL(our_dble)                  :: coeffs_b(6)
     REAL(our_dble)                  :: delta
     REAL(our_dble)                  :: level
+    REAL(our_dble)                  :: rslt
 
     LOGICAL                         :: is_interpolated
     LOGICAL                         :: is_ambiguous
@@ -466,6 +467,19 @@ PROGRAM robufort
                 periods_eps_relevant)
 
     END IF
+
+    !IF (request == 'evaluate') THEN
+        
+    !    CALL evaluate_criterion_function(rslt, coeffs_a, coeffs_b, coeffs_edu, & 
+    !            coeffs_home, shocks, edu_max, delta, edu_start, is_debug, & 
+    !            is_interpolated, level, measure, min_idx, num_draws, & 
+    !            num_periods, num_points, is_ambiguous, periods_eps_relevant, & 
+    !            eps_cholesky, num_agents, num_sims, data_array, & 
+    !            standard_deviates)
+    !
+    !    PRINT *, 'HERE I PRIUNT TO FILE'
+    !
+    !END IF
 
     ! Store results. These are read in by the PYTHON wrapper and added to the 
     ! clsRobupy instance.

@@ -28,11 +28,21 @@ from robupy.python.solve_python import solve_python_bare
 from robupy.tests.random_init import generate_random_dict
 from robupy.tests.random_init import print_random_dict
 from robupy.tests.random_init import generate_init
-from robupy.python.evaluate_python import _evaluate_python_bare
+from robupy.python.evaluate_python import _evaluate_python_bare, evaluate_criterion_function
 # testing battery
 from modules.auxiliary import compile_package
 
 compile_package('--fortran --debug', False)
+
+robupy_obj = read('test.robupy.ini')
+
+robupy_obj = solve(robupy_obj)
+
+data_frame = simulate(robupy_obj)
+
+evaluate(robupy_obj, data_frame)
+import sys
+sys.exit('evaluating fortran')
 
 import robupy.python.f2py.f2py_library as fort_lib
 
@@ -95,25 +105,35 @@ for _ in range(1):
     periods_eps_relevant = create_disturbances(num_draws, seed_solution,
             eps_cholesky, is_ambiguous, num_periods, is_debug, 'solution')
 
-    print('PYTHON')
-    py = _evaluate_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
+    base = None
+    # TODO: Now I Need to work on actual fortran ...
+    args = [coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
             edu_max, delta, edu_start, is_debug, is_interpolated, level, measure,
             min_idx, num_draws, num_periods, num_points, is_ambiguous,
             periods_eps_relevant, eps_cholesky, num_agents, num_sims,
-            data_array, standard_deviates, is_python)
+            data_array, standard_deviates]
 
-    print('FORTRAN')
-    f90 = fort_lib.wrapper_evaluate_criterion_function(coeffs_a, coeffs_b, coeffs_edu,
-            coeffs_home, shocks, edu_max, delta, edu_start, is_debug,
-            is_interpolated, level, measure, min_idx, num_draws, num_periods,
-            num_points, is_ambiguous, periods_eps_relevant, eps_cholesky,
-            num_agents, num_sims, data_array, standard_deviates)
+    for version in ['PYTHON', 'F2PY']:
 
-    np.testing.assert_allclose(py, 6.276720655476828)
-    np.testing.assert_allclose(py, f90)
+        # Select interface
+        if version == 'PYTHON':
+            evaluate = evaluate_criterion_function
+        elif version == 'F2PY':
+            import robupy.python.f2py.f2py_library as f2py_library
+            evaluate = f2py_library.wrapper_evaluate_criterion_function
+        else:
+            raise NotImplementedError
 
-    try:
-        os.unlink('interpolation.txt')
+        rslt = evaluate(*args)
+        print(rslt)
+        if base is None:
+            base = rslt
 
-    except:
-        pass
+        np.testing.assert_allclose(base, 6.276720655476828)
+        np.testing.assert_allclose(base, rslt)
+
+        try:
+            os.unlink('interpolation.txt')
+
+        except:
+            pass

@@ -6,6 +6,7 @@ function.
 import numpy as np
 
 # project library
+from robupy.fortran.evaluate_fortran import evaluate_fortran
 from robupy.python.evaluate_python import evaluate_python
 from robupy.auxiliary import check_dataset
 
@@ -27,7 +28,7 @@ def evaluate(robupy_obj, data_frame):
 
     # Select appropriate interface
     if version == 'FORTRAN':
-        raise NotImplementedError
+        likl = evaluate_fortran(robupy_obj, None)
     else:
         likl = evaluate_python(robupy_obj, data_frame)
 

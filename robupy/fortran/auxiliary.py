@@ -90,9 +90,6 @@ def _add_results(robupy_obj):
 def _write_robufort_initialization(robupy_obj, request):
     """ Write out model request to hidden file .model.robufort.ini.
     """
-    # Check applicability
-    assert (request in ['solve'])
-
     # Distribute class attributes
     model_paras = robupy_obj.get_attr('model_paras')
 

@@ -209,16 +209,17 @@ def _calculate_payoffs_systematic(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
 
     # Interface to core functions
     if is_python:
-        periods_payoffs_systematic = \
-            python_library.calculate_payoffs_systematic(num_periods,
-                states_number_period, states_all, edu_start, coeffs_a,
-                coeffs_b, coeffs_edu, coeffs_home, max_states_period)
+        calculate_payoffs_systematic = \
+            python_library.calculate_payoffs_systematic
     else:
         import robupy.python.f2py.f2py_library as f2py_library
-        periods_payoffs_systematic = \
-            f2py_library.wrapper_calculate_payoffs_systematic(num_periods,
-                states_number_period, states_all, edu_start, coeffs_a, coeffs_b,
-                coeffs_edu, coeffs_home, max_states_period)
+        calculate_payoffs_systematic = \
+            f2py_library.wrapper_calculate_payoffs_systematic
+
+    # Calculate all systematic payoffs
+    periods_payoffs_systematic = calculate_payoffs_systematic(num_periods,
+        states_number_period, states_all, edu_start, coeffs_a, coeffs_b,
+        coeffs_edu, coeffs_home, max_states_period)
 
     # Set missing values to NAN
     periods_payoffs_systematic = \
@@ -241,23 +242,18 @@ def _backward_induction_procedure(periods_payoffs_systematic,
 
     # Interface to core functions
     if is_python:
-        periods_emax, periods_payoffs_ex_post, periods_future_payoffs = \
-            python_library.backward_induction(num_periods,
-                max_states_period, periods_eps_relevant, num_draws,
-                states_number_period, periods_payoffs_systematic, edu_max,
-                edu_start, mapping_state_idx, states_all, delta, is_debug,
-                shocks, level, is_ambiguous, measure, is_interpolated,
-                num_points)
-
+        backward_induction = python_library.backward_induction
     else:
         import robupy.python.f2py.f2py_library as f2py_library
-        periods_emax, periods_payoffs_ex_post, periods_future_payoffs = \
-            f2py_library.wrapper_backward_induction(num_periods,
-                max_states_period, periods_eps_relevant, num_draws,
-                states_number_period, periods_payoffs_systematic,
-                edu_max, edu_start, mapping_state_idx, states_all, delta,
-                is_debug, shocks, level, is_ambiguous, measure,
-                is_interpolated, num_points)
+        backward_induction = f2py_library.wrapper_backward_induction
+
+    # Perform backward induction procedure
+    periods_emax, periods_payoffs_ex_post, periods_future_payoffs = \
+        backward_induction(num_periods, max_states_period,
+            periods_eps_relevant, num_draws, states_number_period,
+            periods_payoffs_systematic, edu_max, edu_start,
+            mapping_state_idx, states_all, delta, is_debug, shocks, level,
+            is_ambiguous, measure, is_interpolated, num_points)
 
     # Replace missing values
     periods_emax = replace_missing_values(periods_emax)
