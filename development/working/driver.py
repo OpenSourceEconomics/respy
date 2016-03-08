@@ -36,7 +36,7 @@ compile_package('--fortran --debug', False)
 import robupy.python.f2py.f2py_debug as fort
 
 
-generate_init()
+#generate_init()
 # Perform toolbox actions
 robupy_obj = read('test.robupy.ini')
 
