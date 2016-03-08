@@ -19,7 +19,7 @@ CONTAINS
 !*******************************************************************************
 SUBROUTINE store_results(mapping_state_idx, states_all, periods_payoffs_ex_post, &
                 periods_payoffs_systematic, states_number_period, periods_emax, &
-                num_periods, min_idx) 
+                num_periods, min_idx, eval, request) 
 
     !/* external objects    */
 
@@ -32,6 +32,9 @@ SUBROUTINE store_results(mapping_state_idx, states_all, periods_payoffs_ex_post,
     REAL(our_dble), INTENT(IN)      :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), INTENT(IN)      :: periods_payoffs_ex_post(:, :, :)    
     REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
+    REAL(our_dble), INTENT(IN)      :: eval
+
+    CHARACTER(10), INTENT(IN)       :: request
 
     !/* internal objects    */
 
@@ -133,6 +136,18 @@ SUBROUTINE store_results(mapping_state_idx, states_all, periods_payoffs_ex_post,
 
     CLOSE(1)
 
+    ! Write out value of criterion function if evaluated.
+    IF (request == 'evaluate') THEN
+
+        2500 FORMAT(1x,f25.15)
+
+        OPEN(UNIT=1, FILE='.eval.robufort.dat')
+
+        WRITE(1, 2400) eval
+
+        CLOSE(1)
+
+    END IF
 
 END SUBROUTINE
 !*******************************************************************************
@@ -432,7 +447,7 @@ PROGRAM robufort
     REAL(our_dble)                  :: coeffs_b(6)
     REAL(our_dble)                  :: delta
     REAL(our_dble)                  :: level
-    REAL(our_dble)                  :: rslt
+    REAL(our_dble)                  :: eval
 
     LOGICAL                         :: is_interpolated
     LOGICAL                         :: is_ambiguous
@@ -442,7 +457,10 @@ PROGRAM robufort
     CHARACTER(10)                   :: measure 
     CHARACTER(10)                   :: request
 
-    INTEGER(our_int)                :: k, j
+    ! TODO: Revisit
+    INTEGER(our_int)                :: k, j, period
+
+
 
 !-------------------------------------------------------------------------------
 ! Algorithm
@@ -478,25 +496,40 @@ PROGRAM robufort
     END IF
 
     IF (request == 'evaluate') THEN
-
+ 
         ALLOCATE(data_array(num_periods * num_agents, 8))
         ALLOCATE(standard_deviates(num_periods, num_sims, 4))
 
-        standard_deviates = zero_dble
+
+        !CALL create_disturbances(standard_deviates, eps_cholesky, seed_simulation, & 
+        !        is_debug, is_zero, is_ambiguous) 
+        
+        OPEN(122, file='disturbances.txt')
+
+        DO period = 1, num_periods
+
+            DO j = 1, num_sims
+        
+                2000 FORMAT(4(1x,f15.10))
+                READ(122,2000) standard_deviates(period, j, :)
+        
+            END DO
+      
+        END DO
+
+        CLOSE(122)
 
     ! Read model specification
+    ! TODO: NA SHOUDLD BE HUGE NOT -99
     OPEN(UNIT=1, FILE='.data.robufort.dat')
 
         ! SHOCKS
         DO j = 1, num_periods * num_agents
             READ(1, *) (data_array(j, k), k=1, 8)
-            PRINT *, data_array(j, :)
         END DO
     
-    ! TODO: REMOVE STATUS LATER
     CLOSE(1, STATUS='delete')
-
-        ! Solve the model for a given parametrization.    
+       ! Solve the model for a given parametrization.    
         CALL solve_fortran_bare(mapping_state_idx, periods_emax, & 
                 periods_future_payoffs, periods_payoffs_ex_post, & 
                 periods_payoffs_systematic, states_all, states_number_period, & 
@@ -504,23 +537,18 @@ PROGRAM robufort
                 delta, edu_start, is_debug, is_interpolated, level, measure, & 
                 min_idx, num_draws, num_periods, num_points, is_ambiguous, & 
                 periods_eps_relevant)
-        
-        CALL evaluate_criterion_function(rslt, coeffs_a, coeffs_b, coeffs_edu, & 
-                coeffs_home, shocks, edu_max, delta, edu_start, is_debug, & 
-                is_interpolated, level, measure, min_idx, num_draws, & 
-                num_periods, num_points, is_ambiguous, periods_eps_relevant, & 
-                eps_cholesky, num_agents, num_sims, data_array, & 
-                standard_deviates)
-    
-    PRINT *, 'rslt', rslt    
 
+        CALL evaluate_criterion_function(eval, mapping_state_idx, periods_emax, & 
+            periods_payoffs_systematic, states_all, shocks, edu_max, delta, & 
+            edu_start, num_periods, eps_cholesky, num_agents, num_sims, & 
+            data_array, standard_deviates)
     END IF
 
     ! Store results. These are read in by the PYTHON wrapper and added to the 
     ! clsRobupy instance.
     CALL store_results(mapping_state_idx, states_all, periods_payoffs_ex_post, & 
             periods_payoffs_systematic, states_number_period, periods_emax, &
-            num_periods, min_idx) 
+            num_periods, min_idx, eval, request) 
 
 !*******************************************************************************
 !*******************************************************************************

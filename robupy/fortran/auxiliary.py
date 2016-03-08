@@ -13,7 +13,7 @@ PACKAGE_PATH = os.path.dirname(os.path.realpath(__file__))
 from robupy.auxiliary import replace_missing_values
 
 
-def _add_results(robupy_obj):
+def _add_results(robupy_obj, request):
     """ Add results to container.
     """
     # Distribute class attributes
@@ -83,8 +83,14 @@ def _add_results(robupy_obj):
 
     robupy_obj.lock()
 
+    # Read in evaluation of criterion function
+    eval = None
+    if request == 'evaluate':
+        eval = float(np.genfromtxt('.eval.robufort.dat'))
+        os.unlink('.eval.robufort.dat')
+
     # Finishing
-    return robupy_obj
+    return robupy_obj, eval
 
 
 def _write_robufort_initialization(robupy_obj, request):

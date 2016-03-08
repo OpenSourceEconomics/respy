@@ -80,46 +80,50 @@ def evaluate_python(robupy_obj, data_frame):
     periods_eps_relevant = create_disturbances(num_draws, seed_solution,
         eps_cholesky, is_ambiguous, num_periods, is_debug, 'solution')
 
-    # Evaluate the criterion function
-    likl = _evaluate_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+    # Solve model for given parametrization
+    args = solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         shocks, edu_max, delta, edu_start, is_debug, is_interpolated, level,
         measure, min_idx, num_draws, num_periods, num_points, is_ambiguous,
-        periods_eps_relevant, eps_cholesky, num_agents, num_sims,
-        data_array, standard_deviates, is_python)
+        periods_eps_relevant, is_python)
+
+    # Distribute return arguments from solution run
+    mapping_state_idx, periods_emax, periods_future_payoffs = args[:3]
+    periods_payoffs_ex_post, periods_payoffs_systematic, states_all = args[3:6]
+
+    # Evaluate the criterion function
+    likl = _evaluate_python_bare(mapping_state_idx, periods_emax,
+                periods_payoffs_systematic, states_all,
+                shocks, edu_max, delta, edu_start, num_periods,  eps_cholesky, num_agents, num_sims,
+                data_array, standard_deviates, is_python)
 
     # Finishing
-    return likl
+    return robupy_obj, likl
 
 
 ''' Auxiliary functions
 '''
 
-def _evaluate_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
-        edu_max, delta, edu_start, is_debug, is_interpolated, level, measure,
-        min_idx, num_draws, num_periods, num_points, is_ambiguous,
-        periods_eps_relevant, eps_cholesky, num_agents, num_sims,
-        data_array, standard_deviates, is_python):
+def _evaluate_python_bare(mapping_state_idx, periods_emax,
+        periods_payoffs_systematic, states_all, shocks,
+        edu_max, delta, edu_start, num_periods,  eps_cholesky, num_agents,
+        num_sims, data_array, standard_deviates, is_python):
     """ This function is required to ensure a full analogy to F2PY and
     FORTRAN implementations. The first part of the interface is identical to
     the solution request functions.
     """
 
     if is_python:
-        likl = evaluate_criterion_function(coeffs_a, coeffs_b, coeffs_edu,
-                coeffs_home, shocks, edu_max, delta, edu_start, is_debug,
-                is_interpolated, level, measure, min_idx, num_draws,
-                num_periods, num_points, is_ambiguous, periods_eps_relevant,
-                eps_cholesky, num_agents, num_sims, data_array,
-                standard_deviates)
+        likl = evaluate_criterion_function(mapping_state_idx, periods_emax,
+            periods_payoffs_systematic, states_all, shocks, edu_max, delta,
+            edu_start, num_periods, eps_cholesky, num_agents, num_sims,
+            data_array, standard_deviates)
 
     else:
         import robupy.python.f2py.f2py_library as f2py_library
-        likl = f2py_library.wrapper_evaluate_criterion_function(coeffs_a,
-                coeffs_b, coeffs_edu, coeffs_home, shocks, edu_max, delta,
-                edu_start, is_debug, is_interpolated, level, measure,
-                min_idx, num_draws, num_periods, num_points, is_ambiguous,
-                periods_eps_relevant, eps_cholesky, num_agents, num_sims,
-                data_array, standard_deviates)
+        likl = f2py_library.wrapper_evaluate_criterion_function(
+            mapping_state_idx, periods_emax, periods_payoffs_systematic,
+            states_all, shocks, edu_max, delta, edu_start, num_periods,
+            eps_cholesky, num_agents, num_sims, data_array, standard_deviates)
 
     # TODO: CHECKS ...
     # Finishing
@@ -127,22 +131,10 @@ def _evaluate_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
 
 
 # Solve the model for given parametrization
-def evaluate_criterion_function(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-                             shocks,
-        edu_max, delta, edu_start, is_debug, is_interpolated, level, measure,
-        min_idx, num_draws, num_periods, num_points, is_ambiguous,
-        periods_eps_relevant, eps_cholesky, num_agents, num_sims,
+def evaluate_criterion_function(mapping_state_idx, periods_emax,
+        periods_payoffs_systematic, states_all, shocks, edu_max, delta,
+        edu_start, num_periods, eps_cholesky, num_agents, num_sims,
         data_array, standard_deviates):
-
-    # This call the PYTON VREIONS
-    args = solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-        shocks, edu_max, delta, edu_start, is_debug, is_interpolated, level,
-        measure, min_idx, num_draws, num_periods, num_points, is_ambiguous,
-        periods_eps_relevant, True)
-
-    # Distribute return arguments
-    mapping_state_idx, periods_emax, periods_future_payoffs = args[:3]
-    periods_payoffs_ex_post, periods_payoffs_systematic, states_all = args[3:6]
 
     # Initialize auxiliary objects
     likl, j = [], 0

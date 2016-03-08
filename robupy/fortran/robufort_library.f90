@@ -32,54 +32,39 @@ MODULE robufort_library
  CONTAINS
  !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE evaluate_criterion_function(rslt, coeffs_a, coeffs_b, coeffs_edu, & 
-                coeffs_home, shocks, edu_max, delta, edu_start, is_debug, & 
-                is_interpolated, level, measure, min_idx, num_draws, & 
-                num_periods, num_points, is_ambiguous, periods_eps_relevant, & 
-                eps_cholesky, num_agents, num_sims, data_array, & 
-                standard_deviates)
+SUBROUTINE evaluate_criterion_function(rslt, mapping_state_idx, periods_emax, & 
+            periods_payoffs_systematic, states_all, shocks, edu_max, delta, & 
+            edu_start, num_periods, eps_cholesky, num_agents, num_sims, & 
+            data_array, standard_deviates)
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(INOUT)   :: rslt 
 
-    INTEGER(our_int), INTENT(IN)    :: num_periods
-    INTEGER(our_int), INTENT(IN)    :: num_agents
-    INTEGER(our_int), INTENT(IN)    :: num_points
-    INTEGER(our_int), INTENT(IN)    :: edu_start
-    INTEGER(our_int), INTENT(IN)    :: num_draws
-    INTEGER(our_int), INTENT(IN)    :: edu_max
-    INTEGER(our_int), INTENT(IN)    :: min_idx
-    INTEGER(our_int), INTENT(IN)    :: num_sims
+    REAL(our_dble), INTENT(OUT)   :: rslt 
 
-    REAL(our_dble), INTENT(IN)      :: periods_eps_relevant(:, :, :)
-    REAL(our_dble), INTENT(IN)      :: standard_deviates(:, :, :)
-    REAL(our_dble), INTENT(IN)      :: data_array(:, :)
-    REAL(our_dble), INTENT(IN)      :: eps_cholesky(:, :)
-    REAL(our_dble), INTENT(IN)      :: coeffs_home(:)
-    REAL(our_dble), INTENT(IN)      :: coeffs_edu(:)
-    REAL(our_dble), INTENT(IN)      :: shocks(:, :)
-    REAL(our_dble), INTENT(IN)      :: coeffs_a(:)
-    REAL(our_dble), INTENT(IN)      :: coeffs_b(:)
-    REAL(our_dble), INTENT(IN)      :: level
-    REAL(our_dble), INTENT(IN)      :: delta 
+    INTEGER(our_int), INTENT(IN)             :: num_periods
+    INTEGER(our_int), INTENT(IN)             :: edu_start
+    INTEGER(our_int), INTENT(IN)             :: edu_max
+    INTEGER(our_int), INTENT(IN)             :: num_agents
+    INTEGER(our_int), INTENT(IN)             :: num_sims
 
-    LOGICAL, INTENT(IN)             :: is_interpolated
-    LOGICAL, INTENT(IN)             :: is_ambiguous
-    LOGICAL, INTENT(IN)             :: is_debug
+    REAL(our_dble), INTENT(IN)    :: standard_deviates(:, :, :)
+    REAL(our_dble), INTENT(IN)    :: data_array(:, :)
 
-    CHARACTER(10), INTENT(IN)       :: measure
+    REAL(our_dble), INTENT(IN)    :: eps_cholesky(:, :)
+    REAL(our_dble), INTENT(IN)    :: shocks(:, :)
+    REAL(our_dble), INTENT(IN)    :: delta 
 
     !/* internal objects        */
 
-    INTEGER(our_int), ALLOCATABLE   :: mapping_state_idx(:, :, :, :, :)
-    INTEGER(our_int), ALLOCATABLE   :: states_number_period(:)
-    INTEGER(our_int), ALLOCATABLE   :: states_all(:, :, :)
+    INTEGER(our_int), INTENT(IN)     :: mapping_state_idx(:, :, :, :, :)
+    INTEGER(our_int), INTENT(IN)     :: states_all(:, :, :)
+    REAL(our_dble), INTENT(IN)       :: periods_payoffs_systematic(:, :, :)
+    REAL(our_dble), INTENT(IN)       :: periods_emax(:, :)
 
-    REAL(our_dble), ALLOCATABLE     :: periods_payoffs_systematic(:, :, :)
+
     REAL(our_dble), ALLOCATABLE     :: periods_payoffs_ex_post(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_future_payoffs(:, :, :)
-    REAL(our_dble), ALLOCATABLE     :: periods_emax(:, :)
     REAL(our_dble), ALLOCATABLE     :: likl(:)
 
     INTEGER(our_int)                :: edu_lagged
@@ -111,15 +96,6 @@ SUBROUTINE evaluate_criterion_function(rslt, coeffs_a, coeffs_b, coeffs_edu, &
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
-
-    ! Solve the model for given parametrization
-    CALL solve_fortran_bare(mapping_state_idx, periods_emax, & 
-            periods_future_payoffs, periods_payoffs_ex_post, & 
-            periods_payoffs_systematic, states_all, & 
-            states_number_period, coeffs_a, coeffs_b, coeffs_edu, & 
-            coeffs_home, shocks, edu_max, delta, edu_start, & 
-            is_debug, is_interpolated, level, measure, min_idx, num_draws, & 
-            num_periods, num_points, is_ambiguous, periods_eps_relevant)
 
     ! Initialize container for likelihood contributions
     ALLOCATE(likl(num_agents * num_periods)); likl = zero_dble

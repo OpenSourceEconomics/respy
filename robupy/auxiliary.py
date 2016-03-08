@@ -85,6 +85,9 @@ def create_disturbances(num_draws, seed, eps_cholesky, is_ambiguous,
         np.random.seed(seed)
         standard_deviates = np.random.multivariate_normal(np.zeros(4),
             np.identity(4), (num_periods, num_draws))
+
+        if is_debug and os.path.isfile('disturbances.txt'):
+            standard_deviates = read_disturbances(num_periods, num_draws)
         return standard_deviates
 
     # This allows to use the same random disturbances across the different

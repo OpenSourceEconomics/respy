@@ -32,8 +32,10 @@ def evaluate_fortran(robupy_obj, data_frame):
     # Call executable
     os.system('"' + PACKAGE_PATH + '/bin/robufort"')
 
-    rslt = 0.0
+    # Add results
+    robupy_obj, eval = _add_results(robupy_obj, 'evaluate')
+
     # Finishing
-    return rslt
+    return robupy_obj, eval
 
 
