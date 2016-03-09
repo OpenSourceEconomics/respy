@@ -154,10 +154,10 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
                 coeffs_edu, edu_start, edu_max, coeffs_home, shocks, & 
-                eps_cholesky, num_draws_emax, seed_solution, seed_estimation, &
-                num_agents, seed_simulation, is_debug, is_zero, &
+                eps_cholesky, num_draws_emax, seed_emax, seed_prob, &
+                num_agents, seed_data, is_debug, is_zero, &
                 is_interpolated, num_points, min_idx, is_ambiguous, measure, & 
-                request, num_sims) 
+                request, num_draws_prob)
 
     !
     !   This function serves as the replacement for the clsRobupy and reads in 
@@ -167,15 +167,15 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
 
     !/* external objects    */
 
-    INTEGER(our_int), INTENT(OUT)   :: seed_simulation 
-    INTEGER(our_int), INTENT(OUT)   :: seed_estimation
-    INTEGER(our_int), INTENT(OUT)   :: seed_solution 
+    INTEGER(our_int), INTENT(OUT)   :: seed_data
+    INTEGER(our_int), INTENT(OUT)   :: seed_prob
+    INTEGER(our_int), INTENT(OUT)   :: seed_emax
     INTEGER(our_int), INTENT(OUT)   :: num_periods
     INTEGER(our_int), INTENT(OUT)   :: num_agents
     INTEGER(our_int), INTENT(OUT)   :: num_points
     INTEGER(our_int), INTENT(OUT)   :: num_draws_emax
     INTEGER(our_int), INTENT(OUT)   :: edu_start
-    INTEGER(our_int), INTENT(OUT)   :: num_sims
+    INTEGER(our_int), INTENT(OUT)   :: num_draws_prob
     INTEGER(our_int), INTENT(OUT)   :: edu_max
     INTEGER(our_int), INTENT(OUT)   :: min_idx
 
@@ -241,11 +241,11 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
 
         ! SOLUTION
         READ(1, 1505) num_draws_emax
-        READ(1, 1505) seed_solution
+        READ(1, 1505) seed_emax
 
         ! SIMULATION
         READ(1, 1505) num_agents
-        READ(1, 1505) seed_simulation
+        READ(1, 1505) seed_data
 
         ! PROGRAM
         READ(1, *) is_debug
@@ -255,8 +255,8 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
         READ(1, 1505) num_points
 
         ! ESTIMATION
-        READ(1, 1505) num_sims
-        READ(1, 1505) seed_estimation
+        READ(1, 1505) num_draws_prob
+        READ(1, 1505) seed_prob
 
         ! AUXILIARY
         READ(1, 1505) min_idx
@@ -479,15 +479,15 @@ PROGRAM robufort
     INTEGER(our_int), ALLOCATABLE   :: states_number_period(:)
     INTEGER(our_int), ALLOCATABLE   :: states_all(:, :, :)
 
-    INTEGER(our_int)                :: seed_simulation 
-    INTEGER(our_int)                :: seed_estimation
-    INTEGER(our_int)                :: seed_solution 
+    INTEGER(our_int)                :: seed_data
+    INTEGER(our_int)                :: seed_prob
+    INTEGER(our_int)                :: seed_emax
     INTEGER(our_int)                :: num_periods
     INTEGER(our_int)                :: num_agents
     INTEGER(our_int)                :: num_points
     INTEGER(our_int)                :: edu_start
     INTEGER(our_int)                :: num_draws_emax
-    INTEGER(our_int)                :: num_sims
+    INTEGER(our_int)                :: num_draws_prob
     INTEGER(our_int)                :: edu_max
     INTEGER(our_int)                :: min_idx
 
@@ -527,15 +527,15 @@ PROGRAM robufort
     ! PYTHON/F2PY implementations.
     CALL read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
             coeffs_edu, edu_start, edu_max, coeffs_home, shocks, eps_cholesky, & 
-            num_draws_emax, seed_solution, seed_estimation, num_agents, &
-            seed_simulation, is_debug, is_zero, is_interpolated, num_points, & 
-            min_idx, is_ambiguous, measure, request, num_sims)
+            num_draws_emax, seed_emax, seed_prob, num_agents, &
+            seed_data, is_debug, is_zero, is_interpolated, num_points, &
+            min_idx, is_ambiguous, measure, request, num_draws_prob)
 
     ! This part creates (or reads from disk) the disturbances for the Monte 
     ! Carlo integration of the EMAX. For is_debugging purposes, these might also be 
     ! read in from disk or set to zero/one.   
     CALL create_disturbances(disturbances_emax, num_periods, num_draws_emax, &
-            seed_solution, is_debug, 'emax', eps_cholesky, is_ambiguous)
+            seed_emax, is_debug, 'emax', eps_cholesky, is_ambiguous)
 
     ! Execute on request.
     IF (request == 'solve') THEN
@@ -554,8 +554,8 @@ PROGRAM robufort
         ! This part creates (or reads from disk) the disturbances for the Monte 
         ! Carlo integration of the choice probabilities. For is_debugging 
         ! purposes, these might also be read in from disk or set to zero/one.   
-        CALL create_disturbances(disturbances_prob, num_periods, num_sims, & 
-                seed_estimation, is_debug, 'prob', eps_cholesky, is_ambiguous)
+        CALL create_disturbances(disturbances_prob, num_periods, num_draws_prob, &
+                seed_prob, is_debug, 'prob', eps_cholesky, is_ambiguous)
 
         ! Read observed dataset from disk
         CALL read_dataset(data_array, num_periods, num_agents)
@@ -572,7 +572,7 @@ PROGRAM robufort
         CALL evaluate_criterion_function(eval, mapping_state_idx, & 
                 periods_emax, periods_payoffs_systematic, states_all, shocks, & 
                 edu_max, delta, edu_start, num_periods, eps_cholesky, & 
-                num_agents, num_sims, data_array, disturbances_prob)
+                num_agents, num_draws_prob, data_array, disturbances_prob)
 
     END IF
 

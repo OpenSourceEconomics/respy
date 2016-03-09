@@ -22,13 +22,13 @@ class RobupyCls(MetaCls):
         self.attr['init_dict'] = None
 
         # Derived attributes
-        self.attr['seed_simulation'] = None
+        self.attr['seed_data'] = None
 
         self.attr['is_interpolated'] = None
 
-        self.attr['seed_estimation'] = None
+        self.attr['seed_prob'] = None
 
-        self.attr['seed_solution'] = None
+        self.attr['seed_emax'] = None
 
         self.attr['is_ambiguous'] = None
 
@@ -48,7 +48,7 @@ class RobupyCls(MetaCls):
 
         self.attr['is_debug'] = None
 
-        self.attr['num_sims'] = None
+        self.attr['num_draws_prob'] = None
 
         self.attr['edu_max'] = None
 
@@ -129,15 +129,15 @@ class RobupyCls(MetaCls):
 
             self.attr['is_interpolated'] = init_dict['INTERPOLATION']['apply']
 
-            self.attr['seed_simulation'] = init_dict['SIMULATION']['seed']
+            self.attr['seed_data'] = init_dict['SIMULATION']['seed']
 
-            self.attr['seed_estimation'] = init_dict['ESTIMATION']['seed']
+            self.attr['seed_prob'] = init_dict['ESTIMATION']['seed']
 
             self.attr['num_points'] = init_dict['INTERPOLATION']['points']
 
             self.attr['num_agents'] = init_dict['SIMULATION']['agents']
 
-            self.attr['seed_solution'] = init_dict['SOLUTION']['seed']
+            self.attr['seed_emax'] = init_dict['SOLUTION']['seed']
 
             self.attr['num_periods'] = init_dict['BASICS']['periods']
 
@@ -147,7 +147,7 @@ class RobupyCls(MetaCls):
 
             self.attr['num_draws_emax'] = init_dict['SOLUTION']['draws']
 
-            self.attr['num_sims'] = init_dict['ESTIMATION']['draws']
+            self.attr['num_draws_prob'] = init_dict['ESTIMATION']['draws']
 
             self.attr['version'] = init_dict['PROGRAM']['version']
 
@@ -237,13 +237,13 @@ class RobupyCls(MetaCls):
             return
 
         # Distribute class attributes
-        seed_simulation = self.attr['seed_simulation']
+        seed_data = self.attr['seed_data']
 
         is_interpolated = self.attr['is_interpolated']
 
-        seed_estimation = self.attr['seed_estimation']
+        seed_prob = self.attr['seed_prob']
 
-        seed_solution = self.attr['seed_solution']
+        seed_emax = self.attr['seed_emax']
 
         is_ambiguous = self.attr['is_ambiguous']
 
@@ -261,7 +261,7 @@ class RobupyCls(MetaCls):
 
         num_draws_emax = self.attr['num_draws_emax']
 
-        num_sims = self.attr['num_sims']
+        num_draws_prob = self.attr['num_draws_prob']
 
         is_debug = self.attr['is_debug']
 
@@ -298,7 +298,7 @@ class RobupyCls(MetaCls):
             assert (eps_zero is False)
 
         # Seeds
-        for seed in [seed_solution, seed_simulation, seed_estimation]:
+        for seed in [seed_emax, seed_data, seed_prob]:
             assert (np.isfinite(seed))
             assert (isinstance(seed, int))
             assert (seed > 0)
@@ -362,8 +362,8 @@ class RobupyCls(MetaCls):
         assert (num_points > 0)
 
         # Simulation of S-ML
-        assert (isinstance(num_sims, int))
-        assert (num_sims > 0)
+        assert (isinstance(num_draws_prob, int))
+        assert (num_draws_prob > 0)
 
         # Check integrity of results as well
         self._check_integrity_results()

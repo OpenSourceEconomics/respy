@@ -162,7 +162,7 @@ def test_86():
 
         mapping_state_idx = robupy_obj.get_attr('mapping_state_idx')
 
-        seed_estimation = robupy_obj.get_attr('seed_estimation')
+        seed_prob = robupy_obj.get_attr('seed_prob')
 
         periods_emax = robupy_obj.get_attr('periods_emax')
 
@@ -198,7 +198,7 @@ def test_86():
         period = np.random.choice(range(num_periods))
 
         disturbances_emax = create_disturbances(num_periods, num_draws_emax,
-            seed_estimation, is_debug, 'emax', eps_cholesky, is_ambiguous)
+            seed_prob, is_debug, 'emax', eps_cholesky, is_ambiguous)
 
         eps_relevant = disturbances_emax[period, :, :]
 
@@ -1240,7 +1240,7 @@ def test_101():
         # Extract class attributes
         is_interpolated = robupy_obj.get_attr('is_interpolated')
 
-        seed_solution = robupy_obj.get_attr('seed_solution')
+        seed_emax = robupy_obj.get_attr('seed_emax')
 
         is_ambiguous = robupy_obj.get_attr('is_ambiguous')
 
@@ -1274,7 +1274,7 @@ def test_101():
 
         # Get set of disturbances
         disturbances_emax = create_disturbances(num_periods, num_draws_emax,
-            seed_solution, is_debug, 'emax', eps_cholesky, is_ambiguous)
+            seed_emax, is_debug, 'emax', eps_cholesky, is_ambiguous)
 
         # Align interpolation grid
         max_states_period = write_interpolation_grid('test.robupy.ini')

@@ -8,7 +8,7 @@
 SUBROUTINE wrapper_evaluate_criterion_function(rslt, mapping_state_idx, &
             periods_emax, periods_payoffs_systematic, states_all, shocks, &
             edu_max, delta, edu_start, num_periods, eps_cholesky, num_agents, & 
-            num_sims, data_array, standard_deviates)
+            num_draws_prob, data_array, standard_deviates)
 
     !/* external libraries      */
 
@@ -26,7 +26,7 @@ SUBROUTINE wrapper_evaluate_criterion_function(rslt, mapping_state_idx, &
     INTEGER, INTENT(IN)             :: edu_start
     INTEGER, INTENT(IN)             :: edu_max
     INTEGER, INTENT(IN)             :: num_agents
-    INTEGER, INTENT(IN)             :: num_sims
+    INTEGER, INTENT(IN)             :: num_draws_prob
 
     DOUBLE PRECISION, INTENT(IN)    :: standard_deviates(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: data_array(:, :)
@@ -46,7 +46,7 @@ SUBROUTINE wrapper_evaluate_criterion_function(rslt, mapping_state_idx, &
    
     CALL evaluate_criterion_function(rslt, mapping_state_idx, periods_emax, & 
             periods_payoffs_systematic, states_all, shocks, edu_max, delta, & 
-            edu_start, num_periods, eps_cholesky, num_agents, num_sims, & 
+            edu_start, num_periods, eps_cholesky, num_agents, num_draws_prob, &
             data_array, standard_deviates)
 
 END SUBROUTINE

@@ -49,17 +49,17 @@ def simulate(robupy_obj):
 
     num_agents = robupy_obj.get_attr('num_agents')
 
-    seed = robupy_obj.get_attr('seed_simulation')
+    seed = robupy_obj.get_attr('seed_data')
 
     is_debug = robupy_obj.get_attr('is_debug')
 
     # Auxiliary objects
     eps_cholesky = model_paras['eps_cholesky']
 
-    seed_simulation = robupy_obj.get_attr('seed_simulation')
+    seed_data = robupy_obj.get_attr('seed_data')
 
     # Draw disturbances for the simulation.
-    disturbances_data = create_disturbances(num_periods, num_agents, seed_simulation,
+    disturbances_data = create_disturbances(num_periods, num_agents, seed_data,
                                            is_debug, 'sims',
         eps_cholesky, is_ambiguous)
 
@@ -144,7 +144,7 @@ def _write_info(robupy_obj, data_frame):
     """ Write information about the simulated economy.
     """
     # Distribute class attributes
-    seed = robupy_obj.get_attr('seed_simulation')
+    seed = robupy_obj.get_attr('seed_data')
 
     # Get basic information
     num_agents = data_frame[1].value_counts()[0]

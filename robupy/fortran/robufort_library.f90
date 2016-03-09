@@ -34,7 +34,7 @@ MODULE robufort_library
 !*******************************************************************************
 SUBROUTINE evaluate_criterion_function(rslt, mapping_state_idx, periods_emax, & 
             periods_payoffs_systematic, states_all, shocks, edu_max, delta, & 
-            edu_start, num_periods, eps_cholesky, num_agents, num_sims, & 
+            edu_start, num_periods, eps_cholesky, num_agents, num_draws_prob, &
             data_array, standard_deviates)
 
     !/* external objects        */
@@ -46,7 +46,7 @@ SUBROUTINE evaluate_criterion_function(rslt, mapping_state_idx, periods_emax, &
     INTEGER(our_int), INTENT(IN)             :: edu_start
     INTEGER(our_int), INTENT(IN)             :: edu_max
     INTEGER(our_int), INTENT(IN)             :: num_agents
-    INTEGER(our_int), INTENT(IN)             :: num_sims
+    INTEGER(our_int), INTENT(IN)             :: num_draws_prob
 
     REAL(our_dble), INTENT(IN)    :: standard_deviates(:, :, :)
     REAL(our_dble), INTENT(IN)    :: data_array(:, :)
@@ -80,10 +80,10 @@ SUBROUTINE evaluate_criterion_function(rslt, mapping_state_idx, periods_emax, &
     INTEGER(our_int)                :: k
     INTEGER(our_int)                :: j
     
-    REAL(our_dble)                  :: conditional_deviates(num_sims, 4)
+    REAL(our_dble)                  :: conditional_deviates(num_draws_prob, 4)
     REAL(our_dble)                  :: choice_probabilities(4)
     REAL(our_dble)                  :: payoffs_systematic(4)
-    REAL(our_dble)                  :: deviates(num_sims, 4)
+    REAL(our_dble)                  :: deviates(num_draws_prob, 4)
     REAL(our_dble)                  :: payoffs_ex_post(4)
     REAL(our_dble)                  :: future_payoffs(4)
     REAL(our_dble)                  :: total_payoffs(4)
@@ -159,14 +159,14 @@ SUBROUTINE evaluate_criterion_function(rslt, mapping_state_idx, periods_emax, &
 
             ! Determine conditional deviates. These correspond to the
             ! unconditional draws if the agent did not work in the labor market.
-            DO s = 1, num_sims
+            DO s = 1, num_draws_prob
                 conditional_deviates(s, :) = & 
                     MATMUL(deviates(s, :), TRANSPOSE(eps_cholesky))
             END DO
 
             counts = 0
 
-            DO s = 1, num_sims
+            DO s = 1, num_draws_prob
                 ! Extract deviates from (un-)conditional normal distributions.
                 disturbances = conditional_deviates(s, :)
 
@@ -186,7 +186,7 @@ SUBROUTINE evaluate_criterion_function(rslt, mapping_state_idx, periods_emax, &
 
             ! Determine relative shares. Special care required due to integer 
             ! arithmetic, transformed to mixed mode arithmetic.
-            choice_probabilities = counts / DBLE(num_sims)
+            choice_probabilities = counts / DBLE(num_draws_prob)
 
             ! Adjust  and record likelihood contribution
             likl_contrib = likl_contrib * choice_probabilities(idx)

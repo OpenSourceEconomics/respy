@@ -241,13 +241,13 @@ def generate_random_dict(constraints=None):
     # Number of simulations for S-ML
     if 'sims' in constraints.keys():
         # Extract object
-        num_sims = constraints['sims']
+        num_draws_prob = constraints['sims']
         # Checks
-        assert (num_sims > 0)
-        assert (isinstance(num_sims, int))
-        assert (np.isfinite(num_sims))
+        assert (num_draws_prob > 0)
+        assert (isinstance(num_draws_prob, int))
+        assert (np.isfinite(num_draws_prob))
         # Replace in initialization files
-        dict_['ESTIMATION']['draws'] = num_sims
+        dict_['ESTIMATION']['draws'] = num_draws_prob
 
     # Finishing.
     return dict_

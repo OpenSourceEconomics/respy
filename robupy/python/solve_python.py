@@ -31,7 +31,7 @@ def solve_python(robupy_obj):
     # Distribute class attributes
     is_interpolated = robupy_obj.get_attr('is_interpolated')
 
-    seed_solution = robupy_obj.get_attr('seed_solution')
+    seed_emax = robupy_obj.get_attr('seed_emax')
 
     is_ambiguous = robupy_obj.get_attr('is_ambiguous')
 
@@ -72,7 +72,7 @@ def solve_python(robupy_obj):
     # in the case of an ambiguous world. This function is located outside the
     # actual bare solution algorithm to ease testing across implementations.
     disturbances_emax = create_disturbances(num_periods, num_draws_emax,
-        seed_solution, is_debug, 'emax', eps_cholesky, is_ambiguous)
+        seed_emax, is_debug, 'emax', eps_cholesky, is_ambiguous)
 
     # Solve the model using PYTHON/F2PY implementation
     args = solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,

@@ -30,9 +30,9 @@ def evaluate_python(robupy_obj, data_frame):
     # Distribute class attribute
     is_interpolated = robupy_obj.get_attr('is_interpolated')
 
-    seed_estimation = robupy_obj.get_attr('seed_estimation')
+    seed_prob = robupy_obj.get_attr('seed_prob')
 
-    seed_solution = robupy_obj.get_attr('seed_solution')
+    seed_emax = robupy_obj.get_attr('seed_emax')
 
     is_ambiguous = robupy_obj.get_attr('is_ambiguous')
 
@@ -52,7 +52,7 @@ def evaluate_python(robupy_obj, data_frame):
 
     is_debug = robupy_obj.get_attr('is_debug')
 
-    num_sims = robupy_obj.get_attr('num_sims')
+    num_draws_prob = robupy_obj.get_attr('num_draws_prob')
 
     edu_max = robupy_obj.get_attr('edu_max')
 
@@ -73,14 +73,14 @@ def evaluate_python(robupy_obj, data_frame):
 
     # Draw standard normal deviates for S-ML approach
     # TODO: Rename
-    standard_deviates = create_disturbances(num_periods, num_sims,
-        seed_estimation, is_debug, 'prob', eps_cholesky, is_ambiguous)
+    standard_deviates = create_disturbances(num_periods, num_draws_prob,
+        seed_prob, is_debug, 'prob', eps_cholesky, is_ambiguous)
 
     # Get the relevant set of disturbances. These are standard normal draws
     # in the case of an ambiguous world. This function is located outside the
     # actual bare solution algorithm to ease testing across implementations.
     disturbances_emax = create_disturbances(num_periods, num_draws_emax,
-        seed_solution, is_debug, 'emax', eps_cholesky, is_ambiguous)
+        seed_emax, is_debug, 'emax', eps_cholesky, is_ambiguous)
 
     # Solve model for given parametrization
     args = solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
@@ -95,7 +95,7 @@ def evaluate_python(robupy_obj, data_frame):
     # Evaluate the criterion function
     likl = _evaluate_python_bare(mapping_state_idx, periods_emax,
                 periods_payoffs_systematic, states_all,
-                shocks, edu_max, delta, edu_start, num_periods,  eps_cholesky, num_agents, num_sims,
+                shocks, edu_max, delta, edu_start, num_periods,  eps_cholesky, num_agents, num_draws_prob,
                 data_array, standard_deviates, is_python)
 
     # Finishing
@@ -108,7 +108,7 @@ def evaluate_python(robupy_obj, data_frame):
 def _evaluate_python_bare(mapping_state_idx, periods_emax,
         periods_payoffs_systematic, states_all, shocks,
         edu_max, delta, edu_start, num_periods,  eps_cholesky, num_agents,
-        num_sims, data_array, standard_deviates, is_python):
+        num_draws_prob, data_array, standard_deviates, is_python):
     """ This function is required to ensure a full analogy to F2PY and
     FORTRAN implementations. The first part of the interface is identical to
     the solution request functions.
@@ -117,7 +117,7 @@ def _evaluate_python_bare(mapping_state_idx, periods_emax,
     if is_python:
         likl = evaluate_criterion_function(mapping_state_idx, periods_emax,
             periods_payoffs_systematic, states_all, shocks, edu_max, delta,
-            edu_start, num_periods, eps_cholesky, num_agents, num_sims,
+            edu_start, num_periods, eps_cholesky, num_agents, num_draws_prob,
             data_array, standard_deviates)
 
     else:
@@ -125,7 +125,7 @@ def _evaluate_python_bare(mapping_state_idx, periods_emax,
         likl = f2py_library.wrapper_evaluate_criterion_function(
             mapping_state_idx, periods_emax, periods_payoffs_systematic,
             states_all, shocks, edu_max, delta, edu_start, num_periods,
-            eps_cholesky, num_agents, num_sims, data_array, standard_deviates)
+            eps_cholesky, num_agents, num_draws_prob, data_array, standard_deviates)
 
     # TODO: CHECKS ...
     # Finishing
@@ -135,7 +135,7 @@ def _evaluate_python_bare(mapping_state_idx, periods_emax,
 # Solve the model for given parametrization
 def evaluate_criterion_function(mapping_state_idx, periods_emax,
         periods_payoffs_systematic, states_all, shocks, edu_max, delta,
-        edu_start, num_periods, eps_cholesky, num_agents, num_sims,
+        edu_start, num_periods, eps_cholesky, num_agents, num_draws_prob,
         data_array, standard_deviates):
 
     # Initialize auxiliary objects
@@ -192,7 +192,7 @@ def evaluate_criterion_function(mapping_state_idx, periods_emax,
             # value functions and determine the choice probabilities.
             counts = np.tile(0.0, 4)
 
-            for s in range(num_sims):
+            for s in range(num_draws_prob):
                 # Extract deviates from (un-)conditional normal distributions.
                 disturbances = conditional_deviates[s, :]
 
@@ -208,7 +208,7 @@ def evaluate_criterion_function(mapping_state_idx, periods_emax,
                 counts[np.argmax(total_payoffs)] += 1.0
 
             # Determine relative shares
-            choice_probabilities = counts / num_sims
+            choice_probabilities = counts / num_draws_prob
 
             # Adjust  and record likelihood contribution
             likl_contrib *= choice_probabilities[idx]

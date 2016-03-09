@@ -108,7 +108,7 @@ def _write_robufort_initialization(robupy_obj, request):
 
     min_idx = robupy_obj.get_attr('min_idx')
 
-    num_sims = robupy_obj.get_attr('num_sims')
+    num_draws_prob = robupy_obj.get_attr('num_draws_prob')
 
     with open('.model.robufort.ini', 'w') as file_:
 
@@ -184,7 +184,7 @@ def _write_robufort_initialization(robupy_obj, request):
         file_.write(line)
 
         # ESTIMATION
-        line = '{0:10d}\n'.format(num_sims)
+        line = '{0:10d}\n'.format(num_draws_prob)
         file_.write(line)
 
         line = '{0:10d}\n'.format(init_dict['ESTIMATION']['seed'])
