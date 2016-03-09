@@ -7,9 +7,10 @@
     <list default="true" id="39b3d67a-e664-4cff-aba7-2a9ae5eaeb87" name="Default" comment="">
       <change type="DELETED" beforePath="$PROJECT_DIR$/analysis/working/driver.py" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/.idea/workspace.xml" afterPath="$PROJECT_DIR$/package/development/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/working/driver.py" afterPath="$PROJECT_DIR$/package/development/working/driver.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/working/test.robupy.ini" afterPath="$PROJECT_DIR$/package/development/working/test.robupy.ini" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/auxiliary.py" afterPath="$PROJECT_DIR$/package/robupy/auxiliary.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/tests/random/investigate" afterPath="$PROJECT_DIR$/package/development/tests/random/investigate" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/tests/random/modules/auxiliary.py" afterPath="$PROJECT_DIR$/package/development/tests/random/modules/auxiliary.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/tests/random/modules/battery.py" afterPath="$PROJECT_DIR$/package/development/tests/random/modules/battery.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/tests/random/run" afterPath="$PROJECT_DIR$/package/development/tests/random/run" />
     </list>
     <ignored path="robustToolbox.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -53,22 +54,24 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="auxiliary.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/package/robupy/auxiliary.py">
+      <file leaf-file-name="battery.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/package/development/tests/random/modules/battery.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.04012841">
-              <caret line="112" column="57" selection-start-line="112" selection-start-column="57" selection-end-line="112" selection-end-column="57" />
+            <state vertical-scroll-proportion="0.04509284">
+              <caret line="1332" column="32" selection-start-line="1332" selection-start-column="32" selection-end-line="1332" selection-end-column="32" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="clsRobupy.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/package/robupy/clsRobupy.py">
+      <file leaf-file-name="python_library.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/package/robupy/python/py/python_library.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-6.354839">
-              <caret line="184" column="36" selection-start-line="184" selection-start-column="28" selection-end-line="184" selection-end-column="36" />
-              <folding />
+            <state vertical-scroll-proportion="8.16129">
+              <caret line="394" column="51" selection-start-line="394" selection-start-column="41" selection-end-line="394" selection-end-column="51" />
+              <folding>
+                <element signature="e#139#167#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -95,7 +98,6 @@
         <option value="$PROJECT_DIR$/package/development/vagrant/bin/provisioning.py" />
         <option value="$PROJECT_DIR$/package/development/tests/random/logging.log" />
         <option value="$PROJECT_DIR$/analysis/inf_future/driver.py" />
-        <option value="$PROJECT_DIR$/package/development/tests/random/modules/auxiliary.py" />
         <option value="$PROJECT_DIR$/analysis/working/driver.py" />
         <option value="$PROJECT_DIR$/package/travis-ci/run.py" />
         <option value="$PROJECT_DIR$/package/robupy/clsMeta.py" />
@@ -127,12 +129,13 @@
         <option value="$PROJECT_DIR$/package/robupy/tests/random_init.py" />
         <option value="$PROJECT_DIR$/package/robupy/fortran/evaluate_fortran.py" />
         <option value="$PROJECT_DIR$/package/robupy/python/py/python_library.py" />
-        <option value="$PROJECT_DIR$/package/development/tests/random/modules/battery.py" />
         <option value="$PROJECT_DIR$/package/robupy/python/evaluate_python.py" />
         <option value="$PROJECT_DIR$/package/robupy/python/solve_python.py" />
         <option value="$PROJECT_DIR$/package/robupy/simulate.py" />
         <option value="$PROJECT_DIR$/package/development/working/driver.py" />
         <option value="$PROJECT_DIR$/package/robupy/auxiliary.py" />
+        <option value="$PROJECT_DIR$/package/development/tests/random/modules/battery.py" />
+        <option value="$PROJECT_DIR$/package/development/tests/random/modules/auxiliary.py" />
       </list>
     </option>
   </component>
@@ -263,7 +266,55 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
+              <option name="myItemId" value="tests" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="robustToolbox" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="robustToolbox" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="package" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="robupy" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
               <option name="myItemId" value="python" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="robustToolbox" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="robustToolbox" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="package" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="robupy" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="python" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="py" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -668,7 +719,7 @@
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32924962" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32731378" sideWeight="0.40153846" order="0" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32924962" sideWeight="0.5" order="9" side_tool="true" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32924962" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Concurrent Activities Diagram" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.0" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -741,13 +792,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/package/development/tests/random/modules/battery.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/package/development/tests/random/investigate">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -994,13 +1038,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/robupy/tests/tests.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.04012841">
-          <caret line="366" column="10" selection-start-line="366" selection-start-column="10" selection-end-line="366" selection-end-column="10" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/package/robupy/tests/random_init.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.8426966">
@@ -1015,36 +1052,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/tests/random/modules/auxiliary.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.33226323">
-          <caret line="20" column="75" selection-start-line="20" selection-start-column="4" selection-end-line="20" selection-end-column="75" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/package/robupy/python/py/auxiliary.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="15" column="4" selection-start-line="15" selection-start-column="4" selection-end-line="15" selection-end-column="4" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/robupy/python/py/python_library.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-6.354839">
-          <caret line="235" column="25" selection-start-line="235" selection-start-column="8" selection-end-line="235" selection-end-column="25" />
-          <folding>
-            <element signature="e#139#167#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/tests/random/modules/battery.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.33277026">
-          <caret line="55" column="38" selection-start-line="55" selection-start-column="29" selection-end-line="55" selection-end-column="38" />
           <folding />
         </state>
       </provider>
@@ -1067,31 +1078,11 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/robupy/python/solve_python.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-3.0033784">
-          <caret line="73" column="32" selection-start-line="73" selection-start-column="32" selection-end-line="73" selection-end-column="32" />
-          <folding>
-            <element signature="e#145#163#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/package/robupy/simulate.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.56179774">
           <caret line="86" column="52" selection-start-line="86" selection-start-column="41" selection-end-line="86" selection-end-column="58" />
           <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/working/driver.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-7.806452">
-          <caret line="81" column="8" selection-start-line="81" selection-start-column="8" selection-end-line="81" selection-end-column="8" />
-          <folding>
-            <element signature="e#152#180#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1113,8 +1104,70 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/package/robupy/auxiliary.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.04012841">
+        <state vertical-scroll-proportion="0.0">
           <caret line="112" column="57" selection-start-line="112" selection-start-column="57" selection-end-line="112" selection-end-column="57" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/robupy/python/solve_python.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.04012841">
+          <caret line="73" column="32" selection-start-line="73" selection-start-column="32" selection-end-line="73" selection-end-column="32" />
+          <folding>
+            <element signature="e#145#163#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/development/working/driver.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-7.806452">
+          <caret line="81" column="8" selection-start-line="81" selection-start-column="8" selection-end-line="81" selection-end-column="8" />
+          <folding>
+            <element signature="e#152#180#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/robupy/python/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/development/tests/random/modules/auxiliary.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.4239865">
+          <caret line="32" column="11" selection-start-line="32" selection-start-column="11" selection-end-line="32" selection-end-column="11" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/robupy/python/py/python_library.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="8.16129">
+          <caret line="394" column="51" selection-start-line="394" selection-start-column="41" selection-end-line="394" selection-end-column="51" />
+          <folding>
+            <element signature="e#139#167#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/robupy/tests/tests.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.75922954">
+          <caret line="387" column="0" selection-start-line="387" selection-start-column="0" selection-end-line="387" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/development/tests/random/modules/battery.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.04509284">
+          <caret line="1332" column="32" selection-start-line="1332" selection-start-column="32" selection-end-line="1332" selection-end-column="32" />
           <folding />
         </state>
       </provider>

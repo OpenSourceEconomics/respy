@@ -1309,7 +1309,7 @@ def test_101():
             seed_solution, is_debug, 'emax', eps_cholesky, is_ambiguous)
 
         # Align interpolation grid
-        if is_interpolated:
+        if is_interpolated and (num_points < max_states_period):
             write_interpolation_grid(num_periods, num_points, states_number_period)
 
         # Baseline input arguments.
@@ -1338,6 +1338,12 @@ def test_101():
             for j in range(7):
                 np.testing.assert_equal(base[j], replace_missing_values(
                     ret_args[j]))
+
+        # Cleanup interpolation grid
+        try:
+            os.unlink('interpolation.txt')
+        except FileNotFoundError:
+            pass
 
     # Cleanup
     cleanup()
