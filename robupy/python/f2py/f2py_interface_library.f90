@@ -93,7 +93,7 @@ END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
 SUBROUTINE wrapper_backward_induction(periods_emax, periods_payoffs_ex_post, &
-                periods_future_payoffs, num_periods, max_states_period, &
+                periods_payoffs_future, num_periods, max_states_period, &
                 disturbances_emax, num_draws_emax, states_number_period, &
                 periods_payoffs_systematic, edu_max, edu_start, & 
                 mapping_state_idx, states_all, delta, is_debug, shocks, &
@@ -111,7 +111,7 @@ SUBROUTINE wrapper_backward_induction(periods_emax, periods_payoffs_ex_post, &
 
     DOUBLE PRECISION, INTENT(OUT)   :: periods_emax(num_periods, max_states_period)
     DOUBLE PRECISION, INTENT(OUT)   :: periods_payoffs_ex_post(num_periods, max_states_period, 4)
-    DOUBLE PRECISION, INTENT(OUT)   :: periods_future_payoffs(num_periods, max_states_period, 4)
+    DOUBLE PRECISION, INTENT(OUT)   :: periods_payoffs_future(num_periods, max_states_period, 4)
 
     DOUBLE PRECISION, INTENT(IN)    :: disturbances_emax(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_payoffs_systematic(:, :, :   )
@@ -140,7 +140,7 @@ SUBROUTINE wrapper_backward_induction(periods_emax, periods_payoffs_ex_post, &
 !-------------------------------------------------------------------------------
         
     CALL backward_induction(periods_emax, periods_payoffs_ex_post, &
-            periods_future_payoffs, num_periods, max_states_period, &
+            periods_payoffs_future, num_periods, max_states_period, &
             disturbances_emax, num_draws_emax, states_number_period, &
             periods_payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
             states_all, delta, is_debug, shocks, level, is_ambiguous, measure, &

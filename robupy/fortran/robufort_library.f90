@@ -64,7 +64,7 @@ SUBROUTINE evaluate_criterion_function(rslt, mapping_state_idx, periods_emax, &
 
 
     REAL(our_dble), ALLOCATABLE     :: periods_payoffs_ex_post(:, :, :)
-    REAL(our_dble), ALLOCATABLE     :: periods_future_payoffs(:, :, :)
+    REAL(our_dble), ALLOCATABLE     :: periods_payoffs_future(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: likl(:)
 
     INTEGER(our_int)                :: edu_lagged
@@ -210,7 +210,7 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE solve_fortran_bare(mapping_state_idx, periods_emax, & 
-    periods_future_payoffs, periods_payoffs_ex_post, & 
+    periods_payoffs_future, periods_payoffs_ex_post, &
     periods_payoffs_systematic, states_all, states_number_period, coeffs_a, & 
     coeffs_b, coeffs_edu, coeffs_home, shocks, edu_max, delta, edu_start, & 
     is_debug, is_interpolated, level, measure, min_idx, num_draws_emax, &
@@ -223,7 +223,7 @@ SUBROUTINE solve_fortran_bare(mapping_state_idx, periods_emax, &
 
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_payoffs_ex_post(:, :, :)
-    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_future_payoffs(:, :, :)
+    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_payoffs_future(:, :, :)
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_emax(:, :)
 
     INTEGER(our_int), INTENT(IN)                    :: num_periods
@@ -280,7 +280,7 @@ SUBROUTINE solve_fortran_bare(mapping_state_idx, periods_emax, &
     ! Allocate arrays
     ALLOCATE(periods_payoffs_systematic(num_periods, max_states_period, 4))
     ALLOCATE(periods_payoffs_ex_post(num_periods, max_states_period, 4))
-    ALLOCATE(periods_future_payoffs(num_periods, max_states_period, 4))
+    ALLOCATE(periods_payoffs_future(num_periods, max_states_period, 4))
     ALLOCATE(periods_emax(num_periods, max_states_period))
 
     ! Calculate the systematic payoffs
@@ -290,7 +290,7 @@ SUBROUTINE solve_fortran_bare(mapping_state_idx, periods_emax, &
 
     ! Perform backward induction procedure.
     CALL backward_induction(periods_emax, periods_payoffs_ex_post, &
-            periods_future_payoffs, num_periods, max_states_period, &
+            periods_payoffs_future, num_periods, max_states_period, &
             disturbances_emax, num_draws_emax, states_number_period, &
             periods_payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
             states_all, delta, is_debug, shocks, level, is_ambiguous, measure, &
@@ -529,7 +529,7 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
-                periods_future_payoffs, num_periods, max_states_period, &
+                periods_payoffs_future, num_periods, max_states_period, &
                 disturbances_emax, num_draws_emax, states_number_period, &
                 periods_payoffs_systematic, edu_max, edu_start, &
                 mapping_state_idx, states_all, delta, is_debug, shocks, &
@@ -546,7 +546,7 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
     !/* external objects    */
 
     REAL(our_dble), INTENT(INOUT)       :: periods_payoffs_ex_post(num_periods, max_states_period, 4)
-    REAL(our_dble), INTENT(INOUT)       :: periods_future_payoffs(num_periods, max_states_period, 4)
+    REAL(our_dble), INTENT(INOUT)       :: periods_payoffs_future(num_periods, max_states_period, 4)
     REAL(our_dble), INTENT(INOUT)       :: periods_emax(num_periods, max_states_period)
 
     REAL(our_dble), INTENT(IN)          :: periods_payoffs_systematic(:, :, :)
@@ -605,7 +605,7 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
 
     ! Set to missing value
     periods_emax = MISSING_FLOAT
-    periods_future_payoffs = MISSING_FLOAT
+    periods_payoffs_future = MISSING_FLOAT
     periods_payoffs_ex_post = MISSING_FLOAT
     
     ! Logging
@@ -687,7 +687,7 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
                 ! This information is only available if no interpolation is 
                 ! used. Otherwise all remain set to missing values (see above). 
                 periods_payoffs_ex_post(period + 1, k + 1, :) = payoffs_ex_post
-                periods_future_payoffs(period + 1, k + 1, :) = future_payoffs
+                periods_payoffs_future(period + 1, k + 1, :) = future_payoffs
 
             END DO
 

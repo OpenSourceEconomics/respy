@@ -81,7 +81,7 @@ def solve_python(robupy_obj):
                 is_ambiguous, disturbances_emax, is_python)
 
     # Distribute return arguments
-    mapping_state_idx, periods_emax, periods_future_payoffs, \
+    mapping_state_idx, periods_emax, periods_payoffs_future, \
         periods_payoffs_ex_post, periods_payoffs_systematic, states_all, \
         states_number_period = args
 
@@ -92,7 +92,7 @@ def solve_python(robupy_obj):
 
     robupy_obj.set_attr('periods_payoffs_ex_post', periods_payoffs_ex_post)
 
-    robupy_obj.set_attr('periods_future_payoffs', periods_future_payoffs)
+    robupy_obj.set_attr('periods_payoffs_future', periods_payoffs_future)
 
     robupy_obj.set_attr('states_number_period', states_number_period)
 
@@ -151,7 +151,7 @@ def solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
     # implementation available.
     logger.info('Starting backward induction procedure')
 
-    periods_emax, periods_payoffs_ex_post, periods_future_payoffs = \
+    periods_emax, periods_payoffs_ex_post, periods_payoffs_future = \
         _backward_induction_procedure(periods_payoffs_systematic,
             states_number_period, mapping_state_idx, is_interpolated,
             num_periods, num_points, states_all, num_draws_emax, edu_start,
@@ -161,7 +161,7 @@ def solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
     logger.info('... finished \n')
 
     # Collect return arguments
-    args = [mapping_state_idx, periods_emax, periods_future_payoffs]
+    args = [mapping_state_idx, periods_emax, periods_payoffs_future]
     args += [periods_payoffs_ex_post, periods_payoffs_systematic, states_all]
     args += [states_number_period]
 
@@ -248,7 +248,7 @@ def _backward_induction_procedure(periods_payoffs_systematic,
         backward_induction = f2py_library.wrapper_backward_induction
 
     # Perform backward induction procedure
-    periods_emax, periods_payoffs_ex_post, periods_future_payoffs = \
+    periods_emax, periods_payoffs_ex_post, periods_payoffs_future = \
         backward_induction(num_periods, max_states_period,
             disturbances_emax, num_draws_emax, states_number_period,
             periods_payoffs_systematic, edu_max, edu_start,
@@ -258,12 +258,12 @@ def _backward_induction_procedure(periods_payoffs_systematic,
     # Replace missing values
     periods_emax = replace_missing_values(periods_emax)
 
-    periods_future_payoffs = replace_missing_values(periods_future_payoffs)
+    periods_payoffs_future = replace_missing_values(periods_payoffs_future)
 
     periods_payoffs_ex_post = replace_missing_values(periods_payoffs_ex_post)
 
     # Finishing
-    return periods_emax, periods_payoffs_ex_post, periods_future_payoffs
+    return periods_emax, periods_payoffs_ex_post, periods_payoffs_future
 
 
 def _start_ambiguity_logging(is_ambiguous, is_debug):

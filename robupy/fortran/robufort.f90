@@ -493,7 +493,7 @@ PROGRAM robufort
 
     REAL(our_dble), ALLOCATABLE     :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_payoffs_ex_post(:, :, :)
-    REAL(our_dble), ALLOCATABLE     :: periods_future_payoffs(:, :, :)
+    REAL(our_dble), ALLOCATABLE     :: periods_payoffs_future(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: disturbances_emax(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: disturbances_prob(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_emax(:, :)
@@ -542,7 +542,7 @@ PROGRAM robufort
 
         ! Solve the model for a given parametrization.    
         CALL solve_fortran_bare(mapping_state_idx, periods_emax, & 
-                periods_future_payoffs, periods_payoffs_ex_post, & 
+                periods_payoffs_future, periods_payoffs_ex_post, &
                 periods_payoffs_systematic, states_all, states_number_period, & 
                 coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, edu_max, & 
                 delta, edu_start, is_debug, is_interpolated, level, measure, & 
@@ -562,7 +562,7 @@ PROGRAM robufort
 
         ! Solve the model for a given parametrization.    
         CALL solve_fortran_bare(mapping_state_idx, periods_emax, & 
-                periods_future_payoffs, periods_payoffs_ex_post, & 
+                periods_payoffs_future, periods_payoffs_ex_post, &
                 periods_payoffs_systematic, states_all, states_number_period, & 
                 coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, edu_max, & 
                 delta, edu_start, is_debug, is_interpolated, level, measure, & 

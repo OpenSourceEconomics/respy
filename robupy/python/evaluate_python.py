@@ -89,7 +89,7 @@ def evaluate_python(robupy_obj, data_frame):
         disturbances_emax, is_python)
 
     # Distribute return arguments from solution run
-    mapping_state_idx, periods_emax, periods_future_payoffs = args[:3]
+    mapping_state_idx, periods_emax, periods_payoffs_future = args[:3]
     periods_payoffs_ex_post, periods_payoffs_systematic, states_all = args[3:6]
 
     # Evaluate the criterion function

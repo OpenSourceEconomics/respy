@@ -42,7 +42,7 @@ def backward_induction(num_periods, max_states_period, disturbances_emax,
     periods_emax = np.tile(MISSING_FLOAT, (num_periods, max_states_period))
     periods_payoffs_ex_post = np.tile(MISSING_FLOAT, (num_periods,
                                                max_states_period, 4))
-    periods_future_payoffs = np.tile(MISSING_FLOAT, (num_periods,
+    periods_payoffs_future = np.tile(MISSING_FLOAT, (num_periods,
                                                max_states_period, 4))
 
     # Iterate backward through all periods
@@ -118,11 +118,11 @@ def backward_induction(num_periods, max_states_period, disturbances_emax,
                 # This information is only available if no interpolation is
                 # used. Otherwise all remain set to missing values (see above).
                 periods_payoffs_ex_post[period, k, :] = payoffs_ex_post
-                periods_future_payoffs[period, k, :] = future_payoffs
+                periods_payoffs_future[period, k, :] = future_payoffs
 
     # Finishing. Note that the last two return arguments are not available in
     # for periods, where interpolation is required.
-    return periods_emax, periods_payoffs_ex_post, periods_future_payoffs
+    return periods_emax, periods_payoffs_ex_post, periods_payoffs_future
 
 
 def get_payoffs(num_draws_emax, eps_relevant, period, k, payoffs_systematic, edu_max,

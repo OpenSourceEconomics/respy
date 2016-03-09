@@ -85,7 +85,7 @@ class RobupyCls(MetaCls):
         # is true for the future payoffs
         self.attr['periods_payoffs_ex_post'] = None
 
-        self.attr['periods_future_payoffs'] = None
+        self.attr['periods_payoffs_future'] = None
 
         # Status indicator
         self.is_locked = False
@@ -386,7 +386,7 @@ class RobupyCls(MetaCls):
         # Distribute results
         periods_payoffs_systematic = self.attr['periods_payoffs_systematic']
 
-        periods_future_payoffs = self.attr['periods_future_payoffs']
+        periods_payoffs_future = self.attr['periods_payoffs_future']
 
         states_number_period = self.attr['states_number_period']
 
@@ -509,7 +509,7 @@ class RobupyCls(MetaCls):
 
         # Check the expected future value
         is_applicable = (periods_emax is not None)
-        is_applicable = is_applicable and (periods_future_payoffs is not None)
+        is_applicable = is_applicable and (periods_payoffs_future is not None)
 
         if is_applicable:
             # Check that the payoffs are finite for all admissible values and
@@ -541,9 +541,9 @@ class RobupyCls(MetaCls):
                         # Check for finite value at admissible state, infinite
                         # values are allowed for the third column when the
                         # maximum level of education is attained.
-                        assert (np.all(np.isfinite(periods_future_payoffs[period, k, :2])))
-                        assert (np.all(np.isfinite(periods_future_payoffs[period, k, 3])))
+                        assert (np.all(np.isfinite(periods_payoffs_future[period, k, :2])))
+                        assert (np.all(np.isfinite(periods_payoffs_future[period, k, 3])))
                         # Special checks for infinite value due to
                         # high education.
-                        if not np.isfinite(periods_future_payoffs[period, k, 2]):
+                        if not np.isfinite(periods_payoffs_future[period, k, 2]):
                             assert (states_all[period, k][2] == edu_max - edu_start)

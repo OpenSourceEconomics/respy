@@ -401,7 +401,7 @@ def test_88():
         # implementations. This is possible as we write out an interpolation
         # grid to disk which is used for both functions. This only works if
         # IS_DEBUG is set to true.
-        generate_random_dict()
+        generate_init   ()
         write_interpolation_grid('test.robupy.ini')
 
         args = (num_points, num_states, period, num_periods, True)

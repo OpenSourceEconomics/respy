@@ -7,7 +7,7 @@
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE wrapper_solve_fortran_bare(mapping_state_idx, periods_emax, & 
-                periods_future_payoffs, periods_payoffs_ex_post, & 
+                periods_payoffs_future, periods_payoffs_ex_post, &
                 periods_payoffs_systematic, states_all, states_number_period, & 
                 coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, &
                 edu_max, delta, edu_start, is_debug, is_interpolated, &
@@ -36,7 +36,7 @@ SUBROUTINE wrapper_solve_fortran_bare(mapping_state_idx, periods_emax, &
 
     DOUBLE PRECISION, INTENT(OUT)   :: periods_payoffs_systematic(num_periods, max_states_period, 4)
     DOUBLE PRECISION, INTENT(OUT)   :: periods_payoffs_ex_post(num_periods, max_states_period, 4)
-    DOUBLE PRECISION, INTENT(OUT)   :: periods_future_payoffs(num_periods, max_states_period, 4)
+    DOUBLE PRECISION, INTENT(OUT)   :: periods_payoffs_future(num_periods, max_states_period, 4)
     DOUBLE PRECISION, INTENT(OUT)   :: periods_emax(num_periods, max_states_period)
 
     INTEGER, INTENT(IN)             :: max_states_period
@@ -75,7 +75,7 @@ SUBROUTINE wrapper_solve_fortran_bare(mapping_state_idx, periods_emax, &
 
     DOUBLE PRECISION, ALLOCATABLE   :: periods_payoffs_systematic_int(:, :, :)
     DOUBLE PRECISION, ALLOCATABLE   :: periods_payoffs_ex_post_int(:, :, : )
-    DOUBLE PRECISION, ALLOCATABLE   :: periods_future_payoffs_int(:, :, :)
+    DOUBLE PRECISION, ALLOCATABLE   :: periods_payoffs_future_int(:, :, :)
     DOUBLE PRECISION, ALLOCATABLE   :: periods_emax_int(:, :)
 
 !-------------------------------------------------------------------------------
@@ -83,7 +83,7 @@ SUBROUTINE wrapper_solve_fortran_bare(mapping_state_idx, periods_emax, &
 !------------------------------------------------------------------------------- 
    
     CALL solve_fortran_bare(mapping_state_idx_int, periods_emax_int, & 
-            periods_future_payoffs_int, periods_payoffs_ex_post_int, & 
+            periods_payoffs_future_int, periods_payoffs_ex_post_int, &
             periods_payoffs_systematic_int, states_all_int, & 
             states_number_period_int, coeffs_a, coeffs_b, coeffs_edu, & 
             coeffs_home, shocks, edu_max, delta, edu_start, & 
@@ -93,7 +93,7 @@ SUBROUTINE wrapper_solve_fortran_bare(mapping_state_idx, periods_emax, &
     ! Assign to initial objects for return to PYTHON
     periods_payoffs_systematic = periods_payoffs_systematic_int   
     periods_payoffs_ex_post = periods_payoffs_ex_post_int  
-    periods_future_payoffs = periods_future_payoffs_int  
+    periods_payoffs_future = periods_payoffs_future_int
     states_number_period = states_number_period_int 
     mapping_state_idx = mapping_state_idx_int 
     periods_emax = periods_emax_int 
