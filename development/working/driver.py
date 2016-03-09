@@ -34,8 +34,8 @@ from robupy.python.evaluate_python import _evaluate_python_bare, evaluate_criter
 from modules.auxiliary import compile_package
 
 
-print('not recompiling')
-#compile_package('--fortran --debug', False)
+#print('not recompiling')
+compile_package('--fortran --debug', False)
 
 np.random.seed(321)
 

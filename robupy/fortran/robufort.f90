@@ -265,18 +265,23 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
 
     CLOSE(1, STATUS='delete')
 
-    ! Construct auxiliary objects
-    CALL cholesky(eps_cholesky, shocks)
+    ! Construct auxiliary objects. The case distinction align the reasoning
+    ! between the PYTHON/F2PY implementations.
+    IF (is_zero) THEN
+        eps_cholesky = zero_dble
+    ELSE
+        CALL cholesky(eps_cholesky, shocks)
+    END IF
 
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE create_disturbances(disturbances_emax, eps_cholesky, seed, &
+SUBROUTINE create_disturbances(disturbances, eps_cholesky, seed, &
                 is_debug, is_zero, is_ambiguous) 
 
     !/* external objects    */
 
-    REAL(our_dble), INTENT(INOUT)       :: disturbances_emax(:, :, :)
+    REAL(our_dble), INTENT(INOUT)       :: disturbances(:, :, :)
 
     REAL(our_dble), INTENT(IN)          :: eps_cholesky(4, 4)
 
@@ -303,9 +308,9 @@ SUBROUTINE create_disturbances(disturbances_emax, eps_cholesky, seed, &
 !------------------------------------------------------------------------------- 
 
     ! Auxiliary objects
-    num_periods = SIZE(disturbances_emax, 1)
+    num_periods = SIZE(disturbances, 1)
 
-    num_draws = SIZE(disturbances_emax, 2)
+    num_draws = SIZE(disturbances, 2)
 
     ! Set random seed
     seed_inflated(:) = seed
@@ -326,7 +331,7 @@ SUBROUTINE create_disturbances(disturbances_emax, eps_cholesky, seed, &
             DO j = 1, num_draws
         
                 2000 FORMAT(4(1x,f15.10))
-                READ(12,2000) disturbances_emax(period, j, :)
+                READ(12,2000) disturbances(period, j, :)
         
             END DO
       
@@ -338,7 +343,7 @@ SUBROUTINE create_disturbances(disturbances_emax, eps_cholesky, seed, &
 
         DO period = 1, num_periods
 
-            CALL multivariate_normal(disturbances_emax(period, :, :))
+            CALL multivariate_normal(disturbances(period, :, :))
         
         END DO
 
@@ -350,8 +355,8 @@ SUBROUTINE create_disturbances(disturbances_emax, eps_cholesky, seed, &
         ! Apply variance change
         DO i = 1, num_draws
         
-            disturbances_emax(period, i:i, :) = &
-                TRANSPOSE(MATMUL(eps_cholesky, TRANSPOSE(disturbances_emax(period, i:i, :))))
+            disturbances(period, i:i, :) = &
+                TRANSPOSE(MATMUL(eps_cholesky, TRANSPOSE(disturbances(period, i:i, :))))
         
         END DO
 
@@ -366,8 +371,8 @@ SUBROUTINE create_disturbances(disturbances_emax, eps_cholesky, seed, &
 
             DO j = 1, 2
             
-                disturbances_emax(period, :, j) = &
-                        EXP(disturbances_emax(period, :, j))
+                disturbances(period, :, j) = &
+                        EXP(disturbances(period, :, j))
             
             END DO
 
@@ -380,13 +385,13 @@ SUBROUTINE create_disturbances(disturbances_emax, eps_cholesky, seed, &
     ! zero.
     IF (is_zero) THEN
 
-        disturbances_emax = zero_dble
+        disturbances = zero_dble
 
         DO period = 1, num_periods
 
             DO j = 1, 2
 
-                disturbances_emax(period, :, j) = one_dble
+                disturbances(period, :, j) = one_dble
 
             END DO
 
