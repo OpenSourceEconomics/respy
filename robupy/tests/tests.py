@@ -84,10 +84,14 @@ class Tests(object):
         simulated.
         """
         for version in VERSIONS:
+            # Constraints, which ensure that interpolation is actually run.
+            num_periods = np.random.random_integers(3, 5)
+            num_points = np.random.random_integers(40, 54)
 
-            # Generate constraints
             constraints = dict()
             constraints['version'] = version
+            constraints['periods'] = num_periods
+            constraints['points'] = num_points
 
             # Generate random initialization file
             generate_init(constraints)

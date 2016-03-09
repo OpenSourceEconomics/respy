@@ -68,8 +68,7 @@ def test_85():
     # Ensure that fast solution methods are available
     compile_package('--fortran --debug', True)
 
-    # Constraints, which ensure that interpolation is actually run (at least
-    # sometimes).
+    # Constraints, which ensure that interpolation is actually run.
     num_periods = np.random.random_integers(5, 10)
     num_points = np.random.random_integers(40, 54)
     max_draws = np.random.random_integers(1, 100)
