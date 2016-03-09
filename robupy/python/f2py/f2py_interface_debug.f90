@@ -9,9 +9,9 @@
 SUBROUTINE wrapper_solve_fortran_bare(mapping_state_idx, periods_emax, & 
                 periods_payoffs_future, periods_payoffs_ex_post, &
                 periods_payoffs_systematic, states_all, states_number_period, & 
-                coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, &
-                edu_max, delta, edu_start, is_debug, is_interpolated, &
-                level, measure, min_idx, num_draws_emax, num_periods, num_points, &
+                coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, edu_max, & 
+                delta, edu_start, is_debug, is_interpolated, level, measure, & 
+                min_idx, num_draws_emax, num_periods, num_points, & 
                 is_ambiguous, disturbances_emax, max_states_period)
     
     !
@@ -31,8 +31,8 @@ SUBROUTINE wrapper_solve_fortran_bare(mapping_state_idx, periods_emax, &
     !/* external objects        */
 
     INTEGER, INTENT(OUT)            :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
-    INTEGER, INTENT(OUT)            :: states_number_period(num_periods)
     INTEGER, INTENT(OUT)            :: states_all(num_periods, max_states_period, 4)
+    INTEGER, INTENT(OUT)            :: states_number_period(num_periods)
 
     DOUBLE PRECISION, INTENT(OUT)   :: periods_payoffs_systematic(num_periods, max_states_period, 4)
     DOUBLE PRECISION, INTENT(OUT)   :: periods_payoffs_ex_post(num_periods, max_states_period, 4)
@@ -40,12 +40,10 @@ SUBROUTINE wrapper_solve_fortran_bare(mapping_state_idx, periods_emax, &
     DOUBLE PRECISION, INTENT(OUT)   :: periods_emax(num_periods, max_states_period)
 
     INTEGER, INTENT(IN)             :: max_states_period
-
-
+    INTEGER, INTENT(IN)             :: num_draws_emax
     INTEGER, INTENT(IN)             :: num_periods
     INTEGER, INTENT(IN)             :: num_points
     INTEGER, INTENT(IN)             :: edu_start
-    INTEGER, INTENT(IN)             :: num_draws_emax
     INTEGER, INTENT(IN)             :: edu_max
     INTEGER, INTENT(IN)             :: min_idx
 
@@ -86,8 +84,8 @@ SUBROUTINE wrapper_solve_fortran_bare(mapping_state_idx, periods_emax, &
             periods_payoffs_future_int, periods_payoffs_ex_post_int, &
             periods_payoffs_systematic_int, states_all_int, & 
             states_number_period_int, coeffs_a, coeffs_b, coeffs_edu, & 
-            coeffs_home, shocks, edu_max, delta, edu_start, & 
-            is_debug, is_interpolated, level, measure, min_idx, num_draws_emax, &
+            coeffs_home, shocks, edu_max, delta, edu_start, is_debug, & 
+            is_interpolated, level, measure, min_idx, num_draws_emax, &
             num_periods, num_points, is_ambiguous, disturbances_emax)
 
     ! Assign to initial objects for return to PYTHON
@@ -104,15 +102,15 @@ END SUBROUTINE
 !******************************************************************************
 SUBROUTINE wrapper_normal_pdf(rslt, x, mean, sd)
 
-    !/* external libraries    */
+    !/* external libraries      */
 
     USE robufort_auxiliary
 
-    !/* setup    */
+    !/* setup                   */
 
     IMPLICIT NONE
 
-    !/* external objects    */
+    !/* external objects        */
 
     DOUBLE PRECISION, INTENT(OUT)      :: rslt
 
@@ -131,15 +129,15 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE wrapper_pinv(rslt, A, m)
 
-    !/* external libraries    */
+    !/* external libraries      */
 
     USE robufort_auxiliary
 
-    !/* setup    */
+    !/* setup                   */
 
     IMPLICIT NONE
 
-    !/* external objects    */
+    !/* external objects        */
 
     DOUBLE PRECISION, INTENT(OUT)   :: rslt(m, m)
 
@@ -151,7 +149,6 @@ SUBROUTINE wrapper_pinv(rslt, A, m)
 ! Algorithm
 !-------------------------------------------------------------------------------
 
-    ! Get Pseudo-inverse
     rslt = pinv(A, m)
     
 END SUBROUTINE
@@ -159,15 +156,15 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE wrapper_svd(U, S, VT, A, m)
 
-    !/* external libraries    */
+    !/* external libraries      */
 
     USE robufort_auxiliary
 
-    !/* setup    */
+    !/* setup                   */
 
     IMPLICIT NONE
 
-    !/* external objects    */
+    !/* external objects        */
 
     DOUBLE PRECISION, INTENT(OUT)   :: S(m) 
     DOUBLE PRECISION, INTENT(OUT)   :: U(m, m)
@@ -181,7 +178,6 @@ SUBROUTINE wrapper_svd(U, S, VT, A, m)
 ! Algorithm
 !-------------------------------------------------------------------------------
     
-    ! Get Singular-Value-Decomposition
     CALL svd(U, S, VT, A, m)
 
 END SUBROUTINE
@@ -193,15 +189,15 @@ SUBROUTINE wrapper_get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
                 states_all, num_periods, periods_emax, delta, is_debug, &
                 shocks, level, measure)
 
-    !/* external libraries    */
+    !/* external libraries      */
 
     USE robufort_ambiguity
 
-    !/* setup    */
+    !/* setup                   */
 
     IMPLICIT NONE
 
-    !/* external objects    */
+    !/* external objects        */
 
     DOUBLE PRECISION, INTENT(OUT)   :: payoffs_ex_post(4)
     DOUBLE PRECISION, INTENT(OUT)   :: future_payoffs(4)
@@ -231,7 +227,6 @@ SUBROUTINE wrapper_get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
 ! Algorithm
 !-------------------------------------------------------------------------------
     
-    ! Get the expected payoffs under ambiguity
     CALL get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
                 future_payoffs, num_draws_emax, eps_relevant, period, k, &
                 payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
@@ -246,20 +241,20 @@ SUBROUTINE wrapper_criterion_approx_gradient(rslt, x, eps, num_draws_emax, &
                 edu_start, mapping_state_idx, states_all, num_periods, &
                 periods_emax, delta)
 
-    !/* external libraries    */
+    !/* external libraries      */
 
     USE robufort_ambiguity
 
-    !/* setup    */
+    !/* setup                   */
 
     IMPLICIT NONE
 
-    !/* external objects    */
+    !/* external objects        */
 
     DOUBLE PRECISION, INTENT(OUT)   :: rslt(2)
 
-    DOUBLE PRECISION, INTENT(IN)    :: eps_relevant(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: payoffs_systematic(:)
+    DOUBLE PRECISION, INTENT(IN)    :: eps_relevant(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_emax(:,:)
     DOUBLE PRECISION, INTENT(IN)    :: delta
     DOUBLE PRECISION, INTENT(IN)    :: x(:)
@@ -267,8 +262,8 @@ SUBROUTINE wrapper_criterion_approx_gradient(rslt, x, eps, num_draws_emax, &
 
     INTEGER, INTENT(IN)             :: mapping_state_idx(:,:,:,:,:)
     INTEGER, INTENT(IN)             :: states_all(:,:,:)
-    INTEGER, INTENT(IN)             :: num_periods
     INTEGER, INTENT(IN)             :: num_draws_emax
+    INTEGER, INTENT(IN)             :: num_periods
     INTEGER, INTENT(IN)             :: edu_start
     INTEGER, INTENT(IN)             :: edu_max
     INTEGER, INTENT(IN)             :: period
@@ -278,10 +273,9 @@ SUBROUTINE wrapper_criterion_approx_gradient(rslt, x, eps, num_draws_emax, &
 ! Algorithm
 !-------------------------------------------------------------------------------
 
-    ! Approximate the gradient of the criterion function
     rslt = criterion_approx_gradient(x, eps, num_draws_emax, eps_relevant, &
-            period, k, payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
-            states_all, num_periods, periods_emax, delta)
+            period, k, payoffs_systematic, edu_max, edu_start, & 
+            mapping_state_idx, states_all, num_periods, periods_emax, delta)
 
 END SUBROUTINE
 !*******************************************************************************
@@ -291,15 +285,15 @@ SUBROUTINE wrapper_simulate_emax(emax_simulated, payoffs_ex_post, &
                 eps_relevant_emax, payoffs_systematic, edu_max, edu_start, &
                 periods_emax, states_all, mapping_state_idx, delta)
 
-    !/* external libraries    */
+    !/* external libraries      */
 
     USE robufort_emax
 
-    !/* setup    */
+    !/* setup                   */
 
     IMPLICIT NONE
 
-    !/* external objects    */
+    !/* external objects        */
 
     DOUBLE PRECISION, INTENT(OUT)   :: payoffs_ex_post(4)
     DOUBLE PRECISION, INTENT(OUT)   :: future_payoffs(4)
@@ -312,8 +306,8 @@ SUBROUTINE wrapper_simulate_emax(emax_simulated, payoffs_ex_post, &
 
     INTEGER, INTENT(IN)             :: mapping_state_idx(:,:,:,:,:)
     INTEGER, INTENT(IN)             :: states_all(:,:,:)
-    INTEGER, INTENT(IN)             :: num_periods
     INTEGER, INTENT(IN)             :: num_draws_emax
+    INTEGER, INTENT(IN)             :: num_periods
     INTEGER, INTENT(IN)             :: edu_start
     INTEGER, INTENT(IN)             :: edu_max
     INTEGER, INTENT(IN)             :: period
@@ -323,7 +317,6 @@ SUBROUTINE wrapper_simulate_emax(emax_simulated, payoffs_ex_post, &
 ! Algorithm
 !-------------------------------------------------------------------------------
 
-    ! Simulate expected future value
     CALL simulate_emax(emax_simulated, payoffs_ex_post, future_payoffs, &
             num_periods, num_draws_emax, period, k, eps_relevant_emax, &
             payoffs_systematic, edu_max, edu_start, periods_emax, states_all, &
@@ -337,28 +330,28 @@ SUBROUTINE wrapper_criterion(emax_simulated, x, num_draws_emax, eps_relevant, &
                 mapping_state_idx, states_all, num_periods, periods_emax, & 
                 delta)
 
-    !/* external libraries    */
+    !/* external libraries      */
 
     USE robufort_ambiguity
 
-    !/* setup    */
+    !/* setup                   */
 
     IMPLICIT NONE
 
-    !/* external objects    */
+    !/* external objects        */
 
     DOUBLE PRECISION, INTENT(OUT)   :: emax_simulated
 
-    DOUBLE PRECISION, INTENT(IN)    :: eps_relevant(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: payoffs_systematic(:)
+    DOUBLE PRECISION, INTENT(IN)    :: eps_relevant(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_emax(:,:)
     DOUBLE PRECISION, INTENT(IN)    :: delta
     DOUBLE PRECISION, INTENT(IN)    :: x(:)
 
     INTEGER , INTENT(IN)            :: mapping_state_idx(:,:,:,:,:)
     INTEGER , INTENT(IN)            :: states_all(:,:,:)
-    INTEGER, INTENT(IN)             :: num_periods
     INTEGER, INTENT(IN)             :: num_draws_emax
+    INTEGER, INTENT(IN)             :: num_periods
     INTEGER, INTENT(IN)             :: edu_start
     INTEGER, INTENT(IN)             :: edu_max
     INTEGER, INTENT(IN)             :: period
@@ -378,56 +371,55 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE wrapper_divergence_approx_gradient(rslt, x, cov, level, eps)
 
-    !/* external libraries    */
+    !/* external libraries      */
 
     USE robufort_ambiguity
 
-    !/* setup    */
+    !/* setup                   */
 
     IMPLICIT NONE
 
-    !/* external objects    */
+    !/* external objects        */
 
+    DOUBLE PRECISION, INTENT(IN)   :: cov(4,4)
     DOUBLE PRECISION, INTENT(OUT)  :: rslt(2)
+    DOUBLE PRECISION, INTENT(IN)   :: level
     DOUBLE PRECISION, INTENT(IN)   :: x(2)
     DOUBLE PRECISION, INTENT(IN)   :: eps
-    DOUBLE PRECISION, INTENT(IN)   :: cov(4,4)
-    DOUBLE PRECISION, INTENT(IN)   :: level
 
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
     
-    ! Approximate the gradient of the KL divergence
     rslt = divergence_approx_gradient(x, cov, level, eps)
 
 END SUBROUTINE 
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_multivariate_normal(draws, mean, covariance, num_draws_emax, dim)
+SUBROUTINE wrapper_multivariate_normal(draws, mean, covariance, & 
+                num_draws_emax, dim)
 
-    !/* external libraries    */
+    !/* external libraries      */
 
     USE robufort_auxiliary
 
-    !/* setup    */
+    !/* setup                   */
 
     IMPLICIT NONE
 
-    !/* external objects    */
+    !/* external objects        */
 
     INTEGER, INTENT(IN)             :: num_draws_emax
     INTEGER, INTENT(IN)             :: dim
 
     DOUBLE PRECISION, INTENT(OUT)   :: draws(num_draws_emax, dim)
-    DOUBLE PRECISION, INTENT(IN)    :: mean(dim)
     DOUBLE PRECISION, INTENT(IN)    :: covariance(dim, dim)
+    DOUBLE PRECISION, INTENT(IN)    :: mean(dim)
 
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
     
-    ! Generate multivariate normal deviates    
     CALL multivariate_normal(draws, mean, covariance)
     
 END SUBROUTINE 
@@ -435,15 +427,15 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE wrapper_standard_normal(draw, dim)
 
-    !/* external libraries    */
+    !/* external libraries      */
 
     USE robufort_auxiliary
 
-    !/* setup    */
+    !/* setup                   */
 
     IMPLICIT NONE
 
-    !/* external objects    */
+    !/* external objects        */
 
     INTEGER, INTENT(IN)             :: dim
     
@@ -453,7 +445,6 @@ SUBROUTINE wrapper_standard_normal(draw, dim)
 ! Algorithm
 !-------------------------------------------------------------------------------
     
-    ! Generate standard normal deviates
     CALL standard_normal(draw)
 
 END SUBROUTINE 
@@ -461,15 +452,15 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE wrapper_determinant(det, A)
 
-    !/* external libraries    */
+    !/* external libraries      */
 
     USE robufort_auxiliary
 
-    !/* setup    */
+    !/* setup                   */
 
     IMPLICIT NONE
 
-    !/* external objects    */
+    !/* external objects        */
 
     DOUBLE PRECISION, INTENT(OUT)   :: det
 
@@ -479,7 +470,6 @@ SUBROUTINE wrapper_determinant(det, A)
 ! Algorithm
 !-------------------------------------------------------------------------------
     
-    ! Get determinant
     det = determinant(A)
 
 END SUBROUTINE
@@ -487,15 +477,15 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE wrapper_cholesky(factor, matrix, n)
 
-    !/* external libraries    */
+    !/* external libraries      */
 
     USE robufort_auxiliary
     
-    !/* setup    */
+    !/* setup                   */
 
     IMPLICIT NONE
 
-    !/* external objects    */
+    !/* external objects        */
 
     DOUBLE PRECISION, INTENT(OUT)   :: factor(n,n)
 
@@ -507,7 +497,6 @@ SUBROUTINE wrapper_cholesky(factor, matrix, n)
 ! Algorithm
 !-------------------------------------------------------------------------------
 
-    ! Get Cholesky decomposition
     CALL cholesky(factor, matrix)
 
 END SUBROUTINE
@@ -515,15 +504,15 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE wrapper_inverse(inv, A, n)
 
-    !/* external libraries    */
+    !/* external libraries      */
 
     USE robufort_auxiliary
 
-    !/* setup    */
+    !/* setup                   */
 
     IMPLICIT NONE
 
-    !/* external objects    */
+    !/* external objects        */
 
     DOUBLE PRECISION, INTENT(OUT)   :: inv(n, n)
 
@@ -535,7 +524,6 @@ SUBROUTINE wrapper_inverse(inv, A, n)
 ! Algorithm
 !-------------------------------------------------------------------------------
 
-    ! Get inverse
     inv = inverse(A, n)
 
 END SUBROUTINE
@@ -543,15 +531,15 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE wrapper_trace(rslt, A)
 
-    !/* external libraries    */
+    !/* external libraries      */
 
     USE robufort_auxiliary
 
-    !/* setup    */
+    !/* setup                   */
 
     IMPLICIT NONE
 
-    !/* external objects    */
+    !/* external objects        */
 
     DOUBLE PRECISION, INTENT(OUT) :: rslt
 
@@ -561,7 +549,6 @@ SUBROUTINE wrapper_trace(rslt, A)
 ! Algorithm
 !-------------------------------------------------------------------------------
     
-    ! Get trace
     rslt = trace_fun(A)
 
 END SUBROUTINE
@@ -569,43 +556,43 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE wrapper_divergence(div, x, cov, level)
 
-    !/* external libraries    */
+    !/* external libraries      */
 
     USE robufort_ambiguity
 
-    !/* setup    */
+    !/* setup                   */
 
     IMPLICIT NONE
 
-    !/* external objects    */
+    !/* external objects        */
 
     DOUBLE PRECISION, INTENT(OUT)   :: div(1)
 
-    DOUBLE PRECISION, INTENT(IN)    :: x(2)
     DOUBLE PRECISION, INTENT(IN)    :: cov(4,4)
     DOUBLE PRECISION, INTENT(IN)    :: level
+    DOUBLE PRECISION, INTENT(IN)    :: x(2)
 
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
     
-    ! Calculate divergence
     div = divergence(x, cov, level)
 
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_get_clipped_vector(Y, X, lower_bound, upper_bound, num_values)
+SUBROUTINE wrapper_get_clipped_vector(Y, X, lower_bound, upper_bound, & 
+                num_values)
 
-    !/* external libraries    */
+    !/* external libraries      */
 
     USE robufort_auxiliary
 
-    !/* setup    */
+    !/* setup                   */
 
     IMPLICIT NONE
 
-    !/* external objects    */
+    !/* external objects        */
 
     DOUBLE PRECISION, INTENT(OUT)   :: Y(num_values)
 
@@ -627,15 +614,15 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE wrapper_get_r_squared(r_squared, Y, P, num_agents)
 
-    !/* external libraries    */
+    !/* external libraries      */
 
     USE robufort_auxiliary
 
-    !/* setup    */
+    !/* setup                   */
 
     IMPLICIT NONE
 
-    !/* external objects    */
+    !/* external objects        */
 
     DOUBLE PRECISION, INTENT(OUT)   :: r_squared
 
@@ -655,15 +642,15 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE wrapper_point_predictions(Y, X, coeffs, num_agents)
 
-    !/* external libraries    */
+    !/* external libraries      */
 
     USE robufort_auxiliary
 
-    !/* setup    */
+    !/* setup                   */
 
     IMPLICIT NONE
 
-    !/* external objects    */
+    !/* external objects        */
 
     DOUBLE PRECISION, INTENT(OUT)       :: Y(num_agents)
 
@@ -684,15 +671,15 @@ END SUBROUTINE
 SUBROUTINE wrapper_get_predictions(predictions, endogenous, exogenous, maxe, & 
                 is_simulated, num_points, num_states)
 
-    !/* external libraries    */
+    !/* external libraries      */
 
     USE robufort_auxiliary
 
-    !/* setup    */
+    !/* setup                   */
 
     IMPLICIT NONE
 
-    !/* external objects    */
+    !/* external objects        */
 
     DOUBLE PRECISION, INTENT(OUT)               :: predictions(num_states)
 
@@ -717,15 +704,15 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE wrapper_random_choice(sample, candidates, num_candidates, num_points)
 
-    !/* external libraries    */
+    !/* external libraries      */
 
     USE robufort_auxiliary
 
-    !/* setup    */
+    !/* setup                   */
 
     IMPLICIT NONE
 
-    !/* external objects    */
+    !/* external objects        */
 
     INTEGER, INTENT(OUT)            :: sample(num_points)
 
@@ -745,15 +732,15 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE wrapper_get_coefficients(coeffs, Y, X, num_covars, num_agents)
 
-    !/* external libraries    */
+    !/* external libraries      */
 
     USE robufort_auxiliary
 
-    !/* setup    */
+    !/* setup                   */
 
     IMPLICIT NONE
 
-    !/* external objects    */
+    !/* external objects        */
 
     DOUBLE PRECISION, INTENT(OUT)   :: coeffs(num_covars)
 
@@ -778,15 +765,15 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, &
                 states_all, is_simulated, num_draws_emax, shocks, level, &
                 is_ambiguous, is_debug, measure, maxe, eps_relevant)
 
-    !/* external libraries    */
+    !/* external libraries      */
 
     USE robufort_library
 
-    !/* setup    */
+    !/* setup                   */
 
     IMPLICIT NONE
 
-    !/* external objects    */
+    !/* external objects        */
 
     DOUBLE PRECISION, INTENT(OUT)       :: exogenous_variable(num_states)
 
@@ -800,10 +787,10 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, &
  
     INTEGER, INTENT(IN)                 :: mapping_state_idx(:, :, :, :, :)    
     INTEGER, INTENT(IN)                 :: states_all(:, :, :)    
+    INTEGER, INTENT(IN)                 :: num_draws_emax
     INTEGER, INTENT(IN)                 :: num_periods
     INTEGER, INTENT(IN)                 :: num_states
     INTEGER, INTENT(IN)                 :: edu_start
-    INTEGER, INTENT(IN)                 :: num_draws_emax
     INTEGER, INTENT(IN)                 :: edu_max
     INTEGER, INTENT(IN)                 :: period
 
@@ -820,8 +807,8 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, &
     CALL get_endogenous_variable(exogenous_variable, period, num_periods, &
             num_states, delta, periods_payoffs_systematic, edu_max, &
             edu_start, mapping_state_idx, periods_emax, states_all, &
-            is_simulated, num_draws_emax, shocks, level, is_ambiguous, is_debug, &
-            measure, maxe, eps_relevant)
+            is_simulated, num_draws_emax, shocks, level, is_ambiguous, & 
+            is_debug, measure, maxe, eps_relevant)
 
 END SUBROUTINE
 !*******************************************************************************
@@ -831,15 +818,15 @@ SUBROUTINE wrapper_get_exogenous_variables(independent_variables, maxe, &
                 periods_payoffs_systematic, shifts, edu_max, edu_start, &
                 mapping_state_idx, periods_emax, states_all)
 
-    !/* external libraries    */
+    !/* external libraries      */
 
     USE robufort_emax
 
-    !/* setup    */
+    !/* setup                   */
 
     IMPLICIT NONE
 
-    !/* external objects    */
+    !/* external objects        */
 
     DOUBLE PRECISION, INTENT(OUT)        :: independent_variables(num_states, 9)
     DOUBLE PRECISION, INTENT(OUT)        :: maxe(num_states)
@@ -873,15 +860,15 @@ END SUBROUTINE
 SUBROUTINE wrapper_get_simulated_indicator(is_simulated, num_points, & 
                 num_states, period, num_periods, is_debug)
 
-    !/* external libraries    */
+    !/* external libraries      */
 
     USE robufort_auxiliary
 
-    !/* setup    */
+    !/* setup                   */
 
     IMPLICIT NONE
 
-    !/* external objects    */
+    !/* external objects        */
 
     LOGICAL, INTENT(OUT)            :: is_simulated(num_states)
 
@@ -909,19 +896,19 @@ SUBROUTINE wrapper_get_payoffs(emax_simulated, payoffs_ex_post, future_payoffs, 
                 measure)
 
 
-    !/* external libraries    */
+    !/* external libraries      */
 
     USE robufort_library
 
-    !/* setup    */
+    !/* setup                   */
 
     IMPLICIT NONE
 
-    !/* external objects    */
+    !/* external objects        */
 
-    DOUBLE PRECISION, INTENT(OUT)       :: emax_simulated
     DOUBLE PRECISION, INTENT(OUT)       :: payoffs_ex_post(4)
     DOUBLE PRECISION, INTENT(OUT)       :: future_payoffs(4)
+    DOUBLE PRECISION, INTENT(OUT)       :: emax_simulated
 
     DOUBLE PRECISION, INTENT(IN)        :: payoffs_systematic(:)
     DOUBLE PRECISION, INTENT(IN)        :: eps_relevant(:, :)
@@ -932,10 +919,10 @@ SUBROUTINE wrapper_get_payoffs(emax_simulated, payoffs_ex_post, future_payoffs, 
 
     INTEGER, INTENT(IN)                 :: mapping_state_idx(:, :, :, :, :)
     INTEGER, INTENT(IN)                 :: states_all(:, :, :)
-    INTEGER, INTENT(IN)                 :: num_periods
     INTEGER, INTENT(IN)                 :: num_draws_emax
-    INTEGER, INTENT(IN)                 :: edu_max
+    INTEGER, INTENT(IN)                 :: num_periods
     INTEGER, INTENT(IN)                 :: edu_start
+    INTEGER, INTENT(IN)                 :: edu_max
     INTEGER, INTENT(IN)                 :: period
     INTEGER, INTENT(IN)                 :: k 
 
