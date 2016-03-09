@@ -359,30 +359,31 @@ def test_88():
     # Load interface to debugging library
     import robupy.python.f2py.f2py_debug as fort
 
-    for _ in range(1000):
+    for i in range(10):
 
-        # Cleanup
-        try:
-            os.unlink('interpolation.txt')
-        except FileNotFoundError:
-            pass
+        # Impose constraints
+        constr = dict()
+        constr['periods'] = np.random.random_integers(2, 5)
+
+        # Construct a random initialization file
+        generate_init(constr)
+
+        # Extract required information
+        robupy_obj = read('test.robupy.ini')
+
+        is_debug = robupy_obj.get_attr('is_debug')
+
+        num_periods = robupy_obj.get_attr('num_periods')
+
+        # Write out a grid for the interpolation
+        max_states_period = write_interpolation_grid('test.robupy.ini')
 
         # Draw random request for testing
-        num_states = np.random.random_integers(1, 500)
-        num_points = np.random.random_integers(1, num_states)
+        num_states = np.random.random_integers(1, max_states_period)
         candidates = list(range(num_states))
 
-        num_periods = np.random.random_integers(4, 10)
         period = np.random.random_integers(1, num_periods - 1)
-
-        states_number_period = np.random.random_integers(1, num_states,
-                                                         size=num_periods)
-
-        # The number of states has to part of this list for the tests to run.
-        idx = np.random.choice(range(num_periods))
-        states_number_period[idx] = num_states
-
-        is_debug = np.random.choice([True, False])
+        num_points = np.random.random_integers(1, num_states)
 
         # Check function for random choice and make sure that there are no
         # duplicates.
@@ -399,12 +400,8 @@ def test_88():
 
         # Test the standardization across PYTHON, F2PY, and FORTRAN
         # implementations. This is possible as we write out an interpolation
-        # grid to disk which is used for both functions. This only works if
-        # IS_DEBUG is set to true.
-        generate_init   ()
-        write_interpolation_grid('test.robupy.ini')
-
-        args = (num_points, num_states, period, num_periods, True)
+        # grid to disk which is used for both functions.
+        args = (num_points, num_states, period, num_periods, is_debug)
         py = _get_simulated_indicator(*args)
         f90 = fort.wrapper_get_simulated_indicator(*args)
 
