@@ -48,7 +48,7 @@ def run(hours):
 
     start, timeout = datetime.now(), timedelta(hours=hours)
 
-    package_labels = list(range(1, 10))
+    package_labels = list(range(1, 9))
 
     development_labels = list(range(85, 103))
 

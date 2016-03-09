@@ -359,27 +359,3 @@ class Tests(object):
             # Checks
             np.testing.assert_allclose(base, x)
 
-    @staticmethod
-    def test_9():
-        """ Testing the evaluation of the likelihood  for random requests.
-        """
-        # TODO: Here I will also check the evaluation based on alternative
-        # implementations.
-        for _ in range(2):
-            # Start of unit test design.
-            constraints = dict()
-            constraints['version'] = 'PYTHON'
-
-            init_dict = generate_random_dict(constraints)
-
-            # Print to dictionary
-            print_random_dict(init_dict)
-
-            # Perform toolbox actions
-            robupy_obj = read('test.robupy.ini')
-
-            robupy_obj = solve(robupy_obj)
-
-            data_frame = simulate(robupy_obj)
-
-            evaluate(robupy_obj, data_frame)
