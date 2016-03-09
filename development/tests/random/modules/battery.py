@@ -29,6 +29,7 @@ from modules.auxiliary import cleanup
 
 # ROBUPY import
 sys.path.insert(0, os.environ['ROBUPY'])
+from robupy import evaluate
 from robupy import simulate
 from robupy import process
 from robupy import solve
@@ -67,19 +68,17 @@ def test_85():
     # Ensure that fast solution methods are available
     compile_package('--fortran --debug', True)
 
-    # Constraints
+    # Constraints, which ensure that interpolation is actually run (at least
+    # sometimes).
+    num_periods = np.random.random_integers(5, 10)
+    num_points = np.random.random_integers(40, 54)
     max_draws = np.random.random_integers(1, 100)
 
     constraints = dict()
     constraints['max_draws'] = max_draws
-    constraints['measure'] = 'kl'
-
-    # This ensures that interpolation is actually run.
-    num_periods = np.random.random_integers(5, 10)
-    num_points = np.random.random_integers(40, 54)
-
     constraints['periods'] = num_periods
     constraints['points'] = num_points
+    constraints['measure'] = 'kl'
     constraints['apply'] = True
 
     # Just making sure that it also works for this special case. Note that
@@ -89,25 +88,13 @@ def test_85():
         constraints['eps_zero'] = True
 
     # Generate random initialization file.
-    init_dict = generate_random_dict(constraints)
+    init_dict = generate_init(constraints)
 
-    # Write out disturbances to align the three implementations.
+    # Write out random components and interpolation grid to align the three
+    # implementations.
     num_periods = init_dict['BASICS']['periods']
     write_disturbances(num_periods, max_draws)
-
-    # Test the standardization across PYTHON, F2PY, and FORTRAN
-    # implementations. This is possible as we write out an interpolation
-    # grid to disk which is used for both functions. This only works if
-    # IS_DEBUG is set to true.
-    print_random_dict(init_dict)
-
-    robupy_obj = read('test.robupy.ini')
-
-    solve(robupy_obj)
-
-    states_number_period = robupy_obj.get_attr('states_number_period')
-
-    write_interpolation_grid(num_periods, num_points, states_number_period)
+    write_interpolation_grid('test.robupy.ini')
 
     # Initialize containers
     base = None
@@ -1249,11 +1236,7 @@ def test_101():
         # Solve random request
         robupy_obj = read('test.robupy.ini')
 
-        solve(robupy_obj)
-
         # Extract class attributes
-        states_number_period = robupy_obj.get_attr('states_number_period')
-
         is_interpolated = robupy_obj.get_attr('is_interpolated')
 
         seed_solution = robupy_obj.get_attr('seed_solution')
@@ -1284,9 +1267,6 @@ def test_101():
 
         level = robupy_obj.get_attr('level')
 
-        # Extract auxiliary objects
-        max_states_period = max(states_number_period)
-
         # Distribute model parameters
         coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, eps_cholesky = \
              distribute_model_paras(model_paras, is_debug)
@@ -1296,8 +1276,7 @@ def test_101():
             seed_solution, is_debug, 'emax', eps_cholesky, is_ambiguous)
 
         # Align interpolation grid
-        if is_interpolated and (num_points < max_states_period):
-            write_interpolation_grid(num_periods, num_points, states_number_period)
+        max_states_period = write_interpolation_grid('test.robupy.ini')
 
         # Baseline input arguments.
         base_args = [coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
@@ -1326,11 +1305,61 @@ def test_101():
                 np.testing.assert_equal(base[j], replace_missing_values(
                     ret_args[j]))
 
-        # Cleanup interpolation grid
-        try:
-            os.unlink('interpolation.txt')
-        except FileNotFoundError:
-            pass
+        # Cleanup
+        cleanup()
 
-    # Cleanup
-    cleanup()
+
+def test_102():
+    """ Testing the equality of an evaluation of the criterion function for 
+    a random request.
+    """
+    # Ensure that fast solution methods are available
+    compile_package('--fortran --debug', True)
+
+    # Run evaluation for multiple random requests.
+    for _ in range(5):
+
+        # Constraints
+        max_draws = np.random.random_integers(10, 100)
+
+        constraints = dict()
+        constraints['max_draws'] = max_draws
+
+        # Generate random initialization file
+        init_dict = generate_init(constraints)
+
+        # Write out random components and interpolation grid to align the three
+        # implementations.
+        num_periods = init_dict['BASICS']['periods']
+        write_disturbances(num_periods, max_draws)
+        write_interpolation_grid('test.robupy.ini')
+
+        # Clean evaluations based on interpolation grid,
+        base = None
+
+        for version in ['PYTHON', 'F2PY', 'FORTRAN']:
+
+            robupy_obj = read('test.robupy.ini')
+
+            robupy_obj = solve(robupy_obj)
+
+            data_frame = simulate(robupy_obj)
+
+            # TODO: I need to revisit the structure of original and derived
+            # attributes in the class. Then revisit this part.
+            robupy_obj.unlock()
+
+            robupy_obj.set_attr('version',  version)
+
+            robupy_obj.set_attr('is_python',  version == 'PYTHON')
+
+            robupy_obj.lock()
+
+            robupy_obj, eval = evaluate(robupy_obj, data_frame)
+
+            if base is None:
+                base = eval
+
+            np.testing.assert_allclose(base, eval, rtol=1e-05, atol=1e-06)
+
+        cleanup()

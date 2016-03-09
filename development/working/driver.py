@@ -42,9 +42,6 @@ np.random.seed(321)
 for _ in range(1000):
     constraints = dict()
 
-    # THIS IS REQUIRED
-    constraints['apply'] = False
-
     max_draws = np.random.random_integers(10, 100)
     constraints['max_draws'] = max_draws
 
@@ -53,10 +50,24 @@ for _ in range(1000):
 
     write_disturbances(num_periods, max_draws)
 
+    # Solving the model here is required as the state space needs to be
+    # determined
+    # TODO: Refactor to just create state space and not all the backward
+    # induction all the way.
+    robupy_obj = read('test.robupy.ini')
+
+    robupy_obj = solve(robupy_obj)
+
+    states_number_period = robupy_obj.get_attr('states_number_period')
+
+    num_points = robupy_obj.get_attr('num_points')
+
+    write_interpolation_grid(num_periods, num_points, states_number_period)
+
+
     base = None
 
     for version in ['PYTHON', 'F2PY', 'FORTRAN']:
-
 
         robupy_obj = read('test.robupy.ini')
 
@@ -64,19 +75,22 @@ for _ in range(1000):
 
         data_frame = simulate(robupy_obj)
 
-        # TODO: THIS CAN BE REWORKED?
-        #robupy_obj.unlock()
+        # TODO: I need to revisit the structure of original and derived
+        # attributes in the class. Then revisit this part.
+        robupy_obj.unlock()
 
-        robupy_obj.attr['version'] = version
-        robupy_obj.attr['is_python'] = version == 'PYTHON'
-        #robupy_obj.lock()
+        robupy_obj.set_attr('version',  version)
+
+        robupy_obj.set_attr('is_python',  version == 'PYTHON')
+
+        robupy_obj.lock()
 
         robupy_obj, eval = evaluate(robupy_obj, data_frame)
 
         if base is None:
             base = eval
 
-        print('outside', version, eval)
+        print(eval)
         np.testing.assert_allclose(base, eval)
 
     try:

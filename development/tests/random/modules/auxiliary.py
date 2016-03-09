@@ -9,7 +9,14 @@ import socket
 import shutil
 import shlex
 import glob
+import sys
 import os
+
+# ROBUPY import
+sys.path.insert(0, os.environ['ROBUPY'])
+from robupy import read
+
+from robupy.python.solve_python import _create_state_space
 
 # project library
 from modules.clsMail import MailCls
@@ -18,13 +25,33 @@ from modules.clsMail import MailCls
 '''
 
 
-def write_interpolation_grid(num_periods, num_points, states_number_period):
+def write_interpolation_grid(file_name):
     """ Write out an interpolation grid that can be used across
     implementations.
     """
-    # Construct auxiliary objects
-    max_states = max(states_number_period)
-    booleans = np.tile(True, (max_states, num_periods))
+    # Process relevant initialization file
+    robupy_obj = read(file_name)
+
+    # Distribute class attributes
+    num_periods = robupy_obj.get_attr('num_periods')
+
+    num_points = robupy_obj.get_attr('num_points')
+
+    edu_start = robupy_obj.get_attr('edu_start')
+
+    is_python = robupy_obj.get_attr('is_python')
+
+    edu_max = robupy_obj.get_attr('edu_max')
+
+    min_idx = robupy_obj.get_attr('min_idx')
+
+    # Determine maximum number of states
+    _, states_number_period, _ = _create_state_space(num_periods, edu_start,
+                                    is_python, edu_max, min_idx)
+    max_states_period = max(states_number_period)
+
+    # Initialize container
+    booleans = np.tile(True, (max_states_period, num_periods))
 
     # Iterate over all periods
     for period in range(num_periods):
@@ -48,6 +75,9 @@ def write_interpolation_grid(num_periods, num_points, states_number_period):
 
     # Write out to file
     np.savetxt('interpolation.txt', booleans, fmt='%s')
+
+    # Some information that is useful elsewhere.
+    return max_states_period
 
 
 def build_f2py_testing(is_hidden):

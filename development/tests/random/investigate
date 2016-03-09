@@ -23,7 +23,7 @@ cleanup()
 
 ''' Request
 '''
-label, seed = '85', 12244
+label, seed = '102', 12244
 
 ''' Error Reproduction
 '''
@@ -36,7 +36,6 @@ except AttributeError:
     from robupy.tests.tests import Tests
     test = getattr(Tests, 'test_' + label)
 
-# TODO: NEed to adjust that 102 is in random test run.
 for _ in range(10):
     print(_)
     test()
