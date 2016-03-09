@@ -41,6 +41,9 @@ SUBROUTINE evaluate_criterion_function(rslt, mapping_state_idx, periods_emax, &
 
     REAL(our_dble), INTENT(OUT)     :: rslt 
 
+
+    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:, :, :, :, :)
+    INTEGER(our_int), INTENT(IN)    :: states_all(:, :, :)
     INTEGER(our_int), INTENT(IN)    :: num_draws_prob
     INTEGER(our_int), INTENT(IN)    :: num_periods
     INTEGER(our_int), INTENT(IN)    :: num_agents
@@ -55,11 +58,6 @@ SUBROUTINE evaluate_criterion_function(rslt, mapping_state_idx, periods_emax, &
 
     !/* internal objects        */
 
-    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:, :, :, :, :)
-    INTEGER(our_int), INTENT(IN)    :: states_all(:, :, :)
-
-    REAL(our_dble), ALLOCATABLE     :: periods_payoffs_ex_post(:, :, :)
-    REAL(our_dble), ALLOCATABLE     :: periods_payoffs_future(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: likl(:)
 
     REAL(our_dble), INTENT(IN)      :: periods_payoffs_systematic(:, :, :)
@@ -576,12 +574,10 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
     INTEGER(our_int)                    :: num_states
     INTEGER(our_int)                    :: period
     INTEGER(our_int)                    :: k
-    INTEGER(our_int)                    :: i
 
     REAL(our_dble)                      :: eps_relevant(num_draws_emax, 4)
     REAL(our_dble)                      :: payoffs_systematic(4)
     REAL(our_dble)                      :: payoffs_ex_post(4)
-    REAL(our_dble)                      :: expected_values(4)
     REAL(our_dble)                      :: future_payoffs(4)
     REAL(our_dble)                      :: emax_simulated
     REAL(our_dble)                      :: shifts(4)

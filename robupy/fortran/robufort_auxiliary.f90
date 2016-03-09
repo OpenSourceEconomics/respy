@@ -1,13 +1,13 @@
 MODULE robufort_auxiliary
 
-	 !/*	external modules	*/
+    !/*	external modules	*/
 
     USE robufort_constants
 
-	 !/*	setup	            */
+	!/*	setup	                 */
 
     IMPLICIT NONE
-
+    
     PUBLIC
 
 CONTAINS
@@ -1055,7 +1055,7 @@ SUBROUTINE get_clipped_vector(Y, X, lower_bound, upper_bound, num_values)
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(OUT)           :: Y(num_values)
+    REAL(our_dble), INTENT(INOUT)           :: Y(num_values)
 
     REAL(our_dble), INTENT(IN)            :: X(num_values)
     REAL(our_dble), INTENT(IN)            :: lower_bound
@@ -1127,21 +1127,17 @@ SUBROUTINE get_coefficients(coeffs, Y, X, num_covars, num_agents)
 
     REAL(our_dble), INTENT(OUT)     :: coeffs(num_covars)
 
-    REAL(our_dble), INTENT(IN)      :: X(:, :)
-    REAL(our_dble), INTENT(IN)      :: Y(:)
-    
     INTEGER, INTENT(IN)             :: num_covars
     INTEGER, INTENT(IN)             :: num_agents
 
+    REAL(our_dble), INTENT(IN)      :: X(:, :)
+    REAL(our_dble), INTENT(IN)      :: Y(:)
+    
     !/* internal objects        */
 
     REAL(our_dble)                  :: A(num_covars, num_covars)
     REAL(our_dble)                  :: C(num_covars, num_covars)
     REAL(our_dble)                  :: D(num_covars, num_agents)
-
-    CHARACTER(20)                   :: HOME
-
-    INTEGER :: i
 
 !-------------------------------------------------------------------------------
 ! Algorithm
