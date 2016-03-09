@@ -187,6 +187,9 @@ def _write_robufort_initialization(robupy_obj, request):
         line = '{0:10d}\n'.format(num_sims)
         file_.write(line)
 
+        line = '{0:10d}\n'.format(init_dict['ESTIMATION']['seed'])
+        file_.write(line)
+
         # Auxiliary
         line = '{0:10d}\n'.format(min_idx)
         file_.write(line)

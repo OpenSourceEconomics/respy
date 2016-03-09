@@ -76,7 +76,9 @@ def create_disturbances(num_periods, num_draws, seed, is_debug, which,
     # Control randomness by setting seed value
     np.random.seed(seed)
 
-    # This allows to align disturbances across implementations
+    # Draw random deviates from a standard normal distribution or read it in
+    # from disk. The latter is available to allow for testing across
+    # implementations.
     if is_debug and os.path.isfile('disturbances.txt'):
         disturbances = read_disturbances(num_periods, num_draws)
     else:
@@ -88,15 +90,12 @@ def create_disturbances(num_periods, num_draws, seed, is_debug, which,
     if which == 'emax':
         # In the case of ambiguous world, the standard deviates are used in the
         # solution part of the program.
-        if is_ambiguous:
+        for period in range(num_periods):
+            disturbances[period, :, :] = \
+                np.dot(eps_cholesky, disturbances[period, :, :].T).T
+
+        if not is_ambiguous:
             for period in range(num_periods):
-                disturbances[period, :, :] = \
-                    np.dot(eps_cholesky, disturbances[period, :, :].T).T
-        else:
-            # Transform disturbances to relevant distribution
-            for period in range(num_periods):
-                disturbances[period, :, :] = \
-                    np.dot(eps_cholesky, disturbances[period, :, :].T).T
                 for j in [0, 1]:
                     disturbances[period, :, j] = \
                         np.exp(disturbances[period, :, j])
