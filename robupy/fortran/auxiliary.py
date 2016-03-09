@@ -10,7 +10,11 @@ import os
 # module-wide variables
 PACKAGE_PATH = os.path.dirname(os.path.realpath(__file__))
 
+# project library
 from robupy.auxiliary import replace_missing_values
+
+''' Auxiliary  functions
+'''
 
 
 def _add_results(robupy_obj, request):

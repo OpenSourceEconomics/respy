@@ -9,7 +9,7 @@
 !*******************************************************************************
 MODULE robufort_ambiguity
 
-	!/*	external modules	*/
+	!/*	external modules	  */
 
     USE robufort_constants
 
@@ -19,7 +19,7 @@ MODULE robufort_ambiguity
 
     USE robufort_risk
 
-	!/*	setup	*/
+	!/*	setup	             */
 
 	IMPLICIT NONE
 
@@ -34,7 +34,7 @@ SUBROUTINE get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
                 states_all, num_periods, periods_emax, delta, is_debug, &
                 shocks, level, measure)
 
-    !/* external objects    */
+    !/* external objects        */
 
     REAL(our_dble), INTENT(OUT)     :: payoffs_ex_post(4)
     REAL(our_dble), INTENT(OUT)     :: future_payoffs(4)
@@ -42,17 +42,17 @@ SUBROUTINE get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:,:,:,:,:)
     INTEGER(our_int), INTENT(IN)    :: states_all(:,:,:)
+    INTEGER(our_int), INTENT(IN)    :: num_draws_emax
     INTEGER(our_int), INTENT(IN)    :: num_periods
     INTEGER(our_int), INTENT(IN)    :: edu_start
-    INTEGER(our_int), INTENT(IN)    :: num_draws_emax
     INTEGER(our_int), INTENT(IN)    :: edu_max
     INTEGER(our_int), INTENT(IN)    :: period
     INTEGER(our_int), INTENT(IN)    :: k
 
     REAL(our_dble), INTENT(IN)      :: payoffs_systematic(:)
+    REAL(our_dble), INTENT(IN)      :: eps_relevant(:, :)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:,:)
     REAL(our_dble), INTENT(IN)      :: shocks(:, :)
-    REAL(our_dble), INTENT(IN)      :: eps_relevant(:, :)
     REAL(our_dble), INTENT(IN)      :: delta
     REAL(our_dble), INTENT(IN)      :: level
 
@@ -60,7 +60,7 @@ SUBROUTINE get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
 
     CHARACTER(10), INTENT(IN)       :: measure
 
-    !/* internal objects    */
+    !/* internal objects        */
 
     INTEGER(our_int)                :: maxiter
 
@@ -81,10 +81,10 @@ SUBROUTINE get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
     eps = 1.4901161193847656e-08
 
     ! Determine worst case scenario
-    CALL slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws_emax, &
-            eps_relevant, period, k, payoffs_systematic, edu_max, edu_start, &
-            mapping_state_idx, states_all, num_periods, periods_emax, &
-            delta, is_debug, shocks, level)
+    CALL slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, &  
+            num_draws_emax, eps_relevant, period, k, payoffs_systematic, &
+            edu_max, edu_start, mapping_state_idx, states_all, num_periods, &
+            periods_emax, delta, is_debug, shocks, level)
 
     ! Transform disturbances
     CALL transform_disturbances_ambiguity(eps_relevant_emax, eps_relevant, &
@@ -99,32 +99,31 @@ SUBROUTINE get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws_emax, &
-            eps_relevant, period, k, payoffs_systematic, edu_max, edu_start, &
-            mapping_state_idx, states_all, num_periods, periods_emax, &
-            delta, is_debug, shocks, level)
+SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, & 
+            num_draws_emax, eps_relevant, period, k, payoffs_systematic, & 
+            edu_max, edu_start, mapping_state_idx, states_all, num_periods, & 
+            periods_emax, delta, is_debug, shocks, level)
 
-    !/* external objects    */
+    !/* external objects        */
 
     REAL(our_dble), INTENT(OUT)     :: x_internal(2)
-    REAL(our_dble), INTENT(IN)      :: x_start(:)
     REAL(our_dble), INTENT(IN)      :: shocks(:,:)
+    REAL(our_dble), INTENT(IN)      :: x_start(:)
     REAL(our_dble), INTENT(IN)      :: level
     REAL(our_dble), INTENT(IN)      :: ftol
 
-
     INTEGER(our_int), INTENT(IN)    :: maxiter
 
-    REAL(our_dble), INTENT(IN)      :: eps_relevant(:, :)
     REAL(our_dble), INTENT(IN)      :: payoffs_systematic(:)
+    REAL(our_dble), INTENT(IN)      :: eps_relevant(:, :)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:,:)
     REAL(our_dble), INTENT(IN)      :: delta
     REAL(our_dble), INTENT(IN)      :: eps
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:,:,:,:,:)
     INTEGER(our_int), INTENT(IN)    :: states_all(:,:,:)
-    INTEGER(our_int), INTENT(IN)    :: num_periods
     INTEGER(our_int), INTENT(IN)    :: num_draws_emax
+    INTEGER(our_int), INTENT(IN)    :: num_periods
     INTEGER(our_int), INTENT(IN)    :: edu_start
     INTEGER(our_int), INTENT(IN)    :: edu_max
     INTEGER(our_int), INTENT(IN)    :: period
@@ -132,19 +131,18 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws_ema
 
     LOGICAL, INTENT(IN)             :: is_debug
 
-    !/* internal objects    */
+    !/* internal objects        */
 
-    INTEGER(our_int)                :: m
-    INTEGER(our_int)                :: meq
-    INTEGER(our_int)                :: n
+    INTEGER(our_int)                :: mineq
     INTEGER(our_int)                :: mode
     INTEGER(our_int)                :: iter
     INTEGER(our_int)                :: mieq
-    INTEGER(our_int)                :: mineq
-    INTEGER(our_int)                :: l_w
     INTEGER(our_int)                :: l_jw
+    INTEGER(our_int)                :: meq
+    INTEGER(our_int)                :: l_w
     INTEGER(our_int)                :: la
-
+    INTEGER(our_int)                :: m
+    INTEGER(our_int)                :: n
 
     INTEGER(our_int)                :: jw(7)
 
@@ -165,8 +163,8 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws_ema
 !-------------------------------------------------------------------------------
 
     !---------------------------------------------------------------------------
-    ! This is hard-coded for the ROBUPY package requirements. What follows below
-    ! is based on this being 0, 1.
+    ! This is hard-coded for the ROBUPY package requirements. What follows 
+    ! below is based on this being 0, 1.
     !---------------------------------------------------------------------------
     meq = 1         ! Number of equality constraints
     mieq = 0        ! Number of inequality constraints
@@ -275,26 +273,26 @@ FUNCTION criterion(x_internal, num_draws_emax, eps_relevant, period, k, &
                 payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
                 states_all, num_periods, periods_emax, delta)
 
-    !/* external objects    */
+    !/* external objects        */
 
     REAL(our_dble)                  :: criterion
 
-    REAL(our_dble), INTENT(IN)      :: eps_relevant(:, :)
     REAL(our_dble), INTENT(IN)      :: payoffs_systematic(:)
+    REAL(our_dble), INTENT(IN)      :: eps_relevant(:, :)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:,:)
     REAL(our_dble), INTENT(IN)      :: x_internal(:)
     REAL(our_dble), INTENT(IN)      :: delta
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:,:,:,:,:)
     INTEGER(our_int), INTENT(IN)    :: states_all(:,:,:)
-    INTEGER(our_int), INTENT(IN)    :: num_periods
     INTEGER(our_int), INTENT(IN)    :: num_draws_emax
+    INTEGER(our_int), INTENT(IN)    :: num_periods
     INTEGER(our_int), INTENT(IN)    :: edu_start
     INTEGER(our_int), INTENT(IN)    :: edu_max
     INTEGER(our_int), INTENT(IN)    :: period
     INTEGER(our_int), INTENT(IN)    :: k
 
-    !/* internal objects    */
+    !/* internal objects        */
 
     REAL(our_dble)                  :: eps_relevant_emax(num_draws_emax, 4)
     REAL(our_dble)                  :: payoffs_ex_post(4)
@@ -321,17 +319,16 @@ FUNCTION criterion(x_internal, num_draws_emax, eps_relevant, period, k, &
 END FUNCTION
 !*******************************************************************************
 !*******************************************************************************
-FUNCTION criterion_approx_gradient(x_internal, eps, num_draws_emax, eps_relevant, &
-                period, k, payoffs_systematic, edu_max, edu_start, &
-                mapping_state_idx, states_all, num_periods, periods_emax, &
-                delta)
+FUNCTION criterion_approx_gradient(x_internal, eps, num_draws_emax, & 
+            eps_relevant, period, k, payoffs_systematic, edu_max, edu_start, &
+            mapping_state_idx, states_all, num_periods, periods_emax, delta)
 
-    !/* external objects    */
+    !/* external objects        */
 
     REAL(our_dble)                  :: criterion_approx_gradient(2)
 
-    REAL(our_dble), INTENT(IN)      :: eps_relevant(:, :)
     REAL(our_dble), INTENT(IN)      :: payoffs_systematic(:)
+    REAL(our_dble), INTENT(IN)      :: eps_relevant(:, :)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:,:)
     REAL(our_dble), INTENT(IN)      :: x_internal(:)
     REAL(our_dble), INTENT(IN)      :: delta
@@ -346,7 +343,7 @@ FUNCTION criterion_approx_gradient(x_internal, eps, num_draws_emax, eps_relevant
     INTEGER(our_int), INTENT(IN)    :: period
     INTEGER(our_int), INTENT(IN)    :: k
 
-    !/* internals objects    */
+    !/* internals objects       */
 
     REAL(our_dble)                  :: ei(2)
     REAL(our_dble)                  :: d(2)
@@ -387,10 +384,10 @@ FUNCTION criterion_approx_gradient(x_internal, eps, num_draws_emax, eps_relevant
 END FUNCTION
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE transform_disturbances_ambiguity(eps_relevant_emax, eps_relevant, x_internal, & 
-             num_draws_emax)
+SUBROUTINE transform_disturbances_ambiguity(eps_relevant_emax, eps_relevant, & 
+                x_internal, num_draws_emax)
 
-    !/* external objects    */
+    !/* external objects        */
 
     REAL(our_dble), INTENT(OUT)     :: eps_relevant_emax(:, :)
 
@@ -399,7 +396,7 @@ SUBROUTINE transform_disturbances_ambiguity(eps_relevant_emax, eps_relevant, x_i
 
     INTEGER(our_int), INTENT(IN)    :: num_draws_emax
 
-    !/* internal objects    */
+    !/* internal objects        */
 
     INTEGER                         :: j
 
@@ -422,18 +419,18 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE logging_ambiguity(x_internal, div, mode, period, k, is_success)
 
-    !/* external objects    */
+    !/* external objects        */
 
     REAL(our_dble), INTENT(IN)      :: x_internal(:)
     REAL(our_dble), INTENT(IN)      :: div
 
+    INTEGER(our_int), INTENT(IN)    :: period
     INTEGER(our_int), INTENT(IN)    :: mode
     INTEGER(our_int), INTENT(IN)    :: k
-    INTEGER(our_int), INTENT(IN)    :: period
 
     LOGICAL, INTENT(IN)             :: is_success
 
-    !/* internal objects    */
+    !/* internal objects        */
 
     CHARACTER(55)                   :: message_optimizer
     CHARACTER(5)                    :: message_success
@@ -495,7 +492,7 @@ END SUBROUTINE
 !*******************************************************************************
 FUNCTION divergence(x_internal, shocks, level)
 
-    !/* external objects    */
+    !/* external objects        */
 
     REAL(our_dble)                  :: divergence 
 
@@ -503,15 +500,15 @@ FUNCTION divergence(x_internal, shocks, level)
     REAL(our_dble), INTENT(IN)      :: shocks(:,:)
     REAL(our_dble), INTENT(IN)      :: level
 
-    !/* internals objects    */
+    !/* internals objects       */
 
     REAL(our_dble)                  :: alt_mean(4, 1) = zero_dble
     REAL(our_dble)                  :: old_mean(4, 1) = zero_dble
+    REAL(our_dble)                  :: inv_old_cov(4,4)
     REAL(our_dble)                  :: alt_cov(4,4)
     REAL(our_dble)                  :: old_cov(4,4)
-    REAL(our_dble)                  :: inv_old_cov(4,4)
-    REAL(our_dble)                  :: comp_a
     REAL(our_dble)                  :: comp_b(1, 1)
+    REAL(our_dble)                  :: comp_a
     REAL(our_dble)                  :: comp_c
     REAL(our_dble)                  :: rslt
 
@@ -551,16 +548,16 @@ END FUNCTION
 !*******************************************************************************
 FUNCTION divergence_approx_gradient(x, cov, level, eps)
 
-    !/* external objects    */
+    !/* external objects        */
 
     REAL(our_dble)                  :: divergence_approx_gradient(2)
 
-    REAL(our_dble), INTENT(IN)      :: x(:)
-    REAL(our_dble), INTENT(IN)      :: eps
     REAL(our_dble), INTENT(IN)      :: cov(:,:)
     REAL(our_dble), INTENT(IN)      :: level
+    REAL(our_dble), INTENT(IN)      :: x(:)
+    REAL(our_dble), INTENT(IN)      :: eps
 
-    !/* internals objects    */
+    !/* internals objects       */
 
     INTEGER(our_int)                :: k
 
