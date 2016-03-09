@@ -214,14 +214,14 @@ class Tests(object):
 
             # Draw a random number of draws for
             # expected future value calculations.
-            num_draws = np.random.randint(1, 100)
+            num_draws_emax = np.random.randint(1, 100)
 
             # Perform toolbox actions
             robupy_obj = read('test.robupy.ini')
 
             robupy_obj.unlock()
 
-            robupy_obj.set_attr('num_draws', num_draws)
+            robupy_obj.set_attr('num_draws_emax', num_draws_emax)
 
             robupy_obj.lock()
 

@@ -356,9 +356,9 @@ def transform_robupy_to_restud(model_paras, init_dict):
         # Write out some basic information about the problem.
         num_agents = init_dict['SIMULATION']['agents']
         num_periods = init_dict['BASICS']['periods']
-        num_draws = init_dict['SOLUTION']['draws']
+        num_draws_emax = init_dict['SOLUTION']['draws']
         file_.write(' {0:03d} {1:05d} {2:06d} {3:06f}'
-            ' {4:06f}\n'.format(num_periods, num_agents, num_draws,-99.0,
+            ' {4:06f}\n'.format(num_periods, num_agents, num_draws_emax,-99.0,
             500.0))
 
         # Write out coefficients for the two occupations.

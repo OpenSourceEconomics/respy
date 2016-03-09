@@ -63,7 +63,7 @@ def distribute_model_paras(model_paras, is_debug):
     return coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, eps_cholesky
 
 
-def create_disturbances(num_periods, num_draws, seed, is_debug, which,
+def create_disturbances(num_periods, num_draws_emax, seed, is_debug, which,
         eps_cholesky, is_ambiguous):
     """ Create the relevant set of disturbances. Handle special case of zero v
     variances as thi case is useful for hand-based testing. The disturbances
@@ -80,10 +80,10 @@ def create_disturbances(num_periods, num_draws, seed, is_debug, which,
     # from disk. The latter is available to allow for testing across
     # implementations.
     if is_debug and os.path.isfile('disturbances.txt'):
-        disturbances = read_disturbances(num_periods, num_draws)
+        disturbances = read_disturbances(num_periods, num_draws_emax)
     else:
         disturbances = np.random.multivariate_normal(np.zeros(4),
-                        np.identity(4), (num_periods, num_draws))
+                        np.identity(4), (num_periods, num_draws_emax))
 
     # Deviates used for the Monte Carlo integration of the expected future
     # values during the solution of the model.
@@ -142,18 +142,18 @@ def replace_missing_values(argument):
     return argument
 
 
-def read_disturbances(num_periods, num_draws):
+def read_disturbances(num_periods, num_draws_emax):
     """ Red the disturbances from disk. This is only used in the development
     process.
     """
     # Initialize containers
-    disturbances_emax = np.tile(np.nan, (num_periods, num_draws, 4))
+    disturbances_emax = np.tile(np.nan, (num_periods, num_draws_emax, 4))
 
     # Read and distribute disturbances
     disturbances = np.array(np.genfromtxt('disturbances.txt'), ndmin=2)
     for period in range(num_periods):
-        lower = 0 + num_draws * period
-        upper = lower + num_draws
+        lower = 0 + num_draws_emax * period
+        upper = lower + num_draws_emax
         disturbances_emax[period, :, :] = disturbances[lower:upper, :]
 
     # Finishing

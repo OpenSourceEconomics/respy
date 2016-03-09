@@ -24,7 +24,7 @@ CONTAINS
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, future_payoffs, & 
-                num_periods, num_draws, period, k, eps_relevant_emax, & 
+                num_periods, num_draws_emax, period, k, eps_relevant_emax, &
                 payoffs_systematic, edu_max, edu_start, periods_emax, states_all, & 
                 mapping_state_idx, delta)
 
@@ -38,7 +38,7 @@ SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, future_payoffs, &
     INTEGER(our_int), INTENT(IN)    :: states_all(:,:,:)
     INTEGER(our_int), INTENT(IN)    :: period
     INTEGER(our_int), INTENT(IN)    :: num_periods
-    INTEGER(our_int), INTENT(IN)    :: num_draws
+    INTEGER(our_int), INTENT(IN)    :: num_draws_emax
     INTEGER(our_int), INTENT(IN)    :: k
     INTEGER(our_int), INTENT(IN)    :: edu_max
     INTEGER(our_int), INTENT(IN)    :: edu_start
@@ -65,7 +65,7 @@ SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, future_payoffs, &
     emax_simulated = zero_dble
 
     ! Iterate over Monte Carlo draws
-    DO i = 1, num_draws 
+    DO i = 1, num_draws_emax
 
         ! Select disturbances for this draw
         disturbances = eps_relevant_emax(i, :)
@@ -84,7 +84,7 @@ SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, future_payoffs, &
     END DO
 
     ! Scaling
-    emax_simulated = emax_simulated / num_draws
+    emax_simulated = emax_simulated / num_draws_emax
 
 END SUBROUTINE
 !*******************************************************************************

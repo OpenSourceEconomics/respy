@@ -154,7 +154,7 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
                 coeffs_edu, edu_start, edu_max, coeffs_home, shocks, & 
-                eps_cholesky, num_draws, seed_solution, seed_estimation, & 
+                eps_cholesky, num_draws_emax, seed_solution, seed_estimation, &
                 num_agents, seed_simulation, is_debug, is_zero, &
                 is_interpolated, num_points, min_idx, is_ambiguous, measure, & 
                 request, num_sims) 
@@ -173,7 +173,7 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
     INTEGER(our_int), INTENT(OUT)   :: num_periods
     INTEGER(our_int), INTENT(OUT)   :: num_agents
     INTEGER(our_int), INTENT(OUT)   :: num_points
-    INTEGER(our_int), INTENT(OUT)   :: num_draws
+    INTEGER(our_int), INTENT(OUT)   :: num_draws_emax
     INTEGER(our_int), INTENT(OUT)   :: edu_start
     INTEGER(our_int), INTENT(OUT)   :: num_sims
     INTEGER(our_int), INTENT(OUT)   :: edu_max
@@ -240,7 +240,7 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
         END DO
 
         ! SOLUTION
-        READ(1, 1505) num_draws
+        READ(1, 1505) num_draws_emax
         READ(1, 1505) seed_solution
 
         ! SIMULATION
@@ -279,7 +279,7 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE create_disturbances(disturbances, num_periods, num_draws, seed, & 
+SUBROUTINE create_disturbances(disturbances, num_periods, num_draws_emax, seed, &
                 is_debug, which, eps_cholesky, is_ambiguous) 
 
     !/* external objects    */
@@ -289,7 +289,7 @@ SUBROUTINE create_disturbances(disturbances, num_periods, num_draws, seed, &
     REAL(our_dble), INTENT(IN)                  :: eps_cholesky(4, 4)
 
     INTEGER(our_int), INTENT(IN)                :: num_periods
-    INTEGER(our_int), INTENT(IN)                :: num_draws
+    INTEGER(our_int), INTENT(IN)                :: num_draws_emax
     INTEGER(our_int), INTENT(IN)                :: seed 
 
     LOGICAL, INTENT(IN)                         :: is_ambiguous
@@ -312,7 +312,7 @@ SUBROUTINE create_disturbances(disturbances, num_periods, num_draws, seed, &
 !------------------------------------------------------------------------------- 
 
     ! Allocate containers
-    ALLOCATE(disturbances(num_periods, num_draws, 4))
+    ALLOCATE(disturbances(num_periods, num_draws_emax, 4))
 
     ! Set random seed
     seed_inflated(:) = seed
@@ -332,7 +332,7 @@ SUBROUTINE create_disturbances(disturbances, num_periods, num_draws, seed, &
 
         DO period = 1, num_periods
 
-            DO j = 1, num_draws
+            DO j = 1, num_draws_emax
         
                 2000 FORMAT(4(1x,f15.10))
                 READ(12,2000) disturbances(period, j, :)
@@ -361,7 +361,7 @@ SUBROUTINE create_disturbances(disturbances, num_periods, num_draws, seed, &
         DO period = 1, num_periods
             
             ! Apply variance change
-            DO i = 1, num_draws
+            DO i = 1, num_draws_emax
             
                 disturbances(period, i:i, :) = &
                     TRANSPOSE(MATMUL(eps_cholesky, TRANSPOSE(disturbances(period, i:i, :))))
@@ -403,7 +403,7 @@ SUBROUTINE create_disturbances(disturbances, num_periods, num_draws, seed, &
         DO period = 1, num_periods
             
             ! Apply variance change
-            DO i = 1, num_draws
+            DO i = 1, num_draws_emax
             
                 disturbances(period, i:i, :) = &
                     TRANSPOSE(MATMUL(eps_cholesky, TRANSPOSE(disturbances(period, i:i, :))))
@@ -486,7 +486,7 @@ PROGRAM robufort
     INTEGER(our_int)                :: num_agents
     INTEGER(our_int)                :: num_points
     INTEGER(our_int)                :: edu_start
-    INTEGER(our_int)                :: num_draws
+    INTEGER(our_int)                :: num_draws_emax
     INTEGER(our_int)                :: num_sims
     INTEGER(our_int)                :: edu_max
     INTEGER(our_int)                :: min_idx
@@ -527,14 +527,14 @@ PROGRAM robufort
     ! PYTHON/F2PY implementations.
     CALL read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
             coeffs_edu, edu_start, edu_max, coeffs_home, shocks, eps_cholesky, & 
-            num_draws, seed_solution, seed_estimation, num_agents, & 
+            num_draws_emax, seed_solution, seed_estimation, num_agents, &
             seed_simulation, is_debug, is_zero, is_interpolated, num_points, & 
             min_idx, is_ambiguous, measure, request, num_sims)
 
     ! This part creates (or reads from disk) the disturbances for the Monte 
     ! Carlo integration of the EMAX. For is_debugging purposes, these might also be 
     ! read in from disk or set to zero/one.   
-    CALL create_disturbances(disturbances_emax, num_periods, num_draws, & 
+    CALL create_disturbances(disturbances_emax, num_periods, num_draws_emax, &
             seed_solution, is_debug, 'emax', eps_cholesky, is_ambiguous)
 
     ! Execute on request.
@@ -546,7 +546,7 @@ PROGRAM robufort
                 periods_payoffs_systematic, states_all, states_number_period, & 
                 coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, edu_max, & 
                 delta, edu_start, is_debug, is_interpolated, level, measure, & 
-                min_idx, num_draws, num_periods, num_points, is_ambiguous, & 
+                min_idx, num_draws_emax, num_periods, num_points, is_ambiguous, &
                 disturbances_emax)
 
     ELSE IF (request == 'evaluate') THEN
@@ -566,7 +566,7 @@ PROGRAM robufort
                 periods_payoffs_systematic, states_all, states_number_period, & 
                 coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, edu_max, & 
                 delta, edu_start, is_debug, is_interpolated, level, measure, & 
-                min_idx, num_draws, num_periods, num_points, is_ambiguous, & 
+                min_idx, num_draws_emax, num_periods, num_points, is_ambiguous, &
                 disturbances_emax)
 
         CALL evaluate_criterion_function(eval, mapping_state_idx, & 

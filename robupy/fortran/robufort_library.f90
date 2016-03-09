@@ -213,7 +213,7 @@ SUBROUTINE solve_fortran_bare(mapping_state_idx, periods_emax, &
     periods_future_payoffs, periods_payoffs_ex_post, & 
     periods_payoffs_systematic, states_all, states_number_period, coeffs_a, & 
     coeffs_b, coeffs_edu, coeffs_home, shocks, edu_max, delta, edu_start, & 
-    is_debug, is_interpolated, level, measure, min_idx, num_draws, & 
+    is_debug, is_interpolated, level, measure, min_idx, num_draws_emax, &
     num_periods, num_points, is_ambiguous, disturbances_emax)
 
 
@@ -229,7 +229,7 @@ SUBROUTINE solve_fortran_bare(mapping_state_idx, periods_emax, &
     INTEGER(our_int), INTENT(IN)                    :: num_periods
     INTEGER(our_int), INTENT(IN)                    :: num_points
     INTEGER(our_int), INTENT(IN)                    :: edu_start
-    INTEGER(our_int), INTENT(IN)                    :: num_draws
+    INTEGER(our_int), INTENT(IN)                    :: num_draws_emax
     INTEGER(our_int), INTENT(IN)                    :: edu_max
     INTEGER(our_int), INTENT(IN)                    :: min_idx
 
@@ -291,7 +291,7 @@ SUBROUTINE solve_fortran_bare(mapping_state_idx, periods_emax, &
     ! Perform backward induction procedure.
     CALL backward_induction(periods_emax, periods_payoffs_ex_post, &
             periods_future_payoffs, num_periods, max_states_period, &
-            disturbances_emax, num_draws, states_number_period, &
+            disturbances_emax, num_draws_emax, states_number_period, &
             periods_payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
             states_all, delta, is_debug, shocks, level, is_ambiguous, measure, &
             is_interpolated, num_points)
@@ -530,7 +530,7 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
                 periods_future_payoffs, num_periods, max_states_period, &
-                disturbances_emax, num_draws, states_number_period, &
+                disturbances_emax, num_draws_emax, states_number_period, &
                 periods_payoffs_systematic, edu_max, edu_start, &
                 mapping_state_idx, states_all, delta, is_debug, shocks, &
                 level, is_ambiguous, measure, is_interpolated, num_points)
@@ -562,7 +562,7 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
     INTEGER(our_int), INTENT(IN)        :: num_periods
     INTEGER(our_int), INTENT(IN)        :: edu_start
     INTEGER(our_int), INTENT(IN)        :: edu_max
-    INTEGER(our_int), INTENT(IN)        :: num_draws
+    INTEGER(our_int), INTENT(IN)        :: num_draws_emax
     INTEGER(our_int), INTENT(IN)        :: num_points
 
     LOGICAL, INTENT(IN)                 :: is_interpolated
@@ -578,7 +578,7 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
     INTEGER(our_int)                    :: k
     INTEGER(our_int)                    :: i
 
-    REAL(our_dble)                      :: eps_relevant(num_draws, 4)
+    REAL(our_dble)                      :: eps_relevant(num_draws_emax, 4)
     REAL(our_dble)                      :: payoffs_systematic(4)
     REAL(our_dble)                      :: payoffs_ex_post(4)
     REAL(our_dble)                      :: expected_values(4)
@@ -649,7 +649,7 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
             CALL get_endogenous_variable(endogenous, period, num_periods, &
                     num_states, delta, periods_payoffs_systematic, edu_max, & 
                     edu_start, mapping_state_idx, periods_emax, states_all, & 
-                    is_simulated, num_draws, shocks, level, is_ambiguous, & 
+                    is_simulated, num_draws_emax, shocks, level, is_ambiguous, &
                     is_debug, measure, maxe, eps_relevant)
 
             ! Create prediction model based on the random subset of points where
@@ -675,7 +675,7 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
                 payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
                 CALL get_payoffs(emax_simulated, payoffs_ex_post, &
-                        future_payoffs, num_draws, eps_relevant, period, k, &
+                        future_payoffs, num_draws_emax, eps_relevant, period, k, &
                         payoffs_systematic, edu_max, edu_start, & 
                         mapping_state_idx, states_all, num_periods, & 
                         periods_emax, delta, is_debug, shocks, level, & 
@@ -836,7 +836,7 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE get_payoffs(emax_simulated, payoffs_ex_post, future_payoffs, &
-                num_draws, eps_relevant, period, k, payoffs_systematic, & 
+                num_draws_emax, eps_relevant, period, k, payoffs_systematic, &
                 edu_max, edu_start, mapping_state_idx, states_all, &
                 num_periods, periods_emax, delta, is_debug, shocks, level, &
                 is_ambiguous, measure)
@@ -857,7 +857,7 @@ SUBROUTINE get_payoffs(emax_simulated, payoffs_ex_post, future_payoffs, &
     INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(:, :, :, :, :)
     INTEGER(our_int), INTENT(IN)        :: states_all(:, :, :)
     INTEGER(our_int), INTENT(IN)        :: num_periods
-    INTEGER(our_int), INTENT(IN)        :: num_draws
+    INTEGER(our_int), INTENT(IN)        :: num_draws_emax
     INTEGER(our_int), INTENT(IN)        :: edu_max
     INTEGER(our_int), INTENT(IN)        :: edu_start
     INTEGER(our_int), INTENT(IN)        :: period
@@ -877,7 +877,7 @@ SUBROUTINE get_payoffs(emax_simulated, payoffs_ex_post, future_payoffs, &
     IF (is_ambiguous) THEN
 
         CALL get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
-                future_payoffs, num_draws, eps_relevant, period, k, & 
+                future_payoffs, num_draws_emax, eps_relevant, period, k, &
                 payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
                 states_all, num_periods, periods_emax, delta, is_debug, &
                 shocks, level, measure)
@@ -885,7 +885,7 @@ SUBROUTINE get_payoffs(emax_simulated, payoffs_ex_post, future_payoffs, &
     ELSE 
 
         CALL get_payoffs_risk(emax_simulated, payoffs_ex_post, &
-                future_payoffs, num_draws, eps_relevant, period, k, &
+                future_payoffs, num_draws_emax, eps_relevant, period, k, &
                 payoffs_systematic, edu_max, edu_start, mapping_state_idx, & 
                 states_all, num_periods, periods_emax, delta, is_debug, & 
                 shocks, level, measure)
@@ -898,7 +898,7 @@ END SUBROUTINE
 SUBROUTINE get_endogenous_variable(endogenous, period, num_periods, &
                 num_states, delta, periods_payoffs_systematic, edu_max, & 
                 edu_start, mapping_state_idx, periods_emax, states_all, & 
-                is_simulated, num_draws, shocks, level, is_ambiguous, & 
+                is_simulated, num_draws_emax, shocks, level, is_ambiguous, &
                 is_debug, measure, maxe, eps_relevant)
 
     !/* external objects    */
@@ -917,7 +917,7 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_periods, &
     INTEGER(our_int), INTENT(IN)        :: states_all(:, :, :)    
     INTEGER(our_int), INTENT(IN)        :: num_periods
     INTEGER(our_int), INTENT(IN)        :: num_states
-    INTEGER(our_int), INTENT(IN)        :: num_draws
+    INTEGER(our_int), INTENT(IN)        :: num_draws_emax
     INTEGER(our_int), INTENT(IN)        :: edu_start
     INTEGER(our_int), INTENT(IN)        :: edu_max
     INTEGER(our_int), INTENT(IN)        :: period
@@ -959,7 +959,7 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_periods, &
 
         ! Get payoffs
         CALL get_payoffs(emax_simulated, payoffs_ex_post, future_payoffs, &
-                num_draws, eps_relevant, period, k, payoffs_systematic, &
+                num_draws_emax, eps_relevant, period, k, payoffs_systematic, &
                 edu_max, edu_start, mapping_state_idx, states_all, & 
                 num_periods, periods_emax, delta, is_debug, shocks, & 
                 level, is_ambiguous, measure)

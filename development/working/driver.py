@@ -62,7 +62,7 @@ for _ in range(1000):
 
     num_points = robupy_obj.get_attr('num_points')
 
-    write_interpolation_grid(num_periods, num_points, states_number_period)
+    write_interpolation_grid('test.robupy.ini')
 
 
     base = None

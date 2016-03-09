@@ -976,7 +976,7 @@ SUBROUTINE multivariate_normal(draws, mean, covariance)
     
     !/* internal objects    */
     
-    INTEGER(our_int)                :: num_draws
+    INTEGER(our_int)                :: num_draws_emax
     INTEGER(our_int)                :: dim
     INTEGER(our_int)                :: i
     INTEGER(our_int)                :: j  
@@ -991,7 +991,7 @@ SUBROUTINE multivariate_normal(draws, mean, covariance)
 !------------------------------------------------------------------------------- 
 
     ! Auxiliary objects
-    num_draws = SIZE(draws, 1)
+    num_draws_emax = SIZE(draws, 1)
 
     dim       = SIZE(draws, 2)
 
@@ -1034,7 +1034,7 @@ SUBROUTINE multivariate_normal(draws, mean, covariance)
     CALL cholesky(ch, covariance_internal) 
 
     ! Draw deviates
-    DO i = 1, num_draws   
+    DO i = 1, num_draws_emax
        
        CALL standard_normal(z(:, 1))
        

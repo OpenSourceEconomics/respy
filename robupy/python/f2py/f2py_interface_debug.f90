@@ -11,7 +11,7 @@ SUBROUTINE wrapper_solve_fortran_bare(mapping_state_idx, periods_emax, &
                 periods_payoffs_systematic, states_all, states_number_period, & 
                 coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, &
                 edu_max, delta, edu_start, is_debug, is_interpolated, &
-                level, measure, min_idx, num_draws, num_periods, num_points, &
+                level, measure, min_idx, num_draws_emax, num_periods, num_points, &
                 is_ambiguous, disturbances_emax, max_states_period)
     
     !
@@ -45,7 +45,7 @@ SUBROUTINE wrapper_solve_fortran_bare(mapping_state_idx, periods_emax, &
     INTEGER, INTENT(IN)             :: num_periods
     INTEGER, INTENT(IN)             :: num_points
     INTEGER, INTENT(IN)             :: edu_start
-    INTEGER, INTENT(IN)             :: num_draws
+    INTEGER, INTENT(IN)             :: num_draws_emax
     INTEGER, INTENT(IN)             :: edu_max
     INTEGER, INTENT(IN)             :: min_idx
 
@@ -87,7 +87,7 @@ SUBROUTINE wrapper_solve_fortran_bare(mapping_state_idx, periods_emax, &
             periods_payoffs_systematic_int, states_all_int, & 
             states_number_period_int, coeffs_a, coeffs_b, coeffs_edu, & 
             coeffs_home, shocks, edu_max, delta, edu_start, & 
-            is_debug, is_interpolated, level, measure, min_idx, num_draws, & 
+            is_debug, is_interpolated, level, measure, min_idx, num_draws_emax, &
             num_periods, num_points, is_ambiguous, disturbances_emax)
 
     ! Assign to initial objects for return to PYTHON
@@ -188,7 +188,7 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE wrapper_get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
-                future_payoffs, num_draws, eps_relevant, period, k, &
+                future_payoffs, num_draws_emax, eps_relevant, period, k, &
                 payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
                 states_all, num_periods, periods_emax, delta, is_debug, &
                 shocks, level, measure)
@@ -211,7 +211,7 @@ SUBROUTINE wrapper_get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
     INTEGER, INTENT(IN)             :: states_all(:,:,:)
     INTEGER, INTENT(IN)             :: num_periods
     INTEGER, INTENT(IN)             :: edu_start
-    INTEGER, INTENT(IN)             :: num_draws
+    INTEGER, INTENT(IN)             :: num_draws_emax
     INTEGER, INTENT(IN)             :: edu_max
     INTEGER, INTENT(IN)             :: period
     INTEGER, INTENT(IN)             :: k
@@ -233,7 +233,7 @@ SUBROUTINE wrapper_get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
     
     ! Get the expected payoffs under ambiguity
     CALL get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
-                future_payoffs, num_draws, eps_relevant, period, k, & 
+                future_payoffs, num_draws_emax, eps_relevant, period, k, &
                 payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
                 states_all, num_periods, periods_emax, delta, is_debug, &
                 shocks, level, measure)
@@ -241,7 +241,7 @@ SUBROUTINE wrapper_get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_criterion_approx_gradient(rslt, x, eps, num_draws, &
+SUBROUTINE wrapper_criterion_approx_gradient(rslt, x, eps, num_draws_emax, &
                 eps_relevant, period, k, payoffs_systematic, edu_max, &
                 edu_start, mapping_state_idx, states_all, num_periods, &
                 periods_emax, delta)
@@ -268,7 +268,7 @@ SUBROUTINE wrapper_criterion_approx_gradient(rslt, x, eps, num_draws, &
     INTEGER, INTENT(IN)             :: mapping_state_idx(:,:,:,:,:)
     INTEGER, INTENT(IN)             :: states_all(:,:,:)
     INTEGER, INTENT(IN)             :: num_periods
-    INTEGER, INTENT(IN)             :: num_draws
+    INTEGER, INTENT(IN)             :: num_draws_emax
     INTEGER, INTENT(IN)             :: edu_start
     INTEGER, INTENT(IN)             :: edu_max
     INTEGER, INTENT(IN)             :: period
@@ -279,7 +279,7 @@ SUBROUTINE wrapper_criterion_approx_gradient(rslt, x, eps, num_draws, &
 !-------------------------------------------------------------------------------
 
     ! Approximate the gradient of the criterion function
-    rslt = criterion_approx_gradient(x, eps, num_draws, eps_relevant, &
+    rslt = criterion_approx_gradient(x, eps, num_draws_emax, eps_relevant, &
             period, k, payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
             states_all, num_periods, periods_emax, delta)
 
@@ -287,7 +287,7 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE wrapper_simulate_emax(emax_simulated, payoffs_ex_post, &
-                future_payoffs, num_periods, num_draws, period, k, &
+                future_payoffs, num_periods, num_draws_emax, period, k, &
                 eps_relevant_emax, payoffs_systematic, edu_max, edu_start, &
                 periods_emax, states_all, mapping_state_idx, delta)
 
@@ -313,7 +313,7 @@ SUBROUTINE wrapper_simulate_emax(emax_simulated, payoffs_ex_post, &
     INTEGER, INTENT(IN)             :: mapping_state_idx(:,:,:,:,:)
     INTEGER, INTENT(IN)             :: states_all(:,:,:)
     INTEGER, INTENT(IN)             :: num_periods
-    INTEGER, INTENT(IN)             :: num_draws
+    INTEGER, INTENT(IN)             :: num_draws_emax
     INTEGER, INTENT(IN)             :: edu_start
     INTEGER, INTENT(IN)             :: edu_max
     INTEGER, INTENT(IN)             :: period
@@ -325,14 +325,14 @@ SUBROUTINE wrapper_simulate_emax(emax_simulated, payoffs_ex_post, &
 
     ! Simulate expected future value
     CALL simulate_emax(emax_simulated, payoffs_ex_post, future_payoffs, &
-            num_periods, num_draws, period, k, eps_relevant_emax, & 
+            num_periods, num_draws_emax, period, k, eps_relevant_emax, &
             payoffs_systematic, edu_max, edu_start, periods_emax, states_all, &
             mapping_state_idx, delta)
 
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_criterion(emax_simulated, x, num_draws, eps_relevant, &
+SUBROUTINE wrapper_criterion(emax_simulated, x, num_draws_emax, eps_relevant, &
                 period, k, payoffs_systematic, edu_max, edu_start, & 
                 mapping_state_idx, states_all, num_periods, periods_emax, & 
                 delta)
@@ -358,7 +358,7 @@ SUBROUTINE wrapper_criterion(emax_simulated, x, num_draws, eps_relevant, &
     INTEGER , INTENT(IN)            :: mapping_state_idx(:,:,:,:,:)
     INTEGER , INTENT(IN)            :: states_all(:,:,:)
     INTEGER, INTENT(IN)             :: num_periods
-    INTEGER, INTENT(IN)             :: num_draws
+    INTEGER, INTENT(IN)             :: num_draws_emax
     INTEGER, INTENT(IN)             :: edu_start
     INTEGER, INTENT(IN)             :: edu_max
     INTEGER, INTENT(IN)             :: period
@@ -368,7 +368,7 @@ SUBROUTINE wrapper_criterion(emax_simulated, x, num_draws, eps_relevant, &
 ! Algorithm
 !-------------------------------------------------------------------------------
 
-    emax_simulated = criterion(x, num_draws, eps_relevant, period, k, &
+    emax_simulated = criterion(x, num_draws_emax, eps_relevant, period, k, &
                         payoffs_systematic, edu_max, edu_start, &
                         mapping_state_idx, states_all, num_periods, &
                         periods_emax, delta)
@@ -404,7 +404,7 @@ SUBROUTINE wrapper_divergence_approx_gradient(rslt, x, cov, level, eps)
 END SUBROUTINE 
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_multivariate_normal(draws, mean, covariance, num_draws, dim)
+SUBROUTINE wrapper_multivariate_normal(draws, mean, covariance, num_draws_emax, dim)
 
     !/* external libraries    */
 
@@ -416,10 +416,10 @@ SUBROUTINE wrapper_multivariate_normal(draws, mean, covariance, num_draws, dim)
 
     !/* external objects    */
 
-    INTEGER, INTENT(IN)             :: num_draws
+    INTEGER, INTENT(IN)             :: num_draws_emax
     INTEGER, INTENT(IN)             :: dim
 
-    DOUBLE PRECISION, INTENT(OUT)   :: draws(num_draws, dim)
+    DOUBLE PRECISION, INTENT(OUT)   :: draws(num_draws_emax, dim)
     DOUBLE PRECISION, INTENT(IN)    :: mean(dim)
     DOUBLE PRECISION, INTENT(IN)    :: covariance(dim, dim)
 
@@ -775,7 +775,7 @@ END SUBROUTINE
 SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, &
                 num_periods, num_states, delta, periods_payoffs_systematic, &
                 edu_max, edu_start, mapping_state_idx, periods_emax, &
-                states_all, is_simulated, num_draws, shocks, level, & 
+                states_all, is_simulated, num_draws_emax, shocks, level, &
                 is_ambiguous, is_debug, measure, maxe, eps_relevant)
 
     !/* external libraries    */
@@ -803,7 +803,7 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, &
     INTEGER, INTENT(IN)                 :: num_periods
     INTEGER, INTENT(IN)                 :: num_states
     INTEGER, INTENT(IN)                 :: edu_start
-    INTEGER, INTENT(IN)                 :: num_draws
+    INTEGER, INTENT(IN)                 :: num_draws_emax
     INTEGER, INTENT(IN)                 :: edu_max
     INTEGER, INTENT(IN)                 :: period
 
@@ -820,7 +820,7 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, &
     CALL get_endogenous_variable(exogenous_variable, period, num_periods, &
             num_states, delta, periods_payoffs_systematic, edu_max, &
             edu_start, mapping_state_idx, periods_emax, states_all, &
-            is_simulated, num_draws, shocks, level, is_ambiguous, is_debug, & 
+            is_simulated, num_draws_emax, shocks, level, is_ambiguous, is_debug, &
             measure, maxe, eps_relevant)
 
 END SUBROUTINE
@@ -903,7 +903,7 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE wrapper_get_payoffs(emax_simulated, payoffs_ex_post, future_payoffs, &
-                num_draws, eps_relevant, period, k, payoffs_systematic, & 
+                num_draws_emax, eps_relevant, period, k, payoffs_systematic, &
                 edu_max, edu_start, mapping_state_idx, states_all, num_periods, & 
                 periods_emax, delta, is_debug, shocks, level, is_ambiguous, & 
                 measure)
@@ -933,7 +933,7 @@ SUBROUTINE wrapper_get_payoffs(emax_simulated, payoffs_ex_post, future_payoffs, 
     INTEGER, INTENT(IN)                 :: mapping_state_idx(:, :, :, :, :)
     INTEGER, INTENT(IN)                 :: states_all(:, :, :)
     INTEGER, INTENT(IN)                 :: num_periods
-    INTEGER, INTENT(IN)                 :: num_draws
+    INTEGER, INTENT(IN)                 :: num_draws_emax
     INTEGER, INTENT(IN)                 :: edu_max
     INTEGER, INTENT(IN)                 :: edu_start
     INTEGER, INTENT(IN)                 :: period
@@ -949,7 +949,7 @@ SUBROUTINE wrapper_get_payoffs(emax_simulated, payoffs_ex_post, future_payoffs, 
 !-------------------------------------------------------------------------------
     
     CALL get_payoffs(emax_simulated, payoffs_ex_post, future_payoffs, &
-                num_draws, eps_relevant, period, k, payoffs_systematic, & 
+                num_draws_emax, eps_relevant, period, k, payoffs_systematic, &
                 edu_max, edu_start, mapping_state_idx, states_all, &
                 num_periods, periods_emax, delta, is_debug, shocks, level, &
                 is_ambiguous, measure)

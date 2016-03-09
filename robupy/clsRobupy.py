@@ -40,7 +40,7 @@ class RobupyCls(MetaCls):
 
         self.attr['num_points'] = None
 
-        self.attr['num_draws'] = None
+        self.attr['num_draws_emax'] = None
 
         self.attr['is_python'] = None
 
@@ -145,7 +145,7 @@ class RobupyCls(MetaCls):
 
             self.attr['edu_start'] = init_dict['EDUCATION']['start']
 
-            self.attr['num_draws'] = init_dict['SOLUTION']['draws']
+            self.attr['num_draws_emax'] = init_dict['SOLUTION']['draws']
 
             self.attr['num_sims'] = init_dict['ESTIMATION']['draws']
 
@@ -259,7 +259,7 @@ class RobupyCls(MetaCls):
 
         is_python = self.attr['is_python']
 
-        num_draws = self.attr['num_draws']
+        num_draws_emax = self.attr['num_draws_emax']
 
         num_sims = self.attr['num_sims']
 
@@ -325,9 +325,9 @@ class RobupyCls(MetaCls):
         assert (edu_start >= 0)
 
         # Number of draws for Monte Carlo integration
-        assert (np.isfinite(num_draws))
-        assert (isinstance(num_draws, int))
-        assert (num_draws >= 0)
+        assert (np.isfinite(num_draws_emax))
+        assert (isinstance(num_draws_emax, int))
+        assert (num_draws_emax >= 0)
 
         # Level of ambiguity
         assert (np.isfinite(level))

@@ -178,7 +178,7 @@ def test_86():
 
         edu_start = robupy_obj.get_attr('edu_start')
 
-        num_draws = robupy_obj.get_attr('num_draws')
+        num_draws_emax = robupy_obj.get_attr('num_draws_emax')
 
         is_debug = robupy_obj.get_attr('is_debug')
 
@@ -197,7 +197,7 @@ def test_86():
         # functions.
         period = np.random.choice(range(num_periods))
 
-        disturbances_emax = create_disturbances(num_periods, num_draws,
+        disturbances_emax = create_disturbances(num_periods, num_draws_emax,
             seed_estimation, is_debug, 'emax', eps_cholesky, is_ambiguous)
 
         eps_relevant = disturbances_emax[period, :, :]
@@ -236,7 +236,7 @@ def test_86():
         args = [period, num_periods, num_states, delta,
                 periods_payoffs_systematic, edu_max, edu_start,
                 mapping_state_idx, periods_emax, states_all, is_simulated,
-                num_draws, shocks, level, is_ambiguous, is_debug, measure,
+                num_draws_emax, shocks, level, is_ambiguous, is_debug, measure,
                 maxe, eps_relevant]
 
         py = _get_endogenous_variable(*args)
@@ -301,7 +301,7 @@ def test_87():
 
         states_all = robupy_obj.get_attr('states_all')
 
-        num_draws = robupy_obj.get_attr('num_draws')
+        num_draws_emax = robupy_obj.get_attr('num_draws_emax')
 
         edu_start = robupy_obj.get_attr('edu_start')
 
@@ -327,15 +327,15 @@ def test_87():
 
             # Finalize extraction of ingredients
             payoffs_systematic = periods_payoffs_systematic[period, k, :]
-            eps_relevant = np.random.sample((num_draws, 4))
+            eps_relevant = np.random.sample((num_draws_emax, 4))
 
             # Extract payoffs using PYTHON and FORTRAN codes.
-            py = get_payoffs(num_draws, eps_relevant, period, k,
+            py = get_payoffs(num_draws_emax, eps_relevant, period, k,
                     payoffs_systematic, edu_max, edu_start, mapping_state_idx,
                     states_all, num_periods, periods_emax, delta, is_debug,
                     shocks, level, is_ambiguous, measure)
 
-            f90 = fort.wrapper_get_payoffs(num_draws, eps_relevant, period, k,
+            f90 = fort.wrapper_get_payoffs(num_draws_emax, eps_relevant, period, k,
                     payoffs_systematic, edu_max, edu_start, mapping_state_idx,
                     states_all, num_periods, periods_emax, delta, is_debug,
                     shocks, level, is_ambiguous, measure)
@@ -401,7 +401,8 @@ def test_88():
         # implementations. This is possible as we write out an interpolation
         # grid to disk which is used for both functions. This only works if
         # IS_DEBUG is set to true.
-        write_interpolation_grid(num_periods, num_points, states_number_period)
+        generate_random_dict()
+        write_interpolation_grid('test.robupy.ini')
 
         args = (num_points, num_states, period, num_periods, True)
         py = _get_simulated_indicator(*args)
@@ -599,7 +600,7 @@ def test_92():
 
         states_all = robupy_obj.get_attr('states_all')
 
-        num_draws = robupy_obj.get_attr('num_draws')
+        num_draws_emax = robupy_obj.get_attr('num_draws_emax')
 
         edu_start = robupy_obj.get_attr('edu_start')
 
@@ -616,7 +617,7 @@ def test_92():
 
         # Sample disturbances
         eps_standard = np.random.multivariate_normal(np.zeros(4),
-                        np.identity(4), (num_draws,))
+                        np.identity(4), (num_draws_emax,))
 
         # Sampling of random period and admissible state index
         period = np.random.choice(range(num_periods))
@@ -628,7 +629,7 @@ def test_92():
         # Set up optimization task
         level = np.random.uniform(0.01, 1.00)
 
-        args = [num_draws, eps_standard, period, k, payoffs_systematic,
+        args = [num_draws_emax, eps_standard, period, k, payoffs_systematic,
             edu_max, edu_start, mapping_state_idx, states_all, num_periods,
             periods_emax, debug, delta, shocks, level, measure]
 
@@ -692,7 +693,7 @@ def test_93():
 
         states_all = robupy_obj.get_attr('states_all')
 
-        num_draws = robupy_obj.get_attr('num_draws')
+        num_draws_emax = robupy_obj.get_attr('num_draws_emax')
 
         edu_start = robupy_obj.get_attr('edu_start')
 
@@ -704,7 +705,7 @@ def test_93():
 
         # Sample disturbances
         eps_standard = np.random.multivariate_normal(np.zeros(4),
-                                np.identity(4), (num_draws,))
+                                np.identity(4), (num_draws_emax,))
 
         # Sampling of random period and admissible state index
         period = np.random.choice(range(num_periods))
@@ -713,7 +714,7 @@ def test_93():
         # Select systematic payoffs
         payoffs_systematic = periods_payoffs_systematic[period, k, :]
 
-        args = (num_draws, eps_standard, period, k, payoffs_systematic, edu_max,
+        args = (num_draws_emax, eps_standard, period, k, payoffs_systematic, edu_max,
             edu_start, mapping_state_idx, states_all, num_periods, periods_emax,
             delta)
 
@@ -726,7 +727,7 @@ def test_93():
         else:
             py = x0
 
-        f = fort.wrapper_slsqp_robufort(x0, maxiter, ftol, eps, num_draws,
+        f = fort.wrapper_slsqp_robufort(x0, maxiter, ftol, eps, num_draws_emax,
                 eps_standard, period, k, payoffs_systematic, edu_max, edu_start,
                 mapping_state_idx, states_all, num_periods, periods_emax,
                 delta, is_debug, shocks, level)
@@ -835,7 +836,7 @@ def test_95():
 
         states_all = robupy_obj.get_attr('states_all')
 
-        num_draws = robupy_obj.get_attr('num_draws')
+        num_draws_emax = robupy_obj.get_attr('num_draws_emax')
 
         edu_start = robupy_obj.get_attr('edu_start')
 
@@ -845,7 +846,7 @@ def test_95():
 
         # Sample disturbances
         eps_standard = np.random.multivariate_normal(np.zeros(4),
-                            np.identity(4), (num_draws,))
+                            np.identity(4), (num_draws_emax,))
 
         # Sampling of random period and admissible state index
         period = np.random.choice(range(num_periods))
@@ -858,18 +859,18 @@ def test_95():
         x = np.random.random(size=2)
 
         # Evaluation of simulated expected future values
-        py, _, _ = simulate_emax(num_periods, num_draws, period, k,
+        py, _, _ = simulate_emax(num_periods, num_draws_emax, period, k,
             eps_standard, payoffs_systematic, edu_max, edu_start,
             periods_emax, states_all, mapping_state_idx, delta)
 
-        f90, _, _ = fort.wrapper_simulate_emax(num_periods, num_draws,
+        f90, _, _ = fort.wrapper_simulate_emax(num_periods, num_draws_emax,
             period, k, eps_standard, payoffs_systematic, edu_max,
             edu_start, periods_emax, states_all, mapping_state_idx, delta)
 
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
         # Criterion function for the determination of the worst case outcomes
-        args = (num_draws, eps_standard, period, k, payoffs_systematic,
+        args = (num_draws_emax, eps_standard, period, k, payoffs_systematic,
                 edu_max, edu_start, mapping_state_idx, states_all, num_periods,
                 periods_emax, delta)
 
@@ -990,7 +991,7 @@ def test_97():
     for _ in range(100):
 
         # Draw random requests for testing purposes.
-        num_draws = np.random.random_integers(2, 1000)
+        num_draws_emax = np.random.random_integers(2, 1000)
         dim = np.random.random_integers(1, 6)
         mean = np.random.uniform(-0.5, 0.5, (dim))
 
@@ -1044,8 +1045,8 @@ def test_97():
 
         # Random normal deviates. This only tests the interface, requires
         # visual inspection in IPYTHON notebook as well.
-        fort.wrapper_standard_normal(num_draws)
-        fort.wrapper_multivariate_normal(mean, cov, num_draws, dim)
+        fort.wrapper_standard_normal(num_draws_emax)
+        fort.wrapper_multivariate_normal(mean, cov, num_draws_emax, dim)
 
         # Clipping values below and above bounds.
         num_values = np.random.random_integers(1, 10000)
@@ -1095,8 +1096,8 @@ def test_98():
     init_dict = generate_random_dict(constraints)
 
     num_agents = init_dict['SIMULATION']['agents']
-    num_draws = init_dict['SOLUTION']['draws']
-    if num_draws < num_agents:
+    num_draws_emax = init_dict['SOLUTION']['draws']
+    if num_draws_emax < num_agents:
         init_dict['SOLUTION']['draws'] = num_agents
 
     print_random_dict(init_dict)
@@ -1253,7 +1254,7 @@ def test_101():
 
         is_python = robupy_obj.get_attr('is_python')
 
-        num_draws = robupy_obj.get_attr('num_draws')
+        num_draws_emax = robupy_obj.get_attr('num_draws_emax')
 
         is_debug = robupy_obj.get_attr('is_debug')
 
@@ -1272,7 +1273,7 @@ def test_101():
              distribute_model_paras(model_paras, is_debug)
 
         # Get set of disturbances
-        disturbances_emax = create_disturbances(num_periods, num_draws,
+        disturbances_emax = create_disturbances(num_periods, num_draws_emax,
             seed_solution, is_debug, 'emax', eps_cholesky, is_ambiguous)
 
         # Align interpolation grid
@@ -1281,7 +1282,7 @@ def test_101():
         # Baseline input arguments.
         base_args = [coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
             edu_max, delta, edu_start, is_debug, is_interpolated, level,
-            measure, min_idx, num_draws, num_periods, num_points,
+            measure, min_idx, num_draws_emax, num_periods, num_points,
             is_ambiguous, disturbances_emax]
 
         # Check for the equality of the solution routines.

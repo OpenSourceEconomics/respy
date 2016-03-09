@@ -27,7 +27,7 @@ logger = logging.getLogger('ROBUPY_SOLVE')
 
 
 def backward_induction(num_periods, max_states_period, disturbances_emax,
-        num_draws, states_number_period, periods_payoffs_systematic, edu_max,
+        num_draws_emax, states_number_period, periods_payoffs_systematic, edu_max,
         edu_start, mapping_state_idx, states_all, delta, is_debug, shocks,
         level, is_ambiguous, measure, is_interpolated, num_points):
     """ Backward induction procedure. There are two main threads to this
@@ -83,7 +83,7 @@ def backward_induction(num_periods, max_states_period, disturbances_emax,
             endogenous = _get_endogenous_variable(period, num_periods,
                 num_states, delta, periods_payoffs_systematic, edu_max,
                 edu_start, mapping_state_idx, periods_emax, states_all,
-                is_simulated, num_draws, shocks, level, is_ambiguous,
+                is_simulated, num_draws_emax, shocks, level, is_ambiguous,
                 is_debug, measure, maxe, eps_relevant)
 
             # Create prediction model based on the random subset of points where
@@ -106,7 +106,7 @@ def backward_induction(num_periods, max_states_period, disturbances_emax,
 
                 # Simulate the expected future value.
                 emax, payoffs_ex_post, future_payoffs = \
-                    get_payoffs(num_draws, eps_relevant, period, k,
+                    get_payoffs(num_draws_emax, eps_relevant, period, k,
                         payoffs_systematic, edu_max, edu_start,
                         mapping_state_idx, states_all, num_periods,
                         periods_emax, delta, is_debug, shocks, level,
@@ -125,7 +125,7 @@ def backward_induction(num_periods, max_states_period, disturbances_emax,
     return periods_emax, periods_payoffs_ex_post, periods_future_payoffs
 
 
-def get_payoffs(num_draws, eps_relevant, period, k, payoffs_systematic, edu_max,
+def get_payoffs(num_draws_emax, eps_relevant, period, k, payoffs_systematic, edu_max,
         edu_start, mapping_state_idx, states_all, num_periods, periods_emax,
         delta, is_debug, shocks, level, is_ambiguous, measure):
     """ Get payoffs for a particular state.
@@ -134,13 +134,13 @@ def get_payoffs(num_draws, eps_relevant, period, k, payoffs_systematic, edu_max,
     # ambiguity or not.
     if is_ambiguous:
         emax, payoffs_ex_post, future_payoffs = \
-            get_payoffs_ambiguity(num_draws, eps_relevant, period, k,
+            get_payoffs_ambiguity(num_draws_emax, eps_relevant, period, k,
                 payoffs_systematic, edu_max, edu_start, mapping_state_idx,
                 states_all, num_periods, periods_emax, delta, is_debug, shocks,
                 level, measure)
     else:
         emax, payoffs_ex_post, future_payoffs = \
-            get_payoffs_risk(num_draws, eps_relevant, period, k,
+            get_payoffs_risk(num_draws_emax, eps_relevant, period, k,
                 payoffs_systematic, edu_max, edu_start, mapping_state_idx,
                 states_all, num_periods, periods_emax, delta, is_debug,
                 shocks, level, measure)
@@ -473,7 +473,7 @@ def _get_exogenous_variables(period, num_periods, num_states, delta,
 
 def _get_endogenous_variable(period, num_periods, num_states, delta,
         periods_payoffs_systematic, edu_max, edu_start, mapping_state_idx,
-        periods_emax, states_all, is_simulated, num_draws, shocks, level,
+        periods_emax, states_all, is_simulated, num_draws_emax, shocks, level,
         is_ambiguous, is_debug, measure, maxe, eps_relevant):
     """ Construct endogenous variable for the subset of interpolation points.
     """
@@ -490,7 +490,7 @@ def _get_endogenous_variable(period, num_periods, num_states, delta,
         payoffs_systematic = periods_payoffs_systematic[period, k, :]
 
         # Simulate the expected future value.
-        emax_simulated, _, _ = get_payoffs(num_draws, eps_relevant, period,
+        emax_simulated, _, _ = get_payoffs(num_draws_emax, eps_relevant, period,
             k, payoffs_systematic, edu_max, edu_start, mapping_state_idx,
             states_all, num_periods, periods_emax, delta, is_debug, shocks,
             level, is_ambiguous, measure)

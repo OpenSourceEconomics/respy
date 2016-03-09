@@ -48,7 +48,7 @@ def evaluate_python(robupy_obj, data_frame):
 
     edu_start = robupy_obj.get_attr('edu_start')
 
-    num_draws = robupy_obj.get_attr('num_draws')
+    num_draws_emax = robupy_obj.get_attr('num_draws_emax')
 
     is_debug = robupy_obj.get_attr('is_debug')
 
@@ -79,13 +79,13 @@ def evaluate_python(robupy_obj, data_frame):
     # Get the relevant set of disturbances. These are standard normal draws
     # in the case of an ambiguous world. This function is located outside the
     # actual bare solution algorithm to ease testing across implementations.
-    disturbances_emax = create_disturbances(num_periods, num_draws,
+    disturbances_emax = create_disturbances(num_periods, num_draws_emax,
         seed_solution, is_debug, 'emax', eps_cholesky, is_ambiguous)
 
     # Solve model for given parametrization
     args = solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         shocks, edu_max, delta, edu_start, is_debug, is_interpolated, level,
-        measure, min_idx, num_draws, num_periods, num_points, is_ambiguous,
+        measure, min_idx, num_draws_emax, num_periods, num_points, is_ambiguous,
         disturbances_emax, is_python)
 
     # Distribute return arguments from solution run
