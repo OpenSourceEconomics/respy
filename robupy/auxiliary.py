@@ -104,100 +104,25 @@ def create_disturbances(num_periods, num_draws, seed, is_debug, which,
     # Deviates used for the Monte Carlo integration of the choice
     # probabilities for the construction of the criterion function.
     elif which == 'prob':
+        # Standard deviates are further processed during the evaluation routine.
         disturbances = disturbances
 
     # Deviates for the simulation of a synthetic agent population.
     elif which == 'sims':
+        # Standard deviates transformed to the distributions relevant for
+        # the agents actual decision making as traversing the tree.
         for period in range(num_periods):
-             disturbances[period, :, :] = \
-                 np.dot(eps_cholesky, disturbances[period, :, :].T).T
-             for j in [0, 1]:
-                 disturbances[period, :, j] = \
-                     np.exp(disturbances[period, :, j])
+            disturbances[period, :, :] = \
+                np.dot(eps_cholesky, disturbances[period, :, :].T).T
+            for j in [0, 1]:
+                disturbances[period, :, j] = \
+                    np.exp(disturbances[period, :, j])
+
     else:
         raise NotImplementedError
 
     # Finishing
     return disturbances
-
-
-def create_disturbances_emax(num_draws, seed_solution, eps_cholesky,
-        is_ambiguous, num_periods, is_debug):
-    # TODO: Adjust docstrings
-    """ Create disturbances.  Handle special case of zero variances as this
-    case is useful for hand-based testing. The disturbances are drawn from a
-    standard normal distribution and transformed later in the code.
-    """
-    # Initialize container
-    disturbances_emax = np.tile(MISSING_FLOAT, (num_periods, num_draws, 4))
-
-    # This allows to use the same random disturbances across the different
-    # implementations of the mode, including the RESTUD program. Otherwise,
-    # we draw a new set of standard deviations
-    if is_debug and os.path.isfile('disturbances.txt'):
-        standard_deviates = read_disturbances(num_periods, num_draws)
-        standard_deviates = standard_deviates[:num_periods, :num_draws, :]
-    else:
-        np.random.seed(seed_solution)
-        standard_deviates = np.random.multivariate_normal(np.zeros(4),
-            np.identity(4), (num_periods, num_draws))
-
-    # In the case of ambiguous world, the standard deviates are used in the
-    # solution part of the program.
-    if is_ambiguous:
-        for period in range(num_periods):
-            disturbances_emax[period, :, :] = \
-                np.dot(eps_cholesky, standard_deviates[period, :, :].T).T
-    else:
-        # Transform disturbances to relevant distribution
-        for period in range(num_periods):
-            disturbances_emax[period, :, :] = \
-                np.dot(eps_cholesky, standard_deviates[period, :, :].T).T
-            for j in [0, 1]:
-                disturbances_emax[period, :, j] = \
-                    np.exp(disturbances_emax[period, :, j])
-
-    # Finishing
-    return disturbances_emax
-
-
-def create_disturbances_prob(num_draws, seed_estimation, num_periods, is_debug):
-    # TODO: Adjust docstrings
-    """ Create disturbances.  Handle special case of zero variances as this
-    case is useful for hand-based testing. The disturbances are drawn from a
-    standard normal distribution and transformed later in the code.
-    """
-    # Draw standard normal deviates used to simulate the likelihood function.
-    np.random.seed(seed_estimation)
-    disturbances_prob = np.random.multivariate_normal(np.zeros(4),
-            np.identity(4), (num_periods, num_draws))
-
-    if is_debug and os.path.isfile('disturbances.txt'):
-        disturbances_prob = read_disturbances(num_periods, num_draws)
-
-    # Finishing
-    return disturbances_prob
-
-def create_disturbances_sims(num_agents, seed_simulation, eps_cholesky,
-                             num_periods, is_debug):
-    """ Create disturbances.  Handle special case of zero variances as this
-    case is useful for hand-based testing. The disturbances are drawn from a
-    standard normal distribution and transformed later in the code.
-    """
-
-    # Initialize container
-    disturbances_sims = np.tile(-88, (num_periods, num_agents, 4))
-
-    np.random.seed(seed_simulation)
-    disturbances_sims = np.random.multivariate_normal(np.zeros(4),
-                                                      np.identity(4), (num_periods, num_agents))
-
-    if is_debug and os.path.isfile('disturbances.txt'):
-        disturbances_sims = read_disturbances(num_periods, num_agents)
-
-
-    # Finishing
-    return disturbances_sims
 
 
 def replace_missing_values(argument):

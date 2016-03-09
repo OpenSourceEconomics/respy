@@ -501,8 +501,6 @@ PROGRAM robufort
         ALLOCATE(standard_deviates(num_periods, num_sims, 4))
 
         ! TODO: REFACTOR DISTURBANCES, renaming seed, nit test
-        !CALL create_disturbances(standard_deviates, eps_cholesky, seed_simulation, & 
-        !        is_debug, is_zero, is_ambiguous) 
         
         OPEN(122, file='disturbances.txt')
 
