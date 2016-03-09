@@ -181,6 +181,8 @@ def test_86():
 
         mapping_state_idx = robupy_obj.get_attr('mapping_state_idx')
 
+        seed_estimation = robupy_obj.get_attr('seed_estimation')
+
         periods_emax = robupy_obj.get_attr('periods_emax')
 
         is_ambiguous = robupy_obj.get_attr('is_ambiguous')
@@ -192,8 +194,6 @@ def test_86():
         states_all = robupy_obj.get_attr('states_all')
 
         num_points = robupy_obj.get_attr('num_points')
-
-        seed = robupy_obj.get_attr('seed_estimation')
 
         edu_start = robupy_obj.get_attr('edu_start')
 
@@ -216,10 +216,10 @@ def test_86():
         # functions.
         period = np.random.choice(range(num_periods))
 
-        disturbances_int = create_disturbances(num_draws, seed,
-            eps_cholesky, is_ambiguous, num_periods, is_debug, 'estimation')
+        disturbances_emax = create_disturbances(num_periods, num_draws,
+            seed_estimation, is_debug, 'emax', eps_cholesky, is_ambiguous)
 
-        eps_relevant = disturbances_int[period, :, :]
+        eps_relevant = disturbances_emax[period, :, :]
 
         num_states = states_number_period[period]
 
@@ -1305,8 +1305,8 @@ def test_101():
              distribute_model_paras(model_paras, is_debug)
 
         # Get set of disturbances
-        disturbances_int = create_disturbances(num_draws, seed_solution,
-            eps_cholesky, is_ambiguous, num_periods, is_debug, 'solution')
+        disturbances_emax = create_disturbances(num_periods, num_draws,
+            seed_solution, is_debug, 'emax', eps_cholesky, is_ambiguous)
 
         # Align interpolation grid
         if is_interpolated:
@@ -1316,7 +1316,7 @@ def test_101():
         base_args = [coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
             edu_max, delta, edu_start, is_debug, is_interpolated, level,
             measure, min_idx, num_draws, num_periods, num_points,
-            is_ambiguous, disturbances_int]
+            is_ambiguous, disturbances_emax]
 
         # Check for the equality of the solution routines.
         base = None

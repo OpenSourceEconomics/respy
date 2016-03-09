@@ -271,12 +271,12 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE create_disturbances(disturbances_int, eps_cholesky, seed, &
+SUBROUTINE create_disturbances(disturbances_emax, eps_cholesky, seed, &
                 is_debug, is_zero, is_ambiguous) 
 
     !/* external objects    */
 
-    REAL(our_dble), INTENT(INOUT)       :: disturbances_int(:, :, :)
+    REAL(our_dble), INTENT(INOUT)       :: disturbances_emax(:, :, :)
 
     REAL(our_dble), INTENT(IN)          :: eps_cholesky(4, 4)
 
@@ -303,9 +303,9 @@ SUBROUTINE create_disturbances(disturbances_int, eps_cholesky, seed, &
 !------------------------------------------------------------------------------- 
 
     ! Auxiliary objects
-    num_periods = SIZE(disturbances_int, 1)
+    num_periods = SIZE(disturbances_emax, 1)
 
-    num_draws = SIZE(disturbances_int, 2)
+    num_draws = SIZE(disturbances_emax, 2)
 
     ! Set random seed
     seed_inflated(:) = seed
@@ -326,7 +326,7 @@ SUBROUTINE create_disturbances(disturbances_int, eps_cholesky, seed, &
             DO j = 1, num_draws
         
                 2000 FORMAT(4(1x,f15.10))
-                READ(12,2000) disturbances_int(period, j, :)
+                READ(12,2000) disturbances_emax(period, j, :)
         
             END DO
       
@@ -338,7 +338,7 @@ SUBROUTINE create_disturbances(disturbances_int, eps_cholesky, seed, &
 
         DO period = 1, num_periods
 
-            CALL multivariate_normal(disturbances_int(period, :, :))
+            CALL multivariate_normal(disturbances_emax(period, :, :))
         
         END DO
 
@@ -350,8 +350,8 @@ SUBROUTINE create_disturbances(disturbances_int, eps_cholesky, seed, &
         ! Apply variance change
         DO i = 1, num_draws
         
-            disturbances_int(period, i:i, :) = &
-                TRANSPOSE(MATMUL(eps_cholesky, TRANSPOSE(disturbances_int(period, i:i, :))))
+            disturbances_emax(period, i:i, :) = &
+                TRANSPOSE(MATMUL(eps_cholesky, TRANSPOSE(disturbances_emax(period, i:i, :))))
         
         END DO
 
@@ -366,8 +366,8 @@ SUBROUTINE create_disturbances(disturbances_int, eps_cholesky, seed, &
 
             DO j = 1, 2
             
-                disturbances_int(period, :, j) = &
-                        EXP(disturbances_int(period, :, j))
+                disturbances_emax(period, :, j) = &
+                        EXP(disturbances_emax(period, :, j))
             
             END DO
 
@@ -380,13 +380,13 @@ SUBROUTINE create_disturbances(disturbances_int, eps_cholesky, seed, &
     ! zero.
     IF (is_zero) THEN
 
-        disturbances_int = zero_dble
+        disturbances_emax = zero_dble
 
         DO period = 1, num_periods
 
             DO j = 1, 2
 
-                disturbances_int(period, :, j) = one_dble
+                disturbances_emax(period, :, j) = one_dble
 
             END DO
 
@@ -433,7 +433,7 @@ PROGRAM robufort
     REAL(our_dble), ALLOCATABLE     :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_payoffs_ex_post(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_future_payoffs(:, :, :)
-    REAL(our_dble), ALLOCATABLE     :: disturbances_int(:, :, :)
+    REAL(our_dble), ALLOCATABLE     :: disturbances_emax(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: standard_deviates(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_emax(:, :)
     REAL(our_dble), ALLOCATABLE     :: data_array(:, :)
@@ -478,8 +478,8 @@ PROGRAM robufort
     ! This part creates (or reads from disk) the disturbances for the Monte 
     ! Carlo integration of the EMAX. For is_debugging purposes, these might also be 
     ! read in from disk or set to zero/one.   
-    ALLOCATE(disturbances_int(num_periods, num_draws, 4))
-    CALL create_disturbances(disturbances_int, eps_cholesky, &
+    ALLOCATE(disturbances_emax(num_periods, num_draws, 4))
+    CALL create_disturbances(disturbances_emax, eps_cholesky, &
             seed_solution, is_debug, is_zero, is_ambiguous)
 
     IF (request == 'solve') THEN
@@ -491,7 +491,7 @@ PROGRAM robufort
                 coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, edu_max, & 
                 delta, edu_start, is_debug, is_interpolated, level, measure, & 
                 min_idx, num_draws, num_periods, num_points, is_ambiguous, & 
-                disturbances_int)
+                disturbances_emax)
 
     END IF
 
@@ -500,7 +500,7 @@ PROGRAM robufort
         ALLOCATE(data_array(num_periods * num_agents, 8))
         ALLOCATE(standard_deviates(num_periods, num_sims, 4))
 
-
+        ! TODO: REFACTOR DISTURBANCES, renaming seed, nit test
         !CALL create_disturbances(standard_deviates, eps_cholesky, seed_simulation, & 
         !        is_debug, is_zero, is_ambiguous) 
         
@@ -536,7 +536,7 @@ PROGRAM robufort
                 coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, edu_max, & 
                 delta, edu_start, is_debug, is_interpolated, level, measure, & 
                 min_idx, num_draws, num_periods, num_points, is_ambiguous, & 
-                disturbances_int)
+                disturbances_emax)
 
         CALL evaluate_criterion_function(eval, mapping_state_idx, periods_emax, & 
             periods_payoffs_systematic, states_all, shocks, edu_max, delta, & 

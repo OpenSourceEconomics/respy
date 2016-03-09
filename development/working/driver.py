@@ -20,7 +20,6 @@ sys.path.insert(0, os.environ['ROBUPY'])
 from robupy import *
 
 from robupy.auxiliary import replace_missing_values
-from robupy.auxiliary import create_disturbances
 from robupy.auxiliary import distribute_model_paras
 from modules.auxiliary import write_interpolation_grid
 from modules.auxiliary import write_disturbances
@@ -38,7 +37,7 @@ from modules.auxiliary import compile_package
 print('not recompiling')
 #compile_package('--fortran --debug', False)
 
-#np.random.seed(321)
+np.random.seed(321)
 
 for _ in range(1000):
     constraints = dict()
@@ -85,3 +84,7 @@ for _ in range(1000):
         os.unlink('interpolation.txt')
     except:
         pass
+
+
+# 1.88618612779
+# 1.47172225978

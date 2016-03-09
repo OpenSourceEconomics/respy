@@ -23,7 +23,7 @@ cleanup()
 
 ''' Request
 '''
-label, seed = '97', 17727
+label, seed = '85', 17727
 
 ''' Error Reproduction
 '''
@@ -37,4 +37,5 @@ except AttributeError:
     test = getattr(Tests, 'test_' + label)
 
 for _ in range(10):
+    print(_)
     test()

@@ -59,8 +59,9 @@ def simulate(robupy_obj):
     seed_simulation = robupy_obj.get_attr('seed_simulation')
 
     # Draw disturbances for the simulation.
-    disturbances_int = create_disturbances(num_agents, seed_simulation,
-        eps_cholesky, is_ambiguous, num_periods, is_debug, 'simulation')
+    disturbances_sims = create_disturbances(num_periods, num_agents, seed_simulation,
+                                           is_debug, 'sims',
+        eps_cholesky, is_ambiguous)
 
     # Simulate a dataset with the results from the solution and write out the
     # dataset to a text file. In addition a file summarizing the dataset is
@@ -68,7 +69,7 @@ def simulate(robupy_obj):
     logger.info('Staring simulation of model for ' + str(num_agents) +
         ' agents with seed ' + str(seed))
 
-    data_frame = _wrapper_simulate_sample(robupy_obj, disturbances_int)
+    data_frame = _wrapper_simulate_sample(robupy_obj, disturbances_sims)
 
     _write_out(data_frame)
 
@@ -83,7 +84,7 @@ def simulate(robupy_obj):
 '''
 
 
-def _wrapper_simulate_sample(robupy_obj, disturbances_int):
+def _wrapper_simulate_sample(robupy_obj, disturbances_sims):
     """ Wrapper for PYTHON and F2PY implementation of sample simulation.
     """
     # Distribute class attributes
@@ -112,14 +113,14 @@ def _wrapper_simulate_sample(robupy_obj, disturbances_int):
     # Interface to core functions
     if is_python:
         data_frame = python_library.simulate_sample(num_agents, states_all,
-            num_periods, mapping_state_idx, periods_payoffs_systematic,
-            disturbances_int, edu_max, edu_start, periods_emax, delta)
+                                                    num_periods, mapping_state_idx, periods_payoffs_systematic,
+                                                    disturbances_sims, edu_max, edu_start, periods_emax, delta)
     else:
         import robupy.python.f2py.f2py_library as f2py_library
         data_frame = f2py_library.wrapper_simulate_sample(num_agents,
-            states_all, num_periods, mapping_state_idx,
-            periods_payoffs_systematic, disturbances_int, edu_max,
-            edu_start, periods_emax, delta)
+                                                          states_all, num_periods, mapping_state_idx,
+                                                          periods_payoffs_systematic, disturbances_sims, edu_max,
+                                                          edu_start, periods_emax, delta)
 
     # Replace missing values
     data_frame = replace_missing_values(data_frame)

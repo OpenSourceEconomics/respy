@@ -13,6 +13,7 @@ from robupy.python.py.auxiliary import get_total_value
 
 from robupy.auxiliary import distribute_model_paras
 from robupy.auxiliary import create_disturbances
+
 from robupy.constants import TINY_FLOAT
 from robupy.constants import HUGE_FLOAT
 
@@ -71,20 +72,21 @@ def evaluate_python(robupy_obj, data_frame):
         distribute_model_paras(model_paras, is_debug)
 
     # Draw standard normal deviates for S-ML approach
-    standard_deviates = create_disturbances(num_sims, seed_estimation,
-        eps_cholesky, is_ambiguous, num_periods, is_debug, 'estimation')
+    # TODO: Rename
+    standard_deviates = create_disturbances(num_periods, num_sims,
+        seed_estimation, is_debug, 'prob', eps_cholesky, is_ambiguous)
 
     # Get the relevant set of disturbances. These are standard normal draws
     # in the case of an ambiguous world. This function is located outside the
     # actual bare solution algorithm to ease testing across implementations.
-    disturbances_int = create_disturbances(num_draws, seed_solution,
-        eps_cholesky, is_ambiguous, num_periods, is_debug, 'solution')
+    disturbances_emax = create_disturbances(num_periods, num_draws,
+        seed_solution, is_debug, 'emax', eps_cholesky, is_ambiguous)
 
     # Solve model for given parametrization
     args = solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         shocks, edu_max, delta, edu_start, is_debug, is_interpolated, level,
         measure, min_idx, num_draws, num_periods, num_points, is_ambiguous,
-        disturbances_int, is_python)
+        disturbances_emax, is_python)
 
     # Distribute return arguments from solution run
     mapping_state_idx, periods_emax, periods_future_payoffs = args[:3]
