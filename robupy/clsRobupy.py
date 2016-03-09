@@ -22,11 +22,12 @@ class RobupyCls(MetaCls):
         self.attr['init_dict'] = None
 
         # Derived attributes
-        self.attr['seed_data'] = None
-
         self.attr['is_interpolated'] = None
 
+        self.attr['seed_data'] = None
+
         self.attr['seed_prob'] = None
+
 
         self.attr['seed_emax'] = None
 
@@ -47,6 +48,10 @@ class RobupyCls(MetaCls):
         self.attr['edu_start'] = None
 
         self.attr['is_debug'] = None
+
+        self.attr['file_sim'] = None
+
+        self.attr['file_est'] = None
 
         self.attr['num_draws_prob'] = None
 
@@ -160,6 +165,10 @@ class RobupyCls(MetaCls):
             self.attr['store'] = init_dict['SOLUTION']['store']
 
             self.attr['delta'] = init_dict['BASICS']['delta']
+
+            self.attr['file_sim'] = init_dict['SIMULATION']['file']
+
+            self.attr['file_est'] = init_dict['ESTIMATION']['file']
 
             # Initialize model parameters
             if self.attr['model_paras'] is None:

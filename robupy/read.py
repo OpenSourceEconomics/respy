@@ -130,7 +130,7 @@ def _process_standard(list_, dict_, keyword):
     # Type conversion
     if name in ['agents', 'periods', 'start', 'max', 'draws', 'seed', 'points']:
         val = int(val)
-    elif name in ['measure']:
+    elif name in ['measure', 'file']:
         val = str(val)
     elif name in ['debug', 'store', 'apply']:
         assert (val.upper() in ['TRUE', 'FALSE'])
@@ -226,6 +226,7 @@ def _check_integrity_read(dict_):
     assert (dict_['ESTIMATION']['draws'] >= 0)
     assert (isinstance(dict_['ESTIMATION']['seed'], int))
     assert (dict_['ESTIMATION']['seed'] >= 0)
+    assert (isinstance(dict_['ESTIMATION']['file'], str))
 
     # Check SOLUTION
     assert (isinstance(dict_['SOLUTION']['draws'], int))
@@ -266,8 +267,9 @@ def _check_integrity_read(dict_):
     assert (dict_['SIMULATION']['agents'] > 0)
     assert (isinstance(dict_['SIMULATION']['seed'], int))
     assert (dict_['SIMULATION']['seed'] >= 0)
+    assert (isinstance(dict_['SIMULATION']['file'], str))
 
-    # Check interpolation
+    # Check INTERPOLATION
     assert (dict_['INTERPOLATION']['apply'] in [True, False])
     assert (isinstance(dict_['INTERPOLATION']['points'], int))
     assert (dict_['INTERPOLATION']['points'] > 0)

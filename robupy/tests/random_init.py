@@ -91,6 +91,7 @@ def generate_random_dict(constraints=None):
     dict_['ESTIMATION'] = {}
     dict_['ESTIMATION']['draws'] = np.random.random_integers(1, MAX_DRAWS)
     dict_['ESTIMATION']['seed'] = np.random.random_integers(1, 10000)
+    dict_['ESTIMATION']['file'] = 'data.robupy'
 
     # PROGRAM
     dict_['PROGRAM'] = {}
@@ -106,6 +107,7 @@ def generate_random_dict(constraints=None):
     dict_['SIMULATION'] = {}
     dict_['SIMULATION']['seed'] = np.random.random_integers(1, 10000)
     dict_['SIMULATION']['agents'] = np.random.random_integers(1, MAX_AGENTS)
+    dict_['SIMULATION']['file'] = 'data.robupy'
 
     # SHOCKS
     shocks = np.identity(4)

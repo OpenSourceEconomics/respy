@@ -53,6 +53,8 @@ def simulate(robupy_obj):
 
     is_debug = robupy_obj.get_attr('is_debug')
 
+    file_sim = robupy_obj.get_attr('file_sim')
+
     # Auxiliary objects
     eps_cholesky = model_paras['eps_cholesky']
 
@@ -71,7 +73,7 @@ def simulate(robupy_obj):
 
     data_frame = _wrapper_simulate_sample(robupy_obj, disturbances_data)
 
-    _write_out(data_frame)
+    _write_out(data_frame, file_sim)
 
     _write_info(robupy_obj, data_frame)
 
@@ -144,6 +146,8 @@ def _write_info(robupy_obj, data_frame):
     """ Write information about the simulated economy.
     """
     # Distribute class attributes
+    file_sim = robupy_obj.get_attr('file_sim')
+
     seed = robupy_obj.get_attr('seed_data')
 
     # Get basic information
@@ -152,7 +156,7 @@ def _write_info(robupy_obj, data_frame):
     num_periods = data_frame[0].value_counts()[0]
 
     # Write information to file
-    with open('data.robupy.info', 'w') as file_:
+    with open(file_sim + '.info', 'w') as file_:
 
         file_.write('\n Simulated Economy\n\n')
 
@@ -209,7 +213,7 @@ def _write_info(robupy_obj, data_frame):
         file_.write(string.format(['Average Experience B', stat]))
 
 
-def _write_out(data_frame):
+def _write_out(data_frame, file_sim):
     """ Write dataset to file.
     """
     formats = []
@@ -220,7 +224,7 @@ def _write_out(data_frame):
 
     formats += [_format_integer, _format_integer]
 
-    with open('data.robupy.dat', 'w') as file_:
+    with open(file_sim + '.dat', 'w') as file_:
 
         data_frame.to_string(file_, index=False, header=None, na_rep='.',
                             formatters=formats)
