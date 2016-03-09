@@ -13,7 +13,9 @@ from robupy.python.py.auxiliary import get_total_value
 
 from robupy.auxiliary import distribute_model_paras
 from robupy.auxiliary import create_disturbances
+
 from robupy.constants import TINY_FLOAT
+from robupy.constants import HUGE_FLOAT
 
 ''' Main function
 '''
@@ -28,9 +30,9 @@ def evaluate_python(robupy_obj, data_frame):
     # Distribute class attribute
     is_interpolated = robupy_obj.get_attr('is_interpolated')
 
-    seed_estimation = robupy_obj.get_attr('seed_estimation')
+    seed_prob = robupy_obj.get_attr('seed_prob')
 
-    seed_solution = robupy_obj.get_attr('seed_solution')
+    seed_emax = robupy_obj.get_attr('seed_emax')
 
     is_ambiguous = robupy_obj.get_attr('is_ambiguous')
 
@@ -46,11 +48,11 @@ def evaluate_python(robupy_obj, data_frame):
 
     edu_start = robupy_obj.get_attr('edu_start')
 
-    num_draws = robupy_obj.get_attr('num_draws')
+    num_draws_emax = robupy_obj.get_attr('num_draws_emax')
 
     is_debug = robupy_obj.get_attr('is_debug')
 
-    num_sims = robupy_obj.get_attr('num_sims')
+    num_draws_prob = robupy_obj.get_attr('num_draws_prob')
 
     edu_max = robupy_obj.get_attr('edu_max')
 
@@ -70,47 +72,71 @@ def evaluate_python(robupy_obj, data_frame):
         distribute_model_paras(model_paras, is_debug)
 
     # Draw standard normal deviates for S-ML approach
-    standard_deviates = create_disturbances(num_sims, seed_estimation,
-        eps_cholesky, is_ambiguous, num_periods, is_debug, 'estimation')
+    # TODO: Rename
+    standard_deviates = create_disturbances(num_periods, num_draws_prob,
+        seed_prob, is_debug, 'prob', eps_cholesky, is_ambiguous)
 
     # Get the relevant set of disturbances. These are standard normal draws
     # in the case of an ambiguous world. This function is located outside the
     # actual bare solution algorithm to ease testing across implementations.
-    periods_eps_relevant = create_disturbances(num_draws, seed_solution,
-        eps_cholesky, is_ambiguous, num_periods, is_debug, 'solution')
+    disturbances_emax = create_disturbances(num_periods, num_draws_emax,
+        seed_emax, is_debug, 'emax', eps_cholesky, is_ambiguous)
+
+    # Solve model for given parametrization
+    args = solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+        shocks, edu_max, delta, edu_start, is_debug, is_interpolated, level,
+        measure, min_idx, num_draws_emax, num_periods, num_points, is_ambiguous,
+        disturbances_emax, is_python)
+
+    # Distribute return arguments from solution run
+    mapping_state_idx, periods_emax, periods_payoffs_future = args[:3]
+    periods_payoffs_ex_post, periods_payoffs_systematic, states_all = args[3:6]
 
     # Evaluate the criterion function
-    likl = _evaluate_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-                shocks, eps_cholesky, edu_max, delta, edu_start, is_debug,
-                is_interpolated, is_python, level, measure, min_idx, num_agents,
-                num_draws, num_sims, num_periods, num_points, is_ambiguous,
-                data_array, standard_deviates, periods_eps_relevant)
+    likl = _evaluate_python_bare(mapping_state_idx, periods_emax,
+                periods_payoffs_systematic, states_all,
+                shocks, edu_max, delta, edu_start, num_periods,  eps_cholesky, num_agents, num_draws_prob,
+                data_array, standard_deviates, is_python)
 
     # Finishing
-    return likl
+    return robupy_obj, likl
 
 
 ''' Auxiliary functions
 '''
 
-
-def _evaluate_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
-        eps_cholesky, edu_max, delta, edu_start, is_debug, is_interpolated,
-        is_python, level, measure, min_idx, num_agents, num_draws, num_sims,
-        num_periods, num_points, is_ambiguous, data_array,
-        standard_deviates, periods_eps_relevant):
+def _evaluate_python_bare(mapping_state_idx, periods_emax,
+        periods_payoffs_systematic, states_all, shocks,
+        edu_max, delta, edu_start, num_periods,  eps_cholesky, num_agents,
+        num_draws_prob, data_array, standard_deviates, is_python):
     """ This function is required to ensure a full analogy to F2PY and
-    FORTRAN implementations.
+    FORTRAN implementations. The first part of the interface is identical to
+    the solution request functions.
     """
-    # Solve the model for updated parametrization
-    args = solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-        shocks, edu_max, delta, edu_start, is_debug, is_interpolated, level,
-        measure, min_idx, num_draws, num_periods, num_points, is_ambiguous,
-        periods_eps_relevant, is_python)
 
-    # Distribute return arguments
-    mapping_state_idx, periods_emax, periods_future_payoffs = args[:3]
-    periods_payoffs_ex_post, periods_payoffs_systematic, states_all = args[3:6]
+    if is_python:
+        likl = evaluate_criterion_function(mapping_state_idx, periods_emax,
+            periods_payoffs_systematic, states_all, shocks, edu_max, delta,
+            edu_start, num_periods, eps_cholesky, num_agents, num_draws_prob,
+            data_array, standard_deviates)
+
+    else:
+        import robupy.python.f2py.f2py_library as f2py_library
+        likl = f2py_library.wrapper_evaluate_criterion_function(
+            mapping_state_idx, periods_emax, periods_payoffs_systematic,
+            states_all, shocks, edu_max, delta, edu_start, num_periods,
+            eps_cholesky, num_agents, num_draws_prob, data_array, standard_deviates)
+
+    # TODO: CHECKS ...
+    # Finishing
+    return likl
+
+
+# Solve the model for given parametrization
+def evaluate_criterion_function(mapping_state_idx, periods_emax,
+        periods_payoffs_systematic, states_all, shocks, edu_max, delta,
+        edu_start, num_periods, eps_cholesky, num_agents, num_draws_prob,
+        data_array, standard_deviates):
 
     # Initialize auxiliary objects
     likl, j = [], 0
@@ -121,11 +147,12 @@ def _evaluate_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
             # Extract observable components of state space as well as agent
             # decision.
             exp_a, exp_b, edu, edu_lagged = data_array[j, 4:].astype(int)
-            choice_indicator = data_array[j, 2].astype(int)
+            choice = data_array[j, 2].astype(int)
+            is_working = choice in [1, 2]
 
             # Transform total years of education to additional years of
             # education and create an index from the choice.
-            edu, idx = edu - edu_start, choice_indicator - 1
+            edu, idx = edu - edu_start, choice - 1
 
             # Get state indicator to obtain the systematic component of the
             # agents payoffs. These feed into the simulation of choice
@@ -142,21 +169,21 @@ def _evaluate_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
             # If an agent is observed working, then the the labor market shocks
             # are observed and the conditional distribution is used to determine
             # the choice probabilities.
-            if choice_indicator in [1, 2]:
-                # Calculate the disturbance, which follows from a normal
+            if is_working:
+                # Calculate the disturbance, which follows a normal
                 # distribution.
                 eps = np.log(data_array[j, 3].astype(float)) - \
                         np.log(payoffs_systematic[idx])
                 # Construct independent normal draws implied by the observed
                 # wages.
-                if choice_indicator == 1:
+                if choice == 1:
                     deviates[:, idx] = eps / np.sqrt(shocks[idx, idx])
                 else:
                     deviates[:, idx] = (eps - eps_cholesky[idx, 0] *
                         deviates[:, 0]) / eps_cholesky[idx, idx]
+
                 # Record contribution of wage observation.
                 likl_contrib *= norm.pdf(eps, 0.0, np.sqrt(shocks[idx, idx]))
-
             # Determine conditional deviates. These correspond to the
             # unconditional draws if the agent did not work in the labor market.
             conditional_deviates = np.dot(eps_cholesky, deviates.T).T
@@ -165,7 +192,7 @@ def _evaluate_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
             # value functions and determine the choice probabilities.
             counts = np.tile(0.0, 4)
 
-            for s in range(num_sims):
+            for s in range(num_draws_prob):
                 # Extract deviates from (un-)conditional normal distributions.
                 disturbances = conditional_deviates[s, :]
 
@@ -176,11 +203,12 @@ def _evaluate_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
                 total_payoffs, _, _ = get_total_value(period, num_periods,
                     delta, payoffs_systematic, disturbances, edu_max,
                     edu_start, mapping_state_idx, periods_emax, k, states_all)
+
                 # Record optimal choices
                 counts[np.argmax(total_payoffs)] += 1.0
 
             # Determine relative shares
-            choice_probabilities = counts / num_sims
+            choice_probabilities = counts / num_draws_prob
 
             # Adjust  and record likelihood contribution
             likl_contrib *= choice_probabilities[idx]
@@ -189,7 +217,8 @@ def _evaluate_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
             j += 1
 
     # Scaling
-    likl = -np.mean(np.log(np.clip(likl, TINY_FLOAT, np.inf)))
+    likl = -np.mean(np.log(np.clip(likl, TINY_FLOAT, HUGE_FLOAT)))
 
     # Finishing
     return likl
+

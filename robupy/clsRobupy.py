@@ -22,13 +22,13 @@ class RobupyCls(MetaCls):
         self.attr['init_dict'] = None
 
         # Derived attributes
-        self.attr['seed_simulation'] = None
+        self.attr['seed_data'] = None
 
         self.attr['is_interpolated'] = None
 
-        self.attr['seed_estimation'] = None
+        self.attr['seed_prob'] = None
 
-        self.attr['seed_solution'] = None
+        self.attr['seed_emax'] = None
 
         self.attr['is_ambiguous'] = None
 
@@ -40,7 +40,7 @@ class RobupyCls(MetaCls):
 
         self.attr['num_points'] = None
 
-        self.attr['num_draws'] = None
+        self.attr['num_draws_emax'] = None
 
         self.attr['is_python'] = None
 
@@ -48,7 +48,7 @@ class RobupyCls(MetaCls):
 
         self.attr['is_debug'] = None
 
-        self.attr['num_sims'] = None
+        self.attr['num_draws_prob'] = None
 
         self.attr['edu_max'] = None
 
@@ -85,7 +85,7 @@ class RobupyCls(MetaCls):
         # is true for the future payoffs
         self.attr['periods_payoffs_ex_post'] = None
 
-        self.attr['periods_future_payoffs'] = None
+        self.attr['periods_payoffs_future'] = None
 
         # Status indicator
         self.is_locked = False
@@ -129,15 +129,15 @@ class RobupyCls(MetaCls):
 
             self.attr['is_interpolated'] = init_dict['INTERPOLATION']['apply']
 
-            self.attr['seed_simulation'] = init_dict['SIMULATION']['seed']
+            self.attr['seed_data'] = init_dict['SIMULATION']['seed']
 
-            self.attr['seed_estimation'] = init_dict['ESTIMATION']['seed']
+            self.attr['seed_prob'] = init_dict['ESTIMATION']['seed']
 
             self.attr['num_points'] = init_dict['INTERPOLATION']['points']
 
             self.attr['num_agents'] = init_dict['SIMULATION']['agents']
 
-            self.attr['seed_solution'] = init_dict['SOLUTION']['seed']
+            self.attr['seed_emax'] = init_dict['SOLUTION']['seed']
 
             self.attr['num_periods'] = init_dict['BASICS']['periods']
 
@@ -145,9 +145,9 @@ class RobupyCls(MetaCls):
 
             self.attr['edu_start'] = init_dict['EDUCATION']['start']
 
-            self.attr['num_draws'] = init_dict['SOLUTION']['draws']
+            self.attr['num_draws_emax'] = init_dict['SOLUTION']['draws']
 
-            self.attr['num_sims'] = init_dict['ESTIMATION']['draws']
+            self.attr['num_draws_prob'] = init_dict['ESTIMATION']['draws']
 
             self.attr['version'] = init_dict['PROGRAM']['version']
 
@@ -237,13 +237,13 @@ class RobupyCls(MetaCls):
             return
 
         # Distribute class attributes
-        seed_simulation = self.attr['seed_simulation']
+        seed_data = self.attr['seed_data']
 
         is_interpolated = self.attr['is_interpolated']
 
-        seed_estimation = self.attr['seed_estimation']
+        seed_prob = self.attr['seed_prob']
 
-        seed_solution = self.attr['seed_solution']
+        seed_emax = self.attr['seed_emax']
 
         is_ambiguous = self.attr['is_ambiguous']
 
@@ -259,9 +259,9 @@ class RobupyCls(MetaCls):
 
         is_python = self.attr['is_python']
 
-        num_draws = self.attr['num_draws']
+        num_draws_emax = self.attr['num_draws_emax']
 
-        num_sims = self.attr['num_sims']
+        num_draws_prob = self.attr['num_draws_prob']
 
         is_debug = self.attr['is_debug']
 
@@ -298,7 +298,7 @@ class RobupyCls(MetaCls):
             assert (eps_zero is False)
 
         # Seeds
-        for seed in [seed_solution, seed_simulation, seed_estimation]:
+        for seed in [seed_emax, seed_data, seed_prob]:
             assert (np.isfinite(seed))
             assert (isinstance(seed, int))
             assert (seed > 0)
@@ -325,9 +325,9 @@ class RobupyCls(MetaCls):
         assert (edu_start >= 0)
 
         # Number of draws for Monte Carlo integration
-        assert (np.isfinite(num_draws))
-        assert (isinstance(num_draws, int))
-        assert (num_draws >= 0)
+        assert (np.isfinite(num_draws_emax))
+        assert (isinstance(num_draws_emax, int))
+        assert (num_draws_emax >= 0)
 
         # Level of ambiguity
         assert (np.isfinite(level))
@@ -362,8 +362,8 @@ class RobupyCls(MetaCls):
         assert (num_points > 0)
 
         # Simulation of S-ML
-        assert (isinstance(num_sims, int))
-        assert (num_sims > 0)
+        assert (isinstance(num_draws_prob, int))
+        assert (num_draws_prob > 0)
 
         # Check integrity of results as well
         self._check_integrity_results()
@@ -386,7 +386,7 @@ class RobupyCls(MetaCls):
         # Distribute results
         periods_payoffs_systematic = self.attr['periods_payoffs_systematic']
 
-        periods_future_payoffs = self.attr['periods_future_payoffs']
+        periods_payoffs_future = self.attr['periods_payoffs_future']
 
         states_number_period = self.attr['states_number_period']
 
@@ -509,7 +509,7 @@ class RobupyCls(MetaCls):
 
         # Check the expected future value
         is_applicable = (periods_emax is not None)
-        is_applicable = is_applicable and (periods_future_payoffs is not None)
+        is_applicable = is_applicable and (periods_payoffs_future is not None)
 
         if is_applicable:
             # Check that the payoffs are finite for all admissible values and
@@ -541,9 +541,9 @@ class RobupyCls(MetaCls):
                         # Check for finite value at admissible state, infinite
                         # values are allowed for the third column when the
                         # maximum level of education is attained.
-                        assert (np.all(np.isfinite(periods_future_payoffs[period, k, :2])))
-                        assert (np.all(np.isfinite(periods_future_payoffs[period, k, 3])))
+                        assert (np.all(np.isfinite(periods_payoffs_future[period, k, :2])))
+                        assert (np.all(np.isfinite(periods_payoffs_future[period, k, 3])))
                         # Special checks for infinite value due to
                         # high education.
-                        if not np.isfinite(periods_future_payoffs[period, k, 2]):
+                        if not np.isfinite(periods_payoffs_future[period, k, 2]):
                             assert (states_all[period, k][2] == edu_max - edu_start)

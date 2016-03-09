@@ -38,7 +38,9 @@ MODULE robufort_constants
     INTEGER(our_int), PARAMETER :: MISSING_INT  = -99_our_int
 
     REAL(our_dble), PARAMETER :: MISSING_FLOAT   = -99_our_dble
+
     REAL(our_dble), PARAMETER :: HUGE_FLOAT      = 1.0e10_our_dble
+    REAL(our_dble), PARAMETER :: TINY_FLOAT      = 1e-20_our_dble
 
     ! Interpolation
     REAL(our_dble), PARAMETER :: interpolation_inadmissible_states = -50000.00_our_dble

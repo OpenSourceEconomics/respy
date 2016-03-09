@@ -9,7 +9,14 @@ import socket
 import shutil
 import shlex
 import glob
+import sys
 import os
+
+# ROBUPY import
+sys.path.insert(0, os.environ['ROBUPY'])
+from robupy import read
+
+from robupy.python.solve_python import _create_state_space
 
 # project library
 from modules.clsMail import MailCls
@@ -18,13 +25,33 @@ from modules.clsMail import MailCls
 '''
 
 
-def write_interpolation_grid(num_periods, num_points, states_number_period):
+def write_interpolation_grid(file_name):
     """ Write out an interpolation grid that can be used across
     implementations.
     """
-    # Construct auxiliary objects
-    max_states = max(states_number_period)
-    booleans = np.tile(True, (max_states, num_periods))
+    # Process relevant initialization file
+    robupy_obj = read(file_name)
+
+    # Distribute class attributes
+    num_periods = robupy_obj.get_attr('num_periods')
+
+    num_points = robupy_obj.get_attr('num_points')
+
+    edu_start = robupy_obj.get_attr('edu_start')
+
+    is_python = robupy_obj.get_attr('is_python')
+
+    edu_max = robupy_obj.get_attr('edu_max')
+
+    min_idx = robupy_obj.get_attr('min_idx')
+
+    # Determine maximum number of states
+    _, states_number_period, _ = _create_state_space(num_periods, edu_start,
+                                    is_python, edu_max, min_idx)
+    max_states_period = max(states_number_period)
+
+    # Initialize container
+    booleans = np.tile(True, (max_states_period, num_periods))
 
     # Iterate over all periods
     for period in range(num_periods):
@@ -48,6 +75,9 @@ def write_interpolation_grid(num_periods, num_points, states_number_period):
 
     # Write out to file
     np.savetxt('interpolation.txt', booleans, fmt='%s')
+
+    # Some information that is useful elsewhere.
+    return max_states_period
 
 
 def build_f2py_testing(is_hidden):
@@ -103,30 +133,19 @@ def build_f2py_testing(is_hidden):
     os.chdir('../')
 
 
-def write_disturbances(init_dict):
+def write_disturbances(num_periods, max_draws):
     """ Write out disturbances to potentially align the different
-    implementations of the model
+    implementations of the model. Note that num draws has to be less or equal
+    to the largest number of requested random deviates.
     """
-
-    # Let us write out the disturbances to a file so that they can be aligned
-    # between the alternative implementations
-    num_draws = init_dict['SOLUTION']['draws']
-    num_agents = init_dict['SIMULATION']['agents']
-    num_periods = init_dict['BASICS']['periods']
-
-    # Check that the number of agents is less or equal than the number of
-    # draws as the same disturbances can be used in the solution and
-    # simulation step.
-    assert (num_agents <= num_draws)
-
     # Draw standard deviates
     standard_deviates = np.random.multivariate_normal(np.zeros(4),
-        np.identity(4), (num_periods, num_draws))
+        np.identity(4), (num_periods, max_draws))
 
     # Write to file to they can be read in by the different implementations.
     with open('disturbances.txt', 'w') as file_:
         for period in range(num_periods):
-            for i in range(num_draws):
+            for i in range(max_draws):
                 line = ' {0:15.10f} {1:15.10f} {2:15.10f} {3:15.10f}\n'.format(
                     *standard_deviates[period, i, :])
                 file_.write(line)
@@ -337,9 +356,9 @@ def transform_robupy_to_restud(model_paras, init_dict):
         # Write out some basic information about the problem.
         num_agents = init_dict['SIMULATION']['agents']
         num_periods = init_dict['BASICS']['periods']
-        num_draws = init_dict['SOLUTION']['draws']
+        num_draws_emax = init_dict['SOLUTION']['draws']
         file_.write(' {0:03d} {1:05d} {2:06d} {3:06f}'
-            ' {4:06f}\n'.format(num_periods, num_agents, num_draws,-99.0,
+            ' {4:06f}\n'.format(num_periods, num_agents, num_draws_emax,-99.0,
             500.0))
 
         # Write out coefficients for the two occupations.

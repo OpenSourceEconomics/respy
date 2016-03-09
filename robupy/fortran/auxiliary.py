@@ -13,7 +13,7 @@ PACKAGE_PATH = os.path.dirname(os.path.realpath(__file__))
 from robupy.auxiliary import replace_missing_values
 
 
-def _add_results(robupy_obj):
+def _add_results(robupy_obj, request):
     """ Add results to container.
     """
     # Distribute class attributes
@@ -83,16 +83,19 @@ def _add_results(robupy_obj):
 
     robupy_obj.lock()
 
+    # Read in evaluation of criterion function
+    eval = None
+    if request == 'evaluate':
+        eval = float(np.genfromtxt('.eval.robufort.dat'))
+        os.unlink('.eval.robufort.dat')
+
     # Finishing
-    return robupy_obj
+    return robupy_obj, eval
 
 
 def _write_robufort_initialization(robupy_obj, request):
     """ Write out model request to hidden file .model.robufort.ini.
     """
-    # Check applicability
-    assert (request in ['solve'])
-
     # Distribute class attributes
     model_paras = robupy_obj.get_attr('model_paras')
 
@@ -104,6 +107,8 @@ def _write_robufort_initialization(robupy_obj, request):
     eps_zero = robupy_obj.get_attr('eps_zero')
 
     min_idx = robupy_obj.get_attr('min_idx')
+
+    num_draws_prob = robupy_obj.get_attr('num_draws_prob')
 
     with open('.model.robufort.ini', 'w') as file_:
 
@@ -176,6 +181,13 @@ def _write_robufort_initialization(robupy_obj, request):
         file_.write(line + '\n')
 
         line = '{0:10d}\n'.format(init_dict['INTERPOLATION']['points'])
+        file_.write(line)
+
+        # ESTIMATION
+        line = '{0:10d}\n'.format(num_draws_prob)
+        file_.write(line)
+
+        line = '{0:10d}\n'.format(init_dict['ESTIMATION']['seed'])
         file_.write(line)
 
         # Auxiliary

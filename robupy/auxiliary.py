@@ -63,58 +63,65 @@ def distribute_model_paras(model_paras, is_debug):
     return coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, eps_cholesky
 
 
-def create_disturbances(num_draws, seed, eps_cholesky, is_ambiguous,
-        num_periods, is_debug, which):
-    """ Create disturbances.  Handle special case of zero variances as this
-    case is useful for hand-based testing. The disturbances are drawn from a
-    standard normal distribution and transformed later in the code.
+def create_disturbances(num_periods, num_draws_emax, seed, is_debug, which,
+        eps_cholesky, is_ambiguous):
+    """ Create the relevant set of disturbances. Handle special case of zero v
+    variances as thi case is useful for hand-based testing. The disturbances
+    are drawn from a standard normal distribution and transformed later in
+    the code.
     """
-    # Antibugging.
-    assert (which in ['simulation', 'estimation', 'solution'])
+    # Antibugging
+    assert (which in ['emax', 'prob', 'sims'])
 
-    # Auxiliary objects
-    is_simulation = (which == 'simulation')
+    # Control randomness by setting seed value
+    np.random.seed(seed)
 
-    is_estimation = (which == 'estimation')
-
-    # Initialize container
-    periods_eps_relevant = np.tile(MISSING_FLOAT, (num_periods, num_draws, 4))
-
-    # Draw standard normal deviates used to simulate the likelihood function.
-    if is_estimation:
-        np.random.seed(seed)
-        standard_deviates = np.random.multivariate_normal(np.zeros(4),
-            np.identity(4), (num_periods, num_draws))
-        return standard_deviates
-
-    # This allows to use the same random disturbances across the different
-    # implementations of the mode, including the RESTUD program. Otherwise,
-    # we draw a new set of standard deviations
+    # Draw random deviates from a standard normal distribution or read it in
+    # from disk. The latter is available to allow for testing across
+    # implementations.
     if is_debug and os.path.isfile('disturbances.txt'):
-        standard_deviates = read_disturbances(num_periods, num_draws)
-        standard_deviates = standard_deviates[:num_periods, :num_draws, :]
+        disturbances = read_disturbances(num_periods, num_draws_emax)
     else:
-        np.random.seed(seed)
-        standard_deviates = np.random.multivariate_normal(np.zeros(4),
-            np.identity(4), (num_periods, num_draws))
+        disturbances = np.random.multivariate_normal(np.zeros(4),
+                        np.identity(4), (num_periods, num_draws_emax))
 
-    # In the case of ambiguous world, the standard deviates are used in the
-    # solution part of the program.
-    if is_ambiguous and not is_simulation:
+    # Deviates used for the Monte Carlo integration of the expected future
+    # values during the solution of the model.
+    if which == 'emax':
+        # In the case of ambiguous world, the standard deviates are used in the
+        # solution part of the program.
         for period in range(num_periods):
-            periods_eps_relevant[period, :, :] = \
-                np.dot(eps_cholesky, standard_deviates[period, :, :].T).T
-    else:
-        # Transform disturbances to relevant distribution
+            disturbances[period, :, :] = \
+                np.dot(eps_cholesky, disturbances[period, :, :].T).T
+
+        if not is_ambiguous:
+            for period in range(num_periods):
+                for j in [0, 1]:
+                    disturbances[period, :, j] = \
+                        np.exp(disturbances[period, :, j])
+
+    # Deviates used for the Monte Carlo integration of the choice
+    # probabilities for the construction of the criterion function.
+    elif which == 'prob':
+        # Standard deviates are further processed during the evaluation routine.
+        disturbances = disturbances
+
+    # Deviates for the simulation of a synthetic agent population.
+    elif which == 'sims':
+        # Standard deviates transformed to the distributions relevant for
+        # the agents actual decision making as traversing the tree.
         for period in range(num_periods):
-            periods_eps_relevant[period, :, :] = \
-                np.dot(eps_cholesky, standard_deviates[period, :, :].T).T
+            disturbances[period, :, :] = \
+                np.dot(eps_cholesky, disturbances[period, :, :].T).T
             for j in [0, 1]:
-                periods_eps_relevant[period, :, j] = \
-                    np.exp(periods_eps_relevant[period, :, j])
+                disturbances[period, :, j] = \
+                    np.exp(disturbances[period, :, j])
+
+    else:
+        raise NotImplementedError
 
     # Finishing
-    return periods_eps_relevant
+    return disturbances
 
 
 def replace_missing_values(argument):
@@ -135,22 +142,22 @@ def replace_missing_values(argument):
     return argument
 
 
-def read_disturbances(num_periods, num_draws):
+def read_disturbances(num_periods, num_draws_emax):
     """ Red the disturbances from disk. This is only used in the development
     process.
     """
     # Initialize containers
-    periods_eps_relevant = np.tile(np.nan, (num_periods, num_draws, 4))
+    disturbances_emax = np.tile(np.nan, (num_periods, num_draws_emax, 4))
 
     # Read and distribute disturbances
     disturbances = np.array(np.genfromtxt('disturbances.txt'), ndmin=2)
     for period in range(num_periods):
-        lower = 0 + num_draws * period
-        upper = lower + num_draws
-        periods_eps_relevant[period, :, :] = disturbances[lower:upper, :]
+        lower = 0 + num_draws_emax * period
+        upper = lower + num_draws_emax
+        disturbances_emax[period, :, :] = disturbances[lower:upper, :]
 
     # Finishing
-    return periods_eps_relevant
+    return disturbances_emax
 
 
 def check_dataset(data_frame, robupy_obj):

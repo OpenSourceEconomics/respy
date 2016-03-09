@@ -25,7 +25,7 @@ def solve_fortran(robupy_obj):
     os.system('"' + PACKAGE_PATH + '/bin/robufort"')
 
     # Add results
-    _add_results(robupy_obj)
+    robupy_obj, _ = _add_results(robupy_obj, 'solve')
 
     # Finishing
     return robupy_obj

@@ -94,7 +94,7 @@ def generate_random_dict(constraints=None):
 
     # PROGRAM
     dict_['PROGRAM'] = {}
-    dict_['PROGRAM']['debug'] = np.random.choice(['True', 'False'])
+    dict_['PROGRAM']['debug'] ='True'
     dict_['PROGRAM']['version'] = np.random.choice(['FORTRAN', 'F2PY',
                                                     'PYTHON'])
 
@@ -157,6 +157,19 @@ def generate_random_dict(constraints=None):
         # Replace in initialization file
         dict_['PROGRAM']['version'] = version
 
+    # Ensure that random deviates do not exceed a certain number. This is
+    # useful when aligning the randomness across implementations.
+    if 'max_draws' in constraints.keys():
+        # Extract objects
+        max_draws = constraints['max_draws']
+        # Checks
+        assert (isinstance(max_draws, int))
+        assert (max_draws > 0)
+        # Replace in initialization file
+        dict_['SIMULATION']['agents'] = np.random.random_integers(1, max_draws)
+        dict_['ESTIMATION']['draws'] = np.random.random_integers(1, max_draws)
+        dict_['SOLUTION']['draws'] = np.random.random_integers(1, max_draws)
+
     # Replace store attribute
     if 'store' in constraints.keys():
         # Extract objects
@@ -165,15 +178,6 @@ def generate_random_dict(constraints=None):
         assert (store in [True, False])
         # Replace in initialization file
         dict_['SOLUTION']['store'] = store
-
-    # Replace debugging level
-    if 'debug' in constraints.keys():
-        # Extract objects
-        debug = constraints['debug']
-        # Checks
-        assert (debug in [True, False])
-        # Replace in initialization file
-        dict_['PROGRAM']['debug'] = debug
 
     # Replace level of ambiguity
     if 'level' in constraints.keys():
@@ -223,18 +227,6 @@ def generate_random_dict(constraints=None):
         if constraints['eps_zero']:
             dict_['SHOCKS'] = np.zeros((4, 4))
 
-    # Number of draws
-    if 'draws' in constraints.keys():
-        # Extract object
-        num_draws = constraints['draws']
-        # Checks
-        assert (num_draws > 0)
-        assert (isinstance(num_draws, int))
-        assert (np.isfinite(num_draws))
-        # Replace in initialization files
-        dict_['ESTIMATION']['draws'] = num_draws
-        dict_['SOLUTION']['draws'] = num_draws
-
     # Number of agents
     if 'agents' in constraints.keys():
         # Extract object
@@ -245,6 +237,17 @@ def generate_random_dict(constraints=None):
         assert (np.isfinite(num_agents))
         # Replace in initialization files
         dict_['SIMULATION']['agents'] = num_agents
+
+    # Number of simulations for S-ML
+    if 'sims' in constraints.keys():
+        # Extract object
+        num_draws_prob = constraints['sims']
+        # Checks
+        assert (num_draws_prob > 0)
+        assert (isinstance(num_draws_prob, int))
+        assert (np.isfinite(num_draws_prob))
+        # Replace in initialization files
+        dict_['ESTIMATION']['draws'] = num_draws_prob
 
     # Finishing.
     return dict_

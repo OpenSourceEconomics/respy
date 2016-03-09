@@ -26,8 +26,8 @@ logger = logging.getLogger('ROBUPY_SOLVE')
 '''
 
 
-def backward_induction(num_periods, max_states_period, periods_eps_relevant,
-        num_draws, states_number_period, periods_payoffs_systematic, edu_max,
+def backward_induction(num_periods, max_states_period, disturbances_emax,
+        num_draws_emax, states_number_period, periods_payoffs_systematic, edu_max,
         edu_start, mapping_state_idx, states_all, delta, is_debug, shocks,
         level, is_ambiguous, measure, is_interpolated, num_points):
     """ Backward induction procedure. There are two main threads to this
@@ -42,14 +42,14 @@ def backward_induction(num_periods, max_states_period, periods_eps_relevant,
     periods_emax = np.tile(MISSING_FLOAT, (num_periods, max_states_period))
     periods_payoffs_ex_post = np.tile(MISSING_FLOAT, (num_periods,
                                                max_states_period, 4))
-    periods_future_payoffs = np.tile(MISSING_FLOAT, (num_periods,
+    periods_payoffs_future = np.tile(MISSING_FLOAT, (num_periods,
                                                max_states_period, 4))
 
     # Iterate backward through all periods
     for period in range(num_periods - 1, -1, -1):
 
         # Extract auxiliary objects
-        eps_relevant = periods_eps_relevant[period, :, :]
+        eps_relevant = disturbances_emax[period, :, :]
         num_states = states_number_period[period]
 
         # Logging.
@@ -83,7 +83,7 @@ def backward_induction(num_periods, max_states_period, periods_eps_relevant,
             endogenous = _get_endogenous_variable(period, num_periods,
                 num_states, delta, periods_payoffs_systematic, edu_max,
                 edu_start, mapping_state_idx, periods_emax, states_all,
-                is_simulated, num_draws, shocks, level, is_ambiguous,
+                is_simulated, num_draws_emax, shocks, level, is_ambiguous,
                 is_debug, measure, maxe, eps_relevant)
 
             # Create prediction model based on the random subset of points where
@@ -106,7 +106,7 @@ def backward_induction(num_periods, max_states_period, periods_eps_relevant,
 
                 # Simulate the expected future value.
                 emax, payoffs_ex_post, future_payoffs = \
-                    get_payoffs(num_draws, eps_relevant, period, k,
+                    get_payoffs(num_draws_emax, eps_relevant, period, k,
                         payoffs_systematic, edu_max, edu_start,
                         mapping_state_idx, states_all, num_periods,
                         periods_emax, delta, is_debug, shocks, level,
@@ -118,14 +118,14 @@ def backward_induction(num_periods, max_states_period, periods_eps_relevant,
                 # This information is only available if no interpolation is
                 # used. Otherwise all remain set to missing values (see above).
                 periods_payoffs_ex_post[period, k, :] = payoffs_ex_post
-                periods_future_payoffs[period, k, :] = future_payoffs
+                periods_payoffs_future[period, k, :] = future_payoffs
 
     # Finishing. Note that the last two return arguments are not available in
     # for periods, where interpolation is required.
-    return periods_emax, periods_payoffs_ex_post, periods_future_payoffs
+    return periods_emax, periods_payoffs_ex_post, periods_payoffs_future
 
 
-def get_payoffs(num_draws, eps_relevant, period, k, payoffs_systematic, edu_max,
+def get_payoffs(num_draws_emax, eps_relevant, period, k, payoffs_systematic, edu_max,
         edu_start, mapping_state_idx, states_all, num_periods, periods_emax,
         delta, is_debug, shocks, level, is_ambiguous, measure):
     """ Get payoffs for a particular state.
@@ -134,13 +134,13 @@ def get_payoffs(num_draws, eps_relevant, period, k, payoffs_systematic, edu_max,
     # ambiguity or not.
     if is_ambiguous:
         emax, payoffs_ex_post, future_payoffs = \
-            get_payoffs_ambiguity(num_draws, eps_relevant, period, k,
+            get_payoffs_ambiguity(num_draws_emax, eps_relevant, period, k,
                 payoffs_systematic, edu_max, edu_start, mapping_state_idx,
                 states_all, num_periods, periods_emax, delta, is_debug, shocks,
                 level, measure)
     else:
         emax, payoffs_ex_post, future_payoffs = \
-            get_payoffs_risk(num_draws, eps_relevant, period, k,
+            get_payoffs_risk(num_draws_emax, eps_relevant, period, k,
                 payoffs_systematic, edu_max, edu_start, mapping_state_idx,
                 states_all, num_periods, periods_emax, delta, is_debug,
                 shocks, level, measure)
@@ -284,7 +284,7 @@ def calculate_payoffs_systematic(num_periods, states_number_period, states_all,
 
 
 def simulate_sample(num_agents, states_all, num_periods, mapping_state_idx,
-        periods_payoffs_systematic, periods_eps_relevant, edu_max, edu_start,
+        periods_payoffs_systematic, disturbances_emax, edu_max, edu_start,
         periods_emax, delta):
     """ Sample simulation
     """
@@ -316,7 +316,7 @@ def simulate_sample(num_agents, states_all, num_periods, mapping_state_idx,
 
             # Select relevant subset
             payoffs_systematic = periods_payoffs_systematic[period, k, :]
-            disturbances = periods_eps_relevant[period, i, :]
+            disturbances = disturbances_emax[period, i, :]
 
             # Get total value of admissible states
             total_payoffs, payoffs_ex_post, _ = get_total_value(period,
@@ -473,7 +473,7 @@ def _get_exogenous_variables(period, num_periods, num_states, delta,
 
 def _get_endogenous_variable(period, num_periods, num_states, delta,
         periods_payoffs_systematic, edu_max, edu_start, mapping_state_idx,
-        periods_emax, states_all, is_simulated, num_draws, shocks, level,
+        periods_emax, states_all, is_simulated, num_draws_emax, shocks, level,
         is_ambiguous, is_debug, measure, maxe, eps_relevant):
     """ Construct endogenous variable for the subset of interpolation points.
     """
@@ -490,7 +490,7 @@ def _get_endogenous_variable(period, num_periods, num_states, delta,
         payoffs_systematic = periods_payoffs_systematic[period, k, :]
 
         # Simulate the expected future value.
-        emax_simulated, _, _ = get_payoffs(num_draws, eps_relevant, period,
+        emax_simulated, _, _ = get_payoffs(num_draws_emax, eps_relevant, period,
             k, payoffs_systematic, edu_max, edu_start, mapping_state_idx,
             states_all, num_periods, periods_emax, delta, is_debug, shocks,
             level, is_ambiguous, measure)
