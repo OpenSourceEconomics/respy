@@ -103,30 +103,19 @@ def build_f2py_testing(is_hidden):
     os.chdir('../')
 
 
-def write_disturbances(init_dict):
+def write_disturbances(num_periods, max_draws):
     """ Write out disturbances to potentially align the different
-    implementations of the model
+    implementations of the model. Note that num draws has to be less or equal
+    to the largest number of requested random deviates.
     """
-
-    # Let us write out the disturbances to a file so that they can be aligned
-    # between the alternative implementations
-    num_draws = init_dict['SOLUTION']['draws']
-    num_agents = init_dict['SIMULATION']['agents']
-    num_periods = init_dict['BASICS']['periods']
-
-    # Check that the number of agents is less or equal than the number of
-    # draws as the same disturbances can be used in the solution and
-    # simulation step.
-    assert (num_agents <= num_draws)
-
     # Draw standard deviates
     standard_deviates = np.random.multivariate_normal(np.zeros(4),
-        np.identity(4), (num_periods, num_draws))
+        np.identity(4), (num_periods, max_draws))
 
     # Write to file to they can be read in by the different implementations.
     with open('disturbances.txt', 'w') as file_:
         for period in range(num_periods):
-            for i in range(num_draws):
+            for i in range(max_draws):
                 line = ' {0:15.10f} {1:15.10f} {2:15.10f} {3:15.10f}\n'.format(
                     *standard_deviates[period, i, :])
                 file_.write(line)

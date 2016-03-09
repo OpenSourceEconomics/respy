@@ -43,16 +43,15 @@ for _ in range(1000):
     constraints = dict()
 
     # THIS IS REQUIRED
-    constraints['debug'] = True
     constraints['apply'] = False
 
-    num_draws = np.random.random_integers(10, 100)
-    constraints['sims'] = np.random.random_integers(10, num_draws)
-    constraints['draws'] = num_draws
-    constraints['agents'] = np.random.random_integers(10, num_draws)
+    max_draws = np.random.random_integers(10, 100)
+    constraints['max_draws'] = max_draws
 
     init_dict = generate_init(constraints)
-    write_disturbances(init_dict)
+    num_periods = init_dict['BASICS']['periods']
+
+    write_disturbances(num_periods, max_draws)
 
     base = None
 
@@ -65,6 +64,7 @@ for _ in range(1000):
 
         data_frame = simulate(robupy_obj)
 
+        # TODO: THIS CAN BE REWORKED?
         #robupy_obj.unlock()
 
         robupy_obj.attr['version'] = version
@@ -85,6 +85,5 @@ for _ in range(1000):
     except:
         pass
 
-
-# 1.88618612779
-# 1.83897020585
+# 1.06544087763
+# 1.3197840859728134

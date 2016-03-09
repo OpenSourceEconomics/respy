@@ -68,8 +68,10 @@ def test_85():
     compile_package('--fortran --debug', True)
 
     # Constraints
+    max_draws = np.random.random_integers(1, 100)
+
     constraints = dict()
-    constraints['debug'] = True
+    constraints['max_draws'] = max_draws
     constraints['measure'] = 'kl'
 
     # This ensures that interpolation is actually run.
@@ -79,15 +81,6 @@ def test_85():
     constraints['periods'] = num_periods
     constraints['points'] = num_points
     constraints['apply'] = True
-
-    # We need to ensure that the number of agents is less or equal than the
-    # number of draws so that we can standardize the disturbances across
-    # implementations.
-    num_draws = np.random.random_integers(1, 100)
-    num_agents = np.random.random_integers(1, num_draws)
-
-    constraints['agents'] = num_agents
-    constraints['draws'] = num_draws
 
     # Just making sure that it also works for this special case. Note that
     # this special case is currently only working in the risk case.
@@ -99,7 +92,8 @@ def test_85():
     init_dict = generate_random_dict(constraints)
 
     # Write out disturbances to align the three implementations.
-    write_disturbances(init_dict)
+    num_periods = init_dict['BASICS']['periods']
+    write_disturbances(num_periods, max_draws)
 
     # Test the standardization across PYTHON, F2PY, and FORTRAN
     # implementations. This is possible as we write out an interpolation
@@ -1103,7 +1097,6 @@ def test_98():
     constraints = dict()
     constraints['edu'] = (10, 20)
     constraints['level'] = 0.00
-    constraints['debug'] = True
     constraints['eps_zero'] = True
 
     version = np.random.choice(['FORTRAN', 'F2PY', 'PYTHON'])
@@ -1163,18 +1156,11 @@ def test_99():
     compile_package('--fortran --debug', True)
 
     # Constraint to risk model
+    max_draws = np.random.random_integers(1, 100)
+
     constraints = dict()
-    constraints['debug'] = True
+    constraints['max_draws'] = max_draws
     constraints['measure'] = 'kl'
-
-    # We need to ensure that the number of agents is less or equal than the
-    # number of draws so that we can standardize the disturbances across
-    # implementations.
-    num_draws = np.random.random_integers(1, 100)
-    num_agents = np.random.random_integers(1, num_draws)
-
-    constraints['agents'] = num_agents
-    constraints['draws'] = num_draws
 
     # Just making sure that it also works for this special case. Note that
     # this special case is currently only working in the risk case.
@@ -1185,8 +1171,9 @@ def test_99():
     # Generate random initialization file.
     init_dict = generate_random_dict(constraints)
 
-    # Ensure standardization across implementations.
-    write_disturbances(init_dict)
+    # Align randomness across implementations
+    num_periods = init_dict['BASICS']['periods']
+    write_disturbances(num_periods, max_draws)
 
     # Initialize containers
     base = None

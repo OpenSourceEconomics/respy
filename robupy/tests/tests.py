@@ -270,7 +270,6 @@ class Tests(object):
 
         # Generate random initialization dictionary
         constraints = dict()
-        constraints['debug'] = True
         constraints['version'] = version
 
         init_dict = generate_random_dict(constraints)
@@ -369,7 +368,6 @@ class Tests(object):
         for _ in range(2):
             # Start of unit test design.
             constraints = dict()
-            constraints['debug'] = True
             constraints['version'] = 'PYTHON'
 
             init_dict = generate_random_dict(constraints)
