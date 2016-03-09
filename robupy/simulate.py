@@ -59,7 +59,7 @@ def simulate(robupy_obj):
     seed_simulation = robupy_obj.get_attr('seed_simulation')
 
     # Draw disturbances for the simulation.
-    periods_eps_relevant = create_disturbances(num_agents, seed_simulation,
+    disturbances_int = create_disturbances(num_agents, seed_simulation,
         eps_cholesky, is_ambiguous, num_periods, is_debug, 'simulation')
 
     # Simulate a dataset with the results from the solution and write out the
@@ -68,7 +68,7 @@ def simulate(robupy_obj):
     logger.info('Staring simulation of model for ' + str(num_agents) +
         ' agents with seed ' + str(seed))
 
-    data_frame = _wrapper_simulate_sample(robupy_obj, periods_eps_relevant)
+    data_frame = _wrapper_simulate_sample(robupy_obj, disturbances_int)
 
     _write_out(data_frame)
 
@@ -83,7 +83,7 @@ def simulate(robupy_obj):
 '''
 
 
-def _wrapper_simulate_sample(robupy_obj, periods_eps_relevant):
+def _wrapper_simulate_sample(robupy_obj, disturbances_int):
     """ Wrapper for PYTHON and F2PY implementation of sample simulation.
     """
     # Distribute class attributes
@@ -113,12 +113,12 @@ def _wrapper_simulate_sample(robupy_obj, periods_eps_relevant):
     if is_python:
         data_frame = python_library.simulate_sample(num_agents, states_all,
             num_periods, mapping_state_idx, periods_payoffs_systematic,
-            periods_eps_relevant, edu_max, edu_start, periods_emax, delta)
+            disturbances_int, edu_max, edu_start, periods_emax, delta)
     else:
         import robupy.python.f2py.f2py_library as f2py_library
         data_frame = f2py_library.wrapper_simulate_sample(num_agents,
             states_all, num_periods, mapping_state_idx,
-            periods_payoffs_systematic, periods_eps_relevant, edu_max,
+            periods_payoffs_systematic, disturbances_int, edu_max,
             edu_start, periods_emax, delta)
 
     # Replace missing values

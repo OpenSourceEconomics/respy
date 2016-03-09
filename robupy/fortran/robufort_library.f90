@@ -214,7 +214,7 @@ SUBROUTINE solve_fortran_bare(mapping_state_idx, periods_emax, &
     periods_payoffs_systematic, states_all, states_number_period, coeffs_a, & 
     coeffs_b, coeffs_edu, coeffs_home, shocks, edu_max, delta, edu_start, & 
     is_debug, is_interpolated, level, measure, min_idx, num_draws, & 
-    num_periods, num_points, is_ambiguous, periods_eps_relevant)
+    num_periods, num_points, is_ambiguous, disturbances_int)
 
 
     INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: mapping_state_idx(:,:,:,:,:)
@@ -233,7 +233,7 @@ SUBROUTINE solve_fortran_bare(mapping_state_idx, periods_emax, &
     INTEGER(our_int), INTENT(IN)                    :: edu_max
     INTEGER(our_int), INTENT(IN)                    :: min_idx
 
-    REAL(our_dble), INTENT(IN)                      :: periods_eps_relevant(:, :, :)
+    REAL(our_dble), INTENT(IN)                      :: disturbances_int(:, :, :)
     REAL(our_dble), INTENT(IN)                      :: coeffs_home(:)
     REAL(our_dble), INTENT(IN)                      :: coeffs_edu(:)
     REAL(our_dble), INTENT(IN)                      :: shocks(4, 4)
@@ -291,7 +291,7 @@ SUBROUTINE solve_fortran_bare(mapping_state_idx, periods_emax, &
     ! Perform backward induction procedure.
     CALL backward_induction(periods_emax, periods_payoffs_ex_post, &
             periods_future_payoffs, num_periods, max_states_period, &
-            periods_eps_relevant, num_draws, states_number_period, & 
+            disturbances_int, num_draws, states_number_period, &
             periods_payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
             states_all, delta, is_debug, shocks, level, is_ambiguous, measure, &
             is_interpolated, num_points)
@@ -301,7 +301,7 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE simulate_sample(dataset, num_agents, states_all, num_periods, &
                 mapping_state_idx, periods_payoffs_systematic, &
-                periods_eps_relevant, edu_max, edu_start, periods_emax, delta)
+                disturbances_int, edu_max, edu_start, periods_emax, delta)
 
     !/* external objects    */
 
@@ -309,7 +309,7 @@ SUBROUTINE simulate_sample(dataset, num_agents, states_all, num_periods, &
 
     REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
     REAL(our_dble), INTENT(IN)      :: periods_payoffs_systematic(:, :, :)
-    REAL(our_dble), INTENT(IN)      :: periods_eps_relevant(:, :, :)
+    REAL(our_dble), INTENT(IN)      :: disturbances_int(:, :, :)
     REAL(our_dble), INTENT(IN)      :: delta
 
     INTEGER(our_int), INTENT(IN)    :: num_periods
@@ -370,7 +370,7 @@ SUBROUTINE simulate_sample(dataset, num_agents, states_all, num_periods, &
 
             ! Calculate ex post payoffs
             payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
-            disturbances = periods_eps_relevant(period + 1, i + 1, :)
+            disturbances = disturbances_int(period + 1, i + 1, :)
 
             ! Calculate total utilities
             CALL get_total_value(total_payoffs, payoffs_ex_post, & 
@@ -530,7 +530,7 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
                 periods_future_payoffs, num_periods, max_states_period, &
-                periods_eps_relevant, num_draws, states_number_period, & 
+                disturbances_int, num_draws, states_number_period, &
                 periods_payoffs_systematic, edu_max, edu_start, &
                 mapping_state_idx, states_all, delta, is_debug, shocks, &
                 level, is_ambiguous, measure, is_interpolated, num_points)
@@ -550,7 +550,7 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
     REAL(our_dble), INTENT(INOUT)       :: periods_emax(num_periods, max_states_period)
 
     REAL(our_dble), INTENT(IN)          :: periods_payoffs_systematic(:, :, :)
-    REAL(our_dble), INTENT(IN)          :: periods_eps_relevant(:, :, :)
+    REAL(our_dble), INTENT(IN)          :: disturbances_int(:, :, :)
     REAL(our_dble), INTENT(IN)          :: shocks(:, :)
     REAL(our_dble), INTENT(IN)          :: delta
     REAL(our_dble), INTENT(IN)          :: level
@@ -615,7 +615,7 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
     DO period = (num_periods - 1), 0, -1
 
         ! Extract disturbances and construct auxiliary objects
-        eps_relevant = periods_eps_relevant(period + 1, :, :)
+        eps_relevant = disturbances_int(period + 1, :, :)
         num_states = states_number_period(period + 1)
 
         ! Logging

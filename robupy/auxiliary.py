@@ -78,7 +78,7 @@ def create_disturbances(num_draws, seed, eps_cholesky, is_ambiguous,
     is_estimation = (which == 'estimation')
 
     # Initialize container
-    periods_eps_relevant = np.tile(MISSING_FLOAT, (num_periods, num_draws, 4))
+    disturbances_int = np.tile(MISSING_FLOAT, (num_periods, num_draws, 4))
 
     # Draw standard normal deviates used to simulate the likelihood function.
     if is_estimation:
@@ -105,19 +105,19 @@ def create_disturbances(num_draws, seed, eps_cholesky, is_ambiguous,
     # solution part of the program.
     if is_ambiguous and not is_simulation:
         for period in range(num_periods):
-            periods_eps_relevant[period, :, :] = \
+            disturbances_int[period, :, :] = \
                 np.dot(eps_cholesky, standard_deviates[period, :, :].T).T
     else:
         # Transform disturbances to relevant distribution
         for period in range(num_periods):
-            periods_eps_relevant[period, :, :] = \
+            disturbances_int[period, :, :] = \
                 np.dot(eps_cholesky, standard_deviates[period, :, :].T).T
             for j in [0, 1]:
-                periods_eps_relevant[period, :, j] = \
-                    np.exp(periods_eps_relevant[period, :, j])
+                disturbances_int[period, :, j] = \
+                    np.exp(disturbances_int[period, :, j])
 
     # Finishing
-    return periods_eps_relevant
+    return disturbances_int
 
 
 def replace_missing_values(argument):
@@ -143,17 +143,17 @@ def read_disturbances(num_periods, num_draws):
     process.
     """
     # Initialize containers
-    periods_eps_relevant = np.tile(np.nan, (num_periods, num_draws, 4))
+    disturbances_int = np.tile(np.nan, (num_periods, num_draws, 4))
 
     # Read and distribute disturbances
     disturbances = np.array(np.genfromtxt('disturbances.txt'), ndmin=2)
     for period in range(num_periods):
         lower = 0 + num_draws * period
         upper = lower + num_draws
-        periods_eps_relevant[period, :, :] = disturbances[lower:upper, :]
+        disturbances_int[period, :, :] = disturbances[lower:upper, :]
 
     # Finishing
-    return periods_eps_relevant
+    return disturbances_int
 
 
 def check_dataset(data_frame, robupy_obj):

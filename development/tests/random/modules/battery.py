@@ -216,10 +216,10 @@ def test_86():
         # functions.
         period = np.random.choice(range(num_periods))
 
-        periods_eps_relevant = create_disturbances(num_draws, seed,
+        disturbances_int = create_disturbances(num_draws, seed,
             eps_cholesky, is_ambiguous, num_periods, is_debug, 'estimation')
 
-        eps_relevant = periods_eps_relevant[period, :, :]
+        eps_relevant = disturbances_int[period, :, :]
 
         num_states = states_number_period[period]
 
@@ -1305,7 +1305,7 @@ def test_101():
              distribute_model_paras(model_paras, is_debug)
 
         # Get set of disturbances
-        periods_eps_relevant = create_disturbances(num_draws, seed_solution,
+        disturbances_int = create_disturbances(num_draws, seed_solution,
             eps_cholesky, is_ambiguous, num_periods, is_debug, 'solution')
 
         # Align interpolation grid
@@ -1316,7 +1316,7 @@ def test_101():
         base_args = [coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
             edu_max, delta, edu_start, is_debug, is_interpolated, level,
             measure, min_idx, num_draws, num_periods, num_points,
-            is_ambiguous, periods_eps_relevant]
+            is_ambiguous, disturbances_int]
 
         # Check for the equality of the solution routines.
         base = None

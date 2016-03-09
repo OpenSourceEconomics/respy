@@ -77,14 +77,14 @@ def evaluate_python(robupy_obj, data_frame):
     # Get the relevant set of disturbances. These are standard normal draws
     # in the case of an ambiguous world. This function is located outside the
     # actual bare solution algorithm to ease testing across implementations.
-    periods_eps_relevant = create_disturbances(num_draws, seed_solution,
+    disturbances_int = create_disturbances(num_draws, seed_solution,
         eps_cholesky, is_ambiguous, num_periods, is_debug, 'solution')
 
     # Solve model for given parametrization
     args = solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         shocks, edu_max, delta, edu_start, is_debug, is_interpolated, level,
         measure, min_idx, num_draws, num_periods, num_points, is_ambiguous,
-        periods_eps_relevant, is_python)
+        disturbances_int, is_python)
 
     # Distribute return arguments from solution run
     mapping_state_idx, periods_emax, periods_future_payoffs = args[:3]

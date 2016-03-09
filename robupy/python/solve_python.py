@@ -71,16 +71,14 @@ def solve_python(robupy_obj):
     # Get the relevant set of disturbances. These are standard normal draws
     # in the case of an ambiguous world. This function is located outside the
     # actual bare solution algorithm to ease testing across implementations.
-    periods_eps_relevant = create_disturbances(num_draws, seed_solution,
+    disturbances_int = create_disturbances(num_draws, seed_solution,
         eps_cholesky, is_ambiguous, num_periods, is_debug, 'solution')
-
-    # TODO: Extract interpolation ...
 
     # Solve the model using PYTHON/F2PY implementation
     args = solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
                 shocks, edu_max, delta, edu_start, is_debug, is_interpolated,
                 level, measure, min_idx, num_draws, num_periods, num_points,
-                is_ambiguous, periods_eps_relevant, is_python)
+                is_ambiguous, disturbances_int, is_python)
 
     # Distribute return arguments
     mapping_state_idx, periods_emax, periods_future_payoffs, \
@@ -122,7 +120,7 @@ def solve_python(robupy_obj):
 def solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
         edu_max, delta, edu_start, is_debug, is_interpolated,
         level, measure, min_idx, num_draws, num_periods, num_points,
-        is_ambiguous, periods_eps_relevant, is_python):
+        is_ambiguous, disturbances_int, is_python):
     """ This function is required to ensure a full analogy to F2PY and
     FORTRAN implementations. This function is not private to the module as it
     is accessed in the evaluation and optimization modules as well.
@@ -158,7 +156,7 @@ def solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
             states_number_period, mapping_state_idx, is_interpolated,
             num_periods, num_points, states_all, num_draws, edu_start,
             is_python, is_debug, edu_max, measure, shocks, delta, level,
-            is_ambiguous, periods_eps_relevant)
+            is_ambiguous, disturbances_int)
 
     logger.info('... finished \n')
 
@@ -235,7 +233,7 @@ def _backward_induction_procedure(periods_payoffs_systematic,
         states_number_period, mapping_state_idx, is_interpolated, num_periods,
         num_points, states_all, num_draws, edu_start, is_python, is_debug,
         edu_max, measure, shocks, delta, level, is_ambiguous,
-        periods_eps_relevant):
+        disturbances_int):
     """ Perform backward induction procedure. This function is a wrapper
     around the PYTHON and F2PY implementation.
     """
@@ -252,7 +250,7 @@ def _backward_induction_procedure(periods_payoffs_systematic,
     # Perform backward induction procedure
     periods_emax, periods_payoffs_ex_post, periods_future_payoffs = \
         backward_induction(num_periods, max_states_period,
-            periods_eps_relevant, num_draws, states_number_period,
+            disturbances_int, num_draws, states_number_period,
             periods_payoffs_systematic, edu_max, edu_start,
             mapping_state_idx, states_all, delta, is_debug, shocks, level,
             is_ambiguous, measure, is_interpolated, num_points)

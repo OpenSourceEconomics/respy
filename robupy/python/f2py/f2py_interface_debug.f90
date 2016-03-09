@@ -12,7 +12,7 @@ SUBROUTINE wrapper_solve_fortran_bare(mapping_state_idx, periods_emax, &
                 coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, &
                 edu_max, delta, edu_start, is_debug, is_interpolated, &
                 level, measure, min_idx, num_draws, num_periods, num_points, &
-                is_ambiguous, periods_eps_relevant, max_states_period)
+                is_ambiguous, disturbances_int, max_states_period)
     
     !
     ! The presence of max_states_period breaks the equality of interfaces. 
@@ -49,7 +49,7 @@ SUBROUTINE wrapper_solve_fortran_bare(mapping_state_idx, periods_emax, &
     INTEGER, INTENT(IN)             :: edu_max
     INTEGER, INTENT(IN)             :: min_idx
 
-    DOUBLE PRECISION, INTENT(IN)    :: periods_eps_relevant(:, :, :)
+    DOUBLE PRECISION, INTENT(IN)    :: disturbances_int(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_home(:)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_edu(:)
     DOUBLE PRECISION, INTENT(IN)    :: shocks(:, :)
@@ -88,7 +88,7 @@ SUBROUTINE wrapper_solve_fortran_bare(mapping_state_idx, periods_emax, &
             states_number_period_int, coeffs_a, coeffs_b, coeffs_edu, & 
             coeffs_home, shocks, edu_max, delta, edu_start, & 
             is_debug, is_interpolated, level, measure, min_idx, num_draws, & 
-            num_periods, num_points, is_ambiguous, periods_eps_relevant)
+            num_periods, num_points, is_ambiguous, disturbances_int)
 
     ! Assign to initial objects for return to PYTHON
     periods_payoffs_systematic = periods_payoffs_systematic_int   

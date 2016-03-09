@@ -54,7 +54,7 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE wrapper_simulate_sample(dataset, num_agents, states_all, num_periods, &
                 mapping_state_idx, periods_payoffs_systematic, &
-                periods_eps_relevant, edu_max, edu_start, periods_emax, delta)
+                disturbances_int, edu_max, edu_start, periods_emax, delta)
 
     !/* external libraries    */
 
@@ -70,7 +70,7 @@ SUBROUTINE wrapper_simulate_sample(dataset, num_agents, states_all, num_periods,
 
     DOUBLE PRECISION, INTENT(IN)    :: periods_emax(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_payoffs_systematic(:, :, :)
-    DOUBLE PRECISION, INTENT(IN)    :: periods_eps_relevant(:, :, :)
+    DOUBLE PRECISION, INTENT(IN)    :: disturbances_int(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: delta
 
     INTEGER, INTENT(IN)             :: num_periods
@@ -87,14 +87,14 @@ SUBROUTINE wrapper_simulate_sample(dataset, num_agents, states_all, num_periods,
 
     CALL simulate_sample(dataset, num_agents, states_all, num_periods, &
                 mapping_state_idx, periods_payoffs_systematic, &
-                periods_eps_relevant, edu_max, edu_start, periods_emax, delta)
+                disturbances_int, edu_max, edu_start, periods_emax, delta)
 
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
 SUBROUTINE wrapper_backward_induction(periods_emax, periods_payoffs_ex_post, &
                 periods_future_payoffs, num_periods, max_states_period, &
-                periods_eps_relevant, num_draws, states_number_period, &
+                disturbances_int, num_draws, states_number_period, &
                 periods_payoffs_systematic, edu_max, edu_start, & 
                 mapping_state_idx, states_all, delta, is_debug, shocks, &
                 level, is_ambiguous, measure, is_interpolated, num_points)
@@ -113,7 +113,7 @@ SUBROUTINE wrapper_backward_induction(periods_emax, periods_payoffs_ex_post, &
     DOUBLE PRECISION, INTENT(OUT)   :: periods_payoffs_ex_post(num_periods, max_states_period, 4)
     DOUBLE PRECISION, INTENT(OUT)   :: periods_future_payoffs(num_periods, max_states_period, 4)
 
-    DOUBLE PRECISION, INTENT(IN)    :: periods_eps_relevant(:, :, :)
+    DOUBLE PRECISION, INTENT(IN)    :: disturbances_int(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_payoffs_systematic(:, :, :   )
     DOUBLE PRECISION, INTENT(IN)    :: shocks(4, 4)
     DOUBLE PRECISION, INTENT(IN)    :: delta
@@ -141,7 +141,7 @@ SUBROUTINE wrapper_backward_induction(periods_emax, periods_payoffs_ex_post, &
         
     CALL backward_induction(periods_emax, periods_payoffs_ex_post, &
             periods_future_payoffs, num_periods, max_states_period, &
-            periods_eps_relevant, num_draws, states_number_period, &
+            disturbances_int, num_draws, states_number_period, &
             periods_payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
             states_all, delta, is_debug, shocks, level, is_ambiguous, measure, &
             is_interpolated, num_points)

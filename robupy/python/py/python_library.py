@@ -26,7 +26,7 @@ logger = logging.getLogger('ROBUPY_SOLVE')
 '''
 
 
-def backward_induction(num_periods, max_states_period, periods_eps_relevant,
+def backward_induction(num_periods, max_states_period, disturbances_int,
         num_draws, states_number_period, periods_payoffs_systematic, edu_max,
         edu_start, mapping_state_idx, states_all, delta, is_debug, shocks,
         level, is_ambiguous, measure, is_interpolated, num_points):
@@ -49,7 +49,7 @@ def backward_induction(num_periods, max_states_period, periods_eps_relevant,
     for period in range(num_periods - 1, -1, -1):
 
         # Extract auxiliary objects
-        eps_relevant = periods_eps_relevant[period, :, :]
+        eps_relevant = disturbances_int[period, :, :]
         num_states = states_number_period[period]
 
         # Logging.
@@ -284,7 +284,7 @@ def calculate_payoffs_systematic(num_periods, states_number_period, states_all,
 
 
 def simulate_sample(num_agents, states_all, num_periods, mapping_state_idx,
-        periods_payoffs_systematic, periods_eps_relevant, edu_max, edu_start,
+        periods_payoffs_systematic, disturbances_int, edu_max, edu_start,
         periods_emax, delta):
     """ Sample simulation
     """
@@ -316,7 +316,7 @@ def simulate_sample(num_agents, states_all, num_periods, mapping_state_idx,
 
             # Select relevant subset
             payoffs_systematic = periods_payoffs_systematic[period, k, :]
-            disturbances = periods_eps_relevant[period, i, :]
+            disturbances = disturbances_int[period, i, :]
 
             # Get total value of admissible states
             total_payoffs, payoffs_ex_post, _ = get_total_value(period,
