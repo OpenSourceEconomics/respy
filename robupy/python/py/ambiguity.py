@@ -28,7 +28,7 @@ def get_payoffs_ambiguity(num_draws_emax, disturbances_relevant, period, k,
     # latter is included as a special case for debugging purposes. The worst
     # case corresponds to zero.
     if shocks_zero:
-        opt = _handle_shocks_zero()
+        opt = _handle_shocks_zero(is_debug, period, k)
     else:
         opt = _determine_worst_case(num_draws_emax, disturbances_relevant,
                 period, k, payoffs_systematic, edu_max, edu_start,

@@ -36,7 +36,7 @@ from modules.auxiliary import cleanup
 
 
 print('not recompiling')
-compile_package('--fortran --debug', False)
+#compile_package('--fortran --debug', False)
 
 np.random.seed(123)
 
@@ -49,4 +49,5 @@ robupy_obj = solve(robupy_obj)
 data_frame = simulate(robupy_obj)
 
 # TODO: How do deal with shocks_zero in evaluation?
-#evaluate(robupy_obj, data_frame)
+# DO NOT FORTRAN, PYTHON?g
+evaluate(robupy_obj, data_frame)

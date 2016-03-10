@@ -7,15 +7,9 @@
     <list default="true" id="39b3d67a-e664-4cff-aba7-2a9ae5eaeb87" name="Default" comment="">
       <change type="DELETED" beforePath="$PROJECT_DIR$/analysis/working/driver.py" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/.idea/workspace.xml" afterPath="$PROJECT_DIR$/package/development/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/tests/random/modules/battery.py" afterPath="$PROJECT_DIR$/package/development/tests/random/modules/battery.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/working/driver.py" afterPath="$PROJECT_DIR$/package/development/working/driver.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/working/test.robupy.ini" afterPath="$PROJECT_DIR$/package/development/working/test.robupy.ini" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/clsRobupy.py" afterPath="$PROJECT_DIR$/package/robupy/clsRobupy.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/fortran/auxiliary.py" afterPath="$PROJECT_DIR$/package/robupy/fortran/auxiliary.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/fortran/robufort_ambiguity.f90" afterPath="$PROJECT_DIR$/package/robupy/fortran/robufort_ambiguity.f90" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/python/py/ambiguity.py" afterPath="$PROJECT_DIR$/package/robupy/python/py/ambiguity.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/tests/random_init.py" afterPath="$PROJECT_DIR$/package/robupy/tests/random_init.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/tests/tests.py" afterPath="$PROJECT_DIR$/package/robupy/tests/tests.py" />
     </list>
     <ignored path="robustToolbox.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -47,24 +41,12 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="driver.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="driver.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/package/development/working/driver.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="38" column="0" selection-start-line="38" selection-start-column="0" selection-end-line="38" selection-end-column="0" />
+            <state vertical-scroll-proportion="0.87074304">
+              <caret line="51" column="26" selection-start-line="51" selection-start-column="26" selection-end-line="51" selection-end-column="26" />
               <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="ambiguity.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/package/robupy/python/py/ambiguity.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.2775575">
-              <caret line="26" column="0" selection-start-line="26" selection-start-column="0" selection-end-line="28" selection-end-column="31" />
-              <folding>
-                <element signature="e#123#158#0" expanded="true" />
-              </folding>
             </state>
           </provider>
         </entry>
@@ -127,8 +109,8 @@
         <option value="$PROJECT_DIR$/package/development/tests/random/modules/battery.py" />
         <option value="$PROJECT_DIR$/package/robupy/clsRobupy.py" />
         <option value="$PROJECT_DIR$/package/robupy/solve.py" />
-        <option value="$PROJECT_DIR$/package/development/working/driver.py" />
         <option value="$PROJECT_DIR$/package/robupy/python/py/ambiguity.py" />
+        <option value="$PROJECT_DIR$/package/development/working/driver.py" />
       </list>
     </option>
   </component>
@@ -1040,21 +1022,21 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/development/working/driver.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="38" column="0" selection-start-line="38" selection-start-column="0" selection-end-line="38" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/package/robupy/python/py/ambiguity.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.2775575">
-          <caret line="26" column="0" selection-start-line="26" selection-start-column="0" selection-end-line="28" selection-end-column="31" />
+        <state vertical-scroll-proportion="0.35526314">
+          <caret line="30" column="53" selection-start-line="30" selection-start-column="53" selection-end-line="30" selection-end-column="53" />
           <folding>
             <element signature="e#123#158#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/development/working/driver.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.87074304">
+          <caret line="51" column="26" selection-start-line="51" selection-start-column="26" selection-end-line="51" selection-end-column="26" />
+          <folding />
         </state>
       </provider>
     </entry>
