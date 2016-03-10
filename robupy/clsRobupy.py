@@ -3,23 +3,25 @@
 """
 
 # standard library
+import pickle as pkl
 import pandas as pd
 import numpy as np
 
-# project library
-from robupy.clsMeta import MetaCls
+# Special care with derived attributes is required to maintain integrity of
+# the class instance.
+DERIVED_ATTR = ['is_ambiguous', 'is_python', 'min_idx', 'shocks_zero']
 
 
-class RobupyCls(MetaCls):
+class RobupyCls(object):
     """ This class manages the distribution of the use requests throughout
     the toolbox.
     """
-    def __init__(self):
+    def __init__(self, init_dict):
         """ Initialization of hand-crafted class for package management.
         """
         self.attr = dict()
 
-        self.attr['init_dict'] = None
+        self.attr['init_dict'] = init_dict
 
         # Derived attributes
         self.attr['is_interpolated'] = None
@@ -58,15 +60,13 @@ class RobupyCls(MetaCls):
 
         self.attr['version'] = None
 
+        self.attr['min_idx'] = None
+
+        self.attr['measure'] = None
+
         self.attr['delta'] = None
 
         self.attr['store'] = None
-
-        # Auxiliary object
-        self.attr['min_idx'] = None
-
-        # Ambiguity
-        self.attr['measure'] = None
 
         self.attr['level'] = None
 
@@ -91,10 +91,13 @@ class RobupyCls(MetaCls):
 
         self.attr['periods_payoffs_future'] = None
 
+        # Initialization
+        self._update_core_attributes()
+
+        self._update_derived_attributes()
+
         # Status indicator
         self.is_locked = False
-
-        self.is_first = True
 
     def update_model_paras(self, coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
             shocks, shocks_cholesky):
@@ -119,133 +122,206 @@ class RobupyCls(MetaCls):
         # Update class attributes
         self.attr['model_paras'] = model_paras
 
-    ''' Derived attributes
+        # Update derived attributes. This is required as the shocks_zero
+        # indicator depends on the value of shocks. The latter is modified
+        # above.
+        self._update_derived_attributes()
+
+    def get_status(self):
+        """ Get status of class instance.
+        """
+        return self.is_locked
+
+    def lock(self):
+        """ Lock class instance.
+        """
+        # Antibugging.
+        assert (self.get_status() is False)
+
+        # Checks
+        self._check_integrity_attributes()
+
+        self._check_integrity_results()
+
+        # Update class attributes.
+        self.is_locked = True
+
+    def unlock(self):
+        """ Unlock class instance.
+        """
+        # Antibugging
+        assert (self.get_status() is True)
+
+        # Update class attributes
+        self.is_locked = False
+
+    def get_attr(self, key):
+        """ Get attributes.
+        """
+        # Antibugging
+        assert (self.get_status() is True)
+        assert (self._check_key(key) is True)
+
+        # Finishing
+        return self.attr[key]
+
+    def set_attr(self, key, value):
+        """ Get attributes.
+        """
+        # Antibugging
+        assert (self.get_status() is False)
+        assert (self._check_key(key) is True)
+
+        # Finishing
+        self.attr[key] = value
+
+        # Special care is required for the attributes which are derived from
+        # other core attributes. These derived attributes cannot be set and
+        # are checked after each modification. Also, the model
+        # parametrization can only be changed by a special function. The
+        # initialization dictionary can only be set initially.
+        invalid_attr = DERIVED_ATTR + ['model_paras', 'init_dict']
+
+        if key in invalid_attr:
+            raise AssertionError('invalid request')
+
+        # Update derived attributes
+        self._update_derived_attributes()
+
+    def store(self, file_name):
+        """ Store class instance.
+        """
+        # Antibugging
+        assert (self.get_status() is True)
+        assert (isinstance(file_name, str))
+
+        # Store.
+        pkl.dump(self, open(file_name, 'wb'))
+
+    ''' Private methods
     '''
-    def _derived_attributes(self):
-        """ Calculate derived attributes.
+    def _update_core_attributes(self):
+        """ Calculate derived attributes. This is only called when the class
+        is initialized
         """
         # Distribute class attributes
         init_dict = self.attr['init_dict']
 
-        is_first = self.is_first
-
         # Extract information from initialization dictionary and construct
         # auxiliary objects.
-        if is_first:
+        self.attr['is_interpolated'] = init_dict['INTERPOLATION']['apply']
 
-            self.attr['is_interpolated'] = init_dict['INTERPOLATION']['apply']
+        self.attr['num_draws_prob'] = init_dict['ESTIMATION']['draws']
 
-            self.attr['seed_data'] = init_dict['SIMULATION']['seed']
+        self.attr['num_points'] = init_dict['INTERPOLATION']['points']
 
-            self.attr['seed_prob'] = init_dict['ESTIMATION']['seed']
+        self.attr['num_draws_emax'] = init_dict['SOLUTION']['draws']
 
-            self.attr['num_points'] = init_dict['INTERPOLATION']['points']
+        self.attr['num_agents'] = init_dict['SIMULATION']['agents']
 
-            self.attr['num_agents'] = init_dict['SIMULATION']['agents']
+        self.attr['num_periods'] = init_dict['BASICS']['periods']
 
-            self.attr['seed_emax'] = init_dict['SOLUTION']['seed']
+        self.attr['measure'] = init_dict['AMBIGUITY']['measure']
 
-            self.attr['num_periods'] = init_dict['BASICS']['periods']
+        self.attr['edu_start'] = init_dict['EDUCATION']['start']
 
-            self.attr['measure'] = init_dict['AMBIGUITY']['measure']
+        self.attr['seed_data'] = init_dict['SIMULATION']['seed']
 
-            self.attr['edu_start'] = init_dict['EDUCATION']['start']
+        self.attr['seed_prob'] = init_dict['ESTIMATION']['seed']
 
-            self.attr['num_draws_emax'] = init_dict['SOLUTION']['draws']
+        self.attr['file_sim'] = init_dict['SIMULATION']['file']
 
-            self.attr['num_draws_prob'] = init_dict['ESTIMATION']['draws']
+        self.attr['file_est'] = init_dict['ESTIMATION']['file']
 
-            self.attr['version'] = init_dict['PROGRAM']['version']
+        self.attr['seed_emax'] = init_dict['SOLUTION']['seed']
 
-            self.attr['is_debug'] = init_dict['PROGRAM']['debug']
+        self.attr['version'] = init_dict['PROGRAM']['version']
 
-            self.attr['level'] = init_dict['AMBIGUITY']['level']
+        self.attr['is_debug'] = init_dict['PROGRAM']['debug']
 
-            self.attr['edu_max'] = init_dict['EDUCATION']['max']
+        self.attr['edu_max'] = init_dict['EDUCATION']['max']
 
-            self.attr['store'] = init_dict['SOLUTION']['store']
+        self.attr['level'] = init_dict['AMBIGUITY']['level']
 
-            self.attr['delta'] = init_dict['BASICS']['delta']
+        self.attr['store'] = init_dict['SOLUTION']['store']
 
-            self.attr['file_sim'] = init_dict['SIMULATION']['file']
+        self.attr['delta'] = init_dict['BASICS']['delta']
 
-            self.attr['file_est'] = init_dict['ESTIMATION']['file']
+        # Initialize model parameters
+        self.attr['model_paras'] = dict()
 
-            # Initialize model parameters
-            if self.attr['model_paras'] is None:
+        self.attr['model_paras']['coeffs_a'] = [init_dict['A']['int']]
+        self.attr['model_paras']['coeffs_a'] += init_dict['A']['coeff']
 
-                self.attr['model_paras'] = dict()
+        self.attr['model_paras']['coeffs_b'] = [init_dict['B']['int']]
+        self.attr['model_paras']['coeffs_b'] += init_dict['B']['coeff']
 
-                self.attr['model_paras']['coeffs_a'] = [init_dict['A']['int']]
-                self.attr['model_paras']['coeffs_a'] += init_dict['A']['coeff']
+        self.attr['model_paras']['coeffs_edu'] = \
+            [init_dict['EDUCATION']['int']]
+        self.attr['model_paras']['coeffs_edu'] += \
+            init_dict['EDUCATION']['coeff']
 
-                self.attr['model_paras']['coeffs_b'] = [init_dict['B']['int']]
-                self.attr['model_paras']['coeffs_b'] += init_dict['B']['coeff']
+        self.attr['model_paras']['coeffs_home'] = \
+            [init_dict['HOME']['int']]
 
-                self.attr['model_paras']['coeffs_edu'] = \
-                    [init_dict['EDUCATION']['int']]
-                self.attr['model_paras']['coeffs_edu'] += \
-                    init_dict['EDUCATION']['coeff']
+        self.attr['model_paras']['shocks'] = init_dict['SHOCKS']
 
-                self.attr['model_paras']['coeffs_home'] = \
-                    [init_dict['HOME']['int']]
+        # Carry the Cholesky decomposition as part of the model
+        # parameters.
+        shocks = self.attr['model_paras']['shocks']
+        if np.count_nonzero(shocks) == 0:
+            shocks_cholesky = np.zeros((4, 4))
+        else:
+            shocks_cholesky = np.linalg.cholesky(shocks)
+        self.attr['model_paras']['shocks_cholesky'] = shocks_cholesky
 
-                self.attr['model_paras']['shocks'] = init_dict['SHOCKS']
+        # Ensure that all elements in the dictionary are of the same
+        # type.
+        keys = ['coeffs_a', 'coeffs_b', 'coeffs_edu', 'coeffs_home']
+        keys += ['shocks']
+        for key_ in keys:
+            self.attr['model_paras'][key_] = \
+                np.array(self.attr['model_paras'][key_])
 
-                # Carry the Cholesky decomposition as part of the model
-                # parameters.
-                shocks = self.attr['model_paras']['shocks']
-                if np.count_nonzero(shocks) == 0:
-                    shocks_cholesky = np.zeros((4, 4))
-                else:
-                    shocks_cholesky = np.linalg.cholesky(shocks)
-                self.attr['model_paras']['shocks_cholesky'] = shocks_cholesky
+        # Delete the duplicated information from the initialization
+        # dictionary. Special treatment of EDUCATION is required as it
+        # contains other information about education than just the
+        # payoff parametrization.
+        del init_dict['EDUCATION']['int']
+        del init_dict['EDUCATION']['coeff']
 
-                # Ensure that all elements in the dictionary are of the same
-                # type.
-                keys = ['coeffs_a', 'coeffs_b', 'coeffs_edu', 'coeffs_home']
-                keys += ['shocks']
-                for key_ in keys:
-                    self.attr['model_paras'][key_] = \
-                        np.array(self.attr['model_paras'][key_])
+        for key_ in ['A', 'B', 'HOME', 'SHOCKS']:
+            del init_dict[key_]
 
-                # Delete the duplicated information from the initialization
-                # dictionary. Special treatment of EDUCATION is required as it
-                # contains other information about education than just the
-                # payoff parametrization.
-                del init_dict['EDUCATION']['int']
-                del init_dict['EDUCATION']['coeff']
+    def _update_derived_attributes(self):
+        """ Update derived attributes.
+        """
 
-                for key_ in ['A', 'B', 'HOME', 'SHOCKS']:
-                    del init_dict[key_]
+        # Distribute class attributes
+        model_paras = self.attr['model_paras']
 
-            # Auxiliary objects
-            model_paras = self.attr['model_paras']
+        num_periods = self.attr['num_periods']
 
-            num_periods = self.attr['num_periods']
+        edu_start = self.attr['edu_start']
 
-            edu_start = self.attr['edu_start']
+        edu_max = self.attr['edu_max']
 
-            edu_max = self.attr['edu_max']
+        # Extract auxiliary information
+        shocks = model_paras['shocks']
 
-            shocks = model_paras['shocks']
+        # Update derived attributes
+        self.attr['min_idx'] = min(num_periods, (edu_max - edu_start + 1))
 
-            self.attr['min_idx'] = min(num_periods, (edu_max - edu_start + 1))
+        self.attr['shocks_zero'] = (np.count_nonzero(shocks) == 0)
 
-            self.attr['shocks_zero'] = (np.count_nonzero(shocks) == 0)
+        self.attr['is_ambiguous'] = (self.attr['level'] > 0.00)
 
-            self.attr['is_ambiguous'] = (self.attr['level'] > 0.00)
+        self.attr['is_python'] = (self.attr['version'] == 'PYTHON')
 
-            self.attr['is_python'] = (self.attr['version'] == 'PYTHON')
-
-    def _check_integrity(self):
+    def _check_integrity_attributes(self):
         """ Check integrity of class instance. This testing is done the first
         time the class is locked and if the package is running in debug mode.
         """
-        # Check applicability
-        if not self.is_first:
-            return
-
         # Distribute class attributes
         is_interpolated = self.attr['is_interpolated']
 
@@ -285,8 +361,6 @@ class RobupyCls(MetaCls):
 
         level = self.attr['level']
 
-        is_first = self.is_first
-
         # Auxiliary objects
         shocks = model_paras['shocks']
 
@@ -308,9 +382,6 @@ class RobupyCls(MetaCls):
             assert (np.isfinite(seed))
             assert (isinstance(seed, int))
             assert (seed > 0)
-
-        # First
-        assert (is_first in [True, False])
 
         # Number of agents
         assert (np.isfinite(num_agents))
@@ -370,12 +441,6 @@ class RobupyCls(MetaCls):
         # Simulation of S-ML
         assert (isinstance(num_draws_prob, int))
         assert (num_draws_prob > 0)
-
-        # Check integrity of results as well
-        self._check_integrity_results()
-
-        # Update status indicator
-        self.is_first = False
 
     def _check_integrity_results(self):
         """ This methods check the integrity of the results.
@@ -553,3 +618,12 @@ class RobupyCls(MetaCls):
                         # high education.
                         if not np.isfinite(periods_payoffs_future[period, k, 2]):
                             assert (states_all[period, k][2] == edu_max - edu_start)
+
+    def _check_key(self, key):
+        """ Check that key is present.
+        """
+        # Check presence
+        assert (key in self.attr.keys())
+
+        # Finishing.
+        return True

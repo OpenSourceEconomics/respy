@@ -59,9 +59,7 @@ def read(file_):
     _check_integrity_read(dict_)
 
     # Construct container
-    robupy_obj = RobupyCls()
-
-    robupy_obj.set_attr('init_dict', dict_)
+    robupy_obj = RobupyCls(dict_)
 
     robupy_obj.lock()
 

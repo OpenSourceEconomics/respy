@@ -1344,13 +1344,9 @@ def test_102():
 
             data_frame = simulate(robupy_obj)
 
-            # TODO: I need to revisit the structure of original and derived
-            # attributes in the class. Then revisit this part.
             robupy_obj.unlock()
 
             robupy_obj.set_attr('version',  version)
-
-            robupy_obj.set_attr('is_python',  version == 'PYTHON')
 
             robupy_obj.lock()
 
