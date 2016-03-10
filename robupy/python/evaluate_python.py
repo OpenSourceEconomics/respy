@@ -68,19 +68,19 @@ def evaluate_python(robupy_obj, data_frame):
     data_array = data_frame.as_matrix()
 
     # Distribute model parameters
-    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, eps_cholesky = \
+    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, shocks_cholesky = \
         distribute_model_paras(model_paras, is_debug)
 
     # Draw standard normal deviates for S-ML approach
     # TODO: Rename
     standard_deviates = create_disturbances(num_periods, num_draws_prob,
-        seed_prob, is_debug, 'prob', eps_cholesky, is_ambiguous)
+        seed_prob, is_debug, 'prob', shocks_cholesky, is_ambiguous)
 
     # Get the relevant set of disturbances. These are standard normal draws
     # in the case of an ambiguous world. This function is located outside the
     # actual bare solution algorithm to ease testing across implementations.
     disturbances_emax = create_disturbances(num_periods, num_draws_emax,
-        seed_emax, is_debug, 'emax', eps_cholesky, is_ambiguous)
+        seed_emax, is_debug, 'emax', shocks_cholesky, is_ambiguous)
 
     # Solve model for given parametrization
     args = solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
@@ -95,7 +95,7 @@ def evaluate_python(robupy_obj, data_frame):
     # Evaluate the criterion function
     likl = _evaluate_python_bare(mapping_state_idx, periods_emax,
                 periods_payoffs_systematic, states_all,
-                shocks, edu_max, delta, edu_start, num_periods,  eps_cholesky, num_agents, num_draws_prob,
+                shocks, edu_max, delta, edu_start, num_periods,  shocks_cholesky, num_agents, num_draws_prob,
                 data_array, standard_deviates, is_python)
 
     # Finishing
@@ -107,7 +107,7 @@ def evaluate_python(robupy_obj, data_frame):
 
 def _evaluate_python_bare(mapping_state_idx, periods_emax,
         periods_payoffs_systematic, states_all, shocks,
-        edu_max, delta, edu_start, num_periods,  eps_cholesky, num_agents,
+        edu_max, delta, edu_start, num_periods,  shocks_cholesky, num_agents,
         num_draws_prob, data_array, standard_deviates, is_python):
     """ This function is required to ensure a full analogy to F2PY and
     FORTRAN implementations. The first part of the interface is identical to
@@ -117,7 +117,7 @@ def _evaluate_python_bare(mapping_state_idx, periods_emax,
     if is_python:
         likl = evaluate_criterion_function(mapping_state_idx, periods_emax,
             periods_payoffs_systematic, states_all, shocks, edu_max, delta,
-            edu_start, num_periods, eps_cholesky, num_agents, num_draws_prob,
+            edu_start, num_periods, shocks_cholesky, num_agents, num_draws_prob,
             data_array, standard_deviates)
 
     else:
@@ -125,7 +125,7 @@ def _evaluate_python_bare(mapping_state_idx, periods_emax,
         likl = f2py_library.wrapper_evaluate_criterion_function(
             mapping_state_idx, periods_emax, periods_payoffs_systematic,
             states_all, shocks, edu_max, delta, edu_start, num_periods,
-            eps_cholesky, num_agents, num_draws_prob, data_array, standard_deviates)
+            shocks_cholesky, num_agents, num_draws_prob, data_array, standard_deviates)
 
     # TODO: CHECKS ...
     # Finishing
@@ -135,7 +135,7 @@ def _evaluate_python_bare(mapping_state_idx, periods_emax,
 # Solve the model for given parametrization
 def evaluate_criterion_function(mapping_state_idx, periods_emax,
         periods_payoffs_systematic, states_all, shocks, edu_max, delta,
-        edu_start, num_periods, eps_cholesky, num_agents, num_draws_prob,
+        edu_start, num_periods, shocks_cholesky, num_agents, num_draws_prob,
         data_array, standard_deviates):
 
     # Initialize auxiliary objects
@@ -179,14 +179,14 @@ def evaluate_criterion_function(mapping_state_idx, periods_emax,
                 if choice == 1:
                     deviates[:, idx] = dist / np.sqrt(shocks[idx, idx])
                 else:
-                    deviates[:, idx] = (dist - eps_cholesky[idx, 0] *
-                        deviates[:, 0]) / eps_cholesky[idx, idx]
+                    deviates[:, idx] = (dist - shocks_cholesky[idx, 0] *
+                        deviates[:, 0]) / shocks_cholesky[idx, idx]
 
                 # Record contribution of wage observation.
                 likl_contrib *= norm.pdf(dist, 0.0, np.sqrt(shocks[idx, idx]))
             # Determine conditional deviates. These correspond to the
             # unconditional draws if the agent did not work in the labor market.
-            conditional_deviates = np.dot(eps_cholesky, deviates.T).T
+            conditional_deviates = np.dot(shocks_cholesky, deviates.T).T
 
             # Simulate the conditional distribution of alternative-specific
             # value functions and determine the choice probabilities.

@@ -157,7 +157,7 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
                 coeffs_edu, edu_start, edu_max, coeffs_home, shocks, & 
-                eps_cholesky, num_draws_emax, seed_emax, seed_prob, &
+                shocks_cholesky, num_draws_emax, seed_emax, seed_prob, &
                 num_agents, seed_data, is_debug, is_zero, is_interpolated, & 
                 num_points, min_idx, is_ambiguous, measure, request, & 
                 num_draws_prob)
@@ -182,7 +182,7 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
     INTEGER(our_int), INTENT(OUT)   :: edu_max
     INTEGER(our_int), INTENT(OUT)   :: min_idx
 
-    REAL(our_dble), INTENT(OUT)     :: eps_cholesky(4, 4)
+    REAL(our_dble), INTENT(OUT)     :: shocks_cholesky(4, 4)
     REAL(our_dble), INTENT(OUT)     :: coeffs_home(1)
     REAL(our_dble), INTENT(OUT)     :: coeffs_edu(3)
     REAL(our_dble), INTENT(OUT)     :: shocks(4, 4)
@@ -274,22 +274,22 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
     ! Construct auxiliary objects. The case distinction align the reasoning
     ! between the PYTHON/F2PY implementations.
     IF (is_zero) THEN
-        eps_cholesky = zero_dble
+        shocks_cholesky = zero_dble
     ELSE
-        CALL cholesky(eps_cholesky, shocks)
+        CALL cholesky(shocks_cholesky, shocks)
     END IF
 
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE create_disturbances(disturbances, num_periods, num_draws_emax, & 
-                seed, is_debug, which, eps_cholesky, is_ambiguous) 
+                seed, is_debug, which, shocks_cholesky, is_ambiguous)
 
     !/* external objects        */
 
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)  :: disturbances(:, :, :)
 
-    REAL(our_dble), INTENT(IN)                  :: eps_cholesky(4, 4)
+    REAL(our_dble), INTENT(IN)                  :: shocks_cholesky(4, 4)
 
     INTEGER(our_int), INTENT(IN)                :: num_draws_emax
     INTEGER(our_int), INTENT(IN)                :: num_periods
@@ -367,7 +367,7 @@ SUBROUTINE create_disturbances(disturbances, num_periods, num_draws_emax, &
             DO i = 1, num_draws_emax
             
                 disturbances(period, i:i, :) = &
-                    TRANSPOSE(MATMUL(eps_cholesky, TRANSPOSE(disturbances(period, i:i, :))))
+                    TRANSPOSE(MATMUL(shocks_cholesky, TRANSPOSE(disturbances(period, i:i, :))))
             
             END DO
 
@@ -409,7 +409,7 @@ SUBROUTINE create_disturbances(disturbances, num_periods, num_draws_emax, &
             DO i = 1, num_draws_emax
             
                 disturbances(period, i:i, :) = &
-                    TRANSPOSE(MATMUL(eps_cholesky, TRANSPOSE(disturbances(period, i:i, :))))
+                    TRANSPOSE(MATMUL(shocks_cholesky, TRANSPOSE(disturbances(period, i:i, :))))
 
             END DO
 
@@ -502,7 +502,7 @@ PROGRAM robufort
     REAL(our_dble), ALLOCATABLE     :: periods_emax(:, :)
     REAL(our_dble), ALLOCATABLE     :: data_array(:, :)
 
-    REAL(our_dble)                  :: eps_cholesky(4, 4)
+    REAL(our_dble)                  :: shocks_cholesky(4, 4)
     REAL(our_dble)                  :: coeffs_home(1)
     REAL(our_dble)                  :: coeffs_edu(3)
     REAL(our_dble)                  :: shocks(4, 4)
@@ -528,7 +528,7 @@ PROGRAM robufort
     ! clsRobupy instance that carries the model parametrization for the 
     ! PYTHON/F2PY implementations.
     CALL read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
-            coeffs_edu, edu_start, edu_max, coeffs_home, shocks, eps_cholesky, & 
+            coeffs_edu, edu_start, edu_max, coeffs_home, shocks, shocks_cholesky, &
             num_draws_emax, seed_emax, seed_prob, num_agents, &
             seed_data, is_debug, is_zero, is_interpolated, num_points, &
             min_idx, is_ambiguous, measure, request, num_draws_prob)
@@ -537,7 +537,7 @@ PROGRAM robufort
     ! Carlo integration of the EMAX. For is_debugging purposes, these might also be 
     ! read in from disk or set to zero/one.   
     CALL create_disturbances(disturbances_emax, num_periods, num_draws_emax, &
-            seed_emax, is_debug, 'emax', eps_cholesky, is_ambiguous)
+            seed_emax, is_debug, 'emax', shocks_cholesky, is_ambiguous)
 
     ! Execute on request.
     IF (request == 'solve') THEN
@@ -557,7 +557,7 @@ PROGRAM robufort
         ! Carlo integration of the choice probabilities. For is_debugging 
         ! purposes, these might also be read in from disk or set to zero/one.   
         CALL create_disturbances(disturbances_prob, num_periods, & 
-                num_draws_prob, seed_prob, is_debug, 'prob', eps_cholesky, & 
+                num_draws_prob, seed_prob, is_debug, 'prob', shocks_cholesky, &
                 is_ambiguous)
 
         ! Read observed dataset from disk
@@ -574,7 +574,7 @@ PROGRAM robufort
 
         CALL evaluate_criterion_function(eval, mapping_state_idx, &
                 periods_emax, periods_payoffs_systematic, states_all, shocks, & 
-                edu_max, delta, edu_start, num_periods, eps_cholesky, & 
+                edu_max, delta, edu_start, num_periods, shocks_cholesky, &
                 num_agents, num_draws_prob, data_array, disturbances_prob)
 
     END IF

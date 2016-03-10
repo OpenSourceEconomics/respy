@@ -190,14 +190,14 @@ def test_86():
         level = robupy_obj.get_attr('level')
 
         # Auxiliary objects
-        eps_cholesky = model_paras['eps_cholesky']
+        shocks_cholesky = model_paras['shocks_cholesky']
 
         # Add some additional objects required for the interfaces to the
         # functions.
         period = np.random.choice(range(num_periods))
 
         disturbances_emax = create_disturbances(num_periods, num_draws_emax,
-            seed_prob, is_debug, 'emax', eps_cholesky, is_ambiguous)
+            seed_prob, is_debug, 'emax', shocks_cholesky, is_ambiguous)
 
         disturbances_relevant = disturbances_emax[period, :, :]
 
@@ -1268,12 +1268,12 @@ def test_101():
         level = robupy_obj.get_attr('level')
 
         # Distribute model parameters
-        coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, eps_cholesky = \
+        coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, shocks_cholesky = \
              distribute_model_paras(model_paras, is_debug)
 
         # Get set of disturbances
         disturbances_emax = create_disturbances(num_periods, num_draws_emax,
-            seed_emax, is_debug, 'emax', eps_cholesky, is_ambiguous)
+            seed_emax, is_debug, 'emax', shocks_cholesky, is_ambiguous)
 
         # Align interpolation grid
         max_states_period = write_interpolation_grid('test.robupy.ini')

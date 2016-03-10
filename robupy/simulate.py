@@ -56,14 +56,14 @@ def simulate(robupy_obj):
     file_sim = robupy_obj.get_attr('file_sim')
 
     # Auxiliary objects
-    eps_cholesky = model_paras['eps_cholesky']
+    shocks_cholesky = model_paras['shocks_cholesky']
 
     seed_data = robupy_obj.get_attr('seed_data')
 
     # Draw disturbances for the simulation.
     disturbances_data = create_disturbances(num_periods, num_agents, seed_data,
                                            is_debug, 'sims',
-        eps_cholesky, is_ambiguous)
+        shocks_cholesky, is_ambiguous)
 
     # Simulate a dataset with the results from the solution and write out the
     # dataset to a text file. In addition a file summarizing the dataset is

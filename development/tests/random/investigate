@@ -23,7 +23,7 @@ cleanup()
 
 ''' Request
 '''
-label, seed = '101', 23906
+label, seed = '101', 9803
 
 ''' Error Reproduction
 '''

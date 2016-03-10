@@ -34,7 +34,7 @@ MODULE robufort_library
 !*******************************************************************************
 SUBROUTINE evaluate_criterion_function(rslt, mapping_state_idx, periods_emax, & 
                 periods_payoffs_systematic, states_all, shocks, edu_max, & 
-                delta, edu_start, num_periods, eps_cholesky, num_agents, & 
+                delta, edu_start, num_periods, shocks_cholesky, num_agents, &
                 num_draws_prob, data_array, standard_deviates)
 
     !/* external objects        */
@@ -51,7 +51,7 @@ SUBROUTINE evaluate_criterion_function(rslt, mapping_state_idx, periods_emax, &
     INTEGER(our_int), INTENT(IN)    :: edu_max
 
     REAL(our_dble), INTENT(IN)      :: standard_deviates(:, :, :)
-    REAL(our_dble), INTENT(IN)      :: eps_cholesky(:, :)
+    REAL(our_dble), INTENT(IN)      :: shocks_cholesky(:, :)
     REAL(our_dble), INTENT(IN)      :: data_array(:, :)
     REAL(our_dble), INTENT(IN)      :: shocks(:, :)
     REAL(our_dble), INTENT(IN)      :: delta 
@@ -145,7 +145,7 @@ SUBROUTINE evaluate_criterion_function(rslt, mapping_state_idx, periods_emax, &
                 IF (choice == 1) THEN
                     deviates(:, idx) = tiny / sqrt(shocks(idx, idx))
                 ELSE
-                    deviates(:, idx) = (tiny - eps_cholesky(idx, 1) * deviates(:, 1)) / eps_cholesky(idx, idx)
+                    deviates(:, idx) = (tiny - shocks_cholesky(idx, 1) * deviates(:, 1)) / shocks_cholesky(idx, idx)
                 END IF
                 
                 ! Record contribution of wage observation. REPLACE 0.0
@@ -157,7 +157,7 @@ SUBROUTINE evaluate_criterion_function(rslt, mapping_state_idx, periods_emax, &
             ! unconditional draws if the agent did not work in the labor market.
             DO s = 1, num_draws_prob
                 conditional_deviates(s, :) = & 
-                    MATMUL(deviates(s, :), TRANSPOSE(eps_cholesky))
+                    MATMUL(deviates(s, :), TRANSPOSE(shocks_cholesky))
             END DO
 
             counts = 0

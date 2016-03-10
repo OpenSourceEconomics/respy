@@ -7,7 +7,7 @@
 !*******************************************************************************
 SUBROUTINE wrapper_evaluate_criterion_function(rslt, mapping_state_idx, &
             periods_emax, periods_payoffs_systematic, states_all, shocks, &
-            edu_max, delta, edu_start, num_periods, eps_cholesky, num_agents, & 
+            edu_max, delta, edu_start, num_periods, shocks_cholesky, num_agents, &
             num_draws_prob, data_array, standard_deviates)
 
     !/* external libraries      */
@@ -32,7 +32,7 @@ SUBROUTINE wrapper_evaluate_criterion_function(rslt, mapping_state_idx, &
 
     DOUBLE PRECISION, INTENT(IN)    :: periods_payoffs_systematic(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: standard_deviates(:, :, :)
-    DOUBLE PRECISION, INTENT(IN)    :: eps_cholesky(:, :)
+    DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_emax(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: data_array(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: shocks(:, :)
@@ -44,7 +44,7 @@ SUBROUTINE wrapper_evaluate_criterion_function(rslt, mapping_state_idx, &
    
     CALL evaluate_criterion_function(rslt, mapping_state_idx, periods_emax, & 
             periods_payoffs_systematic, states_all, shocks, edu_max, delta, & 
-            edu_start, num_periods, eps_cholesky, num_agents, num_draws_prob, &
+            edu_start, num_periods, shocks_cholesky, num_agents, num_draws_prob, &
             data_array, standard_deviates)
 
 END SUBROUTINE

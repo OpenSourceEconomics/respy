@@ -47,7 +47,7 @@ def write_interpolation_grid(file_name):
 
     # Determine maximum number of states
     _, states_number_period, _ = _create_state_space(num_periods, edu_start,
-                                    is_python, edu_max, min_idx)
+                                    edu_max, min_idx, is_python)
     max_states_period = max(states_number_period)
 
     # Initialize container
