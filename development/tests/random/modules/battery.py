@@ -83,8 +83,8 @@ def test_85():
     # Just making sure that it also works for this special case. Note that
     # this special case is currently only working in the risk case.
     if np.random.choice([True, False, False, False]):
-        constraints['level'] = 0.00
-        constraints['eps_zero'] = True
+        constraints['shocks_zero'] = True
+
 
     # Generate random initialization file.
     init_dict = generate_init(constraints)
@@ -429,7 +429,7 @@ def test_89():
     constraints['apply'] = False
     constraints['level'] = 0.00
     constraints['periods'] = np.random.random_integers(2, 6)
-    constraints['eps_zero'] = True
+    constraints['shocks_zero'] = True
 
     # Initialize request
     init_dict = generate_random_dict(constraints)
@@ -525,7 +525,7 @@ def test_91():
         constraints = dict()
         constraints['level'] = 0.00
         constraints['delta'] = 0.00
-        constraints['eps_zero'] = True
+        constraints['shocks_zero'] = True
         constraints['periods'] = np.random.random_integers(2, 5)
 
         # Ex post payoffs are not available for periods where interpolation
@@ -1081,7 +1081,7 @@ def test_98():
     constraints = dict()
     constraints['edu'] = (10, 20)
     constraints['level'] = 0.00
-    constraints['eps_zero'] = True
+    constraints['shocks_zero'] = True
 
     version = np.random.choice(['FORTRAN', 'F2PY', 'PYTHON'])
     constraints['version'] = version
@@ -1150,7 +1150,7 @@ def test_99():
     # this special case is currently only working in the risk case.
     if np.random.choice([True, False, False, False]):
         constraints['level'] = 0.00
-        constraints['eps_zero'] = True
+        constraints['shocks_zero'] = True
 
     # Generate random initialization file.
     init_dict = generate_random_dict(constraints)

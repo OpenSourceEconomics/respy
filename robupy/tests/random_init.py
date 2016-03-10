@@ -222,11 +222,11 @@ def generate_random_dict(constraints=None):
         dict_['BASICS']['delta'] = delta
 
     # No random component to payoffs
-    if 'eps_zero' in constraints.keys():
+    if 'shocks_zero' in constraints.keys():
         # Checks
-        assert (constraints['eps_zero'] in [True, False])
+        assert (constraints['shocks_zero'] in [True, False])
         # Replace in initialization files
-        if constraints['eps_zero']:
+        if constraints['shocks_zero']:
             dict_['SHOCKS'] = np.zeros((4, 4))
 
     # Number of agents

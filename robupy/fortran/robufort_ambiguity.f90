@@ -69,7 +69,9 @@ SUBROUTINE get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
     REAL(our_dble)                  :: x_start(2)
     REAL(our_dble)                  :: ftol
     REAL(our_dble)                  :: tiny
-    
+
+    LOGICAL                         :: shocks_zero
+
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
@@ -80,12 +82,26 @@ SUBROUTINE get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
     ftol = 1e-06_our_dble
     tiny = 1.4901161193847656e-08
 
-    ! Determine worst case scenario
-    CALL slsqp_robufort(x_internal, x_start, maxiter, ftol, tiny, &
-            num_draws_emax, disturbances_relevant, period, k, & 
-            payoffs_systematic, edu_max, edu_start, mapping_state_idx, & 
-            states_all, num_periods, periods_emax, delta, is_debug, shocks, & 
-            level)
+    ! Check for special case
+    shocks_zero = ALL(shocks .EQ. zero_dble)
+
+    ! Determine the worst case, special attention to zero variability. The
+    ! latter is included as a special case for debugging purposes. The worst
+    ! case corresponds to zero.
+
+    IF (shocks_zero) THEN
+
+        CALL handle_shocks_zero(x_internal, is_debug, period, k)
+    
+    ELSE
+
+        CALL slsqp_robufort(x_internal, x_start, maxiter, ftol, tiny, &
+                num_draws_emax, disturbances_relevant, period, k, & 
+                payoffs_systematic, edu_max, edu_start, mapping_state_idx, & 
+                states_all, num_periods, periods_emax, delta, is_debug, & 
+                shocks, level)
+
+    END IF
 
     ! Transform disturbances
     CALL transform_disturbances_ambiguity(disturbances_relevant_emax, & 
@@ -96,6 +112,26 @@ SUBROUTINE get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
             num_periods, num_draws_emax, period, k, & 
             disturbances_relevant_emax, payoffs_systematic, edu_max, & 
             edu_start, periods_emax, states_all, mapping_state_idx, delta)
+
+END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE handle_shocks_zero(x_internal, is_debug, period, k)
+
+    !/* external objects        */
+
+    REAL(our_dble), INTENT(INOUT)       :: x_internal(2)
+
+    INTEGER(our_int), INTENT(IN)        :: period
+    INTEGER(our_int), INTENT(IN)        :: k
+
+    LOGICAL, INTENT(IN)                 :: is_debug
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+
+    CALL logging_ambiguity(x_internal, zero_dble, 10, period, k, .FALSE.)
 
 END SUBROUTINE
 !*******************************************************************************
@@ -472,8 +508,10 @@ SUBROUTINE logging_ambiguity(x_internal, div, mode, period, k, is_success)
         message_optimizer = 'Rank-deficient equality constraint subproblem HFTI'
     ELSEIF (mode == 8) THEN
         message_optimizer = 'Positive directional derivative for linesearch'
-    ELSEIF (mode == 8) THEN
+    ELSEIF (mode == 9) THEN
         message_optimizer = 'Iteration limit exceeded'
+    ELSEIF (mode == 10) THEN
+        message_optimizer = 'No random variation in shocks.'
     END IF
 
     ! Write to file
@@ -482,13 +520,13 @@ SUBROUTINE logging_ambiguity(x_internal, div, mode, period, k, is_success)
         1000 FORMAT(A,i7,A,i7)
         1010 FORMAT(A17,(2(1x,f10.4)))
         WRITE(1, 1000) " PERIOD", period, "  STATE", k
-        WRITE(1, *) ""
+        WRITE(1, *)  
         WRITE(1, 1010) "    Result       ", x_internal
         WRITE(1, 1010) "    Divergence   ", div
-        WRITE(1, *) ""
+        WRITE(1, *)  
         WRITE(1, *) "   Success ", message_success
         WRITE(1, *) "   Message ", message_optimizer
-        WRITE(1, *) ""
+        WRITE(1, *) 
 
     CLOSE(1)
 

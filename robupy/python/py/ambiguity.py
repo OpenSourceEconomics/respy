@@ -21,10 +21,19 @@ def get_payoffs_ambiguity(num_draws_emax, disturbances_relevant, period, k,
         level, measure):
     """ Get worst case
     """
-    opt = _determine_worst_case(num_draws_emax, disturbances_relevant, period,
-            k, payoffs_systematic, edu_max, edu_start, mapping_state_idx,
-            states_all, num_periods, periods_emax, delta, is_debug, shocks,
-            level, measure)
+    # Check for special case
+    shocks_zero = (np.count_nonzero(shocks) == 0)
+
+    # Determine the worst case, special attention to zero variability. The
+    # latter is included as a special case for debugging purposes. The worst
+    # case corresponds to zero.
+    if shocks_zero:
+        opt = _handle_shocks_zero()
+    else:
+        opt = _determine_worst_case(num_draws_emax, disturbances_relevant,
+                period, k, payoffs_systematic, edu_max, edu_start,
+                mapping_state_idx, states_all, num_periods, periods_emax,
+                delta, is_debug, shocks, level, measure)
 
     # Transformation of standard normal deviates to relevant distributions.
     disturbances_relevant_emax = \
@@ -43,8 +52,28 @@ def get_payoffs_ambiguity(num_draws_emax, disturbances_relevant, period, k,
     # Finishing
     return simulated, payoffs_ex_post, payoffs_future
 
-''' Private functions
+''' Auxiliary functions
 '''
+
+
+def _handle_shocks_zero(is_debug, period, k):
+    """ This function ensures that the special case of zero variability is
+    handled with care. This is used for debugging purposes.
+    """
+    # Set up mock object.
+    opt = dict()
+
+    opt['message'] = 'No random variation in shocks.'
+    opt['success'] = False
+    opt['x'] = np.zeros(2)
+    opt['fun'] = 0.0
+
+    # Write information to log file.
+    if is_debug:
+        _write_result(period, k, opt, 0.0)
+
+    # Finishing
+    return opt
 
 
 def _determine_worst_case(num_draws_emax, disturbances_relevant, period, k,

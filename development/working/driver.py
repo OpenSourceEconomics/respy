@@ -48,4 +48,5 @@ robupy_obj = solve(robupy_obj)
 
 data_frame = simulate(robupy_obj)
 
-evaluate(robupy_obj, data_frame)
+# TODO: How do deal with shocks_zero in evaluation?
+#evaluate(robupy_obj, data_frame)

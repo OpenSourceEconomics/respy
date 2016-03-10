@@ -231,7 +231,7 @@ class RobupyCls(MetaCls):
 
             self.attr['min_idx'] = min(num_periods, (edu_max - edu_start + 1))
 
-            self.attr['eps_zero'] = (np.count_nonzero(shocks) == 0)
+            self.attr['shocks_zero'] = (np.count_nonzero(shocks) == 0)
 
             self.attr['is_ambiguous'] = (self.attr['level'] > 0.00)
 
@@ -274,7 +274,7 @@ class RobupyCls(MetaCls):
 
         is_debug = self.attr['is_debug']
 
-        eps_zero = self.attr['eps_zero']
+        shocks_zero = self.attr['shocks_zero']
 
         measure = self.attr['measure']
 
@@ -303,8 +303,6 @@ class RobupyCls(MetaCls):
         # Constraints
         if is_ambiguous and version in ['F2PY', 'FORTRAN']:
             assert (measure in ['kl'])
-        if is_ambiguous:
-            assert (eps_zero is False)
 
         # Seeds
         for seed in [seed_emax, seed_data, seed_prob]:
