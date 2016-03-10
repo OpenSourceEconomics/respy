@@ -174,8 +174,6 @@ def evaluate_criterion_function(mapping_state_idx, periods_emax,
                 # distribution.
                 dist = np.log(data_array[j, 3].astype(float)) - \
                         np.log(payoffs_systematic[idx])
-
-                print(dist)
                 # Construct independent normal draws implied by the observed
                 # wages.
                 if choice == 1:
