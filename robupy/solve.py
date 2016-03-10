@@ -135,19 +135,19 @@ def _summarize_ambiguity(robupy_obj):
         assert (isinstance(list_internal, list))
 
         # Get information
-        is_empt_internal = (len(list_internal) == 0)
+        is_empty_internal = (len(list_internal) == 0)
 
-        if not is_empt_internal:
+        if not is_empty_internal:
             is_block_internal = list_internal[0].isupper()
         else:
             is_block_internal = False
 
         # Antibugging
         assert (is_block_internal in [True, False])
-        assert (is_empt_internal in [True, False])
+        assert (is_empty_internal in [True, False])
 
         # Finishing
-        return is_empt_internal, is_block_internal
+        return is_empty_internal, is_block_internal
 
     # Distribute class attributes
     num_periods = robupy_obj.get_attr('num_periods')
