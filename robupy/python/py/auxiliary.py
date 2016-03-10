@@ -19,7 +19,7 @@ def simulate_emax(num_periods, num_draws_emax, period, k, eps_relevant_emax,
     """ Simulate expected future value.
     """
     # Initialize containers
-    emax_simulated, payoffs_ex_post, future_payoffs = 0.0, 0.0, 0.0
+    emax_simulated, payoffs_ex_post, payoffs_future = 0.0, 0.0, 0.0
 
     # Calculate maximum value
     for i in range(num_draws_emax):
@@ -28,7 +28,7 @@ def simulate_emax(num_periods, num_draws_emax, period, k, eps_relevant_emax,
         disturbances = eps_relevant_emax[i, :]
 
         # Get total value of admissible states
-        total_payoffs, payoffs_ex_post, future_payoffs = get_total_value(period,
+        total_payoffs, payoffs_ex_post, payoffs_future = get_total_value(period,
             num_periods, delta, payoffs_systematic, disturbances, edu_max,
             edu_start, mapping_state_idx, periods_emax, k, states_all)
 
@@ -42,7 +42,7 @@ def simulate_emax(num_periods, num_draws_emax, period, k, eps_relevant_emax,
     emax_simulated = emax_simulated / num_draws_emax
 
     # Finishing
-    return emax_simulated, payoffs_ex_post, future_payoffs
+    return emax_simulated, payoffs_ex_post, payoffs_future
 
 
 def get_total_value(period, num_periods, delta, payoffs_systematic,
@@ -65,20 +65,20 @@ def get_total_value(period, num_periods, delta, payoffs_systematic,
 
     # Get future values
     if period != (num_periods - 1):
-        future_payoffs = _get_future_payoffs(edu_max, edu_start,
+        payoffs_future = _get_future_payoffs(edu_max, edu_start,
             mapping_state_idx, period, periods_emax, k, states_all)
     else:
-        future_payoffs = np.tile(0.0, 4)
+        payoffs_future = np.tile(0.0, 4)
 
     # Calculate total utilities
-    total_payoffs = payoffs_ex_post + delta * future_payoffs
+    total_payoffs = payoffs_ex_post + delta * payoffs_future
 
     # Special treatment in case of myopic agents
     if is_myopic:
-        total_payoffs = _stabilize_myopic(total_payoffs, future_payoffs)
+        total_payoffs = _stabilize_myopic(total_payoffs, payoffs_future)
 
     # Finishing
-    return total_payoffs, payoffs_ex_post, future_payoffs
+    return total_payoffs, payoffs_ex_post, payoffs_future
 
 
 ''' Auxiliary functions
@@ -93,41 +93,41 @@ def _get_future_payoffs(edu_max, edu_start, mapping_state_idx, period,
     exp_a, exp_b, edu, edu_lagged = states_all[period, k, :]
 
     # Future utilities
-    future_payoffs = np.tile(np.nan, 4)
+    payoffs_future = np.tile(np.nan, 4)
 
     # Working in occupation A
     future_idx = mapping_state_idx[period + 1, exp_a + 1, exp_b, edu, 0]
-    future_payoffs[0] = periods_emax[period + 1, future_idx]
+    payoffs_future[0] = periods_emax[period + 1, future_idx]
 
     # Working in occupation B
     future_idx = mapping_state_idx[period + 1, exp_a, exp_b + 1, edu, 0]
-    future_payoffs[1] = periods_emax[period + 1, future_idx]
+    payoffs_future[1] = periods_emax[period + 1, future_idx]
 
     # Increasing schooling. Note that adding an additional year
     # of schooling is only possible for those that have strictly
     # less than the maximum level of additional education allowed.
     if edu < edu_max - edu_start:
         future_idx = mapping_state_idx[period + 1, exp_a, exp_b, edu + 1, 1]
-        future_payoffs[2] = periods_emax[period + 1, future_idx]
+        payoffs_future[2] = periods_emax[period + 1, future_idx]
     else:
-        future_payoffs[2] = -HUGE_FLOAT
+        payoffs_future[2] = -HUGE_FLOAT
 
     # Staying at home
     future_idx = mapping_state_idx[period + 1, exp_a, exp_b, edu, 0]
-    future_payoffs[3] = periods_emax[period + 1, future_idx]
+    payoffs_future[3] = periods_emax[period + 1, future_idx]
 
     # Finishing
-    return future_payoffs
+    return payoffs_future
 
 
-def _stabilize_myopic(total_payoffs, future_payoffs):
+def _stabilize_myopic(total_payoffs, payoffs_future):
     """ Ensuring that schooling does not increase beyond the maximum allowed
     level. This is necessary as in the special case where delta is equal to
     zero, (-np.inf * 0.00) evaluates to NAN. This is returned as the maximum
     value when calling np.argmax.
     """
     # Determine NAN
-    is_huge = (future_payoffs[2] == -HUGE_FLOAT)
+    is_huge = (payoffs_future[2] == -HUGE_FLOAT)
 
     # Replace with negative infinity
     if is_huge:

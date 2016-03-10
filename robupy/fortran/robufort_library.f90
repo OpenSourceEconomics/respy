@@ -81,7 +81,7 @@ SUBROUTINE evaluate_criterion_function(rslt, mapping_state_idx, periods_emax, &
     REAL(our_dble)                  :: choice_probabilities(4)
     REAL(our_dble)                  :: payoffs_systematic(4)
     REAL(our_dble)                  :: payoffs_ex_post(4)
-    REAL(our_dble)                  :: future_payoffs(4)
+    REAL(our_dble)                  :: payoffs_future(4)
     REAL(our_dble)                  :: total_payoffs(4)
     REAL(our_dble)                  :: disturbances(4)
     REAL(our_dble)                  :: likl_contrib
@@ -171,7 +171,7 @@ SUBROUTINE evaluate_criterion_function(rslt, mapping_state_idx, periods_emax, &
 
                 ! Calculate total payoff.
                 CALL get_total_value(total_payoffs, payoffs_ex_post, & 
-                        future_payoffs, period, num_periods, delta, &
+                        payoffs_future, period, num_periods, delta, &
                         payoffs_systematic, disturbances, edu_max, edu_start, & 
                         mapping_state_idx, periods_emax, k, states_all)
                 
@@ -333,7 +333,7 @@ SUBROUTINE simulate_sample(dataset, num_agents, states_all, num_periods, &
 
     REAL(our_dble)                  :: payoffs_systematic(4)
     REAL(our_dble)                  :: payoffs_ex_post(4)
-    REAL(our_dble)                  :: future_payoffs(4)
+    REAL(our_dble)                  :: payoffs_future(4)
     REAL(our_dble)                  :: total_payoffs(4)
     REAL(our_dble)                  :: disturbances(4)
 
@@ -372,7 +372,7 @@ SUBROUTINE simulate_sample(dataset, num_agents, states_all, num_periods, &
 
             ! Calculate total utilities
             CALL get_total_value(total_payoffs, payoffs_ex_post, & 
-                    future_payoffs, period, num_periods, delta, &
+                    payoffs_future, period, num_periods, delta, &
                     payoffs_systematic, disturbances, edu_max, edu_start, & 
                     mapping_state_idx, periods_emax, k, states_all)
 
@@ -578,7 +578,7 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
     REAL(our_dble)                      :: eps_relevant(num_draws_emax, 4)
     REAL(our_dble)                      :: payoffs_systematic(4)
     REAL(our_dble)                      :: payoffs_ex_post(4)
-    REAL(our_dble)                      :: future_payoffs(4)
+    REAL(our_dble)                      :: payoffs_future(4)
     REAL(our_dble)                      :: emax_simulated
     REAL(our_dble)                      :: shifts(4)
 
@@ -671,7 +671,7 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
                 payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
                 CALL get_payoffs(emax_simulated, payoffs_ex_post, &
-                        future_payoffs, num_draws_emax, eps_relevant, period, k, &
+                        payoffs_future, num_draws_emax, eps_relevant, period, k, &
                         payoffs_systematic, edu_max, edu_start, & 
                         mapping_state_idx, states_all, num_periods, & 
                         periods_emax, delta, is_debug, shocks, level, & 
@@ -683,7 +683,7 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
                 ! This information is only available if no interpolation is 
                 ! used. Otherwise all remain set to missing values (see above). 
                 periods_payoffs_ex_post(period + 1, k + 1, :) = payoffs_ex_post
-                periods_payoffs_future(period + 1, k + 1, :) = future_payoffs
+                periods_payoffs_future(period + 1, k + 1, :) = payoffs_future
 
             END DO
 
@@ -831,7 +831,7 @@ SUBROUTINE create_state_space(states_all, states_number_period, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE get_payoffs(emax_simulated, payoffs_ex_post, future_payoffs, &
+SUBROUTINE get_payoffs(emax_simulated, payoffs_ex_post, payoffs_future, &
                 num_draws_emax, eps_relevant, period, k, payoffs_systematic, &
                 edu_max, edu_start, mapping_state_idx, states_all, &
                 num_periods, periods_emax, delta, is_debug, shocks, level, &
@@ -840,7 +840,7 @@ SUBROUTINE get_payoffs(emax_simulated, payoffs_ex_post, future_payoffs, &
     !/* external objects        */
 
     REAL(our_dble), INTENT(OUT)         :: payoffs_ex_post(4)
-    REAL(our_dble), INTENT(OUT)         :: future_payoffs(4)
+    REAL(our_dble), INTENT(OUT)         :: payoffs_future(4)
     REAL(our_dble), INTENT(OUT)         :: emax_simulated
 
     REAL(our_dble), INTENT(IN)          :: payoffs_systematic(:)
@@ -873,7 +873,7 @@ SUBROUTINE get_payoffs(emax_simulated, payoffs_ex_post, future_payoffs, &
     IF (is_ambiguous) THEN
 
         CALL get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
-                future_payoffs, num_draws_emax, eps_relevant, period, k, &
+                payoffs_future, num_draws_emax, eps_relevant, period, k, &
                 payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
                 states_all, num_periods, periods_emax, delta, is_debug, &
                 shocks, level, measure)
@@ -881,7 +881,7 @@ SUBROUTINE get_payoffs(emax_simulated, payoffs_ex_post, future_payoffs, &
     ELSE 
 
         CALL get_payoffs_risk(emax_simulated, payoffs_ex_post, &
-                future_payoffs, num_draws_emax, eps_relevant, period, k, &
+                payoffs_future, num_draws_emax, eps_relevant, period, k, &
                 payoffs_systematic, edu_max, edu_start, mapping_state_idx, & 
                 states_all, num_periods, periods_emax, delta, is_debug, & 
                 shocks, level, measure)
@@ -929,7 +929,7 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_periods, &
 
     REAL(our_dble)                      :: payoffs_systematic(4)
     REAL(our_dble)                      :: payoffs_ex_post(4)
-    REAL(our_dble)                      :: future_payoffs(4)
+    REAL(our_dble)                      :: payoffs_future(4)
     REAL(our_dble)                      :: emax_simulated
 
     INTEGER(our_int)                    :: k
@@ -954,7 +954,7 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_periods, &
         payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
         ! Get payoffs
-        CALL get_payoffs(emax_simulated, payoffs_ex_post, future_payoffs, &
+        CALL get_payoffs(emax_simulated, payoffs_ex_post, payoffs_future, &
                 num_draws_emax, eps_relevant, period, k, payoffs_systematic, &
                 edu_max, edu_start, mapping_state_idx, states_all, & 
                 num_periods, periods_emax, delta, is_debug, shocks, & 

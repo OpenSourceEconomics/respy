@@ -23,9 +23,9 @@ def get_payoffs_risk(num_draws_emax, eps_relevant, period, k, payoffs_systematic
     eps_relevant_emax = eps_relevant
 
     # Simulate expected future value.
-    simulated, payoffs_ex_post, future_payoffs = simulate_emax(num_periods,
+    simulated, payoffs_ex_post, payoffs_future = simulate_emax(num_periods,
         num_draws_emax, period, k, eps_relevant_emax, payoffs_systematic, edu_max,
         edu_start, periods_emax, states_all, mapping_state_idx, delta)
 
     # Finishing
-    return simulated, payoffs_ex_post, future_payoffs
+    return simulated, payoffs_ex_post, payoffs_future

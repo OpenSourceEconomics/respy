@@ -29,7 +29,7 @@ def get_payoffs_ambiguity(num_draws_emax, eps_relevant, period, k,
     # Transformation of standard normal deviates to relevant distributions.
     eps_relevant_emax = transform_disturbances_ambiguity(eps_relevant, opt['x'])
 
-    simulated, payoffs_ex_post, future_payoffs = \
+    simulated, payoffs_ex_post, payoffs_future = \
         simulate_emax(num_periods, num_draws_emax, period, k, eps_relevant_emax,
             payoffs_systematic, edu_max, edu_start, periods_emax, states_all,
             mapping_state_idx, delta)
@@ -40,7 +40,7 @@ def get_payoffs_ambiguity(num_draws_emax, eps_relevant, period, k,
         checks_ambiguity('get_payoffs_ambiguity', simulated, opt)
 
     # Finishing
-    return simulated, payoffs_ex_post, future_payoffs
+    return simulated, payoffs_ex_post, payoffs_future
 
 ''' Private functions
 '''
@@ -127,7 +127,7 @@ def _correct_debugging(opt, x0, shocks, level, eps_relevant, num_periods,
         eps_relevant_emax = transform_disturbances_ambiguity(eps_relevant,
                                 opt['x'])
 
-        simulated, payoffs_ex_post, future_payoffs = \
+        simulated, payoffs_ex_post, payoffs_future = \
             simulate_emax(num_periods, num_draws_emax, period, k, eps_relevant_emax,
                 payoffs_systematic, edu_max, edu_start, periods_emax,
                 states_all, mapping_state_idx, delta)

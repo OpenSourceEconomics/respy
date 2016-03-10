@@ -105,7 +105,7 @@ def backward_induction(num_periods, max_states_period, disturbances_emax,
                 payoffs_systematic = periods_payoffs_systematic[period, k, :]
 
                 # Simulate the expected future value.
-                emax, payoffs_ex_post, future_payoffs = \
+                emax, payoffs_ex_post, payoffs_future = \
                     get_payoffs(num_draws_emax, eps_relevant, period, k,
                         payoffs_systematic, edu_max, edu_start,
                         mapping_state_idx, states_all, num_periods,
@@ -118,7 +118,7 @@ def backward_induction(num_periods, max_states_period, disturbances_emax,
                 # This information is only available if no interpolation is
                 # used. Otherwise all remain set to missing values (see above).
                 periods_payoffs_ex_post[period, k, :] = payoffs_ex_post
-                periods_payoffs_future[period, k, :] = future_payoffs
+                periods_payoffs_future[period, k, :] = payoffs_future
 
     # Finishing. Note that the last two return arguments are not available in
     # for periods, where interpolation is required.
@@ -133,20 +133,20 @@ def get_payoffs(num_draws_emax, eps_relevant, period, k, payoffs_systematic, edu
     # Payoffs require different machinery depending on whether there is
     # ambiguity or not.
     if is_ambiguous:
-        emax, payoffs_ex_post, future_payoffs = \
+        emax, payoffs_ex_post, payoffs_future = \
             get_payoffs_ambiguity(num_draws_emax, eps_relevant, period, k,
                 payoffs_systematic, edu_max, edu_start, mapping_state_idx,
                 states_all, num_periods, periods_emax, delta, is_debug, shocks,
                 level, measure)
     else:
-        emax, payoffs_ex_post, future_payoffs = \
+        emax, payoffs_ex_post, payoffs_future = \
             get_payoffs_risk(num_draws_emax, eps_relevant, period, k,
                 payoffs_systematic, edu_max, edu_start, mapping_state_idx,
                 states_all, num_periods, periods_emax, delta, is_debug,
                 shocks, level, measure)
 
     # Finishing
-    return emax, payoffs_ex_post, future_payoffs
+    return emax, payoffs_ex_post, payoffs_future
 
 
 def create_state_space(num_periods, edu_start, edu_max, min_idx):
@@ -445,13 +445,13 @@ def _get_exogenous_variables(period, num_periods, num_states, delta,
         payoffs_systematic = periods_payoffs_systematic[period, k, :]
 
         # Get total value
-        expected_values, _, future_payoffs = get_total_value(period,
+        expected_values, _, payoffs_future = get_total_value(period,
             num_periods, delta, payoffs_systematic, shifts, edu_max, edu_start,
             mapping_state_idx, periods_emax, k, states_all)
 
         # Treatment of inadmissible states, which will show up in the
         # regression in some way.
-        is_inadmissible = (future_payoffs[2] == -HUGE_FLOAT)
+        is_inadmissible = (payoffs_future[2] == -HUGE_FLOAT)
 
         if is_inadmissible:
             expected_values[2] = INTERPOLATION_INADMISSIBLE_STATES
