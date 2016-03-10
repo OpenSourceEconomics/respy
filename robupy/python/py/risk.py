@@ -10,7 +10,7 @@ from robupy.python.py.auxiliary import simulate_emax
 '''
 
 
-def get_payoffs_risk(num_draws_emax, eps_relevant, period, k, payoffs_systematic,
+def get_payoffs_risk(num_draws_emax, disturbances_relevant, period, k, payoffs_systematic,
         edu_max, edu_start, mapping_state_idx, states_all, num_periods,
         periods_emax, delta, is_debug, shocks, level, measure):
     """ Simulate expected future value under risk. Part of the unused
@@ -20,11 +20,11 @@ def get_payoffs_risk(num_draws_emax, eps_relevant, period, k, payoffs_systematic
     ambiguity code.
     """
     # Renaming for optimization setup, alignment with ROBUFORT
-    eps_relevant_emax = eps_relevant
+    disturbances_relevant_emax = disturbances_relevant
 
     # Simulate expected future value.
     simulated, payoffs_ex_post, payoffs_future = simulate_emax(num_periods,
-        num_draws_emax, period, k, eps_relevant_emax, payoffs_systematic, edu_max,
+        num_draws_emax, period, k, disturbances_relevant_emax, payoffs_systematic, edu_max,
         edu_start, periods_emax, states_all, mapping_state_idx, delta)
 
     # Finishing

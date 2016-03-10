@@ -199,7 +199,7 @@ def test_86():
         disturbances_emax = create_disturbances(num_periods, num_draws_emax,
             seed_prob, is_debug, 'emax', eps_cholesky, is_ambiguous)
 
-        eps_relevant = disturbances_emax[period, :, :]
+        disturbances_relevant = disturbances_emax[period, :, :]
 
         num_states = states_number_period[period]
 
@@ -236,7 +236,7 @@ def test_86():
                 periods_payoffs_systematic, edu_max, edu_start,
                 mapping_state_idx, periods_emax, states_all, is_simulated,
                 num_draws_emax, shocks, level, is_ambiguous, is_debug, measure,
-                maxe, eps_relevant]
+                maxe, disturbances_relevant]
 
         py = _get_endogenous_variable(*args)
         f90 = fort.wrapper_get_endogenous_variable(*args)
@@ -326,15 +326,15 @@ def test_87():
 
             # Finalize extraction of ingredients
             payoffs_systematic = periods_payoffs_systematic[period, k, :]
-            eps_relevant = np.random.sample((num_draws_emax, 4))
+            disturbances_relevant = np.random.sample((num_draws_emax, 4))
 
             # Extract payoffs using PYTHON and FORTRAN codes.
-            py = get_payoffs(num_draws_emax, eps_relevant, period, k,
+            py = get_payoffs(num_draws_emax, disturbances_relevant, period, k,
                     payoffs_systematic, edu_max, edu_start, mapping_state_idx,
                     states_all, num_periods, periods_emax, delta, is_debug,
                     shocks, level, is_ambiguous, measure)
 
-            f90 = fort.wrapper_get_payoffs(num_draws_emax, eps_relevant, period, k,
+            f90 = fort.wrapper_get_payoffs(num_draws_emax, disturbances_relevant, period, k,
                     payoffs_systematic, edu_max, edu_start, mapping_state_idx,
                     states_all, num_periods, periods_emax, delta, is_debug,
                     shocks, level, is_ambiguous, measure)

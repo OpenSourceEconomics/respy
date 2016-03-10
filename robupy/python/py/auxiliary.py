@@ -13,7 +13,7 @@ from robupy.constants import HUGE_FLOAT
 '''
 
 
-def simulate_emax(num_periods, num_draws_emax, period, k, eps_relevant_emax,
+def simulate_emax(num_periods, num_draws_emax, period, k, disturbances_relevant_emax,
         payoffs_systematic, edu_max, edu_start, periods_emax, states_all,
         mapping_state_idx, delta):
     """ Simulate expected future value.
@@ -25,7 +25,7 @@ def simulate_emax(num_periods, num_draws_emax, period, k, eps_relevant_emax,
     for i in range(num_draws_emax):
 
         # Select disturbances for this draw
-        disturbances = eps_relevant_emax[i, :]
+        disturbances = disturbances_relevant_emax[i, :]
 
         # Get total value of admissible states
         total_payoffs, payoffs_ex_post, payoffs_future = get_total_value(period,

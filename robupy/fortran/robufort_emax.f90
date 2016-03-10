@@ -24,7 +24,7 @@ CONTAINS
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, payoffs_future, &
-                num_periods, num_draws_emax, period, k, eps_relevant_emax, &
+                num_periods, num_draws_emax, period, k, disturbances_relevant_emax, &
                 payoffs_systematic, edu_max, edu_start, periods_emax, & 
                 states_all, mapping_state_idx, delta)
 
@@ -43,7 +43,7 @@ SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, payoffs_future, &
     INTEGER(our_int), INTENT(IN)    :: period
     INTEGER(our_int), INTENT(IN)    :: k
 
-    REAL(our_dble), INTENT(IN)      :: eps_relevant_emax(:,:)
+    REAL(our_dble), INTENT(IN)      :: disturbances_relevant_emax(:,:)
     REAL(our_dble), INTENT(IN)      :: payoffs_systematic(:)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:,:)
     REAL(our_dble), INTENT(IN)      :: delta
@@ -68,7 +68,7 @@ SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, payoffs_future, &
     DO i = 1, num_draws_emax
 
         ! Select disturbances for this draw
-        disturbances = eps_relevant_emax(i, :)
+        disturbances = disturbances_relevant_emax(i, :)
 
         ! Calculate total value
         CALL get_total_value(total_payoffs, payoffs_ex_post, payoffs_future, &

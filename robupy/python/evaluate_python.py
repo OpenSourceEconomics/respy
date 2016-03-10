@@ -172,18 +172,18 @@ def evaluate_criterion_function(mapping_state_idx, periods_emax,
             if is_working:
                 # Calculate the disturbance, which follows a normal
                 # distribution.
-                eps = np.log(data_array[j, 3].astype(float)) - \
+                dist = np.log(data_array[j, 3].astype(float)) - \
                         np.log(payoffs_systematic[idx])
                 # Construct independent normal draws implied by the observed
                 # wages.
                 if choice == 1:
-                    deviates[:, idx] = eps / np.sqrt(shocks[idx, idx])
+                    deviates[:, idx] = dist / np.sqrt(shocks[idx, idx])
                 else:
-                    deviates[:, idx] = (eps - eps_cholesky[idx, 0] *
+                    deviates[:, idx] = (dist - eps_cholesky[idx, 0] *
                         deviates[:, 0]) / eps_cholesky[idx, idx]
 
                 # Record contribution of wage observation.
-                likl_contrib *= norm.pdf(eps, 0.0, np.sqrt(shocks[idx, idx]))
+                likl_contrib *= norm.pdf(dist, 0.0, np.sqrt(shocks[idx, idx]))
             # Determine conditional deviates. These correspond to the
             # unconditional draws if the agent did not work in the labor market.
             conditional_deviates = np.dot(eps_cholesky, deviates.T).T

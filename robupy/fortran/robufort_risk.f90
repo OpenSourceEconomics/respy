@@ -26,7 +26,7 @@ CONTAINS
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE get_payoffs_risk(emax_simulated, payoffs_ex_post, payoffs_future, &
-                num_draws_emax, eps_relevant, period, k, payoffs_systematic, &
+                num_draws_emax, disturbances_relevant, period, k, payoffs_systematic, &
                 edu_max, edu_start, mapping_state_idx, states_all, & 
                 num_periods, periods_emax, delta, is_debug, shocks, level, & 
                 measure)
@@ -48,7 +48,7 @@ SUBROUTINE get_payoffs_risk(emax_simulated, payoffs_ex_post, payoffs_future, &
 
     REAL(our_dble), INTENT(IN)      :: payoffs_systematic(:)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
-    REAL(our_dble), INTENT(IN)      :: eps_relevant(:, :)
+    REAL(our_dble), INTENT(IN)      :: disturbances_relevant(:, :)
     REAL(our_dble), INTENT(IN)      :: shocks(:, :)
     REAL(our_dble), INTENT(IN)      :: level
     REAL(our_dble), INTENT(IN)      :: delta
@@ -59,18 +59,18 @@ SUBROUTINE get_payoffs_risk(emax_simulated, payoffs_ex_post, payoffs_future, &
 
     !/* internal  objects       */
 
-    REAL(our_dble)                  :: eps_relevant_emax(num_draws_emax, 4)
+    REAL(our_dble)                  :: disturbances_relevant_emax(num_draws_emax, 4)
 
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
     
     ! Renaming for optimization step
-    eps_relevant_emax = eps_relevant
+    disturbances_relevant_emax = disturbances_relevant
 
     ! Simulated expected future value
     CALL simulate_emax(emax_simulated, payoffs_ex_post, payoffs_future, &
-            num_periods, num_draws_emax, period, k, eps_relevant_emax, &
+            num_periods, num_draws_emax, period, k, disturbances_relevant_emax, &
             payoffs_systematic, edu_max, edu_start, periods_emax, states_all, & 
             mapping_state_idx, delta)
     
