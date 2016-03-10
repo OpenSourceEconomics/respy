@@ -98,7 +98,7 @@ class RobupyCls(MetaCls):
         self.is_first = True
 
     def update_model_paras(self, coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-            shocks, eps_cholesky):
+            shocks, shocks_cholesky):
         """ Update model parameters.
         """
 
@@ -114,7 +114,7 @@ class RobupyCls(MetaCls):
 
         model_paras['shocks'] = shocks
 
-        model_paras['eps_cholesky'] = eps_cholesky
+        model_paras['shocks_cholesky'] = shocks_cholesky
 
         self.attr['model_paras'] = model_paras
 
@@ -195,10 +195,10 @@ class RobupyCls(MetaCls):
                 # parameters.
                 shocks = self.attr['model_paras']['shocks']
                 if np.count_nonzero(shocks) == 0:
-                    eps_cholesky = np.zeros((4, 4))
+                    shocks_cholesky = np.zeros((4, 4))
                 else:
-                    eps_cholesky = np.linalg.cholesky(shocks)
-                self.attr['model_paras']['eps_cholesky'] = eps_cholesky
+                    shocks_cholesky = np.linalg.cholesky(shocks)
+                self.attr['model_paras']['shocks_cholesky'] = shocks_cholesky
 
                 # Ensure that all elements in the dictionary are of the same
                 # type.

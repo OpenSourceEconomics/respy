@@ -28,9 +28,9 @@ def process(robupy_obj):
         assert _check_process(file_est + '.dat', robupy_obj)
 
     # Process dataset from files.
-    data_frame = pd.read_csv(file_est + '.dat', delim_whitespace=True, header=-1,
-        na_values='.', dtype={0: np.int, 1: np.int, 2: np.int, 3: np.float,
-        4: np.int, 5: np.int, 6: np.int, 7: np.int})
+    data_frame = pd.read_csv(file_est + '.dat', delim_whitespace=True,
+        header=-1, na_values='.', dtype={0: np.int, 1: np.int, 2: np.int,
+        3: np.float, 4: np.int, 5: np.int, 6: np.int, 7: np.int})
 
     # Check the dataset against the initialization files.
     check_dataset(data_frame, robupy_obj)

@@ -7,8 +7,8 @@
 !*******************************************************************************
 SUBROUTINE wrapper_evaluate_criterion_function(rslt, mapping_state_idx, &
             periods_emax, periods_payoffs_systematic, states_all, shocks, &
-            edu_max, delta, edu_start, num_periods, eps_cholesky, num_agents, & 
-            num_draws_prob, data_array, standard_deviates)
+            edu_max, delta, edu_start, num_periods, shocks_cholesky, & 
+            num_agents, num_draws_prob, data_array, standard_deviates)
 
     !/* external libraries      */
 
@@ -22,23 +22,21 @@ SUBROUTINE wrapper_evaluate_criterion_function(rslt, mapping_state_idx, &
 
     DOUBLE PRECISION, INTENT(OUT)   :: rslt 
 
-    INTEGER, INTENT(IN)             :: num_periods
-    INTEGER, INTENT(IN)             :: edu_start
-    INTEGER, INTENT(IN)             :: edu_max
-    INTEGER, INTENT(IN)             :: num_agents
-    INTEGER, INTENT(IN)             :: num_draws_prob
-
-    DOUBLE PRECISION, INTENT(IN)    :: standard_deviates(:, :, :)
-    DOUBLE PRECISION, INTENT(IN)    :: data_array(:, :)
-
-    DOUBLE PRECISION, INTENT(IN)    :: eps_cholesky(:, :)
-    DOUBLE PRECISION, INTENT(IN)    :: shocks(:, :)
-    DOUBLE PRECISION, INTENT(IN)    :: delta 
-
-    DOUBLE PRECISION, INTENT(IN)    :: periods_emax(:, :)
-    DOUBLE PRECISION, INTENT(IN)    :: periods_payoffs_systematic(:, :, :)
     INTEGER, INTENT(IN)             :: mapping_state_idx(:, :, :, :, :)
     INTEGER, INTENT(IN)             :: states_all(:, :, :)
+    INTEGER, INTENT(IN)             :: num_draws_prob
+    INTEGER, INTENT(IN)             :: num_periods
+    INTEGER, INTENT(IN)             :: num_agents
+    INTEGER, INTENT(IN)             :: edu_start
+    INTEGER, INTENT(IN)             :: edu_max
+
+    DOUBLE PRECISION, INTENT(IN)    :: periods_payoffs_systematic(:, :, :)
+    DOUBLE PRECISION, INTENT(IN)    :: standard_deviates(:, :, :)
+    DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(:, :)
+    DOUBLE PRECISION, INTENT(IN)    :: periods_emax(:, :)
+    DOUBLE PRECISION, INTENT(IN)    :: data_array(:, :)
+    DOUBLE PRECISION, INTENT(IN)    :: shocks(:, :)
+    DOUBLE PRECISION, INTENT(IN)    :: delta  
 
 !-------------------------------------------------------------------------------
 ! Algorithm
@@ -46,40 +44,40 @@ SUBROUTINE wrapper_evaluate_criterion_function(rslt, mapping_state_idx, &
    
     CALL evaluate_criterion_function(rslt, mapping_state_idx, periods_emax, & 
             periods_payoffs_systematic, states_all, shocks, edu_max, delta, & 
-            edu_start, num_periods, eps_cholesky, num_agents, num_draws_prob, &
-            data_array, standard_deviates)
+            edu_start, num_periods, shocks_cholesky, num_agents, & 
+            num_draws_prob, data_array, standard_deviates)
 
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_simulate_sample(dataset, num_agents, states_all, num_periods, &
-                mapping_state_idx, periods_payoffs_systematic, &
+SUBROUTINE wrapper_simulate_sample(dataset, num_agents, states_all, & 
+                num_periods, mapping_state_idx, periods_payoffs_systematic, &
                 disturbances_emax, edu_max, edu_start, periods_emax, delta)
 
-    !/* external libraries    */
+    !/* external libraries      */
 
     USE robufort_library
 
-    !/* setup    */
+    !/* setup                   */
 
     IMPLICIT NONE
 
-    !/* external objects    */
+    !/* external objects        */
 
     DOUBLE PRECISION, INTENT(OUT)   :: dataset(num_agents*num_periods, 8)
 
-    DOUBLE PRECISION, INTENT(IN)    :: periods_emax(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_payoffs_systematic(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: disturbances_emax(:, :, :)
+    DOUBLE PRECISION, INTENT(IN)    :: periods_emax(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: delta
 
     INTEGER, INTENT(IN)             :: num_periods
     INTEGER, INTENT(IN)             :: edu_start
 
-    INTEGER, INTENT(IN)             :: edu_max
-    INTEGER, INTENT(IN)             :: num_agents
     INTEGER, INTENT(IN)             :: mapping_state_idx(:, :, :, :, :)
     INTEGER, INTENT(IN)             :: states_all(:, :, :)
+    INTEGER, INTENT(IN)             :: num_agents
+    INTEGER, INTENT(IN)             :: edu_max
 
 !-------------------------------------------------------------------------------
 ! Algorithm
@@ -99,35 +97,35 @@ SUBROUTINE wrapper_backward_induction(periods_emax, periods_payoffs_ex_post, &
                 mapping_state_idx, states_all, delta, is_debug, shocks, &
                 level, is_ambiguous, measure, is_interpolated, num_points)
 
-    !/* external libraries    */
+    !/* external libraries      */
 
     USE robufort_library
 
-    !/* setup    */
+    !/* setup                   */
 
     IMPLICIT NONE
 
-    !/* external objects    */
+    !/* external objects        */
 
-    DOUBLE PRECISION, INTENT(OUT)   :: periods_emax(num_periods, max_states_period)
     DOUBLE PRECISION, INTENT(OUT)   :: periods_payoffs_ex_post(num_periods, max_states_period, 4)
     DOUBLE PRECISION, INTENT(OUT)   :: periods_payoffs_future(num_periods, max_states_period, 4)
+    DOUBLE PRECISION, INTENT(OUT)   :: periods_emax(num_periods, max_states_period)
 
-    DOUBLE PRECISION, INTENT(IN)    :: disturbances_emax(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_payoffs_systematic(:, :, :   )
+    DOUBLE PRECISION, INTENT(IN)    :: disturbances_emax(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: shocks(4, 4)
     DOUBLE PRECISION, INTENT(IN)    :: delta
     DOUBLE PRECISION, INTENT(IN)    :: level
 
     INTEGER, INTENT(IN)             :: mapping_state_idx(:, :, :, :, :)    
+    INTEGER, INTENT(IN)             :: states_number_period(:)
+    INTEGER, INTENT(IN)             :: states_all(:, :, :)
+    INTEGER, INTENT(IN)             :: max_states_period
+    INTEGER, INTENT(IN)             :: num_draws_emax
     INTEGER, INTENT(IN)             :: num_periods
     INTEGER, INTENT(IN)             :: num_points
     INTEGER, INTENT(IN)             :: edu_start
     INTEGER, INTENT(IN)             :: edu_max
-    INTEGER, INTENT(IN)             :: states_number_period(:)
-    INTEGER, INTENT(IN)             :: num_draws_emax
-    INTEGER, INTENT(IN)             :: max_states_period
-    INTEGER, INTENT(IN)             :: states_all(:, :, :)
 
     LOGICAL, INTENT(IN)             :: is_interpolated
     LOGICAL, INTENT(IN)             :: is_ambiguous
@@ -152,19 +150,19 @@ END SUBROUTINE
 SUBROUTINE wrapper_create_state_space(states_all, states_number_period, &
                 mapping_state_idx, num_periods, edu_start, edu_max, min_idx)
     
-    !/* external libraries    */
+    !/* external libraries      */
 
     USE robufort_library
 
-    !/* setup    */
+    !/* setup                   */
 
     IMPLICIT NONE
 
-    !/* external objects    */
+    !/* external objects        */
 
+    INTEGER, INTENT(OUT)            :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER, INTENT(OUT)            :: states_all(num_periods, 100000, 4)
     INTEGER, INTENT(OUT)            :: states_number_period(num_periods)
-    INTEGER, INTENT(OUT)            :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
 
     INTEGER, INTENT(IN)             :: num_periods
     INTEGER, INTENT(IN)             :: edu_start
@@ -181,32 +179,32 @@ SUBROUTINE wrapper_create_state_space(states_all, states_number_period, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_calculate_payoffs_systematic(periods_payoffs_systematic, num_periods, &
-              states_number_period, states_all, edu_start, coeffs_a, & 
-              coeffs_b, coeffs_edu, coeffs_home, max_states_period)
+SUBROUTINE wrapper_calculate_payoffs_systematic(periods_payoffs_systematic, & 
+                num_periods, states_number_period, states_all, edu_start, & 
+                coeffs_a, coeffs_b, coeffs_edu, coeffs_home, max_states_period)
 
-    !/* external libraries    */
+    !/* external libraries      */
 
     USE robufort_library
 
-    !/* setup    */
+    !/* setup                   */
 
     IMPLICIT NONE
 
-    !/* external objects    */
+    !/* external objects        */
 
     DOUBLE PRECISION, INTENT(OUT)   :: periods_payoffs_systematic(num_periods, max_states_period, 4)
 
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_home(:)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_edu(:)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(:)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(:)
-    DOUBLE PRECISION, INTENT(IN)    :: coeffs_edu(:)
-    DOUBLE PRECISION, INTENT(IN)    :: coeffs_home(:)
 
-    INTEGER, INTENT(IN)             :: num_periods
     INTEGER, INTENT(IN)             :: states_number_period(:)
-    INTEGER, INTENT(IN)             :: states_all(:,:,:)
-    INTEGER, INTENT(IN)             :: edu_start
     INTEGER, INTENT(IN)             :: max_states_period
+    INTEGER, INTENT(IN)             :: states_all(:,:,:)
+    INTEGER, INTENT(IN)             :: num_periods
+    INTEGER, INTENT(IN)             :: edu_start
 
 !-------------------------------------------------------------------------------
 ! Algorithm

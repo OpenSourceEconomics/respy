@@ -2,13 +2,13 @@
 !*******************************************************************************
 MODULE robufort_extension
 
-    !/* external modules    */
+    !/* external modules        */
 
     USE robufort_constants
 
     USE robufort_auxiliary
 
-    !/* setup   */
+    !/* setup                   */
 
     IMPLICIT NONE
 
@@ -17,17 +17,19 @@ MODULE robufort_extension
 CONTAINS
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE store_results(mapping_state_idx, states_all, periods_payoffs_ex_post, &
-                periods_payoffs_systematic, states_number_period, periods_emax, &
-                num_periods, min_idx, eval, request) 
+SUBROUTINE store_results(mapping_state_idx, states_all, & 
+                periods_payoffs_ex_post, periods_payoffs_systematic, & 
+                states_number_period, periods_emax, num_periods, min_idx, & 
+                eval, request) 
 
-    !/* external objects    */
+    !/* external objects        */
 
+
+    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:, :, :, :, :)
+    INTEGER(our_int), INTENT(IN)    :: states_number_period(:)
+    INTEGER(our_int), INTENT(IN)    :: states_all(:,:,:)
     INTEGER(our_int), INTENT(IN)    :: num_periods
     INTEGER(our_int), INTENT(IN)    :: min_idx 
-    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:, :, :, :, :)
-    INTEGER(our_int), INTENT(IN)    :: states_all(:,:,:)
-    INTEGER(our_int), INTENT(IN)    :: states_number_period(:)
 
     REAL(our_dble), INTENT(IN)      :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), INTENT(IN)      :: periods_payoffs_ex_post(:, :, :)    
@@ -36,7 +38,7 @@ SUBROUTINE store_results(mapping_state_idx, states_all, periods_payoffs_ex_post,
 
     CHARACTER(10), INTENT(IN)       :: request
 
-    !/* internal objects    */
+    !/* internal objects        */
 
     INTEGER(our_int)                :: max_states_period
     INTEGER(our_int)                :: period
@@ -48,9 +50,10 @@ SUBROUTINE store_results(mapping_state_idx, states_all, periods_payoffs_ex_post,
 ! Algorithm
 !-------------------------------------------------------------------------------
     
+    ! Auxiliary objects    
     max_states_period = MAXVAL(states_number_period)
 
-
+    ! Write out results for the store results.
     1800 FORMAT(5(1x,i5))
 
     OPEN(UNIT=1, FILE='.mapping_state_idx.robufort.dat')
@@ -154,10 +157,10 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
                 coeffs_edu, edu_start, edu_max, coeffs_home, shocks, & 
-                eps_cholesky, num_draws_emax, seed_emax, seed_prob, &
-                num_agents, seed_data, is_debug, is_zero, &
-                is_interpolated, num_points, min_idx, is_ambiguous, measure, & 
-                request, num_draws_prob)
+                shocks_cholesky, num_draws_emax, seed_emax, seed_prob, &
+                num_agents, seed_data, is_debug, is_zero, is_interpolated, & 
+                num_points, min_idx, is_ambiguous, measure, request, & 
+                num_draws_prob)
 
     !
     !   This function serves as the replacement for the clsRobupy and reads in 
@@ -165,21 +168,21 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
     !   reads in all required information.  
     !
 
-    !/* external objects    */
+    !/* external objects        */
 
-    INTEGER(our_int), INTENT(OUT)   :: seed_data
-    INTEGER(our_int), INTENT(OUT)   :: seed_prob
-    INTEGER(our_int), INTENT(OUT)   :: seed_emax
+    INTEGER(our_int), INTENT(OUT)   :: num_draws_emax
+    INTEGER(our_int), INTENT(OUT)   :: num_draws_prob
     INTEGER(our_int), INTENT(OUT)   :: num_periods
     INTEGER(our_int), INTENT(OUT)   :: num_agents
     INTEGER(our_int), INTENT(OUT)   :: num_points
-    INTEGER(our_int), INTENT(OUT)   :: num_draws_emax
+    INTEGER(our_int), INTENT(OUT)   :: seed_data
+    INTEGER(our_int), INTENT(OUT)   :: seed_prob
+    INTEGER(our_int), INTENT(OUT)   :: seed_emax
     INTEGER(our_int), INTENT(OUT)   :: edu_start
-    INTEGER(our_int), INTENT(OUT)   :: num_draws_prob
     INTEGER(our_int), INTENT(OUT)   :: edu_max
     INTEGER(our_int), INTENT(OUT)   :: min_idx
 
-    REAL(our_dble), INTENT(OUT)     :: eps_cholesky(4, 4)
+    REAL(our_dble), INTENT(OUT)     :: shocks_cholesky(4, 4)
     REAL(our_dble), INTENT(OUT)     :: coeffs_home(1)
     REAL(our_dble), INTENT(OUT)     :: coeffs_edu(3)
     REAL(our_dble), INTENT(OUT)     :: shocks(4, 4)
@@ -196,7 +199,7 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
     CHARACTER(10), INTENT(OUT)      :: measure 
     CHARACTER(10), INTENT(OUT)      :: request
 
-    !/* internal objects    */
+    !/* internal objects        */
 
     INTEGER(our_int)                :: j
     INTEGER(our_int)                :: k
@@ -271,33 +274,33 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
     ! Construct auxiliary objects. The case distinction align the reasoning
     ! between the PYTHON/F2PY implementations.
     IF (is_zero) THEN
-        eps_cholesky = zero_dble
+        shocks_cholesky = zero_dble
     ELSE
-        CALL cholesky(eps_cholesky, shocks)
+        CALL cholesky(shocks_cholesky, shocks)
     END IF
 
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE create_disturbances(disturbances, num_periods, num_draws_emax, seed, &
-                is_debug, which, eps_cholesky, is_ambiguous) 
+SUBROUTINE create_disturbances(disturbances, num_periods, num_draws_emax, & 
+                seed, is_debug, which, shocks_cholesky, is_ambiguous)
 
-    !/* external objects    */
+    !/* external objects        */
 
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)  :: disturbances(:, :, :)
 
-    REAL(our_dble), INTENT(IN)                  :: eps_cholesky(4, 4)
-
-    INTEGER(our_int), INTENT(IN)                :: num_periods
     INTEGER(our_int), INTENT(IN)                :: num_draws_emax
+    INTEGER(our_int), INTENT(IN)                :: num_periods
     INTEGER(our_int), INTENT(IN)                :: seed 
+
+    REAL(our_dble), INTENT(IN)                  :: shocks_cholesky(4, 4)
 
     LOGICAL, INTENT(IN)                         :: is_ambiguous
     LOGICAL, INTENT(IN)                         :: is_debug
 
     CHARACTER(4)                                :: which
 
-    !/* internal objects    */
+    !/* internal objects        */
 
     INTEGER(our_int)                            :: seed_inflated(15)
     INTEGER(our_int)                            :: seed_size
@@ -364,7 +367,7 @@ SUBROUTINE create_disturbances(disturbances, num_periods, num_draws_emax, seed, 
             DO i = 1, num_draws_emax
             
                 disturbances(period, i:i, :) = &
-                    TRANSPOSE(MATMUL(eps_cholesky, TRANSPOSE(disturbances(period, i:i, :))))
+                    TRANSPOSE(MATMUL(shocks_cholesky, TRANSPOSE(disturbances(period, i:i, :))))
             
             END DO
 
@@ -406,7 +409,7 @@ SUBROUTINE create_disturbances(disturbances, num_periods, num_draws_emax, seed, 
             DO i = 1, num_draws_emax
             
                 disturbances(period, i:i, :) = &
-                    TRANSPOSE(MATMUL(eps_cholesky, TRANSPOSE(disturbances(period, i:i, :))))
+                    TRANSPOSE(MATMUL(shocks_cholesky, TRANSPOSE(disturbances(period, i:i, :))))
 
             END DO
 
@@ -425,14 +428,14 @@ END SUBROUTINE
 !******************************************************************************* 
 SUBROUTINE read_dataset(data_array, num_periods, num_agents)
 
-    !/* external objects    */
+    !/* external objects        */
 
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)  :: data_array(:, :)
 
     INTEGER(our_int), INTENT(IN)                :: num_periods
     INTEGER(our_int), INTENT(IN)                :: num_agents
 
-    !/* internal objects    */
+    !/* internal objects        */
 
     INTEGER(our_int)                            :: j
     INTEGER(our_int)                            :: k
@@ -449,7 +452,7 @@ SUBROUTINE read_dataset(data_array, num_periods, num_agents)
 
         DO j = 1, num_periods * num_agents
     
-            READ(1, *) (data_array(j, k), k=1, 8)
+            READ(1, *) (data_array(j, k), k = 1, 8)
     
         END DO
     
@@ -463,31 +466,31 @@ END MODULE
 !******************************************************************************* 
 PROGRAM robufort
 
-    !/* external modules    */
+    !/* external modules        */
 
     USE robufort_extension
 
     USE robufort_library
 
-    !/* setup   */
+    !/* setup                   */
 
     IMPLICIT NONE
 
-    !/* objects */
+    !/* objects                 */
 
     INTEGER(our_int), ALLOCATABLE   :: mapping_state_idx(:, :, :, :, :)
     INTEGER(our_int), ALLOCATABLE   :: states_number_period(:)
     INTEGER(our_int), ALLOCATABLE   :: states_all(:, :, :)
 
-    INTEGER(our_int)                :: seed_data
-    INTEGER(our_int)                :: seed_prob
-    INTEGER(our_int)                :: seed_emax
+    INTEGER(our_int)                :: num_draws_emax
+    INTEGER(our_int)                :: num_draws_prob
     INTEGER(our_int)                :: num_periods
     INTEGER(our_int)                :: num_agents
     INTEGER(our_int)                :: num_points
+    INTEGER(our_int)                :: seed_data
+    INTEGER(our_int)                :: seed_prob
+    INTEGER(our_int)                :: seed_emax
     INTEGER(our_int)                :: edu_start
-    INTEGER(our_int)                :: num_draws_emax
-    INTEGER(our_int)                :: num_draws_prob
     INTEGER(our_int)                :: edu_max
     INTEGER(our_int)                :: min_idx
 
@@ -499,8 +502,7 @@ PROGRAM robufort
     REAL(our_dble), ALLOCATABLE     :: periods_emax(:, :)
     REAL(our_dble), ALLOCATABLE     :: data_array(:, :)
 
-
-    REAL(our_dble)                  :: eps_cholesky(4, 4)
+    REAL(our_dble)                  :: shocks_cholesky(4, 4)
     REAL(our_dble)                  :: coeffs_home(1)
     REAL(our_dble)                  :: coeffs_edu(3)
     REAL(our_dble)                  :: shocks(4, 4)
@@ -526,8 +528,8 @@ PROGRAM robufort
     ! clsRobupy instance that carries the model parametrization for the 
     ! PYTHON/F2PY implementations.
     CALL read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
-            coeffs_edu, edu_start, edu_max, coeffs_home, shocks, eps_cholesky, & 
-            num_draws_emax, seed_emax, seed_prob, num_agents, &
+            coeffs_edu, edu_start, edu_max, coeffs_home, shocks, &
+            shocks_cholesky, num_draws_emax, seed_emax, seed_prob, num_agents, &
             seed_data, is_debug, is_zero, is_interpolated, num_points, &
             min_idx, is_ambiguous, measure, request, num_draws_prob)
 
@@ -535,7 +537,7 @@ PROGRAM robufort
     ! Carlo integration of the EMAX. For is_debugging purposes, these might also be 
     ! read in from disk or set to zero/one.   
     CALL create_disturbances(disturbances_emax, num_periods, num_draws_emax, &
-            seed_emax, is_debug, 'emax', eps_cholesky, is_ambiguous)
+            seed_emax, is_debug, 'emax', shocks_cholesky, is_ambiguous)
 
     ! Execute on request.
     IF (request == 'solve') THEN
@@ -546,16 +548,17 @@ PROGRAM robufort
                 periods_payoffs_systematic, states_all, states_number_period, & 
                 coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, edu_max, & 
                 delta, edu_start, is_debug, is_interpolated, level, measure, & 
-                min_idx, num_draws_emax, num_periods, num_points, is_ambiguous, &
-                disturbances_emax)
+                min_idx, num_draws_emax, num_periods, num_points, & 
+                is_ambiguous, disturbances_emax)
 
     ELSE IF (request == 'evaluate') THEN
 
         ! This part creates (or reads from disk) the disturbances for the Monte 
         ! Carlo integration of the choice probabilities. For is_debugging 
         ! purposes, these might also be read in from disk or set to zero/one.   
-        CALL create_disturbances(disturbances_prob, num_periods, num_draws_prob, &
-                seed_prob, is_debug, 'prob', eps_cholesky, is_ambiguous)
+        CALL create_disturbances(disturbances_prob, num_periods, & 
+                num_draws_prob, seed_prob, is_debug, 'prob', shocks_cholesky, &
+                is_ambiguous)
 
         ! Read observed dataset from disk
         CALL read_dataset(data_array, num_periods, num_agents)
@@ -566,12 +569,12 @@ PROGRAM robufort
                 periods_payoffs_systematic, states_all, states_number_period, & 
                 coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, edu_max, & 
                 delta, edu_start, is_debug, is_interpolated, level, measure, & 
-                min_idx, num_draws_emax, num_periods, num_points, is_ambiguous, &
-                disturbances_emax)
+                min_idx, num_draws_emax, num_periods, num_points, & 
+                is_ambiguous, disturbances_emax)
 
-        CALL evaluate_criterion_function(eval, mapping_state_idx, & 
+        CALL evaluate_criterion_function(eval, mapping_state_idx, &
                 periods_emax, periods_payoffs_systematic, states_all, shocks, & 
-                edu_max, delta, edu_start, num_periods, eps_cholesky, & 
+                edu_max, delta, edu_start, num_periods, shocks_cholesky, &
                 num_agents, num_draws_prob, data_array, disturbances_prob)
 
     END IF

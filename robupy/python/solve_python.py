@@ -65,14 +65,14 @@ def solve_python(robupy_obj):
     _start_ambiguity_logging(is_ambiguous, is_debug)
 
     # Distribute model parameters
-    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, eps_cholesky = \
+    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, shocks_cholesky = \
         distribute_model_paras(model_paras, is_debug)
 
     # Get the relevant set of disturbances. These are standard normal draws
     # in the case of an ambiguous world. This function is located outside the
     # actual bare solution algorithm to ease testing across implementations.
     disturbances_emax = create_disturbances(num_periods, num_draws_emax,
-        seed_emax, is_debug, 'emax', eps_cholesky, is_ambiguous)
+        seed_emax, is_debug, 'emax', shocks_cholesky, is_ambiguous)
 
     # Solve the model using PYTHON/F2PY implementation
     args = solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
@@ -118,9 +118,9 @@ def solve_python(robupy_obj):
 
 
 def solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
-        edu_max, delta, edu_start, is_debug, is_interpolated,
-        level, measure, min_idx, num_draws_emax, num_periods, num_points,
-        is_ambiguous, disturbances_emax, is_python):
+        edu_max, delta, edu_start, is_debug, is_interpolated, level, measure,
+        min_idx, num_draws_emax, num_periods, num_points, is_ambiguous,
+        disturbances_emax, is_python):
     """ This function is required to ensure a full analogy to F2PY and
     FORTRAN implementations. This function is not private to the module as it
     is accessed in the evaluation and optimization modules as well.
@@ -130,8 +130,7 @@ def solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
     logger.info('Starting state space creation')
 
     states_all, states_number_period, mapping_state_idx = \
-        _create_state_space(num_periods, edu_start, is_python,
-                            edu_max, min_idx)
+        _create_state_space(num_periods, edu_start, edu_max, min_idx, is_python)
 
     logger.info('... finished \n')
 
@@ -143,7 +142,7 @@ def solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
     periods_payoffs_systematic = \
         _calculate_payoffs_systematic(coeffs_a, coeffs_b, coeffs_edu,
             coeffs_home, states_number_period, num_periods, states_all,
-            is_python, edu_start)
+            edu_start, is_python)
 
     logger.info('... finished \n')
 
@@ -155,8 +154,8 @@ def solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
         _backward_induction_procedure(periods_payoffs_systematic,
             states_number_period, mapping_state_idx, is_interpolated,
             num_periods, num_points, states_all, num_draws_emax, edu_start,
-            is_python, is_debug, edu_max, measure, shocks, delta, level,
-            is_ambiguous, disturbances_emax)
+            is_debug, edu_max, measure, shocks, delta, level, is_ambiguous,
+            disturbances_emax, is_python)
 
     logger.info('... finished \n')
 
@@ -169,7 +168,7 @@ def solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
     return args
 
 
-def _create_state_space(num_periods, edu_start, is_python, edu_max, min_idx):
+def _create_state_space(num_periods, edu_start, edu_max, min_idx, is_python):
     """ Create state space. This function is a wrapper around the PYTHON and
     F2PY implementation.
     """
@@ -200,7 +199,7 @@ def _create_state_space(num_periods, edu_start, is_python, edu_max, min_idx):
 
 
 def _calculate_payoffs_systematic(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-        states_number_period, num_periods, states_all, is_python, edu_start):
+        states_number_period, num_periods, states_all, edu_start, is_python):
     """ Calculate the systematic payoffs. This function is a wrapper around the
     PYTHON and F2PY implementation.
     """
@@ -231,9 +230,9 @@ def _calculate_payoffs_systematic(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
 
 def _backward_induction_procedure(periods_payoffs_systematic,
         states_number_period, mapping_state_idx, is_interpolated, num_periods,
-        num_points, states_all, num_draws_emax, edu_start, is_python, is_debug,
-        edu_max, measure, shocks, delta, level, is_ambiguous,
-        disturbances_emax):
+        num_points, states_all, num_draws_emax, edu_start, is_debug, edu_max,
+        measure, shocks, delta, level, is_ambiguous, disturbances_emax,
+        is_python):
     """ Perform backward induction procedure. This function is a wrapper
     around the PYTHON and F2PY implementation.
     """

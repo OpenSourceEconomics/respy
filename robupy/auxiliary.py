@@ -15,11 +15,12 @@ from robupy.constants import MISSING_FLOAT
 
 
 def check_model_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
-        eps_cholesky):
+        shocks_cholesky):
     """ Check the integrity of all model parameters.
     """
     # Checks for all arguments
-    args = [coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, eps_cholesky]
+    args = [coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
+            shocks_cholesky]
     for coeffs in args:
         assert (isinstance(coeffs, np.ndarray))
         assert (np.all(np.isfinite(coeffs)))
@@ -32,8 +33,8 @@ def check_model_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
     assert (coeffs_home.size == 1)
 
     # Check Cholesky decomposition
-    assert (eps_cholesky.shape == (4, 4))
-    aux = np.matmul(eps_cholesky, eps_cholesky.T)
+    assert (shocks_cholesky.shape == (4, 4))
+    aux = np.matmul(shocks_cholesky, shocks_cholesky.T)
     np.testing.assert_array_almost_equal(shocks, aux)
 
     # Checks shock matrix
@@ -53,18 +54,19 @@ def distribute_model_paras(model_paras, is_debug):
     coeffs_edu = model_paras['coeffs_edu']
     coeffs_home = model_paras['coeffs_home']
     shocks = model_paras['shocks']
-    eps_cholesky = model_paras['eps_cholesky']
+    shocks_cholesky = model_paras['shocks_cholesky']
 
     if is_debug:
-        args = coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, eps_cholesky
+        args = [coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
+               shocks_cholesky]
         assert (check_model_parameters(*args))
 
     # Finishing
-    return coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, eps_cholesky
+    return coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, shocks_cholesky
 
 
 def create_disturbances(num_periods, num_draws_emax, seed, is_debug, which,
-        eps_cholesky, is_ambiguous):
+        shocks_cholesky, is_ambiguous):
     """ Create the relevant set of disturbances. Handle special case of zero v
     variances as thi case is useful for hand-based testing. The disturbances
     are drawn from a standard normal distribution and transformed later in
@@ -92,7 +94,7 @@ def create_disturbances(num_periods, num_draws_emax, seed, is_debug, which,
         # solution part of the program.
         for period in range(num_periods):
             disturbances[period, :, :] = \
-                np.dot(eps_cholesky, disturbances[period, :, :].T).T
+                np.dot(shocks_cholesky, disturbances[period, :, :].T).T
 
         if not is_ambiguous:
             for period in range(num_periods):
@@ -112,7 +114,7 @@ def create_disturbances(num_periods, num_draws_emax, seed, is_debug, which,
         # the agents actual decision making as traversing the tree.
         for period in range(num_periods):
             disturbances[period, :, :] = \
-                np.dot(eps_cholesky, disturbances[period, :, :].T).T
+                np.dot(shocks_cholesky, disturbances[period, :, :].T).T
             for j in [0, 1]:
                 disturbances[period, :, j] = \
                     np.exp(disturbances[period, :, j])
@@ -237,12 +239,13 @@ def check_optimization_parameters(x):
 
 
 def opt_get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-                             shocks, eps_cholesky, is_debug):
+        shocks, shocks_cholesky, is_debug):
     """ Get optimization parameters.
     """
     # Checks
     if is_debug:
-        args = coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, eps_cholesky
+        args = [coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
+               shocks_cholesky]
         assert check_model_parameters(*args)
 
     # Initialize container
@@ -261,10 +264,10 @@ def opt_get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
     x[15:16] = coeffs_home
 
     # Shocks
-    x[16:20] = eps_cholesky[0:4, 0]
-    x[20:23] = eps_cholesky[1:4, 1]
-    x[23:25] = eps_cholesky[2:4, 2]
-    x[25:26] = eps_cholesky[3:4, 3]
+    x[16:20] = shocks_cholesky[0:4, 0]
+    x[20:23] = shocks_cholesky[1:4, 1]
+    x[23:25] = shocks_cholesky[2:4, 2]
+    x[25:26] = shocks_cholesky[3:4, 3]
 
     # Checks
     if is_debug:
@@ -294,20 +297,21 @@ def opt_get_model_parameters(x, is_debug):
     coeffs_home = x[15:16]
 
     # Cholesky
-    eps_cholesky = np.tile(0.0, (4, 4))
+    shocks_cholesky = np.tile(0.0, (4, 4))
 
-    eps_cholesky[0:4, 0] = x[16:20]
-    eps_cholesky[1:4, 1] = x[20:23]
-    eps_cholesky[2:4, 2] = x[23:25]
-    eps_cholesky[3:4, 3] = x[25]
+    shocks_cholesky[0:4, 0] = x[16:20]
+    shocks_cholesky[1:4, 1] = x[20:23]
+    shocks_cholesky[2:4, 2] = x[23:25]
+    shocks_cholesky[3:4, 3] = x[25]
 
     # Shocks
-    shocks = np.matmul(eps_cholesky, eps_cholesky.T)
+    shocks = np.matmul(shocks_cholesky, shocks_cholesky.T)
 
     # Checks
     if is_debug:
-        args = coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, eps_cholesky
+        args = [coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
+               shocks_cholesky]
         assert check_model_parameters(*args)
 
     # Finishing
-    return coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, eps_cholesky
+    return coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, shocks_cholesky

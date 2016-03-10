@@ -7,6 +7,7 @@ import os
 # module-wide variables
 PACKAGE_PATH = os.path.dirname(os.path.realpath(__file__))
 
+# project library
 from robupy.fortran.auxiliary import _write_robufort_initialization
 from robupy.fortran.auxiliary import _add_results
 

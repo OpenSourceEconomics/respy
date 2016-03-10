@@ -56,14 +56,13 @@ def simulate(robupy_obj):
     file_sim = robupy_obj.get_attr('file_sim')
 
     # Auxiliary objects
-    eps_cholesky = model_paras['eps_cholesky']
+    shocks_cholesky = model_paras['shocks_cholesky']
 
     seed_data = robupy_obj.get_attr('seed_data')
 
     # Draw disturbances for the simulation.
     disturbances_data = create_disturbances(num_periods, num_agents, seed_data,
-                                           is_debug, 'sims',
-        eps_cholesky, is_ambiguous)
+                            is_debug, 'sims', shocks_cholesky, is_ambiguous)
 
     # Simulate a dataset with the results from the solution and write out the
     # dataset to a text file. In addition a file summarizing the dataset is
@@ -115,14 +114,14 @@ def _wrapper_simulate_sample(robupy_obj, disturbances_data):
     # Interface to core functions
     if is_python:
         data_frame = python_library.simulate_sample(num_agents, states_all,
-                                                    num_periods, mapping_state_idx, periods_payoffs_systematic,
-                                                    disturbances_data, edu_max, edu_start, periods_emax, delta)
+            num_periods, mapping_state_idx, periods_payoffs_systematic,
+            disturbances_data, edu_max, edu_start, periods_emax, delta)
     else:
         import robupy.python.f2py.f2py_library as f2py_library
         data_frame = f2py_library.wrapper_simulate_sample(num_agents,
-                                                          states_all, num_periods, mapping_state_idx,
-                                                          periods_payoffs_systematic, disturbances_data, edu_max,
-                                                          edu_start, periods_emax, delta)
+            states_all, num_periods, mapping_state_idx,
+            periods_payoffs_systematic, disturbances_data, edu_max,
+            edu_start, periods_emax, delta)
 
     # Replace missing values
     data_frame = replace_missing_values(data_frame)

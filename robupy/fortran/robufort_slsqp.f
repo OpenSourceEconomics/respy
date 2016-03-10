@@ -1587,8 +1587,8 @@ C   SUBROUTINES REQUIRED: NONE
 
       INTEGER          mode
       DOUBLE PRECISION f, tol, a, b, c, d, e, p, q, r, u, v, w, x, m,
-     &                 fu, fv, fw, fx, eps, tol1, tol2, ZERO, ax, bx
-      DATA             c /0.381966011d0/, eps /1.5d-8/, ZERO /0.0d0/
+     &                 fu, fv, fw, fx, tiny, tol1, tol2, ZERO, ax, bx
+      DATA             c /0.381966011d0/, tiny /1.5d-8/, ZERO /0.0d0/
 
 C  EPS = SQUARE - ROOT OF MACHINE PRECISION
 C  C = GOLDEN SECTION RATIO = (3-SQRT(5))/2
@@ -1613,7 +1613,7 @@ C  MAIN LOOP STARTS HERE
       fv = fx
       fw = fv
    20 m = 0.5d0*(a + b)
-      tol1 = eps*ABS(x) + tol
+      tol1 = tiny*ABS(x) + tol
       tol2 = tol1 + tol1
 
 C  TEST CONVERGENCE
