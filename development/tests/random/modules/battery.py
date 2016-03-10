@@ -1198,7 +1198,10 @@ def test_99():
 def test_100():
     """ Testing whether random datasets can be simulated and processed.
     """
-    for i in range(10):
+    # Ensure that fast solution methods are available
+    compile_package('--fortran --debug', True)
+
+    for i in range(5):
 
         # Generate random initialization file
         generate_init()
@@ -1209,7 +1212,7 @@ def test_100():
 
         simulate(robupy_obj)
 
-        process('data.robupy.dat', robupy_obj)
+        process(robupy_obj)
 
     # Cleanup
     cleanup()
