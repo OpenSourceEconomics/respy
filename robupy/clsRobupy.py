@@ -24,12 +24,9 @@ class RobupyCls(MetaCls):
         # Derived attributes
         self.attr['is_interpolated'] = None
 
-        self.attr['seed_data'] = None
+        self.attr['num_draws_emax'] = None
 
-        self.attr['seed_prob'] = None
-
-
-        self.attr['seed_emax'] = None
+        self.attr['num_draws_prob'] = None
 
         self.attr['is_ambiguous'] = None
 
@@ -41,7 +38,11 @@ class RobupyCls(MetaCls):
 
         self.attr['num_points'] = None
 
-        self.attr['num_draws_emax'] = None
+        self.attr['seed_data'] = None
+
+        self.attr['seed_prob'] = None
+
+        self.attr['seed_emax'] = None
 
         self.attr['is_python'] = None
 
@@ -52,8 +53,6 @@ class RobupyCls(MetaCls):
         self.attr['file_sim'] = None
 
         self.attr['file_est'] = None
-
-        self.attr['num_draws_prob'] = None
 
         self.attr['edu_max'] = None
 
@@ -101,21 +100,23 @@ class RobupyCls(MetaCls):
             shocks, shocks_cholesky):
         """ Update model parameters.
         """
-
+        # Distribute class attributes
         model_paras = self.attr['model_paras']
+
+        # Update model parametrization
+        model_paras['shocks_cholesky'] = shocks_cholesky
+
+        model_paras['coeffs_home'] = coeffs_home
+
+        model_paras['coeffs_edu'] = coeffs_edu
 
         model_paras['coeffs_a'] = coeffs_a
 
         model_paras['coeffs_b'] = coeffs_b
 
-        model_paras['coeffs_edu'] = coeffs_edu
-
-        model_paras['coeffs_home'] = coeffs_home
-
         model_paras['shocks'] = shocks
 
-        model_paras['shocks_cholesky'] = shocks_cholesky
-
+        # Update class attributes
         self.attr['model_paras'] = model_paras
 
     ''' Derived attributes
@@ -246,13 +247,11 @@ class RobupyCls(MetaCls):
             return
 
         # Distribute class attributes
-        seed_data = self.attr['seed_data']
-
         is_interpolated = self.attr['is_interpolated']
 
-        seed_prob = self.attr['seed_prob']
+        num_draws_emax = self.attr['num_draws_emax']
 
-        seed_emax = self.attr['seed_emax']
+        num_draws_prob = self.attr['num_draws_prob']
 
         is_ambiguous = self.attr['is_ambiguous']
 
@@ -268,23 +267,23 @@ class RobupyCls(MetaCls):
 
         is_python = self.attr['is_python']
 
-        num_draws_emax = self.attr['num_draws_emax']
+        seed_data = self.attr['seed_data']
 
-        num_draws_prob = self.attr['num_draws_prob']
+        seed_prob = self.attr['seed_prob']
+
+        seed_emax = self.attr['seed_emax']
 
         is_debug = self.attr['is_debug']
-
-        shocks_zero = self.attr['shocks_zero']
 
         measure = self.attr['measure']
 
         edu_max = self.attr['edu_max']
 
+        version = self.attr['version']
+
         delta = self.attr['delta']
 
         level = self.attr['level']
-
-        version = self.attr['version']
 
         is_first = self.is_first
 

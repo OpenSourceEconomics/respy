@@ -85,7 +85,6 @@ def test_85():
     if np.random.choice([True, False, False, False]):
         constraints['shocks_zero'] = True
 
-
     # Generate random initialization file.
     init_dict = generate_init(constraints)
 

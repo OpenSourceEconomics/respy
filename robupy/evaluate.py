@@ -18,13 +18,12 @@ def evaluate(robupy_obj, data_frame):
     """ Evaluate likelihood function.
     """
     # Distribute class attribute
-    is_debug = robupy_obj.get_attr('is_debug')
+    shocks_zero = robupy_obj.get_attr('shocks_zero')
 
     version = robupy_obj.get_attr('version')
 
     # Check the dataset against the initialization files
-    if is_debug:
-        check_dataset(data_frame, robupy_obj)
+    assert _check_evaluation('in', data_frame, robupy_obj, shocks_zero)
 
     # Select appropriate interface
     if version == 'FORTRAN':
@@ -33,7 +32,7 @@ def evaluate(robupy_obj, data_frame):
         robupy_obj, likl = evaluate_python(robupy_obj, data_frame)
 
     # Checks
-    assert _check_evaluation(likl)
+    assert _check_evaluation('out', likl)
 
     # Finishing
     return robupy_obj, likl
@@ -42,12 +41,26 @@ def evaluate(robupy_obj, data_frame):
 '''
 
 
-def _check_evaluation(likl):
+def _check_evaluation(str_, *args):
     """ Check integrity of criterion function.
     """
-    # Checks
-    assert isinstance(likl, float)
-    assert np.isfinite(likl)
+    if str_ == 'out':
+
+        # Distribute input parameters
+        likl, = args
+
+        # Check quality
+        assert isinstance(likl, float)
+        assert np.isfinite(likl)
+
+    elif str_ == 'in':
+
+        # Distribute input parameters
+        data_frame, robupy_obj, shocks_zero = args
+
+        # Check quality
+        check_dataset(data_frame, robupy_obj)
+        assert (shocks_zero is False)
 
     # Finishing
     return True

@@ -104,6 +104,7 @@ def evaluate_python(robupy_obj, data_frame):
 ''' Auxiliary functions
 '''
 
+
 def _evaluate_python_bare(mapping_state_idx, periods_emax,
         periods_payoffs_systematic, states_all, shocks, edu_max, delta,
         edu_start, num_periods,  shocks_cholesky, num_agents, num_draws_prob,
