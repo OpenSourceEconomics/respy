@@ -72,8 +72,7 @@ def evaluate_python(robupy_obj, data_frame):
         distribute_model_paras(model_paras, is_debug)
 
     # Draw standard normal deviates for S-ML approach
-    # TODO: Rename
-    standard_deviates = create_disturbances(num_periods, num_draws_prob,
+    disturbances_prob = create_disturbances(num_periods, num_draws_prob,
         seed_prob, is_debug, 'prob', shocks_cholesky, is_ambiguous)
 
     # Get the relevant set of disturbances. These are standard normal draws
@@ -94,9 +93,9 @@ def evaluate_python(robupy_obj, data_frame):
 
     # Evaluate the criterion function
     likl = _evaluate_python_bare(mapping_state_idx, periods_emax,
-                periods_payoffs_systematic, states_all,
-                shocks, edu_max, delta, edu_start, num_periods,  shocks_cholesky, num_agents, num_draws_prob,
-                data_array, standard_deviates, is_python)
+                periods_payoffs_systematic, states_all, shocks, edu_max,
+                delta, edu_start, num_periods, shocks_cholesky, num_agents,
+                num_draws_prob, data_array, disturbances_prob, is_python)
 
     # Finishing
     return robupy_obj, likl
@@ -108,7 +107,7 @@ def evaluate_python(robupy_obj, data_frame):
 def _evaluate_python_bare(mapping_state_idx, periods_emax,
         periods_payoffs_systematic, states_all, shocks,
         edu_max, delta, edu_start, num_periods,  shocks_cholesky, num_agents,
-        num_draws_prob, data_array, standard_deviates, is_python):
+        num_draws_prob, data_array, disturbances_prob, is_python):
     """ This function is required to ensure a full analogy to F2PY and
     FORTRAN implementations. The first part of the interface is identical to
     the solution request functions.
@@ -118,16 +117,16 @@ def _evaluate_python_bare(mapping_state_idx, periods_emax,
         likl = evaluate_criterion_function(mapping_state_idx, periods_emax,
             periods_payoffs_systematic, states_all, shocks, edu_max, delta,
             edu_start, num_periods, shocks_cholesky, num_agents, num_draws_prob,
-            data_array, standard_deviates)
+            data_array, disturbances_prob)
 
     else:
         import robupy.python.f2py.f2py_library as f2py_library
         likl = f2py_library.wrapper_evaluate_criterion_function(
             mapping_state_idx, periods_emax, periods_payoffs_systematic,
             states_all, shocks, edu_max, delta, edu_start, num_periods,
-            shocks_cholesky, num_agents, num_draws_prob, data_array, standard_deviates)
+            shocks_cholesky, num_agents, num_draws_prob, data_array,
+            disturbances_prob)
 
-    # TODO: CHECKS ...
     # Finishing
     return likl
 
@@ -136,7 +135,9 @@ def _evaluate_python_bare(mapping_state_idx, periods_emax,
 def evaluate_criterion_function(mapping_state_idx, periods_emax,
         periods_payoffs_systematic, states_all, shocks, edu_max, delta,
         edu_start, num_periods, shocks_cholesky, num_agents, num_draws_prob,
-        data_array, standard_deviates):
+        data_array, disturbances_prob):
+    """ Evaluate criterion function.
+    """
 
     # Initialize auxiliary objects
     likl, j = [], 0
@@ -161,7 +162,7 @@ def evaluate_criterion_function(mapping_state_idx, periods_emax,
             payoffs_systematic = periods_payoffs_systematic[period, k, :]
 
             # Extract relevant deviates from standard normal distribution.
-            deviates = standard_deviates[period, :, :].copy()
+            deviates = disturbances_prob[period, :, :].copy()
 
             # Prepare to calculate product of likelihood contributions.
             likl_contrib = 1.0
