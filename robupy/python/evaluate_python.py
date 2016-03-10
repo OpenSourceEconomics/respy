@@ -105,9 +105,9 @@ def evaluate_python(robupy_obj, data_frame):
 '''
 
 def _evaluate_python_bare(mapping_state_idx, periods_emax,
-        periods_payoffs_systematic, states_all, shocks,
-        edu_max, delta, edu_start, num_periods,  shocks_cholesky, num_agents,
-        num_draws_prob, data_array, disturbances_prob, is_python):
+        periods_payoffs_systematic, states_all, shocks, edu_max, delta,
+        edu_start, num_periods,  shocks_cholesky, num_agents, num_draws_prob,
+        data_array, disturbances_prob, is_python):
     """ This function is required to ensure a full analogy to F2PY and
     FORTRAN implementations. The first part of the interface is identical to
     the solution request functions.
