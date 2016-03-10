@@ -6,7 +6,7 @@
 !
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, &
+SUBROUTINE wrapper_slsqp_robufort(x_internal, x_start, maxiter, ftol, tiny, &
             num_draws_emax, eps_standard, period, k, payoffs_systematic, edu_max, &
             edu_start, mapping_state_idx, states_all, num_periods, &
             periods_emax, delta, is_debug, shocks, level)
@@ -35,7 +35,7 @@ SUBROUTINE wrapper_slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, &
     DOUBLE PRECISION, INTENT(IN)    :: payoffs_systematic(:)
     DOUBLE PRECISION, INTENT(IN)    :: periods_emax(:,:)
     DOUBLE PRECISION, INTENT(IN)    :: delta
-    DOUBLE PRECISION, INTENT(IN)    :: eps
+    DOUBLE PRECISION, INTENT(IN)    :: tiny
 
     INTEGER, INTENT(IN)             :: mapping_state_idx(:,:,:,:,:)
     INTEGER, INTENT(IN)             :: states_all(:,:,:)
@@ -52,7 +52,7 @@ SUBROUTINE wrapper_slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, &
 ! Algorithm
 !-------------------------------------------------------------------------------
     
-    CALL slsqp_robufort(x_internal, x_start, maxiter, ftol, eps, num_draws_emax, &
+    CALL slsqp_robufort(x_internal, x_start, maxiter, ftol, tiny, num_draws_emax, &
             eps_standard, period, k, payoffs_systematic, edu_max, edu_start, &
             mapping_state_idx, states_all, num_periods, periods_emax, &
             delta, is_debug, shocks, level)

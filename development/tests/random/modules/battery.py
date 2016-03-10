@@ -653,7 +653,7 @@ def test_93():
         ftol = np.random.uniform(0.000000, 1e-5)
         x0 = np.random.normal(size=2)
 
-        eps = 1e-6
+        tiny = 1e-6
 
         shocks = np.identity(4)*np.random.normal(size=1)**2
         level = np.random.normal(size=1)**2
@@ -723,7 +723,7 @@ def test_93():
         else:
             py = x0
 
-        f = fort.wrapper_slsqp_robufort(x0, maxiter, ftol, eps, num_draws_emax,
+        f = fort.wrapper_slsqp_robufort(x0, maxiter, ftol, tiny, num_draws_emax,
                 eps_standard, period, k, payoffs_systematic, edu_max, edu_start,
                 mapping_state_idx, states_all, num_periods, periods_emax,
                 delta, is_debug, shocks, level)
@@ -875,10 +875,10 @@ def test_95():
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
         # Evaluation of derivative of criterion function
-        eps = np.random.uniform(0.000000, 0.5)
+        tiny = np.random.uniform(0.000000, 0.5)
 
-        py = approx_fprime(x, _criterion, eps, *args)
-        f90 = fort.wrapper_criterion_approx_gradient(x, eps, *args)
+        py = approx_fprime(x, _criterion, tiny, *args)
+        f90 = fort.wrapper_criterion_approx_gradient(x, tiny, *args)
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
     # Cleanup
@@ -905,7 +905,7 @@ def test_96():
         cov = np.dot(matrix, matrix.T)
         x = np.random.rand(2)
         level = np.random.random(1)
-        eps = np.random.rand()**2
+        tiny = np.random.rand()**2
 
         # Kullback-Leibler (KL) divergence
         py = _divergence(x, cov, level)
@@ -913,8 +913,8 @@ def test_96():
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
         # Gradient approximation of KL divergence
-        py = approx_fprime(x, _divergence, eps, cov, level)
-        f90 = fort_debug.wrapper_divergence_approx_gradient(x, cov, level, eps)
+        py = approx_fprime(x, _divergence, tiny, cov, level)
+        f90 = fort_debug.wrapper_divergence_approx_gradient(x, cov, level, tiny)
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
     for _ in range(25):
@@ -944,13 +944,13 @@ def test_96():
         # Draw random request for testing purposes
         num_covars = np.random.random_integers(2, 10)
         num_agents = np.random.random_integers(100, 1000)
-        eps = np.random.normal(size=num_agents)
+        tiny = np.random.normal(size=num_agents)
         beta = np.random.normal(size=num_covars)
 
         # Generate sample
         exog = np.random.sample((num_agents, num_covars))
         exog[:, 0] = 1
-        endog = np.dot(exog, beta) + eps
+        endog = np.dot(exog, beta) + tiny
 
         # Run statsmodels
         results = sm.OLS(endog, exog).fit()

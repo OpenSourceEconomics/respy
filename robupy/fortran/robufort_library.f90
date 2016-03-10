@@ -85,7 +85,7 @@ SUBROUTINE evaluate_criterion_function(rslt, mapping_state_idx, periods_emax, &
     REAL(our_dble)                  :: total_payoffs(4)
     REAL(our_dble)                  :: disturbances(4)
     REAL(our_dble)                  :: likl_contrib
-    REAL(our_dble)                  :: dist
+    REAL(our_dble)                  :: tiny
 
     LOGICAL                         :: is_working
 
@@ -138,18 +138,18 @@ SUBROUTINE evaluate_criterion_function(rslt, mapping_state_idx, periods_emax, &
 
                 ! Calculate the disturbance, which follows a normal
                 ! distribution.
-                dist = LOG(data_array(j, 4)) - LOG(payoffs_systematic(idx))
+                tiny = LOG(data_array(j, 4)) - LOG(payoffs_systematic(idx))
                 
                 ! Construct independent normal draws implied by the observed
                 ! wages.
                 IF (choice == 1) THEN
-                    deviates(:, idx) = dist / sqrt(shocks(idx, idx))
+                    deviates(:, idx) = tiny / sqrt(shocks(idx, idx))
                 ELSE
-                    deviates(:, idx) = (dist - eps_cholesky(idx, 1) * deviates(:, 1)) / eps_cholesky(idx, idx)
+                    deviates(:, idx) = (tiny - eps_cholesky(idx, 1) * deviates(:, 1)) / eps_cholesky(idx, idx)
                 END IF
                 
                 ! Record contribution of wage observation. REPLACE 0.0
-                likl_contrib =  likl_contrib * normal_pdf(dist, DBLE(0.0), sqrt(shocks(idx, idx)))
+                likl_contrib =  likl_contrib * normal_pdf(tiny, DBLE(0.0), sqrt(shocks(idx, idx)))
 
             END IF
 

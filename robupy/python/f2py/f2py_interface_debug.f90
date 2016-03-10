@@ -236,7 +236,7 @@ SUBROUTINE wrapper_get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_criterion_approx_gradient(rslt, x, eps, num_draws_emax, &
+SUBROUTINE wrapper_criterion_approx_gradient(rslt, x, tiny, num_draws_emax, &
                 disturbances_relevant, period, k, payoffs_systematic, edu_max, &
                 edu_start, mapping_state_idx, states_all, num_periods, &
                 periods_emax, delta)
@@ -258,7 +258,7 @@ SUBROUTINE wrapper_criterion_approx_gradient(rslt, x, eps, num_draws_emax, &
     DOUBLE PRECISION, INTENT(IN)    :: periods_emax(:,:)
     DOUBLE PRECISION, INTENT(IN)    :: delta
     DOUBLE PRECISION, INTENT(IN)    :: x(:)
-    DOUBLE PRECISION, INTENT(IN)    :: eps
+    DOUBLE PRECISION, INTENT(IN)    :: tiny
 
     INTEGER, INTENT(IN)             :: mapping_state_idx(:,:,:,:,:)
     INTEGER, INTENT(IN)             :: states_all(:,:,:)
@@ -273,7 +273,7 @@ SUBROUTINE wrapper_criterion_approx_gradient(rslt, x, eps, num_draws_emax, &
 ! Algorithm
 !-------------------------------------------------------------------------------
 
-    rslt = criterion_approx_gradient(x, eps, num_draws_emax, disturbances_relevant, &
+    rslt = criterion_approx_gradient(x, tiny, num_draws_emax, disturbances_relevant, &
             period, k, payoffs_systematic, edu_max, edu_start, & 
             mapping_state_idx, states_all, num_periods, periods_emax, delta)
 
@@ -369,7 +369,7 @@ SUBROUTINE wrapper_criterion(emax_simulated, x, num_draws_emax, disturbances_rel
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_divergence_approx_gradient(rslt, x, cov, level, eps)
+SUBROUTINE wrapper_divergence_approx_gradient(rslt, x, cov, level, tiny)
 
     !/* external libraries      */
 
@@ -385,13 +385,13 @@ SUBROUTINE wrapper_divergence_approx_gradient(rslt, x, cov, level, eps)
     DOUBLE PRECISION, INTENT(OUT)  :: rslt(2)
     DOUBLE PRECISION, INTENT(IN)   :: level
     DOUBLE PRECISION, INTENT(IN)   :: x(2)
-    DOUBLE PRECISION, INTENT(IN)   :: eps
+    DOUBLE PRECISION, INTENT(IN)   :: tiny
 
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
     
-    rslt = divergence_approx_gradient(x, cov, level, eps)
+    rslt = divergence_approx_gradient(x, cov, level, tiny)
 
 END SUBROUTINE 
 !*******************************************************************************
