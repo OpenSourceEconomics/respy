@@ -19,7 +19,8 @@ def check_model_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
     """ Check the integrity of all model parameters.
     """
     # Checks for all arguments
-    args = [coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, shocks_cholesky]
+    args = [coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
+            shocks_cholesky]
     for coeffs in args:
         assert (isinstance(coeffs, np.ndarray))
         assert (np.all(np.isfinite(coeffs)))
@@ -56,7 +57,8 @@ def distribute_model_paras(model_paras, is_debug):
     shocks_cholesky = model_paras['shocks_cholesky']
 
     if is_debug:
-        args = coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, shocks_cholesky
+        args = [coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
+               shocks_cholesky]
         assert (check_model_parameters(*args))
 
     # Finishing
@@ -237,12 +239,13 @@ def check_optimization_parameters(x):
 
 
 def opt_get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-                             shocks, shocks_cholesky, is_debug):
+        shocks, shocks_cholesky, is_debug):
     """ Get optimization parameters.
     """
     # Checks
     if is_debug:
-        args = coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, shocks_cholesky
+        args = [coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
+               shocks_cholesky]
         assert check_model_parameters(*args)
 
     # Initialize container
@@ -306,7 +309,8 @@ def opt_get_model_parameters(x, is_debug):
 
     # Checks
     if is_debug:
-        args = coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, shocks_cholesky
+        args = [coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
+               shocks_cholesky]
         assert check_model_parameters(*args)
 
     # Finishing

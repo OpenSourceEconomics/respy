@@ -88,13 +88,13 @@ def _add_results(robupy_obj, request):
     robupy_obj.lock()
 
     # Read in evaluation of criterion function
-    eval = None
+    eval_ = None
     if request == 'evaluate':
-        eval = float(np.genfromtxt('.eval.robufort.dat'))
+        eval_ = float(np.genfromtxt('.eval.robufort.dat'))
         os.unlink('.eval.robufort.dat')
 
     # Finishing
-    return robupy_obj, eval
+    return robupy_obj, eval_
 
 
 def _write_robufort_initialization(robupy_obj, request):

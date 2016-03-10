@@ -1,10 +1,10 @@
 MODULE robufort_auxiliary
 
-    !/*	external modules	*/
+    !/*	external modules	    */
 
     USE robufort_constants
 
-	!/*	setup	                 */
+	!/*	setup	                */
 
     IMPLICIT NONE
     
@@ -18,7 +18,8 @@ SUBROUTINE get_predictions(predictions, endogenous, exogenous, maxe, &
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(OUT)       :: predictions(num_states)
+    REAL(our_dble), INTENT(OUT)       :: predictions(:)
+
     REAL(our_dble), INTENT(IN)        :: exogenous(:, :)
     REAL(our_dble), INTENT(IN)        :: endogenous(:)
     REAL(our_dble), INTENT(IN)        :: maxe(:)
@@ -123,7 +124,7 @@ SUBROUTINE random_choice(sample, candidates, num_candidates, num_points)
 
     !/* external objects    */
 
-    INTEGER, INTENT(OUT)          :: sample(num_points)
+    INTEGER, INTENT(OUT)          :: sample(:)
 
     INTEGER, INTENT(IN)           :: candidates(:)
     INTEGER, INTENT(IN)           :: num_candidates
@@ -371,9 +372,11 @@ PURE FUNCTION normal_pdf(x, mean, sd)
 ! Algorithm
 !-------------------------------------------------------------------------------
     
-    std = ((x - mean)/sd)
+    std = ((x - mean) / sd)
 
-    normal_pdf = (one_dble/sd)*(one_dble/sqrt(two_dble*pi))*exp(-(std*std)/two_dble)
+    normal_pdf = (one_dble / sd) * (one_dble / sqrt(two_dble * pi))
+
+    normal_pdf = normal_pdf * exp( -(std * std) / two_dble)
 
 END FUNCTION
 !******************************************************************************
@@ -474,8 +477,9 @@ FUNCTION determinant(A)
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(IN)    :: A(:, :)
     REAL(our_dble)                :: determinant
+
+    REAL(our_dble), INTENT(IN)    :: A(:, :)
 
     !/* internal objects        */
 
@@ -520,8 +524,9 @@ PURE FUNCTION trace_fun(A)
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(IN)  :: A(:,:)
     REAL(our_dble)              :: trace_fun
+
+    REAL(our_dble), INTENT(IN)  :: A(:,:)
 
     !/* internals objects       */
 
@@ -559,17 +564,18 @@ SUBROUTINE ludcmp(A, d, indx)
 
     !/* internal objects        */
 
+    INTEGER(our_int)                :: imax
     INTEGER(our_int)                :: i
     INTEGER(our_int)                :: j
     INTEGER(our_int)                :: k
-    INTEGER(our_int)                :: imax
     INTEGER(our_int)                :: n
 
     REAL(our_dble), ALLOCATABLE     :: vv(:)
 
-    REAL(our_dble)                  :: dum
-    REAL(our_dble)                  :: sums
+
     REAL(our_dble)                  :: aamax
+    REAL(our_dble)                  :: sums
+    REAL(our_dble)                  :: dum
 
 !-------------------------------------------------------------------------------
 ! Algorithm
@@ -760,11 +766,11 @@ SUBROUTINE svd(U, S, VT, A, m)
     
     !/* external objects        */
 
-    REAL(our_dble), INTENT(OUT)     :: VT(m, m)
-    REAL(our_dble), INTENT(OUT)     :: U(m, m)
-    REAL(our_dble), INTENT(OUT)     :: S(m) 
+    REAL(our_dble), INTENT(OUT)     :: VT(:, :)
+    REAL(our_dble), INTENT(OUT)     :: U(:, :)
+    REAL(our_dble), INTENT(OUT)     :: S(:) 
 
-    REAL(our_dble), INTENT(IN)      :: A(m, m)
+    REAL(our_dble), INTENT(IN)      :: A(:, :)
     
     INTEGER(our_int), INTENT(IN)    :: m
 
@@ -798,7 +804,7 @@ FUNCTION pinv(A, m)
 
     REAL(our_dble)                  :: pinv(m, m)
 
-    REAL(our_dble), INTENT(IN)      :: A(m, m)
+    REAL(our_dble), INTENT(IN)      :: A(:, :)
     
     INTEGER(our_int), INTENT(IN)    :: m
 
@@ -1055,17 +1061,17 @@ SUBROUTINE get_clipped_vector(Y, X, lower_bound, upper_bound, num_values)
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(INOUT)           :: Y(num_values)
+    REAL(our_dble), INTENT(INOUT)       :: Y(:)
 
-    REAL(our_dble), INTENT(IN)            :: X(num_values)
-    REAL(our_dble), INTENT(IN)            :: lower_bound
-    REAL(our_dble), INTENT(IN)            :: upper_bound
+    REAL(our_dble), INTENT(IN)          :: X(:)
+    REAL(our_dble), INTENT(IN)          :: lower_bound
+    REAL(our_dble), INTENT(IN)          :: upper_bound
     
-    INTEGER(our_int), INTENT(IN)          :: num_values
+    INTEGER(our_int), INTENT(IN)        :: num_values
 
     !/* internal objects        */
     
-    INTEGER(our_int)                      :: i
+    INTEGER(our_int)                    :: i
 
 !-------------------------------------------------------------------------------
 ! Algorithm
@@ -1097,7 +1103,7 @@ SUBROUTINE point_predictions(Y, X, coeffs, num_agents)
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(OUT)     :: Y(num_agents)
+    REAL(our_dble), INTENT(OUT)     :: Y(:)
 
     REAL(our_dble), INTENT(IN)      :: coeffs(:)
     REAL(our_dble), INTENT(IN)      :: X(:,:)
@@ -1125,7 +1131,7 @@ SUBROUTINE get_coefficients(coeffs, Y, X, num_covars, num_agents)
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(OUT)     :: coeffs(num_covars)
+    REAL(our_dble), INTENT(OUT)     :: coeffs(:)
 
     INTEGER, INTENT(IN)             :: num_covars
     INTEGER, INTENT(IN)             :: num_agents
@@ -1160,8 +1166,8 @@ SUBROUTINE get_r_squared(r_squared, observed, predicted, num_agents)
 
     REAL(our_dble), INTENT(OUT)     :: r_squared
 
-    REAL(our_dble), INTENT(IN)      :: predicted(num_agents)
-    REAL(our_dble), INTENT(IN)      :: observed(num_agents)
+    REAL(our_dble), INTENT(IN)      :: predicted(:)
+    REAL(our_dble), INTENT(IN)      :: observed(:)
     
     INTEGER(our_int), INTENT(IN)    :: num_agents
 

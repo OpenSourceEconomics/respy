@@ -303,7 +303,7 @@ SUBROUTINE simulate_sample(dataset, num_agents, states_all, num_periods, &
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(OUT)     :: dataset(num_agents*num_periods, 8)
+    REAL(our_dble), INTENT(OUT)     :: dataset(:, :)
 
     REAL(our_dble), INTENT(IN)      :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), INTENT(IN)      :: disturbances_emax(:, :, :)
@@ -431,7 +431,7 @@ SUBROUTINE calculate_payoffs_systematic(periods_payoffs_systematic, &
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(INOUT)       :: periods_payoffs_systematic(num_periods, max_states_period, 4)
+    REAL(our_dble), INTENT(INOUT)       :: periods_payoffs_systematic(:, :, :)
 
     REAL(our_dble), INTENT(IN)          :: coeffs_home(:)
     REAL(our_dble), INTENT(IN)          :: coeffs_edu(:)
@@ -543,9 +543,9 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(INOUT)       :: periods_payoffs_ex_post(num_periods, max_states_period, 4)
-    REAL(our_dble), INTENT(INOUT)       :: periods_payoffs_future(num_periods, max_states_period, 4)
-    REAL(our_dble), INTENT(INOUT)       :: periods_emax(num_periods, max_states_period)
+    REAL(our_dble), INTENT(INOUT)       :: periods_payoffs_ex_post(:, :, :)
+    REAL(our_dble), INTENT(INOUT)       :: periods_payoffs_future(:, :, :)
+    REAL(our_dble), INTENT(INOUT)       :: periods_emax(:, :)
 
     REAL(our_dble), INTENT(IN)          :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), INTENT(IN)          :: disturbances_emax(:, :, :)
@@ -702,10 +702,9 @@ SUBROUTINE create_state_space(states_all, states_number_period, &
 
     !/* external objects        */
 
-    INTEGER(our_int), INTENT(INOUT)     :: states_all(num_periods, 100000, 4)
-    INTEGER(our_int), INTENT(INOUT)     :: states_number_period(num_periods)
-    INTEGER(our_int), INTENT(INOUT)     :: mapping_state_idx(num_periods, & 
-                                            num_periods, num_periods, min_idx, 2)
+    INTEGER(our_int), INTENT(INOUT)     :: mapping_state_idx(:, :, :, :, :)
+    INTEGER(our_int), INTENT(INOUT)     :: states_number_period(:)
+    INTEGER(our_int), INTENT(INOUT)     :: states_all(:, :, :)
 
     INTEGER(our_int), INTENT(IN)        :: num_periods
     INTEGER(our_int), INTENT(IN)        :: edu_start
@@ -832,19 +831,19 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE get_payoffs(emax_simulated, payoffs_ex_post, payoffs_future, &
-                num_draws_emax, disturbances_relevant, period, k, payoffs_systematic, &
-                edu_max, edu_start, mapping_state_idx, states_all, &
-                num_periods, periods_emax, delta, is_debug, shocks, level, &
-                is_ambiguous, measure)
+                num_draws_emax, disturbances_relevant, period, k, & 
+                payoffs_systematic, edu_max, edu_start, mapping_state_idx, & 
+                states_all, num_periods, periods_emax, delta, is_debug, & 
+                shocks, level, is_ambiguous, measure)
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(OUT)         :: payoffs_ex_post(4)
-    REAL(our_dble), INTENT(OUT)         :: payoffs_future(4)
+    REAL(our_dble), INTENT(OUT)         :: payoffs_ex_post(:)
+    REAL(our_dble), INTENT(OUT)         :: payoffs_future(:)
     REAL(our_dble), INTENT(OUT)         :: emax_simulated
 
-    REAL(our_dble), INTENT(IN)          :: payoffs_systematic(:)
     REAL(our_dble), INTENT(IN)          :: disturbances_relevant(:, :)
+    REAL(our_dble), INTENT(IN)          :: payoffs_systematic(:)
     REAL(our_dble), INTENT(IN)          :: periods_emax(:, :)
     REAL(our_dble), INTENT(IN)          :: shocks(:, :)
     REAL(our_dble), INTENT(IN)          :: delta
@@ -873,18 +872,18 @@ SUBROUTINE get_payoffs(emax_simulated, payoffs_ex_post, payoffs_future, &
     IF (is_ambiguous) THEN
 
         CALL get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
-                payoffs_future, num_draws_emax, disturbances_relevant, period, k, &
-                payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
-                states_all, num_periods, periods_emax, delta, is_debug, &
-                shocks, level, measure)
+                payoffs_future, num_draws_emax, disturbances_relevant, & 
+                period, k, payoffs_systematic, edu_max, edu_start, & 
+                mapping_state_idx, states_all, num_periods, periods_emax, & 
+                delta, is_debug, shocks, level, measure)
 
     ELSE 
 
         CALL get_payoffs_risk(emax_simulated, payoffs_ex_post, &
-                payoffs_future, num_draws_emax, disturbances_relevant, period, k, &
-                payoffs_systematic, edu_max, edu_start, mapping_state_idx, & 
-                states_all, num_periods, periods_emax, delta, is_debug, & 
-                shocks, level, measure)
+                payoffs_future, num_draws_emax, disturbances_relevant, & 
+                period, k, payoffs_systematic, edu_max, edu_start, & 
+                mapping_state_idx, states_all, num_periods, periods_emax, & 
+                delta, is_debug, shocks, level, measure)
 
     END IF
     
@@ -899,11 +898,11 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_periods, &
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(OUT)         :: endogenous(num_states)
+    REAL(our_dble), INTENT(OUT)         :: endogenous(:)
 
     REAL(our_dble), INTENT(IN)          :: periods_payoffs_systematic(:, :, :)
-    REAL(our_dble), INTENT(IN)          :: periods_emax(:, :)
     REAL(our_dble), INTENT(IN)          :: disturbances_relevant(:, :)
+    REAL(our_dble), INTENT(IN)          :: periods_emax(:, :)
     REAL(our_dble), INTENT(IN)          :: shocks(:, :)    
     REAL(our_dble), INTENT(IN)          :: maxe(:)
     REAL(our_dble), INTENT(IN)          :: level
@@ -911,9 +910,9 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_periods, &
  
     INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(:, :, :, :, :)    
     INTEGER(our_int), INTENT(IN)        :: states_all(:, :, :)    
+    INTEGER(our_int), INTENT(IN)        :: num_draws_emax
     INTEGER(our_int), INTENT(IN)        :: num_periods
     INTEGER(our_int), INTENT(IN)        :: num_states
-    INTEGER(our_int), INTENT(IN)        :: num_draws_emax
     INTEGER(our_int), INTENT(IN)        :: edu_start
     INTEGER(our_int), INTENT(IN)        :: edu_max
     INTEGER(our_int), INTENT(IN)        :: period
@@ -955,10 +954,10 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_periods, &
 
         ! Get payoffs
         CALL get_payoffs(emax_simulated, payoffs_ex_post, payoffs_future, &
-                num_draws_emax, disturbances_relevant, period, k, payoffs_systematic, &
-                edu_max, edu_start, mapping_state_idx, states_all, & 
-                num_periods, periods_emax, delta, is_debug, shocks, & 
-                level, is_ambiguous, measure)
+                num_draws_emax, disturbances_relevant, period, k, & 
+                payoffs_systematic, edu_max, edu_start, mapping_state_idx, & 
+                states_all, num_periods, periods_emax, delta, is_debug, & 
+                shocks, level, is_ambiguous, measure)
 
         ! Construct dependent variable
         endogenous(k + 1) = emax_simulated - maxe(k + 1)

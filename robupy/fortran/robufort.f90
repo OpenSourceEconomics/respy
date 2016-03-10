@@ -2,13 +2,13 @@
 !*******************************************************************************
 MODULE robufort_extension
 
-    !/* external modules    */
+    !/* external modules        */
 
     USE robufort_constants
 
     USE robufort_auxiliary
 
-    !/* setup   */
+    !/* setup                   */
 
     IMPLICIT NONE
 
@@ -289,11 +289,11 @@ SUBROUTINE create_disturbances(disturbances, num_periods, num_draws_emax, &
 
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)  :: disturbances(:, :, :)
 
-    REAL(our_dble), INTENT(IN)                  :: shocks_cholesky(4, 4)
-
     INTEGER(our_int), INTENT(IN)                :: num_draws_emax
     INTEGER(our_int), INTENT(IN)                :: num_periods
     INTEGER(our_int), INTENT(IN)                :: seed 
+
+    REAL(our_dble), INTENT(IN)                  :: shocks_cholesky(4, 4)
 
     LOGICAL, INTENT(IN)                         :: is_ambiguous
     LOGICAL, INTENT(IN)                         :: is_debug
@@ -528,8 +528,8 @@ PROGRAM robufort
     ! clsRobupy instance that carries the model parametrization for the 
     ! PYTHON/F2PY implementations.
     CALL read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
-            coeffs_edu, edu_start, edu_max, coeffs_home, shocks, shocks_cholesky, &
-            num_draws_emax, seed_emax, seed_prob, num_agents, &
+            coeffs_edu, edu_start, edu_max, coeffs_home, shocks, &
+            shocks_cholesky, num_draws_emax, seed_emax, seed_prob, num_agents, &
             seed_data, is_debug, is_zero, is_interpolated, num_points, &
             min_idx, is_ambiguous, measure, request, num_draws_prob)
 

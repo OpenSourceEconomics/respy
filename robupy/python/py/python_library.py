@@ -5,6 +5,7 @@ where FORTRAN alternatives are available.
 # standard library
 import statsmodels.api as sm
 import numpy as np
+
 import logging
 import shlex
 import os
@@ -12,7 +13,6 @@ import os
 # project library
 from robupy.python.py.ambiguity import get_payoffs_ambiguity
 from robupy.python.py.auxiliary import get_total_value
-
 from robupy.python.py.risk import get_payoffs_risk
 
 from robupy.constants import INTERPOLATION_INADMISSIBLE_STATES
@@ -27,9 +27,9 @@ logger = logging.getLogger('ROBUPY_SOLVE')
 
 
 def backward_induction(num_periods, max_states_period, disturbances_emax,
-        num_draws_emax, states_number_period, periods_payoffs_systematic, edu_max,
-        edu_start, mapping_state_idx, states_all, delta, is_debug, shocks,
-        level, is_ambiguous, measure, is_interpolated, num_points):
+        num_draws_emax, states_number_period, periods_payoffs_systematic,
+        edu_max, edu_start, mapping_state_idx, states_all, delta, is_debug,
+        shocks, level, is_ambiguous, measure, is_interpolated, num_points):
     """ Backward induction procedure. There are two main threads to this
     function depending on whether interpolation is requested or not.
     """
@@ -125,19 +125,20 @@ def backward_induction(num_periods, max_states_period, disturbances_emax,
     return periods_emax, periods_payoffs_ex_post, periods_payoffs_future
 
 
-def get_payoffs(num_draws_emax, disturbances_relevant, period, k, payoffs_systematic, edu_max,
-        edu_start, mapping_state_idx, states_all, num_periods, periods_emax,
-        delta, is_debug, shocks, level, is_ambiguous, measure):
+def get_payoffs(num_draws_emax, disturbances_relevant, period, k,
+        payoffs_systematic, edu_max, edu_start, mapping_state_idx,
+        states_all, num_periods, periods_emax, delta, is_debug, shocks,
+        level, is_ambiguous, measure):
     """ Get payoffs for a particular state.
     """
     # Payoffs require different machinery depending on whether there is
     # ambiguity or not.
     if is_ambiguous:
         emax, payoffs_ex_post, payoffs_future = \
-            get_payoffs_ambiguity(num_draws_emax, disturbances_relevant, period, k,
-                payoffs_systematic, edu_max, edu_start, mapping_state_idx,
-                states_all, num_periods, periods_emax, delta, is_debug, shocks,
-                level, measure)
+            get_payoffs_ambiguity(num_draws_emax, disturbances_relevant,
+                period, k, payoffs_systematic, edu_max, edu_start,
+                mapping_state_idx, states_all, num_periods, periods_emax,
+                delta, is_debug, shocks, level, measure)
     else:
         emax, payoffs_ex_post, payoffs_future = \
             get_payoffs_risk(num_draws_emax, disturbances_relevant, period, k,
@@ -490,10 +491,10 @@ def _get_endogenous_variable(period, num_periods, num_states, delta,
         payoffs_systematic = periods_payoffs_systematic[period, k, :]
 
         # Simulate the expected future value.
-        emax_simulated, _, _ = get_payoffs(num_draws_emax, disturbances_relevant, period,
-            k, payoffs_systematic, edu_max, edu_start, mapping_state_idx,
-            states_all, num_periods, periods_emax, delta, is_debug, shocks,
-            level, is_ambiguous, measure)
+        emax_simulated, _, _ = get_payoffs(num_draws_emax,
+            disturbances_relevant, period, k, payoffs_systematic, edu_max,
+            edu_start, mapping_state_idx, states_all, num_periods,
+            periods_emax, delta, is_debug, shocks, level, is_ambiguous, measure)
 
         # Construct dependent variable
         endogenous_variable[k] = emax_simulated - maxe[k]
@@ -523,8 +524,8 @@ def _get_predictions(endogenous, exogenous, maxe, is_simulated, num_points,
     predictions[is_simulated] = endogenous[is_simulated] + maxe[is_simulated]
 
     # Checks
-    _check_prediction_model(endogenous_predicted, model, num_points, num_states,
-        is_debug)
+    _check_prediction_model(endogenous_predicted, model, num_points,
+        num_states, is_debug)
 
     # Write out some basic information to spot problems easily.
     _logging_prediction_model(results)

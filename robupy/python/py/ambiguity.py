@@ -21,18 +21,19 @@ def get_payoffs_ambiguity(num_draws_emax, disturbances_relevant, period, k,
         level, measure):
     """ Get worst case
     """
-    opt = _determine_worst_case(num_draws_emax, disturbances_relevant, period, k,
-            payoffs_systematic, edu_max, edu_start, mapping_state_idx,
+    opt = _determine_worst_case(num_draws_emax, disturbances_relevant, period,
+            k, payoffs_systematic, edu_max, edu_start, mapping_state_idx,
             states_all, num_periods, periods_emax, delta, is_debug, shocks,
             level, measure)
 
     # Transformation of standard normal deviates to relevant distributions.
-    disturbances_relevant_emax = transform_disturbances_ambiguity(disturbances_relevant, opt['x'])
+    disturbances_relevant_emax = \
+        transform_disturbances_ambiguity(disturbances_relevant, opt['x'])
 
     simulated, payoffs_ex_post, payoffs_future = \
-        simulate_emax(num_periods, num_draws_emax, period, k, disturbances_relevant_emax,
-            payoffs_systematic, edu_max, edu_start, periods_emax, states_all,
-            mapping_state_idx, delta)
+        simulate_emax(num_periods, num_draws_emax, period, k,
+            disturbances_relevant_emax, payoffs_systematic, edu_max,
+            edu_start, periods_emax, states_all, mapping_state_idx, delta)
 
     # Debugging. This only works in the case of success, as otherwise
     # opt['fun'] is not equivalent to simulated.
@@ -60,9 +61,9 @@ def _determine_worst_case(num_draws_emax, disturbances_relevant, period, k,
     x0 = _get_start(is_debug)
 
     # Collect arguments
-    args = (num_draws_emax, disturbances_relevant, period, k, payoffs_systematic, edu_max,
-            edu_start, mapping_state_idx, states_all, num_periods, periods_emax,
-            delta)
+    args = (num_draws_emax, disturbances_relevant, period, k,
+            payoffs_systematic, edu_max, edu_start, mapping_state_idx,
+            states_all, num_periods, periods_emax, delta)
 
     # Run optimization
     if measure == 'absolute':
@@ -84,10 +85,10 @@ def _determine_worst_case(num_draws_emax, disturbances_relevant, period, k,
         # a smooth and informative run of TEST_F in the random development
         # test battery the following checks are performed.
         if is_debug:
-            opt = _correct_debugging(opt, x0, shocks, level, disturbances_relevant,
-                        num_periods, num_draws_emax, period, k, payoffs_systematic,
-                        edu_max, edu_start, periods_emax, states_all,
-                        mapping_state_idx, delta)
+            opt = _correct_debugging(opt, x0, shocks, level,
+                        disturbances_relevant, num_periods, num_draws_emax,
+                        period, k, payoffs_systematic, edu_max, edu_start,
+                        periods_emax, states_all, mapping_state_idx, delta)
 
         # Stabilization. If the optimization fails the starting values are
         # used otherwise it happens that the constraint is not satisfied by far.
@@ -104,9 +105,9 @@ def _determine_worst_case(num_draws_emax, disturbances_relevant, period, k,
     return opt
 
 
-def _correct_debugging(opt, x0, shocks, level, disturbances_relevant, num_periods,
-        num_draws_emax, period, k, payoffs_systematic, edu_max, edu_start,
-        periods_emax, states_all, mapping_state_idx, delta):
+def _correct_debugging(opt, x0, shocks, level, disturbances_relevant,
+        num_periods, num_draws_emax, period, k, payoffs_systematic, edu_max,
+        edu_start, periods_emax, states_all, mapping_state_idx, delta):
     """ Some manipulations for test battery
     """
     # Check applicability
@@ -124,13 +125,13 @@ def _correct_debugging(opt, x0, shocks, level, disturbances_relevant, num_period
         opt['x'] = x0
 
         # Correct final function value
-        disturbances_relevant_emax = transform_disturbances_ambiguity(disturbances_relevant,
-                                opt['x'])
+        disturbances_relevant_emax = \
+            transform_disturbances_ambiguity(disturbances_relevant, opt['x'])
 
         simulated, payoffs_ex_post, payoffs_future = \
-            simulate_emax(num_periods, num_draws_emax, period, k, disturbances_relevant_emax,
-                payoffs_systematic, edu_max, edu_start, periods_emax,
-                states_all, mapping_state_idx, delta)
+            simulate_emax(num_periods, num_draws_emax, period, k,
+                disturbances_relevant_emax, payoffs_systematic, edu_max,
+                edu_start, periods_emax, states_all, mapping_state_idx, delta)
 
         opt['fun'] = simulated
 
@@ -149,8 +150,8 @@ def transform_disturbances_ambiguity(disturbances_relevant, x):
 
     # Exponentiation for occupations
     for j in [0, 1]:
-        disturbances_relevant_emax[:, j] = np.clip(np.exp(disturbances_relevant_emax[:, j]),
-                                          0.0, HUGE_FLOAT)
+        disturbances_relevant_emax[:, j] = \
+            np.clip(np.exp(disturbances_relevant_emax[:, j]), 0.0, HUGE_FLOAT)
 
     # Finishing
     return disturbances_relevant_emax
@@ -208,7 +209,8 @@ def _criterion(x, num_draws_emax, disturbances_relevant, period, k, payoffs_syst
     """
 
     # Transformation of standard normal deviates to relevant distributions.
-    disturbances_relevant_emax = transform_disturbances_ambiguity(disturbances_relevant, x)
+    disturbances_relevant_emax = \
+        transform_disturbances_ambiguity(disturbances_relevant, x)
 
     # Simulate the expected future value for a given parametrization.
     simulated, _, _ = simulate_emax(num_periods, num_draws_emax, period, k,

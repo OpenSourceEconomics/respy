@@ -7,8 +7,8 @@
 !*******************************************************************************
 SUBROUTINE wrapper_evaluate_criterion_function(rslt, mapping_state_idx, &
             periods_emax, periods_payoffs_systematic, states_all, shocks, &
-            edu_max, delta, edu_start, num_periods, shocks_cholesky, num_agents, &
-            num_draws_prob, data_array, standard_deviates)
+            edu_max, delta, edu_start, num_periods, shocks_cholesky, & 
+            num_agents, num_draws_prob, data_array, standard_deviates)
 
     !/* external libraries      */
 
@@ -44,8 +44,8 @@ SUBROUTINE wrapper_evaluate_criterion_function(rslt, mapping_state_idx, &
    
     CALL evaluate_criterion_function(rslt, mapping_state_idx, periods_emax, & 
             periods_payoffs_systematic, states_all, shocks, edu_max, delta, & 
-            edu_start, num_periods, shocks_cholesky, num_agents, num_draws_prob, &
-            data_array, standard_deviates)
+            edu_start, num_periods, shocks_cholesky, num_agents, & 
+            num_draws_prob, data_array, standard_deviates)
 
 END SUBROUTINE
 !*******************************************************************************
