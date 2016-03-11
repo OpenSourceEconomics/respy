@@ -80,10 +80,9 @@ def test_85():
     constraints['measure'] = 'kl'
     constraints['apply'] = True
 
-    # Just making sure that it also works for this special case. Note that
-    # this special case is currently only working in the risk case.
+    # Just making sure that it also works for this special case.
     if np.random.choice([True, False, False, False]):
-        constraints['shocks_zero'] = True
+        constraints['is_deterministic'] = True
 
     # Generate random initialization file.
     init_dict = generate_init(constraints)
@@ -428,7 +427,7 @@ def test_89():
     constraints['apply'] = False
     constraints['level'] = 0.00
     constraints['periods'] = np.random.random_integers(2, 6)
-    constraints['shocks_zero'] = True
+    constraints['is_deterministic'] = True
 
     # Initialize request
     init_dict = generate_random_dict(constraints)
@@ -524,7 +523,7 @@ def test_91():
         constraints = dict()
         constraints['level'] = 0.00
         constraints['delta'] = 0.00
-        constraints['shocks_zero'] = True
+        constraints['is_deterministic'] = True
         constraints['periods'] = np.random.random_integers(2, 5)
 
         # Ex post payoffs are not available for periods where interpolation
@@ -1080,7 +1079,7 @@ def test_98():
     constraints = dict()
     constraints['edu'] = (10, 20)
     constraints['level'] = 0.00
-    constraints['shocks_zero'] = True
+    constraints['is_deterministic'] = True
 
     version = np.random.choice(['FORTRAN', 'F2PY', 'PYTHON'])
     constraints['version'] = version
@@ -1149,7 +1148,7 @@ def test_99():
     # this special case is currently only working in the risk case.
     if np.random.choice([True, False, False, False]):
         constraints['level'] = 0.00
-        constraints['shocks_zero'] = True
+        constraints['is_deterministic'] = True
 
     # Generate random initialization file.
     init_dict = generate_random_dict(constraints)
@@ -1319,9 +1318,11 @@ def test_102():
     for _ in range(5):
 
         # Constraints
+        is_deterministic = np.random.choice([True, False], p=[0.90, 0.1])
         max_draws = np.random.random_integers(10, 100)
 
         constraints = dict()
+        constraints['is_deterministic'] = is_deterministic
         constraints['max_draws'] = max_draws
 
         # Generate random initialization file
@@ -1350,11 +1351,15 @@ def test_102():
 
             robupy_obj.lock()
 
-            robupy_obj, eval = evaluate(robupy_obj, data_frame)
+            robupy_obj, eval_ = evaluate(robupy_obj, data_frame)
 
             if base is None:
-                base = eval
+                base = eval_
 
-            np.testing.assert_allclose(base, eval, rtol=1e-05, atol=1e-06)
+            np.testing.assert_allclose(base, eval_, rtol=1e-05, atol=1e-06)
+
+            # We know even more for the deterministic case.
+            if constraints['is_deterministic']:
+                assert (eval_ in [0.0, 1.0])
 
         cleanup()

@@ -22,12 +22,12 @@ def get_payoffs_ambiguity(num_draws_emax, disturbances_relevant, period, k,
     """ Get worst case
     """
     # Check for special case
-    shocks_zero = (np.count_nonzero(shocks) == 0)
+    is_deterministic = (np.count_nonzero(shocks) == 0)
 
     # Determine the worst case, special attention to zero variability. The
     # latter is included as a special case for debugging purposes. The worst
     # case corresponds to zero.
-    if shocks_zero:
+    if is_deterministic:
         opt = _handle_shocks_zero(is_debug, period, k)
     else:
         opt = _determine_worst_case(num_draws_emax, disturbances_relevant,

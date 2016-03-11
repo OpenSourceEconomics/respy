@@ -158,7 +158,7 @@ END SUBROUTINE
 SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
                 coeffs_edu, edu_start, edu_max, coeffs_home, shocks, & 
                 shocks_cholesky, num_draws_emax, seed_emax, seed_prob, &
-                num_agents, seed_data, is_debug, is_zero, is_interpolated, & 
+                num_agents, seed_data, is_debug, is_deterministic, is_interpolated, &
                 num_points, min_idx, is_ambiguous, measure, request, & 
                 num_draws_prob)
 
@@ -192,9 +192,9 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
     REAL(our_dble), INTENT(OUT)     :: level
 
     LOGICAL, INTENT(OUT)            :: is_interpolated
+    LOGICAL, INTENT(OUT)            :: is_deterministic
     LOGICAL, INTENT(OUT)            :: is_ambiguous    
     LOGICAL, INTENT(OUT)            :: is_debug
-    LOGICAL, INTENT(OUT)            :: is_zero
 
     CHARACTER(10), INTENT(OUT)      :: measure 
     CHARACTER(10), INTENT(OUT)      :: request
@@ -264,7 +264,7 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
         ! AUXILIARY
         READ(1, 1505) min_idx
         READ(1, *) is_ambiguous
-        READ(1, *) is_zero
+        READ(1, *) is_deterministic
 
         ! REQUUEST
         READ(1, *) request
@@ -273,7 +273,7 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
 
     ! Construct auxiliary objects. The case distinction align the reasoning
     ! between the PYTHON/F2PY implementations.
-    IF (is_zero) THEN
+    IF (is_deterministic) THEN
         shocks_cholesky = zero_dble
     ELSE
         CALL cholesky(shocks_cholesky, shocks)
@@ -515,7 +515,7 @@ PROGRAM robufort
     LOGICAL                         :: is_interpolated
     LOGICAL                         :: is_ambiguous
     LOGICAL                         :: is_debug
-    LOGICAL                         :: is_zero
+    LOGICAL                         :: is_deterministic
 
     CHARACTER(10)                   :: measure 
     CHARACTER(10)                   :: request
@@ -530,7 +530,7 @@ PROGRAM robufort
     CALL read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
             coeffs_edu, edu_start, edu_max, coeffs_home, shocks, &
             shocks_cholesky, num_draws_emax, seed_emax, seed_prob, num_agents, &
-            seed_data, is_debug, is_zero, is_interpolated, num_points, &
+            seed_data, is_debug, is_deterministic, is_interpolated, num_points, &
             min_idx, is_ambiguous, measure, request, num_draws_prob)
 
     ! This part creates (or reads from disk) the disturbances for the Monte 
@@ -575,7 +575,8 @@ PROGRAM robufort
         CALL evaluate_criterion_function(eval, mapping_state_idx, &
                 periods_emax, periods_payoffs_systematic, states_all, shocks, & 
                 edu_max, delta, edu_start, num_periods, shocks_cholesky, &
-                num_agents, num_draws_prob, data_array, disturbances_prob)
+                num_agents, num_draws_prob, data_array, disturbances_prob, & 
+                is_deterministic)
 
     END IF
 

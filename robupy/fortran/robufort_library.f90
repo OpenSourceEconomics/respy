@@ -35,7 +35,7 @@ MODULE robufort_library
 SUBROUTINE evaluate_criterion_function(rslt, mapping_state_idx, periods_emax, & 
                 periods_payoffs_systematic, states_all, shocks, edu_max, & 
                 delta, edu_start, num_periods, shocks_cholesky, num_agents, &
-                num_draws_prob, data_array, standard_deviates)
+                num_draws_prob, data_array, standard_deviates, is_deterministic)
 
     !/* external objects        */
 
@@ -85,8 +85,9 @@ SUBROUTINE evaluate_criterion_function(rslt, mapping_state_idx, periods_emax, &
     REAL(our_dble)                  :: total_payoffs(4)
     REAL(our_dble)                  :: disturbances(4)
     REAL(our_dble)                  :: likl_contrib
-    REAL(our_dble)                  :: tiny
+    REAL(our_dble)                  :: dist
 
+    LOGICAL                         :: is_deterministic
     LOGICAL                         :: is_working
 
 !-------------------------------------------------------------------------------
@@ -138,18 +139,30 @@ SUBROUTINE evaluate_criterion_function(rslt, mapping_state_idx, periods_emax, &
 
                 ! Calculate the disturbance, which follows a normal
                 ! distribution.
-                tiny = LOG(data_array(j, 4)) - LOG(payoffs_systematic(idx))
+                dist = LOG(data_array(j, 4)) - LOG(payoffs_systematic(idx))
                 
                 ! Construct independent normal draws implied by the observed
                 ! wages.
                 IF (choice == 1) THEN
-                    deviates(:, idx) = tiny / sqrt(shocks(idx, idx))
+                    deviates(:, idx) = dist / sqrt(shocks(idx, idx))
                 ELSE
-                    deviates(:, idx) = (tiny - shocks_cholesky(idx, 1) * deviates(:, 1)) / shocks_cholesky(idx, idx)
+                    deviates(:, idx) = (dist - shocks_cholesky(idx, 1) * deviates(:, 1)) / shocks_cholesky(idx, idx)
                 END IF
                 
                 ! Record contribution of wage observation. REPLACE 0.0
-                likl_contrib =  likl_contrib * normal_pdf(tiny, DBLE(0.0), sqrt(shocks(idx, idx)))
+                likl_contrib =  likl_contrib * normal_pdf(dist, DBLE(0.0), sqrt(shocks(idx, idx)))
+
+
+                ! If there is no random variation in payoffs, then the
+                ! observed wages need to be identical their systematic
+                ! components.
+                IF (is_deterministic) THEN
+                    IF (dist .NE. zero_dble) THEN
+                        rslt = zero_dble
+                        RETURN
+                    END IF
+                END IF
+
 
             END IF
 
@@ -184,6 +197,15 @@ SUBROUTINE evaluate_criterion_function(rslt, mapping_state_idx, periods_emax, &
             ! arithmetic, transformed to mixed mode arithmetic.
             choice_probabilities = counts / DBLE(num_draws_prob)
 
+            ! If there is no random variation in payoffs, then this implies a
+            ! unique optimal choice.
+            IF (is_deterministic) THEN
+                IF  ((MAXVAL(counts) .EQ. num_draws_prob) .EQV. .FALSE.) THEN
+                    rslt = zero_dble
+                    RETURN
+                END IF
+            END IF
+
             ! Adjust  and record likelihood contribution
             likl_contrib = likl_contrib * choice_probabilities(idx)
             likl(j) = likl_contrib
@@ -201,6 +223,12 @@ SUBROUTINE evaluate_criterion_function(rslt, mapping_state_idx, periods_emax, &
 
     rslt = -SUM(LOG(likl)) / (num_agents * num_periods)
 
+    ! If there is no random variation in payoffs and no agent violated the
+    ! implications of observed wages and choices, then the evaluation return
+    ! a value of one.
+    IF (is_deterministic) THEN
+        rslt = 1.0
+    END IF
 
 END SUBROUTINE
 !*******************************************************************************

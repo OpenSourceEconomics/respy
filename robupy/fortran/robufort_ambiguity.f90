@@ -70,7 +70,7 @@ SUBROUTINE get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
     REAL(our_dble)                  :: ftol
     REAL(our_dble)                  :: tiny
 
-    LOGICAL                         :: shocks_zero
+    LOGICAL                         :: is_deterministic
 
 !-------------------------------------------------------------------------------
 ! Algorithm
@@ -83,13 +83,13 @@ SUBROUTINE get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
     tiny = 1.4901161193847656e-08
 
     ! Check for special case
-    shocks_zero = ALL(shocks .EQ. zero_dble)
+    is_deterministic = ALL(shocks .EQ. zero_dble)
 
     ! Determine the worst case, special attention to zero variability. The
     ! latter is included as a special case for debugging purposes. The worst
     ! case corresponds to zero.
 
-    IF (shocks_zero) THEN
+    IF (is_deterministic) THEN
 
         CALL handle_shocks_zero(x_internal, is_debug, period, k)
     

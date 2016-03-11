@@ -36,7 +36,7 @@ def evaluate_python(robupy_obj, data_frame):
 
     is_ambiguous = robupy_obj.get_attr('is_ambiguous')
 
-    shocks_zero = robupy_obj.get_attr('shocks_zero')
+    is_deterministic = robupy_obj.get_attr('is_deterministic')
 
     model_paras = robupy_obj.get_attr('model_paras')
 
@@ -97,7 +97,7 @@ def evaluate_python(robupy_obj, data_frame):
     likl = _evaluate_python_bare(mapping_state_idx, periods_emax,
                 periods_payoffs_systematic, states_all, shocks, edu_max,
                 delta, edu_start, num_periods, shocks_cholesky, num_agents,
-                num_draws_prob, data_array, disturbances_prob, shocks_zero,
+                num_draws_prob, data_array, disturbances_prob, is_deterministic,
                 is_python)
 
     # Finishing
@@ -111,7 +111,7 @@ def evaluate_python(robupy_obj, data_frame):
 def _evaluate_python_bare(mapping_state_idx, periods_emax,
         periods_payoffs_systematic, states_all, shocks, edu_max, delta,
         edu_start, num_periods,  shocks_cholesky, num_agents, num_draws_prob,
-        data_array, disturbances_prob, shocks_zero, is_python):
+        data_array, disturbances_prob, is_deterministic, is_python):
     """ This function is required to ensure a full analogy to F2PY and
     FORTRAN implementations. The first part of the interface is identical to
     the solution request functions.
@@ -121,7 +121,7 @@ def _evaluate_python_bare(mapping_state_idx, periods_emax,
         likl = evaluate_criterion_function(mapping_state_idx, periods_emax,
             periods_payoffs_systematic, states_all, shocks, edu_max, delta,
             edu_start, num_periods, shocks_cholesky, num_agents, num_draws_prob,
-            data_array, disturbances_prob, shocks_zero)
+            data_array, disturbances_prob, is_deterministic)
 
     else:
         import robupy.python.f2py.f2py_library as f2py_library
@@ -129,7 +129,7 @@ def _evaluate_python_bare(mapping_state_idx, periods_emax,
             mapping_state_idx, periods_emax, periods_payoffs_systematic,
             states_all, shocks, edu_max, delta, edu_start, num_periods,
             shocks_cholesky, num_agents, num_draws_prob, data_array,
-            disturbances_prob)
+            disturbances_prob, is_deterministic)
 
     # Finishing
     return likl
@@ -139,10 +139,12 @@ def _evaluate_python_bare(mapping_state_idx, periods_emax,
 def evaluate_criterion_function(mapping_state_idx, periods_emax,
         periods_payoffs_systematic, states_all, shocks, edu_max, delta,
         edu_start, num_periods, shocks_cholesky, num_agents, num_draws_prob,
-        data_array, disturbances_prob, shocks_zero):
-    """ Evaluate criterion function.
+        data_array, disturbances_prob, is_deterministic):
+    """ Evaluate criterion function. This code allows for a deterministic
+    model, where there is no random variation in the rewards. If that is the
+    case and all agents have corresponding experiences, then one is returned.
+    If a single agent violates the implications, then the zero is returned.
     """
-
     # Initialize auxiliary objects
     likl, j = [], 0
 
@@ -183,7 +185,7 @@ def evaluate_criterion_function(mapping_state_idx, periods_emax,
                 # If there is no random variation in payoffs, then the
                 # observed wages need to be identical their systematic
                 # components.
-                if shocks_zero and dist != 0.0:
+                if is_deterministic and dist != 0.0:
                     return 0.0
 
                 # Construct independent normal draws implied by the observed
@@ -224,7 +226,7 @@ def evaluate_criterion_function(mapping_state_idx, periods_emax,
 
             # If there is no random variation in payoffs, then this implies a
             # unique optimal choice.
-            if shocks_zero and (not np.any(counts == choice_probabilities)):
+            if is_deterministic and (not (max(counts) == num_draws_prob)):
                 return 0.0
 
             # Adjust  and record likelihood contribution
@@ -239,7 +241,7 @@ def evaluate_criterion_function(mapping_state_idx, periods_emax,
     # If there is no random variation in payoffs and no agent violated the
     # implications of observed wages and choices, then the evaluation return
     # a value of one.
-    if shocks_zero:
+    if is_deterministic:
         likl = 1.0
 
     # Finishing

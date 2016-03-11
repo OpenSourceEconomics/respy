@@ -18,12 +18,12 @@ def evaluate(robupy_obj, data_frame):
     """ Evaluate likelihood function.
     """
     # Distribute class attribute
-    shocks_zero = robupy_obj.get_attr('shocks_zero')
+    is_deterministic = robupy_obj.get_attr('is_deterministic')
 
     version = robupy_obj.get_attr('version')
 
     # Check the dataset against the initialization files
-    assert _check_evaluation('in', data_frame, robupy_obj, shocks_zero)
+    assert _check_evaluation('in', data_frame, robupy_obj, is_deterministic)
 
     # Select appropriate interface
     if version == 'FORTRAN':
@@ -56,7 +56,7 @@ def _check_evaluation(str_, *args):
     elif str_ == 'in':
 
         # Distribute input parameters
-        data_frame, robupy_obj, shocks_zero = args
+        data_frame, robupy_obj, is_deterministic = args
 
         # Check quality
         check_dataset(data_frame, robupy_obj)

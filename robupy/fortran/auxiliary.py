@@ -108,7 +108,7 @@ def _write_robufort_initialization(robupy_obj, request):
     # Auxiliary objects
     is_ambiguous = robupy_obj.get_attr('is_ambiguous')
 
-    shocks_zero = robupy_obj.get_attr('shocks_zero')
+    is_deterministic = robupy_obj.get_attr('is_deterministic')
 
     min_idx = robupy_obj.get_attr('min_idx')
 
@@ -201,7 +201,7 @@ def _write_robufort_initialization(robupy_obj, request):
         line = '{0}'.format(is_ambiguous)
         file_.write(line + '\n')
 
-        line = '{0}'.format(shocks_zero)
+        line = '{0}'.format(is_deterministic)
         file_.write(line + '\n')
 
         # Request

@@ -175,7 +175,7 @@ class Tests(object):
         # Generate constraint periods
         constraints = dict()
         constraints['version'] = version
-        constraints['shocks_zero'] = True
+        constraints['is_deterministic'] = True
         constraints['level'] = 0.00
 
         # Generate random initialization file
@@ -204,7 +204,7 @@ class Tests(object):
 
         # Generate constraints
         constraints = dict()
-        constraints['shocks_zero'] = True
+        constraints['is_deterministic'] = True
         constraints['version'] = version
         constraints['level'] = 0.0
 

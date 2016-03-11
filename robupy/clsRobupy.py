@@ -9,7 +9,7 @@ import numpy as np
 
 # Special care with derived attributes is required to maintain integrity of
 # the class instance.
-DERIVED_ATTR = ['is_ambiguous', 'is_python', 'min_idx', 'shocks_zero']
+DERIVED_ATTR = ['is_ambiguous', 'is_python', 'min_idx', 'is_deterministic']
 
 
 class RobupyCls(object):
@@ -122,7 +122,7 @@ class RobupyCls(object):
         # Update class attributes
         self.attr['model_paras'] = model_paras
 
-        # Update derived attributes. This is required as the shocks_zero
+        # Update derived attributes. This is required as the is_deterministic
         # indicator depends on the value of shocks. The latter is modified
         # above.
         self._update_derived_attributes()
@@ -312,7 +312,7 @@ class RobupyCls(object):
         # Update derived attributes
         self.attr['min_idx'] = min(num_periods, (edu_max - edu_start + 1))
 
-        self.attr['shocks_zero'] = (np.count_nonzero(shocks) == 0)
+        self.attr['is_deterministic'] = (np.count_nonzero(shocks) == 0)
 
         self.attr['is_ambiguous'] = (self.attr['level'] > 0.00)
 
