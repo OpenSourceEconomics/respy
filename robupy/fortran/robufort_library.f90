@@ -241,7 +241,7 @@ SUBROUTINE solve_fortran_bare(mapping_state_idx, periods_emax, &
                 coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, edu_max, & 
                 delta, edu_start, is_debug, is_interpolated, level, measure, & 
                 min_idx, num_draws_emax, num_periods, num_points, & 
-                is_ambiguous, disturbances_emax)
+                is_ambiguous, disturbances_emax, is_deterministic)
 
     !/* external objects        */
 
@@ -270,6 +270,7 @@ SUBROUTINE solve_fortran_bare(mapping_state_idx, periods_emax, &
     REAL(our_dble), INTENT(IN)                      :: level
     REAL(our_dble), INTENT(IN)                      :: delta
 
+    LOGICAL, INTENT(IN)                             :: is_deterministic
     LOGICAL, INTENT(IN)                             :: is_interpolated
     LOGICAL, INTENT(IN)                             :: is_ambiguous
     LOGICAL, INTENT(IN)                             :: is_debug
@@ -322,7 +323,7 @@ SUBROUTINE solve_fortran_bare(mapping_state_idx, periods_emax, &
             disturbances_emax, num_draws_emax, states_number_period, &
             periods_payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
             states_all, delta, is_debug, shocks, level, is_ambiguous, measure, &
-            is_interpolated, num_points)
+            is_interpolated, num_points, is_deterministic)
 
 END SUBROUTINE   
 !*******************************************************************************
@@ -561,7 +562,8 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
                 disturbances_emax, num_draws_emax, states_number_period, &
                 periods_payoffs_systematic, edu_max, edu_start, &
                 mapping_state_idx, states_all, delta, is_debug, shocks, &
-                level, is_ambiguous, measure, is_interpolated, num_points)
+                level, is_ambiguous, measure, is_interpolated, num_points, & 
+                is_deterministic)
 
     !
     ! Development Notes
@@ -593,6 +595,7 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
     INTEGER(our_int), INTENT(IN)        :: edu_start
     INTEGER(our_int), INTENT(IN)        :: edu_max
 
+    LOGICAL, INTENT(IN)                 :: is_deterministic
     LOGICAL, INTENT(IN)                 :: is_interpolated
     LOGICAL, INTENT(IN)                 :: is_ambiguous
     LOGICAL, INTENT(IN)                 :: is_debug
@@ -676,7 +679,8 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
                     num_states, delta, periods_payoffs_systematic, edu_max, & 
                     edu_start, mapping_state_idx, periods_emax, states_all, & 
                     is_simulated, num_draws_emax, shocks, level, is_ambiguous, &
-                    is_debug, measure, maxe, disturbances_relevant)
+                    is_debug, measure, maxe, disturbances_relevant, & 
+                    is_deterministic)
 
             ! Create prediction model based on the random subset of points where
             ! the EMAX is actually simulated and thus endogenous and
@@ -705,7 +709,7 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
                         payoffs_systematic, edu_max, edu_start, & 
                         mapping_state_idx, states_all, num_periods, & 
                         periods_emax, delta, is_debug, shocks, level, & 
-                        is_ambiguous, measure)
+                        is_ambiguous, measure, is_deterministic)
 
                 ! Collect information
                 periods_emax(period + 1, k + 1) = emax_simulated
@@ -864,7 +868,7 @@ SUBROUTINE get_payoffs(emax_simulated, payoffs_ex_post, payoffs_future, &
                 num_draws_emax, disturbances_relevant, period, k, & 
                 payoffs_systematic, edu_max, edu_start, mapping_state_idx, & 
                 states_all, num_periods, periods_emax, delta, is_debug, & 
-                shocks, level, is_ambiguous, measure)
+                shocks, level, is_ambiguous, measure, is_deterministic)
 
     !/* external objects        */
 
@@ -888,6 +892,8 @@ SUBROUTINE get_payoffs(emax_simulated, payoffs_ex_post, payoffs_future, &
     INTEGER(our_int), INTENT(IN)        :: period
     INTEGER(our_int), INTENT(IN)        :: k 
 
+
+    LOGICAL, INTENT(IN)                 :: is_deterministic    
     LOGICAL, INTENT(IN)                 :: is_ambiguous
     LOGICAL, INTENT(IN)                 :: is_debug
 
@@ -905,7 +911,7 @@ SUBROUTINE get_payoffs(emax_simulated, payoffs_ex_post, payoffs_future, &
                 payoffs_future, num_draws_emax, disturbances_relevant, & 
                 period, k, payoffs_systematic, edu_max, edu_start, & 
                 mapping_state_idx, states_all, num_periods, periods_emax, & 
-                delta, is_debug, shocks, level, measure)
+                delta, is_debug, shocks, level, measure, is_deterministic)
 
     ELSE 
 
@@ -913,7 +919,7 @@ SUBROUTINE get_payoffs(emax_simulated, payoffs_ex_post, payoffs_future, &
                 payoffs_future, num_draws_emax, disturbances_relevant, & 
                 period, k, payoffs_systematic, edu_max, edu_start, & 
                 mapping_state_idx, states_all, num_periods, periods_emax, & 
-                delta, is_debug, shocks, level, measure)
+                delta, is_debug, shocks, level, measure, is_deterministic)
 
     END IF
     
@@ -924,7 +930,8 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_periods, &
                 num_states, delta, periods_payoffs_systematic, edu_max, & 
                 edu_start, mapping_state_idx, periods_emax, states_all, & 
                 is_simulated, num_draws_emax, shocks, level, is_ambiguous, &
-                is_debug, measure, maxe, disturbances_relevant)
+                is_debug, measure, maxe, disturbances_relevant, & 
+                is_deterministic)
 
     !/* external objects        */
 
@@ -948,6 +955,7 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_periods, &
     INTEGER(our_int), INTENT(IN)        :: period
 
 
+    LOGICAL, INTENT(IN)                 :: is_deterministic
     LOGICAL, INTENT(IN)                 :: is_simulated(:)
     LOGICAL, INTENT(IN)                 :: is_ambiguous
     LOGICAL, INTENT(IN)                 :: is_debug
@@ -987,7 +995,7 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_periods, &
                 num_draws_emax, disturbances_relevant, period, k, & 
                 payoffs_systematic, edu_max, edu_start, mapping_state_idx, & 
                 states_all, num_periods, periods_emax, delta, is_debug, & 
-                shocks, level, is_ambiguous, measure)
+                shocks, level, is_ambiguous, measure, is_deterministic)
 
         ! Construct dependent variable
         endogenous(k + 1) = emax_simulated - maxe(k + 1)

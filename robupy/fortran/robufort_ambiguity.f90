@@ -32,7 +32,7 @@ SUBROUTINE get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
                 payoffs_future, num_draws_emax, disturbances_relevant, period, & 
                 k, payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
                 states_all, num_periods, periods_emax, delta, is_debug, &
-                shocks, level, measure)
+                shocks, level, measure, is_deterministic)
 
     !/* external objects        */
 
@@ -56,6 +56,7 @@ SUBROUTINE get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
     REAL(our_dble), INTENT(IN)      :: delta
     REAL(our_dble), INTENT(IN)      :: level
 
+    LOGICAL, INTENT(IN)             :: is_deterministic
     LOGICAL, INTENT(IN)             :: is_debug
 
     CHARACTER(10), INTENT(IN)       :: measure
@@ -70,8 +71,6 @@ SUBROUTINE get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
     REAL(our_dble)                  :: ftol
     REAL(our_dble)                  :: tiny
 
-    LOGICAL                         :: is_deterministic
-
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
@@ -81,9 +80,6 @@ SUBROUTINE get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
     maxiter = 100000000_our_int
     ftol = 1e-06_our_dble
     tiny = 1.4901161193847656e-08
-
-    ! Check for special case
-    is_deterministic = ALL(shocks .EQ. zero_dble)
 
     ! Determine the worst case, special attention to zero variability. The
     ! latter is included as a special case for debugging purposes. The worst

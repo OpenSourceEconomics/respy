@@ -549,7 +549,7 @@ PROGRAM robufort
                 coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, edu_max, & 
                 delta, edu_start, is_debug, is_interpolated, level, measure, & 
                 min_idx, num_draws_emax, num_periods, num_points, & 
-                is_ambiguous, disturbances_emax)
+                is_ambiguous, disturbances_emax, is_deterministic)
 
     ELSE IF (request == 'evaluate') THEN
 
@@ -570,7 +570,7 @@ PROGRAM robufort
                 coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, edu_max, & 
                 delta, edu_start, is_debug, is_interpolated, level, measure, & 
                 min_idx, num_draws_emax, num_periods, num_points, & 
-                is_ambiguous, disturbances_emax)
+                is_ambiguous, disturbances_emax, is_deterministic)
 
         CALL evaluate_criterion_function(eval, mapping_state_idx, &
                 periods_emax, periods_payoffs_systematic, states_all, shocks, & 

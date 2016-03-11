@@ -12,7 +12,8 @@ SUBROUTINE wrapper_solve_fortran_bare(mapping_state_idx, periods_emax, &
                 coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, edu_max, & 
                 delta, edu_start, is_debug, is_interpolated, level, measure, & 
                 min_idx, num_draws_emax, num_periods, num_points, & 
-                is_ambiguous, disturbances_emax, max_states_period)
+                is_ambiguous, disturbances_emax, is_deterministic, & 
+                max_states_period)
     
     !
     ! The presence of max_states_period breaks the equality of interfaces. 
@@ -55,7 +56,8 @@ SUBROUTINE wrapper_solve_fortran_bare(mapping_state_idx, periods_emax, &
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(:)
     DOUBLE PRECISION, INTENT(IN)    :: level
     DOUBLE PRECISION, INTENT(IN)    :: delta 
- 
+
+    LOGICAL, INTENT(IN)             :: is_deterministic 
     LOGICAL, INTENT(IN)             :: is_interpolated
     LOGICAL, INTENT(IN)             :: is_ambiguous
     LOGICAL, INTENT(IN)             :: is_debug
@@ -86,7 +88,8 @@ SUBROUTINE wrapper_solve_fortran_bare(mapping_state_idx, periods_emax, &
             states_number_period_int, coeffs_a, coeffs_b, coeffs_edu, & 
             coeffs_home, shocks, edu_max, delta, edu_start, is_debug, & 
             is_interpolated, level, measure, min_idx, num_draws_emax, &
-            num_periods, num_points, is_ambiguous, disturbances_emax)
+            num_periods, num_points, is_ambiguous, disturbances_emax, & 
+            is_deterministic)
 
     ! Assign to initial objects for return to PYTHON
     periods_payoffs_systematic = periods_payoffs_systematic_int   
@@ -187,7 +190,7 @@ SUBROUTINE wrapper_get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
                 payoffs_future, num_draws_emax, disturbances_relevant, & 
                 period, k, payoffs_systematic, edu_max, edu_start, & 
                 mapping_state_idx, states_all, num_periods, periods_emax, & 
-                delta, is_debug, shocks, level, measure)
+                delta, is_debug, shocks, level, measure, is_deterministic)
 
     !/* external libraries      */
 
@@ -219,6 +222,7 @@ SUBROUTINE wrapper_get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
     DOUBLE PRECISION, INTENT(IN)    :: delta
     DOUBLE PRECISION, INTENT(IN)    :: level
 
+    LOGICAL, INTENT(IN)             :: is_deterministic
     LOGICAL, INTENT(IN)             :: is_debug
 
     CHARACTER(10), INTENT(IN)       :: measure
@@ -231,7 +235,7 @@ SUBROUTINE wrapper_get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
             payoffs_future, num_draws_emax, disturbances_relevant, period, k, &
             payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
             states_all, num_periods, periods_emax, delta, is_debug, shocks, & 
-            level, measure)
+            level, measure, is_deterministic)
 
 END SUBROUTINE
 !*******************************************************************************
@@ -764,7 +768,8 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, &
                 num_periods, num_states, delta, periods_payoffs_systematic, &
                 edu_max, edu_start, mapping_state_idx, periods_emax, &
                 states_all, is_simulated, num_draws_emax, shocks, level, &
-                is_ambiguous, is_debug, measure, maxe, disturbances_relevant)
+                is_ambiguous, is_debug, measure, maxe, disturbances_relevant, & 
+                is_deterministic)
 
     !/* external libraries      */
 
@@ -795,6 +800,8 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, &
     INTEGER, INTENT(IN)                 :: edu_max
     INTEGER, INTENT(IN)                 :: period
 
+
+    LOGICAL, INTENT(IN)                 :: is_deterministic
     LOGICAL, INTENT(IN)                 :: is_simulated(:)
     LOGICAL, INTENT(IN)                 :: is_ambiguous
     LOGICAL, INTENT(IN)                 :: is_debug
@@ -809,7 +816,7 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, &
             num_states, delta, periods_payoffs_systematic, edu_max, &
             edu_start, mapping_state_idx, periods_emax, states_all, &
             is_simulated, num_draws_emax, shocks, level, is_ambiguous, & 
-            is_debug, measure, maxe, disturbances_relevant)
+            is_debug, measure, maxe, disturbances_relevant, is_deterministic)
 
 END SUBROUTINE
 !*******************************************************************************
@@ -894,7 +901,7 @@ SUBROUTINE wrapper_get_payoffs(emax_simulated, payoffs_ex_post, payoffs_future, 
                 num_draws_emax, disturbances_relevant, period, k, & 
                 payoffs_systematic, edu_max, edu_start, mapping_state_idx, & 
                 states_all, num_periods, periods_emax, delta, is_debug, & 
-                shocks, level, is_ambiguous, measure)
+                shocks, level, is_ambiguous, measure, is_deterministic)
 
 
     !/* external libraries      */
@@ -927,6 +934,7 @@ SUBROUTINE wrapper_get_payoffs(emax_simulated, payoffs_ex_post, payoffs_future, 
     INTEGER, INTENT(IN)                 :: period
     INTEGER, INTENT(IN)                 :: k 
 
+    LOGICAL, INTENT(IN)                 :: is_deterministic
     LOGICAL, INTENT(IN)                 :: is_ambiguous
     LOGICAL, INTENT(IN)                 :: is_debug
 
@@ -940,7 +948,7 @@ SUBROUTINE wrapper_get_payoffs(emax_simulated, payoffs_ex_post, payoffs_future, 
                 num_draws_emax, disturbances_relevant, period, k, & 
                 payoffs_systematic, edu_max, edu_start, mapping_state_idx, & 
                 states_all, num_periods, periods_emax, delta, is_debug, & 
-                shocks, level, is_ambiguous, measure)
+                shocks, level, is_ambiguous, measure, is_deterministic)
     
 END SUBROUTINE
 !*******************************************************************************

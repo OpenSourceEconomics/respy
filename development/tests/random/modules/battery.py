@@ -159,6 +159,8 @@ def test_86():
 
         mapping_state_idx = robupy_obj.get_attr('mapping_state_idx')
 
+        is_deterministic = robupy_obj.get_attr('is_deterministic')
+
         seed_prob = robupy_obj.get_attr('seed_prob')
 
         periods_emax = robupy_obj.get_attr('periods_emax')
@@ -234,7 +236,7 @@ def test_86():
                 periods_payoffs_systematic, edu_max, edu_start,
                 mapping_state_idx, periods_emax, states_all, is_simulated,
                 num_draws_emax, shocks, level, is_ambiguous, is_debug, measure,
-                maxe, disturbances_relevant]
+                maxe, disturbances_relevant, is_deterministic]
 
         py = _get_endogenous_variable(*args)
         f90 = fort.wrapper_get_endogenous_variable(*args)
@@ -288,6 +290,8 @@ def test_87():
 
         mapping_state_idx = robupy_obj.get_attr('mapping_state_idx')
 
+        is_deterministic = robupy_obj.get_attr('is_deterministic')
+
         is_ambiguous = robupy_obj.get_attr('is_ambiguous')
 
         periods_emax = robupy_obj.get_attr('periods_emax')
@@ -330,12 +334,12 @@ def test_87():
             py = get_payoffs(num_draws_emax, disturbances_relevant, period, k,
                     payoffs_systematic, edu_max, edu_start, mapping_state_idx,
                     states_all, num_periods, periods_emax, delta, is_debug,
-                    shocks, level, is_ambiguous, measure)
+                    shocks, level, is_ambiguous, measure, is_deterministic)
 
             f90 = fort.wrapper_get_payoffs(num_draws_emax, disturbances_relevant, period, k,
                     payoffs_systematic, edu_max, edu_start, mapping_state_idx,
                     states_all, num_periods, periods_emax, delta, is_debug,
-                    shocks, level, is_ambiguous, measure)
+                    shocks, level, is_ambiguous, measure, is_deterministic)
 
             # Compare returned array on expected future values, ex post
             # payoffs, and future payoffs.
@@ -586,6 +590,8 @@ def test_92():
 
         mapping_state_idx = robupy_obj.get_attr('mapping_state_idx')
 
+        is_deterministic = robupy_obj.get_attr('is_deterministic')
+
         periods_emax = robupy_obj.get_attr('periods_emax')
 
         num_periods = robupy_obj.get_attr('num_periods')
@@ -625,7 +631,8 @@ def test_92():
 
         args = [num_draws_emax, eps_standard, period, k, payoffs_systematic,
             edu_max, edu_start, mapping_state_idx, states_all, num_periods,
-            periods_emax, debug, delta, shocks, level, measure]
+            periods_emax, debug, delta, shocks, level, measure,
+            is_deterministic]
 
         f = fort.wrapper_get_payoffs_ambiguity(*args)[0]
         py = get_payoffs_ambiguity(*args)[0]
@@ -1237,6 +1244,8 @@ def test_101():
         # Extract class attributes
         is_interpolated = robupy_obj.get_attr('is_interpolated')
 
+        is_deterministic = robupy_obj.get_attr('is_deterministic')
+
         seed_emax = robupy_obj.get_attr('seed_emax')
 
         is_ambiguous = robupy_obj.get_attr('is_ambiguous')
@@ -1280,7 +1289,7 @@ def test_101():
         base_args = [coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
             edu_max, delta, edu_start, is_debug, is_interpolated, level,
             measure, min_idx, num_draws_emax, num_periods, num_points,
-            is_ambiguous, disturbances_emax]
+            is_ambiguous, disturbances_emax, is_deterministic]
 
         # Check for the equality of the solution routines.
         base = None

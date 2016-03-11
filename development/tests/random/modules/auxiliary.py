@@ -238,11 +238,81 @@ def finish(dict_, HOURS, notification):
 
         mail_obj.send()
 
+
 def cleanup():
     """ Cleanup after test battery.
     '"""
 
-    os.system('./clean')
+
+    files = []
+
+    ''' Clean main.
+    '''
+    files += glob.glob('.waf*')
+
+    files += glob.glob('.pkl*')
+
+    files += glob.glob('.txt*')
+
+    files += glob.glob('.grm.*')
+
+    files += glob.glob('*.pkl')
+
+    files += glob.glob('*.txt')
+
+    files += glob.glob('*.out')
+
+    files += glob.glob('*.ini')
+
+    files += glob.glob('*.pyc')
+
+    files += glob.glob('.seed')
+
+    files += glob.glob('.dat*')
+
+    files += glob.glob('*.robupy.*')
+
+    files += glob.glob('*.robufort.*')
+
+    ''' Clean modules.
+        '''
+    files += glob.glob('modules/*.out*')
+
+    files += glob.glob('modules/*.pyc')
+
+    files += glob.glob('modules/*.mod')
+
+    files += glob.glob('modules/dp3asim')
+
+    files += glob.glob('modules/lib')
+
+    files += glob.glob('modules/include')
+
+    files += glob.glob('modules/*.so')
+
+    files += glob.glob('*.dat')
+
+    files += glob.glob('.restud.testing.scratch')
+
+    files += glob.glob('modules/*.o')
+
+    files += glob.glob('modules/__pycache__')
+
+    for file_ in files:
+
+        try:
+
+            os.remove(file_)
+
+        except:
+
+            try:
+
+                shutil.rmtree(file_)
+
+            except:
+
+                pass
 
 
 def compile_package(options, is_hidden):

@@ -29,9 +29,11 @@ def solve_python(robupy_obj):
     the functions across the PYTHON and F2PY implementations.
     """
     # Distribute class attributes
+    is_deterministic = robupy_obj.get_attr('is_deterministic')
+
     is_interpolated = robupy_obj.get_attr('is_interpolated')
 
-    seed_emax = robupy_obj.get_attr('seed_emax')
+    num_draws_emax = robupy_obj.get_attr('num_draws_emax')
 
     is_ambiguous = robupy_obj.get_attr('is_ambiguous')
 
@@ -41,7 +43,7 @@ def solve_python(robupy_obj):
 
     num_points = robupy_obj.get_attr('num_points')
 
-    num_draws_emax = robupy_obj.get_attr('num_draws_emax')
+    seed_emax = robupy_obj.get_attr('seed_emax')
 
     edu_start = robupy_obj.get_attr('edu_start')
 
@@ -78,7 +80,7 @@ def solve_python(robupy_obj):
     args = solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
                 shocks, edu_max, delta, edu_start, is_debug, is_interpolated,
                 level, measure, min_idx, num_draws_emax, num_periods, num_points,
-                is_ambiguous, disturbances_emax, is_python)
+                is_ambiguous, disturbances_emax, is_deterministic, is_python)
 
     # Distribute return arguments
     mapping_state_idx, periods_emax, periods_payoffs_future, \
@@ -120,7 +122,7 @@ def solve_python(robupy_obj):
 def solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
         edu_max, delta, edu_start, is_debug, is_interpolated, level, measure,
         min_idx, num_draws_emax, num_periods, num_points, is_ambiguous,
-        disturbances_emax, is_python):
+        disturbances_emax, is_deterministic, is_python):
     """ This function is required to ensure a full analogy to F2PY and
     FORTRAN implementations. This function is not private to the module as it
     is accessed in the evaluation and optimization modules as well.
@@ -155,7 +157,7 @@ def solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
             states_number_period, mapping_state_idx, is_interpolated,
             num_periods, num_points, states_all, num_draws_emax, edu_start,
             is_debug, edu_max, measure, shocks, delta, level, is_ambiguous,
-            disturbances_emax, is_python)
+            disturbances_emax, is_deterministic, is_python)
 
     logger.info('... finished \n')
 
@@ -232,7 +234,7 @@ def _backward_induction_procedure(periods_payoffs_systematic,
         states_number_period, mapping_state_idx, is_interpolated, num_periods,
         num_points, states_all, num_draws_emax, edu_start, is_debug, edu_max,
         measure, shocks, delta, level, is_ambiguous, disturbances_emax,
-        is_python):
+        is_deterministic, is_python):
     """ Perform backward induction procedure. This function is a wrapper
     around the PYTHON and F2PY implementation.
     """
@@ -252,7 +254,8 @@ def _backward_induction_procedure(periods_payoffs_systematic,
             disturbances_emax, num_draws_emax, states_number_period,
             periods_payoffs_systematic, edu_max, edu_start,
             mapping_state_idx, states_all, delta, is_debug, shocks, level,
-            is_ambiguous, measure, is_interpolated, num_points)
+            is_ambiguous, measure, is_interpolated, num_points,
+            is_deterministic)
 
     # Replace missing values
     periods_emax = replace_missing_values(periods_emax)

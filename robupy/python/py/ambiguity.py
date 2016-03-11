@@ -18,12 +18,9 @@ from robupy.constants import HUGE_FLOAT
 def get_payoffs_ambiguity(num_draws_emax, disturbances_relevant, period, k,
         payoffs_systematic, edu_max, edu_start, mapping_state_idx,
         states_all, num_periods, periods_emax, delta, is_debug, shocks,
-        level, measure):
+        level, measure, is_deterministic):
     """ Get worst case
     """
-    # Check for special case
-    is_deterministic = (np.count_nonzero(shocks) == 0)
-
     # Determine the worst case, special attention to zero variability. The
     # latter is included as a special case for debugging purposes. The worst
     # case corresponds to zero.

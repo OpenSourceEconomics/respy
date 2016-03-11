@@ -98,7 +98,8 @@ SUBROUTINE wrapper_backward_induction(periods_emax, periods_payoffs_ex_post, &
                 disturbances_emax, num_draws_emax, states_number_period, &
                 periods_payoffs_systematic, edu_max, edu_start, & 
                 mapping_state_idx, states_all, delta, is_debug, shocks, &
-                level, is_ambiguous, measure, is_interpolated, num_points)
+                level, is_ambiguous, measure, is_interpolated, num_points, & 
+                is_deterministic)
 
     !/* external libraries      */
 
@@ -130,6 +131,7 @@ SUBROUTINE wrapper_backward_induction(periods_emax, periods_payoffs_ex_post, &
     INTEGER, INTENT(IN)             :: edu_start
     INTEGER, INTENT(IN)             :: edu_max
 
+    LOGICAL, INTENT(IN)             :: is_deterministic
     LOGICAL, INTENT(IN)             :: is_interpolated
     LOGICAL, INTENT(IN)             :: is_ambiguous
     LOGICAL, INTENT(IN)             :: is_debug
@@ -145,7 +147,7 @@ SUBROUTINE wrapper_backward_induction(periods_emax, periods_payoffs_ex_post, &
             disturbances_emax, num_draws_emax, states_number_period, &
             periods_payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
             states_all, delta, is_debug, shocks, level, is_ambiguous, measure, &
-            is_interpolated, num_points)
+            is_interpolated, num_points, is_deterministic)
 
 END SUBROUTINE
 !*******************************************************************************
