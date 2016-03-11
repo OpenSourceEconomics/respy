@@ -243,7 +243,6 @@ def cleanup():
     """ Cleanup after test battery.
     '"""
 
-
     files = []
 
     ''' Clean main.
