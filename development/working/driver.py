@@ -36,11 +36,10 @@ from modules.auxiliary import cleanup
 
 
 print('not recompiling')
-#compile_package('--fortran --debug', False)
+compile_package('--fortran --debug', False)
 
 np.random.seed(123)
 
-#os.system('python /home/peisenha/robustToolbox/package/development/tests/random/clean')
 
 robupy_obj = read('test.robupy.ini')
 
@@ -48,6 +47,4 @@ robupy_obj = solve(robupy_obj)
 
 data_frame = simulate(robupy_obj)
 
-# TODO: How do deal with shocks_zero in evaluation?
-# DO NOT FORTRAN, PYTHON?g
 print(evaluate(robupy_obj, data_frame))

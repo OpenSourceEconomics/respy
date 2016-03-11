@@ -8,7 +8,8 @@
 SUBROUTINE wrapper_evaluate_criterion_function(rslt, mapping_state_idx, &
             periods_emax, periods_payoffs_systematic, states_all, shocks, &
             edu_max, delta, edu_start, num_periods, shocks_cholesky, & 
-            num_agents, num_draws_prob, data_array, standard_deviates)
+            num_agents, num_draws_prob, data_array, standard_deviates, & 
+            shock_zero)
 
     !/* external libraries      */
 
@@ -37,6 +38,8 @@ SUBROUTINE wrapper_evaluate_criterion_function(rslt, mapping_state_idx, &
     DOUBLE PRECISION, INTENT(IN)    :: data_array(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: shocks(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: delta  
+
+    LOGICAL                         :: shock_zero
 
 !-------------------------------------------------------------------------------
 ! Algorithm
