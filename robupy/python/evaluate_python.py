@@ -36,6 +36,8 @@ def evaluate_python(robupy_obj, data_frame):
 
     is_ambiguous = robupy_obj.get_attr('is_ambiguous')
 
+    shocks_zero = robupy_obj.get_attr('shocks_zero')
+
     model_paras = robupy_obj.get_attr('model_paras')
 
     num_periods = robupy_obj.get_attr('num_periods')
@@ -95,7 +97,8 @@ def evaluate_python(robupy_obj, data_frame):
     likl = _evaluate_python_bare(mapping_state_idx, periods_emax,
                 periods_payoffs_systematic, states_all, shocks, edu_max,
                 delta, edu_start, num_periods, shocks_cholesky, num_agents,
-                num_draws_prob, data_array, disturbances_prob, is_python)
+                num_draws_prob, data_array, disturbances_prob, shocks_zero,
+                is_python)
 
     # Finishing
     return robupy_obj, likl
@@ -108,7 +111,7 @@ def evaluate_python(robupy_obj, data_frame):
 def _evaluate_python_bare(mapping_state_idx, periods_emax,
         periods_payoffs_systematic, states_all, shocks, edu_max, delta,
         edu_start, num_periods,  shocks_cholesky, num_agents, num_draws_prob,
-        data_array, disturbances_prob, is_python):
+        data_array, disturbances_prob, shocks_zero, is_python):
     """ This function is required to ensure a full analogy to F2PY and
     FORTRAN implementations. The first part of the interface is identical to
     the solution request functions.
@@ -118,7 +121,7 @@ def _evaluate_python_bare(mapping_state_idx, periods_emax,
         likl = evaluate_criterion_function(mapping_state_idx, periods_emax,
             periods_payoffs_systematic, states_all, shocks, edu_max, delta,
             edu_start, num_periods, shocks_cholesky, num_agents, num_draws_prob,
-            data_array, disturbances_prob)
+            data_array, disturbances_prob, shocks_zero)
 
     else:
         import robupy.python.f2py.f2py_library as f2py_library
@@ -136,7 +139,7 @@ def _evaluate_python_bare(mapping_state_idx, periods_emax,
 def evaluate_criterion_function(mapping_state_idx, periods_emax,
         periods_payoffs_systematic, states_all, shocks, edu_max, delta,
         edu_start, num_periods, shocks_cholesky, num_agents, num_draws_prob,
-        data_array, disturbances_prob):
+        data_array, disturbances_prob, shocks_zero):
     """ Evaluate criterion function.
     """
 
@@ -176,6 +179,13 @@ def evaluate_criterion_function(mapping_state_idx, periods_emax,
                 # distribution.
                 dist = np.log(data_array[j, 3].astype(float)) - \
                         np.log(payoffs_systematic[idx])
+
+                # If there is no random variation in payoffs, then the
+                # observed wages need to be identical their systematic
+                # components.
+                if shocks_zero and dist != 0.0:
+                    return 0.0
+
                 # Construct independent normal draws implied by the observed
                 # wages.
                 if choice == 1:
@@ -212,6 +222,11 @@ def evaluate_criterion_function(mapping_state_idx, periods_emax,
             # Determine relative shares
             choice_probabilities = counts / num_draws_prob
 
+            # If there is no random variation in payoffs, then this implies a
+            # unique optimal choice.
+            if shocks_zero and (not np.any(counts == choice_probabilities)):
+                return 0.0
+
             # Adjust  and record likelihood contribution
             likl_contrib *= choice_probabilities[idx]
             likl += [likl_contrib]
@@ -220,6 +235,12 @@ def evaluate_criterion_function(mapping_state_idx, periods_emax,
 
     # Scaling
     likl = -np.mean(np.log(np.clip(likl, TINY_FLOAT, HUGE_FLOAT)))
+
+    # If there is no random variation in payoffs and no agent violated the
+    # implications of observed wages and choices, then the evaluation return
+    # a value of one.
+    if shocks_zero:
+        likl = 1.0
 
     # Finishing
     return likl

@@ -50,4 +50,4 @@ data_frame = simulate(robupy_obj)
 
 # TODO: How do deal with shocks_zero in evaluation?
 # DO NOT FORTRAN, PYTHON?g
-evaluate(robupy_obj, data_frame)
+print(evaluate(robupy_obj, data_frame))

@@ -60,7 +60,6 @@ def _check_evaluation(str_, *args):
 
         # Check quality
         check_dataset(data_frame, robupy_obj)
-        assert (shocks_zero is False)
 
     # Finishing
     return True
