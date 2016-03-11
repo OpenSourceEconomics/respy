@@ -14,6 +14,7 @@ from robupy.python.py.auxiliary import get_total_value
 from robupy.auxiliary import distribute_model_paras
 from robupy.auxiliary import create_disturbances
 
+from robupy.constants import SMALL_FLOAT
 from robupy.constants import TINY_FLOAT
 from robupy.constants import HUGE_FLOAT
 
@@ -184,8 +185,10 @@ def evaluate_criterion_function(mapping_state_idx, periods_emax,
 
                 # If there is no random variation in payoffs, then the
                 # observed wages need to be identical their systematic
-                # components.
-                if is_deterministic and dist != 0.0:
+                # components. The discrepancy between the observed wages and
+                # their systematic components might be small due to the
+                # reading in of the dataset (FORTRAN only).
+                if is_deterministic and (dist > SMALL_FLOAT):
                     return 0.0
 
                 # Construct independent normal draws implied by the observed

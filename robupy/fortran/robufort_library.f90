@@ -155,9 +155,11 @@ SUBROUTINE evaluate_criterion_function(rslt, mapping_state_idx, periods_emax, &
 
                 ! If there is no random variation in payoffs, then the
                 ! observed wages need to be identical their systematic
-                ! components.
+                ! components. The discrepancy between the observed wages and 
+                ! their systematic components might be small due to the 
+                ! reading in of the dataset.
                 IF (is_deterministic) THEN
-                    IF (dist .NE. zero_dble) THEN
+                    IF (dist .GT. SMALL_FLOAT) THEN
                         rslt = zero_dble
                         RETURN
                     END IF

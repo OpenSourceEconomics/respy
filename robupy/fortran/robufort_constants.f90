@@ -40,6 +40,8 @@ MODULE robufort_constants
     REAL(our_dble), PARAMETER :: HUGE_FLOAT     = 1.0e10_our_dble
     REAL(our_dble), PARAMETER :: TINY_FLOAT     = 1.0e-20_our_dble
 
+    REAL(our_dble), PARAMETER :: SMALL_FLOAT     = 1.0e-5_our_dble
+
     ! Interpolation
     REAL(our_dble), PARAMETER :: interpolation_inadmissible_states = -50000.00_our_dble
 
