@@ -141,7 +141,14 @@ SUBROUTINE wrapper_backward_induction(periods_emax, periods_payoffs_ex_post, &
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
-        
+    
+    ! This assignment is required as the variables are initialized with zero 
+    ! by the interface generator.
+    periods_emax = MISSING_FLOAT
+    periods_payoffs_future = MISSING_FLOAT
+    periods_payoffs_ex_post = MISSING_FLOAT
+
+    ! Call actual function of interest
     CALL backward_induction(periods_emax, periods_payoffs_ex_post, &
             periods_payoffs_future, num_periods, max_states_period, &
             disturbances_emax, num_draws_emax, states_number_period, &

@@ -118,10 +118,6 @@ SUBROUTINE get_total_value(total_payoffs, payoffs_ex_post, payoffs_future, &
     REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
     REAL(our_dble), INTENT(IN)      :: disturbances(:)
     REAL(our_dble), INTENT(IN)      :: delta
-
-    !/* internals objects       */
-
-    LOGICAL                         :: is_myopic
     
 !-------------------------------------------------------------------------------
 ! Algorithm
@@ -129,9 +125,6 @@ SUBROUTINE get_total_value(total_payoffs, payoffs_ex_post, payoffs_future, &
     
     ! Initialize containers
     payoffs_ex_post = zero_dble
-
-    ! Auxiliary objects
-    is_myopic = (delta .EQ. zero_dble)
 
     ! Calculate ex post payoffs
     payoffs_ex_post(1) = payoffs_systematic(1) * disturbances(1)
@@ -149,11 +142,6 @@ SUBROUTINE get_total_value(total_payoffs, payoffs_ex_post, payoffs_future, &
 
     ! Calculate total utilities
     total_payoffs = payoffs_ex_post + delta * payoffs_future
-
-    ! Stabilization in case of myopic agents
-    IF (is_myopic .EQV. .TRUE.) THEN
-        CALL stabilize_myopic(total_payoffs, payoffs_future)
-    END IF
 
 END SUBROUTINE
 !*******************************************************************************
@@ -217,32 +205,6 @@ SUBROUTINE get_future_payoffs(payoffs_future, edu_max, edu_start, &
     future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1, & 
                     exp_b + 1, edu + 1, 1)
     payoffs_future(4) = periods_emax(period + 1 + 1, future_idx + 1)
-
-END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE stabilize_myopic(total_payoffs, payoffs_future)
-
-    !/* external objects        */
-
-    REAL(our_dble), INTENT(INOUT)   :: total_payoffs(:)
-
-    REAL(our_dble), INTENT(IN)      :: payoffs_future(:)
-
-    !/* internals objects       */
-
-    LOGICAL                         :: is_huge
-
-!-------------------------------------------------------------------------------
-! Algorithm
-!-------------------------------------------------------------------------------
-    
-    ! Determine inadmissible state
-    is_huge = (payoffs_future(3) == -HUGE_FLOAT)
-
-    IF (is_huge .EQV. .True.) THEN
-        total_payoffs(3) = -HUGE_FLOAT
-    END IF
 
 END SUBROUTINE
 !*******************************************************************************

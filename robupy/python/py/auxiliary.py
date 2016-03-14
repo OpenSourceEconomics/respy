@@ -50,9 +50,6 @@ def get_total_value(period, num_periods, delta, payoffs_systematic,
         states_all):
     """ Get total value of all possible states.
     """
-    # Auxiliary objects
-    is_myopic = (delta == 0.00)
-
     # Initialize containers
     payoffs_ex_post = np.tile(np.nan, 4)
 
@@ -72,10 +69,6 @@ def get_total_value(period, num_periods, delta, payoffs_systematic,
 
     # Calculate total utilities
     total_payoffs = payoffs_ex_post + delta * payoffs_future
-
-    # Special treatment in case of myopic agents
-    if is_myopic:
-        total_payoffs = _stabilize_myopic(total_payoffs, payoffs_future)
 
     # Finishing
     return total_payoffs, payoffs_ex_post, payoffs_future
@@ -118,20 +111,3 @@ def _get_future_payoffs(edu_max, edu_start, mapping_state_idx, period,
 
     # Finishing
     return payoffs_future
-
-
-def _stabilize_myopic(total_payoffs, payoffs_future):
-    """ Ensuring that schooling does not increase beyond the maximum allowed
-    level. This is necessary as in the special case where delta is equal to
-    zero, (-np.inf * 0.00) evaluates to NAN. This is returned as the maximum
-    value when calling np.argmax.
-    """
-    # Determine NAN
-    is_huge = (payoffs_future[2] == -HUGE_FLOAT)
-
-    # Replace with negative infinity
-    if is_huge:
-        total_payoffs[2] = -HUGE_FLOAT
-
-    # Finishing
-    return total_payoffs

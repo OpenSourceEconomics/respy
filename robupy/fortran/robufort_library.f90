@@ -318,30 +318,31 @@ SUBROUTINE solve_fortran_bare(mapping_state_idx, periods_emax, &
             states_number_period, states_all, edu_start, coeffs_a, coeffs_b, & 
             coeffs_edu, coeffs_home, max_states_period)
 
+    ! Initialize containers, which contain a lot of missing values as we
+    ! capture the tree structure in arrays of fixed dimension.
+    periods_emax = MISSING_FLOAT
+    periods_payoffs_future = MISSING_FLOAT
+    periods_payoffs_ex_post = MISSING_FLOAT
+    
     ! Perform backward induction procedure.
     IF (is_myopic) THEN
-        
-        ! TODO: DO I want this outsise backward induction procedure as well?
-        periods_emax = MISSING_FLOAT
-        periods_payoffs_future = MISSING_FLOAT
-        periods_payoffs_ex_post = MISSING_FLOAT
-
+        ! All other objects remain set to MISSING_FLOAT. This align the
+        ! treatment for the two special cases: (1) is_myopic and (2)
+        ! is_interpolated.
         DO period = 1,  num_periods
-
             periods_emax(period, :states_number_period(period)) = zero_dble
-
         END DO
-
-
 
     ELSE
 
         CALL backward_induction(periods_emax, periods_payoffs_ex_post, &
                 periods_payoffs_future, num_periods, max_states_period, &
                 disturbances_emax, num_draws_emax, states_number_period, &
-                periods_payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
-                states_all, delta, is_debug, shocks, level, is_ambiguous, measure, &
-                is_interpolated, num_points, is_deterministic)
+                periods_payoffs_systematic, edu_max, edu_start, & 
+                mapping_state_idx, states_all, delta, is_debug, shocks, & 
+                level, is_ambiguous, measure, is_interpolated, num_points, & 
+                is_deterministic)
+        
     END IF
 
 END SUBROUTINE   
@@ -651,11 +652,6 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
     shifts = zero_dble
     shifts(:2) = (/ EXP(shocks(1, 1)/two_dble), EXP(shocks(2, 2)/two_dble) /)
 
-    ! Set to missing value
-    periods_emax = MISSING_FLOAT
-    periods_payoffs_future = MISSING_FLOAT
-    periods_payoffs_ex_post = MISSING_FLOAT
-    
     ! Logging
     CALL logging_solution(3)
 

@@ -158,22 +158,24 @@ def solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
     # procedure is not called upon.
     logger.info('Starting backward induction procedure')
 
+    # Initialize containers, which contain a lot of missing values as we
+    # capture the tree structure in arrays of fixed dimension.
+    # TODO: Extraced as derived attribute later.
+    max_states_period = max(states_number_period)
+
+    i, j = num_periods, max_states_period
+    periods_emax = np.tile(MISSING_FLOAT, (i, j))
+    periods_payoffs_ex_post = np.tile(MISSING_FLOAT, (i, j, 4))
+    periods_payoffs_future = np.tile(MISSING_FLOAT, (i, j, 4))
+
     if is_myopic:
-        # Auxiliary objects
-        max_states_period = max(states_number_period)
-
-        i, j = num_periods, max_states_period
-
-        periods_emax = np.tile(MISSING_FLOAT, (i, j))
-        periods_payoffs_ex_post = np.tile(MISSING_FLOAT, (i, j, 4))
-        periods_payoffs_future = np.tile(MISSING_FLOAT, (i, j, 4))
-
-        # The other objects remain set to missing.
+        # All other objects remain set to MISSING_FLOAT. This align the
+        # treatment for the two special cases: (1) is_myopic and (2)
+        # is_interpolated.
         for period, num_states in enumerate(states_number_period):
             periods_emax[period, :num_states] = 0.0
 
     else:
-
         periods_emax, periods_payoffs_ex_post, periods_payoffs_future = \
             _backward_induction_procedure(periods_payoffs_systematic,
                 states_number_period, mapping_state_idx, is_interpolated,
@@ -267,6 +269,9 @@ def _backward_induction_procedure(periods_payoffs_systematic,
     """ Perform backward induction procedure. This function is a wrapper
     around the PYTHON and F2PY implementation.
     """
+    # Antibugging
+    assert checks('_backward_induction_procedure', delta)
+
     # Auxiliary objects
     max_states_period = max(states_number_period)
 
@@ -299,3 +304,27 @@ def _start_ambiguity_logging(is_ambiguous, is_debug):
 
     if is_debug and is_ambiguous:
         open('ambiguity.robupy.log', 'w').close()
+
+
+def checks(str_, *args):
+    """ Some guards to the interfaces.
+    """
+    if str_ == '_backward_induction_procedure':
+
+        # Distribute input parameters
+        delta, = args
+
+        # The backward induction procedure does not work properly for the
+        # myopic case anymore. This is necessary as in the special
+        # case where delta is equal to zero, (-np.inf * 0.00) evaluates to
+        # NAN. This is returned as the maximum value when calling np.argmax.
+        # This was preciously handled by an auxiliary function
+        # "_stabilize_myopic" inside "get_total_value".
+        assert (delta > 0)
+
+    else:
+
+        raise AssertionError
+
+    # Finishing
+    return True
