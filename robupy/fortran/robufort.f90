@@ -160,7 +160,7 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
                 shocks_cholesky, num_draws_emax, seed_emax, seed_prob, &
                 num_agents, seed_data, is_debug, is_deterministic, is_interpolated, &
                 num_points, min_idx, is_ambiguous, measure, request, & 
-                num_draws_prob)
+                num_draws_prob, is_myopic)
 
     !
     !   This function serves as the replacement for the clsRobupy and reads in 
@@ -194,6 +194,7 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
     LOGICAL, INTENT(OUT)            :: is_interpolated
     LOGICAL, INTENT(OUT)            :: is_deterministic
     LOGICAL, INTENT(OUT)            :: is_ambiguous    
+    LOGICAL, INTENT(OUT)            :: is_myopic
     LOGICAL, INTENT(OUT)            :: is_debug
 
     CHARACTER(10), INTENT(OUT)      :: measure 
@@ -265,6 +266,7 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
         READ(1, 1505) min_idx
         READ(1, *) is_ambiguous
         READ(1, *) is_deterministic
+        READ(1, *) is_myopic
 
         ! REQUUEST
         READ(1, *) request
@@ -512,10 +514,11 @@ PROGRAM robufort
     REAL(our_dble)                  :: level
     REAL(our_dble)                  :: eval
 
+    LOGICAL                         :: is_deterministic
     LOGICAL                         :: is_interpolated
     LOGICAL                         :: is_ambiguous
+    LOGICAL                         :: is_myopic
     LOGICAL                         :: is_debug
-    LOGICAL                         :: is_deterministic
 
     CHARACTER(10)                   :: measure 
     CHARACTER(10)                   :: request
@@ -531,7 +534,7 @@ PROGRAM robufort
             coeffs_edu, edu_start, edu_max, coeffs_home, shocks, &
             shocks_cholesky, num_draws_emax, seed_emax, seed_prob, num_agents, &
             seed_data, is_debug, is_deterministic, is_interpolated, num_points, &
-            min_idx, is_ambiguous, measure, request, num_draws_prob)
+            min_idx, is_ambiguous, measure, request, num_draws_prob, is_myopic)
 
     ! This part creates (or reads from disk) the disturbances for the Monte 
     ! Carlo integration of the EMAX. For is_debugging purposes, these might also be 
@@ -549,7 +552,7 @@ PROGRAM robufort
                 coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, edu_max, & 
                 delta, edu_start, is_debug, is_interpolated, level, measure, & 
                 min_idx, num_draws_emax, num_periods, num_points, & 
-                is_ambiguous, disturbances_emax, is_deterministic)
+                is_ambiguous, disturbances_emax, is_deterministic, is_myopic)
 
     ELSE IF (request == 'evaluate') THEN
 
@@ -570,7 +573,7 @@ PROGRAM robufort
                 coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, edu_max, & 
                 delta, edu_start, is_debug, is_interpolated, level, measure, & 
                 min_idx, num_draws_emax, num_periods, num_points, & 
-                is_ambiguous, disturbances_emax, is_deterministic)
+                is_ambiguous, disturbances_emax, is_deterministic, is_myopic)
 
         CALL evaluate_criterion_function(eval, mapping_state_idx, &
                 periods_emax, periods_payoffs_systematic, states_all, shocks, & 

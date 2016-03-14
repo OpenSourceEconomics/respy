@@ -462,6 +462,8 @@ class RobupyCls(object):
 
         edu_start = self.attr['edu_start']
 
+        is_myopic = self.attr['is_myopic']
+
         edu_max = self.attr['edu_max']
 
         # Distribute results
@@ -615,7 +617,7 @@ class RobupyCls(object):
             # Check that the payoffs are finite for all admissible values and
             # infinite for all others. This is only a valid request if no
             # interpolation is performed.
-            if not is_interpolated:
+            if (not is_interpolated) and (not is_myopic):
                 for period in range(num_periods - 1):
                     # Loop over all possible states
                     for k in range(states_number_period[period]):

@@ -171,7 +171,6 @@ def solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
         # The other objects remain set to missing.
         for period, num_states in enumerate(states_number_period):
             periods_emax[period, :num_states] = 0.0
-            periods_payoffs_future[period, :num_states, :] = 0.0
 
     else:
 

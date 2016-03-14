@@ -42,6 +42,11 @@ np.random.seed(123)
 
 robupy_obj = read('test.robupy.ini')
 
+num_periods = robupy_obj.get_attr('num_periods')
+max_draws = 1000
+write_disturbances(num_periods, max_draws)
+
+
 robupy_obj = solve(robupy_obj)
 
 data_frame = simulate(robupy_obj)

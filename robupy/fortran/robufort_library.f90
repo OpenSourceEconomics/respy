@@ -241,7 +241,7 @@ SUBROUTINE solve_fortran_bare(mapping_state_idx, periods_emax, &
                 coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, edu_max, & 
                 delta, edu_start, is_debug, is_interpolated, level, measure, & 
                 min_idx, num_draws_emax, num_periods, num_points, & 
-                is_ambiguous, disturbances_emax, is_deterministic)
+                is_ambiguous, disturbances_emax, is_deterministic, is_myopic)
 
     !/* external objects        */
 
@@ -273,6 +273,7 @@ SUBROUTINE solve_fortran_bare(mapping_state_idx, periods_emax, &
     LOGICAL, INTENT(IN)                             :: is_deterministic
     LOGICAL, INTENT(IN)                             :: is_interpolated
     LOGICAL, INTENT(IN)                             :: is_ambiguous
+    LOGICAL, INTENT(IN)                             :: is_myopic
     LOGICAL, INTENT(IN)                             :: is_debug
 
     CHARACTER(10), INTENT(IN)                       :: measure
@@ -282,8 +283,8 @@ SUBROUTINE solve_fortran_bare(mapping_state_idx, periods_emax, &
     INTEGER(our_int), ALLOCATABLE                   :: states_all_tmp(:, :, :)
 
     INTEGER(our_int)                                :: max_states_period
-
-
+    INTEGER(our_int)                                :: period
+    
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
@@ -318,12 +319,30 @@ SUBROUTINE solve_fortran_bare(mapping_state_idx, periods_emax, &
             coeffs_edu, coeffs_home, max_states_period)
 
     ! Perform backward induction procedure.
-    CALL backward_induction(periods_emax, periods_payoffs_ex_post, &
-            periods_payoffs_future, num_periods, max_states_period, &
-            disturbances_emax, num_draws_emax, states_number_period, &
-            periods_payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
-            states_all, delta, is_debug, shocks, level, is_ambiguous, measure, &
-            is_interpolated, num_points, is_deterministic)
+    IF (is_myopic) THEN
+        
+        ! TODO: DO I want this outsise backward induction procedure as well?
+        periods_emax = MISSING_FLOAT
+        periods_payoffs_future = MISSING_FLOAT
+        periods_payoffs_ex_post = MISSING_FLOAT
+
+        DO period = 1,  num_periods
+
+            periods_emax(period, :states_number_period(period)) = zero_dble
+
+        END DO
+
+
+
+    ELSE
+
+        CALL backward_induction(periods_emax, periods_payoffs_ex_post, &
+                periods_payoffs_future, num_periods, max_states_period, &
+                disturbances_emax, num_draws_emax, states_number_period, &
+                periods_payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
+                states_all, delta, is_debug, shocks, level, is_ambiguous, measure, &
+                is_interpolated, num_points, is_deterministic)
+    END IF
 
 END SUBROUTINE   
 !*******************************************************************************

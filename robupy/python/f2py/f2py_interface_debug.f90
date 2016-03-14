@@ -12,7 +12,7 @@ SUBROUTINE wrapper_solve_fortran_bare(mapping_state_idx, periods_emax, &
                 coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, edu_max, & 
                 delta, edu_start, is_debug, is_interpolated, level, measure, & 
                 min_idx, num_draws_emax, num_periods, num_points, & 
-                is_ambiguous, disturbances_emax, is_deterministic, & 
+                is_ambiguous, disturbances_emax, is_deterministic, is_myopic, & 
                 max_states_period)
     
     !
@@ -60,6 +60,7 @@ SUBROUTINE wrapper_solve_fortran_bare(mapping_state_idx, periods_emax, &
     LOGICAL, INTENT(IN)             :: is_deterministic 
     LOGICAL, INTENT(IN)             :: is_interpolated
     LOGICAL, INTENT(IN)             :: is_ambiguous
+    LOGICAL, INTENT(IN)             :: is_myopic
     LOGICAL, INTENT(IN)             :: is_debug
 
     CHARACTER(10), INTENT(IN)       :: measure
@@ -89,7 +90,7 @@ SUBROUTINE wrapper_solve_fortran_bare(mapping_state_idx, periods_emax, &
             coeffs_home, shocks, edu_max, delta, edu_start, is_debug, & 
             is_interpolated, level, measure, min_idx, num_draws_emax, &
             num_periods, num_points, is_ambiguous, disturbances_emax, & 
-            is_deterministic)
+            is_deterministic, is_myopic)
 
     ! Assign to initial objects for return to PYTHON
     periods_payoffs_systematic = periods_payoffs_systematic_int   

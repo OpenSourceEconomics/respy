@@ -106,14 +106,17 @@ def _write_robufort_initialization(robupy_obj, request):
     init_dict = robupy_obj.get_attr('init_dict')
 
     # Auxiliary objects
-    is_ambiguous = robupy_obj.get_attr('is_ambiguous')
-
     is_deterministic = robupy_obj.get_attr('is_deterministic')
-
-    min_idx = robupy_obj.get_attr('min_idx')
 
     num_draws_prob = robupy_obj.get_attr('num_draws_prob')
 
+    is_ambiguous = robupy_obj.get_attr('is_ambiguous')
+
+    is_myopic = robupy_obj.get_attr('is_myopic')
+
+    min_idx = robupy_obj.get_attr('min_idx')
+
+    # Write out to link file
     with open('.model.robufort.ini', 'w') as file_:
 
         # BASICS
@@ -202,6 +205,10 @@ def _write_robufort_initialization(robupy_obj, request):
         file_.write(line + '\n')
 
         line = '{0}'.format(is_deterministic)
+        file_.write(line + '\n')
+
+
+        line = '{0}'.format(is_myopic)
         file_.write(line + '\n')
 
         # Request
