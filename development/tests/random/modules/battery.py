@@ -513,52 +513,6 @@ def test_90():
 
 
 def test_91():
-    """ This test compares the expected future payoffs to the ex post payoffs
-    in the special case, where agents are myopic and there is no randomness
-    in the disturbances (all realizations are set to zero).
-    """
-    # Ensure that fast solution methods are available
-    compile_package('--fortran --debug', True)
-
-    # Iterate over random test cases
-    for _ in range(10):
-
-        # Generate constraint periods
-        constraints = dict()
-        constraints['level'] = 0.00
-        constraints['delta'] = 0.00
-        constraints['is_deterministic'] = True
-        constraints['periods'] = np.random.random_integers(2, 5)
-
-        # Ex post payoffs are not available for periods where interpolation
-        # is set up.
-        constraints['apply'] = False
-
-        # Sample a random estimation request and write it to disk.
-        init_dict = generate_random_dict(constraints)
-        print_random_dict(init_dict)
-
-        # Run interpolation routine
-        robupy_obj = read('test.robupy.ini')
-
-        robupy_obj = solve(robupy_obj)
-
-        # Extract relevant information
-        payoffs_ex_post = robupy_obj.get_attr('periods_payoffs_ex_post')
-
-        emax = robupy_obj.get_attr('periods_emax')
-
-        # Collapse to maximum values in each period
-        emax_myopic = np.amax(payoffs_ex_post, axis=2)
-
-        # Ensure equivalence
-        np.testing.assert_array_almost_equal(emax_myopic, emax)
-
-    # Cleanup
-    cleanup()
-
-
-def test_92():
     """ This test compares the functions calculating the payoffs under
     ambiguity.
     """
@@ -643,7 +597,7 @@ def test_92():
     cleanup()
 
 
-def test_93():
+def test_92():
     """ This test case compares the results from the SLSQP implementations in
     PYTHON and FORTRAN for the actual optimization problem.
     """
@@ -747,7 +701,7 @@ def test_93():
     cleanup()
 
 
-def test_94():
+def test_93():
     """ This test case compare the results of a debugging setup for the SLSQP
     algorithm's PYTHON and FORTRAN implementation
     """
@@ -799,7 +753,7 @@ def test_94():
     cleanup()
 
 
-def test_95():
+def test_94():
     """ Compare the evaluation of the criterion function for the ambiguity
     optimization and the simulated expected future value between the FORTRAN
     and PYTHON implementations. These tests are set up a separate test case
@@ -890,7 +844,7 @@ def test_95():
     cleanup()
 
 
-def test_96():
+def test_95():
     """ Compare results between FORTRAN and PYTHON of selected
     hand-crafted functions. In test_97() we test FORTRAN implementations
     against PYTHON intrinsic routines.
@@ -933,15 +887,15 @@ def test_96():
         min_idx = min(num_periods, (edu_max - edu_start + 1))
 
         # FORTRAN
-        fort_a, fort_b, fort_c = fort_lib.wrapper_create_state_space(
+        fort_a, fort_b, fort_c, fort_d = fort_lib.wrapper_create_state_space(
             num_periods, edu_start, edu_max, min_idx)
 
         # PYTHON
-        py_a, py_b, py_c = py_lib.create_state_space(num_periods, edu_start,
-            edu_max, min_idx)
+        py_a, py_b, py_c, py_d = py_lib.create_state_space(num_periods,
+            edu_start, edu_max, min_idx)
 
         # Ensure equivalence
-        for obj in [[fort_a, py_a], [fort_b, py_b], [fort_c, py_c]]:
+        for obj in [[fort_a, py_a], [fort_b, py_b], [fort_c, py_c], [fort_d, py_d]]:
             np.testing.assert_allclose(obj[0], obj[1])
 
     for _ in range(100):
@@ -980,7 +934,7 @@ def test_96():
     cleanup()
 
 
-def test_97():
+def test_96():
     """ Compare results between FORTRAN and PYTHON of selected functions. The
     file python/f2py/debug_interface.f90 provides the F2PY bindings.
     """
@@ -1065,7 +1019,7 @@ def test_97():
     cleanup()
 
 
-def test_98():
+def test_97():
     """  Compare results from the RESTUD program and the ROBUPY package.
     """
 
@@ -1137,7 +1091,7 @@ def test_98():
     cleanup()
 
 
-def test_99():
+def test_98():
     """ Testing whether the results from a fast and slow execution of the
     code result in identical simulate datasets.
     """
@@ -1200,7 +1154,7 @@ def test_99():
     cleanup()
 
 
-def test_100():
+def test_99():
     """ Testing whether random datasets can be simulated and processed.
     """
     # Ensure that fast solution methods are available
@@ -1223,7 +1177,7 @@ def test_100():
     cleanup()
 
 
-def test_101():
+def test_100():
     """ Testing the equality of the core functions for random requests.
     """
 
@@ -1318,7 +1272,7 @@ def test_101():
         cleanup()
 
 
-def test_102():
+def test_101():
     """ Testing the equality of an evaluation of the criterion function for 
     a random request.
     """

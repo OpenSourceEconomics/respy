@@ -136,7 +136,7 @@ def solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
     # package class.
     logger.info('Starting state space creation')
 
-    states_all, states_number_period, mapping_state_idx = \
+    states_all, states_number_period, mapping_state_idx, max_states_period = \
         _create_state_space(num_periods, edu_start, edu_max, min_idx, is_python)
 
     logger.info('... finished \n')
@@ -149,7 +149,7 @@ def solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
     periods_payoffs_systematic = \
         _calculate_payoffs_systematic(coeffs_a, coeffs_b, coeffs_edu,
             coeffs_home, states_number_period, num_periods, states_all,
-            edu_start, is_python)
+            edu_start, max_states_period, is_python)
 
     logger.info('... finished \n')
 
@@ -160,9 +160,6 @@ def solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
 
     # Initialize containers, which contain a lot of missing values as we
     # capture the tree structure in arrays of fixed dimension.
-    # TODO: Extraced as derived attribute later.
-    max_states_period = max(states_number_period)
-
     i, j = num_periods, max_states_period
     periods_emax = np.tile(MISSING_FLOAT, (i, j))
     periods_payoffs_ex_post = np.tile(MISSING_FLOAT, (i, j, 4))
@@ -181,7 +178,8 @@ def solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
                 states_number_period, mapping_state_idx, is_interpolated,
                 num_periods, num_points, states_all, num_draws_emax, edu_start,
                 is_debug, edu_max, measure, shocks, delta, level, is_ambiguous,
-                disturbances_emax, is_deterministic, is_python)
+                disturbances_emax, is_deterministic, max_states_period,
+                is_python)
 
     # Replace missing values
     periods_emax = replace_missing_values(periods_emax)
@@ -213,11 +211,13 @@ def _create_state_space(num_periods, edu_start, edu_max, min_idx, is_python):
         create_state_space = f2py_library.wrapper_create_state_space
 
     # Create state space
-    states_all, states_number_period, mapping_state_idx = \
+    states_all, states_number_period, mapping_state_idx, max_states_period = \
         create_state_space(num_periods, edu_start, edu_max, min_idx)
 
     # Type transformations
     states_number_period = np.array(states_number_period, dtype='int')
+
+    max_states_period = max(states_number_period)
 
     # Cutting to size
     states_all = states_all[:, :max(states_number_period), :]
@@ -227,18 +227,20 @@ def _create_state_space(num_periods, edu_start, edu_max, min_idx, is_python):
 
     mapping_state_idx = replace_missing_values(mapping_state_idx)
 
+    # Collect arguments
+    args = [states_all, states_number_period, mapping_state_idx]
+    args += [max_states_period]
+
     # Finishing
-    return states_all, states_number_period, mapping_state_idx
+    return args
 
 
 def _calculate_payoffs_systematic(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-        states_number_period, num_periods, states_all, edu_start, is_python):
+        states_number_period, num_periods, states_all, edu_start,
+        max_states_period, is_python):
     """ Calculate the systematic payoffs. This function is a wrapper around the
     PYTHON and F2PY implementation.
     """
-    # Auxiliary objects
-    max_states_period = max(states_number_period)
-
     # Interface to core functions
     if is_python:
         calculate_payoffs_systematic = \
@@ -265,15 +267,12 @@ def _backward_induction_procedure(periods_payoffs_systematic,
         states_number_period, mapping_state_idx, is_interpolated, num_periods,
         num_points, states_all, num_draws_emax, edu_start, is_debug, edu_max,
         measure, shocks, delta, level, is_ambiguous, disturbances_emax,
-        is_deterministic, is_python):
+        is_deterministic, max_states_period, is_python):
     """ Perform backward induction procedure. This function is a wrapper
     around the PYTHON and F2PY implementation.
     """
     # Antibugging
     assert checks('_backward_induction_procedure', delta)
-
-    # Auxiliary objects
-    max_states_period = max(states_number_period)
 
     # Interface to core functions
     if is_python:

@@ -296,10 +296,8 @@ SUBROUTINE solve_fortran_bare(mapping_state_idx, periods_emax, &
 
     ! Create the state space of the model
     CALL create_state_space(states_all_tmp, states_number_period, & 
-            mapping_state_idx, num_periods, edu_start, edu_max, min_idx)
-
-    ! Auxiliary objects
-    max_states_period = MAXVAL(states_number_period)
+            mapping_state_idx, max_states_period, num_periods, edu_start, & 
+            edu_max, min_idx)
 
     ! Cutting the states_all container to size. The required size is only known 
     ! after the state space creation is completed.
@@ -747,13 +745,15 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE create_state_space(states_all, states_number_period, &
-                mapping_state_idx, num_periods, edu_start, edu_max, min_idx)
+                mapping_state_idx, max_states_period, num_periods, edu_start, & 
+                edu_max, min_idx)
 
     !/* external objects        */
 
     INTEGER(our_int), INTENT(INOUT)     :: mapping_state_idx(:, :, :, :, :)
     INTEGER(our_int), INTENT(INOUT)     :: states_number_period(:)
     INTEGER(our_int), INTENT(INOUT)     :: states_all(:, :, :)
+    INTEGER(our_int), INTENT(INOUT)     :: max_states_period
 
     INTEGER(our_int), INTENT(IN)        :: num_periods
     INTEGER(our_int), INTENT(IN)        :: edu_start
@@ -875,6 +875,9 @@ SUBROUTINE create_state_space(states_all, states_number_period, &
 
       ! Logging
       CALL logging_solution(-1)
+
+      ! Auxiliary object
+      max_states_period = MAXVAL(states_number_period)
 
 END SUBROUTINE
 !*******************************************************************************

@@ -50,7 +50,8 @@ SUBROUTINE store_results(mapping_state_idx, states_all, &
 ! Algorithm
 !-------------------------------------------------------------------------------
     
-    ! Auxiliary objects    
+    ! This is a break in design as otherwise I need to carry the integer up 
+    ! from the solution level.
     max_states_period = MAXVAL(states_number_period)
 
     ! Write out results for the store results.
@@ -484,6 +485,7 @@ PROGRAM robufort
     INTEGER(our_int), ALLOCATABLE   :: states_number_period(:)
     INTEGER(our_int), ALLOCATABLE   :: states_all(:, :, :)
 
+    INTEGER(our_int)                :: max_states_period
     INTEGER(our_int)                :: num_draws_emax
     INTEGER(our_int)                :: num_draws_prob
     INTEGER(our_int)                :: num_periods

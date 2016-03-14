@@ -19,7 +19,6 @@ import sys
 import os
 
 # project
-from modules.auxiliary import compile_package
 from modules.auxiliary import distribute_input
 from modules.auxiliary import start_logging
 from modules.auxiliary import cleanup
@@ -50,7 +49,7 @@ def run(hours):
 
     package_labels = list(range(1, 9))
 
-    development_labels = list(range(85, 103))
+    development_labels = list(range(85, 102))
 
     labels = package_labels + development_labels
 

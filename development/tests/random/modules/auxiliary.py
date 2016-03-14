@@ -46,9 +46,8 @@ def write_interpolation_grid(file_name):
     min_idx = robupy_obj.get_attr('min_idx')
 
     # Determine maximum number of states
-    _, states_number_period, _ = _create_state_space(num_periods, edu_start,
-                                    edu_max, min_idx, is_python)
-    max_states_period = max(states_number_period)
+    _, states_number_period, _, max_states_period = \
+        _create_state_space(num_periods, edu_start, edu_max, min_idx, is_python)
 
     # Initialize container
     booleans = np.tile(True, (max_states_period, num_periods))

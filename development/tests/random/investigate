@@ -18,7 +18,7 @@ sys.path.insert(0, os.environ['ROBUPY'])
 from modules.auxiliary import *
 
 
-label, seed = "1", 22287
+label, seed = "98", 74262
 
 
 # Cleanup

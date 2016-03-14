@@ -230,8 +230,15 @@ def create_state_space(num_periods, edu_start, edu_max, min_idx):
         # Record maximum number of state space realizations by time period
         states_number_period[period] = k
 
+    # Auxiliary objects
+    max_states_period = max(states_number_period)
+
+    # Collect arguments
+    args = [states_all, states_number_period, mapping_state_idx]
+    args += [max_states_period]
+
     # Finishing
-    return states_all, states_number_period, mapping_state_idx
+    return args
 
 
 def calculate_payoffs_systematic(num_periods, states_number_period, states_all,

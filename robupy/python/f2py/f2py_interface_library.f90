@@ -160,7 +160,8 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE wrapper_create_state_space(states_all, states_number_period, &
-                mapping_state_idx, num_periods, edu_start, edu_max, min_idx)
+                mapping_state_idx, max_states_period, num_periods, &
+                edu_start, edu_max, min_idx)
     
     !/* external libraries      */
 
@@ -175,6 +176,7 @@ SUBROUTINE wrapper_create_state_space(states_all, states_number_period, &
     INTEGER, INTENT(OUT)            :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER, INTENT(OUT)            :: states_all(num_periods, 100000, 4)
     INTEGER, INTENT(OUT)            :: states_number_period(num_periods)
+    INTEGER, INTENT(OUT)            :: max_states_period
 
     INTEGER, INTENT(IN)             :: num_periods
     INTEGER, INTENT(IN)             :: edu_start
@@ -186,7 +188,8 @@ SUBROUTINE wrapper_create_state_space(states_all, states_number_period, &
 !-------------------------------------------------------------------------------
     
     CALL create_state_space(states_all, states_number_period, &
-                mapping_state_idx, num_periods, edu_start, edu_max, min_idx)
+                mapping_state_idx, max_states_period, num_periods, edu_start, & 
+                edu_max, min_idx)
 
 END SUBROUTINE
 !*******************************************************************************
