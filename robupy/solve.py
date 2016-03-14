@@ -28,6 +28,8 @@ def solve(robupy_obj):
     # Distribute class attributes
     is_ambiguous = robupy_obj.get_attr('is_ambiguous')
 
+    is_myopic = robupy_obj.get_attr('is_myopic')
+
     is_debug = robupy_obj.get_attr('is_debug')
 
     version = robupy_obj.get_attr('version')
@@ -41,7 +43,7 @@ def solve(robupy_obj):
         robupy_obj = solve_python(robupy_obj)
 
     # Summarize optimizations in case of ambiguity.
-    if is_debug and is_ambiguous:
+    if is_debug and is_ambiguous and (not is_myopic):
         _summarize_ambiguity(robupy_obj)
 
     # Set flag that object includes the solution objects.

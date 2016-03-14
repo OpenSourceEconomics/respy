@@ -210,14 +210,12 @@ def generate_random_dict(constraints=None):
         dict_['BASICS']['periods'] = periods
 
     # Replace discount factor
-    if 'delta' in constraints.keys():
+    if 'is_myopic' in constraints.keys():
         # Extract object
-        delta = constraints['delta']
-        # Checks
-        assert (np.isfinite(delta))
-        assert (delta >= 0.0)
-        # Replace in initialization file
-        dict_['BASICS']['delta'] = delta
+        assert (constraints['is_myopic'] in [True, False])
+        # Replace in initialization files
+        if constraints['is_myopic']:
+            dict_['BASICS']['delta'] = 0.0
 
     # No random component to payoffs
     if 'is_deterministic' in constraints.keys():

@@ -1260,6 +1260,8 @@ def test_101():
 
         is_python = robupy_obj.get_attr('is_python')
 
+        is_myopic = robupy_obj.get_attr('is_myopic')
+
         num_draws_emax = robupy_obj.get_attr('num_draws_emax')
 
         is_debug = robupy_obj.get_attr('is_debug')
@@ -1289,7 +1291,7 @@ def test_101():
         base_args = [coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
             edu_max, delta, edu_start, is_debug, is_interpolated, level,
             measure, min_idx, num_draws_emax, num_periods, num_points,
-            is_ambiguous, disturbances_emax, is_deterministic]
+            is_ambiguous, disturbances_emax, is_deterministic, is_myopic]
 
         # Check for the equality of the solution routines.
         base = None
@@ -1327,11 +1329,14 @@ def test_102():
     for _ in range(5):
 
         # Constraints
-        is_deterministic = np.random.choice([True, False], p=[0.90, 0.1])
+        is_deterministic = np.random.choice([True, False], p=[0.10, 0.9])
+        # TODO: There is another case with special attention, Interpolation
+        is_myopic = np.random.choice([True, False], p=[0.10, 0.9])
         max_draws = np.random.random_integers(10, 100)
 
         constraints = dict()
         constraints['is_deterministic'] = is_deterministic
+        constraints['is_myopic'] = is_myopic
         constraints['max_draws'] = max_draws
 
         # Generate random initialization file
