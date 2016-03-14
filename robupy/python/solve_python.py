@@ -15,6 +15,8 @@ from robupy.auxiliary import create_disturbances
 
 import robupy.python.py.python_library as python_library
 
+from robupy.constants import MISSING_FLOAT
+
 # Logging
 logger = logging.getLogger('ROBUPY_SOLVE')
 
@@ -49,6 +51,8 @@ def solve_python(robupy_obj):
 
     is_python = robupy_obj.get_attr('is_python')
 
+    is_myopic = robupy_obj.get_attr('is_myopic')
+
     is_debug = robupy_obj.get_attr('is_debug')
 
     measure = robupy_obj.get_attr('measure')
@@ -79,8 +83,9 @@ def solve_python(robupy_obj):
     # Solve the model using PYTHON/F2PY implementation
     args = solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
                 shocks, edu_max, delta, edu_start, is_debug, is_interpolated,
-                level, measure, min_idx, num_draws_emax, num_periods, num_points,
-                is_ambiguous, disturbances_emax, is_deterministic, is_python)
+                level, measure, min_idx, num_draws_emax, num_periods,
+                num_points, is_ambiguous, disturbances_emax, is_deterministic,
+                is_myopic, is_python)
 
     # Distribute return arguments
     mapping_state_idx, periods_emax, periods_payoffs_future, \
@@ -122,7 +127,7 @@ def solve_python(robupy_obj):
 def solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
         edu_max, delta, edu_start, is_debug, is_interpolated, level, measure,
         min_idx, num_draws_emax, num_periods, num_points, is_ambiguous,
-        disturbances_emax, is_deterministic, is_python):
+        disturbances_emax, is_deterministic, is_myopic, is_python):
     """ This function is required to ensure a full analogy to F2PY and
     FORTRAN implementations. This function is not private to the module as it
     is accessed in the evaluation and optimization modules as well.
@@ -149,15 +154,40 @@ def solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
     logger.info('... finished \n')
 
     # Backward iteration procedure. There is a PYTHON and FORTRAN
-    # implementation available.
+    # implementation available. If agents are myopic, the backward induction
+    # procedure is not called upon.
     logger.info('Starting backward induction procedure')
 
-    periods_emax, periods_payoffs_ex_post, periods_payoffs_future = \
-        _backward_induction_procedure(periods_payoffs_systematic,
-            states_number_period, mapping_state_idx, is_interpolated,
-            num_periods, num_points, states_all, num_draws_emax, edu_start,
-            is_debug, edu_max, measure, shocks, delta, level, is_ambiguous,
-            disturbances_emax, is_deterministic, is_python)
+    if is_myopic:
+        # Auxiliary objects
+        max_states_period = max(states_number_period)
+
+        i, j = num_periods, max_states_period
+
+        periods_emax = np.tile(MISSING_FLOAT, (i, j))
+        periods_payoffs_ex_post = np.tile(MISSING_FLOAT, (i, j, 4))
+        periods_payoffs_future = np.tile(MISSING_FLOAT, (i, j, 4))
+
+        # The other objects remain set to missing.
+        for period, num_states in enumerate(states_number_period):
+            periods_emax[period, :num_states] = 0.0
+            periods_payoffs_future[period, :num_states, :] = 0.0
+
+    else:
+
+        periods_emax, periods_payoffs_ex_post, periods_payoffs_future = \
+            _backward_induction_procedure(periods_payoffs_systematic,
+                states_number_period, mapping_state_idx, is_interpolated,
+                num_periods, num_points, states_all, num_draws_emax, edu_start,
+                is_debug, edu_max, measure, shocks, delta, level, is_ambiguous,
+                disturbances_emax, is_deterministic, is_python)
+
+    # Replace missing values
+    periods_emax = replace_missing_values(periods_emax)
+
+    periods_payoffs_future = replace_missing_values(periods_payoffs_future)
+
+    periods_payoffs_ex_post = replace_missing_values(periods_payoffs_ex_post)
 
     logger.info('... finished \n')
 
@@ -256,13 +286,6 @@ def _backward_induction_procedure(periods_payoffs_systematic,
             mapping_state_idx, states_all, delta, is_debug, shocks, level,
             is_ambiguous, measure, is_interpolated, num_points,
             is_deterministic)
-
-    # Replace missing values
-    periods_emax = replace_missing_values(periods_emax)
-
-    periods_payoffs_future = replace_missing_values(periods_payoffs_future)
-
-    periods_payoffs_ex_post = replace_missing_values(periods_payoffs_ex_post)
 
     # Finishing
     return periods_emax, periods_payoffs_ex_post, periods_payoffs_future

@@ -53,6 +53,8 @@ def evaluate_python(robupy_obj, data_frame):
 
     num_draws_emax = robupy_obj.get_attr('num_draws_emax')
 
+    is_myopic = robupy_obj.get_attr('is_myopic')
+
     is_debug = robupy_obj.get_attr('is_debug')
 
     num_draws_prob = robupy_obj.get_attr('num_draws_prob')
@@ -88,7 +90,7 @@ def evaluate_python(robupy_obj, data_frame):
     args = solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         shocks, edu_max, delta, edu_start, is_debug, is_interpolated, level,
         measure, min_idx, num_draws_emax, num_periods, num_points, is_ambiguous,
-        disturbances_emax, is_deterministic, is_python)
+        disturbances_emax, is_deterministic, is_myopic, is_python)
 
     # Distribute return arguments from solution run
     mapping_state_idx, periods_emax, periods_payoffs_future = args[:3]

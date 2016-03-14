@@ -10,6 +10,7 @@ import numpy as np
 # Special care with derived attributes is required to maintain integrity of
 # the class instance.
 DERIVED_ATTR = ['is_ambiguous', 'is_python', 'min_idx', 'is_deterministic']
+DERIVED_ATTR += ['is_myopic']
 
 
 class RobupyCls(object):
@@ -45,6 +46,8 @@ class RobupyCls(object):
         self.attr['seed_prob'] = None
 
         self.attr['seed_emax'] = None
+
+        self.attr['is_myopic'] = None
 
         self.attr['is_python'] = None
 
@@ -318,6 +321,8 @@ class RobupyCls(object):
 
         self.attr['is_python'] = (self.attr['version'] == 'PYTHON')
 
+        self.attr['is_myopic'] = (self.attr['delta'] == 0.00)
+
     def _check_integrity_attributes(self):
         """ Check integrity of class instance. This testing is done the first
         time the class is locked and if the package is running in debug mode.
@@ -342,6 +347,8 @@ class RobupyCls(object):
         edu_start = self.attr['edu_start']
 
         is_python = self.attr['is_python']
+
+        is_myopic = self.attr['is_myopic']
 
         seed_data = self.attr['seed_data']
 
@@ -372,6 +379,9 @@ class RobupyCls(object):
 
         # Version of implementation
         assert (is_python in [True, False])
+
+        # Forward-looking agents
+        assert (is_myopic in [True, False])
 
         # Constraints
         if is_ambiguous and version in ['F2PY', 'FORTRAN']:

@@ -36,10 +36,9 @@ from modules.auxiliary import cleanup
 
 
 print('not recompiling')
-compile_package('--fortran --debug', False)
+#compile_package('--fortran --debug', False)
 
 np.random.seed(123)
-
 
 robupy_obj = read('test.robupy.ini')
 
