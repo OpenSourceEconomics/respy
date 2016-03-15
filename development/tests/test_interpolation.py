@@ -3,27 +3,13 @@ development tests.
 """
 
 # standard library
-from pandas.util.testing import assert_frame_equal
-
-from scipy.optimize.slsqp import _minimize_slsqp
-from scipy.optimize import approx_fprime
-from scipy.optimize import rosen_der
-from scipy.optimize import rosen
-from scipy.stats import norm
-
-import statsmodels.api as sm
-import pandas as pd
 import numpy as np
 
-import scipy
 import sys
 import os
 
 # testing library
-from material.auxiliary import transform_robupy_to_restud
 from material.auxiliary import write_interpolation_grid
-from material.auxiliary import write_disturbances
-from material.auxiliary import build_f2py_testing
 from material.auxiliary import compile_package
 from material.auxiliary import cleanup, distribute_model_description
 
@@ -35,26 +21,19 @@ from robupy.python.py.python_library import _get_simulated_indicator
 from robupy.python.py.python_library import _get_exogenous_variables
 from robupy.python.py.python_library import _get_endogenous_variable
 from robupy.python.py.python_library import _get_predictions
-from robupy.python.py.python_library import get_payoffs
-
-from robupy.python.solve_python import solve_python_bare
 
 from robupy.tests.random_init import generate_random_dict
 from robupy.tests.random_init import print_random_dict
 from robupy.tests.random_init import generate_init
 
-from robupy.python.py.ambiguity import get_payoffs_ambiguity
-from robupy.python.py.auxiliary import simulate_emax
-from robupy.python.py.ambiguity import _divergence
-from robupy.python.py.ambiguity import _criterion
-
-from robupy.auxiliary import distribute_model_paras
 from robupy.auxiliary import replace_missing_values
 from robupy.auxiliary import create_disturbances
 
 
 ''' Main
 '''
+
+
 def test_89():
     """ This is the special case where the EMAX better be equal to the MAXE.
     """
@@ -100,6 +79,7 @@ def test_89():
 
     # Cleanup
     cleanup()
+
 
 def test_86():
     """ Further tests for the interpolation routines.
@@ -321,69 +301,3 @@ def test_90():
     # Cleanup
     cleanup()
 
-
-def test_85():
-    """ This test compares the simulated datasets for solutions that involve
-    interpolation in PYTHON and FORTRAN versions.
-    """
-    # Ensure that fast solution methods are available
-    compile_package('--fortran --debug', True)
-
-    # Constraints, which ensure that interpolation is actually run.
-    num_periods = np.random.random_integers(5, 10)
-    num_points = np.random.random_integers(40, 54)
-    max_draws = np.random.random_integers(1, 100)
-
-    constraints = dict()
-    constraints['max_draws'] = max_draws
-    constraints['periods'] = num_periods
-    constraints['points'] = num_points
-    constraints['measure'] = 'kl'
-    constraints['apply'] = True
-
-    # Just making sure that it also works for this special case.
-    if np.random.choice([True, False, False, False]):
-        constraints['is_deterministic'] = True
-
-    # Generate random initialization file.
-    init_dict = generate_init(constraints)
-
-    # Write out random components and interpolation grid to align the three
-    # implementations.
-    num_periods = init_dict['BASICS']['periods']
-    write_disturbances(num_periods, max_draws)
-    write_interpolation_grid('test.robupy.ini')
-
-    # Initialize containers
-    base = None
-    for version in ['PYTHON', 'FORTRAN', 'F2PY']:
-
-        # This ensures that the optimized version agrees with all other
-        # implementations as well.
-        if version in ['OPTIMIZATION']:
-            compile_package('--fortran --debug --optimization', True)
-            version = 'FORTRAN'
-
-        # Prepare initialization file
-        init_dict['PROGRAM']['version'] = version
-
-        print_random_dict(init_dict)
-
-        # Simulate the ROBUPY package
-        robupy_obj = read('test.robupy.ini')
-
-        solve(robupy_obj)
-
-        # Load simulated data frame
-        data_frame = pd.read_csv('data.robupy.dat', delim_whitespace=True)
-
-        data_frame.to_csv(version + '.dat')
-
-        # Compare
-        if base is None:
-            base = data_frame.copy()
-
-        assert_frame_equal(base, data_frame)
-
-    # Cleanup
-    cleanup()

@@ -33,7 +33,8 @@ from robupy.python.py.python_library import create_state_space
 
 
 def test_99():
-    """ Testing whether random datasets can be simulated and processed.
+    """ Testing whether random model specifications can be solved, simulated
+    and processed.
     """
     # Ensure that fast solution methods are available
     compile_package('--fortran --debug', True)
@@ -154,37 +155,3 @@ def test_101():
                 assert (eval_ in [0.0, 1.0])
 
         cleanup()
-
-
-def test_102():
-    """ Testing the equality of a model with myopic agents and those with a
-    huge discount factor.
-    """
-    # Ensure that fast solution methods are available
-    #compile_package('--fortran --debug', True)
-
-    generate_init()
-
-    robupy_obj = read('test.robupy.ini')
-
-    for is_myopic in [True, False]:
-
-        if is_myopic:
-            delta = 0.0
-        else:
-            delta = 0.00000001
-
-        robupy_obj.unlock()
-        robupy_obj.set_attr('delta', delta)
-        robupy_obj.lock()
-
-
-    # Modify the version of the program for the different requests.
-    robupy_obj.unlock()
-    robupy_obj.set_attr('version',  version)
-    robupy_obj.lock()
-
-np.random.seed(234)
-for _ in range(10):
-    print(_)
-    test_102()

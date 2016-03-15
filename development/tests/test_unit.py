@@ -279,7 +279,7 @@ def test_93():
     """
     # Ensure interface is available
     build_f2py_testing(is_hidden=True)
-    import modules.f2py_testing as fort
+    import material.f2py_testing as fort
 
     # Sample basic test case
     maxiter = np.random.random_integers(1, 100)
@@ -403,7 +403,6 @@ def test_94():
 
     # Cleanup
     cleanup()
-
 
 
 def test_95():

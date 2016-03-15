@@ -10,7 +10,6 @@ import os
 
 # project library
 from robupy import simulate
-from robupy import evaluate
 from robupy import solve
 from robupy import read
 
