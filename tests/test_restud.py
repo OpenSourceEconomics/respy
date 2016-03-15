@@ -8,16 +8,17 @@ from pandas.util.testing import assert_frame_equal
 import pandas as pd
 import numpy as np
 
+import pytest
 import sys
 import os
 
 # testing library
 from material.auxiliary import distribute_model_description
 from material.auxiliary import compile_package
-from material.auxiliary import cleanup
 
 # ROBUPY import
-sys.path.insert(0, os.environ['ROBUPY'])
+ROBUPY_DIR = os.environ['ROBUPY']
+sys.path.insert(0, ROBUPY_DIR)
 
 from robupy.tests.random_init import generate_random_dict
 from robupy.tests.random_init import print_random_dict
@@ -99,70 +100,69 @@ def transform_robupy_to_restud(model_paras, init_dict):
 '''
 
 
-def test_97():
-    """  Compare results from the RESTUD program and the ROBUPY package.
-    """
+@pytest.mark.usefixtures('fresh_directory', 'set_seed')
+class TestClass:
+    def test_1(self):
+        """  Compare results from the RESTUD program and the ROBUPY package.
+        """
 
-    # Ensure that fast solution methods are available
-    compile_package('--fortran --debug', True)
+        # Ensure that fast solution methods are available
+        compile_package('--fortran --debug', True)
 
-    # Prepare RESTUD program
-    os.chdir('material')
-    os.system(' gfortran -fcheck=bounds -o dp3asim dp3asim.f95 >'
-              ' /dev/null 2>&1')
-    os.remove('pei_additions.mod')
-    os.remove('imsl_replacements.mod')
-    os.chdir('../')
+        # Prepare RESTUD program
+        os.chdir(ROBUPY_DIR + '/material')
+        os.system(' gfortran -fcheck=bounds -o dp3asim dp3asim.f95 >'
+                  ' /dev/null 2>&1')
+        os.remove('pei_additions.mod')
+        os.remove('imsl_replacements.mod')
+        os.chdir('../')
 
-    # Impose some constraints on the initialization file which ensures that
-    # the problem can be solved by the RESTUD code. The code is adjusted to
-    # run with zero disturbances.
-    constraints = dict()
-    constraints['edu'] = (10, 20)
-    constraints['level'] = 0.00
-    constraints['is_deterministic'] = True
+        # Impose some constraints on the initialization file which ensures that
+        # the problem can be solved by the RESTUD code. The code is adjusted to
+        # run with zero disturbances.
+        constraints = dict()
+        constraints['edu'] = (10, 20)
+        constraints['level'] = 0.00
+        constraints['is_deterministic'] = True
 
-    # Generate random initialization file. The RESTUD code uses the same random
-    # draws for the solution and simulation of the model. Thus, the number of
-    # draws is required to be less or equal to the number of agents.
-    init_dict = generate_random_dict(constraints)
+        # Generate random initialization file. The RESTUD code uses the same
+        # random draws for the solution and simulation of the model. Thus,
+        # the number of draws is required to be less or equal to the number
+        # of agents.
+        init_dict = generate_random_dict(constraints)
 
-    num_agents = init_dict['SIMULATION']['agents']
-    num_draws_emax = init_dict['SOLUTION']['draws']
-    if num_draws_emax < num_agents:
-        init_dict['SOLUTION']['draws'] = num_agents
+        num_agents = init_dict['SIMULATION']['agents']
+        num_draws_emax = init_dict['SOLUTION']['draws']
+        if num_draws_emax < num_agents:
+            init_dict['SOLUTION']['draws'] = num_agents
 
-    print_random_dict(init_dict)
+        print_random_dict(init_dict)
 
-    # Indicate RESTUD code the special case of zero disturbance.
-    open('.restud.testing.scratch', 'a').close()
+        # Indicate RESTUD code the special case of zero disturbance.
+        open('.restud.testing.scratch', 'a').close()
 
-    # Perform toolbox actions
-    robupy_obj = read('test.robupy.ini')
+        # Perform toolbox actions
+        robupy_obj = read('test.robupy.ini')
 
-    # This flag aligns the random components between the RESTUD program and
-    # ROBUPY package. The existence of the file leads to the RESTUD program
-    # to write out the random components.
-    model_paras, init_dict = distribute_model_description(robupy_obj,
-                'model_paras', 'init_dict')
+        # This flag aligns the random components between the RESTUD program and
+        # ROBUPY package. The existence of the file leads to the RESTUD program
+        # to write out the random components.
+        model_paras, init_dict = distribute_model_description(robupy_obj,
+                    'model_paras', 'init_dict')
 
-    transform_robupy_to_restud(model_paras, init_dict)
+        transform_robupy_to_restud(model_paras, init_dict)
 
-    # Solve model using RESTUD code.
-    os.system('./material/dp3asim > /dev/null 2>&1')
+        # Solve model using RESTUD code.
+        os.system('./' + ROBUPY_DIR + '/material/dp3asim > /dev/null 2>&1')
 
-    # Solve model using ROBUPY package.
-    solve(robupy_obj)
+        # Solve model using ROBUPY package.
+        solve(robupy_obj)
 
-    # Compare the simulated datasets generated by the programs.
-    py = pd.DataFrame(np.array(np.genfromtxt('data.robupy.dat',
-            missing_values='.'), ndmin=2)[:, -4:])
+        # Compare the simulated datasets generated by the programs.
+        py = pd.DataFrame(np.array(np.genfromtxt('data.robupy.dat',
+                missing_values='.'), ndmin=2)[:, -4:])
 
-    fort = pd.DataFrame(np.array(np.genfromtxt('ftest.txt',
-            missing_values='.'), ndmin=2)[:, -4:])
+        fort = pd.DataFrame(np.array(np.genfromtxt('ftest.txt',
+                missing_values='.'), ndmin=2)[:, -4:])
 
-    assert_frame_equal(py, fort)
-
-    # Cleanup
-    cleanup()
-
+        assert_frame_equal(py, fort)

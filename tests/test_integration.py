@@ -8,6 +8,7 @@ from pandas.util.testing import assert_frame_equal
 import pandas as pd
 import numpy as np
 
+import pytest
 import sys
 import os
 
@@ -15,7 +16,6 @@ import os
 from material.auxiliary import write_interpolation_grid
 from material.auxiliary import write_disturbances
 from material.auxiliary import compile_package
-from material.auxiliary import cleanup
 
 # ROBUPY import
 sys.path.insert(0, os.environ['ROBUPY'])
@@ -32,14 +32,14 @@ from robupy.python.py.python_library import create_state_space
 '''
 
 
-def test_99():
-    """ Testing whether random model specifications can be solved, simulated
-    and processed.
-    """
-    # Ensure that fast solution methods are available
-    compile_package('--fortran --debug', True)
-
-    for i in range(5):
+@pytest.mark.usefixtures('fresh_directory', 'set_seed')
+class TestClass:
+    def test_1(self):
+        """ Testing whether random model specifications can be solved, simulated
+        and processed.
+        """
+        # Ensure that fast solution methods are available
+        compile_package('--fortran --debug', True)
 
         # Generate random initialization file
         generate_init()
@@ -52,21 +52,14 @@ def test_99():
 
         process(robupy_obj)
 
-        # Cleanup
-        cleanup()
+    def test_2(self):
+        """ Testing the equality of an evaluation of the criterion function for
+        a random request.
+        """
+        # Ensure that fast solution methods are available
+        compile_package('--fortran --debug', True)
 
-
-def test_101():
-    """ Testing the equality of an evaluation of the criterion function for
-    a random request.
-    """
-    # Ensure that fast solution methods are available
-    compile_package('--fortran --debug', True)
-
-    # Run evaluation for multiple random requests.
-    for _ in range(5):
-
-        # Constraints
+        # Run evaluation for multiple random requests.
         is_deterministic = np.random.choice([True, False], p=[0.10, 0.9])
         is_interpolated = np.random.choice([True, False], p=[0.10, 0.9])
         is_myopic = np.random.choice([True, False], p=[0.10, 0.9])
@@ -97,7 +90,7 @@ def test_101():
             min_idx = min(num_periods, (edu_max - edu_start + 1))
 
             max_states_period = create_state_space(num_periods, edu_start,
-                                        edu_max, min_idx)[3]
+                                            edu_max, min_idx)[3]
 
             # Updates to initialization dictionary that trigger a use of the
             # interpolation code.
@@ -109,8 +102,8 @@ def test_101():
         # Print out the relevant initialization file.
         print_random_dict(init_dict)
 
-        # Write out random components and interpolation grid to align the three
-        # implementations.
+        # Write out random components and interpolation grid to align the
+        # three implementations.
         num_periods = init_dict['BASICS']['periods']
         write_disturbances(num_periods, max_draws)
         write_interpolation_grid('test.robupy.ini')
@@ -139,8 +132,8 @@ def test_101():
 
             assert_frame_equal(base_data, data_frame)
 
-            # This part checks the equality of an evaluation of the criterion
-            # function.
+            # This part checks the equality of an evaluation of the
+            # criterion function.
             data_frame = simulate(robupy_obj)
 
             robupy_obj, eval_ = evaluate(robupy_obj, data_frame)
@@ -148,10 +141,10 @@ def test_101():
             if base_eval is None:
                 base_eval = eval_
 
-            np.testing.assert_allclose(base_eval, eval_, rtol=1e-05, atol=1e-06)
+            np.testing.assert_allclose(base_eval, eval_, rtol=1e-05,
+                                       atol=1e-06)
 
             # We know even more for the deterministic case.
             if constraints['is_deterministic']:
                 assert (eval_ in [0.0, 1.0])
 
-        cleanup()

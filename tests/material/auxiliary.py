@@ -13,7 +13,8 @@ import sys
 import os
 
 # ROBUPY import
-sys.path.insert(0, os.environ['ROBUPY'])
+ROBUPY_DIR = os.environ['ROBUPY']
+sys.path.insert(0, ROBUPY_DIR)
 from robupy import read
 
 from robupy.python.solve_python import _create_state_space
@@ -371,7 +372,8 @@ def check_ambiguity_optimization():
 def build_f2py_testing(is_hidden):
     """ Build the F2PY testing interface for testing.f
     """
-    os.chdir('material')
+    tmp_dir = os.getcwd()
+    os.chdir(ROBUPY_DIR + '/tests/material')
 
     # Build static library
     compiler_options = '-O3 -fpic'
@@ -418,5 +420,5 @@ def build_f2py_testing(is_hidden):
     os.system(cmd)
 
     # Finish
-    os.chdir('../')
+    os.chdir(tmp_dir)
 
