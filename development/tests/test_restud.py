@@ -1,5 +1,5 @@
-""" This modules contains some additional tests that are only used in long-run
-development tests.
+""" The tests in this module compare the ROBUPY package to the original
+RESTUD code for the special cases where they overlap.
 """
 
 # standard library
@@ -18,12 +18,14 @@ from material.auxiliary import cleanup
 
 # ROBUPY import
 sys.path.insert(0, os.environ['ROBUPY'])
-from robupy import *
 
 from robupy.tests.random_init import generate_random_dict
 from robupy.tests.random_init import print_random_dict
 
-''' Auxilary functions
+from robupy import *
+
+
+''' Auxiliary functions
 '''
 
 
@@ -35,6 +37,7 @@ def transform_robupy_to_restud(model_paras, init_dict):
     assert (init_dict['EDUCATION']['start'] == 10)
     assert (init_dict['EDUCATION']['max'] == 20)
 
+    # Write to initialization file
     with open('in.txt', 'w') as file_:
 
         # Write out some basic information about the problem.
@@ -92,9 +95,9 @@ def transform_robupy_to_restud(model_paras, init_dict):
         file_.write(line)
 
 
-
 ''' Main
 '''
+
 
 def test_97():
     """  Compare results from the RESTUD program and the ROBUPY package.
@@ -119,9 +122,6 @@ def test_97():
     constraints['level'] = 0.00
     constraints['is_deterministic'] = True
 
-    version = np.random.choice(['FORTRAN', 'F2PY', 'PYTHON'])
-    constraints['version'] = version
-
     # Generate random initialization file. The RESTUD code uses the same random
     # draws for the solution and simulation of the model. Thus, the number of
     # draws is required to be less or equal to the number of agents.
@@ -143,14 +143,13 @@ def test_97():
     # This flag aligns the random components between the RESTUD program and
     # ROBUPY package. The existence of the file leads to the RESTUD program
     # to write out the random components.
-    model_paras, init_dict = \
-            distribute_model_description(robupy_obj,
+    model_paras, init_dict = distribute_model_description(robupy_obj,
                 'model_paras', 'init_dict')
 
     transform_robupy_to_restud(model_paras, init_dict)
 
     # Solve model using RESTUD code.
-    os.system('./modules/dp3asim > /dev/null 2>&1')
+    os.system('./material/dp3asim > /dev/null 2>&1')
 
     # Solve model using ROBUPY package.
     solve(robupy_obj)
@@ -166,3 +165,4 @@ def test_97():
 
     # Cleanup
     cleanup()
+

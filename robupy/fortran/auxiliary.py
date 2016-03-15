@@ -207,7 +207,6 @@ def _write_robufort_initialization(robupy_obj, request):
         line = '{0}'.format(is_deterministic)
         file_.write(line + '\n')
 
-
         line = '{0}'.format(is_myopic)
         file_.write(line + '\n')
 

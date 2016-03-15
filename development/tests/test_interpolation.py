@@ -55,6 +55,51 @@ from robupy.auxiliary import create_disturbances
 
 ''' Main
 '''
+def test_89():
+    """ This is the special case where the EMAX better be equal to the MAXE.
+    """
+    # Ensure that fast solution methods are available
+    compile_package('--fortran --debug', True)
+
+    # Set initial constraints
+    constraints = dict()
+    constraints['apply'] = False
+    constraints['level'] = 0.00
+    constraints['periods'] = np.random.random_integers(2, 6)
+    constraints['is_deterministic'] = True
+
+    # Initialize request
+    init_dict = generate_random_dict(constraints)
+    baseline = None
+
+    # Solve with and without interpolation code
+    for _ in range(2):
+
+        # Write out request
+        print_random_dict(init_dict)
+
+        # Process and solve
+        robupy_obj = read('test.robupy.ini')
+        robupy_obj = solve(robupy_obj)
+
+        # Extract class attributes
+        states_number_period, periods_emax = \
+            distribute_model_description(robupy_obj,
+                'states_number_period', 'periods_emax')
+
+        # Store and check results
+        if baseline is None:
+            baseline = periods_emax
+        else:
+            np.testing.assert_array_almost_equal(baseline, periods_emax)
+
+        # Updates for second iteration. This ensures that there is at least
+        # one interpolation taking place.
+        init_dict['INTERPOLATION']['points'] = max(states_number_period) - 1
+        init_dict['INTERPOLATION']['apply'] = True
+
+    # Cleanup
+    cleanup()
 
 def test_86():
     """ Further tests for the interpolation routines.
