@@ -14,19 +14,17 @@ import numpy as np
 
 import pytest
 import scipy
-import sys
-import os
 
 # testing library
 from codes.auxiliary import distribute_model_description
 from codes.auxiliary import write_interpolation_grid
-
 
 from robupy import simulate
 from robupy import solve
 from robupy import read
 
 from robupy.python.py.python_library import get_payoffs
+import robupy.python.py.python_library as py_lib
 
 from robupy.python.solve_python import solve_python_bare
 
@@ -37,17 +35,12 @@ from robupy.python.py.auxiliary import simulate_emax
 from robupy.python.py.ambiguity import _divergence
 from robupy.python.py.ambiguity import _criterion
 
+from robupy.auxiliary import opt_get_model_parameters
+from robupy.auxiliary import opt_get_optim_parameters
 from robupy.auxiliary import distribute_model_paras
 from robupy.auxiliary import replace_missing_values
 from robupy.auxiliary import create_disturbances
-from robupy.auxiliary import opt_get_model_parameters
-from robupy.auxiliary import opt_get_optim_parameters
 
-import robupy.python.f2py.f2py_debug as fort
-import f2py_testing as fort_test
-import robupy.python.f2py.f2py_debug as fort_debug
-import robupy.python.f2py.f2py_library as fort_lib
-import robupy.python.py.python_library as py_lib
 
 ''' Main
 '''
@@ -58,6 +51,9 @@ class TestClass:
         """ This function compares the results from the payoff functions across
         implementations.
         """
+        # FORTRAN resources
+        import robupy.python.f2py.f2py_debug as fort_debug
+
         for _ in range(10):
 
             # Impose constraints
@@ -103,7 +99,7 @@ class TestClass:
                         states_all, num_periods, periods_emax, delta, is_debug,
                         shocks, level, is_ambiguous, measure, is_deterministic)
 
-                f90 = fort.wrapper_get_payoffs(num_draws_emax,
+                f90 = fort_debug.wrapper_get_payoffs(num_draws_emax,
                         disturbances_relevant, period, k, payoffs_systematic,
                         edu_max, edu_start, mapping_state_idx, states_all,
                         num_periods, periods_emax, delta, is_debug, shocks, level,
@@ -114,12 +110,13 @@ class TestClass:
                 for i in range(3):
                     np.testing.assert_array_almost_equal(py[i], f90[i])
 
-
-
     def test_2(self):
         """ This test compares the functions calculating the payoffs under
         ambiguity.
         """
+        # FORTRAN resources
+        import robupy.python.f2py.f2py_debug as fort_debug
+
         # Iterate over random test cases
         for _ in range(10):
 
@@ -169,17 +166,18 @@ class TestClass:
                 periods_emax, is_debug, delta, shocks, level, measure,
                 is_deterministic]
 
-            f = fort.wrapper_get_payoffs_ambiguity(*args)[0]
+            f = fort_debug.wrapper_get_payoffs_ambiguity(*args)[0]
             py = get_payoffs_ambiguity(*args)[0]
 
             np.testing.assert_allclose(py, f, rtol=1e-05, atol=1e-06)
-
-
 
     def test_3(self):
         """ This test case compares the results from the SLSQP implementations in
         PYTHON and FORTRAN for the actual optimization problem.
         """
+        # FORTRAN resources
+        import robupy.tests.lib.f2py_testing as fort_test
+
         maxiter = np.random.random_integers(1, 100)
         ftol = np.random.uniform(0.000000, 1e-5)
         x0 = np.random.normal(size=2)
@@ -255,12 +253,13 @@ class TestClass:
             else:
                 raise AssertionError
 
-
-
     def test_4(self):
         """ This test case compare the results of a debugging setup for the SLSQP
         algorithm's PYTHON and FORTRAN implementation
         """
+        # FORTRAN resources
+        import robupy.tests.lib.f2py_testing as fort_test
+
         # Sample basic test case
         maxiter = np.random.random_integers(1, 100)
         num_dim = np.random.random_integers(2, 4)
@@ -301,14 +300,14 @@ class TestClass:
                 ftol=ftol,  constraints=constraint)['x']
         np.testing.assert_allclose(py, f, rtol=1e-05, atol=1e-06)
 
-
-
     def test_5(self):
         """ Compare the evaluation of the criterion function for the ambiguity
         optimization and the simulated expected future value between the FORTRAN
         and PYTHON implementations. These tests are set up a separate test case
         due to the large setup cost to construct the ingredients for the interface.
         """
+        # FORTRAN resources
+        import robupy.python.f2py.f2py_debug as fort_debug
 
         # Generate constraint periods
         constraints = dict()
@@ -351,9 +350,10 @@ class TestClass:
             eps_standard, payoffs_systematic, edu_max, edu_start,
             periods_emax, states_all, mapping_state_idx, delta)
 
-        f90, _, _ = fort.wrapper_simulate_emax(num_periods, num_draws_emax,
-            period, k, eps_standard, payoffs_systematic, edu_max,
-            edu_start, periods_emax, states_all, mapping_state_idx, delta)
+        f90, _, _ = fort_debug.wrapper_simulate_emax(num_periods,
+            num_draws_emax, period, k, eps_standard, payoffs_systematic,
+            edu_max, edu_start, periods_emax, states_all, mapping_state_idx,
+            delta)
 
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
@@ -363,14 +363,14 @@ class TestClass:
                 periods_emax, delta)
 
         py = _criterion(x, *args)
-        f90 = fort.wrapper_criterion(x, *args)
+        f90 = fort_debug.wrapper_criterion(x, *args)
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
         # Evaluation of derivative of criterion function
         tiny = np.random.uniform(0.000000, 0.5)
 
         py = approx_fprime(x, _criterion, tiny, *args)
-        f90 = fort.wrapper_criterion_approx_gradient(x, tiny, *args)
+        f90 = fort_debug.wrapper_criterion_approx_gradient(x, tiny, *args)
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
     def test_6(self):
@@ -378,6 +378,10 @@ class TestClass:
         hand-crafted functions. In test_97() we test FORTRAN implementations
         against PYTHON intrinsic routines.
         """
+        # FORTRAN resources
+        import robupy.python.f2py.f2py_library as fort_lib
+        import robupy.python.f2py.f2py_debug as fort_debug
+
         for _ in range(10):
 
             # Draw random request for testing purposes
@@ -456,7 +460,9 @@ class TestClass:
         """ Compare results between FORTRAN and PYTHON of selected functions. The
         file python/f2py/debug_interface.f90 provides the F2PY bindings.
         """
-        # Ensure that fast solution methods are available
+        # FORTRAN resources
+        import robupy.python.f2py.f2py_debug as fort_debug
+
 
 
         for _ in range(10):
@@ -534,6 +540,8 @@ class TestClass:
     def test_8(self):
         """ Testing the equality of the core functions for random requests.
         """
+        # FORTRAN resources
+        import robupy.python.f2py.f2py_debug as fort_debug
 
         # Generate random initialization file
         generate_init()
@@ -595,7 +603,6 @@ class TestClass:
         """ Testing ten admissible realizations of state space for the first
         three periods.
         """
-
         # Generate constraint periods
         constraints = dict()
         constraints['periods'] = np.random.randint(3, 5)

@@ -5,6 +5,7 @@ import numpy as np
 
 import tempfile
 import pytest
+import shutil
 import os
 
 # testing codes
@@ -30,9 +31,11 @@ def supply_resources(request):
     # This the shared robupy/tests
     build_f2py_testing(True)
 
-    def fin():
-        os.unlink(ROOT_DIR + '/robupy/tests/codes/dp3asim')
-    request.addfinalizer(fin)
+    # Teardown of fixture after session is completed.
+    def cleanup():
+        shutil.rmtree(ROOT_DIR + '/robupy/tests/lib')
+
+    request.addfinalizer(cleanup)
 
 """ The following fixtures are called before each test.
 """

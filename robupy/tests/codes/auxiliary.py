@@ -230,7 +230,14 @@ def build_f2py_testing(is_hidden):
     except FileNotFoundError:
         pass
 
+
+    try:
+        shutil.rmtree('../lib')
+    except FileNotFoundError:
+        pass
+
     os.mkdir('build')
+    os.mkdir('../lib')
 
 
     os.chdir('build')
@@ -289,7 +296,7 @@ def build_f2py_testing(is_hidden):
     os.system(cmd)
 
     lib_name = glob.glob('f2py_testing.*.so')[0]
-    shutil.copy(lib_name, '../../')
+    shutil.copy(lib_name, '../../lib')
     os.chdir('../')
     shutil.rmtree('build')
     # Finish

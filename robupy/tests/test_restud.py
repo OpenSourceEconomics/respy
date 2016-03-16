@@ -9,6 +9,7 @@ import pandas as pd
 import numpy as np
 
 import pytest
+import shutil
 import os
 
 # testing library
@@ -106,12 +107,30 @@ class TestClass:
 
         file_dir = os.path.dirname(os.path.realpath(__file__))
 
-        os.chdir(file_dir+ '/codes')
+        os.chdir(file_dir + '/codes')
+
+        try:
+            shutil.rmtree('build')
+        except FileNotFoundError:
+            pass
+
+        os.mkdir('build')
+
+        os.chdir('build')
+
+        shutil.copy('../dp3asim.f95', '.')
+
+
         os.system(' gfortran -fcheck=bounds -o dp3asim dp3asim.f95 >'
                   ' /dev/null 2>&1')
         os.remove('pei_additions.mod')
         os.remove('imsl_replacements.mod')
+
+        shutil.copy('dp3asim', '../../lib/')
+
+
         os.chdir(tmp_dir)
+        shutil.rmtree('build')
 
         # Impose some constraints on the initialization file which ensures that
         # the problem can be solved by the RESTUD code. The code is adjusted to
