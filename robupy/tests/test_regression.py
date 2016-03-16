@@ -44,8 +44,8 @@ class TestClass:
         emax = robupy_obj.get_attr('periods_emax')
 
         # GENERAL: As there are no random disturbances (all disturbances set to
-        # zero), the systematic and ex post versions of the period payoffs should
-        # be identical.
+        # zero), the systematic and ex post versions of the period payoffs
+        # should be identical.
         assert (np.ma.all(np.ma.masked_invalid(ex_post) ==
                           np.ma.masked_invalid(systematic)))
 
