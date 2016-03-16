@@ -4,16 +4,16 @@
 import numpy as np
 
 import pytest
-import sys
 import os
 
 # project library
-ROBUPY_DIR = os.environ['ROBUPY']
-sys.path.insert(0, ROBUPY_DIR)
 
 from robupy import read
 from robupy import solve
 
+# module-wide variables
+ROBUPY_DIR = os.environ['ROBUPY']
+RESOURCES_DIR = ROBUPY_DIR + '/robupy/tests/resources'
 
 
 @pytest.mark.usefixtures('fresh_directory', 'set_seed', 'supply_resources')
@@ -22,7 +22,7 @@ class TestClass:
         """ Test solution of simple model against hard-coded results.
         """
         # Solve specified economy
-        robupy_obj = read(ROBUPY_DIR + '/tests/material/first.robupy.ini')
+        robupy_obj = read(RESOURCES_DIR + '/first.robupy.ini')
         robupy_obj = solve(robupy_obj)
 
         # Extract statistic
@@ -35,7 +35,7 @@ class TestClass:
         """ Compare the solution of simple model against hard-coded results.
         """
         # Solve specified economy
-        robupy_obj = read(ROBUPY_DIR + '/tests/material/second.robupy.ini')
+        robupy_obj = read(RESOURCES_DIR + '/second.robupy.ini')
         robupy_obj = solve(robupy_obj)
 
         # Distribute class attributes
@@ -103,7 +103,7 @@ class TestClass:
         """ Test the solution of model with ambiguity.
         """
         # Solve specified economy
-        robupy_obj = read(ROBUPY_DIR + '/tests/material/third.robupy.ini')
+        robupy_obj = read(RESOURCES_DIR + '/third.robupy.ini')
         robupy_obj = solve(robupy_obj)
 
         # Extract statistic
@@ -116,7 +116,7 @@ class TestClass:
         """ Test the solution of model with ambiguity.
         """
         # Solve specified economy
-        robupy_obj = read(ROBUPY_DIR + '/tests/material/fourth.robupy.ini')
+        robupy_obj = read(RESOURCES_DIR + '/fourth.robupy.ini')
         robupy_obj = solve(robupy_obj)
 
         # Extract statistic

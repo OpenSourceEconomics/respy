@@ -18,21 +18,19 @@ import sys
 import os
 
 # testing library
-from material.auxiliary import write_interpolation_grid
-from material.auxiliary import build_f2py_testing
-from material.auxiliary import compile_package
-from material.auxiliary import cleanup, distribute_model_description
+from codes.auxiliary import distribute_model_description
+from codes.auxiliary import write_interpolation_grid
 
-# ROBUPY import
-ROBUPY_DIR = os.environ['ROBUPY']
-sys.path.insert(0, ROBUPY_DIR)
-from robupy import *
+
+from robupy import simulate
+from robupy import solve
+from robupy import read
 
 from robupy.python.py.python_library import get_payoffs
 
 from robupy.python.solve_python import solve_python_bare
 
-from robupy.tests.random_init import generate_init
+from robupy.tests.codes.random_init import generate_init
 
 from robupy.python.py.ambiguity import get_payoffs_ambiguity
 from robupy.python.py.auxiliary import simulate_emax
@@ -42,23 +40,24 @@ from robupy.python.py.ambiguity import _criterion
 from robupy.auxiliary import distribute_model_paras
 from robupy.auxiliary import replace_missing_values
 from robupy.auxiliary import create_disturbances
+from robupy.auxiliary import opt_get_model_parameters
+from robupy.auxiliary import opt_get_optim_parameters
 
+import robupy.python.f2py.f2py_debug as fort
+import f2py_testing as fort_test
+import robupy.python.f2py.f2py_debug as fort_debug
+import robupy.python.f2py.f2py_library as fort_lib
+import robupy.python.py.python_library as py_lib
 
 ''' Main
 '''
 
-@pytest.mark.usefixtures('fresh_directory', 'set_seed')
+@pytest.mark.usefixtures('fresh_directory', 'set_seed', 'supply_resources')
 class TestClass:
     def test_1(self):
         """ This function compares the results from the payoff functions across
         implementations.
         """
-        # Ensure that fast solution methods are available
-        compile_package('--fortran --debug', True)
-
-        # Load interface to debugging library
-        import robupy.python.f2py.f2py_debug as fort
-
         for _ in range(10):
 
             # Impose constraints
@@ -115,19 +114,12 @@ class TestClass:
                 for i in range(3):
                     np.testing.assert_array_almost_equal(py[i], f90[i])
 
-        # Cleanup
-        cleanup()
-
 
 
     def test_2(self):
         """ This test compares the functions calculating the payoffs under
         ambiguity.
         """
-        # Ensure that fast solution methods are available
-        compile_package('--fortran --debug', True)
-        import robupy.python.f2py.f2py_debug as fort
-
         # Iterate over random test cases
         for _ in range(10):
 
@@ -182,108 +174,93 @@ class TestClass:
 
             np.testing.assert_allclose(py, f, rtol=1e-05, atol=1e-06)
 
-        # Cleanup
-        cleanup()
 
 
     def test_3(self):
         """ This test case compares the results from the SLSQP implementations in
         PYTHON and FORTRAN for the actual optimization problem.
         """
-        # Ensure interface is available
-        build_f2py_testing(is_hidden=True)
-        import material.f2py_testing as fort
+        maxiter = np.random.random_integers(1, 100)
+        ftol = np.random.uniform(0.000000, 1e-5)
+        x0 = np.random.normal(size=2)
 
-        # Sample problem parameters
-        for _ in range(10):
+        tiny = 1e-6
 
-            maxiter = np.random.random_integers(1, 100)
-            ftol = np.random.uniform(0.000000, 1e-5)
-            x0 = np.random.normal(size=2)
+        shocks = np.identity(4)*np.random.normal(size=1)**2
+        level = np.random.normal(size=1)**2
 
-            tiny = 1e-6
+        # Setting up PYTHON SLSQP interface for constraints
+        constraint = dict()
+        constraint['type'] = 'eq'
+        constraint['args'] = (shocks, level)
+        constraint['fun'] = _divergence
 
-            shocks = np.identity(4)*np.random.normal(size=1)**2
-            level = np.random.normal(size=1)**2
+        # Generate constraint periods
+        constraints = dict()
+        constraints['version'] = 'PYTHON'
 
-            # Setting up PYTHON SLSQP interface for constraints
-            constraint = dict()
-            constraint['type'] = 'eq'
-            constraint['args'] = (shocks, level)
-            constraint['fun'] = _divergence
+        # Generate random initialization file
+        generate_init(constraints)
 
-            # Generate constraint periods
-            constraints = dict()
-            constraints['version'] = 'PYTHON'
+        # Perform toolbox actions
+        robupy_obj = read('test.robupy.ini')
+        robupy_obj = solve(robupy_obj)
 
-            # Generate random initialization file
-            generate_init(constraints)
+        # Extract class attributes
+        periods_payoffs_systematic, states_number_period, mapping_state_idx, \
+        periods_emax, num_periods, states_all, num_draws_emax, edu_start, \
+        edu_max, delta, is_debug = \
+            distribute_model_description(robupy_obj,
+                'periods_payoffs_systematic', 'states_number_period',
+                'mapping_state_idx', 'periods_emax', 'num_periods',
+                'states_all', 'num_draws_emax', 'edu_start', 'edu_max',
+                'delta', 'is_debug')
 
-            # Perform toolbox actions
-            robupy_obj = read('test.robupy.ini')
-            robupy_obj = solve(robupy_obj)
+        # Sample disturbances
+        eps_standard = np.random.multivariate_normal(np.zeros(4),
+                                np.identity(4), (num_draws_emax,))
 
-            # Extract class attributes
-            periods_payoffs_systematic, states_number_period, mapping_state_idx, \
-            periods_emax, num_periods, states_all, num_draws_emax, edu_start, \
-            edu_max, delta, is_debug = \
-                distribute_model_description(robupy_obj,
-                    'periods_payoffs_systematic', 'states_number_period',
-                    'mapping_state_idx', 'periods_emax', 'num_periods',
-                    'states_all', 'num_draws_emax', 'edu_start', 'edu_max',
-                    'delta', 'is_debug')
+        # Sampling of random period and admissible state index
+        period = np.random.choice(range(num_periods))
+        k = np.random.choice(range(states_number_period[period]))
 
-            # Sample disturbances
-            eps_standard = np.random.multivariate_normal(np.zeros(4),
-                                    np.identity(4), (num_draws_emax,))
+        # Select systematic payoffs
+        payoffs_systematic = periods_payoffs_systematic[period, k, :]
 
-            # Sampling of random period and admissible state index
-            period = np.random.choice(range(num_periods))
-            k = np.random.choice(range(states_number_period[period]))
+        args = (num_draws_emax, eps_standard, period, k, payoffs_systematic, edu_max,
+            edu_start, mapping_state_idx, states_all, num_periods, periods_emax,
+            delta)
 
-            # Select systematic payoffs
-            payoffs_systematic = periods_payoffs_systematic[period, k, :]
+        opt = _minimize_slsqp(_criterion, x0, args, maxiter=maxiter,
+                       ftol=ftol, constraints=constraint)
 
-            args = (num_draws_emax, eps_standard, period, k, payoffs_systematic, edu_max,
-                edu_start, mapping_state_idx, states_all, num_periods, periods_emax,
-                delta)
+        # Stabilization. This is done as part of the fortran implementation.
+        if opt['success']:
+            py = opt['x']
+        else:
+            py = x0
 
-            opt = _minimize_slsqp(_criterion, x0, args, maxiter=maxiter,
-                           ftol=ftol, constraints=constraint)
+        f = fort_test.wrapper_slsqp_robufort(x0, maxiter, ftol, tiny, num_draws_emax,
+                eps_standard, period, k, payoffs_systematic, edu_max, edu_start,
+                mapping_state_idx, states_all, num_periods, periods_emax,
+                delta, is_debug, shocks, level)
 
-            # Stabilization. This is done as part of the fortran implementation.
-            if opt['success']:
-                py = opt['x']
+        # Check equality. If not equal up to the tolerance, also check
+        # whether the result from the FORTRAN implementation is even better.
+        try:
+            np.testing.assert_allclose(py, f, rtol=1e-05, atol=1e-06)
+        except AssertionError:
+            if _criterion(f, *args) < _criterion(py, *args):
+                pass
             else:
-                py = x0
+                raise AssertionError
 
-            f = fort.wrapper_slsqp_robufort(x0, maxiter, ftol, tiny, num_draws_emax,
-                    eps_standard, period, k, payoffs_systematic, edu_max, edu_start,
-                    mapping_state_idx, states_all, num_periods, periods_emax,
-                    delta, is_debug, shocks, level)
-
-            # Check equality. If not equal up to the tolerance, also check
-            # whether the result from the FORTRAN implementation is even better.
-            try:
-                np.testing.assert_allclose(py, f, rtol=1e-05, atol=1e-06)
-            except AssertionError:
-                if _criterion(f, *args) < _criterion(py, *args):
-                    pass
-                else:
-                    raise AssertionError
-
-        # Cleanup
-        cleanup()
 
 
     def test_4(self):
         """ This test case compare the results of a debugging setup for the SLSQP
         algorithm's PYTHON and FORTRAN implementation
         """
-        # Ensure interface is available
-        build_f2py_testing(is_hidden=True)
-        import material.f2py_testing as fort
-
         # Sample basic test case
         maxiter = np.random.random_integers(1, 100)
         num_dim = np.random.random_integers(2, 4)
@@ -292,12 +269,12 @@ class TestClass:
 
         # Evaluation of Rosenbrock function. We are using the FORTRAN version
         # in the development of the optimization routines.
-        f90 = fort.wrapper_debug_criterion_function(x0, num_dim)
+        f90 = fort_test.wrapper_debug_criterion_function(x0, num_dim)
         py = rosen(x0)
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
         py = rosen_der(x0)
-        f90 = fort.wrapper_debug_criterion_derivative(x0, len(x0))
+        f90 = fort_test.wrapper_debug_criterion_derivative(x0, len(x0))
         np.testing.assert_allclose(py, f90[:-1], rtol=1e-05, atol=1e-06)
 
         # Test the FORTRAN codes against the PYTHON implementation. This is
@@ -319,13 +296,11 @@ class TestClass:
         constraint['jac'] = debug_constraint_derivative
 
         # Evaluate both implementations
-        f = fort.wrapper_slsqp_debug(x0, maxiter, ftol, num_dim)
+        f = fort_test.wrapper_slsqp_debug(x0, maxiter, ftol, num_dim)
         py = _minimize_slsqp(rosen, x0, jac=rosen_der, maxiter=maxiter,
                 ftol=ftol,  constraints=constraint)['x']
         np.testing.assert_allclose(py, f, rtol=1e-05, atol=1e-06)
 
-        # Cleanup
-        cleanup()
 
 
     def test_5(self):
@@ -334,93 +309,76 @@ class TestClass:
         and PYTHON implementations. These tests are set up a separate test case
         due to the large setup cost to construct the ingredients for the interface.
         """
-        # Ensure that fast solution methods are available
-        compile_package('--fortran --debug', True)
 
-        import robupy.python.f2py.f2py_debug as fort
+        # Generate constraint periods
+        constraints = dict()
+        constraints['version'] = 'PYTHON'
 
-        for _ in range(10):
+        # Generate random initialization file
+        generate_init(constraints)
 
-            # Generate constraint periods
-            constraints = dict()
-            constraints['version'] = 'PYTHON'
+        # Perform toolbox actions
+        robupy_obj = read('test.robupy.ini')
 
-            # Generate random initialization file
-            generate_init(constraints)
+        robupy_obj = solve(robupy_obj)
 
-            # Perform toolbox actions
-            robupy_obj = read('test.robupy.ini')
+        # Extract class attributes
+        periods_payoffs_systematic, states_number_period, mapping_state_idx, \
+        periods_emax, num_periods, states_all, num_draws_emax, edu_start, \
+        edu_max, delta = \
+            distribute_model_description(robupy_obj,
+                'periods_payoffs_systematic', 'states_number_period',
+                'mapping_state_idx', 'periods_emax', 'num_periods',
+                'states_all', 'num_draws_emax', 'edu_start', 'edu_max',
+                'delta')
 
-            robupy_obj = solve(robupy_obj)
+        # Sample disturbances
+        eps_standard = np.random.multivariate_normal(np.zeros(4),
+                            np.identity(4), (num_draws_emax,))
 
-            # Extract class attributes
-            periods_payoffs_systematic, states_number_period, mapping_state_idx, \
-            periods_emax, num_periods, states_all, num_draws_emax, edu_start, \
-            edu_max, delta = \
-                distribute_model_description(robupy_obj,
-                    'periods_payoffs_systematic', 'states_number_period',
-                    'mapping_state_idx', 'periods_emax', 'num_periods',
-                    'states_all', 'num_draws_emax', 'edu_start', 'edu_max',
-                    'delta')
+        # Sampling of random period and admissible state index
+        period = np.random.choice(range(num_periods))
+        k = np.random.choice(range(states_number_period[period]))
 
-            # Sample disturbances
-            eps_standard = np.random.multivariate_normal(np.zeros(4),
-                                np.identity(4), (num_draws_emax,))
+        # Select systematic payoffs
+        payoffs_systematic = periods_payoffs_systematic[period, k, :]
 
-            # Sampling of random period and admissible state index
-            period = np.random.choice(range(num_periods))
-            k = np.random.choice(range(states_number_period[period]))
+        # Evaluation point
+        x = np.random.random(size=2)
 
-            # Select systematic payoffs
-            payoffs_systematic = periods_payoffs_systematic[period, k, :]
+        # Evaluation of simulated expected future values
+        py, _, _ = simulate_emax(num_periods, num_draws_emax, period, k,
+            eps_standard, payoffs_systematic, edu_max, edu_start,
+            periods_emax, states_all, mapping_state_idx, delta)
 
-            # Evaluation point
-            x = np.random.random(size=2)
+        f90, _, _ = fort.wrapper_simulate_emax(num_periods, num_draws_emax,
+            period, k, eps_standard, payoffs_systematic, edu_max,
+            edu_start, periods_emax, states_all, mapping_state_idx, delta)
 
-            # Evaluation of simulated expected future values
-            py, _, _ = simulate_emax(num_periods, num_draws_emax, period, k,
-                eps_standard, payoffs_systematic, edu_max, edu_start,
-                periods_emax, states_all, mapping_state_idx, delta)
+        np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
-            f90, _, _ = fort.wrapper_simulate_emax(num_periods, num_draws_emax,
-                period, k, eps_standard, payoffs_systematic, edu_max,
-                edu_start, periods_emax, states_all, mapping_state_idx, delta)
+        # Criterion function for the determination of the worst case outcomes
+        args = (num_draws_emax, eps_standard, period, k, payoffs_systematic,
+                edu_max, edu_start, mapping_state_idx, states_all, num_periods,
+                periods_emax, delta)
 
-            np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
+        py = _criterion(x, *args)
+        f90 = fort.wrapper_criterion(x, *args)
+        np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
-            # Criterion function for the determination of the worst case outcomes
-            args = (num_draws_emax, eps_standard, period, k, payoffs_systematic,
-                    edu_max, edu_start, mapping_state_idx, states_all, num_periods,
-                    periods_emax, delta)
+        # Evaluation of derivative of criterion function
+        tiny = np.random.uniform(0.000000, 0.5)
 
-            py = _criterion(x, *args)
-            f90 = fort.wrapper_criterion(x, *args)
-            np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
-
-            # Evaluation of derivative of criterion function
-            tiny = np.random.uniform(0.000000, 0.5)
-
-            py = approx_fprime(x, _criterion, tiny, *args)
-            f90 = fort.wrapper_criterion_approx_gradient(x, tiny, *args)
-            np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
-
-        # Cleanup
-        cleanup()
-
+        py = approx_fprime(x, _criterion, tiny, *args)
+        f90 = fort.wrapper_criterion_approx_gradient(x, tiny, *args)
+        np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
     def test_6(self):
         """ Compare results between FORTRAN and PYTHON of selected
         hand-crafted functions. In test_97() we test FORTRAN implementations
         against PYTHON intrinsic routines.
         """
-        # Ensure that fast solution methods are available
-        compile_package('--fortran --debug', True)
-
-        import robupy.python.f2py.f2py_debug as fort_debug
-        import robupy.python.f2py.f2py_library as fort_lib
-        import robupy.python.py.python_library as py_lib
-
-        for _ in range(1000):
+        for _ in range(10):
 
             # Draw random request for testing purposes
             matrix = (np.random.multivariate_normal(np.zeros(4), np.identity(
@@ -494,20 +452,14 @@ class TestClass:
             f90 = fort_debug.wrapper_get_r_squared(endog, f90, num_agents)
             np.testing.assert_almost_equal(py, f90)
 
-        # Cleanup
-        cleanup()
-
-
     def test_7(self):
         """ Compare results between FORTRAN and PYTHON of selected functions. The
         file python/f2py/debug_interface.f90 provides the F2PY bindings.
         """
         # Ensure that fast solution methods are available
-        compile_package('--fortran --debug', True)
 
-        import robupy.python.f2py.f2py_debug as fort
 
-        for _ in range(100):
+        for _ in range(10):
 
             # Draw random requests for testing purposes.
             num_draws_emax = np.random.random_integers(2, 1000)
@@ -521,51 +473,51 @@ class TestClass:
             args = np.random.normal(size=3)
             args[-1] **= 2
 
-            f90 = fort.wrapper_normal_pdf(*args)
+            f90 = fort_debug.wrapper_normal_pdf(*args)
             py = norm.pdf(*args)
 
             np.testing.assert_almost_equal(py, f90)
 
             # Singular Value Decomposition
             py = scipy.linalg.svd(matrix)
-            f90 = fort.wrapper_svd(matrix, dim)
+            f90 = fort_debug.wrapper_svd(matrix, dim)
 
         for i in range(3):
             np.testing.assert_allclose(py[i], f90[i], rtol=1e-05, atol=1e-06)
 
             # Pseudo-Inverse
             py = np.linalg.pinv(matrix)
-            f90 = fort.wrapper_pinv(matrix, dim)
+            f90 = fort_debug.wrapper_pinv(matrix, dim)
 
             np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
             # Inverse
             py = np.linalg.inv(cov)
-            f90 = fort.wrapper_inverse(cov, dim)
+            f90 = fort_debug.wrapper_inverse(cov, dim)
             np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
             # Determinant
             py = np.linalg.det(cov)
-            f90 = fort.wrapper_determinant(cov)
+            f90 = fort_debug.wrapper_determinant(cov)
 
             np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
             # Trace
             py = np.trace(cov)
-            f90 = fort.wrapper_trace(cov)
+            f90 = fort_debug.wrapper_trace(cov)
 
             np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
             # Cholesky decomposition
-            f90 = fort.wrapper_cholesky(cov, dim)
+            f90 = fort_debug.wrapper_cholesky(cov, dim)
             py = np.linalg.cholesky(cov)
 
             np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
             # Random normal deviates. This only tests the interface, requires
             # visual inspection in IPYTHON notebook as well.
-            fort.wrapper_standard_normal(num_draws_emax)
-            fort.wrapper_multivariate_normal(mean, cov, num_draws_emax, dim)
+            fort_debug.wrapper_standard_normal(num_draws_emax)
+            fort_debug.wrapper_multivariate_normal(mean, cov, num_draws_emax, dim)
 
             # Clipping values below and above bounds.
             num_values = np.random.random_integers(1, 10000)
@@ -573,84 +525,140 @@ class TestClass:
             upper_bound = lower_bound + np.random.ranf()
             values = np.random.normal(size=num_values)
 
-            f90 = fort.wrapper_get_clipped_vector(values, lower_bound, upper_bound,
+            f90 = fort_debug.wrapper_get_clipped_vector(values, lower_bound, upper_bound,
                                                  num_values)
             py = np.clip(values, lower_bound, upper_bound)
 
             np.testing.assert_almost_equal(py, f90)
 
-        # Cleanup
-        cleanup()
-
-
     def test_8(self):
         """ Testing the equality of the core functions for random requests.
         """
 
-        # Ensure that fast solution methods are available
-        compile_package('--fortran --debug', True)
+        # Generate random initialization file
+        generate_init()
 
-        # Load interface to debugging library
-        import robupy.python.f2py.f2py_debug as fort
+        # Solve random request
+        robupy_obj = read('test.robupy.ini')
 
-        for i in range(5):
+        # Extract class attributes
+        is_interpolated, is_deterministic, seed_emax, is_ambiguous, \
+        model_paras, num_periods, num_points, edu_start, is_python, \
+        is_myopic, num_draws_emax, is_debug, measure, edu_max, \
+        min_idx, delta, level = \
+                distribute_model_description(robupy_obj,
+                    'is_interpolated', 'is_deterministic', 'seed_emax',
+                    'is_ambiguous', 'model_paras', 'num_periods',
+                    'num_points', 'edu_start', 'is_python', 'is_myopic',
+                    'num_draws_emax', 'is_debug', 'measure', 'edu_max',
+                    'min_idx', 'delta', 'level')
 
-            # Generate random initialization file
-            generate_init()
+        # Distribute model parameters
+        coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, shocks_cholesky = \
+                distribute_model_paras(model_paras, is_debug)
 
-            # Solve random request
-            robupy_obj = read('test.robupy.ini')
+        # Get set of disturbances
+        disturbances_emax = create_disturbances(num_periods, num_draws_emax,
+            seed_emax, is_debug, 'emax', shocks_cholesky, is_ambiguous)
 
-            # Extract class attributes
-            is_interpolated, is_deterministic, seed_emax, is_ambiguous, \
-            model_paras, num_periods, num_points, edu_start, is_python, \
-            is_myopic, num_draws_emax, is_debug, measure, edu_max, \
-            min_idx, delta, level = \
-                    distribute_model_description(robupy_obj,
-                        'is_interpolated', 'is_deterministic', 'seed_emax',
-                        'is_ambiguous', 'model_paras', 'num_periods',
-                        'num_points', 'edu_start', 'is_python', 'is_myopic',
-                        'num_draws_emax', 'is_debug', 'measure', 'edu_max',
-                        'min_idx', 'delta', 'level')
+        # Align interpolation grid
+        max_states_period = write_interpolation_grid('test.robupy.ini')
 
-            # Distribute model parameters
-            coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, shocks_cholesky = \
-                    distribute_model_paras(model_paras, is_debug)
+        # Baseline input arguments.
+        base_args = [coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
+            edu_max, delta, edu_start, is_debug, is_interpolated, level,
+            measure, min_idx, num_draws_emax, num_periods, num_points,
+            is_ambiguous, disturbances_emax, is_deterministic, is_myopic]
 
-            # Get set of disturbances
-            disturbances_emax = create_disturbances(num_periods, num_draws_emax,
-                seed_emax, is_debug, 'emax', shocks_cholesky, is_ambiguous)
+        # Check for the equality of the solution routines.
+        base = None
+        for version in ['PYTHON', 'F2PY', 'FORTRAN']:
+            if version in ['F2PY', 'PYTHON']:
+                # Modifications to input arguments
+                args = base_args + [is_python]
+                # Get PYTHON/F2PY results
+                ret_args = solve_python_bare(*args)
+            else:
+                # Modifications to input arguments
+                args = base_args + [max_states_period]
+                # Get FORTRAN results
+                ret_args = fort_debug.wrapper_solve_fortran_bare(*args)
+            # Collect baseline information
+            if base is None:
+                base = ret_args
+            # Check results
+            for j in range(7):
+                np.testing.assert_equal(base[j], replace_missing_values(
+                    ret_args[j]))
 
-            # Align interpolation grid
-            max_states_period = write_interpolation_grid('test.robupy.ini')
+    def test_9(self):
+        """ Testing ten admissible realizations of state space for the first
+        three periods.
+        """
 
-            # Baseline input arguments.
-            base_args = [coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
-                edu_max, delta, edu_start, is_debug, is_interpolated, level,
-                measure, min_idx, num_draws_emax, num_periods, num_points,
-                is_ambiguous, disturbances_emax, is_deterministic, is_myopic]
+        # Generate constraint periods
+        constraints = dict()
+        constraints['periods'] = np.random.randint(3, 5)
 
-            # Check for the equality of the solution routines.
-            base = None
-            for version in ['PYTHON', 'F2PY', 'FORTRAN']:
-                if version in ['F2PY', 'PYTHON']:
-                    # Modifications to input arguments
-                    args = base_args + [is_python]
-                    # Get PYTHON/F2PY results
-                    ret_args = solve_python_bare(*args)
-                else:
-                    # Modifications to input arguments
-                    args = base_args + [max_states_period]
-                    # Get FORTRAN results
-                    ret_args = fort.wrapper_solve_fortran_bare(*args)
-                # Collect baseline information
-                if base is None:
-                    base = ret_args
-                # Check results
-                for j in range(7):
-                    np.testing.assert_equal(base[j], replace_missing_values(
-                        ret_args[j]))
+        # Generate random initialization file
+        generate_init(constraints)
 
-            # Cleanup
-            cleanup()
+        # Perform toolbox actions
+        robupy_obj = read('test.robupy.ini')
 
+        robupy_obj = solve(robupy_obj)
+
+        simulate(robupy_obj)
+
+        # Distribute class attributes
+        states_number_period = robupy_obj.get_attr('states_number_period')
+
+        states_all = robupy_obj.get_attr('states_all')
+
+        # The next hard-coded results assume that at least two more
+        # years of education are admissible.
+        edu_max = robupy_obj.get_attr('edu_max')
+        edu_start = robupy_obj.get_attr('edu_start')
+
+        if edu_max - edu_start < 2:
+            return
+
+        # The number of admissible states in the first three periods
+        for j, number_period in enumerate([1, 4, 13]):
+            assert (states_number_period[j] == number_period)
+
+        # The actual realizations of admissible states in period one
+        assert ((states_all[0, 0, :] == [0, 0, 0, 1]).all())
+
+        # The actual realizations of admissible states in period two
+        states = [[0, 0, 0, 0], [0, 0, 1, 1], [0, 1, 0, 0]]
+        states += [[1, 0, 0, 0]]
+
+        for j, state in enumerate(states):
+            assert ((states_all[1, j, :] == state).all())
+
+        # The actual realizations of admissible states in period three
+        states = [[0, 0, 0, 0], [0, 0, 1, 0], [0, 0, 1, 1]]
+        states += [[0, 0, 2, 1], [0, 1, 0, 0], [0, 1, 1, 0]]
+        states += [[0, 1, 1, 1], [0, 2, 0, 0], [1, 0, 0, 0]]
+        states += [[1, 0, 1, 0], [1, 0, 1, 1], [1, 1, 0, 0]]
+        states += [[2, 0, 0, 0]]
+
+        for j, state in enumerate(states):
+            assert ((states_all[2, j, :] == state).all())
+
+    def test_10(self):
+        """ Testing whether back-and-forth transformation have no effect.
+        """
+        for i in range(10):
+            # Create random parameter vector
+            base = np.random.uniform(size=26)
+            x = base.copy()
+
+            # Apply numerous transformations
+            for j in range(10):
+                args = opt_get_model_parameters(x, is_debug=True)
+                x = opt_get_optim_parameters(*args, is_debug=True)
+
+            # Checks
+            np.testing.assert_allclose(base, x)

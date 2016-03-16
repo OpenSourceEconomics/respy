@@ -13,14 +13,13 @@ import sys
 import os
 
 # ROBUPY import
+# TODO: Remove ROBUPZ REFERNCES
 ROBUPY_DIR = os.environ['ROBUPY']
 sys.path.insert(0, ROBUPY_DIR)
 from robupy import read
 
 from robupy.python.solve_python import _create_state_space
 
-# project library
-from material.clsMail import MailCls
 
 ''' Auxiliary functions.
 '''
@@ -107,95 +106,6 @@ def write_disturbances(num_periods, max_draws):
                 line = ' {0:15.10f} {1:15.10f} {2:15.10f} {3:15.10f}\n'.format(
                     *standard_deviates[period, i, :])
                 file_.write(line)
-
-
-def start_logging():
-    """ Start logging of performance.
-    """
-
-    # Initialize logger
-    logger = logging.getLogger('DEV-TEST')
-    logger.setLevel(logging.DEBUG)
-
-    # Create file handler which logs even debug messages
-    fh = logging.FileHandler('logging.log', 'w')
-    fh.setLevel(logging.DEBUG)
-
-    # Create formatter and add it to the handlers
-    formatter = logging.Formatter(' %(asctime)s     %(message)s \n', datefmt='%I:%M:%S %p')
-    fh.setFormatter(formatter)
-
-    # Add the handlers to the logger
-    logger.addHandler(fh)
-
-def distribute_input(parser):
-    """ Check input for estimation script.
-    """
-    # Parse arguments.
-    args = parser.parse_args()
-
-    # Distribute arguments.
-    hours = args.hours
-    notification = args.notification
-
-    # Assertions.
-    assert (notification in [True, False])
-    assert (isinstance(hours, float))
-    assert (hours > 0.0)
-
-    # Validity checks
-    if notification:
-        # Check that the credentials file is stored in the user's HOME directory.
-        assert (os.path.exists(os.environ['HOME'] + '/.credentials'))
-
-    # Finishing.
-    return hours, notification
-
-def finish(dict_, HOURS, notification):
-    """ Finishing up a run of the testing battery.
-    """
-    # Antibugging.
-    assert (isinstance(dict_, dict))
-    assert (notification in [True, False])
-
-    # Auxiliary objects.
-    hostname = socket.gethostname()
-
-    with open('logging.log', 'a') as file_:
-
-        file_.write(' Summary \n\n')
-
-        str_ = '   Test {0:<10} Success {1:<10} Failures  {2:<10}\n'
-
-        for label in sorted(dict_.keys()):
-
-            success = dict_[label]['success']
-
-            failure = dict_[label]['failure']
-
-            file_.write(str_.format(label, success, failure))
-
-        file_.write('\n')
-
-    if notification:
-
-        subject = ' ROBUPY: Completed Testing Battery '
-
-        message = ' A ' + str(HOURS) +' hour run of the testing battery on @' + \
-                  hostname + ' is completed.'
-
-        mail_obj = MailCls()
-
-        mail_obj.set_attr('subject', subject)
-
-        mail_obj.set_attr('message', message)
-
-        mail_obj.set_attr('attachment', 'logging.log')
-
-        mail_obj.lock()
-
-        mail_obj.send()
-
 
 def cleanup():
     """ Cleanup after test battery.
@@ -308,72 +218,31 @@ def compile_package(options, is_hidden):
 
     os.chdir(tests_dir)
 
-def check_ambiguity_optimization():
-    """ This function checks that less than 5% of all optimization for each
-    period fail.
-    """
-    def _process_cases(list_):
-        """ Process cases and determine whether keyword or empty line.
-        """
-        # Antibugging
-        assert (isinstance(list_, list))
-
-        # Get information
-        is_empty = (len(list_) == 0)
-
-        if not is_empty:
-            is_summary = (list_[0] == 'SUMMARY')
-        else:
-            is_summary = False
-
-        # Antibugging
-        assert (is_summary in [True, False])
-        assert (is_empty in [True, False])
-
-        # Finishing
-        return is_empty, is_summary
-
-    is_relevant = False
-
-    # Check relevance
-    if not os.path.exists('ambiguity.robupy.log'):
-        return
-
-    for line in open('ambiguity.robupy.log').readlines():
-
-        # Split line
-        list_ = shlex.split(line)
-
-        # Determine special cases
-        is_empty, is_summary = _process_cases(list_)
-
-        # Applicability
-        if is_empty:
-            continue
-
-        # Prepare dictionary
-        if is_summary:
-            is_relevant = True
-            continue
-
-        if not is_relevant:
-            continue
-
-        if list_[0] == 'Period':
-            continue
-
-        period, total, success, failure = list_
-
-        total = success + failure
-
-        if float(failure)/float(total) > 0.05:
-            raise AssertionError
 
 def build_f2py_testing(is_hidden):
     """ Build the F2PY testing interface for testing.f
     """
     tmp_dir = os.getcwd()
-    os.chdir(ROBUPY_DIR + '/tests/material')
+    os.chdir(ROBUPY_DIR + '/robupy/tests/codes')
+
+    try:
+        shutil.rmtree('build')
+    except FileNotFoundError:
+        pass
+
+    os.mkdir('build')
+
+
+    os.chdir('build')
+
+    # Get all sources from the FORTRAN package.
+    files = glob.glob('../../../fortran/*.f*')
+
+    for file_ in files:
+        shutil.copy(file_, '.')
+
+    shutil.copy('../robufort_testing.f90', '.')
+    shutil.copy('../f2py_interface_testing.f90', '.')
 
     # Build static library
     compiler_options = '-O3 -fpic'
@@ -419,6 +288,10 @@ def build_f2py_testing(is_hidden):
 
     os.system(cmd)
 
+    lib_name = glob.glob('f2py_testing.*.so')[0]
+    shutil.copy(lib_name, '../../')
+    os.chdir('../')
+    shutil.rmtree('build')
     # Finish
     os.chdir(tmp_dir)
 

@@ -6,42 +6,39 @@ development tests.
 import numpy as np
 
 import pytest
-import sys
 import os
 
 # testing library
-from material.auxiliary import write_interpolation_grid
-from material.auxiliary import compile_package
-from material.auxiliary import cleanup, distribute_model_description
+from codes.auxiliary import distribute_model_description
+from codes.auxiliary import write_interpolation_grid
 
 # ROBUPY import
-sys.path.insert(0, os.environ['ROBUPY'])
-from robupy import *
+from robupy import solve
+from robupy import read
 
 from robupy.python.py.python_library import _get_simulated_indicator
 from robupy.python.py.python_library import _get_exogenous_variables
 from robupy.python.py.python_library import _get_endogenous_variable
 from robupy.python.py.python_library import _get_predictions
 
-from robupy.tests.random_init import generate_random_dict
-from robupy.tests.random_init import print_random_dict
-from robupy.tests.random_init import generate_init
+from robupy.tests.codes.random_init import generate_random_dict
+from robupy.tests.codes.random_init import print_random_dict
+from robupy.tests.codes.random_init import generate_init
 
 from robupy.auxiliary import replace_missing_values
 from robupy.auxiliary import create_disturbances
 
+import robupy.python.f2py.f2py_debug as fort_debug
 
 ''' Main
 '''
 
-@pytest.mark.usefixtures('fresh_directory', 'set_seed')
+
+@pytest.mark.usefixtures('fresh_directory', 'set_seed', 'supply_resources')
 class TestClass:
     def test_1(self):
         """ This is the special case where the EMAX better be equal to the MAXE.
         """
-        # Ensure that fast solution methods are available
-        compile_package('--fortran --debug', True)
-
         # Set initial constraints
         constraints = dict()
         constraints['apply'] = False
@@ -79,18 +76,9 @@ class TestClass:
             init_dict['INTERPOLATION']['points'] = max(states_number_period) - 1
             init_dict['INTERPOLATION']['apply'] = True
 
-        # Cleanup
-        cleanup()
-
     def test_2(self):
         """ Further tests for the interpolation routines.
         """
-        # Ensure that fast solution methods are available
-        compile_package('--fortran --debug', True)
-
-        # Load interface to debugging library
-        import robupy.python.f2py.f2py_debug as fort
-
         # Impose constraints. The FORTRAN code does not include other
         # measures just yet.
         constraints = dict()
@@ -151,7 +139,7 @@ class TestClass:
                 mapping_state_idx, periods_emax, states_all]
 
         py = _get_exogenous_variables(*args)
-        f90 = fort.wrapper_get_exogenous_variables(*args)
+        f90 = fort_debug.wrapper_get_exogenous_variables(*args)
 
         np.testing.assert_equal(py, f90)
 
@@ -167,7 +155,7 @@ class TestClass:
                 measure, maxe, disturbances_relevant, is_deterministic]
 
         py = _get_endogenous_variable(*args)
-        f90 = fort.wrapper_get_endogenous_variable(*args)
+        f90 = fort_debug.wrapper_get_endogenous_variable(*args)
 
         np.testing.assert_equal(py, replace_missing_values(f90))
 
@@ -179,7 +167,7 @@ class TestClass:
                 num_states, is_debug]
 
         py, _ = _get_predictions(*args)
-        f90 = fort.wrapper_get_predictions(*args[:-1])
+        f90 = fort_debug.wrapper_get_predictions(*args[:-1])
 
         np.testing.assert_array_almost_equal(py, f90)
 
@@ -187,12 +175,6 @@ class TestClass:
         """ This is a special test for auxiliary functions related to the
         interpolation setup.
         """
-        # Ensure that fast solution methods are available
-        compile_package('--fortran --debug', True)
-
-        # Load interface to debugging library
-        import robupy.python.f2py.f2py_debug as fort
-
         # Impose constraints
         constr = dict()
         constr['periods'] = np.random.random_integers(2, 5)
@@ -219,13 +201,13 @@ class TestClass:
 
         # Check function for random choice and make sure that there are no
         # duplicates.
-        f90 = fort.wrapper_random_choice(candidates, num_states, num_points)
+        f90 = fort_debug.wrapper_random_choice(candidates, num_states, num_points)
         np.testing.assert_equal(len(set(f90)), len(f90))
         np.testing.assert_equal(len(f90), num_points)
 
         # Check the standard cases of the function.
         args = (num_points, num_states, period, num_periods, is_debug)
-        f90 = fort.wrapper_get_simulated_indicator(*args)
+        f90 = fort_debug.wrapper_get_simulated_indicator(*args)
 
         np.testing.assert_equal(len(f90), num_states)
         np.testing.assert_equal(np.all(f90) in [0, 1], True)
@@ -235,7 +217,7 @@ class TestClass:
         # grid to disk which is used for both functions.
         args = (num_points, num_states, period, num_periods, is_debug)
         py = _get_simulated_indicator(*args)
-        f90 = fort.wrapper_get_simulated_indicator(*args)
+        f90 = fort_debug.wrapper_get_simulated_indicator(*args)
 
         np.testing.assert_array_equal(f90, 1*py)
         os.unlink('interpolation.txt')
@@ -244,7 +226,7 @@ class TestClass:
         # number of candidates. In that case the returned indicator
         # should be all TRUE.
         args = (num_states, num_states, period, num_periods, True)
-        f90 = fort.wrapper_get_simulated_indicator(*args)
+        f90 = fort_debug.wrapper_get_simulated_indicator(*args)
         np.testing.assert_equal(sum(f90), num_states)
 
     def test_4(self):
@@ -254,9 +236,6 @@ class TestClass:
         the interpolation code is run and then all predicted values replaced
         with their actual values.
         """
-        # Ensure that fast solution methods are available
-        compile_package('--fortran --debug', True)
-
         # Set initial constraints
         constraints = dict()
         constraints['apply'] = False

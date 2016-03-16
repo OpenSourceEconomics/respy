@@ -9,21 +9,17 @@ import pandas as pd
 import numpy as np
 
 import pytest
-import sys
 import os
 
 # testing library
-from material.auxiliary import distribute_model_description
-from material.auxiliary import compile_package
+from codes.auxiliary import distribute_model_description
 
 # ROBUPY import
-ROBUPY_DIR = os.environ['ROBUPY']
-sys.path.insert(0, ROBUPY_DIR)
+from robupy.tests.codes.random_init import generate_random_dict
+from robupy.tests.codes.random_init import print_random_dict
 
-from robupy.tests.random_init import generate_random_dict
-from robupy.tests.random_init import print_random_dict
-
-from robupy import *
+from robupy import solve
+from robupy import read
 
 
 ''' Auxiliary functions
@@ -100,22 +96,22 @@ def transform_robupy_to_restud(model_paras, init_dict):
 '''
 
 
-@pytest.mark.usefixtures('fresh_directory', 'set_seed')
+@pytest.mark.usefixtures('fresh_directory', 'set_seed', 'supply_resources')
 class TestClass:
     def test_1(self):
         """  Compare results from the RESTUD program and the ROBUPY package.
         """
-
-        # Ensure that fast solution methods are available
-        compile_package('--fortran --debug', True)
-
         # Prepare RESTUD program
-        os.chdir(ROBUPY_DIR + '/tests/material')
+        tmp_dir = os.getcwd()
+
+        file_dir = os.path.dirname(os.path.realpath(__file__))
+
+        os.chdir(file_dir+ '/codes')
         os.system(' gfortran -fcheck=bounds -o dp3asim dp3asim.f95 >'
                   ' /dev/null 2>&1')
         os.remove('pei_additions.mod')
         os.remove('imsl_replacements.mod')
-        os.chdir(ROBUPY_DIR + '/tests')
+        os.chdir(tmp_dir)
 
         # Impose some constraints on the initialization file which ensures that
         # the problem can be solved by the RESTUD code. The code is adjusted to
@@ -153,7 +149,7 @@ class TestClass:
         transform_robupy_to_restud(model_paras, init_dict)
 
         # Solve model using RESTUD code.
-        os.system('./' + ROBUPY_DIR + '/material/dp3asim > /dev/null 2>&1')
+        os.system(file_dir + '/codes/dp3asim /dev/null 2>&1')
 
         # Solve model using ROBUPY package.
         solve(robupy_obj)
