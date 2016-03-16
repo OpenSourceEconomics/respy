@@ -12,8 +12,8 @@ from robupy import read
 from robupy import solve
 
 # module-wide variables
-ROBUPY_DIR = os.environ['ROBUPY']
-RESOURCES_DIR = ROBUPY_DIR + '/robupy/tests/resources'
+ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
+RESOURCES_DIR = ROOT_DIR + '/resources'
 
 
 @pytest.mark.usefixtures('fresh_directory', 'set_seed', 'supply_resources')
