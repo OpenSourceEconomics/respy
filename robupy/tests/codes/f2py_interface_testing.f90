@@ -58,10 +58,9 @@ SUBROUTINE wrapper_slsqp_robufort(x_internal, x_start, maxiter, ftol, tiny, &
             delta, is_debug, shocks, level)
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
-SUBROUTINE wrapper_slsqp_debug(x_internal, x_start, maxiter, &
-                ftol, num_dim)
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE wrapper_slsqp_debug(x_internal, x_start, maxiter, ftol, num_dim)
 
     !/* external libraries    */
 

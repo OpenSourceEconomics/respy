@@ -4,25 +4,23 @@
 # standard library
 import numpy as np
 
-import logging
-import socket
 import shutil
-import shlex
 import glob
-import sys
 import os
 
 # ROBUPY import
-# TODO: Remove ROBUPZ REFERNCES
-ROBUPY_DIR = os.environ['ROBUPY']
-sys.path.insert(0, ROBUPY_DIR)
 from robupy import read
 
 from robupy.python.solve_python import _create_state_space
 
+# module-wide variables
+ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
+ROOT_DIR = ROOT_DIR.replace('/robupy/tests/codes', '')
+
 
 ''' Auxiliary functions.
 '''
+
 
 def distribute_model_description(robupy_obj, *args):
     """ This function distributes the model description.
@@ -35,6 +33,7 @@ def distribute_model_description(robupy_obj, *args):
 
     return ret
 
+
 def write_interpolation_grid(file_name):
     """ Write out an interpolation grid that can be used across
     implementations.
@@ -43,17 +42,10 @@ def write_interpolation_grid(file_name):
     robupy_obj = read(file_name)
 
     # Distribute class attributes
-    num_periods = robupy_obj.get_attr('num_periods')
-
-    num_points = robupy_obj.get_attr('num_points')
-
-    edu_start = robupy_obj.get_attr('edu_start')
-
-    is_python = robupy_obj.get_attr('is_python')
-
-    edu_max = robupy_obj.get_attr('edu_max')
-
-    min_idx = robupy_obj.get_attr('min_idx')
+    num_periods, num_points, edu_start, is_python, edu_max, min_idx = \
+        distribute_model_description(robupy_obj,
+            'num_periods', 'num_points', 'edu_start', 'is_python', 'edu_max',
+            'min_idx')
 
     # Determine maximum number of states
     _, states_number_period, _, max_states_period = \
@@ -89,7 +81,6 @@ def write_interpolation_grid(file_name):
     return max_states_period
 
 
-
 def write_disturbances(num_periods, max_draws):
     """ Write out disturbances to potentially align the different
     implementations of the model. Note that num draws has to be less or equal
@@ -107,86 +98,12 @@ def write_disturbances(num_periods, max_draws):
                     *standard_deviates[period, i, :])
                 file_.write(line)
 
-def cleanup():
-    """ Cleanup after test battery.
-    '"""
-
-    files = []
-
-    ''' Clean main.
-    '''
-    files += glob.glob('.waf*')
-
-    files += glob.glob('.pkl*')
-
-    files += glob.glob('.txt*')
-
-    files += glob.glob('.grm.*')
-
-    files += glob.glob('*.pkl')
-
-    files += glob.glob('*.txt')
-
-    files += glob.glob('*.out')
-
-    files += glob.glob('test*.ini')
-
-    files += glob.glob('*.pyc')
-
-    files += glob.glob('.seed')
-
-    files += glob.glob('.dat*')
-
-    files += glob.glob('*.robupy.*')
-
-    files += glob.glob('*.robufort.*')
-
-    ''' Clean modules.
-        '''
-    files += glob.glob('modules/*.out*')
-
-    files += glob.glob('modules/*.pyc')
-
-    files += glob.glob('modules/*.mod')
-
-    files += glob.glob('modules/dp3asim')
-
-    files += glob.glob('modules/lib')
-
-    files += glob.glob('modules/include')
-
-    files += glob.glob('modules/*.so')
-
-    files += glob.glob('*.dat')
-
-    files += glob.glob('.restud.testing.scratch')
-
-    files += glob.glob('modules/*.o')
-
-    files += glob.glob('modules/__pycache__')
-
-    for file_ in files:
-
-        try:
-
-            os.remove(file_)
-
-        except:
-
-            try:
-
-                shutil.rmtree(file_)
-
-            except:
-
-                pass
-
 
 def compile_package(options, is_hidden):
     """ Compile toolbox
     """
     # Auxiliary objects
-    package_dir = os.environ['ROBUPY'] + '/robupy'
+    package_dir = ROOT_DIR + '/robupy'
     tests_dir = os.getcwd()
 
     # Compile package
@@ -223,22 +140,14 @@ def build_f2py_testing(is_hidden):
     """ Build the F2PY testing interface for testing.f
     """
     tmp_dir = os.getcwd()
-    os.chdir(ROBUPY_DIR + '/robupy/tests/codes')
+    os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
     try:
         shutil.rmtree('build')
     except FileNotFoundError:
         pass
 
-
-    try:
-        shutil.rmtree('../lib')
-    except FileNotFoundError:
-        pass
-
     os.mkdir('build')
-    os.mkdir('../lib')
-
 
     os.chdir('build')
 

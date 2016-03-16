@@ -28,7 +28,6 @@ from robupy.tests.codes.random_init import generate_init
 from robupy.auxiliary import replace_missing_values
 from robupy.auxiliary import create_disturbances
 
-import robupy.python.f2py.f2py_debug as fort_debug
 
 ''' Main
 '''
@@ -79,6 +78,9 @@ class TestClass:
     def test_2(self):
         """ Further tests for the interpolation routines.
         """
+        # FORTRAN resources
+        import robupy.python.f2py.f2py_debug as fort_debug
+
         # Impose constraints. The FORTRAN code does not include other
         # measures just yet.
         constraints = dict()
@@ -175,6 +177,9 @@ class TestClass:
         """ This is a special test for auxiliary functions related to the
         interpolation setup.
         """
+        # FORTRAN resources
+        import robupy.python.f2py.f2py_debug as fort_debug
+
         # Impose constraints
         constr = dict()
         constr['periods'] = np.random.random_integers(2, 5)

@@ -41,6 +41,9 @@ def remove_nuisances():
         for filename in fnmatch.filter(dir_, '.cache'):
             matches.append(os.path.join(root, filename))
 
+        for filename in fnmatch.filter(dir_, 'build'):
+            matches.append(os.path.join(root, filename))
+
         for file_types in ['*.robupy.*', '.lock-waf_linux_build',
                            '*.so', '.coverage', '*.txt', '.write_out',
                            'dp3asim', '*.o']:

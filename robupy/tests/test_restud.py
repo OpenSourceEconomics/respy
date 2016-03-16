@@ -109,28 +109,29 @@ class TestClass:
 
         os.chdir(file_dir + '/codes')
 
+        # Create required directory structure.
         try:
-            shutil.rmtree('build')
-        except FileNotFoundError:
+            os.mkdir('build')
+        except FileExistsError:
             pass
 
-        os.mkdir('build')
-
+        # Build the upgraded version of the original Keane & Wolpin (1994)
+        # codes.
         os.chdir('build')
 
         shutil.copy('../dp3asim.f95', '.')
 
-
         os.system(' gfortran -fcheck=bounds -o dp3asim dp3asim.f95 >'
                   ' /dev/null 2>&1')
-        os.remove('pei_additions.mod')
-        os.remove('imsl_replacements.mod')
 
         shutil.copy('dp3asim', '../../lib/')
 
+        os.chdir('../')
 
-        os.chdir(tmp_dir)
         shutil.rmtree('build')
+
+        # Return to the temporary directory.
+        os.chdir(tmp_dir)
 
         # Impose some constraints on the initialization file which ensures that
         # the problem can be solved by the RESTUD code. The code is adjusted to
@@ -168,7 +169,7 @@ class TestClass:
         transform_robupy_to_restud(model_paras, init_dict)
 
         # Solve model using RESTUD code.
-        os.system(file_dir + '/codes/dp3asim /dev/null 2>&1')
+        os.system(file_dir + '/lib/dp3asim /dev/null 2>&1')
 
         # Solve model using ROBUPY package.
         solve(robupy_obj)
