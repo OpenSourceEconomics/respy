@@ -176,7 +176,7 @@ class TestClass:
         PYTHON and FORTRAN for the actual optimization problem.
         """
         # FORTRAN resources
-        import robupy.tests.lib.f2py_testing as fort_test
+        import robupy.python.f2py.f2py_debug as fort_debug
 
         maxiter = np.random.random_integers(1, 100)
         ftol = np.random.uniform(0.000000, 1e-5)
@@ -206,13 +206,13 @@ class TestClass:
 
         # Extract class attributes
         periods_payoffs_systematic, states_number_period, mapping_state_idx, \
-        periods_emax, num_periods, states_all, num_draws_emax, edu_start, \
-        edu_max, delta, is_debug = \
-            distribute_model_description(robupy_obj,
-                'periods_payoffs_systematic', 'states_number_period',
-                'mapping_state_idx', 'periods_emax', 'num_periods',
-                'states_all', 'num_draws_emax', 'edu_start', 'edu_max',
-                'delta', 'is_debug')
+            periods_emax, num_periods, states_all, num_draws_emax, edu_start, \
+            edu_max, delta, is_debug = \
+                distribute_model_description(robupy_obj,
+                    'periods_payoffs_systematic', 'states_number_period',
+                    'mapping_state_idx', 'periods_emax', 'num_periods',
+                    'states_all', 'num_draws_emax', 'edu_start', 'edu_max',
+                    'delta', 'is_debug')
 
         # Sample disturbances
         eps_standard = np.random.multivariate_normal(np.zeros(4),
@@ -238,10 +238,10 @@ class TestClass:
         else:
             py = x0
 
-        f = fort_test.wrapper_slsqp_robufort(x0, maxiter, ftol, tiny, num_draws_emax,
-                eps_standard, period, k, payoffs_systematic, edu_max, edu_start,
-                mapping_state_idx, states_all, num_periods, periods_emax,
-                delta, is_debug, shocks, level)
+        f = fort_debug.wrapper_slsqp_robufort(x0, maxiter, ftol, tiny,
+                num_draws_emax, eps_standard, period, k, payoffs_systematic,
+                edu_max, edu_start, mapping_state_idx, states_all,
+                num_periods, periods_emax, delta, is_debug, shocks, level)
 
         # Check equality. If not equal up to the tolerance, also check
         # whether the result from the FORTRAN implementation is even better.
