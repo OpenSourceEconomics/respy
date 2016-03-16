@@ -15,18 +15,17 @@ from codes.auxiliary import write_interpolation_grid
 from codes.auxiliary import write_disturbances
 
 # ROBUPY import
-from robupy import simulate
-from robupy import evaluate
-from robupy import process
-from robupy import solve
-from robupy import read
+from robupy.python.py.python_library import create_state_space
 
 from robupy.tests.codes.random_init import generate_random_dict
 from robupy.tests.codes.random_init import print_random_dict
 from robupy.tests.codes.random_init import generate_init
 
-from robupy.python.py.python_library import create_state_space
-
+from robupy import simulate
+from robupy import evaluate
+from robupy import process
+from robupy import solve
+from robupy import read
 
 ''' Main
 '''

@@ -13,9 +13,6 @@ from codes.auxiliary import distribute_model_description
 from codes.auxiliary import write_interpolation_grid
 
 # ROBUPY import
-from robupy import solve
-from robupy import read
-
 from robupy.python.py.python_library import _get_simulated_indicator
 from robupy.python.py.python_library import _get_exogenous_variables
 from robupy.python.py.python_library import _get_endogenous_variable
@@ -28,6 +25,8 @@ from robupy.tests.codes.random_init import generate_init
 from robupy.auxiliary import replace_missing_values
 from robupy.auxiliary import create_disturbances
 
+from robupy import solve
+from robupy import read
 
 ''' Main
 '''

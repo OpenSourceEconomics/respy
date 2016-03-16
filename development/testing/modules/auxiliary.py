@@ -1,4 +1,62 @@
 
+# standard library
+import numpy as np
+
+import importlib
+import logging
+import socket
+import shutil
+import shlex
+import glob
+import os
+
+# testing library
+from modules.clsMail import MailCls
+
+
+def get_test_dict(TEST_DIR, BASE_DIR):
+
+    os.chdir(TEST_DIR)
+    test_modules = []
+    for test_file in glob.glob('test_*.py'):
+        test_module = test_file.replace('.py', '')
+        test_modules.append(test_module)
+    os.chdir(BASE_DIR)
+
+
+    test_dict = dict()
+    for test_module in test_modules:
+        test_dict[test_module] = []
+
+        str_ = test_module.replace('.py', '')
+        mod = importlib.import_module(str_)
+
+        candidate_methods = dir(mod.TestClass)
+
+        for candidate_method in candidate_methods:
+            if 'test_' in candidate_method:
+               test_dict[test_module].append(candidate_method)
+
+    # Finishing
+    return test_dict
+
+
+def get_random_request(test_dict):
+    """ This function extracts a random request from the dictionary.
+    """
+    # Create a list of tuples. Each tuple denotes a unique combination of
+    # a module and a test contained in it.
+    candidates = []
+    for key_ in sorted(test_dict.keys()):
+        for value in test_dict[key_]:
+            candidates.append((key_, value))
+    # Draw a random combination.
+    index = np.random.random_integers(0, len(candidates))
+    module, method = candidates[index]
+
+    # Finishing
+    return module, method
+
 
 def start_logging():
     """ Start logging of performance.
@@ -88,79 +146,40 @@ def finish(dict_, HOURS, notification):
         mail_obj.send()
 
 
-def cleanup():
+def cleanup(keep_results):
     """ Cleanup after test battery.
-    '"""
+    """
+    import fnmatch
+    matches = []
+    for root, dirnames, filenames in os.walk('.'):
+        for filename in fnmatch.filter(filenames, '*'):
+            matches.append(os.path.join(root, filename))
+        for dirname in fnmatch.filter(dirnames, '*'):
+            matches.append(os.path.join(root, dirname))
 
-    files = []
+    for match in matches:
 
-    ''' Clean main.
-    '''
-    files += glob.glob('.waf*')
+        if '.py' in match:
+            continue
 
-    files += glob.glob('.pkl*')
+        if match == './modules':
+            continue
 
-    files += glob.glob('.txt*')
+        if keep_results:
+            if match == './logging.log':
+                continue
 
-    files += glob.glob('.grm.*')
+        remove(match)
 
-    files += glob.glob('*.pkl')
 
-    files += glob.glob('*.txt')
+def remove(name):
 
-    files += glob.glob('*.out')
+    try:
+        os.unlink(name)
+    except IsADirectoryError:
+        shutil.rmtree(name)
 
-    files += glob.glob('test*.ini')
 
-    files += glob.glob('*.pyc')
-
-    files += glob.glob('.seed')
-
-    files += glob.glob('.dat*')
-
-    files += glob.glob('*.robupy.*')
-
-    files += glob.glob('*.robufort.*')
-
-    ''' Clean modules.
-        '''
-    files += glob.glob('modules/*.out*')
-
-    files += glob.glob('modules/*.pyc')
-
-    files += glob.glob('modules/*.mod')
-
-    files += glob.glob('modules/dp3asim')
-
-    files += glob.glob('modules/lib')
-
-    files += glob.glob('modules/include')
-
-    files += glob.glob('modules/*.so')
-
-    files += glob.glob('*.dat')
-
-    files += glob.glob('.restud.testing.scratch')
-
-    files += glob.glob('modules/*.o')
-
-    files += glob.glob('modules/__pycache__')
-
-    for file_ in files:
-
-        try:
-
-            os.remove(file_)
-
-        except:
-
-            try:
-
-                shutil.rmtree(file_)
-
-            except:
-
-                pass
 
 def check_ambiguity_optimization():
     """ This function checks that less than 5% of all optimization for each

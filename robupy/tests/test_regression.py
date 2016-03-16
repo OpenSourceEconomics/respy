@@ -6,8 +6,7 @@ import numpy as np
 import pytest
 import os
 
-# project library
-
+# ROBUPY imports
 from robupy import read
 from robupy import solve
 
