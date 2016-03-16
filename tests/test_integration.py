@@ -15,11 +15,14 @@ import os
 # testing library
 from material.auxiliary import write_interpolation_grid
 from material.auxiliary import write_disturbances
-from material.auxiliary import compile_package
 
 # ROBUPY import
 sys.path.insert(0, os.environ['ROBUPY'])
-from robupy import *
+from robupy import simulate
+from robupy import evaluate
+from robupy import process
+from robupy import solve
+from robupy import read
 
 from robupy.tests.random_init import generate_random_dict
 from robupy.tests.random_init import print_random_dict
@@ -32,15 +35,13 @@ from robupy.python.py.python_library import create_state_space
 '''
 
 
-@pytest.mark.usefixtures('fresh_directory', 'set_seed')
+@pytest.mark.usefixtures('fresh_directory', 'set_seed', 'supply_resources')
 class TestClass:
+
     def test_1(self):
         """ Testing whether random model specifications can be solved, simulated
         and processed.
         """
-        # Ensure that fast solution methods are available
-        compile_package('--fortran --debug', True)
-
         # Generate random initialization file
         generate_init()
 
@@ -56,9 +57,6 @@ class TestClass:
         """ Testing the equality of an evaluation of the criterion function for
         a random request.
         """
-        # Ensure that fast solution methods are available
-        compile_package('--fortran --debug', True)
-
         # Run evaluation for multiple random requests.
         is_deterministic = np.random.choice([True, False], p=[0.10, 0.9])
         is_interpolated = np.random.choice([True, False], p=[0.10, 0.9])

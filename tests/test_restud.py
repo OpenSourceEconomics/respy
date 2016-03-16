@@ -110,12 +110,12 @@ class TestClass:
         compile_package('--fortran --debug', True)
 
         # Prepare RESTUD program
-        os.chdir(ROBUPY_DIR + '/material')
+        os.chdir(ROBUPY_DIR + '/tests/material')
         os.system(' gfortran -fcheck=bounds -o dp3asim dp3asim.f95 >'
                   ' /dev/null 2>&1')
         os.remove('pei_additions.mod')
         os.remove('imsl_replacements.mod')
-        os.chdir('../')
+        os.chdir(ROBUPY_DIR + '/tests')
 
         # Impose some constraints on the initialization file which ensures that
         # the problem can be solved by the RESTUD code. The code is adjusted to

@@ -11,11 +11,12 @@ import os
 ROBUPY_DIR = os.environ['ROBUPY']
 sys.path.insert(0, ROBUPY_DIR)
 
-from robupy import *
+from robupy import read
+from robupy import solve
 
 
 
-@pytest.mark.usefixtures('fresh_directory', 'set_seed')
+@pytest.mark.usefixtures('fresh_directory', 'set_seed', 'supply_resources')
 class TestClass:
     def test_1(self):
         """ Test solution of simple model against hard-coded results.
