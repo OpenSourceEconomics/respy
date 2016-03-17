@@ -33,7 +33,7 @@ from codes.auxiliary import build_robupy_package
 
 ''' Request
 '''
-seed = 92276
+seed = 63573
 
 if False:
     build_testing_library(False)

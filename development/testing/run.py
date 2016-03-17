@@ -116,7 +116,7 @@ if __name__ == '__main__':
                         help='send notification')
 
     # Start from a clean slate and extract a user's request.
-    cleanup_testing_infrastructure(True)
+    cleanup_testing_infrastructure(False)
     hours, notification = distribute_input(parser)
 
     # Ensure that the FORTRAN resources are available. Some selected
@@ -127,8 +127,7 @@ if __name__ == '__main__':
     build_robupy_package(True)
     build_testing_library(True)
 
-    # Run testing infrastructure, cleanup, and send a notification (if
-    # requested).
+    # Run testing infrastructure and send a notification (if requested).
     run(hours)
 
     if notification:

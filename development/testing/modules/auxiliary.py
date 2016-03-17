@@ -52,20 +52,20 @@ def update_testing_record(module, method, seed, is_success, msg,
         log_file.write(string.format(['START', start_time]))
         log_file.write(string.format(['FINISH', end_time]))
         log_file.write('\n\n')
-        # Iterate over all modules.
-        for module in full_test_record.keys():
+        # Iterate over all modules. There is a potential conflict in the
+        # namespace.
+        for module_ in full_test_record.keys():
             string = '   {0[0]:<25}{0[1]:<20}{0[2]:<20} \n\n'
-            log_file.write(string.format([module, 'Success', 'Failure']))
+            log_file.write(string.format([module_, 'Success', 'Failure']))
             # Iterate over all methods in the particular module.
-            for method in sorted(full_test_record[module]):
+            for method_ in sorted(full_test_record[module_]):
                 string = '\t{0[0]:<25}{0[1]:<20}{0[2]:<20} \n'
-                success, failure = full_test_record[module][method]
-                log_file.write(string.format([method, success, failure]))
+                success, failure = full_test_record[module_][method_]
+                log_file.write(string.format([method_, success, failure]))
 
             log_file.write('\n\n')
 
-    # Special care for failures. However, I need to make sure that the file
-    # exists.
+    # Special care for failures.
     if not is_success:
         # Write out the traceback message to file for future inspection.
         with open('tracebacks.testing.tmp', 'a') as log_file:
