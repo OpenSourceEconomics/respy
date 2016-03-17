@@ -20,10 +20,6 @@ import glob
 import sys
 import os
 
-# project
-from modules.auxiliary import distribute_input
-from modules.auxiliary import cleanup
-
 #import modules.battery as development_tests
 
 
@@ -46,8 +42,12 @@ sys.path.insert(0, TEST_DIR)
 from codes.auxiliary import build_testing_library
 from codes.auxiliary import build_robupy_package
 
+# Testing infrastructure
 from modules.auxiliary import get_random_request
+from modules.auxiliary import distribute_input
 from modules.auxiliary import get_test_dict
+from modules.auxiliary import cleanup
+
 
 ''' Main Function.
 '''
@@ -90,7 +90,7 @@ def run(hours):
         # Set seed.
         seed = random.randrange(1, 100000)
 
-        np.random.seed(23)
+        np.random.seed(seed)
 
         # Construct test case
         module, method = get_random_request(test_dict)
@@ -98,10 +98,13 @@ def run(hours):
         test = getattr(mod.TestClass(), method)
 
         # Run random tes
-        try:
-            test()
-        except Exception:
-            msg = traceback.format_exc()
+        #try:
+        test()
+        #except Exception:
+        #    msg = traceback.format_exc()
+
+        # Cleanup
+        cleanup(True)
 
         #  Timeout.
         if timeout < datetime.now() - start:
@@ -126,9 +129,8 @@ if __name__ == '__main__':
                         help='send notification')
 
     # Ensure that the FORTRAN routines are available.
-    if False:
-        build_robupy_package(True)
-        build_testing_library(True)
+    build_testing_library(False)
+    build_robupy_package(False)
 
     hours, notification = distribute_input(parser)
 

@@ -202,7 +202,12 @@ def build_testing_library(is_hidden):
     os.system(cmd)
 
     lib_name = glob.glob('f2py_testing.*.so')[0]
-    shutil.copy(lib_name, '../../lib')
+    try:
+        os.mkdir('../../lib/')
+    except FileExistsError:
+        pass
+
+    shutil.copy(lib_name, '../../lib/')
     os.chdir('../')
     shutil.rmtree('build')
     # Finish

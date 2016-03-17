@@ -2,6 +2,6 @@
 """ Script to cleanup after a testing run.
 """
 
-from material.auxiliary import cleanup
+from modules.auxiliary import cleanup
 
-cleanup()
+cleanup(False)

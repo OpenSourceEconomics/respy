@@ -115,6 +115,11 @@ class TestClass:
         except FileExistsError:
             pass
 
+        try:
+            os.mkdir('../lib/')
+        except FileExistsError:
+            pass
+
         # Build the upgraded version of the original Keane & Wolpin (1994)
         # codes.
         os.chdir('build')
