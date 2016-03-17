@@ -25,7 +25,7 @@ def simulate_emax(num_periods, num_draws_emax, period, k,
     for i in range(num_draws_emax):
 
         # Select disturbances for this draw
-        disturbances = disturbances_relevant_emax[i, :]
+        disturbances = disturbances_relevant_emax[i,f :]
 
         # Get total value of admissible states
         total_payoffs, payoffs_ex_post, payoffs_future = get_total_value(period,

@@ -7,8 +7,8 @@
     <list default="true" id="39b3d67a-e664-4cff-aba7-2a9ae5eaeb87" name="Default" comment="">
       <change type="DELETED" beforePath="$PROJECT_DIR$/analysis/working/driver.py" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/.idea/workspace.xml" afterPath="$PROJECT_DIR$/package/development/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/testing/investigate.py" afterPath="$PROJECT_DIR$/package/development/testing/investigate.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/tests/test_integration.py" afterPath="$PROJECT_DIR$/package/robupy/tests/test_integration.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/python/py/auxiliary.py" afterPath="$PROJECT_DIR$/package/robupy/python/py/auxiliary.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/python/py/risk.py" afterPath="$PROJECT_DIR$/package/robupy/python/py/risk.py" />
     </list>
     <ignored path="robustToolbox.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -51,11 +51,31 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="test_integration.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/package/robupy/tests/test_integration.py">
+      <file leaf-file-name="risk.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/package/robupy/python/py/risk.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.34575734">
-              <caret line="302" column="33" selection-start-line="302" selection-start-column="33" selection-end-line="302" selection-end-column="33" />
+            <state vertical-scroll-proportion="0.0">
+              <caret line="28" column="34" selection-start-line="28" selection-start-column="34" selection-end-line="28" selection-end-column="34" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="python_library.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/package/robupy/python/py/python_library.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="-13.548388">
+              <caret line="295" column="13" selection-start-line="295" selection-start-column="4" selection-end-line="295" selection-end-column="13" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="auxiliary.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/package/robupy/python/py/auxiliary.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.75337034">
+              <caret line="47" column="19" selection-start-line="47" selection-start-column="4" selection-end-line="47" selection-end-column="19" />
               <folding />
             </state>
           </provider>
@@ -77,7 +97,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/package/robupy/solve.py" />
         <option value="$PROJECT_DIR$/package/robupy/read.py" />
         <option value="$PROJECT_DIR$/package/robupy/clsRobupy.py" />
         <option value="$PROJECT_DIR$/package/robupy/evaluate.py" />
@@ -85,7 +104,6 @@
         <option value="$PROJECT_DIR$/package/robupy/constants.py" />
         <option value="$PROJECT_DIR$/package/robupy/python/py/ambiguity.py" />
         <option value="$PROJECT_DIR$/package/robupy/python/evaluate_python.py" />
-        <option value="$PROJECT_DIR$/package/robupy/python/py/risk.py" />
         <option value="$PROJECT_DIR$/package/development/tests/random/clean" />
         <option value="$PROJECT_DIR$/package/development/tests/random/modules/battery.py" />
         <option value="$PROJECT_DIR$/package/development/tests/random/modules/auxiliary.py" />
@@ -128,6 +146,8 @@
         <option value="$PROJECT_DIR$/package/robupy/python/solve_python.py" />
         <option value="$PROJECT_DIR$/package/robupy/tests/test_integration.py" />
         <option value="$PROJECT_DIR$/package/development/testing/investigate.py" />
+        <option value="$PROJECT_DIR$/package/robupy/python/py/risk.py" />
+        <option value="$PROJECT_DIR$/package/robupy/python/py/auxiliary.py" />
       </list>
     </option>
   </component>
@@ -962,13 +982,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/robupy/python/py/auxiliary.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="1.2630835">
-          <caret line="64" column="44" selection-start-line="64" selection-start-column="25" selection-end-line="64" selection-end-column="44" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/package/robupy/tests/README.md">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.08460237">
@@ -1166,14 +1179,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/robupy/python/py/python_library.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="1.6415544">
-          <caret line="113" column="48" selection-start-line="113" selection-start-column="45" selection-end-line="113" selection-end-column="48" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/package/robupy/python/solve_python.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.8165635">
@@ -1182,10 +1187,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/robupy/python/py/risk.py">
+    <entry file="file://$PROJECT_DIR$/package/robupy/tests/test_integration.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.503096">
-          <caret line="26" column="13" selection-start-line="26" selection-start-column="4" selection-end-line="26" selection-end-column="13" />
+        <state vertical-scroll-proportion="0.14750198">
+          <caret line="292" column="38" selection-start-line="292" selection-start-column="38" selection-end-line="292" selection-end-column="38" />
           <folding />
         </state>
       </provider>
@@ -1198,10 +1203,26 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/robupy/tests/test_integration.py">
+    <entry file="file://$PROJECT_DIR$/package/robupy/python/py/risk.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.34575734">
-          <caret line="302" column="33" selection-start-line="302" selection-start-column="33" selection-end-line="302" selection-end-column="33" />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="28" column="34" selection-start-line="28" selection-start-column="34" selection-end-line="28" selection-end-column="34" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/robupy/python/py/python_library.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-13.548388">
+          <caret line="295" column="13" selection-start-line="295" selection-start-column="4" selection-end-line="295" selection-end-column="13" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/robupy/python/py/auxiliary.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.75337034">
+          <caret line="47" column="19" selection-start-line="47" selection-start-column="4" selection-end-line="47" selection-end-column="19" />
           <folding />
         </state>
       </provider>
