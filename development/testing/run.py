@@ -115,21 +115,21 @@ if __name__ == '__main__':
                         dest='notification', default=False,
                         help='send notification')
 
-    # Extract the user's request.
+    # Start from a clean slate and extract a user's request.
+    cleanup_testing_infrastructure(True)
     hours, notification = distribute_input(parser)
 
     # Ensure that the FORTRAN resources are available. Some selected
     # functions are only used for testing purposes and thus collected in a
-    # special FORTRAN library.
+    # special FORTRAN library. The build of the ROBUPY package starts from a
+    # clean slate and then the testing library is added to tests/lib directory.
     cleanup_robupy_package()
-    build_testing_library(True)
     build_robupy_package(True)
+    build_testing_library(True)
 
     # Run testing infrastructure, cleanup, and send a notification (if
     # requested).
     run(hours)
-
-    cleanup_testing_infrastructure(True)
 
     if notification:
         send_notification(hours)

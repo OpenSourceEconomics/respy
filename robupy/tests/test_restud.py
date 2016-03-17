@@ -176,7 +176,7 @@ class TestClass(object):
         transform_robupy_to_restud(model_paras, init_dict)
 
         # Solve model using RESTUD code.
-        os.system(file_dir + '/lib/dp3asim /dev/null 2>&1')
+        os.system(file_dir + '/lib/dp3asim > /dev/null 2>&1')
 
         # Solve model using ROBUPY package.
         solve(robupy_obj)
