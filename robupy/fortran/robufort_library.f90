@@ -937,7 +937,7 @@ SUBROUTINE get_payoffs(emax_simulated, payoffs_ex_post, payoffs_future, &
                 payoffs_future, num_draws_emax, disturbances_relevant, & 
                 period, k, payoffs_systematic, edu_max, edu_start, & 
                 mapping_state_idx, states_all, num_periods, periods_emax, & 
-                delta, is_debug, shocks, level, measure, is_deterministic)
+                delta)
 
     END IF
     

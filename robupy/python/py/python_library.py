@@ -145,8 +145,7 @@ def get_payoffs(num_draws_emax, disturbances_relevant, period, k,
         emax, payoffs_ex_post, payoffs_future = \
             get_payoffs_risk(num_draws_emax, disturbances_relevant, period, k,
                 payoffs_systematic, edu_max, edu_start, mapping_state_idx,
-                states_all, num_periods, periods_emax, delta, is_debug,
-                shocks, level, measure, is_deterministic)
+                states_all, num_periods, periods_emax, delta)
 
     # Finishing
     return emax, payoffs_ex_post, payoffs_future

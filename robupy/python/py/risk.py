@@ -12,8 +12,7 @@ from robupy.python.py.auxiliary import simulate_emax
 
 def get_payoffs_risk(num_draws_emax, disturbances_relevant, period, k,
         payoffs_systematic, edu_max, edu_start, mapping_state_idx,
-        states_all, num_periods, periods_emax, delta, is_debug, shocks,
-        level, measure, is_deterministic):
+        states_all, num_periods, periods_emax, delta):
     """ Simulate expected future value under risk. Part of the unused
     arguments (shocks, level, measure) is  present to align the interface
     between the PYTHON and FORTRAN implementations. The other part of the

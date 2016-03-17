@@ -28,8 +28,7 @@ CONTAINS
 SUBROUTINE get_payoffs_risk(emax_simulated, payoffs_ex_post, payoffs_future, &
                 num_draws_emax, disturbances_relevant, period, k, & 
                 payoffs_systematic, edu_max, edu_start, mapping_state_idx, & 
-                states_all, num_periods, periods_emax, delta, is_debug, & 
-                shocks, level, measure, is_deterministic)
+                states_all, num_periods, periods_emax, delta)
 
     !/* external objects        */
 
@@ -49,14 +48,7 @@ SUBROUTINE get_payoffs_risk(emax_simulated, payoffs_ex_post, payoffs_future, &
     REAL(our_dble), INTENT(IN)      :: disturbances_relevant(:, :)
     REAL(our_dble), INTENT(IN)      :: payoffs_systematic(:)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
-    REAL(our_dble), INTENT(IN)      :: shocks(:, :)
-    REAL(our_dble), INTENT(IN)      :: level
     REAL(our_dble), INTENT(IN)      :: delta
-
-    LOGICAL, INTENT(IN)             :: is_deterministic
-    LOGICAL, INTENT(IN)             :: is_debug
-
-    CHARACTER(10), INTENT(IN)       :: measure
 
     !/* internal  objects       */
 

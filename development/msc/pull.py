@@ -23,18 +23,11 @@ def update():
     """
     for repo in REPOS:
 
-        # Check if checked out
-        try:
+        os.chdir(repo)
 
+        if os.path.exists('.git'):
             print('\n.. updating ' + repo)
-
-            os.chdir(repo)
-
             os.system('git pull')
-
-        except OSError:
-
-            pass
 
         os.chdir(HOME)
 

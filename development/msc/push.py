@@ -22,23 +22,15 @@ def push():
     """
     for repo in REPOS:
 
-        try:
+        os.chdir(repo)
 
+        if os.path.exists('.git'):
             print('\n.. pushing ' + repo)
-
-            os.chdir(repo)
-
             os.system("git clean -f")
-
             os.system("git commit -a -m'committing'")
-
             os.system("git push")
-
             os.chdir('../')
 
-        except OSError:
-
-            pass
 
         os.chdir(HOME)
 
