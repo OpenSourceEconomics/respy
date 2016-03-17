@@ -300,7 +300,7 @@ class TestClass(object):
         # Iterate over alternative discount rates.
         base_data, base_eval = None, None
 
-        for delta in [0.00, 0.0001]:
+        for delta in [0.00, 0.000001]:
 
             robupy_obj = read('test.robupy.ini')
 
@@ -330,4 +330,4 @@ class TestClass(object):
             if base_eval is None:
                 base_eval = eval_
 
-            np.testing.assert_allclose(base_eval, eval_, rtol=1e-05, atol=1e-06)
+            np.testing.assert_allclose(base_eval, eval_, rtol=1e-03, atol=1e-03)
