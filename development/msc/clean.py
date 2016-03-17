@@ -46,7 +46,7 @@ def remove_nuisances():
 
         for file_types in ['*.robupy.*', '.lock-waf_linux_build',
                            '*.so', '.coverage', '*.txt', '.write_out',
-                           'dp3asim', '*.o']:
+                           'dp3asim', '*.o', '*.tmp']:
 
             for filename in fnmatch.filter(file_names, file_types):
                 matches.append(os.path.join(root, filename))
@@ -100,3 +100,5 @@ remove_nuisances()
 os.chdir(PROJECT_DIR + '/robupy')
 
 os.system('./waf distclean')
+
+remove('../development/testing/test.robupy.ini')
