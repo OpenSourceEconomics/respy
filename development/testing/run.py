@@ -26,6 +26,7 @@ TEST_DIR = TEST_DIR.replace('development/testing', '') + '/robupy/tests'
 
 sys.path.insert(0, TEST_DIR)
 import conftest
+from codes.auxiliary import cleanup_robupy_package
 from codes.auxiliary import build_testing_library
 from codes.auxiliary import build_robupy_package
 
@@ -33,10 +34,11 @@ from codes.auxiliary import build_robupy_package
 from modules.auxiliary import cleanup_testing_infrastructure
 from modules.auxiliary import get_random_request
 from modules.auxiliary import distribute_input
-from modules.auxiliary import record_test_run
 from modules.auxiliary import get_test_dict
-from modules.auxiliary import finish
 
+from modules.auxiliary import finalize_testing_record
+from modules.auxiliary import update_testing_record
+from modules.auxiliary import send_notification
 
 ''' Main Function.
 '''
@@ -62,24 +64,6 @@ def run(hours):
 
     start, timeout = datetime.now(), timedelta(hours=hours)
 
-    # Initialize counter.
-    # dict_ = dict()
-    #
-    # for label in labels:
-    #
-    #     dict_[label] = dict()
-    #
-    #     dict_[label]['success'] = 0
-    #
-    #     dict_[label]['failure'] = 0
-    #
-    # # Logging.
-    # logger = logging.getLogger('DEV-TEST')
-    #
-    # msg = 'Initialization of a ' + str(hours) + ' hours testing run.'
-    #
-    # logger.info(msg)
-    #
     # # Evaluation loop.
     while True:
 
@@ -105,15 +89,17 @@ def run(hours):
             msg = traceback.format_exc()
             is_success = False
 
-        # Cleanup
+        # Record iteration
+        update_testing_record(module, method, seed, is_success, msg,
+                              full_test_record, start, timeout)
+
         cleanup_testing_infrastructure(True)
 
-        # Record iteration
-        record_test_run(module, method, seed, is_success, msg, full_test_record)
-
-        #  Timeout.
+        #  Timeout
         if timeout < datetime.now() - start:
             break
+
+    finalize_testing_record()
 
 ''' Execution of module as script.
 '''
@@ -129,19 +115,22 @@ if __name__ == '__main__':
                         dest='notification', default=False,
                         help='send notification')
 
+    # Extract the user's request.
+    hours, notification = distribute_input(parser)
+
     # Ensure that the FORTRAN resources are available. Some selected
     # functions are only used for testing purposes and thus collected in a
     # special FORTRAN library.
+    cleanup_robupy_package()
     build_testing_library(True)
     build_robupy_package(True)
 
-    hours, notification = distribute_input(parser)
-
-    #start_logging()
-
-
-    dict_ = run(hours)
+    # Run testing infrastructure, cleanup, and send a notification (if
+    # requested).
+    run(hours)
 
     cleanup_testing_infrastructure(True)
 
-    finish(dict_, hours, notification)
+    if notification:
+        send_notification(hours)
+

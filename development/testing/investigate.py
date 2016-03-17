@@ -19,35 +19,35 @@ from modules.auxiliary import get_random_request
 from modules.auxiliary import get_test_dict
 
 # Reconstruct directory structure and edits to PYTHONPATH
-BASE_DIR = os.path.dirname(os.path.realpath(__file__))
-ROBUPY_DIR = BASE_DIR.replace('development/testing', '')
-TEST_DIR = ROBUPY_DIR + '/robupy/tests'
+TEST_DIR = os.path.dirname(os.path.realpath(__file__))
+TEST_DIR = TEST_DIR.replace('development/testing', '')
+TEST_DIR = TEST_DIR + '/robupy/tests'
 
-sys.path.insert(0, ROBUPY_DIR)
+# ROBPUPY testing codes. The import of the PYTEST configuration file ensures
+# that the PYTHONPATH is modified to allow for the use of the tests..
 sys.path.insert(0, TEST_DIR)
-
-# TODO: Rempve
-from robupy.auxiliary import cleanup_robupy_package
-sys.path.insert(0, TEST_DIR)
+import conftest
+from codes.auxiliary import cleanup_robupy_package
+from codes.auxiliary import build_testing_library
+from codes.auxiliary import build_robupy_package
 
 ''' Request
 '''
-seed = 65419
+seed = 20189
 
-cleanup_robupy_package()
-sys.exit("ecit")
-
-# Cleanup
-cleanup(False)
-
+if True:
+    build_testing_library(False)
 
 ''' Error Reproduction
 '''
+cleanup_testing_infrastructure(True)
+
 np.random.seed(seed)
 
 # Construct test
 test_dict = get_test_dict(TEST_DIR)
 module, method = get_random_request(test_dict)
+print(module, method)
 mod = importlib.import_module(module)
 test = getattr(mod.TestClass(), method)
 

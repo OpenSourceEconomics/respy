@@ -4,6 +4,7 @@
 # standard library
 import numpy as np
 
+import fnmatch
 import shutil
 import glob
 import os
@@ -112,7 +113,7 @@ def build_robupy_package(is_hidden):
 
         os.system('./waf distclean > /dev/null 2>&1')
 
-        cmd = './waf configure build --fortran --debug '
+        cmd = './waf configure build --debug '
 
         if is_hidden:
             cmd += ' > /dev/null 2>&1'
@@ -213,3 +214,87 @@ def build_testing_library(is_hidden):
     # Finish
     os.chdir(tmp_dir)
 
+
+def cleanup_robupy_package(is_build=False):
+    """ This function deletes all nuisance files from the package
+    """
+
+    current_directory = os.getcwd()
+
+    file_dir = os.path.realpath(__file__)
+    package_dir = os.path.dirname(file_dir.replace('/tests/codes', ''))
+
+    os.chdir(package_dir)
+
+    # Collect all candidates files and directories.
+    matches = []
+    for root, dirnames, filenames in os.walk('.'):
+        for filename in fnmatch.filter(filenames, '*'):
+            matches.append(os.path.join(root, filename))
+        for filename in fnmatch.filter(filenames, '.*'):
+            matches.append(os.path.join(root, filename))
+        for dirname in fnmatch.filter(dirnames, '*'):
+            matches.append(os.path.join(root, dirname))
+
+    # Remove all files, unless explicitly to be saved.
+    for match in matches:
+
+        # If called as part of a build process, these temporary directories
+        # are required.
+        if is_build:
+            if ('.waf' in match) or ('.bld' in match):
+                continue
+
+        # Explicit treatment for files.
+        if os.path.isfile(match):
+            if ('.py' in match) or ('.f' in match) or ('.f90' in match):
+                continue
+
+            # Keep README files for GITHUB
+            if '.md' in match:
+                continue
+
+            # Keep files for build process
+            if (match == './waf') or (match == './wscript'):
+                continue
+
+            if match == './fortran/wscript':
+                continue
+
+            # Keep the initialization files for the regression tests.
+            if 'test_' in match:
+                continue
+
+        else:
+
+            if match == './fortran':
+                continue
+
+            if match == './python':
+                continue
+
+            if match == './python/py':
+                continue
+
+            if match == './python/f2py':
+                continue
+
+            if match == './tests':
+                continue
+
+            if match == './tests/codes':
+                continue
+
+            if match == './tests/resources':
+                continue
+
+        # Remove remaining files and directories.
+        try:
+            os.unlink(match)
+        except Exception:
+            try:
+                shutil.rmtree(match)
+            except Exception:
+                pass
+
+    os.chdir(current_directory)

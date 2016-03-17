@@ -16,9 +16,65 @@ from modules.clsMail import MailCls
 '''
 
 
-def record_test_run(module, method, seed, is_success, msg, full_test_record):
+def finalize_testing_record():
+    """ Concatenate the two temporary files and delete.
+    """
+    # Aggregate information from temporary files.
+    temp_files = ['overview.testing.tmp']
+    if os.path.exists('tracebacks.testing.tmp'):
+        temp_files.append('tracebacks.testing.tmp')
 
-    pass
+    with open('report.testing.log', 'w') as outfile:
+        for fname in temp_files:
+            with open(fname) as infile:
+                for line in infile:
+                    outfile.write(line)
+            os.unlink(fname)
+            if os.path.exists('tracebacks.testing.tmp'):
+                outfile.write('\n---------------------------------------'
+                              '-----------------------------------------\n\n')
+
+
+def update_testing_record(module, method, seed, is_success, msg,
+        full_test_record, start, timeout):
+    """ Maintain a record about the outcomes of the testing efforts.
+    """
+    # Formatting of time objects.
+    start_time = start.strftime("%Y-%m-%d %H:%M:%S")
+    end_time = (start + timeout).strftime("%Y-%m-%d %H:%M:%S")
+
+    # Write out overview information such as the number of successful and
+    # failed test runs.
+    with open('overview.testing.tmp', 'w') as log_file:
+        # Write out some header information.
+        log_file.write('\n\n')
+        string = '\t{0[0]:<15}{0[1]:<20}\n\n'
+        log_file.write(string.format(['START', start_time]))
+        log_file.write(string.format(['FINISH', end_time]))
+        log_file.write('\n\n')
+        # Iterate over all modules.
+        for module in full_test_record.keys():
+            string = '   {0[0]:<25}{0[1]:<20}{0[2]:<20} \n\n'
+            log_file.write(string.format([module, 'Success', 'Failure']))
+            # Iterate over all methods in the particular module.
+            for method in sorted(full_test_record[module]):
+                string = '\t{0[0]:<25}{0[1]:<20}{0[2]:<20} \n'
+                success, failure = full_test_record[module][method]
+                log_file.write(string.format([method, success, failure]))
+
+            log_file.write('\n\n')
+
+    # Special care for failures. However, I need to make sure that the file
+    # exists.
+    if not is_success:
+        # Write out the traceback message to file for future inspection.
+        with open('tracebacks.testing.tmp', 'a') as log_file:
+            string = 'MODULE {0[0]:<25} METHOD {0[1]:<25} SEED: {0[' \
+                     '2]:<10} \n\n'
+            log_file.write(string.format([module, method, seed]))
+            log_file.write(msg)
+            log_file.write('\n---------------------------------------'
+                           '-----------------------------------------\n\n')
 
 
 def get_test_dict(TEST_DIR):
@@ -91,50 +147,28 @@ def distribute_input(parser):
     return hours, notification
 
 
-def finish(dict_, hours, notification):
+def send_notification(hours):
     """ Finishing up a run of the testing battery.
     """
-    # Antibugging.
-    assert (isinstance(dict_, dict))
-    assert (notification in [True, False])
-
     # Auxiliary objects.
     hostname = socket.gethostname()
 
-    with open('logging.log', 'a') as file_:
+    subject = ' ROBUPY: Completed Testing Battery '
 
-        file_.write(' Summary \n\n')
+    message = ' A ' + str(hours) + ' hour run of the testing battery on @' + \
+              hostname + ' is completed.'
 
-        str_ = '   Test {0:<10} Success {1:<10} Failures  {2:<10}\n'
+    mail_obj = MailCls()
 
-        for label in sorted(dict_.keys()):
+    mail_obj.set_attr('subject', subject)
 
-            success = dict_[label]['success']
+    mail_obj.set_attr('message', message)
 
-            failure = dict_[label]['failure']
+    mail_obj.set_attr('attachment', 'report.testing.log')
 
-            file_.write(str_.format(label, success, failure))
+    mail_obj.lock()
 
-        file_.write('\n')
-
-    if notification:
-
-        subject = ' ROBUPY: Completed Testing Battery '
-
-        message = ' A ' + str(hours) + ' hour run of the testing battery on @' + \
-                  hostname + ' is completed.'
-
-        mail_obj = MailCls()
-
-        mail_obj.set_attr('subject', subject)
-
-        mail_obj.set_attr('message', message)
-
-        mail_obj.set_attr('attachment', 'logging.log')
-
-        mail_obj.lock()
-
-        mail_obj.send()
+    mail_obj.send()
 
 
 def cleanup_testing_infrastructure(keep_results):
@@ -152,19 +186,28 @@ def cleanup_testing_infrastructure(keep_results):
             matches.append(os.path.join(root, dirname))
 
     # Remove all files, unless explicitly to be saved.
+    if keep_results:
+        for fname in ['./report.testing.log', './overview.testing.tmp',
+                      './tracebacks.testing.tmp']:
+            try:
+                matches.remove(fname)
+            except Exception:
+                pass
+
+    # Iterate over all remaining files.
     for match in matches:
         if '.py' in match:
             continue
+
         if match == './modules':
             continue
-        if keep_results:
-            if match == './logging.log':
-                continue
-
         try:
             os.unlink(match)
-        except IsADirectoryError:
-            shutil.rmtree(match)
+        except Exception:
+            try:
+                shutil.rmtree(match)
+            except Exception:
+                pass
 
 
 
