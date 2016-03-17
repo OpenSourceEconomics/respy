@@ -24,7 +24,6 @@ from robupy import solve
 from robupy import read
 
 from robupy.python.py.python_library import get_payoffs
-import robupy.python.py.python_library as py_lib
 
 from robupy.python.solve_python import solve_python_bare
 
@@ -41,6 +40,7 @@ from robupy.auxiliary import distribute_model_paras
 from robupy.auxiliary import replace_missing_values
 from robupy.auxiliary import create_disturbances
 
+import robupy.python.py.python_library as py_lib
 
 ''' Main
 '''

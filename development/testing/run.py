@@ -1,9 +1,5 @@
 #!/usr/bin/env python
 """ Script to start development test battery for the ROBUPY package.
-
-    TODO: The testing routine does not account for problems in the
-    optimization of the ambiguity step.
-
 """
 
 # standard library
@@ -16,27 +12,20 @@ import traceback
 import importlib
 import argparse
 import random
-import glob
 import sys
 import os
-
-#import modules.battery as development_tests
-
 
 # virtual environment
 if not hasattr(sys, 'real_prefix'):
     raise AssertionError('Please use a virtual environment for testing')
 
-BASE_DIR = os.path.dirname(os.path.realpath(__file__))
-ROBUPY_DIR = BASE_DIR.replace('development/testing', '')
+# ROBPUPY testing codes. The import of the PYTEST configuration file ensures
+# that the PYTHONPATH is modified to allow for the use of the tests..
+TEST_DIR = os.path.dirname(os.path.realpath(__file__))
+TEST_DIR = TEST_DIR.replace('development/testing', '') + '/robupy/tests'
 
-TEST_DIR = ROBUPY_DIR + '/robupy/tests'
-
-# ROBUPY import
-#sys.path.insert(0, ROBUPY_DIR)
-
-# ROBPUPY testing codes
 sys.path.insert(0, TEST_DIR)
+import conftest
 from codes.auxiliary import build_testing_library
 from codes.auxiliary import build_robupy_package
 
@@ -44,6 +33,7 @@ from codes.auxiliary import build_robupy_package
 from modules.auxiliary import cleanup_testing_infrastructure
 from modules.auxiliary import get_random_request
 from modules.auxiliary import distribute_input
+from modules.auxiliary import record_test_run
 from modules.auxiliary import get_test_dict
 from modules.auxiliary import finish
 
@@ -61,16 +51,15 @@ def run(hours):
 
     # We initialize a dictionary that allows to keep track of each test's
     # success or failure.
-    test_record = dict()
+    full_test_record = dict()
     for key_ in test_dict.keys():
-        test_record[key_] = dict()
+        full_test_record[key_] = dict()
         for value in test_dict[key_]:
-            test_record[key_][value] = [0, 0]
+            full_test_record[key_][value] = [0, 0]
 
     # Start with a clean slate.
     cleanup_testing_infrastructure(False)
 
-    #
     start, timeout = datetime.now(), timedelta(hours=hours)
 
     # Initialize counter.
@@ -99,23 +88,28 @@ def run(hours):
 
         np.random.seed(seed)
 
-        # Construct test case
+        # Construct test case.
         module, method = get_random_request(test_dict)
         mod = importlib.import_module(module)
         test = getattr(mod.TestClass(), method)
-        print(seed)
+
         # Run random tes
+        is_success, msg = None, None
+
         try:
             test()
-
-            test_record[module][method][0] += 1
-
+            full_test_record[module][method][0] += 1
+            is_success = True
         except Exception:
-            test_record[module][method][1] += 1
-        #    msg = traceback.format_exc()
+            full_test_record[module][method][1] += 1
+            msg = traceback.format_exc()
+            is_success = False
 
         # Cleanup
         cleanup_testing_infrastructure(True)
+
+        # Record iteration
+        record_test_run(module, method, seed, is_success, msg, full_test_record)
 
         #  Timeout.
         if timeout < datetime.now() - start:

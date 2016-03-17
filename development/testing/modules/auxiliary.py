@@ -16,6 +16,11 @@ from modules.clsMail import MailCls
 '''
 
 
+def record_test_run(module, method, seed, is_success, msg, full_test_record):
+
+    pass
+
+
 def get_test_dict(TEST_DIR):
     """ This function constructs a dictionary with the recognized test
     modules as the keys. The corresponding value is a list with all test
@@ -156,14 +161,10 @@ def cleanup_testing_infrastructure(keep_results):
             if match == './logging.log':
                 continue
 
-        remove(match)
+        try:
+            os.unlink(match)
+        except IsADirectoryError:
+            shutil.rmtree(match)
 
 
-def remove(name):
-    """ This function allows to remove files or directories.
-    """
-    try:
-        os.unlink(name)
-    except IsADirectoryError:
-        shutil.rmtree(name)
 

@@ -14,9 +14,9 @@ if not hasattr(sys, 'real_prefix'):
 
 
 # Testing infrastructure
+from modules.auxiliary import cleanup_testing_infrastructure
 from modules.auxiliary import get_random_request
 from modules.auxiliary import get_test_dict
-from modules.auxiliary import cleanup
 
 # Reconstruct directory structure and edits to PYTHONPATH
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -34,6 +34,8 @@ sys.path.insert(0, TEST_DIR)
 '''
 seed = 65419
 
+cleanup_robupy_package()
+sys.exit("ecit")
 
 # Cleanup
 cleanup(False)

@@ -6,6 +6,7 @@ and simulation modules.
 import numpy as np
 
 import fnmatch
+import shutil
 import os
 
 # project library
@@ -341,7 +342,51 @@ def cleanup_robupy_package():
     # Remove all files, unless explicitly to be saved.
     for match in matches:
 
-        if '.py' in match:
-            continue
-    # TODO: Also use in waf build
+        # Explicit treatment for files.
+        if os.path.isfile(match):
+            if ('.py' in match) or ('.f' in match) or ('.f90' in match):
+                continue
+
+            # Keep README files for GITHUB
+            if '.md' in match:
+                continue
+
+            # Keep files for build process
+            if ('waf' in match) or ('wscript' in match):
+                continue
+
+            # Keep the initialization files for the regression tests.
+            if 'test_' in match:
+                continue
+        else:
+
+            if match == './fortran':
+                continue
+
+            if match == './python':
+                continue
+
+            if match == './python/py':
+                continue
+
+            if match == './python/f2py':
+                continue
+
+            if match == './tests':
+                continue
+
+            if match == './tests/codes':
+                continue
+
+            if match == './tests/resources':
+                continue
+
+        try:
+            os.unlink(match)
+        except Exception:
+            try:
+                shutil.rmtree(match)
+            except Exception:
+                pass
+
     os.chdir(current_directory)
