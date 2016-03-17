@@ -288,3 +288,48 @@ class TestClass(object):
 
             # Checks
             np.testing.assert_allclose(base, systematic)
+
+    def test_7(self):
+        """ Testing whether the a simulated dataset and the evaluation of the
+        criterion function are the same for a tiny delta and a myopic agent.
+        """
+
+        # Generate random initialization dictionary
+        generate_init()
+
+        # Iterate over alternative discount rates.
+        base_data, base_eval = None, None
+
+        for delta in [0.00, 0.0001]:
+
+            robupy_obj = read('test.robupy.ini')
+
+            robupy_obj.unlock()
+
+            robupy_obj.set_attr('version',  "PYTHON")
+
+            robupy_obj.set_attr('delta', delta)
+
+            robupy_obj.lock()
+
+            solve(robupy_obj)
+
+            # This parts checks the equality of simulated dataset for the
+            # different versions of the code.
+            data_frame = pd.read_csv('data.robupy.dat', delim_whitespace=True)
+
+            if base_data is None:
+                base_data = data_frame.copy()
+
+            assert_frame_equal(base_data, data_frame)
+
+            # This part checks the equality of an evaluation of the
+            # criterion function.
+            data_frame = simulate(robupy_obj)
+
+            robupy_obj, eval_ = evaluate(robupy_obj, data_frame)
+
+            if base_eval is None:
+                base_eval = eval_
+
+            np.testing.assert_allclose(base_eval, eval_, rtol=1e-05, atol=1e-06)

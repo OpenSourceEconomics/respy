@@ -241,8 +241,7 @@ def cleanup_robupy_package(is_build=False):
 
         # If called as part of a build process, these temporary directories
         # are required.
-        if is_build:
-            if ('.waf' in match) or ('.bld' in match):
+        if is_build and (('.waf' in match) or ('.bld' in match)):
                 continue
 
         # Explicit treatment for files.
@@ -255,7 +254,7 @@ def cleanup_robupy_package(is_build=False):
                 continue
 
             # Keep files for build process
-            if (match == './waf') or (match == './wscript'):
+            if match in ['./waf', './wscript']:
                 continue
 
             if match == './fortran/wscript':

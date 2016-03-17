@@ -112,15 +112,11 @@ class TestClass(object):
         os.chdir(file_dir + '/codes')
 
         # Create required directory structure.
-        try:
+        if not os.path.exists('build'):
             os.mkdir('build')
-        except FileExistsError:
-            pass
 
-        try:
+        if not os.path.exists('../lib/'):
             os.mkdir('../lib/')
-        except FileExistsError:
-            pass
 
         # Build the upgraded version of the original Keane & Wolpin (1994)
         # codes.

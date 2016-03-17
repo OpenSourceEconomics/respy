@@ -212,10 +212,23 @@ def generate_random_dict(constraints=None):
     # Replace discount factor
     if 'is_myopic' in constraints.keys():
         # Extract object
+        assert ('delta' not in constraints.keys())
         assert (constraints['is_myopic'] in [True, False])
         # Replace in initialization files
         if constraints['is_myopic']:
             dict_['BASICS']['delta'] = 0.0
+
+    # Replace discount factor
+    if 'delta' in constraints.keys():
+        # Extract objects
+        delta = constraints['delta']
+        # Checks
+        assert ('is_myopic' not in constraints.keys())
+        assert (np.isfinite(delta))
+        assert (delta >= 0.0)
+        assert (isinstance(delta, float))
+        # Replace in initialization file
+        dict_['BASICS']['delta'] = delta
 
     # No random component to payoffs
     if 'is_deterministic' in constraints.keys():
