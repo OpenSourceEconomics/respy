@@ -46,7 +46,9 @@ import robupy.python.py.python_library as py_lib
 '''
 
 @pytest.mark.usefixtures('fresh_directory', 'set_seed', 'supply_resources')
-class TestClass:
+class TestClass(object):
+    """ This class groups together some tests.
+    """
     def test_1(self):
         """ This function compares the results from the payoff functions across
         implementations.

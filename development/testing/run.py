@@ -95,7 +95,7 @@ def run(hours):
 
         cleanup_testing_infrastructure(True)
 
-        #  Timeout
+        #  Timeout.
         if timeout < datetime.now() - start:
             break
 

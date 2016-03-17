@@ -98,7 +98,9 @@ def transform_robupy_to_restud(model_paras, init_dict):
 
 
 @pytest.mark.usefixtures('fresh_directory', 'set_seed', 'supply_resources')
-class TestClass:
+class TestClass(object):
+    """ This class groups together some tests.
+    """
     def test_1(self):
         """  Compare results from the RESTUD program and the ROBUPY package.
         """

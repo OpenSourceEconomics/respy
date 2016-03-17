@@ -33,7 +33,9 @@ from robupy import read
 
 
 @pytest.mark.usefixtures('fresh_directory', 'set_seed', 'supply_resources')
-class TestClass:
+class TestClass(object):
+    """ This class groups together some tests.
+    """
     def test_1(self):
         """ This is the special case where the EMAX better be equal to the MAXE.
         """

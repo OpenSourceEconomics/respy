@@ -201,13 +201,13 @@ def cleanup_testing_infrastructure(keep_results):
 
         if match == './modules':
             continue
-        try:
+
+        if os.path.isdir(match):
+            shutil.rmtree(match)
+        elif os.path.isfile(match):
             os.unlink(match)
-        except Exception:
-            try:
-                shutil.rmtree(match)
-            except Exception:
-                pass
+        else:
+            pass
 
 
 

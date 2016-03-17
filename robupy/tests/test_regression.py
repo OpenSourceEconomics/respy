@@ -16,7 +16,9 @@ RESOURCES_DIR = ROOT_DIR + '/resources'
 
 
 @pytest.mark.usefixtures('fresh_directory', 'set_seed', 'supply_resources')
-class TestClass:
+class TestClass(object):
+    """ This class groups together some tests.
+    """
     def test_1(self):
         """ Test solution of simple model against hard-coded results.
         """
