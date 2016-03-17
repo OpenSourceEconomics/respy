@@ -17,22 +17,22 @@ from modules.clsMail import MailCls
 
 
 def finalize_testing_record():
-    """ Concatenate the two temporary files and delete.
+    """ Add the temporary file with the information about tracebacks to the
+    main report.
     """
-    # Aggregate information from temporary files.
-    temp_files = ['overview.testing.tmp']
-    if os.path.exists('tracebacks.testing.tmp'):
-        temp_files.append('tracebacks.testing.tmp')
+    # Indicate that test run is finished
+    with open('report.testing.log', 'a') as log_file:
+        log_file.write('   RUN COMPLETED\n\n')
 
-    with open('report.testing.log', 'w') as outfile:
-        for fname in temp_files:
-            with open(fname) as infile:
-                for line in infile:
-                    outfile.write(line)
-            os.unlink(fname)
-            if os.path.exists('tracebacks.testing.tmp'):
-                outfile.write('\n---------------------------------------'
-                              '-----------------------------------------\n\n')
+    # Aggregate information from temporary files.
+    if os.path.exists('tracebacks.testing.tmp'):
+
+        with open('report.testing.log', 'a') as outfile:
+            outfile.write('\n---------------------------------------'
+                            '-----------------------------------------\n\n')
+            for line in open('tracebacks.testing.tmp'):
+                outfile.write(line)
+            os.unlink('tracebacks.testing.tmp')
 
 
 def update_testing_record(module, method, seed, is_success, msg,
@@ -45,7 +45,7 @@ def update_testing_record(module, method, seed, is_success, msg,
 
     # Write out overview information such as the number of successful and
     # failed test runs.
-    with open('overview.testing.tmp', 'w') as log_file:
+    with open('report.testing.log', 'w') as log_file:
         # Write out some header information.
         log_file.write('\n\n')
         string = '\t{0[0]:<15}{0[1]:<20}\n\n'
@@ -187,8 +187,7 @@ def cleanup_testing_infrastructure(keep_results):
 
     # Remove all files, unless explicitly to be saved.
     if keep_results:
-        for fname in ['./report.testing.log', './overview.testing.tmp',
-                      './tracebacks.testing.tmp']:
+        for fname in ['./report.testing.log', './tracebacks.testing.tmp']:
             try:
                 matches.remove(fname)
             except Exception:
