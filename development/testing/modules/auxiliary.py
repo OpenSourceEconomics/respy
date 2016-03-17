@@ -86,7 +86,7 @@ def distribute_input(parser):
     return hours, notification
 
 
-def finish(dict_, HOURS, notification):
+def finish(dict_, hours, notification):
     """ Finishing up a run of the testing battery.
     """
     # Antibugging.
@@ -116,7 +116,7 @@ def finish(dict_, HOURS, notification):
 
         subject = ' ROBUPY: Completed Testing Battery '
 
-        message = ' A ' + str(HOURS) +' hour run of the testing battery on @' + \
+        message = ' A ' + str(hours) + ' hour run of the testing battery on @' + \
                   hostname + ' is completed.'
 
         mail_obj = MailCls()
@@ -132,7 +132,7 @@ def finish(dict_, HOURS, notification):
         mail_obj.send()
 
 
-def cleanup(keep_results):
+def cleanup_testing_infrastructure(keep_results):
     """ This function cleans up before and after a testing run. If requested,
     the log file is retained.
     """

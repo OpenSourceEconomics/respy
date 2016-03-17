@@ -5,6 +5,7 @@ and simulation modules.
 # standard library
 import numpy as np
 
+import fnmatch
 import os
 
 # project library
@@ -315,3 +316,32 @@ def opt_get_model_parameters(x, is_debug):
 
     # Finishing
     return coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, shocks_cholesky
+
+
+def cleanup_robupy_package():
+    """ This function deletes all nuisance files from the package
+    """
+
+    current_directory = os.getcwd()
+
+    os.chdir(os.path.dirname(os.path.realpath(__file__)))
+
+    # Collect all candidates files and directories.
+    matches = []
+    for root, dirnames, filenames in os.walk('.'):
+        for filename in fnmatch.filter(filenames, '*'):
+            matches.append(os.path.join(root, filename))
+        # TODO: Can I aggregate explicit search for hidden files with regular
+        #  request
+        for filename in fnmatch.filter(filenames, '.*'):
+            matches.append(os.path.join(root, filename))
+        for dirname in fnmatch.filter(dirnames, '*'):
+            matches.append(os.path.join(root, dirname))
+
+    # Remove all files, unless explicitly to be saved.
+    for match in matches:
+
+        if '.py' in match:
+            continue
+    # TODO: Also use in waf build
+    os.chdir(current_directory)

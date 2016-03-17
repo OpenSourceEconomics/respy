@@ -26,10 +26,13 @@ TEST_DIR = ROBUPY_DIR + '/robupy/tests'
 sys.path.insert(0, ROBUPY_DIR)
 sys.path.insert(0, TEST_DIR)
 
+# TODO: Rempve
+from robupy.auxiliary import cleanup_robupy_package
+sys.path.insert(0, TEST_DIR)
 
 ''' Request
 '''
-seed = 19387
+seed = 65419
 
 
 # Cleanup

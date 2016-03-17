@@ -32,10 +32,8 @@ ROBUPY_DIR = BASE_DIR.replace('development/testing', '')
 
 TEST_DIR = ROBUPY_DIR + '/robupy/tests'
 
-sys.path.insert(0, BASE_DIR)
-
 # ROBUPY import
-sys.path.insert(0, ROBUPY_DIR)
+#sys.path.insert(0, ROBUPY_DIR)
 
 # ROBPUPY testing codes
 sys.path.insert(0, TEST_DIR)
@@ -43,10 +41,11 @@ from codes.auxiliary import build_testing_library
 from codes.auxiliary import build_robupy_package
 
 # Testing infrastructure
+from modules.auxiliary import cleanup_testing_infrastructure
 from modules.auxiliary import get_random_request
 from modules.auxiliary import distribute_input
 from modules.auxiliary import get_test_dict
-from modules.auxiliary import cleanup
+from modules.auxiliary import finish
 
 
 ''' Main Function.
@@ -60,8 +59,16 @@ def run(hours):
     # Get a dictionary with all candidate test cases.
     test_dict = get_test_dict(TEST_DIR)
 
+    # We initialize a dictionary that allows to keep track of each test's
+    # success or failure.
+    test_record = dict()
+    for key_ in test_dict.keys():
+        test_record[key_] = dict()
+        for value in test_dict[key_]:
+            test_record[key_][value] = [0, 0]
+
     # Start with a clean slate.
-    cleanup(False)
+    cleanup_testing_infrastructure(False)
 
     #
     start, timeout = datetime.now(), timedelta(hours=hours)
@@ -96,30 +103,30 @@ def run(hours):
         module, method = get_random_request(test_dict)
         mod = importlib.import_module(module)
         test = getattr(mod.TestClass(), method)
-
+        print(seed)
         # Run random tes
-        #try:
-        test()
-        #except Exception:
+        try:
+            test()
+
+            test_record[module][method][0] += 1
+
+        except Exception:
+            test_record[module][method][1] += 1
         #    msg = traceback.format_exc()
 
         # Cleanup
-        cleanup(True)
+        cleanup_testing_infrastructure(True)
 
         #  Timeout.
         if timeout < datetime.now() - start:
             break
 
-    # Finishing.
-    return None
-
-
 ''' Execution of module as script.
 '''
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run development test '
-                                                 'battery of ROBUPY package.',
-                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+                'battery of ROBUPY package.',
+                formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('--hours', action='store', dest='hours',
                         type=float, default=1.0, help='run time in hours')
@@ -128,9 +135,11 @@ if __name__ == '__main__':
                         dest='notification', default=False,
                         help='send notification')
 
-    # Ensure that the FORTRAN routines are available.
-    build_testing_library(False)
-    build_robupy_package(False)
+    # Ensure that the FORTRAN resources are available. Some selected
+    # functions are only used for testing purposes and thus collected in a
+    # special FORTRAN library.
+    build_testing_library(True)
+    build_robupy_package(True)
 
     hours, notification = distribute_input(parser)
 
@@ -139,6 +148,6 @@ if __name__ == '__main__':
 
     dict_ = run(hours)
 
-    cleanup(True)
+    cleanup_testing_infrastructure(True)
 
-    #finish(dict_, hours, notification)
+    finish(dict_, hours, notification)

@@ -21,7 +21,7 @@ class TestClass:
         """ Test solution of simple model against hard-coded results.
         """
         # Solve specified economy
-        robupy_obj = read(RESOURCES_DIR + '/first.robupy.ini')
+        robupy_obj = read(RESOURCES_DIR + '/test_first.robupy.ini')
         robupy_obj = solve(robupy_obj)
 
         # Extract statistic
@@ -34,7 +34,7 @@ class TestClass:
         """ Compare the solution of simple model against hard-coded results.
         """
         # Solve specified economy
-        robupy_obj = read(RESOURCES_DIR + '/second.robupy.ini')
+        robupy_obj = read(RESOURCES_DIR + '/test_second.robupy.ini')
         robupy_obj = solve(robupy_obj)
 
         # Distribute class attributes
@@ -102,7 +102,7 @@ class TestClass:
         """ Test the solution of model with ambiguity.
         """
         # Solve specified economy
-        robupy_obj = read(RESOURCES_DIR + '/third.robupy.ini')
+        robupy_obj = read(RESOURCES_DIR + '/test_third.robupy.ini')
         robupy_obj = solve(robupy_obj)
 
         # Extract statistic
@@ -115,7 +115,7 @@ class TestClass:
         """ Test the solution of model with ambiguity.
         """
         # Solve specified economy
-        robupy_obj = read(RESOURCES_DIR + '/fourth.robupy.ini')
+        robupy_obj = read(RESOURCES_DIR + '/test_fourth.robupy.ini')
         robupy_obj = solve(robupy_obj)
 
         # Extract statistic
