@@ -27,21 +27,19 @@ from robupy import read
 '''
 
 
-def transform_robupy_to_restud(model_paras, init_dict):
+def transform_robupy_to_restud(model_paras, level, edu_start, edu_max,
+        num_agents, num_periods, num_draws_emax, delta):
     """ Transform a ROBUPY initialization file to a RESTUD file.
     """
     # Ensure restrictions
-    assert (init_dict['AMBIGUITY']['level'] == 0.00)
-    assert (init_dict['EDUCATION']['start'] == 10)
-    assert (init_dict['EDUCATION']['max'] == 20)
+    assert (level == 0.00)
+    assert (edu_start == 10)
+    assert (edu_max == 20)
 
     # Write to initialization file
     with open('in.txt', 'w') as file_:
 
         # Write out some basic information about the problem.
-        num_agents = init_dict['SIMULATION']['agents']
-        num_periods = init_dict['BASICS']['periods']
-        num_draws_emax = init_dict['SOLUTION']['draws']
         file_.write(' {0:03d} {1:05d} {2:06d} {3:06f}'
             ' {4:06f}\n'.format(num_periods, num_agents, num_draws_emax,-99.0,
             500.0))
@@ -63,7 +61,6 @@ def transform_robupy_to_restud(model_paras, init_dict):
         home = coeffs_home[0] / 1000
         for j in range(2):
             edu_coeffs += [-coeffs_edu[j + 1] / 1000]
-        delta = init_dict['BASICS']['delta']
         coeffs = edu_coeffs + [home, delta]
         line = ' {0:10.6f} {1:10.6f} {2:10.6f} {3:10.6f}' \
                 ' {4:10.6f}\n'.format(*coeffs)
@@ -166,10 +163,14 @@ class TestClass(object):
         # This flag aligns the random components between the RESTUD program and
         # ROBUPY package. The existence of the file leads to the RESTUD program
         # to write out the random components.
-        model_paras, init_dict = distribute_model_description(robupy_obj,
-                    'model_paras', 'init_dict')
+        model_paras, level, edu_start, edu_max, num_agents, num_periods, \
+        num_draws_emax, delta = \
+            distribute_model_description(robupy_obj,
+                'model_paras', 'level', 'edu_start', 'edu_max', 'num_agents',
+                'num_periods', 'num_draws_emax', 'delta')
 
-        transform_robupy_to_restud(model_paras, init_dict)
+        transform_robupy_to_restud(model_paras, level, edu_start, edu_max,
+            num_agents, num_periods, num_draws_emax, delta)
 
         # Solve model using RESTUD code.
         os.system(file_dir + '/lib/dp3asim > /dev/null 2>&1')

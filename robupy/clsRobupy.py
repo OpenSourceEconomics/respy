@@ -290,11 +290,7 @@ class RobupyCls(object):
         # dictionary. Special treatment of EDUCATION is required as it
         # contains other information about education than just the
         # payoff parametrization.
-        del init_dict['EDUCATION']['int']
-        del init_dict['EDUCATION']['coeff']
-
-        for key_ in ['A', 'B', 'HOME', 'SHOCKS']:
-            del init_dict[key_]
+        del self.attr['init_dict']
 
     def _update_derived_attributes(self):
         """ Update derived attributes.
