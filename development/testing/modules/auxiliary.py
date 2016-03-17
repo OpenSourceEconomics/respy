@@ -3,39 +3,42 @@
 import numpy as np
 
 import importlib
-import logging
+import fnmatch
 import socket
 import shutil
-import shlex
 import glob
 import os
 
 # testing library
 from modules.clsMail import MailCls
 
+''' Auxiliary functions
+'''
 
-def get_test_dict(TEST_DIR, BASE_DIR):
 
+def get_test_dict(TEST_DIR):
+    """ This function constructs a dictionary with the recognized test
+    modules as the keys. The corresponding value is a list with all test
+    methods inside that module.
+    """
+    # Process all candidate modules.
+    current_directory = os.getcwd()
     os.chdir(TEST_DIR)
     test_modules = []
     for test_file in glob.glob('test_*.py'):
         test_module = test_file.replace('.py', '')
         test_modules.append(test_module)
-    os.chdir(BASE_DIR)
+    os.chdir(current_directory)
 
-
+    # Given the modules, get all tests methods.
     test_dict = dict()
     for test_module in test_modules:
         test_dict[test_module] = []
-
-        str_ = test_module.replace('.py', '')
-        mod = importlib.import_module(str_)
-
+        mod = importlib.import_module(test_module.replace('.py', ''))
         candidate_methods = dir(mod.TestClass)
-
         for candidate_method in candidate_methods:
             if 'test_' in candidate_method:
-               test_dict[test_module].append(candidate_method)
+                test_dict[test_module].append(candidate_method)
 
     # Finishing
     return test_dict
@@ -58,25 +61,6 @@ def get_random_request(test_dict):
     return module, method
 
 
-def start_logging():
-    """ Start logging of performance.
-    """
-
-    # Initialize logger
-    logger = logging.getLogger('DEV-TEST')
-    logger.setLevel(logging.DEBUG)
-
-    # Create file handler which logs even debug messages
-    fh = logging.FileHandler('logging.log', 'w')
-    fh.setLevel(logging.DEBUG)
-
-    # Create formatter and add it to the handlers
-    formatter = logging.Formatter(' %(asctime)s     %(message)s \n', datefmt='%I:%M:%S %p')
-    fh.setFormatter(formatter)
-
-    # Add the handlers to the logger
-    logger.addHandler(fh)
-
 def distribute_input(parser):
     """ Check input for estimation script.
     """
@@ -94,11 +78,13 @@ def distribute_input(parser):
 
     # Validity checks
     if notification:
-        # Check that the credentials file is stored in the user's HOME directory.
+        # Check that the credentials file is stored in the user's
+        # HOME directory.
         assert (os.path.exists(os.environ['HOME'] + '/.credentials'))
 
     # Finishing.
     return hours, notification
+
 
 def finish(dict_, HOURS, notification):
     """ Finishing up a run of the testing battery.
@@ -147,24 +133,25 @@ def finish(dict_, HOURS, notification):
 
 
 def cleanup(keep_results):
-    """ Cleanup after test battery.
+    """ This function cleans up before and after a testing run. If requested,
+    the log file is retained.
     """
-    import fnmatch
+    # Collect all candidates files and directories.
     matches = []
     for root, dirnames, filenames in os.walk('.'):
         for filename in fnmatch.filter(filenames, '*'):
             matches.append(os.path.join(root, filename))
+        for filename in fnmatch.filter(filenames, '.*'):
+            matches.append(os.path.join(root, filename))
         for dirname in fnmatch.filter(dirnames, '*'):
             matches.append(os.path.join(root, dirname))
 
+    # Remove all files, unless explicitly to be saved.
     for match in matches:
-
         if '.py' in match:
             continue
-
         if match == './modules':
             continue
-
         if keep_results:
             if match == './logging.log':
                 continue
@@ -173,71 +160,10 @@ def cleanup(keep_results):
 
 
 def remove(name):
-
+    """ This function allows to remove files or directories.
+    """
     try:
         os.unlink(name)
     except IsADirectoryError:
         shutil.rmtree(name)
 
-
-
-def check_ambiguity_optimization():
-    """ This function checks that less than 5% of all optimization for each
-    period fail.
-    """
-    def _process_cases(list_):
-        """ Process cases and determine whether keyword or empty line.
-        """
-        # Antibugging
-        assert (isinstance(list_, list))
-
-        # Get information
-        is_empty = (len(list_) == 0)
-
-        if not is_empty:
-            is_summary = (list_[0] == 'SUMMARY')
-        else:
-            is_summary = False
-
-        # Antibugging
-        assert (is_summary in [True, False])
-        assert (is_empty in [True, False])
-
-        # Finishing
-        return is_empty, is_summary
-
-    is_relevant = False
-
-    # Check relevance
-    if not os.path.exists('ambiguity.robupy.log'):
-        return
-
-    for line in open('ambiguity.robupy.log').readlines():
-
-        # Split line
-        list_ = shlex.split(line)
-
-        # Determine special cases
-        is_empty, is_summary = _process_cases(list_)
-
-        # Applicability
-        if is_empty:
-            continue
-
-        # Prepare dictionary
-        if is_summary:
-            is_relevant = True
-            continue
-
-        if not is_relevant:
-            continue
-
-        if list_[0] == 'Period':
-            continue
-
-        period, total, success, failure = list_
-
-        total = success + failure
-
-        if float(failure)/float(total) > 0.05:
-            raise AssertionError

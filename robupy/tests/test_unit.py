@@ -298,7 +298,7 @@ class TestClass:
         f = fort_test.wrapper_slsqp_debug(x0, maxiter, ftol, num_dim)
         py = _minimize_slsqp(rosen, x0, jac=rosen_der, maxiter=maxiter,
                 ftol=ftol,  constraints=constraint)['x']
-        np.testing.assert_allclose(py + 0.5, f, rtol=1e-05, atol=1e-06)
+        np.testing.assert_allclose(py, f, rtol=1e-05, atol=1e-06)
 
     def test_5(self):
         """ Compare the evaluation of the criterion function for the ambiguity

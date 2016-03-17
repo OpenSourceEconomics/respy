@@ -22,9 +22,7 @@ import os
 
 # project
 from modules.auxiliary import distribute_input
-from modules.auxiliary import start_logging
 from modules.auxiliary import cleanup
-from modules.auxiliary import finish
 
 #import modules.battery as development_tests
 
@@ -45,8 +43,8 @@ sys.path.insert(0, ROBUPY_DIR)
 
 # ROBPUPY testing codes
 sys.path.insert(0, TEST_DIR)
-from codes.auxiliary import build_f2py_testing
-from codes.auxiliary import compile_package
+from codes.auxiliary import build_testing_library
+from codes.auxiliary import build_robupy_package
 
 from modules.auxiliary import get_random_request
 from modules.auxiliary import get_test_dict
@@ -60,7 +58,7 @@ def run(hours):
     """
 
     # Get a dictionary with all candidate test cases.
-    test_dict = get_test_dict(TEST_DIR, BASE_DIR)
+    test_dict = get_test_dict(TEST_DIR)
 
     # Start with a clean slate.
     cleanup(False)
@@ -129,8 +127,8 @@ if __name__ == '__main__':
 
     # Ensure that the FORTRAN routines are available.
     if False:
-        compile_package('--fortran --debug', True)
-        build_f2py_testing(True)
+        build_robupy_package(True)
+        build_testing_library(True)
 
     hours, notification = distribute_input(parser)
 

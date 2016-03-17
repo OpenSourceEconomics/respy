@@ -9,9 +9,8 @@ import glob
 import os
 
 # ROBUPY import
-from robupy import read
-
 from robupy.python.solve_python import _create_state_space
+from robupy import read
 
 # module-wide variables
 ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -99,7 +98,7 @@ def write_disturbances(num_periods, max_draws):
                 file_.write(line)
 
 
-def compile_package(options, is_hidden):
+def build_robupy_package(is_hidden):
     """ Compile toolbox
     """
     # Auxiliary objects
@@ -113,9 +112,7 @@ def compile_package(options, is_hidden):
 
         os.system('./waf distclean > /dev/null 2>&1')
 
-        cmd = './waf configure build '
-
-        cmd += options
+        cmd = './waf configure build --fortran --debug '
 
         if is_hidden:
             cmd += ' > /dev/null 2>&1'
@@ -136,7 +133,7 @@ def compile_package(options, is_hidden):
     os.chdir(tests_dir)
 
 
-def build_f2py_testing(is_hidden):
+def build_testing_library(is_hidden):
     """ Build the F2PY testing interface for testing.f
     """
     tmp_dir = os.getcwd()

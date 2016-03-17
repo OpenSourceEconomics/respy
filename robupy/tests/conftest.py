@@ -15,8 +15,8 @@ ROOT_DIR = ROOT_DIR.replace('/robupy/tests', '')
 sys.path.insert(0, ROOT_DIR)
 
 # testing codes
-from codes.auxiliary import build_f2py_testing
-from codes.auxiliary import compile_package
+from codes.auxiliary import build_testing_library
+from codes.auxiliary import build_robupy_package
 
 
 """ The following fixtures are called once per session.
@@ -28,14 +28,14 @@ def supply_resources(request):
     """ This fixture ensures that the compiled libraries are all available.
     """
     # Required compilations to make the F2PY and FORTRAN interfaces available.
-    compile_package('--fortran --debug', True)
+    build_robupy_package(True)
 
     # Prepare directory structure to hold some libraries during the process.
     os.mkdir(ROOT_DIR + '/robupy/tests/lib')
 
     # There is small number of FORTRAN routines that are only used during
     # testing. These are collected in their own library.
-    build_f2py_testing(True)
+    build_testing_library(True)
 
     # Teardown of fixture after session is completed.
     def cleanup():

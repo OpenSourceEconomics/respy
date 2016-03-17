@@ -31,12 +31,12 @@ from robupy.tests.random_init import generate_init
 
 from robupy.python.evaluate_python import _evaluate_python_bare, evaluate_criterion_function
 # testing battery
-from material.auxiliary import compile_package
+from material.auxiliary import build_robupy_package
 from material.auxiliary import cleanup
 
 
 print('not recompiling')
-#compile_package('--fortran --debug', False)
+#build_robupy_package(False)
 
 np.random.seed(123)
 
