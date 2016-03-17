@@ -120,17 +120,6 @@ def build_robupy_package(is_hidden):
 
         os.system(cmd)
 
-        # In a small number of cases the build process seems to fail for no
-        # reason.
-        try:
-            import robupy.python.f2py.f2py_library
-            break
-        except ImportError:
-            pass
-
-        if i == 10:
-            raise AssertionError
-
     os.chdir(tests_dir)
 
 
@@ -140,13 +129,10 @@ def build_testing_library(is_hidden):
     tmp_dir = os.getcwd()
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
-    try:
+    if os.path.exists('build'):
         shutil.rmtree('build')
-    except FileNotFoundError:
-        pass
 
     os.mkdir('build')
-
     os.chdir('build')
 
     # Get all sources from the FORTRAN package.
@@ -178,14 +164,11 @@ def build_testing_library(is_hidden):
 
     # Prepare directory structure
     for dir_ in ['include', 'lib']:
-        try:
+
+        if os.path.exists(dir_):
             shutil.rmtree(dir_)
-        except OSError:
-                pass
-        try:
-            os.makedirs(dir_)
-        except OSError:
-            pass
+
+        os.makedirs(dir_)
 
     # Finalize static library
     module_files = glob.glob('*.mod')
@@ -203,10 +186,9 @@ def build_testing_library(is_hidden):
     os.system(cmd)
 
     lib_name = glob.glob('f2py_testing.*.so')[0]
-    try:
+
+    if not os.path.exists('../../lib/'):
         os.mkdir('../../lib/')
-    except FileExistsError:
-        pass
 
     shutil.copy(lib_name, '../../lib/')
     os.chdir('../')

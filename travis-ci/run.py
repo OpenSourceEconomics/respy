@@ -3,6 +3,7 @@
 """
 
 # standard library
+import pytest
 import os
 
 # If the script is run on TRAVIS-CI, then I need to create a link to F2PY3. So
@@ -11,7 +12,7 @@ if 'TRAVIS' in os.environ.keys():
     os.system('ln -sf /home/travis/virtualenv/python3.4.2/bin/f2py /home/travis/virtualenv/python3.4.2/bin/f2py3')
 
 # Tests
-return_ = os.system(' py.test --cov=robupy -v -s')
+return_ = pytest.main('--cov=robupy -v -s')
 assert (return_ == 0)
 
 return_ = os.system('coveralls')

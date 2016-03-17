@@ -50,7 +50,7 @@ def supply_resources(request):
 def set_seed():
     """ Each test is executed with the same random seed.
     """
-    np.random.seed(123)
+    np.random.seed(1223)
 
 
 @pytest.fixture(scope='function')

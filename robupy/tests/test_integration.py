@@ -169,7 +169,7 @@ class TestClass(object):
         assert (np.ma.all(np.ma.masked_invalid(systematic) ==
                     np.ma.masked_invalid(ex_post)))
 
-    def test_4(slf):
+    def test_4(self):
         """ If there is no random variation in payoffs then the number of
         draws to simulate the expected future value should have no effect.
         """
