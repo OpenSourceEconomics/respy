@@ -9,7 +9,7 @@ import numpy as np
 '''
 MAX_AGENTS = 1000
 MAX_DRAWS = 100
-MAX_PERIODS = 4
+MAX_PERIODS = 5
 
 ''' Public Function
 '''
@@ -54,8 +54,10 @@ def generate_random_dict(constraints=None):
     dict_['BASICS']['delta'] = np.random.random()
 
     # Ambiguity (with temporary constraints)
+    # TODO: When the FORTRAN code does also support the absolute measure,
+    # then a random selection needs to allow for that as well.
     dict_['AMBIGUITY'] = dict()
-    dict_['AMBIGUITY']['measure'] = np.random.choice(['absolute', 'kl'])
+    dict_['AMBIGUITY']['measure'] = np.random.choice(['kl'])
     dict_['AMBIGUITY']['level'] = np.random.choice([0.00, np.random.uniform()])
 
     # Home
@@ -98,8 +100,6 @@ def generate_random_dict(constraints=None):
     dict_['PROGRAM']['debug'] ='True'
     dict_['PROGRAM']['version'] = np.random.choice(['FORTRAN', 'F2PY',
                                                     'PYTHON'])
-    if dict_['PROGRAM']['version'] is not 'PYTHON':
-        dict_['AMBIGUITY']['measure'] = 'kl'
 
     # SIMULATION
     dict_['SIMULATION'] = {}
@@ -212,10 +212,23 @@ def generate_random_dict(constraints=None):
     # Replace discount factor
     if 'is_myopic' in constraints.keys():
         # Extract object
+        assert ('delta' not in constraints.keys())
         assert (constraints['is_myopic'] in [True, False])
         # Replace in initialization files
         if constraints['is_myopic']:
             dict_['BASICS']['delta'] = 0.0
+
+    # Replace discount factor
+    if 'delta' in constraints.keys():
+        # Extract objects
+        delta = constraints['delta']
+        # Checks
+        assert ('is_myopic' not in constraints.keys())
+        assert (np.isfinite(delta))
+        assert (delta >= 0.0)
+        assert (isinstance(delta, float))
+        # Replace in initialization file
+        dict_['BASICS']['delta'] = delta
 
     # No random component to payoffs
     if 'is_deterministic' in constraints.keys():

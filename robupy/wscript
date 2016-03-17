@@ -3,7 +3,7 @@
 # standard library
 import fnmatch
 import shutil
-import glob
+import pytest
 import sys
 import os
 
@@ -21,9 +21,6 @@ def options(opt):
 
     opt.load('compiler_fc')
 
-    opt.add_option('--fortran', action='store_true', dest='is_fortran',
-                   default=False, help='build FORTRAN implementations')
-
     opt.add_option('--test', action='store_true', dest='is_test',
                    default=False, help='run test battery')
 
@@ -33,116 +30,111 @@ def options(opt):
 
 def configure(conf):
 
-    # Distribute options
-    is_fortran = conf.options.is_fortran
-    is_debug = conf.options.is_debug
-
-    # Check options
-    if is_debug:
-        assert (is_fortran is True)
-
     # Construct environment variables
     conf.env.project_paths = dict()
 
     conf.env.project_paths['ROBUPY'] = os.getcwd()
 
-    if is_fortran:
-        conf.load('compiler_fc')
+    conf.load('compiler_fc')
 
 
 def build(bld):
 
-    # Distribute options
-    is_fortran = bld.options.is_fortran
-
     is_test = bld.options.is_test
 
     # Start from a clean slate
-    distclean(all_=False)
+    cleanup_build(True)
 
-    if is_fortran:
-
-        bld.recurse('fortran')
+    # Initialize directory structure
+    bld.recurse("fortran")
 
     if is_test:
-
-        os.chdir('tests')
-
-        os.system('nosetests tests.py')
+        bld.add_post_fun(post)
 
 
-def distclean(all_=True):
-
-    # Remove nuisance files
-    remove_filetypes_distclean('.')
-
-    # Remove compiled files
-    for dir_ in ['lib', 'bin', 'include']:
-
-        remove_for_distclean('fortran/' + dir_)
-
-        # Special treatment for symbolic links
-        try:
-            os.unlink('python/f2py/' + dir_)
-        except OSError:
-            pass
-
-    # Remove build system
-    if all_:
-        remove_for_distclean(glob.glob('.waf*'))
-        remove_for_distclean('.bld')
-
-    try:
-        os.unlink('tests/test.robupy.ini')
-    except OSError:
-        pass
-
-''' Auxiliary functions
-'''
+def distclean(bld):
+    cleanup_build()
 
 
-def remove_for_distclean(paths):
-    """ Remove path, where path can be either a directory or a file. The
-        appropriate function is selected. Note, however, that if an
-        OSError occurs, the function will just path.
+def post(bld):
+    """ Run test battery after compilation.
     """
-    if not isinstance(paths, list):
-        paths = [paths]
+    os.chdir(bld.env.project_paths['ROBUPY'] + '/tests')
 
-    for path in paths:
-
-        if os.path.isdir(path):
-
-            shutil.rmtree(path)
-
-        if os.path.isfile(path):
-
-            os.remove(path)
+    pytest.main([])
 
 
-def remove_filetypes_distclean(path):
-    """ Remove nuisance files from the directory tree.
+def cleanup_build(is_build=False):
+    """ This function deletes all nuisance files from the package
     """
+
+    # Collect all candidates files and directories.
     matches = []
+    for root, dirnames, filenames in os.walk('.'):
+        for filename in fnmatch.filter(filenames, '*'):
+            matches.append(os.path.join(root, filename))
+        for filename in fnmatch.filter(filenames, '.*'):
+            matches.append(os.path.join(root, filename))
+        for dirname in fnmatch.filter(dirnames, '*'):
+            matches.append(os.path.join(root, dirname))
 
-    for root, _, filenames in os.walk(path):
+    # Remove all files, unless explicitly to be saved.
+    for match in matches:
 
-        for filetypes in ['*.aux', '*.log', '*.pyc', '*.so', '*~', '*tar',
-                          '*.zip', '.waf*', '*lock*', '*.mod', '*.a',
-                          '*.pkl', '*.out', '*.pyo', '*.info',
-                          '__pycache__', '.coverage', '*.o']:
+        # If called as part of a build process, these temporary directories
+        # are required.
+        if is_build:
+            if ('.waf' in match) or ('.bld' in match):
+                continue
 
-                for filename in fnmatch.filter(filenames, filetypes):
+        # Explicit treatment for files.
+        if os.path.isfile(match):
+            if ('.py' in match) or ('.f' in match) or ('.f90' in match):
+                continue
 
-                    matches.append(os.path.join(root, filename))
+            # Keep README files for GITHUB
+            if '.md' in match:
+                continue
 
-    matches.append('.lock-wafbuild')
+            # Keep files for build process
+            if (match == './waf') or (match == './wscript'):
+                continue
 
-    for files in matches:
+            if match == './fortran/wscript':
+                continue
 
-        remove_for_distclean(files)
+            # Keep the initialization files for the regression tests.
+            if 'test_' in match:
+                continue
 
-    for dirName, _, _ in os.walk('.'):
+        else:
 
-        if '__pycache__' in dirName:
-            shutil.rmtree(dirName)
+            if match == './fortran':
+                continue
+
+            if match == './python':
+                continue
+
+            if match == './python/py':
+                continue
+
+            if match == './python/f2py':
+                continue
+
+            if match == './tests':
+                continue
+
+            if match == './tests/codes':
+                continue
+
+            if match == './tests/resources':
+                continue
+
+        # Remove remaining files and directories.
+        try:
+            os.unlink(match)
+        except Exception:
+            try:
+                shutil.rmtree(match)
+            except Exception:
+                pass

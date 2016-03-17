@@ -1,0 +1,277 @@
+""" This modules contains some additional tests that are only used in long-run
+development tests.
+"""
+
+# standard library
+import numpy as np
+
+import pytest
+import os
+
+# testing library
+from codes.auxiliary import distribute_model_description
+from codes.auxiliary import write_interpolation_grid
+
+# ROBUPY import
+from robupy.python.py.python_library import _get_simulated_indicator
+from robupy.python.py.python_library import _get_exogenous_variables
+from robupy.python.py.python_library import _get_endogenous_variable
+from robupy.python.py.python_library import _get_predictions
+
+from robupy.tests.codes.random_init import generate_random_dict
+from robupy.tests.codes.random_init import print_random_dict
+from robupy.tests.codes.random_init import generate_init
+
+from robupy.auxiliary import replace_missing_values
+from robupy.auxiliary import create_disturbances
+
+from robupy import solve
+from robupy import read
+
+''' Main
+'''
+
+
+@pytest.mark.usefixtures('fresh_directory', 'set_seed', 'supply_resources')
+class TestClass(object):
+    """ This class groups together some tests.
+    """
+    def test_1(self):
+        """ This is the special case where the EMAX better be equal to the MAXE.
+        """
+        # Set initial constraints
+        constraints = dict()
+        constraints['apply'] = False
+        constraints['level'] = 0.00
+        constraints['periods'] = np.random.random_integers(2, 6)
+        constraints['is_deterministic'] = True
+
+        # Initialize request
+        init_dict = generate_random_dict(constraints)
+        baseline = None
+
+        # Solve with and without interpolation code
+        for _ in range(2):
+
+            # Write out request
+            print_random_dict(init_dict)
+
+            # Process and solve
+            robupy_obj = read('test.robupy.ini')
+            robupy_obj = solve(robupy_obj)
+
+            # Extract class attributes
+            states_number_period, periods_emax = \
+                distribute_model_description(robupy_obj,
+                    'states_number_period', 'periods_emax')
+
+            # Store and check results
+            if baseline is None:
+                baseline = periods_emax
+            else:
+                np.testing.assert_array_almost_equal(baseline, periods_emax)
+
+            # Updates for second iteration. This ensures that there is at least
+            # one interpolation taking place.
+            init_dict['INTERPOLATION']['points'] = max(states_number_period) - 1
+            init_dict['INTERPOLATION']['apply'] = True
+
+    def test_2(self):
+        """ Further tests for the interpolation routines.
+        """
+        # FORTRAN resources
+        import robupy.python.f2py.f2py_debug as fort_debug
+
+        # Impose constraints. The FORTRAN code does not include other
+        # measures just yet.
+        constraints = dict()
+        constraints['measure'] = 'kl'
+
+        # Generate random initialization file
+        generate_init(constraints)
+
+        # Perform toolbox actions
+        robupy_obj = read('test.robupy.ini')
+        robupy_obj = solve(robupy_obj)
+
+        # Extract class attributes
+        periods_payoffs_systematic, states_number_period, \
+        mapping_state_idx, is_deterministic, seed_prob, periods_emax, \
+        is_ambiguous, model_paras, num_periods, states_all, num_points, \
+        edu_start, num_draws_emax, is_debug, measure, edu_max, delta, \
+        level = \
+            distribute_model_description(robupy_obj,
+                'periods_payoffs_systematic', 'states_number_period',
+                'mapping_state_idx', 'is_deterministic', 'seed_prob',
+                'periods_emax', 'is_ambiguous', 'model_paras', 'num_periods',
+                'states_all', 'num_points', 'edu_start', 'num_draws_emax',
+                'is_debug', 'measure', 'edu_max', 'delta', 'level')
+
+        # Auxiliary objects
+        shocks_cholesky = model_paras['shocks_cholesky']
+
+        # Add some additional objects required for the interfaces to the
+        # functions.
+        period = np.random.choice(range(num_periods))
+
+        disturbances_emax = create_disturbances(num_periods, num_draws_emax,
+            seed_prob, is_debug, 'emax', shocks_cholesky, is_ambiguous)
+
+        disturbances_relevant = disturbances_emax[period, :, :]
+
+        num_states = states_number_period[period]
+
+        shocks = model_paras['shocks']
+
+        shifts = np.random.randn(4)
+
+        # Slight modification of request which assures that the
+        # interpolation code is working.
+        num_points = min(num_points, num_states)
+
+        # Get the IS_SIMULATED indicator for the subset of points which are
+        # used for the predication model. The integrity of the corresponding
+        # FORTRAN function is tested in test_88().
+        args = (num_points, num_states, period, num_periods, is_debug)
+        is_simulated = _get_simulated_indicator(*args)
+
+        # Construct the exogenous variables for all points of the state
+        # space.
+        args = [period, num_periods, num_states, delta,
+                periods_payoffs_systematic, shifts, edu_max, edu_start,
+                mapping_state_idx, periods_emax, states_all]
+
+        py = _get_exogenous_variables(*args)
+        f90 = fort_debug.wrapper_get_exogenous_variables(*args)
+
+        np.testing.assert_equal(py, f90)
+
+        # Distribute validated results for further functions.
+        exogenous, maxe = py
+
+        # Construct endogenous variable so that the prediction model can be
+        # fitted.
+        args = [period, num_periods, num_states, delta,
+                periods_payoffs_systematic, edu_max, edu_start,
+                mapping_state_idx, periods_emax, states_all, is_simulated,
+                num_draws_emax, shocks, level, is_ambiguous, is_debug,
+                measure, maxe, disturbances_relevant, is_deterministic]
+
+        py = _get_endogenous_variable(*args)
+        f90 = fort_debug.wrapper_get_endogenous_variable(*args)
+
+        np.testing.assert_equal(py, replace_missing_values(f90))
+
+        # Distribute validated results for further functions.
+        endogenous = py
+
+        # Get predictions for expected future values
+        args = [endogenous, exogenous, maxe, is_simulated, num_points,
+                num_states, is_debug]
+
+        py, _ = _get_predictions(*args)
+        f90 = fort_debug.wrapper_get_predictions(*args[:-1])
+
+        np.testing.assert_array_almost_equal(py, f90)
+
+    def test_3(self):
+        """ This is a special test for auxiliary functions related to the
+        interpolation setup.
+        """
+        # FORTRAN resources
+        import robupy.python.f2py.f2py_debug as fort_debug
+
+        # Impose constraints
+        constr = dict()
+        constr['periods'] = np.random.random_integers(2, 5)
+
+        # Construct a random initialization file
+        generate_init(constr)
+
+        # Extract required information
+        robupy_obj = read('test.robupy.ini')
+
+        # Extract class attributes
+        is_debug, num_periods = distribute_model_description(robupy_obj,
+                'is_debug', 'num_periods')
+
+        # Write out a grid for the interpolation
+        max_states_period = write_interpolation_grid('test.robupy.ini')
+
+        # Draw random request for testing
+        num_states = np.random.random_integers(1, max_states_period)
+        candidates = list(range(num_states))
+
+        period = np.random.random_integers(1, num_periods - 1)
+        num_points = np.random.random_integers(1, num_states)
+
+        # Check function for random choice and make sure that there are no
+        # duplicates.
+        f90 = fort_debug.wrapper_random_choice(candidates, num_states, num_points)
+        np.testing.assert_equal(len(set(f90)), len(f90))
+        np.testing.assert_equal(len(f90), num_points)
+
+        # Check the standard cases of the function.
+        args = (num_points, num_states, period, num_periods, is_debug)
+        f90 = fort_debug.wrapper_get_simulated_indicator(*args)
+
+        np.testing.assert_equal(len(f90), num_states)
+        np.testing.assert_equal(np.all(f90) in [0, 1], True)
+
+        # Test the standardization across PYTHON, F2PY, and FORTRAN
+        # implementations. This is possible as we write out an interpolation
+        # grid to disk which is used for both functions.
+        args = (num_points, num_states, period, num_periods, is_debug)
+        py = _get_simulated_indicator(*args)
+        f90 = fort_debug.wrapper_get_simulated_indicator(*args)
+
+        np.testing.assert_array_equal(f90, 1*py)
+        os.unlink('interpolation.txt')
+
+        # Special case where number of interpolation points are same as the
+        # number of candidates. In that case the returned indicator
+        # should be all TRUE.
+        args = (num_states, num_states, period, num_periods, True)
+        f90 = fort_debug.wrapper_get_simulated_indicator(*args)
+        np.testing.assert_equal(sum(f90), num_states)
+
+    def test_4(self):
+        """ This test compares the results from a solution using the
+        interpolation code for the special case where the number of interpolation
+        points is exactly the number of states in the final period. In this case
+        the interpolation code is run and then all predicted values replaced
+        with their actual values.
+        """
+        # Set initial constraints
+        constraints = dict()
+        constraints['apply'] = False
+
+        # Initialize request
+        init_dict = generate_random_dict(constraints)
+        baseline = None
+
+        # Solve with and without interpolation code
+        for _ in range(2):
+
+            # Write out request
+            print_random_dict(init_dict)
+
+            # Process and solve
+            robupy_obj = read('test.robupy.ini')
+            robupy_obj = solve(robupy_obj)
+
+            # Extract class attributes
+            states_number_period, periods_emax = \
+                distribute_model_description(robupy_obj,
+                    'states_number_period', 'periods_emax')
+
+            # Store and check results
+            if baseline is None:
+                baseline = periods_emax
+            else:
+                np.testing.assert_array_almost_equal(baseline, periods_emax)
+
+            # Updates for second iteration
+            init_dict['INTERPOLATION']['points'] = max(states_number_period)
+            init_dict['INTERPOLATION']['apply'] = True
+
