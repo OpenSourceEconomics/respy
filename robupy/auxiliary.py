@@ -319,7 +319,7 @@ def opt_get_model_parameters(x, is_debug):
     return coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, shocks_cholesky
 
 
-def cleanup_robupy_package():
+def cleanup_robupy_package(is_build=False):
     """ This function deletes all nuisance files from the package
     """
 
@@ -332,8 +332,6 @@ def cleanup_robupy_package():
     for root, dirnames, filenames in os.walk('.'):
         for filename in fnmatch.filter(filenames, '*'):
             matches.append(os.path.join(root, filename))
-        # TODO: Can I aggregate explicit search for hidden files with regular
-        #  request
         for filename in fnmatch.filter(filenames, '.*'):
             matches.append(os.path.join(root, filename))
         for dirname in fnmatch.filter(dirnames, '*'):
@@ -341,6 +339,12 @@ def cleanup_robupy_package():
 
     # Remove all files, unless explicitly to be saved.
     for match in matches:
+
+        # If called as part of a build process, these temporary directories
+        # are required.
+        if is_build:
+            if ('.waf' in match) or ('.bld' in match):
+                continue
 
         # Explicit treatment for files.
         if os.path.isfile(match):
@@ -352,12 +356,16 @@ def cleanup_robupy_package():
                 continue
 
             # Keep files for build process
-            if ('waf' in match) or ('wscript' in match):
+            if (match == './waf') or (match == './wscript'):
+                continue
+
+            if match == './fortran/wscript':
                 continue
 
             # Keep the initialization files for the regression tests.
             if 'test_' in match:
                 continue
+
         else:
 
             if match == './fortran':
@@ -381,6 +389,7 @@ def cleanup_robupy_package():
             if match == './tests/resources':
                 continue
 
+        # Remove remaining files and directories.
         try:
             os.unlink(match)
         except Exception:

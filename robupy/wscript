@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 
 # standard library
-import fnmatch
-import shutil
-import glob
 import sys
 import os
 
@@ -13,6 +10,14 @@ out = '.bld'
 # Check for Python 3
 if not (sys.version_info[0] == 3):
     raise AssertionError('Please use Python 3')
+
+# Reconstruct directory structure and edits to PYTHONPATH
+#BASE_DIR = os.path.dirname(os.path.realpath(__file__))
+#ROBUPY_DIR = BASE_DIR.replace('robupy', '')
+# TODO: THis has to go
+sys.path.insert(0, os.environ["ROBUPY"])
+
+from auxiliary import cleanup_robupy_package
 
 
 def options(opt):
@@ -51,14 +56,13 @@ def configure(conf):
 
 
 def build(bld):
-
     # Distribute options
     is_fortran = bld.options.is_fortran
 
     is_test = bld.options.is_test
 
     # Start from a clean slate
-    distclean(all_=False)
+    cleanup_robupy_package(True)
 
     if is_fortran:
 
@@ -71,78 +75,6 @@ def build(bld):
         os.system('nosetests tests.py')
 
 
-def distclean(all_=True):
+def distclean(self):
 
-    # Remove nuisance files
-    remove_filetypes_distclean('.')
-
-    # Remove compiled files
-    for dir_ in ['lib', 'bin', 'include']:
-
-        remove_for_distclean('fortran/' + dir_)
-
-        # Special treatment for symbolic links
-        try:
-            os.unlink('python/f2py/' + dir_)
-        except OSError:
-            pass
-
-    # Remove build system
-    if all_:
-        remove_for_distclean(glob.glob('.waf*'))
-        remove_for_distclean('.bld')
-
-    try:
-        os.unlink('tests/test.robupy.ini')
-    except OSError:
-        pass
-
-''' Auxiliary functions
-'''
-
-
-def remove_for_distclean(paths):
-    """ Remove path, where path can be either a directory or a file. The
-        appropriate function is selected. Note, however, that if an
-        OSError occurs, the function will just path.
-    """
-    if not isinstance(paths, list):
-        paths = [paths]
-
-    for path in paths:
-
-        if os.path.isdir(path):
-
-            shutil.rmtree(path)
-
-        if os.path.isfile(path):
-
-            os.remove(path)
-
-
-def remove_filetypes_distclean(path):
-    """ Remove nuisance files from the directory tree.
-    """
-    matches = []
-
-    for root, _, filenames in os.walk(path):
-
-        for filetypes in ['*.aux', '*.log', '*.pyc', '*.so', '*~', '*tar',
-                          '*.zip', '.waf*', '*lock*', '*.mod', '*.a',
-                          '*.pkl', '*.out', '*.pyo', '*.info',
-                          '__pycache__', '.coverage', '*.o']:
-
-                for filename in fnmatch.filter(filenames, filetypes):
-
-                    matches.append(os.path.join(root, filename))
-
-    matches.append('.lock-wafbuild')
-
-    for files in matches:
-
-        remove_for_distclean(files)
-
-    for dirName, _, _ in os.walk('.'):
-
-        if '__pycache__' in dirName:
-            shutil.rmtree(dirName)
+    cleanup_robupy_package()

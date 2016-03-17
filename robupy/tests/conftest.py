@@ -29,6 +29,9 @@ from robupy.auxiliary import cleanup_robupy_package
 def supply_resources(request):
     """ This fixture ensures that the compiled libraries are all available.
     """
+    # Start with a clean slate
+    cleanup_robupy_package()
+
     # Required compilations to make the F2PY and FORTRAN interfaces available.
     build_robupy_package(True)
 
