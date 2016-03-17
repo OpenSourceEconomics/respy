@@ -306,8 +306,6 @@ class TestClass(object):
 
             robupy_obj.unlock()
 
-            robupy_obj.set_attr('version',  "PYTHON")
-
             robupy_obj.set_attr('delta', delta)
 
             robupy_obj.lock()

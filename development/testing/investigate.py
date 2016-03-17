@@ -36,6 +36,7 @@ from codes.auxiliary import build_robupy_package
 seed = 63573
 
 if False:
+    build_robupy_package(False)
     build_testing_library(False)
 
 ''' Error Reproduction
