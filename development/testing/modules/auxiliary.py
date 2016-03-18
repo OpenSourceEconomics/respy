@@ -1,5 +1,7 @@
 
 # standard library
+from datetime import datetime
+
 import numpy as np
 
 import importlib
@@ -42,6 +44,7 @@ def update_testing_record(module, method, seed, is_success, msg,
     # Formatting of time objects.
     start_time = start.strftime("%Y-%m-%d %H:%M:%S")
     end_time = (start + timeout).strftime("%Y-%m-%d %H:%M:%S")
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     # Write out overview information such as the number of successful and
     # failed test runs.
@@ -51,6 +54,8 @@ def update_testing_record(module, method, seed, is_success, msg,
         string = '\t{0[0]:<15}{0[1]:<20}\n\n'
         log_file.write(string.format(['START', start_time]))
         log_file.write(string.format(['FINISH', end_time]))
+        log_file.write(string.format(['UPDATE', current_time]))
+
         log_file.write('\n\n')
         # Iterate over all modules. There is a potential conflict in the
         # namespace.
