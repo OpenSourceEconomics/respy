@@ -46,7 +46,10 @@ def _write_dataset(data_frame):
         data_frame.to_string(file_, index=False,
             header=None, na_rep=str(HUGE_FLOAT))
 
-
+    # An empty line is added as otherwise this might lead to problems on the
+    # TRAVIS servers. The FORTRAN routine read_dataset() raises an error.
+    with open('.data.robufort.dat', 'a') as file_:
+        file_.write('\n')
 
 
 
