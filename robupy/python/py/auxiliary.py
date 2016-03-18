@@ -70,6 +70,11 @@ def get_total_value(period, num_periods, delta, payoffs_systematic,
     # Calculate total utilities
     total_payoffs = payoffs_ex_post + delta * payoffs_future
 
+    # This is required to ensure that the agent does not choose any
+    # inadmissible states.
+    if payoffs_future[2] == -HUGE_FLOAT:
+        total_payoffs[2] = -HUGE_FLOAT
+
     # Finishing
     return total_payoffs, payoffs_ex_post, payoffs_future
 

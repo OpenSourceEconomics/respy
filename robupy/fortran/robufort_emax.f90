@@ -143,6 +143,13 @@ SUBROUTINE get_total_value(total_payoffs, payoffs_ex_post, payoffs_future, &
     ! Calculate total utilities
     total_payoffs = payoffs_ex_post + delta * payoffs_future
 
+
+    ! This is required to ensure that the agent does not choose any
+    ! inadmissible states.
+    IF (payoffs_future(3) == -HUGE_FLOAT) THEN
+        total_payoffs(3) = -HUGE_FLOAT
+    END IF
+    
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
