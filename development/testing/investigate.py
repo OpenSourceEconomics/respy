@@ -33,11 +33,11 @@ from codes.auxiliary import build_robupy_package
 
 ''' Request
 '''
-seed = 1223
+seed = 75799
 
-if False:
+if True:
     build_robupy_package(False)
-    build_testing_library(False)
+#    build_testing_library(False)
 
 ''' Error Reproduction
 '''
@@ -48,11 +48,8 @@ np.random.seed(seed)
 # Construct test
 test_dict = get_test_dict(TEST_DIR)
 module, method = get_random_request(test_dict)
-
-module, method = 'test_integration', 'test_7'
 print(module, method)
 mod = importlib.import_module(module)
 test = getattr(mod.TestClass(), method)
-np.random.seed(seed)
 
 test()

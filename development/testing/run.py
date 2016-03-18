@@ -72,6 +72,7 @@ def run(hours):
 
         np.random.seed(seed)
 
+        print(seed)
         # Construct test case.
         module, method = get_random_request(test_dict)
         mod = importlib.import_module(module)
