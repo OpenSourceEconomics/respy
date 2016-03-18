@@ -214,7 +214,5 @@ def _cleanup():
     """ Cleanup all selected files. Note that not simply all *.robupy.*
     files can be deleted as the blank logging files are already created.
     """
-    try:
+    if os.path.exists('ambiguity.robupy.log'):
         os.unlink('ambiguity.robupy.log')
-    except IOError:
-        pass

@@ -270,12 +270,9 @@ def cleanup_robupy_package(is_build=False):
                 continue
 
         # Remove remaining files and directories.
-        try:
+        if os.path.isdir(match):
+            shutil.rmtree(match)
+        elif os.path.isfile(match):
             os.unlink(match)
-        except Exception:
-            try:
-                shutil.rmtree(match)
-            except Exception:
-                pass
 
     os.chdir(current_directory)
