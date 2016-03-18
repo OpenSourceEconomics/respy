@@ -269,10 +269,12 @@ def cleanup_robupy_package(is_build=False):
             if match == './tests/resources':
                 continue
 
-        # Remove remaining files and directories.
-        if os.path.isdir(match):
-            shutil.rmtree(match)
-        elif os.path.isfile(match):
+        # Remove remaining files and directories.. It is important to check
+        # for the link first. Otherwise, isdir() evaluates to true but rmtree()
+        # raises an error if applied to a link.
+        if os.path.isfile(match) or os.path.islink(match):
             os.unlink(match)
+        elif os.path.isdir(match):
+            shutil.rmtree(match)
 
     os.chdir(current_directory)
