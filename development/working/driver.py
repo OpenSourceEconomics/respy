@@ -60,25 +60,27 @@ x0 = opt_get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
 disturbances_prob = create_disturbances(num_periods, num_draws_prob,
          seed_prob, is_debug, 'prob', shocks_cholesky, is_ambiguous)
 
-# Get the relevant set of disturbances. These are standard normal draws
-# in the case of an ambiguous world. This function is located outside the
-# actual bare solution algorithm to ease testing across implementations.
-# TODO: THese need to be adjusted in the case of estimation to alway be
-# standard normal as well
-
-disturbances_emax = create_disturbances(num_periods, num_draws_emax,
-      seed_emax, is_debug, 'emax', shocks_cholesky, is_ambiguous)
 
 data_array = data_frame.as_matrix()
 
 
-def criterion(x, data_array, disturbances_prob, disturbances_emax):
+def criterion(x, data_array, disturbances_prob):
 
     assert (isinstance(data_array, np.ndarray))
 
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, \
         shocks, shocks_cholesky = \
             opt_get_model_parameters(x, True)
+
+
+    # Get the relevant set of disturbances. These are standard normal draws
+    # in the case of an ambiguous world. This function is located outside the
+    # actual bare solution algorithm to ease testing across implementations.
+    # TODO: THese need to be adjusted in the case of estimation to alway be
+    # TODO: standard normal as well and them moved outside
+
+    disturbances_emax = create_disturbances(num_periods, num_draws_emax,
+          seed_emax, is_debug, 'emax', shocks_cholesky, is_ambiguous)
 
     # Solve model for given parametrization
     args = solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
