@@ -33,11 +33,11 @@ from codes.auxiliary import build_robupy_package
 
 ''' Request
 '''
-seed = 1793
+seed = 15981
 
-if False:
+if True:
     build_robupy_package(False)
-#    build_testing_library(False)
+    build_testing_library(False)
 
 ''' Error Reproduction
 '''
