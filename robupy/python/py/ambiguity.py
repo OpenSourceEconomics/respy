@@ -117,7 +117,8 @@ def _determine_worst_case(num_draws_emax, disturbances_relevant, period, k,
             opt = _correct_debugging(opt, x0, shocks, level,
                         disturbances_relevant, num_periods, num_draws_emax,
                         period, k, payoffs_systematic, edu_max, edu_start,
-                        periods_emax, states_all, mapping_state_idx, delta)
+                        periods_emax, states_all, mapping_state_idx, delta,
+                        shocks_cholesky)
 
         # Stabilization. If the optimization fails the starting values are
         # used otherwise it happens that the constraint is not satisfied by far.
@@ -136,7 +137,8 @@ def _determine_worst_case(num_draws_emax, disturbances_relevant, period, k,
 
 def _correct_debugging(opt, x0, shocks, level, disturbances_relevant,
         num_periods, num_draws_emax, period, k, payoffs_systematic, edu_max,
-        edu_start, periods_emax, states_all, mapping_state_idx, delta):
+        edu_start, periods_emax, states_all, mapping_state_idx, delta,
+        shocks_cholesky):
     """ Some manipulations for test battery
     """
     # Check applicability
@@ -160,7 +162,8 @@ def _correct_debugging(opt, x0, shocks, level, disturbances_relevant,
         simulated, payoffs_ex_post, payoffs_future = \
             simulate_emax(num_periods, num_draws_emax, period, k,
                 disturbances_relevant_emax, payoffs_systematic, edu_max,
-                edu_start, periods_emax, states_all, mapping_state_idx, delta)
+                edu_start, periods_emax, states_all, mapping_state_idx, delta,
+                shocks_cholesky)
 
         opt['fun'] = simulated
 
