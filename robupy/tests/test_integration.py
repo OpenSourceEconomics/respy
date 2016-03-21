@@ -151,6 +151,7 @@ class TestClass(object):
         # Generate constraint periods
         constraints = dict()
         constraints['is_deterministic'] = True
+        constraints['is_myopic'] = False
         constraints['level'] = 0.00
 
         # Generate random initialization file

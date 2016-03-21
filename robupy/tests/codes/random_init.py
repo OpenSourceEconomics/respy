@@ -217,8 +217,10 @@ def generate_random_dict(constraints=None):
         # Replace in initialization files
         if constraints['is_myopic']:
             dict_['BASICS']['delta'] = 0.0
-
-    # Replace discount factor
+        else:
+            dict_['BASICS']['delta'] = np.random.uniform(0.1, 1.0)
+    
+# Replace discount factor
     if 'delta' in constraints.keys():
         # Extract objects
         delta = constraints['delta']

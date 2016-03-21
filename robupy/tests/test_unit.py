@@ -490,8 +490,8 @@ class TestClass(object):
             py = scipy.linalg.svd(matrix)
             f90 = fort_debug.wrapper_svd(matrix, dim)
 
-        for i in range(3):
-            np.testing.assert_allclose(py[i], f90[i], rtol=1e-05, atol=1e-06)
+            for i in range(3):
+                np.testing.assert_allclose(py[i], f90[i], rtol=1e-05, atol=1e-06)
 
             # Pseudo-Inverse
             py = np.linalg.pinv(matrix)
