@@ -162,6 +162,7 @@ def _criterion(x, num_draws_emax, disturbances_emax, period, k,
         disturbances_emax, payoffs_systematic, edu_max, edu_start,
         periods_emax, states_all, mapping_state_idx, delta, shocks_cholesky, x)
 
+    print(simulated)
     # Debugging
     checks_ambiguity('_criterion', simulated)
 
