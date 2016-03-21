@@ -76,15 +76,13 @@ def evaluate_python(robupy_obj, data_frame):
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, shocks_cholesky = \
         distribute_model_paras(model_paras, is_debug)
 
-    # Draw standard normal deviates for S-ML approach
+    # Draw standard normal deviates for choice probability integration
     disturbances_prob = create_disturbances(num_periods, num_draws_prob,
-        seed_prob, is_debug, 'prob', shocks_cholesky, is_ambiguous)
+        seed_prob, is_debug, 'prob', shocks_cholesky)
 
-    # Get the relevant set of disturbances. These are standard normal draws
-    # in the case of an ambiguous world. This function is located outside the
-    # actual bare solution algorithm to ease testing across implementations.
+    # Draw standard normal deviates for EMAX integration
     disturbances_emax = create_disturbances(num_periods, num_draws_emax,
-        seed_emax, is_debug, 'emax', shocks_cholesky, is_ambiguous)
+        seed_emax, is_debug, 'emax', shocks_cholesky)
 
     # Solve model for given parametrization
     args = solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
