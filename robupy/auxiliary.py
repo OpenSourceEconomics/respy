@@ -68,7 +68,7 @@ def distribute_model_paras(model_paras, is_debug):
 
 
 def create_disturbances(num_periods, num_draws_emax, seed, is_debug, which,
-        shocks_cholesky, is_ambiguous):
+                        shocks_cholesky):
     """ Create the relevant set of disturbances. Handle special case of zero v
     variances as thi case is useful for hand-based testing. The disturbances
     are drawn from a standard normal distribution and transformed later in
@@ -88,25 +88,11 @@ def create_disturbances(num_periods, num_draws_emax, seed, is_debug, which,
     else:
         disturbances = np.random.multivariate_normal(np.zeros(4),
                         np.identity(4), (num_periods, num_draws_emax))
-
-    # Deviates used for the Monte Carlo integration of the expected future
-    # values during the solution of the model.
-    if which == 'emax':
-        # In the case of ambiguous world, the standard deviates are used in the
-        # solution part of the program.
-        for period in range(num_periods):
-            disturbances[period, :, :] = \
-                np.dot(shocks_cholesky, disturbances[period, :, :].T).T
-
-        if not is_ambiguous:
-            for period in range(num_periods):
-                for j in [0, 1]:
-                    disturbances[period, :, j] = \
-                        np.exp(disturbances[period, :, j])
-
-    # Deviates used for the Monte Carlo integration of the choice
-    # probabilities for the construction of the criterion function.
-    elif which == 'prob':
+    # Standard normal deviates used for the Monte Carlo integration of the
+    # expected future values in the solution step. Also, standard normal
+    # deviates for the Monte Carlo integration of the choice probabilities in
+    # the evaluation step.
+    if which in ['prob', 'emax']:
         # Standard deviates are further processed during the evaluation routine.
         disturbances = disturbances
 
