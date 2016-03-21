@@ -22,6 +22,7 @@ class TestClass(object):
     def test_1(self):
         """ Test solution of simple model against hard-coded results.
         """
+
         # Solve specified economy
         robupy_obj = read(RESOURCES_DIR + '/test_first.robupy.ini')
         robupy_obj = solve(robupy_obj)
@@ -124,34 +125,53 @@ class TestClass(object):
         val = robupy_obj.get_attr('periods_emax')[0, :1]
 
         # Assert unchanged value
-        np.testing.assert_allclose(val, 72.026643)
+        np.testing.assert_allclose(val, 75.719528)
 
-    def test_5(self):
+    def test_5(self, versions):
         """ Test the solution of deterministic model without ambiguity,
-        but with interpolation
+        but with interpolation. As a deterministic model is requested,
+        all versions should yield the same result without any additional effort.
         """
         # Solve specified economy
-        robupy_obj = read(RESOURCES_DIR + '/test_fifth.robupy.ini')
-        robupy_obj = solve(robupy_obj)
+        for version in versions:
 
-        # Extract statistic
-        val = robupy_obj.get_attr('periods_emax')[0, :1]
+            robupy_obj = read(RESOURCES_DIR + '/test_fifth.robupy.ini')
 
-        # Assert unchanged value
-        np.testing.assert_allclose(val, 88750)
+            robupy_obj.unlock()
 
-    def test_6(self):
+            robupy_obj.set_attr('version', version)
+
+            robupy_obj.lock()
+
+            robupy_obj = solve(robupy_obj)
+
+            # Extract statistic
+            val = robupy_obj.get_attr('periods_emax')[0, :1]
+
+            # Assert unchanged value
+            np.testing.assert_allclose(val, 88750)
+
+    def test_6(self, versions):
         """ Test the solution of deterministic model with ambiguity and
         interpolation. This test has the same result as in the absence of
         random variation in payoffs, it does not matter whether the
         environment is ambiguous or not.
         """
         # Solve specified economy
-        robupy_obj = read(RESOURCES_DIR + '/test_sixth.robupy.ini')
-        robupy_obj = solve(robupy_obj)
+        for version in versions:
 
-        # Extract statistic
-        val = robupy_obj.get_attr('periods_emax')[0, :1]
+            robupy_obj = read(RESOURCES_DIR + '/test_fifth.robupy.ini')
 
-        # Assert unchanged value
-        np.testing.assert_allclose(val, 88750)
+            robupy_obj.unlock()
+
+            robupy_obj.set_attr('version', version)
+
+            robupy_obj.lock()
+
+            robupy_obj = solve(robupy_obj)
+
+            # Extract statistic
+            val = robupy_obj.get_attr('periods_emax')[0, :1]
+
+            # Assert unchanged value
+            np.testing.assert_allclose(val, 88750)

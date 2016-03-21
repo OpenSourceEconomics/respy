@@ -22,6 +22,27 @@ from codes.auxiliary import build_robupy_package
 """
 
 
+def pytest_addoption(parser):
+    """ Setup for PYTEST options.
+    """
+    parser.addoption("--versions", action="store",
+        default=['PYTHON', 'F2PY', 'FORTRAN'],
+        help="list of available versions", nargs='*')
+
+
+@pytest.fixture
+def versions(request):
+    """ Processing of command line options.
+    """
+    arg_ = request.config.getoption("--versions")
+
+    # Antibugging
+    assert (isinstance(arg_, list))
+
+    # Finishing
+    return arg_
+
+
 @pytest.fixture(scope='session')
 def supply_resources(request):
     """ This fixture ensures that the compiled libraries are all available.
@@ -30,7 +51,7 @@ def supply_resources(request):
     cleanup_robupy_package()
 
     # Required compilations to make the F2PY and FORTRAN interfaces available.
-    build_robupy_package(True)
+    build_robupy_package(False)
 
     # There is small number of FORTRAN routines that are only used during
     # testing. These are collected in their own library. It is important to

@@ -26,7 +26,8 @@ CONTAINS
 SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, payoffs_future, &
                 num_periods, num_draws_emax, period, k, & 
                 disturbances_relevant_emax, payoffs_systematic, edu_max, & 
-                edu_start, periods_emax, states_all, mapping_state_idx, delta)
+                edu_start, periods_emax, states_all, mapping_state_idx, delta, & 
+                shocks_cholesky, shocks_mean)
 
     !/* external objects    */
 
@@ -45,7 +46,10 @@ SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, payoffs_future, &
 
     REAL(our_dble), INTENT(IN)      :: disturbances_relevant_emax(:,:)
     REAL(our_dble), INTENT(IN)      :: payoffs_systematic(:)
+    REAL(our_dble), INTENT(IN)      :: shocks_cholesky(:,:)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:,:)
+    REAL(our_dble), INTENT(IN)      :: shocks_mean(:)
+
     REAL(our_dble), INTENT(IN)      :: delta
 
     !/* internals objects    */
@@ -56,6 +60,8 @@ SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, payoffs_future, &
     REAL(our_dble)                  :: disturbances(4)
     REAL(our_dble)                  :: maximum
 
+    REAL(our_dble)                  :: disturbances_transformed_emax(num_draws_emax, 4)
+
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
@@ -64,18 +70,32 @@ SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, payoffs_future, &
     payoffs_ex_post = zero_dble
     emax_simulated = zero_dble
 
+    ! Transfer disturbances to relevant distribution
+    DO i = 1, num_draws_emax
+        disturbances_transformed_emax(i:i, :) = &
+            TRANSPOSE(MATMUL(shocks_cholesky, TRANSPOSE(disturbances_relevant_emax(i:i, :)))) 
+    END DO
+    
+    disturbances_transformed_emax(:, :2) = disturbances_transformed_emax(:, :2) + SPREAD(shocks_mean, 1, num_draws_emax)
+
+    DO i = 1, 2
+        disturbances_transformed_emax(:, i) = &
+            EXP(disturbances_transformed_emax(:, i))
+    END DO
+
+
     ! Iterate over Monte Carlo draws
     DO i = 1, num_draws_emax
 
         ! Select disturbances for this draw
-        disturbances = disturbances_relevant_emax(i, :)
+        disturbances = disturbances_transformed_emax(i, :)
 
         ! Calculate total value
         CALL get_total_value(total_payoffs, payoffs_ex_post, payoffs_future, &
                 period, num_periods, delta, payoffs_systematic, disturbances, &
                 edu_max, edu_start, mapping_state_idx, periods_emax, k, & 
                 states_all)
-        
+   
         ! Determine optimal choice
         maximum = MAXVAL(total_payoffs)
 

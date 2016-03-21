@@ -9,17 +9,15 @@ import numpy as np
 # project library
 from robupy.python.py.auxiliary import simulate_emax
 
-from robupy.constants import HUGE_FLOAT
-
 ''' Public functions
 '''
 
 
-def get_payoffs_ambiguity(num_draws_emax, disturbances_relevant, period, k,
-        payoffs_systematic, edu_max, edu_start, mapping_state_idx,
-        states_all, num_periods, periods_emax, delta, is_debug, shocks,
-        level, measure, is_deterministic, shocks_cholesky):
-    """ Get worst case
+def get_payoffs_ambiguity(num_draws_emax, disturbances_emax, period, k,
+        payoffs_systematic, edu_max, edu_start, mapping_state_idx, states_all,
+        num_periods, periods_emax, delta, is_debug, shocks, level, measure,
+        is_deterministic, shocks_cholesky):
+    """ Determine the worst case payoffs.
     """
     # Determine the worst case, special attention to zero variability. The
     # latter is included as a special case for debugging purposes. The worst
@@ -27,22 +25,16 @@ def get_payoffs_ambiguity(num_draws_emax, disturbances_relevant, period, k,
     if is_deterministic:
         opt = _handle_shocks_zero(is_debug, period, k)
     else:
-        opt = _determine_worst_case(num_draws_emax, disturbances_relevant,
+        opt = _determine_worst_case(num_draws_emax, disturbances_emax,
                 period, k, payoffs_systematic, edu_max, edu_start,
                 mapping_state_idx, states_all, num_periods, periods_emax,
                 delta, is_debug, shocks, level, measure, shocks_cholesky)
 
-    # Transformation of standard normal deviates to relevant distributions.
-    # TODO: This should probably be a copy to enesure that devaites remain fo
-    #  standard dype.
-    disturbances_relevant_emax = \
-        transform_disturbances_ambiguity(disturbances_relevant, opt['x'])
-
+    # Simulate the expected future value for the worst case outcome
     simulated, payoffs_ex_post, payoffs_future = \
-        simulate_emax(num_periods, num_draws_emax, period, k,
-            disturbances_relevant_emax, payoffs_systematic, edu_max,
-            edu_start, periods_emax, states_all, mapping_state_idx, delta,
-            shocks_cholesky)
+        simulate_emax(num_periods, num_draws_emax, period, k, disturbances_emax,
+            payoffs_systematic, edu_max, edu_start, periods_emax, states_all,
+            mapping_state_idx, delta, shocks_cholesky, opt['x'])
 
     # Debugging. This only works in the case of success, as otherwise
     # opt['fun'] is not equivalent to simulated.
@@ -76,10 +68,10 @@ def _handle_shocks_zero(is_debug, period, k):
     return opt
 
 
-def _determine_worst_case(num_draws_emax, disturbances_relevant, period, k,
-        payoffs_systematic, edu_max, edu_start, mapping_state_idx,
-        states_all, num_periods, periods_emax, delta, is_debug, shocks,
-        level, measure, shocks_cholesky):
+def _determine_worst_case(num_draws_emax, disturbances_emax, period, k,
+        payoffs_systematic, edu_max, edu_start, mapping_state_idx, states_all,
+        num_periods, periods_emax, delta, is_debug, shocks, level, measure,
+        shocks_cholesky):
     """ Determine the worst case outcome for the given parametrization.
     """
     # Initialize options.
@@ -90,36 +82,19 @@ def _determine_worst_case(num_draws_emax, disturbances_relevant, period, k,
     x0 = _get_start(is_debug)
 
     # Collect arguments
-    args = (num_draws_emax, disturbances_relevant, period, k,
-            payoffs_systematic, edu_max, edu_start, mapping_state_idx,
-            states_all, num_periods, periods_emax, delta, shocks_cholesky)
+    args = (num_draws_emax, disturbances_emax, period, k, payoffs_systematic,
+            edu_max, edu_start, mapping_state_idx, states_all, num_periods,
+            periods_emax, delta, shocks_cholesky)
 
     # Run optimization
     if measure == 'absolute':
-
         bounds = _prep_absolute(level, is_debug)
-
         opt = minimize(_criterion, x0, args, method='SLSQP', options=options,
                        bounds=bounds)
-
     else:
-
         constraints = _prep_kl(shocks, level)
-
         opt = minimize(_criterion, x0, args, method='SLSQP', options=options,
                        constraints=constraints)
-
-        # This is not very satisfactory, but it occurs that the constraint
-        # is not satisfied, even though success is indicated. To ensure
-        # a smooth and informative run of TEST_F in the random development
-        # test battery the following checks are performed.
-        if is_debug:
-            opt = _correct_debugging(opt, x0, shocks, level,
-                        disturbances_relevant, num_periods, num_draws_emax,
-                        period, k, payoffs_systematic, edu_max, edu_start,
-                        periods_emax, states_all, mapping_state_idx, delta,
-                        shocks_cholesky)
-
         # Stabilization. If the optimization fails the starting values are
         # used otherwise it happens that the constraint is not satisfied by far.
         if not opt['success']:
@@ -135,65 +110,13 @@ def _determine_worst_case(num_draws_emax, disturbances_relevant, period, k,
     return opt
 
 
-def _correct_debugging(opt, x0, shocks, level, disturbances_relevant,
-        num_periods, num_draws_emax, period, k, payoffs_systematic, edu_max,
-        edu_start, periods_emax, states_all, mapping_state_idx, delta,
-        shocks_cholesky):
-    """ Some manipulations for test battery
-    """
-    # Check applicability
-    if not (level < 0.1e-10):
-        return opt
-
-    # Distribute results
-    is_success = opt['success']
-    x = opt['x']
-
-    # Check if divergence actually not satisfied while success is indicated.
-    if is_success and (_divergence(x, shocks, level) < 0):
-
-        # Correct resulting values
-        opt['x'] = x0
-
-        # Correct final function value
-        disturbances_relevant_emax = \
-            transform_disturbances_ambiguity(disturbances_relevant, opt['x'])
-
-        simulated, payoffs_ex_post, payoffs_future = \
-            simulate_emax(num_periods, num_draws_emax, period, k,
-                disturbances_relevant_emax, payoffs_systematic, edu_max,
-                edu_start, periods_emax, states_all, mapping_state_idx, delta,
-                shocks_cholesky)
-
-        opt['fun'] = simulated
-
-    # Finishing
-    return opt
-
-
-def transform_disturbances_ambiguity(disturbances_relevant, x):
-    """ Transform disturbances
-    """
-    # Initialize clean slate
-    disturbances_relevant_emax = disturbances_relevant.copy()
-
-    # Mean shift due to ambiguity
-    disturbances_relevant_emax[:, :2] = disturbances_relevant_emax[:, :2] + x
-
-    # Finishing
-    return disturbances_relevant_emax
-
-
 def _prep_kl(shocks, level):
     """ Construct Kullback-Leibler constraint for optimization.
     """
     # Construct constraint
     constraint_divergence = dict()
-
     constraint_divergence['type'] = 'eq'
-
     constraint_divergence['fun'] = _divergence
-
     constraint_divergence['args'] = (shocks, level)
 
     # Collection.
@@ -229,20 +152,15 @@ def _divergence(x, cov, level):
     return level - rslt
 
 
-def _criterion(x, num_draws_emax, disturbances_relevant, period, k, payoffs_systematic,
-        edu_max, edu_start, mapping_state_idx, states_all, num_periods,
-        periods_emax, delta, shocks_cholesky):
+def _criterion(x, num_draws_emax, disturbances_emax, period, k,
+        payoffs_systematic, edu_max, edu_start, mapping_state_idx, states_all,
+        num_periods, periods_emax, delta, shocks_cholesky):
     """ Simulate expected future value for alternative shock distributions.
     """
-
-    # Transformation of standard normal deviates to relevant distributions.
-    disturbances_relevant_emax = \
-        transform_disturbances_ambiguity(disturbances_relevant, x)
-
     # Simulate the expected future value for a given parametrization.
     simulated, _, _ = simulate_emax(num_periods, num_draws_emax, period, k,
-        disturbances_relevant_emax, payoffs_systematic, edu_max, edu_start,
-        periods_emax, states_all, mapping_state_idx, delta, shocks_cholesky)
+        disturbances_emax, payoffs_systematic, edu_max, edu_start,
+        periods_emax, states_all, mapping_state_idx, delta, shocks_cholesky, x)
 
     # Debugging
     checks_ambiguity('_criterion', simulated)

@@ -54,7 +54,9 @@ def solve(robupy_obj):
     robupy_obj.lock()
 
     # Simulate model.
-    simulate(robupy_obj)
+    # TODO: COmment back in
+    print('Simulation needs to be rethought')
+    #simulate(robupy_obj)
 
     # Store results if requested
     if store:

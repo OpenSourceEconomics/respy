@@ -241,7 +241,8 @@ SUBROUTINE solve_fortran_bare(mapping_state_idx, periods_emax, &
                 coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, edu_max, & 
                 delta, edu_start, is_debug, is_interpolated, level, measure, & 
                 min_idx, num_draws_emax, num_periods, num_points, & 
-                is_ambiguous, disturbances_emax, is_deterministic, is_myopic)
+                is_ambiguous, disturbances_emax, is_deterministic, is_myopic,&
+                shocks_cholesky)
 
     !/* external objects        */
 
@@ -262,6 +263,7 @@ SUBROUTINE solve_fortran_bare(mapping_state_idx, periods_emax, &
     INTEGER(our_int), INTENT(IN)                    :: min_idx
 
     REAL(our_dble), INTENT(IN)                      :: disturbances_emax(:, :, :)
+    REAL(our_dble), INTENT(IN)                      :: shocks_cholesky(:, :)
     REAL(our_dble), INTENT(IN)                      :: coeffs_home(:)
     REAL(our_dble), INTENT(IN)                      :: coeffs_edu(:)
     REAL(our_dble), INTENT(IN)                      :: shocks(4, 4)
@@ -339,7 +341,7 @@ SUBROUTINE solve_fortran_bare(mapping_state_idx, periods_emax, &
                 periods_payoffs_systematic, edu_max, edu_start, & 
                 mapping_state_idx, states_all, delta, is_debug, shocks, & 
                 level, is_ambiguous, measure, is_interpolated, num_points, & 
-                is_deterministic)
+                is_deterministic, shocks_cholesky)
         
     END IF
 
@@ -581,14 +583,14 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
                 periods_payoffs_systematic, edu_max, edu_start, &
                 mapping_state_idx, states_all, delta, is_debug, shocks, &
                 level, is_ambiguous, measure, is_interpolated, num_points, & 
-                is_deterministic)
+                is_deterministic, shocks_cholesky)
 
     !
     ! Development Notes
     ! -----------------
     !
     !   The input argument MEASURE is only present to align the interface 
-    !   between the FORTRAN and PYTHOM implementations.
+    !   between the FORTRAN and PYTHON implementations.
     !
 
     !/* external objects        */
@@ -599,6 +601,7 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
 
     REAL(our_dble), INTENT(IN)          :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), INTENT(IN)          :: disturbances_emax(:, :, :)
+    REAL(our_dble), INTENT(IN)          :: shocks_cholesky(:, :)
     REAL(our_dble), INTENT(IN)          :: shocks(:, :)
     REAL(our_dble), INTENT(IN)          :: delta
     REAL(our_dble), INTENT(IN)          :: level
@@ -692,8 +695,8 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
                     num_states, delta, periods_payoffs_systematic, edu_max, & 
                     edu_start, mapping_state_idx, periods_emax, states_all, & 
                     is_simulated, num_draws_emax, shocks, level, is_ambiguous, &
-                    is_debug, measure, maxe, disturbances_relevant, & 
-                    is_deterministic)
+                    is_debug, measure, maxe, disturbances_emax, & 
+                    is_deterministic, shocks_cholesky)
 
             ! Create prediction model based on the random subset of points where
             ! the EMAX is actually simulated and thus endogenous and
@@ -722,7 +725,7 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
                         payoffs_systematic, edu_max, edu_start, & 
                         mapping_state_idx, states_all, num_periods, & 
                         periods_emax, delta, is_debug, shocks, level, & 
-                        is_ambiguous, measure, is_deterministic)
+                        is_ambiguous, measure, is_deterministic, shocks_cholesky)
 
                 ! Collect information
                 periods_emax(period + 1, k + 1) = emax_simulated
@@ -886,7 +889,8 @@ SUBROUTINE get_payoffs(emax_simulated, payoffs_ex_post, payoffs_future, &
                 num_draws_emax, disturbances_relevant, period, k, & 
                 payoffs_systematic, edu_max, edu_start, mapping_state_idx, & 
                 states_all, num_periods, periods_emax, delta, is_debug, & 
-                shocks, level, is_ambiguous, measure, is_deterministic)
+                shocks, level, is_ambiguous, measure, is_deterministic, &
+                shocks_cholesky)
 
     !/* external objects        */
 
@@ -895,6 +899,7 @@ SUBROUTINE get_payoffs(emax_simulated, payoffs_ex_post, payoffs_future, &
     REAL(our_dble), INTENT(OUT)         :: emax_simulated
 
     REAL(our_dble), INTENT(IN)          :: disturbances_relevant(:, :)
+    REAL(our_dble), INTENT(IN)          :: shocks_cholesky(:, :)
     REAL(our_dble), INTENT(IN)          :: payoffs_systematic(:)
     REAL(our_dble), INTENT(IN)          :: periods_emax(:, :)
     REAL(our_dble), INTENT(IN)          :: shocks(:, :)
@@ -929,7 +934,8 @@ SUBROUTINE get_payoffs(emax_simulated, payoffs_ex_post, payoffs_future, &
                 payoffs_future, num_draws_emax, disturbances_relevant, & 
                 period, k, payoffs_systematic, edu_max, edu_start, & 
                 mapping_state_idx, states_all, num_periods, periods_emax, & 
-                delta, is_debug, shocks, level, measure, is_deterministic)
+                delta, is_debug, shocks, level, measure, is_deterministic, & 
+                shocks_cholesky)
 
     ELSE 
 
@@ -937,7 +943,7 @@ SUBROUTINE get_payoffs(emax_simulated, payoffs_ex_post, payoffs_future, &
                 payoffs_future, num_draws_emax, disturbances_relevant, & 
                 period, k, payoffs_systematic, edu_max, edu_start, & 
                 mapping_state_idx, states_all, num_periods, periods_emax, & 
-                delta)
+                delta, shocks_cholesky)
 
     END IF
     
@@ -949,7 +955,7 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_periods, &
                 edu_start, mapping_state_idx, periods_emax, states_all, & 
                 is_simulated, num_draws_emax, shocks, level, is_ambiguous, &
                 is_debug, measure, maxe, disturbances_relevant, & 
-                is_deterministic)
+                is_deterministic, shocks_cholesky)
 
     !/* external objects        */
 
@@ -957,6 +963,7 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_periods, &
 
     REAL(our_dble), INTENT(IN)          :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), INTENT(IN)          :: disturbances_relevant(:, :)
+    REAL(our_dble), INTENT(IN)          :: shocks_cholesky(:, :)
     REAL(our_dble), INTENT(IN)          :: periods_emax(:, :)
     REAL(our_dble), INTENT(IN)          :: shocks(:, :)    
     REAL(our_dble), INTENT(IN)          :: maxe(:)
@@ -1013,7 +1020,8 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_periods, &
                 num_draws_emax, disturbances_relevant, period, k, & 
                 payoffs_systematic, edu_max, edu_start, mapping_state_idx, & 
                 states_all, num_periods, periods_emax, delta, is_debug, & 
-                shocks, level, is_ambiguous, measure, is_deterministic)
+                shocks, level, is_ambiguous, measure, is_deterministic, & 
+                shocks_cholesky)
 
         ! Construct dependent variable
         endogenous(k + 1) = emax_simulated - maxe(k + 1)

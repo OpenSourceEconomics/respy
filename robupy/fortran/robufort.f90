@@ -358,45 +358,11 @@ SUBROUTINE create_disturbances(disturbances, num_periods, num_draws_emax, &
         END DO
 
     END IF
-
-    ! Deviates used for the Monte Carlo integration of the expected future
-    ! values during the solution of the model.
-    IF (which == 'emax') THEN
-
-        ! Transformations
-        DO period = 1, num_periods
-            
-            ! Apply variance change
-            DO i = 1, num_draws_emax
-            
-                disturbances(period, i:i, :) = &
-                    TRANSPOSE(MATMUL(shocks_cholesky, TRANSPOSE(disturbances(period, i:i, :))))
-            
-            END DO
-
-        END DO
-
-        ! Transformation in case of risk-only. In the case of ambiguity, this 
-        ! transformation is later as it needs adjustment for the switched means.
-        IF (.NOT. is_ambiguous) THEN
-            
-            ! Transform disturbance for occupations
-            DO period = 1, num_periods
-
-                DO j = 1, 2
-                
-                    disturbances(period, :, j) = &
-                            EXP(disturbances(period, :, j))
-                
-                END DO
-
-            END DO
-            
-        END IF
-
-    ! Deviates used for the Monte Carlo integration of the choice
-    ! probabilities for the construction of the criterion function.
-    ELSE IF (which == 'prob') THEN
+    ! Standard normal deviates used for the Monte Carlo integration of the
+    ! expected future values in the solution step. Also, standard normal
+    ! deviates for the Monte Carlo integration of the choice probabilities in
+    ! the evaluation step.
+    IF ((which == 'emax') .OR. (which == 'prob')) THEN
 
         disturbances = disturbances
     
@@ -501,8 +467,8 @@ PROGRAM robufort
     REAL(our_dble), ALLOCATABLE     :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_payoffs_ex_post(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_payoffs_future(:, :, :)
-    REAL(our_dble), ALLOCATABLE     :: disturbances_emax(:, :, :)
-    REAL(our_dble), ALLOCATABLE     :: disturbances_prob(:, :, :)
+    REAL(our_dble), ALLOCATABLE     :: periods_disturbances_emax(:, :, :)
+    REAL(our_dble), ALLOCATABLE     :: periods_disturbances_prob(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_emax(:, :)
     REAL(our_dble), ALLOCATABLE     :: data_array(:, :)
 
@@ -541,8 +507,9 @@ PROGRAM robufort
     ! This part creates (or reads from disk) the disturbances for the Monte 
     ! Carlo integration of the EMAX. For is_debugging purposes, these might also be 
     ! read in from disk or set to zero/one.   
-    CALL create_disturbances(disturbances_emax, num_periods, num_draws_emax, &
-            seed_emax, is_debug, 'emax', shocks_cholesky, is_ambiguous)
+    CALL create_disturbances(periods_disturbances_emax, num_periods, & 
+            num_draws_emax, seed_emax, is_debug, 'emax', shocks_cholesky, & 
+            is_ambiguous)
 
     ! Execute on request.
     IF (request == 'solve') THEN
@@ -554,14 +521,15 @@ PROGRAM robufort
                 coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, edu_max, & 
                 delta, edu_start, is_debug, is_interpolated, level, measure, & 
                 min_idx, num_draws_emax, num_periods, num_points, & 
-                is_ambiguous, disturbances_emax, is_deterministic, is_myopic)
+                is_ambiguous, periods_disturbances_emax, is_deterministic, & 
+                is_myopic, shocks_cholesky)
 
     ELSE IF (request == 'evaluate') THEN
 
         ! This part creates (or reads from disk) the disturbances for the Monte 
         ! Carlo integration of the choice probabilities. For is_debugging 
         ! purposes, these might also be read in from disk or set to zero/one.   
-        CALL create_disturbances(disturbances_prob, num_periods, & 
+        CALL create_disturbances(periods_disturbances_prob, num_periods, & 
                 num_draws_prob, seed_prob, is_debug, 'prob', shocks_cholesky, &
                 is_ambiguous)
 
@@ -575,13 +543,14 @@ PROGRAM robufort
                 coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, edu_max, & 
                 delta, edu_start, is_debug, is_interpolated, level, measure, & 
                 min_idx, num_draws_emax, num_periods, num_points, & 
-                is_ambiguous, disturbances_emax, is_deterministic, is_myopic)
+                is_ambiguous, periods_disturbances_emax, is_deterministic, & 
+                is_myopic, shocks_cholesky)
 
         CALL evaluate_criterion_function(eval, mapping_state_idx, &
                 periods_emax, periods_payoffs_systematic, states_all, shocks, & 
                 edu_max, delta, edu_start, num_periods, shocks_cholesky, &
-                num_agents, num_draws_prob, data_array, disturbances_prob, & 
-                is_deterministic)
+                num_agents, num_draws_prob, data_array, & 
+                periods_disturbances_prob, is_deterministic)
 
     END IF
 

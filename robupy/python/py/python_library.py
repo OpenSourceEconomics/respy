@@ -26,7 +26,7 @@ logger = logging.getLogger('ROBUPY_SOLVE')
 '''
 
 
-def backward_induction(num_periods, max_states_period, disturbances_emax,
+def backward_induction(num_periods, max_states_period, periods_disturbances_emax,
         num_draws_emax, states_number_period, periods_payoffs_systematic,
         edu_max, edu_start, mapping_state_idx, states_all, delta, is_debug,
         shocks, level, is_ambiguous, measure, is_interpolated, num_points,
@@ -50,7 +50,7 @@ def backward_induction(num_periods, max_states_period, disturbances_emax,
     for period in range(num_periods - 1, -1, -1):
 
         # Extract auxiliary objects
-        disturbances_relevant = disturbances_emax[period, :, :]
+        disturbances_emax = periods_disturbances_emax[period, :, :]
         num_states = states_number_period[period]
 
         # Logging.
@@ -85,7 +85,7 @@ def backward_induction(num_periods, max_states_period, disturbances_emax,
                 num_states, delta, periods_payoffs_systematic, edu_max,
                 edu_start, mapping_state_idx, periods_emax, states_all,
                 is_simulated, num_draws_emax, shocks, level, is_ambiguous,
-                is_debug, measure, maxe, disturbances_relevant,
+                is_debug, measure, maxe, disturbances_emax,
                 is_deterministic, shocks_cholesky)
 
             # Create prediction model based on the random subset of points where
@@ -108,7 +108,7 @@ def backward_induction(num_periods, max_states_period, disturbances_emax,
 
                 # Simulate the expected future value.
                 emax, payoffs_ex_post, payoffs_future = \
-                    get_payoffs(num_draws_emax, disturbances_relevant, period, k,
+                    get_payoffs(num_draws_emax, disturbances_emax, period, k,
                         payoffs_systematic, edu_max, edu_start,
                         mapping_state_idx, states_all, num_periods,
                         periods_emax, delta, is_debug, shocks, level,
@@ -127,7 +127,7 @@ def backward_induction(num_periods, max_states_period, disturbances_emax,
     return periods_emax, periods_payoffs_ex_post, periods_payoffs_future
 
 
-def get_payoffs(num_draws_emax, disturbances_relevant, period, k,
+def get_payoffs(num_draws_emax, disturbances_emax, period, k,
         payoffs_systematic, edu_max, edu_start, mapping_state_idx,
         states_all, num_periods, periods_emax, delta, is_debug, shocks,
         level, is_ambiguous, measure, is_deterministic, shocks_cholesky):
@@ -137,14 +137,14 @@ def get_payoffs(num_draws_emax, disturbances_relevant, period, k,
     # ambiguity or not.
     if is_ambiguous:
         emax, payoffs_ex_post, payoffs_future = \
-            get_payoffs_ambiguity(num_draws_emax, disturbances_relevant,
+            get_payoffs_ambiguity(num_draws_emax, disturbances_emax,
                 period, k, payoffs_systematic, edu_max, edu_start,
                 mapping_state_idx, states_all, num_periods, periods_emax,
                 delta, is_debug, shocks, level, measure, is_deterministic,
                 shocks_cholesky)
     else:
         emax, payoffs_ex_post, payoffs_future = \
-            get_payoffs_risk(num_draws_emax, disturbances_relevant, period, k,
+            get_payoffs_risk(num_draws_emax, disturbances_emax, period, k,
                 payoffs_systematic, edu_max, edu_start, mapping_state_idx,
                 states_all, num_periods, periods_emax, delta, shocks_cholesky)
 
