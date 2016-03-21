@@ -30,7 +30,7 @@ def backward_induction(num_periods, max_states_period, disturbances_emax,
         num_draws_emax, states_number_period, periods_payoffs_systematic,
         edu_max, edu_start, mapping_state_idx, states_all, delta, is_debug,
         shocks, level, is_ambiguous, measure, is_interpolated, num_points,
-        is_deterministic):
+        is_deterministic, shocks_cholesky):
     """ Backward induction procedure. There are two main threads to this
     function depending on whether interpolation is requested or not.
     """
@@ -86,7 +86,7 @@ def backward_induction(num_periods, max_states_period, disturbances_emax,
                 edu_start, mapping_state_idx, periods_emax, states_all,
                 is_simulated, num_draws_emax, shocks, level, is_ambiguous,
                 is_debug, measure, maxe, disturbances_relevant,
-                is_deterministic)
+                is_deterministic, shocks_cholesky)
 
             # Create prediction model based on the random subset of points where
             # the EMAX is actually simulated and thus dependent and
@@ -112,7 +112,7 @@ def backward_induction(num_periods, max_states_period, disturbances_emax,
                         payoffs_systematic, edu_max, edu_start,
                         mapping_state_idx, states_all, num_periods,
                         periods_emax, delta, is_debug, shocks, level,
-                        is_ambiguous, measure, is_deterministic)
+                        is_ambiguous, measure, is_deterministic, shocks_cholesky)
 
                 # Store results
                 periods_emax[period, k] = emax
@@ -130,7 +130,7 @@ def backward_induction(num_periods, max_states_period, disturbances_emax,
 def get_payoffs(num_draws_emax, disturbances_relevant, period, k,
         payoffs_systematic, edu_max, edu_start, mapping_state_idx,
         states_all, num_periods, periods_emax, delta, is_debug, shocks,
-        level, is_ambiguous, measure, is_deterministic):
+        level, is_ambiguous, measure, is_deterministic, shocks_cholesky):
     """ Get payoffs for a particular state.
     """
     # Payoffs require different machinery depending on whether there is
@@ -140,12 +140,13 @@ def get_payoffs(num_draws_emax, disturbances_relevant, period, k,
             get_payoffs_ambiguity(num_draws_emax, disturbances_relevant,
                 period, k, payoffs_systematic, edu_max, edu_start,
                 mapping_state_idx, states_all, num_periods, periods_emax,
-                delta, is_debug, shocks, level, measure, is_deterministic)
+                delta, is_debug, shocks, level, measure, is_deterministic,
+                shocks_cholesky)
     else:
         emax, payoffs_ex_post, payoffs_future = \
             get_payoffs_risk(num_draws_emax, disturbances_relevant, period, k,
                 payoffs_systematic, edu_max, edu_start, mapping_state_idx,
-                states_all, num_periods, periods_emax, delta)
+                states_all, num_periods, periods_emax, delta, shocks_cholesky)
 
     # Finishing
     return emax, payoffs_ex_post, payoffs_future
@@ -484,7 +485,7 @@ def _get_endogenous_variable(period, num_periods, num_states, delta,
         periods_payoffs_systematic, edu_max, edu_start, mapping_state_idx,
         periods_emax, states_all, is_simulated, num_draws_emax, shocks, level,
         is_ambiguous, is_debug, measure, maxe, disturbances_relevant,
-        is_deterministic):
+        is_deterministic, shocks_cholesky):
     """ Construct endogenous variable for the subset of interpolation points.
     """
     # Construct auxiliary objects
@@ -504,7 +505,7 @@ def _get_endogenous_variable(period, num_periods, num_states, delta,
             disturbances_relevant, period, k, payoffs_systematic, edu_max,
             edu_start, mapping_state_idx, states_all, num_periods,
             periods_emax, delta, is_debug, shocks, level, is_ambiguous,
-            measure, is_deterministic)
+            measure, is_deterministic, shocks_cholesky)
 
         # Construct dependent variable
         endogenous_variable[k] = emax_simulated - maxe[k]

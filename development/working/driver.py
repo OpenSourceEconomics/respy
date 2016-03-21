@@ -58,8 +58,8 @@ x0 = opt_get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
 
 
 # Draw standard normal deviates for S-ML approach
-disturbances_prob = create_disturbances(num_periods, num_draws_prob,
-         seed_prob, is_debug, 'prob', shocks_cholesky, is_ambiguous)
+disturbances_prob = create_disturbances(num_periods, num_draws_prob, seed_prob,
+                                        is_debug, 'prob', shocks_cholesky)
 
 
 data_array = data_frame.as_matrix()
@@ -81,7 +81,8 @@ def criterion(x, data_array, disturbances_prob):
     # TODO: standard normal as well and them moved outside
 
     disturbances_emax = create_disturbances(num_periods, num_draws_emax,
-          seed_emax, is_debug, 'emax', shocks_cholesky, is_ambiguous)
+                                            seed_emax, is_debug, 'emax',
+                                            shocks_cholesky)
 
     # Solve model for given parametrization
     args = solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,

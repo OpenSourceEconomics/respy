@@ -62,7 +62,7 @@ def simulate(robupy_obj):
 
     # Draw disturbances for the simulation.
     disturbances_data = create_disturbances(num_periods, num_agents, seed_data,
-                            is_debug, 'sims', shocks_cholesky, is_ambiguous)
+        is_debug, 'sims', shocks_cholesky)
 
     # Simulate a dataset with the results from the solution and write out the
     # dataset to a text file. In addition a file summarizing the dataset is

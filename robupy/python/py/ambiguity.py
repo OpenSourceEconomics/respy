@@ -18,7 +18,7 @@ from robupy.constants import HUGE_FLOAT
 def get_payoffs_ambiguity(num_draws_emax, disturbances_relevant, period, k,
         payoffs_systematic, edu_max, edu_start, mapping_state_idx,
         states_all, num_periods, periods_emax, delta, is_debug, shocks,
-        level, measure, is_deterministic):
+        level, measure, is_deterministic, shocks_cholesky):
     """ Get worst case
     """
     # Determine the worst case, special attention to zero variability. The
@@ -30,16 +30,19 @@ def get_payoffs_ambiguity(num_draws_emax, disturbances_relevant, period, k,
         opt = _determine_worst_case(num_draws_emax, disturbances_relevant,
                 period, k, payoffs_systematic, edu_max, edu_start,
                 mapping_state_idx, states_all, num_periods, periods_emax,
-                delta, is_debug, shocks, level, measure)
+                delta, is_debug, shocks, level, measure, shocks_cholesky)
 
     # Transformation of standard normal deviates to relevant distributions.
+    # TODO: This should probably be a copy to enesure that devaites remain fo
+    #  standard dype.
     disturbances_relevant_emax = \
         transform_disturbances_ambiguity(disturbances_relevant, opt['x'])
 
     simulated, payoffs_ex_post, payoffs_future = \
         simulate_emax(num_periods, num_draws_emax, period, k,
             disturbances_relevant_emax, payoffs_systematic, edu_max,
-            edu_start, periods_emax, states_all, mapping_state_idx, delta)
+            edu_start, periods_emax, states_all, mapping_state_idx, delta,
+            shocks_cholesky)
 
     # Debugging. This only works in the case of success, as otherwise
     # opt['fun'] is not equivalent to simulated.
@@ -76,7 +79,7 @@ def _handle_shocks_zero(is_debug, period, k):
 def _determine_worst_case(num_draws_emax, disturbances_relevant, period, k,
         payoffs_systematic, edu_max, edu_start, mapping_state_idx,
         states_all, num_periods, periods_emax, delta, is_debug, shocks,
-        level, measure):
+        level, measure, shocks_cholesky):
     """ Determine the worst case outcome for the given parametrization.
     """
     # Initialize options.
@@ -89,7 +92,7 @@ def _determine_worst_case(num_draws_emax, disturbances_relevant, period, k,
     # Collect arguments
     args = (num_draws_emax, disturbances_relevant, period, k,
             payoffs_systematic, edu_max, edu_start, mapping_state_idx,
-            states_all, num_periods, periods_emax, delta)
+            states_all, num_periods, periods_emax, delta, shocks_cholesky)
 
     # Run optimization
     if measure == 'absolute':
@@ -174,11 +177,6 @@ def transform_disturbances_ambiguity(disturbances_relevant, x):
     # Mean shift due to ambiguity
     disturbances_relevant_emax[:, :2] = disturbances_relevant_emax[:, :2] + x
 
-    # Exponentiation for occupations
-    for j in [0, 1]:
-        disturbances_relevant_emax[:, j] = \
-            np.clip(np.exp(disturbances_relevant_emax[:, j]), 0.0, HUGE_FLOAT)
-
     # Finishing
     return disturbances_relevant_emax
 
@@ -230,7 +228,7 @@ def _divergence(x, cov, level):
 
 def _criterion(x, num_draws_emax, disturbances_relevant, period, k, payoffs_systematic,
         edu_max, edu_start, mapping_state_idx, states_all, num_periods,
-        periods_emax, delta):
+        periods_emax, delta, shocks_cholesky):
     """ Simulate expected future value for alternative shock distributions.
     """
 
@@ -241,7 +239,7 @@ def _criterion(x, num_draws_emax, disturbances_relevant, period, k, payoffs_syst
     # Simulate the expected future value for a given parametrization.
     simulated, _, _ = simulate_emax(num_periods, num_draws_emax, period, k,
         disturbances_relevant_emax, payoffs_systematic, edu_max, edu_start,
-        periods_emax, states_all, mapping_state_idx, delta)
+        periods_emax, states_all, mapping_state_idx, delta, shocks_cholesky)
 
     # Debugging
     checks_ambiguity('_criterion', simulated)

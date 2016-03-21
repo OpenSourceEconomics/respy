@@ -115,7 +115,8 @@ class TestClass(object):
         period = np.random.choice(range(num_periods))
 
         disturbances_emax = create_disturbances(num_periods, num_draws_emax,
-            seed_prob, is_debug, 'emax', shocks_cholesky, is_ambiguous)
+                                                seed_prob, is_debug, 'emax',
+                                                shocks_cholesky)
 
         disturbances_relevant = disturbances_emax[period, :, :]
 

@@ -569,7 +569,8 @@ class TestClass(object):
 
         # Get set of disturbances
         disturbances_emax = create_disturbances(num_periods, num_draws_emax,
-            seed_emax, is_debug, 'emax', shocks_cholesky, is_ambiguous)
+                                                seed_emax, is_debug, 'emax',
+                                                shocks_cholesky)
 
         # Align interpolation grid
         max_states_period = write_interpolation_grid('test.robupy.ini')
