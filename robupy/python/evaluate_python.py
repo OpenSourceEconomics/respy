@@ -77,18 +77,19 @@ def evaluate_python(robupy_obj, data_frame):
         distribute_model_paras(model_paras, is_debug)
 
     # Draw standard normal deviates for choice probability integration
-    disturbances_prob = create_disturbances(num_periods, num_draws_prob,
+    periods_disturbances_prob = create_disturbances(num_periods, num_draws_prob,
         seed_prob, is_debug, 'prob', shocks_cholesky)
 
     # Draw standard normal deviates for EMAX integration
-    disturbances_emax = create_disturbances(num_periods, num_draws_emax,
+    periods_disturbances_emax = create_disturbances(num_periods, num_draws_emax,
         seed_emax, is_debug, 'emax', shocks_cholesky)
 
     # Solve model for given parametrization
     args = solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         shocks, edu_max, delta, edu_start, is_debug, is_interpolated, level,
         measure, min_idx, num_draws_emax, num_periods, num_points, is_ambiguous,
-        disturbances_emax, is_deterministic, is_myopic, is_python)
+        periods_disturbances_emax, is_deterministic, is_myopic, shocks_cholesky,
+        is_python)
 
     # Distribute return arguments from solution run
     mapping_state_idx, periods_emax, periods_payoffs_future = args[:3]
@@ -98,7 +99,7 @@ def evaluate_python(robupy_obj, data_frame):
     likl = _evaluate_python_bare(mapping_state_idx, periods_emax,
                 periods_payoffs_systematic, states_all, shocks, edu_max,
                 delta, edu_start, num_periods, shocks_cholesky, num_agents,
-                num_draws_prob, data_array, disturbances_prob, is_deterministic,
+                num_draws_prob, data_array, periods_disturbances_prob, is_deterministic,
                 is_python)
 
     # Finishing

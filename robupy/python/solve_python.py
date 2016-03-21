@@ -78,8 +78,7 @@ def solve_python(robupy_obj):
     # in the case of an ambiguous world. This function is located outside the
     # actual bare solution algorithm to ease testing across implementations.
     periods_disturbances_emax = create_disturbances(num_periods, num_draws_emax,
-                                            seed_emax, is_debug, 'emax',
-                                            shocks_cholesky)
+            seed_emax, is_debug, 'emax', shocks_cholesky)
 
     # Solve the model using PYTHON/F2PY implementation
     args = solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,

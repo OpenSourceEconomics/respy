@@ -114,11 +114,10 @@ class TestClass(object):
         # functions.
         period = np.random.choice(range(num_periods))
 
-        disturbances_emax = create_disturbances(num_periods, num_draws_emax,
-                                                seed_prob, is_debug, 'emax',
-                                                shocks_cholesky)
+        periods_disturbances_emax = create_disturbances(num_periods, num_draws_emax,
+            seed_prob, is_debug, 'emax', shocks_cholesky)
 
-        disturbances_relevant = disturbances_emax[period, :, :]
+        disturbances_relevant = periods_disturbances_emax[period, :, :]
 
         num_states = states_number_period[period]
 
@@ -156,7 +155,8 @@ class TestClass(object):
                 periods_payoffs_systematic, edu_max, edu_start,
                 mapping_state_idx, periods_emax, states_all, is_simulated,
                 num_draws_emax, shocks, level, is_ambiguous, is_debug,
-                measure, maxe, disturbances_relevant, is_deterministic]
+                measure, maxe, disturbances_relevant, is_deterministic,
+                shocks_cholesky]
 
         py = _get_endogenous_variable(*args)
         f90 = fort_debug.wrapper_get_endogenous_variable(*args)

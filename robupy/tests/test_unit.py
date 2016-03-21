@@ -82,6 +82,7 @@ class TestClass(object):
                     'measure', 'delta', 'level')
 
             # Extract auxiliary objects
+            shocks_cholesky = model_paras['shocks_cholesky']
             shocks = model_paras['shocks']
 
             # Iterate over a couple of admissible points
@@ -99,13 +100,15 @@ class TestClass(object):
                 py = get_payoffs(num_draws_emax, disturbances_relevant, period, k,
                         payoffs_systematic, edu_max, edu_start, mapping_state_idx,
                         states_all, num_periods, periods_emax, delta, is_debug,
-                        shocks, level, is_ambiguous, measure, is_deterministic)
+                        shocks, level, is_ambiguous, measure, is_deterministic,
+                        shocks_cholesky)
 
                 f90 = fort_debug.wrapper_get_payoffs(num_draws_emax,
                         disturbances_relevant, period, k, payoffs_systematic,
                         edu_max, edu_start, mapping_state_idx, states_all,
-                        num_periods, periods_emax, delta, is_debug, shocks, level,
-                        is_ambiguous, measure, is_deterministic)
+                        num_periods, periods_emax, delta, is_debug, shocks,
+                        level, is_ambiguous, measure, is_deterministic,
+                        shocks_cholesky)
 
                 # Compare returned array on expected future values, ex post
                 # payoffs, and future payoffs.
@@ -148,6 +151,7 @@ class TestClass(object):
 
             # Auxiliary objects
             shocks = model_paras['shocks']
+            shocks_cholesky = model_paras['shocks_cholesky']
 
             # Sample disturbances
             eps_standard = np.random.multivariate_normal(np.zeros(4),
@@ -166,7 +170,7 @@ class TestClass(object):
             args = [num_draws_emax, eps_standard, period, k, payoffs_systematic,
                 edu_max, edu_start, mapping_state_idx, states_all, num_periods,
                 periods_emax, is_debug, delta, shocks, level, measure,
-                is_deterministic]
+                is_deterministic, shocks_cholesky]
 
             f = fort_debug.wrapper_get_payoffs_ambiguity(*args)[0]
             py = get_payoffs_ambiguity(*args)[0]

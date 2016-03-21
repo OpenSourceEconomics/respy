@@ -25,7 +25,7 @@ CONTAINS
 !*******************************************************************************
 SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, payoffs_future, &
                 num_periods, num_draws_emax, period, k, & 
-                disturbances_relevant_emax, payoffs_systematic, edu_max, & 
+                disturbances_emax, payoffs_systematic, edu_max, & 
                 edu_start, periods_emax, states_all, mapping_state_idx, delta, & 
                 shocks_cholesky, shocks_mean)
 
@@ -44,7 +44,7 @@ SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, payoffs_future, &
     INTEGER(our_int), INTENT(IN)    :: period
     INTEGER(our_int), INTENT(IN)    :: k
 
-    REAL(our_dble), INTENT(IN)      :: disturbances_relevant_emax(:,:)
+    REAL(our_dble), INTENT(IN)      :: disturbances_emax(:,:)
     REAL(our_dble), INTENT(IN)      :: payoffs_systematic(:)
     REAL(our_dble), INTENT(IN)      :: shocks_cholesky(:,:)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:,:)
@@ -60,7 +60,7 @@ SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, payoffs_future, &
     REAL(our_dble)                  :: disturbances(4)
     REAL(our_dble)                  :: maximum
 
-    REAL(our_dble)                  :: disturbances_transformed_emax(num_draws_emax, 4)
+    REAL(our_dble)                  :: disturbances_emax_transformed(num_draws_emax, 4)
 
 !-------------------------------------------------------------------------------
 ! Algorithm
@@ -72,15 +72,15 @@ SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, payoffs_future, &
 
     ! Transfer disturbances to relevant distribution
     DO i = 1, num_draws_emax
-        disturbances_transformed_emax(i:i, :) = &
-            TRANSPOSE(MATMUL(shocks_cholesky, TRANSPOSE(disturbances_relevant_emax(i:i, :)))) 
+        disturbances_emax_transformed(i:i, :) = &
+            TRANSPOSE(MATMUL(shocks_cholesky, TRANSPOSE(disturbances_emax(i:i, :)))) 
     END DO
     
-    disturbances_transformed_emax(:, :2) = disturbances_transformed_emax(:, :2) + SPREAD(shocks_mean, 1, num_draws_emax)
+    disturbances_emax_transformed(:, :2) = disturbances_emax_transformed(:, :2) + SPREAD(shocks_mean, 1, num_draws_emax)
 
     DO i = 1, 2
-        disturbances_transformed_emax(:, i) = &
-            EXP(disturbances_transformed_emax(:, i))
+        disturbances_emax_transformed(:, i) = &
+            EXP(disturbances_emax_transformed(:, i))
     END DO
 
 
@@ -88,7 +88,7 @@ SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, payoffs_future, &
     DO i = 1, num_draws_emax
 
         ! Select disturbances for this draw
-        disturbances = disturbances_transformed_emax(i, :)
+        disturbances = disturbances_emax_transformed(i, :)
 
         ! Calculate total value
         CALL get_total_value(total_payoffs, payoffs_ex_post, payoffs_future, &
