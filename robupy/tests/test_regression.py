@@ -126,3 +126,32 @@ class TestClass(object):
         # Assert unchanged value
         np.testing.assert_allclose(val, 72.026643)
 
+    def test_5(self):
+        """ Test the solution of deterministic model without ambiguity,
+        but with interpolation
+        """
+        # Solve specified economy
+        robupy_obj = read(RESOURCES_DIR + '/test_fifth.robupy.ini')
+        robupy_obj = solve(robupy_obj)
+
+        # Extract statistic
+        val = robupy_obj.get_attr('periods_emax')[0, :1]
+
+        # Assert unchanged value
+        np.testing.assert_allclose(val, 88750)
+
+    def test_6(self):
+        """ Test the solution of deterministic model with ambiguity and
+        interpolation. This test has the same result as in the absence of
+        random variation in payoffs, it does not matter whether the
+        environment is ambiguous or not.
+        """
+        # Solve specified economy
+        robupy_obj = read(RESOURCES_DIR + '/test_sixth.robupy.ini')
+        robupy_obj = solve(robupy_obj)
+
+        # Extract statistic
+        val = robupy_obj.get_attr('periods_emax')[0, :1]
+
+        # Assert unchanged value
+        np.testing.assert_allclose(val, 88750)

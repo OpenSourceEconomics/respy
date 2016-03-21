@@ -22,6 +22,7 @@ robupy_obj = read('test.robupy.ini')
 
 # First, I simulate a dataset.
 solve(robupy_obj)
+sys.exit('preparing eps revamp')
 #simulate(robupy_obj)
 
 data_frame = process(robupy_obj)
@@ -99,6 +100,12 @@ def criterion(x, data_array, disturbances_prob):
                  num_draws_prob, data_array, disturbances_prob, is_deterministic,
                  is_python)
 
+    print(likl)
+
     return likl
 
-criterion(x0, data_array, disturbances_prob, disturbances_emax)
+criterion(x0, data_array, disturbances_prob)
+
+print(x0)
+x0[0] = 0.25
+minimize(criterion, x0, method='Powell', args =(data_array, disturbances_prob))
