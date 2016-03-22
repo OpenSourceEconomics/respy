@@ -68,7 +68,7 @@ SUBROUTINE wrapper_solve_fortran_bare(mapping_state_idx, periods_emax, &
                 delta, edu_start, is_debug, is_interpolated, level, measure, & 
                 min_idx, num_draws_emax, num_periods, num_points, & 
                 is_ambiguous, disturbances_emax, is_deterministic, is_myopic, & 
-                max_states_period, shocks_cholesky)
+                shocks_cholesky, max_states_period)
     
     !
     ! The presence of max_states_period breaks the equality of interfaces. 

@@ -348,7 +348,7 @@ class TestClass(object):
         eps_standard = np.random.multivariate_normal(np.zeros(4),
                             np.identity(4), (num_draws_emax,))
 
-        shocks_mean = np.random.normal(2)
+        shocks_mean = np.random.normal(size=2)
 
         # Sampling of random period and admissible state index
         period = np.random.choice(range(num_periods))
@@ -376,7 +376,7 @@ class TestClass(object):
         # Criterion function for the determination of the worst case outcomes
         args = (num_draws_emax, eps_standard, period, k, payoffs_systematic,
                 edu_max, edu_start, mapping_state_idx, states_all, num_periods,
-                periods_emax, delta)
+                periods_emax, delta, shocks_cholesky)
 
         py = _criterion(x, *args)
         f90 = fort_debug.wrapper_criterion(x, *args)
@@ -577,6 +577,9 @@ class TestClass(object):
                     'num_draws_emax', 'is_debug', 'measure', 'edu_max',
                     'min_idx', 'delta', 'level')
 
+        # Auxiliary objects
+        shocks_cholesky = model_paras['shocks_cholesky']
+
         # Distribute model parameters
         coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, shocks_cholesky = \
                 distribute_model_paras(model_paras, is_debug)
@@ -593,7 +596,8 @@ class TestClass(object):
         base_args = [coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
             edu_max, delta, edu_start, is_debug, is_interpolated, level,
             measure, min_idx, num_draws_emax, num_periods, num_points,
-            is_ambiguous, disturbances_emax, is_deterministic, is_myopic]
+            is_ambiguous, disturbances_emax, is_deterministic, is_myopic,
+            shocks_cholesky]
 
         # Check for the equality of the solution routines.
         base = None
