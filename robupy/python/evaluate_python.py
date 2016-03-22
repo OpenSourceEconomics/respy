@@ -29,15 +29,15 @@ def evaluate_python(robupy_obj, data_frame):
     required to align the functions across the PYTHON and F2PY implementations.
     """
     # Distribute class attribute
+    is_deterministic = robupy_obj.get_attr('is_deterministic')
+
     is_interpolated = robupy_obj.get_attr('is_interpolated')
 
-    seed_prob = robupy_obj.get_attr('seed_prob')
+    num_draws_emax = robupy_obj.get_attr('num_draws_emax')
 
-    seed_emax = robupy_obj.get_attr('seed_emax')
+    num_draws_prob = robupy_obj.get_attr('num_draws_prob')
 
     is_ambiguous = robupy_obj.get_attr('is_ambiguous')
-
-    is_deterministic = robupy_obj.get_attr('is_deterministic')
 
     model_paras = robupy_obj.get_attr('model_paras')
 
@@ -47,17 +47,17 @@ def evaluate_python(robupy_obj, data_frame):
 
     num_agents = robupy_obj.get_attr('num_agents')
 
+    seed_prob = robupy_obj.get_attr('seed_prob')
+
+    seed_emax = robupy_obj.get_attr('seed_emax')
+
     is_python = robupy_obj.get_attr('is_python')
 
     edu_start = robupy_obj.get_attr('edu_start')
 
-    num_draws_emax = robupy_obj.get_attr('num_draws_emax')
-
     is_myopic = robupy_obj.get_attr('is_myopic')
 
     is_debug = robupy_obj.get_attr('is_debug')
-
-    num_draws_prob = robupy_obj.get_attr('num_draws_prob')
 
     edu_max = robupy_obj.get_attr('edu_max')
 
@@ -77,12 +77,12 @@ def evaluate_python(robupy_obj, data_frame):
         distribute_model_paras(model_paras, is_debug)
 
     # Draw standard normal deviates for choice probability integration
-    periods_draws_prob = create_draws(num_periods, num_draws_prob,
-        seed_prob, is_debug, 'prob', shocks_cholesky)
+    periods_draws_prob = create_draws(num_periods, num_draws_prob, seed_prob,
+        is_debug, 'prob', shocks_cholesky)
 
     # Draw standard normal deviates for EMAX integration
-    periods_draws_emax = create_draws(num_periods, num_draws_emax,
-        seed_emax, is_debug, 'emax', shocks_cholesky)
+    periods_draws_emax = create_draws(num_periods, num_draws_emax, seed_emax,
+        is_debug, 'emax', shocks_cholesky)
 
     # Solve model for given parametrization
     args = solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
@@ -97,10 +97,9 @@ def evaluate_python(robupy_obj, data_frame):
 
     # Evaluate the criterion function
     likl = _evaluate_python_bare(mapping_state_idx, periods_emax,
-                periods_payoffs_systematic, states_all, shocks_cov, edu_max,
-                delta, edu_start, num_periods, shocks_cholesky, num_agents,
-                num_draws_prob, data_array, periods_draws_prob, is_deterministic,
-                is_python)
+        periods_payoffs_systematic, states_all, shocks_cov, edu_max, delta,
+        edu_start, num_periods, shocks_cholesky, num_agents, num_draws_prob,
+        data_array, periods_draws_prob, is_deterministic, is_python)
 
     # Finishing
     return robupy_obj, likl
@@ -111,9 +110,9 @@ def evaluate_python(robupy_obj, data_frame):
 
 
 def _evaluate_python_bare(mapping_state_idx, periods_emax,
-                          periods_payoffs_systematic, states_all, shocks_cov, edu_max, delta,
-                          edu_start, num_periods, shocks_cholesky, num_agents, num_draws_prob,
-                          data_array, periods_draws_prob, is_deterministic, is_python):
+        periods_payoffs_systematic, states_all, shocks_cov, edu_max, delta,
+        edu_start, num_periods, shocks_cholesky, num_agents, num_draws_prob,
+        data_array, periods_draws_prob, is_deterministic, is_python):
     """ This function is required to ensure a full analogy to F2PY and
     FORTRAN implementations. The first part of the interface is identical to
     the solution request functions.
@@ -121,10 +120,9 @@ def _evaluate_python_bare(mapping_state_idx, periods_emax,
 
     if is_python:
         likl = evaluate_criterion_function(mapping_state_idx, periods_emax,
-                                           periods_payoffs_systematic, states_all, shocks_cov, edu_max, delta,
-                                           edu_start, num_periods, shocks_cholesky, num_agents, num_draws_prob,
-                                           data_array, periods_draws_prob, is_deterministic)
-
+            periods_payoffs_systematic, states_all, shocks_cov, edu_max, delta,
+            edu_start, num_periods, shocks_cholesky, num_agents, num_draws_prob,
+            data_array, periods_draws_prob, is_deterministic)
     else:
         import robupy.python.f2py.f2py_library as f2py_library
         likl = f2py_library.wrapper_evaluate_criterion_function(
@@ -139,9 +137,9 @@ def _evaluate_python_bare(mapping_state_idx, periods_emax,
 
 # Solve the model for given parametrization
 def evaluate_criterion_function(mapping_state_idx, periods_emax,
-                                periods_payoffs_systematic, states_all, shocks_cov, edu_max, delta,
-                                edu_start, num_periods, shocks_cholesky, num_agents, num_draws_prob,
-                                data_array, periods_draws_prob, is_deterministic):
+        periods_payoffs_systematic, states_all, shocks_cov, edu_max, delta,
+        edu_start, num_periods, shocks_cholesky, num_agents, num_draws_prob,
+        data_array, periods_draws_prob, is_deterministic):
     """ Evaluate criterion function. This code allows for a deterministic
     model, where there is no random variation in the rewards. If that is the
     case and all agents have corresponding experiences, then one is returned.

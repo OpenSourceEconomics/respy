@@ -14,9 +14,9 @@ from robupy.python.py.auxiliary import simulate_emax
 
 
 def get_payoffs_ambiguity(num_draws_emax, draws_emax, period, k,
-                          payoffs_systematic, edu_max, edu_start, mapping_state_idx, states_all,
-                          num_periods, periods_emax, delta, is_debug, shocks_cov, level, measure,
-                          is_deterministic, shocks_cholesky):
+        payoffs_systematic, edu_max, edu_start, mapping_state_idx, states_all,
+        num_periods, periods_emax, delta, is_debug, shocks_cov, level, measure,
+        is_deterministic, shocks_cholesky):
     """ Determine the worst case payoffs.
     """
     # Determine the worst case, special attention to zero variability. The
@@ -26,15 +26,15 @@ def get_payoffs_ambiguity(num_draws_emax, draws_emax, period, k,
         opt = _handle_shocks_zero(is_debug, period, k)
     else:
         opt = _determine_worst_case(num_draws_emax, draws_emax,
-                                    period, k, payoffs_systematic, edu_max, edu_start,
-                                    mapping_state_idx, states_all, num_periods, periods_emax,
-                                    delta, is_debug, shocks_cov, level, measure, shocks_cholesky)
+                period, k, payoffs_systematic, edu_max, edu_start,
+                mapping_state_idx, states_all, num_periods, periods_emax,
+                delta, is_debug, shocks_cov, level, measure, shocks_cholesky)
 
     # Simulate the expected future value for the worst case outcome
     simulated, payoffs_ex_post, payoffs_future = \
         simulate_emax(num_periods, num_draws_emax, period, k, draws_emax,
-                      payoffs_systematic, edu_max, edu_start, periods_emax, states_all,
-                      mapping_state_idx, delta, shocks_cholesky, opt['x'])
+            payoffs_systematic, edu_max, edu_start, periods_emax, states_all,
+            mapping_state_idx, delta, shocks_cholesky, opt['x'])
 
     # Debugging. This only works in the case of success, as otherwise
     # opt['fun'] is not equivalent to simulated.
@@ -69,9 +69,9 @@ def _handle_shocks_zero(is_debug, period, k):
 
 
 def _determine_worst_case(num_draws_emax, draws_emax, period, k,
-                          payoffs_systematic, edu_max, edu_start, mapping_state_idx, states_all,
-                          num_periods, periods_emax, delta, is_debug, shocks_cov, level, measure,
-                          shocks_cholesky):
+        payoffs_systematic, edu_max, edu_start, mapping_state_idx, states_all,
+        num_periods, periods_emax, delta, is_debug, shocks_cov, level, measure,
+        shocks_cholesky):
     """ Determine the worst case outcome for the given parametrization.
     """
     # Initialize options.
@@ -152,15 +152,15 @@ def _divergence(x, cov, level):
     return level - rslt
 
 
-def _criterion(x, num_draws_emax, draws_emax, period, k,
-               payoffs_systematic, edu_max, edu_start, mapping_state_idx, states_all,
-               num_periods, periods_emax, delta, shocks_cholesky):
+def _criterion(x, num_draws_emax, draws_emax, period, k, payoffs_systematic,
+        edu_max, edu_start, mapping_state_idx, states_all, num_periods,
+        periods_emax, delta, shocks_cholesky):
     """ Simulate expected future value for alternative shock distributions.
     """
     # Simulate the expected future value for a given parametrization.
     simulated, _, _ = simulate_emax(num_periods, num_draws_emax, period, k,
-                                    draws_emax, payoffs_systematic, edu_max, edu_start,
-                                    periods_emax, states_all, mapping_state_idx, delta, shocks_cholesky, x)
+        draws_emax, payoffs_systematic, edu_max, edu_start, periods_emax,
+        states_all, mapping_state_idx, delta, shocks_cholesky, x)
 
     # Debugging
     checks_ambiguity('_criterion', simulated)

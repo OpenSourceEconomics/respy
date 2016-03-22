@@ -9,7 +9,6 @@ import os
 # project library
 from robupy.fortran.solve_fortran import solve_fortran
 from robupy.python.solve_python import solve_python
-from robupy.simulate import simulate
 
 ''' Main function
 '''

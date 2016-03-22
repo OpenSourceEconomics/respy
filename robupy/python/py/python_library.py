@@ -27,10 +27,10 @@ logger = logging.getLogger('ROBUPY_SOLVE')
 
 
 def backward_induction(num_periods, max_states_period, periods_draws_emax,
-                       num_draws_emax, states_number_period, periods_payoffs_systematic,
-                       edu_max, edu_start, mapping_state_idx, states_all, delta, is_debug,
-                       shocks_cov, level, is_ambiguous, measure, is_interpolated, num_points,
-                       is_deterministic, shocks_cholesky):
+        num_draws_emax, states_number_period, periods_payoffs_systematic,
+        edu_max, edu_start, mapping_state_idx, states_all, delta, is_debug,
+        shocks_cov, level, is_ambiguous, measure, is_interpolated, num_points,
+        is_deterministic, shocks_cholesky):
     """ Backward induction procedure. There are two main threads to this
     function depending on whether interpolation is requested or not.
     """
@@ -82,11 +82,11 @@ def backward_induction(num_periods, max_states_period, periods_draws_emax,
             # Constructing the dependent variables for at the random subset of
             # points where the EMAX is actually calculated.
             endogenous = _get_endogenous_variable(period, num_periods,
-                                                  num_states, delta, periods_payoffs_systematic, edu_max,
-                                                  edu_start, mapping_state_idx, periods_emax, states_all,
-                                                  is_simulated, num_draws_emax, shocks_cov, level, is_ambiguous,
-                                                  is_debug, measure, maxe, draws_emax,
-                                                  is_deterministic, shocks_cholesky)
+                num_states, delta, periods_payoffs_systematic, edu_max,
+                edu_start, mapping_state_idx, periods_emax, states_all,
+                is_simulated, num_draws_emax, shocks_cov, level, is_ambiguous,
+                is_debug, measure, maxe, draws_emax, is_deterministic,
+                shocks_cholesky)
 
             # Create prediction model based on the random subset of points where
             # the EMAX is actually simulated and thus dependent and
@@ -109,10 +109,10 @@ def backward_induction(num_periods, max_states_period, periods_draws_emax,
                 # Simulate the expected future value.
                 emax, payoffs_ex_post, payoffs_future = \
                     get_payoffs(num_draws_emax, draws_emax, period, k,
-                                payoffs_systematic, edu_max, edu_start,
-                                mapping_state_idx, states_all, num_periods,
-                                periods_emax, delta, is_debug, shocks_cov, level,
-                                is_ambiguous, measure, is_deterministic, shocks_cholesky)
+                        payoffs_systematic, edu_max, edu_start,
+                        mapping_state_idx, states_all, num_periods,
+                        periods_emax, delta, is_debug, shocks_cov, level,
+                        is_ambiguous, measure, is_deterministic, shocks_cholesky)
 
                 # Store results
                 periods_emax[period, k] = emax
@@ -127,10 +127,10 @@ def backward_induction(num_periods, max_states_period, periods_draws_emax,
     return periods_emax, periods_payoffs_ex_post, periods_payoffs_future
 
 
-def get_payoffs(num_draws_emax, draws_emax, period, k,
-                payoffs_systematic, edu_max, edu_start, mapping_state_idx,
-                states_all, num_periods, periods_emax, delta, is_debug, shocks_cov,
-                level, is_ambiguous, measure, is_deterministic, shocks_cholesky):
+def get_payoffs(num_draws_emax, draws_emax, period, k, payoffs_systematic,
+        edu_max, edu_start, mapping_state_idx, states_all, num_periods,
+        periods_emax, delta, is_debug, shocks_cov, level, is_ambiguous,
+        measure, is_deterministic, shocks_cholesky):
     """ Get payoffs for a particular state.
     """
     # Payoffs require different machinery depending on whether there is
@@ -138,15 +138,15 @@ def get_payoffs(num_draws_emax, draws_emax, period, k,
     if is_ambiguous:
         emax, payoffs_ex_post, payoffs_future = \
             get_payoffs_ambiguity(num_draws_emax, draws_emax,
-                                  period, k, payoffs_systematic, edu_max, edu_start,
-                                  mapping_state_idx, states_all, num_periods, periods_emax,
-                                  delta, is_debug, shocks_cov, level, measure, is_deterministic,
-                                  shocks_cholesky)
+                period, k, payoffs_systematic, edu_max, edu_start,
+                mapping_state_idx, states_all, num_periods, periods_emax,
+                delta, is_debug, shocks_cov, level, measure, is_deterministic,
+                shocks_cholesky)
     else:
         emax, payoffs_ex_post, payoffs_future = \
             get_payoffs_risk(num_draws_emax, draws_emax, period, k,
-                             payoffs_systematic, edu_max, edu_start, mapping_state_idx,
-                             states_all, num_periods, periods_emax, delta, shocks_cholesky)
+                payoffs_systematic, edu_max, edu_start, mapping_state_idx,
+                states_all, num_periods, periods_emax, delta, shocks_cholesky)
 
     # Finishing
     return emax, payoffs_ex_post, payoffs_future
@@ -294,8 +294,8 @@ def calculate_payoffs_systematic(num_periods, states_number_period, states_all,
 
 
 def simulate_sample(num_agents, states_all, num_periods, mapping_state_idx,
-                    periods_payoffs_systematic, periods_draws_emax, edu_max, edu_start,
-                    periods_emax, delta):
+        periods_payoffs_systematic, periods_draws_emax, edu_max, edu_start,
+        periods_emax, delta):
     """ Sample simulation
     """
     count = 0
@@ -389,7 +389,7 @@ def _logging_prediction_model(results):
 
 
 def _check_prediction_model(predictions_diff, model, num_points, num_states,
-                            is_debug):
+        is_debug):
     """ Perform some basic consistency checks for the prediction model.
     """
     # Construct auxiliary object
@@ -482,10 +482,10 @@ def _get_exogenous_variables(period, num_periods, num_states, delta,
 
 
 def _get_endogenous_variable(period, num_periods, num_states, delta,
-                             periods_payoffs_systematic, edu_max, edu_start, mapping_state_idx,
-                             periods_emax, states_all, is_simulated, num_draws_emax, shocks_cov, level,
-                             is_ambiguous, is_debug, measure, maxe, draws_emax,
-                             is_deterministic, shocks_cholesky):
+        periods_payoffs_systematic, edu_max, edu_start, mapping_state_idx,
+        periods_emax, states_all, is_simulated, num_draws_emax, shocks_cov,
+        level, is_ambiguous, is_debug, measure, maxe, draws_emax,
+        is_deterministic, shocks_cholesky):
     """ Construct endogenous variable for the subset of interpolation points.
     """
     # Construct auxiliary objects
@@ -502,10 +502,10 @@ def _get_endogenous_variable(period, num_periods, num_states, delta,
 
         # Simulate the expected future value.
         emax_simulated, _, _ = get_payoffs(num_draws_emax,
-                                           draws_emax, period, k, payoffs_systematic, edu_max,
-                                           edu_start, mapping_state_idx, states_all, num_periods,
-                                           periods_emax, delta, is_debug, shocks_cov, level, is_ambiguous,
-                                           measure, is_deterministic, shocks_cholesky)
+            draws_emax, period, k, payoffs_systematic, edu_max, edu_start,
+            mapping_state_idx, states_all, num_periods, periods_emax, delta,
+            is_debug, shocks_cov, level, is_ambiguous, measure,
+            is_deterministic, shocks_cholesky)
 
         # Construct dependent variable
         endogenous_variable[k] = emax_simulated - maxe[k]

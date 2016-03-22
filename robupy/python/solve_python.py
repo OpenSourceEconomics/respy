@@ -82,10 +82,10 @@ def solve_python(robupy_obj):
 
     # Solve the model using PYTHON/F2PY implementation
     args = solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-                shocks_cov, edu_max, delta, edu_start, is_debug, is_interpolated,
-                level, measure, min_idx, num_draws_emax, num_periods,
-                num_points, is_ambiguous, periods_draws_emax, is_deterministic,
-                is_myopic, shocks_cholesky, is_python)
+                shocks_cov, edu_max, delta, edu_start, is_debug,
+                is_interpolated, level, measure, min_idx, num_draws_emax,
+                num_periods, num_points, is_ambiguous, periods_draws_emax,
+                is_deterministic, is_myopic, shocks_cholesky, is_python)
 
     # Distribute return arguments
     mapping_state_idx, periods_emax, periods_payoffs_future, \
@@ -176,11 +176,11 @@ def solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
     else:
         periods_emax, periods_payoffs_ex_post, periods_payoffs_future = \
             _backward_induction_procedure(periods_payoffs_systematic,
-              states_number_period, mapping_state_idx, is_interpolated,
-              num_periods, num_points, states_all, num_draws_emax, edu_start,
-              is_debug, edu_max, measure, shocks_cov, delta, level, is_ambiguous,
-              periods_disturbances_emax, is_deterministic, max_states_period,
-              shocks_cholesky, is_python)
+                states_number_period, mapping_state_idx, is_interpolated,
+                num_periods, num_points, states_all, num_draws_emax, edu_start,
+                is_debug, edu_max, measure, shocks_cov, delta, level,
+                is_ambiguous, periods_disturbances_emax, is_deterministic,
+                max_states_period, shocks_cholesky, is_python)
 
     # Replace missing values
     periods_emax = replace_missing_values(periods_emax)
@@ -265,10 +265,11 @@ def _calculate_payoffs_systematic(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
 
 
 def _backward_induction_procedure(periods_payoffs_systematic,
-                                  states_number_period, mapping_state_idx, is_interpolated, num_periods,
-                                  num_points, states_all, num_draws_emax, edu_start, is_debug, edu_max,
-                                  measure, shocks_cov, delta, level, is_ambiguous, periods_disturbances_emax,
-                                  is_deterministic, max_states_period, shocks_cholesky, is_python):
+        states_number_period, mapping_state_idx, is_interpolated, num_periods,
+        num_points, states_all, num_draws_emax, edu_start, is_debug, edu_max,
+        measure, shocks_cov, delta, level, is_ambiguous,
+        periods_disturbances_emax, is_deterministic, max_states_period,
+        shocks_cholesky, is_python):
     """ Perform backward induction procedure. This function is a wrapper
     around the PYTHON and F2PY implementation.
     """
@@ -285,11 +286,11 @@ def _backward_induction_procedure(periods_payoffs_systematic,
     # Perform backward induction procedure
     periods_emax, periods_payoffs_ex_post, periods_payoffs_future = \
         backward_induction(num_periods, max_states_period,
-                           periods_disturbances_emax, num_draws_emax, states_number_period,
-                           periods_payoffs_systematic, edu_max, edu_start,
-                           mapping_state_idx, states_all, delta, is_debug, shocks_cov, level,
-                           is_ambiguous, measure, is_interpolated, num_points,
-                           is_deterministic, shocks_cholesky)
+            periods_disturbances_emax, num_draws_emax, states_number_period,
+            periods_payoffs_systematic, edu_max, edu_start,
+            mapping_state_idx, states_all, delta, is_debug, shocks_cov, level,
+            is_ambiguous, measure, is_interpolated, num_points,
+            is_deterministic, shocks_cholesky)
 
     # Finishing
     return periods_emax, periods_payoffs_ex_post, periods_payoffs_future

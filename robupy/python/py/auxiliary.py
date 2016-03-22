@@ -14,8 +14,8 @@ from robupy.constants import HUGE_FLOAT
 
 
 def simulate_emax(num_periods, num_draws_emax, period, k, draws_emax,
-                  payoffs_systematic, edu_max, edu_start, periods_emax, states_all,
-                  mapping_state_idx, delta, shocks_cholesky, shocks_mean):
+        payoffs_systematic, edu_max, edu_start, periods_emax, states_all,
+        mapping_state_idx, delta, shocks_cholesky, shocks_mean):
     """ Simulate expected future value.
     """
     # Initialize containers
@@ -55,9 +55,8 @@ def simulate_emax(num_periods, num_draws_emax, period, k, draws_emax,
     return emax_simulated, payoffs_ex_post, payoffs_future
 
 
-def get_total_value(period, num_periods, delta, payoffs_systematic,
-                    draws, edu_max, edu_start, mapping_state_idx, periods_emax, k,
-                    states_all):
+def get_total_value(period, num_periods, delta, payoffs_systematic, draws,
+        edu_max, edu_start, mapping_state_idx, periods_emax, k, states_all):
     """ Get total value of all possible states.
     """
     # Initialize containers

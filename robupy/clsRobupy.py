@@ -17,6 +17,7 @@ class RobupyCls(object):
     """ This class manages the distribution of the use requests throughout
     the toolbox.
     """
+
     def __init__(self, init_dict):
         """ Initialization of hand-crafted class for package management.
         """
@@ -203,6 +204,7 @@ class RobupyCls(object):
 
     ''' Private methods
     '''
+
     def _update_core_attributes(self):
         """ Calculate derived attributes. This is only called when the class
         is initialized
@@ -506,7 +508,8 @@ class RobupyCls(object):
             # (see NUMPY documentation).
             for period in range(num_periods):
                 assert (
-                    np.all(states_all[period, :states_number_period[period]] >= 0))
+                    np.all(
+                        states_all[period, :states_number_period[period]] >= 0))
 
             # The maximum number of additional education years is never larger
             # than (EDU_MAX - EDU_START).
@@ -524,7 +527,8 @@ class RobupyCls(object):
             # values need to be finite.
             for period in range(num_periods):
                 assert (np.all(
-                    np.isfinite(states_all[period, :states_number_period[period]])))
+                    np.isfinite(
+                        states_all[period, :states_number_period[period]])))
 
             # There are no infinite values in final period.
             assert (np.all(np.isfinite(states_all[(num_periods - 1), :, :])))
@@ -535,7 +539,8 @@ class RobupyCls(object):
             # If valid, the number of state space realizations in period two is
             # four.
             if num_periods > 1:
-                assert (np.sum(np.isfinite(mapping_state_idx[1, :, :, :, :])) == 4)
+                assert (
+                np.sum(np.isfinite(mapping_state_idx[1, :, :, :, :])) == 4)
 
             # Check that mapping is defined for all possible realizations of the
             # state space by period. Check that mapping is not defined for all
@@ -547,7 +552,8 @@ class RobupyCls(object):
                 for index in indices:
                     # Check for finite value at admissible state
                     assert (np.isfinite(mapping_state_idx[
-                            period, index[0], index[1], index[2], index[3]]))
+                                            period, index[0], index[1], index[
+                                                2], index[3]]))
                     # Record finite value
                     is_infinite[
                         period, index[0], index[1], index[2], index[3]] = True
@@ -556,12 +562,14 @@ class RobupyCls(object):
 
             # Check that all inadmissible states are infinite
             assert (
-                np.all(np.isfinite(mapping_state_idx[is_infinite == False])) == False)
+                np.all(np.isfinite(
+                    mapping_state_idx[is_infinite == False])) == False)
 
         # Check the calculated systematic payoffs
         is_applicable = (states_all is not None)
         is_applicable = is_applicable and (states_number_period is not None)
-        is_applicable = is_applicable and (periods_payoffs_systematic is not None)
+        is_applicable = is_applicable and (
+        periods_payoffs_systematic is not None)
 
         if is_applicable:
             # Check that the payoffs are finite for all admissible values and
@@ -571,20 +579,23 @@ class RobupyCls(object):
                 # Loop over all possible states
                 for k in range(states_number_period[period]):
                     # Check that wages are all positive
-                    assert (np.all(periods_payoffs_systematic[period, k, :2] > 0.0))
+                    assert (
+                    np.all(periods_payoffs_systematic[period, k, :2] > 0.0))
                     # Check for finite value at admissible state
                     assert (
-                        np.all(np.isfinite(periods_payoffs_systematic[period, k, :])))
+                        np.all(np.isfinite(
+                            periods_payoffs_systematic[period, k, :])))
                     # Record finite value
                     is_infinite[period, k, :] = True
                 # Check that all admissible states are finite
                 assert (
                     np.all(np.isfinite(periods_payoffs_systematic[is_infinite ==
-                                                               True])))
+                                                                  True])))
                 # Check that all inadmissible states are infinite
                 if num_periods > 1:
                     assert (np.all(np.isfinite(
-                        periods_payoffs_systematic[is_infinite == False])) == False)
+                        periods_payoffs_systematic[
+                            is_infinite == False])) == False)
 
         # Check the expected future value
         is_applicable = (periods_emax is not None)
@@ -608,7 +619,8 @@ class RobupyCls(object):
                     assert (len(periods_emax[is_infinite == False]) == 0)
                 else:
                     assert (
-                        np.all(np.isfinite(periods_emax[is_infinite == False])) == False)
+                        np.all(np.isfinite(
+                            periods_emax[is_infinite == False])) == False)
 
             # Check that the payoffs are finite for all admissible values and
             # infinite for all others. This is only a valid request if no
@@ -620,12 +632,16 @@ class RobupyCls(object):
                         # Check for finite value at admissible state, infinite
                         # values are allowed for the third column when the
                         # maximum level of education is attained.
-                        assert (np.all(np.isfinite(periods_payoffs_future[period, k, :2])))
-                        assert (np.all(np.isfinite(periods_payoffs_future[period, k, 3])))
+                        assert (np.all(
+                            np.isfinite(periods_payoffs_future[period, k, :2])))
+                        assert (np.all(
+                            np.isfinite(periods_payoffs_future[period, k, 3])))
                         # Special checks for infinite value due to
                         # high education.
-                        if not np.isfinite(periods_payoffs_future[period, k, 2]):
-                            assert (states_all[period, k][2] == edu_max - edu_start)
+                        if not np.isfinite(
+                                periods_payoffs_future[period, k, 2]):
+                            assert (
+                            states_all[period, k][2] == edu_max - edu_start)
 
     def _check_key(self, key):
         """ Check that key is present.

@@ -16,8 +16,8 @@ from robupy.constants import MISSING_FLOAT
 '''
 
 
-def check_model_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
-                           shocks_cholesky):
+def check_model_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+        shocks_cov, shocks_cholesky):
     """ Check the integrity of all model parameters.
     """
     # Checks for all arguments
@@ -63,12 +63,16 @@ def distribute_model_paras(model_paras, is_debug):
                shocks_cholesky]
         assert (check_model_parameters(*args))
 
+    # Collect arguments
+    args = [coeffs_a, coeffs_b, coeffs_edu, coeffs_home]
+    args += [shocks_cov, shocks_cholesky]
+
     # Finishing
-    return coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, shocks_cholesky
+    return args
 
 
 def create_draws(num_periods, num_draws_emax, seed, is_debug, which,
-                 shocks_cholesky):
+        shocks_cholesky):
     """ Create the relevant set of draws. Handle special case of zero v
     variances as thi case is useful for hand-based testing. The draws
     are drawn from a standard normal distribution and transformed later in
@@ -226,7 +230,7 @@ def check_optimization_parameters(x):
 
 
 def opt_get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-                             shocks_cov, shocks_cholesky, is_debug):
+        shocks_cov, shocks_cholesky, is_debug):
     """ Get optimization parameters.
     """
     # Checks

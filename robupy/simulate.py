@@ -47,7 +47,7 @@ def simulate(robupy_obj):
 
     num_agents = robupy_obj.get_attr('num_agents')
 
-    seed = robupy_obj.get_attr('seed_data')
+    seed_data = robupy_obj.get_attr('seed_data')
 
     is_debug = robupy_obj.get_attr('is_debug')
 
@@ -56,17 +56,15 @@ def simulate(robupy_obj):
     # Auxiliary objects
     shocks_cholesky = model_paras['shocks_cholesky']
 
-    seed_data = robupy_obj.get_attr('seed_data')
-
     # Draw draws for the simulation.
-    draws_data = create_draws(num_periods, num_agents, seed_data,
-        is_debug, 'sims', shocks_cholesky)
+    draws_data = create_draws(num_periods, num_agents, seed_data, is_debug,
+        'sims', shocks_cholesky)
 
     # Simulate a dataset with the results from the solution and write out the
     # dataset to a text file. In addition a file summarizing the dataset is
     # produced.
     logger.info('Staring simulation of model for ' + str(num_agents) +
-        ' agents with seed ' + str(seed))
+        ' agents with seed ' + str(seed_data))
 
     data_frame = _wrapper_simulate_sample(robupy_obj, draws_data)
 
@@ -112,14 +110,14 @@ def _wrapper_simulate_sample(robupy_obj, draws_data):
     # Interface to core functions
     if is_python:
         data_frame = python_library.simulate_sample(num_agents, states_all,
-                                                    num_periods, mapping_state_idx, periods_payoffs_systematic,
-                                                    draws_data, edu_max, edu_start, periods_emax, delta)
+            num_periods, mapping_state_idx, periods_payoffs_systematic,
+            draws_data, edu_max, edu_start, periods_emax, delta)
     else:
         import robupy.python.f2py.f2py_library as f2py_library
         data_frame = f2py_library.wrapper_simulate_sample(num_agents,
-                                                          states_all, num_periods, mapping_state_idx,
-                                                          periods_payoffs_systematic, draws_data, edu_max,
-                                                          edu_start, periods_emax, delta)
+            states_all, num_periods, mapping_state_idx,
+            periods_payoffs_systematic, draws_data, edu_max, edu_start,
+            periods_emax, delta)
 
     # Replace missing values
     data_frame = replace_missing_values(data_frame)
