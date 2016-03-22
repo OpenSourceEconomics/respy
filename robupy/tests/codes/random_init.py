@@ -108,10 +108,10 @@ def generate_random_dict(constraints=None):
     dict_['SIMULATION']['file'] = 'data.robupy'
 
     # SHOCKS
-    shocks = np.identity(4)
+    shocks_cov = np.identity(4)
     for i, val in enumerate(np.random.uniform(0.05, 1, 4)):
-        shocks[i, i] = val
-    dict_['SHOCKS'] = shocks
+        shocks_cov[i, i] = val
+    dict_['SHOCKS'] = shocks_cov
 
     # INTERPOLATION
     dict_['INTERPOLATION'] = {}

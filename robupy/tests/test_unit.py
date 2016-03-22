@@ -83,7 +83,7 @@ class TestClass(object):
 
             # Extract auxiliary objects
             shocks_cholesky = model_paras['shocks_cholesky']
-            shocks = model_paras['shocks']
+            shocks_cov = model_paras['shocks_cov']
 
             # Iterate over a couple of admissible points
             for _ in range(10):
@@ -100,13 +100,13 @@ class TestClass(object):
                 py = get_payoffs(num_draws_emax, draws_emax, period, k,
                         payoffs_systematic, edu_max, edu_start, mapping_state_idx,
                         states_all, num_periods, periods_emax, delta, is_debug,
-                        shocks, level, is_ambiguous, measure, is_deterministic,
+                        shocks_cov, level, is_ambiguous, measure, is_deterministic,
                         shocks_cholesky)
 
                 f90 = fort_debug.wrapper_get_payoffs(num_draws_emax,
                         draws_emax, period, k, payoffs_systematic,
                         edu_max, edu_start, mapping_state_idx, states_all,
-                        num_periods, periods_emax, delta, is_debug, shocks,
+                        num_periods, periods_emax, delta, is_debug, shocks_cov,
                         level, is_ambiguous, measure, is_deterministic,
                         shocks_cholesky)
 
@@ -150,7 +150,7 @@ class TestClass(object):
                     'edu_start', 'edu_max', 'measure', 'delta', 'is_debug')
 
             # Auxiliary objects
-            shocks = model_paras['shocks']
+            shocks_cov = model_paras['shocks_cov']
             shocks_cholesky = model_paras['shocks_cholesky']
 
             # Sample draws
@@ -169,7 +169,7 @@ class TestClass(object):
 
             args = [num_draws_emax, draws_standard, period, k, payoffs_systematic,
                 edu_max, edu_start, mapping_state_idx, states_all, num_periods,
-                periods_emax, is_debug, delta, shocks, level, measure,
+                periods_emax, is_debug, delta, shocks_cov, level, measure,
                 is_deterministic, shocks_cholesky]
 
             f = fort_debug.wrapper_get_payoffs_ambiguity(*args)[0]
@@ -190,13 +190,13 @@ class TestClass(object):
 
         tiny = 1e-6
 
-        shocks = np.identity(4)*np.random.normal(size=1)**2
+        shocks_cov = np.identity(4)*np.random.normal(size=1)**2
         level = np.random.normal(size=1)**2
 
         # Setting up PYTHON SLSQP interface for constraints
         constraint = dict()
         constraint['type'] = 'eq'
-        constraint['args'] = (shocks, level)
+        constraint['args'] = (shocks_cov, level)
         constraint['fun'] = _divergence
 
         # Generate constraint periods
@@ -250,7 +250,7 @@ class TestClass(object):
         f = fort_debug.wrapper_slsqp_robufort(x0, maxiter, ftol, tiny,
                 num_draws_emax, draws_standard, period, k, payoffs_systematic,
                 edu_max, edu_start, mapping_state_idx, states_all,
-                num_periods, periods_emax, delta, is_debug, shocks, level,
+                num_periods, periods_emax, delta, is_debug, shocks_cov, level,
                 shocks_cholesky)
 
         # Check equality. If not equal up to the tolerance, also check

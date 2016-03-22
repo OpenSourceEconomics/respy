@@ -184,7 +184,7 @@ def _write_robufort_initialization(robupy_obj, request):
         file_.write(line)
 
         # SHOCKS
-        shocks = model_paras['shocks']
+        shocks_cov = model_paras['shocks_cov']
         for j in range(4):
             line = ' {0:15.5f} {1:15.5f} {2:15.5f} ' \
                    '{3:15.5f}\n'.format(*shocks[j])

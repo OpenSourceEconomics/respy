@@ -121,7 +121,7 @@ class TestClass(object):
 
         num_states = states_number_period[period]
 
-        shocks = model_paras['shocks']
+        shocks_cov = model_paras['shocks_cov']
 
         shifts = np.random.randn(4)
 
@@ -154,7 +154,7 @@ class TestClass(object):
         args = [period, num_periods, num_states, delta,
                 periods_payoffs_systematic, edu_max, edu_start,
                 mapping_state_idx, periods_emax, states_all, is_simulated,
-                num_draws_emax, shocks, level, is_ambiguous, is_debug,
+                num_draws_emax, shocks_cov, level, is_ambiguous, is_debug,
                 measure, maxe, draws_emax, is_deterministic,
                 shocks_cholesky]
 

@@ -55,7 +55,7 @@ def distribute_model_paras(model_paras, is_debug):
 
     coeffs_edu = model_paras['coeffs_edu']
     coeffs_home = model_paras['coeffs_home']
-    shocks = model_paras['shocks']
+    shocks_cov = model_paras['shocks_cov']
     shocks_cholesky = model_paras['shocks_cholesky']
 
     if is_debug:
@@ -292,15 +292,15 @@ def opt_get_model_parameters(x, is_debug):
     shocks_cholesky[3:4, 3] = x[25]
 
     # Shocks
-    shocks = np.matmul(shocks_cholesky, shocks_cholesky.T)
+    shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
 
     # Checks
     if is_debug:
-        args = [coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
+        args = [coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
                shocks_cholesky]
         assert check_model_parameters(*args)
 
     # Finishing
-    return coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, shocks_cholesky
+    return coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, shocks_cholesky
 
 

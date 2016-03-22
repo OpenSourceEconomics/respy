@@ -103,7 +103,7 @@ class RobupyCls(object):
         self.is_locked = False
 
     def update_model_paras(self, coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-            shocks, shocks_cholesky):
+                           shocks_cov, shocks_cholesky):
         """ Update model parameters.
         """
         # Distribute class attributes
@@ -120,7 +120,7 @@ class RobupyCls(object):
 
         model_paras['coeffs_b'] = coeffs_b
 
-        model_paras['shocks'] = shocks
+        model_paras['shocks_cov'] = shocks_cov
 
         # Update class attributes
         self.attr['model_paras'] = model_paras
@@ -267,21 +267,21 @@ class RobupyCls(object):
         self.attr['model_paras']['coeffs_home'] = \
             [init_dict['HOME']['int']]
 
-        self.attr['model_paras']['shocks'] = init_dict['SHOCKS']
+        self.attr['model_paras']['shocks_cov'] = init_dict['SHOCKS']
 
         # Carry the Cholesky decomposition as part of the model
         # parameters.
-        shocks = self.attr['model_paras']['shocks']
-        if np.count_nonzero(shocks) == 0:
+        shocks_cov = self.attr['model_paras']['shocks_cov']
+        if np.count_nonzero(shocks_cov) == 0:
             shocks_cholesky = np.zeros((4, 4))
         else:
-            shocks_cholesky = np.linalg.cholesky(shocks)
+            shocks_cholesky = np.linalg.cholesky(shocks_cov)
         self.attr['model_paras']['shocks_cholesky'] = shocks_cholesky
 
         # Ensure that all elements in the dictionary are of the same
         # type.
         keys = ['coeffs_a', 'coeffs_b', 'coeffs_edu', 'coeffs_home']
-        keys += ['shocks']
+        keys += ['shocks_cov']
         for key_ in keys:
             self.attr['model_paras'][key_] = \
                 np.array(self.attr['model_paras'][key_])
@@ -306,7 +306,7 @@ class RobupyCls(object):
         edu_max = self.attr['edu_max']
 
         # Extract auxiliary information
-        shocks = model_paras['shocks']
+        shocks_cov = model_paras['shocks_cov']
 
         # Update derived attributes
         self.attr['min_idx'] = min(num_periods, (edu_max - edu_start + 1))
@@ -365,7 +365,7 @@ class RobupyCls(object):
         level = self.attr['level']
 
         # Auxiliary objects
-        shocks = model_paras['shocks']
+        shocks_cov = model_paras['shocks_cov']
 
         # Debug status
         assert (is_debug in [True, False])
@@ -435,9 +435,9 @@ class RobupyCls(object):
         assert (version in ['FORTRAN', 'F2PY', 'PYTHON'])
 
         # Shock distribution
-        assert (isinstance(shocks, np.ndarray))
-        assert (np.all(np.isfinite(shocks)))
-        assert (shocks.shape == (4, 4))
+        assert (isinstance(shocks_cov, np.ndarray))
+        assert (np.all(np.isfinite(shocks_cov)))
+        assert (shocks_cov.shape == (4, 4))
 
         # Interpolation
         assert (is_interpolated in [True, False])
