@@ -7,10 +7,10 @@
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE wrapper_slsqp_robufort(x_internal, x_start, maxiter, ftol, tiny, &
-            num_draws_emax, draws_standard, period, k, payoffs_systematic, &
-            edu_max, &
-            edu_start, mapping_state_idx, states_all, num_periods, &
-            periods_emax, delta, is_debug, shocks_cov, level, shocks_cholesky)
+                num_draws_emax, draws_standard, period, k, payoffs_systematic, &
+                edu_max, edu_start, mapping_state_idx, states_all, & 
+                num_periods, periods_emax, delta, is_debug, shocks_cov, & 
+                level, shocks_cholesky)
 
     !/* external libraries    */
 
@@ -62,14 +62,15 @@ SUBROUTINE wrapper_slsqp_robufort(x_internal, x_start, maxiter, ftol, tiny, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_solve_fortran_bare(mapping_state_idx, periods_emax, & 
-                periods_payoffs_future, periods_payoffs_ex_post, &
-                periods_payoffs_systematic, states_all, states_number_period, & 
-                coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, edu_max, & 
-                delta, edu_start, is_debug, is_interpolated, level, measure, & 
-                min_idx, num_draws_emax, num_periods, num_points, & 
-                is_ambiguous, periods_draws_emax, is_deterministic, is_myopic, &
-                shocks_cholesky, max_states_period)
+SUBROUTINE wrapper_solve_fortran_bare(periods_payoffs_systematic, & 
+                periods_payoffs_ex_post, periods_payoffs_future, & 
+                states_number_period, mapping_state_idx, periods_emax, & 
+                states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, & 
+                shocks_cov, shocks_cholesky, is_deterministic, & 
+                is_interpolated, num_draws_emax, periods_draws_emax, & 
+                is_ambiguous, num_periods, num_points, edu_start, is_myopic, & 
+                is_debug, measure, edu_max, min_idx, delta, level, & 
+                max_states_period)
     
     !
     ! The presence of max_states_period breaks the equality of interfaces. 
@@ -140,14 +141,14 @@ SUBROUTINE wrapper_solve_fortran_bare(mapping_state_idx, periods_emax, &
 ! Algorithm
 !------------------------------------------------------------------------------- 
    
-    CALL solve_fortran_bare(mapping_state_idx_int, periods_emax_int, & 
-            periods_payoffs_future_int, periods_payoffs_ex_post_int, &
-            periods_payoffs_systematic_int, states_all_int, & 
-            states_number_period_int, coeffs_a, coeffs_b, coeffs_edu, & 
-            coeffs_home, shocks_cov, edu_max, delta, edu_start, is_debug, & 
-            is_interpolated, level, measure, min_idx, num_draws_emax, &
-            num_periods, num_points, is_ambiguous, periods_draws_emax, &
-            is_deterministic, is_myopic, shocks_cholesky)
+    CALL solve_fortran_bare(periods_payoffs_systematic_int, & 
+            periods_payoffs_ex_post_int, periods_payoffs_future_int, & 
+            states_number_period_int, mapping_state_idx_int, periods_emax_int, & 
+            states_all_int, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, & 
+            shocks_cov, shocks_cholesky, is_deterministic, & 
+            is_interpolated, num_draws_emax, periods_draws_emax, & 
+            is_ambiguous, num_periods, num_points, edu_start, is_myopic, & 
+            is_debug, measure, edu_max, min_idx, delta, level)
 
     ! Assign to initial objects for return to PYTHON
     periods_payoffs_systematic = periods_payoffs_systematic_int   

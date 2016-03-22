@@ -235,14 +235,14 @@ SUBROUTINE evaluate_criterion_function(rslt, mapping_state_idx, periods_emax, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE solve_fortran_bare(mapping_state_idx, periods_emax, & 
-                periods_payoffs_future, periods_payoffs_ex_post, &
-                periods_payoffs_systematic, states_all, states_number_period, & 
-                coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, & 
-                edu_max, delta, edu_start, is_debug, is_interpolated, level, & 
-                measure, min_idx, num_draws_emax, num_periods, num_points, & 
-                is_ambiguous, periods_draws_emax, is_deterministic, is_myopic,&
-                shocks_cholesky)
+SUBROUTINE solve_fortran_bare(periods_payoffs_systematic, & 
+                periods_payoffs_ex_post, periods_payoffs_future, & 
+                states_number_period, mapping_state_idx, periods_emax, & 
+                states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, & 
+                shocks_cov, shocks_cholesky, is_deterministic, & 
+                is_interpolated, num_draws_emax, periods_draws_emax, & 
+                is_ambiguous, num_periods, num_points, edu_start, is_myopic, & 
+                is_debug, measure, edu_max, min_idx, delta, level)
 
     !/* external objects        */
 

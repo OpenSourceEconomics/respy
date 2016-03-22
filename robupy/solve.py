@@ -7,8 +7,10 @@ import shlex
 import os
 
 # project library
+from robupy.auxiliary import distribute_model_paras
 from robupy.fortran.solve_fortran import solve_fortran
 from robupy.python.solve_python import solve_python
+from robupy.auxiliary import create_draws
 
 ''' Main function
 '''
@@ -39,7 +41,94 @@ def solve(robupy_obj):
     if version == 'FORTRAN':
         robupy_obj = solve_fortran(robupy_obj)
     else:
-        robupy_obj = solve_python(robupy_obj)
+        # Distribute class attributes
+        is_deterministic = robupy_obj.get_attr('is_deterministic')
+
+        is_interpolated = robupy_obj.get_attr('is_interpolated')
+
+        num_draws_emax = robupy_obj.get_attr('num_draws_emax')
+
+        is_ambiguous = robupy_obj.get_attr('is_ambiguous')
+
+        num_periods = robupy_obj.get_attr('num_periods')
+
+        model_paras = robupy_obj.get_attr('model_paras')
+
+        num_points = robupy_obj.get_attr('num_points')
+
+        seed_emax = robupy_obj.get_attr('seed_emax')
+
+        edu_start = robupy_obj.get_attr('edu_start')
+
+        is_python = robupy_obj.get_attr('is_python')
+
+        is_myopic = robupy_obj.get_attr('is_myopic')
+
+        is_debug = robupy_obj.get_attr('is_debug')
+
+        measure = robupy_obj.get_attr('measure')
+
+        edu_max = robupy_obj.get_attr('edu_max')
+
+        min_idx = robupy_obj.get_attr('min_idx')
+
+        store = robupy_obj.get_attr('store')
+
+        delta = robupy_obj.get_attr('delta')
+
+        level = robupy_obj.get_attr('level')
+
+        # Construct auxiliary objects
+        _start_ambiguity_logging(is_ambiguous, is_debug)
+
+        # Distribute model parameters
+        coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, shocks_cholesky = \
+            distribute_model_paras(model_paras, is_debug)
+
+
+
+        # Get the relevant set of disturbances. These are standard normal draws
+        # in the case of an ambiguous world. This function is located outside the
+        # actual bare solution algorithm to ease testing across implementations.
+        periods_draws_emax = create_draws(num_periods, num_draws_emax,
+                seed_emax, is_debug, 'emax', shocks_cholesky)
+
+        # Collect arguments
+        args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
+            shocks_cholesky, is_deterministic, is_interpolated, num_draws_emax,
+            periods_draws_emax, is_ambiguous, num_periods, num_points, edu_start,
+            is_myopic, is_debug, measure, edu_max, min_idx, delta, level,
+            is_python)
+
+        args = solve_python(*args)
+
+        periods_payoffs_systematic, periods_payoffs_ex_post = args[:2]
+        periods_payoffs_future, states_number_period = args[2:4]
+        mapping_state_idx, periods_emax, states_all = args[4:7]
+
+        robupy_obj.unlock()
+
+        robupy_obj.set_attr('periods_payoffs_systematic', periods_payoffs_systematic)
+
+        robupy_obj.set_attr('periods_payoffs_ex_post', periods_payoffs_ex_post)
+
+        robupy_obj.set_attr('periods_payoffs_future', periods_payoffs_future)
+
+        robupy_obj.set_attr('states_number_period', states_number_period)
+
+        robupy_obj.set_attr('mapping_state_idx', mapping_state_idx)
+
+        robupy_obj.set_attr('periods_emax', periods_emax)
+
+        robupy_obj.set_attr('states_all', states_all)
+
+        robupy_obj.set_attr('is_solved', True)
+
+        robupy_obj.lock()
+
+        # Store object to file
+        if store:
+            robupy_obj.store('solution.robupy.pkl')
 
     # Summarize optimizations in case of ambiguity
     if is_debug and is_ambiguous and (not is_myopic):
@@ -212,3 +301,14 @@ def _cleanup():
     """
     if os.path.exists('ambiguity.robupy.log'):
         os.unlink('ambiguity.robupy.log')
+
+
+def _start_ambiguity_logging(is_ambiguous, is_debug):
+    """ Start logging for ambiguity.
+    """
+    # Start logging if required
+    if os.path.exists('ambiguity.robupy.log'):
+        os.remove('ambiguity.robupy.log')
+
+    if is_debug and is_ambiguous:
+        open('ambiguity.robupy.log', 'w').close()

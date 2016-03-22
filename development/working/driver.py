@@ -19,8 +19,8 @@ robupy_obj = read('test.robupy.ini')
 # First, I simulate a dataset.
 solve(robupy_obj)
 
-simulate(robupy_obj)
+#simulate(robupy_obj)
 
-data_frame = process(robupy_obj)
+#data_frame = process(robupy_obj)
 
-estimate(robupy_obj, data_frame)
+#estimate(robupy_obj, data_frame)

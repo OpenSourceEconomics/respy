@@ -25,7 +25,7 @@ from robupy import read
 
 from robupy.python.py.python_library import get_payoffs
 
-from robupy.python.solve_python import solve_python_bare
+from robupy.python.solve_python import solve_python
 
 from robupy.tests.codes.random_init import generate_init
 
@@ -583,7 +583,7 @@ class TestClass(object):
                 distribute_model_paras(model_paras, is_debug)
 
         # Get set of draws
-        draws_emax = create_draws(num_periods, num_draws_emax,
+        periods_draws_emax = create_draws(num_periods, num_draws_emax,
                                                 seed_emax, is_debug, 'emax',
                                                 shocks_cholesky)
 
@@ -592,10 +592,9 @@ class TestClass(object):
 
         # Baseline input arguments.
         base_args = [coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
-            edu_max, delta, edu_start, is_debug, is_interpolated, level,
-            measure, min_idx, num_draws_emax, num_periods, num_points,
-            is_ambiguous, draws_emax, is_deterministic, is_myopic,
-            shocks_cholesky]
+            shocks_cholesky, is_deterministic, is_interpolated, num_draws_emax,
+            periods_draws_emax, is_ambiguous, num_periods, num_points, edu_start,
+            is_myopic, is_debug, measure, edu_max, min_idx, delta, level]
 
         # Check for the equality of the solution routines.
         base = None
@@ -604,7 +603,7 @@ class TestClass(object):
                 # Modifications to input arguments
                 args = base_args + [is_python]
                 # Get PYTHON/F2PY results
-                ret_args = solve_python_bare(*args)
+                ret_args = solve_python(*args)
             else:
                 # Modifications to input arguments
                 args = base_args + [max_states_period]
