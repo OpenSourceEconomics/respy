@@ -7,8 +7,10 @@ import pytest
 import os
 
 # ROBUPY imports
-from robupy import read
+from robupy import evaluate
+from robupy import process
 from robupy import solve
+from robupy import read
 
 # module-wide variables
 ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -27,11 +29,13 @@ class TestClass(object):
         robupy_obj = read(RESOURCES_DIR + '/test_first.robupy.ini')
         robupy_obj = solve(robupy_obj)
 
-        # Extract statistic
+        # Assess expected future value
         val = robupy_obj.get_attr('periods_emax')[0, :1]
+        np.testing.assert_allclose(val, 103320.40501)
 
-        # Evaluate statistic
-        np.testing.assert_allclose(val, [103320.40501])
+        # Assess evaluation
+        _, val = evaluate(robupy_obj, process(robupy_obj))
+        np.testing.assert_allclose(val, 1.97600565965)
 
     def test_2(self):
         """ Compare the solution of simple model against hard-coded results.
@@ -101,6 +105,10 @@ class TestClass(object):
         for i, val in enumerate(vals):
             (np.testing.assert_allclose(emax[0, 0], [val]))
 
+        # Assess evaluation
+        _, val = evaluate(robupy_obj, process(robupy_obj))
+        np.testing.assert_allclose(val, 0.00)
+
     def test_3(self):
         """ Test the solution of model with ambiguity.
         """
@@ -108,11 +116,13 @@ class TestClass(object):
         robupy_obj = read(RESOURCES_DIR + '/test_third.robupy.ini')
         robupy_obj = solve(robupy_obj)
 
-        # Extract statistic
+        # Assess expected future value
         val = robupy_obj.get_attr('periods_emax')[0, :1]
-
-        # Assert unchanged value
         np.testing.assert_allclose(val, 86121.335057)
+
+        # Assess evaluation
+        _, val = evaluate(robupy_obj, process(robupy_obj))
+        np.testing.assert_allclose(val, 1.9145852099486904)
 
     def test_4(self):
         """ Test the solution of model with ambiguity.
@@ -121,11 +131,13 @@ class TestClass(object):
         robupy_obj = read(RESOURCES_DIR + '/test_fourth.robupy.ini')
         robupy_obj = solve(robupy_obj)
 
-        # Extract statistic
+        # Assess expected future value
         val = robupy_obj.get_attr('periods_emax')[0, :1]
-
-        # Assert unchanged value
         np.testing.assert_allclose(val, 75.719528)
+
+        # Assess evaluation
+        _, val = evaluate(robupy_obj, process(robupy_obj))
+        np.testing.assert_allclose(val, 1.9175262133973903)
 
     def test_5(self, versions):
         """ Test the solution of deterministic model without ambiguity,
@@ -145,11 +157,13 @@ class TestClass(object):
 
             robupy_obj = solve(robupy_obj)
 
-            # Extract statistic
+            # Assess expected future value
             val = robupy_obj.get_attr('periods_emax')[0, :1]
-
-            # Assert unchanged value
             np.testing.assert_allclose(val, 88750)
+
+            # Assess evaluation
+            _, val = evaluate(robupy_obj, process(robupy_obj))
+            np.testing.assert_allclose(val, 1.0)
 
     def test_6(self, versions):
         """ Test the solution of deterministic model with ambiguity and
@@ -170,8 +184,10 @@ class TestClass(object):
 
             robupy_obj = solve(robupy_obj)
 
-            # Extract statistic
+            # Assess expected future value
             val = robupy_obj.get_attr('periods_emax')[0, :1]
-
-            # Assert unchanged value
             np.testing.assert_allclose(val, 88750)
+
+            # Assess evaluation
+            _, val = evaluate(robupy_obj, process(robupy_obj))
+            np.testing.assert_allclose(val, 1.0)
