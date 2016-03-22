@@ -17,13 +17,9 @@ from robupy.auxiliary import replace_missing_values
 '''
 
 
-def _add_results(robupy_obj, request):
+def _add_results(num_periods, min_idx, request):
     """ Add results to container.
     """
-    # Distribute class attributes
-    num_periods = robupy_obj.get_attr('num_periods')
-
-    min_idx = robupy_obj.get_attr('min_idx')
 
     # Get the maximum number of states. The special treatment is required as
     # it informs about the dimensions of some of the arrays that are
@@ -32,62 +28,28 @@ def _add_results(robupy_obj, request):
 
     os.unlink('.max_states_period.robufort.dat')
 
+    shape = (num_periods, num_periods, num_periods, min_idx, 2)
+    mapping_state_idx = _read_date('mapping_state_idx', shape)
 
+    shape = (num_periods,)
+    states_number_period = _read_date('states_number_period', shape)
 
-    # Labels for objects
-    labels = []
+    shape = (num_periods, max_states_period, 4)
+    states_all = _read_date('states_all', shape)
 
-    labels += ['mapping_state_idx']
+    shape = (num_periods, max_states_period, 4)
+    periods_payoffs_systematic = _read_date('periods_payoffs_systematic', shape)
 
-    labels += ['states_number_period']
+    shape = (num_periods, max_states_period, 4)
+    periods_payoffs_ex_post = _read_date('periods_payoffs_ex_post', shape)
 
-    labels += ['states_all']
+    shape = (num_periods, max_states_period)
+    periods_emax = _read_date('periods_emax', shape)
 
-    labels += ['periods_payoffs_systematic']
-
-    labels += ['periods_payoffs_ex_post']
-
-    labels += ['periods_emax']
-
-    # Shapes for the final arrays
-    shapes = []
-
-    shapes += [(num_periods, num_periods, num_periods, min_idx, 2)]
-
-    shapes += [(num_periods,)]
-
-    shapes += [(num_periods, max_states_period, 4)]
-
-    shapes += [(num_periods, max_states_period, 4)]
-
-    shapes += [(num_periods, max_states_period, 4)]
-
-    shapes += [(num_periods, max_states_period)]
-
-    # Add objects to class instance
-    robupy_obj.unlock()
-
-    for i in range(len(shapes)):
-
-        label, shape = labels[i], shapes[i]
-
-        file_ = '.' + label + '.robufort.dat'
-
-        # This special treatment is required as it is crucial for this data
-        # to stay of integer type. All other data is transformed to float in
-        # the replacement of missing values.
-        if label == 'states_number_period':
-            data = np.loadtxt(file_, dtype=np.int64)
-        else:
-            data = replace_missing_values(np.loadtxt(file_))
-
-        data = np.reshape(data, shape)
-
-        robupy_obj.set_attr(label, data)
-
-        os.unlink(file_)
-
-    robupy_obj.lock()
+    # Update class attributes with solution
+    args = [periods_payoffs_systematic, periods_payoffs_ex_post,
+            None, states_number_period, mapping_state_idx,
+            periods_emax, states_all]
 
     # Read in evaluation of criterion function
     eval_ = None
@@ -96,7 +58,7 @@ def _add_results(robupy_obj, request):
         os.unlink('.eval.robufort.dat')
 
     # Finishing
-    return robupy_obj, eval_
+    return args, eval_
 
 
 def _read_date(label, shape):
@@ -114,15 +76,17 @@ def _read_date(label, shape):
 
     data = np.reshape(data, shape)
 
+    # Cleanup
+    os.unlink(file_)
+
     # Finishing
     return data
 
 def _write_robufort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
-            is_deterministic, is_interpolated, num_draws_prob,
-            num_draws_emax, is_ambiguous, num_periods, num_points,
-            num_agents, seed_prob, seed_data, is_myopic, edu_start,
-            seed_emax, is_debug, min_idx, measure, edu_max, delta, level,
-            request):
+            is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
+            num_periods, num_points, is_myopic, edu_start, seed_emax,
+            is_debug, min_idx, measure, edu_max, delta, level,
+            num_draws_prob, num_agents, seed_prob, seed_data, request):
     """ Write out model request to hidden file .model.robufort.ini.
     """
 

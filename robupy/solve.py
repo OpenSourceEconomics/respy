@@ -73,25 +73,39 @@ def solve(robupy_obj):
 
     level = robupy_obj.get_attr('level')
 
+    num_draws_prob = robupy_obj.get_attr('num_draws_prob')
+    num_agents = robupy_obj.get_attr('num_agents')
+
+    seed_prob = robupy_obj.get_attr('seed_prob')
+    seed_data = robupy_obj.get_attr('seed_data')
+
+    # Construct auxiliary objects
+    _start_ambiguity_logging(is_ambiguous, is_debug)
+
+    # Distribute model parameters
+    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, shocks_cholesky = \
+        distribute_model_paras(model_paras, is_debug)
+
+    # Get the relevant set of disturbances. These are standard normal draws
+    # in the case of an ambiguous world. This function is located outside
+    # the actual bare solution algorithm to ease testing across
+    # implementations.
+    periods_draws_emax = create_draws(num_periods, num_draws_emax, seed_emax,
+        is_debug, 'emax', shocks_cholesky)
+
     # Select appropriate interface
     if version == 'FORTRAN':
-        robupy_obj = solve_fortran(robupy_obj)
+
+        # TODO: ALign interfaces?
+        args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
+            is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
+            num_periods, num_points, is_myopic, edu_start, seed_emax,
+            is_debug, min_idx, measure, edu_max, delta, level,
+            num_draws_prob, num_agents, seed_prob, seed_data, 'solve')
+
+        args = solve_fortran(*args)
+
     else:
-
-        # Construct auxiliary objects
-        _start_ambiguity_logging(is_ambiguous, is_debug)
-
-        # Distribute model parameters
-        coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, shocks_cholesky = \
-            distribute_model_paras(model_paras, is_debug)
-
-        # Get the relevant set of disturbances. These are standard normal draws
-        # in the case of an ambiguous world. This function is located outside
-        # the actual bare solution algorithm to ease testing across
-        # implementations.
-        periods_draws_emax = create_draws(num_periods, num_draws_emax,
-                seed_emax, is_debug, 'emax', shocks_cholesky)
-
         # Collect arguments
         args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
             shocks_cholesky, is_deterministic, is_interpolated, num_draws_emax,
@@ -101,48 +115,37 @@ def solve(robupy_obj):
 
         args = solve_python(*args)
 
-        periods_payoffs_systematic, periods_payoffs_ex_post = args[:2]
-        periods_payoffs_future, states_number_period = args[2:4]
-        mapping_state_idx, periods_emax, states_all = args[4:7]
+    periods_payoffs_systematic, periods_payoffs_ex_post = args[:2]
+    periods_payoffs_future, states_number_period = args[2:4]
+    mapping_state_idx, periods_emax, states_all = args[4:7]
 
-        robupy_obj.unlock()
-
-        robupy_obj.set_attr('periods_payoffs_systematic', periods_payoffs_systematic)
-
-        robupy_obj.set_attr('periods_payoffs_ex_post', periods_payoffs_ex_post)
-
-        robupy_obj.set_attr('periods_payoffs_future', periods_payoffs_future)
-
-        robupy_obj.set_attr('states_number_period', states_number_period)
-
-        robupy_obj.set_attr('mapping_state_idx', mapping_state_idx)
-
-        robupy_obj.set_attr('periods_emax', periods_emax)
-
-        robupy_obj.set_attr('states_all', states_all)
-
-        robupy_obj.set_attr('is_solved', True)
-
-        robupy_obj.lock()
-
-        # Store object to file
-        if store:
-            robupy_obj.store('solution.robupy.pkl')
-
-    # Summarize optimizations in case of ambiguity
-    if is_debug and is_ambiguous and (not is_myopic):
-        _summarize_ambiguity(robupy_obj)
-
-    # Set flag that object includes the solution objects
     robupy_obj.unlock()
+
+    robupy_obj.set_attr('periods_payoffs_systematic', periods_payoffs_systematic)
+
+    robupy_obj.set_attr('periods_payoffs_ex_post', periods_payoffs_ex_post)
+
+    robupy_obj.set_attr('periods_payoffs_future', periods_payoffs_future)
+
+    robupy_obj.set_attr('states_number_period', states_number_period)
+
+    robupy_obj.set_attr('mapping_state_idx', mapping_state_idx)
+
+    robupy_obj.set_attr('periods_emax', periods_emax)
+
+    robupy_obj.set_attr('states_all', states_all)
 
     robupy_obj.set_attr('is_solved', True)
 
     robupy_obj.lock()
 
-    # Store results if requested
+    # Store object to file
     if store:
         robupy_obj.store('solution.robupy.pkl')
+
+    # Summarize optimizations in case of ambiguity
+    if is_debug and is_ambiguous and (not is_myopic):
+        _summarize_ambiguity(robupy_obj)
 
     # Orderly shutdown of logging capability.
     _stop_logging()
