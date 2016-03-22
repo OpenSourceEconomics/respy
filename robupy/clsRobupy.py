@@ -103,7 +103,7 @@ class RobupyCls(object):
         self.is_locked = False
 
     def update_model_paras(self, coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-                           shocks_cov, shocks_cholesky):
+            shocks_cov, shocks_cholesky):
         """ Update model parameters.
         """
         # Distribute class attributes

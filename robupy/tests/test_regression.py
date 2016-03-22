@@ -8,6 +8,7 @@ import os
 
 # ROBUPY imports
 from robupy import evaluate
+from robupy import simulate
 from robupy import process
 from robupy import solve
 from robupy import read
@@ -28,6 +29,7 @@ class TestClass(object):
         # Solve specified economy
         robupy_obj = read(RESOURCES_DIR + '/test_first.robupy.ini')
         robupy_obj = solve(robupy_obj)
+        simulate(robupy_obj)
 
         # Assess expected future value
         val = robupy_obj.get_attr('periods_emax')[0, :1]
@@ -43,6 +45,7 @@ class TestClass(object):
         # Solve specified economy
         robupy_obj = read(RESOURCES_DIR + '/test_second.robupy.ini')
         robupy_obj = solve(robupy_obj)
+        simulate(robupy_obj)
 
         # Distribute class attributes
         systematic = robupy_obj.get_attr('periods_payoffs_systematic')
@@ -115,6 +118,7 @@ class TestClass(object):
         # Solve specified economy
         robupy_obj = read(RESOURCES_DIR + '/test_third.robupy.ini')
         robupy_obj = solve(robupy_obj)
+        simulate(robupy_obj)
 
         # Assess expected future value
         val = robupy_obj.get_attr('periods_emax')[0, :1]
@@ -130,6 +134,7 @@ class TestClass(object):
         # Solve specified economy
         robupy_obj = read(RESOURCES_DIR + '/test_fourth.robupy.ini')
         robupy_obj = solve(robupy_obj)
+        simulate(robupy_obj)
 
         # Assess expected future value
         val = robupy_obj.get_attr('periods_emax')[0, :1]
@@ -156,6 +161,7 @@ class TestClass(object):
             robupy_obj.lock()
 
             robupy_obj = solve(robupy_obj)
+            simulate(robupy_obj)
 
             # Assess expected future value
             val = robupy_obj.get_attr('periods_emax')[0, :1]
@@ -183,6 +189,7 @@ class TestClass(object):
             robupy_obj.lock()
 
             robupy_obj = solve(robupy_obj)
+            simulate(robupy_obj)
 
             # Assess expected future value
             val = robupy_obj.get_attr('periods_emax')[0, :1]

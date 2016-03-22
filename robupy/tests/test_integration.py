@@ -117,6 +117,7 @@ class TestClass(object):
 
             # Solve the model
             robupy_obj = solve(robupy_obj)
+            simulate(robupy_obj)
 
             # This parts checks the equality of simulated dataset for the
             # different versions of the code.
@@ -312,6 +313,8 @@ class TestClass(object):
             robupy_obj.lock()
 
             solve(robupy_obj)
+
+            simulate(robupy_obj)
 
             # This parts checks the equality of simulated dataset for the
             # different versions of the code.
