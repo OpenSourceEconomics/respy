@@ -40,9 +40,9 @@ VERSIONS = ['PYTHON', 'FORTRAN', 'F2PY']
 
 ''' Request
 '''
-seed = 92118
+seed = 92112
 
-if False:
+if True:
     build_robupy_package(False)
     build_testing_library(False)
 
@@ -56,7 +56,7 @@ np.random.seed(seed)
 test_dict = get_test_dict(TEST_DIR)
 module, method = get_random_request(test_dict)
 
-module, method = 'test_regression', 'test_6'
+#module, method = 'test_regression', 'test_6'
 
 mod = importlib.import_module(module)
 test = getattr(mod.TestClass(), method)

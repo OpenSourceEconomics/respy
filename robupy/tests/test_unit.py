@@ -98,9 +98,10 @@ class TestClass(object):
 
                 # Extract payoffs using PYTHON and FORTRAN codes.
                 py = get_payoffs(num_draws_emax, draws_emax, period, k,
-                        payoffs_systematic, edu_max, edu_start, mapping_state_idx,
-                        states_all, num_periods, periods_emax, delta, is_debug,
-                        shocks_cov, level, is_ambiguous, measure, is_deterministic,
+                        payoffs_systematic, edu_max, edu_start,
+                        mapping_state_idx, states_all, num_periods,
+                        periods_emax, delta, is_debug, shocks_cov, level,
+                        is_ambiguous, measure, is_deterministic,
                         shocks_cholesky)
 
                 f90 = fort_debug.wrapper_get_payoffs(num_draws_emax,
