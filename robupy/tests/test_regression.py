@@ -36,7 +36,7 @@ class TestClass(object):
         np.testing.assert_allclose(val, 103320.40501)
 
         # Assess evaluation
-        _, val = evaluate(robupy_obj, process(robupy_obj))
+        val = evaluate(robupy_obj, process(robupy_obj))
         np.testing.assert_allclose(val, 1.97600565965)
 
     def test_2(self):
@@ -109,7 +109,7 @@ class TestClass(object):
             (np.testing.assert_allclose(emax[0, 0], [val]))
 
         # Assess evaluation
-        _, val = evaluate(robupy_obj, process(robupy_obj))
+        val = evaluate(robupy_obj, process(robupy_obj))
         np.testing.assert_allclose(val, 0.00)
 
     def test_3(self):
@@ -125,7 +125,7 @@ class TestClass(object):
         np.testing.assert_allclose(val, 86121.335057)
 
         # Assess evaluation
-        _, val = evaluate(robupy_obj, process(robupy_obj))
+        val = evaluate(robupy_obj, process(robupy_obj))
         np.testing.assert_allclose(val, 1.9145852099486904)
 
     def test_4(self):
@@ -141,7 +141,7 @@ class TestClass(object):
         np.testing.assert_allclose(val, 75.719528)
 
         # Assess evaluation
-        _, val = evaluate(robupy_obj, process(robupy_obj))
+        val = evaluate(robupy_obj, process(robupy_obj))
         np.testing.assert_allclose(val, 1.9175262133973903)
 
     def test_5(self, versions):
@@ -168,7 +168,7 @@ class TestClass(object):
             np.testing.assert_allclose(val, 88750)
 
             # Assess evaluation
-            _, val = evaluate(robupy_obj, process(robupy_obj))
+            val = evaluate(robupy_obj, process(robupy_obj))
             np.testing.assert_allclose(val, 1.0)
 
     def test_6(self, versions):
@@ -196,5 +196,5 @@ class TestClass(object):
             np.testing.assert_allclose(val, 88750)
 
             # Assess evaluation
-            _, val = evaluate(robupy_obj, process(robupy_obj))
+            val = evaluate(robupy_obj, process(robupy_obj))
             np.testing.assert_allclose(val, 1.0)

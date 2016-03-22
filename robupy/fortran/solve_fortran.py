@@ -36,7 +36,7 @@ def solve_fortran(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
     os.system('"' + PACKAGE_PATH + '/bin/robufort"')
 
     # Add results
-    args, _ = _add_results(num_periods, min_idx, 'solve')
+    args = _add_results(num_periods, min_idx, 'solve')
 
     # Finishing
     return args

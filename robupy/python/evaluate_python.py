@@ -11,8 +11,6 @@ import numpy as np
 from robupy.python.solve_python import solve_python
 from robupy.python.py.auxiliary import get_total_value
 
-from robupy.auxiliary import distribute_model_paras
-from robupy.auxiliary import create_draws
 
 from robupy.constants import SMALL_FLOAT
 from robupy.constants import TINY_FLOAT
@@ -22,67 +20,23 @@ from robupy.constants import HUGE_FLOAT
 '''
 
 
-def evaluate_python(robupy_obj, data_frame):
+def evaluate_python(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
+        shocks_cholesky, is_deterministic, is_interpolated, num_draws_emax,
+        periods_draws_emax, is_ambiguous, num_periods, num_points, edu_start,
+        is_myopic, is_debug, measure, edu_max, min_idx, delta, level,
+        data_frame,  num_agents, num_draws_prob,
+        periods_draws_prob, is_python):
     """ Evaluate the criterion function of the model using PYTHON/F2PY code.
     This purpose of this wrapper is to extract all relevant information from
     the project class to pass it on to the actual evaluation functions. This is
     required to align the functions across the PYTHON and F2PY implementations.
     """
-    # Distribute class attribute
-    is_deterministic = robupy_obj.get_attr('is_deterministic')
 
-    is_interpolated = robupy_obj.get_attr('is_interpolated')
-
-    num_draws_emax = robupy_obj.get_attr('num_draws_emax')
-
-    num_draws_prob = robupy_obj.get_attr('num_draws_prob')
-
-    is_ambiguous = robupy_obj.get_attr('is_ambiguous')
-
-    model_paras = robupy_obj.get_attr('model_paras')
-
-    num_periods = robupy_obj.get_attr('num_periods')
-
-    num_points = robupy_obj.get_attr('num_points')
-
-    num_agents = robupy_obj.get_attr('num_agents')
-
-    seed_prob = robupy_obj.get_attr('seed_prob')
-
-    seed_emax = robupy_obj.get_attr('seed_emax')
-
-    is_python = robupy_obj.get_attr('is_python')
-
-    edu_start = robupy_obj.get_attr('edu_start')
-
-    is_myopic = robupy_obj.get_attr('is_myopic')
-
-    is_debug = robupy_obj.get_attr('is_debug')
-
-    edu_max = robupy_obj.get_attr('edu_max')
-
-    measure = robupy_obj.get_attr('measure')
-
-    min_idx = robupy_obj.get_attr('min_idx')
-
-    level = robupy_obj.get_attr('level')
-
-    delta = robupy_obj.get_attr('delta')
 
     # Transform dataset to array for easy access
     data_array = data_frame.as_matrix()
 
-    # Distribute model parameters
-    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, shocks_cholesky = \
-        distribute_model_paras(model_paras, is_debug)
 
-    # Draw standard normal deviates for choice probability integration
-    periods_draws_prob = create_draws(num_periods, num_draws_prob, seed_prob,
-        is_debug, 'prob', shocks_cholesky)
-
-    # Draw standard normal deviates for EMAX integration
-    periods_draws_emax = create_draws(num_periods, num_draws_emax, seed_emax,
-        is_debug, 'emax', shocks_cholesky)
 
     # Solve model for given parametrization
     args = solve_python(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
@@ -96,28 +50,6 @@ def evaluate_python(robupy_obj, data_frame):
     mapping_state_idx, periods_emax, states_all = args[4:7]
 
     # Evaluate the criterion function
-    likl = _evaluate_python_bare(mapping_state_idx, periods_emax,
-        periods_payoffs_systematic, states_all, shocks_cov, edu_max, delta,
-        edu_start, num_periods, shocks_cholesky, num_agents, num_draws_prob,
-        data_array, periods_draws_prob, is_deterministic, is_python)
-
-    # Finishing
-    return robupy_obj, likl
-
-
-''' Auxiliary functions
-'''
-
-
-def _evaluate_python_bare(mapping_state_idx, periods_emax,
-        periods_payoffs_systematic, states_all, shocks_cov, edu_max, delta,
-        edu_start, num_periods, shocks_cholesky, num_agents, num_draws_prob,
-        data_array, periods_draws_prob, is_deterministic, is_python):
-    """ This function is required to ensure a full analogy to F2PY and
-    FORTRAN implementations. The first part of the interface is identical to
-    the solution request functions.
-    """
-
     if is_python:
         likl = evaluate_criterion_function(mapping_state_idx, periods_emax,
             periods_payoffs_systematic, states_all, shocks_cov, edu_max, delta,
@@ -133,6 +65,10 @@ def _evaluate_python_bare(mapping_state_idx, periods_emax,
 
     # Finishing
     return likl
+
+
+''' Auxiliary functions
+'''
 
 
 # Solve the model for given parametrization

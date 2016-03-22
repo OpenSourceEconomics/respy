@@ -11,7 +11,6 @@ from scipy.optimize import minimize
 from robupy.fortran.evaluate_fortran import evaluate_fortran
 from robupy.python.evaluate_python import evaluate_python
 from robupy.auxiliary import check_dataset
-from robupy.python.evaluate_python import _evaluate_python_bare
 
 from robupy.auxiliary import distribute_model_paras
 from robupy.python.solve_python import solve_python
@@ -24,28 +23,28 @@ def criterion(x, data_frame, edu_max, delta, edu_start, is_debug,
         num_periods, num_points, is_ambiguous, periods_draws_emax,
         is_deterministic, is_myopic, num_agents, num_draws_prob, data_array,
             periods_draws_prob, is_python):
-
-    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, shocks_cholesky = \
-        opt_get_model_parameters(x, is_debug)
-
-    # Solve model for given parametrization
-    args = solve_python(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
-        shocks_cholesky, is_deterministic, is_interpolated, num_draws_emax,
-        periods_draws_emax, is_ambiguous, num_periods, num_points, edu_start,
-        is_myopic, is_debug, measure, edu_max, min_idx, delta, level,
-        is_python)
-
-    # Distribute return arguments from solution run
-    mapping_state_idx, periods_emax, periods_payoffs_future = args[:3]
-    periods_payoffs_ex_post, periods_payoffs_systematic, states_all = args[3:6]
-
-    # Evaluate the criterion function
-    likl = _evaluate_python_bare(mapping_state_idx, periods_emax,
-        periods_payoffs_systematic, states_all, shocks_cov, edu_max,
-        delta, edu_start, num_periods, shocks_cholesky, num_agents,
-        num_draws_prob, data_array, periods_draws_prob, is_deterministic,
-        is_python)
-
+    #
+    # coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, shocks_cholesky = \
+    #     opt_get_model_parameters(x, is_debug)
+    #
+    # # Solve model for given parametrization
+    # args = solve_python(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
+    #     shocks_cholesky, is_deterministic, is_interpolated, num_draws_emax,
+    #     periods_draws_emax, is_ambiguous, num_periods, num_points, edu_start,
+    #     is_myopic, is_debug, measure, edu_max, min_idx, delta, level,
+    #     is_python)
+    #
+    # # Distribute return arguments from solution run
+    # mapping_state_idx, periods_emax, periods_payoffs_future = args[:3]
+    # periods_payoffs_ex_post, periods_payoffs_systematic, states_all = args[3:6]
+    #
+    # # Evaluate the criterion function
+    # likl = evaluate_python(mapping_state_idx, periods_emax,
+    #     periods_payoffs_systematic, states_all, shocks_cov, edu_max,
+    #     delta, edu_start, num_periods, shocks_cholesky, num_agents,
+    #     num_draws_prob, data_array, periods_draws_prob, is_deterministic,
+    #     is_python)
+    likl = 0.0
     print(likl)
     # Finishing
     return likl
@@ -98,7 +97,6 @@ def estimate(robupy_obj, data_frame):
     is_python = robupy_obj.get_attr('is_python')
 
     num_agents = robupy_obj.get_attr('num_agents')
-
 
     # Collect arguments for optimization
     args = (data_frame, edu_max, delta, edu_start, is_debug, is_interpolated,

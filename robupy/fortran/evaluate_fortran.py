@@ -3,6 +3,7 @@ evaluate the likelihood function.
 """
 
 # standard library
+import numpy as np
 import os
 
 # project library
@@ -17,11 +18,22 @@ PACKAGE_PATH = os.path.dirname(os.path.realpath(__file__))
 '''
 
 
-def evaluate_fortran(robupy_obj, data_frame):
+def evaluate_fortran(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
+            is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
+            num_periods, num_points, is_myopic, edu_start, seed_emax,
+            is_debug, min_idx, measure, edu_max, delta, level,
+            num_draws_prob, num_agents, seed_prob, seed_data, request,
+                     data_frame):
     """ Solve dynamic programming using FORTRAN.
     """
     # Prepare ROBUFORT execution
-    _write_robufort_initialization(robupy_obj, 'evaluate')
+    args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
+            is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
+            num_periods, num_points, is_myopic, edu_start, seed_emax,
+            is_debug, min_idx, measure, edu_max, delta, level,
+            num_draws_prob, num_agents, seed_prob, seed_data, 'evaluate')
+
+    _write_robufort_initialization(*args)
 
     _write_dataset(data_frame)
 
@@ -29,10 +41,14 @@ def evaluate_fortran(robupy_obj, data_frame):
     os.system('"' + PACKAGE_PATH + '/bin/robufort"')
 
     # Add results
-    robupy_obj, eval_ = _add_results(robupy_obj, 'evaluate')
+    eval_ = None
+    if request == 'evaluate':
+        eval_ = float(np.genfromtxt('.eval.robufort.dat'))
+        os.unlink('.eval.robufort.dat')
+
 
     # Finishing
-    return robupy_obj, eval_
+    return eval_
 
 ''' Auxiliary function
 '''

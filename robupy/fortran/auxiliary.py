@@ -51,15 +51,8 @@ def _add_results(num_periods, min_idx, request):
             None, states_number_period, mapping_state_idx,
             periods_emax, states_all]
 
-    # Read in evaluation of criterion function
-    eval_ = None
-    if request == 'evaluate':
-        eval_ = float(np.genfromtxt('.eval.robufort.dat'))
-        os.unlink('.eval.robufort.dat')
-
     # Finishing
-    return args, eval_
-
+    return args
 
 def _read_date(label, shape):
     """ Read results

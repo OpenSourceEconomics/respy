@@ -56,7 +56,7 @@ np.random.seed(seed)
 test_dict = get_test_dict(TEST_DIR)
 module, method = get_random_request(test_dict)
 
-module, method = 'test_regression', 'test_5'
+module, method = 'test_integration', 'test_2'
 
 mod = importlib.import_module(module)
 test = getattr(mod.TestClass(), method)

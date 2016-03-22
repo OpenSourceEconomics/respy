@@ -132,7 +132,7 @@ class TestClass(object):
             # criterion function.
             data_frame = simulate(robupy_obj)
 
-            robupy_obj, eval_ = evaluate(robupy_obj, data_frame)
+            eval_ = evaluate(robupy_obj, data_frame)
 
             if base_eval is None:
                 base_eval = eval_
@@ -329,7 +329,7 @@ class TestClass(object):
             # criterion function.
             data_frame = simulate(robupy_obj)
 
-            robupy_obj, eval_ = evaluate(robupy_obj, data_frame)
+            eval_ = evaluate(robupy_obj, data_frame)
 
             if base_eval is None:
                 base_eval = eval_
