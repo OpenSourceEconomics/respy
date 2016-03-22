@@ -24,10 +24,10 @@ CONTAINS
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, payoffs_future, &
-                num_periods, num_draws_emax, period, k, & 
-                draws_emax, payoffs_systematic, edu_max, & 
-                edu_start, periods_emax, states_all, mapping_state_idx, delta, & 
-                shocks_cholesky, shocks_mean)
+                num_periods, num_draws_emax, period, k, draws_emax, & 
+                payoffs_systematic, edu_max, edu_start, periods_emax, & 
+                states_all, mapping_state_idx, delta, shocks_cholesky, & 
+                shocks_mean)
 
     !/* external objects    */
 
@@ -35,8 +35,8 @@ SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, payoffs_future, &
     REAL(our_dble), INTENT(OUT)     :: payoffs_future(:)
     REAL(our_dble), INTENT(OUT)     :: emax_simulated
 
-    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:,:,:,:,:)
-    INTEGER(our_int), INTENT(IN)    :: states_all(:,:,:)
+    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:, :, :, :, :)
+    INTEGER(our_int), INTENT(IN)    :: states_all(:, :, :)
     INTEGER(our_int), INTENT(IN)    :: num_draws_emax
     INTEGER(our_int), INTENT(IN)    :: num_periods
     INTEGER(our_int), INTENT(IN)    :: edu_start
@@ -44,10 +44,10 @@ SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, payoffs_future, &
     INTEGER(our_int), INTENT(IN)    :: period
     INTEGER(our_int), INTENT(IN)    :: k
 
-    REAL(our_dble), INTENT(IN)      :: draws_emax(:,:)
     REAL(our_dble), INTENT(IN)      :: payoffs_systematic(:)
-    REAL(our_dble), INTENT(IN)      :: shocks_cholesky(:,:)
-    REAL(our_dble), INTENT(IN)      :: periods_emax(:,:)
+    REAL(our_dble), INTENT(IN)      :: shocks_cholesky(:, :)
+    REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
+    REAL(our_dble), INTENT(IN)      :: draws_emax(:, :)
     REAL(our_dble), INTENT(IN)      :: shocks_mean(:)
 
     REAL(our_dble), INTENT(IN)      :: delta
@@ -56,11 +56,10 @@ SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, payoffs_future, &
 
     INTEGER(our_int)                :: i
 
+    REAL(our_dble)                  :: draws_emax_transformed(num_draws_emax, 4)
     REAL(our_dble)                  :: total_payoffs(4)
     REAL(our_dble)                  :: draws(4)
     REAL(our_dble)                  :: maximum
-
-    REAL(our_dble)                  :: draws_emax_transformed(num_draws_emax, 4)
 
 !-------------------------------------------------------------------------------
 ! Algorithm
@@ -76,7 +75,8 @@ SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, payoffs_future, &
             TRANSPOSE(MATMUL(shocks_cholesky, TRANSPOSE(draws_emax(i:i, :)))) 
     END DO
     
-    draws_emax_transformed(:, :2) = draws_emax_transformed(:, :2) + SPREAD(shocks_mean, 1, num_draws_emax)
+    draws_emax_transformed(:, :2) = draws_emax_transformed(:, :2) + &
+        SPREAD(shocks_mean, 1, num_draws_emax)
 
     DO i = 1, 2
         draws_emax_transformed(:, i) = &
@@ -111,9 +111,9 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE get_total_value(total_payoffs, payoffs_ex_post, payoffs_future, &
-                period, num_periods, delta, payoffs_systematic, & 
-                draws, edu_max, edu_start, mapping_state_idx, & 
-                periods_emax, k, states_all)
+                period, num_periods, delta, payoffs_systematic, draws, & 
+                edu_max, edu_start, mapping_state_idx, periods_emax, k, & 
+                states_all)
 
     !   Development Note:
     !   
@@ -162,7 +162,6 @@ SUBROUTINE get_total_value(total_payoffs, payoffs_ex_post, payoffs_future, &
 
     ! Calculate total utilities
     total_payoffs = payoffs_ex_post + delta * payoffs_future
-
 
     ! This is required to ensure that the agent does not choose any
     ! inadmissible states.

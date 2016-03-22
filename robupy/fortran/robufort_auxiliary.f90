@@ -814,7 +814,7 @@ FUNCTION pinv(A, m)
     INTEGER(our_int)                :: i
 
     REAL(our_dble)                  :: VT(m, m)
-    REAL(our_dble)                  :: UT(m,m) 
+    REAL(our_dble)                  :: UT(m, m) 
     REAL(our_dble)                  :: U(m, m)
     REAL(our_dble)                  :: cutoff
     REAL(our_dble)                  :: S(m) 
@@ -860,7 +860,7 @@ SUBROUTINE cholesky(factor, matrix)
 
     REAL(our_dble), INTENT(OUT)     :: factor(:,:)
 
-    REAL(our_dble), INTENT(IN)      :: matrix(:,:)
+    REAL(our_dble), INTENT(IN)      :: matrix(:, :)
 
     !/* internal objects        */
 
@@ -1063,9 +1063,9 @@ SUBROUTINE get_clipped_vector(Y, X, lower_bound, upper_bound, num_values)
 
     REAL(our_dble), INTENT(INOUT)       :: Y(:)
 
-    REAL(our_dble), INTENT(IN)          :: X(:)
     REAL(our_dble), INTENT(IN)          :: lower_bound
     REAL(our_dble), INTENT(IN)          :: upper_bound
+    REAL(our_dble), INTENT(IN)          :: X(:)
     
     INTEGER(our_int), INTENT(IN)        :: num_values
 
@@ -1106,7 +1106,7 @@ SUBROUTINE point_predictions(Y, X, coeffs, num_agents)
     REAL(our_dble), INTENT(OUT)     :: Y(:)
 
     REAL(our_dble), INTENT(IN)      :: coeffs(:)
-    REAL(our_dble), INTENT(IN)      :: X(:,:)
+    REAL(our_dble), INTENT(IN)      :: X(:, :)
     
     INTEGER(our_int), INTENT(IN)    :: num_agents
 

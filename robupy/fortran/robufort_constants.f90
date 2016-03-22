@@ -1,6 +1,6 @@
 MODULE robufort_constants
 
-	!/*	setup	*/
+    !/*	setup	                */
 
     IMPLICIT NONE
     
@@ -9,8 +9,8 @@ MODULE robufort_constants
 !------------------------------------------------------------------------------- 
 
     INTEGER, PARAMETER :: our_int   = selected_int_kind(9)
-    INTEGER, PARAMETER :: our_sgle  = selected_real_kind(6,37)
-    INTEGER, PARAMETER :: our_dble  = selected_real_kind(15,307)
+    INTEGER, PARAMETER :: our_sgle  = selected_real_kind(6, 37)
+    INTEGER, PARAMETER :: our_dble  = selected_real_kind(15, 307)
 
     INTEGER(our_int), PARAMETER :: zero_int     = 0_our_int
     INTEGER(our_int), PARAMETER :: one_int      = 1_our_int
@@ -37,10 +37,9 @@ MODULE robufort_constants
     INTEGER(our_int), PARAMETER :: MISSING_INT  = -99_our_int
 
     REAL(our_dble), PARAMETER :: MISSING_FLOAT  = -99.0_our_dble
+    REAL(our_dble), PARAMETER :: SMALL_FLOAT    = 1.0e-5_our_dble
     REAL(our_dble), PARAMETER :: HUGE_FLOAT     = 1.0e10_our_dble
     REAL(our_dble), PARAMETER :: TINY_FLOAT     = 1.0e-20_our_dble
-
-    REAL(our_dble), PARAMETER :: SMALL_FLOAT     = 1.0e-5_our_dble
 
     ! Interpolation
     REAL(our_dble), PARAMETER :: interpolation_inadmissible_states = -50000.00_our_dble

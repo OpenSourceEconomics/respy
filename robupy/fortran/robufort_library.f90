@@ -35,7 +35,8 @@ MODULE robufort_library
 SUBROUTINE evaluate_criterion_function(rslt, mapping_state_idx, periods_emax, & 
                 periods_payoffs_systematic, states_all, shocks_cov, edu_max, & 
                 delta, edu_start, num_periods, shocks_cholesky, num_agents, &
-                num_draws_prob, data_array, periods_draws_prob, is_deterministic)
+                num_draws_prob, data_array, periods_draws_prob, & 
+                is_deterministic)
 
     !/* external objects        */
 
@@ -152,7 +153,6 @@ SUBROUTINE evaluate_criterion_function(rslt, mapping_state_idx, periods_emax, &
                 ! Record contribution of wage observation. REPLACE 0.0
                 likl_contrib =  likl_contrib * normal_pdf(dist, DBLE(0.0), sqrt(shocks_cov(idx, idx)))
 
-
                 ! If there is no random variation in payoffs, then the
                 ! observed wages need to be identical their systematic
                 ! components. The discrepancy between the observed wages and 
@@ -238,9 +238,9 @@ END SUBROUTINE
 SUBROUTINE solve_fortran_bare(mapping_state_idx, periods_emax, & 
                 periods_payoffs_future, periods_payoffs_ex_post, &
                 periods_payoffs_systematic, states_all, states_number_period, & 
-                coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, edu_max, & 
-                delta, edu_start, is_debug, is_interpolated, level, measure, & 
-                min_idx, num_draws_emax, num_periods, num_points, & 
+                coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, & 
+                edu_max, delta, edu_start, is_debug, is_interpolated, level, & 
+                measure, min_idx, num_draws_emax, num_periods, num_points, & 
                 is_ambiguous, periods_draws_emax, is_deterministic, is_myopic,&
                 shocks_cholesky)
 
@@ -326,6 +326,7 @@ SUBROUTINE solve_fortran_bare(mapping_state_idx, periods_emax, &
     
     ! Perform backward induction procedure.
     IF (is_myopic) THEN
+
         ! All other objects remain set to MISSING_FLOAT. This align the
         ! treatment for the two special cases: (1) is_myopic and (2)
         ! is_interpolated.
@@ -490,7 +491,7 @@ SUBROUTINE calculate_payoffs_systematic(periods_payoffs_systematic, &
     REAL(our_dble), INTENT(IN)          :: coeffs_b(:)
 
     INTEGER(our_int), INTENT(IN)        :: states_number_period(:)
-    INTEGER(our_int), INTENT(IN)        :: states_all(:,:,:)
+    INTEGER(our_int), INTENT(IN)        :: states_all(:, :, :)
     INTEGER(our_int), INTENT(IN)        :: max_states_period
     INTEGER(our_int), INTENT(IN)        :: num_periods
     INTEGER(our_int), INTENT(IN)        :: edu_start
@@ -579,11 +580,11 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
                 periods_payoffs_future, num_periods, max_states_period, &
-                periods_draws_emax, num_draws_emax, & 
-                states_number_period, periods_payoffs_systematic, edu_max, & 
-                edu_start, mapping_state_idx, states_all, delta, is_debug, & 
-                shocks_cov, level, is_ambiguous, measure, is_interpolated, & 
-                num_points, is_deterministic, shocks_cholesky)
+                periods_draws_emax, num_draws_emax, states_number_period, & 
+                periods_payoffs_systematic, edu_max, edu_start, & 
+                mapping_state_idx, states_all, delta, is_debug, shocks_cov, & 
+                level, is_ambiguous, measure, is_interpolated, num_points, & 
+                is_deterministic, shocks_cholesky)
 
     !
     ! Development Notes
@@ -694,8 +695,8 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
             CALL get_endogenous_variable(endogenous, period, num_periods, &
                     num_states, delta, periods_payoffs_systematic, edu_max, & 
                     edu_start, mapping_state_idx, periods_emax, states_all, & 
-                    is_simulated, num_draws_emax, shocks_cov, level, is_ambiguous, &
-                    is_debug, measure, maxe, draws_emax, & 
+                    is_simulated, num_draws_emax, shocks_cov, level, & 
+                    is_ambiguous, is_debug, measure, maxe, draws_emax, & 
                     is_deterministic, shocks_cholesky)
 
             ! Create prediction model based on the random subset of points where
@@ -721,11 +722,12 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
                 payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
                 CALL get_payoffs(emax_simulated, payoffs_ex_post, &
-                        payoffs_future, num_draws_emax, draws_emax, period, k, &
-                        payoffs_systematic, edu_max, edu_start, & 
+                        payoffs_future, num_draws_emax, draws_emax, period, & 
+                        k, payoffs_systematic, edu_max, edu_start, & 
                         mapping_state_idx, states_all, num_periods, & 
                         periods_emax, delta, is_debug, shocks_cov, level, & 
-                        is_ambiguous, measure, is_deterministic, shocks_cholesky)
+                        is_ambiguous, measure, is_deterministic, & 
+                        shocks_cholesky)
 
                 ! Collect information
                 periods_emax(period + 1, k + 1) = emax_simulated
@@ -886,11 +888,10 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE get_payoffs(emax_simulated, payoffs_ex_post, payoffs_future, &
-                num_draws_emax, draws_emax, period, k, & 
-                payoffs_systematic, edu_max, edu_start, mapping_state_idx, & 
-                states_all, num_periods, periods_emax, delta, is_debug, & 
-                shocks_cov, level, is_ambiguous, measure, is_deterministic, &
-                shocks_cholesky)
+                num_draws_emax, draws_emax, period, k, payoffs_systematic, & 
+                edu_max, edu_start, mapping_state_idx, states_all, & 
+                num_periods, periods_emax, delta, is_debug, shocks_cov, & 
+                level, is_ambiguous, measure, is_deterministic, shocks_cholesky)
 
     !/* external objects        */
 
@@ -898,11 +899,11 @@ SUBROUTINE get_payoffs(emax_simulated, payoffs_ex_post, payoffs_future, &
     REAL(our_dble), INTENT(OUT)         :: payoffs_future(:)
     REAL(our_dble), INTENT(OUT)         :: emax_simulated
 
-    REAL(our_dble), INTENT(IN)          :: draws_emax(:, :)
     REAL(our_dble), INTENT(IN)          :: shocks_cholesky(:, :)
     REAL(our_dble), INTENT(IN)          :: payoffs_systematic(:)
     REAL(our_dble), INTENT(IN)          :: periods_emax(:, :)
     REAL(our_dble), INTENT(IN)          :: shocks_cov(:, :)
+    REAL(our_dble), INTENT(IN)          :: draws_emax(:, :)
     REAL(our_dble), INTENT(IN)          :: delta
     REAL(our_dble), INTENT(IN)          :: level
 
@@ -931,19 +932,17 @@ SUBROUTINE get_payoffs(emax_simulated, payoffs_ex_post, payoffs_future, &
     IF (is_ambiguous) THEN
 
         CALL get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
-                payoffs_future, num_draws_emax, draws_emax, & 
-                period, k, payoffs_systematic, edu_max, edu_start, & 
-                mapping_state_idx, states_all, num_periods, periods_emax, & 
-                delta, is_debug, shocks_cov, level, measure, is_deterministic, & 
-                shocks_cholesky)
+                payoffs_future, num_draws_emax, draws_emax, period, k, & 
+                payoffs_systematic, edu_max, edu_start, mapping_state_idx, & 
+                states_all, num_periods, periods_emax, delta, is_debug, & 
+                shocks_cov, level, measure, is_deterministic, shocks_cholesky)
 
     ELSE 
 
-        CALL get_payoffs_risk(emax_simulated, payoffs_ex_post, &
-                payoffs_future, num_draws_emax, draws_emax, & 
-                period, k, payoffs_systematic, edu_max, edu_start, & 
-                mapping_state_idx, states_all, num_periods, periods_emax, & 
-                delta, shocks_cholesky)
+        CALL get_payoffs_risk(emax_simulated, payoffs_ex_post, payoffs_future, & 
+                num_draws_emax, draws_emax, period, k, payoffs_systematic, & 
+                edu_max, edu_start, mapping_state_idx, states_all, & 
+                num_periods, periods_emax, delta, shocks_cholesky)
 
     END IF
     
@@ -962,10 +961,10 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_periods, &
     REAL(our_dble), INTENT(OUT)         :: endogenous(:)
 
     REAL(our_dble), INTENT(IN)          :: periods_payoffs_systematic(:, :, :)
-    REAL(our_dble), INTENT(IN)          :: draws_emax(:, :)
     REAL(our_dble), INTENT(IN)          :: shocks_cholesky(:, :)
     REAL(our_dble), INTENT(IN)          :: periods_emax(:, :)
     REAL(our_dble), INTENT(IN)          :: shocks_cov(:, :)    
+    REAL(our_dble), INTENT(IN)          :: draws_emax(:, :)
     REAL(our_dble), INTENT(IN)          :: maxe(:)
     REAL(our_dble), INTENT(IN)          :: level
     REAL(our_dble), INTENT(IN)          :: delta
@@ -1017,11 +1016,10 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_periods, &
 
         ! Get payoffs
         CALL get_payoffs(emax_simulated, payoffs_ex_post, payoffs_future, &
-                num_draws_emax, draws_emax, period, k, & 
-                payoffs_systematic, edu_max, edu_start, mapping_state_idx, & 
-                states_all, num_periods, periods_emax, delta, is_debug, & 
-                shocks_cov, level, is_ambiguous, measure, is_deterministic, & 
-                shocks_cholesky)
+                num_draws_emax, draws_emax, period, k, payoffs_systematic, & 
+                edu_max, edu_start, mapping_state_idx, states_all, & 
+                num_periods, periods_emax, delta, is_debug, shocks_cov, & 
+                level, is_ambiguous, measure, is_deterministic, shocks_cholesky)
 
         ! Construct dependent variable
         endogenous(k + 1) = emax_simulated - maxe(k + 1)

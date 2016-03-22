@@ -159,9 +159,9 @@ END SUBROUTINE
 SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
                 coeffs_edu, edu_start, edu_max, coeffs_home, shocks_cov, & 
                 shocks_cholesky, num_draws_emax, seed_emax, seed_prob, &
-                num_agents, seed_data, is_debug, is_deterministic, is_interpolated, &
-                num_points, min_idx, is_ambiguous, measure, request, & 
-                num_draws_prob, is_myopic)
+                num_agents, seed_data, is_debug, is_deterministic, &
+                is_interpolated, num_points, min_idx, is_ambiguous, measure, & 
+                request, num_draws_prob, is_myopic)
 
     !
     !   This function serves as the replacement for the clsRobupy and reads in 
@@ -285,8 +285,8 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE create_draws(draws, num_periods, num_draws_emax, & 
-                seed, is_debug, which, shocks_cholesky, is_ambiguous)
+SUBROUTINE create_draws(draws, num_periods, num_draws_emax, seed, is_debug, & 
+                which, shocks_cholesky, is_ambiguous)
 
     !/* external objects        */
 
@@ -376,16 +376,12 @@ SUBROUTINE create_draws(draws, num_periods, num_draws_emax, &
             
             ! Apply variance change
             DO i = 1, num_draws_emax
-            
                 draws(period, i:i, :) = &
                     TRANSPOSE(MATMUL(shocks_cholesky, TRANSPOSE(draws(period, i:i, :))))
-
             END DO
 
             DO j = 1, 2
-                
                 draws(period, :, j) =  EXP(draws(period, :, j))
-                
             END DO
                 
         END DO      
@@ -420,9 +416,7 @@ SUBROUTINE read_dataset(data_array, num_periods, num_agents)
     OPEN(UNIT=1, FILE='.data.robufort.dat')
 
         DO j = 1, num_periods * num_agents
-    
             READ(1, *) (data_array(j, k), k = 1, 8)
-    
         END DO
     
     CLOSE(1, STATUS='delete')
@@ -500,16 +494,16 @@ PROGRAM robufort
     ! PYTHON/F2PY implementations.
     CALL read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
             coeffs_edu, edu_start, edu_max, coeffs_home, shocks_cov, &
-            shocks_cholesky, num_draws_emax, seed_emax, seed_prob, num_agents, &
-            seed_data, is_debug, is_deterministic, is_interpolated, num_points, &
-            min_idx, is_ambiguous, measure, request, num_draws_prob, is_myopic)
+            shocks_cholesky, num_draws_emax, seed_emax, seed_prob, &
+            num_agents, seed_data, is_debug, is_deterministic, & 
+            is_interpolated, num_points, min_idx, is_ambiguous, measure, & 
+            request, num_draws_prob, is_myopic)
 
     ! This part creates (or reads from disk) the draws for the Monte 
-    ! Carlo integration of the EMAX. For is_debugging purposes, these might also be 
-    ! read in from disk or set to zero/one.   
-    CALL create_draws(periods_draws_emax, num_periods, & 
-            num_draws_emax, seed_emax, is_debug, 'emax', shocks_cholesky, & 
-            is_ambiguous)
+    ! Carlo integration of the EMAX. For is_debugging purposes, these might 
+    ! also be read in from disk or set to zero/one.   
+    CALL create_draws(periods_draws_emax, num_periods, num_draws_emax, &
+            seed_emax, is_debug, 'emax', shocks_cholesky, is_ambiguous)
 
     ! Execute on request.
     IF (request == 'solve') THEN
@@ -518,9 +512,9 @@ PROGRAM robufort
         CALL solve_fortran_bare(mapping_state_idx, periods_emax, & 
                 periods_payoffs_future, periods_payoffs_ex_post, &
                 periods_payoffs_systematic, states_all, states_number_period, & 
-                coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, edu_max, & 
-                delta, edu_start, is_debug, is_interpolated, level, measure, & 
-                min_idx, num_draws_emax, num_periods, num_points, & 
+                coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, & 
+                edu_max, delta, edu_start, is_debug, is_interpolated, level, & 
+                measure, min_idx, num_draws_emax, num_periods, num_points, & 
                 is_ambiguous, periods_draws_emax, is_deterministic, & 
                 is_myopic, shocks_cholesky)
 
@@ -529,9 +523,8 @@ PROGRAM robufort
         ! This part creates (or reads from disk) the draws for the Monte 
         ! Carlo integration of the choice probabilities. For is_debugging 
         ! purposes, these might also be read in from disk or set to zero/one.   
-        CALL create_draws(periods_draws_prob, num_periods, & 
-                num_draws_prob, seed_prob, is_debug, 'prob', shocks_cholesky, &
-                is_ambiguous)
+        CALL create_draws(periods_draws_prob, num_periods, num_draws_prob, &
+                seed_prob, is_debug, 'prob', shocks_cholesky, is_ambiguous)
 
         ! Read observed dataset from disk
         CALL read_dataset(data_array, num_periods, num_agents)
@@ -540,16 +533,16 @@ PROGRAM robufort
         CALL solve_fortran_bare(mapping_state_idx, periods_emax, & 
                 periods_payoffs_future, periods_payoffs_ex_post, &
                 periods_payoffs_systematic, states_all, states_number_period, & 
-                coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, edu_max, & 
-                delta, edu_start, is_debug, is_interpolated, level, measure, & 
-                min_idx, num_draws_emax, num_periods, num_points, & 
+                coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, & 
+                edu_max, delta, edu_start, is_debug, is_interpolated, level, & 
+                measure, min_idx, num_draws_emax, num_periods, num_points, & 
                 is_ambiguous, periods_draws_emax, is_deterministic, & 
                 is_myopic, shocks_cholesky)
 
         CALL evaluate_criterion_function(eval, mapping_state_idx, &
-                periods_emax, periods_payoffs_systematic, states_all, shocks_cov, & 
-                edu_max, delta, edu_start, num_periods, shocks_cholesky, &
-                num_agents, num_draws_prob, data_array, & 
+                periods_emax, periods_payoffs_systematic, states_all, & 
+                shocks_cov, edu_max, delta, edu_start, num_periods, & 
+                shocks_cholesky, num_agents, num_draws_prob, data_array, & 
                 periods_draws_prob, is_deterministic)
 
     END IF

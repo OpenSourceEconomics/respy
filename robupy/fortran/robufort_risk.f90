@@ -26,9 +26,9 @@ CONTAINS
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE get_payoffs_risk(emax_simulated, payoffs_ex_post, payoffs_future, &
-                num_draws_emax, draws_emax, period, k, & 
-                payoffs_systematic, edu_max, edu_start, mapping_state_idx, & 
-                states_all, num_periods, periods_emax, delta, shocks_cholesky)
+                num_draws_emax, draws_emax, period, k, payoffs_systematic, &
+                edu_max, edu_start, mapping_state_idx, states_all, & 
+                num_periods, periods_emax, delta, shocks_cholesky)
 
     !/* external objects        */
 

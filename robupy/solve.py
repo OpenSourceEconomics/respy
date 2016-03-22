@@ -42,18 +42,18 @@ def solve(robupy_obj):
     else:
         robupy_obj = solve_python(robupy_obj)
 
-    # Summarize optimizations in case of ambiguity.
+    # Summarize optimizations in case of ambiguity
     if is_debug and is_ambiguous and (not is_myopic):
         _summarize_ambiguity(robupy_obj)
 
-    # Set flag that object includes the solution objects.
+    # Set flag that object includes the solution objects
     robupy_obj.unlock()
 
     robupy_obj.set_attr('is_solved', True)
 
     robupy_obj.lock()
 
-    # Simulate model.
+    # Simulate model
     simulate(robupy_obj)
 
     # Store results if requested
@@ -73,7 +73,7 @@ def solve(robupy_obj):
 def _check_solve(robupy_obj):
     """ Check likelihood calculation.
     """
-
+    # Check integrity of the request
     assert (robupy_obj.get_attr('is_solved') is False)
     assert (robupy_obj.get_status())
 
