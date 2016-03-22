@@ -31,11 +31,18 @@ from codes.auxiliary import cleanup_robupy_package
 from codes.auxiliary import build_testing_library
 from codes.auxiliary import build_robupy_package
 
+# Setup for dealing with PYTEST command line options
+import functools
+import inspect
+
+VERSIONS = ['PYTHON', 'FORTRAN', 'F2PY']
+
+
 ''' Request
 '''
-seed = 15981
+seed = 92118
 
-if True:
+if False:
     build_robupy_package(False)
     build_testing_library(False)
 
@@ -49,8 +56,13 @@ np.random.seed(seed)
 test_dict = get_test_dict(TEST_DIR)
 module, method = get_random_request(test_dict)
 
-module, method = 'test_unit', 'test_8'
+#module, method = 'test_regression', 'test_5'
+
 mod = importlib.import_module(module)
 test = getattr(mod.TestClass(), method)
+
+# Deal with PYTEST command line options.
+if 'versions' in inspect.getargspec(test)[0]:
+    test = functools.partial(test, VERSIONS)
 
 test()

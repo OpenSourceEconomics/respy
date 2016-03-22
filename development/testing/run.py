@@ -30,6 +30,12 @@ from codes.auxiliary import cleanup_robupy_package
 from codes.auxiliary import build_testing_library
 from codes.auxiliary import build_robupy_package
 
+# Setup for dealing with PYTEST command line options
+import functools
+import inspect
+
+VERSIONS = ['PYTHON', 'FORTRAN', 'F2PY']
+
 # Testing infrastructure
 from modules.auxiliary import cleanup_testing_infrastructure
 from modules.auxiliary import get_random_request
@@ -76,6 +82,10 @@ def run(hours):
         module, method = get_random_request(test_dict)
         mod = importlib.import_module(module)
         test = getattr(mod.TestClass(), method)
+
+        # Deal with PYTEST command line options.
+        if 'versions' in inspect.getargspec(test)[0]:
+            test = functools.partial(test, VERSIONS)
 
         # Run random tes
         is_success, msg = None, None

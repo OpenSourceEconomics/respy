@@ -577,9 +577,6 @@ class TestClass(object):
                     'num_draws_emax', 'is_debug', 'measure', 'edu_max',
                     'min_idx', 'delta', 'level')
 
-        # Auxiliary objects
-        shocks_cholesky = model_paras['shocks_cholesky']
-
         # Distribute model parameters
         coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, shocks_cholesky = \
                 distribute_model_paras(model_paras, is_debug)
