@@ -213,12 +213,15 @@ class TestClass(object):
         # Extract class attributes
         periods_payoffs_systematic, states_number_period, mapping_state_idx, \
             periods_emax, num_periods, states_all, num_draws_emax, edu_start, \
-            edu_max, delta, is_debug = \
+            edu_max, delta, is_debug, model_paras = \
                 distribute_model_description(robupy_obj,
                     'periods_payoffs_systematic', 'states_number_period',
                     'mapping_state_idx', 'periods_emax', 'num_periods',
                     'states_all', 'num_draws_emax', 'edu_start', 'edu_max',
-                    'delta', 'is_debug')
+                    'delta', 'is_debug', 'model_paras')
+
+        # Auxiliary objects
+        shocks_cholesky = model_paras['shocks_cholesky']
 
         # Sample disturbances
         eps_standard = np.random.multivariate_normal(np.zeros(4),
@@ -233,7 +236,7 @@ class TestClass(object):
 
         args = (num_draws_emax, eps_standard, period, k, payoffs_systematic, edu_max,
             edu_start, mapping_state_idx, states_all, num_periods, periods_emax,
-            delta)
+            delta, shocks_cholesky)
 
         opt = _minimize_slsqp(_criterion, x0, args, maxiter=maxiter,
                        ftol=ftol, constraints=constraint)
@@ -247,7 +250,8 @@ class TestClass(object):
         f = fort_debug.wrapper_slsqp_robufort(x0, maxiter, ftol, tiny,
                 num_draws_emax, eps_standard, period, k, payoffs_systematic,
                 edu_max, edu_start, mapping_state_idx, states_all,
-                num_periods, periods_emax, delta, is_debug, shocks, level)
+                num_periods, periods_emax, delta, is_debug, shocks, level,
+                shocks_cholesky)
 
         # Check equality. If not equal up to the tolerance, also check
         # whether the result from the FORTRAN implementation is even better.
@@ -330,16 +334,21 @@ class TestClass(object):
         # Extract class attributes
         periods_payoffs_systematic, states_number_period, mapping_state_idx, \
         periods_emax, num_periods, states_all, num_draws_emax, edu_start, \
-        edu_max, delta = \
+        edu_max, delta, model_paras = \
             distribute_model_description(robupy_obj,
                 'periods_payoffs_systematic', 'states_number_period',
                 'mapping_state_idx', 'periods_emax', 'num_periods',
                 'states_all', 'num_draws_emax', 'edu_start', 'edu_max',
-                'delta')
+                'delta', 'model_paras')
+
+        # Auxiliary objects
+        shocks_cholesky = model_paras['shocks_cholesky']
 
         # Sample disturbances
         eps_standard = np.random.multivariate_normal(np.zeros(4),
                             np.identity(4), (num_draws_emax,))
+
+        shocks_mean = np.random.normal(2)
 
         # Sampling of random period and admissible state index
         period = np.random.choice(range(num_periods))
@@ -354,12 +363,13 @@ class TestClass(object):
         # Evaluation of simulated expected future values
         py, _, _ = simulate_emax(num_periods, num_draws_emax, period, k,
             eps_standard, payoffs_systematic, edu_max, edu_start,
-            periods_emax, states_all, mapping_state_idx, delta)
+            periods_emax, states_all, mapping_state_idx, delta,
+            shocks_cholesky, shocks_mean)
 
         f90, _, _ = fort_debug.wrapper_simulate_emax(num_periods,
             num_draws_emax, period, k, eps_standard, payoffs_systematic,
             edu_max, edu_start, periods_emax, states_all, mapping_state_idx,
-            delta)
+            delta, shocks_cholesky, shocks_mean)
 
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 

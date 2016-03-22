@@ -29,7 +29,7 @@ def simulate_emax(num_periods, num_draws_emax, period, k, disturbances_emax,
         disturbances_emax_transformed[:, :2] + shocks_mean
     for j in [0, 1]:
         disturbances_emax_transformed[:, j] = \
-            np.exp(disturbances_emax_transformed[:, j])
+            np.clip(np.exp(disturbances_emax_transformed[:, j]), 0.0, HUGE_FLOAT)
 
     # Calculate maximum value
     for i in range(num_draws_emax):
