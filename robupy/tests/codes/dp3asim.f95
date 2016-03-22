@@ -25,7 +25,7 @@ MODULE PEI_ADDITIONS
 
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE READ_IN_DISTURBANCES(EU1, EU2, C, B)
+SUBROUTINE READ_IN_DRAWS(EU1, EU2, C, B)
 
   !/* external objects    */
 
@@ -389,8 +389,8 @@ PROGRAM dp3asim
    31 CONTINUE
 !C  30 CONTINUE
  
-  ! PEI: Create zero disturbances.
-  CALL READ_IN_DISTURBANCES(EU1, EU2, C, B)
+  ! PEI: Create zero draws.
+  CALL READ_IN_DRAWS(EU1, EU2, C, B)
 
 !*****************************************************************
 !*  CONSTRUCT THE EXPECTED MAX OF THE TIME NPER VALUE FUNCTIONS  *

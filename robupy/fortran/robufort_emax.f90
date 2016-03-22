@@ -25,7 +25,7 @@ CONTAINS
 !*******************************************************************************
 SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, payoffs_future, &
                 num_periods, num_draws_emax, period, k, & 
-                disturbances_emax, payoffs_systematic, edu_max, & 
+                draws_emax, payoffs_systematic, edu_max, & 
                 edu_start, periods_emax, states_all, mapping_state_idx, delta, & 
                 shocks_cholesky, shocks_mean)
 
@@ -44,7 +44,7 @@ SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, payoffs_future, &
     INTEGER(our_int), INTENT(IN)    :: period
     INTEGER(our_int), INTENT(IN)    :: k
 
-    REAL(our_dble), INTENT(IN)      :: disturbances_emax(:,:)
+    REAL(our_dble), INTENT(IN)      :: draws_emax(:,:)
     REAL(our_dble), INTENT(IN)      :: payoffs_systematic(:)
     REAL(our_dble), INTENT(IN)      :: shocks_cholesky(:,:)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:,:)
@@ -57,10 +57,10 @@ SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, payoffs_future, &
     INTEGER(our_int)                :: i
 
     REAL(our_dble)                  :: total_payoffs(4)
-    REAL(our_dble)                  :: disturbances(4)
+    REAL(our_dble)                  :: draws(4)
     REAL(our_dble)                  :: maximum
 
-    REAL(our_dble)                  :: disturbances_emax_transformed(num_draws_emax, 4)
+    REAL(our_dble)                  :: draws_emax_transformed(num_draws_emax, 4)
 
 !-------------------------------------------------------------------------------
 ! Algorithm
@@ -70,29 +70,29 @@ SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, payoffs_future, &
     payoffs_ex_post = zero_dble
     emax_simulated = zero_dble
 
-    ! Transfer disturbances to relevant distribution
+    ! Transfer draws to relevant distribution
     DO i = 1, num_draws_emax
-        disturbances_emax_transformed(i:i, :) = &
-            TRANSPOSE(MATMUL(shocks_cholesky, TRANSPOSE(disturbances_emax(i:i, :)))) 
+        draws_emax_transformed(i:i, :) = &
+            TRANSPOSE(MATMUL(shocks_cholesky, TRANSPOSE(draws_emax(i:i, :)))) 
     END DO
     
-    disturbances_emax_transformed(:, :2) = disturbances_emax_transformed(:, :2) + SPREAD(shocks_mean, 1, num_draws_emax)
+    draws_emax_transformed(:, :2) = draws_emax_transformed(:, :2) + SPREAD(shocks_mean, 1, num_draws_emax)
 
     DO i = 1, 2
-        disturbances_emax_transformed(:, i) = &
-            EXP(disturbances_emax_transformed(:, i))
+        draws_emax_transformed(:, i) = &
+            EXP(draws_emax_transformed(:, i))
     END DO
 
 
     ! Iterate over Monte Carlo draws
     DO i = 1, num_draws_emax
 
-        ! Select disturbances for this draw
-        disturbances = disturbances_emax_transformed(i, :)
+        ! Select draws for this draw
+        draws = draws_emax_transformed(i, :)
 
         ! Calculate total value
         CALL get_total_value(total_payoffs, payoffs_ex_post, payoffs_future, &
-                period, num_periods, delta, payoffs_systematic, disturbances, &
+                period, num_periods, delta, payoffs_systematic, draws, &
                 edu_max, edu_start, mapping_state_idx, periods_emax, k, & 
                 states_all)
    
@@ -112,7 +112,7 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE get_total_value(total_payoffs, payoffs_ex_post, payoffs_future, &
                 period, num_periods, delta, payoffs_systematic, & 
-                disturbances, edu_max, edu_start, mapping_state_idx, & 
+                draws, edu_max, edu_start, mapping_state_idx, & 
                 periods_emax, k, states_all)
 
     !   Development Note:
@@ -136,7 +136,7 @@ SUBROUTINE get_total_value(total_payoffs, payoffs_ex_post, payoffs_future, &
 
     REAL(our_dble), INTENT(IN)      :: payoffs_systematic(:)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
-    REAL(our_dble), INTENT(IN)      :: disturbances(:)
+    REAL(our_dble), INTENT(IN)      :: draws(:)
     REAL(our_dble), INTENT(IN)      :: delta
     
 !-------------------------------------------------------------------------------
@@ -147,10 +147,10 @@ SUBROUTINE get_total_value(total_payoffs, payoffs_ex_post, payoffs_future, &
     payoffs_ex_post = zero_dble
 
     ! Calculate ex post payoffs
-    payoffs_ex_post(1) = payoffs_systematic(1) * disturbances(1)
-    payoffs_ex_post(2) = payoffs_systematic(2) * disturbances(2)
-    payoffs_ex_post(3) = payoffs_systematic(3) + disturbances(3)
-    payoffs_ex_post(4) = payoffs_systematic(4) + disturbances(4)
+    payoffs_ex_post(1) = payoffs_systematic(1) * draws(1)
+    payoffs_ex_post(2) = payoffs_systematic(2) * draws(2)
+    payoffs_ex_post(3) = payoffs_systematic(3) + draws(3)
+    payoffs_ex_post(4) = payoffs_systematic(4) + draws(4)
 
     ! Get future values
     IF (period .NE. (num_periods - one_int)) THEN
@@ -266,7 +266,7 @@ SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, &
     REAL(our_dble)                      :: expected_values(4)
     REAL(our_dble)                      :: payoffs_ex_post(4)
     REAL(our_dble)                      :: payoffs_future(4)
-    REAL(our_dble)                      :: deviations(4)
+    REAL(our_dble)                      :: diff(4)
 
     INTEGER(our_int)                    :: k
 
@@ -299,11 +299,11 @@ SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, &
         ! Implement level shifts
         maxe(k + 1) = MAXVAL(expected_values)
 
-        deviations = maxe(k + 1) - expected_values
+        diff = maxe(k + 1) - expected_values
 
         ! Construct regressors
-        independent_variables(k + 1, 1:4) = deviations
-        independent_variables(k + 1, 5:8) = DSQRT(deviations)
+        independent_variables(k + 1, 1:4) = diff
+        independent_variables(k + 1, 5:8) = DSQRT(diff)
 
     END DO
 

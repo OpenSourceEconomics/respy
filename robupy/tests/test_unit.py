@@ -38,7 +38,7 @@ from robupy.auxiliary import opt_get_model_parameters
 from robupy.auxiliary import opt_get_optim_parameters
 from robupy.auxiliary import distribute_model_paras
 from robupy.auxiliary import replace_missing_values
-from robupy.auxiliary import create_disturbances
+from robupy.auxiliary import create_draws
 
 import robupy.python.py.python_library as py_lib
 
@@ -94,17 +94,17 @@ class TestClass(object):
 
                 # Finalize extraction of ingredients
                 payoffs_systematic = periods_payoffs_systematic[period, k, :]
-                disturbances_relevant = np.random.sample((num_draws_emax, 4))
+                draws_emax = np.random.sample((num_draws_emax, 4))
 
                 # Extract payoffs using PYTHON and FORTRAN codes.
-                py = get_payoffs(num_draws_emax, disturbances_relevant, period, k,
+                py = get_payoffs(num_draws_emax, draws_emax, period, k,
                         payoffs_systematic, edu_max, edu_start, mapping_state_idx,
                         states_all, num_periods, periods_emax, delta, is_debug,
                         shocks, level, is_ambiguous, measure, is_deterministic,
                         shocks_cholesky)
 
                 f90 = fort_debug.wrapper_get_payoffs(num_draws_emax,
-                        disturbances_relevant, period, k, payoffs_systematic,
+                        draws_emax, period, k, payoffs_systematic,
                         edu_max, edu_start, mapping_state_idx, states_all,
                         num_periods, periods_emax, delta, is_debug, shocks,
                         level, is_ambiguous, measure, is_deterministic,
@@ -153,8 +153,8 @@ class TestClass(object):
             shocks = model_paras['shocks']
             shocks_cholesky = model_paras['shocks_cholesky']
 
-            # Sample disturbances
-            eps_standard = np.random.multivariate_normal(np.zeros(4),
+            # Sample draws
+            draws_standard = np.random.multivariate_normal(np.zeros(4),
                             np.identity(4), (num_draws_emax,))
 
             # Sampling of random period and admissible state index
@@ -167,7 +167,7 @@ class TestClass(object):
             # Set up optimization task
             level = np.random.uniform(0.01, 1.00)
 
-            args = [num_draws_emax, eps_standard, period, k, payoffs_systematic,
+            args = [num_draws_emax, draws_standard, period, k, payoffs_systematic,
                 edu_max, edu_start, mapping_state_idx, states_all, num_periods,
                 periods_emax, is_debug, delta, shocks, level, measure,
                 is_deterministic, shocks_cholesky]
@@ -223,8 +223,8 @@ class TestClass(object):
         # Auxiliary objects
         shocks_cholesky = model_paras['shocks_cholesky']
 
-        # Sample disturbances
-        eps_standard = np.random.multivariate_normal(np.zeros(4),
+        # Sample draws
+        draws_standard = np.random.multivariate_normal(np.zeros(4),
                                 np.identity(4), (num_draws_emax,))
 
         # Sampling of random period and admissible state index
@@ -234,7 +234,7 @@ class TestClass(object):
         # Select systematic payoffs
         payoffs_systematic = periods_payoffs_systematic[period, k, :]
 
-        args = (num_draws_emax, eps_standard, period, k, payoffs_systematic, edu_max,
+        args = (num_draws_emax, draws_standard, period, k, payoffs_systematic, edu_max,
             edu_start, mapping_state_idx, states_all, num_periods, periods_emax,
             delta, shocks_cholesky)
 
@@ -248,7 +248,7 @@ class TestClass(object):
             py = x0
 
         f = fort_debug.wrapper_slsqp_robufort(x0, maxiter, ftol, tiny,
-                num_draws_emax, eps_standard, period, k, payoffs_systematic,
+                num_draws_emax, draws_standard, period, k, payoffs_systematic,
                 edu_max, edu_start, mapping_state_idx, states_all,
                 num_periods, periods_emax, delta, is_debug, shocks, level,
                 shocks_cholesky)
@@ -344,8 +344,8 @@ class TestClass(object):
         # Auxiliary objects
         shocks_cholesky = model_paras['shocks_cholesky']
 
-        # Sample disturbances
-        eps_standard = np.random.multivariate_normal(np.zeros(4),
+        # Sample draws
+        draws_standard = np.random.multivariate_normal(np.zeros(4),
                             np.identity(4), (num_draws_emax,))
 
         shocks_mean = np.random.normal(size=2)
@@ -362,19 +362,19 @@ class TestClass(object):
 
         # Evaluation of simulated expected future values
         py, _, _ = simulate_emax(num_periods, num_draws_emax, period, k,
-            eps_standard, payoffs_systematic, edu_max, edu_start,
+            draws_standard, payoffs_systematic, edu_max, edu_start,
             periods_emax, states_all, mapping_state_idx, delta,
             shocks_cholesky, shocks_mean)
 
         f90, _, _ = fort_debug.wrapper_simulate_emax(num_periods,
-            num_draws_emax, period, k, eps_standard, payoffs_systematic,
+            num_draws_emax, period, k, draws_standard, payoffs_systematic,
             edu_max, edu_start, periods_emax, states_all, mapping_state_idx,
             delta, shocks_cholesky, shocks_mean)
 
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
         # Criterion function for the determination of the worst case outcomes
-        args = (num_draws_emax, eps_standard, period, k, payoffs_systematic,
+        args = (num_draws_emax, draws_standard, period, k, payoffs_systematic,
                 edu_max, edu_start, mapping_state_idx, states_all, num_periods,
                 periods_emax, delta, shocks_cholesky)
 
@@ -581,8 +581,8 @@ class TestClass(object):
         coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, shocks_cholesky = \
                 distribute_model_paras(model_paras, is_debug)
 
-        # Get set of disturbances
-        disturbances_emax = create_disturbances(num_periods, num_draws_emax,
+        # Get set of draws
+        draws_emax = create_draws(num_periods, num_draws_emax,
                                                 seed_emax, is_debug, 'emax',
                                                 shocks_cholesky)
 
@@ -593,7 +593,7 @@ class TestClass(object):
         base_args = [coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
             edu_max, delta, edu_start, is_debug, is_interpolated, level,
             measure, min_idx, num_draws_emax, num_periods, num_points,
-            is_ambiguous, disturbances_emax, is_deterministic, is_myopic,
+            is_ambiguous, draws_emax, is_deterministic, is_myopic,
             shocks_cholesky]
 
         # Check for the equality of the solution routines.

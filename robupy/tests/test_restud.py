@@ -135,7 +135,7 @@ class TestClass(object):
 
         # Impose some constraints on the initialization file which ensures that
         # the problem can be solved by the RESTUD code. The code is adjusted to
-        # run with zero disturbances.
+        # run with zero draws.
         constraints = dict()
         constraints['edu'] = (10, 20)
         constraints['level'] = 0.00

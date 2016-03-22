@@ -87,7 +87,7 @@ class RobupyCls(object):
         self.attr['is_solved'] = False
 
         # The ex post realizations are only stored for debugging purposes.
-        # In the special case of no randomness (with all disturbances equal
+        # In the special case of no randomness (with all draws equal
         # to zero), they have to be equal to the systematic version. The same
         # is true for the future payoffs
         self.attr['periods_payoffs_ex_post'] = None

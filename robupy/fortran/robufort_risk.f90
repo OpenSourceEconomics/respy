@@ -26,7 +26,7 @@ CONTAINS
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE get_payoffs_risk(emax_simulated, payoffs_ex_post, payoffs_future, &
-                num_draws_emax, disturbances_emax, period, k, & 
+                num_draws_emax, draws_emax, period, k, & 
                 payoffs_systematic, edu_max, edu_start, mapping_state_idx, & 
                 states_all, num_periods, periods_emax, delta, shocks_cholesky)
 
@@ -45,7 +45,7 @@ SUBROUTINE get_payoffs_risk(emax_simulated, payoffs_ex_post, payoffs_future, &
     INTEGER(our_int), INTENT(IN)    :: period
     INTEGER(our_int), INTENT(IN)    :: k 
 
-    REAL(our_dble), INTENT(IN)      :: disturbances_emax(:, :)
+    REAL(our_dble), INTENT(IN)      :: draws_emax(:, :)
     REAL(our_dble), INTENT(IN)      :: payoffs_systematic(:)
     REAL(our_dble), INTENT(IN)      :: shocks_cholesky(:, :)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
@@ -64,7 +64,7 @@ SUBROUTINE get_payoffs_risk(emax_simulated, payoffs_ex_post, payoffs_future, &
     
     ! Simulated expected future value
     CALL simulate_emax(emax_simulated, payoffs_ex_post, payoffs_future, &
-            num_periods, num_draws_emax, period, k, disturbances_emax, & 
+            num_periods, num_draws_emax, period, k, draws_emax, & 
             payoffs_systematic, edu_max, edu_start, periods_emax, states_all, & 
             mapping_state_idx, delta, shocks_cholesky, shocks_mean)
     

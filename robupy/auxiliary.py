@@ -67,10 +67,10 @@ def distribute_model_paras(model_paras, is_debug):
     return coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, shocks_cholesky
 
 
-def create_disturbances(num_periods, num_draws_emax, seed, is_debug, which,
-                        shocks_cholesky):
-    """ Create the relevant set of disturbances. Handle special case of zero v
-    variances as thi case is useful for hand-based testing. The disturbances
+def create_draws(num_periods, num_draws_emax, seed, is_debug, which,
+                 shocks_cholesky):
+    """ Create the relevant set of draws. Handle special case of zero v
+    variances as thi case is useful for hand-based testing. The draws
     are drawn from a standard normal distribution and transformed later in
     the code.
     """
@@ -83,10 +83,10 @@ def create_disturbances(num_periods, num_draws_emax, seed, is_debug, which,
     # Draw random deviates from a standard normal distribution or read it in
     # from disk. The latter is available to allow for testing across
     # implementations.
-    if is_debug and os.path.isfile('disturbances.txt'):
-        disturbances = read_disturbances(num_periods, num_draws_emax)
+    if is_debug and os.path.isfile('draws.txt'):
+        draws = read_draws(num_periods, num_draws_emax)
     else:
-        disturbances = np.random.multivariate_normal(np.zeros(4),
+        draws = np.random.multivariate_normal(np.zeros(4),
                         np.identity(4), (num_periods, num_draws_emax))
     # Standard normal deviates used for the Monte Carlo integration of the
     # expected future values in the solution step. Also, standard normal
@@ -94,24 +94,23 @@ def create_disturbances(num_periods, num_draws_emax, seed, is_debug, which,
     # the evaluation step.
     if which in ['prob', 'emax']:
         # Standard deviates are further processed during the evaluation routine.
-        disturbances = disturbances
+        draws = draws
 
     # Deviates for the simulation of a synthetic agent population.
     elif which == 'sims':
         # Standard deviates transformed to the distributions relevant for
         # the agents actual decision making as traversing the tree.
         for period in range(num_periods):
-            disturbances[period, :, :] = \
-                np.dot(shocks_cholesky, disturbances[period, :, :].T).T
+            draws[period, :, :] = \
+                np.dot(shocks_cholesky, draws[period, :, :].T).T
             for j in [0, 1]:
-                disturbances[period, :, j] = \
-                    np.exp(disturbances[period, :, j])
+                draws[period, :, j] = np.exp(draws[period, :, j])
 
     else:
         raise NotImplementedError
 
     # Finishing
-    return disturbances
+    return draws
 
 
 def replace_missing_values(argument):
@@ -132,22 +131,22 @@ def replace_missing_values(argument):
     return argument
 
 
-def read_disturbances(num_periods, num_draws_emax):
-    """ Red the disturbances from disk. This is only used in the development
+def read_draws(num_periods, num_draws_emax):
+    """ Red the draws from disk. This is only used in the development
     process.
     """
     # Initialize containers
-    disturbances_emax = np.tile(np.nan, (num_periods, num_draws_emax, 4))
+    periods_draws_emax = np.tile(np.nan, (num_periods, num_draws_emax, 4))
 
-    # Read and distribute disturbances
-    disturbances = np.array(np.genfromtxt('disturbances.txt'), ndmin=2)
+    # Read and distribute draws
+    draws = np.array(np.genfromtxt('draws.txt'), ndmin=2)
     for period in range(num_periods):
         lower = 0 + num_draws_emax * period
         upper = lower + num_draws_emax
-        disturbances_emax[period, :, :] = disturbances[lower:upper, :]
+        periods_draws_emax[period, :, :] = draws[lower:upper, :]
 
     # Finishing
-    return disturbances_emax
+    return periods_draws_emax
 
 
 def check_dataset(data_frame, robupy_obj):

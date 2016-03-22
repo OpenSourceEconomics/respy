@@ -81,21 +81,21 @@ def write_interpolation_grid(file_name):
     return max_states_period
 
 
-def write_disturbances(num_periods, max_draws):
-    """ Write out disturbances to potentially align the different
+def write_draws(num_periods, max_draws):
+    """ Write out draws to potentially align the different
     implementations of the model. Note that num draws has to be less or equal
     to the largest number of requested random deviates.
     """
     # Draw standard deviates
-    standard_deviates = np.random.multivariate_normal(np.zeros(4),
+    draws_standard = np.random.multivariate_normal(np.zeros(4),
         np.identity(4), (num_periods, max_draws))
 
     # Write to file to they can be read in by the different implementations.
-    with open('disturbances.txt', 'w') as file_:
+    with open('draws.txt', 'w') as file_:
         for period in range(num_periods):
             for i in range(max_draws):
                 line = ' {0:15.10f} {1:15.10f} {2:15.10f} {3:15.10f}\n'.format(
-                    *standard_deviates[period, i, :])
+                    *draws_standard[period, i, :])
                 file_.write(line)
 
 

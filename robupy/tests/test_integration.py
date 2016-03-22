@@ -12,7 +12,7 @@ import pytest
 
 # testing library
 from codes.auxiliary import write_interpolation_grid
-from codes.auxiliary import write_disturbances
+from codes.auxiliary import write_draws
 
 # ROBUPY import
 from robupy.python.py.python_library import create_state_space
@@ -100,7 +100,7 @@ class TestClass(object):
         # Write out random components and interpolation grid to align the
         # three implementations.
         num_periods = init_dict['BASICS']['periods']
-        write_disturbances(num_periods, max_draws)
+        write_draws(num_periods, max_draws)
         write_interpolation_grid('test.robupy.ini')
 
         # Clean evaluations based on interpolation grid,
@@ -145,7 +145,7 @@ class TestClass(object):
 
     def test_3(self):
         """ Testing whether the systematic and ex post payoffs are identical if
-        there is no random variation in the payoffs (all disturbances set to
+        there is no random variation in the payoffs (all draws set to
         zero).
         """
         # Generate constraint periods

@@ -45,7 +45,7 @@ class TestClass(object):
         ex_post = robupy_obj.get_attr('periods_payoffs_ex_post')
         emax = robupy_obj.get_attr('periods_emax')
 
-        # GENERAL: As there are no random disturbances (all disturbances set to
+        # GENERAL: As there are no random draws (all draws set to
         # zero), the systematic and ex post versions of the period payoffs
         # should be identical.
         assert (np.ma.all(np.ma.masked_invalid(ex_post) ==
@@ -69,7 +69,7 @@ class TestClass(object):
             (np.testing.assert_allclose(systematic[2, i, :], val))
 
         # PERIOD 3: Check expected future values. As there are no
-        # random disturbances, this corresponds to the maximum
+        # random draws, this corresponds to the maximum
         # value in the last period.
         vals = [7.53832493366, 9.20733086588, 9.20733086588, 11.2458593149]
         vals += [12.06127612040, 14.7316759204, 14.7316759204, 31.1869581683]

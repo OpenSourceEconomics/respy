@@ -35,7 +35,7 @@ MODULE robufort_library
 SUBROUTINE evaluate_criterion_function(rslt, mapping_state_idx, periods_emax, & 
                 periods_payoffs_systematic, states_all, shocks, edu_max, & 
                 delta, edu_start, num_periods, shocks_cholesky, num_agents, &
-                num_draws_prob, data_array, standard_deviates, is_deterministic)
+                num_draws_prob, data_array, periods_draws_prob, is_deterministic)
 
     !/* external objects        */
 
@@ -50,7 +50,7 @@ SUBROUTINE evaluate_criterion_function(rslt, mapping_state_idx, periods_emax, &
     INTEGER(our_int), INTENT(IN)    :: edu_start
     INTEGER(our_int), INTENT(IN)    :: edu_max
 
-    REAL(our_dble), INTENT(IN)      :: standard_deviates(:, :, :)
+    REAL(our_dble), INTENT(IN)      :: periods_draws_prob(:, :, :)
     REAL(our_dble), INTENT(IN)      :: shocks_cholesky(:, :)
     REAL(our_dble), INTENT(IN)      :: data_array(:, :)
     REAL(our_dble), INTENT(IN)      :: shocks(:, :)
@@ -76,14 +76,14 @@ SUBROUTINE evaluate_criterion_function(rslt, mapping_state_idx, periods_emax, &
     INTEGER(our_int)                :: k
     INTEGER(our_int)                :: j
     
-    REAL(our_dble)                  :: conditional_deviates(num_draws_prob, 4)
-    REAL(our_dble)                  :: deviates(num_draws_prob, 4)
+    REAL(our_dble)                  :: conditional_draws(num_draws_prob, 4)
+    REAL(our_dble)                  :: draws_prob(num_draws_prob, 4)
     REAL(our_dble)                  :: choice_probabilities(4)
     REAL(our_dble)                  :: payoffs_systematic(4)
     REAL(our_dble)                  :: payoffs_ex_post(4)
     REAL(our_dble)                  :: payoffs_future(4)
     REAL(our_dble)                  :: total_payoffs(4)
-    REAL(our_dble)                  :: disturbances(4)
+    REAL(our_dble)                  :: draws(4)
     REAL(our_dble)                  :: likl_contrib
     REAL(our_dble)                  :: dist
 
@@ -127,7 +127,7 @@ SUBROUTINE evaluate_criterion_function(rslt, mapping_state_idx, periods_emax, &
             payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
             ! Extract relevant deviates from standard normal distribution.
-            deviates = standard_deviates(period + 1, :, :)
+            draws_prob = periods_draws_prob(period + 1, :, :)
 
             ! Prepare to calculate product of likelihood contributions.
             likl_contrib = 1.0
@@ -144,9 +144,9 @@ SUBROUTINE evaluate_criterion_function(rslt, mapping_state_idx, periods_emax, &
                 ! Construct independent normal draws implied by the observed
                 ! wages.
                 IF (choice == 1) THEN
-                    deviates(:, idx) = dist / sqrt(shocks(idx, idx))
+                    draws_prob(:, idx) = dist / sqrt(shocks(idx, idx))
                 ELSE
-                    deviates(:, idx) = (dist - shocks_cholesky(idx, 1) * deviates(:, 1)) / shocks_cholesky(idx, idx)
+                    draws_prob(:, idx) = (dist - shocks_cholesky(idx, 1) * draws_prob(:, 1)) / shocks_cholesky(idx, idx)
                 END IF
                 
                 ! Record contribution of wage observation. REPLACE 0.0
@@ -171,23 +171,23 @@ SUBROUTINE evaluate_criterion_function(rslt, mapping_state_idx, periods_emax, &
             ! Determine conditional deviates. These correspond to the
             ! unconditional draws if the agent did not work in the labor market.
             DO s = 1, num_draws_prob
-                conditional_deviates(s, :) = & 
-                    MATMUL(deviates(s, :), TRANSPOSE(shocks_cholesky))
+                conditional_draws(s, :) = & 
+                    MATMUL(draws_prob(s, :), TRANSPOSE(shocks_cholesky))
             END DO
 
             counts = 0
 
             DO s = 1, num_draws_prob
                 ! Extract deviates from (un-)conditional normal distributions.
-                disturbances = conditional_deviates(s, :)
+                draws = conditional_draws(s, :)
 
-                disturbances(1) = exp(disturbances(1))
-                disturbances(2) = exp(disturbances(2))
+                draws(1) = EXP(draws(1))
+                draws(2) = EXP(draws(2))
 
                 ! Calculate total payoff.
                 CALL get_total_value(total_payoffs, payoffs_ex_post, & 
                         payoffs_future, period, num_periods, delta, &
-                        payoffs_systematic, disturbances, edu_max, edu_start, & 
+                        payoffs_systematic, draws, edu_max, edu_start, & 
                         mapping_state_idx, periods_emax, k, states_all)
                 
                 ! Record optimal choices
@@ -241,7 +241,7 @@ SUBROUTINE solve_fortran_bare(mapping_state_idx, periods_emax, &
                 coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, edu_max, & 
                 delta, edu_start, is_debug, is_interpolated, level, measure, & 
                 min_idx, num_draws_emax, num_periods, num_points, & 
-                is_ambiguous, disturbances_emax, is_deterministic, is_myopic,&
+                is_ambiguous, periods_draws_emax, is_deterministic, is_myopic,&
                 shocks_cholesky)
 
     !/* external objects        */
@@ -262,7 +262,7 @@ SUBROUTINE solve_fortran_bare(mapping_state_idx, periods_emax, &
     INTEGER(our_int), INTENT(IN)                    :: edu_max
     INTEGER(our_int), INTENT(IN)                    :: min_idx
 
-    REAL(our_dble), INTENT(IN)                      :: disturbances_emax(:, :, :)
+    REAL(our_dble), INTENT(IN)                      :: periods_draws_emax(:, :, :)
     REAL(our_dble), INTENT(IN)                      :: shocks_cholesky(:, :)
     REAL(our_dble), INTENT(IN)                      :: coeffs_home(:)
     REAL(our_dble), INTENT(IN)                      :: coeffs_edu(:)
@@ -337,7 +337,7 @@ SUBROUTINE solve_fortran_bare(mapping_state_idx, periods_emax, &
 
         CALL backward_induction(periods_emax, periods_payoffs_ex_post, &
                 periods_payoffs_future, num_periods, max_states_period, &
-                disturbances_emax, num_draws_emax, states_number_period, &
+                periods_draws_emax, num_draws_emax, states_number_period, &
                 periods_payoffs_systematic, edu_max, edu_start, & 
                 mapping_state_idx, states_all, delta, is_debug, shocks, & 
                 level, is_ambiguous, measure, is_interpolated, num_points, & 
@@ -350,14 +350,14 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE simulate_sample(dataset, num_agents, states_all, num_periods, &
                 mapping_state_idx, periods_payoffs_systematic, &
-                disturbances_emax, edu_max, edu_start, periods_emax, delta)
+                periods_draws_emax, edu_max, edu_start, periods_emax, delta)
 
     !/* external objects        */
 
     REAL(our_dble), INTENT(OUT)     :: dataset(:, :)
 
     REAL(our_dble), INTENT(IN)      :: periods_payoffs_systematic(:, :, :)
-    REAL(our_dble), INTENT(IN)      :: disturbances_emax(:, :, :)
+    REAL(our_dble), INTENT(IN)      :: periods_draws_emax(:, :, :)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
     REAL(our_dble), INTENT(IN)      :: delta
 
@@ -386,7 +386,7 @@ SUBROUTINE simulate_sample(dataset, num_agents, states_all, num_periods, &
     REAL(our_dble)                  :: payoffs_ex_post(4)
     REAL(our_dble)                  :: payoffs_future(4)
     REAL(our_dble)                  :: total_payoffs(4)
-    REAL(our_dble)                  :: disturbances(4)
+    REAL(our_dble)                  :: draws(4)
 
 !-------------------------------------------------------------------------------
 ! Algorithm
@@ -419,12 +419,12 @@ SUBROUTINE simulate_sample(dataset, num_agents, states_all, num_periods, &
 
             ! Calculate ex post payoffs
             payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
-            disturbances = disturbances_emax(period + 1, i + 1, :)
+            draws = periods_draws_emax(period + 1, i + 1, :)
 
             ! Calculate total utilities
             CALL get_total_value(total_payoffs, payoffs_ex_post, & 
                     payoffs_future, period, num_periods, delta, &
-                    payoffs_systematic, disturbances, edu_max, edu_start, & 
+                    payoffs_systematic, draws, edu_max, edu_start, & 
                     mapping_state_idx, periods_emax, k, states_all)
 
             ! Write relevant state space for period to data frame
@@ -579,7 +579,7 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
                 periods_payoffs_future, num_periods, max_states_period, &
-                periods_disturbances_emax, num_draws_emax, & 
+                periods_draws_emax, num_draws_emax, & 
                 states_number_period, periods_payoffs_systematic, edu_max, & 
                 edu_start, mapping_state_idx, states_all, delta, is_debug, & 
                 shocks, level, is_ambiguous, measure, is_interpolated, & 
@@ -600,7 +600,7 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
     REAL(our_dble), INTENT(INOUT)       :: periods_emax(:, :)
 
     REAL(our_dble), INTENT(IN)          :: periods_payoffs_systematic(:, :, :)
-    REAL(our_dble), INTENT(IN)          :: periods_disturbances_emax(:, :, :)
+    REAL(our_dble), INTENT(IN)          :: periods_draws_emax(:, :, :)
     REAL(our_dble), INTENT(IN)          :: shocks_cholesky(:, :)
     REAL(our_dble), INTENT(IN)          :: shocks(:, :)
     REAL(our_dble), INTENT(IN)          :: delta
@@ -629,7 +629,7 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
     INTEGER(our_int)                    :: period
     INTEGER(our_int)                    :: k
 
-    REAL(our_dble)                      :: disturbances_emax(num_draws_emax, 4)
+    REAL(our_dble)                      :: draws_emax(num_draws_emax, 4)
     REAL(our_dble)                      :: payoffs_systematic(4)
     REAL(our_dble)                      :: payoffs_ex_post(4)
     REAL(our_dble)                      :: payoffs_future(4)
@@ -659,8 +659,8 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
     ! Backward induction
     DO period = (num_periods - 1), 0, -1
 
-        ! Extract disturbances and construct auxiliary objects
-        disturbances_emax = periods_disturbances_emax(period + 1, :, :)
+        ! Extract draws and construct auxiliary objects
+        draws_emax = periods_draws_emax(period + 1, :, :)
         num_states = states_number_period(period + 1)
 
         ! Logging
@@ -695,7 +695,7 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
                     num_states, delta, periods_payoffs_systematic, edu_max, & 
                     edu_start, mapping_state_idx, periods_emax, states_all, & 
                     is_simulated, num_draws_emax, shocks, level, is_ambiguous, &
-                    is_debug, measure, maxe, disturbances_emax, & 
+                    is_debug, measure, maxe, draws_emax, & 
                     is_deterministic, shocks_cholesky)
 
             ! Create prediction model based on the random subset of points where
@@ -721,7 +721,7 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
                 payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
                 CALL get_payoffs(emax_simulated, payoffs_ex_post, &
-                        payoffs_future, num_draws_emax, disturbances_emax, period, k, &
+                        payoffs_future, num_draws_emax, draws_emax, period, k, &
                         payoffs_systematic, edu_max, edu_start, & 
                         mapping_state_idx, states_all, num_periods, & 
                         periods_emax, delta, is_debug, shocks, level, & 
@@ -886,7 +886,7 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE get_payoffs(emax_simulated, payoffs_ex_post, payoffs_future, &
-                num_draws_emax, disturbances_emax, period, k, & 
+                num_draws_emax, draws_emax, period, k, & 
                 payoffs_systematic, edu_max, edu_start, mapping_state_idx, & 
                 states_all, num_periods, periods_emax, delta, is_debug, & 
                 shocks, level, is_ambiguous, measure, is_deterministic, &
@@ -898,7 +898,7 @@ SUBROUTINE get_payoffs(emax_simulated, payoffs_ex_post, payoffs_future, &
     REAL(our_dble), INTENT(OUT)         :: payoffs_future(:)
     REAL(our_dble), INTENT(OUT)         :: emax_simulated
 
-    REAL(our_dble), INTENT(IN)          :: disturbances_emax(:, :)
+    REAL(our_dble), INTENT(IN)          :: draws_emax(:, :)
     REAL(our_dble), INTENT(IN)          :: shocks_cholesky(:, :)
     REAL(our_dble), INTENT(IN)          :: payoffs_systematic(:)
     REAL(our_dble), INTENT(IN)          :: periods_emax(:, :)
@@ -931,7 +931,7 @@ SUBROUTINE get_payoffs(emax_simulated, payoffs_ex_post, payoffs_future, &
     IF (is_ambiguous) THEN
 
         CALL get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
-                payoffs_future, num_draws_emax, disturbances_emax, & 
+                payoffs_future, num_draws_emax, draws_emax, & 
                 period, k, payoffs_systematic, edu_max, edu_start, & 
                 mapping_state_idx, states_all, num_periods, periods_emax, & 
                 delta, is_debug, shocks, level, measure, is_deterministic, & 
@@ -940,7 +940,7 @@ SUBROUTINE get_payoffs(emax_simulated, payoffs_ex_post, payoffs_future, &
     ELSE 
 
         CALL get_payoffs_risk(emax_simulated, payoffs_ex_post, &
-                payoffs_future, num_draws_emax, disturbances_emax, & 
+                payoffs_future, num_draws_emax, draws_emax, & 
                 period, k, payoffs_systematic, edu_max, edu_start, & 
                 mapping_state_idx, states_all, num_periods, periods_emax, & 
                 delta, shocks_cholesky)
@@ -954,7 +954,7 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_periods, &
                 num_states, delta, periods_payoffs_systematic, edu_max, & 
                 edu_start, mapping_state_idx, periods_emax, states_all, & 
                 is_simulated, num_draws_emax, shocks, level, is_ambiguous, &
-                is_debug, measure, maxe, disturbances_emax, & 
+                is_debug, measure, maxe, draws_emax, & 
                 is_deterministic, shocks_cholesky)
 
     !/* external objects        */
@@ -962,7 +962,7 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_periods, &
     REAL(our_dble), INTENT(OUT)         :: endogenous(:)
 
     REAL(our_dble), INTENT(IN)          :: periods_payoffs_systematic(:, :, :)
-    REAL(our_dble), INTENT(IN)          :: disturbances_emax(:, :)
+    REAL(our_dble), INTENT(IN)          :: draws_emax(:, :)
     REAL(our_dble), INTENT(IN)          :: shocks_cholesky(:, :)
     REAL(our_dble), INTENT(IN)          :: periods_emax(:, :)
     REAL(our_dble), INTENT(IN)          :: shocks(:, :)    
@@ -1017,7 +1017,7 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_periods, &
 
         ! Get payoffs
         CALL get_payoffs(emax_simulated, payoffs_ex_post, payoffs_future, &
-                num_draws_emax, disturbances_emax, period, k, & 
+                num_draws_emax, draws_emax, period, k, & 
                 payoffs_systematic, edu_max, edu_start, mapping_state_idx, & 
                 states_all, num_periods, periods_emax, delta, is_debug, & 
                 shocks, level, is_ambiguous, measure, is_deterministic, & 

@@ -285,12 +285,12 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE create_disturbances(disturbances, num_periods, num_draws_emax, & 
+SUBROUTINE create_draws(draws, num_periods, num_draws_emax, & 
                 seed, is_debug, which, shocks_cholesky, is_ambiguous)
 
     !/* external objects        */
 
-    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)  :: disturbances(:, :, :)
+    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)  :: draws(:, :, :)
 
     INTEGER(our_int), INTENT(IN)                :: num_draws_emax
     INTEGER(our_int), INTENT(IN)                :: num_periods
@@ -318,7 +318,7 @@ SUBROUTINE create_disturbances(disturbances, num_periods, num_draws_emax, &
 !------------------------------------------------------------------------------- 
 
     ! Allocate containers
-    ALLOCATE(disturbances(num_periods, num_draws_emax, 4))
+    ALLOCATE(draws(num_periods, num_draws_emax, 4))
 
     ! Set random seed
     seed_inflated(:) = seed
@@ -330,18 +330,18 @@ SUBROUTINE create_disturbances(disturbances, num_periods, num_draws_emax, &
     ! Draw random deviates from a standard normal distribution or read it in
     ! from disk. The latter is available to allow for testing across
     ! implementations.
-    INQUIRE(FILE='disturbances.txt', EXIST=READ_IN)
+    INQUIRE(FILE='draws.txt', EXIST=READ_IN)
 
     IF ((READ_IN .EQV. .True.)  .AND. (is_debug .EQV. .True.)) THEN
 
-        OPEN(12, file='disturbances.txt')
+        OPEN(12, file='draws.txt')
 
         DO period = 1, num_periods
 
             DO j = 1, num_draws_emax
         
                 2000 FORMAT(4(1x,f15.10))
-                READ(12,2000) disturbances(period, j, :)
+                READ(12,2000) draws(period, j, :)
         
             END DO
       
@@ -353,7 +353,7 @@ SUBROUTINE create_disturbances(disturbances, num_periods, num_draws_emax, &
 
         DO period = 1, num_periods
 
-            CALL multivariate_normal(disturbances(period, :, :))
+            CALL multivariate_normal(draws(period, :, :))
         
         END DO
 
@@ -364,7 +364,7 @@ SUBROUTINE create_disturbances(disturbances, num_periods, num_draws_emax, &
     ! the evaluation step.
     IF ((which == 'emax') .OR. (which == 'prob')) THEN
 
-        disturbances = disturbances
+        draws = draws
     
     ! Deviates for the simulation of a synthetic agent population.
     ELSE IF (which == 'sims') THEN
@@ -377,14 +377,14 @@ SUBROUTINE create_disturbances(disturbances, num_periods, num_draws_emax, &
             ! Apply variance change
             DO i = 1, num_draws_emax
             
-                disturbances(period, i:i, :) = &
-                    TRANSPOSE(MATMUL(shocks_cholesky, TRANSPOSE(disturbances(period, i:i, :))))
+                draws(period, i:i, :) = &
+                    TRANSPOSE(MATMUL(shocks_cholesky, TRANSPOSE(draws(period, i:i, :))))
 
             END DO
 
             DO j = 1, 2
                 
-                disturbances(period, :, j) =  EXP(disturbances(period, :, j))
+                draws(period, :, j) =  EXP(draws(period, :, j))
                 
             END DO
                 
@@ -467,8 +467,8 @@ PROGRAM robufort
     REAL(our_dble), ALLOCATABLE     :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_payoffs_ex_post(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_payoffs_future(:, :, :)
-    REAL(our_dble), ALLOCATABLE     :: periods_disturbances_emax(:, :, :)
-    REAL(our_dble), ALLOCATABLE     :: periods_disturbances_prob(:, :, :)
+    REAL(our_dble), ALLOCATABLE     :: periods_draws_emax(:, :, :)
+    REAL(our_dble), ALLOCATABLE     :: periods_draws_prob(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_emax(:, :)
     REAL(our_dble), ALLOCATABLE     :: data_array(:, :)
 
@@ -504,10 +504,10 @@ PROGRAM robufort
             seed_data, is_debug, is_deterministic, is_interpolated, num_points, &
             min_idx, is_ambiguous, measure, request, num_draws_prob, is_myopic)
 
-    ! This part creates (or reads from disk) the disturbances for the Monte 
+    ! This part creates (or reads from disk) the draws for the Monte 
     ! Carlo integration of the EMAX. For is_debugging purposes, these might also be 
     ! read in from disk or set to zero/one.   
-    CALL create_disturbances(periods_disturbances_emax, num_periods, & 
+    CALL create_draws(periods_draws_emax, num_periods, & 
             num_draws_emax, seed_emax, is_debug, 'emax', shocks_cholesky, & 
             is_ambiguous)
 
@@ -521,15 +521,15 @@ PROGRAM robufort
                 coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, edu_max, & 
                 delta, edu_start, is_debug, is_interpolated, level, measure, & 
                 min_idx, num_draws_emax, num_periods, num_points, & 
-                is_ambiguous, periods_disturbances_emax, is_deterministic, & 
+                is_ambiguous, periods_draws_emax, is_deterministic, & 
                 is_myopic, shocks_cholesky)
 
     ELSE IF (request == 'evaluate') THEN
 
-        ! This part creates (or reads from disk) the disturbances for the Monte 
+        ! This part creates (or reads from disk) the draws for the Monte 
         ! Carlo integration of the choice probabilities. For is_debugging 
         ! purposes, these might also be read in from disk or set to zero/one.   
-        CALL create_disturbances(periods_disturbances_prob, num_periods, & 
+        CALL create_draws(periods_draws_prob, num_periods, & 
                 num_draws_prob, seed_prob, is_debug, 'prob', shocks_cholesky, &
                 is_ambiguous)
 
@@ -543,14 +543,14 @@ PROGRAM robufort
                 coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, edu_max, & 
                 delta, edu_start, is_debug, is_interpolated, level, measure, & 
                 min_idx, num_draws_emax, num_periods, num_points, & 
-                is_ambiguous, periods_disturbances_emax, is_deterministic, & 
+                is_ambiguous, periods_draws_emax, is_deterministic, & 
                 is_myopic, shocks_cholesky)
 
         CALL evaluate_criterion_function(eval, mapping_state_idx, &
                 periods_emax, periods_payoffs_systematic, states_all, shocks, & 
                 edu_max, delta, edu_start, num_periods, shocks_cholesky, &
                 num_agents, num_draws_prob, data_array, & 
-                periods_disturbances_prob, is_deterministic)
+                periods_draws_prob, is_deterministic)
 
     END IF
 

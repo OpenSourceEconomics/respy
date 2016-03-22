@@ -15,14 +15,14 @@ sys.path.insert(0, os.environ['ROBUPY'])
 from robupy import simulate, read, solve, process
 from robupy.auxiliary import opt_get_model_parameters, opt_get_optim_parameters
 from robupy.auxiliary import distribute_model_paras
-from robupy.auxiliary import create_disturbances
+from robupy.auxiliary import create_draws
 from robupy.python.solve_python import solve_python_bare
 from robupy.python.evaluate_python import _evaluate_python_bare
 robupy_obj = read('test.robupy.ini')
 
 # First, I simulate a dataset.
 solve(robupy_obj)
-sys.exit('preparing eps revamp')
+sys.exit('preparing draws revamp')
 #simulate(robupy_obj)
 
 data_frame = process(robupy_obj)
@@ -58,14 +58,14 @@ x0 = opt_get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
 
 
 # Draw standard normal deviates for S-ML approach
-disturbances_prob = create_disturbances(num_periods, num_draws_prob, seed_prob,
-                                        is_debug, 'prob', shocks_cholesky)
+periods_draws_prob = create_draws(num_periods, num_draws_prob, seed_prob,
+                                  is_debug, 'prob', shocks_cholesky)
 
 
 data_array = data_frame.as_matrix()
 
 
-def criterion(x, data_array, disturbances_prob):
+def criterion(x, data_array, periods_emax_prob):
 
     assert (isinstance(data_array, np.ndarray))
 
@@ -74,13 +74,13 @@ def criterion(x, data_array, disturbances_prob):
             opt_get_model_parameters(x, True)
 
 
-    # Get the relevant set of disturbances. These are standard normal draws
+    # Get the relevant set of draws. These are standard normal draws
     # in the case of an ambiguous world. This function is located outside the
     # actual bare solution algorithm to ease testing across implementations.
     # TODO: THese need to be adjusted in the case of estimation to alway be
     # TODO: standard normal as well and them moved outside
 
-    disturbances_emax = create_disturbances(num_periods, num_draws_emax,
+    periods_draws_emax = create_draws(num_periods, num_draws_emax,
                                             seed_emax, is_debug, 'emax',
                                             shocks_cholesky)
 
@@ -88,7 +88,7 @@ def criterion(x, data_array, disturbances_prob):
     args = solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
          shocks, edu_max, delta, edu_start, is_debug, is_interpolated, level,
         measure, min_idx, num_draws_emax, num_periods, num_points, is_ambiguous,
-         disturbances_emax, is_deterministic, is_myopic, is_python)
+         periods_draws_emax, is_deterministic, is_myopic, is_python)
 
     # Distribute return arguments from solution run
     mapping_state_idx, periods_emax, periods_payoffs_future = args[:3]
@@ -96,17 +96,17 @@ def criterion(x, data_array, disturbances_prob):
 
      # Evaluate the criterion function
     likl = _evaluate_python_bare(mapping_state_idx, periods_emax,
-                 periods_payoffs_systematic, states_all, shocks, edu_max,
-                 delta, edu_start, num_periods, shocks_cholesky, num_agents,
-                 num_draws_prob, data_array, disturbances_prob, is_deterministic,
-                 is_python)
+                                 periods_payoffs_systematic, states_all, shocks, edu_max,
+                                 delta, edu_start, num_periods, shocks_cholesky, num_agents,
+                                 num_draws_prob, data_array, periods_emax_prob, is_deterministic,
+                                 is_python)
 
     print(likl)
 
     return likl
 
-criterion(x0, data_array, disturbances_prob)
+criterion(x0, data_array, periods_draws_prob)
 
 print(x0)
 x0[0] = 0.25
-minimize(criterion, x0, method='Powell', args =(data_array, disturbances_prob))
+minimize(criterion, x0, method='Powell', args =(data_array, periods_draws_prob))

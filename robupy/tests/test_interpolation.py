@@ -23,7 +23,7 @@ from robupy.tests.codes.random_init import print_random_dict
 from robupy.tests.codes.random_init import generate_init
 
 from robupy.auxiliary import replace_missing_values
-from robupy.auxiliary import create_disturbances
+from robupy.auxiliary import create_draws
 
 from robupy import solve
 from robupy import read
@@ -114,10 +114,10 @@ class TestClass(object):
         # functions.
         period = np.random.choice(range(num_periods))
 
-        periods_disturbances_emax = create_disturbances(num_periods, num_draws_emax,
+        periods_draws_emax = create_draws(num_periods, num_draws_emax,
             seed_prob, is_debug, 'emax', shocks_cholesky)
 
-        disturbances_relevant = periods_disturbances_emax[period, :, :]
+        draws_emax = periods_draws_emax[period, :, :]
 
         num_states = states_number_period[period]
 
@@ -155,7 +155,7 @@ class TestClass(object):
                 periods_payoffs_systematic, edu_max, edu_start,
                 mapping_state_idx, periods_emax, states_all, is_simulated,
                 num_draws_emax, shocks, level, is_ambiguous, is_debug,
-                measure, maxe, disturbances_relevant, is_deterministic,
+                measure, maxe, draws_emax, is_deterministic,
                 shocks_cholesky]
 
         py = _get_endogenous_variable(*args)
