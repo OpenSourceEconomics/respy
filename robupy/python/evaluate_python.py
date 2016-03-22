@@ -73,7 +73,7 @@ def evaluate_python(robupy_obj, data_frame):
     data_array = data_frame.as_matrix()
 
     # Distribute model parameters
-    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, shocks_cholesky = \
+    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, shocks_cholesky = \
         distribute_model_paras(model_paras, is_debug)
 
     # Draw standard normal deviates for choice probability integration
@@ -86,7 +86,7 @@ def evaluate_python(robupy_obj, data_frame):
 
     # Solve model for given parametrization
     args = solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-        shocks, edu_max, delta, edu_start, is_debug, is_interpolated, level,
+        shocks_cov, edu_max, delta, edu_start, is_debug, is_interpolated, level,
         measure, min_idx, num_draws_emax, num_periods, num_points, is_ambiguous,
         periods_draws_emax, is_deterministic, is_myopic, shocks_cholesky,
         is_python)
@@ -97,7 +97,7 @@ def evaluate_python(robupy_obj, data_frame):
 
     # Evaluate the criterion function
     likl = _evaluate_python_bare(mapping_state_idx, periods_emax,
-                periods_payoffs_systematic, states_all, shocks, edu_max,
+                periods_payoffs_systematic, states_all, shocks_cov, edu_max,
                 delta, edu_start, num_periods, shocks_cholesky, num_agents,
                 num_draws_prob, data_array, periods_draws_prob, is_deterministic,
                 is_python)
@@ -111,7 +111,7 @@ def evaluate_python(robupy_obj, data_frame):
 
 
 def _evaluate_python_bare(mapping_state_idx, periods_emax,
-                          periods_payoffs_systematic, states_all, shocks, edu_max, delta,
+                          periods_payoffs_systematic, states_all, shocks_cov, edu_max, delta,
                           edu_start, num_periods, shocks_cholesky, num_agents, num_draws_prob,
                           data_array, periods_draws_prob, is_deterministic, is_python):
     """ This function is required to ensure a full analogy to F2PY and
@@ -121,7 +121,7 @@ def _evaluate_python_bare(mapping_state_idx, periods_emax,
 
     if is_python:
         likl = evaluate_criterion_function(mapping_state_idx, periods_emax,
-                                           periods_payoffs_systematic, states_all, shocks, edu_max, delta,
+                                           periods_payoffs_systematic, states_all, shocks_cov, edu_max, delta,
                                            edu_start, num_periods, shocks_cholesky, num_agents, num_draws_prob,
                                            data_array, periods_draws_prob, is_deterministic)
 
@@ -129,7 +129,7 @@ def _evaluate_python_bare(mapping_state_idx, periods_emax,
         import robupy.python.f2py.f2py_library as f2py_library
         likl = f2py_library.wrapper_evaluate_criterion_function(
             mapping_state_idx, periods_emax, periods_payoffs_systematic,
-            states_all, shocks, edu_max, delta, edu_start, num_periods,
+            states_all, shocks_cov, edu_max, delta, edu_start, num_periods,
             shocks_cholesky, num_agents, num_draws_prob, data_array,
             periods_draws_prob, is_deterministic)
 
@@ -139,7 +139,7 @@ def _evaluate_python_bare(mapping_state_idx, periods_emax,
 
 # Solve the model for given parametrization
 def evaluate_criterion_function(mapping_state_idx, periods_emax,
-                                periods_payoffs_systematic, states_all, shocks, edu_max, delta,
+                                periods_payoffs_systematic, states_all, shocks_cov, edu_max, delta,
                                 edu_start, num_periods, shocks_cholesky, num_agents, num_draws_prob,
                                 data_array, periods_draws_prob, is_deterministic):
     """ Evaluate criterion function. This code allows for a deterministic
@@ -195,13 +195,13 @@ def evaluate_criterion_function(mapping_state_idx, periods_emax,
                 # Construct independent normal draws implied by the observed
                 # wages.
                 if choice == 1:
-                    draws_prob[:, idx] = dist / np.sqrt(shocks[idx, idx])
+                    draws_prob[:, idx] = dist / np.sqrt(shocks_cov[idx, idx])
                 else:
                     draws_prob[:, idx] = (dist - shocks_cholesky[idx, 0] *
                         draws_prob[:, 0]) / shocks_cholesky[idx, idx]
 
                 # Record contribution of wage observation.
-                likl_contrib *= norm.pdf(dist, 0.0, np.sqrt(shocks[idx, idx]))
+                likl_contrib *= norm.pdf(dist, 0.0, np.sqrt(shocks_cov[idx, idx]))
             # Determine conditional deviates. These correspond to the
             # unconditional draws if the agent did not work in the labor market.
             conditional_draws = np.dot(shocks_cholesky, draws_prob.T).T

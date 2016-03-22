@@ -157,7 +157,7 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
-                coeffs_edu, edu_start, edu_max, coeffs_home, shocks, & 
+                coeffs_edu, edu_start, edu_max, coeffs_home, shocks_cov, & 
                 shocks_cholesky, num_draws_emax, seed_emax, seed_prob, &
                 num_agents, seed_data, is_debug, is_deterministic, is_interpolated, &
                 num_points, min_idx, is_ambiguous, measure, request, & 
@@ -186,7 +186,7 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
     REAL(our_dble), INTENT(OUT)     :: shocks_cholesky(4, 4)
     REAL(our_dble), INTENT(OUT)     :: coeffs_home(1)
     REAL(our_dble), INTENT(OUT)     :: coeffs_edu(3)
-    REAL(our_dble), INTENT(OUT)     :: shocks(4, 4)
+    REAL(our_dble), INTENT(OUT)     :: shocks_cov(4, 4)
     REAL(our_dble), INTENT(OUT)     :: coeffs_a(6)
     REAL(our_dble), INTENT(OUT)     :: coeffs_b(6)
     REAL(our_dble), INTENT(OUT)     :: delta
@@ -241,7 +241,7 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
 
         ! SHOCKS
         DO j = 1, 4
-            READ(1, 1500) (shocks(j, k), k=1, 4)
+            READ(1, 1500) (shocks_cov(j, k), k=1, 4)
         END DO
 
         ! SOLUTION
@@ -279,7 +279,7 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
     IF (is_deterministic) THEN
         shocks_cholesky = zero_dble
     ELSE
-        CALL cholesky(shocks_cholesky, shocks)
+        CALL cholesky(shocks_cholesky, shocks_cov)
     END IF
 
 END SUBROUTINE
@@ -475,7 +475,7 @@ PROGRAM robufort
     REAL(our_dble)                  :: shocks_cholesky(4, 4)
     REAL(our_dble)                  :: coeffs_home(1)
     REAL(our_dble)                  :: coeffs_edu(3)
-    REAL(our_dble)                  :: shocks(4, 4)
+    REAL(our_dble)                  :: shocks_cov(4, 4)
     REAL(our_dble)                  :: coeffs_a(6)
     REAL(our_dble)                  :: coeffs_b(6)
     REAL(our_dble)                  :: delta
@@ -499,7 +499,7 @@ PROGRAM robufort
     ! clsRobupy instance that carries the model parametrization for the 
     ! PYTHON/F2PY implementations.
     CALL read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
-            coeffs_edu, edu_start, edu_max, coeffs_home, shocks, &
+            coeffs_edu, edu_start, edu_max, coeffs_home, shocks_cov, &
             shocks_cholesky, num_draws_emax, seed_emax, seed_prob, num_agents, &
             seed_data, is_debug, is_deterministic, is_interpolated, num_points, &
             min_idx, is_ambiguous, measure, request, num_draws_prob, is_myopic)
@@ -518,7 +518,7 @@ PROGRAM robufort
         CALL solve_fortran_bare(mapping_state_idx, periods_emax, & 
                 periods_payoffs_future, periods_payoffs_ex_post, &
                 periods_payoffs_systematic, states_all, states_number_period, & 
-                coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, edu_max, & 
+                coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, edu_max, & 
                 delta, edu_start, is_debug, is_interpolated, level, measure, & 
                 min_idx, num_draws_emax, num_periods, num_points, & 
                 is_ambiguous, periods_draws_emax, is_deterministic, & 
@@ -540,14 +540,14 @@ PROGRAM robufort
         CALL solve_fortran_bare(mapping_state_idx, periods_emax, & 
                 periods_payoffs_future, periods_payoffs_ex_post, &
                 periods_payoffs_systematic, states_all, states_number_period, & 
-                coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, edu_max, & 
+                coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, edu_max, & 
                 delta, edu_start, is_debug, is_interpolated, level, measure, & 
                 min_idx, num_draws_emax, num_periods, num_points, & 
                 is_ambiguous, periods_draws_emax, is_deterministic, & 
                 is_myopic, shocks_cholesky)
 
         CALL evaluate_criterion_function(eval, mapping_state_idx, &
-                periods_emax, periods_payoffs_systematic, states_all, shocks, & 
+                periods_emax, periods_payoffs_systematic, states_all, shocks_cov, & 
                 edu_max, delta, edu_start, num_periods, shocks_cholesky, &
                 num_agents, num_draws_prob, data_array, & 
                 periods_draws_prob, is_deterministic)

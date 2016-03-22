@@ -32,7 +32,7 @@ SUBROUTINE get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
                 payoffs_future, num_draws_emax, draws_emax, period, & 
                 k, payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
                 states_all, num_periods, periods_emax, delta, is_debug, &
-                shocks, level, measure, is_deterministic, shocks_cholesky)
+                shocks_cov, level, measure, is_deterministic, shocks_cholesky)
 
     !/* external objects        */
 
@@ -53,7 +53,7 @@ SUBROUTINE get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
     REAL(our_dble), INTENT(IN)      :: shocks_cholesky(:, :)
     REAL(our_dble), INTENT(IN)      :: payoffs_systematic(:)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:,:)
-    REAL(our_dble), INTENT(IN)      :: shocks(:, :)
+    REAL(our_dble), INTENT(IN)      :: shocks_cov(:, :)
     REAL(our_dble), INTENT(IN)      :: delta
     REAL(our_dble), INTENT(IN)      :: level
 
@@ -95,7 +95,7 @@ SUBROUTINE get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
                 num_draws_emax, draws_emax, period, k, & 
                 payoffs_systematic, edu_max, edu_start, mapping_state_idx, & 
                 states_all, num_periods, periods_emax, delta, is_debug, & 
-                shocks, level, shocks_cholesky)
+                shocks_cov, level, shocks_cholesky)
 
     END IF
 
@@ -131,14 +131,14 @@ END SUBROUTINE
 SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, tiny, &
             num_draws_emax, draws_emax, period, k, & 
             payoffs_systematic, edu_max, edu_start, mapping_state_idx, & 
-            states_all, num_periods, periods_emax, delta, is_debug, shocks, & 
+            states_all, num_periods, periods_emax, delta, is_debug, shocks_cov, & 
             level, shocks_cholesky)
 
     !/* external objects        */
 
     REAL(our_dble), INTENT(OUT)     :: x_internal(:)
 
-    REAL(our_dble), INTENT(IN)      :: shocks(:,:)
+    REAL(our_dble), INTENT(IN)      :: shocks_cov(:,:)
     REAL(our_dble), INTENT(IN)      :: x_start(:)
     REAL(our_dble), INTENT(IN)      :: level
     REAL(our_dble), INTENT(IN)      :: ftol
@@ -240,8 +240,8 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, tiny, &
                 periods_emax, delta, shocks_cholesky)
 
     ! Initialize constraint at starting values
-    c = divergence(x_internal, shocks, level)
-    a(1,:2) = divergence_approx_gradient(x_internal, shocks, level, tiny)
+    c = divergence(x_internal, shocks_cov, level)
+    a(1,:2) = divergence_approx_gradient(x_internal, shocks_cov, level, tiny)
 
     ! Iterate until completion
     DO WHILE (.NOT. is_finished)
@@ -254,7 +254,7 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, tiny, &
                     mapping_state_idx, states_all, num_periods, periods_emax, & 
                     delta, shocks_cholesky)
 
-            c = divergence(x_internal, shocks, level)
+            c = divergence(x_internal, shocks_cov, level)
 
         ! Evaluate gradient of criterion function and constraints. Note that the
         ! a is of dimension (1, n + 1) and the last element needs to always
@@ -266,7 +266,7 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, tiny, &
                     payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
                     states_all, num_periods, periods_emax, delta, shocks_cholesky)
 
-            a(1,:2) = divergence_approx_gradient(x_internal, shocks, level, tiny)
+            a(1,:2) = divergence_approx_gradient(x_internal, shocks_cov, level, tiny)
 
         END IF
 
@@ -293,7 +293,7 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, tiny, &
     IF (is_debug) THEN
 
         ! Evaluate divergence at final value
-        div = divergence(x_internal, shocks, level) - level
+        div = divergence(x_internal, shocks_cov, level) - level
         ! Write to logging file
         CALL logging_ambiguity(x_internal, div, mode, period, k, is_success)
 
@@ -491,14 +491,14 @@ SUBROUTINE logging_ambiguity(x_internal, div, mode, period, k, is_success)
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-FUNCTION divergence(x_internal, shocks, level)
+FUNCTION divergence(x_internal, shocks_cov, level)
 
     !/* external objects        */
 
     REAL(our_dble)                  :: divergence 
 
     REAL(our_dble), INTENT(IN)      :: x_internal(:)
-    REAL(our_dble), INTENT(IN)      :: shocks(:,:)
+    REAL(our_dble), INTENT(IN)      :: shocks_cov(:,:)
     REAL(our_dble), INTENT(IN)      :: level
 
     !/* internals objects       */
@@ -520,10 +520,10 @@ FUNCTION divergence(x_internal, shocks, level)
     ! Construct alternative distribution
     alt_mean(1,1) = x_internal(1)
     alt_mean(2,1) = x_internal(2)
-    alt_cov = shocks
+    alt_cov = shocks_cov
 
     ! Construct baseline distribution
-    old_cov = shocks
+    old_cov = shocks_cov
 
     ! Construct auxiliary objects.
     inv_old_cov = inverse(old_cov, 4)

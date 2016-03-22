@@ -16,12 +16,12 @@ from robupy.constants import MISSING_FLOAT
 '''
 
 
-def check_model_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
-        shocks_cholesky):
+def check_model_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
+                           shocks_cholesky):
     """ Check the integrity of all model parameters.
     """
     # Checks for all arguments
-    args = [coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
+    args = [coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
             shocks_cholesky]
     for coeffs in args:
         assert (isinstance(coeffs, np.ndarray))
@@ -37,11 +37,11 @@ def check_model_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
     # Check Cholesky decomposition
     assert (shocks_cholesky.shape == (4, 4))
     aux = np.matmul(shocks_cholesky, shocks_cholesky.T)
-    np.testing.assert_array_almost_equal(shocks, aux)
+    np.testing.assert_array_almost_equal(shocks_cov, aux)
 
     # Checks shock matrix
-    assert (shocks.shape == (4, 4))
-    np.testing.assert_array_almost_equal(shocks, shocks.T)
+    assert (shocks_cov.shape == (4, 4))
+    np.testing.assert_array_almost_equal(shocks_cov, shocks_cov.T)
 
     # Finishing
     return True
@@ -59,12 +59,12 @@ def distribute_model_paras(model_paras, is_debug):
     shocks_cholesky = model_paras['shocks_cholesky']
 
     if is_debug:
-        args = [coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
+        args = [coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
                shocks_cholesky]
         assert (check_model_parameters(*args))
 
     # Finishing
-    return coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, shocks_cholesky
+    return coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, shocks_cholesky
 
 
 def create_draws(num_periods, num_draws_emax, seed, is_debug, which,
@@ -226,13 +226,13 @@ def check_optimization_parameters(x):
 
 
 def opt_get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-        shocks, shocks_cholesky, is_debug):
+                             shocks_cov, shocks_cholesky, is_debug):
     """ Get optimization parameters.
     """
     # Checks
     if is_debug:
-        args = [coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
-               shocks_cholesky]
+        args = [coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
+                shocks_cholesky]
         assert check_model_parameters(*args)
 
     # Initialize container

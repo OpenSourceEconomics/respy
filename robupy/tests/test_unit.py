@@ -578,7 +578,7 @@ class TestClass(object):
                     'min_idx', 'delta', 'level')
 
         # Distribute model parameters
-        coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, shocks_cholesky = \
+        coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, shocks_cholesky = \
                 distribute_model_paras(model_paras, is_debug)
 
         # Get set of draws
@@ -590,7 +590,7 @@ class TestClass(object):
         max_states_period = write_interpolation_grid('test.robupy.ini')
 
         # Baseline input arguments.
-        base_args = [coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
+        base_args = [coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
             edu_max, delta, edu_start, is_debug, is_interpolated, level,
             measure, min_idx, num_draws_emax, num_periods, num_points,
             is_ambiguous, draws_emax, is_deterministic, is_myopic,

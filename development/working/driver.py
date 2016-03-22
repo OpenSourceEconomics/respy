@@ -51,10 +51,10 @@ is_python = robupy_obj.get_attr('is_python')
 num_agents = robupy_obj.get_attr('num_agents')
 
 coeffs_a, coeffs_b, coeffs_edu, coeffs_home, \
-    shocks, shocks_cholesky = \
+shocks_cov, shocks_cholesky = \
         distribute_model_paras(model_paras, True)
 x0 = opt_get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-        shocks, shocks_cholesky, True)
+                              shocks_cov, shocks_cholesky, True)
 
 
 # Draw standard normal deviates for S-ML approach
@@ -70,7 +70,7 @@ def criterion(x, data_array, periods_emax_prob):
     assert (isinstance(data_array, np.ndarray))
 
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, \
-        shocks, shocks_cholesky = \
+        shocks_cov, shocks_cholesky = \
             opt_get_model_parameters(x, True)
 
 
@@ -86,7 +86,7 @@ def criterion(x, data_array, periods_emax_prob):
 
     # Solve model for given parametrization
     args = solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-         shocks, edu_max, delta, edu_start, is_debug, is_interpolated, level,
+         shocks_cov, edu_max, delta, edu_start, is_debug, is_interpolated, level,
         measure, min_idx, num_draws_emax, num_periods, num_points, is_ambiguous,
          periods_draws_emax, is_deterministic, is_myopic, is_python)
 
@@ -96,7 +96,7 @@ def criterion(x, data_array, periods_emax_prob):
 
      # Evaluate the criterion function
     likl = _evaluate_python_bare(mapping_state_idx, periods_emax,
-                                 periods_payoffs_systematic, states_all, shocks, edu_max,
+                                 periods_payoffs_systematic, states_all, shocks_cov, edu_max,
                                  delta, edu_start, num_periods, shocks_cholesky, num_agents,
                                  num_draws_prob, data_array, periods_emax_prob, is_deterministic,
                                  is_python)

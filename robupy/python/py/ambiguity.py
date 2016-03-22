@@ -15,7 +15,7 @@ from robupy.python.py.auxiliary import simulate_emax
 
 def get_payoffs_ambiguity(num_draws_emax, draws_emax, period, k,
                           payoffs_systematic, edu_max, edu_start, mapping_state_idx, states_all,
-                          num_periods, periods_emax, delta, is_debug, shocks, level, measure,
+                          num_periods, periods_emax, delta, is_debug, shocks_cov, level, measure,
                           is_deterministic, shocks_cholesky):
     """ Determine the worst case payoffs.
     """
@@ -28,7 +28,7 @@ def get_payoffs_ambiguity(num_draws_emax, draws_emax, period, k,
         opt = _determine_worst_case(num_draws_emax, draws_emax,
                                     period, k, payoffs_systematic, edu_max, edu_start,
                                     mapping_state_idx, states_all, num_periods, periods_emax,
-                                    delta, is_debug, shocks, level, measure, shocks_cholesky)
+                                    delta, is_debug, shocks_cov, level, measure, shocks_cholesky)
 
     # Simulate the expected future value for the worst case outcome
     simulated, payoffs_ex_post, payoffs_future = \
@@ -70,7 +70,7 @@ def _handle_shocks_zero(is_debug, period, k):
 
 def _determine_worst_case(num_draws_emax, draws_emax, period, k,
                           payoffs_systematic, edu_max, edu_start, mapping_state_idx, states_all,
-                          num_periods, periods_emax, delta, is_debug, shocks, level, measure,
+                          num_periods, periods_emax, delta, is_debug, shocks_cov, level, measure,
                           shocks_cholesky):
     """ Determine the worst case outcome for the given parametrization.
     """
@@ -92,7 +92,7 @@ def _determine_worst_case(num_draws_emax, draws_emax, period, k,
         opt = minimize(_criterion, x0, args, method='SLSQP', options=options,
                        bounds=bounds)
     else:
-        constraints = _prep_kl(shocks, level)
+        constraints = _prep_kl(shocks_cov, level)
         opt = minimize(_criterion, x0, args, method='SLSQP', options=options,
                        constraints=constraints)
         # Stabilization. If the optimization fails the starting values are
@@ -103,21 +103,21 @@ def _determine_worst_case(num_draws_emax, draws_emax, period, k,
     # Logging result to file
     if is_debug:
         # Evaluate divergence at final value.
-        div = _divergence(opt['x'], shocks, level) - level
+        div = _divergence(opt['x'], shocks_cov, level) - level
         _write_result(period, k, opt, div)
 
     # Finishing
     return opt
 
 
-def _prep_kl(shocks, level):
+def _prep_kl(shocks_cov, level):
     """ Construct Kullback-Leibler constraint for optimization.
     """
     # Construct constraint
     constraint_divergence = dict()
     constraint_divergence['type'] = 'eq'
     constraint_divergence['fun'] = _divergence
-    constraint_divergence['args'] = (shocks, level)
+    constraint_divergence['args'] = (shocks_cov, level)
 
     # Collection.
     constraints = [constraint_divergence, ]

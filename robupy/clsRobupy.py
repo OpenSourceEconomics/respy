@@ -311,7 +311,7 @@ class RobupyCls(object):
         # Update derived attributes
         self.attr['min_idx'] = min(num_periods, (edu_max - edu_start + 1))
 
-        self.attr['is_deterministic'] = (np.count_nonzero(shocks) == 0)
+        self.attr['is_deterministic'] = (np.count_nonzero(shocks_cov) == 0)
 
         self.attr['is_ambiguous'] = (self.attr['level'] > 0.00)
 

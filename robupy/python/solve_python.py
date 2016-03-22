@@ -71,10 +71,10 @@ def solve_python(robupy_obj):
     _start_ambiguity_logging(is_ambiguous, is_debug)
 
     # Distribute model parameters
-    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, shocks_cholesky = \
+    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, shocks_cholesky = \
         distribute_model_paras(model_paras, is_debug)
 
-    # Get the relevant set of draws. These are standard normal draws
+    # Get the relevant set of disturbances. These are standard normal draws
     # in the case of an ambiguous world. This function is located outside the
     # actual bare solution algorithm to ease testing across implementations.
     periods_draws_emax = create_draws(num_periods, num_draws_emax,
@@ -82,7 +82,7 @@ def solve_python(robupy_obj):
 
     # Solve the model using PYTHON/F2PY implementation
     args = solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-                shocks, edu_max, delta, edu_start, is_debug, is_interpolated,
+                shocks_cov, edu_max, delta, edu_start, is_debug, is_interpolated,
                 level, measure, min_idx, num_draws_emax, num_periods,
                 num_points, is_ambiguous, periods_draws_emax, is_deterministic,
                 is_myopic, shocks_cholesky, is_python)
@@ -124,11 +124,11 @@ def solve_python(robupy_obj):
 '''
 
 
-def solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
-                      edu_max, delta, edu_start, is_debug, is_interpolated, level, measure,
-                      min_idx, num_draws_emax, num_periods, num_points, is_ambiguous,
-                      periods_draws_emax, is_deterministic, is_myopic, shocks_cholesky,
-                      is_python):
+def solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
+        edu_max, delta, edu_start, is_debug, is_interpolated, level, measure,
+        min_idx, num_draws_emax, num_periods, num_points, is_ambiguous,
+        periods_disturbances_emax, is_deterministic, is_myopic, shocks_cholesky,
+        is_python):
     """ This function is required to ensure a full analogy to F2PY and
     FORTRAN implementations. This function is not private to the module as it
     is accessed in the evaluation and optimization modules as well.
@@ -176,11 +176,11 @@ def solve_python_bare(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
     else:
         periods_emax, periods_payoffs_ex_post, periods_payoffs_future = \
             _backward_induction_procedure(periods_payoffs_systematic,
-                                          states_number_period, mapping_state_idx, is_interpolated,
-                                          num_periods, num_points, states_all, num_draws_emax, edu_start,
-                                          is_debug, edu_max, measure, shocks, delta, level, is_ambiguous,
-                                          periods_draws_emax, is_deterministic, max_states_period,
-                                          shocks_cholesky, is_python)
+              states_number_period, mapping_state_idx, is_interpolated,
+              num_periods, num_points, states_all, num_draws_emax, edu_start,
+              is_debug, edu_max, measure, shocks_cov, delta, level, is_ambiguous,
+              periods_disturbances_emax, is_deterministic, max_states_period,
+              shocks_cholesky, is_python)
 
     # Replace missing values
     periods_emax = replace_missing_values(periods_emax)
@@ -267,7 +267,7 @@ def _calculate_payoffs_systematic(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
 def _backward_induction_procedure(periods_payoffs_systematic,
                                   states_number_period, mapping_state_idx, is_interpolated, num_periods,
                                   num_points, states_all, num_draws_emax, edu_start, is_debug, edu_max,
-                                  measure, shocks, delta, level, is_ambiguous, periods_draws_emax,
+                                  measure, shocks_cov, delta, level, is_ambiguous, periods_disturbances_emax,
                                   is_deterministic, max_states_period, shocks_cholesky, is_python):
     """ Perform backward induction procedure. This function is a wrapper
     around the PYTHON and F2PY implementation.
@@ -285,9 +285,9 @@ def _backward_induction_procedure(periods_payoffs_systematic,
     # Perform backward induction procedure
     periods_emax, periods_payoffs_ex_post, periods_payoffs_future = \
         backward_induction(num_periods, max_states_period,
-                           periods_draws_emax, num_draws_emax, states_number_period,
+                           periods_disturbances_emax, num_draws_emax, states_number_period,
                            periods_payoffs_systematic, edu_max, edu_start,
-                           mapping_state_idx, states_all, delta, is_debug, shocks, level,
+                           mapping_state_idx, states_all, delta, is_debug, shocks_cov, level,
                            is_ambiguous, measure, is_interpolated, num_points,
                            is_deterministic, shocks_cholesky)
 
