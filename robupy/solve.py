@@ -37,46 +37,46 @@ def solve(robupy_obj):
 
     store = robupy_obj.get_attr('store')
 
+    is_deterministic = robupy_obj.get_attr('is_deterministic')
+
+    is_interpolated = robupy_obj.get_attr('is_interpolated')
+
+    num_draws_emax = robupy_obj.get_attr('num_draws_emax')
+
+    is_ambiguous = robupy_obj.get_attr('is_ambiguous')
+
+    num_periods = robupy_obj.get_attr('num_periods')
+
+    model_paras = robupy_obj.get_attr('model_paras')
+
+    num_points = robupy_obj.get_attr('num_points')
+
+    seed_emax = robupy_obj.get_attr('seed_emax')
+
+    edu_start = robupy_obj.get_attr('edu_start')
+
+    is_python = robupy_obj.get_attr('is_python')
+
+    is_myopic = robupy_obj.get_attr('is_myopic')
+
+    is_debug = robupy_obj.get_attr('is_debug')
+
+    measure = robupy_obj.get_attr('measure')
+
+    edu_max = robupy_obj.get_attr('edu_max')
+
+    min_idx = robupy_obj.get_attr('min_idx')
+
+    store = robupy_obj.get_attr('store')
+
+    delta = robupy_obj.get_attr('delta')
+
+    level = robupy_obj.get_attr('level')
+
     # Select appropriate interface
     if version == 'FORTRAN':
         robupy_obj = solve_fortran(robupy_obj)
     else:
-        # Distribute class attributes
-        is_deterministic = robupy_obj.get_attr('is_deterministic')
-
-        is_interpolated = robupy_obj.get_attr('is_interpolated')
-
-        num_draws_emax = robupy_obj.get_attr('num_draws_emax')
-
-        is_ambiguous = robupy_obj.get_attr('is_ambiguous')
-
-        num_periods = robupy_obj.get_attr('num_periods')
-
-        model_paras = robupy_obj.get_attr('model_paras')
-
-        num_points = robupy_obj.get_attr('num_points')
-
-        seed_emax = robupy_obj.get_attr('seed_emax')
-
-        edu_start = robupy_obj.get_attr('edu_start')
-
-        is_python = robupy_obj.get_attr('is_python')
-
-        is_myopic = robupy_obj.get_attr('is_myopic')
-
-        is_debug = robupy_obj.get_attr('is_debug')
-
-        measure = robupy_obj.get_attr('measure')
-
-        edu_max = robupy_obj.get_attr('edu_max')
-
-        min_idx = robupy_obj.get_attr('min_idx')
-
-        store = robupy_obj.get_attr('store')
-
-        delta = robupy_obj.get_attr('delta')
-
-        level = robupy_obj.get_attr('level')
 
         # Construct auxiliary objects
         _start_ambiguity_logging(is_ambiguous, is_debug)
@@ -85,11 +85,10 @@ def solve(robupy_obj):
         coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, shocks_cholesky = \
             distribute_model_paras(model_paras, is_debug)
 
-
-
         # Get the relevant set of disturbances. These are standard normal draws
-        # in the case of an ambiguous world. This function is located outside the
-        # actual bare solution algorithm to ease testing across implementations.
+        # in the case of an ambiguous world. This function is located outside
+        # the actual bare solution algorithm to ease testing across
+        # implementations.
         periods_draws_emax = create_draws(num_periods, num_draws_emax,
                 seed_emax, is_debug, 'emax', shocks_cholesky)
 

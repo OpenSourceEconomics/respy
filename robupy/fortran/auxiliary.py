@@ -32,6 +32,8 @@ def _add_results(robupy_obj, request):
 
     os.unlink('.max_states_period.robufort.dat')
 
+
+
     # Labels for objects
     labels = []
 
@@ -65,7 +67,7 @@ def _add_results(robupy_obj, request):
     # Add objects to class instance
     robupy_obj.unlock()
 
-    for i in range(6):
+    for i in range(len(shapes)):
 
         label, shape = labels[i], shapes[i]
 
@@ -97,50 +99,33 @@ def _add_results(robupy_obj, request):
     return robupy_obj, eval_
 
 
-def _write_robufort_initialization(robupy_obj, request):
+def _read_date(label, shape):
+    """ Read results
+    """
+    file_ = '.' + label + '.robufort.dat'
+
+    # This special treatment is required as it is crucial for this data
+    # to stay of integer type. All other data is transformed to float in
+    # the replacement of missing values.
+    if label == 'states_number_period':
+        data = np.loadtxt(file_, dtype=np.int64)
+    else:
+        data = replace_missing_values(np.loadtxt(file_))
+
+    data = np.reshape(data, shape)
+
+    # Finishing
+    return data
+
+def _write_robufort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
+            is_deterministic, is_interpolated, num_draws_prob,
+            num_draws_emax, is_ambiguous, num_periods, num_points,
+            num_agents, seed_prob, seed_data, is_myopic, edu_start,
+            seed_emax, is_debug, min_idx, measure, edu_max, delta, level,
+            request):
     """ Write out model request to hidden file .model.robufort.ini.
     """
-    # Distribute class attributes
-    model_paras = robupy_obj.get_attr('model_paras')
 
-    # Auxiliary objects
-    is_deterministic = robupy_obj.get_attr('is_deterministic')
-
-    is_interpolated = robupy_obj.get_attr('is_interpolated')
-
-    num_draws_prob = robupy_obj.get_attr('num_draws_prob')
-
-    num_draws_emax = robupy_obj.get_attr('num_draws_emax')
-
-    is_ambiguous = robupy_obj.get_attr('is_ambiguous')
-
-    num_periods = robupy_obj.get_attr('num_periods')
-
-    num_points = robupy_obj.get_attr('num_points')
-
-    num_agents = robupy_obj.get_attr('num_agents')
-
-    seed_prob = robupy_obj.get_attr('seed_prob')
-
-    seed_data = robupy_obj.get_attr('seed_data')
-
-    is_myopic = robupy_obj.get_attr('is_myopic')
-
-    edu_start = robupy_obj.get_attr('edu_start')
-
-    seed_emax = robupy_obj.get_attr('seed_emax')
-
-    is_debug = robupy_obj.get_attr('is_debug')
-
-    min_idx = robupy_obj.get_attr('min_idx')
-
-    measure = robupy_obj.get_attr('measure')
-
-    edu_max = robupy_obj.get_attr('edu_max')
-
-    delta = robupy_obj.get_attr('delta')
-
-    level = robupy_obj.get_attr('level')
 
     # Write out to link file
     with open('.model.robufort.ini', 'w') as file_:
@@ -163,13 +148,13 @@ def _write_robufort_initialization(robupy_obj, request):
             raise NotImplementedError
 
         # WORK
-        for num in [model_paras['coeffs_a'], model_paras['coeffs_b']]:
+        for num in [coeffs_a, coeffs_b]:
             line = ' {0:15.10f} {1:15.10f} {2:15.10f} {3:15.10f}  {4:15.10f}' \
                         ' {5:15.10f}\n'.format(*num)
             file_.write(line)
 
         # EDUCATION
-        num = model_paras['coeffs_edu']
+        num = coeffs_edu
         line = ' {0:+15.9f} {1:+15.9f} {2:+15.9f}\n'.format(*num)
         file_.write(line)
 
@@ -180,11 +165,10 @@ def _write_robufort_initialization(robupy_obj, request):
         file_.write(line)
 
         # HOME
-        line = ' {0:15.10f}\n'.format(model_paras['coeffs_home'][0])
+        line = ' {0:15.10f}\n'.format(coeffs_home[0])
         file_.write(line)
 
         # SHOCKS
-        shocks_cov = model_paras['shocks_cov']
         for j in range(4):
             line = ' {0:15.5f} {1:15.5f} {2:15.5f} ' \
                    '{3:15.5f}\n'.format(*shocks_cov[j])
