@@ -5,6 +5,8 @@ import sys
 import os
 
 # Package structure
+from robupy.estimate.estimate import estimate
+
 from robupy.process.process import process
 from robupy.read.read import read
 

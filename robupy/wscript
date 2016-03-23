@@ -136,6 +136,16 @@ def cleanup_build(is_build=False):
             if match == './process':
                 continue
 
+            if match == './evaluate':
+                continue
+
+            if match == './estimate':
+                continue
+            if match == './simulate':
+                continue
+            if match == './solve':
+                continue
+
         # Remove remaining files and directories.
         try:
             os.unlink(match)

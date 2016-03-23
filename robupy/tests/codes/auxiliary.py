@@ -269,6 +269,20 @@ def cleanup_robupy_package(is_build=False):
             if match == './tests/resources':
                 continue
 
+            if match == './read':
+                continue
+
+            if match == './process':
+                continue
+            if match == './estimate':
+                continue
+            if match == './simulate':
+                continue
+            if match == './solve':
+                continue
+            if match == './evaluate':
+                continue
+
         # Remove remaining files and directories.. It is important to check
         # for the link first. Otherwise, isdir() evaluates to true but rmtree()
         # raises an error if applied to a link.
