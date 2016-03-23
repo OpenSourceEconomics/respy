@@ -59,7 +59,7 @@ SUBROUTINE evaluate_criterion_function(rslt, mapping_state_idx, periods_emax, &
 
     !/* internal objects        */
 
-    REAL(our_dble), ALLOCATABLE     :: likl(:)
+    REAL(our_dble), ALLOCATABLE     :: crit_val(:)
 
     REAL(our_dble), INTENT(IN)      :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
@@ -85,7 +85,7 @@ SUBROUTINE evaluate_criterion_function(rslt, mapping_state_idx, periods_emax, &
     REAL(our_dble)                  :: payoffs_future(4)
     REAL(our_dble)                  :: total_payoffs(4)
     REAL(our_dble)                  :: draws(4)
-    REAL(our_dble)                  :: likl_contrib
+    REAL(our_dble)                  :: crit_val_contrib
     REAL(our_dble)                  :: dist
 
     LOGICAL                         :: is_deterministic
@@ -96,7 +96,7 @@ SUBROUTINE evaluate_criterion_function(rslt, mapping_state_idx, periods_emax, &
 !-------------------------------------------------------------------------------
 
     ! Initialize container for likelihood contributions
-    ALLOCATE(likl(num_agents * num_periods)); likl = zero_dble
+    ALLOCATE(crit_val(num_agents * num_periods)); crit_val = zero_dble
 
     j = 1   
 
@@ -131,7 +131,7 @@ SUBROUTINE evaluate_criterion_function(rslt, mapping_state_idx, periods_emax, &
             draws_prob = periods_draws_prob(period + 1, :, :)
 
             ! Prepare to calculate product of likelihood contributions.
-            likl_contrib = 1.0
+            crit_val_contrib = 1.0
 
             ! If an agent is observed working, then the the labor market shocks
             ! are observed and the conditional distribution is used to determine
@@ -151,7 +151,7 @@ SUBROUTINE evaluate_criterion_function(rslt, mapping_state_idx, periods_emax, &
                 END IF
                 
                 ! Record contribution of wage observation. REPLACE 0.0
-                likl_contrib =  likl_contrib * normal_pdf(dist, DBLE(0.0), sqrt(shocks_cov(idx, idx)))
+                crit_val_contrib =  crit_val_contrib * normal_pdf(dist, DBLE(0.0), sqrt(shocks_cov(idx, idx)))
 
                 ! If there is no random variation in payoffs, then the
                 ! observed wages need to be identical their systematic
@@ -209,8 +209,8 @@ SUBROUTINE evaluate_criterion_function(rslt, mapping_state_idx, periods_emax, &
             END IF
 
             ! Adjust  and record likelihood contribution
-            likl_contrib = likl_contrib * choice_probabilities(idx)
-            likl(j) = likl_contrib
+            crit_val_contrib = crit_val_contrib * choice_probabilities(idx)
+            crit_val(j) = crit_val_contrib
             
             j = j + 1
 
@@ -220,10 +220,10 @@ SUBROUTINE evaluate_criterion_function(rslt, mapping_state_idx, periods_emax, &
 
     ! Scaling
     DO i = 1, num_agents * num_periods
-        likl(i) = clip_value(likl(i), TINY_FLOAT, HUGE_FLOAT)
+        crit_val(i) = clip_value(crit_val(i), TINY_FLOAT, HUGE_FLOAT)
     END DO
 
-    rslt = -SUM(LOG(likl)) / (num_agents * num_periods)
+    rslt = -SUM(LOG(crit_val)) / (num_agents * num_periods)
 
     ! If there is no random variation in payoffs and no agent violated the
     ! implications of observed wages and choices, then the evaluation return

@@ -34,25 +34,26 @@ def evaluate_python(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
     solution = solve_python(*solution)
 
     # Extract relevant arguments from solution. All solution arguments will
-    # be returned by thus function in addition to the likl.
+    # be returned by thus function in addition to the value of the criterion
+    # function.
     periods_payoffs_systematic, periods_payoffs_ex_post = solution[:2]
     mapping_state_idx, periods_emax, states_all = solution[4:7]
 
     # Evaluate the criterion function
     if is_python:
-        likl = evaluate_criterion_function(mapping_state_idx, periods_emax,
+        crit_val = evaluate_criterion_function(mapping_state_idx, periods_emax,
             periods_payoffs_systematic, states_all, shocks_cov, edu_max, delta,
             edu_start, num_periods, shocks_cholesky, num_agents, num_draws_prob,
             data_array, periods_draws_prob, is_deterministic)
     else:
         import robupy.fortran.f2py_library as f2py_library
-        likl = f2py_library.wrapper_evaluate_criterion_function(
+        crit_val = f2py_library.wrapper_evaluate_criterion_function(
             mapping_state_idx, periods_emax, periods_payoffs_systematic,
             states_all, shocks_cov, edu_max, delta, edu_start, num_periods,
             shocks_cholesky, num_agents, num_draws_prob, data_array,
             periods_draws_prob, is_deterministic)
 
     # Finishing
-    return likl, solution
+    return crit_val, solution
 
 

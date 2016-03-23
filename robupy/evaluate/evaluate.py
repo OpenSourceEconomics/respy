@@ -54,7 +54,7 @@ def evaluate(robupy_obj, data_frame):
     # Select appropriate interface
     if version == 'FORTRAN':
 
-        likl, solution = fortran_interface(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+        crit_val, solution = fortran_interface(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
             shocks_cov, is_deterministic, is_interpolated, num_draws_emax,
             is_ambiguous, num_periods, num_points, is_myopic, edu_start,
             seed_emax, is_debug, min_idx, measure, edu_max, delta, level,
@@ -63,7 +63,7 @@ def evaluate(robupy_obj, data_frame):
 
     else:
 
-        likl, solution = evaluate_python(coeffs_a, coeffs_b, coeffs_edu,
+        crit_val, solution = evaluate_python(coeffs_a, coeffs_b, coeffs_edu,
             coeffs_home, shocks_cov, shocks_cholesky, is_deterministic,
             is_interpolated, num_draws_emax, periods_draws_emax,
             is_ambiguous, num_periods, num_points, edu_start, is_myopic,
@@ -71,10 +71,10 @@ def evaluate(robupy_obj, data_frame):
             num_agents, num_draws_prob, periods_draws_prob, is_python)
 
     # Checks
-    assert check_evaluation('out', likl)
+    assert check_evaluation('out', crit_val)
 
    # Distribute return arguments from solution run
     robupy_obj = add_solution(robupy_obj, store, *solution)
 
     # Finishing
-    return likl, robupy_obj
+    return crit_val, robupy_obj

@@ -36,15 +36,15 @@ def criterion(x, data_frame, edu_max, delta, edu_start, is_debug,
     # periods_payoffs_ex_post, periods_payoffs_systematic, states_all = args[3:6]
     #
     # # Evaluate the criterion function
-    # likl = evaluate_python(mapping_state_idx, periods_emax,
+    # crit_val = evaluate_python(mapping_state_idx, periods_emax,
     #     periods_payoffs_systematic, states_all, shocks_cov, edu_max,
     #     delta, edu_start, num_periods, shocks_cholesky, num_agents,
     #     num_draws_prob, data_array, periods_draws_prob, is_deterministic,
     #     is_python)
-    likl = 0.0
-    print(likl)
+    crit_val = 0.0
+    print(crit_val)
     # Finishing
-    return likl
+    return crit_val
 
 ''' Main function
 '''

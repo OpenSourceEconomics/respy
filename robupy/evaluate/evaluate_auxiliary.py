@@ -23,7 +23,7 @@ def evaluate_criterion_function(mapping_state_idx, periods_emax,
     If a single agent violates the implications, then the zero is returned.
     """
     # Initialize auxiliary objects
-    likl, j = [], 0
+    crit_val, j = [], 0
 
     # Calculate the probability over agents and time.
     for i in range(num_agents):
@@ -48,7 +48,7 @@ def evaluate_criterion_function(mapping_state_idx, periods_emax,
             draws_prob = periods_draws_prob[period, :, :].copy()
 
             # Prepare to calculate product of likelihood contributions.
-            likl_contrib = 1.0
+            crit_val_contrib = 1.0
 
             # If an agent is observed working, then the the labor market shocks
             # are observed and the conditional distribution is used to determine
@@ -76,7 +76,7 @@ def evaluate_criterion_function(mapping_state_idx, periods_emax,
                         draws_prob[:, 0]) / shocks_cholesky[idx, idx]
 
                 # Record contribution of wage observation.
-                likl_contrib *= norm.pdf(dist, 0.0, np.sqrt(shocks_cov[idx, idx]))
+                crit_val_contrib *= norm.pdf(dist, 0.0, np.sqrt(shocks_cov[idx, idx]))
             # Determine conditional deviates. These correspond to the
             # unconditional draws if the agent did not work in the labor market.
             conditional_draws = np.dot(shocks_cholesky, draws_prob.T).T
@@ -109,22 +109,22 @@ def evaluate_criterion_function(mapping_state_idx, periods_emax,
                 return 0.0
 
             # Adjust  and record likelihood contribution
-            likl_contrib *= choice_probabilities[idx]
-            likl += [likl_contrib]
+            crit_val_contrib *= choice_probabilities[idx]
+            crit_val += [crit_val_contrib]
 
             j += 1
 
     # Scaling
-    likl = -np.mean(np.log(np.clip(likl, TINY_FLOAT, HUGE_FLOAT)))
+    crit_val = -np.mean(np.log(np.clip(crit_val, TINY_FLOAT, HUGE_FLOAT)))
 
     # If there is no random variation in payoffs and no agent violated the
     # implications of observed wages and choices, then the evaluation return
     # a value of one.
     if is_deterministic:
-        likl = 1.0
+        crit_val = 1.0
 
     # Finishing
-    return likl
+    return crit_val
 
 
 def check_evaluation(str_, *args):
@@ -133,11 +133,11 @@ def check_evaluation(str_, *args):
     if str_ == 'out':
 
         # Distribute input parameters
-        likl, = args
+        crit_val, = args
 
         # Check quality
-        assert isinstance(likl, float)
-        assert np.isfinite(likl)
+        assert isinstance(crit_val, float)
+        assert np.isfinite(crit_val)
 
     elif str_ == 'in':
 

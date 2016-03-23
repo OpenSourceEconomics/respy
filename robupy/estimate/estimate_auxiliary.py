@@ -6,6 +6,9 @@ import numpy as np
 # project library
 from robupy.shared.auxiliary import check_model_parameters
 
+''' Auxilary functions
+'''
+
 
 def opt_get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         shocks_cov, shocks_cholesky, is_debug):

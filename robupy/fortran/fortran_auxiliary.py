@@ -39,6 +39,9 @@ def get_results(num_periods, min_idx):
     periods_payoffs_systematic = read_date('periods_payoffs_systematic', shape)
 
     shape = (num_periods, max_states_period, 4)
+    periods_payoffs_future = read_date('periods_payoffs_future', shape)
+
+    shape = (num_periods, max_states_period, 4)
     periods_payoffs_ex_post = read_date('periods_payoffs_ex_post', shape)
 
     shape = (num_periods, max_states_period)
@@ -46,11 +49,12 @@ def get_results(num_periods, min_idx):
 
     # Update class attributes with solution
     args = [periods_payoffs_systematic, periods_payoffs_ex_post,
-            None, states_number_period, mapping_state_idx,
-            periods_emax, states_all]
+        periods_payoffs_future, states_number_period,  mapping_state_idx,
+        periods_emax, states_all]
 
     # Finishing
     return args
+
 
 def read_date(label, shape):
     """ Read results
