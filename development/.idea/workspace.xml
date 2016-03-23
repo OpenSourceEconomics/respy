@@ -2,20 +2,18 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="dab45195-1938-4e75-b973-f8d08bf57068" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/package/robupy/python/emax.py" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/analysis/working/driver.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/package/robupy/python/py/auxiliary.py" afterPath="" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/robupy/evaluate.py" afterPath="$PROJECT_DIR$/package/robupy/evaluate/evaluate.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/robupy/python/evaluate_python.py" afterPath="$PROJECT_DIR$/package/robupy/evaluate/evaluate_python.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/robupy/python/py/__init__.py" afterPath="$PROJECT_DIR$/package/robupy/evaluate/__init__.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/robupy/python/py/ambiguity.py" afterPath="$PROJECT_DIR$/package/robupy/python/ambiguity.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/robupy/python/py/python_library.py" afterPath="$PROJECT_DIR$/package/robupy/python/solve_auxiliary.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/robupy/python/py/risk.py" afterPath="$PROJECT_DIR$/package/robupy/python/risk.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/robupy/solve.py" afterPath="$PROJECT_DIR$/package/robupy/python/solve.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/robupy/python/__init__.py" afterPath="$PROJECT_DIR$/package/robupy/solve/__init__.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/robupy/python/ambiguity.py" afterPath="$PROJECT_DIR$/package/robupy/solve/ambiguity.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/robupy/python/emax.py" afterPath="$PROJECT_DIR$/package/robupy/solve/emax.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/robupy/python/risk.py" afterPath="$PROJECT_DIR$/package/robupy/solve/risk.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/robupy/python/solve.py" afterPath="$PROJECT_DIR$/package/robupy/solve/solve.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/robupy/python/solve_auxiliary.py" afterPath="$PROJECT_DIR$/package/robupy/solve/solve_auxiliary.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/package/robupy/python/solve_python.py" afterPath="$PROJECT_DIR$/package/robupy/solve/solve_python.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/.idea/workspace.xml" afterPath="$PROJECT_DIR$/package/development/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/__init__.py" afterPath="$PROJECT_DIR$/package/robupy/__init__.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/estimate/estimate.py" afterPath="$PROJECT_DIR$/package/robupy/estimate/estimate.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/python/solve_python.py" afterPath="$PROJECT_DIR$/package/robupy/python/solve_python.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/evaluate/evaluate_python.py" afterPath="$PROJECT_DIR$/package/robupy/evaluate/evaluate_python.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/tests/codes/auxiliary.py" afterPath="$PROJECT_DIR$/package/robupy/tests/codes/auxiliary.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/tests/test_integration.py" afterPath="$PROJECT_DIR$/package/robupy/tests/test_integration.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/tests/test_interpolation.py" afterPath="$PROJECT_DIR$/package/robupy/tests/test_interpolation.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/tests/test_unit.py" afterPath="$PROJECT_DIR$/package/robupy/tests/test_unit.py" />
@@ -32,6 +30,7 @@
   </component>
   <component name="ChangesViewManager" flattened_view="true" show_ignored="false" />
   <component name="CoverageDataManager">
+    <SUITE FILE_PATH="coverage/robustToolbox$auxiliary.coverage" NAME="auxiliary Coverage Results" MODIFIED="1458721981565" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/package/robupy" />
     <SUITE FILE_PATH="coverage/robustToolbox$evaluate_python.coverage" NAME="evaluate_python Coverage Results" MODIFIED="1458639518065" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/package/robupy/python" />
     <SUITE FILE_PATH="coverage/robustToolbox$Unittest_TestClass_test_8.coverage" NAME="Unittest TestClass.test_8 Coverage Results" MODIFIED="1458629675068" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/package/robupy/tests" />
   </component>
@@ -43,7 +42,18 @@
     <favorites_list name="robustToolbox" />
   </component>
   <component name="FileEditorManager">
-    <leaf />
+    <leaf>
+      <file leaf-file-name="auxiliary.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/package/robupy/auxiliary.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.22073579">
+              <caret line="70" column="13" selection-start-line="70" selection-start-column="13" selection-end-line="70" selection-end-column="13" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -100,11 +110,11 @@
         <option value="$PROJECT_DIR$/package/robupy/evaluate.py" />
         <option value="$PROJECT_DIR$/package/robupy/evaluate/evaluate_python.py" />
         <option value="$PROJECT_DIR$/package/robupy/python/py/auxiliary.py" />
-        <option value="$PROJECT_DIR$/package/robupy/tests/test_unit.py" />
-        <option value="$PROJECT_DIR$/package/robupy/__init__.py" />
         <option value="$PROJECT_DIR$/package/robupy/python/ambiguity.py" />
         <option value="$PROJECT_DIR$/package/robupy/python/solve_auxiliary.py" />
         <option value="$PROJECT_DIR$/package/robupy/python/solve_python.py" />
+        <option value="$PROJECT_DIR$/package/robupy/__init__.py" />
+        <option value="$PROJECT_DIR$/package/robupy/tests/test_unit.py" />
       </list>
     </option>
   </component>
@@ -118,6 +128,25 @@
     <option name="y" value="18" />
     <option name="width" value="975" />
     <option name="height" value="750" />
+  </component>
+  <component name="ProjectInspectionProfilesVisibleTreeState">
+    <entry key="Project Default">
+      <profile-state>
+        <expanded-state>
+          <State>
+            <id />
+          </State>
+          <State>
+            <id>Python</id>
+          </State>
+        </expanded-state>
+        <selected-state>
+          <State>
+            <id>Python</id>
+          </State>
+        </selected-state>
+      </profile-state>
+    </entry>
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <OptionsSetting value="true" id="Add" />
@@ -196,57 +225,13 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="robustToolbox" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="robustToolbox" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="package" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="robupy" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="python" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="robustToolbox" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="robustToolbox" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="package" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="robupy" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="evaluate" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
         </subPane>
       </pane>
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="last_opened_file_path" value="$PROJECT_DIR$/package/robupy/python/emax.py" />
-    <property name="settings.editor.selected.configurable" value="configurable.group.appearance" />
+    <property name="settings.editor.selected.configurable" value="Errors" />
     <property name="settings.editor.splitter.proportion" value="0.2" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="js-jscs-nodeInterpreter" value="/usr/bin/node" />
@@ -260,7 +245,7 @@
       <recent name="$PROJECT_DIR$/package/robupy/constants" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.evaluate_python">
+  <component name="RunManager" selected="Python.auxiliary">
     <configuration default="false" name="Unittest TestClass.test_8" type="tests" factoryName="Unittests" temporary="true" nameIsGenerated="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -298,6 +283,24 @@
       <module name="robustToolbox" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/package/robupy/evaluate/evaluate_python.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <method />
+    </configuration>
+    <configuration default="false" name="auxiliary" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/package/robupy" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="robustToolbox" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/package/robupy/auxiliary.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <method />
@@ -495,14 +498,16 @@
       <option name="USE_KEYWORD" value="false" />
       <method />
     </configuration>
-    <list size="2">
+    <list size="3">
       <item index="0" class="java.lang.String" itemvalue="Python tests.Unittest TestClass.test_8" />
       <item index="1" class="java.lang.String" itemvalue="Python.evaluate_python" />
+      <item index="2" class="java.lang.String" itemvalue="Python.auxiliary" />
     </list>
     <recent_temporary>
-      <list size="2">
-        <item index="0" class="java.lang.String" itemvalue="Python.evaluate_python" />
-        <item index="1" class="java.lang.String" itemvalue="Python tests.Unittest TestClass.test_8" />
+      <list size="3">
+        <item index="0" class="java.lang.String" itemvalue="Python.auxiliary" />
+        <item index="1" class="java.lang.String" itemvalue="Python.evaluate_python" />
+        <item index="2" class="java.lang.String" itemvalue="Python tests.Unittest TestClass.test_8" />
       </list>
     </recent_temporary>
   </component>
@@ -526,14 +531,14 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="49" y="18" width="975" height="750" extended-state="6" />
-    <editor active="false" />
+    <editor active="true" />
     <layout>
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.8514548" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.03828484" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2497309" sideWeight="0.4946401" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2378902" sideWeight="0.48851454" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2497309" sideWeight="0.4946401" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.40473628" sideWeight="0.48851454" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.39969373" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32924962" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -554,7 +559,7 @@
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.8514548" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3568147" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.39969373" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25511304" sideWeight="0.51148546" order="2" side_tool="true" content_ui="tabs" />
@@ -563,7 +568,7 @@
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2497309" sideWeight="0.4946401" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.3562971" sideWeight="0.48851454" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.40473628" sideWeight="0.48851454" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -583,18 +588,11 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="1" />
+      <option name="time" value="2" />
     </breakpoint-manager>
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/package/robupy/auxiliary.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/package/robupy/tests/resources/test_third.robupy.ini">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -849,14 +847,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/robupy/tests/codes/auxiliary.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-13.259819">
-          <caret line="101" column="26" selection-start-line="101" selection-start-column="26" selection-end-line="101" selection-end-column="26" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/package/robupy/wscript">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.5438067">
@@ -891,15 +881,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/robupy/tests/test_unit.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.33333334">
-          <caret line="30" column="36" selection-start-line="30" selection-start-column="36" selection-end-line="30" selection-end-column="36" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/robupy/python/risk.py">
+    <entry file="file://$PROJECT_DIR$/package/robupy/solve/risk.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.36630037">
           <caret line="21" column="4" selection-start-line="21" selection-start-column="4" selection-end-line="21" selection-end-column="4" />
@@ -911,36 +893,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.04012841">
           <caret line="11" column="21" selection-start-line="11" selection-start-column="21" selection-end-line="11" selection-end-column="21" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/robupy/python/solve.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="6.82183">
-          <caret line="183" column="11" selection-start-line="183" selection-start-column="11" selection-end-line="183" selection-end-column="11" />
-          <folding>
-            <element signature="e#4653#4856#0" expanded="false" />
-            <element signature="e#5367#6032#0" expanded="false" />
-            <element signature="e#6077#8347#0" expanded="false" />
-            <element signature="e#8370#8607#0" expanded="false" />
-            <element signature="e#8668#8914#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/robupy/auxiliary.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.96308184">
-          <caret line="28" column="36" selection-start-line="28" selection-start-column="34" selection-end-line="28" selection-end-column="36" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/robupy/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="16" column="0" selection-start-line="16" selection-start-column="0" selection-end-line="16" selection-end-column="0" />
           <folding />
         </state>
       </provider>
@@ -963,7 +915,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/robupy/python/ambiguity.py">
+    <entry file="file://$PROJECT_DIR$/package/robupy/solve/ambiguity.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="9" column="0" selection-start-line="9" selection-start-column="0" selection-end-line="9" selection-end-column="0" />
@@ -971,7 +923,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/robupy/python/emax.py">
+    <entry file="file://$PROJECT_DIR$/package/robupy/solve/emax.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
@@ -979,7 +931,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/robupy/python/solve_auxiliary.py">
+    <entry file="file://$PROJECT_DIR$/package/robupy/solve/solve_auxiliary.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
@@ -989,10 +941,67 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/robupy/python/solve_python.py">
+    <entry file="file://$PROJECT_DIR$/package/robupy/solve/solve_python.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.33277026">
           <caret line="11" column="55" selection-start-line="11" selection-start-column="55" selection-end-line="11" selection-end-column="55" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/robupy/tests/codes/auxiliary.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="252" column="27" selection-start-line="252" selection-start-column="27" selection-end-line="252" selection-end-column="27" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/publish">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/robupy/solve/solve.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="18" column="22" selection-start-line="18" selection-start-column="22" selection-end-line="18" selection-end-column="22" />
+          <folding>
+            <element signature="e#83#97#0" expanded="true" />
+            <element signature="e#4652#4855#0" expanded="false" />
+            <element signature="e#5366#6031#0" expanded="false" />
+            <element signature="e#6076#8346#0" expanded="false" />
+            <element signature="e#8369#8606#0" expanded="false" />
+            <element signature="e#8667#8913#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/robupy/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="11" column="36" selection-start-line="11" selection-start-column="36" selection-end-line="11" selection-end-column="36" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/robupy/tests/test_unit.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.33277026">
+          <caret line="395" column="38" selection-start-line="395" selection-start-column="32" selection-end-line="395" selection-end-column="38" />
+          <folding>
+            <element signature="e#122#140#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/robupy/auxiliary.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.22073579">
+          <caret line="70" column="13" selection-start-line="70" selection-start-column="13" selection-end-line="70" selection-end-column="13" />
           <folding />
         </state>
       </provider>

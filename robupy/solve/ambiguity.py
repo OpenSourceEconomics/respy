@@ -7,7 +7,7 @@ import numpy as np
 from scipy.optimize import minimize
 
 # project library
-from robupy.python.emax import simulate_emax
+from robupy.solve.emax import simulate_emax
 
 ''' Public functions
 '''

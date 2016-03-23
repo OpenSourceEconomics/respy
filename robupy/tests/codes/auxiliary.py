@@ -11,7 +11,7 @@ import os
 
 # ROBUPY import
 from robupy.shared.constants import ROOT_DIR
-from robupy.python.solve_python import _create_state_space
+from robupy.solve.solve_python import _create_state_space
 from robupy import read
 
 ''' Auxiliary functions.

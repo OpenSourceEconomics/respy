@@ -5,7 +5,7 @@
 import numpy as np
 
 # project library
-from robupy.python.emax import simulate_emax
+from robupy.solve.emax import simulate_emax
 
 ''' Public functions
 '''

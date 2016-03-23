@@ -13,7 +13,7 @@ from codes.auxiliary import write_interpolation_grid
 from codes.auxiliary import write_draws
 
 # ROBUPY import
-from robupy.python.solve_auxiliary import create_state_space
+from robupy.solve.solve_auxiliary import create_state_space
 
 from robupy.tests.codes.random_init import generate_random_dict
 from robupy.tests.codes.random_init import print_random_dict

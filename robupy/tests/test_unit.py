@@ -21,24 +21,23 @@ from robupy import simulate
 from robupy import solve
 from robupy import read
 
-from robupy.python.solve_auxiliary import get_payoffs
+from robupy.solve.solve_auxiliary import get_payoffs
 
-from robupy.python.solve_python import solve_python
+from robupy.solve.solve_python import solve_python
 
 from robupy.tests.codes.random_init import generate_init
 
-from robupy.python.ambiguity import get_payoffs_ambiguity
-from robupy.python.emax import simulate_emax
-from robupy.python.ambiguity import _divergence
-from robupy.python.ambiguity import _criterion
+from robupy.solve.ambiguity import get_payoffs_ambiguity
+from robupy.solve.emax import simulate_emax
+from robupy.solve.ambiguity import _divergence
+from robupy.solve.ambiguity import _criterion
 
+from robupy.solve.solve_auxiliary import create_state_space
 from robupy.auxiliary import opt_get_model_parameters
 from robupy.auxiliary import opt_get_optim_parameters
 from robupy.auxiliary import distribute_model_paras
 from robupy.auxiliary import replace_missing_values
 from robupy.auxiliary import create_draws
-
-import robupy.python.solve_auxiliary as py_lib
 
 ''' Main
 '''
@@ -432,7 +431,7 @@ class TestClass(object):
                     num_periods, edu_start, edu_max, min_idx)
 
             # PYTHON
-            py_a, py_b, py_c, py_d = py_lib.create_state_space(num_periods,
+            py_a, py_b, py_c, py_d = create_state_space(num_periods,
                     edu_start, edu_max, min_idx)
 
             # Ensure equivalence
@@ -473,7 +472,7 @@ class TestClass(object):
 
     def test_7(self):
         """ Compare results between FORTRAN and PYTHON of selected functions. The
-        file python/f2py/debug_interface.f90 provides the F2PY bindings.
+        file fortran/debug_interface.f90 provides the F2PY bindings.
         """
         # FORTRAN resources
         import robupy.fortran.f2py_debug as fort_debug

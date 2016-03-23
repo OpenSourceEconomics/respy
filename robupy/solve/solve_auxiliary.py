@@ -11,9 +11,9 @@ import numpy as np
 import statsmodels.api as sm
 
 # project library
-from robupy.python.ambiguity import get_payoffs_ambiguity
+from robupy.solve.ambiguity import get_payoffs_ambiguity
 from robupy.shared.auxiliary import get_total_value
-from robupy.python.risk import get_payoffs_risk
+from robupy.solve.risk import get_payoffs_risk
 
 from robupy.shared.constants import INTERPOLATION_INADMISSIBLE_STATES
 from robupy.shared.constants import MISSING_FLOAT

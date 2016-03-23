@@ -9,7 +9,7 @@ import numpy as np
 # project library
 from robupy.auxiliary import replace_missing_values
 
-import robupy.python.solve_auxiliary as solve_auxiliary
+import robupy.solve.solve_auxiliary as solve_auxiliary
 
 from robupy.shared.constants import MISSING_FLOAT
 
