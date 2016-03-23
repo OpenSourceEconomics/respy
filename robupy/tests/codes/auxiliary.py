@@ -10,13 +10,9 @@ import glob
 import os
 
 # ROBUPY import
+from robupy.constants.constants import ROOT_DIR
 from robupy.python.solve_python import _create_state_space
 from robupy import read
-
-# module-wide variables
-ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
-ROOT_DIR = ROOT_DIR.replace('/robupy/tests/codes', '')
-
 
 ''' Auxiliary functions.
 '''
@@ -103,7 +99,7 @@ def build_robupy_package(is_hidden):
     """ Compile toolbox
     """
     # Auxiliary objects
-    package_dir = ROOT_DIR + '/robupy'
+    package_dir = ROOT_DIR
     tests_dir = os.getcwd()
 
     # Compile package
@@ -282,7 +278,7 @@ def cleanup_robupy_package(is_build=False):
                 continue
             if match == './evaluate':
                 continue
-            if match == './f2py':
+            if match == './constants':
                 continue
 
         # Remove remaining files and directories.. It is important to check

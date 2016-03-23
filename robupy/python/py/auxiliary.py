@@ -6,7 +6,7 @@ implementations of the core functions.
 import numpy as np
 
 # project library
-from robupy.constants import HUGE_FLOAT
+from robupy.constants.constants import HUGE_FLOAT
 
 
 ''' Main functions

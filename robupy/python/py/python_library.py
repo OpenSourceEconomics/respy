@@ -15,9 +15,9 @@ from robupy.python.py.ambiguity import get_payoffs_ambiguity
 from robupy.python.py.auxiliary import get_total_value
 from robupy.python.py.risk import get_payoffs_risk
 
-from robupy.constants import INTERPOLATION_INADMISSIBLE_STATES
-from robupy.constants import MISSING_FLOAT
-from robupy.constants import HUGE_FLOAT
+from robupy.constants.constants import INTERPOLATION_INADMISSIBLE_STATES
+from robupy.constants.constants import MISSING_FLOAT
+from robupy.constants.constants import HUGE_FLOAT
 
 # Logging
 logger = logging.getLogger('ROBUPY_SOLVE')

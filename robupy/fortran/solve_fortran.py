@@ -4,12 +4,10 @@ model with FORTRAN.
 # standard library
 import os
 
-# module-wide variables
-PACKAGE_PATH = os.path.dirname(os.path.realpath(__file__))
-
 # project library
 from robupy.fortran.auxiliary import _write_robufort_initialization
 from robupy.fortran.auxiliary import _add_results
+from robupy.constants.constants import FORTRAN_DIR
 
 ''' Main function
 '''
@@ -33,7 +31,7 @@ def solve_fortran(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
     _write_robufort_initialization(*args)
 
     # Call executable
-    os.system('"' + PACKAGE_PATH + '/bin/robufort"')
+    os.system('"' + FORTRAN_DIR + '/bin/robufort"')
 
     # Add results
     args = _add_results(num_periods, min_idx, 'solve')

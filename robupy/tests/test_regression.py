@@ -13,9 +13,7 @@ from robupy import process
 from robupy import solve
 from robupy import read
 
-# module-wide variables
-ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
-RESOURCES_DIR = ROOT_DIR + '/resources'
+from robupy.constants.constants import TEST_RESOURCES_DIR
 
 
 @pytest.mark.usefixtures('fresh_directory', 'set_seed', 'supply_resources')
@@ -27,7 +25,7 @@ class TestClass(object):
         """
 
         # Solve specified economy
-        robupy_obj = read(RESOURCES_DIR + '/test_first.robupy.ini')
+        robupy_obj = read(TEST_RESOURCES_DIR + '/test_first.robupy.ini')
         robupy_obj = solve(robupy_obj)
         simulate(robupy_obj)
 
@@ -43,7 +41,7 @@ class TestClass(object):
         """ Compare the solution of simple model against hard-coded results.
         """
         # Solve specified economy
-        robupy_obj = read(RESOURCES_DIR + '/test_second.robupy.ini')
+        robupy_obj = read(TEST_RESOURCES_DIR + '/test_second.robupy.ini')
         robupy_obj = solve(robupy_obj)
         simulate(robupy_obj)
 
@@ -116,7 +114,7 @@ class TestClass(object):
         """ Test the solution of model with ambiguity.
         """
         # Solve specified economy
-        robupy_obj = read(RESOURCES_DIR + '/test_third.robupy.ini')
+        robupy_obj = read(TEST_RESOURCES_DIR + '/test_third.robupy.ini')
         robupy_obj = solve(robupy_obj)
         simulate(robupy_obj)
 
@@ -132,7 +130,7 @@ class TestClass(object):
         """ Test the solution of model with ambiguity.
         """
         # Solve specified economy
-        robupy_obj = read(RESOURCES_DIR + '/test_fourth.robupy.ini')
+        robupy_obj = read(TEST_RESOURCES_DIR + '/test_fourth.robupy.ini')
         robupy_obj = solve(robupy_obj)
         simulate(robupy_obj)
 
@@ -152,7 +150,7 @@ class TestClass(object):
         # Solve specified economy
         for version in versions:
 
-            robupy_obj = read(RESOURCES_DIR + '/test_fifth.robupy.ini')
+            robupy_obj = read(TEST_RESOURCES_DIR + '/test_fifth.robupy.ini')
 
             robupy_obj.unlock()
 
@@ -180,7 +178,7 @@ class TestClass(object):
         # Solve specified economy
         for version in versions:
 
-            robupy_obj = read(RESOURCES_DIR + '/test_fifth.robupy.ini')
+            robupy_obj = read(TEST_RESOURCES_DIR + '/test_fifth.robupy.ini')
 
             robupy_obj.unlock()
 

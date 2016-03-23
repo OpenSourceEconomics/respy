@@ -9,10 +9,8 @@ import os
 # project library
 from robupy.fortran.auxiliary import _write_robufort_initialization
 from robupy.fortran.auxiliary import _add_results
-from robupy.constants import HUGE_FLOAT
-
-# module-wide variables
-PACKAGE_PATH = os.path.dirname(os.path.realpath(__file__))
+from robupy.constants.constants import HUGE_FLOAT
+from robupy.constants.constants import FORTRAN_DIR
 
 ''' Main function
 '''
@@ -38,7 +36,7 @@ def evaluate_fortran(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
     _write_dataset(data_frame)
 
     # Call executable
-    os.system('"' + PACKAGE_PATH + '/bin/robufort"')
+    os.system('"' + FORTRAN_DIR + '/bin/robufort"')
 
     # Add results
     eval_ = None

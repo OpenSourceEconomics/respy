@@ -80,7 +80,7 @@ class TestClass(object):
         """ Further tests for the interpolation routines.
         """
         # FORTRAN resources
-        import robupy.f2py.f2py_debug as fort_debug
+        import robupy.fortran.f2py_debug as fort_debug
 
         # Impose constraints. The FORTRAN code does not include other
         # measures just yet.
@@ -180,7 +180,7 @@ class TestClass(object):
         interpolation setup.
         """
         # FORTRAN resources
-        import robupy.f2py.f2py_debug as fort_debug
+        import robupy.fortran.f2py_debug as fort_debug
 
         # Impose constraints
         constr = dict()

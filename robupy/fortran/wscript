@@ -76,21 +76,7 @@ class CreateF2pyInterface(Task):
 
     def run(self):
 
-        os.chdir(self.env.project_paths['ROBUPY'] + '/f2py')
-
-        # Link to original library
-        for dir_ in ['include', 'lib']:
-            try:
-                os.remove(dir_)
-            except OSError:
-                pass
-
-            try:
-                shutil.rmtree(dir_)
-            except OSError:
-                pass
-
-            os.symlink('../fortran/' + dir_, dir_)
+        os.chdir(self.env.project_paths['ROBUPY'] + '/fortran')
 
         os.system(
             'f2py3 -c -m  f2py_library f2py_interface_library.f90 '

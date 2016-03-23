@@ -145,7 +145,7 @@ def cleanup_build(is_build=False):
                 continue
             if match == './solve':
                 continue
-            if match == './f2py':
+            if match == './constants':
                 continue
 
         # Remove remaining files and directories.

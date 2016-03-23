@@ -7,9 +7,6 @@ import numpy as np
 
 import os
 
-# module-wide variables
-PACKAGE_PATH = os.path.dirname(os.path.realpath(__file__))
-
 # project library
 from robupy.auxiliary import replace_missing_values
 
