@@ -277,3 +277,17 @@ def check_model_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
 
     # Finishing
     return True
+
+
+def distribute_class_attributes(robupy_obj, *args):
+    """ This function distributes a host of class attributes.
+    """
+    # Initialize container
+    ret = []
+
+    # Process requests
+    for arg in args:
+        ret.append(robupy_obj.get_attr(arg))
+
+    # Finishing
+    return ret

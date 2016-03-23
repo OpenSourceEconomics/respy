@@ -2,12 +2,11 @@
 """
 
 # standard library
-import pandas as pd
 import numpy as np
-
-import os
+import pandas as pd
 
 # project library
+from robupy.process.process_auxiliary import check_process
 from robupy.shared.auxiliary import check_dataset
 
 ''' Main function
@@ -25,7 +24,7 @@ def process(robupy_obj):
 
     # Check integrity of processing request
     if is_debug:
-        assert _check_process(file_est + '.dat', robupy_obj)
+        assert check_process(file_est + '.dat', robupy_obj)
 
     # Process dataset from files.
     data_frame = pd.read_csv(file_est + '.dat', delim_whitespace=True,
@@ -38,16 +37,3 @@ def process(robupy_obj):
     # Finishing
     return data_frame
 
-''' Auxiliary functions
-'''
-
-
-def _check_process(data_file, robupy_obj):
-    """ Check the validity of the request.
-    """
-    # Checks
-    assert (os.path.exists(data_file))
-    assert (robupy_obj.get_status())
-
-    # Finishing
-    return True

@@ -8,8 +8,8 @@ import logging
 
 # project library
 from robupy.shared.auxiliary import replace_missing_values
-import robupy.solve.solve_auxiliary as solve_auxiliary
 
+import robupy.solve.solve_auxiliary as solve_auxiliary
 from robupy.shared.constants import MISSING_FLOAT
 
 # Logging

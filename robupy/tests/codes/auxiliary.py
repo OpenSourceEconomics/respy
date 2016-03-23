@@ -21,6 +21,8 @@ from robupy import read
 def distribute_model_description(robupy_obj, *args):
     """ This function distributes the model description.
     """
+    # TODO: I create a similar method as part of the robupy package. Mabe we
+    # can replace this one?
 
     ret = []
 
