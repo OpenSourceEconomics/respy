@@ -7,7 +7,7 @@ import logging
 
 import numpy as np
 # project library
-from robupy.auxiliary import replace_missing_values
+from robupy.shared.auxiliary import replace_missing_values
 
 import robupy.solve.solve_auxiliary as solve_auxiliary
 

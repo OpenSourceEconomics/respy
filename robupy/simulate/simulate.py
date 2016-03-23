@@ -23,9 +23,8 @@ import pandas as pd
 # project library
 from robupy.simulate.simulate_auxiliary import simulate_sample
 
-from robupy.auxiliary import replace_missing_values
-from robupy.auxiliary import check_dataset
-from robupy.auxiliary import create_draws
+from robupy.shared.auxiliary import create_draws, replace_missing_values, \
+    check_dataset
 
 # Logging
 logger = logging.getLogger('ROBUPY_SIMULATE')

@@ -5,13 +5,12 @@ function.
 # standard library
 import numpy as np
 
-from robupy.auxiliary import create_draws
-from robupy.auxiliary import distribute_model_paras
+from robupy.shared.auxiliary import create_draws, check_dataset, \
+    distribute_model_paras
 
 # project library
 from robupy.fortran.evaluate_fortran import evaluate_fortran
 from robupy.evaluate.evaluate_python import evaluate_python
-from robupy.auxiliary import check_dataset
 
 ''' Main function
 '''

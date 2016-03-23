@@ -33,11 +33,10 @@ from robupy.solve.ambiguity import _divergence
 from robupy.solve.ambiguity import _criterion
 
 from robupy.solve.solve_auxiliary import create_state_space
-from robupy.auxiliary import opt_get_model_parameters
-from robupy.auxiliary import opt_get_optim_parameters
-from robupy.auxiliary import distribute_model_paras
-from robupy.auxiliary import replace_missing_values
-from robupy.auxiliary import create_draws
+from robupy.estimate.estimate_auxiliary import opt_get_optim_parameters, \
+    opt_get_model_parameters
+from robupy.shared.auxiliary import create_draws, replace_missing_values, \
+    distribute_model_paras
 
 ''' Main
 '''

@@ -8,7 +8,7 @@ import numpy as np
 import os
 
 # project library
-from robupy.auxiliary import replace_missing_values
+from robupy.shared.auxiliary import replace_missing_values
 
 ''' Auxiliary  functions
 '''

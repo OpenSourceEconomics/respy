@@ -5,12 +5,14 @@ function.
 # standard library
 from scipy.optimize import minimize
 
-from robupy.auxiliary import create_draws
+from robupy.shared.auxiliary import create_draws, distribute_model_paras
 # project library
 
-from robupy.auxiliary import distribute_model_paras
+from robupy.shared.auxiliary import distribute_model_paras
 
-from robupy.auxiliary import opt_get_optim_parameters
+from robupy.estimate.estimate_auxiliary import opt_get_optim_parameters
+
+
 # TODO: Some nice debugging is in order.as
 
 def criterion(x, data_frame, edu_max, delta, edu_start, is_debug,

@@ -8,7 +8,7 @@ import numpy as np
 import os
 
 # project library
-from robupy.auxiliary import check_dataset
+from robupy.shared.auxiliary import check_dataset
 
 ''' Main function
 '''

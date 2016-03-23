@@ -7,10 +7,9 @@ import shlex
 import os
 
 # project library
-from robupy.auxiliary import distribute_model_paras
 from robupy.fortran.solve_fortran import solve_fortran
 from robupy.solve.solve_python import solve_python
-from robupy.auxiliary import create_draws
+from robupy.shared.auxiliary import create_draws, distribute_model_paras
 
 ''' Main function
 '''
