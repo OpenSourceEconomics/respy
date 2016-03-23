@@ -3,17 +3,15 @@ development tests.
 """
 
 # standard library
-from scipy.optimize.slsqp import _minimize_slsqp
-from scipy.optimize import approx_fprime
-from scipy.optimize import rosen_der
-from scipy.optimize import rosen
-from scipy.stats import norm
-
-import statsmodels.api as sm
 import numpy as np
-
 import pytest
 import scipy
+import statsmodels.api as sm
+from scipy.optimize import approx_fprime
+from scipy.optimize import rosen
+from scipy.optimize import rosen_der
+from scipy.optimize.slsqp import _minimize_slsqp
+from scipy.stats import norm
 
 # testing library
 from codes.auxiliary import distribute_model_description
@@ -54,7 +52,7 @@ class TestClass(object):
         implementations.
         """
         # FORTRAN resources
-        import robupy.python.f2py.f2py_debug as fort_debug
+        import robupy.f2py.f2py_debug as fort_debug
 
         for _ in range(10):
 
@@ -121,7 +119,7 @@ class TestClass(object):
         ambiguity.
         """
         # FORTRAN resources
-        import robupy.python.f2py.f2py_debug as fort_debug
+        import robupy.f2py.f2py_debug as fort_debug
 
         # Iterate over random test cases
         for _ in range(10):
@@ -183,7 +181,7 @@ class TestClass(object):
         PYTHON and FORTRAN for the actual optimization problem.
         """
         # FORTRAN resources
-        import robupy.python.f2py.f2py_debug as fort_debug
+        import robupy.f2py.f2py_debug as fort_debug
 
         maxiter = np.random.random_integers(1, 100)
         ftol = np.random.uniform(0.000000, 1e-5)
@@ -318,7 +316,7 @@ class TestClass(object):
         due to the large setup cost to construct the ingredients for the interface.
         """
         # FORTRAN resources
-        import robupy.python.f2py.f2py_debug as fort_debug
+        import robupy.f2py.f2py_debug as fort_debug
 
         # Generate constraint periods
         constraints = dict()
@@ -396,8 +394,8 @@ class TestClass(object):
         against PYTHON intrinsic routines.
         """
         # FORTRAN resources
-        import robupy.python.f2py.f2py_library as fort_lib
-        import robupy.python.f2py.f2py_debug as fort_debug
+        import robupy.f2py.f2py_library as fort_lib
+        import robupy.f2py.f2py_debug as fort_debug
 
         for _ in range(10):
 
@@ -478,7 +476,7 @@ class TestClass(object):
         file python/f2py/debug_interface.f90 provides the F2PY bindings.
         """
         # FORTRAN resources
-        import robupy.python.f2py.f2py_debug as fort_debug
+        import robupy.f2py.f2py_debug as fort_debug
 
 
 
@@ -558,7 +556,7 @@ class TestClass(object):
         """ Testing the equality of the core functions for random requests.
         """
         # FORTRAN resources
-        import robupy.python.f2py.f2py_debug as fort_debug
+        import robupy.f2py.f2py_debug as fort_debug
 
         # Generate random initialization file
         generate_init()

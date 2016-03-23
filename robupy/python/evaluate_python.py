@@ -3,9 +3,8 @@ evaluate the likelihood function.
 """
 
 # standard library
-from scipy.stats import norm
-
 import numpy as np
+from scipy.stats import norm
 
 # project library
 from robupy.python.solve_python import solve_python
@@ -56,7 +55,7 @@ def evaluate_python(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
             edu_start, num_periods, shocks_cholesky, num_agents, num_draws_prob,
             data_array, periods_draws_prob, is_deterministic)
     else:
-        import robupy.python.f2py.f2py_library as f2py_library
+        import robupy.f2py.f2py_library as f2py_library
         likl = f2py_library.wrapper_evaluate_criterion_function(
             mapping_state_idx, periods_emax, periods_payoffs_systematic,
             states_all, shocks_cov, edu_max, delta, edu_start, num_periods,

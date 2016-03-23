@@ -15,10 +15,10 @@ information to disk.
 """
 
 # standard library
-import pandas as pd
-import numpy as np
-
 import logging
+
+import numpy as np
+import pandas as pd
 
 # project library
 import robupy.python.py.python_library as python_library
@@ -113,7 +113,7 @@ def _wrapper_simulate_sample(robupy_obj, draws_data):
             num_periods, mapping_state_idx, periods_payoffs_systematic,
             draws_data, edu_max, edu_start, periods_emax, delta)
     else:
-        import robupy.python.f2py.f2py_library as f2py_library
+        import robupy.f2py.f2py_library as f2py_library
         data_frame = f2py_library.wrapper_simulate_sample(num_agents,
             states_all, num_periods, mapping_state_idx,
             periods_payoffs_systematic, draws_data, edu_max, edu_start,

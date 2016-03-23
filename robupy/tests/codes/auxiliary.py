@@ -282,6 +282,8 @@ def cleanup_robupy_package(is_build=False):
                 continue
             if match == './evaluate':
                 continue
+            if match == './f2py':
+                continue
 
         # Remove remaining files and directories.. It is important to check
         # for the link first. Otherwise, isdir() evaluates to true but rmtree()

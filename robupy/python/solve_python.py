@@ -3,11 +3,9 @@ model with PYTHON and F2PY capabilities.
 """
 
 # standard library
-import numpy as np
-
 import logging
-import os
 
+import numpy as np
 # project library
 from robupy.auxiliary import replace_missing_values
 
@@ -111,7 +109,7 @@ def _create_state_space(num_periods, edu_start, edu_max, min_idx, is_python):
     if is_python:
         create_state_space = python_library.create_state_space
     else:
-        import robupy.python.f2py.f2py_library as f2py_library
+        import robupy.f2py.f2py_library as f2py_library
         create_state_space = f2py_library.wrapper_create_state_space
 
     # Create state space
@@ -150,7 +148,7 @@ def _calculate_payoffs_systematic(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         calculate_payoffs_systematic = \
             python_library.calculate_payoffs_systematic
     else:
-        import robupy.python.f2py.f2py_library as f2py_library
+        import robupy.f2py.f2py_library as f2py_library
         calculate_payoffs_systematic = \
             f2py_library.wrapper_calculate_payoffs_systematic
 
@@ -183,7 +181,7 @@ def _backward_induction_procedure(periods_payoffs_systematic,
     if is_python:
         backward_induction = python_library.backward_induction
     else:
-        import robupy.python.f2py.f2py_library as f2py_library
+        import robupy.f2py.f2py_library as f2py_library
         backward_induction = f2py_library.wrapper_backward_induction
 
     # Perform backward induction procedure

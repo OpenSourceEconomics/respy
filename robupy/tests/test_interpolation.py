@@ -3,10 +3,10 @@ development tests.
 """
 
 # standard library
-import numpy as np
-
-import pytest
 import os
+
+import numpy as np
+import pytest
 
 # testing library
 from codes.auxiliary import distribute_model_description
@@ -80,7 +80,7 @@ class TestClass(object):
         """ Further tests for the interpolation routines.
         """
         # FORTRAN resources
-        import robupy.python.f2py.f2py_debug as fort_debug
+        import robupy.f2py.f2py_debug as fort_debug
 
         # Impose constraints. The FORTRAN code does not include other
         # measures just yet.
@@ -180,7 +180,7 @@ class TestClass(object):
         interpolation setup.
         """
         # FORTRAN resources
-        import robupy.python.f2py.f2py_debug as fort_debug
+        import robupy.f2py.f2py_debug as fort_debug
 
         # Impose constraints
         constr = dict()

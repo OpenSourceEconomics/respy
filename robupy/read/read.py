@@ -241,8 +241,7 @@ def _check_integrity_read(dict_):
     assert (dict_['PROGRAM']['version'] in ['FORTRAN', 'F2PY', 'PYTHON'])
 
     if dict_['PROGRAM']['version'] == 'F2PY':
-        assert (len(glob.glob(PACKAGE_DIR +
-                              '/python/f2py/f2py_library.*.so')) == 1)
+        assert (len(glob.glob(PACKAGE_DIR + '/f2py/f2py_library.*.so')) == 1)
 
     if dict_['PROGRAM']['version'] == 'FORTRAN':
         assert (os.path.exists(PACKAGE_DIR + '/fortran/bin/robufort'))
