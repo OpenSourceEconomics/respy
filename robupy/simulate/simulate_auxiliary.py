@@ -134,8 +134,7 @@ def write_info(robupy_obj, data_frame):
             home = np.sum((data_frame[2] == 4) & (data_frame[1] ==
                                                   t))/num_agents
 
-            string = '''{0[0]:>10}    {0[1]:10.4f} {0[2]:10.4f}
-             {0[3]:10.4f} {0[4]:10.4f}\n'''
+            string = '''{0[0]:>10}    {0[1]:10.4f} {0[2]:10.4f} {0[3]:10.4f} {0[4]:10.4f}\n'''
 
             args = [(t + 1), work_a, work_b, schooling, home]
             file_.write(string.format(args))
@@ -160,6 +159,11 @@ def write_info(robupy_obj, data_frame):
         stat = data_frame[data_frame.ix[:, 1] ==
                 (num_periods - 1)].ix[:, 5].mean()
         file_.write(string.format(['Average Experience B', stat]))
+
+    # Write out the parametrization of the simulated economy.
+    model_paras = robupy_obj.get_attr('model_paras')
+    vector = get_estimation_vector(model_paras)
+    np.savetxt(open('data.robupy.paras', 'wb'), vector, fmt='%15.8f')
 
 
 def write_out(data_frame, file_sim):
@@ -195,6 +199,35 @@ def _format_integer(x):
         return '    .'
     else:
         return '{0:<5}'.format(int(x))
+
+def get_estimation_vector(model_paras):
+    """ Construct the vector estimation arguments.
+    """
+
+    # Distribute auxiliary objects
+    shocks_cholesky = model_paras['shocks_cholesky']
+
+    # Collect parameters
+    vector = list()
+
+    vector += model_paras['coeffs_a'].tolist()
+
+    vector += model_paras['coeffs_b'].tolist()
+
+    vector += model_paras['coeffs_edu'].tolist()
+
+    vector += model_paras['coeffs_home'].tolist()
+
+    vector += shocks_cholesky[0:4, 0].tolist()
+
+    vector += shocks_cholesky[1:4, 1].tolist()
+
+    vector += shocks_cholesky[2:4, 2].tolist()
+
+    vector += shocks_cholesky[3:4, 3].tolist()
+
+    # Finishing
+    return vector
 
 
 def check_simulation(robupy_obj):

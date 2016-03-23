@@ -5,8 +5,10 @@ function.
 # standard library
 from scipy.optimize import minimize
 
+
 # project library
 from robupy.estimate.estimate_auxiliary import opt_get_optim_parameters
+from robupy.estimate.estimate_auxiliary import logging_optimization
 from robupy.estimate.estimate_auxiliary import criterion
 
 from robupy.shared.auxiliary import distribute_class_attributes
@@ -15,6 +17,9 @@ from robupy.shared.auxiliary import create_draws
 
 ''' Main function
 '''
+
+def all_done():
+    print('all_done()')
 
 
 def estimate(robupy_obj, data_frame):
@@ -58,8 +63,21 @@ def estimate(robupy_obj, data_frame):
         is_ambiguous, periods_draws_emax, is_deterministic, is_myopic,
         num_agents, num_draws_prob, periods_draws_prob, is_python)
 
+    # Start logging
+    x0[0] = 0.25
 
-    minimize(criterion, x0, method='Powell', args=args)
+
+    crit_val = criterion(x0, data_frame, edu_max, delta, edu_start, is_debug,
+        is_interpolated, level, measure, min_idx, num_draws_emax, num_periods,
+        num_points, is_ambiguous, periods_draws_emax, is_deterministic,
+        is_myopic, num_agents, num_draws_prob, periods_draws_prob, is_python)
+
+    logging_optimization('start', crit_val, x0)
+
+
+
+
+    minimize(criterion, x0, method='POWELL', args=args)
 
 
 

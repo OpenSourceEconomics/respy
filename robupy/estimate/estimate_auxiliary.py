@@ -3,6 +3,8 @@
 # standard library
 import numpy as np
 
+import os
+
 # project library
 from robupy.evaluate.evaluate_python import evaluate_python
 from robupy.shared.auxiliary import check_model_parameters
@@ -10,6 +12,71 @@ from robupy.shared.auxiliary import check_model_parameters
 ''' Auxiliary functions
 '''
 
+
+def criterion(x, data_frame, edu_max, delta, edu_start, is_debug,
+        is_interpolated, level, measure, min_idx, num_draws_emax, num_periods,
+        num_points, is_ambiguous, periods_draws_emax, is_deterministic,
+        is_myopic, num_agents, num_draws_prob, periods_draws_prob, is_python):
+    """ This function provides the wrapper for optimization routines.
+    """
+    # Distribute model parameters
+    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, shocks_cholesky = \
+        opt_get_model_parameters(x, is_debug)
+
+    # Evaluate criterion function
+    crit_val, _ = evaluate_python(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+        shocks_cov, shocks_cholesky, is_deterministic, is_interpolated,
+        num_draws_emax, periods_draws_emax, is_ambiguous, num_periods,
+        num_points, edu_start, is_myopic, is_debug, measure, edu_max, min_idx,
+        delta, level, data_frame, num_agents, num_draws_prob,
+        periods_draws_prob, is_python)
+
+    if os.path.exists('.optimization.robupy.scratch'):
+        logging_optimization('step', crit_val, x)
+
+    print(crit_val)
+
+    # Finishing
+    return crit_val
+
+def logging_optimization(which, *args):
+
+    if which == 'start':
+
+        crit_val, x0 = args
+
+        info = np.array(np.array([0, crit_val]))
+
+        np.savetxt(open('.optimization.robupy.scratch', 'wb'), info)
+
+        with open('optimization.robupy.log', 'w') as out_file:
+            out_file.write('STEP  {0:<5}'.format(0))
+            out_file.write('VALUE {0:15.8f}\n\n'.format(crit_val))
+
+        np.savetxt(open('.optimization.robupy.scratch', 'wb'), info)
+        np.savetxt(open('start_paras.robupy.log', 'wb'), x0, fmt='%15.8f')
+
+
+    elif which == 'step':
+
+        crit_val, x = args
+
+        info = np.genfromtxt('.optimization.robupy.scratch')
+        current_num_step = int(info[0])
+        current_crit_val = info[1]
+
+        is_step = crit_val < current_crit_val
+
+        if is_step:
+
+            with open('optimization.robupy.log', 'a') as out_file:
+                out_file.write('STEP  {0:<5}'.format(current_num_step + 1))
+                out_file.write('VALUE {0:15.8f}\n\n'.format(crit_val))
+
+            np.savetxt(open('step_paras.robupy.log', 'wb'), x, fmt='%15.8f')
+
+            info = np.array(np.array([current_num_step + 1, crit_val]))
+            np.savetxt(open('.optimization.robupy.scratch', 'wb'), info)
 
 def opt_get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         shocks_cov, shocks_cholesky, is_debug):
@@ -102,24 +169,3 @@ def check_optimization_parameters(x):
     # Finishing
     return True
 
-
-def criterion(x, data_frame, edu_max, delta, edu_start, is_debug,
-        is_interpolated, level, measure, min_idx, num_draws_emax, num_periods,
-        num_points, is_ambiguous, periods_draws_emax, is_deterministic,
-        is_myopic, num_agents, num_draws_prob, periods_draws_prob, is_python):
-    """ This function provides the wrapper for optimization routines.
-    """
-    # Distribute model parameters
-    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, shocks_cholesky = \
-        opt_get_model_parameters(x, is_debug)
-
-    # Evaluate criterion function
-    crit_val, _ = evaluate_python(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-        shocks_cov, shocks_cholesky, is_deterministic, is_interpolated,
-        num_draws_emax, periods_draws_emax, is_ambiguous, num_periods,
-        num_points, edu_start, is_myopic, is_debug, measure, edu_max, min_idx,
-        delta, level, data_frame,  num_agents, num_draws_prob,
-        periods_draws_prob, is_python)
-
-    # Finishing
-    return crit_val
