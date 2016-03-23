@@ -6,12 +6,12 @@ import os
 
 # Package structure
 from robupy.estimate.estimate import estimate
+from robupy.simulate.simulate import simulate
 
 from robupy.process.process import process
 from robupy.read.read import read
 
 from robupy.estimate import estimate
-from robupy.simulate import simulate
 from robupy.evaluate import evaluate
 from robupy.solve import solve
 

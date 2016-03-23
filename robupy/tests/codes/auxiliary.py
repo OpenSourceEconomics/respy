@@ -10,7 +10,7 @@ import glob
 import os
 
 # ROBUPY import
-from robupy.constants.constants import ROOT_DIR
+from robupy.shared.constants import ROOT_DIR
 from robupy.python.solve_python import _create_state_space
 from robupy import read
 
@@ -278,7 +278,7 @@ def cleanup_robupy_package(is_build=False):
                 continue
             if match == './evaluate':
                 continue
-            if match == './constants':
+            if match == './shared':
                 continue
 
         # Remove remaining files and directories.. It is important to check

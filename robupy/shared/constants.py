@@ -7,7 +7,7 @@ import os
 
 # Obtain the root directory of the package
 ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
-ROOT_DIR = ROOT_DIR.replace('/constants', '')
+ROOT_DIR = ROOT_DIR.replace('/shared', '')
 
 # Directory with additional resources for the testing harness
 TEST_DIR = ROOT_DIR + '/tests'

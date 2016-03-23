@@ -10,7 +10,7 @@ import shutil
 import os
 
 # project library
-from robupy.constants.constants import MISSING_FLOAT
+from robupy.shared.constants import MISSING_FLOAT
 
 ''' Auxiliary functions
 '''

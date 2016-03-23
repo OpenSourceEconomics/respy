@@ -9,7 +9,7 @@ import glob
 import os
 
 # project library
-from robupy.constants.constants import ROOT_DIR
+from robupy.shared.constants import ROOT_DIR
 from robupy.clsRobupy import RobupyCls
 
 

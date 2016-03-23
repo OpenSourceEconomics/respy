@@ -24,7 +24,7 @@ def evaluate(robupy_obj, data_frame):
 
     version = robupy_obj.get_attr('version')
 
-   # Distribute class attribute
+    # Distribute class attribute
     is_deterministic = robupy_obj.get_attr('is_deterministic')
 
     is_interpolated = robupy_obj.get_attr('is_interpolated')

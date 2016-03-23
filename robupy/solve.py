@@ -171,6 +171,7 @@ def _check_solve(robupy_obj):
 def _stop_logging():
     """ Ensure orderly shutdown of logging capabilities.
     """
+    # TODO: These need to be extract
     # Collect all loggers for shutdown.
     loggers = []
     loggers += [logging.getLogger('ROBUPY_SOLVE')]

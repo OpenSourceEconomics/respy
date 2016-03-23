@@ -21,7 +21,7 @@ import numpy as np
 import pandas as pd
 
 # project library
-import robupy.python.py.python_library as python_library
+from robupy.simulate.simulate_auxiliary import simulate_sample
 
 from robupy.auxiliary import replace_missing_values
 from robupy.auxiliary import check_dataset
@@ -109,7 +109,7 @@ def _wrapper_simulate_sample(robupy_obj, draws_data):
 
     # Interface to core functions
     if is_python:
-        data_frame = python_library.simulate_sample(num_agents, states_all,
+        data_frame = simulate_sample(num_agents, states_all,
             num_periods, mapping_state_idx, periods_payoffs_systematic,
             draws_data, edu_max, edu_start, periods_emax, delta)
     else:

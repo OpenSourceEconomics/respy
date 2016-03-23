@@ -13,7 +13,7 @@ from robupy import process
 from robupy import solve
 from robupy import read
 
-from robupy.constants.constants import TEST_RESOURCES_DIR
+from robupy.shared.constants import TEST_RESOURCES_DIR
 
 
 @pytest.mark.usefixtures('fresh_directory', 'set_seed', 'supply_resources')

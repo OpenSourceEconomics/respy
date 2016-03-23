@@ -9,8 +9,8 @@ import os
 # project library
 from robupy.fortran.auxiliary import _write_robufort_initialization
 from robupy.fortran.auxiliary import _add_results
-from robupy.constants.constants import HUGE_FLOAT
-from robupy.constants.constants import FORTRAN_DIR
+from robupy.shared.constants import HUGE_FLOAT
+from robupy.shared.constants import FORTRAN_DIR
 
 ''' Main function
 '''

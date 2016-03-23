@@ -11,7 +11,7 @@ from robupy.auxiliary import replace_missing_values
 
 import robupy.python.py.python_library as python_library
 
-from robupy.constants.constants import MISSING_FLOAT
+from robupy.shared.constants import MISSING_FLOAT
 
 # Logging
 logger = logging.getLogger('ROBUPY_SOLVE')
