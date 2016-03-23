@@ -2,15 +2,15 @@
 """
 
 # standard library
+import numpy as np
+
 import glob
 import os
 import shlex
 
-import numpy as np
-
 # project library
 from robupy.shared.constants import ROOT_DIR
-from robupy.shared.clsRobupy import RobupyCls
+from robupy.read.clsRobupy import RobupyCls
 
 
 ''' Main function

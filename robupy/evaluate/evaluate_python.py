@@ -3,8 +3,9 @@ evaluate the likelihood function.
 """
 
 # standard library
-import numpy as np
 from scipy.stats import norm
+
+import numpy as np
 
 # project library
 from robupy.solve.solve_python import solve_python

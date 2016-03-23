@@ -9,7 +9,9 @@ import os
 # project library
 from robupy.fortran.solve_fortran import solve_fortran
 from robupy.solve.solve_python import solve_python
-from robupy.shared.auxiliary import create_draws, distribute_model_paras
+
+from robupy.shared.auxiliary import distribute_model_paras
+from robupy.shared.auxiliary import create_draws
 
 ''' Main function
 '''

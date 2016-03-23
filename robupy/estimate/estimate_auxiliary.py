@@ -1,5 +1,9 @@
+""" This module contains auxiliary functions for the estimation.
+"""
+# standard library
 import numpy as np
 
+# project library
 from robupy.shared.auxiliary import check_model_parameters
 
 

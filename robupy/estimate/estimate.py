@@ -5,12 +5,12 @@ function.
 # standard library
 from scipy.optimize import minimize
 
-from robupy.shared.auxiliary import create_draws, distribute_model_paras
 # project library
+from robupy.estimate.estimate_auxiliary import opt_get_optim_parameters
 
 from robupy.shared.auxiliary import distribute_model_paras
+from robupy.shared.auxiliary import create_draws
 
-from robupy.estimate.estimate_auxiliary import opt_get_optim_parameters
 
 
 # TODO: Some nice debugging is in order.as

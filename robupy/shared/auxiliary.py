@@ -1,8 +1,15 @@
-import os
-
+""" This module contains auxiliary functions that are shared among the requests.
+"""
+# standard library
 import numpy as np
 
+import os
+
+# project library
 from robupy.shared.constants import HUGE_FLOAT, MISSING_FLOAT
+
+''' Auxiliary functions
+'''
 
 
 def get_total_value(period, num_periods, delta, payoffs_systematic, draws,
@@ -121,8 +128,7 @@ def create_draws(num_periods, num_draws_emax, seed, is_debug, which,
 
 def replace_missing_values(argument):
     """ Replace missing value MISSING_FLOAT with NAN. Note that the output
-    argument is
-    of type float.
+    argument is of type float.
     """
     # Determine missing values
     is_missing = (argument == MISSING_FLOAT)

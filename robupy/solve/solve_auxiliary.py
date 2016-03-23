@@ -7,13 +7,14 @@ import logging
 import os
 import shlex
 
-import numpy as np
 import statsmodels.api as sm
+import numpy as np
 
 # project library
 from robupy.solve.ambiguity import get_payoffs_ambiguity
-from robupy.shared.auxiliary import get_total_value
 from robupy.solve.risk import get_payoffs_risk
+
+from robupy.shared.auxiliary import get_total_value
 
 from robupy.shared.constants import INTERPOLATION_INADMISSIBLE_STATES
 from robupy.shared.constants import MISSING_FLOAT

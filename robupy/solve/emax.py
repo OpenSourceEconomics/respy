@@ -1,5 +1,7 @@
+# standard library
 import numpy as np
 
+# project library
 from robupy.shared.auxiliary import get_total_value
 from robupy.shared.constants import HUGE_FLOAT
 
