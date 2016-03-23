@@ -94,8 +94,8 @@ def evaluate_criterion_function(mapping_state_idx, periods_emax,
 
                 # Calculate total payoff.
                 total_payoffs, _, _ = get_total_value(period, num_periods,
-                    delta, payoffs_systematic, draws, edu_max,
-                    edu_start, mapping_state_idx, periods_emax, k, states_all)
+                    delta, payoffs_systematic, draws, edu_max, edu_start,
+                    mapping_state_idx, periods_emax, k, states_all)
 
                 # Record optimal choices
                 counts[np.argmax(total_payoffs)] += 1.0

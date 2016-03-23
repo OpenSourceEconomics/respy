@@ -10,6 +10,7 @@ import os
 from robupy.fortran.solve_fortran import solve_fortran
 from robupy.solve.solve_python import solve_python
 
+from robupy.shared.auxiliary import distribute_class_attributes
 from robupy.shared.auxiliary import distribute_model_paras
 from robupy.shared.auxiliary import create_draws
 
@@ -28,57 +29,20 @@ def solve(robupy_obj):
     _start_logging()
 
     # Distribute class attributes
-    is_ambiguous = robupy_obj.get_attr('is_ambiguous')
-
-    is_myopic = robupy_obj.get_attr('is_myopic')
-
-    is_debug = robupy_obj.get_attr('is_debug')
-
-    version = robupy_obj.get_attr('version')
-
-    store = robupy_obj.get_attr('store')
-
-    is_deterministic = robupy_obj.get_attr('is_deterministic')
-
-    is_interpolated = robupy_obj.get_attr('is_interpolated')
-
-    num_draws_emax = robupy_obj.get_attr('num_draws_emax')
-
-    is_ambiguous = robupy_obj.get_attr('is_ambiguous')
-
-    num_periods = robupy_obj.get_attr('num_periods')
-
-    model_paras = robupy_obj.get_attr('model_paras')
-
-    num_points = robupy_obj.get_attr('num_points')
-
-    seed_emax = robupy_obj.get_attr('seed_emax')
-
-    edu_start = robupy_obj.get_attr('edu_start')
-
-    is_python = robupy_obj.get_attr('is_python')
-
-    is_myopic = robupy_obj.get_attr('is_myopic')
-
-    is_debug = robupy_obj.get_attr('is_debug')
-
-    measure = robupy_obj.get_attr('measure')
-
-    edu_max = robupy_obj.get_attr('edu_max')
-
-    min_idx = robupy_obj.get_attr('min_idx')
-
-    store = robupy_obj.get_attr('store')
-
-    delta = robupy_obj.get_attr('delta')
-
-    level = robupy_obj.get_attr('level')
-
-    num_draws_prob = robupy_obj.get_attr('num_draws_prob')
-    num_agents = robupy_obj.get_attr('num_agents')
-
-    seed_prob = robupy_obj.get_attr('seed_prob')
-    seed_data = robupy_obj.get_attr('seed_data')
+    periods_payoffs_systematic, mapping_state_idx, periods_emax, model_paras, \
+        num_periods, num_agents, states_all, edu_start, is_python, seed_data, \
+        is_debug, file_sim, edu_max, delta, is_deterministic, version, \
+        num_draws_prob, seed_prob, num_draws_emax, seed_emax, is_interpolated, \
+        is_ambiguous, num_points, is_myopic, min_idx, measure, level = \
+            distribute_class_attributes(robupy_obj,
+                'periods_payoffs_systematic', 'mapping_state_idx',
+                'periods_emax', 'model_paras', 'num_periods', 'num_agents',
+                'states_all', 'edu_start', 'is_python', 'seed_data',
+                'is_debug', 'file_sim', 'edu_max', 'delta',
+                'is_deterministic', 'version', 'num_draws_prob', 'seed_prob',
+                'num_draws_emax', 'seed_emax', 'is_interpolated',
+                'is_ambiguous', 'num_points', 'is_myopic', 'min_idx', 'measure',
+                'level')
 
     # Construct auxiliary objects
     _start_ambiguity_logging(is_ambiguous, is_debug)
@@ -116,6 +80,7 @@ def solve(robupy_obj):
 
         args = solve_python(*args)
 
+    # Distribute return arguments
     periods_payoffs_systematic, periods_payoffs_ex_post = args[:2]
     periods_payoffs_future, states_number_period = args[2:4]
     mapping_state_idx, periods_emax, states_all = args[4:7]

@@ -21,8 +21,6 @@ def evaluate_python(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
     the project class to pass it on to the actual evaluation functions. This is
     required to align the functions across the PYTHON and F2PY implementations.
     """
-
-
     # Transform dataset to array for easy access
     data_array = data_frame.as_matrix()
 
