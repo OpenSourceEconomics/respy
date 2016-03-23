@@ -291,3 +291,36 @@ def distribute_class_attributes(robupy_obj, *args):
 
     # Finishing
     return ret
+
+
+def add_solution(robupy_obj, store, periods_payoffs_systematic,
+        periods_payoffs_ex_post, periods_payoffs_future,
+        states_number_period, mapping_state_idx, periods_emax, states_all):
+    """ Add solution to class instance.
+    """
+    robupy_obj.unlock()
+
+    robupy_obj.set_attr('periods_payoffs_systematic', periods_payoffs_systematic)
+
+    robupy_obj.set_attr('periods_payoffs_ex_post', periods_payoffs_ex_post)
+
+    robupy_obj.set_attr('periods_payoffs_future', periods_payoffs_future)
+
+    robupy_obj.set_attr('states_number_period', states_number_period)
+
+    robupy_obj.set_attr('mapping_state_idx', mapping_state_idx)
+
+    robupy_obj.set_attr('periods_emax', periods_emax)
+
+    robupy_obj.set_attr('states_all', states_all)
+
+    robupy_obj.set_attr('is_solved', True)
+
+    robupy_obj.lock()
+
+    # Store object to file
+    if store:
+        robupy_obj.store('solution.robupy.pkl')
+
+    # Finishing
+    return robupy_obj

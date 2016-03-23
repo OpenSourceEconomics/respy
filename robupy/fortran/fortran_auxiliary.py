@@ -9,12 +9,13 @@ import os
 
 # project library
 from robupy.shared.auxiliary import replace_missing_values
+from robupy.shared.constants import HUGE_FLOAT
 
 ''' Auxiliary  functions
 '''
 
 
-def _add_results(num_periods, min_idx, request):
+def get_results(num_periods, min_idx):
     """ Add results to container.
     """
 
@@ -26,22 +27,22 @@ def _add_results(num_periods, min_idx, request):
     os.unlink('.max_states_period.robufort.dat')
 
     shape = (num_periods, num_periods, num_periods, min_idx, 2)
-    mapping_state_idx = _read_date('mapping_state_idx', shape)
+    mapping_state_idx = read_date('mapping_state_idx', shape)
 
     shape = (num_periods,)
-    states_number_period = _read_date('states_number_period', shape)
+    states_number_period = read_date('states_number_period', shape)
 
     shape = (num_periods, max_states_period, 4)
-    states_all = _read_date('states_all', shape)
+    states_all = read_date('states_all', shape)
 
     shape = (num_periods, max_states_period, 4)
-    periods_payoffs_systematic = _read_date('periods_payoffs_systematic', shape)
+    periods_payoffs_systematic = read_date('periods_payoffs_systematic', shape)
 
     shape = (num_periods, max_states_period, 4)
-    periods_payoffs_ex_post = _read_date('periods_payoffs_ex_post', shape)
+    periods_payoffs_ex_post = read_date('periods_payoffs_ex_post', shape)
 
     shape = (num_periods, max_states_period)
-    periods_emax = _read_date('periods_emax', shape)
+    periods_emax = read_date('periods_emax', shape)
 
     # Update class attributes with solution
     args = [periods_payoffs_systematic, periods_payoffs_ex_post,
@@ -51,7 +52,7 @@ def _add_results(num_periods, min_idx, request):
     # Finishing
     return args
 
-def _read_date(label, shape):
+def read_date(label, shape):
     """ Read results
     """
     file_ = '.' + label + '.robufort.dat'
@@ -72,11 +73,11 @@ def _read_date(label, shape):
     # Finishing
     return data
 
-def _write_robufort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
-            is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
-            num_periods, num_points, is_myopic, edu_start, seed_emax,
-            is_debug, min_idx, measure, edu_max, delta, level,
-            num_draws_prob, num_agents, seed_prob, seed_data, request):
+def write_robufort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+        shocks_cov, is_deterministic, is_interpolated, num_draws_emax,
+        is_ambiguous, num_periods, num_points, is_myopic, edu_start, seed_emax,
+        is_debug, min_idx, measure, edu_max, delta, level, num_draws_prob,
+        num_agents, seed_prob, seed_data, request):
     """ Write out model request to hidden file .model.robufort.ini.
     """
 
@@ -176,3 +177,17 @@ def _write_robufort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, 
         # Request
         line = '{0}'.format(request)
         file_.write(line + '\n')
+
+
+def write_dataset(data_frame):
+    """ Write the dataset to a temporary file. Missing values are set
+    to large values.
+    """
+    with open('.data.robufort.dat', 'w') as file_:
+        data_frame.to_string(file_, index=False,
+            header=None, na_rep=str(HUGE_FLOAT))
+
+    # An empty line is added as otherwise this might lead to problems on the
+    # TRAVIS servers. The FORTRAN routine read_dataset() raises an error.
+    with open('.data.robufort.dat', 'a') as file_:
+        file_.write('\n')

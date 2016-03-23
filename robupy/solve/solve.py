@@ -3,16 +3,17 @@
 
 # standard library
 import logging
-import shlex
 import os
+import shlex
 
 # project library
-from robupy.fortran.solve_fortran import solve_fortran
+from robupy.fortran.fortran import fortran_interface
 from robupy.solve.solve_python import solve_python
 
 from robupy.shared.auxiliary import distribute_class_attributes
 from robupy.shared.auxiliary import distribute_model_paras
 from robupy.shared.auxiliary import create_draws
+from robupy.shared.auxiliary import add_solution
 
 ''' Main function
 '''
@@ -33,7 +34,7 @@ def solve(robupy_obj):
         num_periods, num_agents, states_all, edu_start, is_python, seed_data, \
         is_debug, file_sim, edu_max, delta, is_deterministic, version, \
         num_draws_prob, seed_prob, num_draws_emax, seed_emax, is_interpolated, \
-        is_ambiguous, num_points, is_myopic, min_idx, measure, level = \
+        is_ambiguous, num_points, is_myopic, min_idx, measure, level, store = \
             distribute_class_attributes(robupy_obj,
                 'periods_payoffs_systematic', 'mapping_state_idx',
                 'periods_emax', 'model_paras', 'num_periods', 'num_agents',
@@ -42,7 +43,7 @@ def solve(robupy_obj):
                 'is_deterministic', 'version', 'num_draws_prob', 'seed_prob',
                 'num_draws_emax', 'seed_emax', 'is_interpolated',
                 'is_ambiguous', 'num_points', 'is_myopic', 'min_idx', 'measure',
-                'level')
+                'level', 'store')
 
     # Construct auxiliary objects
     _start_ambiguity_logging(is_ambiguous, is_debug)
@@ -60,54 +61,27 @@ def solve(robupy_obj):
 
     # Select appropriate interface
     if version == 'FORTRAN':
-
-        # TODO: ALign interfaces?
+        # Collect arguments and call FORTRAN interface
         args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
             is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
             num_periods, num_points, is_myopic, edu_start, seed_emax,
             is_debug, min_idx, measure, edu_max, delta, level,
-            num_draws_prob, num_agents, seed_prob, seed_data, 'solve')
+            num_draws_prob, num_agents, seed_prob, seed_data, 'solve', None)
 
-        args = solve_fortran(*args)
+        solution = fortran_interface(*args)
 
     else:
-        # Collect arguments
+        # Collect arguments and call PYTHON solution methods
         args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
             shocks_cholesky, is_deterministic, is_interpolated, num_draws_emax,
             periods_draws_emax, is_ambiguous, num_periods, num_points, edu_start,
             is_myopic, is_debug, measure, edu_max, min_idx, delta, level,
             is_python)
 
-        args = solve_python(*args)
+        solution = solve_python(*args)
 
-    # Distribute return arguments
-    periods_payoffs_systematic, periods_payoffs_ex_post = args[:2]
-    periods_payoffs_future, states_number_period = args[2:4]
-    mapping_state_idx, periods_emax, states_all = args[4:7]
-
-    robupy_obj.unlock()
-
-    robupy_obj.set_attr('periods_payoffs_systematic', periods_payoffs_systematic)
-
-    robupy_obj.set_attr('periods_payoffs_ex_post', periods_payoffs_ex_post)
-
-    robupy_obj.set_attr('periods_payoffs_future', periods_payoffs_future)
-
-    robupy_obj.set_attr('states_number_period', states_number_period)
-
-    robupy_obj.set_attr('mapping_state_idx', mapping_state_idx)
-
-    robupy_obj.set_attr('periods_emax', periods_emax)
-
-    robupy_obj.set_attr('states_all', states_all)
-
-    robupy_obj.set_attr('is_solved', True)
-
-    robupy_obj.lock()
-
-    # Store object to file
-    if store:
-        robupy_obj.store('solution.robupy.pkl')
+    # Attach solution to class instance
+    robupy_obj = add_solution(robupy_obj, store, *solution)
 
     # Summarize optimizations in case of ambiguity
     if is_debug and is_ambiguous and (not is_myopic):
@@ -118,6 +92,7 @@ def solve(robupy_obj):
 
     # Finishing
     return robupy_obj
+
 
 ''' Auxiliary functions
 '''

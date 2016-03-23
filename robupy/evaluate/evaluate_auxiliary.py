@@ -7,7 +7,7 @@ from scipy.stats import norm
 import numpy as np
 
 # project library
-from robupy.shared.auxiliary import get_total_value
+from robupy.shared.auxiliary import get_total_value, check_dataset
 from robupy.shared.constants import SMALL_FLOAT
 from robupy.shared.constants import TINY_FLOAT
 from robupy.shared.constants import HUGE_FLOAT
@@ -125,3 +125,27 @@ def evaluate_criterion_function(mapping_state_idx, periods_emax,
 
     # Finishing
     return likl
+
+
+def check_evaluation(str_, *args):
+    """ Check integrity of criterion function.
+    """
+    if str_ == 'out':
+
+        # Distribute input parameters
+        likl, = args
+
+        # Check quality
+        assert isinstance(likl, float)
+        assert np.isfinite(likl)
+
+    elif str_ == 'in':
+
+        # Distribute input parameters
+        data_frame, robupy_obj, is_deterministic = args
+
+        # Check quality
+        check_dataset(data_frame, robupy_obj)
+
+    # Finishing
+    return True

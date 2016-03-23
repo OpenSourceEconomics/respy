@@ -102,7 +102,7 @@ class TestClass(object):
         write_interpolation_grid('test.robupy.ini')
 
         # Clean evaluations based on interpolation grid,
-        base_eval, base_data = None, None
+        base_val, base_data = None, None
 
         for version in ['PYTHON', 'F2PY', 'FORTRAN']:
 
@@ -130,17 +130,17 @@ class TestClass(object):
             # criterion function.
             data_frame = simulate(robupy_obj)
 
-            eval_ = evaluate(robupy_obj, data_frame)
+            crit_val, _ = evaluate(robupy_obj, data_frame)
 
-            if base_eval is None:
-                base_eval = eval_
+            if base_val is None:
+                base_val = crit_val
 
-            np.testing.assert_allclose(base_eval, eval_, rtol=1e-05,
+            np.testing.assert_allclose(base_val, crit_val, rtol=1e-05,
                                        atol=1e-06)
 
             # We know even more for the deterministic case.
             if constraints['is_deterministic']:
-                assert (eval_ in [0.0, 1.0])
+                assert (crit_val in [0.0, 1.0])
 
     def test_3(self):
         """ Testing whether the systematic and ex post payoffs are identical if
@@ -298,7 +298,7 @@ class TestClass(object):
         generate_init()
 
         # Iterate over alternative discount rates.
-        base_data, base_eval = None, None
+        base_data, base_val = None, None
 
         for delta in [0.00, 0.000001]:
 
@@ -327,9 +327,9 @@ class TestClass(object):
             # criterion function.
             data_frame = simulate(robupy_obj)
 
-            eval_ = evaluate(robupy_obj, data_frame)
+            crit_val, _ = evaluate(robupy_obj, data_frame)
 
-            if base_eval is None:
-                base_eval = eval_
+            if base_val is None:
+                base_val= crit_val
 
-            np.testing.assert_allclose(base_eval, eval_, rtol=1e-03, atol=1e-03)
+            np.testing.assert_allclose(base_val, crit_val, rtol=1e-03, atol=1e-03)

@@ -20,7 +20,7 @@ CONTAINS
 SUBROUTINE store_results(mapping_state_idx, states_all, & 
                 periods_payoffs_ex_post, periods_payoffs_systematic, & 
                 states_number_period, periods_emax, num_periods, min_idx, & 
-                eval, request) 
+                crit_val, request) 
 
     !/* external objects        */
 
@@ -34,7 +34,7 @@ SUBROUTINE store_results(mapping_state_idx, states_all, &
     REAL(our_dble), INTENT(IN)      :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), INTENT(IN)      :: periods_payoffs_ex_post(:, :, :)    
     REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
-    REAL(our_dble), INTENT(IN)      :: eval
+    REAL(our_dble), INTENT(IN)      :: crit_val
 
     CHARACTER(10), INTENT(IN)       :: request
 
@@ -147,7 +147,7 @@ SUBROUTINE store_results(mapping_state_idx, states_all, &
 
         OPEN(UNIT=1, FILE='.eval.robufort.dat')
 
-        WRITE(1, 2500) eval
+        WRITE(1, 2500) crit_val
 
         CLOSE(1)
 
@@ -472,9 +472,9 @@ PROGRAM robufort
     REAL(our_dble)                  :: shocks_cov(4, 4)
     REAL(our_dble)                  :: coeffs_a(6)
     REAL(our_dble)                  :: coeffs_b(6)
+    REAL(our_dble)                  :: crit_val
     REAL(our_dble)                  :: delta
     REAL(our_dble)                  :: level
-    REAL(our_dble)                  :: eval
 
     LOGICAL                         :: is_deterministic
     LOGICAL                         :: is_interpolated
@@ -539,7 +539,7 @@ PROGRAM robufort
                 is_ambiguous, num_periods, num_points, edu_start, is_myopic, & 
                 is_debug, measure, edu_max, min_idx, delta, level)
 
-        CALL evaluate_criterion_function(eval, mapping_state_idx, &
+        CALL evaluate_criterion_function(crit_val, mapping_state_idx, &
                 periods_emax, periods_payoffs_systematic, states_all, & 
                 shocks_cov, edu_max, delta, edu_start, num_periods, & 
                 shocks_cholesky, num_agents, num_draws_prob, data_array, & 
@@ -551,7 +551,7 @@ PROGRAM robufort
     ! clsRobupy instance.
     CALL store_results(mapping_state_idx, states_all, periods_payoffs_ex_post, & 
             periods_payoffs_systematic, states_number_period, periods_emax, &
-            num_periods, min_idx, eval, request) 
+            num_periods, min_idx, crit_val, request) 
 
 !*******************************************************************************
 !*******************************************************************************

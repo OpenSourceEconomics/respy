@@ -25,15 +25,18 @@ def evaluate_python(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
     data_array = data_frame.as_matrix()
 
     # Solve model for given parametrization
-    args = solve_python(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
+    solution = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
         shocks_cholesky, is_deterministic, is_interpolated, num_draws_emax,
         periods_draws_emax, is_ambiguous, num_periods, num_points, edu_start,
         is_myopic, is_debug, measure, edu_max, min_idx, delta, level,
         is_python)
 
-    # Distribute return arguments from solution run
-    periods_payoffs_systematic, periods_payoffs_ex_post = args[:2]
-    mapping_state_idx, periods_emax, states_all = args[4:7]
+    solution = solve_python(*solution)
+
+    # Extract relevant arguments from solution. All solution arguments will
+    # be returned by thus function in addition to the likl.
+    periods_payoffs_systematic, periods_payoffs_ex_post = solution[:2]
+    mapping_state_idx, periods_emax, states_all = solution[4:7]
 
     # Evaluate the criterion function
     if is_python:
@@ -50,6 +53,6 @@ def evaluate_python(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
             periods_draws_prob, is_deterministic)
 
     # Finishing
-    return likl
+    return likl, solution
 
 
