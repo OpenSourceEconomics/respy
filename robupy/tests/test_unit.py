@@ -21,16 +21,16 @@ from robupy import simulate
 from robupy import solve
 from robupy import read
 
-from robupy.python.py.python_library import get_payoffs
+from robupy.python.solve_auxiliary import get_payoffs
 
 from robupy.python.solve_python import solve_python
 
 from robupy.tests.codes.random_init import generate_init
 
-from robupy.python.py.ambiguity import get_payoffs_ambiguity
-from robupy.python.py.auxiliary import simulate_emax
-from robupy.python.py.ambiguity import _divergence
-from robupy.python.py.ambiguity import _criterion
+from robupy.python.ambiguity import get_payoffs_ambiguity
+from robupy.python.emax import simulate_emax
+from robupy.python.ambiguity import _divergence
+from robupy.python.ambiguity import _criterion
 
 from robupy.auxiliary import opt_get_model_parameters
 from robupy.auxiliary import opt_get_optim_parameters
@@ -38,7 +38,7 @@ from robupy.auxiliary import distribute_model_paras
 from robupy.auxiliary import replace_missing_values
 from robupy.auxiliary import create_draws
 
-import robupy.python.py.python_library as py_lib
+import robupy.python.solve_auxiliary as py_lib
 
 ''' Main
 '''

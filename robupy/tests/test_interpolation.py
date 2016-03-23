@@ -13,10 +13,10 @@ from codes.auxiliary import distribute_model_description
 from codes.auxiliary import write_interpolation_grid
 
 # ROBUPY import
-from robupy.python.py.python_library import _get_simulated_indicator
-from robupy.python.py.python_library import _get_exogenous_variables
-from robupy.python.py.python_library import _get_endogenous_variable
-from robupy.python.py.python_library import _get_predictions
+from robupy.python.solve_auxiliary import _get_simulated_indicator
+from robupy.python.solve_auxiliary import _get_exogenous_variables
+from robupy.python.solve_auxiliary import _get_endogenous_variable
+from robupy.python.solve_auxiliary import _get_predictions
 
 from robupy.tests.codes.random_init import generate_random_dict
 from robupy.tests.codes.random_init import print_random_dict

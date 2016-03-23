@@ -8,8 +8,8 @@ from scipy.stats import norm
 
 # project library
 from robupy.python.solve_python import solve_python
-from robupy.shared.auxiliary import get_total_value
 
+from robupy.shared.auxiliary import get_total_value
 from robupy.shared.constants import SMALL_FLOAT
 from robupy.shared.constants import TINY_FLOAT
 from robupy.shared.constants import HUGE_FLOAT

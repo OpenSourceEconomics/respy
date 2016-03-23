@@ -11,9 +11,9 @@ import numpy as np
 import statsmodels.api as sm
 
 # project library
-from robupy.python.py.ambiguity import get_payoffs_ambiguity
+from robupy.python.ambiguity import get_payoffs_ambiguity
 from robupy.shared.auxiliary import get_total_value
-from robupy.python.py.risk import get_payoffs_risk
+from robupy.python.risk import get_payoffs_risk
 
 from robupy.shared.constants import INTERPOLATION_INADMISSIBLE_STATES
 from robupy.shared.constants import MISSING_FLOAT
@@ -466,3 +466,5 @@ def _get_predictions(endogenous, exogenous, maxe, is_simulated, num_points,
 
     # Finishing
     return predictions, results
+
+

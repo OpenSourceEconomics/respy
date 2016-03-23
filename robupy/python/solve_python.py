@@ -9,7 +9,7 @@ import numpy as np
 # project library
 from robupy.auxiliary import replace_missing_values
 
-import robupy.python.py.python_library as python_library
+import robupy.python.solve_auxiliary as solve_auxiliary
 
 from robupy.shared.constants import MISSING_FLOAT
 
@@ -107,7 +107,7 @@ def _create_state_space(num_periods, edu_start, edu_max, min_idx, is_python):
     """
     # Interface to core functions
     if is_python:
-        create_state_space = python_library.create_state_space
+        create_state_space = solve_auxiliary.create_state_space
     else:
         import robupy.fortran.f2py_library as f2py_library
         create_state_space = f2py_library.wrapper_create_state_space
@@ -146,7 +146,7 @@ def _calculate_payoffs_systematic(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
     # Interface to core functions
     if is_python:
         calculate_payoffs_systematic = \
-            python_library.calculate_payoffs_systematic
+            solve_auxiliary.calculate_payoffs_systematic
     else:
         import robupy.fortran.f2py_library as f2py_library
         calculate_payoffs_systematic = \
@@ -179,7 +179,7 @@ def _backward_induction_procedure(periods_payoffs_systematic,
 
     # Interface to core functions
     if is_python:
-        backward_induction = python_library.backward_induction
+        backward_induction = solve_auxiliary.backward_induction
     else:
         import robupy.fortran.f2py_library as f2py_library
         backward_induction = f2py_library.wrapper_backward_induction

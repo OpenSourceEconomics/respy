@@ -3,11 +3,11 @@
 """
 
 # standard library
-from scipy.optimize import minimize
 import numpy as np
+from scipy.optimize import minimize
 
 # project library
-from robupy.python.py.auxiliary import simulate_emax
+from robupy.python.emax import simulate_emax
 
 ''' Public functions
 '''

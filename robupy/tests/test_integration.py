@@ -3,19 +3,17 @@ development tests.
 """
 
 # standard library
-from pandas.util.testing import assert_frame_equal
-
-import pandas as pd
 import numpy as np
-
+import pandas as pd
 import pytest
+from pandas.util.testing import assert_frame_equal
 
 # testing library
 from codes.auxiliary import write_interpolation_grid
 from codes.auxiliary import write_draws
 
 # ROBUPY import
-from robupy.python.py.python_library import create_state_space
+from robupy.python.solve_auxiliary import create_state_space
 
 from robupy.tests.codes.random_init import generate_random_dict
 from robupy.tests.codes.random_init import print_random_dict

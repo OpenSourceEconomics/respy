@@ -3,19 +3,14 @@ function.
 """
 
 # standard library
-import numpy as np
-from robupy.auxiliary import create_draws
 from scipy.optimize import minimize
 
+from robupy.auxiliary import create_draws
 # project library
-from robupy.fortran.evaluate_fortran import evaluate_fortran
-from robupy.python.evaluate_python import evaluate_python
-from robupy.auxiliary import check_dataset
 
 from robupy.auxiliary import distribute_model_paras
-from robupy.python.solve_python import solve_python
 
-from robupy.auxiliary import opt_get_model_parameters, opt_get_optim_parameters
+from robupy.auxiliary import opt_get_optim_parameters
 # TODO: Some nice debugging is in order.as
 
 def criterion(x, data_frame, edu_max, delta, edu_start, is_debug,

@@ -1,17 +1,7 @@
-""" This module contains some auxiliary functions for the PYTHON
-implementations of the core functions.
-"""
-
-# standard library
 import numpy as np
 
-# project library
 from robupy.shared.auxiliary import get_total_value
 from robupy.shared.constants import HUGE_FLOAT
-
-
-''' Main functions
-'''
 
 
 def simulate_emax(num_periods, num_draws_emax, period, k, draws_emax,
@@ -54,4 +44,3 @@ def simulate_emax(num_periods, num_draws_emax, period, k, draws_emax,
 
     # Finishing
     return emax_simulated, payoffs_ex_post, payoffs_future
-
