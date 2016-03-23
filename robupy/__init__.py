@@ -5,12 +5,13 @@ import sys
 import os
 
 # Package structure
+from robupy.process.process import process
+from robupy.read.read import read
+
 from robupy.estimate import estimate
 from robupy.simulate import simulate
 from robupy.evaluate import evaluate
-from robupy.process import process
 from robupy.solve import solve
-from robupy.read import read
 
 # Check for Python 3
 if not (sys.version_info[0] == 3):

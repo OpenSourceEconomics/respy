@@ -130,6 +130,12 @@ def cleanup_build(is_build=False):
             if match == './tests/resources':
                 continue
 
+            if match == './read':
+                continue
+
+            if match == './process':
+                continue
+
         # Remove remaining files and directories.
         try:
             os.unlink(match)

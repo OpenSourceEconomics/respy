@@ -26,3 +26,4 @@ simulate(robupy_obj)
 val = evaluate(robupy_obj, process(robupy_obj))
 #np.testing.assert_allclose(6.669068979562924, val)
 
+process(robupy_obj  )
