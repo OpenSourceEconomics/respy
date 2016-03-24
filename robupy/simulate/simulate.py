@@ -46,13 +46,13 @@ def simulate(robupy_obj):
 
     # Distribute class attributes
     periods_payoffs_systematic, mapping_state_idx, periods_emax, model_paras, \
-        num_periods, num_agents, states_all, edu_start, is_python, seed_data, \
-        is_debug, file_sim, edu_max, delta, version = \
+        num_periods, num_agents, states_all, edu_start, seed_data, is_debug, \
+        file_sim, edu_max, delta, version = \
             distribute_class_attributes(robupy_obj,
                 'periods_payoffs_systematic', 'mapping_state_idx',
                 'periods_emax', 'model_paras', 'num_periods', 'num_agents',
-                'states_all', 'edu_start', 'is_python', 'seed_data',
-                'is_debug', 'file_sim', 'edu_max', 'delta', 'version')
+                'states_all', 'edu_start', 'seed_data', 'is_debug',
+                'file_sim', 'edu_max', 'delta', 'version')
 
     # Auxiliary objects
     shocks_cholesky = model_paras['shocks_cholesky']

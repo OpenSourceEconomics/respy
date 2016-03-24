@@ -40,10 +40,9 @@ def write_interpolation_grid(file_name):
     robupy_obj = read(file_name)
 
     # Distribute class attribute
-    num_periods, num_points, edu_start, is_python, edu_max, min_idx = \
+    num_periods, num_points, edu_start, edu_max, min_idx = \
         distribute_model_description(robupy_obj,
-            'num_periods', 'num_points', 'edu_start', 'is_python', 'edu_max',
-            'min_idx')
+            'num_periods', 'num_points', 'edu_start', 'edu_max', 'min_idx')
 
     # Determine maximum number of states
     _, states_number_period, _, max_states_period = \

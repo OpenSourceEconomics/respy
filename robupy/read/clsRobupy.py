@@ -9,7 +9,7 @@ import numpy as np
 
 # Special care with derived attributes is required to maintain integrity of
 # the class instance.
-DERIVED_ATTR = ['is_ambiguous', 'is_python', 'min_idx', 'is_deterministic']
+DERIVED_ATTR = ['is_ambiguous', 'min_idx', 'is_deterministic']
 DERIVED_ATTR += ['is_myopic']
 
 
@@ -49,8 +49,6 @@ class RobupyCls(object):
         self.attr['seed_emax'] = None
 
         self.attr['is_myopic'] = None
-
-        self.attr['is_python'] = None
 
         self.attr['edu_start'] = None
 
@@ -317,8 +315,6 @@ class RobupyCls(object):
 
         self.attr['is_ambiguous'] = (self.attr['level'] > 0.00)
 
-        self.attr['is_python'] = (self.attr['version'] == 'PYTHON')
-
         self.attr['is_myopic'] = (self.attr['delta'] == 0.00)
 
     def _check_integrity_attributes(self):
@@ -343,8 +339,6 @@ class RobupyCls(object):
         num_points = self.attr['num_points']
 
         edu_start = self.attr['edu_start']
-
-        is_python = self.attr['is_python']
 
         is_myopic = self.attr['is_myopic']
 
@@ -374,9 +368,6 @@ class RobupyCls(object):
 
         # Ambiguity in environment
         assert (is_ambiguous in [True, False])
-
-        # Version of implementation
-        assert (is_python in [True, False])
 
         # Forward-looking agents
         assert (is_myopic in [True, False])
