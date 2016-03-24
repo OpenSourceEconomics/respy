@@ -3,9 +3,9 @@ model with PYTHON and F2PY capabilities.
 """
 
 # standard library
-import numpy as np
 import logging
 
+import numpy as np
 # project library
 from robupy.shared.auxiliary import replace_missing_values
 
@@ -13,6 +13,8 @@ import robupy.solve.solve_auxiliary as solve_auxiliary
 from robupy.shared.constants import MISSING_FLOAT
 
 # Logging
+from robupy.solve.solve_auxiliary import checks
+
 logger = logging.getLogger('ROBUPY_SOLVE')
 
 ''' Main function
@@ -35,7 +37,7 @@ def solve_python(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
     logger.info('Starting state space creation')
 
     states_all, states_number_period, mapping_state_idx, max_states_period = \
-        _create_state_space(num_periods, edu_start, edu_max, min_idx, is_python)
+        wrapper_create_state_space(num_periods, edu_start, edu_max, min_idx, is_python)
 
     logger.info('... finished \n')
 
@@ -45,7 +47,7 @@ def solve_python(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
     logger.info('Starting calculation of systematic payoffs')
 
     periods_payoffs_systematic = \
-        _calculate_payoffs_systematic(coeffs_a, coeffs_b, coeffs_edu,
+        wrapper_calculate_payoffs_systematic(coeffs_a, coeffs_b, coeffs_edu,
             coeffs_home, states_number_period, num_periods, states_all,
             edu_start, max_states_period, is_python)
 
@@ -72,7 +74,7 @@ def solve_python(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
 
     else:
         periods_emax, periods_payoffs_ex_post, periods_payoffs_future = \
-            _backward_induction_procedure(periods_payoffs_systematic,
+            wrapper_backward_induction_procedure(periods_payoffs_systematic,
                 states_number_period, mapping_state_idx, is_interpolated,
                 num_periods, num_points, states_all, num_draws_emax, edu_start,
                 is_debug, edu_max, measure, shocks_cov, delta, level,
@@ -100,24 +102,23 @@ def solve_python(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
 '''
 
 
-def _create_state_space(num_periods, edu_start, edu_max, min_idx, is_python):
+def wrapper_create_state_space(num_periods, edu_start, edu_max, min_idx,
+        is_python):
     """ Create state space. This function is a wrapper around the PYTHON and
     F2PY implementation.
     """
     # Interface to core functions
     if is_python:
-        create_state_space = solve_auxiliary.create_state_space
+        create_state_space = solve_auxiliary.pyth_create_state_space
     else:
         import robupy.fortran.f2py_library as f2py_library
-        create_state_space = f2py_library.wrapper_create_state_space
+        create_state_space = f2py_library.f2py_create_state_space
 
     # Create state space
     states_all, states_number_period, mapping_state_idx, max_states_period = \
         create_state_space(num_periods, edu_start, edu_max, min_idx)
 
-    # Type transformations
-    states_number_period = np.array(states_number_period, dtype='int')
-
+    # Auxiliary objects
     max_states_period = max(states_number_period)
 
     # Cutting to size
@@ -136,8 +137,8 @@ def _create_state_space(num_periods, edu_start, edu_max, min_idx, is_python):
     return args
 
 
-def _calculate_payoffs_systematic(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-        states_number_period, num_periods, states_all, edu_start,
+def wrapper_calculate_payoffs_systematic(coeffs_a, coeffs_b, coeffs_edu,
+        coeffs_home, states_number_period, num_periods, states_all, edu_start,
         max_states_period, is_python):
     """ Calculate the systematic payoffs. This function is a wrapper around the
     PYTHON and F2PY implementation.
@@ -145,11 +146,11 @@ def _calculate_payoffs_systematic(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
     # Interface to core functions
     if is_python:
         calculate_payoffs_systematic = \
-            solve_auxiliary.calculate_payoffs_systematic
+            solve_auxiliary.pyth_calculate_payoffs_systematic
     else:
         import robupy.fortran.f2py_library as f2py_library
         calculate_payoffs_systematic = \
-            f2py_library.wrapper_calculate_payoffs_systematic
+            f2py_library.f2py_calculate_payoffs_systematic
 
     # Calculate all systematic payoffs
     periods_payoffs_systematic = calculate_payoffs_systematic(num_periods,
@@ -164,11 +165,11 @@ def _calculate_payoffs_systematic(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
     return periods_payoffs_systematic
 
 
-def _backward_induction_procedure(periods_payoffs_systematic,
+def wrapper_backward_induction_procedure(periods_payoffs_systematic,
         states_number_period, mapping_state_idx, is_interpolated, num_periods,
         num_points, states_all, num_draws_emax, edu_start, is_debug, edu_max,
         measure, shocks_cov, delta, level, is_ambiguous,
-        periods_disturbances_emax, is_deterministic, max_states_period,
+        periods_draws_emax, is_deterministic, max_states_period,
         shocks_cholesky, is_python):
     """ Perform backward induction procedure. This function is a wrapper
     around the PYTHON and F2PY implementation.
@@ -178,15 +179,15 @@ def _backward_induction_procedure(periods_payoffs_systematic,
 
     # Interface to core functions
     if is_python:
-        backward_induction = solve_auxiliary.backward_induction
+        backward_induction = solve_auxiliary.pyth_backward_induction
     else:
         import robupy.fortran.f2py_library as f2py_library
-        backward_induction = f2py_library.wrapper_backward_induction
+        backward_induction = f2py_library.f2py_backward_induction
 
     # Perform backward induction procedure
     periods_emax, periods_payoffs_ex_post, periods_payoffs_future = \
         backward_induction(num_periods, max_states_period,
-            periods_disturbances_emax, num_draws_emax, states_number_period,
+            periods_draws_emax, num_draws_emax, states_number_period,
             periods_payoffs_systematic, edu_max, edu_start,
             mapping_state_idx, states_all, delta, is_debug, shocks_cov, level,
             is_ambiguous, measure, is_interpolated, num_points,
@@ -196,25 +197,3 @@ def _backward_induction_procedure(periods_payoffs_systematic,
     return periods_emax, periods_payoffs_ex_post, periods_payoffs_future
 
 
-def checks(str_, *args):
-    """ Some guards to the interfaces.
-    """
-    if str_ == '_backward_induction_procedure':
-
-        # Distribute input parameters
-        delta, = args
-
-        # The backward induction procedure does not work properly for the
-        # myopic case anymore. This is necessary as in the special
-        # case where delta is equal to zero, (-np.inf * 0.00) evaluates to
-        # NAN. This is returned as the maximum value when calling np.argmax.
-        # This was preciously handled by an auxiliary function
-        # "_stabilize_myopic" inside "get_total_value".
-        assert (delta > 0)
-
-    else:
-
-        raise AssertionError
-
-    # Finishing
-    return True

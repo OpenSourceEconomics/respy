@@ -11,7 +11,7 @@ import os
 
 # ROBUPY import
 from robupy.shared.constants import ROOT_DIR
-from robupy.solve.solve_python import _create_state_space
+from robupy.solve.solve_python import wrapper_create_state_space
 from robupy import read
 
 ''' Auxiliary functions.
@@ -47,7 +47,7 @@ def write_interpolation_grid(file_name):
 
     # Determine maximum number of states
     _, states_number_period, _, max_states_period = \
-        _create_state_space(num_periods, edu_start, edu_max, min_idx, is_python)
+        wrapper_create_state_space(num_periods, edu_start, edu_max, min_idx, is_python)
 
     # Initialize container
     booleans = np.tile(True, (max_states_period, num_periods))

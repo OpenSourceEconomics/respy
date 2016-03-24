@@ -21,7 +21,7 @@ from robupy import simulate
 from robupy import solve
 from robupy import read
 
-from robupy.solve.solve_auxiliary import get_payoffs
+from robupy.solve.solve_auxiliary import _get_payoffs
 
 from robupy.solve.solve_python import solve_python
 
@@ -32,11 +32,15 @@ from robupy.solve.emax import simulate_emax
 from robupy.solve.ambiguity import _divergence
 from robupy.solve.ambiguity import _criterion
 
-from robupy.solve.solve_auxiliary import create_state_space
-from robupy.estimate.estimate_auxiliary import opt_get_optim_parameters, \
-    opt_get_model_parameters
-from robupy.shared.auxiliary import create_draws, replace_missing_values, \
-    distribute_model_paras
+from robupy.solve.solve_auxiliary import pyth_create_state_space
+
+from robupy.estimate.estimate_auxiliary import opt_get_optim_parameters
+from robupy.estimate.estimate_auxiliary import opt_get_model_parameters
+
+from robupy.shared.auxiliary import replace_missing_values
+from robupy.shared.auxiliary import distribute_model_paras
+from robupy.shared.auxiliary import create_draws
+
 
 ''' Main
 '''
@@ -93,7 +97,7 @@ class TestClass(object):
                 draws_emax = np.random.sample((num_draws_emax, 4))
 
                 # Extract payoffs using PYTHON and FORTRAN codes.
-                py = get_payoffs(num_draws_emax, draws_emax, period, k,
+                py = _get_payoffs(num_draws_emax, draws_emax, period, k,
                         payoffs_systematic, edu_max, edu_start,
                         mapping_state_idx, states_all, num_periods,
                         periods_emax, delta, is_debug, shocks_cov, level,
@@ -426,11 +430,11 @@ class TestClass(object):
             min_idx = min(num_periods, (edu_max - edu_start + 1))
 
             # FORTRAN
-            fort_a, fort_b, fort_c, fort_d = fort_lib.wrapper_create_state_space(
+            fort_a, fort_b, fort_c, fort_d = fort_lib.f2py_create_state_space(
                     num_periods, edu_start, edu_max, min_idx)
 
             # PYTHON
-            py_a, py_b, py_c, py_d = create_state_space(num_periods,
+            py_a, py_b, py_c, py_d = pyth_create_state_space(num_periods,
                     edu_start, edu_max, min_idx)
 
             # Ensure equivalence
@@ -683,3 +687,76 @@ class TestClass(object):
 
             # Checks
             np.testing.assert_allclose(base, x)
+
+    def test_11(self):
+        """ Testing the core functions of the solution step for the equality
+        of results between the PYTHON and FORTRAN implementations.
+        """
+
+        from robupy.solve.solve_auxiliary import pyth_create_state_space
+        from robupy.fortran.f2py_library import  f2py_create_state_space
+
+        from robupy.solve.solve_auxiliary import pyth_calculate_payoffs_systematic
+        from robupy.fortran.f2py_library import f2py_calculate_payoffs_systematic
+
+        from robupy.solve.solve_auxiliary import pyth_backward_induction
+        from robupy.fortran.f2py_library import f2py_backward_induction
+
+        # Generate random initialization file
+        generate_init()
+
+        # Perform toolbox actions
+        robupy_obj = read('test.robupy.ini')
+
+        # Extract class attributes
+        num_periods, edu_start, edu_max, min_idx, model_paras, num_draws_emax, \
+            seed_emax, is_debug, delta, level, is_ambiguous, measure, \
+            is_interpolated, num_points, is_deterministic = \
+                distribute_model_description(robupy_obj,
+                    'num_periods', 'edu_start', 'edu_max', 'min_idx',
+                    'model_paras', 'num_draws_emax', 'seed_emax', 'is_debug',
+                    'delta', 'level', 'is_ambiguous', 'measure',
+                    'is_interpolated', 'num_points', 'is_deterministic')
+
+        # Extract coefficients
+        coeffs_a = model_paras['coeffs_a']
+        coeffs_b = model_paras['coeffs_b']
+        coeffs_home = model_paras['coeffs_home']
+        coeffs_edu = model_paras['coeffs_edu']
+        shocks_cholesky = model_paras['shocks_cholesky']
+        shocks_cov = model_paras['shocks_cov']
+
+        # Check the state space creation.
+        args = (num_periods, edu_start, edu_max, min_idx)
+        pyth = pyth_create_state_space(*args)
+        f2py = f2py_create_state_space(*args)
+        for i in range(4):
+            np.testing.assert_allclose(pyth[i], f2py[i])
+
+        # Carry some results from the state space creation for future use.
+        states_all, states_number_period = pyth[:2]
+        mapping_state_idx, max_states_period = pyth[2:]
+
+        # Check calculation of systematic components of payoffs.
+        args = (num_periods, states_number_period, states_all, edu_start,
+            coeffs_a, coeffs_b, coeffs_edu, coeffs_home, max_states_period)
+        pyth = pyth_calculate_payoffs_systematic(*args)
+        f2py = f2py_calculate_payoffs_systematic(*args)
+        np.testing.assert_allclose(pyth, f2py)
+
+        # Carry some results from the systematic payoff calculation for
+        # future use and create the required set of disturbances.
+        periods_draws_emax = create_draws(num_periods, num_draws_emax, seed_emax,
+            is_debug, 'emax', shocks_cholesky)
+        periods_payoffs_systematic = pyth
+
+        # Check backward induction procedure.
+        args = (num_periods, max_states_period, periods_draws_emax,
+            num_draws_emax, states_number_period, periods_payoffs_systematic,
+            edu_max, edu_start, mapping_state_idx, states_all, delta,
+            is_debug, shocks_cov, level, is_ambiguous, measure,
+            is_interpolated, num_points, is_deterministic, shocks_cholesky)
+        pyth = pyth_backward_induction(*args)
+        f2py = f2py_backward_induction(*args)
+        for i in range(3):
+            np.testing.assert_allclose(pyth[i], f2py[i])

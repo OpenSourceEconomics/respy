@@ -6,7 +6,9 @@ import numpy as np
 import os
 
 # project library
-from robupy.shared.constants import HUGE_FLOAT, MISSING_FLOAT
+from robupy.shared.constants import MISSING_FLOAT
+from robupy.shared.constants import MISSING_INT
+from robupy.shared.constants import HUGE_FLOAT
 
 ''' Auxiliary functions
 '''
@@ -130,11 +132,11 @@ def replace_missing_values(argument):
     """ Replace missing value MISSING_FLOAT with NAN. Note that the output
     argument is of type float.
     """
-    # Determine missing values
-    is_missing = (argument == MISSING_FLOAT)
-
     # Transform to float array
     argument = np.asfarray(argument)
+
+    # Determine missing values
+    is_missing = (argument == MISSING_FLOAT)
 
     # Replace missing values
     argument[is_missing] = np.nan

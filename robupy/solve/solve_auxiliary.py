@@ -18,6 +18,7 @@ from robupy.shared.auxiliary import get_total_value
 
 from robupy.shared.constants import INTERPOLATION_INADMISSIBLE_STATES
 from robupy.shared.constants import MISSING_FLOAT
+from robupy.shared.constants import MISSING_INT
 from robupy.shared.constants import HUGE_FLOAT
 
 # Logging
@@ -27,7 +28,7 @@ logger = logging.getLogger('ROBUPY_SOLVE')
 '''
 
 
-def backward_induction(num_periods, max_states_period, periods_draws_emax,
+def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
         num_draws_emax, states_number_period, periods_payoffs_systematic,
         edu_max, edu_start, mapping_state_idx, states_all, delta, is_debug,
         shocks_cov, level, is_ambiguous, measure, is_interpolated, num_points,
@@ -109,7 +110,7 @@ def backward_induction(num_periods, max_states_period, periods_draws_emax,
 
                 # Simulate the expected future value.
                 emax, payoffs_ex_post, payoffs_future = \
-                    get_payoffs(num_draws_emax, draws_emax, period, k,
+                    _get_payoffs(num_draws_emax, draws_emax, period, k,
                         payoffs_systematic, edu_max, edu_start,
                         mapping_state_idx, states_all, num_periods,
                         periods_emax, delta, is_debug, shocks_cov, level,
@@ -128,32 +129,7 @@ def backward_induction(num_periods, max_states_period, periods_draws_emax,
     return periods_emax, periods_payoffs_ex_post, periods_payoffs_future
 
 
-def get_payoffs(num_draws_emax, draws_emax, period, k, payoffs_systematic,
-        edu_max, edu_start, mapping_state_idx, states_all, num_periods,
-        periods_emax, delta, is_debug, shocks_cov, level, is_ambiguous,
-        measure, is_deterministic, shocks_cholesky):
-    """ Get payoffs for a particular state.
-    """
-    # Payoffs require different machinery depending on whether there is
-    # ambiguity or not.
-    if is_ambiguous:
-        emax, payoffs_ex_post, payoffs_future = \
-            get_payoffs_ambiguity(num_draws_emax, draws_emax,
-                period, k, payoffs_systematic, edu_max, edu_start,
-                mapping_state_idx, states_all, num_periods, periods_emax,
-                delta, is_debug, shocks_cov, level, measure, is_deterministic,
-                shocks_cholesky)
-    else:
-        emax, payoffs_ex_post, payoffs_future = \
-            get_payoffs_risk(num_draws_emax, draws_emax, period, k,
-                payoffs_systematic, edu_max, edu_start, mapping_state_idx,
-                states_all, num_periods, periods_emax, delta, shocks_cholesky)
-
-    # Finishing
-    return emax, payoffs_ex_post, payoffs_future
-
-
-def create_state_space(num_periods, edu_start, edu_max, min_idx):
+def pyth_create_state_space(num_periods, edu_start, edu_max, min_idx):
     """ Create grid for state space.
     """
     # Array for possible realization of state space by period
@@ -165,7 +141,7 @@ def create_state_space(num_periods, edu_start, edu_max, min_idx):
         num_periods, min_idx, 2))
 
     # Array for maximum number of realizations of state space by period
-    states_number_period = np.tile(MISSING_FLOAT, num_periods)
+    states_number_period = np.tile(MISSING_INT, num_periods)
 
     # Construct state space by periods
     for period in range(num_periods):
@@ -242,8 +218,8 @@ def create_state_space(num_periods, edu_start, edu_max, min_idx):
     return args
 
 
-def calculate_payoffs_systematic(num_periods, states_number_period, states_all,
-        edu_start, coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+def pyth_calculate_payoffs_systematic(num_periods, states_number_period,
+        states_all, edu_start, coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         max_states_period):
     """ Calculate ex systematic payoffs.
     """
@@ -297,6 +273,30 @@ def calculate_payoffs_systematic(num_periods, states_number_period, states_all,
 ''' Auxiliary functions
 '''
 
+
+def _get_payoffs(num_draws_emax, draws_emax, period, k, payoffs_systematic,
+        edu_max, edu_start, mapping_state_idx, states_all, num_periods,
+        periods_emax, delta, is_debug, shocks_cov, level, is_ambiguous,
+        measure, is_deterministic, shocks_cholesky):
+    """ Get payoffs for a particular state.
+    """
+    # Payoffs require different machinery depending on whether there is
+    # ambiguity or not.
+    if is_ambiguous:
+        emax, payoffs_ex_post, payoffs_future = \
+            get_payoffs_ambiguity(num_draws_emax, draws_emax,
+                period, k, payoffs_systematic, edu_max, edu_start,
+                mapping_state_idx, states_all, num_periods, periods_emax,
+                delta, is_debug, shocks_cov, level, measure, is_deterministic,
+                shocks_cholesky)
+    else:
+        emax, payoffs_ex_post, payoffs_future = \
+            get_payoffs_risk(num_draws_emax, draws_emax, period, k,
+                payoffs_systematic, edu_max, edu_start, mapping_state_idx,
+                states_all, num_periods, periods_emax, delta, shocks_cholesky)
+
+    # Finishing
+    return emax, payoffs_ex_post, payoffs_future
 
 def _logging_prediction_model(results):
     """ Write out some basic information to the solutions log file.
@@ -425,7 +425,7 @@ def _get_endogenous_variable(period, num_periods, num_states, delta,
         payoffs_systematic = periods_payoffs_systematic[period, k, :]
 
         # Simulate the expected future value.
-        emax_simulated, _, _ = get_payoffs(num_draws_emax,
+        emax_simulated, _, _ = _get_payoffs(num_draws_emax,
             draws_emax, period, k, payoffs_systematic, edu_max, edu_start,
             mapping_state_idx, states_all, num_periods, periods_emax, delta,
             is_debug, shocks_cov, level, is_ambiguous, measure,
@@ -469,3 +469,25 @@ def _get_predictions(endogenous, exogenous, maxe, is_simulated, num_points,
     return predictions, results
 
 
+def checks(str_, *args):
+    """ Some guards to the interfaces.
+    """
+    if str_ == '_backward_induction_procedure':
+
+        # Distribute input parameters
+        delta, = args
+
+        # The backward induction procedure does not work properly for the
+        # myopic case anymore. This is necessary as in the special
+        # case where delta is equal to zero, (-np.inf * 0.00) evaluates to
+        # NAN. This is returned as the maximum value when calling np.argmax.
+        # This was preciously handled by an auxiliary function
+        # "_stabilize_myopic" inside "get_total_value".
+        assert (delta > 0)
+
+    else:
+
+        raise AssertionError
+
+    # Finishing
+    return True

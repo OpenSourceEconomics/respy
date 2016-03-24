@@ -93,7 +93,7 @@ SUBROUTINE wrapper_simulate_sample(dataset, num_agents, states_all, &
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE wrapper_backward_induction(periods_emax, periods_payoffs_ex_post, &
+SUBROUTINE f2py_backward_induction(periods_emax, periods_payoffs_ex_post, &
                 periods_payoffs_future, num_periods, max_states_period, &
                 periods_draws_emax, num_draws_emax, states_number_period, &
                 periods_payoffs_systematic, edu_max, edu_start, & 
@@ -160,7 +160,7 @@ SUBROUTINE wrapper_backward_induction(periods_emax, periods_payoffs_ex_post, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_create_state_space(states_all, states_number_period, &
+SUBROUTINE f2py_create_state_space(states_all, states_number_period, &
                 mapping_state_idx, max_states_period, num_periods, &
                 edu_start, edu_max, min_idx)
     
@@ -189,13 +189,13 @@ SUBROUTINE wrapper_create_state_space(states_all, states_number_period, &
 !-------------------------------------------------------------------------------
     
     CALL create_state_space(states_all, states_number_period, &
-                mapping_state_idx, max_states_period, num_periods, edu_start, & 
-                edu_max, min_idx)
+            mapping_state_idx, max_states_period, num_periods, edu_start, & 
+            edu_max, min_idx)
 
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_calculate_payoffs_systematic(periods_payoffs_systematic, & 
+SUBROUTINE f2py_calculate_payoffs_systematic(periods_payoffs_systematic, & 
                 num_periods, states_number_period, states_all, edu_start, & 
                 coeffs_a, coeffs_b, coeffs_edu, coeffs_home, max_states_period)
 

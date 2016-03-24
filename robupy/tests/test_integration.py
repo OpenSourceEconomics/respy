@@ -13,7 +13,7 @@ from codes.auxiliary import write_interpolation_grid
 from codes.auxiliary import write_draws
 
 # ROBUPY import
-from robupy.solve.solve_auxiliary import create_state_space
+from robupy.solve.solve_auxiliary import pyth_create_state_space
 
 from robupy.tests.codes.random_init import generate_random_dict
 from robupy.tests.codes.random_init import print_random_dict
@@ -82,7 +82,7 @@ class TestClass(object):
             edu_max = init_dict['EDUCATION']['max']
             min_idx = min(num_periods, (edu_max - edu_start + 1))
 
-            max_states_period = create_state_space(num_periods, edu_start,
+            max_states_period = pyth_create_state_space(num_periods, edu_start,
                                             edu_max, min_idx)[3]
 
             # Updates to initialization dictionary that trigger a use of the
