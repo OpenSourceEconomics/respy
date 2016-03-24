@@ -17,6 +17,7 @@ from codes.auxiliary import write_draws
 from robupy.shared.auxiliary import read_draws
 from robupy.solve.solve_auxiliary import pyth_create_state_space
 
+from robupy.estimate.estimate_auxiliary import opt_get_optim_parameters
 from robupy.tests.codes.random_init import generate_random_dict
 from robupy.tests.codes.random_init import print_random_dict
 from robupy.tests.codes.random_init import generate_init
@@ -347,6 +348,12 @@ class TestClass(object):
         from robupy.simulate.simulate_python import pyth_simulate
         from robupy.fortran.f2py_library import f2py_simulate
 
+        from robupy.evaluate.evaluate_python import pyth_evaluate
+        from robupy.fortran.f2py_library import f2py_evaluate
+
+        from robupy.fortran.f2py_library import f2py_criterion
+        from robupy.estimate.estimate_python import pyth_criterion
+
         # Generate random initialization file
         generate_init()
 
@@ -361,22 +368,23 @@ class TestClass(object):
         num_periods, edu_start, edu_max, min_idx, model_paras, num_draws_emax, \
             seed_emax, is_debug, delta, level, is_ambiguous, measure, \
             is_interpolated, num_points, is_deterministic, is_myopic, \
-            num_agents = \
+            num_agents, num_draws_prob = \
                 distribute_model_description(robupy_obj,
                     'num_periods', 'edu_start', 'edu_max', 'min_idx',
                     'model_paras', 'num_draws_emax', 'seed_emax', 'is_debug',
                     'delta', 'level', 'is_ambiguous', 'measure',
                     'is_interpolated', 'num_points', 'is_deterministic',
-                    'is_myopic', 'num_agents')
+                    'is_myopic', 'num_agents', 'num_draws_prob')
 
         # TODO: Align interfaces, the problems is the treatment of
         # shocks_cholesky. It is passed in as argument in PY/F2PY but
         # computed internally by FORTRAN.
         # Write out random components and interpolation grid to align the
         # three implementations.
-        max_draws = max(num_agents, num_draws_emax)
+        max_draws = max(num_agents, num_draws_emax, num_draws_prob)
         write_draws(num_periods, max_draws)
         periods_draws_emax = read_draws(num_periods, num_draws_emax)
+        periods_draws_prob = read_draws(num_periods, num_draws_prob)
         periods_draws_sims = read_draws(num_periods, num_agents)
 
         # Extract coefficients
@@ -421,4 +429,31 @@ class TestClass(object):
         pyth = pyth_simulate(*args)
         f2py = f2py_simulate(*args)
 
+        np.testing.assert_allclose(pyth, f2py)
+
+        data_array = pyth
+
+        # TODO: FORTRAN missing, first I want to settle on interface.
+        args = (periods_payoffs_systematic, mapping_state_idx, periods_emax,
+            states_all, shocks_cov, shocks_cholesky, is_deterministic,
+            num_periods, edu_start, edu_max, delta, data_array, num_agents,
+            num_draws_prob, periods_draws_prob)
+
+        pyth = pyth_evaluate(*args)
+        f2py = f2py_evaluate(*args)
+
+        np.testing.assert_allclose(pyth, f2py)
+
+        # Evaluation of criterion function
+        x0 = opt_get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu,
+            coeffs_home, shocks_cov, shocks_cholesky, is_debug)
+
+        args =(x0, data_array, edu_max, delta, edu_start, is_debug, \
+            is_interpolated, level, measure, min_idx, num_draws_emax, \
+            num_periods, num_points, is_ambiguous, periods_draws_emax, \
+            is_deterministic, is_myopic, num_agents, num_draws_prob, \
+            periods_draws_prob)
+
+        pyth = pyth_criterion(*args)
+        f2py = f2py_criterion(*args)
         np.testing.assert_allclose(pyth, f2py)

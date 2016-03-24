@@ -6,6 +6,125 @@
 !
 !*******************************************************************************
 !*******************************************************************************
+SUBROUTINE f2py_criterion(crit_val, x, data_array, edu_max, delta, edu_start, is_debug, & 
+        is_interpolated, level, measure, min_idx, num_draws_emax, num_periods, & 
+        num_points, is_ambiguous, periods_draws_emax, is_deterministic, &
+        is_myopic, num_agents, num_draws_prob, periods_draws_prob)
+
+    !/* external libraries      */
+
+    USE robufort_library
+    USE robufort_extension
+    !/* setup                   */
+
+    IMPLICIT NONE
+
+    !/* external objects        */
+
+    DOUBLE PRECISION, INTENT(OUT)   :: crit_val
+
+    DOUBLE PRECISION, INTENT(IN)   :: x(26)
+
+
+    INTEGER, INTENT(IN)             :: num_agents
+    INTEGER, INTENT(IN)             :: num_draws_emax, num_draws_prob
+    INTEGER, INTENT(IN)             :: num_periods
+    INTEGER, INTENT(IN)             :: num_points
+    INTEGER, INTENT(IN)             :: edu_start
+    INTEGER, INTENT(IN)             :: edu_max
+    INTEGER, INTENT(IN)             :: min_idx
+
+    DOUBLE PRECISION, INTENT(IN)    :: periods_draws_emax(:, :, :)
+    DOUBLE PRECISION, INTENT(IN)    :: periods_draws_prob(:, :, :)
+    DOUBLE PRECISION, INTENT(IN)    :: data_array(:, :)
+    !DOUBLE PRECISION, INTENT(IN)    :: coeffs_edu(:)
+    !DOUBLE PRECISION, INTENT(IN)    :: shocks_cov(:, :)
+    !DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(:)
+    !DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(:)
+    DOUBLE PRECISION, INTENT(IN)    :: level
+    DOUBLE PRECISION, INTENT(IN)    :: delta 
+
+    LOGICAL, INTENT(IN)             :: is_deterministic 
+    LOGICAL, INTENT(IN)             :: is_interpolated
+    LOGICAL, INTENT(IN)             :: is_ambiguous
+    LOGICAL, INTENT(IN)             :: is_myopic
+    LOGICAL, INTENT(IN)             :: is_debug
+
+    CHARACTER(10), INTENT(IN)       :: measure
+
+!    DOUBLE PRECISION, INTENT(IN)    :: periods_payoffs_systematic(:, :, :)
+!    DOUBLE PRECISION, INTENT(IN)    :: periods_draws_sims(:, :, :)
+!    DOUBLE PRECISION, INTENT(IN)    :: periods_emax(:, :)
+!    DOUBLE PRECISION, INTENT(IN)    :: delta
+
+!    INTEGER, INTENT(IN)             :: num_periods
+!    INTEGER, INTENT(IN)             :: edu_start
+
+!    INTEGER, INTENT(IN)             :: mapping_state_idx(:, :, :, :, :)
+!    INTEGER, INTENT(IN)             :: states_all(:, :, :)
+!    INTEGER, INTENT(IN)             :: num_agents
+!    INTEGER, INTENT(IN)             :: edu_max
+
+    !/* internal objects            */
+    DOUBLE PRECISION     :: coeffs_home(1)
+    DOUBLE PRECISION     :: coeffs_edu(3)
+    DOUBLE PRECISION     :: shocks_cholesky(4, 4) = 0.0
+    DOUBLE PRECISION     :: coeffs_a(6)
+    DOUBLE PRECISION     :: coeffs_b(6)
+    DOUBLE PRECISION     :: shocks_cov(4, 4)
+
+    INTEGER, ALLOCATABLE            :: mapping_state_idx(:, :, :, :, :)
+    INTEGER, ALLOCATABLE            :: states_number_period(:)
+    INTEGER, ALLOCATABLE            :: states_all(:, :, :)
+
+    DOUBLE PRECISION, ALLOCATABLE   :: periods_payoffs_systematic(:, :, :)
+    DOUBLE PRECISION, ALLOCATABLE   :: periods_payoffs_ex_post(:, :, : )
+    DOUBLE PRECISION, ALLOCATABLE   :: periods_payoffs_future(:, :, :)
+    DOUBLE PRECISION, ALLOCATABLE   :: periods_emax(:, :)
+
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+
+
+    !# Distribute model parameters
+    coeffs_a = x(1:6)
+
+    coeffs_b = x(7:12)
+
+    coeffs_edu = x(13:15)
+
+    coeffs_home = x(16:16)
+
+    shocks_cholesky(1:4, 1) = x(17:20)
+    shocks_cholesky(2:4, 2) = x(21:23)
+    shocks_cholesky(3:4, 3) = x(24:25) 
+    shocks_cholesky(4:4, 4) = x(26:26) 
+
+    !coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, shocks_cholesky = \
+    !    opt_get_model_parameters(x, is_debug)
+    ! THIS NEEDS TO BE CHECKED.
+    shocks_cov = MATMUL(shocks_cholesky, TRANSPOSE(shocks_cholesky))
+
+
+    CALL solve_fortran_bare(periods_payoffs_systematic, & 
+            periods_payoffs_ex_post, periods_payoffs_future, & 
+           states_number_period, mapping_state_idx, periods_emax, & 
+            states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, & 
+            shocks_cov, shocks_cholesky, is_deterministic, & 
+            is_interpolated, num_draws_emax, periods_draws_emax, & 
+            is_ambiguous, num_periods, num_points, edu_start, is_myopic, & 
+            is_debug, measure, edu_max, min_idx, delta, level)
+
+    CALL fort_evaluate(crit_val, periods_payoffs_systematic, mapping_state_idx, & 
+            periods_emax, states_all, shocks_cov, shocks_cholesky, & 
+            is_deterministic, num_periods, edu_start, edu_max, delta, & 
+            data_array, num_agents, num_draws_prob, periods_draws_prob)
+
+END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE f2py_solve(periods_payoffs_systematic, periods_payoffs_ex_post, & 
                 periods_payoffs_future, states_number_period, & 
                 mapping_state_idx, periods_emax, states_all, coeffs_a, &

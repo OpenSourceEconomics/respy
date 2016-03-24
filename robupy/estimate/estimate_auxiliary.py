@@ -3,41 +3,12 @@
 # standard library
 import numpy as np
 
-import os
-
 # project library
-from robupy.evaluate.evaluate_python import pyth_evaluate
 from robupy.shared.auxiliary import check_model_parameters
 
 ''' Auxiliary functions
 '''
 
-
-def criterion(x, data_frame, edu_max, delta, edu_start, is_debug,
-        is_interpolated, level, measure, min_idx, num_draws_emax, num_periods,
-        num_points, is_ambiguous, periods_draws_emax, is_deterministic,
-        is_myopic, num_agents, num_draws_prob, periods_draws_prob, is_python):
-    """ This function provides the wrapper for optimization routines.
-    """
-    # Distribute model parameters
-    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, shocks_cholesky = \
-        opt_get_model_parameters(x, is_debug)
-
-    # Evaluate criterion function
-    crit_val, _ = pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-        shocks_cov, shocks_cholesky, is_deterministic, is_interpolated,
-        num_draws_emax, periods_draws_emax, is_ambiguous, num_periods,
-        num_points, edu_start, is_myopic, is_debug, measure, edu_max, min_idx,
-        delta, level, data_frame, num_agents, num_draws_prob,
-        periods_draws_prob, is_python)
-
-    if os.path.exists('.optimization.robupy.scratch'):
-        logging_optimization('step', crit_val, x)
-
-    print(crit_val)
-
-    # Finishing
-    return crit_val
 
 def logging_optimization(which, *args):
 

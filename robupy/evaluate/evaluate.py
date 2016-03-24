@@ -72,8 +72,6 @@ def evaluate(robupy_obj, data_frame):
         min_idx, measure, edu_max, delta, level, num_draws_prob, num_agents,
         seed_prob, seed_data, 'evaluate', data_frame)
 
-        print(crit_val)
-
     elif version == 'PYTHON':
 
         crit_val = pyth_evaluate(*args)

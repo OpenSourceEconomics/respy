@@ -23,10 +23,6 @@ def pyth_evaluate(periods_payoffs_systematic, mapping_state_idx,
     the project class to pass it on to the actual evaluation functions. This is
     required to align the functions across the PYTHON and F2PY implementations.
     """
-    # Transform dataset to array for easy access
-
-
-
     """ Evaluate criterion function. This code allows for a deterministic
     model, where there is no random variation in the rewards. If that is the
     case and all agents have corresponding experiences, then one is returned.
