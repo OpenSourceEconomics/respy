@@ -23,7 +23,7 @@ from robupy import read
 
 from robupy.solve.solve_auxiliary import _get_payoffs
 
-from robupy.solve.solve_python import solve_python
+from robupy.solve.solve_python import pyth_solve
 
 from robupy.tests.codes.random_init import generate_init
 
@@ -601,9 +601,9 @@ class TestClass(object):
         for version in ['PYTHON', 'F2PY', 'FORTRAN']:
             if version in ['F2PY', 'PYTHON']:
                 # Modifications to input arguments
-                args = base_args + [is_python]
+                args = base_args
                 # Get PYTHON/F2PY results
-                ret_args = solve_python(*args)
+                ret_args = pyth_solve(*args)
             else:
                 # Modifications to input arguments
                 args = base_args + [max_states_period]

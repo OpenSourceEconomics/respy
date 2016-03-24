@@ -8,12 +8,15 @@ import shlex
 
 # project library
 from robupy.fortran.fortran import fortran_interface
-from robupy.solve.solve_python import solve_python
+from robupy.solve.solve_python import pyth_solve
 
 from robupy.shared.auxiliary import distribute_class_attributes
 from robupy.shared.auxiliary import distribute_model_paras
+from robupy.shared.auxiliary import replace_missing_values
 from robupy.shared.auxiliary import create_draws
 from robupy.shared.auxiliary import add_solution
+
+
 
 ''' Main function
 '''
@@ -70,17 +73,41 @@ def solve(robupy_obj):
 
         solution = fortran_interface(*args)
 
-    else:
+    # TODO: NEED TO ADD F2PY solution
+    elif version == 'PYTHON':
         # Collect arguments and call PYTHON solution methods
         args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
             shocks_cholesky, is_deterministic, is_interpolated, num_draws_emax,
             periods_draws_emax, is_ambiguous, num_periods, num_points, edu_start,
+            is_myopic, is_debug, measure, edu_max, min_idx, delta, level)
+
+        solution = pyth_solve(*args)
+    elif version == 'F2PY':
+        from robupy.fortran.f2py_library import  f2py_create_state_space
+        from robupy.fortran.f2py_library import  f2py_solve
+        #
+        args = (num_periods, edu_start, edu_max, min_idx)
+        max_states_period = f2py_create_state_space(*args)[3]
+
+        args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
+            shocks_cholesky, is_deterministic, is_interpolated, num_draws_emax,
+            periods_draws_emax, is_ambiguous, num_periods, num_points, edu_start,
             is_myopic, is_debug, measure, edu_max, min_idx, delta, level,
-            is_python)
+            max_states_period)
 
-        solution = solve_python(*args)
+        solution = f2py_solve(*args)
 
-    # Attach solution to class instance
+        # TODO: Or Do I want all to return a tuple? I juist need to make sure
+        #  they all return the same.
+        # Type transformation
+        solution = list(solution)
+    else:
+        raise NotImplementedError
+
+    # Replace missing values
+    solution = [replace_missing_values(x) for x in solution ]
+
+   # Attach solution to class instance
     robupy_obj = add_solution(robupy_obj, store, *solution)
 
     # Summarize optimizations in case of ambiguity

@@ -13,6 +13,8 @@ from robupy.shared.auxiliary import distribute_model_paras
 from robupy.shared.auxiliary import create_draws
 from robupy.shared.auxiliary import add_solution
 
+from robupy.shared.auxiliary import replace_missing_values
+
 ''' Main function
 '''
 
@@ -72,6 +74,9 @@ def evaluate(robupy_obj, data_frame):
 
     # Checks
     assert check_evaluation('out', crit_val)
+
+    # Replace missing values
+    solution = [replace_missing_values(x) for x in solution ]
 
    # Distribute return arguments from solution run
     robupy_obj = add_solution(robupy_obj, store, *solution)

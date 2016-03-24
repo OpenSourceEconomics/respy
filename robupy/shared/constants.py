@@ -27,12 +27,14 @@ PRODUCTION_OPTIONS = '-O3'
 
 
 
-MISSING_INT = -99
-
-MISSING_FLOAT = -99.00
 HUGE_FLOAT = 1.0e10
 TINY_FLOAT = 1e-20
 SMALL_FLOAT = 1e-5
 
 # Interpolation
 INTERPOLATION_INADMISSIBLE_STATES = -50000.00
+
+# Missing values. These allow to aline the treatment of missing values across
+# implementations. There is no NAN available in FORTRAN.
+MISSING_INT = -99
+MISSING_FLOAT = float(MISSING_INT)

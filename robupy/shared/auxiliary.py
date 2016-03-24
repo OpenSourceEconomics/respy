@@ -130,16 +130,17 @@ def create_draws(num_periods, num_draws_emax, seed, is_debug, which,
 
 def replace_missing_values(argument):
     """ Replace missing value MISSING_FLOAT with NAN. Note that the output
-    argument is of type float.
+    argument is of type float in the case missing values are found.
     """
-    # Transform to float array
-    argument = np.asfarray(argument)
+    # Transform to float array to evaluate missing values.
+    argument_internal = np.asfarray(argument)
 
     # Determine missing values
-    is_missing = (argument == MISSING_FLOAT)
-
-    # Replace missing values
-    argument[is_missing] = np.nan
+    is_missing = (argument_internal == MISSING_FLOAT)
+    if np.any(is_missing):
+        # Replace missing values
+        argument = np.asfarray(argument)
+        argument[is_missing] = np.nan
 
     # Finishing
     return argument
@@ -300,6 +301,7 @@ def add_solution(robupy_obj, store, periods_payoffs_systematic,
         states_number_period, mapping_state_idx, periods_emax, states_all):
     """ Add solution to class instance.
     """
+
     robupy_obj.unlock()
 
     robupy_obj.set_attr('periods_payoffs_systematic', periods_payoffs_systematic)

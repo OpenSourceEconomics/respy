@@ -6,38 +6,40 @@ model with PYTHON and F2PY capabilities.
 import logging
 
 import numpy as np
+
 # project library
 from robupy.shared.auxiliary import replace_missing_values
 
-import robupy.solve.solve_auxiliary as solve_auxiliary
 from robupy.shared.constants import MISSING_FLOAT
 
-# Logging
-from robupy.solve.solve_auxiliary import checks
+from robupy.solve.solve_auxiliary import pyth_calculate_payoffs_systematic
+from robupy.solve.solve_auxiliary import pyth_create_state_space
+from robupy.solve.solve_auxiliary import pyth_backward_induction
 
+# Logging
 logger = logging.getLogger('ROBUPY_SOLVE')
 
 ''' Main function
 '''
 
 
-def solve_python(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
+def pyth_solve(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
         shocks_cholesky, is_deterministic, is_interpolated, num_draws_emax,
         periods_draws_emax, is_ambiguous, num_periods, num_points, edu_start,
-        is_myopic, is_debug, measure, edu_max, min_idx, delta, level,
-        is_python):
-    """ Solving the model using PYTHON/F2PY code. This purpose of this
-    wrapper is to extract all relevant information from the project class to
-    pass it on to the actual solution functions. This is required to align
-    the functions across the PYTHON and F2PY implementations.
+        is_myopic, is_debug, measure, edu_max, min_idx, delta, level):
+    """ Solving the model using pure PYTHON code.
     """
-    # Solve the model using PYTHON/F2PY implementation
     # Creating the state space of the model and collect the results in the
     # package class.
     logger.info('Starting state space creation')
 
+    # Create state space
     states_all, states_number_period, mapping_state_idx, max_states_period = \
-        wrapper_create_state_space(num_periods, edu_start, edu_max, min_idx, is_python)
+        pyth_create_state_space(num_periods, edu_start, edu_max, min_idx)
+
+    # Cutting to size
+    states_all = states_all[:, :max(states_number_period), :]
+
 
     logger.info('... finished \n')
 
@@ -46,10 +48,10 @@ def solve_python(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
     # to the alternative shock distributions.
     logger.info('Starting calculation of systematic payoffs')
 
-    periods_payoffs_systematic = \
-        wrapper_calculate_payoffs_systematic(coeffs_a, coeffs_b, coeffs_edu,
-            coeffs_home, states_number_period, num_periods, states_all,
-            edu_start, max_states_period, is_python)
+    # Calculate all systematic payoffs
+    periods_payoffs_systematic = pyth_calculate_payoffs_systematic(num_periods,
+        states_number_period, states_all, edu_start, coeffs_a, coeffs_b,
+        coeffs_edu, coeffs_home, max_states_period)
 
     logger.info('... finished \n')
 
@@ -74,19 +76,12 @@ def solve_python(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
 
     else:
         periods_emax, periods_payoffs_ex_post, periods_payoffs_future = \
-            wrapper_backward_induction_procedure(periods_payoffs_systematic,
-                states_number_period, mapping_state_idx, is_interpolated,
-                num_periods, num_points, states_all, num_draws_emax, edu_start,
-                is_debug, edu_max, measure, shocks_cov, delta, level,
-                is_ambiguous, periods_draws_emax, is_deterministic,
-                max_states_period, shocks_cholesky, is_python)
-
-    # Replace missing values
-    periods_emax = replace_missing_values(periods_emax)
-
-    periods_payoffs_future = replace_missing_values(periods_payoffs_future)
-
-    periods_payoffs_ex_post = replace_missing_values(periods_payoffs_ex_post)
+            pyth_backward_induction(num_periods, max_states_period,
+                periods_draws_emax, num_draws_emax, states_number_period,
+                periods_payoffs_systematic, edu_max, edu_start,
+                mapping_state_idx, states_all, delta, is_debug, shocks_cov, level,
+                is_ambiguous, measure, is_interpolated, num_points,
+                is_deterministic, shocks_cholesky)
 
     logger.info('... finished \n')
 
@@ -97,103 +92,3 @@ def solve_python(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
 
     # Finishing
     return args
-
-''' Auxiliary functions
-'''
-
-
-def wrapper_create_state_space(num_periods, edu_start, edu_max, min_idx,
-        is_python):
-    """ Create state space. This function is a wrapper around the PYTHON and
-    F2PY implementation.
-    """
-    # Interface to core functions
-    if is_python:
-        create_state_space = solve_auxiliary.pyth_create_state_space
-    else:
-        import robupy.fortran.f2py_library as f2py_library
-        create_state_space = f2py_library.f2py_create_state_space
-
-    # Create state space
-    states_all, states_number_period, mapping_state_idx, max_states_period = \
-        create_state_space(num_periods, edu_start, edu_max, min_idx)
-
-    # Auxiliary objects
-    max_states_period = max(states_number_period)
-
-    # Cutting to size
-    states_all = states_all[:, :max(states_number_period), :]
-
-    # Set missing values to NAN
-    states_all = replace_missing_values(states_all)
-
-    mapping_state_idx = replace_missing_values(mapping_state_idx)
-
-    # Collect arguments
-    args = [states_all, states_number_period, mapping_state_idx]
-    args += [max_states_period]
-
-    # Finishing
-    return args
-
-
-def wrapper_calculate_payoffs_systematic(coeffs_a, coeffs_b, coeffs_edu,
-        coeffs_home, states_number_period, num_periods, states_all, edu_start,
-        max_states_period, is_python):
-    """ Calculate the systematic payoffs. This function is a wrapper around the
-    PYTHON and F2PY implementation.
-    """
-    # Interface to core functions
-    if is_python:
-        calculate_payoffs_systematic = \
-            solve_auxiliary.pyth_calculate_payoffs_systematic
-    else:
-        import robupy.fortran.f2py_library as f2py_library
-        calculate_payoffs_systematic = \
-            f2py_library.f2py_calculate_payoffs_systematic
-
-    # Calculate all systematic payoffs
-    periods_payoffs_systematic = calculate_payoffs_systematic(num_periods,
-        states_number_period, states_all, edu_start, coeffs_a, coeffs_b,
-        coeffs_edu, coeffs_home, max_states_period)
-
-    # Set missing values to NAN
-    periods_payoffs_systematic = \
-        replace_missing_values(periods_payoffs_systematic)
-
-    # Finishing
-    return periods_payoffs_systematic
-
-
-def wrapper_backward_induction_procedure(periods_payoffs_systematic,
-        states_number_period, mapping_state_idx, is_interpolated, num_periods,
-        num_points, states_all, num_draws_emax, edu_start, is_debug, edu_max,
-        measure, shocks_cov, delta, level, is_ambiguous,
-        periods_draws_emax, is_deterministic, max_states_period,
-        shocks_cholesky, is_python):
-    """ Perform backward induction procedure. This function is a wrapper
-    around the PYTHON and F2PY implementation.
-    """
-    # Antibugging
-    assert checks('_backward_induction_procedure', delta)
-
-    # Interface to core functions
-    if is_python:
-        backward_induction = solve_auxiliary.pyth_backward_induction
-    else:
-        import robupy.fortran.f2py_library as f2py_library
-        backward_induction = f2py_library.f2py_backward_induction
-
-    # Perform backward induction procedure
-    periods_emax, periods_payoffs_ex_post, periods_payoffs_future = \
-        backward_induction(num_periods, max_states_period,
-            periods_draws_emax, num_draws_emax, states_number_period,
-            periods_payoffs_systematic, edu_max, edu_start,
-            mapping_state_idx, states_all, delta, is_debug, shocks_cov, level,
-            is_ambiguous, measure, is_interpolated, num_points,
-            is_deterministic, shocks_cholesky)
-
-    # Finishing
-    return periods_emax, periods_payoffs_ex_post, periods_payoffs_future
-
-
