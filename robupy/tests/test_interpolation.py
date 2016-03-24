@@ -22,7 +22,8 @@ from robupy.tests.codes.random_init import generate_random_dict
 from robupy.tests.codes.random_init import print_random_dict
 from robupy.tests.codes.random_init import generate_init
 
-from robupy.shared.auxiliary import create_draws, replace_missing_values
+from robupy.shared.auxiliary import replace_missing_values
+from robupy.shared.auxiliary import create_draws
 
 from robupy import solve
 from robupy import read
@@ -160,7 +161,7 @@ class TestClass(object):
         py = _get_endogenous_variable(*args)
         f90 = fort_debug.wrapper_get_endogenous_variable(*args)
 
-        np.testing.assert_equal(py, replace_missing_values(f90))
+        np.testing.assert_equal(py, replace_missing_values((f90,))[0])
 
         # Distribute validated results for further functions.
         endogenous = py

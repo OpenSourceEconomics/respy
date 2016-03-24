@@ -9,10 +9,12 @@ import pytest
 from pandas.util.testing import assert_frame_equal
 
 # testing library
+from codes.auxiliary import distribute_model_description
 from codes.auxiliary import write_interpolation_grid
 from codes.auxiliary import write_draws
 
 # ROBUPY import
+from robupy.shared.auxiliary import read_draws
 from robupy.solve.solve_auxiliary import pyth_create_state_space
 
 from robupy.tests.codes.random_init import generate_random_dict
@@ -333,3 +335,70 @@ class TestClass(object):
                 base_val= crit_val
 
             np.testing.assert_allclose(base_val, crit_val, rtol=1e-03, atol=1e-03)
+
+    def test_8(self):
+        """ This methods ensures that the core functions yield the same
+        results across implementations.
+        """
+        from robupy.fortran.f2py_library import f2py_solve
+        from robupy.solve.solve_python import pyth_solve
+        from robupy.fortran.fortran import fort_solve
+
+        # Generate random initialization file
+        generate_init()
+
+        # Perform toolbox actions
+        robupy_obj = read('test.robupy.ini')
+
+        # Ensure that backward induction routines use the same grid for the
+        # interpolation.
+        max_states_period = write_interpolation_grid('test.robupy.ini')
+
+        # Extract class attributes
+        num_periods, edu_start, edu_max, min_idx, model_paras, num_draws_emax, \
+            seed_emax, is_debug, delta, level, is_ambiguous, measure, \
+            is_interpolated, num_points, is_deterministic, is_myopic = \
+                distribute_model_description(robupy_obj,
+                    'num_periods', 'edu_start', 'edu_max', 'min_idx',
+                    'model_paras', 'num_draws_emax', 'seed_emax', 'is_debug',
+                    'delta', 'level', 'is_ambiguous', 'measure',
+                    'is_interpolated', 'num_points', 'is_deterministic',
+                    'is_myopic')
+
+        # TODO: Align interfaces, the problems is the treatment of
+        # shocks_cholesky. It is passed in as argument in PY/F2PY but
+        # computed internally by FORTRAN.
+        # Write out random components and interpolation grid to align the
+        # three implementations.
+        max_draws = num_draws_emax
+        write_draws(num_periods, max_draws)
+        periods_draws_emax = read_draws(num_periods, num_draws_emax)
+
+        # Extract coefficients
+        coeffs_a = model_paras['coeffs_a']
+        coeffs_b = model_paras['coeffs_b']
+        coeffs_home = model_paras['coeffs_home']
+        coeffs_edu = model_paras['coeffs_edu']
+        shocks_cholesky = model_paras['shocks_cholesky']
+        shocks_cov = model_paras['shocks_cov']
+
+        # Check the full solution procedure
+        measure = 'kl'
+        args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
+            is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
+            num_periods, num_points, is_myopic, edu_start, seed_emax,
+            is_debug, measure, edu_max, min_idx, delta, level)
+
+        fort = fort_solve(*args)
+
+        args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
+            is_deterministic, is_interpolated, num_draws_emax,
+            periods_draws_emax, is_ambiguous, num_periods, num_points, edu_start,
+            is_myopic, is_debug, measure, edu_max, min_idx, delta, level,
+            shocks_cholesky)
+
+        pyth = pyth_solve(*args )
+        f2py = f2py_solve(*args + (max_states_period,))
+        for alt in [f2py, fort]:
+            for i in range(7):
+                np.testing.assert_allclose(pyth[i], alt[i])

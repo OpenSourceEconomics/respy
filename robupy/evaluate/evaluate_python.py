@@ -26,9 +26,10 @@ def evaluate_python(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
 
     # Solve model for given parametrization
     solution = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
-        shocks_cholesky, is_deterministic, is_interpolated, num_draws_emax,
+        is_deterministic, is_interpolated, num_draws_emax,
         periods_draws_emax, is_ambiguous, num_periods, num_points, edu_start,
-        is_myopic, is_debug, measure, edu_max, min_idx, delta, level)
+        is_myopic, is_debug, measure, edu_max, min_idx, delta, level,
+        shocks_cholesky)
 
     solution = pyth_solve(*solution)
 

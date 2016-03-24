@@ -8,8 +8,6 @@ import logging
 import numpy as np
 
 # project library
-from robupy.shared.auxiliary import replace_missing_values
-
 from robupy.shared.constants import MISSING_FLOAT
 
 from robupy.solve.solve_auxiliary import pyth_calculate_payoffs_systematic
@@ -24,9 +22,10 @@ logger = logging.getLogger('ROBUPY_SOLVE')
 
 
 def pyth_solve(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
-        shocks_cholesky, is_deterministic, is_interpolated, num_draws_emax,
+        is_deterministic, is_interpolated, num_draws_emax,
         periods_draws_emax, is_ambiguous, num_periods, num_points, edu_start,
-        is_myopic, is_debug, measure, edu_max, min_idx, delta, level):
+        is_myopic, is_debug, measure, edu_max, min_idx, delta, level,
+        shocks_cholesky):
     """ Solving the model using pure PYTHON code.
     """
     # Creating the state space of the model and collect the results in the
@@ -85,10 +84,10 @@ def pyth_solve(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
 
     logger.info('... finished \n')
 
-    # Update class attributes with solution
-    args = [periods_payoffs_systematic, periods_payoffs_ex_post,
+    # Collect return arguments in tuple
+    args = (periods_payoffs_systematic, periods_payoffs_ex_post,
             periods_payoffs_future, states_number_period, mapping_state_idx,
-            periods_emax, states_all]
+            periods_emax, states_all)
 
     # Finishing
     return args

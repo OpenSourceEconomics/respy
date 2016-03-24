@@ -22,9 +22,6 @@ from robupy import solve
 from robupy import read
 
 from robupy.solve.solve_auxiliary import _get_payoffs
-
-from robupy.solve.solve_python import pyth_solve
-
 from robupy.tests.codes.random_init import generate_init
 
 from robupy.solve.ambiguity import get_payoffs_ambiguity
@@ -37,8 +34,6 @@ from robupy.solve.solve_auxiliary import pyth_create_state_space
 from robupy.estimate.estimate_auxiliary import opt_get_optim_parameters
 from robupy.estimate.estimate_auxiliary import opt_get_model_parameters
 
-from robupy.shared.auxiliary import replace_missing_values
-from robupy.shared.auxiliary import distribute_model_paras
 from robupy.shared.auxiliary import create_draws
 
 
@@ -555,69 +550,6 @@ class TestClass(object):
             np.testing.assert_almost_equal(py, f90)
 
     def test_8(self):
-        """ Testing the equality of the core functions for random requests.
-        """
-        # FORTRAN resources
-        import robupy.fortran.f2py_debug as fort_debug
-
-        # Generate random initialization file
-        generate_init()
-
-        # Solve random request
-        robupy_obj = read('test.robupy.ini')
-
-        # Extract class attributes
-        is_interpolated, is_deterministic, seed_emax, is_ambiguous, \
-        model_paras, num_periods, num_points, edu_start, is_python, \
-        is_myopic, num_draws_emax, is_debug, measure, edu_max, \
-        min_idx, delta, level = \
-                distribute_model_description(robupy_obj,
-                    'is_interpolated', 'is_deterministic', 'seed_emax',
-                    'is_ambiguous', 'model_paras', 'num_periods',
-                    'num_points', 'edu_start', 'is_python', 'is_myopic',
-                    'num_draws_emax', 'is_debug', 'measure', 'edu_max',
-                    'min_idx', 'delta', 'level')
-
-        # Distribute model parameters
-        coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, shocks_cholesky = \
-                distribute_model_paras(model_paras, is_debug)
-
-        # Get set of draws
-        periods_draws_emax = create_draws(num_periods, num_draws_emax,
-                                                seed_emax, is_debug, 'emax',
-                                                shocks_cholesky)
-
-        # Align interpolation grid
-        max_states_period = write_interpolation_grid('test.robupy.ini')
-
-        # Baseline input arguments.
-        base_args = [coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
-            shocks_cholesky, is_deterministic, is_interpolated, num_draws_emax,
-            periods_draws_emax, is_ambiguous, num_periods, num_points, edu_start,
-            is_myopic, is_debug, measure, edu_max, min_idx, delta, level]
-
-        # Check for the equality of the solution routines.
-        base = None
-        for version in ['PYTHON', 'F2PY', 'FORTRAN']:
-            if version in ['F2PY', 'PYTHON']:
-                # Modifications to input arguments
-                args = base_args
-                # Get PYTHON/F2PY results
-                ret_args = pyth_solve(*args)
-            else:
-                # Modifications to input arguments
-                args = base_args + [max_states_period]
-                # Get FORTRAN results
-                ret_args = fort_debug.wrapper_solve_fortran_bare(*args)
-            # Collect baseline information
-            if base is None:
-                base = ret_args
-            # Check results
-            for j in range(7):
-                np.testing.assert_equal(base[j], replace_missing_values(
-                    ret_args[j]))
-
-    def test_9(self):
         """ Testing ten admissible realizations of state space for the first
         three periods.
         """
@@ -672,7 +604,7 @@ class TestClass(object):
         for j, state in enumerate(states):
             assert ((states_all[2, j, :] == state).all())
 
-    def test_10(self):
+    def test_9(self):
         """ Testing whether back-and-forth transformation have no effect.
         """
         for i in range(10):
@@ -688,7 +620,7 @@ class TestClass(object):
             # Checks
             np.testing.assert_allclose(base, x)
 
-    def test_11(self):
+    def test_10(self):
         """ Testing the core functions of the solution step for the equality
         of results between the PYTHON and FORTRAN implementations.
         """
@@ -708,15 +640,20 @@ class TestClass(object):
         # Perform toolbox actions
         robupy_obj = read('test.robupy.ini')
 
+        # Ensure that backward induction routines use the same grid for the
+        # interpolation.
+        write_interpolation_grid('test.robupy.ini')
+
         # Extract class attributes
         num_periods, edu_start, edu_max, min_idx, model_paras, num_draws_emax, \
             seed_emax, is_debug, delta, level, is_ambiguous, measure, \
-            is_interpolated, num_points, is_deterministic = \
+            is_interpolated, num_points, is_deterministic, is_myopic = \
                 distribute_model_description(robupy_obj,
                     'num_periods', 'edu_start', 'edu_max', 'min_idx',
                     'model_paras', 'num_draws_emax', 'seed_emax', 'is_debug',
                     'delta', 'level', 'is_ambiguous', 'measure',
-                    'is_interpolated', 'num_points', 'is_deterministic')
+                    'is_interpolated', 'num_points', 'is_deterministic',
+                    'is_myopic')
 
         # Extract coefficients
         coeffs_a = model_paras['coeffs_a']
@@ -748,6 +685,7 @@ class TestClass(object):
         # future use and create the required set of disturbances.
         periods_draws_emax = create_draws(num_periods, num_draws_emax, seed_emax,
             is_debug, 'emax', shocks_cholesky)
+
         periods_payoffs_systematic = pyth
 
         # Check backward induction procedure.

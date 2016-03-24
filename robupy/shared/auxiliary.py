@@ -128,40 +128,48 @@ def create_draws(num_periods, num_draws_emax, seed, is_debug, which,
     return draws
 
 
-def replace_missing_values(argument):
+def replace_missing_values(arguments):
     """ Replace missing value MISSING_FLOAT with NAN. Note that the output
     argument is of type float in the case missing values are found.
     """
-    # Transform to float array to evaluate missing values.
-    argument_internal = np.asfarray(argument)
+    # Antibugging
+    assert (isinstance(arguments, tuple))
 
-    # Determine missing values
-    is_missing = (argument_internal == MISSING_FLOAT)
-    if np.any(is_missing):
-        # Replace missing values
-        argument = np.asfarray(argument)
-        argument[is_missing] = np.nan
+    rslt = tuple()
+
+    for argument in arguments:
+        # Transform to float array to evaluate missing values.
+        argument_internal = np.asfarray(argument)
+
+        # Determine missing values
+        is_missing = (argument_internal == MISSING_FLOAT)
+        if np.any(is_missing):
+            # Replace missing values
+            argument = np.asfarray(argument)
+            argument[is_missing] = np.nan
+
+        rslt += (argument,)
 
     # Finishing
-    return argument
+    return rslt
 
 
-def read_draws(num_periods, num_draws_emax):
+def read_draws(num_periods, num_draws):
     """ Red the draws from disk. This is only used in the development
     process.
     """
     # Initialize containers
-    periods_draws_emax = np.tile(np.nan, (num_periods, num_draws_emax, 4))
+    periods_draws = np.tile(np.nan, (num_periods, num_draws, 4))
 
     # Read and distribute draws
     draws = np.array(np.genfromtxt('draws.txt'), ndmin=2)
     for period in range(num_periods):
-        lower = 0 + num_draws_emax * period
-        upper = lower + num_draws_emax
-        periods_draws_emax[period, :, :] = draws[lower:upper, :]
+        lower = 0 + num_draws * period
+        upper = lower + num_draws
+        periods_draws[period, :, :] = draws[lower:upper, :]
 
     # Finishing
-    return periods_draws_emax
+    return periods_draws
 
 
 def check_dataset(data_frame, robupy_obj):

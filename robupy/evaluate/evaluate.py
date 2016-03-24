@@ -6,7 +6,7 @@ function.
 from robupy.evaluate.evaluate_auxiliary import check_evaluation
 from robupy.evaluate.evaluate_python import evaluate_python
 
-from robupy.fortran.fortran import fortran_interface
+from robupy.fortran.fortran import fort_evaluate
 
 from robupy.shared.auxiliary import distribute_class_attributes
 from robupy.shared.auxiliary import distribute_model_paras
@@ -56,7 +56,7 @@ def evaluate(robupy_obj, data_frame):
     # Select appropriate interface
     if version == 'FORTRAN':
 
-        crit_val, solution = fortran_interface(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+        crit_val, solution = fort_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
             shocks_cov, is_deterministic, is_interpolated, num_draws_emax,
             is_ambiguous, num_periods, num_points, is_myopic, edu_start,
             seed_emax, is_debug, min_idx, measure, edu_max, delta, level,
@@ -76,7 +76,7 @@ def evaluate(robupy_obj, data_frame):
     assert check_evaluation('out', crit_val)
 
     # Replace missing values
-    solution = [replace_missing_values(x) for x in solution ]
+    solution = replace_missing_values(solution)
 
    # Distribute return arguments from solution run
     robupy_obj = add_solution(robupy_obj, store, *solution)

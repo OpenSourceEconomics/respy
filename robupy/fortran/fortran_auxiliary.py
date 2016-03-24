@@ -48,9 +48,9 @@ def get_results(num_periods, min_idx):
     periods_emax = read_date('periods_emax', shape)
 
     # Update class attributes with solution
-    args = [periods_payoffs_systematic, periods_payoffs_ex_post,
+    args = (periods_payoffs_systematic, periods_payoffs_ex_post,
         periods_payoffs_future, states_number_period,  mapping_state_idx,
-        periods_emax, states_all]
+        periods_emax, states_all)
 
     # Finishing
     return args
@@ -67,7 +67,7 @@ def read_date(label, shape):
     if label == 'states_number_period':
         data = np.loadtxt(file_, dtype=np.int64)
     else:
-        data = replace_missing_values(np.loadtxt(file_))
+        data = np.loadtxt(file_)
 
     data = np.reshape(data, shape)
 

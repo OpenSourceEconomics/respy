@@ -25,11 +25,8 @@ def simulate_python(periods_payoffs_systematic, mapping_state_idx,
             periods_payoffs_systematic, periods_draws_sims, edu_max, edu_start,
             periods_emax, delta)
 
-    # Replace missing values
-    data_frame = replace_missing_values(data_frame)
-
-    # Create pandas data frame
-    data_frame = pd.DataFrame(data_frame)
+    # Create pandas data frame with missing values.
+    data_frame = pd.DataFrame(replace_missing_values((data_frame,))[0])
 
     # Finishing
     return data_frame

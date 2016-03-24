@@ -36,7 +36,8 @@ logger = logging.getLogger('ROBUPY_SIMULATE')
 
 
 def simulate(robupy_obj):
-    """ Simulate dataset from model.
+    """ Simulate dataset from model. To keep the different tasks as separate
+    as possible, this requires to pass in a solved robupy_obj.
     """
     # Checks
     assert check_simulation(robupy_obj)

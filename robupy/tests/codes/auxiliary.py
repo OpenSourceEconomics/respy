@@ -39,7 +39,7 @@ def write_interpolation_grid(file_name):
     # Process relevant initialization file
     robupy_obj = read(file_name)
 
-    # Distribute class attributes
+    # Distribute class attribute
     num_periods, num_points, edu_start, is_python, edu_max, min_idx = \
         distribute_model_description(robupy_obj,
             'num_periods', 'num_points', 'edu_start', 'is_python', 'edu_max',
