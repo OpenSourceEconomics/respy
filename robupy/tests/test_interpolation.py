@@ -3,25 +3,25 @@ development tests.
 """
 
 # standard library
+import numpy as np
+
+import pytest
 import os
 
-import numpy as np
-import pytest
-
 # testing library
-from codes.auxiliary import distribute_model_description
 from codes.auxiliary import write_interpolation_grid
 
 # ROBUPY import
-from robupy.solve.solve_auxiliary import _get_simulated_indicator
-from robupy.solve.solve_auxiliary import _get_exogenous_variables
-from robupy.solve.solve_auxiliary import _get_endogenous_variable
-from robupy.solve.solve_auxiliary import _get_predictions
+from robupy.solve.solve_auxiliary import get_simulated_indicator
+from robupy.solve.solve_auxiliary import get_exogenous_variables
+from robupy.solve.solve_auxiliary import get_endogenous_variable
+from robupy.solve.solve_auxiliary import get_predictions
 
 from robupy.tests.codes.random_init import generate_random_dict
 from robupy.tests.codes.random_init import print_random_dict
 from robupy.tests.codes.random_init import generate_init
 
+from robupy.shared.auxiliary import distribute_class_attributes
 from robupy.shared.auxiliary import replace_missing_values
 from robupy.shared.auxiliary import create_draws
 
@@ -62,7 +62,7 @@ class TestClass(object):
 
             # Extract class attributes
             states_number_period, periods_emax = \
-                distribute_model_description(robupy_obj,
+                distribute_class_attributes(robupy_obj,
                     'states_number_period', 'periods_emax')
 
             # Store and check results
@@ -100,7 +100,7 @@ class TestClass(object):
         is_ambiguous, model_paras, num_periods, states_all, num_points, \
         edu_start, num_draws_emax, is_debug, measure, edu_max, delta, \
         level = \
-            distribute_model_description(robupy_obj,
+            distribute_class_attributes(robupy_obj,
                 'periods_payoffs_systematic', 'states_number_period',
                 'mapping_state_idx', 'is_deterministic', 'seed_prob',
                 'periods_emax', 'is_ambiguous', 'model_paras', 'num_periods',
@@ -133,7 +133,7 @@ class TestClass(object):
         # used for the predication model. The integrity of the corresponding
         # FORTRAN function is tested in test_88().
         args = (num_points, num_states, period, num_periods, is_debug)
-        is_simulated = _get_simulated_indicator(*args)
+        is_simulated = get_simulated_indicator(*args)
 
         # Construct the exogenous variables for all points of the state
         # space.
@@ -141,7 +141,7 @@ class TestClass(object):
                 periods_payoffs_systematic, shifts, edu_max, edu_start,
                 mapping_state_idx, periods_emax, states_all]
 
-        py = _get_exogenous_variables(*args)
+        py = get_exogenous_variables(*args)
         f90 = fort_debug.wrapper_get_exogenous_variables(*args)
 
         np.testing.assert_equal(py, f90)
@@ -158,7 +158,7 @@ class TestClass(object):
                 measure, maxe, draws_emax, is_deterministic,
                 shocks_cholesky]
 
-        py = _get_endogenous_variable(*args)
+        py = get_endogenous_variable(*args)
         f90 = fort_debug.wrapper_get_endogenous_variable(*args)
 
         np.testing.assert_equal(py, replace_missing_values((f90,))[0])
@@ -170,7 +170,7 @@ class TestClass(object):
         args = [endogenous, exogenous, maxe, is_simulated, num_points,
                 num_states, is_debug]
 
-        py, _ = _get_predictions(*args)
+        py, _ = get_predictions(*args)
         f90 = fort_debug.wrapper_get_predictions(*args[:-1])
 
         np.testing.assert_array_almost_equal(py, f90)
@@ -193,7 +193,7 @@ class TestClass(object):
         robupy_obj = read('test.robupy.ini')
 
         # Extract class attributes
-        is_debug, num_periods = distribute_model_description(robupy_obj,
+        is_debug, num_periods = distribute_class_attributes(robupy_obj,
                 'is_debug', 'num_periods')
 
         # Write out a grid for the interpolation
@@ -223,7 +223,7 @@ class TestClass(object):
         # implementations. This is possible as we write out an interpolation
         # grid to disk which is used for both functions.
         args = (num_points, num_states, period, num_periods, is_debug)
-        py = _get_simulated_indicator(*args)
+        py = get_simulated_indicator(*args)
         f90 = fort_debug.wrapper_get_simulated_indicator(*args)
 
         np.testing.assert_array_equal(f90, 1*py)
@@ -263,7 +263,7 @@ class TestClass(object):
 
             # Extract class attributes
             states_number_period, periods_emax = \
-                distribute_model_description(robupy_obj,
+                distribute_class_attributes(robupy_obj,
                     'states_number_period', 'periods_emax')
 
             # Store and check results

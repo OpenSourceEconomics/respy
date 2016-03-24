@@ -14,7 +14,6 @@ from scipy.optimize.slsqp import _minimize_slsqp
 from scipy.stats import norm
 
 # testing library
-from codes.auxiliary import distribute_model_description
 from codes.auxiliary import write_interpolation_grid
 
 from robupy import simulate
@@ -34,6 +33,7 @@ from robupy.solve.solve_auxiliary import pyth_create_state_space
 from robupy.estimate.estimate_auxiliary import opt_get_optim_parameters
 from robupy.estimate.estimate_auxiliary import opt_get_model_parameters
 
+from robupy.shared.auxiliary import distribute_class_attributes
 from robupy.shared.auxiliary import create_draws
 
 
@@ -69,7 +69,7 @@ class TestClass(object):
             is_deterministic, is_ambiguous, periods_emax, model_paras, \
             num_periods, states_all, num_draws_emax, edu_start, is_debug,\
             edu_max, measure, delta, level = \
-                distribute_model_description(robupy_obj,
+                distribute_class_attributes(robupy_obj,
                     'periods_payoffs_systematic', 'states_number_period',
                     'mapping_state_idx', 'is_deterministic', 'is_ambiguous',
                     'periods_emax', 'model_paras', 'num_periods', 'states_all',
@@ -139,7 +139,7 @@ class TestClass(object):
             is_deterministic, periods_emax, num_periods, model_paras, \
             states_all, num_draws_emax, edu_start, edu_max, measure, \
             delta, is_debug = \
-                distribute_model_description(robupy_obj,
+                distribute_class_attributes(robupy_obj,
                     'periods_payoffs_systematic', 'states_number_period',
                     'mapping_state_idx', 'is_deterministic', 'periods_emax',
                     'num_periods', 'model_paras', 'states_all', 'num_draws_emax',
@@ -210,7 +210,7 @@ class TestClass(object):
         periods_payoffs_systematic, states_number_period, mapping_state_idx, \
             periods_emax, num_periods, states_all, num_draws_emax, edu_start, \
             edu_max, delta, is_debug, model_paras = \
-                distribute_model_description(robupy_obj,
+                distribute_class_attributes(robupy_obj,
                     'periods_payoffs_systematic', 'states_number_period',
                     'mapping_state_idx', 'periods_emax', 'num_periods',
                     'states_all', 'num_draws_emax', 'edu_start', 'edu_max',
@@ -331,7 +331,7 @@ class TestClass(object):
         periods_payoffs_systematic, states_number_period, mapping_state_idx, \
         periods_emax, num_periods, states_all, num_draws_emax, edu_start, \
         edu_max, delta, model_paras = \
-            distribute_model_description(robupy_obj,
+            distribute_class_attributes(robupy_obj,
                 'periods_payoffs_systematic', 'states_number_period',
                 'mapping_state_idx', 'periods_emax', 'num_periods',
                 'states_all', 'num_draws_emax', 'edu_start', 'edu_max',
@@ -648,7 +648,7 @@ class TestClass(object):
         num_periods, edu_start, edu_max, min_idx, model_paras, num_draws_emax, \
             seed_emax, is_debug, delta, level, is_ambiguous, measure, \
             is_interpolated, num_points, is_deterministic, is_myopic = \
-                distribute_model_description(robupy_obj,
+                distribute_class_attributes(robupy_obj,
                     'num_periods', 'edu_start', 'edu_max', 'min_idx',
                     'model_paras', 'num_draws_emax', 'seed_emax', 'is_debug',
                     'delta', 'level', 'is_ambiguous', 'measure',

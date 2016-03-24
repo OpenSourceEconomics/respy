@@ -13,24 +13,10 @@ import os
 from robupy.shared.constants import ROOT_DIR
 from robupy.solve.solve_auxiliary import pyth_create_state_space
 from robupy import read
+from robupy.shared.auxiliary import distribute_class_attributes
 
 ''' Auxiliary functions.
 '''
-
-
-def distribute_model_description(robupy_obj, *args):
-    """ This function distributes the model description.
-    """
-    # TODO: I create a similar method as part of the robupy package. Mabe we
-    # can replace this one?
-
-    ret = []
-
-    for arg in args:
-        ret.append(robupy_obj.get_attr(arg))
-
-    return ret
-
 
 def write_interpolation_grid(file_name):
     """ Write out an interpolation grid that can be used across
@@ -41,7 +27,7 @@ def write_interpolation_grid(file_name):
 
     # Distribute class attribute
     num_periods, num_points, edu_start, edu_max, min_idx = \
-        distribute_model_description(robupy_obj,
+        distribute_class_attributes(robupy_obj,
             'num_periods', 'num_points', 'edu_start', 'edu_max', 'min_idx')
 
     # Determine maximum number of states

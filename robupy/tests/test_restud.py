@@ -12,12 +12,11 @@ import pytest
 import shutil
 import os
 
-# testing library
-from codes.auxiliary import distribute_model_description
-
 # ROBUPY import
 from robupy.tests.codes.random_init import generate_random_dict
 from robupy.tests.codes.random_init import print_random_dict
+
+from robupy.shared.auxiliary import distribute_class_attributes
 
 from robupy import simulate
 from robupy import solve
@@ -167,7 +166,7 @@ class TestClass(object):
         # to write out the random components.
         model_paras, level, edu_start, edu_max, num_agents, num_periods, \
         num_draws_emax, delta = \
-            distribute_model_description(robupy_obj,
+            distribute_class_attributes(robupy_obj,
                 'model_paras', 'level', 'edu_start', 'edu_max', 'num_agents',
                 'num_periods', 'num_draws_emax', 'delta')
 

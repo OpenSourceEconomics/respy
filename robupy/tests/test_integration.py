@@ -9,12 +9,13 @@ import pytest
 from pandas.util.testing import assert_frame_equal
 
 # testing library
-from codes.auxiliary import distribute_model_description
 from codes.auxiliary import write_interpolation_grid
 from codes.auxiliary import write_draws
 
 # ROBUPY import
+from robupy.shared.auxiliary import distribute_class_attributes
 from robupy.shared.auxiliary import read_draws
+
 from robupy.solve.solve_auxiliary import pyth_create_state_space
 
 from robupy.estimate.estimate_auxiliary import opt_get_optim_parameters
@@ -369,7 +370,7 @@ class TestClass(object):
             seed_emax, is_debug, delta, level, is_ambiguous, measure, \
             is_interpolated, num_points, is_deterministic, is_myopic, \
             num_agents, num_draws_prob = \
-                distribute_model_description(robupy_obj,
+                distribute_class_attributes(robupy_obj,
                     'num_periods', 'edu_start', 'edu_max', 'min_idx',
                     'model_paras', 'num_draws_emax', 'seed_emax', 'is_debug',
                     'delta', 'level', 'is_ambiguous', 'measure',

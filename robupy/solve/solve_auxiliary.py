@@ -70,20 +70,20 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
         if any_interpolated:
 
             # Get indicator for interpolation and simulation of states
-            is_simulated = _get_simulated_indicator(num_points, num_states,
+            is_simulated = get_simulated_indicator(num_points, num_states,
                 period, num_periods, is_debug)
 
             # Constructing the exogenous variable for all states, including the
             # ones where simulation will take place. All information will be
             # used in either the construction of the prediction model or the
             # prediction step.
-            exogenous, maxe = _get_exogenous_variables(period, num_periods,
+            exogenous, maxe = get_exogenous_variables(period, num_periods,
                 num_states, delta, periods_payoffs_systematic, shifts,
                 edu_max, edu_start, mapping_state_idx, periods_emax, states_all)
 
             # Constructing the dependent variables for at the random subset of
             # points where the EMAX is actually calculated.
-            endogenous = _get_endogenous_variable(period, num_periods,
+            endogenous = get_endogenous_variable(period, num_periods,
                 num_states, delta, periods_payoffs_systematic, edu_max,
                 edu_start, mapping_state_idx, periods_emax, states_all,
                 is_simulated, num_draws_emax, shocks_cov, level, is_ambiguous,
@@ -94,7 +94,7 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
             # the EMAX is actually simulated and thus dependent and
             # independent variables are available. For the interpolation
             # points, the actual values are used.
-            predictions, results = _get_predictions(endogenous, exogenous,
+            predictions, results = get_predictions(endogenous, exogenous,
                 maxe, is_simulated, num_points, num_states, is_debug)
 
             # Store results
@@ -330,7 +330,7 @@ def _check_prediction_model(predictions_diff, model, num_points, num_states,
         assert (model.nobs == min(num_points, num_states))
 
 
-def _get_simulated_indicator(num_points, num_candidates, period, num_periods,
+def get_simulated_indicator(num_points, num_candidates, period, num_periods,
         is_debug):
     """ Get the indicator for points of interpolation and simulation. The
     unused argument is present to align the interface between the PYTHON and
@@ -361,7 +361,7 @@ def _get_simulated_indicator(num_points, num_candidates, period, num_periods,
     return is_simulated
 
 
-def _get_exogenous_variables(period, num_periods, num_states, delta,
+def get_exogenous_variables(period, num_periods, num_states, delta,
         periods_payoffs_systematic, shifts, edu_max, edu_start,
         mapping_state_idx, periods_emax, states_all):
     """ Get exogenous variables for interpolation scheme. The unused argument
@@ -405,7 +405,7 @@ def _get_exogenous_variables(period, num_periods, num_states, delta,
     return exogenous, maxe
 
 
-def _get_endogenous_variable(period, num_periods, num_states, delta,
+def get_endogenous_variable(period, num_periods, num_states, delta,
         periods_payoffs_systematic, edu_max, edu_start, mapping_state_idx,
         periods_emax, states_all, is_simulated, num_draws_emax, shocks_cov,
         level, is_ambiguous, is_debug, measure, maxe, draws_emax,
@@ -438,7 +438,7 @@ def _get_endogenous_variable(period, num_periods, num_states, delta,
     return endogenous_variable
 
 
-def _get_predictions(endogenous, exogenous, maxe, is_simulated, num_points,
+def get_predictions(endogenous, exogenous, maxe, is_simulated, num_points,
         num_states, is_debug):
     """ Fit an OLS regression of the exogenous variables on the endogenous
     variables and use the results to predict the endogenous variables for all
