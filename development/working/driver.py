@@ -34,8 +34,8 @@ val = robupy_obj.get_attr('periods_emax')[0, 0]
 #np.testing.assert_allclose(3.664605209230335, val)
 
 simulate(robupy_obj)
-val, _ = evaluate(robupy_obj, process(robupy_obj))
-#np.testing.assert_allclose(8.73671639678513, val)
+val = evaluate(robupy_obj, process(robupy_obj))
+np.testing.assert_allclose(2.992618550039753, val)
 
 data_frame = process(robupy_obj)
 

@@ -32,11 +32,10 @@ MODULE robufort_library
  CONTAINS
  !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE evaluate_criterion_function(rslt, mapping_state_idx, periods_emax, & 
-                periods_payoffs_systematic, states_all, shocks_cov, edu_max, & 
-                delta, edu_start, num_periods, shocks_cholesky, num_agents, &
-                num_draws_prob, data_array, periods_draws_prob, & 
-                is_deterministic)
+SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, & 
+                periods_emax, states_all, shocks_cov, shocks_cholesky, & 
+                is_deterministic, num_periods, edu_start, edu_max, delta, &
+                data_array, num_agents, num_draws_prob, periods_draws_prob)
 
     !/* external objects        */
 
@@ -349,16 +348,16 @@ SUBROUTINE solve_fortran_bare(periods_payoffs_systematic, &
 END SUBROUTINE   
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE simulate_sample(dataset, num_agents, states_all, num_periods, &
+SUBROUTINE fort_simulate(dataset, num_agents, states_all, num_periods, &
                 mapping_state_idx, periods_payoffs_systematic, &
-                periods_draws_emax, edu_max, edu_start, periods_emax, delta)
+                periods_draws_sims, edu_max, edu_start, periods_emax, delta)
 
     !/* external objects        */
 
     REAL(our_dble), INTENT(OUT)     :: dataset(:, :)
 
     REAL(our_dble), INTENT(IN)      :: periods_payoffs_systematic(:, :, :)
-    REAL(our_dble), INTENT(IN)      :: periods_draws_emax(:, :, :)
+    REAL(our_dble), INTENT(IN)      :: periods_draws_sims(:, :, :)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
     REAL(our_dble), INTENT(IN)      :: delta
 
@@ -420,7 +419,7 @@ SUBROUTINE simulate_sample(dataset, num_agents, states_all, num_periods, &
 
             ! Calculate ex post payoffs
             payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
-            draws = periods_draws_emax(period + 1, i + 1, :)
+            draws = periods_draws_sims(period + 1, i + 1, :)
 
             ! Calculate total utilities
             CALL get_total_value(total_payoffs, payoffs_ex_post, & 

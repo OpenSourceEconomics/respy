@@ -48,19 +48,9 @@ def fort_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
     # Call executable
     os.system('"' + FORTRAN_DIR + '/bin/robufort"')
 
-    # Return arguments depends on the request.
-    args = get_results(num_periods, min_idx)
+    crit_val = float(np.genfromtxt('.eval.robufort.dat'))
 
-    if request == 'solve':
-        return args
-    elif request == 'evaluate':
-        # Get results and return
-        crit_val = float(np.genfromtxt('.eval.robufort.dat'))
-        os.unlink('.eval.robufort.dat')
-        return crit_val, args
-    else:
-        raise NotImplementedError
-
+    return crit_val
 
 def fort_solve(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
         is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,

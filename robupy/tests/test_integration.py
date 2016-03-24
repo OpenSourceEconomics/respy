@@ -132,7 +132,7 @@ class TestClass(object):
             # criterion function.
             data_frame = simulate(robupy_obj)
 
-            crit_val, _ = evaluate(robupy_obj, data_frame)
+            crit_val = evaluate(robupy_obj, data_frame)
 
             if base_val is None:
                 base_val = crit_val
@@ -329,7 +329,7 @@ class TestClass(object):
             # criterion function.
             data_frame = simulate(robupy_obj)
 
-            crit_val, _ = evaluate(robupy_obj, data_frame)
+            crit_val = evaluate(robupy_obj, data_frame)
 
             if base_val is None:
                 base_val= crit_val
@@ -344,6 +344,9 @@ class TestClass(object):
         from robupy.solve.solve_python import pyth_solve
         from robupy.fortran.fortran import fort_solve
 
+        from robupy.simulate.simulate_python import pyth_simulate
+        from robupy.fortran.f2py_library import f2py_simulate
+
         # Generate random initialization file
         generate_init()
 
@@ -357,22 +360,24 @@ class TestClass(object):
         # Extract class attributes
         num_periods, edu_start, edu_max, min_idx, model_paras, num_draws_emax, \
             seed_emax, is_debug, delta, level, is_ambiguous, measure, \
-            is_interpolated, num_points, is_deterministic, is_myopic = \
+            is_interpolated, num_points, is_deterministic, is_myopic, \
+            num_agents = \
                 distribute_model_description(robupy_obj,
                     'num_periods', 'edu_start', 'edu_max', 'min_idx',
                     'model_paras', 'num_draws_emax', 'seed_emax', 'is_debug',
                     'delta', 'level', 'is_ambiguous', 'measure',
                     'is_interpolated', 'num_points', 'is_deterministic',
-                    'is_myopic')
+                    'is_myopic', 'num_agents')
 
         # TODO: Align interfaces, the problems is the treatment of
         # shocks_cholesky. It is passed in as argument in PY/F2PY but
         # computed internally by FORTRAN.
         # Write out random components and interpolation grid to align the
         # three implementations.
-        max_draws = num_draws_emax
+        max_draws = max(num_agents, num_draws_emax)
         write_draws(num_periods, max_draws)
         periods_draws_emax = read_draws(num_periods, num_draws_emax)
+        periods_draws_sims = read_draws(num_periods, num_agents)
 
         # Extract coefficients
         coeffs_a = model_paras['coeffs_a']
@@ -402,3 +407,18 @@ class TestClass(object):
         for alt in [f2py, fort]:
             for i in range(7):
                 np.testing.assert_allclose(pyth[i], alt[i])
+
+        # Distribute solution arguments for further use in simulation test.
+        periods_payoffs_systematic, periods_payoffs_ex_post, \
+            periods_payoffs_future, states_number_period, mapping_state_idx, \
+            periods_emax, states_all = pyth
+
+        # Collect arguments across implementations.
+        args = (periods_payoffs_systematic, mapping_state_idx, periods_emax,
+            num_periods, states_all, num_agents, edu_start, edu_max, delta,
+            periods_draws_sims)
+
+        pyth = pyth_simulate(*args)
+        f2py = f2py_simulate(*args)
+
+        np.testing.assert_allclose(pyth, f2py)

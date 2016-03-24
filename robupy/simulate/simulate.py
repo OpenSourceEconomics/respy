@@ -15,6 +15,7 @@ information to disk.
 """
 
 # standard library
+import pandas as pd
 import logging
 
 # project library
@@ -23,11 +24,12 @@ from robupy.simulate.simulate_auxiliary import write_info
 from robupy.simulate.simulate_auxiliary import write_out
 
 from robupy.shared.auxiliary import distribute_class_attributes
+from robupy.shared.auxiliary import replace_missing_values
 from robupy.shared.auxiliary import check_dataset
 from robupy.shared.auxiliary import create_draws
 
 # Logging
-from robupy.simulate.simulate_python import simulate_python
+from robupy.simulate.simulate_python import pyth_simulate
 
 logger = logging.getLogger('ROBUPY_SIMULATE')
 
@@ -45,12 +47,12 @@ def simulate(robupy_obj):
     # Distribute class attributes
     periods_payoffs_systematic, mapping_state_idx, periods_emax, model_paras, \
         num_periods, num_agents, states_all, edu_start, is_python, seed_data, \
-        is_debug, file_sim, edu_max, delta = \
+        is_debug, file_sim, edu_max, delta, version = \
             distribute_class_attributes(robupy_obj,
                 'periods_payoffs_systematic', 'mapping_state_idx',
                 'periods_emax', 'model_paras', 'num_periods', 'num_agents',
                 'states_all', 'edu_start', 'is_python', 'seed_data',
-                'is_debug', 'file_sim', 'edu_max', 'delta')
+                'is_debug', 'file_sim', 'edu_max', 'delta', 'version')
 
     # Auxiliary objects
     shocks_cholesky = model_paras['shocks_cholesky']
@@ -65,12 +67,22 @@ def simulate(robupy_obj):
     logger.info('Staring simulation of model for ' + str(num_agents) +
         ' agents with seed ' + str(seed_data))
 
-    # Simulate a dataset.
+    # Collect arguments to pass in different implementations of the simulation.
     args = (periods_payoffs_systematic, mapping_state_idx, periods_emax,
-            num_periods, states_all, num_agents, edu_start, edu_max, delta,
-            periods_draws_sims, is_python)
+        num_periods, states_all, num_agents, edu_start, edu_max, delta,
+        periods_draws_sims)
 
-    data_frame = simulate_python(*args)
+    # Select appropriate interface
+    if version == 'PYTHON':
+        data_array = pyth_simulate(*args)
+    elif version in ['FORTRAN', 'F2PY']:
+        from robupy.fortran.f2py_library import f2py_simulate
+        data_array = f2py_simulate(*args)
+    else:
+        raise NotImplementedError
+
+    # Create pandas data frame with missing values.
+    data_frame = pd.DataFrame(replace_missing_values((data_array,))[0])
 
     # Wrapping up by running some checks on the dataset and then writing out
     # the file and some basic information.

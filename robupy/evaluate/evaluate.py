@@ -4,7 +4,7 @@ function.
 
 # project library
 from robupy.evaluate.evaluate_auxiliary import check_evaluation
-from robupy.evaluate.evaluate_python import evaluate_python
+from robupy.evaluate.evaluate_python import pyth_evaluate
 
 from robupy.fortran.fortran import fort_evaluate
 
@@ -22,6 +22,10 @@ from robupy.shared.auxiliary import replace_missing_values
 def evaluate(robupy_obj, data_frame):
     """ Evaluate likelihood function.
     """
+    # Antibugging
+    assert robupy_obj.get_attr('is_solved')
+    assert robupy_obj.get_status()
+
     # Distribute class attributes
     periods_payoffs_systematic, mapping_state_idx, periods_emax, model_paras, \
         num_periods, num_agents, states_all, edu_start, is_python, seed_data, \
@@ -41,6 +45,8 @@ def evaluate(robupy_obj, data_frame):
     # Check the dataset against the initialization files
     assert check_evaluation('in', data_frame, robupy_obj, is_deterministic)
 
+
+
     # Distribute model parameters
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, shocks_cholesky = \
         distribute_model_paras(model_paras, is_debug)
@@ -50,36 +56,40 @@ def evaluate(robupy_obj, data_frame):
         is_debug, 'prob', shocks_cholesky)
 
     # Draw standard normal deviates for EMAX integration
-    periods_draws_emax = create_draws(num_periods, num_draws_emax, seed_emax,
-        is_debug, 'emax', shocks_cholesky)
+    data_array = data_frame.as_matrix()
+
+    args = (periods_payoffs_systematic, mapping_state_idx, periods_emax,
+        states_all, shocks_cov, shocks_cholesky, is_deterministic,
+        num_periods, edu_start, edu_max, delta, data_array, num_agents,
+        num_draws_prob, periods_draws_prob)
 
     # Select appropriate interface
     if version == 'FORTRAN':
 
-        crit_val, solution = fort_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-            shocks_cov, is_deterministic, is_interpolated, num_draws_emax,
-            is_ambiguous, num_periods, num_points, is_myopic, edu_start,
-            seed_emax, is_debug, min_idx, measure, edu_max, delta, level,
-            num_draws_prob, num_agents, seed_prob, seed_data, 'evaluate',
-            data_frame)
+        crit_val = fort_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
+        is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
+        num_periods, num_points, is_myopic, edu_start, seed_emax, is_debug,
+        min_idx, measure, edu_max, delta, level, num_draws_prob, num_agents,
+        seed_prob, seed_data, 'evaluate', data_frame)
+
+        print(crit_val)
+
+    elif version == 'PYTHON':
+
+        crit_val = pyth_evaluate(*args)
+
+    elif version == 'F2PY':
+
+        from robupy.fortran.f2py_library import f2py_evaluate
+        crit_val = f2py_evaluate(*args)
 
     else:
 
-        crit_val, solution = evaluate_python(coeffs_a, coeffs_b, coeffs_edu,
-            coeffs_home, shocks_cov, shocks_cholesky, is_deterministic,
-            is_interpolated, num_draws_emax, periods_draws_emax,
-            is_ambiguous, num_periods, num_points, edu_start, is_myopic,
-            is_debug, measure, edu_max, min_idx, delta, level, data_frame,
-            num_agents, num_draws_prob, periods_draws_prob, is_python)
+        raise NotImplementedError
+
 
     # Checks
     assert check_evaluation('out', crit_val)
 
-    # Replace missing values
-    solution = replace_missing_values(solution)
-
-   # Distribute return arguments from solution run
-    robupy_obj = add_solution(robupy_obj, store, *solution)
-
     # Finishing
-    return crit_val, robupy_obj
+    return crit_val

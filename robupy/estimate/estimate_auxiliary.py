@@ -6,7 +6,7 @@ import numpy as np
 import os
 
 # project library
-from robupy.evaluate.evaluate_python import evaluate_python
+from robupy.evaluate.evaluate_python import pyth_evaluate
 from robupy.shared.auxiliary import check_model_parameters
 
 ''' Auxiliary functions
@@ -24,7 +24,7 @@ def criterion(x, data_frame, edu_max, delta, edu_start, is_debug,
         opt_get_model_parameters(x, is_debug)
 
     # Evaluate criterion function
-    crit_val, _ = evaluate_python(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+    crit_val, _ = pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         shocks_cov, shocks_cholesky, is_deterministic, is_interpolated,
         num_draws_emax, periods_draws_emax, is_ambiguous, num_periods,
         num_points, edu_start, is_myopic, is_debug, measure, edu_max, min_idx,

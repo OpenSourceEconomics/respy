@@ -552,11 +552,11 @@ PROGRAM robufort
                 is_ambiguous, num_periods, num_points, edu_start, is_myopic, & 
                 is_debug, measure, edu_max, min_idx, delta, level)
 
-        CALL evaluate_criterion_function(crit_val, mapping_state_idx, &
-                periods_emax, periods_payoffs_systematic, states_all, & 
-                shocks_cov, edu_max, delta, edu_start, num_periods, & 
-                shocks_cholesky, num_agents, num_draws_prob, data_array, & 
-                periods_draws_prob, is_deterministic)
+        CALL fort_evaluate(crit_val, periods_payoffs_systematic, & 
+                mapping_state_idx, periods_emax, states_all, shocks_cov, & 
+                shocks_cholesky, is_deterministic, num_periods, edu_start, &
+                edu_max, delta, data_array, num_agents, num_draws_prob, &
+                periods_draws_prob)
 
     END IF
 

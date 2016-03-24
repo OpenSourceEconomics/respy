@@ -105,11 +105,10 @@ SUBROUTINE f2py_solve(periods_payoffs_systematic, periods_payoffs_ex_post, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_evaluate_criterion_function(rslt, mapping_state_idx, &
-            periods_emax, periods_payoffs_systematic, states_all, shocks_cov, &
-            edu_max, delta, edu_start, num_periods, shocks_cholesky, & 
-            num_agents, num_draws_prob, data_array, draws_prob, & 
-            shock_zero)
+SUBROUTINE f2py_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, & 
+                periods_emax, states_all, shocks_cov, shocks_cholesky, & 
+                is_deterministic, num_periods, edu_start, edu_max, delta, & 
+                data_array, num_agents, num_draws_prob, periods_draws_prob)
 
     !/* external libraries      */
 
@@ -132,30 +131,30 @@ SUBROUTINE wrapper_evaluate_criterion_function(rslt, mapping_state_idx, &
     INTEGER, INTENT(IN)             :: edu_max
 
     DOUBLE PRECISION, INTENT(IN)    :: periods_payoffs_systematic(:, :, :)
-    DOUBLE PRECISION, INTENT(IN)    :: draws_prob(:, :, :)
+    DOUBLE PRECISION, INTENT(IN)    :: periods_draws_prob(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_emax(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: data_array(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: shocks_cov(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: delta  
 
-    LOGICAL                         :: shock_zero
+    LOGICAL                         :: is_deterministic
 
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
    
-    CALL evaluate_criterion_function(rslt, mapping_state_idx, periods_emax, & 
-            periods_payoffs_systematic, states_all, shocks_cov, edu_max, delta, & 
-            edu_start, num_periods, shocks_cholesky, num_agents, & 
-            num_draws_prob, data_array, draws_prob, shock_zero)
+    CALL fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, & 
+            periods_emax, states_all, shocks_cov, shocks_cholesky, & 
+            is_deterministic, num_periods, edu_start, edu_max, delta, & 
+            data_array, num_agents, num_draws_prob, periods_draws_prob)
 
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_simulate_sample(dataset, num_agents, states_all, & 
-                num_periods, mapping_state_idx, periods_payoffs_systematic, &
-                periods_draws_emax, edu_max, edu_start, periods_emax, delta)
+SUBROUTINE f2py_simulate(dataset, periods_payoffs_systematic, & 
+                mapping_state_idx, periods_emax, num_periods, states_all, & 
+                num_agents, edu_start, edu_max, delta, periods_draws_sims)
 
     !/* external libraries      */
 
@@ -167,10 +166,10 @@ SUBROUTINE wrapper_simulate_sample(dataset, num_agents, states_all, &
 
     !/* external objects        */
 
-    DOUBLE PRECISION, INTENT(OUT)   :: dataset(num_agents*num_periods, 8)
+    DOUBLE PRECISION, INTENT(OUT)   :: dataset(num_agents * num_periods, 8)
 
     DOUBLE PRECISION, INTENT(IN)    :: periods_payoffs_systematic(:, :, :)
-    DOUBLE PRECISION, INTENT(IN)    :: periods_draws_emax(:, :, :)
+    DOUBLE PRECISION, INTENT(IN)    :: periods_draws_sims(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_emax(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: delta
 
@@ -186,9 +185,9 @@ SUBROUTINE wrapper_simulate_sample(dataset, num_agents, states_all, &
 ! Algorithm
 !-------------------------------------------------------------------------------
 
-    CALL simulate_sample(dataset, num_agents, states_all, num_periods, &
+    CALL fort_simulate(dataset, num_agents, states_all, num_periods, &
                 mapping_state_idx, periods_payoffs_systematic, &
-                periods_draws_emax, edu_max, edu_start, periods_emax, delta)
+                periods_draws_sims, edu_max, edu_start, periods_emax, delta)
 
 END SUBROUTINE
 !******************************************************************************
