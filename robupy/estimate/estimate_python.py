@@ -1,5 +1,3 @@
-import os
-from robupy.estimate.estimate_auxiliary import logging_optimization
 from robupy.estimate.estimate_auxiliary import opt_get_model_parameters
 
 from robupy.solve.solve_python import pyth_solve
@@ -22,9 +20,8 @@ def pyth_criterion(x, data_array, edu_max, delta, edu_start, is_debug,
         is_myopic, is_debug, measure, edu_max, min_idx, delta, level,
         shocks_cholesky)
 
-    periods_payoffs_systematic, _, \
-        _, _, mapping_state_idx, \
-        periods_emax, states_all = solution
+    periods_payoffs_systematic, _, mapping_state_idx, periods_emax, \
+        states_all = solution
 
     crit_val = pyth_evaluate(periods_payoffs_systematic, mapping_state_idx,
         periods_emax, states_all, shocks_cov, shocks_cholesky,

@@ -78,8 +78,6 @@ SUBROUTINE f2py_criterion(crit_val, x, data_array, edu_max, delta, edu_start, is
     INTEGER, ALLOCATABLE            :: states_all(:, :, :)
 
     DOUBLE PRECISION, ALLOCATABLE   :: periods_payoffs_systematic(:, :, :)
-    DOUBLE PRECISION, ALLOCATABLE   :: periods_payoffs_ex_post(:, :, : )
-    DOUBLE PRECISION, ALLOCATABLE   :: periods_payoffs_future(:, :, :)
     DOUBLE PRECISION, ALLOCATABLE   :: periods_emax(:, :)
 
 
@@ -108,9 +106,8 @@ SUBROUTINE f2py_criterion(crit_val, x, data_array, edu_max, delta, edu_start, is
     shocks_cov = MATMUL(shocks_cholesky, TRANSPOSE(shocks_cholesky))
 
 
-    CALL solve_fortran_bare(periods_payoffs_systematic, & 
-            periods_payoffs_ex_post, periods_payoffs_future, & 
-           states_number_period, mapping_state_idx, periods_emax, & 
+    CALL fort_solve(periods_payoffs_systematic, &
+            states_number_period, mapping_state_idx, periods_emax, &
             states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, & 
             shocks_cov, shocks_cholesky, is_deterministic, & 
             is_interpolated, num_draws_emax, periods_draws_emax, & 
@@ -125,8 +122,8 @@ SUBROUTINE f2py_criterion(crit_val, x, data_array, edu_max, delta, edu_start, is
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE f2py_solve(periods_payoffs_systematic, periods_payoffs_ex_post, & 
-                periods_payoffs_future, states_number_period, & 
+SUBROUTINE f2py_solve(periods_payoffs_systematic, &
+                states_number_period, &
                 mapping_state_idx, periods_emax, states_all, coeffs_a, &
                 coeffs_b, coeffs_edu, coeffs_home, shocks_cov, &
                 is_deterministic, is_interpolated, num_draws_emax, & 
@@ -155,8 +152,6 @@ SUBROUTINE f2py_solve(periods_payoffs_systematic, periods_payoffs_ex_post, &
     INTEGER, INTENT(OUT)            :: states_number_period(num_periods)
 
     DOUBLE PRECISION, INTENT(OUT)   :: periods_payoffs_systematic(num_periods, max_states_period, 4)
-    DOUBLE PRECISION, INTENT(OUT)   :: periods_payoffs_ex_post(num_periods, max_states_period, 4)
-    DOUBLE PRECISION, INTENT(OUT)   :: periods_payoffs_future(num_periods, max_states_period, 4)
     DOUBLE PRECISION, INTENT(OUT)   :: periods_emax(num_periods, max_states_period)
 
     INTEGER, INTENT(IN)             :: max_states_period
@@ -195,16 +190,13 @@ SUBROUTINE f2py_solve(periods_payoffs_systematic, periods_payoffs_ex_post, &
     INTEGER, ALLOCATABLE            :: states_all_int(:, :, :)
 
     DOUBLE PRECISION, ALLOCATABLE   :: periods_payoffs_systematic_int(:, :, :)
-    DOUBLE PRECISION, ALLOCATABLE   :: periods_payoffs_ex_post_int(:, :, : )
-    DOUBLE PRECISION, ALLOCATABLE   :: periods_payoffs_future_int(:, :, :)
     DOUBLE PRECISION, ALLOCATABLE   :: periods_emax_int(:, :)
 
 !-------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------- 
    
-    CALL solve_fortran_bare(periods_payoffs_systematic_int, & 
-            periods_payoffs_ex_post_int, periods_payoffs_future_int, & 
+    CALL fort_solve(periods_payoffs_systematic_int, &
             states_number_period_int, mapping_state_idx_int, periods_emax_int, & 
             states_all_int, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, & 
             shocks_cov, shocks_cholesky, is_deterministic, & 
@@ -214,9 +206,7 @@ SUBROUTINE f2py_solve(periods_payoffs_systematic, periods_payoffs_ex_post, &
 
     ! Assign to initial objects for return to PYTHON
     periods_payoffs_systematic = periods_payoffs_systematic_int   
-    periods_payoffs_ex_post = periods_payoffs_ex_post_int  
-    periods_payoffs_future = periods_payoffs_future_int
-    states_number_period = states_number_period_int 
+    states_number_period = states_number_period_int
     mapping_state_idx = mapping_state_idx_int 
     periods_emax = periods_emax_int 
     states_all = states_all_int
@@ -311,8 +301,8 @@ SUBROUTINE f2py_simulate(dataset, periods_payoffs_systematic, &
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE f2py_backward_induction(periods_emax, periods_payoffs_ex_post, &
-                periods_payoffs_future, num_periods, max_states_period, &
+SUBROUTINE f2py_backward_induction(periods_emax, &
+                num_periods, max_states_period, &
                 periods_draws_emax, num_draws_emax, states_number_period, &
                 periods_payoffs_systematic, edu_max, edu_start, & 
                 mapping_state_idx, states_all, delta, is_debug, shocks_cov, &
@@ -329,8 +319,6 @@ SUBROUTINE f2py_backward_induction(periods_emax, periods_payoffs_ex_post, &
 
     !/* external objects        */
 
-    DOUBLE PRECISION, INTENT(OUT)   :: periods_payoffs_ex_post(num_periods, max_states_period, 4)
-    DOUBLE PRECISION, INTENT(OUT)   :: periods_payoffs_future(num_periods, max_states_period, 4)
     DOUBLE PRECISION, INTENT(OUT)   :: periods_emax(num_periods, max_states_period)
 
     DOUBLE PRECISION, INTENT(IN)    :: periods_payoffs_systematic(:, :, :   )
@@ -364,12 +352,10 @@ SUBROUTINE f2py_backward_induction(periods_emax, periods_payoffs_ex_post, &
     ! This assignment is required as the variables are initialized with zero 
     ! by the interface generator.
     periods_emax = MISSING_FLOAT
-    periods_payoffs_future = MISSING_FLOAT
-    periods_payoffs_ex_post = MISSING_FLOAT
 
     ! Call actual function of interest
-    CALL backward_induction(periods_emax, periods_payoffs_ex_post, &
-            periods_payoffs_future, num_periods, max_states_period, &
+    CALL backward_induction(periods_emax, &
+            num_periods, max_states_period, &
             periods_draws_emax, num_draws_emax, states_number_period, &
             periods_payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
             states_all, delta, is_debug, shocks_cov, level, is_ambiguous, measure, &

@@ -147,33 +147,6 @@ class TestClass(object):
                 assert (crit_val in [0.0, 1.0])
 
     def test_3(self):
-        """ Testing whether the systematic and ex post payoffs are identical if
-        there is no random variation in the payoffs (all draws set to
-        zero).
-        """
-        # Generate constraint periods
-        constraints = dict()
-        constraints['is_deterministic'] = True
-        constraints['is_myopic'] = False
-        constraints['level'] = 0.00
-
-        # Generate random initialization file
-        generate_init(constraints)
-
-        # Perform toolbox actions
-        robupy_obj = read('test.robupy.ini')
-
-        robupy_obj = solve(robupy_obj)
-
-        # Distribute class attributes
-        systematic = robupy_obj.get_attr('periods_payoffs_systematic')
-        ex_post = robupy_obj.get_attr('periods_payoffs_ex_post')
-
-        # Check
-        assert (np.ma.all(np.ma.masked_invalid(systematic) ==
-                    np.ma.masked_invalid(ex_post)))
-
-    def test_4(self):
         """ If there is no random variation in payoffs then the number of
         draws to simulate the expected future value should have no effect.
         """
@@ -219,7 +192,7 @@ class TestClass(object):
             assert (np.isfinite(diff))
             assert (diff < 10e-10)
 
-    def test_5(self):
+    def test_4(self):
         """ Testing whether the risk code is identical to the ambiguity code for
         very, very small levels of ambiguity.
         """
@@ -254,7 +227,8 @@ class TestClass(object):
             # Checks
             np.testing.assert_allclose(base, periods_emax, rtol=1e-06)
 
-    def test_6(self):
+
+    def test_5(self):
         """ Testing whether the systematic payoff calculation is unaffected by
         the level of ambiguity.
         """
@@ -293,7 +267,7 @@ class TestClass(object):
             # Checks
             np.testing.assert_allclose(base, systematic)
 
-    def test_7(self):
+    def test_6(self):
         """ Testing whether the a simulated dataset and the evaluation of the
         criterion function are the same for a tiny delta and a myopic agent.
         """
@@ -338,7 +312,7 @@ class TestClass(object):
 
             np.testing.assert_allclose(base_val, crit_val, rtol=1e-03, atol=1e-03)
 
-    def test_8(self):
+    def test_7(self):
         """ This methods ensures that the core functions yield the same
         results across implementations.
         """
@@ -414,12 +388,12 @@ class TestClass(object):
         pyth = pyth_solve(*args )
         f2py = f2py_solve(*args + (max_states_period,))
         for alt in [f2py, fort]:
-            for i in range(7):
+            for i in range(5):
                 np.testing.assert_allclose(pyth[i], alt[i])
 
         # Distribute solution arguments for further use in simulation test.
-        periods_payoffs_systematic, periods_payoffs_ex_post, \
-            periods_payoffs_future, states_number_period, mapping_state_idx, \
+        periods_payoffs_systematic, \
+            states_number_period, mapping_state_idx, \
             periods_emax, states_all = pyth
 
         # Collect arguments across implementations.

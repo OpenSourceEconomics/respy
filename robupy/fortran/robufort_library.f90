@@ -234,9 +234,8 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE solve_fortran_bare(periods_payoffs_systematic, & 
-                periods_payoffs_ex_post, periods_payoffs_future, & 
-                states_number_period, mapping_state_idx, periods_emax, & 
+SUBROUTINE fort_solve(periods_payoffs_systematic, &
+                states_number_period, mapping_state_idx, periods_emax, &
                 states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, & 
                 shocks_cov, shocks_cholesky, is_deterministic, & 
                 is_interpolated, num_draws_emax, periods_draws_emax, & 
@@ -250,8 +249,6 @@ SUBROUTINE solve_fortran_bare(periods_payoffs_systematic, &
     INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: states_all(:, :, :)
 
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_payoffs_systematic(:, :, :)
-    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_payoffs_ex_post(:, :, :)
-    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_payoffs_future(:, :, :)
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_emax(:, :)
 
     INTEGER(our_int), INTENT(IN)                    :: num_draws_emax
@@ -308,8 +305,6 @@ SUBROUTINE solve_fortran_bare(periods_payoffs_systematic, &
 
     ! Allocate arrays
     ALLOCATE(periods_payoffs_systematic(num_periods, max_states_period, 4))
-    ALLOCATE(periods_payoffs_ex_post(num_periods, max_states_period, 4))
-    ALLOCATE(periods_payoffs_future(num_periods, max_states_period, 4))
     ALLOCATE(periods_emax(num_periods, max_states_period))
 
     ! Calculate the systematic payoffs
@@ -320,9 +315,7 @@ SUBROUTINE solve_fortran_bare(periods_payoffs_systematic, &
     ! Initialize containers, which contain a lot of missing values as we
     ! capture the tree structure in arrays of fixed dimension.
     periods_emax = MISSING_FLOAT
-    periods_payoffs_future = MISSING_FLOAT
-    periods_payoffs_ex_post = MISSING_FLOAT
-    
+
     ! Perform backward induction procedure.
     IF (is_myopic) THEN
 
@@ -335,8 +328,8 @@ SUBROUTINE solve_fortran_bare(periods_payoffs_systematic, &
 
     ELSE
 
-        CALL backward_induction(periods_emax, periods_payoffs_ex_post, &
-                periods_payoffs_future, num_periods, max_states_period, &
+        CALL backward_induction(periods_emax, &
+                num_periods, max_states_period, &
                 periods_draws_emax, num_draws_emax, states_number_period, &
                 periods_payoffs_systematic, edu_max, edu_start, & 
                 mapping_state_idx, states_all, delta, is_debug, shocks_cov, & 
@@ -577,8 +570,8 @@ SUBROUTINE calculate_payoffs_systematic(periods_payoffs_systematic, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
-                periods_payoffs_future, num_periods, max_states_period, &
+SUBROUTINE backward_induction(periods_emax, &
+                num_periods, max_states_period, &
                 periods_draws_emax, num_draws_emax, states_number_period, & 
                 periods_payoffs_systematic, edu_max, edu_start, & 
                 mapping_state_idx, states_all, delta, is_debug, shocks_cov, & 
@@ -595,8 +588,6 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(INOUT)       :: periods_payoffs_ex_post(:, :, :)
-    REAL(our_dble), INTENT(INOUT)       :: periods_payoffs_future(:, :, :)
     REAL(our_dble), INTENT(INOUT)       :: periods_emax(:, :)
 
     REAL(our_dble), INTENT(IN)          :: periods_payoffs_systematic(:, :, :)
@@ -733,8 +724,6 @@ SUBROUTINE backward_induction(periods_emax, periods_payoffs_ex_post, &
 
                 ! This information is only available if no interpolation is 
                 ! used. Otherwise all remain set to missing values (see above). 
-                periods_payoffs_ex_post(period + 1, k + 1, :) = payoffs_ex_post
-                periods_payoffs_future(period + 1, k + 1, :) = payoffs_future
 
             END DO
 

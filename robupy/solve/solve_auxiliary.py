@@ -3,12 +3,12 @@ where FORTRAN alternatives are available.
 """
 
 # standard library
+import statsmodels.api as sm
+import numpy as np
+
 import logging
 import os
 import shlex
-
-import statsmodels.api as sm
-import numpy as np
 
 # project library
 from robupy.solve.ambiguity import get_payoffs_ambiguity
@@ -43,10 +43,6 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
 
     # Initialize containers with missing values
     periods_emax = np.tile(MISSING_FLOAT, (num_periods, max_states_period))
-    periods_payoffs_ex_post = np.tile(MISSING_FLOAT, (num_periods,
-                                               max_states_period, 4))
-    periods_payoffs_future = np.tile(MISSING_FLOAT, (num_periods,
-                                               max_states_period, 4))
 
     # Iterate backward through all periods
     for period in range(num_periods - 1, -1, -1):
@@ -119,14 +115,9 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
                 # Store results
                 periods_emax[period, k] = emax
 
-                # This information is only available if no interpolation is
-                # used. Otherwise all remain set to missing values (see above).
-                periods_payoffs_ex_post[period, k, :] = payoffs_ex_post
-                periods_payoffs_future[period, k, :] = payoffs_future
-
     # Finishing. Note that the last two return arguments are not available in
     # for periods, where interpolation is required.
-    return periods_emax, periods_payoffs_ex_post, periods_payoffs_future
+    return periods_emax
 
 
 def pyth_create_state_space(num_periods, edu_start, edu_max, min_idx):
@@ -225,8 +216,8 @@ def pyth_calculate_payoffs_systematic(num_periods, states_number_period,
     """
 
     # Initialize
-    periods_payoffs_systematic = np.tile(MISSING_FLOAT,
-        (num_periods, max_states_period, 4))
+    shape = (num_periods, max_states_period, 4)
+    periods_payoffs_systematic = np.tile(MISSING_FLOAT, shape)
 
     # Calculate systematic instantaneous payoffs
     for period in range(num_periods - 1, -1, -1):

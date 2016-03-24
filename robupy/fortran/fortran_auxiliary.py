@@ -8,7 +8,6 @@ import numpy as np
 import os
 
 # project library
-from robupy.shared.auxiliary import replace_missing_values
 from robupy.shared.constants import HUGE_FLOAT
 
 ''' Auxiliary  functions
@@ -38,19 +37,12 @@ def get_results(num_periods, min_idx):
     shape = (num_periods, max_states_period, 4)
     periods_payoffs_systematic = read_date('periods_payoffs_systematic', shape)
 
-    shape = (num_periods, max_states_period, 4)
-    periods_payoffs_future = read_date('periods_payoffs_future', shape)
-
-    shape = (num_periods, max_states_period, 4)
-    periods_payoffs_ex_post = read_date('periods_payoffs_ex_post', shape)
-
     shape = (num_periods, max_states_period)
     periods_emax = read_date('periods_emax', shape)
 
     # Update class attributes with solution
-    args = (periods_payoffs_systematic, periods_payoffs_ex_post,
-        periods_payoffs_future, states_number_period,  mapping_state_idx,
-        periods_emax, states_all)
+    args = (periods_payoffs_systematic, states_number_period,
+        mapping_state_idx, periods_emax, states_all)
 
     # Finishing
     return args

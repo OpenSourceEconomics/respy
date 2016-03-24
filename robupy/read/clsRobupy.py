@@ -85,14 +85,6 @@ class RobupyCls(object):
 
         self.attr['is_solved'] = False
 
-        # The ex post realizations are only stored for debugging purposes.
-        # In the special case of no randomness (with all draws equal
-        # to zero), they have to be equal to the systematic version. The same
-        # is true for the future payoffs
-        self.attr['periods_payoffs_ex_post'] = None
-
-        self.attr['periods_payoffs_future'] = None
-
         # Initialization
         self._update_core_attributes()
 
@@ -458,8 +450,6 @@ class RobupyCls(object):
         # Distribute results
         periods_payoffs_systematic = self.attr['periods_payoffs_systematic']
 
-        periods_payoffs_future = self.attr['periods_payoffs_future']
-
         states_number_period = self.attr['states_number_period']
 
         mapping_state_idx = self.attr['mapping_state_idx']
@@ -590,7 +580,6 @@ class RobupyCls(object):
 
         # Check the expected future value
         is_applicable = (periods_emax is not None)
-        is_applicable = is_applicable and (periods_payoffs_future is not None)
 
         if is_applicable:
             # Check that the payoffs are finite for all admissible values and
@@ -612,27 +601,6 @@ class RobupyCls(object):
                     assert (
                         np.all(np.isfinite(
                             periods_emax[is_infinite == False])) == False)
-
-            # Check that the payoffs are finite for all admissible values and
-            # infinite for all others. This is only a valid request if no
-            # interpolation is performed.
-            if (not is_interpolated) and (not is_myopic):
-                for period in range(num_periods - 1):
-                    # Loop over all possible states
-                    for k in range(states_number_period[period]):
-                        # Check for finite value at admissible state, infinite
-                        # values are allowed for the third column when the
-                        # maximum level of education is attained.
-                        assert (np.all(
-                            np.isfinite(periods_payoffs_future[period, k, :2])))
-                        assert (np.all(
-                            np.isfinite(periods_payoffs_future[period, k, 3])))
-                        # Special checks for infinite value due to
-                        # high education.
-                        if not np.isfinite(
-                                periods_payoffs_future[period, k, 2]):
-                            assert (
-                            states_all[period, k][2] == edu_max - edu_start)
 
     def _check_key(self, key):
         """ Check that key is present.

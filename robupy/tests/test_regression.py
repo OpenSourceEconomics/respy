@@ -47,14 +47,7 @@ class TestClass(object):
 
         # Distribute class attributes
         systematic = robupy_obj.get_attr('periods_payoffs_systematic')
-        ex_post = robupy_obj.get_attr('periods_payoffs_ex_post')
         emax = robupy_obj.get_attr('periods_emax')
-
-        # GENERAL: As there are no random draws (all draws set to
-        # zero), the systematic and ex post versions of the period payoffs
-        # should be identical.
-        assert (np.ma.all(np.ma.masked_invalid(ex_post) ==
-                          np.ma.masked_invalid(systematic)))
 
         # PERIOD 3: Check the systematic payoffs against hand calculations.
         vals = [[2.7456010000000000, 07.5383250000000000, -3999.60, 1.140]]

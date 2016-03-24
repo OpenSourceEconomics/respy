@@ -3,9 +3,9 @@ model with PYTHON and F2PY capabilities.
 """
 
 # standard library
-import logging
-
 import numpy as np
+
+import logging
 
 # project library
 from robupy.shared.constants import MISSING_FLOAT
@@ -39,7 +39,6 @@ def pyth_solve(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
     # Cutting to size
     states_all = states_all[:, :max(states_number_period), :]
 
-
     logger.info('... finished \n')
 
     # Calculate systematic payoffs which are later used in the backward
@@ -63,8 +62,6 @@ def pyth_solve(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
     # capture the tree structure in arrays of fixed dimension.
     i, j = num_periods, max_states_period
     periods_emax = np.tile(MISSING_FLOAT, (i, j))
-    periods_payoffs_ex_post = np.tile(MISSING_FLOAT, (i, j, 4))
-    periods_payoffs_future = np.tile(MISSING_FLOAT, (i, j, 4))
 
     if is_myopic:
         # All other objects remain set to MISSING_FLOAT. This align the
@@ -74,20 +71,19 @@ def pyth_solve(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
             periods_emax[period, :num_states] = 0.0
 
     else:
-        periods_emax, periods_payoffs_ex_post, periods_payoffs_future = \
+        periods_emax = \
             pyth_backward_induction(num_periods, max_states_period,
                 periods_draws_emax, num_draws_emax, states_number_period,
                 periods_payoffs_systematic, edu_max, edu_start,
-                mapping_state_idx, states_all, delta, is_debug, shocks_cov, level,
-                is_ambiguous, measure, is_interpolated, num_points,
+                mapping_state_idx, states_all, delta, is_debug, shocks_cov,
+                level, is_ambiguous, measure, is_interpolated, num_points,
                 is_deterministic, shocks_cholesky)
 
     logger.info('... finished \n')
 
     # Collect return arguments in tuple
-    args = (periods_payoffs_systematic, periods_payoffs_ex_post,
-            periods_payoffs_future, states_number_period, mapping_state_idx,
-            periods_emax, states_all)
+    args = (periods_payoffs_systematic, states_number_period,
+        mapping_state_idx, periods_emax, states_all)
 
     # Finishing
     return args

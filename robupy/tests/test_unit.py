@@ -696,5 +696,4 @@ class TestClass(object):
             is_interpolated, num_points, is_deterministic, shocks_cholesky)
         pyth = pyth_backward_induction(*args)
         f2py = f2py_backward_induction(*args)
-        for i in range(3):
-            np.testing.assert_allclose(pyth[i], f2py[i])
+        np.testing.assert_allclose(pyth, f2py)

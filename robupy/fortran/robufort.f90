@@ -18,8 +18,8 @@ CONTAINS
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE store_results(mapping_state_idx, states_all, & 
-                periods_payoffs_ex_post, periods_payoffs_systematic, & 
-                states_number_period, periods_emax, periods_payoffs_future, & 
+                periods_payoffs_systematic, &
+                states_number_period, periods_emax, &
                 num_periods, min_idx, crit_val, request) 
 
     !/* external objects        */
@@ -32,8 +32,6 @@ SUBROUTINE store_results(mapping_state_idx, states_all, &
     INTEGER(our_int), INTENT(IN)    :: min_idx 
 
     REAL(our_dble), INTENT(IN)      :: periods_payoffs_systematic(:, :, :)
-    REAL(our_dble), INTENT(IN)      :: periods_payoffs_ex_post(:, :, :)    
-    REAL(our_dble), INTENT(IN)      :: periods_payoffs_future(:, :, :)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
     REAL(our_dble), INTENT(IN)      :: crit_val
 
@@ -97,31 +95,6 @@ SUBROUTINE store_results(mapping_state_idx, states_all, &
     END DO
 
     CLOSE(1)
-
-
-    3100 FORMAT(4(1x,f25.15))
-
-    OPEN(UNIT=1, FILE='.periods_payoffs_future.robufort.dat')
-
-    DO period = 1, num_periods
-        DO i = 1, max_states_period
-            WRITE(1, 3100) periods_payoffs_future(period, i, :)
-        END DO
-    END DO
-
-    CLOSE(1)
-
-
-    OPEN(UNIT=1, FILE='.periods_payoffs_ex_post.robufort.dat')
-
-    DO period = 1, num_periods
-        DO i = 1, max_states_period
-            WRITE(1, 1900) periods_payoffs_ex_post(period, i, :)
-        END DO
-    END DO
-
-    CLOSE(1)
-
 
     2100 FORMAT(i5)
 
@@ -472,8 +445,6 @@ PROGRAM robufort
     INTEGER(our_int)                :: min_idx
 
     REAL(our_dble), ALLOCATABLE     :: periods_payoffs_systematic(:, :, :)
-    REAL(our_dble), ALLOCATABLE     :: periods_payoffs_ex_post(:, :, :)
-    REAL(our_dble), ALLOCATABLE     :: periods_payoffs_future(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_draws_emax(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_draws_prob(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_emax(:, :)
@@ -522,9 +493,8 @@ PROGRAM robufort
     IF (request == 'solve') THEN
 
         ! Solve the model for a given parametrization.    
-        CALL solve_fortran_bare(periods_payoffs_systematic, & 
-                periods_payoffs_ex_post, periods_payoffs_future, & 
-                states_number_period, mapping_state_idx, periods_emax, & 
+        CALL fort_solve(periods_payoffs_systematic, &
+                states_number_period, mapping_state_idx, periods_emax, &
                 states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, & 
                 shocks_cov, shocks_cholesky, is_deterministic, & 
                 is_interpolated, num_draws_emax, periods_draws_emax, & 
@@ -543,8 +513,7 @@ PROGRAM robufort
         CALL read_dataset(data_array, num_periods, num_agents)
 
         ! Solve the model for a given parametrization.    
-        CALL solve_fortran_bare(periods_payoffs_systematic, & 
-                periods_payoffs_ex_post, periods_payoffs_future, & 
+        CALL fort_solve(periods_payoffs_systematic, &
                 states_number_period, mapping_state_idx, periods_emax, & 
                 states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, & 
                 shocks_cov, shocks_cholesky, is_deterministic, & 
@@ -562,9 +531,9 @@ PROGRAM robufort
 
     ! Store results. These are read in by the PYTHON wrapper and added to the 
     ! clsRobupy instance.
-    CALL store_results(mapping_state_idx, states_all, periods_payoffs_ex_post, & 
+    CALL store_results(mapping_state_idx, states_all, &
             periods_payoffs_systematic, states_number_period, periods_emax, &
-            periods_payoffs_future, num_periods, min_idx, crit_val, request) 
+            num_periods, min_idx, crit_val, request)
 
 !*******************************************************************************
 !*******************************************************************************
