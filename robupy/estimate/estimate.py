@@ -27,6 +27,10 @@ def all_done():
 def estimate(robupy_obj, data_frame):
     """ Estimate the model
     """
+    # Antibugging
+    assert robupy_obj.get_attr('is_solved')
+    assert robupy_obj.get_attr('is_locked')
+
     # Distribute class attributes
     periods_payoffs_systematic, mapping_state_idx, periods_emax, model_paras, \
         num_periods, num_agents, states_all, edu_start, seed_data, \

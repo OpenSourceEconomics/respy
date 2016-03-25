@@ -19,7 +19,6 @@ import pandas as pd
 import logging
 
 # project library
-from robupy.simulate.simulate_auxiliary import check_simulation
 from robupy.simulate.simulate_auxiliary import write_info
 from robupy.simulate.simulate_auxiliary import write_out
 
@@ -44,7 +43,8 @@ def simulate(robupy_obj):
     as possible, this requires to pass in a solved robupy_obj.
     """
     # Checks
-    assert check_simulation(robupy_obj)
+    assert robupy_obj.get_attr('is_solved')
+    assert robupy_obj.get_attr('is_locked')
 
     # Distribute class attributes
     periods_payoffs_systematic, mapping_state_idx, periods_emax, model_paras, \

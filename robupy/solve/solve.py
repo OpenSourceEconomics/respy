@@ -26,7 +26,8 @@ def solve(robupy_obj):
     """ Solve dynamic programming problem by backward induction.
     """
     # Checks, cleanup, start logger
-    assert _check_solve(robupy_obj)
+    assert (not robupy_obj.get_attr('is_solved'))
+    assert robupy_obj.get_attr('is_locked')
 
     _cleanup()
 
@@ -116,17 +117,6 @@ def solve(robupy_obj):
 
 ''' Auxiliary functions
 '''
-
-
-def _check_solve(robupy_obj):
-    """ Check likelihood calculation.
-    """
-    # Check integrity of the request
-    assert (not robupy_obj.get_attr('is_solved'))
-    assert robupy_obj.get_attr('is_locked')
-
-    # Finishing
-    return True
 
 
 def _stop_logging():

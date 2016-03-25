@@ -16,6 +16,8 @@ from robupy.shared.auxiliary import check_dataset
 def process(robupy_obj):
     """ This function processes the dataset from disk.
     """
+    # Antibugging
+    assert robupy_obj.get_attr('is_locked')
 
     # Distribute class attributes
     file_est = robupy_obj.get_attr('file_est')

@@ -93,10 +93,6 @@ def remove_nuisances():
 
             shutil.rmtree(root)
 
-        if 'robupy.egg-info' in root:
-
-            shutil.rmtree(root)
-
 """ Main algorithm.
 """
 remove_nuisances()
