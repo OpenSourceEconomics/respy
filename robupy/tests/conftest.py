@@ -38,11 +38,6 @@ def versions(request):
     return arg_
 
 
-@pytest.fixture(scope='session')
-def supply_resources(request):
-    """ This fixture ensures that the compiled libraries are all available.
-    """
-    pass
 """ The following fixtures are called before each test.
 """
 

@@ -15,6 +15,8 @@ from robupy.shared.auxiliary import distribute_class_attributes
 from robupy.shared.auxiliary import distribute_model_paras
 from robupy.shared.auxiliary import create_draws
 
+from robupy.fortran.f2py_library import f2py_criterion
+
 ''' Main function
 '''
 
@@ -73,7 +75,6 @@ def estimate(robupy_obj, data_frame):
     if version == 'PYTHON':
         crit_val = pyth_criterion(x0, *args)
     elif version in ['F2PY', 'FORTRAN']:
-        from robupy.fortran.f2py_library import f2py_criterion
         crit_val = f2py_criterion(x0, *args)
     else:
         raise NotImplementedError

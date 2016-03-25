@@ -95,7 +95,7 @@ def transform_robupy_to_restud(model_paras, level, edu_start, edu_max,
 '''
 
 
-@pytest.mark.usefixtures('fresh_directory', 'set_seed', 'supply_resources')
+@pytest.mark.usefixtures('fresh_directory', 'set_seed')
 class TestClass(object):
     """ This class groups together some tests.
     """

@@ -28,6 +28,8 @@ from robupy.shared.auxiliary import replace_missing_values
 from robupy.shared.auxiliary import check_dataset
 from robupy.shared.auxiliary import create_draws
 
+from robupy.fortran.f2py_library import f2py_simulate
+
 # Logging
 from robupy.simulate.simulate_python import pyth_simulate
 
@@ -76,7 +78,6 @@ def simulate(robupy_obj):
     if version == 'PYTHON':
         data_array = pyth_simulate(*args)
     elif version in ['FORTRAN', 'F2PY']:
-        from robupy.fortran.f2py_library import f2py_simulate
         data_array = f2py_simulate(*args)
     else:
         raise NotImplementedError

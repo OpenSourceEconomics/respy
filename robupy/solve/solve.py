@@ -15,8 +15,8 @@ from robupy.shared.auxiliary import distribute_model_paras
 from robupy.shared.auxiliary import replace_missing_values
 from robupy.shared.auxiliary import create_draws
 from robupy.shared.auxiliary import add_solution
-
-
+from robupy.fortran.f2py_library import f2py_create_state_space
+from robupy.fortran.f2py_library import f2py_solve
 
 ''' Main function
 '''
@@ -81,8 +81,7 @@ def solve(robupy_obj):
         solution = pyth_solve(*args)
 
     elif version == 'F2PY':
-        from robupy.fortran.f2py_library import f2py_create_state_space
-        from robupy.fortran.f2py_library import f2py_solve
+
         #
         args = (num_periods, edu_start, edu_max, min_idx)
         max_states_period = f2py_create_state_space(*args)[3]

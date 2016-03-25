@@ -15,6 +15,8 @@ from robupy.shared.auxiliary import add_solution
 
 from robupy.shared.auxiliary import replace_missing_values
 
+from robupy.fortran.f2py_library import f2py_evaluate
+
 ''' Main function
 '''
 
@@ -77,7 +79,6 @@ def evaluate(robupy_obj, data_frame):
 
     elif version == 'F2PY':
 
-        from robupy.fortran.f2py_library import f2py_evaluate
         crit_val = f2py_evaluate(*args)
 
     else:

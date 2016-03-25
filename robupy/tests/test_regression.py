@@ -16,7 +16,7 @@ from robupy import read
 from robupy.shared.constants import TEST_RESOURCES_DIR
 
 
-@pytest.mark.usefixtures('fresh_directory', 'set_seed', 'supply_resources')
+@pytest.mark.usefixtures('fresh_directory', 'set_seed')
 class TestClass(object):
     """ This class groups together some tests.
     """

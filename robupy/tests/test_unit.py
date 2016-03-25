@@ -36,11 +36,23 @@ from robupy.estimate.estimate_auxiliary import opt_get_model_parameters
 from robupy.shared.auxiliary import distribute_class_attributes
 from robupy.shared.auxiliary import create_draws
 
+import robupy.fortran.f2py_testing as fort_test
+import robupy.fortran.f2py_debug as fort_debug
+import robupy.fortran.f2py_library as fort_lib
+
+from robupy.solve.solve_auxiliary import pyth_create_state_space
+from robupy.fortran.f2py_library import  f2py_create_state_space
+
+from robupy.solve.solve_auxiliary import pyth_calculate_payoffs_systematic
+from robupy.fortran.f2py_library import f2py_calculate_payoffs_systematic
+
+from robupy.solve.solve_auxiliary import pyth_backward_induction
+from robupy.fortran.f2py_library import f2py_backward_induction
 
 ''' Main
 '''
 
-@pytest.mark.usefixtures('fresh_directory', 'set_seed', 'supply_resources')
+@pytest.mark.usefixtures('fresh_directory', 'set_seed')
 class TestClass(object):
     """ This class groups together some tests.
     """
@@ -49,7 +61,6 @@ class TestClass(object):
         implementations.
         """
         # FORTRAN resources
-        import robupy.fortran.f2py_debug as fort_debug
 
         for _ in range(5):
 
@@ -116,7 +127,6 @@ class TestClass(object):
         ambiguity.
         """
         # FORTRAN resources
-        import robupy.fortran.f2py_debug as fort_debug
 
         # Iterate over random test cases
         for _ in range(5):
@@ -178,8 +188,6 @@ class TestClass(object):
         PYTHON and FORTRAN for the actual optimization problem.
         """
         # FORTRAN resources
-        import robupy.fortran.f2py_debug as fort_debug
-
         maxiter = np.random.random_integers(1, 100)
         ftol = np.random.uniform(0.000000, 1e-5)
         x0 = np.random.normal(size=2)
@@ -263,9 +271,6 @@ class TestClass(object):
         """ This test case compare the results of a debugging setup for the SLSQP
         algorithm's PYTHON and FORTRAN implementation
         """
-        # FORTRAN resources
-        import robupy.fortran.f2py_testing as fort_test
-
         # Sample basic test case
         maxiter = np.random.random_integers(1, 100)
         num_dim = np.random.random_integers(2, 4)
@@ -312,9 +317,7 @@ class TestClass(object):
         and PYTHON implementations. These tests are set up a separate test case
         due to the large setup cost to construct the ingredients for the interface.
         """
-        # FORTRAN resources
-        import robupy.fortran.f2py_debug as fort_debug
-
+        # FORTRAN resource
         # Generate constraint periods
         constraints = dict()
         constraints['version'] = 'PYTHON'
@@ -391,8 +394,6 @@ class TestClass(object):
         against PYTHON intrinsic routines.
         """
         # FORTRAN resources
-        import robupy.fortran.f2py_library as fort_lib
-        import robupy.fortran.f2py_debug as fort_debug
 
         for _ in range(10):
 
@@ -472,9 +473,7 @@ class TestClass(object):
         """ Compare results between FORTRAN and PYTHON of selected functions. The
         file fortran/debug_interface.f90 provides the F2PY bindings.
         """
-        # FORTRAN resources
-        import robupy.fortran.f2py_debug as fort_debug
-
+        # FORTRAN resource
 
 
         for _ in range(10):
@@ -624,15 +623,6 @@ class TestClass(object):
         """ Testing the core functions of the solution step for the equality
         of results between the PYTHON and FORTRAN implementations.
         """
-
-        from robupy.solve.solve_auxiliary import pyth_create_state_space
-        from robupy.fortran.f2py_library import  f2py_create_state_space
-
-        from robupy.solve.solve_auxiliary import pyth_calculate_payoffs_systematic
-        from robupy.fortran.f2py_library import f2py_calculate_payoffs_systematic
-
-        from robupy.solve.solve_auxiliary import pyth_backward_induction
-        from robupy.fortran.f2py_library import f2py_backward_induction
 
         # Generate random initialization file
         generate_init()

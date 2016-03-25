@@ -28,11 +28,13 @@ from robupy.shared.auxiliary import create_draws
 from robupy import solve
 from robupy import read
 
+import robupy.fortran.f2py_debug as fort_debug
+
 ''' Main
 '''
 
 
-@pytest.mark.usefixtures('fresh_directory', 'set_seed', 'supply_resources')
+@pytest.mark.usefixtures('fresh_directory', 'set_seed')
 class TestClass(object):
     """ This class groups together some tests.
     """
@@ -80,7 +82,6 @@ class TestClass(object):
         """ Further tests for the interpolation routines.
         """
         # FORTRAN resources
-        import robupy.fortran.f2py_debug as fort_debug
 
         # Impose constraints. The FORTRAN code does not include other
         # measures just yet.
@@ -179,9 +180,6 @@ class TestClass(object):
         """ This is a special test for auxiliary functions related to the
         interpolation setup.
         """
-        # FORTRAN resources
-        import robupy.fortran.f2py_debug as fort_debug
-
         # Impose constraints
         constr = dict()
         constr['periods'] = np.random.random_integers(2, 5)
