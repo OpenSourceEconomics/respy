@@ -375,8 +375,8 @@ class TestClass(object):
         measure = 'kl'
         args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
             is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
-            num_periods, num_points, is_myopic, edu_start, seed_emax,
-            is_debug, measure, edu_max, min_idx, delta, level)
+            num_periods, num_points, is_myopic, edu_start,
+            is_debug, measure, edu_max, min_idx, delta, level, seed_emax)
 
         fort = fort_solve(*args)
 
