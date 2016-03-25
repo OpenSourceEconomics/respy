@@ -307,7 +307,6 @@ def add_solution(robupy_obj, store, periods_payoffs_systematic,
         states_number_period, mapping_state_idx, periods_emax, states_all):
     """ Add solution to class instance.
     """
-    print(robupy_obj.get_attr('is_solved'))
     robupy_obj.unlock()
 
     robupy_obj.set_attr('periods_payoffs_systematic', periods_payoffs_systematic)

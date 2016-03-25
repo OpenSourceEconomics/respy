@@ -33,15 +33,15 @@ def solve(robupy_obj):
     _start_logging()
 
     # Distribute class attributes
-    model_paras, num_periods, num_agents, edu_start, seed_data, \
-        is_debug, file_sim, edu_max, delta, is_deterministic, version, \
-        num_draws_prob, seed_prob, num_draws_emax, seed_emax, is_interpolated, \
+    model_paras, num_periods, edu_start,  \
+        is_debug, edu_max, delta, is_deterministic, version, \
+        num_draws_emax, seed_emax, is_interpolated, \
         is_ambiguous, num_points, is_myopic, min_idx, measure, level, store = \
             distribute_class_attributes(robupy_obj,
-                'model_paras', 'num_periods', 'num_agents',
-                'edu_start',  'seed_data',
-                'is_debug', 'file_sim', 'edu_max', 'delta',
-                'is_deterministic', 'version', 'num_draws_prob', 'seed_prob',
+                'model_paras', 'num_periods',
+                'edu_start',
+                'is_debug', 'edu_max', 'delta',
+                'is_deterministic', 'version',
                 'num_draws_emax', 'seed_emax', 'is_interpolated',
                 'is_ambiguous', 'num_points', 'is_myopic', 'min_idx', 'measure',
                 'level', 'store')

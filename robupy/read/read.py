@@ -4,14 +4,13 @@
 # standard library
 import numpy as np
 
+import shlex
 import glob
 import os
-import shlex
 
 # project library
 from robupy.shared.constants import ROOT_DIR
 from robupy.read.clsRobupy import RobupyCls
-
 
 ''' Main function
 '''

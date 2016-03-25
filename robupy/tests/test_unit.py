@@ -65,10 +65,11 @@ class TestClass(object):
             robupy_obj = solve(robupy_obj)
 
             # Extract class attributes
-            periods_payoffs_systematic, states_number_period, mapping_state_idx, \
-            is_deterministic, is_ambiguous, periods_emax, model_paras, \
-            num_periods, states_all, num_draws_emax, edu_start, is_debug,\
-            edu_max, measure, delta, level = \
+            periods_payoffs_systematic, states_number_period, \
+                mapping_state_idx, is_deterministic, is_ambiguous, \
+                periods_emax, model_paras, num_periods, states_all, \
+                num_draws_emax, edu_start, is_debug, edu_max, measure, delta,\
+                level = \
                 distribute_class_attributes(robupy_obj,
                     'periods_payoffs_systematic', 'states_number_period',
                     'mapping_state_idx', 'is_deterministic', 'is_ambiguous',
@@ -136,9 +137,9 @@ class TestClass(object):
 
             # Extract class attributes
             periods_payoffs_systematic, states_number_period, mapping_state_idx, \
-            is_deterministic, periods_emax, num_periods, model_paras, \
-            states_all, num_draws_emax, edu_start, edu_max, measure, \
-            delta, is_debug = \
+                is_deterministic, periods_emax, num_periods, model_paras, \
+                states_all, num_draws_emax, edu_start, edu_max, measure, \
+                delta, is_debug = \
                 distribute_class_attributes(robupy_obj,
                     'periods_payoffs_systematic', 'states_number_period',
                     'mapping_state_idx', 'is_deterministic', 'periods_emax',

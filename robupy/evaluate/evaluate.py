@@ -29,17 +29,17 @@ def evaluate(robupy_obj, data_frame):
     # Distribute class attributes
     periods_payoffs_systematic, mapping_state_idx, periods_emax, model_paras, \
         num_periods, num_agents, states_all, edu_start, seed_data, \
-        is_debug, file_sim, edu_max, delta, is_deterministic, version, \
+        is_debug, edu_max, delta, is_deterministic, version, \
         num_draws_prob, seed_prob, num_draws_emax, seed_emax, is_interpolated, \
-        is_ambiguous, num_points, is_myopic, min_idx, measure, level, store = \
+        is_ambiguous, num_points, is_myopic, min_idx, measure, level = \
             distribute_class_attributes(robupy_obj,
                 'periods_payoffs_systematic', 'mapping_state_idx',
                 'periods_emax', 'model_paras', 'num_periods', 'num_agents',
                 'states_all', 'edu_start', 'seed_data', 'is_debug',
-                'file_sim', 'edu_max', 'delta', 'is_deterministic',
+                'edu_max', 'delta', 'is_deterministic',
                 'version', 'num_draws_prob', 'seed_prob', 'num_draws_emax',
                 'seed_emax', 'is_interpolated', 'is_ambiguous', 'num_points',
-                'is_myopic', 'min_idx', 'measure', 'level', 'store')
+                'is_myopic', 'min_idx', 'measure', 'level')
 
     # Check the dataset against the initialization files
     assert check_evaluation('in', data_frame, robupy_obj, is_deterministic)
