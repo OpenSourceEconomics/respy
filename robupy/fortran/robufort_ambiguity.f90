@@ -226,12 +226,12 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, tiny, &
     is_finished = .False.
 
     ! Initialize criterion function at starting values
-    f = criterion(x_internal, num_draws_emax, draws_emax, period, & 
+    f = criterion_ambiguity(x_internal, num_draws_emax, draws_emax, period, &
             k, payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
             states_all, num_periods, periods_emax, delta, shocks_cholesky)
 
 
-    g(:2) = criterion_approx_gradient(x_internal, tiny, num_draws_emax, &
+    g(:2) = criterion_ambiguity_approx_gradient(x_internal, tiny, num_draws_emax, &
                 draws_emax, period, k, payoffs_systematic, edu_max, & 
                 edu_start, mapping_state_idx, states_all, num_periods, & 
                 periods_emax, delta, shocks_cholesky)
@@ -246,7 +246,7 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, tiny, &
         ! Evaluate criterion function and constraints
         IF (mode == one_int) THEN
 
-            f = criterion(x_internal, num_draws_emax, draws_emax, & 
+            f = criterion_ambiguity(x_internal, num_draws_emax, draws_emax, &
                     period, k, payoffs_systematic, edu_max, edu_start, &
                     mapping_state_idx, states_all, num_periods, periods_emax, & 
                     delta, shocks_cholesky)
@@ -258,7 +258,7 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, tiny, &
         ! be zero.
         ELSEIF (mode == - one_int) THEN
 
-            g(:2) = criterion_approx_gradient(x_internal, tiny, & 
+            g(:2) = criterion_ambiguity_approx_gradient(x_internal, tiny, &
                         num_draws_emax, draws_emax, period, k, &
                         payoffs_systematic, edu_max, edu_start, & 
                         mapping_state_idx, states_all, num_periods, & 
@@ -299,13 +299,13 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, tiny, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-FUNCTION criterion(x_internal, num_draws_emax, draws_emax, period, k, & 
+FUNCTION criterion_ambiguity(x_internal, num_draws_emax, draws_emax, period, k, &
             payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
             states_all, num_periods, periods_emax, delta, shocks_cholesky)
 
     !/* external objects        */
 
-    REAL(our_dble)                  :: criterion
+    REAL(our_dble)                  :: criterion_ambiguity
 
     REAL(our_dble), INTENT(IN)      :: payoffs_systematic(:)
     REAL(our_dble), INTENT(IN)      :: shocks_cholesky(:, :)
@@ -338,19 +338,19 @@ FUNCTION criterion(x_internal, num_draws_emax, draws_emax, period, k, &
             mapping_state_idx, delta, shocks_cholesky, x_internal)
 
     ! Finishing
-    criterion = emax_simulated
+    criterion_ambiguity = emax_simulated
 
 END FUNCTION
 !*******************************************************************************
 !*******************************************************************************
-FUNCTION criterion_approx_gradient(x_internal, tiny, num_draws_emax, &
+FUNCTION criterion_ambiguity_approx_gradient(x_internal, tiny, num_draws_emax, &
             draws_emax, period, k, payoffs_systematic, edu_max, edu_start, & 
             mapping_state_idx, states_all, num_periods, periods_emax, delta, &
             shocks_cholesky)
 
     !/* external objects        */
 
-    REAL(our_dble)                  :: criterion_approx_gradient(2)
+    REAL(our_dble)                  :: criterion_ambiguity_approx_gradient(2)
 
     REAL(our_dble), INTENT(IN)      :: shocks_cholesky(:, :)
     REAL(our_dble), INTENT(IN)      :: payoffs_systematic(:)
@@ -386,7 +386,7 @@ FUNCTION criterion_approx_gradient(x_internal, tiny, num_draws_emax, &
     ei = zero_dble
 
     ! Evaluate baseline
-    f0 = criterion(x_internal, num_draws_emax, draws_emax, period, & 
+    f0 = criterion_ambiguity(x_internal, num_draws_emax, draws_emax, period, &
             k, payoffs_systematic, edu_max, edu_start, mapping_state_idx, & 
             states_all, num_periods, periods_emax, delta, shocks_cholesky)
 
@@ -397,11 +397,11 @@ FUNCTION criterion_approx_gradient(x_internal, tiny, num_draws_emax, &
 
         d = tiny * ei
 
-        f1 = criterion(x_internal + d, num_draws_emax, draws_emax, period, &
+        f1 = criterion_ambiguity(x_internal + d, num_draws_emax, draws_emax, period, &
                 k, payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
                 states_all, num_periods, periods_emax, delta, shocks_cholesky)
 
-        criterion_approx_gradient(j) = (f1 - f0) / d(j)
+        criterion_ambiguity_approx_gradient(j) = (f1 - f0) / d(j)
 
         ei(j) = zero_dble
 

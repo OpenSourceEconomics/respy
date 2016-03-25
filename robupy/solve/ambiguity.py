@@ -90,11 +90,11 @@ def _determine_worst_case(num_draws_emax, draws_emax, period, k,
     # Run optimization
     if measure == 'absolute':
         bounds = _prep_absolute(level, is_debug)
-        opt = minimize(_criterion, x0, args, method='SLSQP', options=options,
+        opt = minimize(criterion_ambiguity, x0, args, method='SLSQP', options=options,
                        bounds=bounds)
     else:
         constraints = _prep_kl(shocks_cov, level)
-        opt = minimize(_criterion, x0, args, method='SLSQP', options=options,
+        opt = minimize(criterion_ambiguity, x0, args, method='SLSQP', options=options,
                        constraints=constraints)
         # Stabilization. If the optimization fails the starting values are
         # used otherwise it happens that the constraint is not satisfied by far.
@@ -153,7 +153,7 @@ def _divergence(x, cov, level):
     return level - rslt
 
 
-def _criterion(x, num_draws_emax, draws_emax, period, k, payoffs_systematic,
+def criterion_ambiguity(x, num_draws_emax, draws_emax, period, k, payoffs_systematic,
         edu_max, edu_start, mapping_state_idx, states_all, num_periods,
         periods_emax, delta, shocks_cholesky):
     """ Simulate expected future value for alternative shock distributions.
@@ -164,7 +164,7 @@ def _criterion(x, num_draws_emax, draws_emax, period, k, payoffs_systematic,
         states_all, mapping_state_idx, delta, shocks_cholesky, x)
 
     # Debugging
-    checks_ambiguity('_criterion', simulated)
+    checks_ambiguity('criterion_ambiguity', simulated)
 
     # Finishing
     return simulated
@@ -242,7 +242,7 @@ def checks_ambiguity(str_, *args):
         # should be the same.
         assert (simulated == opt['fun'])
 
-    elif str_ == '_criterion':
+    elif str_ == 'criterion_ambiguity':
 
         # Distribute input parameters
         simulated, = args

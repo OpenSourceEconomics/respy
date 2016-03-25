@@ -26,7 +26,7 @@ from robupy.tests.codes.random_init import generate_init
 from robupy.solve.ambiguity import get_payoffs_ambiguity
 from robupy.solve.emax import simulate_emax
 from robupy.solve.ambiguity import _divergence
-from robupy.solve.ambiguity import _criterion
+from robupy.solve.ambiguity import criterion_ambiguity
 
 from robupy.solve.solve_auxiliary import pyth_create_state_space
 
@@ -242,7 +242,7 @@ class TestClass(object):
             edu_start, mapping_state_idx, states_all, num_periods, periods_emax,
             delta, shocks_cholesky)
 
-        opt = _minimize_slsqp(_criterion, x0, args, maxiter=maxiter,
+        opt = _minimize_slsqp(criterion_ambiguity, x0, args, maxiter=maxiter,
                        ftol=ftol, constraints=constraint)
 
         # Stabilization. This is done as part of the fortran implementation.
@@ -262,7 +262,7 @@ class TestClass(object):
         try:
             np.testing.assert_allclose(py, f, rtol=1e-05, atol=1e-06)
         except AssertionError:
-            if _criterion(f, *args) < _criterion(py, *args):
+            if criterion_ambiguity(f, *args) < criterion_ambiguity(py, *args):
                 pass
             else:
                 raise AssertionError
@@ -377,15 +377,16 @@ class TestClass(object):
                 edu_max, edu_start, mapping_state_idx, states_all, num_periods,
                 periods_emax, delta, shocks_cholesky)
 
-        py = _criterion(x, *args)
-        f90 = fort_debug.wrapper_criterion(x, *args)
+        py = criterion_ambiguity(x, *args)
+        f90 = fort_debug.wrapper_criterion_ambiguity(x, *args)
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
         # Evaluation of derivative of criterion function
         tiny = np.random.uniform(0.000000, 0.5)
 
-        py = approx_fprime(x, _criterion, tiny, *args)
-        f90 = fort_debug.wrapper_criterion_approx_gradient(x, tiny, *args)
+        py = approx_fprime(x, criterion_ambiguity, tiny, *args)
+        f90 = fort_debug.wrapper_criterion_ambiguity_approx_gradient(x, tiny,
+            *args)
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
     def test_6(self):

@@ -199,8 +199,8 @@ SUBROUTINE wrapper_get_payoffs_ambiguity(emax_simulated, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_criterion_approx_gradient(rslt, x, tiny, num_draws_emax, &
-                draws_emax, period, k, payoffs_systematic, edu_max, &
+SUBROUTINE wrapper_criterion_ambiguity_approx_gradient(rslt, x, tiny, &
+                num_draws_emax, draws_emax, period, k, payoffs_systematic, edu_max, &
                 edu_start, mapping_state_idx, states_all, num_periods, &
                 periods_emax, delta, shocks_cholesky)
 
@@ -237,7 +237,7 @@ SUBROUTINE wrapper_criterion_approx_gradient(rslt, x, tiny, num_draws_emax, &
 ! Algorithm
 !-------------------------------------------------------------------------------
 
-    rslt = criterion_approx_gradient(x, tiny, num_draws_emax, & 
+    rslt = criterion_ambiguity_approx_gradient(x, tiny, num_draws_emax, &
             draws_emax, period, k, payoffs_systematic, edu_max, &
             edu_start, mapping_state_idx, states_all, num_periods, & 
             periods_emax, delta, shocks_cholesky)
@@ -292,7 +292,7 @@ SUBROUTINE wrapper_simulate_emax(emax_simulated, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_criterion(emax_simulated, x, num_draws_emax, & 
+SUBROUTINE wrapper_criterion_ambiguity(emax_simulated, x, num_draws_emax, &
                 draws_emax, period, k, payoffs_systematic, & 
                 edu_max, edu_start, mapping_state_idx, states_all, & 
                 num_periods, periods_emax, delta, shocks_cholesky)
@@ -329,7 +329,7 @@ SUBROUTINE wrapper_criterion(emax_simulated, x, num_draws_emax, &
 ! Algorithm
 !-------------------------------------------------------------------------------
 
-    emax_simulated = criterion(x, num_draws_emax, draws_emax, & 
+    emax_simulated = criterion_ambiguity(x, num_draws_emax, draws_emax, &
                         period, k, payoffs_systematic, edu_max, edu_start, &
                         mapping_state_idx, states_all, num_periods, &
                         periods_emax, delta, shocks_cholesky)

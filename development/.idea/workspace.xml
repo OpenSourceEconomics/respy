@@ -7,8 +7,9 @@
     <list default="true" id="dab45195-1938-4e75-b973-f8d08bf57068" name="Default" comment="">
       <change type="DELETED" beforePath="$PROJECT_DIR$/analysis/working/driver.py" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/.idea/workspace.xml" afterPath="$PROJECT_DIR$/package/development/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/fortran/f2py_interface_testing.f90" afterPath="$PROJECT_DIR$/package/robupy/fortran/f2py_interface_testing.f90" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/fortran/robufort_testing.f90" afterPath="$PROJECT_DIR$/package/robupy/fortran/robufort_testing.f90" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/fortran/f2py_interface_debug.f90" afterPath="$PROJECT_DIR$/package/robupy/fortran/f2py_interface_debug.f90" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/fortran/robufort_ambiguity.f90" afterPath="$PROJECT_DIR$/package/robupy/fortran/robufort_ambiguity.f90" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/solve/ambiguity.py" afterPath="$PROJECT_DIR$/package/robupy/solve/ambiguity.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/tests/test_unit.py" afterPath="$PROJECT_DIR$/package/robupy/tests/test_unit.py" />
     </list>
     <ignored path="robustToolbox.iws" />
@@ -51,8 +52,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/package/robupy/python/ambiguity.py" />
-        <option value="$PROJECT_DIR$/package/robupy/python/solve_auxiliary.py" />
         <option value="$PROJECT_DIR$/package/robupy/python/solve_python.py" />
         <option value="$PROJECT_DIR$/package/robupy/auxiliary.py" />
         <option value="$PROJECT_DIR$/package/robupy/process/process.py" />
@@ -83,7 +82,6 @@
         <option value="$PROJECT_DIR$/package/robupy/solve/risk.py" />
         <option value="$PROJECT_DIR$/package/robupy/simulate/simulate_python.py" />
         <option value="$PROJECT_DIR$/package/robupy/evaluate/evaluate_python.py" />
-        <option value="$PROJECT_DIR$/package/robupy/solve/ambiguity.py" />
         <option value="$PROJECT_DIR$/package/robupy/solve/solve_auxiliary.py" />
         <option value="$PROJECT_DIR$/package/robupy/__init__.py" />
         <option value="$PROJECT_DIR$/package/development/msc/clean.py" />
@@ -92,7 +90,6 @@
         <option value="$PROJECT_DIR$/package/setup.cfg" />
         <option value="$PROJECT_DIR$/package/setup.py" />
         <option value="$PROJECT_DIR$/package/robupy/tests/conftest.py" />
-        <option value="$PROJECT_DIR$/package/robupy/tests/test_unit.py" />
         <option value="$PROJECT_DIR$/package/robupy/tests/test_restud.py" />
         <option value="$PROJECT_DIR$/package/robupy/tests/test_regression.py" />
         <option value="$PROJECT_DIR$/package/robupy/tests/test_interpolation.py" />
@@ -102,6 +99,10 @@
         <option value="$PROJECT_DIR$/package/robupy/simulate/simulate.py" />
         <option value="$PROJECT_DIR$/package/robupy/solve/solve.py" />
         <option value="$PROJECT_DIR$/package/build/lib/robupy/tests/test_unit.py" />
+        <option value="$PROJECT_DIR$/package/robupy/solve/ambiguity.py" />
+        <option value="$PROJECT_DIR$/package/robupy/fortran/f2py_interface_debug.f90" />
+        <option value="$PROJECT_DIR$/package/robupy/fortran/robufort_ambiguity.f90" />
+        <option value="$PROJECT_DIR$/package/robupy/tests/test_unit.py" />
       </list>
     </option>
   </component>
@@ -824,7 +825,7 @@
     <layout>
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.59264934" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" x="261" y="41" width="551" height="683" />
+      <window_info id="Find" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.46401227" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" x="261" y="41" width="551" height="683" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.39969373" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="8" side_tool="true" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25511304" sideWeight="0.51148546" order="2" side_tool="true" content_ui="tabs" />
@@ -849,15 +850,15 @@
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.5823466" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" x="1019" y="-3" width="1450" height="927" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.46401227" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" x="261" y="41" width="551" height="683" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.39969373" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="8" side_tool="true" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25511304" sideWeight="0.51148546" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25188375" sideWeight="0.4946401" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.25188375" sideWeight="0.4946401" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.5199139" sideWeight="0.48851454" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.5199139" sideWeight="0.48851454" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32924962" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
@@ -882,14 +883,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/package/robupy/simulate/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/package/robupy/solve/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -921,14 +914,6 @@
           <folding>
             <element signature="e#95#113#0" expanded="false" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/robupy/fortran/f2py_interface_debug.f90">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-1.0446194">
-          <caret line="64" column="0" selection-start-line="64" selection-start-column="0" selection-end-line="72" selection-end-column="34" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1206,14 +1191,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/robupy/tests/test_unit.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.28089887">
-          <caret line="54" column="54" selection-start-line="54" selection-start-column="54" selection-end-line="54" selection-end-column="54" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/package/robupy/tests/test_restud.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.48154092">
@@ -1306,10 +1283,34 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/package/robupy/fortran/robufort_ambiguity.f90">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-3.0655737">
+          <caret line="403" column="17" selection-start-line="403" selection-start-column="8" selection-end-line="403" selection-end-column="27" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/robupy/fortran/f2py_interface_debug.f90">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.45">
+          <caret line="331" column="40" selection-start-line="331" selection-start-column="40" selection-end-line="331" selection-end-column="40" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/package/robupy/solve/ambiguity.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.77367574">
-          <caret line="160" column="48" selection-start-line="160" selection-start-column="48" selection-end-line="160" selection-end-column="48" />
+        <state vertical-scroll-proportion="0.1375">
+          <caret line="166" column="41" selection-start-line="166" selection-start-column="41" selection-end-line="166" selection-end-column="41" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/robupy/tests/test_unit.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.7533784">
+          <caret line="387" column="53" selection-start-line="387" selection-start-column="53" selection-end-line="387" selection-end-column="53" />
           <folding />
         </state>
       </provider>
