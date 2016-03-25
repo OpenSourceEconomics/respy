@@ -13,11 +13,6 @@ ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
 ROOT_DIR = ROOT_DIR.replace('/robupy/tests', '')
 sys.path.insert(0, ROOT_DIR)
 
-# testing codes
-from codes.auxiliary import cleanup_robupy_package
-from codes.auxiliary import build_testing_library
-from codes.auxiliary import build_robupy_package
-
 """ The following fixtures are called once per session.
 """
 

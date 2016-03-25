@@ -1,4 +1,4 @@
-from distutils.core import setup
+from setuptools import setup
 import os
 
 def setup_package():
@@ -28,12 +28,11 @@ def setup_package():
     url='https://github.com/robustToolbox/package',
     keywords=['Economics', 'Dynamic Discrete Choice Model', 'Robustness'],
     classifiers=[],
-
-  )
+   setup_requires=['pytest-runner'],
+    tests_require=['pytest'],
+     )
 
     setup(**metadata)
-
-    print("I am printing ", os.getcwd())
 
 if __name__ == '__main__':
     setup_package()

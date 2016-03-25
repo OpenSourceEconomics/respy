@@ -29,6 +29,19 @@ from robupy import process
 from robupy import solve
 from robupy import read
 
+from robupy.fortran.f2py_library import f2py_solve
+from robupy.solve.solve_python import pyth_solve
+from robupy.fortran.fortran import fort_solve
+
+from robupy.simulate.simulate_python import pyth_simulate
+from robupy.fortran.f2py_library import f2py_simulate
+
+from robupy.evaluate.evaluate_python import pyth_evaluate
+from robupy.fortran.f2py_library import f2py_evaluate
+
+from robupy.fortran.f2py_library import f2py_criterion
+from robupy.estimate.estimate_python import pyth_criterion
+
 ''' Main
 '''
 
@@ -316,18 +329,6 @@ class TestClass(object):
         """ This methods ensures that the core functions yield the same
         results across implementations.
         """
-        from robupy.fortran.f2py_library import f2py_solve
-        from robupy.solve.solve_python import pyth_solve
-        from robupy.fortran.fortran import fort_solve
-
-        from robupy.simulate.simulate_python import pyth_simulate
-        from robupy.fortran.f2py_library import f2py_simulate
-
-        from robupy.evaluate.evaluate_python import pyth_evaluate
-        from robupy.fortran.f2py_library import f2py_evaluate
-
-        from robupy.fortran.f2py_library import f2py_criterion
-        from robupy.estimate.estimate_python import pyth_criterion
 
         # Generate random initialization file
         generate_init()
