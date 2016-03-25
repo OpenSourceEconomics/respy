@@ -382,11 +382,11 @@ class TestClass(object):
 
         args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
             is_deterministic, is_interpolated, num_draws_emax,
-            periods_draws_emax, is_ambiguous, num_periods, num_points, edu_start,
+            is_ambiguous, num_periods, num_points, edu_start,
             is_myopic, is_debug, measure, edu_max, min_idx, delta, level,
-            shocks_cholesky)
+            shocks_cholesky, periods_draws_emax)
 
-        pyth = pyth_solve(*args )
+        pyth = pyth_solve(*args)
         f2py = f2py_solve(*args + (max_states_period,))
         for alt in [f2py, fort]:
             for i in range(5):

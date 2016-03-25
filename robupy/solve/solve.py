@@ -2,21 +2,20 @@
 """
 
 # standard library
-import logging
-import os
-import shlex
 
 # project library
-from robupy.fortran.fortran import fort_solve
-from robupy.solve.solve_python import pyth_solve
+from robupy.fortran.f2py_library import f2py_create_state_space
+from robupy.fortran.f2py_library import f2py_solve
 
+from robupy.fortran.fortran import fort_solve
+from robupy.shared.auxiliary import add_solution
+from robupy.shared.auxiliary import create_draws
 from robupy.shared.auxiliary import distribute_class_attributes
 from robupy.shared.auxiliary import distribute_model_paras
 from robupy.shared.auxiliary import replace_missing_values
-from robupy.shared.auxiliary import create_draws
-from robupy.shared.auxiliary import add_solution
-from robupy.fortran.f2py_library import f2py_create_state_space
-from robupy.fortran.f2py_library import f2py_solve
+from robupy.solve.solve_auxiliary import stop_logging, start_logging, \
+    summarize_ambiguity, cleanup, _start_ambiguity_logging, check_input
+from robupy.solve.solve_python import pyth_solve
 
 ''' Main function
 '''
@@ -26,23 +25,19 @@ def solve(robupy_obj):
     """ Solve dynamic programming problem by backward induction.
     """
     # Checks, cleanup, start logger
-    assert (not robupy_obj.get_attr('is_solved'))
-    assert robupy_obj.get_attr('is_locked')
+    assert check_input(robupy_obj)
 
-    _cleanup()
+    cleanup()
 
-    _start_logging()
+    start_logging()
 
     # Distribute class attributes
-    model_paras, num_periods, edu_start,  \
-        is_debug, edu_max, delta, is_deterministic, version, \
-        num_draws_emax, seed_emax, is_interpolated, \
+    model_paras, num_periods, edu_start, is_debug, edu_max, delta, \
+        is_deterministic, version, num_draws_emax, seed_emax, is_interpolated, \
         is_ambiguous, num_points, is_myopic, min_idx, measure, level, store = \
             distribute_class_attributes(robupy_obj,
-                'model_paras', 'num_periods',
-                'edu_start',
-                'is_debug', 'edu_max', 'delta',
-                'is_deterministic', 'version',
+                'model_paras', 'num_periods', 'edu_start', 'is_debug',
+                'edu_max', 'delta', 'is_deterministic', 'version',
                 'num_draws_emax', 'seed_emax', 'is_interpolated',
                 'is_ambiguous', 'num_points', 'is_myopic', 'min_idx', 'measure',
                 'level', 'store')
@@ -61,40 +56,28 @@ def solve(robupy_obj):
     periods_draws_emax = create_draws(num_periods, num_draws_emax, seed_emax,
         is_debug, 'emax', shocks_cholesky)
 
-    # Select appropriate interface
+    # Collect arguments
+    pyth_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
+        is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
+        num_periods, num_points, edu_start, is_myopic, is_debug, measure,
+        edu_max, min_idx, delta, level, shocks_cholesky, periods_draws_emax)
+
+    fort_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
+        is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
+        num_periods, num_points, is_myopic, edu_start, seed_emax,
+        is_debug, measure, edu_max, min_idx, delta, level)
+
+    # Select appropriate interface. The additional preparations for the F2PY
+    # interface are required as only explicit shape arguments can be passed
+    # into the interface.
     if version == 'FORTRAN':
-        # Collect arguments and call FORTRAN interface
-        args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
-            is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
-            num_periods, num_points, is_myopic, edu_start, seed_emax,
-            is_debug, measure, edu_max, min_idx, delta, level)
-
-        solution = fort_solve(*args)
-
+        solution = fort_solve(*fort_args)
     elif version == 'PYTHON':
-        # Collect arguments and call PYTHON solution methods
-        args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
-            is_deterministic, is_interpolated, num_draws_emax,
-            periods_draws_emax, is_ambiguous, num_periods, num_points, edu_start,
-            is_myopic, is_debug, measure, edu_max, min_idx, delta, level,
-            shocks_cholesky)
-
-        solution = pyth_solve(*args)
-
+        solution = pyth_solve(*pyth_args)
     elif version == 'F2PY':
-
-        #
         args = (num_periods, edu_start, edu_max, min_idx)
         max_states_period = f2py_create_state_space(*args)[3]
-
-        args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
-            is_deterministic, is_interpolated, num_draws_emax,
-            periods_draws_emax, is_ambiguous, num_periods, num_points, edu_start,
-            is_myopic, is_debug, measure, edu_max, min_idx, delta, level,
-            shocks_cholesky, max_states_period)
-
-        solution = f2py_solve(*args)
-
+        solution = f2py_solve(*pyth_args + (max_states_period,))
     else:
         raise NotImplementedError
 
@@ -106,163 +89,12 @@ def solve(robupy_obj):
 
     # Summarize optimizations in case of ambiguity
     if is_debug and is_ambiguous and (not is_myopic):
-        _summarize_ambiguity(robupy_obj)
+        summarize_ambiguity(robupy_obj)
 
     # Orderly shutdown of logging capability.
-    _stop_logging()
+    stop_logging()
 
     # Finishing
     return robupy_obj
 
 
-''' Auxiliary functions
-'''
-
-
-def _stop_logging():
-    """ Ensure orderly shutdown of logging capabilities.
-    """
-    # TODO: These need to be extract
-    # Collect all loggers for shutdown.
-    loggers = []
-    loggers += [logging.getLogger('ROBUPY_SOLVE')]
-    loggers += [logging.getLogger('ROBUPY_SIMULATE')]
-
-    # Close file handlers
-    for logger in loggers:
-        handlers = logger.handlers[:]
-        for handler in handlers:
-            handler.close()
-            logger.removeHandler(handler)
-
-
-def _start_logging():
-    """ Initialize logging setup for the solution of the model.
-    """
-
-    formatter = logging.Formatter('  %(message)s \n')
-
-    logger = logging.getLogger('ROBUPY_SOLVE')
-
-    handler = logging.FileHandler('logging.robupy.sol.log', mode='w',
-                                  delay=False)
-
-    handler.setFormatter(formatter)
-
-    logger.setLevel(logging.INFO)
-
-    logger.addHandler(handler)
-
-    logger = logging.getLogger('ROBUPY_SIMULATE')
-
-    handler = logging.FileHandler('logging.robupy.sim.log', mode='w',
-                                  delay=False)
-
-    handler.setFormatter(formatter)
-
-    logger.setLevel(logging.INFO)
-
-    logger.addHandler(handler)
-
-
-def _summarize_ambiguity(robupy_obj):
-    """ Summarize optimizations in case of ambiguity.
-    """
-
-    def _process_cases(list_internal):
-        """ Process cases and determine whether keyword or empty line.
-        """
-        # Antibugging
-        assert (isinstance(list_internal, list))
-
-        # Get information
-        is_empty_internal = (len(list_internal) == 0)
-
-        if not is_empty_internal:
-            is_block_internal = list_internal[0].isupper()
-        else:
-            is_block_internal = False
-
-        # Antibugging
-        assert (is_block_internal in [True, False])
-        assert (is_empty_internal in [True, False])
-
-        # Finishing
-        return is_empty_internal, is_block_internal
-
-    # Distribute class attributes
-    num_periods = robupy_obj.get_attr('num_periods')
-
-    dict_ = dict()
-
-    for line in open('ambiguity.robupy.log').readlines():
-
-        # Split line
-        list_ = shlex.split(line)
-
-        # Determine special cases
-        is_empty, is_block = _process_cases(list_)
-
-        # Applicability
-        if is_empty:
-            continue
-
-        # Prepare dictionary
-        if is_block:
-
-            period = int(list_[1])
-
-            if period in dict_.keys():
-                continue
-    
-            dict_[period] = {}
-            dict_[period]['success'] = 0
-            dict_[period]['failure'] = 0
-            dict_[period]['total'] = 0
-
-        # Collect success indicator
-        if list_[0] == 'Success':
-            dict_[period]['total'] += 1
-
-            is_success = (list_[1] == 'True')
-            if is_success:
-                dict_[period]['success'] += 1
-            else:
-                dict_[period]['failure'] += 1
-
-    with open('ambiguity.robupy.log', 'a') as file_:
-
-        file_.write('\nSUMMARY\n\n')
-
-        string = '''{0[0]:>10} {0[1]:>10} {0[2]:>10} {0[3]:>10}\n'''
-        file_.write(string.format(['Period', 'Total', 'Success', 'Failure']))
-
-        file_.write('\n')
-
-        for period in range(num_periods):
-            total = dict_[period]['total']
-
-            success = dict_[period]['success']/total
-            failure = dict_[period]['failure']/total
-
-            string = '''{0[0]:>10} {0[1]:>10} {0[2]:10.2f} {0[3]:10.2f}\n'''
-            file_.write(string.format([period, total, success, failure]))
-
-
-def _cleanup():
-    """ Cleanup all selected files. Note that not simply all *.robupy.*
-    files can be deleted as the blank logging files are already created.
-    """
-    if os.path.exists('ambiguity.robupy.log'):
-        os.unlink('ambiguity.robupy.log')
-
-
-def _start_ambiguity_logging(is_ambiguous, is_debug):
-    """ Start logging for ambiguity.
-    """
-    # Start logging if required
-    if os.path.exists('ambiguity.robupy.log'):
-        os.remove('ambiguity.robupy.log')
-
-    if is_debug and is_ambiguous:
-        open('ambiguity.robupy.log', 'w').close()

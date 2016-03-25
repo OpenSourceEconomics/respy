@@ -127,9 +127,9 @@ SUBROUTINE f2py_solve(periods_payoffs_systematic, &
                 mapping_state_idx, periods_emax, states_all, coeffs_a, &
                 coeffs_b, coeffs_edu, coeffs_home, shocks_cov, &
                 is_deterministic, is_interpolated, num_draws_emax, & 
-                periods_draws_emax, is_ambiguous, num_periods, num_points, &
+                is_ambiguous, num_periods, num_points, &
                 edu_start, is_myopic, is_debug, measure, edu_max, min_idx, & 
-                delta, level, shocks_cholesky, max_states_period)
+                delta, level, shocks_cholesky, periods_draws_emax, max_states_period)
     
     !
     ! The presence of max_states_period breaks the equality of interfaces. 
