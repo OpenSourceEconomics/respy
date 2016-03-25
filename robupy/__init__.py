@@ -1,10 +1,8 @@
 
 # standard library
 import logging
-import atexit
-import glob
+import pytest
 import sys
-import os
 
 # Package structure
 from robupy.estimate.estimate import estimate
@@ -19,16 +17,6 @@ if not (sys.version_info[0] == 3):
     raise AssertionError('Please use Python 3')
 
 
-"""
-"""
-def cleanup_at_exit():
-    """ Cleanup once call is finished.
-    """
-    for file_ in glob.glob('.*.scratch'):
-        os.unlink(file_)
-
-#atexit.register(cleanup_at_exit)
-
 """ Testing functions
 """
 
@@ -36,15 +24,9 @@ def cleanup_at_exit():
 def test():
     """ Run nose tester for the package.
     """
-    base = os.getcwd()
 
-    os.chdir(os.path.dirname(os.path.realpath(__file__)))
+    pytest.main('--cov=robupy -v')
 
-    os.chdir('tests')
-
-    os.system('nosetests tests.py')
-
-    os.chdir(base)
 
 
 """ Set up logging.
