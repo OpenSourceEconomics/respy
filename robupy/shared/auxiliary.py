@@ -149,6 +149,10 @@ def replace_missing_values(arguments):
 
         rslt += (argument,)
 
+    # Aligning interface.
+    if len(rslt) == 1:
+        rslt = rslt[0]
+
     # Finishing
     return rslt
 

@@ -94,7 +94,7 @@ def pyth_simulate(periods_payoffs_systematic, mapping_state_idx,
 
 
     # Create pandas data frame with missing values.
-    data_frame = pd.DataFrame(replace_missing_values((data_frame,))[0])
+    data_frame = pd.DataFrame(replace_missing_values((data_frame,)))
 
     # Finishing
     return data_frame
