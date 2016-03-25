@@ -162,7 +162,7 @@ class TestClass(object):
         py = get_endogenous_variable(*args)
         f90 = fort_debug.wrapper_get_endogenous_variable(*args)
 
-        np.testing.assert_equal(py, replace_missing_values((f90,)))
+        np.testing.assert_equal(py, replace_missing_values(f90))
 
         # Distribute validated results for further functions.
         endogenous = py

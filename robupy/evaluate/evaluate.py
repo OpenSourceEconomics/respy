@@ -11,9 +11,6 @@ from robupy.fortran.fortran import fort_evaluate
 from robupy.shared.auxiliary import distribute_class_attributes
 from robupy.shared.auxiliary import distribute_model_paras
 from robupy.shared.auxiliary import create_draws
-from robupy.shared.auxiliary import add_solution
-
-from robupy.shared.auxiliary import replace_missing_values
 
 from robupy.fortran.f2py_library import f2py_evaluate
 

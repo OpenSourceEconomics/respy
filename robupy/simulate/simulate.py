@@ -83,7 +83,7 @@ def simulate(robupy_obj):
         raise NotImplementedError
 
     # Create pandas data frame with missing values.
-    data_frame = pd.DataFrame(replace_missing_values((data_array,)))
+    data_frame = pd.DataFrame(replace_missing_values(data_array))
 
     # Wrapping up by running some checks on the dataset and then writing out
     # the file and some basic information.

@@ -132,7 +132,10 @@ def replace_missing_values(arguments):
     argument is of type float in the case missing values are found.
     """
     # Antibugging
-    assert (isinstance(arguments, tuple))
+    assert (isinstance(arguments, tuple) or isinstance(arguments, np.ndarray))
+
+    if isinstance(arguments, np.ndarray):
+        arguments = (arguments, )
 
     rslt = tuple()
 

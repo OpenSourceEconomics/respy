@@ -10,7 +10,6 @@ from robupy.shared.auxiliary import get_total_value
 
 logger = logging.getLogger('ROBUPY_SIMULATE')
 
-from robupy.shared.auxiliary import replace_missing_values
 
 ''' Main function
 '''
@@ -90,11 +89,3 @@ def pyth_simulate(periods_payoffs_systematic, mapping_state_idx,
 
     # Finishing
     return dataset
-
-
-
-    # Create pandas data frame with missing values.
-    data_frame = pd.DataFrame(replace_missing_values((data_frame,)))
-
-    # Finishing
-    return data_frame
