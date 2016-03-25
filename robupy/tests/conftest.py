@@ -47,22 +47,7 @@ def versions(request):
 def supply_resources(request):
     """ This fixture ensures that the compiled libraries are all available.
     """
-    # Start with a clean slate
-    cleanup_robupy_package()
-
-    # Required compilations to make the F2PY and FORTRAN interfaces available.
-    build_robupy_package(True)
-
-    # There is small number of FORTRAN routines that are only used during
-    # testing. These are collected in their own library. It is important to
-    # build the two objects in this order. The build of the ROBUPY package
-    # starts from a clean slate and then the testing library is added to
-    # tests/lib directory.
-    build_testing_library(True)
-
-    # Teardown of fixture after session is completed.
-    request.addfinalizer(cleanup_robupy_package)
-
+    pass
 """ The following fixtures are called before each test.
 """
 

@@ -264,7 +264,7 @@ class TestClass(object):
         algorithm's PYTHON and FORTRAN implementation
         """
         # FORTRAN resources
-        import robupy.tests.lib.f2py_testing as fort_test
+        import robupy.fortran.f2py_testing as fort_test
 
         # Sample basic test case
         maxiter = np.random.random_integers(1, 100)

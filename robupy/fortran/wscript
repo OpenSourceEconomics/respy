@@ -41,7 +41,8 @@ class CreateRobufortLibrary(Task):
 
         files = ['robufort_constants.f90', 'robufort_auxiliary.f90',
                  'robufort_slsqp.f', 'robufort_emax.f90', 'robufort_risk.f90',
-                 'robufort_ambiguity.f90', 'robufort_library.f90']
+                 'robufort_ambiguity.f90', 'robufort_library.f90',
+                 'robufort_testing.f90']
 
         for file_ in files:
             os.system('gfortran ' + compiler_options + ' -c ' + file_)
@@ -84,6 +85,10 @@ class CreateF2pyInterface(Task):
 
         os.system(
             'f2py3 -c -m  f2py_debug f2py_interface_debug.f90 '
+            '-Iinclude -Llib -lfort_robufort -L/usr/lib/lapack -llapack')
+
+        os.system(
+            'f2py3 -c -m  f2py_testing f2py_interface_testing.f90 '
             '-Iinclude -Llib -lfort_robufort -L/usr/lib/lapack -llapack')
 
 ''' Build
