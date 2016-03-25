@@ -410,10 +410,11 @@ class TestClass(object):
         data_array = pyth
 
         # TODO: FORTRAN missing, first I want to settle on interface.
-        args = (periods_payoffs_systematic, mapping_state_idx, periods_emax,
-            states_all, shocks_cov, shocks_cholesky, is_deterministic,
-            num_periods, edu_start, edu_max, delta, data_array, num_agents,
-            num_draws_prob, periods_draws_prob)
+        args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
+                is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
+                num_periods, num_points, is_myopic, edu_start, is_debug, measure,
+                edu_max, min_idx, delta, level, data_array, num_agents, num_draws_prob,
+                shocks_cholesky, periods_draws_emax, periods_draws_prob)
 
         pyth = pyth_evaluate(*args)
         f2py = f2py_evaluate(*args)
@@ -424,11 +425,10 @@ class TestClass(object):
         x0 = opt_get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu,
             coeffs_home, shocks_cov, shocks_cholesky, is_debug)
 
-        args =(x0, data_array, edu_max, delta, edu_start, is_debug, \
-            is_interpolated, level, measure, min_idx, num_draws_emax, \
-            num_periods, num_points, is_ambiguous, periods_draws_emax, \
-            is_deterministic, is_myopic, num_agents, num_draws_prob, \
-            periods_draws_prob)
+        args =(x0, is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
+        num_periods, num_points, is_myopic, edu_start, is_debug, measure,
+        edu_max, min_idx, delta, level, data_array, num_agents, num_draws_prob,
+        periods_draws_emax, periods_draws_prob)
 
         pyth = pyth_criterion(*args)
         f2py = f2py_criterion(*args)

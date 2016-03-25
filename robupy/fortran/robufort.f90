@@ -145,7 +145,7 @@ END SUBROUTINE
 SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
                 coeffs_edu, edu_start, edu_max, coeffs_home, shocks_cov, & 
                 shocks_cholesky, num_draws_emax, seed_emax, seed_prob, &
-                num_agents, seed_data, is_debug, is_deterministic, &
+                num_agents, is_debug, is_deterministic, &
                 is_interpolated, num_points, min_idx, is_ambiguous, measure, & 
                 request, num_draws_prob, is_myopic)
 
@@ -162,7 +162,6 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
     INTEGER(our_int), INTENT(OUT)   :: num_periods
     INTEGER(our_int), INTENT(OUT)   :: num_agents
     INTEGER(our_int), INTENT(OUT)   :: num_points
-    INTEGER(our_int), INTENT(OUT)   :: seed_data
     INTEGER(our_int), INTENT(OUT)   :: seed_prob
     INTEGER(our_int), INTENT(OUT)   :: seed_emax
     INTEGER(our_int), INTENT(OUT)   :: edu_start
@@ -236,7 +235,6 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
 
         ! SIMULATION
         READ(1, 1505) num_agents
-        READ(1, 1505) seed_data
 
         ! PROGRAM
         READ(1, *) is_debug
@@ -437,7 +435,6 @@ PROGRAM robufort
     INTEGER(our_int)                :: num_periods
     INTEGER(our_int)                :: num_agents
     INTEGER(our_int)                :: num_points
-    INTEGER(our_int)                :: seed_data
     INTEGER(our_int)                :: seed_prob
     INTEGER(our_int)                :: seed_emax
     INTEGER(our_int)                :: edu_start
@@ -479,7 +476,7 @@ PROGRAM robufort
     CALL read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
             coeffs_edu, edu_start, edu_max, coeffs_home, shocks_cov, &
             shocks_cholesky, num_draws_emax, seed_emax, seed_prob, &
-            num_agents, seed_data, is_debug, is_deterministic, & 
+            num_agents, is_debug, is_deterministic, & 
             is_interpolated, num_points, min_idx, is_ambiguous, measure, & 
             request, num_draws_prob, is_myopic)
 

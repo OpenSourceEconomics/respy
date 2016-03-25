@@ -18,32 +18,25 @@ from robupy.shared.constants import FORTRAN_DIR
 
 def fort_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
         is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
-        num_periods, num_points, is_myopic, edu_start, seed_emax, is_debug,
-        min_idx, measure, edu_max, delta, level, num_draws_prob, num_agents,
-        seed_prob, seed_data, request, data_frame):
+        num_periods, num_points, is_myopic, edu_start, is_debug,
+        measure, edu_max, min_idx, delta, level, data_array, num_agents,
+        num_draws_prob,  seed_emax, seed_prob):
     """ This function serves as the interface to the FORTRAN implementations.
     """
-    # Antibugging
-    if request == 'evaluate':
-        assert data_frame is not None
-    else:
-        assert data_frame is None
-
     # Prepare ROBUFORT execution by collecting arguments and writing them to
     # the ROBUFORT initialization file.
     args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
             is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
             num_periods, num_points, is_myopic, edu_start, seed_emax,
             is_debug, min_idx, measure, edu_max, delta, level,
-            num_draws_prob, num_agents, seed_prob, seed_data, request)
+            num_draws_prob, num_agents, seed_prob, 'evaluate')
 
     write_robufort_initialization(*args)
 
     # If an evaluation is requested, then a specially formatted dataset is
     # written to a scratch file. This eases the reading of the dataset in
     # FORTRAN.
-    if request == 'evaluate':
-        write_dataset(data_frame)
+    write_dataset(data_array)
 
     # Call executable
     os.system('"' + FORTRAN_DIR + '/bin/robufort"')
@@ -67,7 +60,7 @@ def fort_solve(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
             is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
             num_periods, num_points, is_myopic, edu_start, seed_emax,
             is_debug, min_idx, measure, edu_max, delta, level,
-            1, 1, 1, 1, 'solve')
+            1, 1, 1, 'solve')
 
     write_robufort_initialization(*args)
 

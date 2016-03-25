@@ -3,6 +3,7 @@ FORTRAN implementation.
 """
 
 # standard library
+import pandas as pd
 import numpy as np
 
 import os
@@ -73,7 +74,7 @@ def write_robufort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         shocks_cov, is_deterministic, is_interpolated, num_draws_emax,
         is_ambiguous, num_periods, num_points, is_myopic, edu_start, seed_emax,
         is_debug, min_idx, measure, edu_max, delta, level, num_draws_prob,
-        num_agents, seed_prob, seed_data, request):
+        num_agents, seed_prob, request):
     """ Write out model request to hidden file .model.robufort.ini.
     """
 
@@ -136,9 +137,6 @@ def write_robufort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         line = '{0:10d}\n'.format(num_agents)
         file_.write(line)
 
-        line = '{0:10d}\n'.format(seed_data)
-        file_.write(line)
-
         # PROGRAM
         line = '{0}'.format(is_debug)
         file_.write(line + '\n')
@@ -175,10 +173,14 @@ def write_robufort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         file_.write(line + '\n')
 
 
-def write_dataset(data_frame):
+def write_dataset(data_array):
     """ Write the dataset to a temporary file. Missing values are set
     to large values.
     """
+    # Transfer to data frame as this allows to fill the missing values with
+    # HUGE FLOAT. The numpy array is passed in to align the intefaces across
+    # implementations
+    data_frame = pd.DataFrame(data_array)
     with open('.data.robufort.dat', 'w') as file_:
         data_frame.to_string(file_, index=False,
             header=None, na_rep=str(HUGE_FLOAT))

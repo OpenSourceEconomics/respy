@@ -3,6 +3,8 @@ function.
 """
 
 # project library
+from robupy.fortran.f2py_library import f2py_create_state_space
+
 from robupy.evaluate.evaluate_auxiliary import check_output
 from robupy.evaluate.evaluate_auxiliary import check_input
 from robupy.evaluate.evaluate_python import pyth_evaluate
@@ -25,15 +27,14 @@ def evaluate(robupy_obj, data_frame):
     # Antibugging
     assert check_input(robupy_obj, data_frame)
 
+    # TODO: Remove the results from previous run.
     # Distribute class attributes
-    periods_payoffs_systematic, mapping_state_idx, periods_emax, model_paras, \
-        num_periods, num_agents, states_all, edu_start, seed_data, \
+    model_paras, num_periods, num_agents, states_all, edu_start, seed_data, \
         is_debug, edu_max, delta, is_deterministic, version, \
         num_draws_prob, seed_prob, num_draws_emax, seed_emax, is_interpolated, \
         is_ambiguous, num_points, is_myopic, min_idx, measure, level = \
             distribute_class_attributes(robupy_obj,
-                'periods_payoffs_systematic', 'mapping_state_idx',
-                'periods_emax', 'model_paras', 'num_periods', 'num_agents',
+                'model_paras', 'num_periods', 'num_agents',
                 'states_all', 'edu_start', 'seed_data', 'is_debug',
                 'edu_max', 'delta', 'is_deterministic',
                 'version', 'num_draws_prob', 'seed_prob', 'num_draws_emax',
@@ -44,30 +45,31 @@ def evaluate(robupy_obj, data_frame):
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, shocks_cholesky = \
         distribute_model_paras(model_paras, is_debug)
 
-    # Draw standard normal deviates for choice probability integration
+    # Draw standard normal deviates for choice probabilities and expected
+    # future values.
     periods_draws_prob = create_draws(num_periods, num_draws_prob, seed_prob,
         is_debug, 'prob', shocks_cholesky)
+
+    periods_draws_emax = create_draws(num_periods, num_draws_emax, seed_emax,
+        is_debug, 'emax', shocks_cholesky)
 
     # Draw standard normal deviates for EMAX integration
     data_array = data_frame.as_matrix()
 
-    args = (periods_payoffs_systematic, mapping_state_idx, periods_emax,
-        states_all, shocks_cov, shocks_cholesky, is_deterministic,
-        num_periods, edu_start, edu_max, delta, data_array, num_agents,
-        num_draws_prob, periods_draws_prob)
+    base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
+        is_deterministic, is_interpolated, num_draws_emax,is_ambiguous,
+        num_periods, num_points, is_myopic, edu_start, is_debug, measure,
+        edu_max, min_idx, delta, level, data_array, num_agents, num_draws_prob)
 
     # Select appropriate interface
     if version == 'FORTRAN':
-
-        crit_val = fort_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
-        is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
-        num_periods, num_points, is_myopic, edu_start, seed_emax, is_debug,
-        min_idx, measure, edu_max, delta, level, num_draws_prob, num_agents,
-        seed_prob, seed_data, 'evaluate', data_frame)
-
+        args = base_args + (seed_emax, seed_prob)
+        crit_val = fort_evaluate(*args)
     elif version == 'PYTHON':
+        args = base_args + (shocks_cholesky, periods_draws_emax, periods_draws_prob)
         crit_val = pyth_evaluate(*args)
     elif version == 'F2PY':
+        args = base_args + (shocks_cholesky, periods_draws_emax, periods_draws_prob)
         crit_val = f2py_evaluate(*args)
     else:
         raise NotImplementedError

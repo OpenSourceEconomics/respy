@@ -25,9 +25,6 @@ def check_input(robupy_obj, data_frame):
     # Check that class instance is locked.
     assert robupy_obj.get_attr('is_locked')
 
-    # Check for previous solution.
-    assert robupy_obj.get_attr('is_solved')
-
     # Check that dataset aligns with model specification.
     check_dataset(data_frame, robupy_obj)
 
