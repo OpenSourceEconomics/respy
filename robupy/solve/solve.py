@@ -59,7 +59,7 @@ def solve(robupy_obj):
     # Collect arguments
     pyth_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
         is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
-        num_periods, num_points, edu_start, is_myopic, is_debug, measure,
+        num_periods, num_points, is_myopic, edu_start, is_debug, measure,
         edu_max, min_idx, delta, level, shocks_cholesky, periods_draws_emax)
 
     fort_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
@@ -83,7 +83,7 @@ def solve(robupy_obj):
 
     # Replace missing values
     solution = replace_missing_values(solution)
-
+#
     # Attach solution to class instance
     robupy_obj = add_solution(robupy_obj, store, *solution)
 
