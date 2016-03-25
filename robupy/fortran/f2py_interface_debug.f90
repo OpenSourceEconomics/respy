@@ -146,7 +146,7 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE wrapper_get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
-                payoffs_future, num_draws_emax, draws_emax, &
+                num_draws_emax, draws_emax, &
                 period, k, payoffs_systematic, edu_max, edu_start, & 
                 mapping_state_idx, states_all, num_periods, periods_emax, & 
                 delta, is_debug, shocks_cov, level, measure, is_deterministic, & 
@@ -163,7 +163,6 @@ SUBROUTINE wrapper_get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
     !/* external objects        */
 
     DOUBLE PRECISION, INTENT(OUT)   :: payoffs_ex_post(4)
-    DOUBLE PRECISION, INTENT(OUT)   :: payoffs_future(4)
     DOUBLE PRECISION, INTENT(OUT)   :: emax_simulated
 
     INTEGER, INTENT(IN)             :: mapping_state_idx(:,:,:,:,:)
@@ -193,7 +192,7 @@ SUBROUTINE wrapper_get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
 !-------------------------------------------------------------------------------
     
     CALL get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
-            payoffs_future, num_draws_emax, draws_emax, period, k, &
+            num_draws_emax, draws_emax, period, k, &
             payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
             states_all, num_periods, periods_emax, delta, is_debug, shocks_cov, & 
             level, measure, is_deterministic, shocks_cholesky)
@@ -248,7 +247,7 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE wrapper_simulate_emax(emax_simulated, payoffs_ex_post, &
-                payoffs_future, num_periods, num_draws_emax, period, k, &
+                num_periods, num_draws_emax, period, k, &
                 draws_emax, payoffs_systematic, edu_max, & 
                 edu_start, periods_emax, states_all, mapping_state_idx, delta, & 
                 shocks_cholesky, shocks_mean)
@@ -264,7 +263,6 @@ SUBROUTINE wrapper_simulate_emax(emax_simulated, payoffs_ex_post, &
     !/* external objects        */
 
     DOUBLE PRECISION, INTENT(OUT)   :: payoffs_ex_post(4)
-    DOUBLE PRECISION, INTENT(OUT)   :: payoffs_future(4)
     DOUBLE PRECISION, INTENT(OUT)   :: emax_simulated
 
     DOUBLE PRECISION, INTENT(IN)    :: draws_emax(:,:)
@@ -287,7 +285,7 @@ SUBROUTINE wrapper_simulate_emax(emax_simulated, payoffs_ex_post, &
 ! Algorithm
 !-------------------------------------------------------------------------------
 
-    CALL simulate_emax(emax_simulated, payoffs_ex_post, payoffs_future, &
+    CALL simulate_emax(emax_simulated, payoffs_ex_post, &
             num_periods, num_draws_emax, period, k, & 
             draws_emax, payoffs_systematic, edu_max, & 
             edu_start, periods_emax, states_all, mapping_state_idx, delta, & 
@@ -866,7 +864,7 @@ SUBROUTINE wrapper_get_simulated_indicator(is_simulated, num_points, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_get_payoffs(emax_simulated, payoffs_ex_post, payoffs_future, &
+SUBROUTINE wrapper_get_payoffs(emax_simulated, payoffs_ex_post, &
                 num_draws_emax, draws_emax, period, k, & 
                 payoffs_systematic, edu_max, edu_start, mapping_state_idx, & 
                 states_all, num_periods, periods_emax, delta, is_debug, & 
@@ -885,7 +883,6 @@ SUBROUTINE wrapper_get_payoffs(emax_simulated, payoffs_ex_post, payoffs_future, 
     !/* external objects        */
 
     DOUBLE PRECISION, INTENT(OUT)       :: payoffs_ex_post(4)
-    DOUBLE PRECISION, INTENT(OUT)       :: payoffs_future(4)
     DOUBLE PRECISION, INTENT(OUT)       :: emax_simulated
 
     DOUBLE PRECISION, INTENT(IN)        :: draws_emax(:, :)
@@ -915,7 +912,7 @@ SUBROUTINE wrapper_get_payoffs(emax_simulated, payoffs_ex_post, payoffs_future, 
 ! Algorithm
 !-------------------------------------------------------------------------------
     
-    CALL get_payoffs(emax_simulated, payoffs_ex_post, payoffs_future, &
+    CALL get_payoffs(emax_simulated, payoffs_ex_post, &
                 num_draws_emax, draws_emax, period, k, & 
                 payoffs_systematic, edu_max, edu_start, mapping_state_idx, & 
                 states_all, num_periods, periods_emax, delta, is_debug, & 

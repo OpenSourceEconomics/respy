@@ -23,7 +23,7 @@ MODULE robufort_emax
 CONTAINS
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, payoffs_future, &
+SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, &
                 num_periods, num_draws_emax, period, k, draws_emax, & 
                 payoffs_systematic, edu_max, edu_start, periods_emax, & 
                 states_all, mapping_state_idx, delta, shocks_cholesky, & 
@@ -32,7 +32,6 @@ SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, payoffs_future, &
     !/* external objects    */
 
     REAL(our_dble), INTENT(OUT)     :: payoffs_ex_post(:)
-    REAL(our_dble), INTENT(OUT)     :: payoffs_future(:)
     REAL(our_dble), INTENT(OUT)     :: emax_simulated
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:, :, :, :, :)
@@ -91,7 +90,7 @@ SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, payoffs_future, &
         draws = draws_emax_transformed(i, :)
 
         ! Calculate total value
-        CALL get_total_value(total_payoffs, payoffs_ex_post, payoffs_future, &
+        CALL get_total_value(total_payoffs, payoffs_ex_post, &
                 period, num_periods, delta, payoffs_systematic, draws, &
                 edu_max, edu_start, mapping_state_idx, periods_emax, k, & 
                 states_all)
@@ -110,7 +109,7 @@ SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, payoffs_future, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE get_total_value(total_payoffs, payoffs_ex_post, payoffs_future, &
+SUBROUTINE get_total_value(total_payoffs, payoffs_ex_post, &
                 period, num_periods, delta, payoffs_systematic, draws, & 
                 edu_max, edu_start, mapping_state_idx, periods_emax, k, & 
                 states_all)
@@ -123,7 +122,6 @@ SUBROUTINE get_total_value(total_payoffs, payoffs_ex_post, payoffs_future, &
     !/* external objects        */
 
     REAL(our_dble), INTENT(OUT)     :: payoffs_ex_post(:)
-    REAL(our_dble), INTENT(OUT)     :: payoffs_future(:)
     REAL(our_dble), INTENT(OUT)     :: total_payoffs(:)
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:, :, :, :, :)
@@ -138,6 +136,11 @@ SUBROUTINE get_total_value(total_payoffs, payoffs_ex_post, payoffs_future, &
     REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
     REAL(our_dble), INTENT(IN)      :: draws(:)
     REAL(our_dble), INTENT(IN)      :: delta
+
+    !/* internal objects        */
+
+    REAL(our_dble)                  :: payoffs_future(4)
+
     
 !-------------------------------------------------------------------------------
 ! Algorithm
@@ -264,7 +267,6 @@ SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, &
     REAL(our_dble)                      :: payoffs_systematic(4)
     REAL(our_dble)                      :: expected_values(4)
     REAL(our_dble)                      :: payoffs_ex_post(4)
-    REAL(our_dble)                      :: payoffs_future(4)
     REAL(our_dble)                      :: diff(4)
 
     INTEGER(our_int)                    :: k
@@ -280,14 +282,14 @@ SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, &
 
         payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
-        CALL get_total_value(expected_values, payoffs_ex_post, payoffs_future, &
+        CALL get_total_value(expected_values, payoffs_ex_post, &
                 period, num_periods, delta, payoffs_systematic, shifts, &
                 edu_max, edu_start, mapping_state_idx, periods_emax, k, &
                 states_all)
 
         ! Treatment of inadmissible states, which will show up in the regression 
         ! in some way
-        is_inadmissible = (payoffs_future(3) == -HUGE_FLOAT)
+        is_inadmissible = (expected_values(3) == -HUGE_FLOAT)
 
         IF (is_inadmissible) THEN
 

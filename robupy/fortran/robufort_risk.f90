@@ -25,7 +25,7 @@ MODULE robufort_risk
 CONTAINS
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE get_payoffs_risk(emax_simulated, payoffs_ex_post, payoffs_future, &
+SUBROUTINE get_payoffs_risk(emax_simulated, payoffs_ex_post, &
                 num_draws_emax, draws_emax, period, k, payoffs_systematic, &
                 edu_max, edu_start, mapping_state_idx, states_all, & 
                 num_periods, periods_emax, delta, shocks_cholesky)
@@ -33,7 +33,6 @@ SUBROUTINE get_payoffs_risk(emax_simulated, payoffs_ex_post, payoffs_future, &
     !/* external objects        */
 
     REAL(our_dble), INTENT(OUT)     :: payoffs_ex_post(:)
-    REAL(our_dble), INTENT(OUT)     :: payoffs_future(:)
     REAL(our_dble), INTENT(OUT)     :: emax_simulated
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:, :, :, :, :)
@@ -63,7 +62,7 @@ SUBROUTINE get_payoffs_risk(emax_simulated, payoffs_ex_post, payoffs_future, &
     shocks_mean = zero_dble
     
     ! Simulated expected future value
-    CALL simulate_emax(emax_simulated, payoffs_ex_post, payoffs_future, &
+    CALL simulate_emax(emax_simulated, payoffs_ex_post, &
             num_periods, num_draws_emax, period, k, draws_emax, & 
             payoffs_systematic, edu_max, edu_start, periods_emax, states_all, & 
             mapping_state_idx, delta, shocks_cholesky, shocks_mean)

@@ -363,7 +363,7 @@ class TestClass(object):
             periods_emax, states_all, mapping_state_idx, delta,
             shocks_cholesky, shocks_mean)
 
-        f90, _, _ = fort_debug.wrapper_simulate_emax(num_periods,
+        f90, _ = fort_debug.wrapper_simulate_emax(num_periods,
             num_draws_emax, period, k, draws_standard, payoffs_systematic,
             edu_max, edu_start, periods_emax, states_all, mapping_state_idx,
             delta, shocks_cholesky, shocks_mean)

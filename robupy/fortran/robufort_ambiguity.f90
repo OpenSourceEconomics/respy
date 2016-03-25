@@ -29,7 +29,7 @@ CONTAINS
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
-                payoffs_future, num_draws_emax, draws_emax, period, k, & 
+                num_draws_emax, draws_emax, period, k, & 
                 payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
                 states_all, num_periods, periods_emax, delta, is_debug, &
                 shocks_cov, level, measure, is_deterministic, shocks_cholesky)
@@ -37,7 +37,6 @@ SUBROUTINE get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
     !/* external objects        */
 
     REAL(our_dble), INTENT(OUT)     :: payoffs_ex_post(:)
-    REAL(our_dble), INTENT(OUT)     :: payoffs_future(:)
     REAL(our_dble), INTENT(OUT)     :: emax_simulated
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:, :, :, :, :)
@@ -100,7 +99,7 @@ SUBROUTINE get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
     END IF
 
     ! Evaluate expected future value for perturbed values
-    CALL simulate_emax(emax_simulated, payoffs_ex_post, payoffs_future, &
+    CALL simulate_emax(emax_simulated, payoffs_ex_post, &
             num_periods, num_draws_emax, period, k, draws_emax, & 
             payoffs_systematic, edu_max, edu_start, periods_emax, states_all, & 
             mapping_state_idx, delta, shocks_cholesky, x_internal)
@@ -328,7 +327,6 @@ FUNCTION criterion(x_internal, num_draws_emax, draws_emax, period, k, &
     !/* internal objects        */
 
     REAL(our_dble)                  :: payoffs_ex_post(4)
-    REAL(our_dble)                  :: payoffs_future(4)
     REAL(our_dble)                  :: emax_simulated
 
 !-------------------------------------------------------------------------------
@@ -336,7 +334,7 @@ FUNCTION criterion(x_internal, num_draws_emax, draws_emax, period, k, &
 !-------------------------------------------------------------------------------
 
     ! Evaluate expected future value
-    CALL simulate_emax(emax_simulated, payoffs_ex_post, payoffs_future, &
+    CALL simulate_emax(emax_simulated, payoffs_ex_post, &
             num_periods, num_draws_emax, period, k, draws_emax, & 
             payoffs_systematic, edu_max, edu_start, periods_emax, states_all, & 
             mapping_state_idx, delta, shocks_cholesky, x_internal)

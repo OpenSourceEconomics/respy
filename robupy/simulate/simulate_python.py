@@ -63,7 +63,7 @@ def pyth_simulate(periods_payoffs_systematic, mapping_state_idx,
             # Record earnings
             dataset[count, 3] = MISSING_FLOAT
             if max_idx in [0, 1]:
-                dataset[count, 3] = payoffs_ex_post[max_idx]
+                dataset[count, 3] = payoffs_systematic[max_idx] * draws[max_idx]
 
             # Write relevant state space for period to data frame
             dataset[count, 4:8] = current_state

@@ -31,7 +31,7 @@ from robupy.shared.auxiliary import distribute_model_paras
 
 from robupy import simulate, read, solve, process, evaluate, estimate
 
-if False:
+if True:
     build_robupy_package(False)
 
 robupy_obj = read('test.robupy.ini')
