@@ -146,3 +146,32 @@ def get_estimation_vector(model_paras):
 
     # Finishing
     return vector
+
+
+
+def start_logging():
+    """ Initialize logging setup for the solution of the model.
+    """
+
+    formatter = logging.Formatter('  %(message)s \n')
+
+    logger = logging.getLogger('ROBUPY_SIMULATE')
+
+    handler = logging.FileHandler('logging.robupy.sim.log', mode='w',
+                                  delay=False)
+
+    handler.setFormatter(formatter)
+
+    logger.setLevel(logging.INFO)
+
+    logger.addHandler(handler)
+
+def stop_logging():
+    """ Ensure orderly shutdown of logging capabilities.
+    """
+    # Shut down logger and close connection.
+    logger = logging.getLogger('ROBUPY_SOLVE')
+    handlers = logger.handlers[:]
+    for handler in handlers:
+        handler.close()
+        logger.removeHandler(handler)

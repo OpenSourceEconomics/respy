@@ -1,20 +1,23 @@
 """ This module contains the interface to solve the model.
 """
 
-# standard library
-
 # project library
 from robupy.fortran.f2py_library import f2py_create_state_space
 from robupy.fortran.f2py_library import f2py_solve
 
-from robupy.fortran.fortran import fort_solve
-from robupy.shared.auxiliary import add_solution
-from robupy.shared.auxiliary import create_draws
 from robupy.shared.auxiliary import distribute_class_attributes
 from robupy.shared.auxiliary import distribute_model_paras
 from robupy.shared.auxiliary import replace_missing_values
-from robupy.solve.solve_auxiliary import stop_logging, start_logging, \
-    summarize_ambiguity, cleanup, _start_ambiguity_logging, check_input
+from robupy.shared.auxiliary import add_solution
+from robupy.shared.auxiliary import create_draws
+from robupy.fortran.fortran import fort_solve
+
+from robupy.solve.solve_auxiliary import start_ambiguity_logging
+from robupy.solve.solve_auxiliary import summarize_ambiguity
+from robupy.solve.solve_auxiliary import logging_solution
+from robupy.solve.solve_auxiliary import check_input
+from robupy.solve.solve_auxiliary import cleanup
+
 from robupy.solve.solve_python import pyth_solve
 
 ''' Main function
@@ -29,7 +32,7 @@ def solve(robupy_obj):
 
     cleanup()
 
-    start_logging()
+    logging_solution('start')
 
     # Distribute class attributes
     model_paras, num_periods, edu_start, is_debug, edu_max, delta, \
@@ -43,7 +46,7 @@ def solve(robupy_obj):
                 'level', 'store')
 
     # Construct auxiliary objects
-    _start_ambiguity_logging(is_ambiguous, is_debug)
+    start_ambiguity_logging(is_ambiguous, is_debug)
 
     # Distribute model parameters
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, shocks_cholesky = \
@@ -91,7 +94,7 @@ def solve(robupy_obj):
         summarize_ambiguity(robupy_obj)
 
     # Orderly shutdown of logging capability.
-    stop_logging()
+    logging_solution('stop')
 
     # Finishing
     return robupy_obj

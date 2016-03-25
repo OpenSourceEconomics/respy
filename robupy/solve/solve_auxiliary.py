@@ -7,8 +7,8 @@ import statsmodels.api as sm
 import numpy as np
 
 import logging
-import os
 import shlex
+import os
 
 # project library
 from robupy.solve.ambiguity import get_payoffs_ambiguity
@@ -106,7 +106,7 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
 
                 # Simulate the expected future value.
                 emax = \
-                    _get_payoffs(num_draws_emax, draws_emax, period, k,
+                    get_payoffs(num_draws_emax, draws_emax, period, k,
                         payoffs_systematic, edu_max, edu_start,
                         mapping_state_idx, states_all, num_periods,
                         periods_emax, delta, is_debug, shocks_cov, level,
@@ -265,7 +265,7 @@ def pyth_calculate_payoffs_systematic(num_periods, states_number_period,
 '''
 
 
-def _get_payoffs(num_draws_emax, draws_emax, period, k, payoffs_systematic,
+def get_payoffs(num_draws_emax, draws_emax, period, k, payoffs_systematic,
         edu_max, edu_start, mapping_state_idx, states_all, num_periods,
         periods_emax, delta, is_debug, shocks_cov, level, is_ambiguous,
         measure, is_deterministic, shocks_cholesky):
@@ -274,22 +274,21 @@ def _get_payoffs(num_draws_emax, draws_emax, period, k, payoffs_systematic,
     # Payoffs require different machinery depending on whether there is
     # ambiguity or not.
     if is_ambiguous:
-        emax = \
-            get_payoffs_ambiguity(num_draws_emax, draws_emax,
-                period, k, payoffs_systematic, edu_max, edu_start,
-                mapping_state_idx, states_all, num_periods, periods_emax,
-                delta, is_debug, shocks_cov, level, measure, is_deterministic,
-                shocks_cholesky)
+        emax = get_payoffs_ambiguity(num_draws_emax, draws_emax,
+            period, k, payoffs_systematic, edu_max, edu_start,
+            mapping_state_idx, states_all, num_periods, periods_emax,
+            delta, is_debug, shocks_cov, level, measure, is_deterministic,
+            shocks_cholesky)
     else:
-        emax = \
-            get_payoffs_risk(num_draws_emax, draws_emax, period, k,
-                payoffs_systematic, edu_max, edu_start, mapping_state_idx,
-                states_all, num_periods, periods_emax, delta, shocks_cholesky)
+        emax = get_payoffs_risk(num_draws_emax, draws_emax, period, k,
+            payoffs_systematic, edu_max, edu_start, mapping_state_idx,
+            states_all, num_periods, periods_emax, delta, shocks_cholesky)
 
     # Finishing
     return emax
 
-def _logging_prediction_model(results):
+
+def logging_prediction_model(results):
     """ Write out some basic information to the solutions log file.
     """
     logger.info('    Information about Prediction Model ')
@@ -303,7 +302,7 @@ def _logging_prediction_model(results):
     logger.info(string.format('R-squared', results.rsquared))
 
 
-def _check_prediction_model(predictions_diff, model, num_points, num_states,
+def check_prediction_model(predictions_diff, model, num_points, num_states,
         is_debug):
     """ Perform some basic consistency checks for the prediction model.
     """
@@ -370,8 +369,8 @@ def get_exogenous_variables(period, num_periods, num_states, delta,
         payoffs_systematic = periods_payoffs_systematic[period, k, :]
 
         # Get total value
-        total_payoffs = get_total_value(period,
-            num_periods, delta, payoffs_systematic, shifts, edu_max, edu_start,
+        total_payoffs = get_total_value(period, num_periods, delta,
+            payoffs_systematic, shifts, edu_max, edu_start,
             mapping_state_idx, periods_emax, k, states_all)
 
         # Treatment of inadmissible states, which will show up in the
@@ -416,11 +415,11 @@ def get_endogenous_variable(period, num_periods, num_states, delta,
         payoffs_systematic = periods_payoffs_systematic[period, k, :]
 
         # Simulate the expected future value.
-        emax_simulated = _get_payoffs(num_draws_emax,
-            draws_emax, period, k, payoffs_systematic, edu_max, edu_start,
-            mapping_state_idx, states_all, num_periods, periods_emax, delta,
-            is_debug, shocks_cov, level, is_ambiguous, measure,
-            is_deterministic, shocks_cholesky)
+        emax_simulated = get_payoffs(num_draws_emax, draws_emax, period, k,
+            payoffs_systematic, edu_max, edu_start, mapping_state_idx,
+            states_all, num_periods, periods_emax, delta, is_debug,
+            shocks_cov, level, is_ambiguous, measure, is_deterministic,
+            shocks_cholesky)
 
         # Construct dependent variable
         endogenous_variable[k] = emax_simulated - maxe[k]
@@ -450,11 +449,11 @@ def get_predictions(endogenous, exogenous, maxe, is_simulated, num_points,
     predictions[is_simulated] = endogenous[is_simulated] + maxe[is_simulated]
 
     # Checks
-    _check_prediction_model(endogenous_predicted, model, num_points,
+    check_prediction_model(endogenous_predicted, model, num_points,
         num_states, is_debug)
 
     # Write out some basic information to spot problems easily.
-    _logging_prediction_model(results)
+    logging_prediction_model(results)
 
     # Finishing
     return predictions, results
@@ -484,51 +483,33 @@ def checks(str_, *args):
     return True
 
 
-def stop_logging():
-    """ Ensure orderly shutdown of logging capabilities.
+def logging_solution(which):
+    """ Ensure proper handling of logging.
     """
-    # TODO: These need to be extract
-    # Collect all loggers for shutdown.
-    loggers = []
-    loggers += [logging.getLogger('ROBUPY_SOLVE')]
-    loggers += [logging.getLogger('ROBUPY_SIMULATE')]
+    # Antibugging
+    assert (which in ['start', 'stop'])
 
-    # Close file handlers
-    for logger in loggers:
+    # Start logging
+    if which == 'start':
+
+        formatter = logging.Formatter('  %(message)s \n')
+        logger = logging.getLogger('ROBUPY_SOLVE')
+        handler = logging.FileHandler('logging.robupy.sol.log', mode='w',
+                                      delay=False)
+        handler.setFormatter(formatter)
+        logger.setLevel(logging.INFO)
+        logger.addHandler(handler)
+
+    elif which == 'stop':
+        # Shut down logger and close connection.
+        logger = logging.getLogger('ROBUPY_SOLVE')
         handlers = logger.handlers[:]
         for handler in handlers:
             handler.close()
             logger.removeHandler(handler)
 
-
-def start_logging():
-    """ Initialize logging setup for the solution of the model.
-    """
-
-    formatter = logging.Formatter('  %(message)s \n')
-
-    logger = logging.getLogger('ROBUPY_SOLVE')
-
-    handler = logging.FileHandler('logging.robupy.sol.log', mode='w',
-                                  delay=False)
-
-    handler.setFormatter(formatter)
-
-    logger.setLevel(logging.INFO)
-
-    logger.addHandler(handler)
-
-    logger = logging.getLogger('ROBUPY_SIMULATE')
-
-    handler = logging.FileHandler('logging.robupy.sim.log', mode='w',
-                                  delay=False)
-
-    handler.setFormatter(formatter)
-
-    logger.setLevel(logging.INFO)
-
-    logger.addHandler(handler)
-
+    else:
+        raise NotImplementedError
 
 def summarize_ambiguity(robupy_obj):
     """ Summarize optimizations in case of ambiguity.
@@ -622,7 +603,7 @@ def cleanup():
         os.unlink('ambiguity.robupy.log')
 
 
-def _start_ambiguity_logging(is_ambiguous, is_debug):
+def start_ambiguity_logging(is_ambiguous, is_debug):
     """ Start logging for ambiguity.
     """
     # Start logging if required
@@ -634,6 +615,13 @@ def _start_ambiguity_logging(is_ambiguous, is_debug):
 
 
 def check_input(robupy_obj):
-    assert (not robupy_obj.get_attr('is_solved'))
+    """ Check input arguments.
+    """
+    # Check that class instance is locked.
     assert robupy_obj.get_attr('is_locked')
+
+    # Check for previous solution attempt.
+    assert (not robupy_obj.get_attr('is_solved'))
+
+    # Finishing
     return True

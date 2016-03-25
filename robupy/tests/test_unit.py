@@ -20,7 +20,7 @@ from robupy import simulate
 from robupy import solve
 from robupy import read
 
-from robupy.solve.solve_auxiliary import _get_payoffs
+from robupy.solve.solve_auxiliary import get_payoffs
 from robupy.tests.codes.random_init import generate_init
 
 from robupy.solve.ambiguity import get_payoffs_ambiguity
@@ -104,7 +104,7 @@ class TestClass(object):
                 draws_emax = np.random.sample((num_draws_emax, 4))
 
                 # Extract payoffs using PYTHON and FORTRAN codes.
-                py = _get_payoffs(num_draws_emax, draws_emax, period, k,
+                py = get_payoffs(num_draws_emax, draws_emax, period, k,
                         payoffs_systematic, edu_max, edu_start,
                         mapping_state_idx, states_all, num_periods,
                         periods_emax, delta, is_debug, shocks_cov, level,

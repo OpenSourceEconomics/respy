@@ -30,6 +30,7 @@ def setup_package():
     classifiers=[],
    setup_requires=['pytest-runner'],
     tests_require=['pytest'],
+    install_requires=['numpy'],
      )
 
     setup(**metadata)

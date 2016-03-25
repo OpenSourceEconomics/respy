@@ -20,7 +20,7 @@ import logging
 
 # project library
 from robupy.simulate.simulate_auxiliary import write_info
-from robupy.simulate.simulate_auxiliary import write_out
+from robupy.simulate.simulate_auxiliary import write_out, start_logging, stop_logging
 
 from robupy.shared.auxiliary import distribute_class_attributes
 from robupy.shared.auxiliary import replace_missing_values
@@ -45,6 +45,8 @@ def simulate(robupy_obj):
     # Checks
     assert robupy_obj.get_attr('is_solved')
     assert robupy_obj.get_attr('is_locked')
+
+    start_logging()
 
     # Distribute class attributes
     periods_payoffs_systematic, mapping_state_idx, periods_emax, model_paras, \
@@ -95,6 +97,8 @@ def simulate(robupy_obj):
     write_info(robupy_obj, data_frame)
 
     logger.info('... finished \n')
+
+    stop_logging()
 
     # Finishing
     return data_frame
