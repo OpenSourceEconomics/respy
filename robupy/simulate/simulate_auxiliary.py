@@ -152,8 +152,8 @@ def check_simulation(robupy_obj):
     """ Check integrity of simulation request.
     """
     # Checks
-    assert (robupy_obj.get_attr('is_solved'))
-    assert (robupy_obj.get_status())
+    assert robupy_obj.get_attr('is_solved')
+    assert robupy_obj.get_attr('is_locked')
 
     # Finishing
     return True

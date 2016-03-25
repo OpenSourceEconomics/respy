@@ -51,6 +51,8 @@ class RobupyCls(object):
 
         self.attr['seed_emax'] = None
 
+        self.attr['is_locked'] = None
+
         self.attr['is_solved'] = None
 
         self.attr['edu_start'] = None
@@ -99,7 +101,7 @@ class RobupyCls(object):
         self._update_derived_attributes()
 
         # Status indicators
-        self.is_locked = False
+        self.attr['is_locked'] = False
 
         self.attr['is_solved'] = False
 
@@ -131,40 +133,35 @@ class RobupyCls(object):
         # above.
         self._update_derived_attributes()
 
-    def get_status(self):
-        """ Get status of class instance.
-        """
-        return self.is_locked
-
     def lock(self):
         """ Lock class instance.
         """
         # Antibugging.
-        assert (self.get_status() is False)
+        assert (not self.attr['is_locked'])
 
         # Checks
         self._check_integrity_attributes()
 
         self._check_integrity_results()
 
-        # Update class attributes.
-        self.is_locked = True
+        # Update status indicator
+        self.attr['is_locked'] = True
 
     def unlock(self):
         """ Unlock class instance.
         """
         # Antibugging
-        assert (self.get_status() is True)
+        assert self.attr['is_locked']
 
-        # Update class attributes
-        self.is_locked = False
+        # Update status indicator
+        self.attr['is_locked'] = False
 
     def get_attr(self, key):
         """ Get attributes.
         """
         # Antibugging
-        assert (self.get_status() is True)
-        assert (self._check_key(key) is True)
+        assert self.attr['is_locked']
+        assert self._check_key(key)
 
         # If solution attributes are requested, make sure the class instance
         # is solved.
@@ -178,8 +175,8 @@ class RobupyCls(object):
         """ Get attributes.
         """
         # Antibugging
-        assert (self.get_status() is False)
-        assert (self._check_key(key) is True)
+        assert (not self.attr['is_locked'])
+        assert self._check_key(key)
 
         # Finishing
         self.attr[key] = value
@@ -208,8 +205,8 @@ class RobupyCls(object):
         """ Store class instance.
         """
         # Antibugging
-        assert (self.get_status() is True)
-        assert (isinstance(file_name, str))
+        assert self.attr['is_locked']
+        assert isinstance(file_name, str)
 
         # Store.
         pkl.dump(self, open(file_name, 'wb'))
@@ -309,8 +306,7 @@ class RobupyCls(object):
     def _update_derived_attributes(self):
         """ Update derived attributes.
         """
-
-        # Distribute class attributes
+        # Distribute model parameters
         model_paras = self.attr['model_paras']
 
         num_periods = self.attr['num_periods']
@@ -455,11 +451,10 @@ class RobupyCls(object):
         assert (isinstance(num_draws_prob, int))
         assert (num_draws_prob > 0)
 
-    # noinspection PyTypeChecker
     def _check_integrity_results(self):
         """ This methods check the integrity of the results.
         """
-        # Distribute auxiliary objects
+        # Distribute class attributes
         num_periods = self.attr['num_periods']
 
         edu_start = self.attr['edu_start']
@@ -549,9 +544,8 @@ class RobupyCls(object):
                 indices = states_all[period, :states_number_period[period], :]
                 for index in indices:
                     # Check for finite value at admissible state
-                    assert (np.isfinite(mapping_state_idx[
-                                            period, index[0], index[1], index[
-                                                2], index[3]]))
+                    assert (np.isfinite(mapping_state_idx[period, index[0],
+                        index[1], index[2], index[3]]))
                     # Record finite value
                     is_infinite[
                         period, index[0], index[1], index[2], index[3]] = True
@@ -559,15 +553,13 @@ class RobupyCls(object):
             assert (np.all(np.isfinite(mapping_state_idx[is_infinite == True])))
 
             # Check that all inadmissible states are infinite
-            assert (
-                np.all(np.isfinite(
-                    mapping_state_idx[is_infinite == False])) == False)
+            assert (np.all(np.isfinite(
+                mapping_state_idx[is_infinite == False])) == False)
 
         # Check the calculated systematic payoffs
         is_applicable = (states_all is not None)
         is_applicable = is_applicable and (states_number_period is not None)
-        is_applicable = is_applicable and (
-        periods_payoffs_systematic is not None)
+        is_applicable = is_applicable and (periods_payoffs_systematic is not None)
 
         if is_applicable:
             # Check that the payoffs are finite for all admissible values and

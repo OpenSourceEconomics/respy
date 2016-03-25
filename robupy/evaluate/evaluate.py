@@ -24,7 +24,7 @@ def evaluate(robupy_obj, data_frame):
     """
     # Antibugging
     assert robupy_obj.get_attr('is_solved')
-    assert robupy_obj.get_status()
+    assert robupy_obj.get_attr('is_locked')
 
     # Distribute class attributes
     periods_payoffs_systematic, mapping_state_idx, periods_emax, model_paras, \

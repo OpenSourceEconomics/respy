@@ -123,8 +123,8 @@ def _check_solve(robupy_obj):
     """ Check likelihood calculation.
     """
     # Check integrity of the request
-    assert (robupy_obj.get_attr('is_solved') is False)
-    assert (robupy_obj.get_status())
+    assert (not robupy_obj.get_attr('is_solved'))
+    assert robupy_obj.get_attr('is_locked')
 
     # Finishing
     return True
