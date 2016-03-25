@@ -9,26 +9,27 @@ import numpy as np
 from robupy.shared.auxiliary import check_dataset
 
 
-
-def check_evaluation(str_, *args):
+def check_output(crit_val):
     """ Check integrity of criterion function.
     """
-    if str_ == 'out':
+    assert (np.isfinite(crit_val))
+    assert (isinstance(crit_val, float))
 
-        # Distribute input parameters
-        crit_val, = args
+    # Finishing
+    return True
 
-        # Check quality
-        assert isinstance(crit_val, float)
-        assert np.isfinite(crit_val)
 
-    elif str_ == 'in':
+def check_input(robupy_obj, data_frame):
+    """ Check input arguments.
+    """
+    # Check that class instance is locked.
+    assert robupy_obj.get_attr('is_locked')
 
-        # Distribute input parameters
-        data_frame, robupy_obj, is_deterministic = args
+    # Check for previous solution.
+    assert robupy_obj.get_attr('is_solved')
 
-        # Check quality
-        check_dataset(data_frame, robupy_obj)
+    # Check that dataset aligns with model specification.
+    check_dataset(data_frame, robupy_obj)
 
     # Finishing
     return True

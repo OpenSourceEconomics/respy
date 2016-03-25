@@ -3,7 +3,8 @@ function.
 """
 
 # project library
-from robupy.evaluate.evaluate_auxiliary import check_evaluation
+from robupy.evaluate.evaluate_auxiliary import check_output
+from robupy.evaluate.evaluate_auxiliary import check_input
 from robupy.evaluate.evaluate_python import pyth_evaluate
 
 from robupy.fortran.fortran import fort_evaluate
@@ -19,11 +20,10 @@ from robupy.fortran.f2py_library import f2py_evaluate
 
 
 def evaluate(robupy_obj, data_frame):
-    """ Evaluate likelihood function.
+    """ Evaluate the criterion function.
     """
     # Antibugging
-    assert robupy_obj.get_attr('is_solved')
-    assert robupy_obj.get_attr('is_locked')
+    assert check_input(robupy_obj, data_frame)
 
     # Distribute class attributes
     periods_payoffs_systematic, mapping_state_idx, periods_emax, model_paras, \
@@ -39,11 +39,6 @@ def evaluate(robupy_obj, data_frame):
                 'version', 'num_draws_prob', 'seed_prob', 'num_draws_emax',
                 'seed_emax', 'is_interpolated', 'is_ambiguous', 'num_points',
                 'is_myopic', 'min_idx', 'measure', 'level')
-
-    # Check the dataset against the initialization files
-    assert check_evaluation('in', data_frame, robupy_obj, is_deterministic)
-
-
 
     # Distribute model parameters
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, shocks_cholesky = \
@@ -71,20 +66,14 @@ def evaluate(robupy_obj, data_frame):
         seed_prob, seed_data, 'evaluate', data_frame)
 
     elif version == 'PYTHON':
-
         crit_val = pyth_evaluate(*args)
-
     elif version == 'F2PY':
-
         crit_val = f2py_evaluate(*args)
-
     else:
-
         raise NotImplementedError
 
-
     # Checks
-    assert check_evaluation('out', crit_val)
+    assert check_output(crit_val)
 
     # Finishing
     return crit_val

@@ -27,15 +27,14 @@ def get_payoffs_ambiguity(num_draws_emax, draws_emax, period, k,
         opt = _handle_shocks_zero(is_debug, period, k)
     else:
         opt = _determine_worst_case(num_draws_emax, draws_emax,
-                period, k, payoffs_systematic, edu_max, edu_start,
-                mapping_state_idx, states_all, num_periods, periods_emax,
-                delta, is_debug, shocks_cov, level, measure, shocks_cholesky)
+            period, k, payoffs_systematic, edu_max, edu_start,
+            mapping_state_idx, states_all, num_periods, periods_emax,
+            delta, is_debug, shocks_cov, level, measure, shocks_cholesky)
 
     # Simulate the expected future value for the worst case outcome
-    simulated = \
-        simulate_emax(num_periods, num_draws_emax, period, k, draws_emax,
-            payoffs_systematic, edu_max, edu_start, periods_emax, states_all,
-            mapping_state_idx, delta, shocks_cholesky, opt['x'])
+    simulated = simulate_emax(num_periods, num_draws_emax, period, k,
+        draws_emax, payoffs_systematic, edu_max, edu_start, periods_emax,
+        states_all, mapping_state_idx, delta, shocks_cholesky, opt['x'])
 
     # Debugging. This only works in the case of success, as otherwise
     # opt['fun'] is not equivalent to simulated.
