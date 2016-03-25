@@ -6,13 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="dab45195-1938-4e75-b973-f8d08bf57068" name="Default" comment="">
       <change type="DELETED" beforePath="$PROJECT_DIR$/analysis/working/driver.py" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/.idea/workspace.xml" afterPath="$PROJECT_DIR$/package/development/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/fortran/f2py_interface_debug.f90" afterPath="$PROJECT_DIR$/package/robupy/fortran/f2py_interface_debug.f90" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/fortran/robufort_ambiguity.f90" afterPath="$PROJECT_DIR$/package/robupy/fortran/robufort_ambiguity.f90" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/fortran/robufort_emax.f90" afterPath="$PROJECT_DIR$/package/robupy/fortran/robufort_emax.f90" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/fortran/robufort_library.f90" afterPath="$PROJECT_DIR$/package/robupy/fortran/robufort_library.f90" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/fortran/robufort_risk.f90" afterPath="$PROJECT_DIR$/package/robupy/fortran/robufort_risk.f90" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/tests/test_unit.py" afterPath="$PROJECT_DIR$/package/robupy/tests/test_unit.py" />
     </list>
     <ignored path="robustToolbox.iws" />
     <ignored path=".idea/workspace.xml" />
