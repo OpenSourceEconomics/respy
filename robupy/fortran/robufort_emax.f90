@@ -23,7 +23,7 @@ MODULE robufort_emax
 CONTAINS
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, &
+SUBROUTINE simulate_emax(emax_simulated, &
                 num_periods, num_draws_emax, period, k, draws_emax, & 
                 payoffs_systematic, edu_max, edu_start, periods_emax, & 
                 states_all, mapping_state_idx, delta, shocks_cholesky, & 
@@ -31,7 +31,6 @@ SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, &
 
     !/* external objects    */
 
-    REAL(our_dble), INTENT(OUT)     :: payoffs_ex_post(:)
     REAL(our_dble), INTENT(OUT)     :: emax_simulated
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:, :, :, :, :)
@@ -65,7 +64,6 @@ SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, &
 !-------------------------------------------------------------------------------
 
     ! Initialize containers
-    payoffs_ex_post = zero_dble
     emax_simulated = zero_dble
 
     ! Transfer draws to relevant distribution
@@ -90,7 +88,7 @@ SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, &
         draws = draws_emax_transformed(i, :)
 
         ! Calculate total value
-        CALL get_total_value(total_payoffs, payoffs_ex_post, &
+        CALL get_total_value(total_payoffs, &
                 period, num_periods, delta, payoffs_systematic, draws, &
                 edu_max, edu_start, mapping_state_idx, periods_emax, k, & 
                 states_all)
@@ -109,7 +107,7 @@ SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE get_total_value(total_payoffs, payoffs_ex_post, &
+SUBROUTINE get_total_value(total_payoffs, &
                 period, num_periods, delta, payoffs_systematic, draws, & 
                 edu_max, edu_start, mapping_state_idx, periods_emax, k, & 
                 states_all)
@@ -121,7 +119,6 @@ SUBROUTINE get_total_value(total_payoffs, payoffs_ex_post, &
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(OUT)     :: payoffs_ex_post(:)
     REAL(our_dble), INTENT(OUT)     :: total_payoffs(:)
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:, :, :, :, :)
@@ -140,6 +137,7 @@ SUBROUTINE get_total_value(total_payoffs, payoffs_ex_post, &
     !/* internal objects        */
 
     REAL(our_dble)                  :: payoffs_future(4)
+    REAL(our_dble)                  :: payoffs_ex_post(4)
 
     
 !-------------------------------------------------------------------------------
@@ -266,7 +264,6 @@ SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, &
 
     REAL(our_dble)                      :: payoffs_systematic(4)
     REAL(our_dble)                      :: expected_values(4)
-    REAL(our_dble)                      :: payoffs_ex_post(4)
     REAL(our_dble)                      :: diff(4)
 
     INTEGER(our_int)                    :: k
@@ -282,7 +279,7 @@ SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, &
 
         payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
-        CALL get_total_value(expected_values, payoffs_ex_post, &
+        CALL get_total_value(expected_values, &
                 period, num_periods, delta, payoffs_systematic, shifts, &
                 edu_max, edu_start, mapping_state_idx, periods_emax, k, &
                 states_all)

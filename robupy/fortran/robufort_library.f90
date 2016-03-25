@@ -80,7 +80,6 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
     REAL(our_dble)                  :: draws_prob(num_draws_prob, 4)
     REAL(our_dble)                  :: choice_probabilities(4)
     REAL(our_dble)                  :: payoffs_systematic(4)
-    REAL(our_dble)                  :: payoffs_ex_post(4)
     REAL(our_dble)                  :: total_payoffs(4)
     REAL(our_dble)                  :: draws(4)
     REAL(our_dble)                  :: crit_val_contrib
@@ -183,7 +182,7 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
                 draws(2) = EXP(draws(2))
 
                 ! Calculate total payoff.
-                CALL get_total_value(total_payoffs, payoffs_ex_post, & 
+                CALL get_total_value(total_payoffs, & 
                         period, num_periods, delta, &
                         payoffs_systematic, draws, edu_max, edu_start, & 
                         mapping_state_idx, periods_emax, k, states_all)
@@ -375,7 +374,6 @@ SUBROUTINE fort_simulate(dataset, num_agents, states_all, num_periods, &
     INTEGER(our_int)                :: k
 
     REAL(our_dble)                  :: payoffs_systematic(4)
-    REAL(our_dble)                  :: payoffs_ex_post(4)
     REAL(our_dble)                  :: total_payoffs(4)
     REAL(our_dble)                  :: draws(4)
 
@@ -413,7 +411,7 @@ SUBROUTINE fort_simulate(dataset, num_agents, states_all, num_periods, &
             draws = periods_draws_sims(period + 1, i + 1, :)
 
             ! Calculate total utilities
-            CALL get_total_value(total_payoffs, payoffs_ex_post, & 
+            CALL get_total_value(total_payoffs, & 
                     period, num_periods, delta, &
                     payoffs_systematic, draws, edu_max, edu_start, & 
                     mapping_state_idx, periods_emax, k, states_all)
@@ -620,7 +618,6 @@ SUBROUTINE backward_induction(periods_emax, &
 
     REAL(our_dble)                      :: draws_emax(num_draws_emax, 4)
     REAL(our_dble)                      :: payoffs_systematic(4)
-    REAL(our_dble)                      :: payoffs_ex_post(4)
     REAL(our_dble)                      :: emax_simulated
     REAL(our_dble)                      :: shifts(4)
 
@@ -708,7 +705,7 @@ SUBROUTINE backward_induction(periods_emax, &
                 ! Extract payoffs
                 payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
-                CALL get_payoffs(emax_simulated, payoffs_ex_post, &
+                CALL get_payoffs(emax_simulated, &
                         num_draws_emax, draws_emax, period, & 
                         k, payoffs_systematic, edu_max, edu_start, & 
                         mapping_state_idx, states_all, num_periods, & 
@@ -872,7 +869,7 @@ SUBROUTINE create_state_space(states_all, states_number_period, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE get_payoffs(emax_simulated, payoffs_ex_post, &
+SUBROUTINE get_payoffs(emax_simulated, &
                 num_draws_emax, draws_emax, period, k, payoffs_systematic, & 
                 edu_max, edu_start, mapping_state_idx, states_all, & 
                 num_periods, periods_emax, delta, is_debug, shocks_cov, & 
@@ -880,7 +877,6 @@ SUBROUTINE get_payoffs(emax_simulated, payoffs_ex_post, &
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(OUT)         :: payoffs_ex_post(:)
     REAL(our_dble), INTENT(OUT)         :: emax_simulated
 
     REAL(our_dble), INTENT(IN)          :: shocks_cholesky(:, :)
@@ -915,7 +911,7 @@ SUBROUTINE get_payoffs(emax_simulated, payoffs_ex_post, &
     ! ambiguity or not.
     IF (is_ambiguous) THEN
 
-        CALL get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
+        CALL get_payoffs_ambiguity(emax_simulated, &
                 num_draws_emax, draws_emax, period, k, & 
                 payoffs_systematic, edu_max, edu_start, mapping_state_idx, & 
                 states_all, num_periods, periods_emax, delta, is_debug, & 
@@ -923,7 +919,7 @@ SUBROUTINE get_payoffs(emax_simulated, payoffs_ex_post, &
 
     ELSE 
 
-        CALL get_payoffs_risk(emax_simulated, payoffs_ex_post, & 
+        CALL get_payoffs_risk(emax_simulated, & 
                 num_draws_emax, draws_emax, period, k, payoffs_systematic, & 
                 edu_max, edu_start, mapping_state_idx, states_all, & 
                 num_periods, periods_emax, delta, shocks_cholesky)
@@ -973,7 +969,6 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_periods, &
     !/* internal objects        */
 
     REAL(our_dble)                      :: payoffs_systematic(4)
-    REAL(our_dble)                      :: payoffs_ex_post(4)
     REAL(our_dble)                      :: emax_simulated
 
     INTEGER(our_int)                    :: k
@@ -998,7 +993,7 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_periods, &
         payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
         ! Get payoffs
-        CALL get_payoffs(emax_simulated, payoffs_ex_post, &
+        CALL get_payoffs(emax_simulated, &
                 num_draws_emax, draws_emax, period, k, payoffs_systematic, & 
                 edu_max, edu_start, mapping_state_idx, states_all, & 
                 num_periods, periods_emax, delta, is_debug, shocks_cov, & 

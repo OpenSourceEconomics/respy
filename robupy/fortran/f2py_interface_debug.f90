@@ -145,7 +145,7 @@ SUBROUTINE wrapper_svd(U, S, VT, A, m)
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
+SUBROUTINE wrapper_get_payoffs_ambiguity(emax_simulated, &
                 num_draws_emax, draws_emax, &
                 period, k, payoffs_systematic, edu_max, edu_start, & 
                 mapping_state_idx, states_all, num_periods, periods_emax, & 
@@ -162,7 +162,6 @@ SUBROUTINE wrapper_get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
 
     !/* external objects        */
 
-    DOUBLE PRECISION, INTENT(OUT)   :: payoffs_ex_post(4)
     DOUBLE PRECISION, INTENT(OUT)   :: emax_simulated
 
     INTEGER, INTENT(IN)             :: mapping_state_idx(:,:,:,:,:)
@@ -191,7 +190,7 @@ SUBROUTINE wrapper_get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
 ! Algorithm
 !-------------------------------------------------------------------------------
     
-    CALL get_payoffs_ambiguity(emax_simulated, payoffs_ex_post, &
+    CALL get_payoffs_ambiguity(emax_simulated, &
             num_draws_emax, draws_emax, period, k, &
             payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
             states_all, num_periods, periods_emax, delta, is_debug, shocks_cov, & 
@@ -246,7 +245,7 @@ SUBROUTINE wrapper_criterion_approx_gradient(rslt, x, tiny, num_draws_emax, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_simulate_emax(emax_simulated, payoffs_ex_post, &
+SUBROUTINE wrapper_simulate_emax(emax_simulated, &
                 num_periods, num_draws_emax, period, k, &
                 draws_emax, payoffs_systematic, edu_max, & 
                 edu_start, periods_emax, states_all, mapping_state_idx, delta, & 
@@ -262,7 +261,6 @@ SUBROUTINE wrapper_simulate_emax(emax_simulated, payoffs_ex_post, &
 
     !/* external objects        */
 
-    DOUBLE PRECISION, INTENT(OUT)   :: payoffs_ex_post(4)
     DOUBLE PRECISION, INTENT(OUT)   :: emax_simulated
 
     DOUBLE PRECISION, INTENT(IN)    :: draws_emax(:,:)
@@ -285,7 +283,7 @@ SUBROUTINE wrapper_simulate_emax(emax_simulated, payoffs_ex_post, &
 ! Algorithm
 !-------------------------------------------------------------------------------
 
-    CALL simulate_emax(emax_simulated, payoffs_ex_post, &
+    CALL simulate_emax(emax_simulated, &
             num_periods, num_draws_emax, period, k, & 
             draws_emax, payoffs_systematic, edu_max, & 
             edu_start, periods_emax, states_all, mapping_state_idx, delta, & 
@@ -864,7 +862,7 @@ SUBROUTINE wrapper_get_simulated_indicator(is_simulated, num_points, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_get_payoffs(emax_simulated, payoffs_ex_post, &
+SUBROUTINE wrapper_get_payoffs(emax_simulated, &
                 num_draws_emax, draws_emax, period, k, & 
                 payoffs_systematic, edu_max, edu_start, mapping_state_idx, & 
                 states_all, num_periods, periods_emax, delta, is_debug, & 
@@ -882,7 +880,6 @@ SUBROUTINE wrapper_get_payoffs(emax_simulated, payoffs_ex_post, &
 
     !/* external objects        */
 
-    DOUBLE PRECISION, INTENT(OUT)       :: payoffs_ex_post(4)
     DOUBLE PRECISION, INTENT(OUT)       :: emax_simulated
 
     DOUBLE PRECISION, INTENT(IN)        :: draws_emax(:, :)
@@ -912,7 +909,7 @@ SUBROUTINE wrapper_get_payoffs(emax_simulated, payoffs_ex_post, &
 ! Algorithm
 !-------------------------------------------------------------------------------
     
-    CALL get_payoffs(emax_simulated, payoffs_ex_post, &
+    CALL get_payoffs(emax_simulated, &
                 num_draws_emax, draws_emax, period, k, & 
                 payoffs_systematic, edu_max, edu_start, mapping_state_idx, & 
                 states_all, num_periods, periods_emax, delta, is_debug, & 

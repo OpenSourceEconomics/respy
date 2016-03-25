@@ -51,7 +51,7 @@ class TestClass(object):
         # FORTRAN resources
         import robupy.fortran.f2py_debug as fort_debug
 
-        for _ in range(10):
+        for _ in range(5):
 
             # Impose constraints
             constraints = dict()
@@ -100,7 +100,7 @@ class TestClass(object):
                         is_ambiguous, measure, is_deterministic,
                         shocks_cholesky)
 
-                f90, _ = fort_debug.wrapper_get_payoffs(num_draws_emax,
+                f90 = fort_debug.wrapper_get_payoffs(num_draws_emax,
                         draws_emax, period, k, payoffs_systematic,
                         edu_max, edu_start, mapping_state_idx, states_all,
                         num_periods, periods_emax, delta, is_debug, shocks_cov,
@@ -119,7 +119,7 @@ class TestClass(object):
         import robupy.fortran.f2py_debug as fort_debug
 
         # Iterate over random test cases
-        for _ in range(10):
+        for _ in range(5):
 
             # Generate constraint periods
             constraints = dict()
@@ -168,8 +168,8 @@ class TestClass(object):
                 periods_emax, is_debug, delta, shocks_cov, level, measure,
                 is_deterministic, shocks_cholesky]
 
-            f = fort_debug.wrapper_get_payoffs_ambiguity(*args)[0]
-            py = get_payoffs_ambiguity(*args)[0]
+            f = fort_debug.wrapper_get_payoffs_ambiguity(*args)
+            py = get_payoffs_ambiguity(*args)
 
             np.testing.assert_allclose(py, f, rtol=1e-05, atol=1e-06)
 
@@ -362,7 +362,7 @@ class TestClass(object):
             periods_emax, states_all, mapping_state_idx, delta,
             shocks_cholesky, shocks_mean)
 
-        f90, _ = fort_debug.wrapper_simulate_emax(num_periods,
+        f90 = fort_debug.wrapper_simulate_emax(num_periods,
             num_draws_emax, period, k, draws_standard, payoffs_systematic,
             edu_max, edu_start, periods_emax, states_all, mapping_state_idx,
             delta, shocks_cholesky, shocks_mean)
