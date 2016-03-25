@@ -8,9 +8,14 @@ import pandas as pd
 import numpy as np
 
 # Special care with derived attributes is required to maintain integrity of
-# the class instance.
+# the class instance. These derived attributes cannot be changed directly.
 DERIVED_ATTR = ['is_ambiguous', 'min_idx', 'is_deterministic']
 DERIVED_ATTR += ['is_myopic']
+
+# Special care with solution attributes is required. These are only returned
+# if the class instance was solved.
+SOLUTION_ATTR = ['periods_payoffs_systematic', 'states_number_period']
+SOLUTION_ATTR += ['mapping_state_idx', 'periods_emax', 'states_all']
 
 
 class RobupyCls(object):
@@ -25,14 +30,12 @@ class RobupyCls(object):
 
         self.attr['init_dict'] = init_dict
 
-        # Derived attributes
+        # Constitutive attributes
         self.attr['is_interpolated'] = None
 
         self.attr['num_draws_emax'] = None
 
         self.attr['num_draws_prob'] = None
-
-        self.attr['is_ambiguous'] = None
 
         self.attr['num_periods'] = None
 
@@ -48,7 +51,7 @@ class RobupyCls(object):
 
         self.attr['seed_emax'] = None
 
-        self.attr['is_myopic'] = None
+        self.attr['is_solved'] = None
 
         self.attr['edu_start'] = None
 
@@ -62,8 +65,6 @@ class RobupyCls(object):
 
         self.attr['version'] = None
 
-        self.attr['min_idx'] = None
-
         self.attr['measure'] = None
 
         self.attr['delta'] = None
@@ -72,7 +73,16 @@ class RobupyCls(object):
 
         self.attr['level'] = None
 
-        # Results
+        # Derived attributes
+        self.attr['is_deterministic'] = None
+
+        self.attr['is_ambiguous'] = None
+
+        self.attr['is_myopic'] = None
+
+        self.attr['min_idx'] = None
+
+        # Solution attributes
         self.attr['periods_payoffs_systematic'] = None
 
         self.attr['states_number_period'] = None
@@ -83,15 +93,15 @@ class RobupyCls(object):
 
         self.attr['states_all'] = None
 
-        self.attr['is_solved'] = False
-
         # Initialization
         self._update_core_attributes()
 
         self._update_derived_attributes()
 
-        # Status indicator
+        # Status indicators
         self.is_locked = False
+
+        self.attr['is_solved'] = False
 
     def update_model_paras(self, coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
             shocks_cov, shocks_cholesky):
@@ -156,6 +166,11 @@ class RobupyCls(object):
         assert (self.get_status() is True)
         assert (self._check_key(key) is True)
 
+        # If solution attributes are requested, make sure the class instance
+        # is solved.
+        if key in SOLUTION_ATTR:
+            assert self.get_attr('is_solved'), 'invalid request'
+
         # Finishing
         return self.attr[key]
 
@@ -178,6 +193,13 @@ class RobupyCls(object):
 
         if key in invalid_attr:
             raise AssertionError('invalid request')
+
+        # Special care is required for solution attributes. These cannot be
+        # set when the class instance is solved. The status attribute is
+        # accessed directly as the class instance is unlocked, which does not
+        # allow to access attributes using the get method.
+        if key in SOLUTION_ATTR:
+            assert not self.attr['is_solved'], 'invalid request'
 
         # Update derived attributes
         self._update_derived_attributes()
@@ -433,17 +455,14 @@ class RobupyCls(object):
         assert (isinstance(num_draws_prob, int))
         assert (num_draws_prob > 0)
 
+    # noinspection PyTypeChecker
     def _check_integrity_results(self):
         """ This methods check the integrity of the results.
         """
         # Distribute auxiliary objects
-        is_interpolated = self.attr['is_interpolated']
-
         num_periods = self.attr['num_periods']
 
         edu_start = self.attr['edu_start']
-
-        is_myopic = self.attr['is_myopic']
 
         edu_max = self.attr['edu_max']
 
@@ -488,9 +507,8 @@ class RobupyCls(object):
             # required as np.all evaluates to FALSE for this condition
             # (see NUMPY documentation).
             for period in range(num_periods):
-                assert (
-                    np.all(
-                        states_all[period, :states_number_period[period]] >= 0))
+                assert (np.all(
+                    states_all[period, :states_number_period[period]] >= 0))
 
             # The maximum number of additional education years is never larger
             # than (EDU_MAX - EDU_START).
@@ -507,9 +525,8 @@ class RobupyCls(object):
             # Checking validity of state space values. All valid
             # values need to be finite.
             for period in range(num_periods):
-                assert (np.all(
-                    np.isfinite(
-                        states_all[period, :states_number_period[period]])))
+                assert (np.all(np.isfinite(
+                    states_all[period, :states_number_period[period]])))
 
             # There are no infinite values in final period.
             assert (np.all(np.isfinite(states_all[(num_periods - 1), :, :])))

@@ -21,17 +21,18 @@ sys.path.insert(0, ROOT_DIR)
 from codes.auxiliary import cleanup_robupy_package
 from codes.auxiliary import build_testing_library
 from codes.auxiliary import build_robupy_package
-from codes.auxiliary import distribute_model_description
+
 from robupy.estimate.estimate_auxiliary import opt_get_optim_parameters
 from robupy.estimate.estimate_auxiliary import logging_optimization
 from robupy.estimate.estimate_python import pyth_criterion
 from robupy.shared.auxiliary import create_draws
-
 from robupy.shared.auxiliary import distribute_class_attributes
 from robupy.shared.auxiliary import distribute_model_paras
 
 from robupy import simulate, read, solve, process, evaluate, estimate
-build_robupy_package(False)
+
+if False:
+    build_robupy_package(False)
 
 robupy_obj = read('test.robupy.ini')
 
