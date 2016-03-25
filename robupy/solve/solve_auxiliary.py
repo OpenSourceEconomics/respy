@@ -370,21 +370,21 @@ def get_exogenous_variables(period, num_periods, num_states, delta,
         payoffs_systematic = periods_payoffs_systematic[period, k, :]
 
         # Get total value
-        expected_values = get_total_value(period,
+        total_payoffs = get_total_value(period,
             num_periods, delta, payoffs_systematic, shifts, edu_max, edu_start,
             mapping_state_idx, periods_emax, k, states_all)
 
         # Treatment of inadmissible states, which will show up in the
         # regression in some way.
-        is_inadmissible = (expected_values[2] == -HUGE_FLOAT)
+        is_inadmissible = (total_payoffs[2] == -HUGE_FLOAT)
 
         if is_inadmissible:
-            expected_values[2] = INTERPOLATION_INADMISSIBLE_STATES
+            total_payoffs[2] = INTERPOLATION_INADMISSIBLE_STATES
 
         # Implement level shifts
-        maxe[k] = max(expected_values)
+        maxe[k] = max(total_payoffs)
 
-        diff = maxe[k] - expected_values
+        diff = maxe[k] - total_payoffs
 
         exogenous[k, :8] = np.hstack((diff, np.sqrt(diff)))
 

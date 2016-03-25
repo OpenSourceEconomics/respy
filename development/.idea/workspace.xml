@@ -7,9 +7,8 @@
     <list default="true" id="dab45195-1938-4e75-b973-f8d08bf57068" name="Default" comment="">
       <change type="DELETED" beforePath="$PROJECT_DIR$/analysis/working/driver.py" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/.idea/workspace.xml" afterPath="$PROJECT_DIR$/package/development/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/fortran/f2py_interface_debug.f90" afterPath="$PROJECT_DIR$/package/robupy/fortran/f2py_interface_debug.f90" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/fortran/robufort_ambiguity.f90" afterPath="$PROJECT_DIR$/package/robupy/fortran/robufort_ambiguity.f90" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/tests/test_unit.py" afterPath="$PROJECT_DIR$/package/robupy/tests/test_unit.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/fortran/robufort_emax.f90" afterPath="$PROJECT_DIR$/package/robupy/fortran/robufort_emax.f90" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/solve/solve_auxiliary.py" afterPath="$PROJECT_DIR$/package/robupy/solve/solve_auxiliary.py" />
     </list>
     <ignored path="robustToolbox.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -36,7 +35,18 @@
     <favorites_list name="robustToolbox" />
   </component>
   <component name="FileEditorManager">
-    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300" />
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file leaf-file-name="auxiliary.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/package/robupy/shared/auxiliary.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="-0.97643095">
+              <caret line="129" column="14" selection-start-line="129" selection-start-column="4" selection-end-line="129" selection-end-column="26" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -51,7 +61,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/package/robupy/process/process.py" />
         <option value="$PROJECT_DIR$/package/robupy/fortran/auxiliary.py" />
         <option value="$PROJECT_DIR$/package/robupy/fortran/evaluate_fortran.py" />
         <option value="$PROJECT_DIR$/package/robupy/fortran/interface_fortran.py" />
@@ -79,7 +88,6 @@
         <option value="$PROJECT_DIR$/package/robupy/solve/risk.py" />
         <option value="$PROJECT_DIR$/package/robupy/simulate/simulate_python.py" />
         <option value="$PROJECT_DIR$/package/robupy/evaluate/evaluate_python.py" />
-        <option value="$PROJECT_DIR$/package/robupy/solve/solve_auxiliary.py" />
         <option value="$PROJECT_DIR$/package/robupy/__init__.py" />
         <option value="$PROJECT_DIR$/package/development/msc/clean.py" />
         <option value="$PROJECT_DIR$/package/robupy/fortran/wscript" />
@@ -102,6 +110,8 @@
         <option value="$PROJECT_DIR$/package/robupy/fortran/f2py_interface_testing.f90" />
         <option value="$PROJECT_DIR$/package/robupy/fortran/robufort_testing.f90" />
         <option value="$PROJECT_DIR$/package/robupy/fortran/f2py_interface_debug.f90" />
+        <option value="$PROJECT_DIR$/package/robupy/solve/solve_auxiliary.py" />
+        <option value="$PROJECT_DIR$/package/robupy/fortran/robufort_emax.f90" />
       </list>
     </option>
   </component>
@@ -824,7 +834,7 @@
     <layout>
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.46401227" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" x="261" y="41" width="551" height="683" />
+      <window_info id="Find" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.4992343" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" x="261" y="41" width="551" height="683" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.39969373" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="8" side_tool="true" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25511304" sideWeight="0.51148546" order="2" side_tool="true" content_ui="tabs" />
@@ -855,7 +865,7 @@
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25511304" sideWeight="0.51148546" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.25188375" sideWeight="0.4946401" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25188375" sideWeight="0.4946401" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.5199139" sideWeight="0.48851454" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
@@ -1054,16 +1064,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/robupy/solve/solve_auxiliary.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.17174959">
-          <caret line="414" column="17" selection-start-line="414" selection-start-column="17" selection-end-line="414" selection-end-column="17" />
-          <folding>
-            <element signature="e#139#167#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/package/robupy/simulate/simulate_python.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.33226323">
@@ -1086,22 +1086,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.33226323">
           <caret line="36" column="24" selection-start-line="36" selection-start-column="24" selection-end-line="36" selection-end-column="24" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/robupy/shared/auxiliary.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.07939189">
-          <caret line="305" column="8" selection-start-line="305" selection-start-column="4" selection-end-line="305" selection-end-column="8" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/robupy/fortran/robufort_emax.f90">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.29213482">
-          <caret line="152" column="57" selection-start-line="152" selection-start-column="25" selection-end-line="152" selection-end-column="57" />
           <folding />
         </state>
       </provider>
@@ -1310,6 +1294,32 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.33226323">
           <caret line="201" column="39" selection-start-line="201" selection-start-column="39" selection-end-line="201" selection-end-column="39" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/robupy/solve/solve_auxiliary.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.42214534">
+          <caret line="372" column="21" selection-start-line="372" selection-start-column="21" selection-end-line="372" selection-end-column="21" />
+          <folding>
+            <element signature="e#139#167#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/robupy/fortran/robufort_emax.f90">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="1.971875">
+          <caret line="281" column="42" selection-start-line="281" selection-start-column="42" selection-end-line="281" selection-end-column="42" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/robupy/shared/auxiliary.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-0.97643095">
+          <caret line="129" column="14" selection-start-line="129" selection-start-column="4" selection-end-line="129" selection-end-column="26" />
           <folding />
         </state>
       </provider>

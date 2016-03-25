@@ -263,7 +263,7 @@ SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, &
     !/* internal objects        */
 
     REAL(our_dble)                      :: payoffs_systematic(4)
-    REAL(our_dble)                      :: expected_values(4)
+    REAL(our_dble)                      :: total_payoffs(4)
     REAL(our_dble)                      :: diff(4)
 
     INTEGER(our_int)                    :: k
@@ -279,25 +279,25 @@ SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, &
 
         payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
-        CALL get_total_value(expected_values, &
+        CALL get_total_value(total_payoffs, &
                 period, num_periods, delta, payoffs_systematic, shifts, &
                 edu_max, edu_start, mapping_state_idx, periods_emax, k, &
                 states_all)
 
         ! Treatment of inadmissible states, which will show up in the regression 
         ! in some way
-        is_inadmissible = (expected_values(3) == -HUGE_FLOAT)
+        is_inadmissible = (total_payoffs(3) == -HUGE_FLOAT)
 
         IF (is_inadmissible) THEN
 
-            expected_values(3) = interpolation_inadmissible_states
+            total_payoffs(3) = interpolation_inadmissible_states
 
         END IF
 
         ! Implement level shifts
-        maxe(k + 1) = MAXVAL(expected_values)
+        maxe(k + 1) = MAXVAL(total_payoffs)
 
-        diff = maxe(k + 1) - expected_values
+        diff = maxe(k + 1) - total_payoffs
 
         ! Construct regressors
         independent_variables(k + 1, 1:4) = diff
