@@ -385,7 +385,7 @@ class TestClass(object):
         tiny = np.random.uniform(0.000000, 0.5)
 
         py = approx_fprime(x, criterion_ambiguity, tiny, *args)
-        f90 = fort_debug.wrapper_criterion_ambiguity_approx_gradient(x, tiny,
+        f90 = fort_debug.wrapper_criterion_ambiguity_derivative(x, tiny,
             *args)
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
@@ -413,7 +413,7 @@ class TestClass(object):
 
             # Gradient approximation of KL divergence
             py = approx_fprime(x, _divergence, tiny, cov, level)
-            f90 = fort_debug.wrapper_divergence_approx_gradient(x, cov, level, tiny)
+            f90 = fort_debug.wrapper_divergence_derivative(x, cov, level, tiny)
             np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
         for _ in range(25):

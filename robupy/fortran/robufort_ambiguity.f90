@@ -231,14 +231,14 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, tiny, &
             states_all, num_periods, periods_emax, delta, shocks_cholesky)
 
 
-    g(:2) = criterion_ambiguity_approx_gradient(x_internal, tiny, num_draws_emax, &
+    g(:2) = criterion_ambiguity_derivative(x_internal, tiny, num_draws_emax, &
                 draws_emax, period, k, payoffs_systematic, edu_max, & 
                 edu_start, mapping_state_idx, states_all, num_periods, & 
                 periods_emax, delta, shocks_cholesky)
 
     ! Initialize constraint at starting values
     c = divergence(x_internal, shocks_cov, level)
-    a(1,:2) = divergence_approx_gradient(x_internal, shocks_cov, level, tiny)
+    a(1,:2) = divergence_derivative(x_internal, shocks_cov, level, tiny)
 
     ! Iterate until completion
     DO WHILE (.NOT. is_finished)
@@ -258,13 +258,13 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, tiny, &
         ! be zero.
         ELSEIF (mode == - one_int) THEN
 
-            g(:2) = criterion_ambiguity_approx_gradient(x_internal, tiny, &
+            g(:2) = criterion_ambiguity_derivative(x_internal, tiny, &
                         num_draws_emax, draws_emax, period, k, &
                         payoffs_systematic, edu_max, edu_start, & 
                         mapping_state_idx, states_all, num_periods, & 
                         periods_emax, delta, shocks_cholesky)
 
-            a(1,:2) = divergence_approx_gradient(x_internal, shocks_cov, & 
+            a(1,:2) = divergence_derivative(x_internal, shocks_cov, &
                             level, tiny)
 
         END IF
@@ -343,14 +343,14 @@ FUNCTION criterion_ambiguity(x_internal, num_draws_emax, draws_emax, period, k, 
 END FUNCTION
 !*******************************************************************************
 !*******************************************************************************
-FUNCTION criterion_ambiguity_approx_gradient(x_internal, tiny, num_draws_emax, &
+FUNCTION criterion_ambiguity_derivative(x_internal, tiny, num_draws_emax, &
             draws_emax, period, k, payoffs_systematic, edu_max, edu_start, & 
             mapping_state_idx, states_all, num_periods, periods_emax, delta, &
             shocks_cholesky)
 
     !/* external objects        */
 
-    REAL(our_dble)                  :: criterion_ambiguity_approx_gradient(2)
+    REAL(our_dble)                  :: criterion_ambiguity_derivative(2)
 
     REAL(our_dble), INTENT(IN)      :: shocks_cholesky(:, :)
     REAL(our_dble), INTENT(IN)      :: payoffs_systematic(:)
@@ -401,7 +401,7 @@ FUNCTION criterion_ambiguity_approx_gradient(x_internal, tiny, num_draws_emax, &
                 k, payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
                 states_all, num_periods, periods_emax, delta, shocks_cholesky)
 
-        criterion_ambiguity_approx_gradient(j) = (f1 - f0) / d(j)
+        criterion_ambiguity_derivative(j) = (f1 - f0) / d(j)
 
         ei(j) = zero_dble
 
@@ -541,11 +541,11 @@ FUNCTION divergence(x_internal, shocks_cov, level)
 END FUNCTION
 !*******************************************************************************
 !*******************************************************************************
-FUNCTION divergence_approx_gradient(x, cov, level, tiny)
+FUNCTION divergence_derivative(x, cov, level, tiny)
 
     !/* external objects        */
 
-    REAL(our_dble)                  :: divergence_approx_gradient(2)
+    REAL(our_dble)                  :: divergence_derivative(2)
 
     REAL(our_dble), INTENT(IN)      :: cov(:, :)
     REAL(our_dble), INTENT(IN)      :: level
@@ -580,7 +580,7 @@ FUNCTION divergence_approx_gradient(x, cov, level, tiny)
 
         f1 = divergence(x + d, cov, level)
 
-        divergence_approx_gradient(k) = (f1 - f0) / d(k)
+        divergence_derivative(k) = (f1 - f0) / d(k)
 
         ei(k) = zero_dble
 

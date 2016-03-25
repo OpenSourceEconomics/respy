@@ -199,7 +199,7 @@ SUBROUTINE wrapper_get_payoffs_ambiguity(emax_simulated, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_criterion_ambiguity_approx_gradient(rslt, x, tiny, &
+SUBROUTINE wrapper_criterion_ambiguity_derivative(rslt, x, tiny, &
                 num_draws_emax, draws_emax, period, k, payoffs_systematic, edu_max, &
                 edu_start, mapping_state_idx, states_all, num_periods, &
                 periods_emax, delta, shocks_cholesky)
@@ -237,7 +237,7 @@ SUBROUTINE wrapper_criterion_ambiguity_approx_gradient(rslt, x, tiny, &
 ! Algorithm
 !-------------------------------------------------------------------------------
 
-    rslt = criterion_ambiguity_approx_gradient(x, tiny, num_draws_emax, &
+    rslt = criterion_ambiguity_derivative(x, tiny, num_draws_emax, &
             draws_emax, period, k, payoffs_systematic, edu_max, &
             edu_start, mapping_state_idx, states_all, num_periods, & 
             periods_emax, delta, shocks_cholesky)
@@ -337,7 +337,7 @@ SUBROUTINE wrapper_criterion_ambiguity(emax_simulated, x, num_draws_emax, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_divergence_approx_gradient(rslt, x, cov, level, tiny)
+SUBROUTINE wrapper_divergence_derivative(rslt, x, cov, level, tiny)
 
     !/* external libraries      */
 
@@ -359,7 +359,7 @@ SUBROUTINE wrapper_divergence_approx_gradient(rslt, x, cov, level, tiny)
 ! Algorithm
 !-------------------------------------------------------------------------------
     
-    rslt = divergence_approx_gradient(x, cov, level, tiny)
+    rslt = divergence_derivative(x, cov, level, tiny)
 
 END SUBROUTINE 
 !*******************************************************************************
