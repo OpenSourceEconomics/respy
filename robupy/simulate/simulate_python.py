@@ -50,7 +50,7 @@ def pyth_simulate(periods_payoffs_systematic, mapping_state_idx,
             draws = periods_draws_sims[period, i, :]
 
             # Get total value of admissible states
-            total_payoffs, payoffs_ex_post, _ = get_total_value(period,
+            total_payoffs, payoffs_ex_post = get_total_value(period,
                 num_periods, delta, payoffs_systematic, draws, edu_max,
                 edu_start, mapping_state_idx, periods_emax, k, states_all)
 

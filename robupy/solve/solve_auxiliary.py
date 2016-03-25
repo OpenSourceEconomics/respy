@@ -105,7 +105,7 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
                 payoffs_systematic = periods_payoffs_systematic[period, k, :]
 
                 # Simulate the expected future value.
-                emax, payoffs_ex_post, payoffs_future = \
+                emax, payoffs_ex_post = \
                     _get_payoffs(num_draws_emax, draws_emax, period, k,
                         payoffs_systematic, edu_max, edu_start,
                         mapping_state_idx, states_all, num_periods,
@@ -274,20 +274,20 @@ def _get_payoffs(num_draws_emax, draws_emax, period, k, payoffs_systematic,
     # Payoffs require different machinery depending on whether there is
     # ambiguity or not.
     if is_ambiguous:
-        emax, payoffs_ex_post, payoffs_future = \
+        emax, payoffs_ex_post = \
             get_payoffs_ambiguity(num_draws_emax, draws_emax,
                 period, k, payoffs_systematic, edu_max, edu_start,
                 mapping_state_idx, states_all, num_periods, periods_emax,
                 delta, is_debug, shocks_cov, level, measure, is_deterministic,
                 shocks_cholesky)
     else:
-        emax, payoffs_ex_post, payoffs_future = \
+        emax, payoffs_ex_post = \
             get_payoffs_risk(num_draws_emax, draws_emax, period, k,
                 payoffs_systematic, edu_max, edu_start, mapping_state_idx,
                 states_all, num_periods, periods_emax, delta, shocks_cholesky)
 
     # Finishing
-    return emax, payoffs_ex_post, payoffs_future
+    return emax, payoffs_ex_post
 
 def _logging_prediction_model(results):
     """ Write out some basic information to the solutions log file.
@@ -370,13 +370,13 @@ def get_exogenous_variables(period, num_periods, num_states, delta,
         payoffs_systematic = periods_payoffs_systematic[period, k, :]
 
         # Get total value
-        expected_values, _, payoffs_future = get_total_value(period,
+        expected_values, _ = get_total_value(period,
             num_periods, delta, payoffs_systematic, shifts, edu_max, edu_start,
             mapping_state_idx, periods_emax, k, states_all)
 
         # Treatment of inadmissible states, which will show up in the
         # regression in some way.
-        is_inadmissible = (payoffs_future[2] == -HUGE_FLOAT)
+        is_inadmissible = (expected_values[2] == -HUGE_FLOAT)
 
         if is_inadmissible:
             expected_values[2] = INTERPOLATION_INADMISSIBLE_STATES
@@ -416,7 +416,7 @@ def get_endogenous_variable(period, num_periods, num_states, delta,
         payoffs_systematic = periods_payoffs_systematic[period, k, :]
 
         # Simulate the expected future value.
-        emax_simulated, _, _ = _get_payoffs(num_draws_emax,
+        emax_simulated, _ = _get_payoffs(num_draws_emax,
             draws_emax, period, k, payoffs_systematic, edu_max, edu_start,
             mapping_state_idx, states_all, num_periods, periods_emax, delta,
             is_debug, shocks_cov, level, is_ambiguous, measure,

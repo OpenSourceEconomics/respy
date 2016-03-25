@@ -109,7 +109,7 @@ class TestClass(object):
 
                 # Compare returned array on expected future values, ex post
                 # payoffs, and future payoffs.
-                for i in range(3):
+                for i in range(2):
                     np.testing.assert_array_almost_equal(py[i], f90[i])
 
     def test_2(self):
@@ -358,7 +358,7 @@ class TestClass(object):
         x = np.random.random(size=2)
 
         # Evaluation of simulated expected future values
-        py, _, _ = simulate_emax(num_periods, num_draws_emax, period, k,
+        py, _, = simulate_emax(num_periods, num_draws_emax, period, k,
             draws_standard, payoffs_systematic, edu_max, edu_start,
             periods_emax, states_all, mapping_state_idx, delta,
             shocks_cholesky, shocks_mean)
