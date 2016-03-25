@@ -43,7 +43,7 @@ def get_total_value(period, num_periods, delta, payoffs_systematic, draws,
         total_payoffs[2] = -HUGE_FLOAT
 
     # Finishing
-    return total_payoffs, payoffs_ex_post
+    return total_payoffs
 
 
 def _get_future_payoffs(edu_max, edu_start, mapping_state_idx, period,

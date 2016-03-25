@@ -100,7 +100,7 @@ class TestClass(object):
                         is_ambiguous, measure, is_deterministic,
                         shocks_cholesky)
 
-                f90 = fort_debug.wrapper_get_payoffs(num_draws_emax,
+                f90, _ = fort_debug.wrapper_get_payoffs(num_draws_emax,
                         draws_emax, period, k, payoffs_systematic,
                         edu_max, edu_start, mapping_state_idx, states_all,
                         num_periods, periods_emax, delta, is_debug, shocks_cov,
@@ -109,8 +109,7 @@ class TestClass(object):
 
                 # Compare returned array on expected future values, ex post
                 # payoffs, and future payoffs.
-                for i in range(2):
-                    np.testing.assert_array_almost_equal(py[i], f90[i])
+                np.testing.assert_array_almost_equal(py, f90)
 
     def test_2(self):
         """ This test compares the functions calculating the payoffs under
@@ -358,7 +357,7 @@ class TestClass(object):
         x = np.random.random(size=2)
 
         # Evaluation of simulated expected future values
-        py, _, = simulate_emax(num_periods, num_draws_emax, period, k,
+        py = simulate_emax(num_periods, num_draws_emax, period, k,
             draws_standard, payoffs_systematic, edu_max, edu_start,
             periods_emax, states_all, mapping_state_idx, delta,
             shocks_cholesky, shocks_mean)

@@ -15,7 +15,7 @@ def simulate_emax(num_periods, num_draws_emax, period, k, draws_emax,
     """ Simulate expected future value.
     """
     # Initialize containers
-    emax_simulated, payoffs_ex_post = 0.0, 0.0
+    emax_simulated = 0.0
 
     # Transfer draws to relevant distribution
     draws_emax_transformed = draws_emax.copy()
@@ -34,7 +34,7 @@ def simulate_emax(num_periods, num_draws_emax, period, k, draws_emax,
         draws = draws_emax_transformed[i, :]
 
         # Get total value of admissible states
-        total_payoffs, payoffs_ex_post = get_total_value(period,
+        total_payoffs = get_total_value(period,
             num_periods, delta, payoffs_systematic, draws, edu_max,
             edu_start, mapping_state_idx, periods_emax, k, states_all)
 
@@ -48,4 +48,4 @@ def simulate_emax(num_periods, num_draws_emax, period, k, draws_emax,
     emax_simulated = emax_simulated / num_draws_emax
 
     # Finishing
-    return emax_simulated, payoffs_ex_post
+    return emax_simulated

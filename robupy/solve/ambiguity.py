@@ -32,7 +32,7 @@ def get_payoffs_ambiguity(num_draws_emax, draws_emax, period, k,
                 delta, is_debug, shocks_cov, level, measure, shocks_cholesky)
 
     # Simulate the expected future value for the worst case outcome
-    simulated, payoffs_ex_post = \
+    simulated = \
         simulate_emax(num_periods, num_draws_emax, period, k, draws_emax,
             payoffs_systematic, edu_max, edu_start, periods_emax, states_all,
             mapping_state_idx, delta, shocks_cholesky, opt['x'])
@@ -43,7 +43,7 @@ def get_payoffs_ambiguity(num_draws_emax, draws_emax, period, k,
         checks_ambiguity('get_payoffs_ambiguity', simulated, opt)
 
     # Finishing
-    return simulated, payoffs_ex_post
+    return simulated
 
 ''' Auxiliary functions
 '''
@@ -159,7 +159,7 @@ def _criterion(x, num_draws_emax, draws_emax, period, k, payoffs_systematic,
     """ Simulate expected future value for alternative shock distributions.
     """
     # Simulate the expected future value for a given parametrization.
-    simulated, _ = simulate_emax(num_periods, num_draws_emax, period, k,
+    simulated = simulate_emax(num_periods, num_draws_emax, period, k,
         draws_emax, payoffs_systematic, edu_max, edu_start, periods_emax,
         states_all, mapping_state_idx, delta, shocks_cholesky, x)
 

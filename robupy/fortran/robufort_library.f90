@@ -450,11 +450,11 @@ SUBROUTINE fort_simulate(dataset, num_agents, states_all, num_periods, &
 
             ! Record earnings
             IF (choice(1) .EQ. one_int) THEN
-                dataset(count + 1, 4) = payoffs_ex_post(1)
+                dataset(count + 1, 4) = payoffs_systematic(1) * draws(1)
             END IF
 
             IF (choice(1) .EQ. two_int) THEN
-                dataset(count + 1, 4) = payoffs_ex_post(2)
+                dataset(count + 1, 4) = payoffs_systematic(2) * draws(2)
             END IF
 
             ! Update row indicator

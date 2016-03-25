@@ -99,7 +99,7 @@ def pyth_evaluate(periods_payoffs_systematic, mapping_state_idx,
                 draws[1] = np.exp(draws[1])
 
                 # Calculate total payoff.
-                total_payoffs, _ = get_total_value(period, num_periods,
+                total_payoffs = get_total_value(period, num_periods,
                     delta, payoffs_systematic, draws, edu_max, edu_start,
                     mapping_state_idx, periods_emax, k, states_all)
 
