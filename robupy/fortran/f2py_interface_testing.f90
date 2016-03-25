@@ -35,7 +35,7 @@ END SUBROUTINE
 
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_debug_criterion_function(rslt, x, n)
+SUBROUTINE wrapper_criterion_debug_function(rslt, x, n)
 
     !/* external libraries    */
 
@@ -52,12 +52,12 @@ SUBROUTINE wrapper_debug_criterion_function(rslt, x, n)
 ! Algorithm
 !------------------------------------------------------------------------------
 
-   CALL debug_criterion_function(rslt, x, n)
+   CALL criterion_debug_function(rslt, x, n)
 
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_debug_criterion_derivative(rslt, x, n)
+SUBROUTINE wrapper_criterion_debug_derivative(rslt, x, n)
 
     !/* external libraries    */
 
@@ -74,7 +74,7 @@ SUBROUTINE wrapper_debug_criterion_derivative(rslt, x, n)
 ! Algorithm
 !-------------------------------------------------------------------------------
 
-    CALL debug_criterion_derivative(rslt, x, n)
+    CALL criterion_debug_derivative(rslt, x, n)
 
 END SUBROUTINE
 !*******************************************************************************

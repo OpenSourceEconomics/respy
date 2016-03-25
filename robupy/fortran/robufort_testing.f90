@@ -118,8 +118,8 @@ SUBROUTINE slsqp_debug(x_internal, x_start, maxiter, ftol, &
 
     is_finished = .False.
 
-    CALL debug_criterion_function(f, x_internal, n)
-    CALL debug_criterion_derivative(g, x_internal, n)
+    CALL criterion_debug_function(f, x_internal, n)
+    CALL criterion_debug_derivative(g, x_internal, n)
 
     CALL debug_constraint_function(c, x_internal, n, la)
     CALL debug_constraint_derivative(a, x_internal, n, la)
@@ -129,11 +129,11 @@ SUBROUTINE slsqp_debug(x_internal, x_start, maxiter, ftol, &
 
         ! Evaluate criterion function and constraints
         IF (mode == one_int) THEN
-            CALL debug_criterion_function(f, x_internal, n)
+            CALL criterion_debug_function(f, x_internal, n)
             CALL debug_constraint_function(c, x_internal, n, la)
         ! Evaluate gradient of criterion function and constraints
         ELSEIF (mode == - one_int) THEN
-            CALL debug_criterion_derivative(g, x_internal, n)
+            CALL criterion_debug_derivative(g, x_internal, n)
             CALL debug_constraint_derivative(a, x_internal, n, la)
         END IF
 
@@ -151,7 +151,7 @@ SUBROUTINE slsqp_debug(x_internal, x_start, maxiter, ftol, &
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE debug_criterion_function(rslt, x, n)
+SUBROUTINE criterion_debug_function(rslt, x, n)
 
     !/* external objects    */
 
@@ -179,7 +179,7 @@ SUBROUTINE debug_criterion_function(rslt, x, n)
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE debug_criterion_derivative(rslt, x, n)
+SUBROUTINE criterion_debug_derivative(rslt, x, n)
 
     !/* external objects    */
 

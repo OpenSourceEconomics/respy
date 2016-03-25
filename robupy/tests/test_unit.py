@@ -279,12 +279,12 @@ class TestClass(object):
 
         # Evaluation of Rosenbrock function. We are using the FORTRAN version
         # in the development of the optimization routines.
-        f90 = fort_test.wrapper_debug_criterion_function(x0, num_dim)
+        f90 = fort_test.wrapper_criterion_debug_function(x0, num_dim)
         py = rosen(x0)
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
         py = rosen_der(x0)
-        f90 = fort_test.wrapper_debug_criterion_derivative(x0, len(x0))
+        f90 = fort_test.wrapper_criterion_debug_derivative(x0, len(x0))
         np.testing.assert_allclose(py, f90[:-1], rtol=1e-05, atol=1e-06)
 
         # Test the FORTRAN codes against the PYTHON implementation. This is
