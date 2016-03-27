@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 import os
 
 def setup_package():
@@ -13,12 +13,7 @@ def setup_package():
     metadata = dict(
 
    name='robupy',
-  packages=['robupy', 'robupy.estimate', 'robupy.evaluate', 'robupy.fortran',
-                'robupy.process', 'robupy.read', 'robupy.shared',
-         'robupy.simulate',
-  'robupy.solve', 'robupy.tests', 'robupy.tests.codes',
-         'robupy.tests.resources', 'robupy.fortran.bin',
-      'robupy.fortran.include', 'robupy.fortran.lib'],
+    packages=find_packages(),
     package_data={'robupy': ['fortran/bin/robufort',
         'fortran/include/*.mod', 'fortran/lib/*.a'], },
     version="0.1.8",
@@ -30,8 +25,10 @@ def setup_package():
     classifiers=[],
    setup_requires=['pytest-runner'],
     tests_require=['pytest'],
-    install_requires=['numpy'],
-     )
+    
+    install_requires=['numpy', 'scipy', 'pandas', 'scipy', 'statsmodels', 'pytest'],
+    
+    )
 
     setup(**metadata)
 
