@@ -32,8 +32,6 @@ class CreateDirectoryStructure(Task):
 
 class CreateRobufortLibrary(Task):
 
-    after = ['CreateDirectoryStructure']
-
     def run(self):
 
         # Determine compiler options
@@ -60,8 +58,6 @@ class CreateRobufortLibrary(Task):
 
 class CreateRobufortExecutable(Task):
 
-    after = ['CreateRobufortLibrary']
-
     def run(self):
 
         is_debug = self.is_debug
@@ -71,9 +67,7 @@ class CreateRobufortExecutable(Task):
         robufort_build(self, is_debug)
 
 
-class CreateF2pyInterface(Task):
-
-    after = ['CreateRobufortExecutable_debug']
+class CreateF2pyInterfaces(Task):
 
     def run(self):
 
@@ -90,6 +84,15 @@ class CreateF2pyInterface(Task):
         os.system(
             'f2py3 -c -m  f2py_testing f2py_interface_testing.f90 '
             '-Iinclude -Llib -lfort_robufort -L/usr/lib/lapack -llapack')
+
+
+class CreateKeaneWolpinExecutables(Task):
+
+    def run(self):
+
+        os.system(' gfortran -fcheck=bounds -o kw_dp3asim kw_dp3asim.f95')
+
+        shutil.move('kw_dp3asim', 'bin/')
 
 ''' Build
 '''
@@ -124,9 +127,15 @@ def build(bld):
     task_3.set_run_after(task_2)
 
     # Build F2PY interface
-    task_4 = CreateF2pyInterface(env=bld.env)
+    task_4 = CreateF2pyInterfaces(env=bld.env)
 
     bld.add_to_group(task_4)
 
     task_4.set_run_after(task_3)
 
+    # Create the executables for the Keane & Wolpin (1994) comparisons.
+    task_5 = CreateKeaneWolpinExecutables(env=bld.env)
+
+    bld.add_to_group(task_5)
+
+    task_5.set_run_after(task_4)

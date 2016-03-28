@@ -17,6 +17,7 @@ from robupy.tests.codes.random_init import generate_random_dict
 from robupy.tests.codes.random_init import print_random_dict
 
 from robupy.shared.auxiliary import distribute_class_attributes
+from robupy.shared.constants import FORTRAN_DIR
 
 from robupy import simulate
 from robupy import solve
@@ -102,38 +103,6 @@ class TestClass(object):
     def test_1(self):
         """  Compare results from the RESTUD program and the ROBUPY package.
         """
-        # Prepare RESTUD program
-        tmp_dir = os.getcwd()
-
-        file_dir = os.path.dirname(os.path.realpath(__file__))
-
-        os.chdir(file_dir + '/codes')
-
-        # Create required directory structure.
-        if not os.path.exists('build'):
-            os.mkdir('build')
-
-        if not os.path.exists('../lib/'):
-            os.mkdir('../lib/')
-
-        # Build the upgraded version of the original Keane & Wolpin (1994)
-        # codes.
-        os.chdir('build')
-
-        shutil.copy('../dp3asim.f95', '.')
-
-        os.system(' gfortran -fcheck=bounds -o dp3asim dp3asim.f95 >'
-                  ' /dev/null 2>&1')
-
-        shutil.copy('dp3asim', '../../lib/')
-
-        os.chdir('../')
-
-        shutil.rmtree('build')
-
-        # Return to the temporary directory.
-        os.chdir(tmp_dir)
-
         # Impose some constraints on the initialization file which ensures that
         # the problem can be solved by the RESTUD code. The code is adjusted to
         # run with zero draws.
@@ -165,16 +134,15 @@ class TestClass(object):
         # ROBUPY package. The existence of the file leads to the RESTUD program
         # to write out the random components.
         model_paras, level, edu_start, edu_max, num_agents, num_periods, \
-            num_draws_emax, delta = \
-                distribute_class_attributes(robupy_obj,
-                    'model_paras', 'level', 'edu_start', 'edu_max', 'num_agents',
-                    'num_periods', 'num_draws_emax', 'delta')
+            num_draws_emax, delta = distribute_class_attributes(robupy_obj,
+                'model_paras', 'level', 'edu_start', 'edu_max', 'num_agents',
+                'num_periods', 'num_draws_emax', 'delta')
 
         transform_robupy_to_restud(model_paras, level, edu_start, edu_max,
             num_agents, num_periods, num_draws_emax, delta)
 
         # Solve model using RESTUD code.
-        os.system(file_dir + '/lib/dp3asim > /dev/null 2>&1')
+        os.system(FORTRAN_DIR + '/bin/kw_dp3asim')
 
         # Solve model using ROBUPY package.
         solve(robupy_obj)
