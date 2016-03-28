@@ -29,12 +29,14 @@ def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
     If a single agent violates the implications, then the zero is returned.
     """
     # Solve requested model.
+    base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
+        is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
+        num_periods, num_points, is_myopic, edu_start, is_debug, measure,
+        edu_max, min_idx, delta, level)
+
     periods_payoffs_systematic, states_number_period, mapping_state_idx, \
-        periods_emax, states_all = pyth_solve(coeffs_a, coeffs_b, coeffs_edu,
-            coeffs_home, shocks_cov, is_deterministic, is_interpolated,
-            num_draws_emax, is_ambiguous, num_periods, num_points, is_myopic,
-            edu_start, is_debug, measure, edu_max, min_idx, delta, level,
-            shocks_cholesky, periods_draws_emax)
+        periods_emax, states_all = \
+            pyth_solve(*base_args + (shocks_cholesky, periods_draws_emax))
 
     # Initialize auxiliary objects
     crit_val, j = [], 0
