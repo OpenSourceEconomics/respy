@@ -15,27 +15,22 @@ from robupy.shared.constants import FORTRAN_DIR
 ''' Main function
 '''
 
+
 def fort_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
         is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
-        num_periods, num_points, is_myopic, edu_start, is_debug,
-        measure, edu_max, min_idx, delta, level, data_array, num_agents,
+        num_periods, num_points, is_myopic, edu_start, is_debug, measure,
+        edu_max, min_idx, delta, level, data_array, num_agents,
         num_draws_prob,  seed_emax, seed_prob):
     """ This function serves as the interface to the FORTRAN implementations.
     """
-
-    #base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
-    #    is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
-    #    num_periods, num_points, is_myopic, edu_start, is_debug, measure,
-    #    edu_max, min_idx, delta, level)
-
     # Prepare ROBUFORT execution by collecting arguments and writing them to
     # the ROBUFORT initialization file.
     args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
-            is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
-            num_periods, num_points, is_myopic, edu_start, is_debug, measure,
-            edu_max, min_idx, delta, level,
-            num_draws_prob, num_agents, seed_prob, seed_emax, 'evaluate')
-    
+        is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
+        num_periods, num_points, is_myopic, edu_start, is_debug, measure,
+        edu_max, min_idx, delta, level)
+
+    args = args + (num_draws_prob, num_agents, seed_prob, seed_emax, 'evaluate')
     write_robufort_initialization(*args)
 
     # If an evaluation is requested, then a specially formatted dataset is
@@ -50,6 +45,7 @@ def fort_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
 
     return crit_val
 
+
 def fort_solve(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
         is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
         num_periods, num_points, is_myopic, edu_start, is_debug,
@@ -57,16 +53,14 @@ def fort_solve(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
     """ This function serves as the interface to the FORTRAN implementations.
     """
     # Prepare ROBUFORT execution by collecting arguments and writing them to
-    # the ROBUFORT initialization file.
-    # TODO: ORder the arguments in write_robupfort so that I can do the
-    # following args + (1, 1, 1,, solve).
-
+    # the ROBUFORT initialization file. The last arguments are just
+    # placeholders as that are not needed for a solution request.
     args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
-            is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
-            num_periods, num_points, is_myopic, edu_start, is_debug, measure,
-    edu_max, min_idx, delta, level,
-            1, 1, 1, seed_emax, 'solve')
+        is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
+        num_periods, num_points, is_myopic, edu_start, is_debug, measure,
+        edu_max, min_idx, delta, level)
 
+    args = args + (1, 1, 1, seed_emax, 'solve')
     write_robufort_initialization(*args)
 
     # Call executable
