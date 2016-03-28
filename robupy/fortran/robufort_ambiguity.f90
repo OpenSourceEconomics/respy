@@ -28,11 +28,11 @@ MODULE robufort_ambiguity
 CONTAINS
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE get_payoffs_ambiguity(emax_simulated, &
-                num_draws_emax, draws_emax, period, k, & 
-                payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
-                states_all, num_periods, periods_emax, delta, is_debug, &
-                shocks_cov, level, measure, is_deterministic, shocks_cholesky)
+SUBROUTINE get_payoffs_ambiguity(emax_simulated, num_draws_emax, draws_emax, & 
+                period, k, payoffs_systematic, edu_max, edu_start, & 
+                mapping_state_idx, states_all, num_periods, periods_emax, & 
+                delta, is_debug, shocks_cov, level, measure, & 
+                is_deterministic, shocks_cholesky)
 
     !/* external objects        */
 
@@ -98,10 +98,10 @@ SUBROUTINE get_payoffs_ambiguity(emax_simulated, &
     END IF
 
     ! Evaluate expected future value for perturbed values
-    CALL simulate_emax(emax_simulated, &
-            num_periods, num_draws_emax, period, k, draws_emax, & 
-            payoffs_systematic, edu_max, edu_start, periods_emax, states_all, & 
-            mapping_state_idx, delta, shocks_cholesky, x_internal)
+    CALL simulate_emax(emax_simulated, num_periods, num_draws_emax, period, & 
+            k, draws_emax, payoffs_systematic, edu_max, edu_start, & 
+            periods_emax, states_all, mapping_state_idx, delta, & 
+            shocks_cholesky, x_internal)
 
 END SUBROUTINE
 !*******************************************************************************
@@ -127,9 +127,10 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, tiny, &
-            num_draws_emax, draws_emax, period, k, payoffs_systematic, &
-            edu_max, edu_start, mapping_state_idx, states_all, num_periods, & 
-            periods_emax, delta, is_debug, shocks_cov, level, shocks_cholesky)
+                num_draws_emax, draws_emax, period, k, payoffs_systematic, &
+                edu_max, edu_start, mapping_state_idx, states_all, & 
+                num_periods, periods_emax, delta, is_debug, shocks_cov, & 
+                level, shocks_cholesky)
 
     !/* external objects        */
 
@@ -299,8 +300,8 @@ SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, tiny, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-FUNCTION criterion_ambiguity(x_internal, num_draws_emax, draws_emax, period, k, &
-            payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
+FUNCTION criterion_ambiguity(x_internal, num_draws_emax, draws_emax, period, & 
+            k, payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
             states_all, num_periods, periods_emax, delta, shocks_cholesky)
 
     !/* external objects        */
@@ -332,10 +333,10 @@ FUNCTION criterion_ambiguity(x_internal, num_draws_emax, draws_emax, period, k, 
 !-------------------------------------------------------------------------------
 
     ! Evaluate expected future value
-    CALL simulate_emax(emax_simulated, &
-            num_periods, num_draws_emax, period, k, draws_emax, & 
-            payoffs_systematic, edu_max, edu_start, periods_emax, states_all, & 
-            mapping_state_idx, delta, shocks_cholesky, x_internal)
+    CALL simulate_emax(emax_simulated, num_periods, num_draws_emax, period, & 
+            k, draws_emax, payoffs_systematic, edu_max, edu_start, & 
+            periods_emax, states_all, mapping_state_idx, delta, & 
+            shocks_cholesky, x_internal)
 
     ! Finishing
     criterion_ambiguity = emax_simulated
@@ -397,9 +398,10 @@ FUNCTION criterion_ambiguity_derivative(x_internal, tiny, num_draws_emax, &
 
         d = tiny * ei
 
-        f1 = criterion_ambiguity(x_internal + d, num_draws_emax, draws_emax, period, &
-                k, payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
-                states_all, num_periods, periods_emax, delta, shocks_cholesky)
+        f1 = criterion_ambiguity(x_internal + d, num_draws_emax, draws_emax, & 
+                period, k, payoffs_systematic, edu_max, edu_start, & 
+                mapping_state_idx, states_all, num_periods, periods_emax, & 
+                delta, shocks_cholesky)
 
         criterion_ambiguity_derivative(j) = (f1 - f0) / d(j)
 

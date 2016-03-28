@@ -33,9 +33,9 @@ MODULE robufort_library
  !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, & 
-                periods_emax, states_all, shocks_cov, & 
-                is_deterministic, num_periods, edu_start, edu_max, delta, &
-                data_array, num_agents, num_draws_prob, periods_draws_prob)
+                periods_emax, states_all, shocks_cov, is_deterministic, & 
+                num_periods, edu_start, edu_max, delta, data_array, & 
+                num_agents, num_draws_prob, periods_draws_prob)
 
     !/* external objects        */
 
@@ -189,9 +189,8 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
                 draws(2) = EXP(draws(2))
 
                 ! Calculate total payoff.
-                CALL get_total_value(total_payoffs, & 
-                        period, num_periods, delta, &
-                        payoffs_systematic, draws, edu_max, edu_start, & 
+                CALL get_total_value(total_payoffs, period, num_periods, & 
+                        delta, payoffs_systematic, draws, edu_max, edu_start, & 
                         mapping_state_idx, periods_emax, k, states_all)
                 
                 ! Record optimal choices
@@ -239,13 +238,13 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE fort_solve(periods_payoffs_systematic, &
-                states_number_period, mapping_state_idx, periods_emax, &
-                states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, & 
-                shocks_cov, is_deterministic, & 
-                is_interpolated, num_draws_emax, periods_draws_emax, & 
-                is_ambiguous, num_periods, num_points, edu_start, is_myopic, & 
-                is_debug, measure, edu_max, min_idx, delta, level)
+SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, & 
+                mapping_state_idx, periods_emax, states_all, coeffs_a, & 
+                coeffs_b, coeffs_edu, coeffs_home, shocks_cov, & 
+                is_deterministic, is_interpolated, num_draws_emax, & 
+                periods_draws_emax, is_ambiguous, num_periods, num_points, & 
+                edu_start, is_myopic, is_debug, measure, edu_max, min_idx, & 
+                delta, level)
 
     !/* external objects        */
 
@@ -341,8 +340,7 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, &
 
     ELSE
 
-        CALL backward_induction(periods_emax, &
-                num_periods, max_states_period, &
+        CALL backward_induction(periods_emax, num_periods, max_states_period, &
                 periods_draws_emax, num_draws_emax, states_number_period, &
                 periods_payoffs_systematic, edu_max, edu_start, & 
                 mapping_state_idx, states_all, delta, is_debug, shocks_cov, & 
@@ -426,8 +424,7 @@ SUBROUTINE fort_simulate(dataset, num_agents, states_all, num_periods, &
             draws = periods_draws_sims(period + 1, i + 1, :)
 
             ! Calculate total utilities
-            CALL get_total_value(total_payoffs, & 
-                    period, num_periods, delta, &
+            CALL get_total_value(total_payoffs, period, num_periods, delta, &
                     payoffs_systematic, draws, edu_max, edu_start, & 
                     mapping_state_idx, periods_emax, k, states_all)
 
@@ -581,8 +578,7 @@ SUBROUTINE calculate_payoffs_systematic(periods_payoffs_systematic, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE backward_induction(periods_emax, &
-                num_periods, max_states_period, &
+SUBROUTINE backward_induction(periods_emax, num_periods, max_states_period, &
                 periods_draws_emax, num_draws_emax, states_number_period, & 
                 periods_payoffs_systematic, edu_max, edu_start, & 
                 mapping_state_idx, states_all, delta, is_debug, shocks_cov, & 
@@ -720,9 +716,8 @@ SUBROUTINE backward_induction(periods_emax, &
                 ! Extract payoffs
                 payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
-                CALL get_payoffs(emax_simulated, &
-                        num_draws_emax, draws_emax, period, & 
-                        k, payoffs_systematic, edu_max, edu_start, & 
+                CALL get_payoffs(emax_simulated, num_draws_emax, draws_emax, & 
+                        period, k, payoffs_systematic, edu_max, edu_start, & 
                         mapping_state_idx, states_all, num_periods, & 
                         periods_emax, delta, is_debug, shocks_cov, level, & 
                         is_ambiguous, measure, is_deterministic, & 
@@ -884,11 +879,11 @@ SUBROUTINE create_state_space(states_all, states_number_period, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE get_payoffs(emax_simulated, &
-                num_draws_emax, draws_emax, period, k, payoffs_systematic, & 
-                edu_max, edu_start, mapping_state_idx, states_all, & 
-                num_periods, periods_emax, delta, is_debug, shocks_cov, & 
-                level, is_ambiguous, measure, is_deterministic, shocks_cholesky)
+SUBROUTINE get_payoffs(emax_simulated, num_draws_emax, draws_emax, period, & 
+                k, payoffs_systematic, edu_max, edu_start, mapping_state_idx, & 
+                states_all, num_periods, periods_emax, delta, is_debug, & 
+                shocks_cov, level, is_ambiguous, measure, is_deterministic, & 
+                shocks_cholesky)
 
     !/* external objects        */
 
@@ -926,18 +921,18 @@ SUBROUTINE get_payoffs(emax_simulated, &
     ! ambiguity or not.
     IF (is_ambiguous) THEN
 
-        CALL get_payoffs_ambiguity(emax_simulated, &
-                num_draws_emax, draws_emax, period, k, & 
-                payoffs_systematic, edu_max, edu_start, mapping_state_idx, & 
-                states_all, num_periods, periods_emax, delta, is_debug, & 
-                shocks_cov, level, measure, is_deterministic, shocks_cholesky)
+        CALL get_payoffs_ambiguity(emax_simulated, num_draws_emax, & 
+                draws_emax, period, k, payoffs_systematic, edu_max, & 
+                edu_start, mapping_state_idx, states_all, num_periods, & 
+                periods_emax, delta, is_debug, shocks_cov, level, measure, & 
+                is_deterministic, shocks_cholesky)
 
     ELSE 
 
-        CALL get_payoffs_risk(emax_simulated, & 
-                num_draws_emax, draws_emax, period, k, payoffs_systematic, & 
-                edu_max, edu_start, mapping_state_idx, states_all, & 
-                num_periods, periods_emax, delta, shocks_cholesky)
+        CALL get_payoffs_risk(emax_simulated, num_draws_emax, draws_emax, & 
+                period, k, payoffs_systematic, edu_max, edu_start, & 
+                mapping_state_idx, states_all, num_periods, periods_emax, & 
+                delta, shocks_cholesky)
 
     END IF
     
@@ -1008,11 +1003,11 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_periods, &
         payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
         ! Get payoffs
-        CALL get_payoffs(emax_simulated, &
-                num_draws_emax, draws_emax, period, k, payoffs_systematic, & 
-                edu_max, edu_start, mapping_state_idx, states_all, & 
-                num_periods, periods_emax, delta, is_debug, shocks_cov, & 
-                level, is_ambiguous, measure, is_deterministic, shocks_cholesky)
+        CALL get_payoffs(emax_simulated, num_draws_emax, draws_emax, period, & 
+                k, payoffs_systematic, edu_max, edu_start, mapping_state_idx, & 
+                states_all, num_periods, periods_emax, delta, is_debug, & 
+                shocks_cov, level, is_ambiguous, measure, is_deterministic, & 
+                shocks_cholesky)
 
         ! Construct dependent variable
         endogenous(k + 1) = emax_simulated - maxe(k + 1)

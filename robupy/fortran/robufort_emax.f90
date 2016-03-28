@@ -93,10 +93,9 @@ SUBROUTINE simulate_emax(emax_simulated, num_periods, num_draws_emax, period, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE get_total_value(total_payoffs, &
-                period, num_periods, delta, payoffs_systematic, draws, & 
-                edu_max, edu_start, mapping_state_idx, periods_emax, k, & 
-                states_all)
+SUBROUTINE get_total_value(total_payoffs, period, num_periods, delta, & 
+                payoffs_systematic, draws, edu_max, edu_start, & 
+                mapping_state_idx, periods_emax, k, states_all)
 
     !   Development Note:
     !   

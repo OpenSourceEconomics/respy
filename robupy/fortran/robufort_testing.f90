@@ -23,8 +23,7 @@ MODULE robufort_testing
 CONTAINS
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE slsqp_debug(x_internal, x_start, maxiter, ftol, &
-                num_dim)
+SUBROUTINE slsqp_debug(x_internal, x_start, maxiter, ftol, num_dim)
 
     !/* external objects    */
 

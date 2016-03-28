@@ -163,8 +163,8 @@ SUBROUTINE random_choice(sample, candidates, num_candidates, num_points)
 
     INTEGER, INTENT(OUT)          :: sample(:)
 
-    INTEGER, INTENT(IN)           :: candidates(:)
     INTEGER, INTENT(IN)           :: num_candidates
+    INTEGER, INTENT(IN)           :: candidates(:)
     INTEGER, INTENT(IN)           :: num_points
 
     !/* internal objects    */
@@ -252,6 +252,7 @@ SUBROUTINE logging_solution(indicator, period, num_states)
     !/* external objects        */
 
     INTEGER(our_int), INTENT(IN)            :: indicator
+
     INTEGER(our_int), INTENT(IN), OPTIONAL  :: num_states
     INTEGER(our_int), INTENT(IN), OPTIONAL  :: period
 
