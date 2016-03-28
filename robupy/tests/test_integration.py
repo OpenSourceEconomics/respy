@@ -14,7 +14,7 @@ import pytest
 from codes.auxiliary import write_interpolation_grid
 from codes.auxiliary import write_draws
 
-# ROBUPY import
+# project library
 from robupy.shared.auxiliary import distribute_class_attributes
 from robupy.shared.auxiliary import distribute_model_paras
 from robupy.shared.auxiliary import read_draws

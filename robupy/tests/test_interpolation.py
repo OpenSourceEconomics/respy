@@ -11,7 +11,7 @@ import os
 # testing library
 from codes.auxiliary import write_interpolation_grid
 
-# ROBUPY import
+# project library
 from robupy.solve.solve_auxiliary import get_simulated_indicator
 from robupy.solve.solve_auxiliary import get_exogenous_variables
 from robupy.solve.solve_auxiliary import get_endogenous_variable

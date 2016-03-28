@@ -12,7 +12,7 @@ import pytest
 import shutil
 import os
 
-# ROBUPY import
+# project library
 from robupy.tests.codes.random_init import generate_random_dict
 from robupy.tests.codes.random_init import print_random_dict
 

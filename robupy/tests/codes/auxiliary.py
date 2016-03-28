@@ -4,7 +4,7 @@
 # standard library
 import numpy as np
 
-# ROBUPY import
+# project library
 from robupy.solve.solve_auxiliary import pyth_create_state_space
 from robupy.shared.auxiliary import distribute_class_attributes
 

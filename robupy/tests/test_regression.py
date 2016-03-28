@@ -5,7 +5,7 @@ import numpy as np
 
 import pytest
 
-# ROBUPY imports
+# project library
 from robupy.shared.constants import TEST_RESOURCES_DIR
 
 from robupy import evaluate
