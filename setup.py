@@ -14,20 +14,25 @@ class CustomInstallCommand(install):
     """ Customized setuptools install command - prints a friendly greeting.
     """
     def run(self):
-
-        os.chdir('robupy')
-
-        os.system('./waf distclean; ./waf configure build')
-
-        os.chdir('../')
-
-        install.run(self)
+        pass
+        # os.chdir('robupy')
+        #
+        # os.system('./waf distclean; ./waf configure build')
+        #
+        # os.chdir('../')
+        #
+        # install.run(self)
 
 ''' Setup
 '''
 
 
 def setup_package():
+
+
+    os.chdir('robupy')
+    os.system('./waf configure build')
+    os.chdir('../')
 
     metadata = dict(
         name='robupy',
@@ -36,7 +41,7 @@ def setup_package():
             'fortran/include/*.mod', 'fortran/lib/*.a', 
             'waf', 'wscript', 'fortran/wscript', 'fortran/*.f90', 
             'fortran/*.f', 'fortran/*.f95']},
-        version="0.1.8.5",
+        version="0.1.8.6",
         description='Toolbox to explore robust dynamic discrete choice models',
         author='Philipp Eisenhauer',
         author_email='eisenhauer@policy-lab.org',
