@@ -177,3 +177,13 @@ def stop_logging():
     for handler in handlers:
         handler.close()
         logger.removeHandler(handler)
+
+
+def check_input(robupy_obj):
+    """ Check input arguments.
+    """
+    assert robupy_obj.get_attr('is_solved')
+    assert robupy_obj.get_attr('is_locked')
+
+    # Finishing
+    return True

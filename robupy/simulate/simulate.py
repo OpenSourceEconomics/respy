@@ -19,8 +19,11 @@ import pandas as pd
 import logging
 
 # project library
+from robupy.simulate.simulate_auxiliary import start_logging
+from robupy.simulate.simulate_auxiliary import stop_logging
+from robupy.simulate.simulate_auxiliary import check_input
 from robupy.simulate.simulate_auxiliary import write_info
-from robupy.simulate.simulate_auxiliary import write_out, start_logging, stop_logging
+from robupy.simulate.simulate_auxiliary import write_out
 
 from robupy.shared.auxiliary import distribute_class_attributes
 from robupy.shared.auxiliary import replace_missing_values
@@ -43,8 +46,7 @@ def simulate(robupy_obj):
     as possible, this requires to pass in a solved robupy_obj.
     """
     # Checks
-    assert robupy_obj.get_attr('is_solved')
-    assert robupy_obj.get_attr('is_locked')
+    assert check_input(robupy_obj)
 
     start_logging()
 
