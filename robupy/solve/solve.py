@@ -73,12 +73,12 @@ def solve(robupy_obj):
         args = base_args + (seed_emax,)
         solution = fort_solve(*args)
     elif version == 'PYTHON':
-        args = base_args + (shocks_cholesky, periods_draws_emax)
+        args = base_args + (periods_draws_emax, )
         solution = pyth_solve(*args)
     elif version == 'F2PY':
         args = (num_periods, edu_start, edu_max, min_idx)
         max_states_period = f2py_create_state_space(*args)[3]
-        args = base_args + (shocks_cholesky, periods_draws_emax, max_states_period)
+        args = base_args + (periods_draws_emax, max_states_period)
         solution = f2py_solve(*args)
     else:
         raise NotImplementedError

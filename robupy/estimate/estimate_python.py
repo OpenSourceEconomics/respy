@@ -1,6 +1,5 @@
 from robupy.estimate.estimate_auxiliary import opt_get_model_parameters
 
-from robupy.solve.solve_python import pyth_solve
 from robupy.evaluate.evaluate_python import pyth_evaluate
 
 def pyth_criterion(x, is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,

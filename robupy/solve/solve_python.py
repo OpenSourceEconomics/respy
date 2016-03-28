@@ -24,9 +24,15 @@ logger = logging.getLogger('ROBUPY_SOLVE')
 def pyth_solve(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
         is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
         num_periods, num_points, is_myopic, edu_start, is_debug, measure,
-        edu_max, min_idx, delta, level, shocks_cholesky, periods_draws_emax):
+        edu_max, min_idx, delta, level, periods_draws_emax):
     """ Solving the model using pure PYTHON code.
     """
+    # Construct Cholesky decomposition
+    if is_deterministic:
+        shocks_cholesky = np.zeros((4, 4))
+    else:
+        shocks_cholesky = np.linalg.cholesky(shocks_cov)
+
     # Creating the state space of the model and collect the results in the
     # package class.
     logger.info('Starting state space creation')

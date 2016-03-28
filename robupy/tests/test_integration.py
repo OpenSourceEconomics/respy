@@ -383,7 +383,7 @@ class TestClass(object):
             is_deterministic, is_interpolated, num_draws_emax,
             is_ambiguous, num_periods, num_points, is_myopic, edu_start,
             is_debug, measure, edu_max, min_idx, delta, level,
-            shocks_cholesky, periods_draws_emax)
+            periods_draws_emax)
 
         pyth = pyth_solve(*args)
         f2py = f2py_solve(*args + (max_states_period,))
@@ -392,8 +392,7 @@ class TestClass(object):
                 np.testing.assert_allclose(pyth[i], alt[i])
 
         # Distribute solution arguments for further use in simulation test.
-        periods_payoffs_systematic, \
-            states_number_period, mapping_state_idx, \
+        periods_payoffs_systematic, states_number_period, mapping_state_idx, \
             periods_emax, states_all = pyth
 
         # Collect arguments across implementations.

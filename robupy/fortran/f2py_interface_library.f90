@@ -130,7 +130,7 @@ SUBROUTINE f2py_solve(periods_payoffs_systematic, &
                 is_deterministic, is_interpolated, num_draws_emax, & 
                 is_ambiguous, num_periods, num_points, &
                 is_myopic, edu_start, is_debug, measure, edu_max, min_idx, &
-                delta, level, shocks_cholesky, periods_draws_emax, max_states_period)
+                delta, level, periods_draws_emax, max_states_period)
     
     !
     ! The presence of max_states_period breaks the equality of interfaces. 
@@ -164,7 +164,6 @@ SUBROUTINE f2py_solve(periods_payoffs_systematic, &
     INTEGER, INTENT(IN)             :: min_idx
 
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_emax(:, :, :)
-    DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_home(:)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_edu(:)
     DOUBLE PRECISION, INTENT(IN)    :: shocks_cov(:, :)
@@ -193,10 +192,20 @@ SUBROUTINE f2py_solve(periods_payoffs_systematic, &
     DOUBLE PRECISION, ALLOCATABLE   :: periods_payoffs_systematic_int(:, :, :)
     DOUBLE PRECISION, ALLOCATABLE   :: periods_emax_int(:, :)
 
+    DOUBLE PRECISION                :: shocks_cholesky(4, 4)
+
 !-------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------- 
    
+    ! Construct Cholesky decomposition
+    IF (is_deterministic) THEN
+        shocks_cholesky = zero_dble
+    ELSE
+        CALL cholesky(shocks_cholesky, shocks_cov)
+    END IF
+
+    ! Call FORTRAN solution
     CALL fort_solve(periods_payoffs_systematic_int, &
             states_number_period_int, mapping_state_idx_int, periods_emax_int, & 
             states_all_int, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, & 

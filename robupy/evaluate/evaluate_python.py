@@ -42,7 +42,7 @@ def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
 
     periods_payoffs_systematic, states_number_period, mapping_state_idx, \
         periods_emax, states_all = \
-            pyth_solve(*base_args + (shocks_cholesky, periods_draws_emax))
+            pyth_solve(*base_args + (periods_draws_emax, ))
 
     # Initialize auxiliary objects
     crit_val, j = [], 0
