@@ -211,6 +211,14 @@ class RobupyCls(object):
         # Store.
         pkl.dump(self, open(file_name, 'wb'))
 
+    def remove_solution(self):
+        """ Remove solution attributes from class instance.
+        """
+        for label in SOLUTION_ATTR:
+            self.attr[label] = None
+
+        self.attr['is_solved'] = False
+
     ''' Private methods
     '''
 
@@ -454,6 +462,13 @@ class RobupyCls(object):
     def _check_integrity_results(self):
         """ This methods check the integrity of the results.
         """
+        # Check if solution attributes well maintained.
+        for label in SOLUTION_ATTR:
+            if self.attr['is_solved']:
+                assert (self.attr[label] is not None)
+            else:
+                assert (self.attr[label] is None)
+
         # Distribute class attributes
         num_periods = self.attr['num_periods']
 

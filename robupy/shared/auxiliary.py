@@ -336,3 +336,6 @@ def add_solution(robupy_obj, store, periods_payoffs_systematic,
 
     # Finishing
     return robupy_obj
+
+
+
