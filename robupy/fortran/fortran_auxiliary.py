@@ -73,7 +73,7 @@ def read_data(label, shape):
 def write_robufort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         shocks_cov, is_deterministic, is_interpolated, num_draws_emax,
         is_ambiguous, num_periods, num_points, is_myopic, edu_start,
-        is_debug, min_idx, measure, edu_max, delta, level,
+        is_debug, measure, edu_max, min_idx, delta, level,
         num_draws_prob, num_agents, seed_prob, seed_emax, request):
     """ Write out model request to hidden file .model.robufort.ini.
     """
