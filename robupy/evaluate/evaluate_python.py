@@ -1,14 +1,16 @@
 """ This module provides the interface to the functionality needed to
 evaluate the likelihood function.
 """
+# standard library
 from scipy.stats import norm
 
 import numpy as np
+
+# project library
 from robupy.shared.auxiliary import get_total_value
 from robupy.shared.constants import SMALL_FLOAT
 from robupy.shared.constants import TINY_FLOAT
 from robupy.shared.constants import HUGE_FLOAT
-
 
 from robupy.solve.solve_python import pyth_solve
 
@@ -21,19 +23,18 @@ def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
         num_periods, num_points, is_myopic, edu_start, is_debug, measure,
         edu_max, min_idx, delta, level, data_array, num_agents, num_draws_prob,
         shocks_cholesky, periods_draws_emax, periods_draws_prob):
-
     """ Evaluate criterion function. This code allows for a deterministic
     model, where there is no random variation in the rewards. If that is the
     case and all agents have corresponding experiences, then one is returned.
     If a single agent violates the implications, then the zero is returned.
     """
+    # Solve requested model.
     periods_payoffs_systematic, states_number_period, mapping_state_idx, \
-        periods_emax, states_all = \
-            pyth_solve(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
-                is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
-                num_periods, num_points, is_myopic, edu_start, is_debug,
-                measure, edu_max, min_idx, delta, level, shocks_cholesky,
-                periods_draws_emax)
+        periods_emax, states_all = pyth_solve(coeffs_a, coeffs_b, coeffs_edu,
+            coeffs_home, shocks_cov, is_deterministic, is_interpolated,
+            num_draws_emax, is_ambiguous, num_periods, num_points, is_myopic,
+            edu_start, is_debug, measure, edu_max, min_idx, delta, level,
+            shocks_cholesky, periods_draws_emax)
 
     # Initialize auxiliary objects
     crit_val, j = [], 0

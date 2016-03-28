@@ -49,7 +49,7 @@ def evaluate(robupy_obj, data_frame):
     periods_draws_emax = create_draws(num_periods, num_draws_emax, seed_emax,
         is_debug, 'emax', shocks_cholesky)
 
-    # Draw standard normal deviates for EMAX integration
+    # Transform dataset for interface
     data_array = data_frame.as_matrix()
 
     base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,

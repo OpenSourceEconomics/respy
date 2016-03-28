@@ -4,8 +4,6 @@ FORTRAN implementations.
 # standard library
 import os
 
-import numpy as np
-
 # project library
 from robupy.fortran.fortran_auxiliary import write_robufort_initialization
 from robupy.fortran.fortran_auxiliary import write_dataset
