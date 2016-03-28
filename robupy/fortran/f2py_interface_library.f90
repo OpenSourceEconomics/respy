@@ -277,6 +277,8 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, 
 ! Algorithm
 !-------------------------------------------------------------------------------
     
+    ! Construct Cholesky decomposition
+
     ! Solve them model for the given parametrization.
     CALL fort_solve(periods_payoffs_systematic, &
             states_number_period, mapping_state_idx, periods_emax, &

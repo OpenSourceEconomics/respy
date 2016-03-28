@@ -9,6 +9,9 @@ import logging
 import pandas as pd
 logger = logging.getLogger('ROBUPY_SIMULATE')
 
+# project library
+from robupy.shared.auxiliary import distribute_model_paras
+
 
 def write_info(robupy_obj, data_frame):
     """ Write information about the simulated economy.
@@ -81,7 +84,7 @@ def write_info(robupy_obj, data_frame):
 
     # Write out the parametrization of the simulated economy.
     model_paras = robupy_obj.get_attr('model_paras')
-    vector = get_estimation_vector(model_paras)
+    vector = get_estimation_vector(model_paras, True)
     np.savetxt(open('data.robupy.paras', 'wb'), vector, fmt='%15.8f')
 
 
@@ -120,12 +123,12 @@ def _format_integer(x):
         return '{0:<5}'.format(int(x))
 
 
-def get_estimation_vector(model_paras):
+def get_estimation_vector(model_paras, is_debug):
     """ Construct the vector estimation arguments.
     """
 
-    # Distribute auxiliary objects
-    shocks_cholesky = model_paras['shocks_cholesky']
+    # Auxiliary objects
+    shocks_cholesky = distribute_model_paras(model_paras, is_debug)[5]
 
     # Collect parameters
     vector = list()

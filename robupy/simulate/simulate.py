@@ -26,9 +26,11 @@ from robupy.simulate.simulate_auxiliary import write_info
 from robupy.simulate.simulate_auxiliary import write_out
 
 from robupy.shared.auxiliary import distribute_class_attributes
+from robupy.shared.auxiliary import distribute_model_paras
 from robupy.shared.auxiliary import replace_missing_values
 from robupy.shared.auxiliary import check_dataset
 from robupy.shared.auxiliary import create_draws
+
 
 from robupy.fortran.f2py_library import f2py_simulate
 
@@ -61,7 +63,7 @@ def simulate(robupy_obj):
                 'file_sim', 'edu_max', 'delta', 'version')
 
     # Auxiliary objects
-    shocks_cholesky = model_paras['shocks_cholesky']
+    shocks_cholesky = distribute_model_paras(model_paras, is_debug)[5]
 
     # Draw draws for the simulation.
     periods_draws_sims = create_draws(num_periods, num_agents, seed_data,

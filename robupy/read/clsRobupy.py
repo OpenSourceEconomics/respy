@@ -106,15 +106,13 @@ class RobupyCls(object):
         self.attr['is_solved'] = False
 
     def update_model_paras(self, coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-            shocks_cov, shocks_cholesky):
+            shocks_cov):
         """ Update model parameters.
         """
         # Distribute class attributes
         model_paras = self.attr['model_paras']
 
         # Update model parametrization
-        model_paras['shocks_cholesky'] = shocks_cholesky
-
         model_paras['coeffs_home'] = coeffs_home
 
         model_paras['coeffs_edu'] = coeffs_edu
@@ -287,15 +285,6 @@ class RobupyCls(object):
             [init_dict['HOME']['int']]
 
         self.attr['model_paras']['shocks_cov'] = init_dict['SHOCKS']
-
-        # Carry the Cholesky decomposition as part of the model
-        # parameters.
-        shocks_cov = self.attr['model_paras']['shocks_cov']
-        if np.count_nonzero(shocks_cov) == 0:
-            shocks_cholesky = np.zeros((4, 4))
-        else:
-            shocks_cholesky = np.linalg.cholesky(shocks_cov)
-        self.attr['model_paras']['shocks_cholesky'] = shocks_cholesky
 
         # Ensure that all elements in the dictionary are of the same
         # type.

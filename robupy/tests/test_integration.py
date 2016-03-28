@@ -16,6 +16,7 @@ from codes.auxiliary import write_draws
 
 # ROBUPY import
 from robupy.shared.auxiliary import distribute_class_attributes
+from robupy.shared.auxiliary import distribute_model_paras
 from robupy.shared.auxiliary import read_draws
 
 from robupy.solve.solve_auxiliary import pyth_create_state_space
@@ -366,12 +367,8 @@ class TestClass(object):
         periods_draws_sims = read_draws(num_periods, num_agents)
 
         # Extract coefficients
-        coeffs_a = model_paras['coeffs_a']
-        coeffs_b = model_paras['coeffs_b']
-        coeffs_home = model_paras['coeffs_home']
-        coeffs_edu = model_paras['coeffs_edu']
-        shocks_cholesky = model_paras['shocks_cholesky']
-        shocks_cov = model_paras['shocks_cov']
+        coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, \
+            shocks_cholesky = distribute_model_paras(model_paras, True)
 
         # Check the full solution procedure
         measure = 'kl'

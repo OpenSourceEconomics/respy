@@ -23,6 +23,7 @@ from robupy.tests.codes.random_init import generate_init
 
 from robupy.shared.auxiliary import distribute_class_attributes
 from robupy.shared.auxiliary import replace_missing_values
+from robupy.shared.auxiliary import distribute_model_paras
 from robupy.shared.auxiliary import create_draws
 
 import robupy.fortran.f2py_debug as fort_debug
@@ -109,7 +110,8 @@ class TestClass(object):
                 'is_debug', 'measure', 'edu_max', 'delta', 'level')
 
         # Auxiliary objects
-        shocks_cholesky = model_paras['shocks_cholesky']
+        _, _, _, _, shocks_cov, shocks_cholesky = \
+            distribute_model_paras(model_paras, is_debug)
 
         # Add some additional objects required for the interfaces to the
         # functions.
@@ -121,8 +123,6 @@ class TestClass(object):
         draws_emax = periods_draws_emax[period, :, :]
 
         num_states = states_number_period[period]
-
-        shocks_cov = model_paras['shocks_cov']
 
         shifts = np.random.randn(4)
 

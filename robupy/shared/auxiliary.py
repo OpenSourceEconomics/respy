@@ -250,7 +250,12 @@ def distribute_model_paras(model_paras, is_debug):
     coeffs_edu = model_paras['coeffs_edu']
     coeffs_home = model_paras['coeffs_home']
     shocks_cov = model_paras['shocks_cov']
-    shocks_cholesky = model_paras['shocks_cholesky']
+
+    # Construct cholesky decomposition
+    if np.count_nonzero(shocks_cov) == 0:
+        shocks_cholesky = np.zeros((4, 4))
+    else:
+        shocks_cholesky = np.linalg.cholesky(shocks_cov)
 
     if is_debug:
         args = [coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,

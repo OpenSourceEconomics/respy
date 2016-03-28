@@ -30,6 +30,7 @@ from robupy.estimate.estimate_auxiliary import opt_get_optim_parameters
 from robupy.estimate.estimate_auxiliary import opt_get_model_parameters
 
 from robupy.shared.auxiliary import distribute_class_attributes
+from robupy.shared.auxiliary import distribute_model_paras
 from robupy.shared.auxiliary import create_draws
 
 import robupy.fortran.f2py_testing as fort_test
@@ -88,8 +89,8 @@ class TestClass(object):
                     'measure', 'delta', 'level')
 
             # Extract auxiliary objects
-            shocks_cholesky = model_paras['shocks_cholesky']
-            shocks_cov = model_paras['shocks_cov']
+            _, _, _, _, shocks_cov, shocks_cholesky = \
+                distribute_model_paras(model_paras, is_debug)
 
             # Iterate over a couple of admissible points
             for _ in range(10):
@@ -154,8 +155,8 @@ class TestClass(object):
                         'delta', 'is_debug')
 
             # Auxiliary objects
-            shocks_cov = model_paras['shocks_cov']
-            shocks_cholesky = model_paras['shocks_cholesky']
+            _, _, _, _, shocks_cov, shocks_cholesky = \
+                distribute_model_paras(model_paras, is_debug)
 
             # Sample draws
             draws_standard = np.random.multivariate_normal(np.zeros(4),
@@ -223,7 +224,8 @@ class TestClass(object):
                     'delta', 'is_debug', 'model_paras')
 
         # Auxiliary objects
-        shocks_cholesky = model_paras['shocks_cholesky']
+        _, _, _, _, _, shocks_cholesky = \
+            distribute_model_paras(model_paras, is_debug)
 
         # Sample draws
         draws_standard = np.random.multivariate_normal(np.zeros(4),
@@ -236,9 +238,9 @@ class TestClass(object):
         # Select systematic payoffs
         payoffs_systematic = periods_payoffs_systematic[period, k, :]
 
-        args = (num_draws_emax, draws_standard, period, k, payoffs_systematic, edu_max,
-            edu_start, mapping_state_idx, states_all, num_periods, periods_emax,
-            delta, shocks_cholesky)
+        args = (num_draws_emax, draws_standard, period, k, payoffs_systematic,
+            edu_max, edu_start, mapping_state_idx, states_all, num_periods,
+            periods_emax, delta, shocks_cholesky)
 
         opt = _minimize_slsqp(criterion_ambiguity, x0, args, maxiter=maxiter,
                        ftol=ftol, constraints=constraint)
@@ -330,13 +332,16 @@ class TestClass(object):
         # Extract class attributes
         periods_payoffs_systematic, states_number_period, mapping_state_idx, \
         periods_emax, num_periods, states_all, num_draws_emax, edu_start, \
-        edu_max, delta, model_paras = distribute_class_attributes(robupy_obj,
-            'periods_payoffs_systematic', 'states_number_period',
-            'mapping_state_idx', 'periods_emax', 'num_periods', 'states_all',
-            'num_draws_emax', 'edu_start', 'edu_max', 'delta', 'model_paras')
+        edu_max, delta, model_paras, is_debug = \
+            distribute_class_attributes(robupy_obj,
+                'periods_payoffs_systematic', 'states_number_period',
+                'mapping_state_idx', 'periods_emax', 'num_periods',
+                'states_all', 'num_draws_emax', 'edu_start', 'edu_max',
+                'delta', 'model_paras', 'is_debug')
 
         # Auxiliary objects
-        shocks_cholesky = model_paras['shocks_cholesky']
+        _, _, _, _, _, shocks_cholesky = \
+            distribute_model_paras(model_paras, is_debug)
 
         # Sample draws
         draws_standard = np.random.multivariate_normal(np.zeros(4),
@@ -637,13 +642,9 @@ class TestClass(object):
                     'is_interpolated', 'num_points', 'is_deterministic',
                     'is_myopic')
 
-        # Extract coefficients
-        coeffs_a = model_paras['coeffs_a']
-        coeffs_b = model_paras['coeffs_b']
-        coeffs_home = model_paras['coeffs_home']
-        coeffs_edu = model_paras['coeffs_edu']
-        shocks_cholesky = model_paras['shocks_cholesky']
-        shocks_cov = model_paras['shocks_cov']
+        # Auxiliary objects
+        coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, \
+            shocks_cholesky = distribute_model_paras(model_paras, is_debug)
 
         # Check the state space creation.
         args = (num_periods, edu_start, edu_max, min_idx)
