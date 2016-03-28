@@ -495,7 +495,7 @@ PROGRAM robufort
         CALL fort_solve(periods_payoffs_systematic, &
                 states_number_period, mapping_state_idx, periods_emax, &
                 states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, & 
-                shocks_cov, shocks_cholesky, is_deterministic, & 
+                shocks_cov, is_deterministic, & 
                 is_interpolated, num_draws_emax, periods_draws_emax, & 
                 is_ambiguous, num_periods, num_points, edu_start, is_myopic, & 
                 is_debug, measure, edu_max, min_idx, delta, level)
@@ -515,14 +515,14 @@ PROGRAM robufort
         CALL fort_solve(periods_payoffs_systematic, &
                 states_number_period, mapping_state_idx, periods_emax, & 
                 states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, & 
-                shocks_cov, shocks_cholesky, is_deterministic, & 
+                shocks_cov, is_deterministic, & 
                 is_interpolated, num_draws_emax, periods_draws_emax, & 
                 is_ambiguous, num_periods, num_points, edu_start, is_myopic, & 
                 is_debug, measure, edu_max, min_idx, delta, level)
 
         CALL fort_evaluate(crit_val, periods_payoffs_systematic, & 
                 mapping_state_idx, periods_emax, states_all, shocks_cov, & 
-                shocks_cholesky, is_deterministic, num_periods, edu_start, &
+                is_deterministic, num_periods, edu_start, &
                 edu_max, delta, data_array, num_agents, num_draws_prob, &
                 periods_draws_prob)
 

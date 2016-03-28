@@ -110,13 +110,13 @@ SUBROUTINE f2py_criterion(crit_val, x, &
     CALL fort_solve(periods_payoffs_systematic, &
             states_number_period, mapping_state_idx, periods_emax, &
             states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, & 
-            shocks_cov, shocks_cholesky, is_deterministic, & 
+            shocks_cov, is_deterministic, & 
             is_interpolated, num_draws_emax, periods_draws_emax, & 
             is_ambiguous, num_periods, num_points, edu_start, is_myopic, & 
             is_debug, measure, edu_max, min_idx, delta, level)
 
     CALL fort_evaluate(crit_val, periods_payoffs_systematic, mapping_state_idx, & 
-            periods_emax, states_all, shocks_cov, shocks_cholesky, & 
+            periods_emax, states_all, shocks_cov, & 
             is_deterministic, num_periods, edu_start, edu_max, delta, & 
             data_array, num_agents, num_draws_prob, periods_draws_prob)
 
@@ -192,24 +192,16 @@ SUBROUTINE f2py_solve(periods_payoffs_systematic, &
     DOUBLE PRECISION, ALLOCATABLE   :: periods_payoffs_systematic_int(:, :, :)
     DOUBLE PRECISION, ALLOCATABLE   :: periods_emax_int(:, :)
 
-    DOUBLE PRECISION                :: shocks_cholesky(4, 4)
 
 !-------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------- 
-   
-    ! Construct Cholesky decomposition
-    IF (is_deterministic) THEN
-        shocks_cholesky = zero_dble
-    ELSE
-        CALL cholesky(shocks_cholesky, shocks_cov)
-    END IF
 
     ! Call FORTRAN solution
     CALL fort_solve(periods_payoffs_systematic_int, &
             states_number_period_int, mapping_state_idx_int, periods_emax_int, & 
             states_all_int, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, & 
-            shocks_cov, shocks_cholesky, is_deterministic, & 
+            shocks_cov, is_deterministic, & 
             is_interpolated, num_draws_emax, periods_draws_emax, & 
             is_ambiguous, num_periods, num_points, edu_start, is_myopic, & 
             is_debug, measure, edu_max, min_idx, delta, level)
@@ -232,8 +224,6 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, 
                 periods_draws_emax, periods_draws_prob)
 
     !/* external libraries      */
-
-    USE robufort_auxiliary
 
     USE robufort_library
 
@@ -278,34 +268,25 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, 
     INTEGER, ALLOCATABLE            :: states_number_period(:)
     INTEGER, ALLOCATABLE            :: states_all(:, :, :)
 
-    DOUBLE PRECISION                :: shocks_cholesky(4, 4)
-
     DOUBLE PRECISION, ALLOCATABLE   :: periods_payoffs_systematic(:, :, :)
     DOUBLE PRECISION, ALLOCATABLE   :: periods_emax(:, :)
 
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
-    
-    ! Construct Cholesky decomposition
-    IF (is_deterministic) THEN
-        shocks_cholesky = zero_dble
-    ELSE
-        CALL cholesky(shocks_cholesky, shocks_cov)
-    END IF
 
     ! Solve them model for the given parametrization.
     CALL fort_solve(periods_payoffs_systematic, &
             states_number_period, mapping_state_idx, periods_emax, &
             states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, & 
-            shocks_cov, shocks_cholesky, is_deterministic, & 
+            shocks_cov, is_deterministic, & 
             is_interpolated, num_draws_emax, periods_draws_emax, & 
             is_ambiguous, num_periods, num_points, edu_start, is_myopic, & 
             is_debug, measure, edu_max, min_idx, delta, level)
 
     ! Evaluate the criterion function building on the solution.
     CALL fort_evaluate(crit_val, periods_payoffs_systematic, mapping_state_idx, & 
-                periods_emax, states_all, shocks_cov, shocks_cholesky, & 
+                periods_emax, states_all, shocks_cov, & 
                 is_deterministic, num_periods, edu_start, edu_max, delta, &
                 data_array, num_agents, num_draws_prob, periods_draws_prob)
 

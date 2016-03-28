@@ -28,12 +28,6 @@ def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
     case and all agents have corresponding experiences, then one is returned.
     If a single agent violates the implications, then the zero is returned.
     """
-    # Construct Cholesky decomposition
-    if is_deterministic:
-        shocks_cholesky = np.zeros((4, 4))
-    else:
-        shocks_cholesky = np.linalg.cholesky(shocks_cov)
-
     # Solve requested model.
     base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
         is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
@@ -43,6 +37,12 @@ def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
     periods_payoffs_systematic, states_number_period, mapping_state_idx, \
         periods_emax, states_all = \
             pyth_solve(*base_args + (periods_draws_emax, ))
+
+    # Construct Cholesky decomposition
+    if is_deterministic:
+        shocks_cholesky = np.zeros((4, 4))
+    else:
+        shocks_cholesky = np.linalg.cholesky(shocks_cov)
 
     # Initialize auxiliary objects
     crit_val, j = [], 0

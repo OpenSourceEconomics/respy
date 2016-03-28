@@ -33,7 +33,7 @@ MODULE robufort_library
  !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, & 
-                periods_emax, states_all, shocks_cov, shocks_cholesky, & 
+                periods_emax, states_all, shocks_cov, & 
                 is_deterministic, num_periods, edu_start, edu_max, delta, &
                 data_array, num_agents, num_draws_prob, periods_draws_prob)
 
@@ -51,7 +51,6 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
     INTEGER(our_int), INTENT(IN)    :: edu_max
 
     REAL(our_dble), INTENT(IN)      :: periods_draws_prob(:, :, :)
-    REAL(our_dble), INTENT(IN)      :: shocks_cholesky(:, :)
     REAL(our_dble), INTENT(IN)      :: data_array(:, :)
     REAL(our_dble), INTENT(IN)      :: shocks_cov(:, :)
     REAL(our_dble), INTENT(IN)      :: delta 
@@ -80,9 +79,10 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
     REAL(our_dble)                  :: draws_prob(num_draws_prob, 4)
     REAL(our_dble)                  :: choice_probabilities(4)
     REAL(our_dble)                  :: payoffs_systematic(4)
+    REAL(our_dble)                  :: shocks_cholesky(4, 4)
+    REAL(our_dble)                  :: crit_val_contrib
     REAL(our_dble)                  :: total_payoffs(4)
     REAL(our_dble)                  :: draws(4)
-    REAL(our_dble)                  :: crit_val_contrib
     REAL(our_dble)                  :: dist
 
     LOGICAL                         :: is_deterministic
@@ -91,6 +91,13 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
+
+    ! Construct Cholesky decomposition
+    IF (is_deterministic) THEN
+        shocks_cholesky = zero_dble
+    ELSE
+        CALL cholesky(shocks_cholesky, shocks_cov)
+    END IF
 
     ! Initialize container for likelihood contributions
     ALLOCATE(crit_val(num_agents * num_periods)); crit_val = zero_dble
@@ -235,7 +242,7 @@ END SUBROUTINE
 SUBROUTINE fort_solve(periods_payoffs_systematic, &
                 states_number_period, mapping_state_idx, periods_emax, &
                 states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, & 
-                shocks_cov, shocks_cholesky, is_deterministic, & 
+                shocks_cov, is_deterministic, & 
                 is_interpolated, num_draws_emax, periods_draws_emax, & 
                 is_ambiguous, num_periods, num_points, edu_start, is_myopic, & 
                 is_debug, measure, edu_max, min_idx, delta, level)
@@ -257,7 +264,6 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, &
     INTEGER(our_int), INTENT(IN)                    :: min_idx
 
     REAL(our_dble), INTENT(IN)                      :: periods_draws_emax(:, :, :)
-    REAL(our_dble), INTENT(IN)                      :: shocks_cholesky(:, :)
     REAL(our_dble), INTENT(IN)                      :: coeffs_home(:)
     REAL(our_dble), INTENT(IN)                      :: coeffs_edu(:)
     REAL(our_dble), INTENT(IN)                      :: shocks_cov(4, 4)
@@ -281,9 +287,18 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, &
     INTEGER(our_int)                                :: max_states_period
     INTEGER(our_int)                                :: period
     
+    REAL(our_dble)                                  :: shocks_cholesky(4, 4)
+    
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
+   
+    ! Construct Cholesky decomposition
+    IF (is_deterministic) THEN
+        shocks_cholesky = zero_dble
+    ELSE
+        CALL cholesky(shocks_cholesky, shocks_cov)
+    END IF
 
     ! Allocate arrays
     ALLOCATE(mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2))
