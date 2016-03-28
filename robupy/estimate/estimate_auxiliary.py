@@ -5,10 +5,25 @@ import numpy as np
 
 # project library
 from robupy.shared.auxiliary import check_model_parameters
+from robupy.shared.auxiliary import check_dataset
 
 ''' Auxiliary functions
 '''
 
+def check_input(robupy_obj, data_frame):
+    """ Check input arguments.
+    """
+    # Check that class instance is locked.
+    assert robupy_obj.get_attr('is_locked')
+
+    if robupy_obj.get_attr('is_solved'):
+        robupy_obj.reset()
+
+    # Check that dataset aligns with model specification.
+    check_dataset(data_frame, robupy_obj)
+
+    # Finishing
+    return True
 
 def logging_optimization(which, *args):
 

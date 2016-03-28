@@ -416,17 +416,15 @@ class TestClass(object):
         for alt in [f2py, fort]:
             np.testing.assert_allclose(pyth, alt)
 
-        #
-        # TODO: Account for the evaluation of the criterion function.
         # Evaluation of criterion function
-        # x0 = opt_get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu,
-        #     coeffs_home, shocks_cov, shocks_cholesky, is_debug)
-        #
-        # args = (x0, is_deterministic, is_interpolated, num_draws_emax,
-        #     is_ambiguous, num_periods, num_points, is_myopic, edu_start,
-        #     is_debug, measure, edu_max, min_idx, delta, level, data_array,
-        #     num_agents, num_draws_prob, periods_draws_emax, periods_draws_prob)
-        #
-        #pyth = pyth_criterion(*args)
-        #f2py = f2py_criterion(*args)
-        #np.testing.assert_allclose(pyth, f2py)
+        x0 = opt_get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu,
+                coeffs_home, shocks_cov, shocks_cholesky, is_debug)
+
+        args = (is_deterministic, is_interpolated, num_draws_emax,is_ambiguous,
+            num_periods, num_points, is_myopic, edu_start, is_debug, measure,
+            edu_max, min_idx, delta, level, data_array, num_agents,
+            num_draws_prob, periods_draws_emax, periods_draws_prob)
+
+        pyth = pyth_criterion(x0, *args)
+        f2py = f2py_criterion(x0, *args)
+        np.testing.assert_allclose(pyth, f2py)

@@ -9,7 +9,7 @@
 SUBROUTINE f2py_criterion(crit_val, x, is_deterministic, is_interpolated, & 
                 num_draws_emax, is_ambiguous, num_periods, num_points, & 
                 is_myopic, edu_start, is_debug, measure, edu_max, min_idx, & 
-                delta, level, data_array, num_agents, num_draws_prob, &
+                delta, level, data_array, num_agents, num_draws_prob, & 
                 periods_draws_emax, periods_draws_prob)
 
     !/* external libraries      */
@@ -102,9 +102,7 @@ SUBROUTINE f2py_criterion(crit_val, x, is_deterministic, is_interpolated, &
     shocks_cholesky(3:4, 3) = x(24:25) 
     shocks_cholesky(4:4, 4) = x(26:26) 
 
-    !coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, shocks_cholesky = \
-    !    opt_get_model_parameters(x, is_debug)
-    ! THIS NEEDS TO BE CHECKED.
+
     shocks_cov = MATMUL(shocks_cholesky, TRANSPOSE(shocks_cholesky))
 
 
