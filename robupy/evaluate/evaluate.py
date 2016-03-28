@@ -62,12 +62,10 @@ def evaluate(robupy_obj, data_frame):
         args = base_args + (seed_emax, seed_prob)
         crit_val = fort_evaluate(*args)
     elif version == 'PYTHON':
-        args = base_args + (shocks_cholesky, periods_draws_emax,
-            periods_draws_prob)
+        args = base_args + (periods_draws_emax, periods_draws_prob)
         crit_val = pyth_evaluate(*args)
     elif version == 'F2PY':
-        args = base_args + (shocks_cholesky, periods_draws_emax,
-            periods_draws_prob)
+        args = base_args + (periods_draws_emax, periods_draws_prob)
         crit_val = f2py_evaluate(*args)
     else:
         raise NotImplementedError

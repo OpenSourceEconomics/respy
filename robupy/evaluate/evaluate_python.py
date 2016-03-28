@@ -22,12 +22,18 @@ def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
         is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
         num_periods, num_points, is_myopic, edu_start, is_debug, measure,
         edu_max, min_idx, delta, level, data_array, num_agents, num_draws_prob,
-        shocks_cholesky, periods_draws_emax, periods_draws_prob):
+        periods_draws_emax, periods_draws_prob):
     """ Evaluate criterion function. This code allows for a deterministic
     model, where there is no random variation in the rewards. If that is the
     case and all agents have corresponding experiences, then one is returned.
     If a single agent violates the implications, then the zero is returned.
     """
+    # Construct Cholesky decomposition
+    if is_deterministic:
+        shocks_cholesky = np.zeros((4, 4))
+    else:
+        shocks_cholesky = np.linalg.cholesky(shocks_cov)
+
     # Solve requested model.
     base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
         is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,

@@ -219,10 +219,12 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, 
                 is_deterministic, is_interpolated, num_draws_emax, & 
                 is_ambiguous, num_periods, num_points, &
                 is_myopic, edu_start, is_debug, measure, edu_max, min_idx, &
-                delta, level, data_array, num_agents, num_draws_prob, shocks_cholesky, & 
+                delta, level, data_array, num_agents, num_draws_prob, & 
                 periods_draws_emax, periods_draws_prob)
 
     !/* external libraries      */
+
+    USE robufort_auxiliary
 
     USE robufort_library
 
@@ -232,7 +234,7 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, 
 
     !/* external objects        */
 
-    DOUBLE PRECISION, INTENT(OUT)             :: crit_val
+    DOUBLE PRECISION, INTENT(OUT)   :: crit_val
 
     INTEGER, INTENT(IN)             :: num_draws_emax
     INTEGER, INTENT(IN)             :: num_periods
@@ -258,26 +260,30 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, 
     LOGICAL, INTENT(IN)             :: is_ambiguous
     LOGICAL, INTENT(IN)             :: is_myopic
     LOGICAL, INTENT(IN)             :: is_debug
-    DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(:, :)
 
     CHARACTER(10), INTENT(IN)       :: measure
 
     !/* internal */
 
-
     INTEGER, ALLOCATABLE            :: mapping_state_idx(:, :, :, :, :)
     INTEGER, ALLOCATABLE            :: states_number_period(:)
     INTEGER, ALLOCATABLE            :: states_all(:, :, :)
 
+    DOUBLE PRECISION                :: shocks_cholesky(4, 4)
+
     DOUBLE PRECISION, ALLOCATABLE   :: periods_payoffs_systematic(:, :, :)
     DOUBLE PRECISION, ALLOCATABLE   :: periods_emax(:, :)
-
 
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
     
     ! Construct Cholesky decomposition
+    IF (is_deterministic) THEN
+        shocks_cholesky = zero_dble
+    ELSE
+        CALL cholesky(shocks_cholesky, shocks_cov)
+    END IF
 
     ! Solve them model for the given parametrization.
     CALL fort_solve(periods_payoffs_systematic, &

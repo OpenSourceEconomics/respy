@@ -877,6 +877,9 @@ SUBROUTINE cholesky(factor, matrix)
 ! Algorithm
 !-------------------------------------------------------------------------------
     
+    ! Initialize result
+    factor = zero_dble
+
     ! Auxiliary objects
     n = size(matrix,1)
    
@@ -904,11 +907,11 @@ SUBROUTINE cholesky(factor, matrix)
 
         DO k = 1, (j - 1)
 
-          sums = sums + clon(j, k)*clon(i, k)
+          sums = sums + clon(j, k) * clon(i, k)
 
         END DO
 
-        clon(i, j) = (clon(i, j) - sums)/clon(j, j)
+        clon(i, j) = (clon(i, j) - sums) / clon(j, j)
 
       END DO
     
