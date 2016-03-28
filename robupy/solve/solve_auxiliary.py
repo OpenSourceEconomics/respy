@@ -54,7 +54,7 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
         # Logging.
         string = '''{0[0]:>18}{0[1]:>3}{0[2]:>5}{0[3]:>6}{0[4]:>7}'''
         logger.info(string.format(['... solving period', period, 'with',
-                num_states, 'states']))
+            num_states, 'states']))
 
         # The number of interpolation points is the same for all periods.
         # Thus, for some periods the number of interpolation points is
@@ -105,12 +105,11 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
                 payoffs_systematic = periods_payoffs_systematic[period, k, :]
 
                 # Simulate the expected future value.
-                emax = \
-                    get_payoffs(num_draws_emax, draws_emax, period, k,
-                        payoffs_systematic, edu_max, edu_start,
-                        mapping_state_idx, states_all, num_periods,
-                        periods_emax, delta, is_debug, shocks_cov, level,
-                        is_ambiguous, measure, is_deterministic, shocks_cholesky)
+                emax = get_payoffs(num_draws_emax, draws_emax, period, k,
+                    payoffs_systematic, edu_max, edu_start,
+                    mapping_state_idx, states_all, num_periods, periods_emax,
+                    delta, is_debug, shocks_cov, level, is_ambiguous, measure,
+                    is_deterministic, shocks_cholesky)
 
                 # Store results
                 periods_emax[period, k] = emax
@@ -328,7 +327,7 @@ def get_simulated_indicator(num_points, num_candidates, period, num_periods,
     """
     # Drawing random interpolation points
     interpolation_points = np.random.choice(range(num_candidates),
-                                size=num_points, replace=False)
+        size=num_points, replace=False)
 
     # Constructing an indicator whether a state will be simulated or
     # interpolated.
@@ -510,6 +509,7 @@ def logging_solution(which):
 
     else:
         raise NotImplementedError
+
 
 def summarize_ambiguity(robupy_obj):
     """ Summarize optimizations in case of ambiguity.

@@ -89,12 +89,12 @@ def _determine_worst_case(num_draws_emax, draws_emax, period, k,
     # Run optimization
     if measure == 'absolute':
         bounds = _prep_absolute(level, is_debug)
-        opt = minimize(criterion_ambiguity, x0, args, method='SLSQP', options=options,
-                       bounds=bounds)
+        opt = minimize(criterion_ambiguity, x0, args, method='SLSQP',
+            options=options, bounds=bounds)
     else:
         constraints = _prep_kl(shocks_cov, level)
-        opt = minimize(criterion_ambiguity, x0, args, method='SLSQP', options=options,
-                       constraints=constraints)
+        opt = minimize(criterion_ambiguity, x0, args, method='SLSQP',
+            options=options, constraints=constraints)
         # Stabilization. If the optimization fails the starting values are
         # used otherwise it happens that the constraint is not satisfied by far.
         if not opt['success']:
@@ -152,9 +152,9 @@ def _divergence(x, cov, level):
     return level - rslt
 
 
-def criterion_ambiguity(x, num_draws_emax, draws_emax, period, k, payoffs_systematic,
-        edu_max, edu_start, mapping_state_idx, states_all, num_periods,
-        periods_emax, delta, shocks_cholesky):
+def criterion_ambiguity(x, num_draws_emax, draws_emax, period, k,
+        payoffs_systematic, edu_max, edu_start, mapping_state_idx,
+        states_all, num_periods, periods_emax, delta, shocks_cholesky):
     """ Simulate expected future value for alternative shock distributions.
     """
     # Simulate the expected future value for a given parametrization.

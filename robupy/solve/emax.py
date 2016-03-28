@@ -16,20 +16,12 @@ def simulate_emax(num_periods, num_draws_emax, period, k, draws_emax,
         mapping_state_idx, delta, shocks_cholesky, shocks_mean):
     """ Simulate expected future value.
     """
-    # Initialize containers
-    emax_simulated = 0.0
-
-    # Transfer draws to relevant distribution
-    draws_emax_transformed = draws_emax.copy()
-    draws_emax_transformed = \
-        np.dot(shocks_cholesky, draws_emax_transformed.T).T
-    draws_emax_transformed[:, :2] = \
-        draws_emax_transformed[:, :2] + shocks_mean
-    for j in [0, 1]:
-        draws_emax_transformed[:, j] = \
-            np.clip(np.exp(draws_emax_transformed[:, j]), 0.0, HUGE_FLOAT)
+    # Get the transformed set of disturbances
+    draws_emax_transformed = _transform_disturbances(draws_emax,
+        shocks_cholesky, shocks_mean)
 
     # Calculate maximum value
+    emax_simulated = 0.0
     for i in range(num_draws_emax):
 
         # Select draws for this draw
@@ -51,3 +43,20 @@ def simulate_emax(num_periods, num_draws_emax, period, k, draws_emax,
 
     # Finishing
     return emax_simulated
+
+
+
+def _transform_disturbances(draws_emax, shocks_cholesky, shocks_mean):
+    """ Transform the standard normal deviates to the relevant distribution.
+    """
+    # Transfer draws to relevant distribution
+    draws_emax_transformed = draws_emax.copy()
+    draws_emax_transformed = np.dot(shocks_cholesky, draws_emax_transformed.T).T
+    draws_emax_transformed[:, :2] = draws_emax_transformed[:, :2] + shocks_mean
+
+    for j in [0, 1]:
+        draws_emax_transformed[:, j] = \
+            np.clip(np.exp(draws_emax_transformed[:, j]), 0.0, HUGE_FLOAT)
+
+    # Finishing
+    return draws_emax_transformed
