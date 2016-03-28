@@ -10,6 +10,7 @@ import numpy as np
 from robupy.fortran.fortran_auxiliary import write_robufort_initialization
 from robupy.fortran.fortran_auxiliary import write_dataset
 from robupy.fortran.fortran_auxiliary import get_results
+from robupy.fortran.fortran_auxiliary import read_data
 
 from robupy.shared.constants import FORTRAN_DIR
 
@@ -41,7 +42,7 @@ def fort_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
     # Call executable
     os.system('"' + FORTRAN_DIR + '/bin/robufort"')
 
-    crit_val = float(np.genfromtxt('.eval.robufort.dat'))
+    crit_val = read_data('eval', 1)[0]
 
     return crit_val
 

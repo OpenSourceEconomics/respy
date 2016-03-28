@@ -21,10 +21,11 @@ def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
         num_periods, num_points, is_myopic, edu_start, is_debug, measure,
         edu_max, min_idx, delta, level, data_array, num_agents, num_draws_prob,
         shocks_cholesky, periods_draws_emax, periods_draws_prob):
-    """ Evaluate the criterion function of the model using PYTHON/F2PY code.
-    This purpose of this wrapper is to extract all relevant information from
-    the project class to pass it on to the actual evaluation functions. This is
-    required to align the functions across the PYTHON and F2PY implementations.
+
+    """ Evaluate criterion function. This code allows for a deterministic
+    model, where there is no random variation in the rewards. If that is the
+    case and all agents have corresponding experiences, then one is returned.
+    If a single agent violates the implications, then the zero is returned.
     """
     periods_payoffs_systematic, states_number_period, mapping_state_idx, \
         periods_emax, states_all = \
@@ -34,11 +35,6 @@ def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
                 measure, edu_max, min_idx, delta, level, shocks_cholesky,
                 periods_draws_emax)
 
-    """ Evaluate criterion function. This code allows for a deterministic
-    model, where there is no random variation in the rewards. If that is the
-    case and all agents have corresponding experiences, then one is returned.
-    If a single agent violates the implications, then the zero is returned.
-    """
     # Initialize auxiliary objects
     crit_val, j = [], 0
 

@@ -53,81 +53,83 @@ SUBROUTINE store_results(mapping_state_idx, states_all, &
     ! from the solution level.
     max_states_period = MAXVAL(states_number_period)
 
-    ! Write out results for the store results.
-    1800 FORMAT(5(1x,i5))
+    IF (request == 'solve') THEN
 
-    OPEN(UNIT=1, FILE='.mapping_state_idx.robufort.dat')
+        ! Write out results for the store results.
+        1800 FORMAT(5(1x,i5))
 
-    DO period = 1, num_periods
-        DO i = 1, num_periods
-            DO j = 1, num_periods
-                DO k = 1, min_idx
-                    WRITE(1, 1800) mapping_state_idx(period, i, j, k, :)
+        OPEN(UNIT=1, FILE='.mapping_state_idx.robufort.dat')
+
+        DO period = 1, num_periods
+            DO i = 1, num_periods
+                DO j = 1, num_periods
+                    DO k = 1, min_idx
+                        WRITE(1, 1800) mapping_state_idx(period, i, j, k, :)
+                    END DO
                 END DO
             END DO
         END DO
-    END DO
 
-    CLOSE(1)
+        CLOSE(1)
 
 
-    2000 FORMAT(4(1x,i5))
+        2000 FORMAT(4(1x,i5))
 
-    OPEN(UNIT=1, FILE='.states_all.robufort.dat')
+        OPEN(UNIT=1, FILE='.states_all.robufort.dat')
 
-    DO period = 1, num_periods
-        DO i = 1, max_states_period
-            WRITE(1, 2000) states_all(period, i, :)
+        DO period = 1, num_periods
+            DO i = 1, max_states_period
+                WRITE(1, 2000) states_all(period, i, :)
+            END DO
         END DO
-    END DO
 
-    CLOSE(1)
+        CLOSE(1)
 
 
-    1900 FORMAT(4(1x,f25.15))
+        1900 FORMAT(4(1x,f25.15))
 
-    OPEN(UNIT=1, FILE='.periods_payoffs_systematic.robufort.dat')
+        OPEN(UNIT=1, FILE='.periods_payoffs_systematic.robufort.dat')
 
-    DO period = 1, num_periods
-        DO i = 1, max_states_period
-            WRITE(1, 1900) periods_payoffs_systematic(period, i, :)
+        DO period = 1, num_periods
+            DO i = 1, max_states_period
+                WRITE(1, 1900) periods_payoffs_systematic(period, i, :)
+            END DO
         END DO
-    END DO
 
-    CLOSE(1)
+        CLOSE(1)
 
-    2100 FORMAT(i5)
+        2100 FORMAT(i5)
 
-    OPEN(UNIT=1, FILE='.states_number_period.robufort.dat')
+        OPEN(UNIT=1, FILE='.states_number_period.robufort.dat')
 
-    DO period = 1, num_periods
-        WRITE(1, 2100) states_number_period(period)
-    END DO
+        DO period = 1, num_periods
+            WRITE(1, 2100) states_number_period(period)
+        END DO
 
-    CLOSE(1)
-
-
-    2200 FORMAT(i5)
-
-    OPEN(UNIT=1, FILE='.max_states_period.robufort.dat')
-
-    WRITE(1, 2200) max_states_period
-
-    CLOSE(1)
+        CLOSE(1)
 
 
-    2400 FORMAT(100000(1x,f25.15))
+        2200 FORMAT(i5)
 
-    OPEN(UNIT=1, FILE='.periods_emax.robufort.dat')
+        OPEN(UNIT=1, FILE='.max_states_period.robufort.dat')
 
-    DO period = 1, num_periods
-        WRITE(1, 2400) periods_emax(period, :)
-    END DO
+        WRITE(1, 2200) max_states_period
 
-    CLOSE(1)
+        CLOSE(1)
+
+
+        2400 FORMAT(100000(1x,f25.15))
+
+        OPEN(UNIT=1, FILE='.periods_emax.robufort.dat')
+
+        DO period = 1, num_periods
+            WRITE(1, 2400) periods_emax(period, :)
+        END DO
+
+        CLOSE(1)
 
     ! Write out value of criterion function if evaluated.
-    IF (request == 'evaluate') THEN
+    ELSEIF (request == 'evaluate') THEN
 
         2500 FORMAT(1x,f25.15)
 

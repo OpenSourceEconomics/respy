@@ -211,7 +211,7 @@ class RobupyCls(object):
         # Store.
         pkl.dump(self, open(file_name, 'wb'))
 
-    def remove_solution(self):
+    def reset(self):
         """ Remove solution attributes from class instance.
         """
         for label in SOLUTION_ATTR:

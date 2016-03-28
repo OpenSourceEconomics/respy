@@ -27,19 +27,19 @@ def get_results(num_periods, min_idx):
     os.unlink('.max_states_period.robufort.dat')
 
     shape = (num_periods, num_periods, num_periods, min_idx, 2)
-    mapping_state_idx = read_date('mapping_state_idx', shape)
+    mapping_state_idx = read_data('mapping_state_idx', shape)
 
     shape = (num_periods,)
-    states_number_period = read_date('states_number_period', shape)
+    states_number_period = read_data('states_number_period', shape)
 
     shape = (num_periods, max_states_period, 4)
-    states_all = read_date('states_all', shape)
+    states_all = read_data('states_all', shape)
 
     shape = (num_periods, max_states_period, 4)
-    periods_payoffs_systematic = read_date('periods_payoffs_systematic', shape)
+    periods_payoffs_systematic = read_data('periods_payoffs_systematic', shape)
 
     shape = (num_periods, max_states_period)
-    periods_emax = read_date('periods_emax', shape)
+    periods_emax = read_data('periods_emax', shape)
 
     # Update class attributes with solution
     args = (periods_payoffs_systematic, states_number_period,
@@ -49,7 +49,7 @@ def get_results(num_periods, min_idx):
     return args
 
 
-def read_date(label, shape):
+def read_data(label, shape):
     """ Read results
     """
     file_ = '.' + label + '.robufort.dat'
@@ -178,7 +178,7 @@ def write_dataset(data_array):
     to large values.
     """
     # Transfer to data frame as this allows to fill the missing values with
-    # HUGE FLOAT. The numpy array is passed in to align the intefaces across
+    # HUGE FLOAT. The numpy array is passed in to align the interfaces across
     # implementations
     data_frame = pd.DataFrame(data_array)
     with open('.data.robufort.dat', 'w') as file_:

@@ -1,8 +1,8 @@
 """ This module contains some auxiliary functions for the evaluation of the
 criterion function.
 """
-# standard library
 
+# standard library
 import numpy as np
 
 # project library
@@ -26,7 +26,7 @@ def check_input(robupy_obj, data_frame):
     assert robupy_obj.get_attr('is_locked')
 
     if robupy_obj.get_attr('is_solved'):
-        robupy_obj.remove_solution()
+        robupy_obj.reset()
 
     # Check that dataset aligns with model specification.
     check_dataset(data_frame, robupy_obj)
