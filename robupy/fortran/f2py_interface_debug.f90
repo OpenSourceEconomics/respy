@@ -8,7 +8,7 @@
 !*******************************************************************************
 SUBROUTINE wrapper_slsqp_robufort(x_internal, x_start, maxiter, ftol, tiny, &
                 num_draws_emax, draws_standard, period, k, payoffs_systematic, &
-                edu_max, edu_start, mapping_state_idx, states_all, & 
+                edu_max, edu_start, mapping_state_idx, states_all, 
                 num_periods, periods_emax, delta, is_debug, shocks_cov, & 
                 level, shocks_cholesky)
 
@@ -24,9 +24,9 @@ SUBROUTINE wrapper_slsqp_robufort(x_internal, x_start, maxiter, ftol, tiny, &
 
     !/* external objects    */
 
+    DOUBLE PRECISION, INTENT(IN)    :: shocks_cov(4, 4)
     DOUBLE PRECISION, INTENT(OUT)   :: x_internal(2)
     DOUBLE PRECISION, INTENT(IN)    :: x_start(2)
-    DOUBLE PRECISION, INTENT(IN)    :: shocks_cov(4, 4)
     DOUBLE PRECISION, INTENT(IN)    :: level
     DOUBLE PRECISION, INTENT(IN)    :: ftol
 
@@ -54,10 +54,10 @@ SUBROUTINE wrapper_slsqp_robufort(x_internal, x_start, maxiter, ftol, tiny, &
 ! Algorithm
 !-------------------------------------------------------------------------------
     
-    CALL slsqp_robufort(x_internal, x_start, maxiter, ftol, tiny, num_draws_emax, &
-            draws_standard, period, k, payoffs_systematic, edu_max, edu_start, &
-            mapping_state_idx, states_all, num_periods, periods_emax, &
-            delta, is_debug, shocks_cov, level, shocks_cholesky)
+    CALL slsqp_robufort(x_internal, x_start, maxiter, ftol, tiny, & 
+            num_draws_emax, draws_standard, period, k, payoffs_systematic, & 
+            edu_max, edu_start, mapping_state_idx, states_all, num_periods, &
+            periods_emax, delta, is_debug, shocks_cov, level, shocks_cholesky)
 
 END SUBROUTINE
 !******************************************************************************
@@ -145,12 +145,11 @@ SUBROUTINE wrapper_svd(U, S, VT, A, m)
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_get_payoffs_ambiguity(emax_simulated, &
-                num_draws_emax, draws_emax, &
-                period, k, payoffs_systematic, edu_max, edu_start, & 
-                mapping_state_idx, states_all, num_periods, periods_emax, & 
-                delta, is_debug, shocks_cov, level, measure, is_deterministic, & 
-                shocks_cholesky)
+SUBROUTINE wrapper_get_payoffs_ambiguity(emax_simulated, num_draws_emax, & 
+                draws_emax, period, k, payoffs_systematic, edu_max, & 
+                edu_start, mapping_state_idx, states_all, num_periods, & 
+                periods_emax, delta, is_debug, shocks_cov, level, measure, & 
+                is_deterministic, shocks_cholesky)
 
     !/* external libraries      */
 
@@ -190,19 +189,19 @@ SUBROUTINE wrapper_get_payoffs_ambiguity(emax_simulated, &
 ! Algorithm
 !-------------------------------------------------------------------------------
     
-    CALL get_payoffs_ambiguity(emax_simulated, &
-            num_draws_emax, draws_emax, period, k, &
-            payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
-            states_all, num_periods, periods_emax, delta, is_debug, shocks_cov, & 
-            level, measure, is_deterministic, shocks_cholesky)
+    CALL get_payoffs_ambiguity(emax_simulated, num_draws_emax, draws_emax, & 
+            period, k, payoffs_systematic, edu_max, edu_start, & 
+            mapping_state_idx, states_all, num_periods, periods_emax, delta, & 
+            is_debug, shocks_cov, level, measure, is_deterministic, & 
+            shocks_cholesky)
 
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE wrapper_criterion_ambiguity_derivative(rslt, x, tiny, &
-                num_draws_emax, draws_emax, period, k, payoffs_systematic, edu_max, &
-                edu_start, mapping_state_idx, states_all, num_periods, &
-                periods_emax, delta, shocks_cholesky)
+                num_draws_emax, draws_emax, period, k, payoffs_systematic, & 
+                edu_max, edu_start, mapping_state_idx, states_all, & 
+                num_periods, periods_emax, delta, shocks_cholesky)
 
     !/* external libraries      */
 
@@ -238,18 +237,17 @@ SUBROUTINE wrapper_criterion_ambiguity_derivative(rslt, x, tiny, &
 !-------------------------------------------------------------------------------
 
     rslt = criterion_ambiguity_derivative(x, tiny, num_draws_emax, &
-            draws_emax, period, k, payoffs_systematic, edu_max, &
-            edu_start, mapping_state_idx, states_all, num_periods, & 
-            periods_emax, delta, shocks_cholesky)
+            draws_emax, period, k, payoffs_systematic, edu_max, edu_start, & 
+            mapping_state_idx, states_all, num_periods, periods_emax, & 
+            delta, shocks_cholesky)
 
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_simulate_emax(emax_simulated, &
-                num_periods, num_draws_emax, period, k, &
-                draws_emax, payoffs_systematic, edu_max, & 
-                edu_start, periods_emax, states_all, mapping_state_idx, delta, & 
-                shocks_cholesky, shocks_mean)
+SUBROUTINE wrapper_simulate_emax(emax_simulated, num_periods, & 
+                num_draws_emax, period, k, draws_emax, payoffs_systematic, & 
+                edu_max, edu_start, periods_emax, states_all, & 
+                mapping_state_idx, delta, shocks_cholesky, shocks_mean)
 
     !/* external libraries      */
 
@@ -263,10 +261,10 @@ SUBROUTINE wrapper_simulate_emax(emax_simulated, &
 
     DOUBLE PRECISION, INTENT(OUT)   :: emax_simulated
 
-    DOUBLE PRECISION, INTENT(IN)    :: draws_emax(:,:)
     DOUBLE PRECISION, INTENT(IN)    :: payoffs_systematic(:)
     DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_emax(:,:)
+    DOUBLE PRECISION, INTENT(IN)    :: draws_emax(:,:)
     DOUBLE PRECISION, INTENT(IN)    :: shocks_mean(:)
     DOUBLE PRECISION, INTENT(IN)    :: delta
 
@@ -283,19 +281,17 @@ SUBROUTINE wrapper_simulate_emax(emax_simulated, &
 ! Algorithm
 !-------------------------------------------------------------------------------
 
-    CALL simulate_emax(emax_simulated, &
-            num_periods, num_draws_emax, period, k, & 
-            draws_emax, payoffs_systematic, edu_max, & 
-            edu_start, periods_emax, states_all, mapping_state_idx, delta, & 
-            shocks_cholesky, shocks_mean)
+    CALL simulate_emax(emax_simulated, num_periods, num_draws_emax, period, k, & 
+            draws_emax, payoffs_systematic, edu_max, edu_start, periods_emax, & 
+            states_all, mapping_state_idx, delta, shocks_cholesky, shocks_mean)
 
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE wrapper_criterion_ambiguity(emax_simulated, x, num_draws_emax, &
-                draws_emax, period, k, payoffs_systematic, & 
-                edu_max, edu_start, mapping_state_idx, states_all, & 
-                num_periods, periods_emax, delta, shocks_cholesky)
+                draws_emax, period, k, payoffs_systematic, edu_max, & 
+                edu_start, mapping_state_idx, states_all, num_periods, & 
+                periods_emax, delta, shocks_cholesky)
 
     !/* external libraries      */
 
@@ -309,10 +305,10 @@ SUBROUTINE wrapper_criterion_ambiguity(emax_simulated, x, num_draws_emax, &
 
     DOUBLE PRECISION, INTENT(OUT)   :: emax_simulated
 
-    DOUBLE PRECISION, INTENT(IN)    :: draws_emax(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: payoffs_systematic(:)
     DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_emax(:,:)
+    DOUBLE PRECISION, INTENT(IN)    :: draws_emax(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: delta
     DOUBLE PRECISION, INTENT(IN)    :: x(:)
 
@@ -330,9 +326,9 @@ SUBROUTINE wrapper_criterion_ambiguity(emax_simulated, x, num_draws_emax, &
 !-------------------------------------------------------------------------------
 
     emax_simulated = criterion_ambiguity(x, num_draws_emax, draws_emax, &
-                        period, k, payoffs_systematic, edu_max, edu_start, &
-                        mapping_state_idx, states_all, num_periods, &
-                        periods_emax, delta, shocks_cholesky)
+        period, k, payoffs_systematic, edu_max, edu_start, &
+        mapping_state_idx, states_all, num_periods, periods_emax, delta, & 
+        shocks_cholesky)
 
 END SUBROUTINE
 !*******************************************************************************
@@ -597,7 +593,7 @@ SUBROUTINE wrapper_get_r_squared(r_squared, Y, P, num_agents)
     DOUBLE PRECISION, INTENT(IN)    :: Y(num_agents)
     DOUBLE PRECISION, INTENT(IN)    :: P(num_agents)
     
-    INTEGER, INTENT(IN)              :: num_agents
+    INTEGER, INTENT(IN)             :: num_agents
 
 !-------------------------------------------------------------------------------
 ! Algorithm
@@ -712,8 +708,8 @@ SUBROUTINE wrapper_get_coefficients(coeffs, Y, X, num_covars, num_agents)
 
     DOUBLE PRECISION, INTENT(OUT)   :: coeffs(num_covars)
 
-    DOUBLE PRECISION, INTENT(IN)    :: Y(:)
     DOUBLE PRECISION, INTENT(IN)    :: X(:,:)
+    DOUBLE PRECISION, INTENT(IN)    :: Y(:)
     
     INTEGER, INTENT(IN)             :: num_covars
     INTEGER, INTENT(IN)             :: num_agents
@@ -747,9 +743,9 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, &
     DOUBLE PRECISION, INTENT(OUT)       :: exogenous_variable(num_states)
 
     DOUBLE PRECISION, INTENT(IN)        :: periods_payoffs_systematic(:, :, :)
+    DOUBLE PRECISION, INTENT(IN)        :: shocks_cholesky(:, :)
     DOUBLE PRECISION, INTENT(IN)        :: periods_emax(:, :)
     DOUBLE PRECISION, INTENT(IN)        :: draws_emax(:, :)
-    DOUBLE PRECISION, INTENT(IN)        :: shocks_cholesky(:, :)
     DOUBLE PRECISION, INTENT(IN)        :: shocks_cov(:, :)
     DOUBLE PRECISION, INTENT(IN)        :: maxe(:)
     DOUBLE PRECISION, INTENT(IN)        :: delta
@@ -862,12 +858,11 @@ SUBROUTINE wrapper_get_simulated_indicator(is_simulated, num_points, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_get_payoffs(emax_simulated, &
-                num_draws_emax, draws_emax, period, k, & 
-                payoffs_systematic, edu_max, edu_start, mapping_state_idx, & 
-                states_all, num_periods, periods_emax, delta, is_debug, & 
-                shocks_cov, level, is_ambiguous, measure, is_deterministic, & 
-                shocks_cholesky)
+SUBROUTINE wrapper_get_payoffs(emax_simulated, num_draws_emax, & 
+                draws_emax, period, k, payoffs_systematic, edu_max, & 
+                edu_start, mapping_state_idx, states_all, num_periods, & 
+                periods_emax, delta, is_debug, shocks_cov, level, & 
+                is_ambiguous, measure, is_deterministic, shocks_cholesky)
 
 
     !/* external libraries      */
@@ -882,11 +877,11 @@ SUBROUTINE wrapper_get_payoffs(emax_simulated, &
 
     DOUBLE PRECISION, INTENT(OUT)       :: emax_simulated
 
-    DOUBLE PRECISION, INTENT(IN)        :: draws_emax(:, :)
     DOUBLE PRECISION, INTENT(IN)        :: payoffs_systematic(:)
     DOUBLE PRECISION, INTENT(IN)        :: shocks_cholesky(:, :)
     DOUBLE PRECISION, INTENT(IN)        :: periods_emax(:, :)
     DOUBLE PRECISION, INTENT(IN)        :: shocks_cov(:, :)
+    DOUBLE PRECISION, INTENT(IN)        :: draws_emax(:, :)
     DOUBLE PRECISION, INTENT(IN)        :: delta
     DOUBLE PRECISION, INTENT(IN)        :: level
 
@@ -909,12 +904,11 @@ SUBROUTINE wrapper_get_payoffs(emax_simulated, &
 ! Algorithm
 !-------------------------------------------------------------------------------
     
-    CALL get_payoffs(emax_simulated, &
-                num_draws_emax, draws_emax, period, k, & 
-                payoffs_systematic, edu_max, edu_start, mapping_state_idx, & 
-                states_all, num_periods, periods_emax, delta, is_debug, & 
-                shocks_cov, level, is_ambiguous, measure, is_deterministic, & 
-                shocks_cholesky)
+    CALL get_payoffs(emax_simulated, num_draws_emax, draws_emax, period, k, & 
+            payoffs_systematic, edu_max, edu_start, mapping_state_idx, & 
+            states_all, num_periods, periods_emax, delta, is_debug, & 
+            shocks_cov, level, is_ambiguous, measure, is_deterministic, & 
+            shocks_cholesky)
     
 END SUBROUTINE
 !*******************************************************************************
