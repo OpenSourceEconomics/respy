@@ -45,7 +45,6 @@ def simulate_emax(num_periods, num_draws_emax, period, k, draws_emax,
     return emax_simulated
 
 
-
 def _transform_disturbances(draws_emax, shocks_cholesky, shocks_mean):
     """ Transform the standard normal deviates to the relevant distribution.
     """
@@ -60,3 +59,4 @@ def _transform_disturbances(draws_emax, shocks_cholesky, shocks_mean):
 
     # Finishing
     return draws_emax_transformed
+

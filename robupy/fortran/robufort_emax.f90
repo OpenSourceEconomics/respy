@@ -23,11 +23,10 @@ MODULE robufort_emax
 CONTAINS
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE simulate_emax(emax_simulated, &
-                num_periods, num_draws_emax, period, k, draws_emax, & 
-                payoffs_systematic, edu_max, edu_start, periods_emax, & 
-                states_all, mapping_state_idx, delta, shocks_cholesky, & 
-                shocks_mean)
+SUBROUTINE simulate_emax(emax_simulated, num_periods, num_draws_emax, period, & 
+                k, draws_emax, payoffs_systematic, edu_max, edu_start, & 
+                periods_emax, states_all, mapping_state_idx, delta, & 
+                shocks_cholesky, shocks_mean)
 
     !/* external objects    */
 
@@ -63,25 +62,12 @@ SUBROUTINE simulate_emax(emax_simulated, &
 ! Algorithm
 !-------------------------------------------------------------------------------
 
-    ! Initialize containers
-    emax_simulated = zero_dble
-
-    ! Transfer draws to relevant distribution
-    DO i = 1, num_draws_emax
-        draws_emax_transformed(i:i, :) = &
-            TRANSPOSE(MATMUL(shocks_cholesky, TRANSPOSE(draws_emax(i:i, :)))) 
-    END DO
-    
-    draws_emax_transformed(:, :2) = draws_emax_transformed(:, :2) + &
-        SPREAD(shocks_mean, 1, num_draws_emax)
-
-    DO i = 1, 2
-        draws_emax_transformed(:, i) = &
-            EXP(draws_emax_transformed(:, i))
-    END DO
-
+    ! Transform disturbances
+    CALL transform_disturbances(draws_emax_transformed, draws_emax, & 
+            shocks_cholesky, shocks_mean, num_draws_emax)
 
     ! Iterate over Monte Carlo draws
+    emax_simulated = zero_dble
     DO i = 1, num_draws_emax
 
         ! Select draws for this draw
