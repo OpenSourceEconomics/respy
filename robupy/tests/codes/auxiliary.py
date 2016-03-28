@@ -1,4 +1,4 @@
-""" Auxiliary functions for development test suite.
+""" This module contains auxiliary functions for the PYTEST suite.
 """
 
 # standard library
@@ -7,10 +7,12 @@ import numpy as np
 # ROBUPY import
 from robupy.solve.solve_auxiliary import pyth_create_state_space
 from robupy.shared.auxiliary import distribute_class_attributes
+
 from robupy import read
 
 ''' Auxiliary functions.
 '''
+
 
 def write_interpolation_grid(file_name):
     """ Write out an interpolation grid that can be used across
@@ -44,7 +46,7 @@ def write_interpolation_grid(file_name):
 
         # Draw points for interpolation
         indicators = np.random.choice(range(num_states),
-                            size=num_states - num_points, replace=False)
+            size=(num_states - num_points), replace=False)
 
         # Replace indicators
         for i in range(num_states):
@@ -71,7 +73,7 @@ def write_draws(num_periods, max_draws):
     with open('draws.txt', 'w') as file_:
         for period in range(num_periods):
             for i in range(max_draws):
-                line = ' {0:15.10f} {1:15.10f} {2:15.10f} {3:15.10f}\n'.format(
-                    *draws_standard[period, i, :])
+                fmt = ' {0:15.10f} {1:15.10f} {2:15.10f} {3:15.10f}\n'
+                line = fmt.format(*draws_standard[period, i, :])
                 file_.write(line)
 

@@ -3,22 +3,20 @@ development tests.
 """
 
 # standard library
+import statsmodels.api as sm
 import numpy as np
+
+from scipy.optimize.slsqp import _minimize_slsqp
+from scipy.optimize import approx_fprime
+from scipy.optimize import rosen_der
+from scipy.optimize import rosen
+from scipy.stats import norm
+
 import pytest
 import scipy
-import statsmodels.api as sm
-from scipy.optimize import approx_fprime
-from scipy.optimize import rosen
-from scipy.optimize import rosen_der
-from scipy.optimize.slsqp import _minimize_slsqp
-from scipy.stats import norm
 
 # testing library
 from codes.auxiliary import write_interpolation_grid
-
-from robupy import simulate
-from robupy import solve
-from robupy import read
 
 from robupy.solve.solve_auxiliary import get_payoffs
 from robupy.tests.codes.random_init import generate_init
@@ -27,8 +25,6 @@ from robupy.solve.ambiguity import get_payoffs_ambiguity
 from robupy.solve.emax import simulate_emax
 from robupy.solve.ambiguity import _divergence
 from robupy.solve.ambiguity import criterion_ambiguity
-
-from robupy.solve.solve_auxiliary import pyth_create_state_space
 
 from robupy.estimate.estimate_auxiliary import opt_get_optim_parameters
 from robupy.estimate.estimate_auxiliary import opt_get_model_parameters
@@ -49,8 +45,14 @@ from robupy.fortran.f2py_library import f2py_calculate_payoffs_systematic
 from robupy.solve.solve_auxiliary import pyth_backward_induction
 from robupy.fortran.f2py_library import f2py_backward_induction
 
+from robupy import simulate
+from robupy import solve
+from robupy import read
+
+
 ''' Main
 '''
+
 
 @pytest.mark.usefixtures('fresh_directory', 'set_seed')
 class TestClass(object):
@@ -60,8 +62,6 @@ class TestClass(object):
         """ This function compares the results from the payoff functions across
         implementations.
         """
-        # FORTRAN resources
-
         for _ in range(5):
 
             # Impose constraints
@@ -80,8 +80,7 @@ class TestClass(object):
                 mapping_state_idx, is_deterministic, is_ambiguous, \
                 periods_emax, model_paras, num_periods, states_all, \
                 num_draws_emax, edu_start, is_debug, edu_max, measure, delta,\
-                level = \
-                distribute_class_attributes(robupy_obj,
+                level = distribute_class_attributes(robupy_obj,
                     'periods_payoffs_systematic', 'states_number_period',
                     'mapping_state_idx', 'is_deterministic', 'is_ambiguous',
                     'periods_emax', 'model_paras', 'num_periods', 'states_all',
@@ -105,18 +104,18 @@ class TestClass(object):
 
                 # Extract payoffs using PYTHON and FORTRAN codes.
                 py = get_payoffs(num_draws_emax, draws_emax, period, k,
-                        payoffs_systematic, edu_max, edu_start,
-                        mapping_state_idx, states_all, num_periods,
-                        periods_emax, delta, is_debug, shocks_cov, level,
-                        is_ambiguous, measure, is_deterministic,
-                        shocks_cholesky)
+                    payoffs_systematic, edu_max, edu_start,
+                    mapping_state_idx, states_all, num_periods,
+                    periods_emax, delta, is_debug, shocks_cov, level,
+                    is_ambiguous, measure, is_deterministic,
+                    shocks_cholesky)
 
                 f90 = fort_debug.wrapper_get_payoffs(num_draws_emax,
-                        draws_emax, period, k, payoffs_systematic,
-                        edu_max, edu_start, mapping_state_idx, states_all,
-                        num_periods, periods_emax, delta, is_debug, shocks_cov,
-                        level, is_ambiguous, measure, is_deterministic,
-                        shocks_cholesky)
+                    draws_emax, period, k, payoffs_systematic,
+                    edu_max, edu_start, mapping_state_idx, states_all,
+                    num_periods, periods_emax, delta, is_debug, shocks_cov,
+                    level, is_ambiguous, measure, is_deterministic,
+                    shocks_cholesky)
 
                 # Compare returned array on expected future values, ex post
                 # payoffs, and future payoffs.
@@ -126,8 +125,6 @@ class TestClass(object):
         """ This test compares the functions calculating the payoffs under
         ambiguity.
         """
-        # FORTRAN resources
-
         # Iterate over random test cases
         for _ in range(5):
 
@@ -145,15 +142,16 @@ class TestClass(object):
             robupy_obj = solve(robupy_obj)
 
             # Extract class attributes
-            periods_payoffs_systematic, states_number_period, mapping_state_idx, \
-                is_deterministic, periods_emax, num_periods, model_paras, \
-                states_all, num_draws_emax, edu_start, edu_max, measure, \
-                delta, is_debug = \
-                distribute_class_attributes(robupy_obj,
-                    'periods_payoffs_systematic', 'states_number_period',
-                    'mapping_state_idx', 'is_deterministic', 'periods_emax',
-                    'num_periods', 'model_paras', 'states_all', 'num_draws_emax',
-                    'edu_start', 'edu_max', 'measure', 'delta', 'is_debug')
+            periods_payoffs_systematic, states_number_period, \
+                mapping_state_idx, is_deterministic, periods_emax, \
+                num_periods, model_paras, states_all, num_draws_emax, \
+                edu_start, edu_max, measure, delta, is_debug = \
+                    distribute_class_attributes(robupy_obj,
+                        'periods_payoffs_systematic', 'states_number_period',
+                        'mapping_state_idx', 'is_deterministic', 'periods_emax',
+                        'num_periods', 'model_paras', 'states_all',
+                        'num_draws_emax', 'edu_start', 'edu_max', 'measure',
+                        'delta', 'is_debug')
 
             # Auxiliary objects
             shocks_cov = model_paras['shocks_cov']
@@ -173,10 +171,10 @@ class TestClass(object):
             # Set up optimization task
             level = np.random.uniform(0.01, 1.00)
 
-            args = [num_draws_emax, draws_standard, period, k, payoffs_systematic,
-                edu_max, edu_start, mapping_state_idx, states_all, num_periods,
-                periods_emax, is_debug, delta, shocks_cov, level, measure,
-                is_deterministic, shocks_cholesky]
+            args = [num_draws_emax, draws_standard, period, k,
+                payoffs_systematic, edu_max, edu_start, mapping_state_idx,
+                states_all, num_periods, periods_emax, is_debug, delta,
+                shocks_cov, level, measure, is_deterministic, shocks_cholesky]
 
             f = fort_debug.wrapper_get_payoffs_ambiguity(*args)
             py = get_payoffs_ambiguity(*args)
@@ -187,7 +185,7 @@ class TestClass(object):
         """ This test case compares the results from the SLSQP implementations in
         PYTHON and FORTRAN for the actual optimization problem.
         """
-        # FORTRAN resources
+        # Draw random request
         maxiter = np.random.random_integers(1, 100)
         ftol = np.random.uniform(0.000000, 1e-5)
         x0 = np.random.normal(size=2)
@@ -252,10 +250,10 @@ class TestClass(object):
             py = x0
 
         f = fort_debug.wrapper_slsqp_robufort(x0, maxiter, ftol, tiny,
-                num_draws_emax, draws_standard, period, k, payoffs_systematic,
-                edu_max, edu_start, mapping_state_idx, states_all,
-                num_periods, periods_emax, delta, is_debug, shocks_cov, level,
-                shocks_cholesky)
+            num_draws_emax, draws_standard, period, k, payoffs_systematic,
+            edu_max, edu_start, mapping_state_idx, states_all, num_periods,
+            periods_emax, delta, is_debug, shocks_cov, level,
+            shocks_cholesky)
 
         # Check equality. If not equal up to the tolerance, also check
         # whether the result from the FORTRAN implementation is even better.
@@ -317,7 +315,6 @@ class TestClass(object):
         and PYTHON implementations. These tests are set up a separate test case
         due to the large setup cost to construct the ingredients for the interface.
         """
-        # FORTRAN resource
         # Generate constraint periods
         constraints = dict()
         constraints['version'] = 'PYTHON'
@@ -333,12 +330,10 @@ class TestClass(object):
         # Extract class attributes
         periods_payoffs_systematic, states_number_period, mapping_state_idx, \
         periods_emax, num_periods, states_all, num_draws_emax, edu_start, \
-        edu_max, delta, model_paras = \
-            distribute_class_attributes(robupy_obj,
-                'periods_payoffs_systematic', 'states_number_period',
-                'mapping_state_idx', 'periods_emax', 'num_periods',
-                'states_all', 'num_draws_emax', 'edu_start', 'edu_max',
-                'delta', 'model_paras')
+        edu_max, delta, model_paras = distribute_class_attributes(robupy_obj,
+            'periods_payoffs_systematic', 'states_number_period',
+            'mapping_state_idx', 'periods_emax', 'num_periods', 'states_all',
+            'num_draws_emax', 'edu_start', 'edu_max', 'delta', 'model_paras')
 
         # Auxiliary objects
         shocks_cholesky = model_paras['shocks_cholesky']
@@ -365,17 +360,17 @@ class TestClass(object):
             periods_emax, states_all, mapping_state_idx, delta,
             shocks_cholesky, shocks_mean)
 
-        f90 = fort_debug.wrapper_simulate_emax(num_periods,
-            num_draws_emax, period, k, draws_standard, payoffs_systematic,
-            edu_max, edu_start, periods_emax, states_all, mapping_state_idx,
-            delta, shocks_cholesky, shocks_mean)
+        f90 = fort_debug.wrapper_simulate_emax(num_periods, num_draws_emax,
+            period, k, draws_standard, payoffs_systematic, edu_max, edu_start,
+            periods_emax, states_all, mapping_state_idx, delta,
+            shocks_cholesky, shocks_mean)
 
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
         # Criterion function for the determination of the worst case outcomes
         args = (num_draws_emax, draws_standard, period, k, payoffs_systematic,
-                edu_max, edu_start, mapping_state_idx, states_all, num_periods,
-                periods_emax, delta, shocks_cholesky)
+            edu_max, edu_start, mapping_state_idx, states_all, num_periods,
+            periods_emax, delta, shocks_cholesky)
 
         py = criterion_ambiguity(x, *args)
         f90 = fort_debug.wrapper_criterion_ambiguity(x, *args)
@@ -385,8 +380,7 @@ class TestClass(object):
         tiny = np.random.uniform(0.000000, 0.5)
 
         py = approx_fprime(x, criterion_ambiguity, tiny, *args)
-        f90 = fort_debug.wrapper_criterion_ambiguity_derivative(x, tiny,
-            *args)
+        f90 = fort_debug.wrapper_criterion_ambiguity_derivative(x, tiny, *args)
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
     def test_6(self):
@@ -394,8 +388,6 @@ class TestClass(object):
         hand-crafted functions. In test_97() we test FORTRAN implementations
         against PYTHON intrinsic routines.
         """
-        # FORTRAN resources
-
         for _ in range(10):
 
             # Draw random request for testing purposes
@@ -457,7 +449,7 @@ class TestClass(object):
             # Check parameters
             py = results.params
             f90 = fort_debug.wrapper_get_coefficients(endog, exog, num_covars,
-                        num_agents)
+                num_agents)
             np.testing.assert_almost_equal(py, f90)
 
             # Check prediction
@@ -474,9 +466,6 @@ class TestClass(object):
         """ Compare results between FORTRAN and PYTHON of selected functions. The
         file fortran/debug_interface.f90 provides the F2PY bindings.
         """
-        # FORTRAN resource
-
-
         for _ in range(10):
 
             # Draw random requests for testing purposes.
@@ -484,7 +473,8 @@ class TestClass(object):
             dim = np.random.random_integers(1, 6)
             mean = np.random.uniform(-0.5, 0.5, (dim))
 
-            matrix = (np.random.multivariate_normal(np.zeros(dim), np.identity(dim), dim))
+            matrix = (np.random.multivariate_normal(np.zeros(dim),
+                np.identity(dim), dim))
             cov = np.dot(matrix, matrix.T)
 
             # PDF of normal distribution
@@ -535,7 +525,8 @@ class TestClass(object):
             # Random normal deviates. This only tests the interface, requires
             # visual inspection in IPYTHON notebook as well.
             fort_debug.wrapper_standard_normal(num_draws_emax)
-            fort_debug.wrapper_multivariate_normal(mean, cov, num_draws_emax, dim)
+            fort_debug.wrapper_multivariate_normal(mean, cov, num_draws_emax,
+                dim)
 
             # Clipping values below and above bounds.
             num_values = np.random.random_integers(1, 10000)
@@ -543,8 +534,8 @@ class TestClass(object):
             upper_bound = lower_bound + np.random.ranf()
             values = np.random.normal(size=num_values)
 
-            f90 = fort_debug.wrapper_get_clipped_vector(values, lower_bound, upper_bound,
-                                                 num_values)
+            f90 = fort_debug.wrapper_get_clipped_vector(values, lower_bound,
+                upper_bound, num_values)
             py = np.clip(values, lower_bound, upper_bound)
 
             np.testing.assert_almost_equal(py, f90)

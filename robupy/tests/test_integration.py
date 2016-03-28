@@ -3,10 +3,12 @@ development tests.
 """
 
 # standard library
+from pandas.util.testing import assert_frame_equal
+
 import numpy as np
 import pandas as pd
+
 import pytest
-from pandas.util.testing import assert_frame_equal
 
 # testing library
 from codes.auxiliary import write_interpolation_grid
@@ -39,8 +41,8 @@ from robupy.fortran.f2py_library import f2py_simulate
 from robupy.evaluate.evaluate_python import pyth_evaluate
 from robupy.fortran.f2py_library import f2py_evaluate
 
-from robupy.fortran.f2py_library import f2py_criterion
 from robupy.estimate.estimate_python import pyth_criterion
+from robupy.fortran.f2py_library import f2py_criterion
 
 ''' Main
 '''
@@ -100,7 +102,7 @@ class TestClass(object):
             min_idx = min(num_periods, (edu_max - edu_start + 1))
 
             max_states_period = pyth_create_state_space(num_periods, edu_start,
-                                            edu_max, min_idx)[3]
+                edu_max, min_idx)[3]
 
             # Updates to initialization dictionary that trigger a use of the
             # interpolation code.
@@ -411,10 +413,11 @@ class TestClass(object):
 
         # TODO: FORTRAN missing, first I want to settle on interface.
         args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
-                is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
-                num_periods, num_points, is_myopic, edu_start, is_debug, measure,
-                edu_max, min_idx, delta, level, data_array, num_agents, num_draws_prob,
-                shocks_cholesky, periods_draws_emax, periods_draws_prob)
+            is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
+            num_periods, num_points, is_myopic, edu_start, is_debug, measure,
+            edu_max, min_idx, delta, level, data_array, num_agents,
+            num_draws_prob, shocks_cholesky, periods_draws_emax,
+            periods_draws_prob)
 
         pyth = pyth_evaluate(*args)
         f2py = f2py_evaluate(*args)
@@ -425,10 +428,10 @@ class TestClass(object):
         x0 = opt_get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu,
             coeffs_home, shocks_cov, shocks_cholesky, is_debug)
 
-        args =(x0, is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
-        num_periods, num_points, is_myopic, edu_start, is_debug, measure,
-        edu_max, min_idx, delta, level, data_array, num_agents, num_draws_prob,
-        periods_draws_emax, periods_draws_prob)
+        args = (x0, is_deterministic, is_interpolated, num_draws_emax,
+            is_ambiguous, num_periods, num_points, is_myopic, edu_start,
+            is_debug, measure, edu_max, min_idx, delta, level, data_array,
+            num_agents, num_draws_prob, periods_draws_emax, periods_draws_prob)
 
         pyth = pyth_criterion(*args)
         f2py = f2py_criterion(*args)

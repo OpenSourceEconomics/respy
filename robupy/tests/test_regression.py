@@ -4,16 +4,15 @@
 import numpy as np
 
 import pytest
-import os
 
 # ROBUPY imports
+from robupy.shared.constants import TEST_RESOURCES_DIR
+
 from robupy import evaluate
 from robupy import simulate
 from robupy import process
 from robupy import solve
 from robupy import read
-
-from robupy.shared.constants import TEST_RESOURCES_DIR
 
 
 @pytest.mark.usefixtures('fresh_directory', 'set_seed')
@@ -100,7 +99,7 @@ class TestClass(object):
             (np.testing.assert_allclose(emax[0, 0], [val]))
 
         # Assess evaluation
-        val  = evaluate(robupy_obj, process(robupy_obj))
+        val = evaluate(robupy_obj, process(robupy_obj))
         np.testing.assert_allclose(val, 0.00)
 
     def test_3(self):
@@ -135,13 +134,13 @@ class TestClass(object):
         val = evaluate(robupy_obj, process(robupy_obj))
         np.testing.assert_allclose(val, 1.9175262133973903)
 
-    def test_5(self, versions):
+    def test_5(self):
         """ Test the solution of deterministic model without ambiguity,
         but with interpolation. As a deterministic model is requested,
         all versions should yield the same result without any additional effort.
         """
         # Solve specified economy
-        for version in versions:
+        for version in ['FORTRAN', 'PYTHON', 'F2PY']:
 
             robupy_obj = read(TEST_RESOURCES_DIR + '/test_fifth.robupy.ini')
 
@@ -162,14 +161,14 @@ class TestClass(object):
             val = evaluate(robupy_obj, process(robupy_obj))
             np.testing.assert_allclose(val, 1.0)
 
-    def test_6(self, versions):
+    def test_6(self):
         """ Test the solution of deterministic model with ambiguity and
         interpolation. This test has the same result as in the absence of
         random variation in payoffs, it does not matter whether the
         environment is ambiguous or not.
         """
         # Solve specified economy
-        for version in versions:
+        for version in ['FORTRAN', 'PYTHON', 'F2PY']:
 
             robupy_obj = read(TEST_RESOURCES_DIR + '/test_fifth.robupy.ini')
 

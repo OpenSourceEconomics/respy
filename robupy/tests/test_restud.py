@@ -63,8 +63,8 @@ def transform_robupy_to_restud(model_paras, level, edu_start, edu_max,
         for j in range(2):
             edu_coeffs += [-coeffs_edu[j + 1] / 1000]
         coeffs = edu_coeffs + [home, delta]
-        line = ' {0:10.6f} {1:10.6f} {2:10.6f} {3:10.6f}' \
-                ' {4:10.6f}\n'.format(*coeffs)
+        fmt = ' {0:10.6f} {1:10.6f} {2:10.6f} {3:10.6f} {4:10.6f}\n'
+        line = fmt.format(*coeffs)
         file_.write(line)
 
         # Write out coefficients of correlation, which need to be constructed

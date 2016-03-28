@@ -1,24 +1,18 @@
-""" Module that contains the functions for the random generation of an
-    initialization file.
+""" This module contains the functions for the generation of random requests.
 """
 
 # standard library
 import numpy as np
 
-''' Module-specific Parameters
-'''
+# module-wide variables
 MAX_AGENTS = 1000
 MAX_DRAWS = 100
 MAX_PERIODS = 5
-
-''' Public Function
-'''
 
 
 def generate_init(constraints=None):
     """ Get a random initialization file.
     """
-
     # Antibugging. This interface is using a sentinel value.
     if constraints is not None:
         assert (isinstance(constraints, dict))
@@ -29,10 +23,6 @@ def generate_init(constraints=None):
 
     # Finishing.
     return dict_
-
-
-''' Private Functions
-'''
 
 
 def generate_random_dict(constraints=None):
@@ -53,9 +43,7 @@ def generate_random_dict(constraints=None):
     dict_['BASICS']['periods'] = np.random.random_integers(1, MAX_PERIODS)
     dict_['BASICS']['delta'] = np.random.random()
 
-    # Ambiguity (with temporary constraints)
-    # TODO: When the FORTRAN code does also support the absolute measure,
-    # then a random selection needs to allow for that as well.
+    # Operationalization of ambiguity
     dict_['AMBIGUITY'] = dict()
     dict_['AMBIGUITY']['measure'] = np.random.choice(['kl'])
     dict_['AMBIGUITY']['level'] = np.random.choice([0.00, np.random.uniform()])
@@ -97,7 +85,7 @@ def generate_random_dict(constraints=None):
 
     # PROGRAM
     dict_['PROGRAM'] = {}
-    dict_['PROGRAM']['debug'] ='True'
+    dict_['PROGRAM']['debug'] = 'True'
     dict_['PROGRAM']['version'] = np.random.choice(['FORTRAN', 'F2PY',
                                                     'PYTHON'])
 
@@ -219,8 +207,10 @@ def generate_random_dict(constraints=None):
             dict_['BASICS']['delta'] = 0.0
         else:
             dict_['BASICS']['delta'] = np.random.uniform(0.1, 1.0)
-    
-# Replace discount factor
+
+    # Replace discount factor. This is option is needed in addition to
+    # is_myopic the code is run for very small levels of delta and compared
+    # against the myopic version.
     if 'delta' in constraints.keys():
         # Extract objects
         delta = constraints['delta']

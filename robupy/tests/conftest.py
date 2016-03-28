@@ -13,31 +13,6 @@ ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
 ROOT_DIR = ROOT_DIR.replace('/robupy/tests', '')
 sys.path.insert(0, ROOT_DIR)
 
-""" The following fixtures are called once per session.
-"""
-
-
-def pytest_addoption(parser):
-    """ Setup for PYTEST options.
-    """
-    parser.addoption("--versions", action="store",
-        default=['PYTHON', 'F2PY', 'FORTRAN'],
-        help="list of available versions", nargs='*')
-
-
-@pytest.fixture
-def versions(request):
-    """ Processing of command line options.
-    """
-    arg_ = request.config.getoption("--versions")
-
-    # Antibugging
-    assert (isinstance(arg_, list))
-
-    # Finishing
-    return arg_
-
-
 """ The following fixtures are called before each test.
 """
 

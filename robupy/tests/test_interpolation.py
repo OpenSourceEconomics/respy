@@ -25,10 +25,11 @@ from robupy.shared.auxiliary import distribute_class_attributes
 from robupy.shared.auxiliary import replace_missing_values
 from robupy.shared.auxiliary import create_draws
 
+import robupy.fortran.f2py_debug as fort_debug
+
 from robupy import solve
 from robupy import read
 
-import robupy.fortran.f2py_debug as fort_debug
 
 ''' Main
 '''
@@ -97,11 +98,10 @@ class TestClass(object):
 
         # Extract class attributes
         periods_payoffs_systematic, states_number_period, \
-        mapping_state_idx, is_deterministic, seed_prob, periods_emax, \
-        is_ambiguous, model_paras, num_periods, states_all, num_points, \
-        edu_start, num_draws_emax, is_debug, measure, edu_max, delta, \
-        level = \
-            distribute_class_attributes(robupy_obj,
+            mapping_state_idx, is_deterministic, seed_prob, periods_emax, \
+            is_ambiguous, model_paras, num_periods, states_all, num_points, \
+            edu_start, num_draws_emax, is_debug, measure, edu_max, delta, \
+            level = distribute_class_attributes(robupy_obj,
                 'periods_payoffs_systematic', 'states_number_period',
                 'mapping_state_idx', 'is_deterministic', 'seed_prob',
                 'periods_emax', 'is_ambiguous', 'model_paras', 'num_periods',
@@ -153,11 +153,11 @@ class TestClass(object):
         # Construct endogenous variable so that the prediction model can be
         # fitted.
         args = [period, num_periods, num_states, delta,
-                periods_payoffs_systematic, edu_max, edu_start,
-                mapping_state_idx, periods_emax, states_all, is_simulated,
-                num_draws_emax, shocks_cov, level, is_ambiguous, is_debug,
-                measure, maxe, draws_emax, is_deterministic,
-                shocks_cholesky]
+            periods_payoffs_systematic, edu_max, edu_start,
+            mapping_state_idx, periods_emax, states_all, is_simulated,
+            num_draws_emax, shocks_cov, level, is_ambiguous, is_debug,
+            measure, maxe, draws_emax, is_deterministic,
+            shocks_cholesky]
 
         py = get_endogenous_variable(*args)
         f90 = fort_debug.wrapper_get_endogenous_variable(*args)
