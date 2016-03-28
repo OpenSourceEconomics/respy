@@ -41,6 +41,7 @@ from robupy.fortran.f2py_library import f2py_simulate
 
 from robupy.evaluate.evaluate_python import pyth_evaluate
 from robupy.fortran.f2py_library import f2py_evaluate
+from robupy.fortran.fortran import fort_evaluate
 
 from robupy.estimate.estimate_python import pyth_criterion
 from robupy.fortran.f2py_library import f2py_criterion
@@ -125,7 +126,6 @@ class TestClass(object):
         base_val, base_data = None, None
 
         for version in ['PYTHON', 'F2PY', 'FORTRAN']:
-            print(version)
             robupy_obj = read('test.robupy.ini')
 
             # Modify the version of the program for the different requests.
@@ -347,17 +347,14 @@ class TestClass(object):
         num_periods, edu_start, edu_max, min_idx, model_paras, num_draws_emax, \
             seed_emax, is_debug, delta, level, is_ambiguous, measure, \
             is_interpolated, num_points, is_deterministic, is_myopic, \
-            num_agents, num_draws_prob = \
+            num_agents, num_draws_prob, seed_prob = \
                 distribute_class_attributes(robupy_obj,
                     'num_periods', 'edu_start', 'edu_max', 'min_idx',
                     'model_paras', 'num_draws_emax', 'seed_emax', 'is_debug',
                     'delta', 'level', 'is_ambiguous', 'measure',
                     'is_interpolated', 'num_points', 'is_deterministic',
-                    'is_myopic', 'num_agents', 'num_draws_prob')
+                    'is_myopic', 'num_agents', 'num_draws_prob', 'seed_prob')
 
-        # TODO: Align interfaces, the problems is the treatment of
-        # shocks_cholesky. It is passed in as argument in PY/F2PY but
-        # computed internally by FORTRAN.
         # Write out random components and interpolation grid to align the
         # three implementations.
         max_draws = max(num_agents, num_draws_emax, num_draws_prob)
@@ -372,21 +369,15 @@ class TestClass(object):
 
         # Check the full solution procedure
         measure = 'kl'
-        args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
+        base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
             is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
-            num_periods, num_points, is_myopic, edu_start,
-            is_debug, measure, edu_max, min_idx, delta, level, seed_emax)
+            num_periods, num_points, is_myopic, edu_start, is_debug, measure,
+            edu_max, min_idx, delta, level)
 
-        fort = fort_solve(*args)
+        fort = fort_solve(*base_args + (seed_emax,))
+        pyth = pyth_solve(*base_args + (periods_draws_emax,))
+        f2py = f2py_solve(*base_args + (periods_draws_emax, max_states_period))
 
-        args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
-            is_deterministic, is_interpolated, num_draws_emax,
-            is_ambiguous, num_periods, num_points, is_myopic, edu_start,
-            is_debug, measure, edu_max, min_idx, delta, level,
-            periods_draws_emax)
-
-        pyth = pyth_solve(*args)
-        f2py = f2py_solve(*args + (max_states_period,))
         for alt in [f2py, fort]:
             for i in range(5):
                 np.testing.assert_allclose(pyth[i], alt[i])
@@ -407,27 +398,35 @@ class TestClass(object):
 
         data_array = pyth
 
-        # TODO: FORTRAN missing, first I want to settle on interface.
-        args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
-            is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
+        base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
+            is_deterministic, is_interpolated, num_draws_emax,is_ambiguous,
             num_periods, num_points, is_myopic, edu_start, is_debug, measure,
             edu_max, min_idx, delta, level, data_array, num_agents,
-            num_draws_prob, periods_draws_emax, periods_draws_prob)
+            num_draws_prob)
 
+        args = base_args + (seed_emax, seed_prob)
+        fort = fort_evaluate(*args)
+
+        args = base_args + (periods_draws_emax, periods_draws_prob)
         pyth = pyth_evaluate(*args)
+
+        args = base_args + (periods_draws_emax, periods_draws_prob)
         f2py = f2py_evaluate(*args)
 
-        np.testing.assert_allclose(pyth, f2py)
+        for alt in [f2py, fort]:
+            np.testing.assert_allclose(pyth, alt)
 
+        #
+        # TODO: Account for the evaluation of the criterion function.
         # Evaluation of criterion function
-        x0 = opt_get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu,
-            coeffs_home, shocks_cov, shocks_cholesky, is_debug)
-
-        args = (x0, is_deterministic, is_interpolated, num_draws_emax,
-            is_ambiguous, num_periods, num_points, is_myopic, edu_start,
-            is_debug, measure, edu_max, min_idx, delta, level, data_array,
-            num_agents, num_draws_prob, periods_draws_emax, periods_draws_prob)
-
+        # x0 = opt_get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu,
+        #     coeffs_home, shocks_cov, shocks_cholesky, is_debug)
+        #
+        # args = (x0, is_deterministic, is_interpolated, num_draws_emax,
+        #     is_ambiguous, num_periods, num_points, is_myopic, edu_start,
+        #     is_debug, measure, edu_max, min_idx, delta, level, data_array,
+        #     num_agents, num_draws_prob, periods_draws_emax, periods_draws_prob)
+        #
         #pyth = pyth_criterion(*args)
         #f2py = f2py_criterion(*args)
         #np.testing.assert_allclose(pyth, f2py)
