@@ -1,14 +1,12 @@
 # standard library
-import pandas as pd
 import numpy as np
+
 import logging
+logger = logging.getLogger('ROBUPY_SIMULATE')
 
 # project library
-
 from robupy.shared.constants import MISSING_FLOAT
 from robupy.shared.auxiliary import get_total_value
-
-logger = logging.getLogger('ROBUPY_SIMULATE')
 
 
 ''' Main function

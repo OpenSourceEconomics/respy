@@ -9,6 +9,7 @@ import logging
 import pandas as pd
 logger = logging.getLogger('ROBUPY_SIMULATE')
 
+
 def write_info(robupy_obj, data_frame):
     """ Write information about the simulated economy.
     """
@@ -118,6 +119,7 @@ def _format_integer(x):
     else:
         return '{0:<5}'.format(int(x))
 
+
 def get_estimation_vector(model_paras):
     """ Construct the vector estimation arguments.
     """
@@ -148,7 +150,6 @@ def get_estimation_vector(model_paras):
     return vector
 
 
-
 def start_logging():
     """ Initialize logging setup for the solution of the model.
     """
@@ -165,6 +166,7 @@ def start_logging():
     logger.setLevel(logging.INFO)
 
     logger.addHandler(handler)
+
 
 def stop_logging():
     """ Ensure orderly shutdown of logging capabilities.
