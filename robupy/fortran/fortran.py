@@ -32,9 +32,9 @@ def fort_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
     # the ROBUFORT initialization file.
     args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
             is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
-            num_periods, num_points, is_myopic, edu_start, is_debug, seed_emax,
-             min_idx, measure, edu_max, delta, level,
-            num_draws_prob, num_agents, seed_prob, 'evaluate')
+            num_periods, num_points, is_myopic, edu_start, is_debug,
+            min_idx, measure, edu_max, delta, level,
+            num_draws_prob, num_agents, seed_prob, seed_emax, 'evaluate')
 
     write_robufort_initialization(*args)
 
@@ -63,9 +63,9 @@ def fort_solve(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
 
     args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
             is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
-            num_periods, num_points, is_myopic, edu_start, is_debug, seed_emax,
-            min_idx, measure, edu_max, delta, level,
-            1, 1, 1, 'solve')
+            num_periods, num_points, is_myopic, edu_start, is_debug, min_idx,
+            measure, edu_max, delta, level,
+            1, 1, 1, seed_emax, 'solve')
 
     write_robufort_initialization(*args)
 
