@@ -36,7 +36,7 @@ def distribute_input_arguments(parser):
     assert (os.path.exists(init_file))
 
     if resume:
-        assert (os.path.exists('steps_paras.robupy.log'))
+        assert (os.path.exists('paras_steps.robupy.log'))
 
     # Finishing
     return resume, single, init_file
@@ -55,7 +55,7 @@ def estimate_wrapper(resume, single, init_file):
     # Update parametrization of the model if resuming from a previous
     # estimation run.
     if resume:
-        x0 = np.genfromtxt('steps_paras.robupy.log')
+        x0 = np.genfromtxt('paras_steps.robupy.log')
         args = opt_get_model_parameters(x0, True)[:-1]
         robupy_obj.update_model_paras(*args)
 
