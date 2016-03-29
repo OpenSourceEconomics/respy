@@ -6,6 +6,13 @@
 import pytest
 import os
 
+# Build the package
+os.chdir('robupy')
+
+os.system('./waf configure build')
+
+os.chdir('../')
+
 # If the script is run on TRAVIS-CI, then I need to create a link to F2PY3. So
 # far I was unable to figure out why that is the case.
 if 'TRAVIS' in os.environ.keys():
