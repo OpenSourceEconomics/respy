@@ -127,15 +127,15 @@ def _process_standard(list_, dict_, keyword):
         dict_[keyword][name] = []
 
     # Type conversion
-    if name in ['agents', 'periods', 'start', 'max', 'draws', 'seed', 'points']:
+    if name in ['agents', 'periods', 'start', 'max', 'draws',
+        'seed', 'points', 'maxiter']:
         val = int(val)
     elif name in ['measure', 'file']:
         val = str(val)
     elif name in ['debug', 'store', 'apply']:
         assert (val.upper() in ['TRUE', 'FALSE'])
         val = (val.upper() == 'TRUE')
-    elif name in ['version']:
-        assert (val.upper() in ['FORTRAN', 'F2PY', 'PYTHON'])
+    elif name in ['version', 'optimizer']:
         val = val.upper()
     else:
         val = float(val)

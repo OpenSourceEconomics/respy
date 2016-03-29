@@ -3,22 +3,17 @@ function.
 """
 
 # standard library
-from scipy.optimize import minimize
 
 
 # project library
 from robupy.estimate.estimate_auxiliary import opt_get_optim_parameters
-from robupy.estimate.estimate_auxiliary import logging_optimization
 from robupy.estimate.estimate_auxiliary import check_input
-
-from robupy.estimate.estimate_python import pyth_criterion
 
 from robupy.shared.auxiliary import distribute_class_attributes
 from robupy.shared.auxiliary import distribute_model_paras
 from robupy.shared.auxiliary import create_draws
 
-from robupy.fortran.f2py_library import f2py_criterion
-
+from robupy.estimate.estimate_wrapper import OptimizationClass
 ''' Main function
 '''
 
@@ -32,14 +27,15 @@ def estimate(robupy_obj, data_frame):
     model_paras, num_periods, num_agents, edu_start, seed_data, \
         is_debug, file_sim, edu_max, delta, num_draws_prob, seed_prob, \
         num_draws_emax, seed_emax, level, measure, min_idx, is_ambiguous, \
-        is_deterministic, is_myopic, is_interpolated, num_points, version = \
+        is_deterministic, is_myopic, is_interpolated, num_points, version, \
+        maxiter, optimizer = \
             distribute_class_attributes(robupy_obj,
                 'model_paras', 'num_periods', 'num_agents', 'edu_start',
                 'seed_data', 'is_debug', 'file_sim', 'edu_max', 'delta',
                 'num_draws_prob', 'seed_prob', 'num_draws_emax', 'seed_emax',
                 'level', 'measure', 'min_idx', 'is_ambiguous',
                 'is_deterministic', 'is_myopic', 'is_interpolated',
-                'num_points', 'version')
+                'num_points', 'version', 'maxiter', 'optimizer')
 
     # Auxiliary objects
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, shocks_cholesky = \
@@ -56,32 +52,37 @@ def estimate(robupy_obj, data_frame):
     x0 = opt_get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         shocks_cov, shocks_cholesky, is_debug)
 
-    # Start logging
-    x0[0] = 0.25
-
     data_array = data_frame.as_matrix()
 
-    # Collect arguments for optimization
+    # Collect arguments that are required for the criterion function. These
+    # must be in the correct order already.
     args = (is_deterministic, is_interpolated, num_draws_emax,is_ambiguous,
         num_periods, num_points, is_myopic, edu_start, is_debug, measure,
         edu_max, min_idx, delta, level, data_array, num_agents,
         num_draws_prob, periods_draws_emax, periods_draws_prob)
 
-    if version == 'PYTHON':
-        crit_val = pyth_criterion(x0, *args)
-    elif version in ['F2PY', 'FORTRAN']:
-        crit_val = f2py_criterion(x0, *args)
-    else:
-        raise NotImplementedError
+    # Setup optimization class, which handles all the details depending on the
+    # request.
+    opt_obj = OptimizationClass()
 
-    logging_optimization('start', crit_val, x0)
+    opt_obj.set_attr('args', args)
 
-    optimizer_args = dict()
-    optimizer_args['maxiter'] = 0
-    optimizer_args['maxfun'] = 1
+    opt_obj.set_attr('optimizer', optimizer)
 
-    #minimize(pyth_criterion, x0, method='BFGS', args=args,
-    #    options=optimizer_args)
+    opt_obj.set_attr('version', version)
+
+    opt_obj.set_attr('maxiter', maxiter)
+
+    opt_obj.lock()
+
+    # Perform optimization.
+    x, fval = opt_obj.optimize(x0)
+
+    print(x)
+
+
+
+
 
 
 

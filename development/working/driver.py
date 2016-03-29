@@ -25,13 +25,15 @@ from robupy import simulate, read, solve, process, evaluate, estimate
 robupy_obj = read('test.robupy.ini')
 
 # First, I simulate a dataset.
+print('starting to solve')
 robupy_obj = solve(robupy_obj)
 
-val = robupy_obj.get_attr('periods_emax')[0, 0]
+#val = robupy_obj.get_attr('periods_emax')[0, 0]
 #np.testing.assert_allclose(1.4963828613937988, val)
 
+print('starting to simulate')
 simulate(robupy_obj)
-
+print('starting to estimate')
 estimate(robupy_obj, process(robupy_obj))
 
 #val = evaluate(robupy_obj, process(robupy_obj))

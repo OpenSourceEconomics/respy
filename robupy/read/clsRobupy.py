@@ -57,6 +57,8 @@ class RobupyCls(object):
 
         self.attr['edu_start'] = None
 
+        self.attr['optimizer'] = None
+
         self.attr['is_debug'] = None
 
         self.attr['file_sim'] = None
@@ -68,6 +70,8 @@ class RobupyCls(object):
         self.attr['version'] = None
 
         self.attr['measure'] = None
+
+        self.attr['maxiter'] = None
 
         self.attr['delta'] = None
 
@@ -235,11 +239,15 @@ class RobupyCls(object):
 
         self.attr['num_points'] = init_dict['INTERPOLATION']['points']
 
+        self.attr['optimizer'] = init_dict['ESTIMATION']['optimizer']
+
         self.attr['num_draws_emax'] = init_dict['SOLUTION']['draws']
 
         self.attr['num_agents'] = init_dict['SIMULATION']['agents']
 
         self.attr['num_periods'] = init_dict['BASICS']['periods']
+
+        self.attr['maxiter'] = init_dict['ESTIMATION']['maxiter']
 
         self.attr['measure'] = init_dict['AMBIGUITY']['measure']
 
@@ -355,6 +363,8 @@ class RobupyCls(object):
 
         seed_emax = self.attr['seed_emax']
 
+        optimizer = self.attr['optimizer']
+
         is_debug = self.attr['is_debug']
 
         measure = self.attr['measure']
@@ -362,6 +372,8 @@ class RobupyCls(object):
         edu_max = self.attr['edu_max']
 
         version = self.attr['version']
+
+        maxiter = self.attr['maxiter']
 
         delta = self.attr['delta']
 
@@ -447,6 +459,13 @@ class RobupyCls(object):
         # Simulation of S-ML
         assert (isinstance(num_draws_prob, int))
         assert (num_draws_prob > 0)
+
+        # Maximum number of iterations
+        assert (isinstance(maxiter, int))
+        assert (maxiter >= 0)
+
+        # Optimizers
+        assert (optimizer in ['SCIPY-BFGS', 'SCIPY-POWELL'])
 
     def _check_integrity_results(self):
         """ This methods check the integrity of the results.

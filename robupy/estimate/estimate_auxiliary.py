@@ -25,44 +25,6 @@ def check_input(robupy_obj, data_frame):
     # Finishing
     return True
 
-def logging_optimization(which, *args):
-
-    if which == 'start':
-
-        crit_val, x0 = args
-
-        info = np.array(np.array([0, crit_val]))
-
-        np.savetxt(open('.optimization.robupy.scratch', 'wb'), info)
-
-        with open('optimization.robupy.log', 'w') as out_file:
-            out_file.write('STEP  {0:<5}'.format(0))
-            out_file.write('VALUE {0:15.8f}\n\n'.format(crit_val))
-
-        np.savetxt(open('.optimization.robupy.scratch', 'wb'), info)
-        np.savetxt(open('start_paras.robupy.log', 'wb'), x0, fmt='%15.8f')
-
-
-    elif which == 'step':
-
-        crit_val, x = args
-
-        info = np.genfromtxt('.optimization.robupy.scratch')
-        current_num_step = int(info[0])
-        current_crit_val = info[1]
-
-        is_step = crit_val < current_crit_val
-
-        if is_step:
-
-            with open('optimization.robupy.log', 'a') as out_file:
-                out_file.write('STEP  {0:<5}'.format(current_num_step + 1))
-                out_file.write('VALUE {0:15.8f}\n\n'.format(crit_val))
-
-            np.savetxt(open('step_paras.robupy.log', 'wb'), x, fmt='%15.8f')
-
-            info = np.array(np.array([current_num_step + 1, crit_val]))
-            np.savetxt(open('.optimization.robupy.scratch', 'wb'), info)
 
 def opt_get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         shocks_cov, shocks_cholesky, is_debug):
