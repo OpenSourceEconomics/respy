@@ -7,11 +7,8 @@ well-organized code without any loss of performance.
 
 # standard library
 import shutil
-import shlex
-import copy
 import os
 
-# module-wide variables
 DEBUG_OPTIONS = ' -O2 -fimplicit-none  -Wall -Wline-truncation' \
                 ' -Wcharacter-truncation  -Wsurprising  -Waliasing' \
                 ' -Wimplicit-interface  -Wunused-parameter  -fwhole-file' \

@@ -1,15 +1,16 @@
 
 # standard library
 import logging
+import pytest
 import sys
-import os
 
 # Package structure
-from robupy.simulate import simulate
-from robupy.evaluate import evaluate
-from robupy.process import process
-from robupy.solve import solve
-from robupy.read import read
+from robupy.estimate.estimate import estimate
+from robupy.simulate.simulate import simulate
+from robupy.evaluate.evaluate import evaluate
+from robupy.process.process import process
+from robupy.solve.solve import solve
+from robupy.read.read import read
 
 # Check for Python 3
 if not (sys.version_info[0] == 3):
@@ -23,15 +24,9 @@ if not (sys.version_info[0] == 3):
 def test():
     """ Run nose tester for the package.
     """
-    base = os.getcwd()
 
-    os.chdir(os.path.dirname(os.path.realpath(__file__)))
+    pytest.main('--cov=robupy -v')
 
-    os.chdir('tests')
-
-    os.system('nosetests tests.py')
-
-    os.chdir(base)
 
 
 """ Set up logging.

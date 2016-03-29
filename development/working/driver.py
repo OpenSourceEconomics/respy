@@ -1,45 +1,42 @@
 #!/usr/bin/env python
-""" I use this module to acquaint myself with the interpolation scheme
-proposed in Keane & Wolpin (1994).
+""" I will now try to run some estimations.
 """
 
+
 # standard library
-from scipy.stats import norm
-
 import numpy as np
-
-import scipy
+from scipy.optimize import minimize
 import sys
 import os
 
-# PYTHONPATH
-sys.path.insert(0, os.environ['ROBUPY'] + '/development/tests')
+# ROOT DIRECTORY
 sys.path.insert(0, os.environ['ROBUPY'])
+# ROOT DIRECTORY
+ROOT_DIR = os.environ['ROBUPY']
+ROOT_DIR = ROOT_DIR + '/robupy/tests'
 
-# RobuPy library
-from robupy import simulate
-from robupy import evaluate
-from robupy import read
-from robupy import solve
+sys.path.insert(0, ROOT_DIR)
 
+# testing codes
 
-from material.auxiliary import write_disturbances
-
-
-print('not recompiling')
-#build_robupy_package(False)
-
-np.random.seed(123)
-
-robupy_obj = read('test.robupy.ini')
-
-num_periods = robupy_obj.get_attr('num_periods')
-max_draws = 1000
-write_disturbances(num_periods, max_draws)
+from robupy import simulate, read, solve, process, evaluate, estimate
 
 
+robupy_obj = read('model.robupy.ini')
+
+# First, I simulate a dataset.
+print('starting to solve')
 robupy_obj = solve(robupy_obj)
 
-data_frame = simulate(robupy_obj)
+#val = robupy_obj.get_attr('periods_emax')[0, 0]
+#np.testing.assert_allclose(1.4963828613937988, val)
 
-print(evaluate(robupy_obj, data_frame))
+print('starting to simulate')
+simulate(robupy_obj)
+#print('starting to estimate')
+#äestimate(robupy_obj, process(robupy_obj))
+
+#val = evaluate(robupy_obj, process(robupy_obj))
+#np.testing.assert_allclose(2.992618550039753, val)
+
+

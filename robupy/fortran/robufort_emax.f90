@@ -23,19 +23,17 @@ MODULE robufort_emax
 CONTAINS
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, payoffs_future, &
-                num_periods, num_draws_emax, period, k, & 
-                disturbances_relevant_emax, payoffs_systematic, edu_max, & 
-                edu_start, periods_emax, states_all, mapping_state_idx, delta)
+SUBROUTINE simulate_emax(emax_simulated, num_periods, num_draws_emax, period, & 
+                k, draws_emax, payoffs_systematic, edu_max, edu_start, & 
+                periods_emax, states_all, mapping_state_idx, delta, & 
+                shocks_cholesky, shocks_mean)
 
     !/* external objects    */
 
-    REAL(our_dble), INTENT(OUT)     :: payoffs_ex_post(:)
-    REAL(our_dble), INTENT(OUT)     :: payoffs_future(:)
     REAL(our_dble), INTENT(OUT)     :: emax_simulated
 
-    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:,:,:,:,:)
-    INTEGER(our_int), INTENT(IN)    :: states_all(:,:,:)
+    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:, :, :, :, :)
+    INTEGER(our_int), INTENT(IN)    :: states_all(:, :, :)
     INTEGER(our_int), INTENT(IN)    :: num_draws_emax
     INTEGER(our_int), INTENT(IN)    :: num_periods
     INTEGER(our_int), INTENT(IN)    :: edu_start
@@ -43,39 +41,44 @@ SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, payoffs_future, &
     INTEGER(our_int), INTENT(IN)    :: period
     INTEGER(our_int), INTENT(IN)    :: k
 
-    REAL(our_dble), INTENT(IN)      :: disturbances_relevant_emax(:,:)
     REAL(our_dble), INTENT(IN)      :: payoffs_systematic(:)
-    REAL(our_dble), INTENT(IN)      :: periods_emax(:,:)
+    REAL(our_dble), INTENT(IN)      :: shocks_cholesky(:, :)
+    REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
+    REAL(our_dble), INTENT(IN)      :: draws_emax(:, :)
+    REAL(our_dble), INTENT(IN)      :: shocks_mean(:)
+
     REAL(our_dble), INTENT(IN)      :: delta
 
     !/* internals objects    */
 
     INTEGER(our_int)                :: i
 
+    REAL(our_dble)                  :: draws_emax_transformed(num_draws_emax, 4)
     REAL(our_dble)                  :: total_payoffs(4)
-    REAL(our_dble)                  :: disturbances(4)
+    REAL(our_dble)                  :: draws(4)
     REAL(our_dble)                  :: maximum
 
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
 
-    ! Initialize containers
-    payoffs_ex_post = zero_dble
-    emax_simulated = zero_dble
+    ! Transform disturbances
+    CALL transform_disturbances(draws_emax_transformed, draws_emax, & 
+            shocks_cholesky, shocks_mean, num_draws_emax)
 
     ! Iterate over Monte Carlo draws
+    emax_simulated = zero_dble
     DO i = 1, num_draws_emax
 
-        ! Select disturbances for this draw
-        disturbances = disturbances_relevant_emax(i, :)
+        ! Select draws for this draw
+        draws = draws_emax_transformed(i, :)
 
         ! Calculate total value
-        CALL get_total_value(total_payoffs, payoffs_ex_post, payoffs_future, &
-                period, num_periods, delta, payoffs_systematic, disturbances, &
+        CALL get_total_value(total_payoffs, &
+                period, num_periods, delta, payoffs_systematic, draws, &
                 edu_max, edu_start, mapping_state_idx, periods_emax, k, & 
                 states_all)
-        
+   
         ! Determine optimal choice
         maximum = MAXVAL(total_payoffs)
 
@@ -90,10 +93,9 @@ SUBROUTINE simulate_emax(emax_simulated, payoffs_ex_post, payoffs_future, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE get_total_value(total_payoffs, payoffs_ex_post, payoffs_future, &
-                period, num_periods, delta, payoffs_systematic, & 
-                disturbances, edu_max, edu_start, mapping_state_idx, & 
-                periods_emax, k, states_all)
+SUBROUTINE get_total_value(total_payoffs, period, num_periods, delta, & 
+                payoffs_systematic, draws, edu_max, edu_start, & 
+                mapping_state_idx, periods_emax, k, states_all)
 
     !   Development Note:
     !   
@@ -102,8 +104,6 @@ SUBROUTINE get_total_value(total_payoffs, payoffs_ex_post, payoffs_future, &
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(OUT)     :: payoffs_ex_post(:)
-    REAL(our_dble), INTENT(OUT)     :: payoffs_future(:)
     REAL(our_dble), INTENT(OUT)     :: total_payoffs(:)
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:, :, :, :, :)
@@ -116,8 +116,14 @@ SUBROUTINE get_total_value(total_payoffs, payoffs_ex_post, payoffs_future, &
 
     REAL(our_dble), INTENT(IN)      :: payoffs_systematic(:)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
-    REAL(our_dble), INTENT(IN)      :: disturbances(:)
+    REAL(our_dble), INTENT(IN)      :: draws(:)
     REAL(our_dble), INTENT(IN)      :: delta
+
+    !/* internal objects        */
+
+    REAL(our_dble)                  :: payoffs_future(4)
+    REAL(our_dble)                  :: payoffs_ex_post(4)
+
     
 !-------------------------------------------------------------------------------
 ! Algorithm
@@ -127,10 +133,10 @@ SUBROUTINE get_total_value(total_payoffs, payoffs_ex_post, payoffs_future, &
     payoffs_ex_post = zero_dble
 
     ! Calculate ex post payoffs
-    payoffs_ex_post(1) = payoffs_systematic(1) * disturbances(1)
-    payoffs_ex_post(2) = payoffs_systematic(2) * disturbances(2)
-    payoffs_ex_post(3) = payoffs_systematic(3) + disturbances(3)
-    payoffs_ex_post(4) = payoffs_systematic(4) + disturbances(4)
+    payoffs_ex_post(1) = payoffs_systematic(1) * draws(1)
+    payoffs_ex_post(2) = payoffs_systematic(2) * draws(2)
+    payoffs_ex_post(3) = payoffs_systematic(3) + draws(3)
+    payoffs_ex_post(4) = payoffs_systematic(4) + draws(4)
 
     ! Get future values
     IF (period .NE. (num_periods - one_int)) THEN
@@ -142,7 +148,6 @@ SUBROUTINE get_total_value(total_payoffs, payoffs_ex_post, payoffs_future, &
 
     ! Calculate total utilities
     total_payoffs = payoffs_ex_post + delta * payoffs_future
-
 
     ! This is required to ensure that the agent does not choose any
     ! inadmissible states.
@@ -243,10 +248,8 @@ SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, &
     !/* internal objects        */
 
     REAL(our_dble)                      :: payoffs_systematic(4)
-    REAL(our_dble)                      :: expected_values(4)
-    REAL(our_dble)                      :: payoffs_ex_post(4)
-    REAL(our_dble)                      :: payoffs_future(4)
-    REAL(our_dble)                      :: deviations(4)
+    REAL(our_dble)                      :: total_payoffs(4)
+    REAL(our_dble)                      :: diff(4)
 
     INTEGER(our_int)                    :: k
 
@@ -261,29 +264,29 @@ SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, &
 
         payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
-        CALL get_total_value(expected_values, payoffs_ex_post, payoffs_future, &
+        CALL get_total_value(total_payoffs, &
                 period, num_periods, delta, payoffs_systematic, shifts, &
                 edu_max, edu_start, mapping_state_idx, periods_emax, k, &
                 states_all)
 
         ! Treatment of inadmissible states, which will show up in the regression 
         ! in some way
-        is_inadmissible = (payoffs_future(3) == -HUGE_FLOAT)
+        is_inadmissible = (total_payoffs(3) == -HUGE_FLOAT)
 
         IF (is_inadmissible) THEN
 
-            expected_values(3) = interpolation_inadmissible_states
+            total_payoffs(3) = interpolation_inadmissible_states
 
         END IF
 
         ! Implement level shifts
-        maxe(k + 1) = MAXVAL(expected_values)
+        maxe(k + 1) = MAXVAL(total_payoffs)
 
-        deviations = maxe(k + 1) - expected_values
+        diff = maxe(k + 1) - total_payoffs
 
         ! Construct regressors
-        independent_variables(k + 1, 1:4) = deviations
-        independent_variables(k + 1, 5:8) = DSQRT(deviations)
+        independent_variables(k + 1, 1:4) = diff
+        independent_variables(k + 1, 5:8) = DSQRT(diff)
 
     END DO
 

@@ -35,18 +35,15 @@ def remove_nuisances():
 
     for root, dir_, file_names in os.walk('.'):
 
-        for filename in fnmatch.filter(dir_, '__pycache__'):
-            matches.append(os.path.join(root, filename))
-
-        for filename in fnmatch.filter(dir_, '.cache'):
-            matches.append(os.path.join(root, filename))
-
-        for filename in fnmatch.filter(dir_, 'build'):
-            matches.append(os.path.join(root, filename))
+        # Cleanup of directories
+        for name in ['__pycache__', '.cache', 'build', '.eggs',
+            'robupy.egg-info']:
+            for filename in fnmatch.filter(dir_, name):
+                matches.append(os.path.join(root, filename))
 
         for file_types in ['*.robupy.*', '.lock-waf_linux_build',
                            '*.so', '.coverage', '*.txt', '.write_out',
-                           'dp3asim', '*.o', '*.tmp']:
+                           'dp3asim', '*.o', '*.tmp', '*.pyc']:
 
             for filename in fnmatch.filter(file_names, file_types):
                 matches.append(os.path.join(root, filename))
@@ -55,6 +52,10 @@ def remove_nuisances():
 
         if 'ini' in file_:
             continue
+
+        if 'opt' in file_:
+            continue
+
 
         if 'restud/simulation' in file_:
             continue

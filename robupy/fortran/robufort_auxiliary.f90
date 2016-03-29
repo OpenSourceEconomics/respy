@@ -13,6 +13,43 @@ MODULE robufort_auxiliary
 CONTAINS
 !*******************************************************************************
 !*******************************************************************************
+SUBROUTINE transform_disturbances(draws_emax_transformed, draws_emax, & 
+                shocks_cholesky, shocks_mean, num_draws_emax)
+
+    !/* external objects        */
+
+    REAL(our_dble), INTENT(OUT)     :: draws_emax_transformed(:, :)
+
+    REAL(our_dble), INTENT(IN)      :: shocks_cholesky(:, :)
+    REAL(our_dble), INTENT(IN)      :: draws_emax(:, :)
+    REAL(our_dble), INTENT(IN)      :: shocks_mean(:)
+
+    INTEGER, INTENT(IN)             :: num_draws_emax
+
+    !/* internal objects        */
+
+    INTEGER(our_int)                :: i
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+    
+    DO i = 1, num_draws_emax
+        draws_emax_transformed(i:i, :) = &
+            TRANSPOSE(MATMUL(shocks_cholesky, TRANSPOSE(draws_emax(i:i, :)))) 
+    END DO
+    
+    draws_emax_transformed(:, :2) = draws_emax_transformed(:, :2) + &
+        SPREAD(shocks_mean, 1, num_draws_emax)
+
+    DO i = 1, 2
+        draws_emax_transformed(:, i) = EXP(draws_emax_transformed(:, i))
+    END DO
+
+
+END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE get_predictions(predictions, endogenous, exogenous, maxe, & 
               is_simulated, num_points, num_states)
 
@@ -126,8 +163,8 @@ SUBROUTINE random_choice(sample, candidates, num_candidates, num_points)
 
     INTEGER, INTENT(OUT)          :: sample(:)
 
-    INTEGER, INTENT(IN)           :: candidates(:)
     INTEGER, INTENT(IN)           :: num_candidates
+    INTEGER, INTENT(IN)           :: candidates(:)
     INTEGER, INTENT(IN)           :: num_points
 
     !/* internal objects    */
@@ -215,6 +252,7 @@ SUBROUTINE logging_solution(indicator, period, num_states)
     !/* external objects        */
 
     INTEGER(our_int), INTENT(IN)            :: indicator
+
     INTEGER(our_int), INTENT(IN), OPTIONAL  :: num_states
     INTEGER(our_int), INTENT(IN), OPTIONAL  :: period
 
@@ -814,7 +852,7 @@ FUNCTION pinv(A, m)
     INTEGER(our_int)                :: i
 
     REAL(our_dble)                  :: VT(m, m)
-    REAL(our_dble)                  :: UT(m,m) 
+    REAL(our_dble)                  :: UT(m, m) 
     REAL(our_dble)                  :: U(m, m)
     REAL(our_dble)                  :: cutoff
     REAL(our_dble)                  :: S(m) 
@@ -860,7 +898,7 @@ SUBROUTINE cholesky(factor, matrix)
 
     REAL(our_dble), INTENT(OUT)     :: factor(:,:)
 
-    REAL(our_dble), INTENT(IN)      :: matrix(:,:)
+    REAL(our_dble), INTENT(IN)      :: matrix(:, :)
 
     !/* internal objects        */
 
@@ -877,6 +915,9 @@ SUBROUTINE cholesky(factor, matrix)
 ! Algorithm
 !-------------------------------------------------------------------------------
     
+    ! Initialize result
+    factor = zero_dble
+
     ! Auxiliary objects
     n = size(matrix,1)
    
@@ -904,11 +945,11 @@ SUBROUTINE cholesky(factor, matrix)
 
         DO k = 1, (j - 1)
 
-          sums = sums + clon(j, k)*clon(i, k)
+          sums = sums + clon(j, k) * clon(i, k)
 
         END DO
 
-        clon(i, j) = (clon(i, j) - sums)/clon(j, j)
+        clon(i, j) = (clon(i, j) - sums) / clon(j, j)
 
       END DO
     
@@ -1063,9 +1104,9 @@ SUBROUTINE get_clipped_vector(Y, X, lower_bound, upper_bound, num_values)
 
     REAL(our_dble), INTENT(INOUT)       :: Y(:)
 
-    REAL(our_dble), INTENT(IN)          :: X(:)
     REAL(our_dble), INTENT(IN)          :: lower_bound
     REAL(our_dble), INTENT(IN)          :: upper_bound
+    REAL(our_dble), INTENT(IN)          :: X(:)
     
     INTEGER(our_int), INTENT(IN)        :: num_values
 
@@ -1106,7 +1147,7 @@ SUBROUTINE point_predictions(Y, X, coeffs, num_agents)
     REAL(our_dble), INTENT(OUT)     :: Y(:)
 
     REAL(our_dble), INTENT(IN)      :: coeffs(:)
-    REAL(our_dble), INTENT(IN)      :: X(:,:)
+    REAL(our_dble), INTENT(IN)      :: X(:, :)
     
     INTEGER(our_int), INTENT(IN)    :: num_agents
 

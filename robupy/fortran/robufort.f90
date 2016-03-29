@@ -17,10 +17,9 @@ MODULE robufort_extension
 CONTAINS
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE store_results(mapping_state_idx, states_all, & 
-                periods_payoffs_ex_post, periods_payoffs_systematic, & 
-                states_number_period, periods_emax, num_periods, min_idx, & 
-                eval, request) 
+SUBROUTINE store_results(mapping_state_idx, states_all, &
+                periods_payoffs_systematic, states_number_period, & 
+                periods_emax, num_periods, min_idx, crit_val, request) 
 
     !/* external objects        */
 
@@ -32,9 +31,8 @@ SUBROUTINE store_results(mapping_state_idx, states_all, &
     INTEGER(our_int), INTENT(IN)    :: min_idx 
 
     REAL(our_dble), INTENT(IN)      :: periods_payoffs_systematic(:, :, :)
-    REAL(our_dble), INTENT(IN)      :: periods_payoffs_ex_post(:, :, :)    
     REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
-    REAL(our_dble), INTENT(IN)      :: eval
+    REAL(our_dble), INTENT(IN)      :: crit_val
 
     CHARACTER(10), INTENT(IN)       :: request
 
@@ -54,100 +52,89 @@ SUBROUTINE store_results(mapping_state_idx, states_all, &
     ! from the solution level.
     max_states_period = MAXVAL(states_number_period)
 
-    ! Write out results for the store results.
-    1800 FORMAT(5(1x,i5))
+    IF (request == 'solve') THEN
 
-    OPEN(UNIT=1, FILE='.mapping_state_idx.robufort.dat')
+        ! Write out results for the store results.
+        1800 FORMAT(5(1x,i5))
 
-    DO period = 1, num_periods
-        DO i = 1, num_periods
-            DO j = 1, num_periods
-                DO k = 1, min_idx
-                    WRITE(1, 1800) mapping_state_idx(period, i, j, k, :)
+        OPEN(UNIT=1, FILE='.mapping_state_idx.robufort.dat')
+
+        DO period = 1, num_periods
+            DO i = 1, num_periods
+                DO j = 1, num_periods
+                    DO k = 1, min_idx
+                        WRITE(1, 1800) mapping_state_idx(period, i, j, k, :)
+                    END DO
                 END DO
             END DO
         END DO
-    END DO
 
-    CLOSE(1)
+        CLOSE(1)
 
 
-    2000 FORMAT(4(1x,i5))
+        2000 FORMAT(4(1x,i5))
 
-    OPEN(UNIT=1, FILE='.states_all.robufort.dat')
+        OPEN(UNIT=1, FILE='.states_all.robufort.dat')
 
-    DO period = 1, num_periods
-        DO i = 1, max_states_period
-            WRITE(1, 2000) states_all(period, i, :)
+        DO period = 1, num_periods
+            DO i = 1, max_states_period
+                WRITE(1, 2000) states_all(period, i, :)
+            END DO
         END DO
-    END DO
 
-    CLOSE(1)
+        CLOSE(1)
 
 
-    1900 FORMAT(4(1x,f25.15))
+        1900 FORMAT(4(1x,f25.15))
 
-    OPEN(UNIT=1, FILE='.periods_payoffs_systematic.robufort.dat')
+        OPEN(UNIT=1, FILE='.periods_payoffs_systematic.robufort.dat')
 
-    DO period = 1, num_periods
-        DO i = 1, max_states_period
-            WRITE(1, 1900) periods_payoffs_systematic(period, i, :)
+        DO period = 1, num_periods
+            DO i = 1, max_states_period
+                WRITE(1, 1900) periods_payoffs_systematic(period, i, :)
+            END DO
         END DO
-    END DO
 
-    CLOSE(1)
+        CLOSE(1)
 
+        2100 FORMAT(i5)
 
+        OPEN(UNIT=1, FILE='.states_number_period.robufort.dat')
 
-    OPEN(UNIT=1, FILE='.periods_payoffs_ex_post.robufort.dat')
-
-    DO period = 1, num_periods
-        DO i = 1, max_states_period
-            WRITE(1, 1900) periods_payoffs_ex_post(period, i, :)
+        DO period = 1, num_periods
+            WRITE(1, 2100) states_number_period(period)
         END DO
-    END DO
 
-    CLOSE(1)
-
-
-    2100 FORMAT(i5)
-
-    OPEN(UNIT=1, FILE='.states_number_period.robufort.dat')
-
-    DO period = 1, num_periods
-        WRITE(1, 2100) states_number_period(period)
-    END DO
-
-    CLOSE(1)
+        CLOSE(1)
 
 
-    2200 FORMAT(i5)
+        2200 FORMAT(i5)
 
-    OPEN(UNIT=1, FILE='.max_states_period.robufort.dat')
+        OPEN(UNIT=1, FILE='.max_states_period.robufort.dat')
 
-    WRITE(1, 2200) max_states_period
+        WRITE(1, 2200) max_states_period
 
-    CLOSE(1)
+        CLOSE(1)
 
 
-    2400 FORMAT(100000(1x,f25.15))
+        2400 FORMAT(100000(1x,f25.15))
 
-    OPEN(UNIT=1, FILE='.periods_emax.robufort.dat')
+        OPEN(UNIT=1, FILE='.periods_emax.robufort.dat')
 
-    DO period = 1, num_periods
-        WRITE(1, 2400) periods_emax(period, :)
-    END DO
+        DO period = 1, num_periods
+            WRITE(1, 2400) periods_emax(period, :)
+        END DO
 
-    CLOSE(1)
+        CLOSE(1)
 
     ! Write out value of criterion function if evaluated.
-    IF (request == 'evaluate') THEN
+    ELSEIF (request == 'evaluate') THEN
 
         2500 FORMAT(1x,f25.15)
 
         OPEN(UNIT=1, FILE='.eval.robufort.dat')
 
-        WRITE(1, 2500) eval
+        WRITE(1, 2500) crit_val
 
         CLOSE(1)
 
@@ -157,9 +144,9 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
-                coeffs_edu, edu_start, edu_max, coeffs_home, shocks, & 
+                coeffs_edu, edu_start, edu_max, coeffs_home, shocks_cov, & 
                 shocks_cholesky, num_draws_emax, seed_emax, seed_prob, &
-                num_agents, seed_data, is_debug, is_deterministic, is_interpolated, &
+                num_agents, is_debug, is_deterministic, is_interpolated, & 
                 num_points, min_idx, is_ambiguous, measure, request, & 
                 num_draws_prob, is_myopic)
 
@@ -176,7 +163,6 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
     INTEGER(our_int), INTENT(OUT)   :: num_periods
     INTEGER(our_int), INTENT(OUT)   :: num_agents
     INTEGER(our_int), INTENT(OUT)   :: num_points
-    INTEGER(our_int), INTENT(OUT)   :: seed_data
     INTEGER(our_int), INTENT(OUT)   :: seed_prob
     INTEGER(our_int), INTENT(OUT)   :: seed_emax
     INTEGER(our_int), INTENT(OUT)   :: edu_start
@@ -184,9 +170,9 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
     INTEGER(our_int), INTENT(OUT)   :: min_idx
 
     REAL(our_dble), INTENT(OUT)     :: shocks_cholesky(4, 4)
+    REAL(our_dble), INTENT(OUT)     :: shocks_cov(4, 4)
     REAL(our_dble), INTENT(OUT)     :: coeffs_home(1)
     REAL(our_dble), INTENT(OUT)     :: coeffs_edu(3)
-    REAL(our_dble), INTENT(OUT)     :: shocks(4, 4)
     REAL(our_dble), INTENT(OUT)     :: coeffs_a(6)
     REAL(our_dble), INTENT(OUT)     :: coeffs_b(6)
     REAL(our_dble), INTENT(OUT)     :: delta
@@ -241,7 +227,7 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
 
         ! SHOCKS
         DO j = 1, 4
-            READ(1, 1500) (shocks(j, k), k=1, 4)
+            READ(1, 1500) (shocks_cov(j, k), k=1, 4)
         END DO
 
         ! SOLUTION
@@ -250,7 +236,6 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
 
         ! SIMULATION
         READ(1, 1505) num_agents
-        READ(1, 1505) seed_data
 
         ! PROGRAM
         READ(1, *) is_debug
@@ -279,18 +264,18 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
     IF (is_deterministic) THEN
         shocks_cholesky = zero_dble
     ELSE
-        CALL cholesky(shocks_cholesky, shocks)
+        CALL cholesky(shocks_cholesky, shocks_cov)
     END IF
 
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE create_disturbances(disturbances, num_periods, num_draws_emax, & 
-                seed, is_debug, which, shocks_cholesky, is_ambiguous)
+SUBROUTINE create_draws(draws, num_periods, num_draws_emax, seed, is_debug, & 
+                which, shocks_cholesky, is_ambiguous)
 
     !/* external objects        */
 
-    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)  :: disturbances(:, :, :)
+    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)  :: draws(:, :, :)
 
     INTEGER(our_int), INTENT(IN)                :: num_draws_emax
     INTEGER(our_int), INTENT(IN)                :: num_periods
@@ -318,7 +303,7 @@ SUBROUTINE create_disturbances(disturbances, num_periods, num_draws_emax, &
 !------------------------------------------------------------------------------- 
 
     ! Allocate containers
-    ALLOCATE(disturbances(num_periods, num_draws_emax, 4))
+    ALLOCATE(draws(num_periods, num_draws_emax, 4))
 
     ! Set random seed
     seed_inflated(:) = seed
@@ -330,18 +315,18 @@ SUBROUTINE create_disturbances(disturbances, num_periods, num_draws_emax, &
     ! Draw random deviates from a standard normal distribution or read it in
     ! from disk. The latter is available to allow for testing across
     ! implementations.
-    INQUIRE(FILE='disturbances.txt', EXIST=READ_IN)
+    INQUIRE(FILE='draws.txt', EXIST=READ_IN)
 
     IF ((READ_IN .EQV. .True.)  .AND. (is_debug .EQV. .True.)) THEN
 
-        OPEN(12, file='disturbances.txt')
+        OPEN(12, file='draws.txt')
 
         DO period = 1, num_periods
 
             DO j = 1, num_draws_emax
         
                 2000 FORMAT(4(1x,f15.10))
-                READ(12,2000) disturbances(period, j, :)
+                READ(12,2000) draws(period, j, :)
         
             END DO
       
@@ -353,52 +338,18 @@ SUBROUTINE create_disturbances(disturbances, num_periods, num_draws_emax, &
 
         DO period = 1, num_periods
 
-            CALL multivariate_normal(disturbances(period, :, :))
+            CALL multivariate_normal(draws(period, :, :))
         
         END DO
 
     END IF
+    ! Standard normal deviates used for the Monte Carlo integration of the
+    ! expected future values in the solution step. Also, standard normal
+    ! deviates for the Monte Carlo integration of the choice probabilities in
+    ! the evaluation step.
+    IF ((which == 'emax') .OR. (which == 'prob')) THEN
 
-    ! Deviates used for the Monte Carlo integration of the expected future
-    ! values during the solution of the model.
-    IF (which == 'emax') THEN
-
-        ! Transformations
-        DO period = 1, num_periods
-            
-            ! Apply variance change
-            DO i = 1, num_draws_emax
-            
-                disturbances(period, i:i, :) = &
-                    TRANSPOSE(MATMUL(shocks_cholesky, TRANSPOSE(disturbances(period, i:i, :))))
-            
-            END DO
-
-        END DO
-
-        ! Transformation in case of risk-only. In the case of ambiguity, this 
-        ! transformation is later as it needs adjustment for the switched means.
-        IF (.NOT. is_ambiguous) THEN
-            
-            ! Transform disturbance for occupations
-            DO period = 1, num_periods
-
-                DO j = 1, 2
-                
-                    disturbances(period, :, j) = &
-                            EXP(disturbances(period, :, j))
-                
-                END DO
-
-            END DO
-            
-        END IF
-
-    ! Deviates used for the Monte Carlo integration of the choice
-    ! probabilities for the construction of the criterion function.
-    ELSE IF (which == 'prob') THEN
-
-        disturbances = disturbances
+        draws = draws
     
     ! Deviates for the simulation of a synthetic agent population.
     ELSE IF (which == 'sims') THEN
@@ -410,16 +361,12 @@ SUBROUTINE create_disturbances(disturbances, num_periods, num_draws_emax, &
             
             ! Apply variance change
             DO i = 1, num_draws_emax
-            
-                disturbances(period, i:i, :) = &
-                    TRANSPOSE(MATMUL(shocks_cholesky, TRANSPOSE(disturbances(period, i:i, :))))
-
+                draws(period, i:i, :) = &
+                    TRANSPOSE(MATMUL(shocks_cholesky, TRANSPOSE(draws(period, i:i, :))))
             END DO
 
             DO j = 1, 2
-                
-                disturbances(period, :, j) =  EXP(disturbances(period, :, j))
-                
+                draws(period, :, j) =  EXP(draws(period, :, j))
             END DO
                 
         END DO      
@@ -454,9 +401,7 @@ SUBROUTINE read_dataset(data_array, num_periods, num_agents)
     OPEN(UNIT=1, FILE='.data.robufort.dat')
 
         DO j = 1, num_periods * num_agents
-    
             READ(1, *) (data_array(j, k), k = 1, 8)
-    
         END DO
     
     CLOSE(1, STATUS='delete')
@@ -491,7 +436,6 @@ PROGRAM robufort
     INTEGER(our_int)                :: num_periods
     INTEGER(our_int)                :: num_agents
     INTEGER(our_int)                :: num_points
-    INTEGER(our_int)                :: seed_data
     INTEGER(our_int)                :: seed_prob
     INTEGER(our_int)                :: seed_emax
     INTEGER(our_int)                :: edu_start
@@ -499,22 +443,20 @@ PROGRAM robufort
     INTEGER(our_int)                :: min_idx
 
     REAL(our_dble), ALLOCATABLE     :: periods_payoffs_systematic(:, :, :)
-    REAL(our_dble), ALLOCATABLE     :: periods_payoffs_ex_post(:, :, :)
-    REAL(our_dble), ALLOCATABLE     :: periods_payoffs_future(:, :, :)
-    REAL(our_dble), ALLOCATABLE     :: disturbances_emax(:, :, :)
-    REAL(our_dble), ALLOCATABLE     :: disturbances_prob(:, :, :)
+    REAL(our_dble), ALLOCATABLE     :: periods_draws_emax(:, :, :)
+    REAL(our_dble), ALLOCATABLE     :: periods_draws_prob(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_emax(:, :)
     REAL(our_dble), ALLOCATABLE     :: data_array(:, :)
 
     REAL(our_dble)                  :: shocks_cholesky(4, 4)
+    REAL(our_dble)                  :: shocks_cov(4, 4)
     REAL(our_dble)                  :: coeffs_home(1)
     REAL(our_dble)                  :: coeffs_edu(3)
-    REAL(our_dble)                  :: shocks(4, 4)
     REAL(our_dble)                  :: coeffs_a(6)
     REAL(our_dble)                  :: coeffs_b(6)
+    REAL(our_dble)                  :: crit_val
     REAL(our_dble)                  :: delta
     REAL(our_dble)                  :: level
-    REAL(our_dble)                  :: eval
 
     LOGICAL                         :: is_deterministic
     LOGICAL                         :: is_interpolated
@@ -533,63 +475,62 @@ PROGRAM robufort
     ! clsRobupy instance that carries the model parametrization for the 
     ! PYTHON/F2PY implementations.
     CALL read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
-            coeffs_edu, edu_start, edu_max, coeffs_home, shocks, &
-            shocks_cholesky, num_draws_emax, seed_emax, seed_prob, num_agents, &
-            seed_data, is_debug, is_deterministic, is_interpolated, num_points, &
-            min_idx, is_ambiguous, measure, request, num_draws_prob, is_myopic)
+            coeffs_edu, edu_start, edu_max, coeffs_home, shocks_cov, &
+            shocks_cholesky, num_draws_emax, seed_emax, seed_prob, &
+            num_agents, is_debug, is_deterministic, is_interpolated, & 
+            num_points, min_idx, is_ambiguous, measure, request, & 
+            num_draws_prob, is_myopic)
 
-    ! This part creates (or reads from disk) the disturbances for the Monte 
-    ! Carlo integration of the EMAX. For is_debugging purposes, these might also be 
-    ! read in from disk or set to zero/one.   
-    CALL create_disturbances(disturbances_emax, num_periods, num_draws_emax, &
+    ! This part creates (or reads from disk) the draws for the Monte 
+    ! Carlo integration of the EMAX. For is_debugging purposes, these might 
+    ! also be read in from disk or set to zero/one.   
+    CALL create_draws(periods_draws_emax, num_periods, num_draws_emax, &
             seed_emax, is_debug, 'emax', shocks_cholesky, is_ambiguous)
 
     ! Execute on request.
     IF (request == 'solve') THEN
 
         ! Solve the model for a given parametrization.    
-        CALL solve_fortran_bare(mapping_state_idx, periods_emax, & 
-                periods_payoffs_future, periods_payoffs_ex_post, &
-                periods_payoffs_systematic, states_all, states_number_period, & 
-                coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, edu_max, & 
-                delta, edu_start, is_debug, is_interpolated, level, measure, & 
-                min_idx, num_draws_emax, num_periods, num_points, & 
-                is_ambiguous, disturbances_emax, is_deterministic, is_myopic)
+        CALL fort_solve(periods_payoffs_systematic, states_number_period, & 
+                mapping_state_idx, periods_emax, states_all, coeffs_a, & 
+                coeffs_b, coeffs_edu, coeffs_home, shocks_cov, & 
+                is_deterministic, is_interpolated, num_draws_emax, & 
+                periods_draws_emax, is_ambiguous, num_periods, num_points, & 
+                edu_start, is_myopic, is_debug, measure, edu_max, min_idx, & 
+                delta, level)
 
     ELSE IF (request == 'evaluate') THEN
 
-        ! This part creates (or reads from disk) the disturbances for the Monte 
+        ! This part creates (or reads from disk) the draws for the Monte 
         ! Carlo integration of the choice probabilities. For is_debugging 
         ! purposes, these might also be read in from disk or set to zero/one.   
-        CALL create_disturbances(disturbances_prob, num_periods, & 
-                num_draws_prob, seed_prob, is_debug, 'prob', shocks_cholesky, &
-                is_ambiguous)
+        CALL create_draws(periods_draws_prob, num_periods, num_draws_prob, &
+                seed_prob, is_debug, 'prob', shocks_cholesky, is_ambiguous)
 
         ! Read observed dataset from disk
         CALL read_dataset(data_array, num_periods, num_agents)
 
         ! Solve the model for a given parametrization.    
-        CALL solve_fortran_bare(mapping_state_idx, periods_emax, & 
-                periods_payoffs_future, periods_payoffs_ex_post, &
-                periods_payoffs_systematic, states_all, states_number_period, & 
-                coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, edu_max, & 
-                delta, edu_start, is_debug, is_interpolated, level, measure, & 
-                min_idx, num_draws_emax, num_periods, num_points, & 
-                is_ambiguous, disturbances_emax, is_deterministic, is_myopic)
+        CALL fort_solve(periods_payoffs_systematic, states_number_period, & 
+                mapping_state_idx, periods_emax, states_all, coeffs_a, & 
+                coeffs_b, coeffs_edu, coeffs_home, shocks_cov, & 
+                is_deterministic, is_interpolated, num_draws_emax, & 
+                periods_draws_emax, is_ambiguous, num_periods, num_points, & 
+                edu_start, is_myopic, is_debug, measure, edu_max, min_idx, & 
+                delta, level)
 
-        CALL evaluate_criterion_function(eval, mapping_state_idx, &
-                periods_emax, periods_payoffs_systematic, states_all, shocks, & 
-                edu_max, delta, edu_start, num_periods, shocks_cholesky, &
-                num_agents, num_draws_prob, data_array, disturbances_prob, & 
-                is_deterministic)
+        CALL fort_evaluate(crit_val, periods_payoffs_systematic, & 
+                mapping_state_idx, periods_emax, states_all, shocks_cov, & 
+                is_deterministic, num_periods, edu_start, edu_max, delta, & 
+                data_array, num_agents, num_draws_prob, periods_draws_prob)
 
     END IF
 
     ! Store results. These are read in by the PYTHON wrapper and added to the 
     ! clsRobupy instance.
-    CALL store_results(mapping_state_idx, states_all, periods_payoffs_ex_post, & 
+    CALL store_results(mapping_state_idx, states_all, &
             periods_payoffs_systematic, states_number_period, periods_emax, &
-            num_periods, min_idx, eval, request) 
+            num_periods, min_idx, crit_val, request)
 
 !*******************************************************************************
 !*******************************************************************************

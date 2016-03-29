@@ -3,49 +3,59 @@ development tests.
 """
 
 # standard library
+import statsmodels.api as sm
+import numpy as np
+
 from scipy.optimize.slsqp import _minimize_slsqp
 from scipy.optimize import approx_fprime
 from scipy.optimize import rosen_der
 from scipy.optimize import rosen
 from scipy.stats import norm
 
-import statsmodels.api as sm
-import numpy as np
-
 import pytest
 import scipy
 
 # testing library
-from codes.auxiliary import distribute_model_description
 from codes.auxiliary import write_interpolation_grid
+
+from robupy.solve.solve_auxiliary import get_payoffs
+from robupy.tests.codes.random_init import generate_init
+
+from robupy.solve.ambiguity import get_payoffs_ambiguity
+from robupy.solve.ambiguity import criterion_ambiguity
+from robupy.solve.ambiguity import _divergence
+from robupy.solve.emax import simulate_emax
+
+from robupy.estimate.estimate_auxiliary import opt_get_optim_parameters
+from robupy.estimate.estimate_auxiliary import opt_get_model_parameters
+
+from robupy.shared.auxiliary import distribute_class_attributes
+from robupy.shared.auxiliary import distribute_model_paras
+from robupy.shared.auxiliary import create_draws
+
+import robupy.fortran.f2py_testing as fort_test
+import robupy.fortran.f2py_debug as fort_debug
+import robupy.fortran.f2py_library as fort_lib
+
+from robupy.solve.solve_auxiliary import pyth_create_state_space
+from robupy.fortran.f2py_library import  f2py_create_state_space
+
+from robupy.solve.solve_auxiliary import pyth_calculate_payoffs_systematic
+from robupy.fortran.f2py_library import f2py_calculate_payoffs_systematic
+
+from robupy.solve.solve_auxiliary import pyth_backward_induction
+from robupy.fortran.f2py_library import f2py_backward_induction
 
 from robupy import simulate
 from robupy import solve
 from robupy import read
 
-from robupy.python.py.python_library import get_payoffs
-
-from robupy.python.solve_python import solve_python_bare
-
-from robupy.tests.codes.random_init import generate_init
-
-from robupy.python.py.ambiguity import get_payoffs_ambiguity
-from robupy.python.py.auxiliary import simulate_emax
-from robupy.python.py.ambiguity import _divergence
-from robupy.python.py.ambiguity import _criterion
-
-from robupy.auxiliary import opt_get_model_parameters
-from robupy.auxiliary import opt_get_optim_parameters
-from robupy.auxiliary import distribute_model_paras
-from robupy.auxiliary import replace_missing_values
-from robupy.auxiliary import create_disturbances
-
-import robupy.python.py.python_library as py_lib
 
 ''' Main
 '''
 
-@pytest.mark.usefixtures('fresh_directory', 'set_seed', 'supply_resources')
+
+@pytest.mark.usefixtures('fresh_directory', 'set_seed')
 class TestClass(object):
     """ This class groups together some tests.
     """
@@ -53,10 +63,7 @@ class TestClass(object):
         """ This function compares the results from the payoff functions across
         implementations.
         """
-        # FORTRAN resources
-        import robupy.python.f2py.f2py_debug as fort_debug
-
-        for _ in range(10):
+        for _ in range(5):
 
             # Impose constraints
             constraints = dict()
@@ -70,11 +77,11 @@ class TestClass(object):
             robupy_obj = solve(robupy_obj)
 
             # Extract class attributes
-            periods_payoffs_systematic, states_number_period, mapping_state_idx, \
-            is_deterministic, is_ambiguous, periods_emax, model_paras, \
-            num_periods, states_all, num_draws_emax, edu_start, is_debug,\
-            edu_max, measure, delta, level = \
-                distribute_model_description(robupy_obj,
+            periods_payoffs_systematic, states_number_period, \
+                mapping_state_idx, is_deterministic, is_ambiguous, \
+                periods_emax, model_paras, num_periods, states_all, \
+                num_draws_emax, edu_start, is_debug, edu_max, measure, delta,\
+                level = distribute_class_attributes(robupy_obj,
                     'periods_payoffs_systematic', 'states_number_period',
                     'mapping_state_idx', 'is_deterministic', 'is_ambiguous',
                     'periods_emax', 'model_paras', 'num_periods', 'states_all',
@@ -82,7 +89,8 @@ class TestClass(object):
                     'measure', 'delta', 'level')
 
             # Extract auxiliary objects
-            shocks = model_paras['shocks']
+            _, _, _, _, shocks_cov, shocks_cholesky = \
+                distribute_model_paras(model_paras, is_debug)
 
             # Iterate over a couple of admissible points
             for _ in range(10):
@@ -93,34 +101,33 @@ class TestClass(object):
 
                 # Finalize extraction of ingredients
                 payoffs_systematic = periods_payoffs_systematic[period, k, :]
-                disturbances_relevant = np.random.sample((num_draws_emax, 4))
+                draws_emax = np.random.sample((num_draws_emax, 4))
 
                 # Extract payoffs using PYTHON and FORTRAN codes.
-                py = get_payoffs(num_draws_emax, disturbances_relevant, period, k,
-                        payoffs_systematic, edu_max, edu_start, mapping_state_idx,
-                        states_all, num_periods, periods_emax, delta, is_debug,
-                        shocks, level, is_ambiguous, measure, is_deterministic)
+                py = get_payoffs(num_draws_emax, draws_emax, period, k,
+                    payoffs_systematic, edu_max, edu_start,
+                    mapping_state_idx, states_all, num_periods,
+                    periods_emax, delta, is_debug, shocks_cov, level,
+                    is_ambiguous, measure, is_deterministic,
+                    shocks_cholesky)
 
                 f90 = fort_debug.wrapper_get_payoffs(num_draws_emax,
-                        disturbances_relevant, period, k, payoffs_systematic,
-                        edu_max, edu_start, mapping_state_idx, states_all,
-                        num_periods, periods_emax, delta, is_debug, shocks, level,
-                        is_ambiguous, measure, is_deterministic)
+                    draws_emax, period, k, payoffs_systematic,
+                    edu_max, edu_start, mapping_state_idx, states_all,
+                    num_periods, periods_emax, delta, is_debug, shocks_cov,
+                    level, is_ambiguous, measure, is_deterministic,
+                    shocks_cholesky)
 
                 # Compare returned array on expected future values, ex post
                 # payoffs, and future payoffs.
-                for i in range(3):
-                    np.testing.assert_array_almost_equal(py[i], f90[i])
+                np.testing.assert_array_almost_equal(py, f90)
 
     def test_2(self):
         """ This test compares the functions calculating the payoffs under
         ambiguity.
         """
-        # FORTRAN resources
-        import robupy.python.f2py.f2py_debug as fort_debug
-
         # Iterate over random test cases
-        for _ in range(10):
+        for _ in range(5):
 
             # Generate constraint periods
             constraints = dict()
@@ -136,21 +143,23 @@ class TestClass(object):
             robupy_obj = solve(robupy_obj)
 
             # Extract class attributes
-            periods_payoffs_systematic, states_number_period, mapping_state_idx, \
-            is_deterministic, periods_emax, num_periods, model_paras, \
-            states_all, num_draws_emax, edu_start, edu_max, measure, \
-            delta, is_debug = \
-                distribute_model_description(robupy_obj,
-                    'periods_payoffs_systematic', 'states_number_period',
-                    'mapping_state_idx', 'is_deterministic', 'periods_emax',
-                    'num_periods', 'model_paras', 'states_all', 'num_draws_emax',
-                    'edu_start', 'edu_max', 'measure', 'delta', 'is_debug')
+            periods_payoffs_systematic, states_number_period, \
+                mapping_state_idx, is_deterministic, periods_emax, \
+                num_periods, model_paras, states_all, num_draws_emax, \
+                edu_start, edu_max, measure, delta, is_debug = \
+                    distribute_class_attributes(robupy_obj,
+                        'periods_payoffs_systematic', 'states_number_period',
+                        'mapping_state_idx', 'is_deterministic', 'periods_emax',
+                        'num_periods', 'model_paras', 'states_all',
+                        'num_draws_emax', 'edu_start', 'edu_max', 'measure',
+                        'delta', 'is_debug')
 
             # Auxiliary objects
-            shocks = model_paras['shocks']
+            _, _, _, _, shocks_cov, shocks_cholesky = \
+                distribute_model_paras(model_paras, is_debug)
 
-            # Sample disturbances
-            eps_standard = np.random.multivariate_normal(np.zeros(4),
+            # Sample draws
+            draws_standard = np.random.multivariate_normal(np.zeros(4),
                             np.identity(4), (num_draws_emax,))
 
             # Sampling of random period and admissible state index
@@ -163,13 +172,13 @@ class TestClass(object):
             # Set up optimization task
             level = np.random.uniform(0.01, 1.00)
 
-            args = [num_draws_emax, eps_standard, period, k, payoffs_systematic,
-                edu_max, edu_start, mapping_state_idx, states_all, num_periods,
-                periods_emax, is_debug, delta, shocks, level, measure,
-                is_deterministic]
+            args = [num_draws_emax, draws_standard, period, k,
+                payoffs_systematic, edu_max, edu_start, mapping_state_idx,
+                states_all, num_periods, periods_emax, is_debug, delta,
+                shocks_cov, level, measure, is_deterministic, shocks_cholesky]
 
-            f = fort_debug.wrapper_get_payoffs_ambiguity(*args)[0]
-            py = get_payoffs_ambiguity(*args)[0]
+            f = fort_debug.wrapper_get_payoffs_ambiguity(*args)
+            py = get_payoffs_ambiguity(*args)
 
             np.testing.assert_allclose(py, f, rtol=1e-05, atol=1e-06)
 
@@ -177,22 +186,20 @@ class TestClass(object):
         """ This test case compares the results from the SLSQP implementations in
         PYTHON and FORTRAN for the actual optimization problem.
         """
-        # FORTRAN resources
-        import robupy.python.f2py.f2py_debug as fort_debug
-
+        # Draw random request
         maxiter = np.random.random_integers(1, 100)
         ftol = np.random.uniform(0.000000, 1e-5)
         x0 = np.random.normal(size=2)
 
         tiny = 1e-6
 
-        shocks = np.identity(4)*np.random.normal(size=1)**2
+        shocks_cov = np.identity(4)*np.random.normal(size=1)**2
         level = np.random.normal(size=1)**2
 
         # Setting up PYTHON SLSQP interface for constraints
         constraint = dict()
         constraint['type'] = 'eq'
-        constraint['args'] = (shocks, level)
+        constraint['args'] = (shocks_cov, level)
         constraint['fun'] = _divergence
 
         # Generate constraint periods
@@ -209,15 +216,19 @@ class TestClass(object):
         # Extract class attributes
         periods_payoffs_systematic, states_number_period, mapping_state_idx, \
             periods_emax, num_periods, states_all, num_draws_emax, edu_start, \
-            edu_max, delta, is_debug = \
-                distribute_model_description(robupy_obj,
+            edu_max, delta, is_debug, model_paras = \
+                distribute_class_attributes(robupy_obj,
                     'periods_payoffs_systematic', 'states_number_period',
                     'mapping_state_idx', 'periods_emax', 'num_periods',
                     'states_all', 'num_draws_emax', 'edu_start', 'edu_max',
-                    'delta', 'is_debug')
+                    'delta', 'is_debug', 'model_paras')
 
-        # Sample disturbances
-        eps_standard = np.random.multivariate_normal(np.zeros(4),
+        # Auxiliary objects
+        _, _, _, _, _, shocks_cholesky = \
+            distribute_model_paras(model_paras, is_debug)
+
+        # Sample draws
+        draws_standard = np.random.multivariate_normal(np.zeros(4),
                                 np.identity(4), (num_draws_emax,))
 
         # Sampling of random period and admissible state index
@@ -227,11 +238,11 @@ class TestClass(object):
         # Select systematic payoffs
         payoffs_systematic = periods_payoffs_systematic[period, k, :]
 
-        args = (num_draws_emax, eps_standard, period, k, payoffs_systematic, edu_max,
-            edu_start, mapping_state_idx, states_all, num_periods, periods_emax,
-            delta)
+        args = (num_draws_emax, draws_standard, period, k, payoffs_systematic,
+            edu_max, edu_start, mapping_state_idx, states_all, num_periods,
+            periods_emax, delta, shocks_cholesky)
 
-        opt = _minimize_slsqp(_criterion, x0, args, maxiter=maxiter,
+        opt = _minimize_slsqp(criterion_ambiguity, x0, args, maxiter=maxiter,
                        ftol=ftol, constraints=constraint)
 
         # Stabilization. This is done as part of the fortran implementation.
@@ -241,16 +252,17 @@ class TestClass(object):
             py = x0
 
         f = fort_debug.wrapper_slsqp_robufort(x0, maxiter, ftol, tiny,
-                num_draws_emax, eps_standard, period, k, payoffs_systematic,
-                edu_max, edu_start, mapping_state_idx, states_all,
-                num_periods, periods_emax, delta, is_debug, shocks, level)
+            num_draws_emax, draws_standard, period, k, payoffs_systematic,
+            edu_max, edu_start, mapping_state_idx, states_all, num_periods,
+            periods_emax, delta, is_debug, shocks_cov, level,
+            shocks_cholesky)
 
         # Check equality. If not equal up to the tolerance, also check
         # whether the result from the FORTRAN implementation is even better.
         try:
             np.testing.assert_allclose(py, f, rtol=1e-05, atol=1e-06)
         except AssertionError:
-            if _criterion(f, *args) < _criterion(py, *args):
+            if criterion_ambiguity(f, *args) < criterion_ambiguity(py, *args):
                 pass
             else:
                 raise AssertionError
@@ -259,9 +271,6 @@ class TestClass(object):
         """ This test case compare the results of a debugging setup for the SLSQP
         algorithm's PYTHON and FORTRAN implementation
         """
-        # FORTRAN resources
-        import robupy.tests.lib.f2py_testing as fort_test
-
         # Sample basic test case
         maxiter = np.random.random_integers(1, 100)
         num_dim = np.random.random_integers(2, 4)
@@ -270,12 +279,12 @@ class TestClass(object):
 
         # Evaluation of Rosenbrock function. We are using the FORTRAN version
         # in the development of the optimization routines.
-        f90 = fort_test.wrapper_debug_criterion_function(x0, num_dim)
+        f90 = fort_test.wrapper_criterion_debug_function(x0, num_dim)
         py = rosen(x0)
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
         py = rosen_der(x0)
-        f90 = fort_test.wrapper_debug_criterion_derivative(x0, len(x0))
+        f90 = fort_test.wrapper_criterion_debug_derivative(x0, len(x0))
         np.testing.assert_allclose(py, f90[:-1], rtol=1e-05, atol=1e-06)
 
         # Test the FORTRAN codes against the PYTHON implementation. This is
@@ -308,9 +317,6 @@ class TestClass(object):
         and PYTHON implementations. These tests are set up a separate test case
         due to the large setup cost to construct the ingredients for the interface.
         """
-        # FORTRAN resources
-        import robupy.python.f2py.f2py_debug as fort_debug
-
         # Generate constraint periods
         constraints = dict()
         constraints['version'] = 'PYTHON'
@@ -326,16 +332,22 @@ class TestClass(object):
         # Extract class attributes
         periods_payoffs_systematic, states_number_period, mapping_state_idx, \
         periods_emax, num_periods, states_all, num_draws_emax, edu_start, \
-        edu_max, delta = \
-            distribute_model_description(robupy_obj,
+        edu_max, delta, model_paras, is_debug = \
+            distribute_class_attributes(robupy_obj,
                 'periods_payoffs_systematic', 'states_number_period',
                 'mapping_state_idx', 'periods_emax', 'num_periods',
                 'states_all', 'num_draws_emax', 'edu_start', 'edu_max',
-                'delta')
+                'delta', 'model_paras', 'is_debug')
 
-        # Sample disturbances
-        eps_standard = np.random.multivariate_normal(np.zeros(4),
+        # Auxiliary objects
+        _, _, _, _, _, shocks_cholesky = \
+            distribute_model_paras(model_paras, is_debug)
+
+        # Sample draws
+        draws_standard = np.random.multivariate_normal(np.zeros(4),
                             np.identity(4), (num_draws_emax,))
+
+        shocks_mean = np.random.normal(size=2)
 
         # Sampling of random period and admissible state index
         period = np.random.choice(range(num_periods))
@@ -348,31 +360,32 @@ class TestClass(object):
         x = np.random.random(size=2)
 
         # Evaluation of simulated expected future values
-        py, _, _ = simulate_emax(num_periods, num_draws_emax, period, k,
-            eps_standard, payoffs_systematic, edu_max, edu_start,
-            periods_emax, states_all, mapping_state_idx, delta)
+        py = simulate_emax(num_periods, num_draws_emax, period, k,
+            draws_standard, payoffs_systematic, edu_max, edu_start,
+            periods_emax, states_all, mapping_state_idx, delta,
+            shocks_cholesky, shocks_mean)
 
-        f90, _, _ = fort_debug.wrapper_simulate_emax(num_periods,
-            num_draws_emax, period, k, eps_standard, payoffs_systematic,
-            edu_max, edu_start, periods_emax, states_all, mapping_state_idx,
-            delta)
+        f90 = fort_debug.wrapper_simulate_emax(num_periods, num_draws_emax,
+            period, k, draws_standard, payoffs_systematic, edu_max, edu_start,
+            periods_emax, states_all, mapping_state_idx, delta,
+            shocks_cholesky, shocks_mean)
 
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
         # Criterion function for the determination of the worst case outcomes
-        args = (num_draws_emax, eps_standard, period, k, payoffs_systematic,
-                edu_max, edu_start, mapping_state_idx, states_all, num_periods,
-                periods_emax, delta)
+        args = (num_draws_emax, draws_standard, period, k, payoffs_systematic,
+            edu_max, edu_start, mapping_state_idx, states_all, num_periods,
+            periods_emax, delta, shocks_cholesky)
 
-        py = _criterion(x, *args)
-        f90 = fort_debug.wrapper_criterion(x, *args)
+        py = criterion_ambiguity(x, *args)
+        f90 = fort_debug.wrapper_criterion_ambiguity(x, *args)
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
         # Evaluation of derivative of criterion function
         tiny = np.random.uniform(0.000000, 0.5)
 
-        py = approx_fprime(x, _criterion, tiny, *args)
-        f90 = fort_debug.wrapper_criterion_approx_gradient(x, tiny, *args)
+        py = approx_fprime(x, criterion_ambiguity, tiny, *args)
+        f90 = fort_debug.wrapper_criterion_ambiguity_derivative(x, tiny, *args)
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
     def test_6(self):
@@ -380,10 +393,6 @@ class TestClass(object):
         hand-crafted functions. In test_97() we test FORTRAN implementations
         against PYTHON intrinsic routines.
         """
-        # FORTRAN resources
-        import robupy.python.f2py.f2py_library as fort_lib
-        import robupy.python.f2py.f2py_debug as fort_debug
-
         for _ in range(10):
 
             # Draw random request for testing purposes
@@ -401,7 +410,7 @@ class TestClass(object):
 
             # Gradient approximation of KL divergence
             py = approx_fprime(x, _divergence, tiny, cov, level)
-            f90 = fort_debug.wrapper_divergence_approx_gradient(x, cov, level, tiny)
+            f90 = fort_debug.wrapper_divergence_derivative(x, cov, level, tiny)
             np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
         for _ in range(25):
@@ -415,11 +424,11 @@ class TestClass(object):
             min_idx = min(num_periods, (edu_max - edu_start + 1))
 
             # FORTRAN
-            fort_a, fort_b, fort_c, fort_d = fort_lib.wrapper_create_state_space(
+            fort_a, fort_b, fort_c, fort_d = fort_lib.f2py_create_state_space(
                     num_periods, edu_start, edu_max, min_idx)
 
             # PYTHON
-            py_a, py_b, py_c, py_d = py_lib.create_state_space(num_periods,
+            py_a, py_b, py_c, py_d = pyth_create_state_space(num_periods,
                     edu_start, edu_max, min_idx)
 
             # Ensure equivalence
@@ -445,7 +454,7 @@ class TestClass(object):
             # Check parameters
             py = results.params
             f90 = fort_debug.wrapper_get_coefficients(endog, exog, num_covars,
-                        num_agents)
+                num_agents)
             np.testing.assert_almost_equal(py, f90)
 
             # Check prediction
@@ -460,13 +469,8 @@ class TestClass(object):
 
     def test_7(self):
         """ Compare results between FORTRAN and PYTHON of selected functions. The
-        file python/f2py/debug_interface.f90 provides the F2PY bindings.
+        file fortran/debug_interface.f90 provides the F2PY bindings.
         """
-        # FORTRAN resources
-        import robupy.python.f2py.f2py_debug as fort_debug
-
-
-
         for _ in range(10):
 
             # Draw random requests for testing purposes.
@@ -474,7 +478,8 @@ class TestClass(object):
             dim = np.random.random_integers(1, 6)
             mean = np.random.uniform(-0.5, 0.5, (dim))
 
-            matrix = (np.random.multivariate_normal(np.zeros(dim), np.identity(dim), dim))
+            matrix = (np.random.multivariate_normal(np.zeros(dim),
+                np.identity(dim), dim))
             cov = np.dot(matrix, matrix.T)
 
             # PDF of normal distribution
@@ -525,7 +530,8 @@ class TestClass(object):
             # Random normal deviates. This only tests the interface, requires
             # visual inspection in IPYTHON notebook as well.
             fort_debug.wrapper_standard_normal(num_draws_emax)
-            fort_debug.wrapper_multivariate_normal(mean, cov, num_draws_emax, dim)
+            fort_debug.wrapper_multivariate_normal(mean, cov, num_draws_emax,
+                dim)
 
             # Clipping values below and above bounds.
             num_values = np.random.random_integers(1, 10000)
@@ -533,75 +539,13 @@ class TestClass(object):
             upper_bound = lower_bound + np.random.ranf()
             values = np.random.normal(size=num_values)
 
-            f90 = fort_debug.wrapper_get_clipped_vector(values, lower_bound, upper_bound,
-                                                 num_values)
+            f90 = fort_debug.wrapper_get_clipped_vector(values, lower_bound,
+                upper_bound, num_values)
             py = np.clip(values, lower_bound, upper_bound)
 
             np.testing.assert_almost_equal(py, f90)
 
     def test_8(self):
-        """ Testing the equality of the core functions for random requests.
-        """
-        # FORTRAN resources
-        import robupy.python.f2py.f2py_debug as fort_debug
-
-        # Generate random initialization file
-        generate_init()
-
-        # Solve random request
-        robupy_obj = read('test.robupy.ini')
-
-        # Extract class attributes
-        is_interpolated, is_deterministic, seed_emax, is_ambiguous, \
-        model_paras, num_periods, num_points, edu_start, is_python, \
-        is_myopic, num_draws_emax, is_debug, measure, edu_max, \
-        min_idx, delta, level = \
-                distribute_model_description(robupy_obj,
-                    'is_interpolated', 'is_deterministic', 'seed_emax',
-                    'is_ambiguous', 'model_paras', 'num_periods',
-                    'num_points', 'edu_start', 'is_python', 'is_myopic',
-                    'num_draws_emax', 'is_debug', 'measure', 'edu_max',
-                    'min_idx', 'delta', 'level')
-
-        # Distribute model parameters
-        coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks, shocks_cholesky = \
-                distribute_model_paras(model_paras, is_debug)
-
-        # Get set of disturbances
-        disturbances_emax = create_disturbances(num_periods, num_draws_emax,
-            seed_emax, is_debug, 'emax', shocks_cholesky, is_ambiguous)
-
-        # Align interpolation grid
-        max_states_period = write_interpolation_grid('test.robupy.ini')
-
-        # Baseline input arguments.
-        base_args = [coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks,
-            edu_max, delta, edu_start, is_debug, is_interpolated, level,
-            measure, min_idx, num_draws_emax, num_periods, num_points,
-            is_ambiguous, disturbances_emax, is_deterministic, is_myopic]
-
-        # Check for the equality of the solution routines.
-        base = None
-        for version in ['PYTHON', 'F2PY', 'FORTRAN']:
-            if version in ['F2PY', 'PYTHON']:
-                # Modifications to input arguments
-                args = base_args + [is_python]
-                # Get PYTHON/F2PY results
-                ret_args = solve_python_bare(*args)
-            else:
-                # Modifications to input arguments
-                args = base_args + [max_states_period]
-                # Get FORTRAN results
-                ret_args = fort_debug.wrapper_solve_fortran_bare(*args)
-            # Collect baseline information
-            if base is None:
-                base = ret_args
-            # Check results
-            for j in range(7):
-                np.testing.assert_equal(base[j], replace_missing_values(
-                    ret_args[j]))
-
-    def test_9(self):
         """ Testing ten admissible realizations of state space for the first
         three periods.
         """
@@ -656,7 +600,7 @@ class TestClass(object):
         for j, state in enumerate(states):
             assert ((states_all[2, j, :] == state).all())
 
-    def test_10(self):
+    def test_9(self):
         """ Testing whether back-and-forth transformation have no effect.
         """
         for i in range(10):
@@ -671,3 +615,68 @@ class TestClass(object):
 
             # Checks
             np.testing.assert_allclose(base, x)
+
+    def test_10(self):
+        """ Testing the core functions of the solution step for the equality
+        of results between the PYTHON and FORTRAN implementations.
+        """
+
+        # Generate random initialization file
+        generate_init()
+
+        # Perform toolbox actions
+        robupy_obj = read('test.robupy.ini')
+
+        # Ensure that backward induction routines use the same grid for the
+        # interpolation.
+        write_interpolation_grid('test.robupy.ini')
+
+        # Extract class attributes
+        num_periods, edu_start, edu_max, min_idx, model_paras, num_draws_emax, \
+            seed_emax, is_debug, delta, level, is_ambiguous, measure, \
+            is_interpolated, num_points, is_deterministic, is_myopic = \
+                distribute_class_attributes(robupy_obj,
+                    'num_periods', 'edu_start', 'edu_max', 'min_idx',
+                    'model_paras', 'num_draws_emax', 'seed_emax', 'is_debug',
+                    'delta', 'level', 'is_ambiguous', 'measure',
+                    'is_interpolated', 'num_points', 'is_deterministic',
+                    'is_myopic')
+
+        # Auxiliary objects
+        coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, \
+            shocks_cholesky = distribute_model_paras(model_paras, is_debug)
+
+        # Check the state space creation.
+        args = (num_periods, edu_start, edu_max, min_idx)
+        pyth = pyth_create_state_space(*args)
+        f2py = f2py_create_state_space(*args)
+        for i in range(4):
+            np.testing.assert_allclose(pyth[i], f2py[i])
+
+        # Carry some results from the state space creation for future use.
+        states_all, states_number_period = pyth[:2]
+        mapping_state_idx, max_states_period = pyth[2:]
+
+        # Check calculation of systematic components of payoffs.
+        args = (num_periods, states_number_period, states_all, edu_start,
+            coeffs_a, coeffs_b, coeffs_edu, coeffs_home, max_states_period)
+        pyth = pyth_calculate_payoffs_systematic(*args)
+        f2py = f2py_calculate_payoffs_systematic(*args)
+        np.testing.assert_allclose(pyth, f2py)
+
+        # Carry some results from the systematic payoff calculation for
+        # future use and create the required set of disturbances.
+        periods_draws_emax = create_draws(num_periods, num_draws_emax, seed_emax,
+            is_debug, 'emax', shocks_cholesky)
+
+        periods_payoffs_systematic = pyth
+
+        # Check backward induction procedure.
+        args = (num_periods, max_states_period, periods_draws_emax,
+            num_draws_emax, states_number_period, periods_payoffs_systematic,
+            edu_max, edu_start, mapping_state_idx, states_all, delta,
+            is_debug, shocks_cov, level, is_ambiguous, measure,
+            is_interpolated, num_points, is_deterministic, shocks_cholesky)
+        pyth = pyth_backward_induction(*args)
+        f2py = f2py_backward_induction(*args)
+        np.testing.assert_allclose(pyth, f2py)
