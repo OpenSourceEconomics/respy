@@ -120,6 +120,7 @@ class TestClass(object):
 
                 # Compare returned array on expected future values, ex post
                 # payoffs, and future payoffs.
+                print(py, f90)
                 np.testing.assert_array_almost_equal(py, f90)
 
     def test_2(self):
