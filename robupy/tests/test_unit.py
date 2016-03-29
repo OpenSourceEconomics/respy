@@ -22,9 +22,9 @@ from robupy.solve.solve_auxiliary import get_payoffs
 from robupy.tests.codes.random_init import generate_init
 
 from robupy.solve.ambiguity import get_payoffs_ambiguity
-from robupy.solve.emax import simulate_emax
-from robupy.solve.ambiguity import _divergence
 from robupy.solve.ambiguity import criterion_ambiguity
+from robupy.solve.ambiguity import _divergence
+from robupy.solve.emax import simulate_emax
 
 from robupy.estimate.estimate_auxiliary import opt_get_optim_parameters
 from robupy.estimate.estimate_auxiliary import opt_get_model_parameters
@@ -120,7 +120,6 @@ class TestClass(object):
 
                 # Compare returned array on expected future values, ex post
                 # payoffs, and future payoffs.
-                print(py, f90)
                 np.testing.assert_array_almost_equal(py, f90)
 
     def test_2(self):
