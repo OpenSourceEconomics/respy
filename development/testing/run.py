@@ -26,9 +26,6 @@ TEST_DIR = TEST_DIR.replace('development/testing', '') + '/robupy/tests'
 
 sys.path.insert(0, TEST_DIR)
 import conftest
-from codes.auxiliary import cleanup_robupy_package
-from codes.auxiliary import build_testing_library
-from codes.auxiliary import build_robupy_package
 
 # Setup for dealing with PYTEST command line options
 import functools
@@ -128,14 +125,6 @@ if __name__ == '__main__':
     # Start from a clean slate and extract a user's request.
     cleanup_testing_infrastructure(False)
     hours, notification = distribute_input(parser)
-
-    # Ensure that the FORTRAN resources are available. Some selected
-    # functions are only used for testing purposes and thus collected in a
-    # special FORTRAN library. The build of the ROBUPY package starts from a
-    # clean slate and then the testing library is added to tests/lib directory.
-    cleanup_robupy_package()
-    build_robupy_package(True)
-    build_testing_library(True)
 
     # Run testing infrastructure and send a notification (if requested).
     run(hours)
