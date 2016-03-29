@@ -465,7 +465,7 @@ class RobupyCls(object):
         assert (maxiter >= 0)
 
         # Optimizers
-        assert (optimizer in ['SCIPY-BFGS', 'SCIPY-POWELL'])
+        assert (optimizer in ['SCIPY-BFGS', 'SCIPY-POWELL', 'SCIPY-LBFGSB'])
 
     def _check_integrity_results(self):
         """ This methods check the integrity of the results.
@@ -592,23 +592,17 @@ class RobupyCls(object):
                 # Loop over all possible states
                 for k in range(states_number_period[period]):
                     # Check that wages are all positive
-                    assert (
-                    np.all(periods_payoffs_systematic[period, k, :2] > 0.0))
+                    assert (np.all(periods_payoffs_systematic[period, k, :2] >= 0.0))
                     # Check for finite value at admissible state
-                    assert (
-                        np.all(np.isfinite(
-                            periods_payoffs_systematic[period, k, :])))
+                    assert (np.all(np.isfinite(periods_payoffs_systematic[
+                    period, k, :])))
                     # Record finite value
                     is_infinite[period, k, :] = True
                 # Check that all admissible states are finite
-                assert (
-                    np.all(np.isfinite(periods_payoffs_systematic[is_infinite ==
-                                                                  True])))
+                assert (np.all(np.isfinite(periods_payoffs_systematic[is_infinite==True])))
                 # Check that all inadmissible states are infinite
                 if num_periods > 1:
-                    assert (np.all(np.isfinite(
-                        periods_payoffs_systematic[
-                            is_infinite == False])) == False)
+                    assert (np.all(np.isfinite(periods_payoffs_systematic[is_infinite == False])) == False)
 
         # Check the expected future value
         is_applicable = (periods_emax is not None)
@@ -630,9 +624,7 @@ class RobupyCls(object):
                 if num_periods == 1:
                     assert (len(periods_emax[is_infinite == False]) == 0)
                 else:
-                    assert (
-                        np.all(np.isfinite(
-                            periods_emax[is_infinite == False])) == False)
+                    assert (np.all(np.isfinite(periods_emax[is_infinite == False])) == False)
 
     def _check_key(self, key):
         """ Check that key is present.
