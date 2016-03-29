@@ -6,8 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="dab45195-1938-4e75-b973-f8d08bf57068" name="Default" comment="">
       <change type="DELETED" beforePath="$PROJECT_DIR$/analysis/working/driver.py" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/.idea/workspace.xml" afterPath="$PROJECT_DIR$/package/development/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/tests/test_unit.py" afterPath="$PROJECT_DIR$/package/robupy/tests/test_unit.py" />
     </list>
     <ignored path="robustToolbox.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -49,8 +47,8 @@
       <file leaf-file-name="test_unit.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/package/robupy/tests/test_unit.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-1.3188854">
-              <caret line="25" column="46" selection-start-line="25" selection-start-column="35" selection-end-line="25" selection-end-column="46" />
+            <state vertical-scroll-proportion="0.24148607">
+              <caret line="97" column="26" selection-start-line="97" selection-start-column="26" selection-end-line="97" selection-end-column="26" />
               <folding>
                 <element signature="e#122#150#0" expanded="true" />
               </folding>
@@ -932,8 +930,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/package/robupy/tests/test_unit.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-1.3188854">
-          <caret line="25" column="46" selection-start-line="25" selection-start-column="35" selection-end-line="25" selection-end-column="46" />
+        <state vertical-scroll-proportion="0.24148607">
+          <caret line="97" column="26" selection-start-line="97" selection-start-column="26" selection-end-line="97" selection-end-column="26" />
           <folding>
             <element signature="e#122#150#0" expanded="true" />
           </folding>
