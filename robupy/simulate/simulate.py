@@ -31,8 +31,9 @@ from robupy.shared.auxiliary import replace_missing_values
 from robupy.shared.auxiliary import check_dataset
 from robupy.shared.auxiliary import create_draws
 
-
 from robupy.fortran.f2py_library import f2py_simulate
+
+from robupy.solve.solve import solve
 
 # Logging
 from robupy.simulate.simulate_python import pyth_simulate
@@ -50,6 +51,11 @@ def simulate(robupy_obj):
     # Checks
     assert check_input(robupy_obj)
 
+    # Solve the requested economy
+    solve(robupy_obj)
+
+    # Fire up the logging for the simulation. The logging of the solution
+    # step is handled within the solution routines.
     start_logging()
 
     # Distribute class attributes

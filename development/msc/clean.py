@@ -53,6 +53,10 @@ def remove_nuisances():
         if 'ini' in file_:
             continue
 
+        if 'opt' in file_:
+            continue
+
+
         if 'restud/simulation' in file_:
             continue
 

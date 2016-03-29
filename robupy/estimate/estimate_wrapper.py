@@ -219,7 +219,7 @@ class OptimizationClass(object):
         # Initialization
         dict_ = {}
 
-        for line in open('optimizers.robupy.opt').readlines():
+        for line in open('optimization.robupy.opt').readlines():
 
             # Split line
             list_ = shlex.split(line)
