@@ -180,15 +180,18 @@ class OptimizationClass(object):
         else:
             raise NotImplementedError
 
+        # Recording of current evaluation
+        np.savetxt(open('paras_curre.robupy.log', 'wb'), x, fmt='%15.8f')
+
         # Recording of starting information
         if is_first:
-            np.savetxt(open('start_paras.robupy.log', 'wb'), x, fmt='%15.8f')
+            np.savetxt(open('paras_start.robupy.log', 'wb'), x, fmt='%15.8f')
             if os.path.exists('optimization.robupy.log'):
                 os.unlink('optimization.robupy.log')
 
         # Recording of information about each step.
         if crit_val < step_val:
-            np.savetxt(open('steps_paras.robupy.log', 'wb'), x, fmt='%15.8f')
+            np.savetxt(open('paras_steps.robupy.log', 'wb'), x, fmt='%15.8f')
             with open('optimization.robupy.log', 'a') as out_file:
                 str_ = '{0:<10} {1:<5}\n'.format('Iteration', int(num_iter))
                 out_file.write(str_)
