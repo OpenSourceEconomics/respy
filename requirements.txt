@@ -5,3 +5,4 @@ pandas==0.17.1
 coveralls==0.5
 scipy==0.15.1
 statsmodels==0.6.1
+coverage==3.7
