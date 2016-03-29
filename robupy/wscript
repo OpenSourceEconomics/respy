@@ -124,6 +124,9 @@ def cleanup_build(is_build=False):
             if match == './tests':
                 continue
 
+            if match == './scripts':
+                continue
+
             if match == './tests/codes':
                 continue
 
