@@ -22,7 +22,7 @@ sys.path.insert(0, ROOT_DIR)
 from robupy import simulate, read, solve, process, evaluate, estimate
 
 
-robupy_obj = read('test.robupy.ini')
+robupy_obj = read('model.robupy.ini')
 
 # First, I simulate a dataset.
 print('starting to solve')
@@ -33,8 +33,8 @@ robupy_obj = solve(robupy_obj)
 
 print('starting to simulate')
 simulate(robupy_obj)
-print('starting to estimate')
-estimate(robupy_obj, process(robupy_obj))
+#print('starting to estimate')
+#äestimate(robupy_obj, process(robupy_obj))
 
 #val = evaluate(robupy_obj, process(robupy_obj))
 #np.testing.assert_allclose(2.992618550039753, val)

@@ -117,3 +117,50 @@ def check_optimization_parameters(x):
     # Finishing
     return True
 
+
+def process_block(list_, dict_, keyword):
+    """ This function processes most parts of the initialization file.
+    """
+    # Distribute information
+    name, val = list_[0], list_[1]
+
+    # Prepare container.
+    if (name not in dict_[keyword].keys()) and (name in ['coeff']):
+        dict_[keyword][name] = []
+
+    # Type conversion
+    if name in ['m', 'maxfun']:
+        val = int(val)
+    elif name in ['file']:
+        val = str(val)
+    else:
+        val = float(val)
+
+    # Collect information
+    dict_[keyword][name] = val
+
+    # Finishing.
+    return dict_
+
+
+def process_cases(list_):
+    """ Process cases and determine whether keyword or empty line.
+    """
+    # Antibugging
+    assert (isinstance(list_, list))
+
+    # Get information
+    is_empty = (len(list_) == 0)
+
+    if not is_empty:
+        is_keyword = list_[0].isupper()
+    else:
+        is_keyword = False
+
+    # Antibugging
+    assert (is_keyword in [True, False])
+    assert (is_empty in [True, False])
+
+    # Finishing
+    return is_empty, is_keyword
+
