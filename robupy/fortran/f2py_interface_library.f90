@@ -272,7 +272,7 @@ SUBROUTINE f2py_simulate(dataset, periods_payoffs_systematic, &
 
     !/* external libraries      */
 
-    USE robufort_library
+    USE robufort_simulate
 
     !/* setup                   */
 
