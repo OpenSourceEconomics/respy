@@ -7,10 +7,7 @@
     <list default="true" id="dab45195-1938-4e75-b973-f8d08bf57068" name="Default" comment="">
       <change type="DELETED" beforePath="$PROJECT_DIR$/analysis/working/driver.py" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/.idea/workspace.xml" afterPath="$PROJECT_DIR$/package/development/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/testing/investigate.py" afterPath="$PROJECT_DIR$/package/development/testing/investigate.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/read/read.py" afterPath="$PROJECT_DIR$/package/robupy/read/read.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/solve/solve_auxiliary.py" afterPath="$PROJECT_DIR$/package/robupy/solve/solve_auxiliary.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/tests/test_regression.py" afterPath="$PROJECT_DIR$/package/robupy/tests/test_regression.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/travis-ci/run.py" afterPath="$PROJECT_DIR$/package/travis-ci/run.py" />
     </list>
     <ignored path="robustToolbox.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -49,12 +46,24 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="read.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="read.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/package/robupy/read/read.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.056968465">
-              <caret line="27" column="0" selection-start-line="27" selection-start-column="0" selection-end-line="27" selection-end-column="0" />
+            <state vertical-scroll-proportion="0.0">
+              <caret line="34" column="17" selection-start-line="34" selection-start-column="17" selection-end-line="34" selection-end-column="17" />
               <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="run.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/package/travis-ci/run.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.7121058">
+              <caret line="25" column="0" selection-start-line="25" selection-start-column="0" selection-end-line="25" selection-end-column="0" />
+              <folding>
+                <element signature="e#122#135#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -92,8 +101,8 @@
       <file leaf-file-name="solve_auxiliary.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/package/robupy/solve/solve_auxiliary.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-32.51613">
-              <caret line="338" column="32" selection-start-line="338" selection-start-column="32" selection-end-line="338" selection-end-column="32" />
+            <state vertical-scroll-proportion="-33.419353">
+              <caret line="339" column="32" selection-start-line="339" selection-start-column="32" selection-end-line="339" selection-end-column="32" />
               <folding />
             </state>
           </provider>
@@ -178,13 +187,13 @@
         <option value="$PROJECT_DIR$/package/development/testing/run.py" />
         <option value="$PROJECT_DIR$/package/robupy/solve/ambiguity.py" />
         <option value="$PROJECT_DIR$/package/robupy/tests/test_unit.py" />
-        <option value="$PROJECT_DIR$/package/travis-ci/run.py" />
         <option value="$PROJECT_DIR$/package/requirements.txt" />
         <option value="$PROJECT_DIR$/package/robupy/estimate/estimate_wrapper.py" />
         <option value="$PROJECT_DIR$/package/robupy/tests/test_regression.py" />
         <option value="$PROJECT_DIR$/package/robupy/solve/solve_auxiliary.py" />
         <option value="$PROJECT_DIR$/package/development/testing/investigate.py" />
         <option value="$PROJECT_DIR$/package/robupy/read/read.py" />
+        <option value="$PROJECT_DIR$/package/travis-ci/run.py" />
       </list>
     </option>
   </component>
@@ -266,6 +275,74 @@
             <PATH_ELEMENT>
               <option name="myItemId" value="robustToolbox" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="External Libraries" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ExternalLibrariesNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="&lt; Python 3.4.3 virtualenv at ~/.envs/robustToolbox3 &gt;" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.NamedLibraryElementNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="robustToolbox" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="robustToolbox" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="robustToolbox" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="robustToolbox" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="package" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="robustToolbox" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="robustToolbox" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="package" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="travis-ci" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="robustToolbox" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="robustToolbox" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="package" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="robupy" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
         </subPane>
@@ -616,11 +693,11 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="2617" y="46" width="1578" height="1394" extended-state="4" />
-    <editor active="false" />
+    <editor active="true" />
     <layout>
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.21896684" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" x="261" y="41" width="551" height="683" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.21896684" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" x="261" y="41" width="551" height="683" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2545692" sideWeight="0.4946401" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.15274152" sideWeight="0.48851454" order="0" side_tool="false" content_ui="tabs" />
@@ -842,13 +919,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/travis-ci/run.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="7" column="0" selection-start-line="7" selection-start-column="0" selection-end-line="7" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/package/requirements.txt">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.15469614">
@@ -906,8 +976,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/package/robupy/solve/solve_auxiliary.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-32.51613">
-          <caret line="338" column="32" selection-start-line="338" selection-start-column="32" selection-end-line="338" selection-end-column="32" />
+        <state vertical-scroll-proportion="-33.419353">
+          <caret line="339" column="32" selection-start-line="339" selection-start-column="32" selection-end-line="339" selection-end-column="32" />
           <folding />
         </state>
       </provider>
@@ -930,9 +1000,19 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/package/robupy/read/read.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.056968465">
-          <caret line="27" column="0" selection-start-line="27" selection-start-column="0" selection-end-line="27" selection-end-column="0" />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="34" column="17" selection-start-line="34" selection-start-column="17" selection-end-line="34" selection-end-column="17" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/travis-ci/run.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.7121058">
+          <caret line="25" column="0" selection-start-line="25" selection-start-column="0" selection-end-line="25" selection-end-column="0" />
+          <folding>
+            <element signature="e#122#135#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
