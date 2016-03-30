@@ -75,7 +75,7 @@ PROGRAM robufort
     ! Carlo integration of the EMAX. For is_debugging purposes, these might 
     ! also be read in from disk or set to zero/one.   
     CALL create_draws(periods_draws_emax, num_periods, num_draws_emax, &
-            seed_emax, is_debug, 'emax', shocks_cholesky, is_ambiguous)
+            seed_emax, is_debug, 'emax', shocks_cholesky)
 
     ! Execute on request.
     IF (request == 'solve') THEN
@@ -95,7 +95,7 @@ PROGRAM robufort
         ! Carlo integration of the choice probabilities. For is_debugging 
         ! purposes, these might also be read in from disk or set to zero/one.   
         CALL create_draws(periods_draws_prob, num_periods, num_draws_prob, &
-                seed_prob, is_debug, 'prob', shocks_cholesky, is_ambiguous)
+                seed_prob, is_debug, 'prob', shocks_cholesky)
 
         ! Read observed dataset from disk
         CALL read_dataset(data_array, num_periods, num_agents)

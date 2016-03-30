@@ -4,6 +4,8 @@ MODULE solve_auxiliary
 
 	!/*	external modules	*/
 
+    USE shared_auxiliary
+
     USE shared_constants
 
     USE solve_ambiguity
@@ -11,8 +13,6 @@ MODULE solve_auxiliary
     USE evaluate_emax
 
     USE evaluate_risk
-
-    USE shared_auxiliary
 
 	!/*	setup	*/
 

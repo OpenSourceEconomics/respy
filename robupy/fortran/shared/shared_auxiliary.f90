@@ -144,7 +144,7 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE create_draws(draws, num_periods, num_draws_emax, seed, is_debug, &
-                which, shocks_cholesky, is_ambiguous)
+                which, shocks_cholesky)
 
     !/* external objects        */
 
@@ -156,7 +156,6 @@ SUBROUTINE create_draws(draws, num_periods, num_draws_emax, seed, is_debug, &
 
     REAL(our_dble), INTENT(IN)                  :: shocks_cholesky(4, 4)
 
-    LOGICAL, INTENT(IN)                         :: is_ambiguous
     LOGICAL, INTENT(IN)                         :: is_debug
 
     CHARACTER(4)                                :: which

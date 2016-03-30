@@ -119,7 +119,9 @@ SUBROUTINE handle_shocks_zero(x_internal, is_debug, period, k)
 ! Algorithm
 !-------------------------------------------------------------------------------
 
-    CALL logging_ambiguity(x_internal, zero_dble, 10, period, k, .FALSE.)
+    IF (is_debug) THEN
+        CALL logging_ambiguity(x_internal, zero_dble, 10, period, k, .FALSE.)
+    END IF
 
 END SUBROUTINE
 !*******************************************************************************
