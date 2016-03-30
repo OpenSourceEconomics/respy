@@ -22,33 +22,35 @@ def read(file_):
     # Initialization
     dict_ = {}
 
-    for line in open(file_).readlines():
+    with open(file_) as in_file:
 
-        # Split line
-        list_ = shlex.split(line)
+        for line in in_file.readlines():
 
-        # Determine special cases
-        is_empty, is_keyword = _process_cases(list_)
+            # Split line
+            list_ = shlex.split(line)
 
-        # Applicability
-        if is_empty:
-            continue
+            # Determine special cases
+            is_empty, is_keyword = _process_cases(list_)
 
-        # Prepare dictionary
-        if is_keyword:
-            keyword = list_[0]
-            dict_[keyword] = {}
-            continue
+            # Applicability
+            if is_empty:
+                continue
 
-        # Process blocks of information
-        if keyword not in ['WORK', 'SHOCKS']:
-            dict_ = _process_standard(list_, dict_, keyword)
-        elif keyword in ['WORK']:
-            _process_working(list_, dict_)
-        elif keyword in ['SHOCKS']:
-            dict_ = _process_shocks(list_, dict_)
-        else:
-            raise AssertionError
+            # Prepare dictionary
+            if is_keyword:
+                keyword = list_[0]
+                dict_[keyword] = {}
+                continue
+
+            # Process blocks of information
+            if keyword not in ['WORK', 'SHOCKS']:
+                dict_ = _process_standard(list_, dict_, keyword)
+            elif keyword in ['WORK']:
+                _process_working(list_, dict_)
+            elif keyword in ['SHOCKS']:
+                dict_ = _process_shocks(list_, dict_)
+            else:
+                raise AssertionError
 
     # Type conversion for Shocks
     dict_['SHOCKS'] = np.array(dict_['SHOCKS'])
