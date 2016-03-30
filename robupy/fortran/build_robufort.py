@@ -39,7 +39,7 @@ def robufort_build(self, is_debug=False):
 
     # Compile robufort file according to selected options.
     cmd = 'gfortran ' + compiler_options + ' -o robufort ' \
-          'shared/shared_constants.f90  robufort_auxiliary.f90 ' \
+          'shared/shared_constants.f90 shared/shared_auxiliary.f90 robufort_auxiliary.f90 ' \
           'robufort_slsqp.f  solve/solve_emax.f90 ' \
           'solve/solve_risk.f90 solve/solve_ambiguity.f90 solve/solve_auxiliary.f90 ' \
           'solve/solve.f90 simulate/simulate.f90 robufort_library.f90 ' \

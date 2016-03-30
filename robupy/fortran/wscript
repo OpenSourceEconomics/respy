@@ -37,7 +37,8 @@ class CreateRobufortLibrary(Task):
         # Determine compiler options
         compiler_options = '-O3 -fpic'
 
-        files = ['shared/shared_constants.f90', 'robufort_auxiliary.f90',
+        files = ['shared/shared_constants.f90',
+            'shared/shared_auxiliary.f90', 'robufort_auxiliary.f90',
                  'robufort_slsqp.f', 'solve/solve_emax.f90',
                  'solve/solve_risk.f90', 'solve/solve_ambiguity.f90',
                  'solve/solve_auxiliary.f90', 'solve/solve.f90',
