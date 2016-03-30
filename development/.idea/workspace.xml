@@ -5,20 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="dab45195-1938-4e75-b973-f8d08bf57068" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/package/robupy/fortran/estimate/estimate_auxiliary.f90" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/analysis/working/driver.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/package/robupy/fortran/robufort_auxiliary.f90" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/development/.idea/workspace.xml" afterPath="$PROJECT_DIR$/package/development/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/fortran/build_robufort.py" afterPath="$PROJECT_DIR$/package/robupy/fortran/build_robufort.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/fortran/f2py_interface_library.f90" afterPath="$PROJECT_DIR$/package/robupy/fortran/f2py_interface_library.f90" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/fortran/robufort.f90" afterPath="$PROJECT_DIR$/package/robupy/fortran/robufort.f90" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/fortran/simulate/simulate.f90" afterPath="$PROJECT_DIR$/package/robupy/fortran/simulate/simulate.f90" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/fortran/solve/solve_ambiguity.f90" afterPath="$PROJECT_DIR$/package/robupy/fortran/solve/solve_ambiguity.f90" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/fortran/solve/solve_auxiliary.f90" afterPath="$PROJECT_DIR$/package/robupy/fortran/solve/solve_auxiliary.f90" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/fortran/solve/solve_emax.f90" afterPath="$PROJECT_DIR$/package/robupy/fortran/solve/solve_emax.f90" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/fortran/solve/solve_risk.f90" afterPath="$PROJECT_DIR$/package/robupy/fortran/solve/solve_risk.f90" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/fortran/wscript" afterPath="$PROJECT_DIR$/package/robupy/fortran/wscript" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/wscript" afterPath="$PROJECT_DIR$/package/robupy/wscript" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/fortran/shared/shared_auxiliary.f90" afterPath="$PROJECT_DIR$/package/robupy/fortran/shared/shared_auxiliary.f90" />
     </list>
     <ignored path="robustToolbox.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -54,61 +44,51 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="solve.f90" pinned="false" current-in-tab="false">
+      <file leaf-file-name="solve.f90" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/package/robupy/fortran/solve/solve.f90">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+            <state vertical-scroll-proportion="0.39009288">
+              <caret line="18" column="0" selection-start-line="18" selection-start-column="0" selection-end-line="18" selection-end-column="0" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="robufort.f90" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/package/robupy/fortran/robufort.f90">
+      <file leaf-file-name="solve_ambiguity.f90" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/package/robupy/fortran/solve/solve_ambiguity.f90">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="17" column="0" selection-start-line="17" selection-start-column="0" selection-end-line="17" selection-end-column="0" />
+              <caret line="14" column="0" selection-start-line="14" selection-start-column="0" selection-end-line="14" selection-end-column="0" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="simulate.f90" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/package/robupy/fortran/simulate/simulate.f90">
+      <file leaf-file-name="solve_auxiliary.f90" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/package/robupy/fortran/solve/solve_auxiliary.f90">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="8" column="24" selection-start-line="8" selection-start-column="24" selection-end-line="8" selection-end-column="24" />
+              <caret line="7" column="0" selection-start-line="7" selection-start-column="0" selection-end-line="7" selection-end-column="0" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="f2py_interface_library.f90" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/package/robupy/fortran/f2py_interface_library.f90">
+      <file leaf-file-name="solve_emax.f90" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/package/robupy/fortran/solve/solve_emax.f90">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.1998414">
-              <caret line="20" column="16" selection-start-line="20" selection-start-column="16" selection-end-line="20" selection-end-column="16" />
+            <state vertical-scroll-proportion="0.0">
+              <caret line="13" column="0" selection-start-line="13" selection-start-column="0" selection-end-line="13" selection-end-column="0" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="f2py_interface_debug.f90" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/package/robupy/fortran/f2py_interface_debug.f90">
+      <file leaf-file-name="solve_risk.f90" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/package/robupy/fortran/solve/solve_risk.f90">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-13.548388">
-              <caret line="16" column="18" selection-start-line="16" selection-start-column="8" selection-end-line="16" selection-end-column="18" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="f2py_interface_testing.f90" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/package/robupy/fortran/f2py_interface_testing.f90">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-12.903226">
-              <caret line="41" column="17" selection-start-line="41" selection-start-column="8" selection-end-line="41" selection-end-column="17" />
+            <state vertical-scroll-proportion="0.0">
+              <caret line="8" column="20" selection-start-line="8" selection-start-column="20" selection-end-line="8" selection-end-column="20" />
               <folding />
             </state>
           </provider>
@@ -166,7 +146,6 @@
         <option value="$PROJECT_DIR$/package/robupy/fortran/robufort_testing.f90" />
         <option value="$PROJECT_DIR$/package/robupy/fortran/evaluate/evaluate.f90" />
         <option value="$PROJECT_DIR$/package/robupy/fortran/evaluate/evaluate_auxiliary.f90" />
-        <option value="$PROJECT_DIR$/package/robupy/fortran/shared/shared_auxiliary.f90" />
         <option value="$PROJECT_DIR$/package/robupy/fortran/f2py_interface_debug.f90" />
         <option value="$PROJECT_DIR$/package/robupy/wscript" />
         <option value="$PROJECT_DIR$/package/robupy/fortran/robufort_auxiliary.f90" />
@@ -177,9 +156,10 @@
         <option value="$PROJECT_DIR$/package/robupy/fortran/solve/solve_emax.f90" />
         <option value="$PROJECT_DIR$/package/robupy/fortran/solve/solve_auxiliary.f90" />
         <option value="$PROJECT_DIR$/package/robupy/fortran/solve/solve_ambiguity.f90" />
-        <option value="$PROJECT_DIR$/package/robupy/fortran/robufort.f90" />
         <option value="$PROJECT_DIR$/package/robupy/fortran/simulate/simulate.f90" />
         <option value="$PROJECT_DIR$/package/robupy/fortran/f2py_interface_library.f90" />
+        <option value="$PROJECT_DIR$/package/robupy/fortran/shared/shared_auxiliary.f90" />
+        <option value="$PROJECT_DIR$/package/robupy/fortran/robufort.f90" />
       </list>
     </option>
   </component>
@@ -1307,14 +1287,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/robupy/fortran/shared/shared_auxiliary.f90">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-36.16129">
-          <caret line="406" column="12" selection-start-line="406" selection-start-column="12" selection-end-line="406" selection-end-column="12" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/package/robupy/fortran/evaluate/evaluate_auxiliary.f90">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -1371,62 +1343,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/robupy/fortran/solve/solve_risk.f90">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.28173375">
-          <caret line="13" column="0" selection-start-line="13" selection-start-column="0" selection-end-line="13" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/robupy/fortran/solve/solve_emax.f90">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.28173375">
-          <caret line="13" column="0" selection-start-line="13" selection-start-column="0" selection-end-line="13" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/robupy/fortran/solve/solve_auxiliary.f90">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.15170279">
-          <caret line="7" column="0" selection-start-line="7" selection-start-column="0" selection-end-line="7" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/robupy/fortran/solve/solve_ambiguity.f90">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.30340558">
-          <caret line="14" column="0" selection-start-line="14" selection-start-column="0" selection-end-line="14" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/robupy/fortran/solve/solve.f90">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/robupy/fortran/robufort.f90">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="17" column="0" selection-start-line="17" selection-start-column="0" selection-end-line="17" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/robupy/fortran/simulate/simulate.f90">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="8" column="24" selection-start-line="8" selection-start-column="24" selection-end-line="8" selection-end-column="24" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/package/robupy/fortran/f2py_interface_testing.f90">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-12.903226">
@@ -1447,6 +1363,70 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.1998414">
           <caret line="20" column="16" selection-start-line="20" selection-start-column="16" selection-end-line="20" selection-end-column="16" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/robupy/fortran/simulate/simulate.f90">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.17337461">
+          <caret line="8" column="24" selection-start-line="8" selection-start-column="24" selection-end-line="8" selection-end-column="24" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/robupy/fortran/robufort.f90">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-0.996904">
+          <caret line="8" column="0" selection-start-line="8" selection-start-column="0" selection-end-line="8" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/robupy/fortran/shared/shared_auxiliary.f90">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.95665634">
+          <caret line="1089" column="14" selection-start-line="1089" selection-start-column="14" selection-end-line="1089" selection-end-column="14" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/robupy/fortran/solve/solve_ambiguity.f90">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="14" column="0" selection-start-line="14" selection-start-column="0" selection-end-line="14" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/robupy/fortran/solve/solve_auxiliary.f90">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="7" column="0" selection-start-line="7" selection-start-column="0" selection-end-line="7" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/robupy/fortran/solve/solve_emax.f90">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="13" column="0" selection-start-line="13" selection-start-column="0" selection-end-line="13" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/robupy/fortran/solve/solve_risk.f90">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="8" column="20" selection-start-line="8" selection-start-column="20" selection-end-line="8" selection-end-column="20" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/robupy/fortran/solve/solve.f90">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.39009288">
+          <caret line="18" column="0" selection-start-line="18" selection-start-column="0" selection-end-line="18" selection-end-column="0" />
           <folding />
         </state>
       </provider>
