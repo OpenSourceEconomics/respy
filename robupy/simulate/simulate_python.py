@@ -5,8 +5,8 @@ import logging
 logger = logging.getLogger('ROBUPY_SIMULATE')
 
 # project library
-from robupy.shared.constants import MISSING_FLOAT
-from robupy.shared.auxiliary import get_total_value
+from robupy.shared.shared_constants import MISSING_FLOAT
+from robupy.shared.shared_auxiliary import get_total_value
 
 
 ''' Main function

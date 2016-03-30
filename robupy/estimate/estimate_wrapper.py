@@ -16,7 +16,7 @@ from robupy.estimate.estimate_auxiliary import process_cases
 
 from robupy.estimate.estimate_python import pyth_criterion
 
-from robupy.shared.auxiliary import HUGE_FLOAT
+from robupy.shared.shared_auxiliary import HUGE_FLOAT
 
 from robupy.fortran.f2py_library import f2py_criterion
 

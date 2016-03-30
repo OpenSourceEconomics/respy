@@ -21,10 +21,10 @@ from robupy.tests.codes.random_init import generate_random_dict
 from robupy.tests.codes.random_init import print_random_dict
 from robupy.tests.codes.random_init import generate_init
 
-from robupy.shared.auxiliary import distribute_class_attributes
-from robupy.shared.auxiliary import replace_missing_values
-from robupy.shared.auxiliary import distribute_model_paras
-from robupy.shared.auxiliary import create_draws
+from robupy.shared.shared_auxiliary import distribute_class_attributes
+from robupy.shared.shared_auxiliary import replace_missing_values
+from robupy.shared.shared_auxiliary import distribute_model_paras
+from robupy.shared.shared_auxiliary import create_draws
 
 import robupy.fortran.f2py_debug as fort_debug
 

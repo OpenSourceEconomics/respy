@@ -16,8 +16,8 @@ import os
 from robupy.tests.codes.random_init import generate_random_dict
 from robupy.tests.codes.random_init import print_random_dict
 
-from robupy.shared.auxiliary import distribute_class_attributes
-from robupy.shared.constants import FORTRAN_DIR
+from robupy.shared.shared_auxiliary import distribute_class_attributes
+from robupy.shared.shared_constants import FORTRAN_DIR
 
 from robupy import simulate
 from robupy import solve

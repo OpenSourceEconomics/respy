@@ -4,8 +4,8 @@
 import numpy as np
 
 # project library
-from robupy.shared.auxiliary import check_model_parameters
-from robupy.shared.auxiliary import check_dataset
+from robupy.shared.shared_auxiliary import check_model_parameters
+from robupy.shared.shared_auxiliary import check_dataset
 
 ''' Auxiliary functions
 '''

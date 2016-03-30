@@ -8,7 +8,7 @@ import numpy as np
 import logging
 
 # project library
-from robupy.shared.constants import MISSING_FLOAT
+from robupy.shared.shared_constants import MISSING_FLOAT
 
 from robupy.solve.solve_auxiliary import pyth_calculate_payoffs_systematic
 from robupy.solve.solve_auxiliary import pyth_create_state_space

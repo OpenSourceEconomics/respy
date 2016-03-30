@@ -14,12 +14,12 @@ import os
 from robupy.solve.solve_ambiguity import get_payoffs_ambiguity
 from robupy.solve.solve_risk import get_payoffs_risk
 
-from robupy.shared.auxiliary import get_total_value
+from robupy.shared.shared_auxiliary import get_total_value
 
-from robupy.shared.constants import INTERPOLATION_INADMISSIBLE_STATES
-from robupy.shared.constants import MISSING_FLOAT
-from robupy.shared.constants import MISSING_INT
-from robupy.shared.constants import HUGE_FLOAT
+from robupy.shared.shared_constants import INTERPOLATION_INADMISSIBLE_STATES
+from robupy.shared.shared_constants import MISSING_FLOAT
+from robupy.shared.shared_constants import MISSING_INT
+from robupy.shared.shared_constants import HUGE_FLOAT
 
 # Logging
 logger = logging.getLogger('ROBUPY_SOLVE')

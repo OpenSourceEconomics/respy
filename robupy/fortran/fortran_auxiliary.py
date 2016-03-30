@@ -9,7 +9,7 @@ import numpy as np
 import os
 
 # project library
-from robupy.shared.constants import HUGE_FLOAT
+from robupy.shared.shared_constants import HUGE_FLOAT
 
 ''' Auxiliary  functions
 '''

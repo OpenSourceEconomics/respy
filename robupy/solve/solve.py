@@ -5,11 +5,11 @@
 from robupy.fortran.f2py_library import f2py_create_state_space
 from robupy.fortran.f2py_library import f2py_solve
 
-from robupy.shared.auxiliary import distribute_class_attributes
-from robupy.shared.auxiliary import distribute_model_paras
-from robupy.shared.auxiliary import replace_missing_values
-from robupy.shared.auxiliary import add_solution
-from robupy.shared.auxiliary import create_draws
+from robupy.shared.shared_auxiliary import distribute_class_attributes
+from robupy.shared.shared_auxiliary import distribute_model_paras
+from robupy.shared.shared_auxiliary import replace_missing_values
+from robupy.shared.shared_auxiliary import add_solution
+from robupy.shared.shared_auxiliary import create_draws
 from robupy.fortran.fortran import fort_solve
 
 from robupy.solve.solve_auxiliary import start_ambiguity_logging

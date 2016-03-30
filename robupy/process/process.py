@@ -7,7 +7,7 @@ import pandas as pd
 
 # project library
 from robupy.process.process_auxiliary import check_process
-from robupy.shared.auxiliary import check_dataset
+from robupy.shared.shared_auxiliary import check_dataset
 
 ''' Main function
 '''

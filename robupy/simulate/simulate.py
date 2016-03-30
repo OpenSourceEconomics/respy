@@ -25,11 +25,11 @@ from robupy.simulate.simulate_auxiliary import check_input
 from robupy.simulate.simulate_auxiliary import write_info
 from robupy.simulate.simulate_auxiliary import write_out
 
-from robupy.shared.auxiliary import distribute_class_attributes
-from robupy.shared.auxiliary import distribute_model_paras
-from robupy.shared.auxiliary import replace_missing_values
-from robupy.shared.auxiliary import check_dataset
-from robupy.shared.auxiliary import create_draws
+from robupy.shared.shared_auxiliary import distribute_class_attributes
+from robupy.shared.shared_auxiliary import distribute_model_paras
+from robupy.shared.shared_auxiliary import replace_missing_values
+from robupy.shared.shared_auxiliary import check_dataset
+from robupy.shared.shared_auxiliary import create_draws
 
 from robupy.fortran.f2py_library import f2py_simulate
 

@@ -10,7 +10,7 @@ import pandas as pd
 logger = logging.getLogger('ROBUPY_SIMULATE')
 
 # project library
-from robupy.shared.auxiliary import distribute_model_paras
+from robupy.shared.shared_auxiliary import distribute_model_paras
 
 
 def write_info(robupy_obj, data_frame):

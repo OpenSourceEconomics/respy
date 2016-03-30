@@ -29,9 +29,9 @@ from robupy.solve.solve_emax import simulate_emax
 from robupy.estimate.estimate_auxiliary import get_optim_parameters
 from robupy.estimate.estimate_auxiliary import get_model_parameters
 
-from robupy.shared.auxiliary import distribute_class_attributes
-from robupy.shared.auxiliary import distribute_model_paras
-from robupy.shared.auxiliary import create_draws
+from robupy.shared.shared_auxiliary import distribute_class_attributes
+from robupy.shared.shared_auxiliary import distribute_model_paras
+from robupy.shared.shared_auxiliary import create_draws
 
 import robupy.fortran.f2py_testing as fort_test
 import robupy.fortran.f2py_debug as fort_debug

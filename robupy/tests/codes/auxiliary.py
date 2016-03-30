@@ -6,7 +6,7 @@ import numpy as np
 
 # project library
 from robupy.solve.solve_auxiliary import pyth_create_state_space
-from robupy.shared.auxiliary import distribute_class_attributes
+from robupy.shared.shared_auxiliary import distribute_class_attributes
 
 from robupy import read
 

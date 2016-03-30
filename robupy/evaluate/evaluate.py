@@ -10,9 +10,9 @@ from robupy.evaluate.evaluate_python import pyth_evaluate
 from robupy.fortran.f2py_library import f2py_evaluate
 from robupy.fortran.fortran import fort_evaluate
 
-from robupy.shared.auxiliary import distribute_class_attributes
-from robupy.shared.auxiliary import distribute_model_paras
-from robupy.shared.auxiliary import create_draws
+from robupy.shared.shared_auxiliary import distribute_class_attributes
+from robupy.shared.shared_auxiliary import distribute_model_paras
+from robupy.shared.shared_auxiliary import create_draws
 
 
 ''' Main function

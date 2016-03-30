@@ -6,7 +6,7 @@ criterion function.
 import numpy as np
 
 # project library
-from robupy.shared.auxiliary import check_dataset
+from robupy.shared.shared_auxiliary import check_dataset
 
 
 def check_output(crit_val):
