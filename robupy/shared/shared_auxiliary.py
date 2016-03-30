@@ -127,55 +127,32 @@ def create_draws(num_periods, num_draws_emax, seed, is_debug, which,
     return draws
 
 
-def replace_missing_values(arguments):
-    """ Replace missing value MISSING_FLOAT with NAN. Note that the output
-    argument is of type float in the case missing values are found.
+def add_solution(robupy_obj, store, periods_payoffs_systematic,
+        states_number_period, mapping_state_idx, periods_emax, states_all):
+    """ Add solution to class instance.
     """
-    # Antibugging
-    assert (isinstance(arguments, tuple) or isinstance(arguments, np.ndarray))
+    robupy_obj.unlock()
 
-    if isinstance(arguments, np.ndarray):
-        arguments = (arguments, )
+    robupy_obj.set_attr('periods_payoffs_systematic', periods_payoffs_systematic)
 
-    rslt = tuple()
+    robupy_obj.set_attr('states_number_period', states_number_period)
 
-    for argument in arguments:
-        # Transform to float array to evaluate missing values.
-        argument_internal = np.asfarray(argument)
+    robupy_obj.set_attr('mapping_state_idx', mapping_state_idx)
 
-        # Determine missing values
-        is_missing = (argument_internal == MISSING_FLOAT)
-        if np.any(is_missing):
-            # Replace missing values
-            argument = np.asfarray(argument)
-            argument[is_missing] = np.nan
+    robupy_obj.set_attr('periods_emax', periods_emax)
 
-        rslt += (argument,)
+    robupy_obj.set_attr('states_all', states_all)
 
-    # Aligning interface.
-    if len(rslt) == 1:
-        rslt = rslt[0]
+    robupy_obj.set_attr('is_solved', True)
+
+    robupy_obj.lock()
+
+    # Store object to file
+    if store:
+        robupy_obj.store('solution.robupy.pkl')
 
     # Finishing
-    return rslt
-
-
-def read_draws(num_periods, num_draws):
-    """ Red the draws from disk. This is only used in the development
-    process.
-    """
-    # Initialize containers
-    periods_draws = np.tile(np.nan, (num_periods, num_draws, 4))
-
-    # Read and distribute draws
-    draws = np.array(np.genfromtxt('draws.txt'), ndmin=2)
-    for period in range(num_periods):
-        lower = 0 + num_draws * period
-        upper = lower + num_draws
-        periods_draws[period, :, :] = draws[lower:upper, :]
-
-    # Finishing
-    return periods_draws
+    return robupy_obj
 
 
 def check_dataset(data_frame, robupy_obj):
@@ -270,6 +247,39 @@ def distribute_model_paras(model_paras, is_debug):
     return args
 
 
+def replace_missing_values(arguments):
+    """ Replace missing value MISSING_FLOAT with NAN. Note that the output
+    argument is of type float in the case missing values are found.
+    """
+    # Antibugging
+    assert (isinstance(arguments, tuple) or isinstance(arguments, np.ndarray))
+
+    if isinstance(arguments, np.ndarray):
+        arguments = (arguments, )
+
+    rslt = tuple()
+
+    for argument in arguments:
+        # Transform to float array to evaluate missing values.
+        argument_internal = np.asfarray(argument)
+
+        # Determine missing values
+        is_missing = (argument_internal == MISSING_FLOAT)
+        if np.any(is_missing):
+            # Replace missing values
+            argument = np.asfarray(argument)
+            argument[is_missing] = np.nan
+
+        rslt += (argument,)
+
+    # Aligning interface.
+    if len(rslt) == 1:
+        rslt = rslt[0]
+
+    # Finishing
+    return rslt
+
+
 def check_model_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         shocks_cov, shocks_cholesky):
     """ Check the integrity of all model parameters.
@@ -315,32 +325,19 @@ def distribute_class_attributes(robupy_obj, *args):
     return ret
 
 
-def add_solution(robupy_obj, store, periods_payoffs_systematic,
-        states_number_period, mapping_state_idx, periods_emax, states_all):
-    """ Add solution to class instance.
+def read_draws(num_periods, num_draws):
+    """ Red the draws from disk. This is only used in the development
+    process.
     """
-    robupy_obj.unlock()
+    # Initialize containers
+    periods_draws = np.tile(np.nan, (num_periods, num_draws, 4))
 
-    robupy_obj.set_attr('periods_payoffs_systematic', periods_payoffs_systematic)
-
-    robupy_obj.set_attr('states_number_period', states_number_period)
-
-    robupy_obj.set_attr('mapping_state_idx', mapping_state_idx)
-
-    robupy_obj.set_attr('periods_emax', periods_emax)
-
-    robupy_obj.set_attr('states_all', states_all)
-
-    robupy_obj.set_attr('is_solved', True)
-
-    robupy_obj.lock()
-
-    # Store object to file
-    if store:
-        robupy_obj.store('solution.robupy.pkl')
+    # Read and distribute draws
+    draws = np.array(np.genfromtxt('draws.txt'), ndmin=2)
+    for period in range(num_periods):
+        lower = 0 + num_draws * period
+        upper = lower + num_draws
+        periods_draws[period, :, :] = draws[lower:upper, :]
 
     # Finishing
-    return robupy_obj
-
-
-
+    return periods_draws

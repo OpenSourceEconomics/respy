@@ -365,7 +365,7 @@ SUBROUTINE wrapper_multivariate_normal(draws, mean, covariance, &
 
     !/* external libraries      */
 
-    USE robufort_auxiliary
+    USE shared_auxiliary
 
     !/* setup                   */
 
@@ -393,7 +393,7 @@ SUBROUTINE wrapper_standard_normal(draw, dim)
 
     !/* external libraries      */
 
-    USE robufort_auxiliary
+    USE shared_auxiliary
 
     !/* setup                   */
 
@@ -443,7 +443,7 @@ SUBROUTINE wrapper_cholesky(factor, matrix, n)
 
     !/* external libraries      */
 
-    USE robufort_auxiliary
+    USE shared_auxiliary
     
     !/* setup                   */
 
