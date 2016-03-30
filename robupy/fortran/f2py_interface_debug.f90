@@ -416,7 +416,7 @@ SUBROUTINE wrapper_determinant(det, A)
 
     !/* external libraries      */
 
-    USE robufort_auxiliary
+    USE shared_auxiliary
 
     !/* setup                   */
 
@@ -468,7 +468,7 @@ SUBROUTINE wrapper_inverse(inv, A, n)
 
     !/* external libraries      */
 
-    USE robufort_auxiliary
+    USE shared_auxiliary
 
     !/* setup                   */
 
@@ -495,7 +495,7 @@ SUBROUTINE wrapper_trace(rslt, A)
 
     !/* external libraries      */
 
-    USE robufort_auxiliary
+    USE shared_auxiliary
 
     !/* setup                   */
 
