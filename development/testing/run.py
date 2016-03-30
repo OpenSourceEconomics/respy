@@ -12,6 +12,7 @@ import traceback
 import importlib
 import argparse
 import random
+import time
 import sys
 import os
 
@@ -101,6 +102,12 @@ def run(hours):
                               full_test_record, start, timeout)
 
         cleanup_testing_infrastructure(True)
+
+        # This sleep is required as otherwise the fast execution of tasks
+        # does impede the functionality of the INQUIRE and OS.PATH.EXISTS
+        # function. The indicate the presence of debugging files that were
+        # just deleted shortly before.
+        time.sleep(1)
 
         #  Timeout.
         if timeout < datetime.now() - start:

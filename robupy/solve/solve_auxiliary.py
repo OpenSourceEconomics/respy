@@ -335,7 +335,7 @@ def get_simulated_indicator(num_points, num_candidates, period, num_periods,
     is_simulated[interpolation_points] = True
 
     # Check for debugging cases.
-    is_standardized = is_debug and os.path.isfile('interpolation.txt')
+    is_standardized = is_debug and os.path.exists('interpolation.txt')
     if is_standardized:
         with open('interpolation.txt', 'r') as file_:
             indicators = []
