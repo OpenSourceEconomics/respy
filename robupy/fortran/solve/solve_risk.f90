@@ -6,13 +6,13 @@
 !
 !*******************************************************************************
 !*******************************************************************************
-MODULE robufort_risk
+MODULE evaluate_risk
 
 	!/*	external modules	    */
 
     USE shared_constants
 
-    USE robufort_emax
+    USE evaluate_emax
 
 	!/*	setup	                */
 

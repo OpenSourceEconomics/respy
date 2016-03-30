@@ -14,7 +14,7 @@ SUBROUTINE wrapper_get_worst_case(x_internal, x_start, maxiter, ftol, tiny, &
 
     !/* external libraries    */
 
-    USE robufort_ambiguity
+    USE solve_ambiguity
 
     !/* setup    */
 
@@ -151,7 +151,7 @@ SUBROUTINE wrapper_get_payoffs_ambiguity(emax_simulated, num_draws_emax, &
 
     !/* external libraries      */
 
-    USE robufort_ambiguity
+    USE solve_ambiguity
 
     !/* setup                   */
 
@@ -203,7 +203,7 @@ SUBROUTINE wrapper_criterion_ambiguity_derivative(rslt, x, tiny, &
 
     !/* external libraries      */
 
-    USE robufort_ambiguity
+    USE solve_ambiguity
 
     !/* setup                   */
 
@@ -249,7 +249,7 @@ SUBROUTINE wrapper_simulate_emax(emax_simulated, num_periods, &
 
     !/* external libraries      */
 
-    USE robufort_emax
+    USE evaluate_emax
 
     !/* setup                   */
 
@@ -293,7 +293,7 @@ SUBROUTINE wrapper_criterion_ambiguity(emax_simulated, x, num_draws_emax, &
 
     !/* external libraries      */
 
-    USE robufort_ambiguity
+    USE solve_ambiguity
 
     !/* setup                   */
 
@@ -335,7 +335,7 @@ SUBROUTINE wrapper_divergence_derivative(rslt, x, cov, level, tiny)
 
     !/* external libraries      */
 
-    USE robufort_ambiguity
+    USE solve_ambiguity
 
     !/* setup                   */
 
@@ -520,7 +520,7 @@ SUBROUTINE wrapper_divergence(div, x, cov, level)
 
     !/* external libraries      */
 
-    USE robufort_ambiguity
+    USE solve_ambiguity
 
     !/* setup                   */
 

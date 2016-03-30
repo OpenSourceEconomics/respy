@@ -12,7 +12,7 @@ MODULE robufort_testing
     
     USE shared_constants
 
-    USE robufort_ambiguity
+    USE solve_ambiguity
 
 	!/*	setup	*/
 

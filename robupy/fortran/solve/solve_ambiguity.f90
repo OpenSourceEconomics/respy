@@ -7,15 +7,15 @@
 !
 !*******************************************************************************
 !*******************************************************************************
-MODULE robufort_ambiguity
+MODULE solve_ambiguity
 
 	!/*	external modules	  */
 
     USE shared_constants
 
-    USE robufort_emax
+    USE evaluate_emax
 
-    USE robufort_risk
+    USE evaluate_risk
 
 	!/*	setup	             */
 

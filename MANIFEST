@@ -11,12 +11,12 @@ robupy/solve.py
 robupy/fortran/__init__.py
 robupy/fortran/build_robufort.py
 robupy/fortran/robufort.f90
-robupy/fortran/robufort_ambiguity.f90
+robupy/fortran/solve_ambiguity.f90
 robupy/fortran/robufort_auxiliary.f90
 robupy/fortran/robufort_constants.f90
-robupy/fortran/robufort_emax.f90
+robupy/fortran/evaluate_emax.f90
 robupy/fortran/robufort_library.f90
-robupy/fortran/robufort_risk.f90
+robupy/fortran/evaluate_risk.f90
 robupy/fortran/robufort_slsqp.f
 robupy/fortran/solve_fortran.py
 robupy/python/__init__.py

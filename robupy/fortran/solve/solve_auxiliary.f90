@@ -6,11 +6,11 @@ MODULE solve_auxiliary
 
     USE shared_constants
 
-    USE robufort_ambiguity
+    USE solve_ambiguity
 
-    USE robufort_emax
+    USE evaluate_emax
 
-    USE robufort_risk
+    USE evaluate_risk
 
     USE shared_auxiliary
 

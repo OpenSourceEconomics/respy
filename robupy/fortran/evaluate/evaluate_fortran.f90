@@ -1,14 +1,14 @@
 !*******************************************************************************
 !*******************************************************************************
-MODULE robufort_evaluate
+MODULE evaluate_fortran
 
 	!/*	external modules	*/
-
-    USE shared_constants
 
     USE evaluate_auxiliary
 
     USE shared_auxiliary
+
+    USE shared_constants
 
 	!/*	setup	*/
 

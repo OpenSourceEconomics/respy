@@ -4,11 +4,11 @@ PROGRAM robufort
 
     !/* external modules        */
 
-    USE robufort_evaluate
+    USE evaluate_fortran
 
     USE shared_auxiliary
 
-    USE robufort_solve
+    USE solve_fortran
 
     !/* setup                   */
 
