@@ -13,6 +13,7 @@ MODULE solve_auxiliary
 
     USE robufort_risk
 
+    USE shared_auxiliary
 
 	!/*	setup	*/
 
@@ -21,7 +22,6 @@ MODULE solve_auxiliary
     PUBLIC
 
 CONTAINS
-
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE fort_create_state_space(states_all, states_number_period, &

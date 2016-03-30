@@ -14,6 +14,8 @@ MODULE robufort_emax
 
     USE robufort_auxiliary
 
+    USE shared_auxiliary
+
 	!/*	setup                   */
 
     IMPLICIT NONE
