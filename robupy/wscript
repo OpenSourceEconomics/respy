@@ -115,6 +115,9 @@ def cleanup_build(is_build=False):
             if match == './fortran/solve':
                 continue
 
+            if match == './fortran/shared':
+                continue
+
             if match == './fortran/simulate':
                 continue
 
