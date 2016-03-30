@@ -42,8 +42,8 @@ class CreateRobufortLibrary(Task):
                  'robufort_slsqp.f', 'solve/solve_emax.f90',
                  'solve/solve_risk.f90', 'solve/solve_ambiguity.f90',
                  'solve/solve_auxiliary.f90', 'solve/solve.f90',
-                 'simulate/simulate.f90','robufort_library.f90',
-                 'robufort_testing.f90']
+                 'evaluate/evaluate_auxiliary.f90', 'evaluate/evaluate.f90',
+                 'simulate/simulate.f90', 'robufort_testing.f90']
 
         for file_ in files:
             os.system('gfortran ' + compiler_options + ' -c ' + file_)

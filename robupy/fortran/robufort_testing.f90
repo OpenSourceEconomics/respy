@@ -14,8 +14,6 @@ MODULE robufort_testing
 
     USE robufort_ambiguity
 
-    USE robufort_library
-
 	!/*	setup	*/
 
     IMPLICIT NONE

@@ -1,47 +1,32 @@
 !*******************************************************************************
 !*******************************************************************************
-!
-!   Interface to ROBUPY library. This is the front-end to all functionality. 
-!   Subroutines and functions for the case of risk-only case are in the 
-!   robufort_risk module. Building on the risk-only functionality, the module
-!   robufort_ambugity provided the required subroutines and functions for the 
-!   case of ambiguity.
-!
-!*******************************************************************************
-!*******************************************************************************
-MODULE robufort_library
+MODULE robufort_evaluate
 
 	!/*	external modules	*/
 
     USE robufort_constants
 
-    USE robufort_auxiliary
+    USE evaluate_auxiliary
 
-    USE robufort_ambiguity
-
-    USE solve_auxiliary
-
-    USE robufort_emax
-
-    USE robufort_risk
+    USE shared_auxiliary
 
 	!/*	setup	*/
 
 	IMPLICIT NONE
 
     PUBLIC
-    
+
  CONTAINS
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, & 
-                periods_emax, states_all, shocks_cov, is_deterministic, & 
-                num_periods, edu_start, edu_max, delta, data_array, & 
+SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
+                periods_emax, states_all, shocks_cov, is_deterministic, &
+                num_periods, edu_start, edu_max, delta, data_array, &
                 num_agents, num_draws_prob, periods_draws_prob)
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(OUT)     :: rslt 
+    REAL(our_dble), INTENT(OUT)     :: rslt
 
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:, :, :, :, :)
@@ -55,7 +40,7 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
     REAL(our_dble), INTENT(IN)      :: periods_draws_prob(:, :, :)
     REAL(our_dble), INTENT(IN)      :: data_array(:, :)
     REAL(our_dble), INTENT(IN)      :: shocks_cov(:, :)
-    REAL(our_dble), INTENT(IN)      :: delta 
+    REAL(our_dble), INTENT(IN)      :: delta
 
     !/* internal objects        */
 
@@ -76,7 +61,7 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
     INTEGER(our_int)                :: s
     INTEGER(our_int)                :: k
     INTEGER(our_int)                :: j
-    
+
     REAL(our_dble)                  :: conditional_draws(num_draws_prob, 4)
     REAL(our_dble)                  :: draws_prob(num_draws_prob, 4)
     REAL(our_dble)                  :: choice_probabilities(4)
@@ -104,7 +89,7 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
     ! Initialize container for likelihood contributions
     ALLOCATE(crit_val(num_agents * num_periods)); crit_val = zero_dble
 
-    j = 1   
+    j = 1
 
     DO i = 0, num_agents - 1
 
@@ -147,7 +132,7 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
                 ! Calculate the disturbance, which follows a normal
                 ! distribution.
                 dist = LOG(data_array(j, 4)) - LOG(payoffs_systematic(idx))
-                
+
                 ! Construct independent normal draws implied by the observed
                 ! wages.
                 IF (choice == 1) THEN
@@ -155,14 +140,14 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
                 ELSE
                     draws_prob(:, idx) = (dist - shocks_cholesky(idx, 1) * draws_prob(:, 1)) / shocks_cholesky(idx, idx)
                 END IF
-                
+
                 ! Record contribution of wage observation. REPLACE 0.0
                 crit_val_contrib =  crit_val_contrib * normal_pdf(dist, DBLE(0.0), sqrt(shocks_cov(idx, idx)))
 
                 ! If there is no random variation in payoffs, then the
                 ! observed wages need to be identical their systematic
-                ! components. The discrepancy between the observed wages and 
-                ! their systematic components might be small due to the 
+                ! components. The discrepancy between the observed wages and
+                ! their systematic components might be small due to the
                 ! reading in of the dataset.
                 IF (is_deterministic) THEN
                     IF (dist .GT. SMALL_FLOAT) THEN
@@ -177,7 +162,7 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
             ! Determine conditional deviates. These correspond to the
             ! unconditional draws if the agent did not work in the labor market.
             DO s = 1, num_draws_prob
-                conditional_draws(s, :) = & 
+                conditional_draws(s, :) = &
                     MATMUL(draws_prob(s, :), TRANSPOSE(shocks_cholesky))
             END DO
 
@@ -191,16 +176,16 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
                 draws(2) = EXP(draws(2))
 
                 ! Calculate total payoff.
-                CALL get_total_value(total_payoffs, period, num_periods, & 
-                        delta, payoffs_systematic, draws, edu_max, edu_start, & 
+                CALL get_total_value(total_payoffs, period, num_periods, &
+                        delta, payoffs_systematic, draws, edu_max, edu_start, &
                         mapping_state_idx, periods_emax, k, states_all)
-                
+
                 ! Record optimal choices
                 counts(MAXLOC(total_payoffs)) = counts(MAXLOC(total_payoffs)) + 1
 
             END DO
 
-            ! Determine relative shares. Special care required due to integer 
+            ! Determine relative shares. Special care required due to integer
             ! arithmetic, transformed to mixed mode arithmetic.
             choice_probabilities = counts / DBLE(num_draws_prob)
 
@@ -216,12 +201,12 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
             ! Adjust  and record likelihood contribution
             crit_val_contrib = crit_val_contrib * choice_probabilities(idx)
             crit_val(j) = crit_val_contrib
-            
+
             j = j + 1
 
         END DO
 
-    END DO 
+    END DO
 
     ! Scaling
     DO i = 1, num_agents * num_periods
@@ -240,4 +225,4 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-END MODULE  
+END MODULE

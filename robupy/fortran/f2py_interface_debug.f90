@@ -16,8 +16,6 @@ SUBROUTINE wrapper_get_worst_case(x_internal, x_start, maxiter, ftol, tiny, &
 
     USE robufort_ambiguity
 
-    !USE robufort_library 
-    
     !/* setup    */
 
     IMPLICIT NONE
@@ -66,7 +64,7 @@ SUBROUTINE wrapper_normal_pdf(rslt, x, mean, sd)
 
     !/* external libraries      */
 
-    USE robufort_auxiliary
+    USE evaluate_auxiliary
 
     !/* setup                   */
 

@@ -10,6 +10,8 @@ MODULE robufort_extension
 
     USE robufort_solve
 
+    USE robufort_evaluate
+
     !/* setup                   */
 
     IMPLICIT NONE
@@ -313,8 +315,6 @@ PROGRAM robufort
     !/* external modules        */
 
     USE robufort_extension
-
-    USE robufort_library
 
     !/* setup                   */
 

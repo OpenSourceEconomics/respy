@@ -14,11 +14,11 @@ SUBROUTINE f2py_criterion(crit_val, x, is_deterministic, is_interpolated, &
 
     !/* external libraries      */
 
-    USE robufort_library
-
     USE robufort_auxiliary
 
     USE robufort_solve
+
+    USE robufort_evaluate
 
     !/* setup                   */
 
@@ -195,7 +195,7 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, &
 
     !/* external libraries      */
 
-    USE robufort_library
+    USE robufort_evaluate
 
     USE robufort_solve
 
@@ -315,7 +315,7 @@ SUBROUTINE f2py_backward_induction(periods_emax, num_periods, &
 
     !/* external libraries      */
 
-    USE robufort_library
+    USE solve_auxiliary
 
     !/* setup                   */
 
@@ -374,7 +374,7 @@ SUBROUTINE f2py_create_state_space(states_all, states_number_period, &
     
     !/* external libraries      */
 
-    USE robufort_library
+    USE solve_auxiliary
 
     !/* setup                   */
 
@@ -409,7 +409,7 @@ SUBROUTINE f2py_calculate_payoffs_systematic(periods_payoffs_systematic, &
 
     !/* external libraries      */
 
-    USE robufort_library
+    USE solve_auxiliary
 
     !/* setup                   */
 
