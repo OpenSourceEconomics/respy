@@ -548,7 +548,7 @@ SUBROUTINE wrapper_get_clipped_vector(Y, X, lower_bound, upper_bound, &
 
     !/* external libraries      */
 
-    USE robufort_auxiliary
+    USE solve_auxiliary
 
     !/* setup                   */
 
@@ -578,7 +578,7 @@ SUBROUTINE wrapper_get_r_squared(r_squared, Y, P, num_agents)
 
     !/* external libraries      */
 
-    USE robufort_auxiliary
+    USE solve_auxiliary
 
     !/* setup                   */
 
@@ -606,7 +606,7 @@ SUBROUTINE wrapper_point_predictions(Y, X, coeffs, num_agents)
 
     !/* external libraries      */
 
-    USE robufort_auxiliary
+    USE solve_auxiliary
 
     !/* setup                   */
 
