@@ -112,6 +112,9 @@ def cleanup_build(is_build=False):
             if match == './fortran':
                 continue
 
+            if match == './fortran/solve':
+                continue
+
             if match == './python':
                 continue
 
