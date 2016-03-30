@@ -54,39 +54,6 @@ SUBROUTINE get_model_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, &
     shocks_cov = MATMUL(shocks_cholesky, TRANSPOSE(shocks_cholesky))
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
-FUNCTION clip_value(value, lower_bound, upper_bound)
-
-    !/* external objects        */
-
-    REAL(our_dble), INTENT(IN)  :: lower_bound
-    REAL(our_dble), INTENT(IN)  :: upper_bound
-    REAL(our_dble), INTENT(IN)  :: value
-
-    !/*  internal objects       */
-
-    REAL(our_dble)              :: clip_value
-
-!------------------------------------------------------------------------------
-! Algorithm
-!------------------------------------------------------------------------------
-
-    IF(value < lower_bound) THEN
-
-        clip_value = lower_bound
-
-    ELSEIF(value > upper_bound) THEN
-
-        clip_value = upper_bound
-
-    ELSE
-
-        clip_value = value
-
-    END IF
-
-END FUNCTION
 !*******************************************************************************
 !*******************************************************************************
 FUNCTION inverse(A, k)
