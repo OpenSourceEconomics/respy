@@ -20,6 +20,8 @@ os.chdir('../')
 
 # Run PYTEST battery, some tests are expected to fail due to small numerical
 # differences between PYTHON and FORTRAN implementations.
+os.system('pip install pytest-cov==2.2.1')
+os.system('pip install coveralls==1.1')
 pytest.main('--cov=robupy -v -s')
 
 # Update coverage statistic.
