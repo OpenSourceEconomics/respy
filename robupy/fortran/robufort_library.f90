@@ -307,7 +307,7 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, &
     ALLOCATE(states_number_period(num_periods))
 
     ! Create the state space of the model
-    CALL create_state_space(states_all_tmp, states_number_period, & 
+    CALL fort_create_state_space(states_all_tmp, states_number_period, &
             mapping_state_idx, max_states_period, num_periods, edu_start, & 
             edu_max, min_idx)
 
@@ -322,9 +322,9 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, &
     ALLOCATE(periods_emax(num_periods, max_states_period))
 
     ! Calculate the systematic payoffs
-    CALL calculate_payoffs_systematic(periods_payoffs_systematic, num_periods, &
-            states_number_period, states_all, edu_start, coeffs_a, coeffs_b, & 
-            coeffs_edu, coeffs_home, max_states_period)
+    CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, &
+            num_periods, states_number_period, states_all, edu_start, &
+            coeffs_a, coeffs_b, coeffs_edu, coeffs_home, max_states_period)
 
     ! Initialize containers, which contain a lot of missing values as we
     ! capture the tree structure in arrays of fixed dimension.
@@ -342,12 +342,12 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, &
 
     ELSE
 
-        CALL backward_induction(periods_emax, num_periods, max_states_period, &
-                periods_draws_emax, num_draws_emax, states_number_period, &
-                periods_payoffs_systematic, edu_max, edu_start, & 
-                mapping_state_idx, states_all, delta, is_debug, shocks_cov, & 
-                level, is_ambiguous, measure, is_interpolated, num_points, & 
-                is_deterministic, shocks_cholesky)
+        CALL fort_backward_induction(periods_emax, num_periods, &
+                max_states_period, periods_draws_emax, num_draws_emax, &
+                states_number_period, periods_payoffs_systematic, edu_max, &
+                edu_start, mapping_state_idx, states_all, delta, is_debug, &
+                shocks_cov, level, is_ambiguous, measure, is_interpolated, &
+                num_points, is_deterministic, shocks_cholesky)
         
     END IF
 

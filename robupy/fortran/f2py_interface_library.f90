@@ -354,7 +354,7 @@ SUBROUTINE f2py_backward_induction(periods_emax, num_periods, &
     periods_emax = MISSING_FLOAT
 
     ! Call actual function of interest
-    CALL backward_induction(periods_emax, num_periods, max_states_period, &
+    CALL fort_backward_induction(periods_emax, num_periods, max_states_period, &
             periods_draws_emax, num_draws_emax, states_number_period, &
             periods_payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
             states_all, delta, is_debug, shocks_cov, level, is_ambiguous, & 
@@ -392,7 +392,7 @@ SUBROUTINE f2py_create_state_space(states_all, states_number_period, &
 ! Algorithm
 !-------------------------------------------------------------------------------
     
-    CALL create_state_space(states_all, states_number_period, &
+    CALL fort_create_state_space(states_all, states_number_period, &
             mapping_state_idx, max_states_period, num_periods, edu_start, & 
             edu_max, min_idx)
 
@@ -430,9 +430,9 @@ SUBROUTINE f2py_calculate_payoffs_systematic(periods_payoffs_systematic, &
 ! Algorithm
 !-------------------------------------------------------------------------------
     
-    CALL calculate_payoffs_systematic(periods_payoffs_systematic, num_periods, &
-            states_number_period, states_all, edu_start, coeffs_a, coeffs_b, & 
-            coeffs_edu, coeffs_home, max_states_period)
+    CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, &
+            num_periods, states_number_period, states_all, edu_start, &
+            coeffs_a, coeffs_b, coeffs_edu, coeffs_home, max_states_period)
 
 END SUBROUTINE
 !*******************************************************************************
