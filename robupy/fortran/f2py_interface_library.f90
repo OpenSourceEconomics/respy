@@ -18,6 +18,8 @@ SUBROUTINE f2py_criterion(crit_val, x, is_deterministic, is_interpolated, &
 
     USE robufort_auxiliary
 
+    USE robufort_solve
+
     !/* setup                   */
 
     IMPLICIT NONE
@@ -108,7 +110,7 @@ SUBROUTINE f2py_solve(periods_payoffs_systematic, states_number_period, &
 
     !/* external libraries      */
 
-    USE robufort_library
+    USE robufort_solve
 
     !/* setup                   */
 
@@ -194,6 +196,8 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, &
     !/* external libraries      */
 
     USE robufort_library
+
+    USE robufort_solve
 
     !/* setup                   */
 

@@ -8,6 +8,8 @@ MODULE robufort_extension
 
     USE robufort_auxiliary
 
+    USE robufort_solve
+
     !/* setup                   */
 
     IMPLICIT NONE
