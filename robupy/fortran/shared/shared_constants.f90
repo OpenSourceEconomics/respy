@@ -1,4 +1,4 @@
-MODULE robufort_constants
+MODULE shared_constants
 
     !/*	setup	                */
 

@@ -13,7 +13,7 @@ MODULE robufort_solve
 
 	!/*	external modules	*/
 
-    USE robufort_constants
+    USE shared_constants
 
     USE solve_auxiliary
 

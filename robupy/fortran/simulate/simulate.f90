@@ -4,7 +4,7 @@ MODULE robufort_simulate
 
 	!/*	external modules	*/
 
-    USE robufort_constants
+    USE shared_constants
 
     USE shared_auxiliary
 

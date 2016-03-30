@@ -4,7 +4,7 @@ MODULE shared_auxiliary
 
 	!/*	external modules	*/
 
-    USE robufort_constants
+    USE shared_constants
 
 	!/*	setup	*/
 

@@ -4,7 +4,7 @@ MODULE robufort_evaluate
 
 	!/*	external modules	*/
 
-    USE robufort_constants
+    USE shared_constants
 
     USE evaluate_auxiliary
 

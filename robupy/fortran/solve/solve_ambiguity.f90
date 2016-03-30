@@ -11,7 +11,7 @@ MODULE robufort_ambiguity
 
 	!/*	external modules	  */
 
-    USE robufort_constants
+    USE shared_constants
 
     USE robufort_emax
 
