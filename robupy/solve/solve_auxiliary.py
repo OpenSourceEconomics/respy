@@ -28,97 +28,6 @@ logger = logging.getLogger('ROBUPY_SOLVE')
 '''
 
 
-def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
-        num_draws_emax, states_number_period, periods_payoffs_systematic,
-        edu_max, edu_start, mapping_state_idx, states_all, delta, is_debug,
-        shocks_cov, level, is_ambiguous, measure, is_interpolated, num_points,
-        is_deterministic, shocks_cholesky):
-    """ Backward induction procedure. There are two main threads to this
-    function depending on whether interpolation is requested or not.
-    """
-    # Auxiliary objects. These shifts are used to determine the expected
-    # values of the two labor market alternatives. These ar log normal
-    # distributed and thus the draws cannot simply set to zero.
-    shifts = [np.exp(shocks_cov[0, 0] / 2.0), np.exp(shocks_cov[1, 1] / 2.0), 0.0, 0.0]
-
-    # Initialize containers with missing values
-    periods_emax = np.tile(MISSING_FLOAT, (num_periods, max_states_period))
-
-    # Iterate backward through all periods
-    for period in range(num_periods - 1, -1, -1):
-
-        # Extract auxiliary objects
-        draws_emax = periods_draws_emax[period, :, :]
-        num_states = states_number_period[period]
-
-        # Logging.
-        string = '''{0[0]:>18}{0[1]:>3}{0[2]:>5}{0[3]:>6}{0[4]:>7}'''
-        logger.info(string.format(['... solving period', period, 'with',
-            num_states, 'states']))
-
-        # The number of interpolation points is the same for all periods.
-        # Thus, for some periods the number of interpolation points is
-        # larger than the actual number of states. In that case no
-        # interpolation is needed.
-        any_interpolated = (num_points <= num_states) and is_interpolated
-
-        # Case distinction
-        if any_interpolated:
-
-            # Get indicator for interpolation and simulation of states
-            is_simulated = get_simulated_indicator(num_points, num_states,
-                period, num_periods, is_debug)
-
-            # Constructing the exogenous variable for all states, including the
-            # ones where simulation will take place. All information will be
-            # used in either the construction of the prediction model or the
-            # prediction step.
-            exogenous, maxe = get_exogenous_variables(period, num_periods,
-                num_states, delta, periods_payoffs_systematic, shifts,
-                edu_max, edu_start, mapping_state_idx, periods_emax, states_all)
-
-            # Constructing the dependent variables for at the random subset of
-            # points where the EMAX is actually calculated.
-            endogenous = get_endogenous_variable(period, num_periods,
-                num_states, delta, periods_payoffs_systematic, edu_max,
-                edu_start, mapping_state_idx, periods_emax, states_all,
-                is_simulated, num_draws_emax, shocks_cov, level, is_ambiguous,
-                is_debug, measure, maxe, draws_emax, is_deterministic,
-                shocks_cholesky)
-
-            # Create prediction model based on the random subset of points where
-            # the EMAX is actually simulated and thus dependent and
-            # independent variables are available. For the interpolation
-            # points, the actual values are used.
-            predictions, results = get_predictions(endogenous, exogenous,
-                maxe, is_simulated, num_points, num_states, is_debug)
-
-            # Store results
-            periods_emax[period, :num_states] = predictions
-
-        else:
-
-            # Loop over all possible states
-            for k in range(states_number_period[period]):
-
-                # Extract payoffs
-                payoffs_systematic = periods_payoffs_systematic[period, k, :]
-
-                # Simulate the expected future value.
-                emax = get_payoffs(num_draws_emax, draws_emax, period, k,
-                    payoffs_systematic, edu_max, edu_start,
-                    mapping_state_idx, states_all, num_periods, periods_emax,
-                    delta, is_debug, shocks_cov, level, is_ambiguous, measure,
-                    is_deterministic, shocks_cholesky)
-
-                # Store results
-                periods_emax[period, k] = emax
-
-    # Finishing. Note that the last two return arguments are not available in
-    # for periods, where interpolation is required.
-    return periods_emax
-
-
 def pyth_create_state_space(num_periods, edu_start, edu_max, min_idx):
     """ Create grid for state space.
     """
@@ -260,6 +169,97 @@ def pyth_calculate_payoffs_systematic(num_periods, states_number_period,
     return periods_payoffs_systematic
 
 
+def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
+        num_draws_emax, states_number_period, periods_payoffs_systematic,
+        edu_max, edu_start, mapping_state_idx, states_all, delta, is_debug,
+        shocks_cov, level, is_ambiguous, measure, is_interpolated, num_points,
+        is_deterministic, shocks_cholesky):
+    """ Backward induction procedure. There are two main threads to this
+    function depending on whether interpolation is requested or not.
+    """
+    # Auxiliary objects. These shifts are used to determine the expected
+    # values of the two labor market alternatives. These ar log normal
+    # distributed and thus the draws cannot simply set to zero.
+    shifts = [np.exp(shocks_cov[0, 0] / 2.0), np.exp(shocks_cov[1, 1] / 2.0), 0.0, 0.0]
+
+    # Initialize containers with missing values
+    periods_emax = np.tile(MISSING_FLOAT, (num_periods, max_states_period))
+
+    # Iterate backward through all periods
+    for period in range(num_periods - 1, -1, -1):
+
+        # Extract auxiliary objects
+        draws_emax = periods_draws_emax[period, :, :]
+        num_states = states_number_period[period]
+
+        # Logging.
+        string = '''{0[0]:>18}{0[1]:>3}{0[2]:>5}{0[3]:>6}{0[4]:>7}'''
+        logger.info(string.format(['... solving period', period, 'with',
+            num_states, 'states']))
+
+        # The number of interpolation points is the same for all periods.
+        # Thus, for some periods the number of interpolation points is
+        # larger than the actual number of states. In that case no
+        # interpolation is needed.
+        any_interpolated = (num_points <= num_states) and is_interpolated
+
+        # Case distinction
+        if any_interpolated:
+
+            # Get indicator for interpolation and simulation of states
+            is_simulated = get_simulated_indicator(num_points, num_states,
+                period, num_periods, is_debug)
+
+            # Constructing the exogenous variable for all states, including the
+            # ones where simulation will take place. All information will be
+            # used in either the construction of the prediction model or the
+            # prediction step.
+            exogenous, maxe = get_exogenous_variables(period, num_periods,
+                num_states, delta, periods_payoffs_systematic, shifts,
+                edu_max, edu_start, mapping_state_idx, periods_emax, states_all)
+
+            # Constructing the dependent variables for at the random subset of
+            # points where the EMAX is actually calculated.
+            endogenous = get_endogenous_variable(period, num_periods,
+                num_states, delta, periods_payoffs_systematic, edu_max,
+                edu_start, mapping_state_idx, periods_emax, states_all,
+                is_simulated, num_draws_emax, shocks_cov, level, is_ambiguous,
+                is_debug, measure, maxe, draws_emax, is_deterministic,
+                shocks_cholesky)
+
+            # Create prediction model based on the random subset of points where
+            # the EMAX is actually simulated and thus dependent and
+            # independent variables are available. For the interpolation
+            # points, the actual values are used.
+            predictions, results = get_predictions(endogenous, exogenous,
+                maxe, is_simulated, num_points, num_states, is_debug)
+
+            # Store results
+            periods_emax[period, :num_states] = predictions
+
+        else:
+
+            # Loop over all possible states
+            for k in range(states_number_period[period]):
+
+                # Extract payoffs
+                payoffs_systematic = periods_payoffs_systematic[period, k, :]
+
+                # Simulate the expected future value.
+                emax = get_payoffs(num_draws_emax, draws_emax, period, k,
+                    payoffs_systematic, edu_max, edu_start,
+                    mapping_state_idx, states_all, num_periods, periods_emax,
+                    delta, is_debug, shocks_cov, level, is_ambiguous, measure,
+                    is_deterministic, shocks_cholesky)
+
+                # Store results
+                periods_emax[period, k] = emax
+
+    # Finishing. Note that the last two return arguments are not available in
+    # for periods, where interpolation is required.
+    return periods_emax
+
+
 ''' Auxiliary functions
 '''
 
@@ -285,38 +285,6 @@ def get_payoffs(num_draws_emax, draws_emax, period, k, payoffs_systematic,
 
     # Finishing
     return emax
-
-
-def logging_prediction_model(results):
-    """ Write out some basic information to the solutions log file.
-    """
-    logger.info('    Information about Prediction Model ')
-
-    string = '''{0:>18}    {1:10.4f} {2:10.4f} {3:10.4f} {4:10.4f}'''
-    string += ''' {5:10.4f} {6:10.4f} {7:10.4f} {8:10.4f} {9:10.4f}'''
-
-    logger.info(string.format('Coefficients', *results.params))
-    string = '''{0:>18}    {1:10.4f}\n'''
-
-    logger.info(string.format('R-squared', results.rsquared))
-
-
-def check_prediction_model(predictions_diff, model, num_points, num_states,
-        is_debug):
-    """ Perform some basic consistency checks for the prediction model.
-    """
-    # Construct auxiliary object
-    results = model.fit()
-    # Perform basic checks
-    assert (np.all(predictions_diff >= 0.00))
-    assert (results.params.shape == (9,))
-    assert (np.all(np.isfinite(results.params)))
-
-    # Check for standardization as the following constraint is not
-    # necessarily satisfied in that case. For ease of application, we do not
-    # ensure that the same number of interpolation points is available.
-    if not (is_debug and os.path.isfile('interpolation.txt')):
-        assert (model.nobs == min(num_points, num_states))
 
 
 def get_simulated_indicator(num_points, num_candidates, period, num_periods,
@@ -457,29 +425,18 @@ def get_predictions(endogenous, exogenous, maxe, is_simulated, num_points,
     # Finishing
     return predictions, results
 
-
-def checks(str_, *args):
-    """ Some guards to the interfaces.
+def logging_prediction_model(results):
+    """ Write out some basic information to the solutions log file.
     """
-    if str_ == '_backward_induction_procedure':
+    logger.info('    Information about Prediction Model ')
 
-        # Distribute input parameters
-        delta, = args
+    string = '''{0:>18}    {1:10.4f} {2:10.4f} {3:10.4f} {4:10.4f}'''
+    string += ''' {5:10.4f} {6:10.4f} {7:10.4f} {8:10.4f} {9:10.4f}'''
 
-        # The backward induction procedure does not work properly for the
-        # myopic case anymore. This is necessary as in the special
-        # case where delta is equal to zero, (-np.inf * 0.00) evaluates to
-        # NAN. This is returned as the maximum value when calling np.argmax.
-        # This was preciously handled by an auxiliary function
-        # "_stabilize_myopic" inside "get_total_value".
-        assert (delta > 0)
+    logger.info(string.format('Coefficients', *results.params))
+    string = '''{0:>18}    {1:10.4f}\n'''
 
-    else:
-
-        raise AssertionError
-
-    # Finishing
-    return True
+    logger.info(string.format('R-squared', results.rsquared))
 
 
 def logging_solution(which):
@@ -612,6 +569,48 @@ def start_ambiguity_logging(is_ambiguous, is_debug):
 
     if is_debug and is_ambiguous:
         open('ambiguity.robupy.log', 'w').close()
+
+
+def check_prediction_model(predictions_diff, model, num_points, num_states,
+        is_debug):
+    """ Perform some basic consistency checks for the prediction model.
+    """
+    # Construct auxiliary object
+    results = model.fit()
+    # Perform basic checks
+    assert (np.all(predictions_diff >= 0.00))
+    assert (results.params.shape == (9,))
+    assert (np.all(np.isfinite(results.params)))
+
+    # Check for standardization as the following constraint is not
+    # necessarily satisfied in that case. For ease of application, we do not
+    # ensure that the same number of interpolation points is available.
+    if not (is_debug and os.path.isfile('interpolation.txt')):
+        assert (model.nobs == min(num_points, num_states))
+
+
+def checks(str_, *args):
+    """ Some guards to the interfaces.
+    """
+    if str_ == '_backward_induction_procedure':
+
+        # Distribute input parameters
+        delta, = args
+
+        # The backward induction procedure does not work properly for the
+        # myopic case anymore. This is necessary as in the special
+        # case where delta is equal to zero, (-np.inf * 0.00) evaluates to
+        # NAN. This is returned as the maximum value when calling np.argmax.
+        # This was preciously handled by an auxiliary function
+        # "_stabilize_myopic" inside "get_total_value".
+        assert (delta > 0)
+
+    else:
+
+        raise AssertionError
+
+    # Finishing
+    return True
 
 
 def check_input(robupy_obj):

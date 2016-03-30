@@ -39,9 +39,10 @@ def robufort_build(self, is_debug=False):
 
     # Compile robufort file according to selected options.
     cmd = 'gfortran ' + compiler_options + ' -o robufort ' \
-          'robufort_constants.f90  robufort_auxiliary.f90 ' \
-          'robufort_slsqp.f solve_emax.f90 solve_risk.f90  ' \
-          'solve_ambiguity.f90 robufort_library.f90 ' \
+          'shared_constants.f90  robufort_auxiliary.f90 ' \
+          'robufort_slsqp.f  solve_emax.f90 ' \
+          'solve_risk.f90 solve_ambiguity.f90 solve_auxiliary.f90 ' \
+                                           'robufort_library.f90 ' \
           'robufort.f90 -L/usr/lib/lapack -llapack'
 
     os.system(cmd)

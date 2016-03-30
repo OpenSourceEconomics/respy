@@ -637,7 +637,7 @@ SUBROUTINE wrapper_get_predictions(predictions, endogenous, exogenous, maxe, &
 
     !/* external libraries      */
 
-    USE robufort_auxiliary
+    USE solve_auxiliary
 
     !/* setup                   */
 
@@ -670,7 +670,7 @@ SUBROUTINE wrapper_random_choice(sample, candidates, num_candidates, num_points)
 
     !/* external libraries      */
 
-    USE robufort_auxiliary
+    USE solve_auxiliary
 
     !/* setup                   */
 
@@ -732,7 +732,7 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, &
 
     !/* external libraries      */
 
-    USE robufort_library
+    USE solve_auxiliary
 
     !/* setup                   */
 
@@ -789,7 +789,7 @@ SUBROUTINE wrapper_get_exogenous_variables(independent_variables, maxe, &
 
     !/* external libraries      */
 
-    USE robufort_emax
+    USE solve_auxiliary
 
     !/* setup                   */
 
@@ -831,7 +831,7 @@ SUBROUTINE wrapper_get_simulated_indicator(is_simulated, num_points, &
 
     !/* external libraries      */
 
-    USE robufort_auxiliary
+    USE solve_auxiliary
 
     !/* setup                   */
 
@@ -867,7 +867,7 @@ SUBROUTINE wrapper_get_payoffs(emax_simulated, num_draws_emax, &
 
     !/* external libraries      */
 
-    USE robufort_library
+    USE solve_auxiliary
 
     !/* setup                   */
 
