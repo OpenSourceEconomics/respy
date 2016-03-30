@@ -39,7 +39,7 @@ class CreateRobufortLibrary(Task):
 
         files = ['robufort_constants.f90', 'robufort_auxiliary.f90',
                  'robufort_slsqp.f', 'solve_emax.f90', 'robufort_risk.f90',
-                 'robufort_ambiguity.f90', 'robufort_library.f90',
+                 'solve_ambiguity.f90', 'robufort_library.f90',
                  'robufort_testing.f90']
 
         for file_ in files:
