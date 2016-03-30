@@ -15,7 +15,6 @@ SUBROUTINE f2py_criterion(crit_val, x, is_deterministic, is_interpolated, &
     !/* external libraries      */
 
     USE robufort_library
-    USE robufort_extension
 
     !/* setup                   */
 
