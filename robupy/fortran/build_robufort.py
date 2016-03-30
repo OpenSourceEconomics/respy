@@ -42,7 +42,7 @@ def robufort_build(self, is_debug=False):
           'shared_constants.f90  robufort_auxiliary.f90 ' \
           'robufort_slsqp.f  solve/solve_emax.f90 ' \
           'solve/solve_risk.f90 solve/solve_ambiguity.f90 solve/solve_auxiliary.f90 ' \
-          'solve/solve.f90 robufort_library.f90 ' \
+          'solve/solve.f90 simulate/simulate.f90 robufort_library.f90 ' \
           'robufort.f90 -L/usr/lib/lapack -llapack'
 
     os.system(cmd)
