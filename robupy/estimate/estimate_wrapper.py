@@ -207,26 +207,28 @@ class OptimizationClass(object):
         # Initialization
         dict_ = {}
 
-        for line in open('optimization.robupy.opt').readlines():
+        with open('optimization.robupy.opt') as in_file:
 
-            # Split line
-            list_ = shlex.split(line)
+            for line in in_file.readlines():
 
-            # Determine special cases
-            is_empty, is_keyword = process_cases(list_)
+                # Split line
+                list_ = shlex.split(line)
 
-            # Applicability
-            if is_empty:
-                continue
+                # Determine special cases
+                is_empty, is_keyword = process_cases(list_)
 
-            # Prepare dictionary
-            if is_keyword:
-                keyword = list_[0]
-                dict_[keyword] = {}
-                continue
+                # Applicability
+                if is_empty:
+                    continue
 
-            # Process blocks of information
-            dict_ = process_block(list_, dict_, keyword)
+                # Prepare dictionary
+                if is_keyword:
+                    keyword = list_[0]
+                    dict_[keyword] = {}
+                    continue
+
+                # Process blocks of information
+                dict_ = process_block(list_, dict_, keyword)
 
         return dict_
 
@@ -279,21 +281,19 @@ class OptimizationClass(object):
     def _logging_interim(self, x, crit_val):
         """ This method write out some information during the optimization.
         """
+        # Recording of current evaluation
+        self.attr['value_curre'] = crit_val
+        self.attr['paras_curre'] = x
+
         # Distribute class attributes
         paras_curre = self.attr['paras_curre']
-        paras_start = self.attr['paras_start']
-        paras_steps = self.attr['paras_steps']
 
-        value_start = self.attr['value_start']
         value_curre = self.attr['value_curre']
         value_steps = self.attr['value_steps']
 
         num_steps = self.attr['num_steps']
         is_first = self.attr['is_first']
 
-        # Recording of current evaluation
-        self.attr['value_curre'] = crit_val
-        self.attr['paras_curre'] = x
         np.savetxt(open('paras_curre.robupy.log', 'wb'), x, fmt='%15.8f')
 
         # Recording of starting information
@@ -303,6 +303,9 @@ class OptimizationClass(object):
             np.savetxt(open('paras_start.robupy.log', 'wb'), x, fmt='%15.8f')
             if os.path.exists('optimization.robupy.log'):
                 os.unlink('optimization.robupy.log')
+
+        paras_start = self.attr['paras_start']
+        value_start = self.attr['value_start']
 
         # Recording of information about each step.
         if crit_val < value_steps:
@@ -318,6 +321,9 @@ class OptimizationClass(object):
             self.attr['value_steps'] = crit_val
             self.attr['num_steps'] = num_steps + 1
             self.attr['is_first'] = False
+
+        paras_steps = self.attr['paras_steps']
+        value_steps = self.attr['value_steps']
 
         # Write information to file.
         with open('optimization.robupy.info', 'w') as out_file:
