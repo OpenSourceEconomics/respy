@@ -446,14 +446,14 @@ SUBROUTINE get_model_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, &
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(OUT)     :: shocks_cholesky(:, :)
-    REAL(our_dble), INTENT(OUT)     :: shocks_cov(:, :)
-    REAL(our_dble), INTENT(OUT)     :: coeffs_home(:)
-    REAL(our_dble), INTENT(OUT)     :: coeffs_edu(:)
-    REAL(our_dble), INTENT(OUT)     :: coeffs_a(:)
-    REAL(our_dble), INTENT(OUT)     :: coeffs_b(:)
+    DOUBLE PRECISION, INTENT(OUT)     :: shocks_cholesky(4, 4)
+    DOUBLE PRECISION, INTENT(OUT)     :: shocks_cov(4, 4)
+    DOUBLE PRECISION, INTENT(OUT)     :: coeffs_home(1)
+    DOUBLE PRECISION, INTENT(OUT)     :: coeffs_edu(3)
+    DOUBLE PRECISION, INTENT(OUT)     :: coeffs_a(6)
+    DOUBLE PRECISION, INTENT(OUT)     :: coeffs_b(6)
 
-    REAL(our_dble), INTENT(IN)      :: x(:)
+    DOUBLE PRECISION, INTENT(IN)      :: x(:)
 
 !-------------------------------------------------------------------------------
 ! Algorithm
