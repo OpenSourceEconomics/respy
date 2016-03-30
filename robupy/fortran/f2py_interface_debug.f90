@@ -91,7 +91,7 @@ SUBROUTINE wrapper_pinv(rslt, A, m)
 
     !/* external libraries      */
 
-    USE robufort_auxiliary
+    USE solve_auxiliary
 
     !/* setup                   */
 
@@ -118,7 +118,7 @@ SUBROUTINE wrapper_svd(U, S, VT, A, m)
 
     !/* external libraries      */
 
-    USE robufort_auxiliary
+    USE solve_auxiliary
 
     !/* setup                   */
 
@@ -696,7 +696,7 @@ SUBROUTINE wrapper_get_coefficients(coeffs, Y, X, num_covars, num_agents)
 
     !/* external libraries      */
 
-    USE robufort_auxiliary
+    USE solve_auxiliary
 
     !/* setup                   */
 
