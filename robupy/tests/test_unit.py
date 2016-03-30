@@ -21,10 +21,10 @@ from codes.auxiliary import write_interpolation_grid
 from robupy.solve.solve_auxiliary import get_payoffs
 from robupy.tests.codes.random_init import generate_init
 
-from robupy.solve.ambiguity import get_payoffs_ambiguity
-from robupy.solve.ambiguity import criterion_ambiguity
-from robupy.solve.ambiguity import _divergence
-from robupy.solve.emax import simulate_emax
+from robupy.solve.solve_ambiguity import get_payoffs_ambiguity
+from robupy.solve.solve_ambiguity import criterion_ambiguity
+from robupy.solve.solve_ambiguity import _divergence
+from robupy.solve.solve_emax import simulate_emax
 
 from robupy.estimate.estimate_auxiliary import get_optim_parameters
 from robupy.estimate.estimate_auxiliary import get_model_parameters

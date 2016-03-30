@@ -11,8 +11,8 @@ import shlex
 import os
 
 # project library
-from robupy.solve.ambiguity import get_payoffs_ambiguity
-from robupy.solve.risk import get_payoffs_risk
+from robupy.solve.solve_ambiguity import get_payoffs_ambiguity
+from robupy.solve.solve_risk import get_payoffs_risk
 
 from robupy.shared.auxiliary import get_total_value
 

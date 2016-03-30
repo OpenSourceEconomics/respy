@@ -17,7 +17,7 @@ def simulate_emax(num_periods, num_draws_emax, period, k, draws_emax,
     """ Simulate expected future value.
     """
     # Get the transformed set of disturbances
-    draws_emax_transformed = _transform_disturbances(draws_emax,
+    draws_emax_transformed = transform_disturbances(draws_emax,
         shocks_cholesky, shocks_mean)
 
     # Calculate maximum value
@@ -45,7 +45,7 @@ def simulate_emax(num_periods, num_draws_emax, period, k, draws_emax,
     return emax_simulated
 
 
-def _transform_disturbances(draws_emax, shocks_cholesky, shocks_mean):
+def transform_disturbances(draws_emax, shocks_cholesky, shocks_mean):
     """ Transform the standard normal deviates to the relevant distribution.
     """
     # Transfer draws to relevant distribution
