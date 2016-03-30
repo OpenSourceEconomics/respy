@@ -1,16 +1,19 @@
-MODULE robufort_auxiliary
+!*******************************************************************************
+!*******************************************************************************
+MODULE estimate_auxiliary
 
-    !/*	external modules	    */
+	!/*	external modules	*/
 
     USE robufort_constants
 
-	!/*	setup	                */
+	!/*	setup	*/
 
-    IMPLICIT NONE
-    
+	IMPLICIT NONE
+
     PUBLIC
 
 CONTAINS
+
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE get_model_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, &

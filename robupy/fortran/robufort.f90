@@ -6,8 +6,6 @@ MODULE robufort_extension
 
     USE robufort_constants
 
-    USE robufort_auxiliary
-
     USE robufort_solve
 
     USE robufort_evaluate

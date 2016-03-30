@@ -6,7 +6,6 @@ MODULE solve_auxiliary
 
     USE robufort_constants
 
-
     USE robufort_ambiguity
 
     USE robufort_emax

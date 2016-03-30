@@ -13,8 +13,6 @@ MODULE robufort_ambiguity
 
     USE robufort_constants
 
-    USE robufort_auxiliary
-
     USE robufort_emax
 
     USE robufort_risk

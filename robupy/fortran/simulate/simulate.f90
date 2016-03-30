@@ -6,8 +6,6 @@ MODULE robufort_simulate
 
     USE robufort_constants
 
-    USE robufort_auxiliary
-
     USE shared_auxiliary
 
 	!/*	setup	*/

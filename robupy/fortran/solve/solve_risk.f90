@@ -12,8 +12,6 @@ MODULE robufort_risk
 
     USE robufort_constants
 
-    USE robufort_auxiliary
-
     USE robufort_emax
 
 	!/*	setup	                */
