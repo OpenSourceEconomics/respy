@@ -24,9 +24,9 @@ def get_payoffs_ambiguity(num_draws_emax, draws_emax, period, k,
     # latter is included as a special case for debugging purposes. The worst
     # case corresponds to zero.
     if is_deterministic:
-        opt = _handle_shocks_zero(is_debug, period, k)
+        opt = handle_shocks_zero(is_debug, period, k)
     else:
-        opt = _determine_worst_case(num_draws_emax, draws_emax,
+        opt = get_worst_case(num_draws_emax, draws_emax,
             period, k, payoffs_systematic, edu_max, edu_start,
             mapping_state_idx, states_all, num_periods, periods_emax,
             delta, is_debug, shocks_cov, level, measure, shocks_cholesky)
@@ -39,7 +39,7 @@ def get_payoffs_ambiguity(num_draws_emax, draws_emax, period, k,
     # Debugging. This only works in the case of success, as otherwise
     # opt['fun'] is not equivalent to simulated.
     if is_debug and opt['success']:
-        checks_ambiguity('get_payoffs_ambiguity', simulated, opt)
+        _checks_ambiguity('get_payoffs_ambiguity', simulated, opt)
 
     # Finishing
     return simulated
@@ -48,7 +48,7 @@ def get_payoffs_ambiguity(num_draws_emax, draws_emax, period, k,
 '''
 
 
-def _handle_shocks_zero(is_debug, period, k):
+def handle_shocks_zero(is_debug, period, k):
     """ This function ensures that the special case of zero variability is
     handled with care. This is used for debugging purposes.
     """
@@ -68,7 +68,7 @@ def _handle_shocks_zero(is_debug, period, k):
     return opt
 
 
-def _determine_worst_case(num_draws_emax, draws_emax, period, k,
+def get_worst_case(num_draws_emax, draws_emax, period, k,
         payoffs_systematic, edu_max, edu_start, mapping_state_idx, states_all,
         num_periods, periods_emax, delta, is_debug, shocks_cov, level, measure,
         shocks_cholesky):
@@ -103,30 +103,31 @@ def _determine_worst_case(num_draws_emax, draws_emax, period, k,
     # Logging result to file
     if is_debug:
         # Evaluate divergence at final value.
-        div = _divergence(opt['x'], shocks_cov, level) - level
+        div = divergence(opt['x'], shocks_cov, level) - level
         _write_result(period, k, opt, div)
 
     # Finishing
     return opt
 
 
-def _prep_kl(shocks_cov, level):
-    """ Construct Kullback-Leibler constraint for optimization.
+def criterion_ambiguity(x, num_draws_emax, draws_emax, period, k,
+        payoffs_systematic, edu_max, edu_start, mapping_state_idx,
+        states_all, num_periods, periods_emax, delta, shocks_cholesky):
+    """ Simulate expected future value for alternative shock distributions.
     """
-    # Construct constraint
-    constraint_divergence = dict()
-    constraint_divergence['type'] = 'eq'
-    constraint_divergence['fun'] = _divergence
-    constraint_divergence['args'] = (shocks_cov, level)
+    # Simulate the expected future value for a given parametrization.
+    simulated = simulate_emax(num_periods, num_draws_emax, period, k,
+        draws_emax, payoffs_systematic, edu_max, edu_start, periods_emax,
+        states_all, mapping_state_idx, delta, shocks_cholesky, x)
 
-    # Collection.
-    constraints = [constraint_divergence, ]
+    # Debugging
+    _checks_ambiguity('criterion_ambiguity', simulated)
 
-    # Finishing.
-    return constraints
+    # Finishing
+    return simulated
 
 
-def _divergence(x, cov, level):
+def divergence(x, cov, level):
     """ Calculate the relevant Kullback-Leibler distance of evaluation points
         from center.
     """
@@ -152,21 +153,20 @@ def _divergence(x, cov, level):
     return level - rslt
 
 
-def criterion_ambiguity(x, num_draws_emax, draws_emax, period, k,
-        payoffs_systematic, edu_max, edu_start, mapping_state_idx,
-        states_all, num_periods, periods_emax, delta, shocks_cholesky):
-    """ Simulate expected future value for alternative shock distributions.
+def _prep_kl(shocks_cov, level):
+    """ Construct Kullback-Leibler constraint for optimization.
     """
-    # Simulate the expected future value for a given parametrization.
-    simulated = simulate_emax(num_periods, num_draws_emax, period, k,
-        draws_emax, payoffs_systematic, edu_max, edu_start, periods_emax,
-        states_all, mapping_state_idx, delta, shocks_cholesky, x)
+    # Construct constraint
+    constraint_divergence = dict()
+    constraint_divergence['type'] = 'eq'
+    constraint_divergence['fun'] = divergence
+    constraint_divergence['args'] = (shocks_cov, level)
 
-    # Debugging
-    checks_ambiguity('criterion_ambiguity', simulated)
+    # Collection.
+    constraints = [constraint_divergence, ]
 
-    # Finishing
-    return simulated
+    # Finishing.
+    return constraints
 
 
 def _write_result(period, k, opt, div):
@@ -195,7 +195,7 @@ def _get_start(is_debug):
 
     # Debugging
     if is_debug:
-        checks_ambiguity('_get_start', x0)
+        _checks_ambiguity('_get_start', x0)
 
     # Finishing
     return x0
@@ -209,13 +209,13 @@ def _prep_absolute(level, is_debug):
 
     # Debugging
     if is_debug:
-        checks_ambiguity('_prep_absolute', bounds)
+        _checks_ambiguity('_prep_absolute', bounds)
 
     # Finishing
     return bounds
 
 
-def checks_ambiguity(str_, *args):
+def _checks_ambiguity(str_, *args):
     """ This checks the integrity of the objects related to the
         solution of the model.
     """

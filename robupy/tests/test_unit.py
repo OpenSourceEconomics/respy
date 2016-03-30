@@ -23,7 +23,7 @@ from robupy.tests.codes.random_init import generate_init
 
 from robupy.solve.solve_ambiguity import get_payoffs_ambiguity
 from robupy.solve.solve_ambiguity import criterion_ambiguity
-from robupy.solve.solve_ambiguity import _divergence
+from robupy.solve.solve_ambiguity import divergence
 from robupy.solve.solve_emax import simulate_emax
 
 from robupy.estimate.estimate_auxiliary import get_optim_parameters
@@ -200,7 +200,7 @@ class TestClass(object):
         constraint = dict()
         constraint['type'] = 'eq'
         constraint['args'] = (shocks_cov, level)
-        constraint['fun'] = _divergence
+        constraint['fun'] = divergence
 
         # Generate constraint periods
         constraints = dict()
@@ -251,7 +251,7 @@ class TestClass(object):
         else:
             py = x0
 
-        f = fort_debug.wrapper_slsqp_robufort(x0, maxiter, ftol, tiny,
+        f = fort_debug.wrapper_get_worst_case(x0, maxiter, ftol, tiny,
             num_draws_emax, draws_standard, period, k, payoffs_systematic,
             edu_max, edu_start, mapping_state_idx, states_all, num_periods,
             periods_emax, delta, is_debug, shocks_cov, level,
@@ -404,12 +404,12 @@ class TestClass(object):
             tiny = np.random.rand()**2
 
             # Kullback-Leibler (KL) divergence
-            py = _divergence(x, cov, level)
+            py = divergence(x, cov, level)
             f90 = fort_debug.wrapper_divergence(x, cov, level)
             np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
             # Gradient approximation of KL divergence
-            py = approx_fprime(x, _divergence, tiny, cov, level)
+            py = approx_fprime(x, divergence, tiny, cov, level)
             f90 = fort_debug.wrapper_divergence_derivative(x, cov, level, tiny)
             np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 

@@ -89,7 +89,7 @@ SUBROUTINE get_payoffs_ambiguity(emax_simulated, num_draws_emax, draws_emax, &
     
     ELSE
 
-        CALL slsqp_robufort(x_internal, x_start, maxiter, ftol, tiny, &
+        CALL get_worst_case(x_internal, x_start, maxiter, ftol, tiny, &
                 num_draws_emax, draws_emax, period, k, payoffs_systematic, &
                 edu_max, edu_start, mapping_state_idx, states_all, &
                 num_periods, periods_emax, delta, is_debug, shocks_cov, &
@@ -126,7 +126,7 @@ SUBROUTINE handle_shocks_zero(x_internal, is_debug, period, k)
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE slsqp_robufort(x_internal, x_start, maxiter, ftol, tiny, &
+SUBROUTINE get_worst_case(x_internal, x_start, maxiter, ftol, tiny, &
                 num_draws_emax, draws_emax, period, k, payoffs_systematic, &
                 edu_max, edu_start, mapping_state_idx, states_all, & 
                 num_periods, periods_emax, delta, is_debug, shocks_cov, & 
@@ -344,8 +344,64 @@ FUNCTION criterion_ambiguity(x_internal, num_draws_emax, draws_emax, period, &
 END FUNCTION
 !*******************************************************************************
 !*******************************************************************************
+FUNCTION divergence(x_internal, shocks_cov, level)
+
+    !/* external objects        */
+
+    REAL(our_dble)                  :: divergence
+
+    REAL(our_dble), INTENT(IN)      :: shocks_cov(:,:)
+    REAL(our_dble), INTENT(IN)      :: x_internal(:)
+    REAL(our_dble), INTENT(IN)      :: level
+
+    !/* internals objects       */
+
+    REAL(our_dble)                  :: alt_mean(4, 1) = zero_dble
+    REAL(our_dble)                  :: old_mean(4, 1) = zero_dble
+    REAL(our_dble)                  :: inv_old_cov(4, 4)
+    REAL(our_dble)                  :: alt_cov(4, 4)
+    REAL(our_dble)                  :: old_cov(4, 4)
+    REAL(our_dble)                  :: comp_b(1, 1)
+    REAL(our_dble)                  :: comp_a
+    REAL(our_dble)                  :: comp_c
+    REAL(our_dble)                  :: rslt
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+
+    ! Construct alternative distribution
+    alt_mean(1, 1) = x_internal(1)
+    alt_mean(2, 1) = x_internal(2)
+    alt_cov = shocks_cov
+
+    ! Construct baseline distribution
+    old_cov = shocks_cov
+
+    ! Construct auxiliary objects.
+    inv_old_cov = inverse(old_cov, 4)
+
+    ! Calculate first component
+    comp_a = trace_fun(MATMUL(inv_old_cov, alt_cov))
+
+    ! Calculate second component
+    comp_b = MATMUL(MATMUL(TRANSPOSE(old_mean - alt_mean), inv_old_cov), &
+                old_mean - alt_mean)
+
+    ! Calculate third component
+    comp_c = LOG(determinant(alt_cov) / determinant(old_cov))
+
+    ! Statistic
+    rslt = half_dble * (comp_a + comp_b(1,1) - four_dble + comp_c)
+
+    ! Divergence
+    divergence = level - rslt
+
+END FUNCTION
+!*******************************************************************************
+!*******************************************************************************
 FUNCTION criterion_ambiguity_derivative(x_internal, tiny, num_draws_emax, &
-            draws_emax, period, k, payoffs_systematic, edu_max, edu_start, & 
+            draws_emax, period, k, payoffs_systematic, edu_max, edu_start, &
             mapping_state_idx, states_all, num_periods, periods_emax, delta, &
             shocks_cholesky)
 
@@ -388,7 +444,7 @@ FUNCTION criterion_ambiguity_derivative(x_internal, tiny, num_draws_emax, &
 
     ! Evaluate baseline
     f0 = criterion_ambiguity(x_internal, num_draws_emax, draws_emax, period, &
-            k, payoffs_systematic, edu_max, edu_start, mapping_state_idx, & 
+            k, payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
             states_all, num_periods, periods_emax, delta, shocks_cholesky)
 
     ! Iterate over increments
@@ -398,14 +454,62 @@ FUNCTION criterion_ambiguity_derivative(x_internal, tiny, num_draws_emax, &
 
         d = tiny * ei
 
-        f1 = criterion_ambiguity(x_internal + d, num_draws_emax, draws_emax, & 
-                period, k, payoffs_systematic, edu_max, edu_start, & 
-                mapping_state_idx, states_all, num_periods, periods_emax, & 
+        f1 = criterion_ambiguity(x_internal + d, num_draws_emax, draws_emax, &
+                period, k, payoffs_systematic, edu_max, edu_start, &
+                mapping_state_idx, states_all, num_periods, periods_emax, &
                 delta, shocks_cholesky)
 
         criterion_ambiguity_derivative(j) = (f1 - f0) / d(j)
 
         ei(j) = zero_dble
+
+    END DO
+
+END FUNCTION
+!*******************************************************************************
+!*******************************************************************************
+FUNCTION divergence_derivative(x, cov, level, tiny)
+
+    !/* external objects        */
+
+    REAL(our_dble)                  :: divergence_derivative(2)
+
+    REAL(our_dble), INTENT(IN)      :: cov(:, :)
+    REAL(our_dble), INTENT(IN)      :: level
+    REAL(our_dble), INTENT(IN)      :: x(:)
+    REAL(our_dble), INTENT(IN)      :: tiny
+
+    !/* internals objects       */
+
+    INTEGER(our_int)                :: k
+
+    REAL(our_dble)                  :: ei(2)
+    REAL(our_dble)                  :: d(2)
+    REAL(our_dble)                  :: f0
+    REAL(our_dble)                  :: f1
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+
+    ! Initialize containers
+    ei = zero_dble
+
+    ! Evaluate baseline
+    f0 = divergence(x, cov, level)
+
+    ! Iterate over increments
+    DO k = 1, 2
+
+        ei(k) = one_dble
+
+        d = tiny * ei
+
+        f1 = divergence(x + d, cov, level)
+
+        divergence_derivative(k) = (f1 - f0) / d(k)
+
+        ei(k) = zero_dble
 
     END DO
 
@@ -485,110 +589,6 @@ SUBROUTINE logging_ambiguity(x_internal, div, mode, period, k, is_success)
     CLOSE(1)
 
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
-FUNCTION divergence(x_internal, shocks_cov, level)
-
-    !/* external objects        */
-
-    REAL(our_dble)                  :: divergence 
-
-    REAL(our_dble), INTENT(IN)      :: shocks_cov(:,:)
-    REAL(our_dble), INTENT(IN)      :: x_internal(:)
-    REAL(our_dble), INTENT(IN)      :: level
-
-    !/* internals objects       */
-
-    REAL(our_dble)                  :: alt_mean(4, 1) = zero_dble
-    REAL(our_dble)                  :: old_mean(4, 1) = zero_dble
-    REAL(our_dble)                  :: inv_old_cov(4, 4)
-    REAL(our_dble)                  :: alt_cov(4, 4)
-    REAL(our_dble)                  :: old_cov(4, 4)
-    REAL(our_dble)                  :: comp_b(1, 1)
-    REAL(our_dble)                  :: comp_a
-    REAL(our_dble)                  :: comp_c
-    REAL(our_dble)                  :: rslt
-
-!-------------------------------------------------------------------------------
-! Algorithm
-!-------------------------------------------------------------------------------
-
-    ! Construct alternative distribution
-    alt_mean(1, 1) = x_internal(1)
-    alt_mean(2, 1) = x_internal(2)
-    alt_cov = shocks_cov
-
-    ! Construct baseline distribution
-    old_cov = shocks_cov
-
-    ! Construct auxiliary objects.
-    inv_old_cov = inverse(old_cov, 4)
-
-    ! Calculate first component
-    comp_a = trace_fun(MATMUL(inv_old_cov, alt_cov))
-
-    ! Calculate second component
-    comp_b = MATMUL(MATMUL(TRANSPOSE(old_mean - alt_mean), inv_old_cov), &
-                old_mean - alt_mean)
-
-    ! Calculate third component
-    comp_c = LOG(determinant(alt_cov) / determinant(old_cov))
-
-    ! Statistic
-    rslt = half_dble * (comp_a + comp_b(1,1) - four_dble + comp_c)
-
-    ! Divergence
-    divergence = level - rslt
-
-END FUNCTION
-!*******************************************************************************
-!*******************************************************************************
-FUNCTION divergence_derivative(x, cov, level, tiny)
-
-    !/* external objects        */
-
-    REAL(our_dble)                  :: divergence_derivative(2)
-
-    REAL(our_dble), INTENT(IN)      :: cov(:, :)
-    REAL(our_dble), INTENT(IN)      :: level
-    REAL(our_dble), INTENT(IN)      :: x(:)
-    REAL(our_dble), INTENT(IN)      :: tiny
-
-    !/* internals objects       */
-
-    INTEGER(our_int)                :: k
-
-    REAL(our_dble)                  :: ei(2)
-    REAL(our_dble)                  :: d(2)
-    REAL(our_dble)                  :: f0 
-    REAL(our_dble)                  :: f1 
-
-!-------------------------------------------------------------------------------
-! Algorithm
-!-------------------------------------------------------------------------------
-
-    ! Initialize containers
-    ei = zero_dble
-
-    ! Evaluate baseline
-    f0 = divergence(x, cov, level)
-
-    ! Iterate over increments
-    DO k = 1, 2
-
-        ei(k) = one_dble
-
-        d = tiny * ei
-
-        f1 = divergence(x + d, cov, level)
-
-        divergence_derivative(k) = (f1 - f0) / d(k)
-
-        ei(k) = zero_dble
-
-    END DO
-
-END FUNCTION
 !*******************************************************************************
 !*******************************************************************************
 END MODULE

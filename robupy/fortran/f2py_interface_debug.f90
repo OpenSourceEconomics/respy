@@ -6,7 +6,7 @@
 !
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_slsqp_robufort(x_internal, x_start, maxiter, ftol, tiny, &
+SUBROUTINE wrapper_get_worst_case(x_internal, x_start, maxiter, ftol, tiny, &
                 num_draws_emax, draws_standard, period, k, payoffs_systematic, &
                 edu_max, edu_start, mapping_state_idx, states_all, &
                 num_periods, periods_emax, delta, is_debug, shocks_cov, & 
@@ -54,7 +54,7 @@ SUBROUTINE wrapper_slsqp_robufort(x_internal, x_start, maxiter, ftol, tiny, &
 ! Algorithm
 !-------------------------------------------------------------------------------
     
-    CALL slsqp_robufort(x_internal, x_start, maxiter, ftol, tiny, & 
+    CALL get_worst_case(x_internal, x_start, maxiter, ftol, tiny, &
             num_draws_emax, draws_standard, period, k, payoffs_systematic, & 
             edu_max, edu_start, mapping_state_idx, states_all, num_periods, &
             periods_emax, delta, is_debug, shocks_cov, level, shocks_cholesky)
