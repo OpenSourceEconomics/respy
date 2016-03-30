@@ -10,7 +10,7 @@ import shlex
 import os
 
 # project library
-from robupy.estimate.estimate_auxiliary import opt_get_model_parameters
+from robupy.estimate.estimate_auxiliary import get_model_parameters
 from robupy.estimate.estimate_auxiliary import process_block
 from robupy.estimate.estimate_auxiliary import process_cases
 
@@ -346,7 +346,7 @@ class OptimizationClass(object):
 
             # Write out the current covariance matrix of the reward shocks.
             out_file.write('\n\n Current Covariance Matrix \n\n')
-            shocks_cov = opt_get_model_parameters(paras_curre, True)[4]
+            shocks_cov = get_model_parameters(paras_curre, True)[4]
             fmt_ = '{0:15.4f}    {1:15.4f}    {2:15.4f}    {3:15.4f}\n'
             for i in range(4):
                 out_file.write(fmt_.format(*shocks_cov[i, :]))

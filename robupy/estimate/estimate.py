@@ -6,7 +6,7 @@ function.
 
 
 # project library
-from robupy.estimate.estimate_auxiliary import opt_get_optim_parameters
+from robupy.estimate.estimate_auxiliary import get_optim_parameters
 from robupy.estimate.estimate_auxiliary import check_input
 
 from robupy.shared.auxiliary import distribute_class_attributes
@@ -49,7 +49,7 @@ def estimate(robupy_obj, data_frame):
         is_debug, 'emax', shocks_cholesky)
 
     # Construct starting values
-    x0 = opt_get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+    x0 = get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         shocks_cov, shocks_cholesky, is_debug)
 
     data_array = data_frame.as_matrix()

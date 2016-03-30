@@ -21,7 +21,7 @@ from robupy.shared.auxiliary import read_draws
 
 from robupy.solve.solve_auxiliary import pyth_create_state_space
 
-from robupy.estimate.estimate_auxiliary import opt_get_optim_parameters
+from robupy.estimate.estimate_auxiliary import get_optim_parameters
 from robupy.tests.codes.random_init import generate_random_dict
 from robupy.tests.codes.random_init import print_random_dict
 from robupy.tests.codes.random_init import generate_init
@@ -417,7 +417,7 @@ class TestClass(object):
             np.testing.assert_allclose(pyth, alt)
 
         # Evaluation of criterion function
-        x0 = opt_get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu,
+        x0 = get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu,
                 coeffs_home, shocks_cov, shocks_cholesky, is_debug)
 
         args = (is_deterministic, is_interpolated, num_draws_emax,is_ambiguous,

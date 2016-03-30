@@ -16,6 +16,8 @@ SUBROUTINE f2py_criterion(crit_val, x, is_deterministic, is_interpolated, &
 
     USE robufort_library
 
+    USE robufort_auxiliary
+
     !/* setup                   */
 
     IMPLICIT NONE
@@ -58,7 +60,6 @@ SUBROUTINE f2py_criterion(crit_val, x, is_deterministic, is_interpolated, &
     DOUBLE PRECISION, ALLOCATABLE   :: periods_payoffs_systematic(:, :, :)
     DOUBLE PRECISION, ALLOCATABLE   :: periods_emax(:, :)
 
-
     DOUBLE PRECISION                :: shocks_cholesky(4, 4) 
     DOUBLE PRECISION                :: shocks_cov(4, 4)
     DOUBLE PRECISION                :: coeffs_home(1)
@@ -71,28 +72,10 @@ SUBROUTINE f2py_criterion(crit_val, x, is_deterministic, is_interpolated, &
 !-------------------------------------------------------------------------------
 
     !# Distribute model parameters
-    coeffs_a = x(1:6)
+    CALL get_model_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, & 
+                shocks_cov, shocks_cholesky, x)
 
-    coeffs_b = x(7:12)
-
-    coeffs_edu = x(13:15)
-
-    coeffs_home = x(16:16)
-
-    shocks_cholesky = 0.0
-
-    shocks_cholesky(1:4, 1) = x(17:20)
-
-    shocks_cholesky(2:4, 2) = x(21:23)
-
-    shocks_cholesky(3:4, 3) = x(24:25) 
-
-    shocks_cholesky(4:4, 4) = x(26:26) 
-
-
-    shocks_cov = MATMUL(shocks_cholesky, TRANSPOSE(shocks_cholesky))
-
-
+    ! Solve requested model
     CALL fort_solve(periods_payoffs_systematic, states_number_period, & 
             mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, & 
             coeffs_edu, coeffs_home, shocks_cov, is_deterministic, & 
@@ -100,6 +83,7 @@ SUBROUTINE f2py_criterion(crit_val, x, is_deterministic, is_interpolated, &
             is_ambiguous, num_periods, num_points, edu_start, is_myopic, & 
             is_debug, measure, edu_max, min_idx, delta, level)
 
+    ! Evaluate criterion function for observed data
     CALL fort_evaluate(crit_val, periods_payoffs_systematic, & 
             mapping_state_idx, periods_emax, states_all, shocks_cov, & 
             is_deterministic, num_periods, edu_start, edu_max, delta, & 

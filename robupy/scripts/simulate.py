@@ -10,7 +10,7 @@ import argparse
 import os
 
 # project library
-from robupy.estimate.estimate_auxiliary import opt_get_model_parameters
+from robupy.estimate.estimate_auxiliary import get_model_parameters
 from robupy.simulate.simulate import simulate
 from robupy.read.read import read
 
@@ -53,7 +53,7 @@ def simulate_wrapper(update, init_file):
     # estimation run.
     if update:
         x0 = np.genfromtxt('paras_steps.robupy.log')
-        args = opt_get_model_parameters(x0, True)[:-1]
+        args = get_model_parameters(x0, True)[:-1]
         robupy_obj.update_model_paras(*args)
 
    # Optimize the criterion function.

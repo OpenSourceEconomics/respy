@@ -26,8 +26,8 @@ from robupy.solve.ambiguity import criterion_ambiguity
 from robupy.solve.ambiguity import _divergence
 from robupy.solve.emax import simulate_emax
 
-from robupy.estimate.estimate_auxiliary import opt_get_optim_parameters
-from robupy.estimate.estimate_auxiliary import opt_get_model_parameters
+from robupy.estimate.estimate_auxiliary import get_optim_parameters
+from robupy.estimate.estimate_auxiliary import get_model_parameters
 
 from robupy.shared.auxiliary import distribute_class_attributes
 from robupy.shared.auxiliary import distribute_model_paras
@@ -610,8 +610,8 @@ class TestClass(object):
 
             # Apply numerous transformations
             for j in range(10):
-                args = opt_get_model_parameters(x, is_debug=True)
-                x = opt_get_optim_parameters(*args, is_debug=True)
+                args = get_model_parameters(x, is_debug=True)
+                x = get_optim_parameters(*args, is_debug=True)
 
             # Checks
             np.testing.assert_allclose(base, x)

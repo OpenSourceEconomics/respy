@@ -10,7 +10,7 @@ import argparse
 import os
 
 # project library
-from robupy.estimate.estimate_auxiliary import opt_get_model_parameters
+from robupy.estimate.estimate_auxiliary import get_model_parameters
 from robupy.estimate.estimate import estimate
 from robupy.process.process import process
 from robupy.read.read import read
@@ -56,7 +56,7 @@ def estimate_wrapper(resume, single, init_file):
     # estimation run.
     if resume:
         x0 = np.genfromtxt('paras_steps.robupy.log')
-        args = opt_get_model_parameters(x0, True)[:-1]
+        args = get_model_parameters(x0, True)[:-1]
         robupy_obj.update_model_paras(*args)
 
     # Set maximum iteration count when only an evaluation of the criterion
