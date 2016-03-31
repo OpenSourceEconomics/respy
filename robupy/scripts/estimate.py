@@ -105,8 +105,8 @@ def add_gradient_information(robupy_obj, data_frame):
                 fmt_ = '{0:>15}    {1:>15}\n\n'
                 out_file.write(fmt_.format(*['Identifier', 'Start']))
                 fmt_ = '{0:>15}    {1:15.4f}\n'
-                for j in range(len(grad)):
-                    values = [j, grad[j]]
+                for j, val in enumerate(grad):
+                    values = [j, val]
                     out_file.write(fmt_.format(*values))
                 out_file.write('\n')
 
