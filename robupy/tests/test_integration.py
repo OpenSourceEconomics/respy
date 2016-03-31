@@ -26,6 +26,7 @@ from robupy.tests.codes.random_init import generate_init
 
 from robupy import simulate
 from robupy import evaluate
+from robupy import estimate
 from robupy import process
 from robupy import solve
 from robupy import read
@@ -426,3 +427,23 @@ class TestClass(object):
         pyth = pyth_criterion(x0, *args)
         f2py = f2py_criterion(x0, *args)
         np.testing.assert_allclose(pyth, f2py)
+
+    def test_8(self):
+        """ This test ensures that the evaluation of the criterion function
+        at the starting value is identical between the different versions.
+        """
+
+        # Generate random initialization file
+        constraints = dict()
+        constraints['maxiter'] = 0
+
+        # Generate random initialization file
+        generate_init(constraints)
+
+        # Perform toolbox actions
+        robupy_obj = read('test.robupy.ini')
+
+        # Simulate a dataset
+        simulate(robupy_obj)
+
+        estimate(robupy_obj, process(robupy_obj))

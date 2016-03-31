@@ -82,6 +82,7 @@ def generate_random_dict(constraints=None):
     dict_['ESTIMATION']['draws'] = np.random.random_integers(1, MAX_DRAWS)
     dict_['ESTIMATION']['seed'] = np.random.random_integers(1, 10000)
     dict_['ESTIMATION']['file'] = 'data.robupy'
+    dict_['ESTIMATION']['options'] = 'optimization.robupy.opt'
     dict_['ESTIMATION']['optimizer'] = np.random.choice(['SCIPY-BFGS', 'SCIPY-POWELL'])
     dict_['ESTIMATION']['maxiter'] = np.random.random_integers(1, 10000)
 
@@ -124,6 +125,16 @@ def generate_random_dict(constraints=None):
         assert (points > 0)
         # Replace in initialization files
         dict_['INTERPOLATION']['points'] = points
+
+    # Replace number of iterations
+    if 'maxiter' in constraints.keys():
+        # Extract objects
+        maxiter = constraints['maxiter']
+        # Checks
+        assert (isinstance(maxiter, int))
+        assert (maxiter >= 0)
+        # Replace in initialization files
+        dict_['ESTIMATION']['maxiter'] = maxiter
 
     # Replace education
     if 'edu' in constraints.keys():

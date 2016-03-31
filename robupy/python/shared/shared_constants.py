@@ -16,17 +16,6 @@ TEST_RESOURCES_DIR = ROOT_DIR + '/tests/resources'
 # Directory with the FORTRAN resources
 FORTRAN_DIR = ROOT_DIR + '/fortran'
 
-
-# module-wide variables
-DEBUG_OPTIONS = ' -O2 -fimplicit-none  -Wall -Wline-truncation' \
-                ' -Wcharacter-truncation  -Wsurprising  -Waliasing' \
-                ' -Wimplicit-interface  -Wunused-parameter  -fwhole-file' \
-                ' -fcheck=all  -fbacktrace '
-
-PRODUCTION_OPTIONS = '-O3'
-
-
-
 HUGE_FLOAT = 1.0e10
 TINY_FLOAT = 1e-20
 SMALL_FLOAT = 1e-5
