@@ -23,7 +23,6 @@
       <change type="MOVED" beforePath="$PROJECT_DIR$/package/robupy/shared/shared_auxiliary.py" afterPath="$PROJECT_DIR$/package/robupy/python/shared/shared_auxiliary.py" />
       <change type="MOVED" beforePath="$PROJECT_DIR$/package/robupy/simulate/__init__.py" afterPath="$PROJECT_DIR$/package/robupy/python/estimate/__init__.py" />
       <change type="MOVED" beforePath="$PROJECT_DIR$/package/robupy/simulate/simulate.py" afterPath="$PROJECT_DIR$/package/robupy/simulate.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/package/robupy/simulate/simulate_auxiliary.py" afterPath="$PROJECT_DIR$/package/robupy/python/simulate/simulate_auxiliary.py" />
       <change type="MOVED" beforePath="$PROJECT_DIR$/package/robupy/simulate/simulate_python.py" afterPath="$PROJECT_DIR$/package/robupy/python/simulate/simulate_python.py" />
       <change type="MOVED" beforePath="$PROJECT_DIR$/package/robupy/solve/__init__.py" afterPath="$PROJECT_DIR$/package/robupy/python/__init__.py" />
       <change type="MOVED" beforePath="$PROJECT_DIR$/package/robupy/solve/solve.py" afterPath="$PROJECT_DIR$/package/robupy/solve.py" />
@@ -44,6 +43,7 @@
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/python/estimate/estimate_wrapper.py" afterPath="$PROJECT_DIR$/package/robupy/python/estimate/estimate_wrapper.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/python/read/clsRobupy.py" afterPath="$PROJECT_DIR$/package/robupy/python/read/clsRobupy.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/python/shared/shared_constants.py" afterPath="$PROJECT_DIR$/package/robupy/python/shared/shared_constants.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/python/simulate/simulate_auxiliary.py" afterPath="$PROJECT_DIR$/package/robupy/python/simulate/simulate_auxiliary.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/scripts/estimate.py" afterPath="$PROJECT_DIR$/package/robupy/scripts/estimate.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/scripts/simulate.py" afterPath="$PROJECT_DIR$/package/robupy/scripts/simulate.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package/robupy/tests/codes/auxiliary.py" afterPath="$PROJECT_DIR$/package/robupy/tests/codes/auxiliary.py" />
@@ -89,14 +89,34 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="estimate.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/package/robupy/scripts/estimate.py">
+      <file leaf-file-name="simulate.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/package/robupy/scripts/simulate.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.398374">
-              <caret line="107" column="46" selection-start-line="107" selection-start-column="46" selection-end-line="107" selection-end-column="46" />
+            <state vertical-scroll-proportion="0.0">
+              <caret line="13" column="0" selection-start-line="13" selection-start-column="0" selection-end-line="13" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="estimate_wrapper.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/package/robupy/python/estimate/estimate_wrapper.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.3326338">
+              <caret line="203" column="61" selection-start-line="203" selection-start-column="61" selection-end-line="203" selection-end-column="61" />
               <folding>
-                <element signature="e#129#169#0" expanded="true" />
+                <element signature="e#105#140#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="estimate_auxiliary.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/package/robupy/python/estimate/estimate_auxiliary.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="-13.451612">
+              <caret line="16" column="43" selection-start-line="16" selection-start-column="43" selection-end-line="16" selection-end-column="43" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -116,8 +136,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/package/robupy/solve/solve_auxiliary.py" />
-        <option value="$PROJECT_DIR$/package/robupy/fortran/solve_auxiliary.f90" />
         <option value="$PROJECT_DIR$/package/robupy/fortran/solve.f90" />
         <option value="$PROJECT_DIR$/package/robupy/shared/shared_auxiliary.py" />
         <option value="$PROJECT_DIR$/package/robupy/fortran/robufort_library.f90" />
@@ -163,10 +181,12 @@
         <option value="$PROJECT_DIR$/package/robupy/estimate.py" />
         <option value="$PROJECT_DIR$/package/development/testing/investigate.py" />
         <option value="$PROJECT_DIR$/package/development/testing/run.py" />
-        <option value="$PROJECT_DIR$/package/development/working/driver.py" />
         <option value="$PROJECT_DIR$/package/development/working/model.robupy.ini" />
-        <option value="$PROJECT_DIR$/package/robupy/python/estimate/estimate_wrapper.py" />
         <option value="$PROJECT_DIR$/package/robupy/scripts/estimate.py" />
+        <option value="$PROJECT_DIR$/package/development/working/driver.py" />
+        <option value="$PROJECT_DIR$/package/robupy/python/simulate/simulate_auxiliary.py" />
+        <option value="$PROJECT_DIR$/package/robupy/scripts/simulate.py" />
+        <option value="$PROJECT_DIR$/package/robupy/python/estimate/estimate_wrapper.py" />
       </list>
     </option>
   </component>
@@ -365,6 +385,32 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="python" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="robustToolbox" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="robustToolbox" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="package" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="robupy" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="python" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="simulate" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -843,13 +889,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/package/robupy/fortran/robufort_slsqp.f">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/package/robupy/fortran/fortran_auxiliary.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -1166,14 +1205,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package/robupy/python/estimate/estimate_auxiliary.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-0.76829267">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/package/robupy/estimate.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -1200,30 +1231,62 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/package/robupy/scripts/estimate.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.62601626">
+          <caret line="109" column="37" selection-start-line="109" selection-start-column="37" selection-end-line="109" selection-end-column="37" />
+          <folding>
+            <element signature="e#129#169#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/robupy/python/simulate/simulate_python.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.5406504">
+          <caret line="21" column="21" selection-start-line="21" selection-start-column="21" selection-end-line="21" selection-end-column="21" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/package/development/working/driver.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.597561">
-          <caret line="22" column="0" selection-start-line="22" selection-start-column="0" selection-end-line="22" selection-end-column="0" />
+        <state vertical-scroll-proportion="0.800813">
+          <caret line="30" column="0" selection-start-line="30" selection-start-column="0" selection-end-line="32" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/robupy/python/simulate/simulate_auxiliary.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-0.11382114">
+          <caret line="76" column="16" selection-start-line="76" selection-start-column="16" selection-end-line="76" selection-end-column="16" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/robupy/scripts/simulate.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="13" column="0" selection-start-line="13" selection-start-column="0" selection-end-line="13" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package/robupy/python/estimate/estimate_auxiliary.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-13.451612">
+          <caret line="16" column="43" selection-start-line="16" selection-start-column="43" selection-end-line="16" selection-end-column="43" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/package/robupy/python/estimate/estimate_wrapper.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.24796748">
-          <caret line="324" column="54" selection-start-line="324" selection-start-column="54" selection-end-line="324" selection-end-column="54" />
+        <state vertical-scroll-proportion="0.3326338">
+          <caret line="203" column="61" selection-start-line="203" selection-start-column="61" selection-end-line="203" selection-end-column="61" />
           <folding>
             <element signature="e#105#140#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package/robupy/scripts/estimate.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.398374">
-          <caret line="107" column="46" selection-start-line="107" selection-start-column="46" selection-end-line="107" selection-end-column="46" />
-          <folding>
-            <element signature="e#129#169#0" expanded="true" />
           </folding>
         </state>
       </provider>

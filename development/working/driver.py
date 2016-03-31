@@ -23,3 +23,11 @@ robupy_obj = read('model.robupy.ini')
 
 print('starting to simulate')
 data_frame = simulate(robupy_obj)
+
+
+# Indicator for working at time t in Occupation 1
+t = 1
+
+is_working = (data_frame[2] == 1) & (data_frame[1] == t)
+wages = data_frame[is_working].ix[:,3]
+

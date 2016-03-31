@@ -10,7 +10,9 @@ import os
 import numpy as np
 # project library
 from robupy.python.estimate.estimate_auxiliary import get_model_parameters
-from robupy import read, simulate
+
+from robupy import simulate
+from robupy import read
 
 """ Auxiliary function
 """
@@ -24,6 +26,7 @@ def distribute_input_arguments(parser):
 
     # Distribute arguments
     init_file = args.init_file
+    file_sim = args.file_sim
     update = args.update
 
     # Check attributes
@@ -34,14 +37,14 @@ def distribute_input_arguments(parser):
         assert (os.path.exists('paras_steps.robupy.log'))
 
     # Finishing
-    return update, init_file
+    return update, init_file, file_sim
 
 
 """ Main function
 """
 
 
-def simulate_wrapper(update, init_file):
+def simulate_wrapper(update, init_file, file_sim):
     """ Wrapper for the estimation.
     """
     # Read in baseline model specification.
@@ -54,7 +57,13 @@ def simulate_wrapper(update, init_file):
         args = get_model_parameters(x0, True)[:-1]
         robupy_obj.update_model_paras(*args)
 
-   # Optimize the criterion function.
+    # Update file for output.
+    if file_sim is not None:
+        robupy_obj.unlock()
+        robupy_obj.set_attr('file_sim', file_sim)
+        robupy_obj.lock()
+
+    # Optimize the criterion function.
     simulate(robupy_obj)
 
 
@@ -72,6 +81,9 @@ if __name__ == '__main__':
     parser.add_argument('--init_file', action='store', dest='init_file',
         default='model.robupy.ini', help='initialization file')
 
-    update, init_file = distribute_input_arguments(parser)
+    parser.add_argument('--file_sim', action='store', dest='file_sim',
+        default=None, help='output file')
 
-    simulate_wrapper(update, init_file)
+    update, init_file, file_sim = distribute_input_arguments(parser)
+
+    simulate_wrapper(update, init_file, file_sim)

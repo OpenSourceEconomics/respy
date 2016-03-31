@@ -33,15 +33,13 @@ def write_info(robupy_obj, data_frame):
         file_.write('\n Simulated Economy\n\n')
 
         file_.write('   Number of Agents:       ' + str(num_agents) + '\n\n')
-
         file_.write('   Number of Periods:      ' + str(num_periods) + '\n\n')
-
         file_.write('   Seed:                   ' + str(seed) + '\n\n\n')
-
         file_.write('   Choices\n\n')
 
-        file_.write('       Period     Work A     Work B    '
-                    'Schooling   Home      \n\n')
+        fmt_ = '{:>10}' + '{:>14}' * 4 + '\n\n'
+        labels = ['Period', 'Work A', 'Work B', 'Schooling', 'Home']
+        file_.write(fmt_.format(*labels))
 
         for t in range(num_periods):
 
@@ -57,12 +55,45 @@ def write_info(robupy_obj, data_frame):
             home = np.sum((data_frame[2] == 4) & (data_frame[1] ==
                                                   t))/num_agents
 
-            string = '''{0[0]:>10}    {0[1]:10.4f} {0[2]:10.4f} {0[3]:10.4f} {0[4]:10.4f}\n'''
-
+            fmt_ = '{:>10}' + '{:14.4f}' * 4 + '\n'
             args = [(t + 1), work_a, work_b, schooling, home]
-            file_.write(string.format(args))
+            file_.write(fmt_.format(*args))
 
-        file_.write('\n\n\n')
+        file_.write('\n\n')
+        file_.write('   Outcomes\n\n')
+
+        for j, label in enumerate(['A', 'B']):
+
+            file_.write('    Occupation ' + label + '\n\n')
+            fmt_ = '{:>10}' + '{:>14}' * 6 + '\n\n'
+            labels = [' Period', 'Counts',  'Mean', 'S.-Dev.',  '2. Decile']
+            labels += ['5. Decile',  '8. Decile']
+            file_.write(fmt_.format(*labels))
+
+            for t in range(num_periods):
+
+                is_working = (data_frame[2] == (j + 1)) & (data_frame[1] == t)
+                wages = data_frame[is_working].ix[:,3]
+                count = wages.count()
+
+                if count > 0:
+                    mean, sd = np.mean(wages), np.sqrt(np.var(wages))
+                    percentiles = np.percentile(wages, [20, 50, 80]).tolist()
+                else:
+                    mean, sd = '---', '---'
+                    percentiles = ['---', '---', '---']
+
+                values = [t + 1]
+                values += [count, mean, sd]
+                values += percentiles
+
+                fmt_ = '{:>10}    ' + '{:>10}    ' * 6 + '\n'
+                if count > 0:
+                    fmt_ = '{:>10}    {:>10}' + '{:14.4f}' * 5 + '\n'
+                file_.write(fmt_.format(*values))
+
+            file_.write('\n')
+        file_.write('\n')
 
         # Additional information about the simulated economy
         string = '''       {0[0]:<25}    {0[1]:10.4f}\n'''

@@ -91,6 +91,7 @@ def add_gradient_information(robupy_obj, data_frame):
     # approximation scheme.
     original_lines = open('optimization.robupy.info', 'r').readlines()
     original_lines[-3] = ' Number of Steps                 0\n'
+
     # Approximate gradient by forward finite differences.
     epsilon = 1.4901161193847656e-08
     grad = approx_fprime(x0, opt_obj.crit_func, epsilon, *args)

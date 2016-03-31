@@ -201,7 +201,8 @@ class OptimizationClass(object):
 
     @staticmethod
     def _options_read():
-
+        """ Read in the tuning parameters for the optimizers.
+        """
         # Initialization
         dict_ = {}
 
@@ -315,7 +316,7 @@ class OptimizationClass(object):
             fmt_ = '{0:>15}    {1:>15}    {2:>15}    {3:>15}\n\n'
             out_file.write(fmt_.format(*['Identifier', 'Start', 'Step', 'Current']))
             fmt_ = '{0:>15}    {1:15.4f}    {2:15.4f}    {3:15.4f}\n'
-            for i in range(len(paras_curre)):
+            for i, _ in enumerate(paras_curre):
                 paras = [i, paras_start[i], paras_steps[i], paras_curre[i]]
                 out_file.write(fmt_.format(*paras))
 
