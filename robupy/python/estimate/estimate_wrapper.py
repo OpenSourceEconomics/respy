@@ -2,21 +2,20 @@
 """
 
 # standard library
-from scipy.optimize import minimize
+import os
+import shlex
 
 import numpy as np
-
-import shlex
-import os
+from scipy.optimize import minimize
 
 # project library
-from robupy.estimate.estimate_auxiliary import get_model_parameters
-from robupy.estimate.estimate_auxiliary import process_block
-from robupy.estimate.estimate_auxiliary import process_cases
+from robupy.python.estimate.estimate_auxiliary import get_model_parameters
+from robupy.python.estimate.estimate_auxiliary import process_block
+from robupy.python.estimate.estimate_auxiliary import process_cases
 
-from robupy.estimate.estimate_python import pyth_criterion
+from robupy.python.estimate.estimate_python import pyth_criterion
 
-from robupy.shared.shared_auxiliary import HUGE_FLOAT
+from robupy.python.shared.shared_auxiliary import HUGE_FLOAT
 
 from robupy.fortran.f2py_library import f2py_criterion
 

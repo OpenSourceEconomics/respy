@@ -3,14 +3,15 @@ model.
 """
 
 # standard library
-import numpy as np
 import logging
 
+import numpy as np
 import pandas as pd
+
 logger = logging.getLogger('ROBUPY_SIMULATE')
 
 # project library
-from robupy.shared.shared_auxiliary import distribute_model_paras
+from robupy.python.shared.shared_auxiliary import distribute_model_paras
 
 
 def write_info(robupy_obj, data_frame):

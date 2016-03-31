@@ -4,10 +4,8 @@
 
 
 # standard library
-import numpy as np
-from scipy.optimize import minimize
-import sys
 import os
+import sys
 
 # ROOT DIRECTORY
 sys.path.insert(0, os.environ['ROBUPY'])
@@ -19,8 +17,7 @@ sys.path.insert(0, ROOT_DIR)
 
 # testing codes
 
-from robupy import simulate, read, solve, process, evaluate, estimate
-
+from robupy import simulate, read, solve
 
 robupy_obj = read('model.robupy.ini')
 

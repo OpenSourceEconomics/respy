@@ -3,16 +3,16 @@ model with PYTHON and F2PY capabilities.
 """
 
 # standard library
-import numpy as np
-
 import logging
 
-# project library
-from robupy.shared.shared_constants import MISSING_FLOAT
+import numpy as np
 
-from robupy.solve.solve_auxiliary import pyth_calculate_payoffs_systematic
-from robupy.solve.solve_auxiliary import pyth_create_state_space
-from robupy.solve.solve_auxiliary import pyth_backward_induction
+# project library
+from robupy.python.shared.shared_constants import MISSING_FLOAT
+
+from robupy.python.solve.solve_auxiliary import pyth_calculate_payoffs_systematic
+from robupy.python.solve.solve_auxiliary import pyth_create_state_space
+from robupy.python.solve.solve_auxiliary import pyth_backward_induction
 
 # Logging
 logger = logging.getLogger('ROBUPY_SOLVE')

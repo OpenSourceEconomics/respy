@@ -3,13 +3,13 @@ FORTRAN implementation.
 """
 
 # standard library
-import pandas as pd
-import numpy as np
-
 import os
 
+import numpy as np
+import pandas as pd
+
 # project library
-from robupy.shared.shared_constants import HUGE_FLOAT
+from robupy.python.shared.shared_constants import HUGE_FLOAT
 
 ''' Auxiliary  functions
 '''

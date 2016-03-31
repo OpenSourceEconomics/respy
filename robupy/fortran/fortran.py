@@ -10,7 +10,7 @@ from robupy.fortran.fortran_auxiliary import write_dataset
 from robupy.fortran.fortran_auxiliary import get_results
 from robupy.fortran.fortran_auxiliary import read_data
 
-from robupy.shared.shared_constants import FORTRAN_DIR
+from robupy.python.shared.shared_constants import FORTRAN_DIR
 
 ''' Main function
 '''

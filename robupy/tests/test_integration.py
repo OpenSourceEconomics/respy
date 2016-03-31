@@ -3,25 +3,23 @@ development tests.
 """
 
 # standard library
-from pandas.util.testing import assert_frame_equal
-
 import numpy as np
 import pandas as pd
-
 import pytest
+from pandas.util.testing import assert_frame_equal
 
 # testing library
 from codes.auxiliary import write_interpolation_grid
 from codes.auxiliary import write_draws
 
 # project library
-from robupy.shared.shared_auxiliary import distribute_class_attributes
-from robupy.shared.shared_auxiliary import distribute_model_paras
-from robupy.shared.shared_auxiliary import read_draws
+from robupy.python.shared.shared_auxiliary import distribute_class_attributes
+from robupy.python.shared.shared_auxiliary import distribute_model_paras
+from robupy.python.shared.shared_auxiliary import read_draws
 
-from robupy.solve.solve_auxiliary import pyth_create_state_space
+from robupy.python.solve.solve_auxiliary import pyth_create_state_space
 
-from robupy.estimate.estimate_auxiliary import get_optim_parameters
+from robupy.python.estimate.estimate_auxiliary import get_optim_parameters
 from robupy.tests.codes.random_init import generate_random_dict
 from robupy.tests.codes.random_init import print_random_dict
 from robupy.tests.codes.random_init import generate_init
@@ -32,18 +30,18 @@ from robupy import process
 from robupy import solve
 from robupy import read
 
+from robupy.python.solve.solve_python import pyth_solve
 from robupy.fortran.f2py_library import f2py_solve
-from robupy.solve.solve_python import pyth_solve
 from robupy.fortran.fortran import fort_solve
 
-from robupy.simulate.simulate_python import pyth_simulate
+from robupy.python.simulate.simulate_python import pyth_simulate
 from robupy.fortran.f2py_library import f2py_simulate
 
-from robupy.evaluate.evaluate_python import pyth_evaluate
+from robupy.python.evaluate.evaluate_python import pyth_evaluate
 from robupy.fortran.f2py_library import f2py_evaluate
 from robupy.fortran.fortran import fort_evaluate
 
-from robupy.estimate.estimate_python import pyth_criterion
+from robupy.python.estimate.estimate_python import pyth_criterion
 from robupy.fortran.f2py_library import f2py_criterion
 
 ''' Main

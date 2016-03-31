@@ -6,8 +6,10 @@ import numpy as np
 import pandas as pd
 
 # project library
-from robupy.process.process_auxiliary import check_process
-from robupy.shared.shared_auxiliary import check_dataset
+from robupy.python.process.process_auxiliary import check_process
+
+from robupy.python.shared.shared_auxiliary import check_dataset
+
 
 ''' Main function
 '''

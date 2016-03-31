@@ -4,15 +4,13 @@ model.
 """
 
 # standard library
-import numpy as np
-
 import argparse
 import os
 
+import numpy as np
 # project library
-from robupy.estimate.estimate_auxiliary import get_model_parameters
-from robupy.simulate.simulate import simulate
-from robupy.read.read import read
+from robupy.python.estimate.estimate_auxiliary import get_model_parameters
+from robupy import read, simulate
 
 """ Auxiliary function
 """

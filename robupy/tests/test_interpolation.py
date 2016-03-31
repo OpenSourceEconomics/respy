@@ -3,28 +3,28 @@ development tests.
 """
 
 # standard library
-import numpy as np
-
-import pytest
 import os
+
+import numpy as np
+import pytest
 
 # testing library
 from codes.auxiliary import write_interpolation_grid
 
 # project library
-from robupy.solve.solve_auxiliary import get_simulated_indicator
-from robupy.solve.solve_auxiliary import get_exogenous_variables
-from robupy.solve.solve_auxiliary import get_endogenous_variable
-from robupy.solve.solve_auxiliary import get_predictions
+from robupy.python.solve.solve_auxiliary import get_simulated_indicator
+from robupy.python.solve.solve_auxiliary import get_exogenous_variables
+from robupy.python.solve.solve_auxiliary import get_endogenous_variable
+from robupy.python.solve.solve_auxiliary import get_predictions
 
 from robupy.tests.codes.random_init import generate_random_dict
 from robupy.tests.codes.random_init import print_random_dict
 from robupy.tests.codes.random_init import generate_init
 
-from robupy.shared.shared_auxiliary import distribute_class_attributes
-from robupy.shared.shared_auxiliary import replace_missing_values
-from robupy.shared.shared_auxiliary import distribute_model_paras
-from robupy.shared.shared_auxiliary import create_draws
+from robupy.python.shared.shared_auxiliary import distribute_class_attributes
+from robupy.python.shared.shared_auxiliary import replace_missing_values
+from robupy.python.shared.shared_auxiliary import distribute_model_paras
+from robupy.python.shared.shared_auxiliary import create_draws
 
 import robupy.fortran.f2py_debug as fort_debug
 

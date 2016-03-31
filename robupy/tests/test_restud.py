@@ -3,21 +3,19 @@ RESTUD code for the special cases where they overlap.
 """
 
 # standard library
-from pandas.util.testing import assert_frame_equal
-
-import pandas as pd
-import numpy as np
-
-import pytest
-import shutil
 import os
+
+import numpy as np
+import pandas as pd
+import pytest
+from pandas.util.testing import assert_frame_equal
 
 # project library
 from robupy.tests.codes.random_init import generate_random_dict
 from robupy.tests.codes.random_init import print_random_dict
 
-from robupy.shared.shared_auxiliary import distribute_class_attributes
-from robupy.shared.shared_constants import FORTRAN_DIR
+from robupy.python.shared.shared_auxiliary import distribute_class_attributes
+from robupy.python.shared.shared_constants import FORTRAN_DIR
 
 from robupy import simulate
 from robupy import solve

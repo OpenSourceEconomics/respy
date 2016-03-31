@@ -130,10 +130,25 @@ def cleanup_build(is_build=False):
             if match == './python':
                 continue
 
-            if match == './python/py':
+            if match == './python/estimate':
                 continue
 
-            if match == './python/f2py':
+            if match == './python/evaluate':
+                continue
+
+            if match == './python/process':
+                continue
+
+            if match == './python/read':
+                continue
+
+            if match == './python/shared':
+                continue
+
+            if match == './python/simulate':
+                continue
+
+            if match == './python/solve':
                 continue
 
             if match == './tests':

@@ -2,8 +2,9 @@
 """
 
 # standard library
-from robupy.estimate.estimate_auxiliary import get_model_parameters
-from robupy.evaluate.evaluate_python import pyth_evaluate
+from robupy.python.estimate.estimate_auxiliary import get_model_parameters
+from robupy.python.evaluate.evaluate_python import pyth_evaluate
+
 
 def pyth_criterion(x, is_deterministic, is_interpolated, num_draws_emax,
         is_ambiguous, num_periods, num_points, is_myopic, edu_start,

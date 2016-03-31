@@ -3,47 +3,45 @@ development tests.
 """
 
 # standard library
-import statsmodels.api as sm
 import numpy as np
-
-from scipy.optimize.slsqp import _minimize_slsqp
-from scipy.optimize import approx_fprime
-from scipy.optimize import rosen_der
-from scipy.optimize import rosen
-from scipy.stats import norm
-
 import pytest
 import scipy
+import statsmodels.api as sm
+from scipy.optimize import approx_fprime
+from scipy.optimize import rosen
+from scipy.optimize import rosen_der
+from scipy.optimize.slsqp import _minimize_slsqp
+from scipy.stats import norm
 
 # testing library
 from codes.auxiliary import write_interpolation_grid
 
-from robupy.solve.solve_auxiliary import get_payoffs
+from robupy.python.solve.solve_auxiliary import get_payoffs
 from robupy.tests.codes.random_init import generate_init
 
-from robupy.solve.solve_ambiguity import get_payoffs_ambiguity
-from robupy.solve.solve_ambiguity import criterion_ambiguity
-from robupy.solve.solve_ambiguity import divergence
-from robupy.solve.solve_emax import simulate_emax
+from robupy.python.solve.solve_ambiguity import get_payoffs_ambiguity
+from robupy.python.solve.solve_ambiguity import criterion_ambiguity
+from robupy.python.solve.solve_ambiguity import divergence
+from robupy.python.solve.solve_emax import simulate_emax
 
-from robupy.estimate.estimate_auxiliary import get_optim_parameters
-from robupy.estimate.estimate_auxiliary import get_model_parameters
+from robupy.python.estimate.estimate_auxiliary import get_optim_parameters
+from robupy.python.estimate.estimate_auxiliary import get_model_parameters
 
-from robupy.shared.shared_auxiliary import distribute_class_attributes
-from robupy.shared.shared_auxiliary import distribute_model_paras
-from robupy.shared.shared_auxiliary import create_draws
+from robupy.python.shared.shared_auxiliary import distribute_class_attributes
+from robupy.python.shared.shared_auxiliary import distribute_model_paras
+from robupy.python.shared.shared_auxiliary import create_draws
 
 import robupy.fortran.f2py_testing as fort_test
-import robupy.fortran.f2py_debug as fort_debug
 import robupy.fortran.f2py_library as fort_lib
+import robupy.fortran.f2py_debug as fort_debug
 
-from robupy.solve.solve_auxiliary import pyth_create_state_space
+from robupy.python.solve.solve_auxiliary import pyth_create_state_space
 from robupy.fortran.f2py_library import  f2py_create_state_space
 
-from robupy.solve.solve_auxiliary import pyth_calculate_payoffs_systematic
+from robupy.python.solve.solve_auxiliary import pyth_calculate_payoffs_systematic
 from robupy.fortran.f2py_library import f2py_calculate_payoffs_systematic
 
-from robupy.solve.solve_auxiliary import pyth_backward_induction
+from robupy.python.solve.solve_auxiliary import pyth_backward_induction
 from robupy.fortran.f2py_library import f2py_backward_induction
 
 from robupy import simulate

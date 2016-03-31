@@ -1,16 +1,17 @@
 
 # standard library
 import logging
-import pytest
 import sys
 
+import pytest
+
 # Package structure
-from robupy.estimate.estimate import estimate
-from robupy.simulate.simulate import simulate
-from robupy.evaluate.evaluate import evaluate
-from robupy.process.process import process
-from robupy.solve.solve import solve
-from robupy.read.read import read
+from robupy.estimate import estimate
+from robupy.evaluate import evaluate
+from robupy.simulate import simulate
+from robupy.process import process
+from robupy.solve import solve
+from robupy.read import read
 
 # Check for Python 3
 if not (sys.version_info[0] == 3):

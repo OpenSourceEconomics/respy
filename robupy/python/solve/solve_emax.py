@@ -4,8 +4,8 @@
 import numpy as np
 
 # project library
-from robupy.shared.shared_auxiliary import get_total_value
-from robupy.shared.shared_constants import HUGE_FLOAT
+from robupy.python.shared.shared_auxiliary import get_total_value
+from robupy.python.shared.shared_constants import HUGE_FLOAT
 
 ''' Main function
 '''

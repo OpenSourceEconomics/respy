@@ -3,12 +3,11 @@
 """
 
 # standard library
+import numpy as np
 from scipy.optimize import minimize
 
-import numpy as np
-
 # project library
-from robupy.solve.solve_emax import simulate_emax
+from robupy.python.solve.solve_emax import simulate_emax
 
 ''' Public functions
 '''

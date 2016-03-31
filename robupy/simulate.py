@@ -15,28 +15,29 @@ information to disk.
 """
 
 # standard library
-import pandas as pd
 import logging
 
-# project library
-from robupy.simulate.simulate_auxiliary import start_logging
-from robupy.simulate.simulate_auxiliary import stop_logging
-from robupy.simulate.simulate_auxiliary import check_input
-from robupy.simulate.simulate_auxiliary import write_info
-from robupy.simulate.simulate_auxiliary import write_out
+import pandas as pd
 
-from robupy.shared.shared_auxiliary import distribute_class_attributes
-from robupy.shared.shared_auxiliary import distribute_model_paras
-from robupy.shared.shared_auxiliary import replace_missing_values
-from robupy.shared.shared_auxiliary import check_dataset
-from robupy.shared.shared_auxiliary import create_draws
+# project library
+from robupy.python.simulate.simulate_auxiliary import start_logging
+from robupy.python.simulate.simulate_auxiliary import stop_logging
+from robupy.python.simulate.simulate_auxiliary import check_input
+from robupy.python.simulate.simulate_auxiliary import write_info
+from robupy.python.simulate.simulate_auxiliary import write_out
+
+from robupy.python.shared.shared_auxiliary import distribute_class_attributes
+from robupy.python.shared.shared_auxiliary import distribute_model_paras
+from robupy.python.shared.shared_auxiliary import replace_missing_values
+from robupy.python.shared.shared_auxiliary import check_dataset
+from robupy.python.shared.shared_auxiliary import create_draws
 
 from robupy.fortran.f2py_library import f2py_simulate
 
-from robupy.solve.solve import solve
+from robupy.solve import solve
 
 # Logging
-from robupy.simulate.simulate_python import pyth_simulate
+from robupy.python.simulate.simulate_python import pyth_simulate
 
 logger = logging.getLogger('ROBUPY_SIMULATE')
 

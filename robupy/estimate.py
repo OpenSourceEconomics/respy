@@ -6,14 +6,15 @@ function.
 
 
 # project library
-from robupy.estimate.estimate_auxiliary import get_optim_parameters
-from robupy.estimate.estimate_auxiliary import check_input
+from robupy.python.estimate.estimate_auxiliary import get_optim_parameters
+from robupy.python.estimate.estimate_auxiliary import check_input
 
-from robupy.shared.shared_auxiliary import distribute_class_attributes
-from robupy.shared.shared_auxiliary import distribute_model_paras
-from robupy.shared.shared_auxiliary import create_draws
+from robupy.python.shared.shared_auxiliary import distribute_class_attributes
+from robupy.python.shared.shared_auxiliary import distribute_model_paras
+from robupy.python.shared.shared_auxiliary import create_draws
 
-from robupy.estimate.estimate_wrapper import OptimizationClass
+from robupy.python.estimate.estimate_wrapper import OptimizationClass
+
 ''' Main function
 '''
 

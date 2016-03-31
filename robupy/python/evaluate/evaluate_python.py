@@ -2,17 +2,16 @@
 evaluate the likelihood function.
 """
 # standard library
+import numpy as np
 from scipy.stats import norm
 
-import numpy as np
-
 # project library
-from robupy.shared.shared_auxiliary import get_total_value
-from robupy.shared.shared_constants import SMALL_FLOAT
-from robupy.shared.shared_constants import TINY_FLOAT
-from robupy.shared.shared_constants import HUGE_FLOAT
+from robupy.python.shared.shared_auxiliary import get_total_value
+from robupy.python.shared.shared_constants import SMALL_FLOAT
+from robupy.python.shared.shared_constants import TINY_FLOAT
+from robupy.python.shared.shared_constants import HUGE_FLOAT
 
-from robupy.solve.solve_python import pyth_solve
+from robupy.python.solve.solve_python import pyth_solve
 
 ''' Main function
 '''

@@ -5,20 +5,21 @@
 from robupy.fortran.f2py_library import f2py_create_state_space
 from robupy.fortran.f2py_library import f2py_solve
 
-from robupy.shared.shared_auxiliary import distribute_class_attributes
-from robupy.shared.shared_auxiliary import distribute_model_paras
-from robupy.shared.shared_auxiliary import replace_missing_values
-from robupy.shared.shared_auxiliary import add_solution
-from robupy.shared.shared_auxiliary import create_draws
+from robupy.python.solve.solve_auxiliary import start_ambiguity_logging
+from robupy.python.solve.solve_auxiliary import summarize_ambiguity
+from robupy.python.solve.solve_auxiliary import logging_solution
+from robupy.python.solve.solve_auxiliary import check_input
+from robupy.python.solve.solve_auxiliary import cleanup
+
+from robupy.python.shared.shared_auxiliary import distribute_class_attributes
+from robupy.python.shared.shared_auxiliary import distribute_model_paras
+from robupy.python.shared.shared_auxiliary import replace_missing_values
+from robupy.python.shared.shared_auxiliary import add_solution
+from robupy.python.shared.shared_auxiliary import create_draws
+
+from robupy.python.solve.solve_python import pyth_solve
+
 from robupy.fortran.fortran import fort_solve
-
-from robupy.solve.solve_auxiliary import start_ambiguity_logging
-from robupy.solve.solve_auxiliary import summarize_ambiguity
-from robupy.solve.solve_auxiliary import logging_solution
-from robupy.solve.solve_auxiliary import check_input
-from robupy.solve.solve_auxiliary import cleanup
-
-from robupy.solve.solve_python import pyth_solve
 
 ''' Main function
 '''

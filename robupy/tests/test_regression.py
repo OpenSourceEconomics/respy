@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 
 # project library
-from robupy.shared.shared_constants import TEST_RESOURCES_DIR
+from robupy.python.shared.shared_constants import TEST_RESOURCES_DIR
 
 from robupy import evaluate
 from robupy import simulate
