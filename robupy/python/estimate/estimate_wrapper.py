@@ -2,11 +2,12 @@
 """
 
 # standard library
-import os
-import shlex
+from scipy.optimize import minimize
 
 import numpy as np
-from scipy.optimize import minimize
+
+import shlex
+import os
 
 # project library
 from robupy.python.estimate.estimate_auxiliary import get_model_parameters
@@ -92,7 +93,7 @@ class OptimizationClass(object):
         # criterion function is always the one indicated by the class
         # attribute and not the value returned by the optimization algorithm.
         if maxiter == 0:
-            crit_val = self._crit_func(x0, *args)
+            crit_val = self.crit_func(x0, *args)
 
             rslt = dict()
             rslt['x'] = x0
@@ -100,14 +101,12 @@ class OptimizationClass(object):
             rslt['success'] = True
             rslt['message'] = 'Evaluation of criterion function at starting values.'
 
-            self.attr['step+val'] = crit_val
-
         else:
             if optimizer == 'SCIPY-BFGS':
-                rslt = minimize(self._crit_func, x0, method='BFGS', args=args,
+                rslt = minimize(self.crit_func, x0, method='BFGS', args=args,
                     options=options)
             elif optimizer == 'SCIPY-POWELL':
-                rslt = minimize(self._crit_func, x0, method='POWELL', args=args,
+                rslt = minimize(self.crit_func, x0, method='POWELL', args=args,
                     options=options)
             elif optimizer == 'SCIPY-LBFGSB':
                 raise NotImplementedError
@@ -180,7 +179,7 @@ class OptimizationClass(object):
         assert isinstance(maxiter, int)
         assert (maxiter >= 0)
 
-    def _crit_func(self, x, *args):
+    def crit_func(self, x, *args):
         """ This method serves as a wrapper around the alternative
         implementations of the criterion function.
         """
@@ -321,13 +320,24 @@ class OptimizationClass(object):
                 out_file.write(fmt_.format(*paras))
 
             # Write out the current covariance matrix of the reward shocks.
-            out_file.write('\n\n Current Covariance Matrix \n\n')
-            shocks_cov = get_model_parameters(paras_curre, True)[4]
-            fmt_ = '{0:15.4f}    {1:15.4f}    {2:15.4f}    {3:15.4f}\n'
-            for i in range(4):
-                out_file.write(fmt_.format(*shocks_cov[i, :]))
+            out_file.write('\n\n Covariance Matrix \n\n')
 
-            fmt_ = '\n\n{0:>15}   {1:>15}\n'
+            for which in ['Start', 'Step', 'Current']:
+                if which == 'Start':
+                    paras = paras_start
+                elif which == 'Step':
+                    paras = paras_steps
+                else:
+                    paras = paras_curre
+                fmt_ = '{0:>15}   \n\n'
+                out_file.write(fmt_.format(*[which]))
+                shocks_cov = get_model_parameters(paras, True)[4]
+                fmt_ = '{0:15.4f}    {1:15.4f}    {2:15.4f}    {3:15.4f}\n'
+                for i in range(4):
+                    out_file.write(fmt_.format(*shocks_cov[i, :]))
+                out_file.write('\n')
+
+            fmt_ = '\n{0:>15}   {1:>15}\n'
             out_file.write(fmt_.format(*[' Number of Steps', num_steps]))
 
     def _logging_final(self, rslt):
