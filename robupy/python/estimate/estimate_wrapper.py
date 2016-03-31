@@ -254,29 +254,6 @@ class OptimizationClass(object):
         assert isinstance(ftol, float)
         assert (ftol > 0)
 
-        # Check options for SCIPY-LBFGSB algorithm
-        options = self.attr['options']['SCIPY-LBFGSB']
-        m, factr, maxfun = options['m'], options['factr'], options['maxfun']
-        pgtol, epsilon = options['pgtol'], options['epsilon']
-        file = options['file']
-
-        assert isinstance(m, int)
-        assert (m > 0 )
-
-        assert isinstance(factr, float)
-        assert (factr > 0 )
-
-        assert isinstance(pgtol, float)
-        assert (pgtol > 0 )
-
-        assert isinstance(epsilon, float)
-        assert (epsilon > 0 )
-
-        assert isinstance(maxfun, int)
-        assert (maxfun > 0 )
-
-        assert os.path.exists(file)
-
     def _logging_interim(self, x, crit_val):
         """ This method write out some information during the optimization.
         """

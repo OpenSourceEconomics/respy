@@ -446,4 +446,25 @@ class TestClass(object):
         # Simulate a dataset
         simulate(robupy_obj)
 
-        estimate(robupy_obj, process(robupy_obj))
+        # Iterate over alternative implementations
+        base_x, base_val = None, None
+
+        for version in ['FORTRAN', 'PYTHON', 'F2PY']:
+
+            robupy_obj.unlock()
+
+            robupy_obj.set_attr('version', version)
+
+            robupy_obj.lock()
+
+            x, val = estimate(robupy_obj, process(robupy_obj))
+
+            # Check for the returned parameters.
+            if base_x is None:
+                base_x = x
+            np.testing.assert_allclose(base_x, x)
+
+            # Check for the value of the criterion function.
+            if base_val is None:
+                base_val = val
+            np.testing.assert_allclose(base_val, val)

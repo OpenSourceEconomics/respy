@@ -77,9 +77,10 @@ def estimate(robupy_obj, data_frame):
     opt_obj.lock()
 
     # Perform optimization.
-    x, fval = opt_obj.optimize(x0)
+    x, val = opt_obj.optimize(x0)
 
-    print(x)
+    # Finishing
+    return x, val
 
 
 

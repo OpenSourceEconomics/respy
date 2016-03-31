@@ -82,7 +82,6 @@ def generate_random_dict(constraints=None):
     dict_['ESTIMATION']['draws'] = np.random.random_integers(1, MAX_DRAWS)
     dict_['ESTIMATION']['seed'] = np.random.random_integers(1, 10000)
     dict_['ESTIMATION']['file'] = 'data.robupy'
-    dict_['ESTIMATION']['options'] = 'optimization.robupy.opt'
     dict_['ESTIMATION']['optimizer'] = np.random.choice(['SCIPY-BFGS', 'SCIPY-POWELL'])
     dict_['ESTIMATION']['maxiter'] = np.random.random_integers(1, 10000)
 
@@ -386,3 +385,13 @@ def print_random_dict(dict_):
         file_.write(str_.format(*line))
 
         file_.write('\n')
+
+    # Write out a valid specification for the admissible optimizers.
+    lines = ['SCIPY-BFGS', 'gtol    1e-05', 'epsilon 1.4901161193847656e-08']
+    lines += [' ']
+    lines += ['SCIPY-POWELL', 'xtol 0.0001', 'ftol 0.0001']
+
+    with open('optimization.robupy.opt', 'a') as file_:
+        str_ = ' {0:>25} \n'
+        for line in lines:
+            file_.write(str_.format(line))
