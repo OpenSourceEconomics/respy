@@ -36,7 +36,7 @@ VERSIONS = ['PYTHON', 'FORTRAN', 'F2PY']
 
 ''' Request
 '''
-seed = 48346#6216748723
+seed = 43983#6216748723
 
 
 ''' Error Reproduction
@@ -49,7 +49,7 @@ np.random.seed(seed)
 test_dict = get_test_dict(TEST_DIR)
 module, method = get_random_request(test_dict)
 
-module, method = 'test_integration', 'test_8'
+#module, method = 'test_integration', 'test_8'
 
 mod = importlib.import_module(module)
 test = getattr(mod.TestClass(), method)

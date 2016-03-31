@@ -68,6 +68,9 @@ def run(hours):
 
     start, timeout = datetime.now(), timedelta(hours=hours)
 
+    # TODO: Remove ....
+    print('fixed seed')
+    random.seed(1233)
     # # Evaluation loop.
     while True:
 
