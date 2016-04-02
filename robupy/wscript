@@ -15,10 +15,10 @@ if not (sys.version_info[0] == 3):
     raise AssertionError('Please use Python 3')
 
 # Set of compiler options.
-DEBUG_OPTIONS = ' -O2 -fimplicit-none  -Wall -Wline-truncation' \
+DEBUG_OPTIONS = ' -O2  -Wall -Wline-truncation' \
     ' -Wcharacter-truncation  -Wsurprising  -Waliasing' \
     ' -Wimplicit-interface  -Wunused-parameter  -fwhole-file' \
-    ' -fcheck=all  -fbacktrace -g -ffpe-trap=invalid,zero,overflow'
+    ' -fcheck=all  -fbacktrace -g'
 
 PRODUCTION_OPTIONS = '-O3'
 

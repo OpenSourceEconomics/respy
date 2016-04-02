@@ -141,8 +141,8 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
                     draws_prob(:, idx) = (dist - shocks_cholesky(idx, 1) * draws_prob(:, 1)) / shocks_cholesky(idx, idx)
                 END IF
 
-                ! Record contribution of wage observation. REPLACE 0.0
-                crit_val_contrib =  crit_val_contrib * normal_pdf(dist, DBLE(0.0), sqrt(shocks_cov(idx, idx)))
+                ! Record contribution of wage observation.  
+                crit_val_contrib =  crit_val_contrib * normal_pdf(dist, zero_dble, sqrt(shocks_cov(idx, idx)))
 
                 ! If there is no random variation in payoffs, then the
                 ! observed wages need to be identical their systematic

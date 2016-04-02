@@ -46,17 +46,17 @@ cleanup_testing_infrastructure(True)
 np.random.seed(seed)
 
 # Construct test
-test_dict = get_test_dict(TEST_DIR)
-module, method = get_random_request(test_dict)
+for _ in range(1100):
+    test_dict = get_test_dict(TEST_DIR)
+    module, method = get_random_request(test_dict)
 
-#module, method = 'test_integration', 'test_8'
+    #module, method = 'test_restud', 'test_1'
+    print(module, method)
+    mod = importlib.import_module(module)
+    test = getattr(mod.TestClass(), method)
 
-mod = importlib.import_module(module)
-test = getattr(mod.TestClass(), method)
+    # Deal with PYTEST command line options.
+    if 'versions' in inspect.getargspec(test)[0]:
+        test = functools.partial(test, VERSIONS)
 
-print(module, method)
-# Deal with PYTEST command line options.
-if 'versions' in inspect.getargspec(test)[0]:
-    test = functools.partial(test, VERSIONS)
-
-test()
+    test()

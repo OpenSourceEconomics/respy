@@ -1222,9 +1222,14 @@ SUBROUTINE get_r_squared(r_squared, observed, predicted, num_agents)
 
     END DO
 
-    ! Construct result
-    r_squared = one_dble - ss_residuals / ss_total
-
+    ! Turning off all randomness during testing requires special case to avoid 
+    ! an error due to the division by zero. 
+    IF (ss_residuals .EQ. zero_dble) THEN
+        r_squared = one_dble
+    ELSE
+        r_squared = one_dble - ss_residuals / ss_total
+    END IF
+    
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************

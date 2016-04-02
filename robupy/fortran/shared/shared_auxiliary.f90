@@ -952,6 +952,39 @@ SUBROUTINE read_dataset(data_array, num_periods, num_agents)
     CLOSE(1, STATUS='delete')
 
 END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+FUNCTION clip_value(value, lower_bound, upper_bound)
+
+    !/* external objects        */
+
+    REAL(our_dble), INTENT(IN)  :: lower_bound
+    REAL(our_dble), INTENT(IN)  :: upper_bound
+    REAL(our_dble), INTENT(IN)  :: value
+
+    !/*  internal objects       */
+
+    REAL(our_dble)              :: clip_value
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    IF(value < lower_bound) THEN
+
+        clip_value = lower_bound
+
+    ELSEIF(value > upper_bound) THEN
+
+        clip_value = upper_bound
+
+    ELSE
+
+        clip_value = value
+
+    END IF
+
+END FUNCTION
 !*******************************************************************************
 !*******************************************************************************
 END MODULE
