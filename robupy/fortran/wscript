@@ -93,14 +93,14 @@ class CreateKeaneWolpinExecutables(Task):
 
         current_directory = os.getcwd()
         package_directory = self.env.project_paths['ROBUPY']
-
+        compiler_options = self.env.compiler_options
         os.chdir(package_directory + '/fortran/miscellaneous/kw_recomputation')
 
         cmd = ' kw_shared_constants.f90 kw_imsl_replacements.f90 ' \
               'kw_test_additions.f90 kw_dp3asim.f90 ' \
               ' -L/usr/lib/lapack -llapack'
 
-        os.system(' gfortran -o kw_dp3asim ' + cmd)
+        os.system(' gfortran ' + compiler_options + ' -o kw_dp3asim ' + cmd)
         shutil.move('kw_dp3asim', '../../bin/')
         os.chdir(current_directory)
 
