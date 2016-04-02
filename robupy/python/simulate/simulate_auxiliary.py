@@ -207,7 +207,7 @@ def stop_logging():
     """ Ensure orderly shutdown of logging capabilities.
     """
     # Shut down logger and close connection.
-    logger = logging.getLogger('ROBUPY_SOLVE')
+    logger = logging.getLogger('ROBUPY_SIMULATE')
     handlers = logger.handlers[:]
     for handler in handlers:
         handler.close()
