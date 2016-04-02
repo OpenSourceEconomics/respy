@@ -63,11 +63,9 @@ class CreateRobufortExecutable(Task):
 
     def run(self):
 
-        is_debug = self.is_debug
-
         from fortran.build_robufort import robufort_build
 
-        robufort_build(self, is_debug)
+        robufort_build(self)
 
 
 class CreateF2pyInterfaces(Task):

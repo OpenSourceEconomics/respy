@@ -9,33 +9,22 @@ well-organized code without any loss of performance.
 import shutil
 import os
 
-DEBUG_OPTIONS = ' -O2 -fimplicit-none  -Wall -Wline-truncation' \
-                ' -Wcharacter-truncation  -Wsurprising  -Waliasing' \
-                ' -Wimplicit-interface  -Wunused-parameter  -fwhole-file' \
-                ' -fcheck=all  -fbacktrace '
-
-PRODUCTION_OPTIONS = '-O3'
-
 
 ''' Main function
 '''
 
 
-def robufort_build(self, is_debug=False):
+def robufort_build(self):
     """ Building the ROBUFORT executable for high speed execution.
     """
-    # Compilation of executable for fastest performance
+    # Compilation of executable
     current_directory = os.getcwd()
+
+    compiler_options = self.env.compiler_options
 
     path = self.env.project_paths['ROBUPY']
 
     os.chdir(path + '/fortran')
-
-    # Set compilation options
-    if is_debug:
-        compiler_options = DEBUG_OPTIONS
-    else:
-        compiler_options = PRODUCTION_OPTIONS
 
     # Compile robufort file according to selected options.
     cmd = 'gfortran ' + compiler_options + ' -o robufort ' \
