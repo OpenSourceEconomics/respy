@@ -10,6 +10,10 @@ MODULE shared_auxiliary
 
 	IMPLICIT NONE
 
+    ! External procedures defined in LAPACK
+    EXTERNAL DGETRF
+    EXTERNAL DGETRI
+
     PUBLIC
 
  CONTAINS
@@ -485,64 +489,38 @@ SUBROUTINE cholesky(factor, matrix)
     END DO
 
 END SUBROUTINE
-
 !*******************************************************************************
 !*******************************************************************************
-FUNCTION inverse(A, k)
+FUNCTION inverse(A, n)
 
     !/* external objects        */
 
-    INTEGER(our_int), INTENT(IN)  :: k
+    INTEGER(our_int), INTENT(IN)    :: n
 
-    REAL(our_dble), INTENT(IN)    :: A(:, :)
+    REAL(our_dble), INTENT(IN)      :: A(:, :)
 
     !/* internal objects        */
 
-    REAL(our_dble), ALLOCATABLE   :: y(:, :)
-    REAL(our_dble), ALLOCATABLE   :: B(:, :)
+    INTEGER(our_int)                :: ipiv(n)
+    INTEGER(our_int)                :: info
 
-    REAL(our_dble)                :: inverse(k, k)
-    REAL(our_dble)                :: d
-
-    INTEGER(our_int), ALLOCATABLE :: indx(:)
-
-    INTEGER(our_int)              :: n
-    INTEGER(our_int)              :: i
-    INTEGER(our_int)              :: j
-
+    REAL(our_dble)                  :: inverse(n, n)
+    REAL(our_dble)                  :: work(n)
+    
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
+    
+    ! Initialize matrix for replacement
+    inverse = A
 
-    ! Auxiliary objects
-    n  = size(A, 1)
+    ! DGETRF computes an LU factorization of a general M-by-N matrix A
+    ! using partial pivoting with row interchanges.
+    CALL DGETRF(n, n, inverse, n, ipiv, info)
 
-    ! Allocate containers
-    ALLOCATE(y(n, n))
-    ALLOCATE(B(n, n))
-    ALLOCATE(indx(n))
-
-    ! Initialize containers
-    y = zero_dble
-    B = A
-
-    ! Main
-    DO i = 1, n
-
-        y(i, i) = 1
-
-    END DO
-
-    CALL ludcmp(B, d, indx)
-
-    DO j = 1, n
-
-        CALL lubksb(B, y(:, j), indx)
-
-    END DO
-
-    ! Collect result
-    inverse = y
+    ! DGETRI computes the inverse of a matrix using the LU factorization
+    ! computed by DGETRF.
+    CALL DGETRI(n, inverse, n, ipiv, work, n, info)
 
 END FUNCTION
 !*******************************************************************************
@@ -726,79 +704,6 @@ SUBROUTINE ludcmp(A, d, indx)
        END IF
 
     END DO
-
-END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE lubksb(A, B, indx)
-
-    !/* external objects        */
-
-    INTEGER(our_int), INTENT(IN)    :: indx(:)
-
-    REAL(our_dble), INTENT(INOUT)   :: A(:, :)
-    REAL(our_dble), INTENT(INOUT)   :: B(:)
-
-    !/* internal objects        */
-
-    INTEGER(our_int)                :: ii
-    INTEGER(our_int)                :: ll
-    INTEGER(our_int)                :: n
-    INTEGER(our_int)                :: j
-    INTEGER(our_int)                :: i
-
-    REAL(our_dble)                  :: sums
-
-!-------------------------------------------------------------------------------
-! Algorithm
-!-------------------------------------------------------------------------------
-
-    ! Auxiliary objects
-    n = SIZE(A, DIM = 1)
-
-    ! Allocate containers
-    ii = zero_int
-
-    ! Main
-    DO i = 1, n
-
-      ll = indx(i)
-
-      sums = B(ll)
-
-      B(ll) = B(i)
-
-      IF(ii /= zero_dble) THEN
-
-        DO j = ii, (i - 1)
-
-          sums = sums - a(i, j) * b(j)
-
-        END DO
-
-      ELSE IF(sums /= zero_dble) THEN
-
-        ii = i
-
-      END IF
-
-      b(i) = sums
-
-    END DO
-
-    DO i = n, 1, -1
-
-      sums = b(i)
-
-      DO j = (i + 1), n
-
-        sums = sums - a(i, j) * b(j)
-
-      END DO
-
-      b(i) = sums / a(i, i)
-
-  END DO
 
 END SUBROUTINE
 !*******************************************************************************
