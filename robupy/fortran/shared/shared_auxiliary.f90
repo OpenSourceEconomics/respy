@@ -13,6 +13,7 @@ MODULE shared_auxiliary
     ! External procedures defined in LAPACK
     EXTERNAL DGETRF
     EXTERNAL DGETRI
+    EXTERNAL DPOTRF
 
     PUBLIC
 
@@ -420,72 +421,31 @@ SUBROUTINE cholesky(factor, matrix)
 
     !/* internal objects        */
 
+    INTEGER(our_int)                :: info
     INTEGER(our_int)                :: i
     INTEGER(our_int)                :: n
-    INTEGER(our_int)                :: k
     INTEGER(our_int)                :: j
-
-    REAL(our_dble), ALLOCATABLE     :: clon(:, :)
-
-    REAL(our_dble)                  :: sums
-
+    
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
+    
+    n = SIZE(matrix, 1)
 
-    ! Initialize result
-    factor = zero_dble
+    ! Initialize matrix for replacement
+    factor = matrix
 
-    ! Auxiliary objects
-    n = size(matrix,1)
+    ! Compute the Cholesky factorization of a real symmetric positive 
+    ! definite matrix A.
+    CALL DPOTRF('L', n, factor, n, info)
 
-    ! Allocate containers
-    ALLOCATE(clon(n,n))
-
-    ! Apply Cholesky decomposition
-    clon = matrix
-
-    DO j = 1, n
-
-      sums = 0.0
-
-      DO k = 1, (j - 1)
-
-        sums = sums + clon(j, k)**2
-
-      END DO
-
-      clon(j, j) = DSQRT(clon(j, j) - sums)
-
-      DO i = (j + 1), n
-
-        sums = zero_dble
-
-        DO k = 1, (j - 1)
-
-          sums = sums + clon(j, k) * clon(i, k)
-
-        END DO
-
-        clon(i, j) = (clon(i, j) - sums) / clon(j, j)
-
-      END DO
-
-    END DO
-
-    ! Transfer information from matrix to factor
+    ! Replace upper diagonal with zeros.
     DO i = 1, n
-
       DO j = 1, n
-
-        IF(i .LE. j) THEN
-
-          factor(j, i) = clon(j, i)
-
+        IF(i .GT. j) THEN
+          factor(j, i) = zero_dble
         END IF
-
       END DO
-
     END DO
 
 END SUBROUTINE

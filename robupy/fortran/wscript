@@ -93,7 +93,7 @@ class CreateKeaneWolpinExecutables(Task):
 
     def run(self):
 
-        os.system(' gfortran -fcheck=bounds -o kw_dp3asim kw_dp3asim.f95')
+        os.system(' gfortran -o kw_dp3asim kw_dp3asim.f95')
 
         shutil.move('kw_dp3asim', 'bin/')
 
