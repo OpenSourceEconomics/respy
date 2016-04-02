@@ -127,6 +127,12 @@ def cleanup_build(is_build=False):
             if match == './fortran/simulate':
                 continue
 
+            if match == './fortran/miscellaneous':
+                continue
+
+            if match == './fortran/miscellaneous/kw_recomputation':
+                continue
+
             if match == './python':
                 continue
 
