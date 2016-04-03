@@ -495,177 +495,49 @@ FUNCTION determinant(A)
 
     !/* internal objects        */
 
-    INTEGER(our_int), ALLOCATABLE :: indx(:)
+    INTEGER(our_int), ALLOCATABLE :: IPIV(:)
 
-    INTEGER(our_int)              :: j
-    INTEGER(our_int)              :: n
+    INTEGER(our_int)              :: INFO
+    INTEGER(our_int)              :: N
+    INTEGER(our_int)              :: i
 
     REAL(our_dble), ALLOCATABLE   :: B(:, :)
 
-    REAL(our_dble)                :: d
-
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
-
+    
     ! Auxiliary objects
-    n  = size(A, 1)
+    N = SIZE(A, 1)
+    
+    ! Allocate auxiliary containers
+    ALLOCATE(B(N, N))
+    ALLOCATE(IPIV(N))
 
-    ! Allocate containers
-    ALLOCATE(B(n, n))
-    ALLOCATE(indx(n))
-
-    ! Initialize containers
+    ! Initialize matrix for replacement
     B = A
 
-    CALL ludcmp(B, d, indx)
+    ! Compute an LU factorization of a general M-by-N matrix A using
+    ! partial pivoting with row interchanges
+    CALL DGETRF( N, N, B, N, IPIV, INFO )
 
-    DO j = 1, n
+    IF (INFO .NE. zero_int) THEN
+        STOP 'LU factorization failed'
+    END IF
 
-       d = d * B(j, j)
-
+    ! Compute the product of the diagonal elements, accounting for 
+    ! interchanges of rows.
+    determinant = one_dble
+    DO  i = 1, N
+        IF(IPIV(i) .NE. i) THEN
+            determinant = -determinant * B(i,i)
+        ELSE
+            determinant = determinant * B(i,i)
+        END IF
     END DO
 
-    ! Collect results
-    determinant = d
 
 END FUNCTION
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE ludcmp(A, d, indx)
-
-    !/* external objects        */
-
-    INTEGER(our_int), INTENT(INOUT) :: indx(:)
-
-    REAL(our_dble), INTENT(INOUT)   :: a(:,:)
-    REAL(our_dble), INTENT(INOUT)   :: d
-
-    !/* internal objects        */
-
-    INTEGER(our_int)                :: imax
-    INTEGER(our_int)                :: i
-    INTEGER(our_int)                :: j
-    INTEGER(our_int)                :: k
-    INTEGER(our_int)                :: n
-
-    REAL(our_dble), ALLOCATABLE     :: vv(:)
-
-
-    REAL(our_dble)                  :: aamax
-    REAL(our_dble)                  :: sums
-    REAL(our_dble)                  :: dum
-
-!-------------------------------------------------------------------------------
-! Algorithm
-!-------------------------------------------------------------------------------
-
-    ! Initialize containers
-    imax = MISSING_INT
-
-    ! Auxiliary objects
-    n = SIZE(A, DIM = 1)
-
-    ! Initialize containers
-    ALLOCATE(vv(n))
-
-    ! Allocate containers
-    d = one_dble
-
-    ! Main
-    DO i = 1, n
-
-       aamax = zero_dble
-
-       DO j = 1, n
-
-          IF(abs(a(i, j)) > aamax) aamax = abs(a(i, j))
-
-       END DO
-
-       vv(i) = one_dble / aamax
-
-    END DO
-
-    DO j = 1, n
-
-       DO i = 1, (j - 1)
-
-          sums = a(i, j)
-
-          DO k = 1, (i - 1)
-
-             sums = sums - a(i, k)*a(k, j)
-
-          END DO
-
-       a(i,j) = sums
-
-       END DO
-
-       aamax = zero_dble
-
-       DO i = j, n
-
-          sums = a(i, j)
-
-          DO k = 1, (j - 1)
-
-             sums = sums - a(i, k)*a(k, j)
-
-          END DO
-
-          a(i, j) = sums
-
-          dum = vv(i) * abs(sums)
-
-          IF(dum >= aamax) THEN
-
-            imax  = i
-
-            aamax = dum
-
-          END IF
-
-       END DO
-
-       IF(j /= imax) THEN
-
-         DO k = 1, n
-
-            dum = a(imax, k)
-
-            a(imax, k) = a(j, k)
-
-            a(j, k) = dum
-
-         END DO
-
-         d = -d
-
-         vv(imax) = vv(j)
-
-       END IF
-
-       indx(j) = imax
-
-       IF(a(j, j) == zero_dble) a(j, j) = TINY_FLOAT
-
-       IF(j /= n) THEN
-
-         dum = one_dble / a(j, j)
-
-         DO i = (j + 1), n
-
-            a(i, j) = a(i, j) * dum
-
-         END DO
-
-       END IF
-
-    END DO
-
-END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE store_results(mapping_state_idx, states_all, &
