@@ -585,7 +585,7 @@ def check_prediction_model(predictions_diff, model, num_points, num_states,
     # Check for standardization as the following constraint is not
     # necessarily satisfied in that case. For ease of application, we do not
     # ensure that the same number of interpolation points is available.
-    if not (is_debug and os.path.isfile('interpolation.txt')):
+    if not (is_debug and os.path.exists('interpolation.txt')):
         assert (model.nobs == min(num_points, num_states))
 
 

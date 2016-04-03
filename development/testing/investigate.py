@@ -20,8 +20,7 @@ from modules.auxiliary import get_test_dict
 
 # Reconstruct directory structure and edits to PYTHONPATH
 TEST_DIR = os.path.dirname(os.path.realpath(__file__))
-TEST_DIR = TEST_DIR.replace('development/testing', '')
-TEST_DIR = TEST_DIR + '/robupy/tests'
+TEST_DIR = TEST_DIR.replace('development/testing', '') + '/robupy/tests'
 
 # ROBPUPY testing codes. The import of the PYTEST configuration file ensures
 # that the PYTHONPATH is modified to allow for the use of the tests..
@@ -36,7 +35,7 @@ VERSIONS = ['PYTHON', 'FORTRAN', 'F2PY']
 
 ''' Request
 '''
-seed = 43983#6216748723
+seed = 84918#6216748723
 
 
 ''' Error Reproduction
@@ -46,7 +45,7 @@ cleanup_testing_infrastructure(True)
 np.random.seed(seed)
 
 # Construct test
-for _ in range(1100):
+for _ in range(1):
     test_dict = get_test_dict(TEST_DIR)
     module, method = get_random_request(test_dict)
 

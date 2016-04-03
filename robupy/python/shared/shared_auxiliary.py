@@ -97,7 +97,7 @@ def create_draws(num_periods, num_draws_emax, seed, is_debug, which,
     # Draw random deviates from a standard normal distribution or read it in
     # from disk. The latter is available to allow for testing across
     # implementations.
-    if is_debug and os.path.isfile('draws.txt'):
+    if is_debug and os.path.exists('draws.txt'):
         draws = read_draws(num_periods, num_draws_emax)
     else:
         draws = np.random.multivariate_normal(np.zeros(4),

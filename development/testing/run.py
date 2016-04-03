@@ -20,13 +20,17 @@ import os
 if not hasattr(sys, 'real_prefix'):
     raise AssertionError('Please use a virtual environment for testing')
 
+# ROBUPY directory. This allows to compile the debug version of the FORTRAN
+# program.
+ROBUPY_DIR = os.path.dirname(os.path.realpath(__file__))
+ROBUPY_DIR = ROBUPY_DIR.replace('development/testing', '') + 'robupy'
+
 # ROBPUPY testing codes. The import of the PYTEST configuration file ensures
 # that the PYTHONPATH is modified to allow for the use of the tests..
 TEST_DIR = os.path.dirname(os.path.realpath(__file__))
-TEST_DIR = TEST_DIR.replace('development/testing', '') + '/robupy/tests'
+TEST_DIR = TEST_DIR.replace('development/testing', '') + 'robupy/tests'
 
 sys.path.insert(0, TEST_DIR)
-import conftest
 
 # Setup for dealing with PYTEST command line options
 import functools
@@ -51,6 +55,11 @@ from modules.auxiliary import send_notification
 def run(hours):
     """ Run test battery.
     """
+    # Compile the debug version of the FORTRAN program.
+    current_directory = os.getcwd()
+    os.chdir(ROBUPY_DIR)
+    os.system('./waf distclean; ./waf configure build --debug')
+    os.chdir(current_directory)
 
     # Get a dictionary with all candidate test cases.
     test_dict = get_test_dict(TEST_DIR)
@@ -91,6 +100,10 @@ def run(hours):
         # Run random tes
         is_success, msg = None, None
 
+        # Create a fresh test directory.
+        os.mkdir('test_dir')
+        os.chdir('test_dir')
+
         try:
             test()
             full_test_record[module][method][0] += 1
@@ -100,17 +113,14 @@ def run(hours):
             msg = traceback.format_exc()
             is_success = False
 
+        # The directory is deleted by the cleanup
+        os.chdir('../')
+
         # Record iteration
         update_testing_record(module, method, seed, is_success, msg,
                               full_test_record, start, timeout)
 
         cleanup_testing_infrastructure(True)
-
-        # This sleep is required as otherwise the fast execution of tasks
-        # does impede the functionality of the INQUIRE and OS.PATH.EXISTS
-        # function. The indicate the presence of debugging files that were
-        # just deleted shortly before.
-        time.sleep(1)
 
         #  Timeout.
         if timeout < datetime.now() - start:
@@ -141,4 +151,3 @@ if __name__ == '__main__':
 
     if notification:
         send_notification(hours)
-
