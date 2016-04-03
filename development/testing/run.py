@@ -31,6 +31,7 @@ TEST_DIR = os.path.dirname(os.path.realpath(__file__))
 TEST_DIR = TEST_DIR.replace('development/testing', '') + 'robupy/tests'
 
 sys.path.insert(0, TEST_DIR)
+import conftest
 
 # Setup for dealing with PYTEST command line options
 import functools
