@@ -58,7 +58,7 @@ def solve(robupy_obj):
     # the actual bare solution algorithm to ease testing across
     # implementations.
     periods_draws_emax = create_draws(num_periods, num_draws_emax, seed_emax,
-        is_debug, 'emax', shocks_cholesky)
+        is_debug)
 
     # Collect baseline arguments. These are latter amended to account for
     # each interface.

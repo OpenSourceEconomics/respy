@@ -118,7 +118,7 @@ class TestClass(object):
         period = np.random.choice(range(num_periods))
 
         periods_draws_emax = create_draws(num_periods, num_draws_emax,
-            seed_prob, is_debug, 'emax', shocks_cholesky)
+            seed_prob, is_debug)
 
         draws_emax = periods_draws_emax[period, :, :]
 
