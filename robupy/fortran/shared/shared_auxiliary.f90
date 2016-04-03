@@ -439,6 +439,10 @@ SUBROUTINE cholesky(factor, matrix)
     ! definite matrix A.
     CALL DPOTRF('L', n, factor, n, info)
 
+    IF (INFO .NE. zero_int) THEN
+        STOP 'Cholesky factorization factorization failed'
+    END IF
+    
     ! Replace upper diagonal with zeros.
     DO i = 1, n
       DO j = 1, n
@@ -478,9 +482,17 @@ FUNCTION inverse(A, n)
     ! using partial pivoting with row interchanges.
     CALL DGETRF(n, n, inverse, n, ipiv, info)
 
+    IF (INFO .NE. zero_int) THEN
+        STOP 'LU factorization failed'
+    END IF
+
     ! DGETRI computes the inverse of a matrix using the LU factorization
     ! computed by DGETRF.
     CALL DGETRI(n, inverse, n, ipiv, work, n, info)
+
+    IF (INFO .NE. zero_int) THEN
+        STOP 'Matrix inversion failed'
+    END IF
 
 END FUNCTION
 !*******************************************************************************
