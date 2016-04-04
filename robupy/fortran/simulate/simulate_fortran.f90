@@ -42,6 +42,8 @@ SUBROUTINE fort_simulate(dataset, periods_payoffs_systematic, &
 
     !/* internal objects        */
 
+    REAL(our_dble)                  :: periods_draws_sims_transformed(num_periods, num_agents, 4)
+
     INTEGER(our_int)                :: current_state(4)
     INTEGER(our_int)                :: edu_lagged
     INTEGER(our_int)                :: choice(1)
@@ -55,11 +57,23 @@ SUBROUTINE fort_simulate(dataset, periods_payoffs_systematic, &
 
     REAL(our_dble)                  :: payoffs_systematic(4)
     REAL(our_dble)                  :: total_payoffs(4)
+    REAL(our_dble)                  :: shocks_mean(2)
     REAL(our_dble)                  :: draws(4)
 
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
+
+    !Standard deviates transformed to the distributions relevant for
+    ! the agents actual decision making as traversing the tree.
+    shocks_mean = zero_dble
+
+    DO period = 1, num_periods
+        CALL transform_disturbances(periods_draws_sims_transformed(period, :, :), & 
+                periods_draws_sims(period, :, :), shocks_cholesky, shocks_mean, & 
+                num_agents)
+    END DO
+
     ! Initialize containers
     dataset = MISSING_FLOAT
 
@@ -88,7 +102,7 @@ SUBROUTINE fort_simulate(dataset, periods_payoffs_systematic, &
 
             ! Calculate ex post payoffs
             payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
-            draws = periods_draws_sims(period + 1, i + 1, :)
+            draws = periods_draws_sims_transformed(period + 1, i + 1, :)
 
             ! Calculate total utilities
             CALL get_total_value(total_payoffs, period, num_periods, delta, &

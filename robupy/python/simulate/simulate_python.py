@@ -22,11 +22,11 @@ def pyth_simulate(periods_payoffs_systematic, mapping_state_idx,
     # Standard deviates transformed to the distributions relevant for
     # the agents actual decision making as traversing the tree.
     shocks_mean = np.tile(0.0, 2)
-    periods_draws_emax_transformed = np.tile(np.nan,
+    periods_draws_sims_transformed = np.tile(np.nan,
         (num_periods, num_agents, 4))
 
     for period in range(num_periods):
-        periods_draws_emax_transformed[period, :, :] = \
+        periods_draws_sims_transformed[period, :, :] = \
             transform_disturbances(periods_draws_sims[period, :, :],
                 shocks_cholesky, shocks_mean)
 
@@ -59,7 +59,7 @@ def pyth_simulate(periods_payoffs_systematic, mapping_state_idx,
 
             # Select relevant subset
             payoffs_systematic = periods_payoffs_systematic[period, k, :]
-            draws = periods_draws_sims[period, i, :]
+            draws = periods_draws_sims_transformed[period, i, :]
 
             # Get total value of admissible states
             total_payoffs = get_total_value(period,
