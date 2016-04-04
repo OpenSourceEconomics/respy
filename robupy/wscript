@@ -18,7 +18,7 @@ if not (sys.version_info[0] == 3):
 DEBUG_OPTIONS = ' -O2  -Wall -Wline-truncation' \
     ' -Wcharacter-truncation  -Wsurprising  -Waliasing' \
     ' -Wimplicit-interface  -Wunused-parameter  -fwhole-file' \
-    ' -fcheck=all  -fbacktrace -g'
+    ' -fcheck=all  -fbacktrace -g -fmax-errors=1'
 
 PRODUCTION_OPTIONS = '-O3'
 
@@ -43,6 +43,7 @@ def configure(conf):
     conf.env.project_paths['ROBUPY'] = os.getcwd()
 
     conf.load('compiler_fc')
+
 
 def build(bld):
 

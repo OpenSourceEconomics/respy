@@ -34,7 +34,7 @@ class TestClass(object):
 
         # Assess evaluation
         val = evaluate(robupy_obj, process(robupy_obj))
-        np.testing.assert_allclose(val, 1.97600565965)
+        np.testing.assert_allclose(val, 1.9775860444869962)
 
     def test_2(self):
         """ Compare the solution of simple model against hard-coded results.
@@ -116,7 +116,7 @@ class TestClass(object):
 
         # Assess evaluation
         val = evaluate(robupy_obj, process(robupy_obj))
-        np.testing.assert_allclose(val, 1.9145852099486904)
+        np.testing.assert_allclose(val, 1.9162587639887239)
 
     def test_4(self):
         """ Test the solution of model with ambiguity.
@@ -132,7 +132,7 @@ class TestClass(object):
 
         # Assess evaluation
         val = evaluate(robupy_obj, process(robupy_obj))
-        np.testing.assert_allclose(val, 1.9175262133973903)
+        np.testing.assert_allclose(val, 2.802285449312437)
 
     def test_5(self):
         """ Test the solution of deterministic model without ambiguity,

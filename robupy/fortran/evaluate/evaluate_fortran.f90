@@ -63,14 +63,15 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
     INTEGER(our_int)                :: j
 
     REAL(our_dble)                  :: conditional_draws(num_draws_prob, 4)
-    REAL(our_dble)                  :: draws_prob(num_draws_prob, 4)
+    REAL(our_dble)                  :: draws_prob_raw(num_draws_prob, 4)
     REAL(our_dble)                  :: choice_probabilities(4)
     REAL(our_dble)                  :: payoffs_systematic(4)
     REAL(our_dble)                  :: shocks_cholesky(4, 4)
     REAL(our_dble)                  :: crit_val_contrib
     REAL(our_dble)                  :: total_payoffs(4)
-    REAL(our_dble)                  :: draws(4)
-    REAL(our_dble)                  :: dist
+    REAL(our_dble)                  :: draws(4), smoot_payoff(4), maxim_payoff(4)
+    REAL(our_dble)                  :: dist, draws_cond(4), prob_choice
+    REAL(our_dble)                  :: tau, prob_obs, draws_stan(4), prob_wage
 
     LOGICAL                         :: is_deterministic
     LOGICAL                         :: is_working
@@ -78,6 +79,8 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
+
+    tau = 500.00
 
     ! Construct Cholesky decomposition
     IF (is_deterministic) THEN
@@ -119,7 +122,7 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
             payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
             ! Extract relevant deviates from standard normal distribution.
-            draws_prob = periods_draws_prob(period + 1, :, :)
+            draws_prob_raw = periods_draws_prob(period + 1, :, :)
 
             ! Prepare to calculate product of likelihood contributions.
             crit_val_contrib = 1.0
@@ -135,14 +138,14 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
 
                 ! Construct independent normal draws implied by the observed
                 ! wages.
-                IF (choice == 1) THEN
-                    draws_prob(:, idx) = dist / sqrt(shocks_cov(idx, idx))
-                ELSE
-                    draws_prob(:, idx) = (dist - shocks_cholesky(idx, 1) * draws_prob(:, 1)) / shocks_cholesky(idx, idx)
-                END IF
+                !IF (choice == 1) THEN
+                !    draws_prob(:, idx) = dist / sqrt(shocks_cov(idx, idx))
+                !ELSE
+                !    draws_prob(:, idx) = (dist - shocks_cholesky(idx, 1) * draws_prob(:, 1)) / shocks_cholesky(idx, idx)
+                !END IF
 
                 ! Record contribution of wage observation.  
-                crit_val_contrib =  crit_val_contrib * normal_pdf(dist, zero_dble, sqrt(shocks_cov(idx, idx)))
+                !crit_val_contrib =  crit_val_contrib * normal_pdf(dist, zero_dble, sqrt(shocks_cov(idx, idx)))
 
                 ! If there is no random variation in payoffs, then the
                 ! observed wages need to be identical their systematic
@@ -159,21 +162,51 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
 
             END IF
 
+            ! Simulate the conditional distribution of alternative-specific
+            ! value functions and determine the choice probabilities.
+            counts = 0
+            prob_obs = 0.0
+
             ! Determine conditional deviates. These correspond to the
             ! unconditional draws if the agent did not work in the labor market.
-            DO s = 1, num_draws_prob
-                conditional_draws(s, :) = &
-                    MATMUL(draws_prob(s, :), TRANSPOSE(shocks_cholesky))
-            END DO
+            !DO s = 1, num_draws_prob
+            !    conditional_draws(s, :) = &
+            !        MATMUL(draws_prob(s, :), TRANSPOSE(shocks_cholesky))
+            !END DO
 
-            counts = 0
+            !counts = 0
 
             DO s = 1, num_draws_prob
                 ! Extract deviates from (un-)conditional normal distributions.
-                draws = conditional_draws(s, :)
+                draws_stan = draws_prob_raw(s, :)
 
-                draws(1) = EXP(draws(1))
-                draws(2) = EXP(draws(2))
+                ! Construct independent normal draws implied by the agents
+                ! state experience. This is need to maintain the correlation
+                ! structure of the disturbances.
+                IF (is_working) THEN 
+
+                    IF (choice == 1) THEN
+                        draws_stan(idx) = dist / sqrt(shocks_cov(idx, idx))
+                    ELSE
+                        draws_stan(idx) = (dist - shocks_cholesky(idx, 1) * draws_stan(1)) / shocks_cholesky(idx, idx)
+                    END IF
+
+                    prob_wage = normal_pdf(draws_stan(idx), zero_dble, sqrt(shocks_cov(idx, idx)))
+
+                ELSE 
+                    prob_wage = one_dble
+                END IF
+
+                ! As deviates are aligned with the state experiences, create
+                ! the conditional draws. Note, that the realization of the
+                ! random component of wages align withe their observed
+                ! counterpart in the data.
+                draws_cond = MATMUL(draws_stan, TRANSPOSE(shocks_cholesky))
+
+                ! Extract deviates from (un-)conditional normal distributions
+                ! and transform labor market shocks.
+                draws = draws_cond
+                draws(:2) = EXP(draws(:2))
 
                 ! Calculate total payoff.
                 CALL get_total_value(total_payoffs, period, num_periods, &
@@ -183,14 +216,27 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
                 ! Record optimal choices
                 counts(MAXLOC(total_payoffs)) = counts(MAXLOC(total_payoffs)) + 1
 
+                ! Get the smoothed choice probability.
+                ! TODO: Refactor
+                maxim_payoff = MAXVAL(total_payoffs)
+                smoot_payoff = EXP((total_payoffs - maxim_payoff)/tau)
+                prob_choice = (smoot_payoff(idx) / SUM(smoot_payoff))
+                
+                !prob_choice = get_smoothed_probability(total_payoffs, idx, tau)               
+                prob_obs = prob_obs + prob_choice * prob_wage
+
             END DO
+            ! Determine relative shares
+            prob_obs = prob_obs / num_draws_prob
+
 
             ! Determine relative shares. Special care required due to integer
             ! arithmetic, transformed to mixed mode arithmetic.
-            choice_probabilities = counts / DBLE(num_draws_prob)
+            !choice_probabilities = counts / DBLE(num_draws_prob)
 
             ! If there is no random variation in payoffs, then this implies a
             ! unique optimal choice.
+            ! TODO: THIS IS NOT ALIGNED
             IF (is_deterministic) THEN
                 IF  ((MAXVAL(counts) .EQ. num_draws_prob) .EQV. .FALSE.) THEN
                     rslt = zero_dble
@@ -199,8 +245,8 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
             END IF
 
             ! Adjust  and record likelihood contribution
-            crit_val_contrib = crit_val_contrib * choice_probabilities(idx)
-            crit_val(j) = crit_val_contrib
+            !crit_val_contrib = crit_val_contrib * choice_probabilities(idx)
+            crit_val(j) = prob_obs
 
             j = j + 1
 
@@ -221,7 +267,7 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
     IF (is_deterministic) THEN
         rslt = 1.0
     END IF
-
+    
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************

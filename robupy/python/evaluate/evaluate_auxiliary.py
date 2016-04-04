@@ -9,6 +9,15 @@ import numpy as np
 from robupy.python.shared.shared_auxiliary import check_dataset
 
 
+def get_smoothed_probability(total_payoffs, idx, tau):
+
+    maxim_payoff = max(total_payoffs)
+    smoot_payoff = np.exp((total_payoffs - maxim_payoff)/tau)
+    prob_choice = (smoot_payoff[idx] / sum(smoot_payoff))
+
+    return prob_choice
+
+
 def check_output(crit_val):
     """ Check integrity of criterion function.
     """
