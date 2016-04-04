@@ -20,7 +20,7 @@ from robupy.python.shared.shared_constants import INTERPOLATION_INADMISSIBLE_STA
 from robupy.python.shared.shared_constants import MISSING_FLOAT
 from robupy.python.shared.shared_constants import MISSING_INT
 from robupy.python.shared.shared_constants import HUGE_FLOAT
-from robupy.python.shared.shared_constants import HUGE_EPS
+
 # Logging
 logger = logging.getLogger('ROBUPY_SOLVE')
 
@@ -142,11 +142,11 @@ def pyth_calculate_payoffs_systematic(num_periods, states_number_period,
 
             # Calculate systematic part of wages in occupation A
             periods_payoffs_systematic[period, k, 0] = \
-                np.clip(np.exp(np.dot(coeffs_a, covars)), 0.0, HUGE_EPS)
+                np.clip(np.exp(np.dot(coeffs_a, covars)), 0.0, HUGE_FLOAT)
 
             # Calculate systematic part pf wages in occupation B
             periods_payoffs_systematic[period, k, 1] = \
-                np.clip(np.exp(np.dot(coeffs_b, covars)), 0.0, HUGE_EPS)
+                np.clip(np.exp(np.dot(coeffs_b, covars)), 0.0, HUGE_FLOAT)
 
             # Calculate systematic part of schooling utility
             payoff = coeffs_edu[0]
@@ -181,8 +181,8 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
     # values of the two labor market alternatives. These ar log normal
     # distributed and thus the draws cannot simply set to zero.
     shifts = [0.00, 0.00, 0.00, 0.00]
-    shifts[0] = [np.clip(np.exp(shocks_cov[0, 0] / 2.0), 0.0, HUGE_EPS)]
-    shifts[1] = [np.clip(np.exp(shocks_cov[1, 1] / 2.0), 0.0, HUGE_EPS)]
+    shifts[0] = np.clip(np.exp(shocks_cov[0, 0] / 2.0), 0.0, HUGE_FLOAT)
+    shifts[1] = np.clip(np.exp(shocks_cov[1, 1] / 2.0), 0.0, HUGE_FLOAT)
 
     # Initialize containers with missing values
     periods_emax = np.tile(MISSING_FLOAT, (num_periods, max_states_period))

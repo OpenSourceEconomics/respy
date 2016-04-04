@@ -206,7 +206,8 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
                 ! Extract deviates from (un-)conditional normal distributions
                 ! and transform labor market shocks.
                 draws = draws_cond
-                draws(:2) = EXP(draws(:2))
+                draws(1) = clip_value(EXP(draws(1)), zero_dble, HUGE_FLOAT)
+                draws(2) = clip_value(EXP(draws(2)), zero_dble, HUGE_FLOAT)
 
                 ! Calculate total payoff.
                 CALL get_total_value(total_payoffs, period, num_periods, &
@@ -219,7 +220,8 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
                 ! Get the smoothed choice probability.
                 ! TODO: Refactor
                 maxim_payoff = MAXVAL(total_payoffs)
-                smoot_payoff = EXP((total_payoffs - maxim_payoff)/tau)
+                smoot_payoff = clip_value(EXP((total_payoffs - maxim_payoff)/tau), &
+                    zero_dble, HUGE_FLOAT)
                 prob_choice = (smoot_payoff(idx) / SUM(smoot_payoff))
                 
                 !prob_choice = get_smoothed_probability(total_payoffs, idx, tau)               

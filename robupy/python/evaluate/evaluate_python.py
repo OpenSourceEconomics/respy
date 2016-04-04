@@ -124,7 +124,7 @@ def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
                 # Extract deviates from (un-)conditional normal distributions
                 # and transform labor market shocks.
                 draws = draws_cond[:]
-                draws[:2] = np.exp(draws[:2])
+                draws[:2] = np.clip(np.exp(draws[:2]), 0.0, HUGE_FLOAT)
 
                 # Calculate total payoff.
                 total_payoffs = get_total_value(period, num_periods,

@@ -17,6 +17,13 @@ MODULE shared_auxiliary
 
     PUBLIC
 
+    ! Polymorphisms
+    INTERFACE clip_value
+
+        MODULE PROCEDURE clip_value_1, clip_value_2
+
+    END INTERFACE
+
  CONTAINS
  !*******************************************************************************
 !*******************************************************************************
@@ -50,7 +57,7 @@ SUBROUTINE transform_disturbances(draws_transformed, draws, shocks_cholesky, &
         SPREAD(shocks_mean, 1, num_draws)
 
     DO i = 1, 2
-        draws_transformed(:, i) = EXP(draws_transformed(:, i))
+        draws_transformed(:, i) = clip_value(EXP(draws_transformed(:, i)), zero_dble, HUGE_FLOAT)
     END DO
 
 
@@ -841,7 +848,7 @@ SUBROUTINE read_dataset(data_array, num_periods, num_agents)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-FUNCTION clip_value(value, lower_bound, upper_bound)
+FUNCTION clip_value_1(value, lower_bound, upper_bound)
 
     !/* external objects        */
 
@@ -851,7 +858,7 @@ FUNCTION clip_value(value, lower_bound, upper_bound)
 
     !/*  internal objects       */
 
-    REAL(our_dble)              :: clip_value
+    REAL(our_dble)              :: clip_value_1
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -859,17 +866,62 @@ FUNCTION clip_value(value, lower_bound, upper_bound)
 
     IF(value < lower_bound) THEN
 
-        clip_value = lower_bound
+        clip_value_1 = lower_bound
 
     ELSEIF(value > upper_bound) THEN
 
-        clip_value = upper_bound
+        clip_value_1 = upper_bound
 
     ELSE
 
-        clip_value = value
+        clip_value_1 = value
 
     END IF
+
+END FUNCTION
+!******************************************************************************
+!******************************************************************************
+FUNCTION clip_value_2(value, lower_bound, upper_bound)
+
+    !/* external objects        */
+
+    REAL(our_dble), INTENT(IN)  :: lower_bound
+    REAL(our_dble), INTENT(IN)  :: upper_bound
+    REAL(our_dble), INTENT(IN)  :: value(:)
+
+    !/*  internal objects       */
+
+    REAL(our_dble), ALLOCATABLE :: clip_value_2(:)
+    
+    INTEGER(our_int)            :: num_values
+    INTEGER(our_int)            :: i
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+
+    num_values = SIZE(value, 1)
+    
+    ALLOCATE(clip_value_2(num_values))
+
+    DO i = 1, num_values
+
+        IF(value(i) < lower_bound) THEN
+
+            clip_value_2(i) = lower_bound
+
+        ELSEIF(value(i) > upper_bound) THEN
+
+            clip_value_2(i) = upper_bound
+
+        ELSE
+
+            clip_value_2(i) = value(i)
+
+        END IF
+    
+    END DO
 
 END FUNCTION
 !*******************************************************************************
