@@ -20,7 +20,7 @@ from robupy.python.shared.shared_constants import INTERPOLATION_INADMISSIBLE_STA
 from robupy.python.shared.shared_constants import MISSING_FLOAT
 from robupy.python.shared.shared_constants import MISSING_INT
 from robupy.python.shared.shared_constants import HUGE_FLOAT
-
+from robupy.python.shared.shared_constants import HUGE_EPS
 # Logging
 logger = logging.getLogger('ROBUPY_SOLVE')
 
@@ -142,11 +142,11 @@ def pyth_calculate_payoffs_systematic(num_periods, states_number_period,
 
             # Calculate systematic part of wages in occupation A
             periods_payoffs_systematic[period, k, 0] = \
-                np.clip(np.exp(np.dot(coeffs_a, covars)), 0.0, HUGE_FLOAT)
+                np.clip(np.exp(np.dot(coeffs_a, covars)), 0.0, HUGE_EPS)
 
             # Calculate systematic part pf wages in occupation B
             periods_payoffs_systematic[period, k, 1] = \
-                np.clip(np.exp(np.dot(coeffs_b, covars)), 0.0, HUGE_FLOAT)
+                np.clip(np.exp(np.dot(coeffs_b, covars)), 0.0, HUGE_EPS)
 
             # Calculate systematic part of schooling utility
             payoff = coeffs_edu[0]
@@ -180,7 +180,9 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
     # Auxiliary objects. These shifts are used to determine the expected
     # values of the two labor market alternatives. These ar log normal
     # distributed and thus the draws cannot simply set to zero.
-    shifts = [np.exp(shocks_cov[0, 0] / 2.0), np.exp(shocks_cov[1, 1] / 2.0), 0.0, 0.0]
+    shifts = [0.00, 0.00, 0.00, 0.00]
+    shifts[0] = [np.clip(np.exp(shocks_cov[0, 0] / 2.0), 0.0, HUGE_EPS)]
+    shifts[1] = [np.clip(np.exp(shocks_cov[1, 1] / 2.0), 0.0, HUGE_EPS)]
 
     # Initialize containers with missing values
     periods_emax = np.tile(MISSING_FLOAT, (num_periods, max_states_period))
@@ -218,6 +220,9 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
                 num_states, delta, periods_payoffs_systematic, shifts,
                 edu_max, edu_start, mapping_state_idx, periods_emax, states_all)
 
+            assert (np.all(np.isfinite(periods_emax))), 'emax'
+            assert (np.all(np.isfinite(periods_payoffs_systematic))), 'pyoffs'
+
             # Constructing the dependent variables for at the random subset of
             # points where the EMAX is actually calculated.
             endogenous = get_endogenous_variable(period, num_periods,
@@ -226,6 +231,7 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
                 is_simulated, num_draws_emax, shocks_cov, level, is_ambiguous,
                 is_debug, measure, maxe, draws_emax, is_deterministic,
                 shocks_cholesky)
+
 
             # Create prediction model based on the random subset of points where
             # the EMAX is actually simulated and thus dependent and

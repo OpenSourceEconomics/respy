@@ -332,7 +332,8 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, &
 
     ! Shifts
     shifts = zero_dble
-    shifts(:2) = (/ EXP(shocks_cov(1, 1)/two_dble), EXP(shocks_cov(2, 2)/two_dble) /)
+    shifts(1) = clip_value(EXP(shocks_cov(1, 1)/two_dble), zero_dble, HUGE_FLOAT)
+    shifts(2) = clip_value(EXP(shocks_cov(2, 2)/two_dble), zero_dble, HUGE_FLOAT)
 
     ! Logging
     CALL logging_solution(3)
