@@ -12,6 +12,8 @@ from robupy.python.shared.shared_auxiliary import get_total_value
 
 ''' Main function
 '''
+
+
 def pyth_simulate(periods_payoffs_systematic, mapping_state_idx,
         periods_emax, num_periods, states_all, num_agents, edu_start,
         edu_max, delta, periods_draws_sims):

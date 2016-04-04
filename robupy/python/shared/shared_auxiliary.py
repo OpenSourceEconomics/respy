@@ -316,3 +316,19 @@ def read_draws(num_periods, num_draws):
 
     # Finishing
     return periods_draws
+
+
+def transform_disturbances(draws, shocks_cholesky, shocks_mean):
+    """ Transform the standard normal deviates to the relevant distribution.
+    """
+    # Transfer draws to relevant distribution
+    draws_transformed = draws.copy()
+    draws_transformed = np.dot(shocks_cholesky, draws_transformed.T).T
+    draws_transformed[:, :2] = draws_transformed[:, :2] + shocks_mean
+
+    for j in [0, 1]:
+        draws_transformed[:, j] = \
+            np.clip(np.exp(draws_transformed[:, j]), 0.0, HUGE_FLOAT)
+
+    # Finishing
+    return draws_transformed

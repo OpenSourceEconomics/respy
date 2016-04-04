@@ -18,6 +18,43 @@ MODULE shared_auxiliary
     PUBLIC
 
  CONTAINS
+ !*******************************************************************************
+!*******************************************************************************
+SUBROUTINE transform_disturbances(draws_transformed, draws, shocks_cholesky, & 
+                shocks_mean, num_draws)
+
+    !/* external objects        */
+
+    REAL(our_dble), INTENT(OUT)     :: draws_transformed(:, :)
+
+    REAL(our_dble), INTENT(IN)      :: shocks_cholesky(:, :)
+    REAL(our_dble), INTENT(IN)      :: shocks_mean(:)
+    REAL(our_dble), INTENT(IN)      :: draws(:, :)
+
+    INTEGER, INTENT(IN)             :: num_draws
+
+    !/* internal objects        */
+
+    INTEGER(our_int)                :: i
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+
+    DO i = 1, num_draws
+        draws_transformed(i:i, :) = &
+            TRANSPOSE(MATMUL(shocks_cholesky, TRANSPOSE(draws(i:i, :))))
+    END DO
+
+    draws_transformed(:, :2) = draws_transformed(:, :2) + &
+        SPREAD(shocks_mean, 1, num_draws)
+
+    DO i = 1, 2
+        draws_transformed(:, i) = EXP(draws_transformed(:, i))
+    END DO
+
+
+END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE get_total_value(total_payoffs, period, num_periods, delta, &
