@@ -194,6 +194,9 @@ class OptimizationClass(object):
         else:
             raise NotImplementedError
 
+        # Antibugging.
+        assert (np.isfinite(crit_val))
+
         self._logging_interim(x, crit_val)
 
         # Finishing

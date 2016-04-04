@@ -165,6 +165,7 @@ def pyth_calculate_payoffs_systematic(num_periods, states_number_period,
             # Calculate systematic part of HOME
             periods_payoffs_systematic[period, k, 3] = coeffs_home[0]
 
+    assert (np.all(np.isfinite(periods_payoffs_systematic)))
     # Finishing
     return periods_payoffs_systematic
 

@@ -18,9 +18,10 @@ if not (sys.version_info[0] == 3):
 DEBUG_OPTIONS = ' -O2  -Wall -Wline-truncation' \
     ' -Wcharacter-truncation  -Wsurprising  -Waliasing' \
     ' -Wimplicit-interface  -Wunused-parameter  -fwhole-file' \
-    ' -fcheck=all  -fbacktrace -g -fmax-errors=1'
+    ' -fcheck=all  -fbacktrace -g -fmax-errors=1 -ffpe-trap=invalid'
 
 PRODUCTION_OPTIONS = '-O3'
+
 
 def options(opt):
 

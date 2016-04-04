@@ -34,8 +34,7 @@ class CreateRobufortLibrary(Task):
 
     def run(self):
 
-        # Determine compiler options
-        compiler_options = '-O3 -fpic'
+        compiler_options = self.env.compiler_options + ' -fpic'
 
         files = ['shared/shared_constants.f90', 'shared/shared_auxiliary.f90',
                 'robufort_slsqp.f', 'solve/solve_emax.f90',
