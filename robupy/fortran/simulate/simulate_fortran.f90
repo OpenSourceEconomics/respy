@@ -19,7 +19,8 @@ MODULE simulate_fortran
 !*******************************************************************************
 SUBROUTINE fort_simulate(dataset, periods_payoffs_systematic, & 
                 mapping_state_idx, periods_emax, num_periods, states_all, & 
-                num_agents, edu_start, edu_max, delta, periods_draws_sims)
+                num_agents, edu_start, edu_max, delta, periods_draws_sims, & 
+                shocks_cholesky)
 
     !/* external objects        */
 
@@ -27,6 +28,7 @@ SUBROUTINE fort_simulate(dataset, periods_payoffs_systematic, &
 
     REAL(our_dble), INTENT(IN)      :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), INTENT(IN)      :: periods_draws_sims(:, :, :)
+    REAL(our_dble), INTENT(IN)      :: shocks_cholesky(:, :)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
     REAL(our_dble), INTENT(IN)      :: delta
 

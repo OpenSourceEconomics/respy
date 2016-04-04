@@ -16,7 +16,7 @@ from robupy.python.shared.shared_auxiliary import get_total_value
 
 def pyth_simulate(periods_payoffs_systematic, mapping_state_idx,
         periods_emax, num_periods, states_all, num_agents, edu_start,
-        edu_max, delta, periods_draws_sims):
+        edu_max, delta, periods_draws_sims, shocks_cholesky):
     """ Wrapper for PYTHON and F2PY implementation of sample simulation.
     """
     count = 0
