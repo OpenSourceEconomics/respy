@@ -268,7 +268,8 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE f2py_simulate(dataset, periods_payoffs_systematic, & 
                 mapping_state_idx, periods_emax, num_periods, states_all, & 
-                num_agents, edu_start, edu_max, delta, periods_draws_sims)
+                num_agents, edu_start, edu_max, delta, periods_draws_sims, & 
+                shocks_cholesky)
 
     !/* external libraries      */
 
@@ -284,6 +285,7 @@ SUBROUTINE f2py_simulate(dataset, periods_payoffs_systematic, &
 
     DOUBLE PRECISION, INTENT(IN)    :: periods_payoffs_systematic(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_sims(:, :, :)
+    DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_emax(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: delta
 
@@ -299,9 +301,10 @@ SUBROUTINE f2py_simulate(dataset, periods_payoffs_systematic, &
 ! Algorithm
 !-------------------------------------------------------------------------------
 
-    CALL fort_simulate(dataset, num_agents, states_all, num_periods, &
-                mapping_state_idx, periods_payoffs_systematic, &
-                periods_draws_sims, edu_max, edu_start, periods_emax, delta)
+    CALL fort_simulate(dataset, periods_payoffs_systematic, & 
+                mapping_state_idx, periods_emax, num_periods, states_all, & 
+                num_agents, edu_start, edu_max, delta, periods_draws_sims, &
+                shocks_cholesky)
 
 END SUBROUTINE
 !******************************************************************************

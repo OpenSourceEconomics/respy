@@ -1,11 +1,10 @@
 """ This module contains the simulation of the expected future value.
 """
 # standard library
-import numpy as np
 
 # project library
+from robupy.python.shared.shared_auxiliary import transform_disturbances
 from robupy.python.shared.shared_auxiliary import get_total_value
-from robupy.python.shared.shared_constants import HUGE_FLOAT
 
 ''' Main function
 '''
@@ -44,19 +43,4 @@ def simulate_emax(num_periods, num_draws_emax, period, k, draws_emax,
     # Finishing
     return emax_simulated
 
-
-def transform_disturbances(draws_emax, shocks_cholesky, shocks_mean):
-    """ Transform the standard normal deviates to the relevant distribution.
-    """
-    # Transfer draws to relevant distribution
-    draws_emax_transformed = draws_emax.copy()
-    draws_emax_transformed = np.dot(shocks_cholesky, draws_emax_transformed.T).T
-    draws_emax_transformed[:, :2] = draws_emax_transformed[:, :2] + shocks_mean
-
-    for j in [0, 1]:
-        draws_emax_transformed[:, j] = \
-            np.clip(np.exp(draws_emax_transformed[:, j]), 0.0, HUGE_FLOAT)
-
-    # Finishing
-    return draws_emax_transformed
 

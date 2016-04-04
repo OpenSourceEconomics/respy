@@ -6,17 +6,31 @@ import numpy as np
 logger = logging.getLogger('ROBUPY_SIMULATE')
 
 # project library
+from robupy.python.shared.shared_auxiliary import transform_disturbances
 from robupy.python.shared.shared_constants import MISSING_FLOAT
 from robupy.python.shared.shared_auxiliary import get_total_value
 
-
 ''' Main function
 '''
+
+
 def pyth_simulate(periods_payoffs_systematic, mapping_state_idx,
         periods_emax, num_periods, states_all, num_agents, edu_start,
-        edu_max, delta, periods_draws_sims):
+        edu_max, delta, periods_draws_sims, shocks_cholesky):
     """ Wrapper for PYTHON and F2PY implementation of sample simulation.
     """
+    # Standard deviates transformed to the distributions relevant for
+    # the agents actual decision making as traversing the tree.
+    shocks_mean = np.tile(0.0, 2)
+    periods_draws_sims_transformed = np.tile(np.nan,
+        (num_periods, num_agents, 4))
+
+    for period in range(num_periods):
+        periods_draws_sims_transformed[period, :, :] = \
+            transform_disturbances(periods_draws_sims[period, :, :],
+                shocks_cholesky, shocks_mean)
+
+    # Simulate agent experiences
     count = 0
 
     # Initialize data
@@ -45,7 +59,7 @@ def pyth_simulate(periods_payoffs_systematic, mapping_state_idx,
 
             # Select relevant subset
             payoffs_systematic = periods_payoffs_systematic[period, k, :]
-            draws = periods_draws_sims[period, i, :]
+            draws = periods_draws_sims_transformed[period, i, :]
 
             # Get total value of admissible states
             total_payoffs = get_total_value(period,

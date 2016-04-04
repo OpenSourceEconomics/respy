@@ -15,9 +15,10 @@ information to disk.
 """
 
 # standard library
-import logging
-
 import pandas as pd
+import numpy as np
+
+import logging
 
 # project library
 from robupy.python.simulate.simulate_auxiliary import start_logging
@@ -74,7 +75,7 @@ def simulate(robupy_obj):
 
     # Draw draws for the simulation.
     periods_draws_sims = create_draws(num_periods, num_agents, seed_data,
-        is_debug, 'sims', shocks_cholesky)
+        is_debug)
 
     # Simulate a dataset with the results from the solution and write out the
     # dataset to a text file. In addition a file summarizing the dataset is
@@ -85,7 +86,7 @@ def simulate(robupy_obj):
     # Collect arguments to pass in different implementations of the simulation.
     args = (periods_payoffs_systematic, mapping_state_idx, periods_emax,
         num_periods, states_all, num_agents, edu_start, edu_max, delta,
-        periods_draws_sims)
+        periods_draws_sims, shocks_cholesky)
 
     # Select appropriate interface
     if version == 'PYTHON':

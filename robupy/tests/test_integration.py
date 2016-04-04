@@ -388,7 +388,7 @@ class TestClass(object):
         # Collect arguments across implementations.
         args = (periods_payoffs_systematic, mapping_state_idx, periods_emax,
             num_periods, states_all, num_agents, edu_start, edu_max, delta,
-            periods_draws_sims)
+            periods_draws_sims, shocks_cholesky)
 
         pyth = pyth_simulate(*args)
         f2py = f2py_simulate(*args)

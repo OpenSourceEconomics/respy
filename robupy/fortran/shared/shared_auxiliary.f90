@@ -18,6 +18,43 @@ MODULE shared_auxiliary
     PUBLIC
 
  CONTAINS
+ !*******************************************************************************
+!*******************************************************************************
+SUBROUTINE transform_disturbances(draws_transformed, draws, shocks_cholesky, & 
+                shocks_mean, num_draws)
+
+    !/* external objects        */
+
+    REAL(our_dble), INTENT(OUT)     :: draws_transformed(:, :)
+
+    REAL(our_dble), INTENT(IN)      :: shocks_cholesky(:, :)
+    REAL(our_dble), INTENT(IN)      :: shocks_mean(:)
+    REAL(our_dble), INTENT(IN)      :: draws(:, :)
+
+    INTEGER, INTENT(IN)             :: num_draws
+
+    !/* internal objects        */
+
+    INTEGER(our_int)                :: i
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+
+    DO i = 1, num_draws
+        draws_transformed(i:i, :) = &
+            TRANSPOSE(MATMUL(shocks_cholesky, TRANSPOSE(draws(i:i, :))))
+    END DO
+
+    draws_transformed(:, :2) = draws_transformed(:, :2) + &
+        SPREAD(shocks_mean, 1, num_draws)
+
+    DO i = 1, 2
+        draws_transformed(:, i) = EXP(draws_transformed(:, i))
+    END DO
+
+
+END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE get_total_value(total_payoffs, period, num_periods, delta, &
@@ -148,8 +185,7 @@ SUBROUTINE get_future_payoffs(payoffs_future, edu_max, edu_start, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE create_draws(draws, num_periods, num_draws_emax, seed, is_debug, &
-                which, shocks_cholesky)
+SUBROUTINE create_draws(draws, num_periods, num_draws_emax, seed, is_debug)
 
     !/* external objects        */
 
@@ -159,11 +195,7 @@ SUBROUTINE create_draws(draws, num_periods, num_draws_emax, seed, is_debug, &
     INTEGER(our_int), INTENT(IN)                :: num_periods
     INTEGER(our_int), INTENT(IN)                :: seed
 
-    REAL(our_dble), INTENT(IN)                  :: shocks_cholesky(4, 4)
-
     LOGICAL, INTENT(IN)                         :: is_debug
-
-    CHARACTER(4)                                :: which
 
     !/* internal objects        */
 
@@ -220,36 +252,7 @@ SUBROUTINE create_draws(draws, num_periods, num_draws_emax, seed, is_debug, &
         END DO
 
     END IF
-    ! Standard normal deviates used for the Monte Carlo integration of the
-    ! expected future values in the solution step. Also, standard normal
-    ! deviates for the Monte Carlo integration of the choice probabilities in
-    ! the evaluation step.
-    IF ((which == 'emax') .OR. (which == 'prob')) THEN
-
-        draws = draws
-
-    ! Deviates for the simulation of a synthetic agent population.
-    ELSE IF (which == 'sims') THEN
-        ! Standard deviates transformed to the distributions relevant for
-        ! the agents actual decision making as traversing the tree.
-
-        ! Transformations
-        DO period = 1, num_periods
-
-            ! Apply variance change
-            DO i = 1, num_draws_emax
-                draws(period, i:i, :) = &
-                    TRANSPOSE(MATMUL(shocks_cholesky, TRANSPOSE(draws(period, i:i, :))))
-            END DO
-
-            DO j = 1, 2
-                draws(period, :, j) =  EXP(draws(period, :, j))
-            END DO
-
-        END DO
-
-    END IF
-
+   
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
@@ -439,6 +442,10 @@ SUBROUTINE cholesky(factor, matrix)
     ! definite matrix A.
     CALL DPOTRF('L', n, factor, n, info)
 
+    IF (INFO .NE. zero_int) THEN
+        STOP 'Cholesky factorization factorization failed'
+    END IF
+    
     ! Replace upper diagonal with zeros.
     DO i = 1, n
       DO j = 1, n
@@ -478,9 +485,17 @@ FUNCTION inverse(A, n)
     ! using partial pivoting with row interchanges.
     CALL DGETRF(n, n, inverse, n, ipiv, info)
 
+    IF (INFO .NE. zero_int) THEN
+        STOP 'LU factorization failed'
+    END IF
+
     ! DGETRI computes the inverse of a matrix using the LU factorization
     ! computed by DGETRF.
     CALL DGETRI(n, inverse, n, ipiv, work, n, info)
+
+    IF (INFO .NE. zero_int) THEN
+        STOP 'Matrix inversion failed'
+    END IF
 
 END FUNCTION
 !*******************************************************************************
@@ -495,177 +510,49 @@ FUNCTION determinant(A)
 
     !/* internal objects        */
 
-    INTEGER(our_int), ALLOCATABLE :: indx(:)
+    INTEGER(our_int), ALLOCATABLE :: IPIV(:)
 
-    INTEGER(our_int)              :: j
-    INTEGER(our_int)              :: n
+    INTEGER(our_int)              :: INFO
+    INTEGER(our_int)              :: N
+    INTEGER(our_int)              :: i
 
     REAL(our_dble), ALLOCATABLE   :: B(:, :)
 
-    REAL(our_dble)                :: d
-
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
-
+    
     ! Auxiliary objects
-    n  = size(A, 1)
+    N = SIZE(A, 1)
+    
+    ! Allocate auxiliary containers
+    ALLOCATE(B(N, N))
+    ALLOCATE(IPIV(N))
 
-    ! Allocate containers
-    ALLOCATE(B(n, n))
-    ALLOCATE(indx(n))
-
-    ! Initialize containers
+    ! Initialize matrix for replacement
     B = A
 
-    CALL ludcmp(B, d, indx)
+    ! Compute an LU factorization of a general M-by-N matrix A using
+    ! partial pivoting with row interchanges
+    CALL DGETRF( N, N, B, N, IPIV, INFO )
 
-    DO j = 1, n
+    IF (INFO .NE. zero_int) THEN
+        STOP 'LU factorization failed'
+    END IF
 
-       d = d * B(j, j)
-
+    ! Compute the product of the diagonal elements, accounting for 
+    ! interchanges of rows.
+    determinant = one_dble
+    DO  i = 1, N
+        IF(IPIV(i) .NE. i) THEN
+            determinant = -determinant * B(i,i)
+        ELSE
+            determinant = determinant * B(i,i)
+        END IF
     END DO
 
-    ! Collect results
-    determinant = d
 
 END FUNCTION
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE ludcmp(A, d, indx)
-
-    !/* external objects        */
-
-    INTEGER(our_int), INTENT(INOUT) :: indx(:)
-
-    REAL(our_dble), INTENT(INOUT)   :: a(:,:)
-    REAL(our_dble), INTENT(INOUT)   :: d
-
-    !/* internal objects        */
-
-    INTEGER(our_int)                :: imax
-    INTEGER(our_int)                :: i
-    INTEGER(our_int)                :: j
-    INTEGER(our_int)                :: k
-    INTEGER(our_int)                :: n
-
-    REAL(our_dble), ALLOCATABLE     :: vv(:)
-
-
-    REAL(our_dble)                  :: aamax
-    REAL(our_dble)                  :: sums
-    REAL(our_dble)                  :: dum
-
-!-------------------------------------------------------------------------------
-! Algorithm
-!-------------------------------------------------------------------------------
-
-    ! Initialize containers
-    imax = MISSING_INT
-
-    ! Auxiliary objects
-    n = SIZE(A, DIM = 1)
-
-    ! Initialize containers
-    ALLOCATE(vv(n))
-
-    ! Allocate containers
-    d = one_dble
-
-    ! Main
-    DO i = 1, n
-
-       aamax = zero_dble
-
-       DO j = 1, n
-
-          IF(abs(a(i, j)) > aamax) aamax = abs(a(i, j))
-
-       END DO
-
-       vv(i) = one_dble / aamax
-
-    END DO
-
-    DO j = 1, n
-
-       DO i = 1, (j - 1)
-
-          sums = a(i, j)
-
-          DO k = 1, (i - 1)
-
-             sums = sums - a(i, k)*a(k, j)
-
-          END DO
-
-       a(i,j) = sums
-
-       END DO
-
-       aamax = zero_dble
-
-       DO i = j, n
-
-          sums = a(i, j)
-
-          DO k = 1, (j - 1)
-
-             sums = sums - a(i, k)*a(k, j)
-
-          END DO
-
-          a(i, j) = sums
-
-          dum = vv(i) * abs(sums)
-
-          IF(dum >= aamax) THEN
-
-            imax  = i
-
-            aamax = dum
-
-          END IF
-
-       END DO
-
-       IF(j /= imax) THEN
-
-         DO k = 1, n
-
-            dum = a(imax, k)
-
-            a(imax, k) = a(j, k)
-
-            a(j, k) = dum
-
-         END DO
-
-         d = -d
-
-         vv(imax) = vv(j)
-
-       END IF
-
-       indx(j) = imax
-
-       IF(a(j, j) == zero_dble) a(j, j) = TINY_FLOAT
-
-       IF(j /= n) THEN
-
-         dum = one_dble / a(j, j)
-
-         DO i = (j + 1), n
-
-            a(i, j) = a(i, j) * dum
-
-         END DO
-
-       END IF
-
-    END DO
-
-END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE store_results(mapping_state_idx, states_all, &

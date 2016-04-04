@@ -44,10 +44,10 @@ def estimate(robupy_obj, data_frame):
 
     # Draw standard normal deviates for the solution and evaluation step.
     periods_draws_prob = create_draws(num_periods, num_draws_prob, seed_prob,
-        is_debug, 'prob', shocks_cholesky)
+        is_debug)
 
     periods_draws_emax = create_draws(num_periods, num_draws_emax, seed_emax,
-        is_debug, 'emax', shocks_cholesky)
+        is_debug)
 
     # Construct starting values
     x0 = get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
