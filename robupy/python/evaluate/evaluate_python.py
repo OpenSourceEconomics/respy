@@ -129,21 +129,13 @@ def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
             if is_deterministic and (not (max(counts) == num_draws_prob)):
                 return 0.0
 
-
             # Adjust  and record likelihood contribution
             crit_val_contrib *= choice_probabilities[idx]
             crit_val += [crit_val_contrib]
 
             if not np.isfinite(crit_val_contrib):
-                print(data_array[j, :], j)
                 dist = np.log(data_array[j, 3].astype(float)) - \
                         np.log(payoffs_systematic[idx])
-
-                print(dist)
-
-                import sys
-                sys.exit('exot')
-
             j += 1
 
     # Scaling
