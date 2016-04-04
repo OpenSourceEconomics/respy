@@ -77,15 +77,6 @@ def simulate(robupy_obj):
     periods_draws_sims = create_draws(num_periods, num_agents, seed_data,
         is_debug)
 
-    # Standard deviates transformed to the distributions relevant for
-    # the agents actual decision making as traversing the tree.
-    for period in range(num_periods):
-        periods_draws_sims[period, :, :] = \
-            np.dot(shocks_cholesky, periods_draws_sims[period, :, :].T).T
-        for j in [0, 1]:
-            periods_draws_sims[period, :, j] = \
-                np.exp(periods_draws_sims[period, :, j])
-
     # Simulate a dataset with the results from the solution and write out the
     # dataset to a text file. In addition a file summarizing the dataset is
     # produced.
