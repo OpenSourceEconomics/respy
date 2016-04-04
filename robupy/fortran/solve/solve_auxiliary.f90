@@ -224,11 +224,12 @@ SUBROUTINE fort_calculate_payoffs_systematic(periods_payoffs_systematic, &
 
             ! Calculate systematic part of payoff in occupation A
             periods_payoffs_systematic(period, k, 1) =  &
-                EXP(DOT_PRODUCT(covars, coeffs_a))
+                clip_value(EXP(DOT_PRODUCT(covars, coeffs_a)), zero_dble, HUGE_FLOAT)
+                
 
             ! Calculate systematic part of payoff in occupation B
             periods_payoffs_systematic(period, k, 2) = &
-                EXP(DOT_PRODUCT(covars, coeffs_b))
+                clip_value(EXP(DOT_PRODUCT(covars, coeffs_b)), zero_dble, HUGE_FLOAT)
 
             ! Calculate systematic part of schooling utility
             payoff = coeffs_edu(1)

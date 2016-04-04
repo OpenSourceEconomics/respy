@@ -141,12 +141,12 @@ def pyth_calculate_payoffs_systematic(num_periods, states_number_period,
                       exp_b ** 2]
 
             # Calculate systematic part of wages in occupation A
-            periods_payoffs_systematic[period, k, 0] = np.exp(
-                np.dot(coeffs_a, covars))
+            periods_payoffs_systematic[period, k, 0] = \
+                np.clip(np.exp(np.dot(coeffs_a, covars)), 0.0, HUGE_FLOAT)
 
             # Calculate systematic part pf wages in occupation B
-            periods_payoffs_systematic[period, k, 1] = np.exp(
-                np.dot(coeffs_b, covars))
+            periods_payoffs_systematic[period, k, 1] = \
+                np.clip(np.exp(np.dot(coeffs_b, covars)), 0.0, HUGE_FLOAT)
 
             # Calculate systematic part of schooling utility
             payoff = coeffs_edu[0]
