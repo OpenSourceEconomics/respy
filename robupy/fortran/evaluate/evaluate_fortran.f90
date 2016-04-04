@@ -234,11 +234,8 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
     END DO
 
     ! Scaling
-    DO i = 1, num_agents * num_periods
-        crit_val(i) = clip_value(crit_val(i), TINY_FLOAT, HUGE_FLOAT)
-    END DO
-
-    rslt = -SUM(LOG(crit_val)) / (num_agents * num_periods)
+    crit_val = clip_value(LOG(crit_val), -HUGE_FLOAT, HUGE_FLOAT)
+    rslt = -SUM(crit_val) / (num_agents * num_periods)
 
     ! If there is no random variation in payoffs and no agent violated the
     ! implications of observed wages and choices, then the evaluation return

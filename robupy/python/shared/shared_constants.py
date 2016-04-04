@@ -16,7 +16,7 @@ TEST_RESOURCES_DIR = ROOT_DIR + '/tests/resources'
 # Directory with the FORTRAN resources
 FORTRAN_DIR = ROOT_DIR + '/fortran'
 
-HUGE_FLOAT = 1.0e10
+HUGE_FLOAT = 1.0e20
 TINY_FLOAT = 1e-20
 SMALL_FLOAT = 1e-5
 

@@ -90,7 +90,9 @@ def add_gradient_information(robupy_obj, data_frame):
     # accounts for the multiple function evaluation during the gradient
     # approximation scheme.
     original_lines = open('optimization.robupy.info', 'r').readlines()
-    original_lines[-3] = ' Number of Steps                 0\n'
+    fmt_ = '{0:<25}{1:>15}\n'
+    original_lines[-5] = fmt_.format(*[' Number of Steps', 0])
+    original_lines[-3] = fmt_.format(*[' Number of Evaluations', len(x0)])
 
     # Approximate gradient by forward finite differences.
     epsilon = 1.4901161193847656e-08
