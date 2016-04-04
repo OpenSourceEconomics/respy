@@ -80,8 +80,8 @@ def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
             if is_working:
                 # Calculate the disturbance which are implied by the model
                 # and the observed wages.
-                dist = np.log(data_array[j, 3]) - \
-                       np.log(payoffs_systematic[idx])
+                dist = np.clip(np.log(data_array[j, 3]), -HUGE_FLOAT, None) - \
+                       np.clip(np.log(payoffs_systematic[idx]), -HUGE_FLOAT, None)
 
                 # If there is no random variation in payoffs, then the
                 # observed wages need to be identical their systematic

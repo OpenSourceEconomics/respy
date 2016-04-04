@@ -62,6 +62,8 @@ class OptimizationClass(object):
         self.attr['is_first'] = True
 
         self.attr['num_steps'] = 0
+        self.attr['num_evals'] = 0
+
 
     def set_attr(self, key, value):
         """ Set attributes.
@@ -264,6 +266,7 @@ class OptimizationClass(object):
         """ This method write out some information during the optimization.
         """
         # Recording of current evaluation
+        self.attr['num_evals'] += 1
         self.attr['value_curre'] = crit_val
         self.attr['paras_curre'] = x
 
@@ -274,6 +277,8 @@ class OptimizationClass(object):
         value_steps = self.attr['value_steps']
 
         num_steps = self.attr['num_steps']
+        num_evals = self.attr['num_evals']
+
         is_first = self.attr['is_first']
 
         np.savetxt(open('paras_curre.robupy.log', 'wb'), x, fmt='%15.8f')
@@ -344,8 +349,9 @@ class OptimizationClass(object):
                     out_file.write(fmt_.format(*shocks_cov[i, :]))
                 out_file.write('\n')
 
-            fmt_ = '\n{0:>15}   {1:>15}\n'
+            fmt_ = '\n{0:<25}{1:>15}\n'
             out_file.write(fmt_.format(*[' Number of Steps', num_steps]))
+            out_file.write(fmt_.format(*[' Number of Evaluations', num_evals]))
 
     def _logging_final(self, rslt):
         """ This method writes out some information when the optimization is
