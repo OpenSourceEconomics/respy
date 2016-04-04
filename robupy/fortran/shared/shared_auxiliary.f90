@@ -18,6 +18,43 @@ MODULE shared_auxiliary
     PUBLIC
 
  CONTAINS
+ !*******************************************************************************
+!*******************************************************************************
+SUBROUTINE transform_disturbances(draws_transformed, draws, shocks_cholesky, & 
+                shocks_mean, num_draws)
+
+    !/* external objects        */
+
+    REAL(our_dble), INTENT(OUT)     :: draws_transformed(:, :)
+
+    REAL(our_dble), INTENT(IN)      :: shocks_cholesky(:, :)
+    REAL(our_dble), INTENT(IN)      :: shocks_mean(:)
+    REAL(our_dble), INTENT(IN)      :: draws(:, :)
+
+    INTEGER, INTENT(IN)             :: num_draws
+
+    !/* internal objects        */
+
+    INTEGER(our_int)                :: i
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+
+    DO i = 1, num_draws
+        draws_transformed(i:i, :) = &
+            TRANSPOSE(MATMUL(shocks_cholesky, TRANSPOSE(draws(i:i, :))))
+    END DO
+
+    draws_transformed(:, :2) = draws_transformed(:, :2) + &
+        SPREAD(shocks_mean, 1, num_draws)
+
+    DO i = 1, 2
+        draws_transformed(:, i) = EXP(draws_transformed(:, i))
+    END DO
+
+
+END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE get_total_value(total_payoffs, period, num_periods, delta, &
@@ -148,8 +185,7 @@ SUBROUTINE get_future_payoffs(payoffs_future, edu_max, edu_start, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE create_draws(draws, num_periods, num_draws_emax, seed, is_debug, &
-                which, shocks_cholesky)
+SUBROUTINE create_draws(draws, num_periods, num_draws_emax, seed, is_debug)
 
     !/* external objects        */
 
@@ -159,11 +195,7 @@ SUBROUTINE create_draws(draws, num_periods, num_draws_emax, seed, is_debug, &
     INTEGER(our_int), INTENT(IN)                :: num_periods
     INTEGER(our_int), INTENT(IN)                :: seed
 
-    REAL(our_dble), INTENT(IN)                  :: shocks_cholesky(4, 4)
-
     LOGICAL, INTENT(IN)                         :: is_debug
-
-    CHARACTER(4)                                :: which
 
     !/* internal objects        */
 
@@ -220,36 +252,7 @@ SUBROUTINE create_draws(draws, num_periods, num_draws_emax, seed, is_debug, &
         END DO
 
     END IF
-    ! Standard normal deviates used for the Monte Carlo integration of the
-    ! expected future values in the solution step. Also, standard normal
-    ! deviates for the Monte Carlo integration of the choice probabilities in
-    ! the evaluation step.
-    IF ((which == 'emax') .OR. (which == 'prob')) THEN
-
-        draws = draws
-
-    ! Deviates for the simulation of a synthetic agent population.
-    ELSE IF (which == 'sims') THEN
-        ! Standard deviates transformed to the distributions relevant for
-        ! the agents actual decision making as traversing the tree.
-
-        ! Transformations
-        DO period = 1, num_periods
-
-            ! Apply variance change
-            DO i = 1, num_draws_emax
-                draws(period, i:i, :) = &
-                    TRANSPOSE(MATMUL(shocks_cholesky, TRANSPOSE(draws(period, i:i, :))))
-            END DO
-
-            DO j = 1, 2
-                draws(period, :, j) =  EXP(draws(period, :, j))
-            END DO
-
-        END DO
-
-    END IF
-
+   
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************

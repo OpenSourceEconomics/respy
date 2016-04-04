@@ -665,7 +665,7 @@ class TestClass(object):
         # Carry some results from the systematic payoff calculation for
         # future use and create the required set of disturbances.
         periods_draws_emax = create_draws(num_periods, num_draws_emax, seed_emax,
-            is_debug, 'emax', shocks_cholesky)
+            is_debug)
 
         periods_payoffs_systematic = pyth
 

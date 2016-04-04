@@ -44,10 +44,10 @@ def evaluate(robupy_obj, data_frame):
     # Draw standard normal deviates for choice probabilities and expected
     # future values.
     periods_draws_prob = create_draws(num_periods, num_draws_prob, seed_prob,
-        is_debug, 'prob', shocks_cholesky)
+        is_debug)
 
     periods_draws_emax = create_draws(num_periods, num_draws_emax, seed_emax,
-        is_debug, 'emax', shocks_cholesky)
+        is_debug)
 
     # Transform dataset for interface
     data_array = data_frame.as_matrix()

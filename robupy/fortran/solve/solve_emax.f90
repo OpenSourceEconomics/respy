@@ -93,40 +93,4 @@ SUBROUTINE simulate_emax(emax_simulated, num_periods, num_draws_emax, period, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE transform_disturbances(draws_emax_transformed, draws_emax, &
-                shocks_cholesky, shocks_mean, num_draws_emax)
-
-    !/* external objects        */
-
-    REAL(our_dble), INTENT(OUT)     :: draws_emax_transformed(:, :)
-
-    REAL(our_dble), INTENT(IN)      :: shocks_cholesky(:, :)
-    REAL(our_dble), INTENT(IN)      :: draws_emax(:, :)
-    REAL(our_dble), INTENT(IN)      :: shocks_mean(:)
-
-    INTEGER, INTENT(IN)             :: num_draws_emax
-
-    !/* internal objects        */
-
-    INTEGER(our_int)                :: i
-
-!-------------------------------------------------------------------------------
-! Algorithm
-!-------------------------------------------------------------------------------
-
-    DO i = 1, num_draws_emax
-        draws_emax_transformed(i:i, :) = &
-            TRANSPOSE(MATMUL(shocks_cholesky, TRANSPOSE(draws_emax(i:i, :))))
-    END DO
-
-    draws_emax_transformed(:, :2) = draws_emax_transformed(:, :2) + &
-        SPREAD(shocks_mean, 1, num_draws_emax)
-
-    DO i = 1, 2
-        draws_emax_transformed(:, i) = EXP(draws_emax_transformed(:, i))
-    END DO
-
-
-END SUBROUTINE
-
 END MODULE

@@ -81,16 +81,12 @@ def _get_future_payoffs(edu_max, edu_start, mapping_state_idx, period,
     return payoffs_future
 
 
-def create_draws(num_periods, num_draws_emax, seed, is_debug, which,
-        shocks_cholesky):
+def create_draws(num_periods, num_draws, seed, is_debug):
     """ Create the relevant set of draws. Handle special case of zero v
     variances as thi case is useful for hand-based testing. The draws
     are drawn from a standard normal distribution and transformed later in
     the code.
     """
-    # Antibugging
-    assert (which in ['emax', 'prob', 'sims'])
-
     # Control randomness by setting seed value
     np.random.seed(seed)
 
@@ -98,31 +94,10 @@ def create_draws(num_periods, num_draws_emax, seed, is_debug, which,
     # from disk. The latter is available to allow for testing across
     # implementations.
     if is_debug and os.path.exists('draws.txt'):
-        draws = read_draws(num_periods, num_draws_emax)
+        draws = read_draws(num_periods, num_draws)
     else:
         draws = np.random.multivariate_normal(np.zeros(4),
-                        np.identity(4), (num_periods, num_draws_emax))
-    # Standard normal deviates used for the Monte Carlo integration of the
-    # expected future values in the solution step. Also, standard normal
-    # deviates for the Monte Carlo integration of the choice probabilities in
-    # the evaluation step.
-    if which in ['prob', 'emax']:
-        # Standard deviates are further processed during the evaluation routine.
-        draws = draws
-
-    # Deviates for the simulation of a synthetic agent population.
-    elif which == 'sims':
-        # Standard deviates transformed to the distributions relevant for
-        # the agents actual decision making as traversing the tree.
-        for period in range(num_periods):
-            draws[period, :, :] = \
-                np.dot(shocks_cholesky, draws[period, :, :].T).T
-            for j in [0, 1]:
-                draws[period, :, j] = np.exp(draws[period, :, j])
-
-    else:
-        raise NotImplementedError
-
+                        np.identity(4), (num_periods, num_draws))
     # Finishing
     return draws
 
@@ -341,3 +316,19 @@ def read_draws(num_periods, num_draws):
 
     # Finishing
     return periods_draws
+
+
+def transform_disturbances(draws, shocks_cholesky, shocks_mean):
+    """ Transform the standard normal deviates to the relevant distribution.
+    """
+    # Transfer draws to relevant distribution
+    draws_transformed = draws.copy()
+    draws_transformed = np.dot(shocks_cholesky, draws_transformed.T).T
+    draws_transformed[:, :2] = draws_transformed[:, :2] + shocks_mean
+
+    for j in [0, 1]:
+        draws_transformed[:, j] = \
+            np.clip(np.exp(draws_transformed[:, j]), 0.0, HUGE_FLOAT)
+
+    # Finishing
+    return draws_transformed
