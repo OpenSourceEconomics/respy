@@ -8,7 +8,7 @@ MODULE estimate_auxiliary
 
 	!/*	setup	*/
 
-	IMPLICIT NONE
+    IMPLICIT NONE
 
     PUBLIC
 

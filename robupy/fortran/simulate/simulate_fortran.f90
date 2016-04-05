@@ -10,7 +10,7 @@ MODULE simulate_fortran
 
 	!/*	setup	*/
 
-	IMPLICIT NONE
+    IMPLICIT NONE
 
     PUBLIC
 

@@ -16,9 +16,9 @@ MODULE evaluate_risk
 
 	!/*	setup	                */
 
-	IMPLICIT NONE
+    IMPLICIT NONE
 
-	PUBLIC
+    PUBLIC
  
 CONTAINS
 !*******************************************************************************

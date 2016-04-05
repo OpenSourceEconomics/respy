@@ -12,7 +12,7 @@ MODULE evaluate_fortran
 
 	!/*	setup	*/
 
-	IMPLICIT NONE
+    IMPLICIT NONE
 
     PUBLIC
 
@@ -63,9 +63,7 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
     INTEGER(our_int)                :: k
     INTEGER(our_int)                :: j
 
-    REAL(our_dble)                  :: conditional_draws(num_draws_prob, 4)
     REAL(our_dble)                  :: draws_prob_raw(num_draws_prob, 4)
-    REAL(our_dble)                  :: choice_probabilities(4)
     REAL(our_dble)                  :: payoffs_systematic(4)
     REAL(our_dble)                  :: shocks_cholesky(4, 4)
     REAL(our_dble)                  :: crit_val_contrib
@@ -129,6 +127,7 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
             ! If an agent is observed working, then the the labor market shocks
             ! are observed and the conditional distribution is used to determine
             ! the choice probabilities.
+            dist = zero_dble
             IF (is_working) THEN
 
                 ! Calculate the disturbance, which follows a normal

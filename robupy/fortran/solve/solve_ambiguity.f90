@@ -19,7 +19,7 @@ MODULE solve_ambiguity
 
 	!/*	setup	             */
 
-	IMPLICIT NONE
+    IMPLICIT NONE
 
     PUBLIC 
     

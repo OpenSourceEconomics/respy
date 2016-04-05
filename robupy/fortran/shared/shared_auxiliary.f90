@@ -8,7 +8,7 @@ MODULE shared_auxiliary
 
 	!/*	setup	*/
 
-	IMPLICIT NONE
+    IMPLICIT NONE
 
     ! External procedures defined in LAPACK
     EXTERNAL DGETRF
@@ -25,7 +25,7 @@ MODULE shared_auxiliary
     END INTERFACE
 
  CONTAINS
- !*******************************************************************************
+!*******************************************************************************
 !*******************************************************************************
 SUBROUTINE transform_disturbances(draws_transformed, draws, shocks_cholesky, & 
                 shocks_mean, num_draws)
@@ -149,9 +149,9 @@ SUBROUTINE get_future_payoffs(payoffs_future, edu_max, edu_start, &
 
     INTEGER(our_int)                :: edu_lagged
     INTEGER(our_int)                :: future_idx
-    INTEGER(our_int)    			:: exp_a
-    INTEGER(our_int)    			:: exp_b
-    INTEGER(our_int)    			:: edu
+    INTEGER(our_int)                :: exp_a
+    INTEGER(our_int)                :: exp_b
+    INTEGER(our_int)                :: edu
 
 !-------------------------------------------------------------------------------
 ! Algorithm
@@ -210,7 +210,6 @@ SUBROUTINE create_draws(draws, num_periods, num_draws_emax, seed, is_debug)
     INTEGER(our_int)                            :: seed_size
     INTEGER(our_int)                            :: period
     INTEGER(our_int)                            :: j
-    INTEGER(our_int)                            :: i
 
     LOGICAL                                     :: READ_IN
 
