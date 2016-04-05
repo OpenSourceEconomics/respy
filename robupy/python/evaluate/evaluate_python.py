@@ -106,13 +106,14 @@ def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
                 # structure of the disturbances.
                 if is_working:
                     if choice == 1:
-                        draws_stan[0] = dist / np.sqrt(shocks_cov[idx, idx])
+                        draws_stan[0] = dist / shocks_cholesky[idx, idx]
                     else:
                         draws_stan[1] = (dist - shocks_cholesky[idx, 0] *
                             draws_stan[0]) / shocks_cholesky[idx, idx]
 
-                    prob_wage = norm.pdf(draws_stan[idx], 0.0,
-                        np.sqrt(shocks_cov[idx, idx]))
+                    prob_wage = norm.pdf(draws_stan[idx], 0.0, 1.0) / \
+                        shocks_cholesky[idx, idx]
+
                 else:
                     prob_wage = 1.0
 
