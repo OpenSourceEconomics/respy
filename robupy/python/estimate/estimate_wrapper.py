@@ -196,12 +196,10 @@ class OptimizationClass(object):
         else:
             raise NotImplementedError
 
-        if not np.isfinite(crit_val):
-            np.savetxt(open('paras_curre.robupy.log', 'wb'), x, fmt='%15.8f')
+        # Antibugging
+        assert np.isfinite(crit_val)
 
-        # Antibugging.
-        assert (np.isfinite(crit_val))
-
+        # Document progress
         self._logging_interim(x, crit_val)
 
         # Finishing
