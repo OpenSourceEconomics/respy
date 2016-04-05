@@ -14,8 +14,23 @@ import os
 # testing library
 from modules.clsMail import MailCls
 
+# ROBUPY directory. This allows to compile the debug version of the FORTRAN
+# program.
+ROBUPY_DIR = os.path.dirname(os.path.realpath(__file__))
+ROBUPY_DIR = ROBUPY_DIR.replace('development/testing/modules', '') + 'robupy'
+
+
 ''' Auxiliary functions
 '''
+
+
+def compile_package():
+    """ Compile ROBUPY package in debug mode.
+    """
+    current_directory = os.getcwd()
+    os.chdir(ROBUPY_DIR)
+    os.system('./waf distclean; ./waf configure build --debug')
+    os.chdir(current_directory)
 
 
 def finalize_testing_record():
@@ -134,12 +149,14 @@ def distribute_input(parser):
     args = parser.parse_args()
 
     # Distribute arguments.
-    hours = args.hours
     notification = args.notification
+    compile = args.compile
+    hours = args.hours
 
     # Assertions.
     assert (notification in [True, False])
     assert (isinstance(hours, float))
+    assert (compile in [True, False])
     assert (hours > 0.0)
 
     # Validity checks
@@ -149,7 +166,7 @@ def distribute_input(parser):
         assert (os.path.exists(os.environ['HOME'] + '/.credentials'))
 
     # Finishing.
-    return hours, notification
+    return hours, notification, compile
 
 
 def send_notification(hours):

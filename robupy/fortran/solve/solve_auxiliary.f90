@@ -804,8 +804,8 @@ SUBROUTINE get_predictions(predictions, endogenous, exogenous, maxe, &
     CALL get_r_squared(r_squared, endogenous_is_available, &
             endogenous_predicted_available, num_points)
 
-    CALL get_clipped_vector(endogenous_predicted, endogenous_predicted, &
-            zero_dble, HUGE_FLOAT, num_states)
+    endogenous_predicted = clip_value(endogenous_predicted, &
+            zero_dble, HUGE_FLOAT)
 
     ! Construct predicted EMAX for all states and the replace
     ! interpolation points with simulated values.
@@ -1104,49 +1104,6 @@ SUBROUTINE get_coefficients(coeffs, Y, X, num_covars, num_agents)
    D = MATMUL(C, TRANSPOSE(X))
 
    coeffs = MATMUL(D, Y)
-
-END SUBROUTINE
-
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE get_clipped_vector(Y, X, lower_bound, upper_bound, num_values)
-
-    !/* external objects        */
-
-    REAL(our_dble), INTENT(INOUT)       :: Y(:)
-
-    REAL(our_dble), INTENT(IN)          :: lower_bound
-    REAL(our_dble), INTENT(IN)          :: upper_bound
-    REAL(our_dble), INTENT(IN)          :: X(:)
-
-    INTEGER(our_int), INTENT(IN)        :: num_values
-
-    !/* internal objects        */
-
-    INTEGER(our_int)                    :: i
-
-!-------------------------------------------------------------------------------
-! Algorithm
-!-------------------------------------------------------------------------------
-
-    DO i = 1, num_values
-
-        IF (X(i) .LT. lower_bound) THEN
-
-            Y(i) = lower_bound
-
-        ELSE IF (X(i) .GT. upper_bound) THEN
-
-            Y(i) = upper_bound
-
-        ELSE
-
-            Y(i) = X(i)
-
-        END IF
-
-    END DO
-
 
 END SUBROUTINE
 !*******************************************************************************

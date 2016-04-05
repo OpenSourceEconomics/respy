@@ -543,12 +543,12 @@ SUBROUTINE wrapper_divergence(div, x, cov, level)
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_get_clipped_vector(Y, X, lower_bound, upper_bound, & 
-                num_values)
+SUBROUTINE wrapper_clip_value(clipped_value, value, lower_bound, upper_bound, & 
+            num_values)
 
     !/* external libraries      */
 
-    USE solve_auxiliary
+    USE shared_auxiliary
 
     !/* setup                   */
 
@@ -556,19 +556,19 @@ SUBROUTINE wrapper_get_clipped_vector(Y, X, lower_bound, upper_bound, &
 
     !/* external objects        */
 
-    DOUBLE PRECISION, INTENT(OUT)   :: Y(num_values)
+    DOUBLE PRECISION, INTENT(OUT)       :: clipped_value(num_values)
 
-    DOUBLE PRECISION, INTENT(IN)    :: X(num_values)
-    DOUBLE PRECISION, INTENT(IN)    :: lower_bound
-    DOUBLE PRECISION, INTENT(IN)    :: upper_bound 
+    DOUBLE PRECISION, INTENT(IN)        :: value(:)
+    DOUBLE PRECISION, INTENT(IN)        :: lower_bound
+    DOUBLE PRECISION, INTENT(IN)        :: upper_bound 
 
-    INTEGER, INTENT(IN)             :: num_values
+    INTEGER, INTENT(IN)                 :: num_values
 
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
     
-    CALL get_clipped_vector(Y, X, lower_bound, upper_bound, num_values)
+    clipped_value = clip_value(value, lower_bound, upper_bound)
 
 
 END SUBROUTINE

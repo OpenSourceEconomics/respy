@@ -20,11 +20,6 @@ import os
 if not hasattr(sys, 'real_prefix'):
     raise AssertionError('Please use a virtual environment for testing')
 
-# ROBUPY directory. This allows to compile the debug version of the FORTRAN
-# program.
-ROBUPY_DIR = os.path.dirname(os.path.realpath(__file__))
-ROBUPY_DIR = ROBUPY_DIR.replace('development/testing', '') + 'robupy'
-
 # ROBPUPY testing codes. The import of the PYTEST configuration file ensures
 # that the PYTHONPATH is modified to allow for the use of the tests..
 TEST_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -48,19 +43,18 @@ from modules.auxiliary import get_test_dict
 from modules.auxiliary import finalize_testing_record
 from modules.auxiliary import update_testing_record
 from modules.auxiliary import send_notification
+from modules.auxiliary import compile_package
 
 ''' Main Function.
 '''
 
 
-def run(hours):
+def run(hours, compile):
     """ Run test battery.
     """
-    # Compile the debug version of the FORTRAN program.
-    current_directory = os.getcwd()
-    os.chdir(ROBUPY_DIR)
-    os.system('./waf distclean; ./waf configure build --debug')
-    os.chdir(current_directory)
+    # Compile the debug version of the ROBUPY program.
+    if compile:
+        compile_package()
 
     # Get a dictionary with all candidate test cases.
     test_dict = get_test_dict(TEST_DIR)
@@ -143,12 +137,16 @@ if __name__ == '__main__':
                         dest='notification', default=False,
                         help='send notification')
 
+    parser.add_argument('--compile', action='store_true',
+                        dest='compile', default=False,
+                        help='compile toolbox with debug flag')
+
     # Start from a clean slate and extract a user's request.
     cleanup_testing_infrastructure(False)
-    hours, notification = distribute_input(parser)
+    hours, notification, compile = distribute_input(parser)
 
     # Run testing infrastructure and send a notification (if requested).
-    run(hours)
+    run(hours, compile)
 
     if notification:
         send_notification(hours)

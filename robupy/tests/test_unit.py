@@ -537,7 +537,7 @@ class TestClass(object):
             upper_bound = lower_bound + np.random.ranf()
             values = np.random.normal(size=num_values)
 
-            f90 = fort_debug.wrapper_get_clipped_vector(values, lower_bound,
+            f90 = fort_debug.wrapper_clip_value(values, lower_bound,
                 upper_bound, num_values)
             py = np.clip(values, lower_bound, upper_bound)
 
