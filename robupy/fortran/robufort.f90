@@ -20,7 +20,6 @@ PROGRAM robufort
     INTEGER(our_int), ALLOCATABLE   :: states_number_period(:)
     INTEGER(our_int), ALLOCATABLE   :: states_all(:, :, :)
 
-    INTEGER(our_int)                :: max_states_period
     INTEGER(our_int)                :: num_draws_emax
     INTEGER(our_int)                :: num_draws_prob
     INTEGER(our_int)                :: num_periods
