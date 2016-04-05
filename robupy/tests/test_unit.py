@@ -36,7 +36,7 @@ import robupy.fortran.f2py_library as fort_lib
 import robupy.fortran.f2py_debug as fort_debug
 
 from robupy.python.solve.solve_auxiliary import pyth_create_state_space
-from robupy.fortran.f2py_library import  f2py_create_state_space
+from robupy.fortran.f2py_library import f2py_create_state_space
 
 from robupy.python.solve.solve_auxiliary import pyth_calculate_payoffs_systematic
 from robupy.fortran.f2py_library import f2py_calculate_payoffs_systematic

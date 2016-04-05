@@ -25,7 +25,7 @@ CONTAINS
 !*******************************************************************************
 SUBROUTINE fort_create_state_space(states_all, states_number_period, &
                 mapping_state_idx, max_states_period, num_periods, edu_start, &
-                edu_max, min_idx)
+                edu_max)
 
     !/* external objects        */
 
@@ -37,7 +37,6 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, &
     INTEGER(our_int), INTENT(IN)        :: num_periods
     INTEGER(our_int), INTENT(IN)        :: edu_start
     INTEGER(our_int), INTENT(IN)        :: edu_max
-    INTEGER(our_int), INTENT(IN)        :: min_idx
 
     !/* internals objects       */
 
@@ -163,7 +162,7 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE fort_calculate_payoffs_systematic(periods_payoffs_systematic, &
                 num_periods, states_number_period, states_all, edu_start, &
-                coeffs_a, coeffs_b, coeffs_edu, coeffs_home, max_states_period)
+                coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
 
     !/* external objects        */
 
@@ -176,7 +175,6 @@ SUBROUTINE fort_calculate_payoffs_systematic(periods_payoffs_systematic, &
 
     INTEGER(our_int), INTENT(IN)        :: states_number_period(:)
     INTEGER(our_int), INTENT(IN)        :: states_all(:, :, :)
-    INTEGER(our_int), INTENT(IN)        :: max_states_period
     INTEGER(our_int), INTENT(IN)        :: num_periods
     INTEGER(our_int), INTENT(IN)        :: edu_start
 
@@ -264,11 +262,11 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE fort_backward_induction(periods_emax, num_periods, &
-                max_states_period, periods_draws_emax, num_draws_emax, &
-                states_number_period, periods_payoffs_systematic, edu_max, &
-                edu_start, mapping_state_idx, states_all, delta, is_debug, &
-                shocks_cov, level, is_ambiguous, measure, is_interpolated, &
-                num_points, is_deterministic, shocks_cholesky)
+                periods_draws_emax, num_draws_emax, states_number_period, & 
+                periods_payoffs_systematic, edu_max, edu_start, & 
+                mapping_state_idx, states_all, delta, is_debug, shocks_cov, & 
+                level, is_ambiguous, measure, is_interpolated, num_points, & 
+                is_deterministic, shocks_cholesky)
 
     !
     ! Development Notes
@@ -292,7 +290,6 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, &
     INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(:, :, :, :, :)
     INTEGER(our_int), INTENT(IN)        :: states_number_period(:)
     INTEGER(our_int), INTENT(IN)        :: states_all(:, :, :)
-    INTEGER(our_int), INTENT(IN)        :: max_states_period
     INTEGER(our_int), INTENT(IN)        :: num_draws_emax
     INTEGER(our_int), INTENT(IN)        :: num_periods
     INTEGER(our_int), INTENT(IN)        :: num_points
