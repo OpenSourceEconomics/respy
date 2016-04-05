@@ -12,7 +12,8 @@ MODULE shared_auxiliary
 
     PUBLIC
 
-    ! Polymorphisms
+    !/* explicit interfaces   */
+
     INTERFACE clip_value
 
         MODULE PROCEDURE clip_value_1, clip_value_2

@@ -2,40 +2,40 @@
 !*******************************************************************************
 MODULE IMSL_REPLACEMENTS
 
-	!/*	external modules	*/
+    !/* external modules    */
 
-	USE shared_constants
+    USE shared_constants
 
-	!/* setup   */
+    !/* setup   */
 
-	IMPLICIT NONE
-		
-	! External procedures defined in LAPACK
-	EXTERNAL DGETRF
-	EXTERNAL DGETRI
-	EXTERNAL DPOTRF
+    IMPLICIT NONE
+        
+    ! External procedures defined in LAPACK
+    EXTERNAL DGETRF
+    EXTERNAL DGETRI
+    EXTERNAL DPOTRF
 
-	PUBLIC
+    PUBLIC
 
 CONTAINS
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE LFCDS(N, A, LDA, FACT, LDFACT, RCOND)
 
-	!/* external objects    */
+    !/* external objects    */
 
-	REAL, INTENT(OUT)		:: FACT(N, N)
+    REAL, INTENT(OUT)       :: FACT(N, N)
 
-	INTEGER, INTENT(IN)		:: LDFACT
-	INTEGER, INTENT(IN)		:: LDA 
-	INTEGER, INTENT(IN)		:: N
-	
-	REAL, INTENT(IN)		:: A(N, N)	
-	REAL, INTENT(IN)		:: RCOND
+    INTEGER, INTENT(IN)     :: LDFACT
+    INTEGER, INTENT(IN)     :: LDA 
+    INTEGER, INTENT(IN)     :: N
+    
+    REAL, INTENT(IN)        :: A(N, N)  
+    REAL, INTENT(IN)        :: RCOND
 
-	!/* internal objects    */
+    !/* internal objects    */
 
-	INTEGER           		:: INFO
+    INTEGER                 :: INFO
 
 !------------------------------------------------------------------------------- 
 ! Algorithm
@@ -53,113 +53,113 @@ END SUBROUTINE
 !******************************************************************************* 
 SUBROUTINE RNNOR(dim, draw)
 
-	!
-	! This subroutine generates deviates from a standard normal distribution 
-	! using the Box-Muller algorithm.
-	!
+    !
+    ! This subroutine generates deviates from a standard normal distribution 
+    ! using the Box-Muller algorithm.
+    !
 
-	!/* external objects    */
+    !/* external objects    */
 
-	INTEGER, INTENT(IN)   :: dim
+    INTEGER, INTENT(IN)   :: dim
 
-	REAL, INTENT(OUT)   :: draw(dim)
-		
-	!/* internal objects    */
+    REAL, INTENT(OUT)   :: draw(dim)
+        
+    !/* internal objects    */
 
-	INTEGER             :: g 
+    INTEGER             :: g 
 
-	REAL, PARAMETER     :: pi = 3.141592653589793238462643383279502884197
-	REAL, ALLOCATABLE   :: u(:), r(:)
+    REAL, PARAMETER     :: pi = 3.141592653589793238462643383279502884197
+    REAL, ALLOCATABLE   :: u(:), r(:)
 
 !------------------------------------------------------------------------------- 
 ! Algorithm
 !------------------------------------------------------------------------------- 
 
-	! Allocate containers
-	ALLOCATE(u(2*dim)); ALLOCATE(r(2*dim))
+    ! Allocate containers
+    ALLOCATE(u(2*dim)); ALLOCATE(r(2*dim))
 
-	! Call uniform deviates
-	CALL random_number(u)
+    ! Call uniform deviates
+    CALL random_number(u)
 
-	! Apply Box-Muller transform
-	DO g = 1, 2*dim, 2
-	
-			r(g)   = SQRT(-2*LOG(u(g)))*COS(2*pi*u(g+1)) 
-			r(g+1) = SQRT(-2*LOG(u(g)))*SIN(2*pi*u(g+1)) 
-	
-	END DO
+    ! Apply Box-Muller transform
+    DO g = 1, 2*dim, 2
+    
+            r(g)   = SQRT(-2*LOG(u(g)))*COS(2*pi*u(g+1)) 
+            r(g+1) = SQRT(-2*LOG(u(g)))*SIN(2*pi*u(g+1)) 
+    
+    END DO
 
-	! Extract relevant floats
-	DO g = 1, dim 
+    ! Extract relevant floats
+    DO g = 1, dim 
 
-			draw(g) = r(g)     
-	
-	END DO
+            draw(g) = r(g)     
+    
+    END DO
 
 END SUBROUTINE 
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE LINDS(N, A, LDA, AINV, LDAINV)
 
-	!/* external objects    */
+    !/* external objects    */
 
-	INTEGER, INTENT(IN)               :: N, LDA, LDAINV
-	REAL, INTENT(IN)                  :: A(N, N)
+    INTEGER, INTENT(IN)               :: N, LDA, LDAINV
+    REAL, INTENT(IN)                  :: A(N, N)
 
-	REAL, INTENT(OUT)                  :: AINV(N, N)
-	
-	!/* internal objects    */
+    REAL, INTENT(OUT)                  :: AINV(N, N)
+    
+    !/* internal objects    */
 
 !------------------------------------------------------------------------------- 
 ! Algorithm
 !------------------------------------------------------------------------------- 
-	
-	AINV = inverse(A, N)
+    
+    AINV = inverse(A, N)
 
 END SUBROUTINE 
 !*******************************************************************************
 !*******************************************************************************
 FUNCTION inverse(A, n)
 
-		!/* external objects        */
+        !/* external objects        */
 
-		INTEGER(our_int), INTENT(IN)    :: n
+        INTEGER(our_int), INTENT(IN)    :: n
 
-		REAL, INTENT(IN)      :: A(:, :)
+        REAL, INTENT(IN)      :: A(:, :)
 
-		!/* internal objects        */
+        !/* internal objects        */
 
-		INTEGER(our_int)                :: ipiv(n)
-		INTEGER(our_int)                :: info
+        INTEGER(our_int)                :: ipiv(n)
+        INTEGER(our_int)                :: info
 
-		REAL(our_dble)                  :: inverse(n, n)
-		REAL(our_dble)                  :: work(n)
-		
+        REAL(our_dble)                  :: inverse(n, n)
+        REAL(our_dble)                  :: work(n)
+        
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
-		
-		! Initialize matrix for replacement
-		inverse = A
+        
+        ! Initialize matrix for replacement
+        inverse = A
 
-		! DGETRF computes an LU factorization of a general M-by-N matrix A
-		! using partial pivoting with row interchanges.
-		CALL DGETRF(n, n, inverse, n, ipiv, info)
+        ! DGETRF computes an LU factorization of a general M-by-N matrix A
+        ! using partial pivoting with row interchanges.
+        CALL DGETRF(n, n, inverse, n, ipiv, info)
 
-		! DGETRI computes the inverse of a matrix using the LU factorization
-		! computed by DGETRF.
-		CALL DGETRI(n, inverse, n, ipiv, work, n, info)
+        ! DGETRI computes the inverse of a matrix using the LU factorization
+        ! computed by DGETRF.
+        CALL DGETRI(n, inverse, n, ipiv, work, n, info)
 
 END FUNCTION
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE RNOPT(seed)
 
-	!/* external objects    */
+    !/* external objects    */
 
-	INTEGER, INTENT(IN)               :: seed
+    INTEGER, INTENT(IN)               :: seed
 
-	!/* internal objects    */
+    !/* internal objects    */
 
 !------------------------------------------------------------------------------- 
 ! Algorithm
@@ -172,116 +172,116 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE RNGET(seed)
 
-	!/* external objects    */
+    !/* external objects    */
 
-	INTEGER, INTENT(IN)               :: seed
+    INTEGER, INTENT(IN)               :: seed
 
-	!/* internal objects    */
+    !/* internal objects    */
 
-	INTEGER                   :: size
+    INTEGER                   :: size
 
-	INTEGER                   :: auxiliary(55)
+    INTEGER                   :: auxiliary(55)
 
 !------------------------------------------------------------------------------- 
 ! Algorithm
 !------------------------------------------------------------------------------- 
 
-	CALL RANDOM_SEED(size=size)
+    CALL RANDOM_SEED(size=size)
 
-	auxiliary = seed
+    auxiliary = seed
 
-	CALL RANDOM_SEED(get=auxiliary)
+    CALL RANDOM_SEED(get=auxiliary)
 
 END SUBROUTINE 
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE RNSET(seed)
 
-	!/* external objects    */
+    !/* external objects    */
 
-	INTEGER, INTENT(IN)    	    :: seed
+    INTEGER, INTENT(IN)         :: seed
 
-	!/* internal objects    */
+    !/* internal objects    */
 
-	INTEGER                     :: size
+    INTEGER                     :: size
 
-	INTEGER                     :: auxiliary(55)
+    INTEGER                     :: auxiliary(55)
 
 !------------------------------------------------------------------------------- 
 ! Algorithm
 !------------------------------------------------------------------------------- 
 
-	CALL RANDOM_SEED(size=size)
+    CALL RANDOM_SEED(size=size)
 
-	auxiliary = seed
+    auxiliary = seed
 
-	CALL RANDOM_SEED(put=auxiliary)
+    CALL RANDOM_SEED(put=auxiliary)
 
 END SUBROUTINE 
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE RNSRI(NSAMP, NPOP, INDEX)
 
-	!/* external objects    */
+    !/* external objects    */
 
-	INTEGER, INTENT(OUT)		:: INDEX(:)
+    INTEGER, INTENT(OUT)        :: INDEX(:)
 
-	INTEGER, INTENT(IN)			:: NSAMP
-	INTEGER, INTENT(IN)			:: NPOP
+    INTEGER, INTENT(IN)         :: NSAMP
+    INTEGER, INTENT(IN)         :: NPOP
 
-	!/* internal objects    */
+    !/* internal objects    */
 
-	INTEGER 					:: shuffled(NPOP)
-	INTEGER 					:: initial(NPOP)
-	INTEGER 					:: i
+    INTEGER                     :: shuffled(NPOP)
+    INTEGER                     :: initial(NPOP)
+    INTEGER                     :: i
 
 !------------------------------------------------------------------------------- 
 ! Algorithm
 !------------------------------------------------------------------------------- 
 
-	DO i = 1, NPOP
-		initial(i) = i
-	END DO
+    DO i = 1, NPOP
+        initial(i) = i
+    END DO
 
-	shuffled = initial
-	CALL shuffle(shuffled)
+    shuffled = initial
+    CALL shuffle(shuffled)
 
-	INDEX(:NSAMP) = shuffled(:NSAMP)
+    INDEX(:NSAMP) = shuffled(:NSAMP)
 
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE shuffle(a)
 
-	!/* external objects    */
+    !/* external objects    */
 
-	INTEGER, INTENT(INOUT)		:: a(:)
-	
-	!/* internal objects    */
-	
-	INTEGER 					:: randpos
-	INTEGER 					:: temp
-	INTEGER 					:: i
+    INTEGER, INTENT(INOUT)      :: a(:)
+    
+    !/* internal objects    */
+    
+    INTEGER                     :: randpos
+    INTEGER                     :: temp
+    INTEGER                     :: i
 
-	REAL 						:: r
+    REAL                        :: r
 
 !------------------------------------------------------------------------------- 
 ! Algorithm
 !------------------------------------------------------------------------------- 
 
-	DO i = SIZE(a), 2, -1
-		
-		CALL RANDOM_NUMBER(r)
+    DO i = SIZE(a), 2, -1
+        
+        CALL RANDOM_NUMBER(r)
 
-		randpos = int(r * i) + 1
-		
-		temp = a(randpos)
-		
-		a(randpos) = a(i)
-		
-		a(i) = temp
-	
-	END DO
+        randpos = int(r * i) + 1
+        
+        temp = a(randpos)
+        
+        a(randpos) = a(i)
+        
+        a(i) = temp
+    
+    END DO
 
 END SUBROUTINE
 !*******************************************************************************
