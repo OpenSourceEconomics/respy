@@ -196,7 +196,7 @@ class OptimizationClass(object):
         else:
             raise NotImplementedError
 
-        # Antibugging
+        # Antibugging.
         assert np.isfinite(crit_val)
 
         # Document progress

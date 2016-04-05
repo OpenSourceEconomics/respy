@@ -693,7 +693,7 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
                 shocks_cholesky, num_draws_emax, seed_emax, seed_prob, &
                 num_agents, is_debug, is_deterministic, is_interpolated, &
                 num_points, min_idx, is_ambiguous, measure, request, &
-                num_draws_prob, is_myopic)
+                num_draws_prob, is_myopic, tau)
 
     !
     !   This function serves as the replacement for the clsRobupy and reads in
@@ -722,6 +722,7 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
     REAL(our_dble), INTENT(OUT)     :: coeffs_b(6)
     REAL(our_dble), INTENT(OUT)     :: delta
     REAL(our_dble), INTENT(OUT)     :: level
+    REAL(our_dble), INTENT(OUT)     :: tau
 
     LOGICAL, INTENT(OUT)            :: is_interpolated
     LOGICAL, INTENT(OUT)            :: is_deterministic
@@ -792,6 +793,7 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
         ! ESTIMATION
         READ(1, 1505) num_draws_prob
         READ(1, 1505) seed_prob
+        READ(1, 1510) tau
 
         ! AUXILIARY
         READ(1, 1505) min_idx

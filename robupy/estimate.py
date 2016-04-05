@@ -29,14 +29,14 @@ def estimate(robupy_obj, data_frame):
         is_debug, file_sim, edu_max, delta, num_draws_prob, seed_prob, \
         num_draws_emax, seed_emax, level, measure, min_idx, is_ambiguous, \
         is_deterministic, is_myopic, is_interpolated, num_points, version, \
-        maxiter, optimizer = \
+        maxiter, optimizer, tau = \
             distribute_class_attributes(robupy_obj,
                 'model_paras', 'num_periods', 'num_agents', 'edu_start',
                 'seed_data', 'is_debug', 'file_sim', 'edu_max', 'delta',
                 'num_draws_prob', 'seed_prob', 'num_draws_emax', 'seed_emax',
                 'level', 'measure', 'min_idx', 'is_ambiguous',
                 'is_deterministic', 'is_myopic', 'is_interpolated',
-                'num_points', 'version', 'maxiter', 'optimizer')
+                'num_points', 'version', 'maxiter', 'optimizer', 'tau')
 
     # Auxiliary objects
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, shocks_cholesky = \
@@ -60,7 +60,7 @@ def estimate(robupy_obj, data_frame):
     args = (is_deterministic, is_interpolated, num_draws_emax,is_ambiguous,
         num_periods, num_points, is_myopic, edu_start, is_debug, measure,
         edu_max, min_idx, delta, level, data_array, num_agents,
-        num_draws_prob, periods_draws_emax, periods_draws_prob)
+        num_draws_prob, tau, periods_draws_emax, periods_draws_prob)
 
     # Setup optimization class, which handles all the details depending on the
     # request.

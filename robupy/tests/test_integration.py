@@ -346,13 +346,14 @@ class TestClass(object):
         num_periods, edu_start, edu_max, min_idx, model_paras, num_draws_emax, \
             seed_emax, is_debug, delta, level, is_ambiguous, measure, \
             is_interpolated, num_points, is_deterministic, is_myopic, \
-            num_agents, num_draws_prob, seed_prob = \
+            num_agents, num_draws_prob, seed_prob, tau = \
                 distribute_class_attributes(robupy_obj,
                     'num_periods', 'edu_start', 'edu_max', 'min_idx',
                     'model_paras', 'num_draws_emax', 'seed_emax', 'is_debug',
                     'delta', 'level', 'is_ambiguous', 'measure',
                     'is_interpolated', 'num_points', 'is_deterministic',
-                    'is_myopic', 'num_agents', 'num_draws_prob', 'seed_prob')
+                    'is_myopic', 'num_agents', 'num_draws_prob', 'seed_prob',
+                    'tau')
 
         # Write out random components and interpolation grid to align the
         # three implementations.
@@ -373,7 +374,7 @@ class TestClass(object):
             num_periods, num_points, is_myopic, edu_start, is_debug, measure,
             edu_max, min_idx, delta, level)
 
-        fort = fort_solve(*base_args + (seed_emax,))
+        fort = fort_solve(*base_args + (seed_emax, tau))
         pyth = pyth_solve(*base_args + (periods_draws_emax,))
         f2py = f2py_solve(*base_args + (periods_draws_emax, max_states_period))
 
@@ -401,7 +402,7 @@ class TestClass(object):
             is_deterministic, is_interpolated, num_draws_emax,is_ambiguous,
             num_periods, num_points, is_myopic, edu_start, is_debug, measure,
             edu_max, min_idx, delta, level, data_array, num_agents,
-            num_draws_prob)
+            num_draws_prob, tau)
 
         args = base_args + (seed_emax, seed_prob)
         fort = fort_evaluate(*args)
@@ -422,7 +423,7 @@ class TestClass(object):
         args = (is_deterministic, is_interpolated, num_draws_emax,is_ambiguous,
             num_periods, num_points, is_myopic, edu_start, is_debug, measure,
             edu_max, min_idx, delta, level, data_array, num_agents,
-            num_draws_prob, periods_draws_emax, periods_draws_prob)
+            num_draws_prob, tau, periods_draws_emax, periods_draws_prob)
 
         pyth = pyth_criterion(x0, *args)
         f2py = f2py_criterion(x0, *args)

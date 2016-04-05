@@ -228,6 +228,8 @@ def _check_integrity_read(dict_):
     assert (isinstance(dict_['ESTIMATION']['seed'], int))
     assert (dict_['ESTIMATION']['seed'] >= 0)
     assert (isinstance(dict_['ESTIMATION']['file'], str))
+    assert (isinstance(dict_['ESTIMATION']['tau'], float))
+    assert (dict_['ESTIMATION']['tau'] >= 0)
 
     # Check SOLUTION
     assert (isinstance(dict_['SOLUTION']['draws'], int))

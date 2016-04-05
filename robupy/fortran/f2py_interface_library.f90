@@ -10,7 +10,7 @@ SUBROUTINE f2py_criterion(crit_val, x, is_deterministic, is_interpolated, &
                 num_draws_emax, is_ambiguous, num_periods, num_points, & 
                 is_myopic, edu_start, is_debug, measure, edu_max, min_idx, & 
                 delta, level, data_array, num_agents, num_draws_prob, & 
-                periods_draws_emax, periods_draws_prob)
+                tau, periods_draws_emax, periods_draws_prob)
 
     !/* external libraries      */
 
@@ -44,6 +44,7 @@ SUBROUTINE f2py_criterion(crit_val, x, is_deterministic, is_interpolated, &
     DOUBLE PRECISION, INTENT(IN)    :: data_array(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: level
     DOUBLE PRECISION, INTENT(IN)    :: delta 
+    DOUBLE PRECISION, INTENT(IN)    :: tau
 
     LOGICAL, INTENT(IN)             :: is_deterministic 
     LOGICAL, INTENT(IN)             :: is_interpolated
@@ -89,7 +90,7 @@ SUBROUTINE f2py_criterion(crit_val, x, is_deterministic, is_interpolated, &
     CALL fort_evaluate(crit_val, periods_payoffs_systematic, & 
             mapping_state_idx, periods_emax, states_all, shocks_cov, & 
             is_deterministic, num_periods, edu_start, edu_max, delta, & 
-            data_array, num_agents, num_draws_prob, periods_draws_prob)
+            data_array, num_agents, num_draws_prob, periods_draws_prob, tau)
 
 END SUBROUTINE
 !*******************************************************************************
@@ -190,7 +191,7 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, &
                 coeffs_home, shocks_cov, is_deterministic, is_interpolated, & 
                 num_draws_emax, is_ambiguous, num_periods, num_points, &
                 is_myopic, edu_start, is_debug, measure, edu_max, min_idx, &
-                delta, level, data_array, num_agents, num_draws_prob, & 
+                delta, level, data_array, num_agents, num_draws_prob, tau, & 
                 periods_draws_emax, periods_draws_prob)
 
     !/* external libraries      */
@@ -227,6 +228,7 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, &
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(:)
     DOUBLE PRECISION, INTENT(IN)    :: delta 
     DOUBLE PRECISION, INTENT(IN)    :: level
+    DOUBLE PRECISION, INTENT(IN)    :: tau
 
     LOGICAL, INTENT(IN)             :: is_deterministic 
     LOGICAL, INTENT(IN)             :: is_interpolated
@@ -261,7 +263,7 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, &
     CALL fort_evaluate(crit_val, periods_payoffs_systematic, & 
             mapping_state_idx, periods_emax, states_all, shocks_cov, & 
             is_deterministic, num_periods, edu_start, edu_max, delta, &
-            data_array, num_agents, num_draws_prob, periods_draws_prob)
+            data_array, num_agents, num_draws_prob, periods_draws_prob, tau)
 
 END SUBROUTINE
 !*******************************************************************************

@@ -29,13 +29,13 @@ def evaluate(robupy_obj, data_frame):
     model_paras, num_periods, num_agents, edu_start, seed_data, is_debug, \
         edu_max, delta, is_deterministic, version, num_draws_prob, seed_prob, \
         num_draws_emax, seed_emax, is_interpolated, is_ambiguous, num_points, \
-        is_myopic, min_idx, measure, level = \
+        is_myopic, min_idx, measure, level, tau = \
             distribute_class_attributes(robupy_obj,
                 'model_paras', 'num_periods', 'num_agents', 'edu_start',
                 'seed_data', 'is_debug', 'edu_max', 'delta', 'is_deterministic',
                 'version', 'num_draws_prob', 'seed_prob', 'num_draws_emax',
                 'seed_emax', 'is_interpolated', 'is_ambiguous', 'num_points',
-                'is_myopic', 'min_idx', 'measure', 'level')
+                'is_myopic', 'min_idx', 'measure', 'level', 'tau')
 
     # Distribute model parameters
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, \
@@ -53,9 +53,10 @@ def evaluate(robupy_obj, data_frame):
     data_array = data_frame.as_matrix()
 
     base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
-        is_deterministic, is_interpolated, num_draws_emax,is_ambiguous,
+        is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
         num_periods, num_points, is_myopic, edu_start, is_debug, measure,
-        edu_max, min_idx, delta, level, data_array, num_agents, num_draws_prob)
+        edu_max, min_idx, delta, level, data_array, num_agents,
+        num_draws_prob, tau)
 
     # Select appropriate interface
     if version == 'FORTRAN':

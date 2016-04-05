@@ -22,7 +22,7 @@ MODULE evaluate_fortran
 SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
                 periods_emax, states_all, shocks_cov, is_deterministic, &
                 num_periods, edu_start, edu_max, delta, data_array, &
-                num_agents, num_draws_prob, periods_draws_prob)
+                num_agents, num_draws_prob, periods_draws_prob, tau)
 
     !/* external objects        */
 
@@ -41,6 +41,7 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
     REAL(our_dble), INTENT(IN)      :: data_array(:, :)
     REAL(our_dble), INTENT(IN)      :: shocks_cov(:, :)
     REAL(our_dble), INTENT(IN)      :: delta
+    REAL(our_dble), INTENT(IN)      :: tau
 
     !/* internal objects        */
 
@@ -71,7 +72,7 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
     REAL(our_dble)                  :: total_payoffs(4)
     REAL(our_dble)                  :: draws(4), smoot_payoff(4), maxim_payoff(4)
     REAL(our_dble)                  :: dist, draws_cond(4), prob_choice
-    REAL(our_dble)                  :: tau, prob_obs, draws_stan(4), prob_wage
+    REAL(our_dble)                  :: prob_obs, draws_stan(4), prob_wage
 
     LOGICAL                         :: is_deterministic
     LOGICAL                         :: is_working
@@ -79,8 +80,6 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
-
-    tau = 500.00
 
     ! Construct Cholesky decomposition
     IF (is_deterministic) THEN

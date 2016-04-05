@@ -79,6 +79,8 @@ class RobupyCls(object):
 
         self.attr['level'] = None
 
+        self.attr['tau'] = None
+
         # Derived attributes
         self.attr['is_deterministic'] = None
 
@@ -275,6 +277,8 @@ class RobupyCls(object):
 
         self.attr['delta'] = init_dict['BASICS']['delta']
 
+        self.attr['tau'] = init_dict['ESTIMATION']['tau']
+
         # Initialize model parameters
         self.attr['model_paras'] = dict()
 
@@ -379,6 +383,8 @@ class RobupyCls(object):
 
         level = self.attr['level']
 
+        tau = self.attr['tau']
+
         # Auxiliary objects
         shocks_cov = model_paras['shocks_cov']
 
@@ -437,6 +443,10 @@ class RobupyCls(object):
 
         # Debugging mode
         assert (is_debug in [True, False])
+
+        # Window for smoothing parameter
+        assert (isinstance(tau, float))
+        assert (tau > 0)
 
         # Discount factor
         assert (np.isfinite(delta))

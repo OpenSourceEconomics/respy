@@ -84,6 +84,7 @@ def generate_random_dict(constraints=None):
     dict_['ESTIMATION']['file'] = 'data.robupy'
     dict_['ESTIMATION']['optimizer'] = np.random.choice(['SCIPY-BFGS', 'SCIPY-POWELL'])
     dict_['ESTIMATION']['maxiter'] = np.random.random_integers(1, 10000)
+    dict_['ESTIMATION']['tau'] = np.random.uniform(100, 500)
 
     # PROGRAM
     dict_['PROGRAM'] = {}

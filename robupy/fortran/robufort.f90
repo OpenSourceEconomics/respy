@@ -47,6 +47,7 @@ PROGRAM robufort
     REAL(our_dble)                  :: crit_val
     REAL(our_dble)                  :: delta
     REAL(our_dble)                  :: level
+    REAL(our_dble)                  :: tau
 
     LOGICAL                         :: is_deterministic
     LOGICAL                         :: is_interpolated
@@ -69,7 +70,7 @@ PROGRAM robufort
             shocks_cholesky, num_draws_emax, seed_emax, seed_prob, &
             num_agents, is_debug, is_deterministic, is_interpolated, & 
             num_points, min_idx, is_ambiguous, measure, request, & 
-            num_draws_prob, is_myopic)
+            num_draws_prob, is_myopic, tau)
 
     ! This part creates (or reads from disk) the draws for the Monte 
     ! Carlo integration of the EMAX. For is_debugging purposes, these might 
@@ -112,7 +113,7 @@ PROGRAM robufort
         CALL fort_evaluate(crit_val, periods_payoffs_systematic, & 
                 mapping_state_idx, periods_emax, states_all, shocks_cov, & 
                 is_deterministic, num_periods, edu_start, edu_max, delta, & 
-                data_array, num_agents, num_draws_prob, periods_draws_prob)
+                data_array, num_agents, num_draws_prob, periods_draws_prob, tau)
 
     END IF
 
