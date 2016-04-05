@@ -72,15 +72,11 @@ def run(hours, compile):
 
     start, timeout = datetime.now(), timedelta(hours=hours)
 
-    # TODO: Remove ....
-    print('fixed seed')
-    random.seed(1233)
     # # Evaluation loop.
     while True:
 
         # Set seed.
         seed = random.randrange(1, 100000)
-        print(seed)
         np.random.seed(seed)
 
         # Construct test case.
