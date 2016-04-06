@@ -1,27 +1,26 @@
 # standard library
+from setuptools.command.build_py import build_py
 from setuptools import find_packages
 from setuptools import setup
 
-from setuptools.command.install import install
-
 import os
+
 
 ''' Auxiliary
 '''
 
 
-class CustomInstallCommand(install):
+class CustomBuildCommand(build_py):
     """ Customized setuptools install command - prints a friendly greeting.
     """
     def run(self):
-        pass
-        # os.chdir('robupy')
-        #
-        # os.system('./waf distclean; ./waf configure build')
-        #
-        # os.chdir('../')
-        #
-        # install.run(self)
+        os.chdir('robupy')
+
+        os.system('./waf distclean; ./waf configure build')
+
+        os.chdir('../')
+
+        build_py.run(self)
 
 ''' Setup
 '''
@@ -29,19 +28,12 @@ class CustomInstallCommand(install):
 
 def setup_package():
 
-
-    os.chdir('robupy')
-    os.system('./waf configure build')
-    os.chdir('../')
-
     metadata = dict(
         name='robupy',
         packages=find_packages(),
-        package_data={'robupy': ['fortran/bin/robufort',
-            'fortran/include/*.mod', 'fortran/lib/*.a', 
-            'waf', 'wscript', 'fortran/wscript', 'fortran/*.f90', 
-            'fortran/*.f', 'fortran/*.f95']},
-        version="0.1.8.6",
+        package_data={'robupy': ['fortran/bin/*', 'fortran/*.so',
+            'fortran/lib/*.*', 'fortran/include/*.*']},
+        version="0.0.1",
         description='Toolbox to explore robust dynamic discrete choice models',
         author='Philipp Eisenhauer',
         author_email='eisenhauer@policy-lab.org',
@@ -52,7 +44,8 @@ def setup_package():
         tests_require=['pytest'],
         install_requires=['numpy', 'scipy', 'pandas', 'scipy',
             'statsmodels', 'pytest'],
-        cmdclass={'install': CustomInstallCommand}
+        cmdclass={'build_py': CustomBuildCommand},
+        include_package_data=True
         )
 
     setup(**metadata)

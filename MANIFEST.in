@@ -1,0 +1,2 @@
+recursive-include robupy *.f90 *.f wscript waf 
+graft robupy/tests

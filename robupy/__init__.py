@@ -1,11 +1,9 @@
-
 # standard library
-import logging
-import sys
-
 import pytest
+import sys
+import os
 
-# Package structure
+# project library
 from robupy.estimate import estimate
 from robupy.evaluate import evaluate
 from robupy.simulate import simulate
@@ -26,12 +24,9 @@ def test():
     """ Run nose tester for the package.
     """
 
-    pytest.main('--cov=robupy -v')
+    package_directory = os.path.dirname(os.path.realpath(__file__))
+    current_directory = os.getcwd()
 
-
-
-""" Set up logging.
-"""
-
-logging.captureWarnings(True)
-
+    os.chdir(package_directory)
+    pytest.main()
+    os.chdir(current_directory)
