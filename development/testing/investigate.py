@@ -25,6 +25,7 @@ TEST_DIR = TEST_DIR.replace('development/testing', '') + '/robupy/tests'
 # ROBPUPY testing codes. The import of the PYTEST configuration file ensures
 # that the PYTHONPATH is modified to allow for the use of the tests..
 sys.path.insert(0, TEST_DIR)
+import conftest
 
 # Setup for dealing with PYTEST command line options
 import functools
@@ -35,7 +36,7 @@ VERSIONS = ['PYTHON', 'FORTRAN', 'F2PY']
 
 ''' Request
 '''
-seed = 15167#6216748723
+seed = 12055#6216748723
 
 
 ''' Error Reproduction
@@ -49,7 +50,7 @@ for _ in range(1):
     test_dict = get_test_dict(TEST_DIR)
     module, method = get_random_request(test_dict)
 
-    module, method = 'test_integration', 'test_8'
+    #module, method = 'test_integration', 'test_8'
     print(module, method)
     mod = importlib.import_module(module)
     test = getattr(mod.TestClass(), method)

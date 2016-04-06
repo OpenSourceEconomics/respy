@@ -201,8 +201,8 @@ class TestClass(object):
         num_states = np.random.randint(1, max_states_period)
         candidates = list(range(num_states))
 
-        period = np.random.randint(1, num_periods - 1)
-        num_points = np.random.randint(1, num_states)
+        period = np.random.randint(1, num_periods)
+        num_points = np.random.randint(1, num_states + 1)
 
         # Check function for random choice and make sure that there are no
         # duplicates.
