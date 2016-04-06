@@ -85,9 +85,6 @@ def solve(robupy_obj):
     else:
         raise NotImplementedError
 
-    # Replace missing values
-    solution = replace_missing_values(solution)
-
     # Attach solution to class instance
     robupy_obj = add_solution(robupy_obj, store, *solution)
 

@@ -7,6 +7,9 @@ import pickle as pkl
 import pandas as pd
 import numpy as np
 
+# project library
+from robupy.python.shared.shared_auxiliary import replace_missing_values
+
 # Special care with derived attributes is required to maintain integrity of
 # the class instance. These derived attributes cannot be changed directly.
 DERIVED_ATTR = ['is_ambiguous', 'min_idx', 'is_deterministic']
@@ -505,6 +508,17 @@ class RobupyCls(object):
 
         states_all = self.attr['states_all']
 
+        # Replace missing value with NAN. This allows to easily select the
+        # valid subsets of the containers
+        if mapping_state_idx is not None:
+            mapping_state_idx = replace_missing_values(mapping_state_idx)
+        if states_all is not None:
+            states_all = replace_missing_values(states_all)
+        if periods_payoffs_systematic is not None:
+            periods_payoffs_systematic = replace_missing_values(periods_payoffs_systematic)
+        if periods_emax is not None:
+            periods_emax = replace_missing_values(periods_emax)
+
         # Check the creation of the state space
         is_applicable = (states_all is not None)
         is_applicable = is_applicable and (states_number_period is not None)
@@ -574,7 +588,8 @@ class RobupyCls(object):
             is_infinite = np.tile(False, reps=mapping_state_idx.shape)
             for period in range(num_periods):
                 # Subsetting valid indices
-                indices = states_all[period, :states_number_period[period], :]
+                indices = states_all[period, :states_number_period[
+                    period], :].astype('int')
                 for index in indices:
                     # Check for finite value at admissible state
                     assert (np.isfinite(mapping_state_idx[period, index[0],

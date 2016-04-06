@@ -32,11 +32,11 @@ def pyth_create_state_space(num_periods, edu_start, edu_max, min_idx):
     """ Create grid for state space.
     """
     # Array for possible realization of state space by period
-    states_all = np.tile(MISSING_FLOAT, (num_periods, 100000, 4))
+    states_all = np.tile(MISSING_INT, (num_periods, 100000, 4))
 
     # Array for the mapping of state space values to indices in variety
     # of matrices.
-    mapping_state_idx = np.tile(MISSING_FLOAT, (num_periods, num_periods,
+    mapping_state_idx = np.tile(MISSING_INT, (num_periods, num_periods,
         num_periods, min_idx, 2))
 
     # Array for maximum number of realizations of state space by period

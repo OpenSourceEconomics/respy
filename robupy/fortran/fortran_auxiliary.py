@@ -26,13 +26,14 @@ def get_results(num_periods, min_idx):
     os.unlink('.max_states_period.robufort.dat')
 
     shape = (num_periods, num_periods, num_periods, min_idx, 2)
-    mapping_state_idx = read_data('mapping_state_idx', shape)
+    mapping_state_idx = read_data('mapping_state_idx', shape).astype('int')
 
     shape = (num_periods,)
-    states_number_period = read_data('states_number_period', shape)
+    states_number_period = \
+        read_data('states_number_period', shape).astype('int')
 
     shape = (num_periods, max_states_period, 4)
-    states_all = read_data('states_all', shape)
+    states_all = read_data('states_all', shape).astype('int')
 
     shape = (num_periods, max_states_period, 4)
     periods_payoffs_systematic = read_data('periods_payoffs_systematic', shape)
