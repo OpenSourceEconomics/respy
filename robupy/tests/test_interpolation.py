@@ -47,7 +47,7 @@ class TestClass(object):
         constraints = dict()
         constraints['apply'] = False
         constraints['level'] = 0.00
-        constraints['periods'] = np.random.random_integers(2, 6)
+        constraints['periods'] = np.random.randint(2, 6)
         constraints['is_deterministic'] = True
 
         # Initialize request
@@ -182,7 +182,7 @@ class TestClass(object):
         """
         # Impose constraints
         constr = dict()
-        constr['periods'] = np.random.random_integers(2, 5)
+        constr['periods'] = np.random.randint(2, 5)
 
         # Construct a random initialization file
         generate_init(constr)
@@ -198,11 +198,11 @@ class TestClass(object):
         max_states_period = write_interpolation_grid('test.robupy.ini')
 
         # Draw random request for testing
-        num_states = np.random.random_integers(1, max_states_period)
+        num_states = np.random.randint(1, max_states_period)
         candidates = list(range(num_states))
 
-        period = np.random.random_integers(1, num_periods - 1)
-        num_points = np.random.random_integers(1, num_states)
+        period = np.random.randint(1, num_periods - 1)
+        num_points = np.random.randint(1, num_states)
 
         # Check function for random choice and make sure that there are no
         # duplicates.

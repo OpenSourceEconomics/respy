@@ -185,7 +185,7 @@ class TestClass(object):
         PYTHON and FORTRAN for the actual optimization problem.
         """
         # Draw random request
-        maxiter = np.random.random_integers(1, 100)
+        maxiter = np.random.randint(1, 100)
         ftol = np.random.uniform(0.000000, 1e-5)
         x0 = np.random.normal(size=2)
 
@@ -270,8 +270,8 @@ class TestClass(object):
         algorithm's PYTHON and FORTRAN implementation
         """
         # Sample basic test case
-        maxiter = np.random.random_integers(1, 100)
-        num_dim = np.random.random_integers(2, 4)
+        maxiter = np.random.randint(1, 100)
+        num_dim = np.random.randint(2, 4)
         ftol = np.random.uniform(0.000000, 1e-5)
         x0 = np.random.normal(size=num_dim)
 
@@ -414,9 +414,9 @@ class TestClass(object):
         for _ in range(25):
 
             # Create grid of admissible state space values.
-            num_periods = np.random.random_integers(1, 15)
-            edu_start = np.random.random_integers(1, 5)
-            edu_max = edu_start + np.random.random_integers(1, 5)
+            num_periods = np.random.randint(1, 15)
+            edu_start = np.random.randint(1, 5)
+            edu_max = edu_start + np.random.randint(1, 5)
 
             # Prepare interface
             min_idx = min(num_periods, (edu_max - edu_start + 1))
@@ -436,8 +436,8 @@ class TestClass(object):
         for _ in range(100):
 
             # Draw random request for testing purposes
-            num_covars = np.random.random_integers(2, 10)
-            num_agents = np.random.random_integers(100, 1000)
+            num_covars = np.random.randint(2, 10)
+            num_agents = np.random.randint(100, 1000)
             tiny = np.random.normal(size=num_agents)
             beta = np.random.normal(size=num_covars)
 
@@ -472,8 +472,8 @@ class TestClass(object):
         for _ in range(10):
 
             # Draw random requests for testing purposes.
-            num_draws_emax = np.random.random_integers(2, 1000)
-            dim = np.random.random_integers(1, 6)
+            num_draws_emax = np.random.randint(2, 1000)
+            dim = np.random.randint(1, 6)
             mean = np.random.uniform(-0.5, 0.5, (dim))
 
             matrix = (np.random.multivariate_normal(np.zeros(dim),
@@ -532,7 +532,7 @@ class TestClass(object):
                 dim)
 
             # Clipping values below and above bounds.
-            num_values = np.random.random_integers(1, 10000)
+            num_values = np.random.randint(1, 10000)
             lower_bound = np.random.randn()
             upper_bound = lower_bound + np.random.ranf()
             values = np.random.normal(size=num_values)

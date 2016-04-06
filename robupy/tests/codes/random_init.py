@@ -40,7 +40,7 @@ def generate_random_dict(constraints=None):
 
     # Basics
     dict_['BASICS'] = {}
-    dict_['BASICS']['periods'] = np.random.random_integers(1, MAX_PERIODS)
+    dict_['BASICS']['periods'] = np.random.randint(1, MAX_PERIODS)
     dict_['BASICS']['delta'] = np.random.random()
 
     # Operationalization of ambiguity
@@ -67,23 +67,23 @@ def generate_random_dict(constraints=None):
     dict_['EDUCATION']['coeff'] = np.random.uniform(-0.05, 0.05, 2)
     dict_['EDUCATION']['int'] = np.random.uniform(-0.05, 0.05, 1)[0]
 
-    dict_['EDUCATION']['start'] = np.random.random_integers(1, 10)
-    dict_['EDUCATION']['max'] = np.random.random_integers(
+    dict_['EDUCATION']['start'] = np.random.randint(1, 10)
+    dict_['EDUCATION']['max'] = np.random.randint(
         dict_['EDUCATION']['start'] + 1, 20)
 
     # SOLUTION
     dict_['SOLUTION'] = {}
-    dict_['SOLUTION']['draws'] = np.random.random_integers(1, MAX_DRAWS)
-    dict_['SOLUTION']['seed'] = np.random.random_integers(1, 10000)
+    dict_['SOLUTION']['draws'] = np.random.randint(1, MAX_DRAWS)
+    dict_['SOLUTION']['seed'] = np.random.randint(1, 10000)
     dict_['SOLUTION']['store'] = np.random.choice(['True', 'False'])
 
     # ESTIMATION
     dict_['ESTIMATION'] = {}
-    dict_['ESTIMATION']['draws'] = np.random.random_integers(1, MAX_DRAWS)
-    dict_['ESTIMATION']['seed'] = np.random.random_integers(1, 10000)
+    dict_['ESTIMATION']['draws'] = np.random.randint(1, MAX_DRAWS)
+    dict_['ESTIMATION']['seed'] = np.random.randint(1, 10000)
     dict_['ESTIMATION']['file'] = 'data.robupy'
     dict_['ESTIMATION']['optimizer'] = np.random.choice(['SCIPY-BFGS', 'SCIPY-POWELL'])
-    dict_['ESTIMATION']['maxiter'] = np.random.random_integers(1, 10000)
+    dict_['ESTIMATION']['maxiter'] = np.random.randint(1, 10000)
     dict_['ESTIMATION']['tau'] = np.random.uniform(100, 500)
 
     # PROGRAM
@@ -94,8 +94,8 @@ def generate_random_dict(constraints=None):
 
     # SIMULATION
     dict_['SIMULATION'] = {}
-    dict_['SIMULATION']['seed'] = np.random.random_integers(1, 10000)
-    dict_['SIMULATION']['agents'] = np.random.random_integers(1, MAX_AGENTS)
+    dict_['SIMULATION']['seed'] = np.random.randint(1, 10000)
+    dict_['SIMULATION']['agents'] = np.random.randint(1, MAX_AGENTS)
     dict_['SIMULATION']['file'] = 'data.robupy'
 
     # SHOCKS
@@ -107,7 +107,7 @@ def generate_random_dict(constraints=None):
     # INTERPOLATION
     dict_['INTERPOLATION'] = {}
     dict_['INTERPOLATION']['apply'] = np.random.choice([True, False])
-    dict_['INTERPOLATION']['points'] = np.random.random_integers(10, 100)
+    dict_['INTERPOLATION']['points'] = np.random.randint(10, 100)
 
     # Replace interpolation
     if 'apply' in constraints.keys():
@@ -167,9 +167,9 @@ def generate_random_dict(constraints=None):
         assert (isinstance(max_draws, int))
         assert (max_draws > 0)
         # Replace in initialization file
-        dict_['SIMULATION']['agents'] = np.random.random_integers(1, max_draws)
-        dict_['ESTIMATION']['draws'] = np.random.random_integers(1, max_draws)
-        dict_['SOLUTION']['draws'] = np.random.random_integers(1, max_draws)
+        dict_['SIMULATION']['agents'] = np.random.randint(1, max_draws)
+        dict_['ESTIMATION']['draws'] = np.random.randint(1, max_draws)
+        dict_['SOLUTION']['draws'] = np.random.randint(1, max_draws)
 
     # Replace store attribute
     if 'store' in constraints.keys():

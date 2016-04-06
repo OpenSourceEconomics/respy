@@ -76,7 +76,7 @@ class TestClass(object):
         is_deterministic = np.random.choice([True, False], p=[0.10, 0.9])
         is_interpolated = np.random.choice([True, False], p=[0.10, 0.9])
         is_myopic = np.random.choice([True, False], p=[0.10, 0.9])
-        max_draws = np.random.random_integers(10, 100)
+        max_draws = np.random.randint(10, 100)
 
         # Generate random initialization file
         constraints = dict()
@@ -97,7 +97,7 @@ class TestClass(object):
             # required to construct the state space. The number of periods
             # needs to be at least three in order to provide enough state
             # points.
-            num_periods = np.random.random_integers(3, 6)
+            num_periods = np.random.randint(3, 6)
             edu_start = init_dict['EDUCATION']['start']
             edu_max = init_dict['EDUCATION']['max']
             min_idx = min(num_periods, (edu_max - edu_start + 1))
@@ -110,7 +110,7 @@ class TestClass(object):
             init_dict['BASICS']['periods'] = num_periods
             init_dict['INTERPOLATION']['apply'] = True
             init_dict['INTERPOLATION']['points'] = \
-                np.random.random_integers(10, max_states_period)
+                np.random.randint(10, max_states_period)
 
         # Print out the relevant initialization file.
         print_random_dict(init_dict)
