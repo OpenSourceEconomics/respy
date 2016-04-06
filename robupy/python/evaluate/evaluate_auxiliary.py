@@ -9,14 +9,22 @@ import numpy as np
 from robupy.python.shared.shared_auxiliary import check_dataset
 from robupy.python.shared.shared_constants import HUGE_FLOAT
 
-def get_smoothed_probability(total_payoffs, idx, tau):
 
+''' Auxiliary functions
+'''
+
+
+def get_smoothed_probability(total_payoffs, idx, tau):
+    """ Construct the smoothed choice probabilities.
+    """
     maxim_payoff = max(total_payoffs)
+
     smoot_payoff = np.clip(np.exp((total_payoffs - maxim_payoff)/tau), 0.0,
         HUGE_FLOAT)
 
-    prob_choice = (smoot_payoff[idx] / sum(smoot_payoff))
+    prob_choice = smoot_payoff[idx] / sum(smoot_payoff)
 
+    # Finishing
     return prob_choice
 
 

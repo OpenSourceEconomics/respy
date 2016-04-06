@@ -68,9 +68,15 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
     REAL(our_dble)                  :: shocks_cholesky(4, 4)
     REAL(our_dble)                  :: crit_val_contrib
     REAL(our_dble)                  :: total_payoffs(4)
-    REAL(our_dble)                  :: draws(4), smoot_payoff(4), maxim_payoff(4)
-    REAL(our_dble)                  :: dist, draws_cond(4), prob_choice
-    REAL(our_dble)                  :: prob_obs, draws_stan(4), prob_wage
+    REAL(our_dble)                  :: smoot_payoff(4)
+    REAL(our_dble)                  :: maxim_payoff(4)
+    REAL(our_dble)                  :: draws_cond(4)
+    REAL(our_dble)                  :: draws_stan(4)
+    REAL(our_dble)                  :: prob_choice
+    REAL(our_dble)                  :: prob_wage
+    REAL(our_dble)                  :: prob_obs
+    REAL(our_dble)                  :: draws(4)
+    REAL(our_dble)                  :: dist
 
     LOGICAL                         :: is_deterministic
     LOGICAL                         :: is_working
@@ -197,14 +203,8 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
                 ! Record optimal choices
                 counts(MAXLOC(total_payoffs)) = counts(MAXLOC(total_payoffs)) + 1
 
-                ! Get the smoothed choice probability.
-                ! TODO: Refactor
-                maxim_payoff = MAXVAL(total_payoffs)
-                smoot_payoff = clip_value(EXP((total_payoffs - maxim_payoff)/tau), &
-                    zero_dble, HUGE_FLOAT)
-                prob_choice = (smoot_payoff(idx) / SUM(smoot_payoff))
-                
-                !prob_choice = get_smoothed_probability(total_payoffs, idx, tau)               
+                ! Get the smoothed choice probability
+                prob_choice = get_smoothed_probability(total_payoffs, idx, tau)
                 prob_obs = prob_obs + prob_choice * prob_wage
 
             END DO

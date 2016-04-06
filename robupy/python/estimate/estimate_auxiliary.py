@@ -10,6 +10,7 @@ from robupy.python.shared.shared_auxiliary import check_dataset
 ''' Auxiliary functions
 '''
 
+
 def check_input(robupy_obj, data_frame):
     """ Check input arguments.
     """

@@ -17,6 +17,36 @@ MODULE evaluate_auxiliary
 CONTAINS
 !*******************************************************************************
 !*******************************************************************************
+FUNCTION get_smoothed_probability(total_payoffs, idx, tau)
+
+    !/* external objects        */
+
+    INTEGER(our_int), INTENT(IN)    :: idx
+
+    REAL(our_dble), INTENT(IN)      :: total_payoffs(:)
+    REAL(our_dble), INTENT(IN)      :: tau
+
+    !/*  internal objects       */
+
+    REAL(our_dble)                  :: get_smoothed_probability
+    REAL(our_dble)                  :: smoot_payoff(4)
+    REAL(our_dble)                  :: maxim_payoff(4)
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+
+    maxim_payoff = MAXVAL(total_payoffs)
+
+    smoot_payoff = clip_value(EXP((total_payoffs - maxim_payoff)/tau), & 
+        zero_dble, HUGE_FLOAT)
+
+    get_smoothed_probability = smoot_payoff(idx) / SUM(smoot_payoff)
+
+
+END FUNCTION
+!*******************************************************************************
+!*******************************************************************************
 PURE FUNCTION normal_pdf(x, mean, sd)
 
     !/* external objects        */
