@@ -214,9 +214,8 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
 
             ! If there is no random variation in payoffs, then this implies a
             ! unique optimal choice.
-            ! TODO: THIS IS NOT ALIGNED
             IF (is_deterministic) THEN
-                IF  ((MAXVAL(counts) .EQ. num_draws_prob) .EQV. .FALSE.) THEN
+                IF  ((counts(idx) .EQ. num_draws_prob) .EQV. .FALSE.) THEN
                     rslt = zero_dble
                     RETURN
                 END IF
