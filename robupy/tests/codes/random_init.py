@@ -53,14 +53,14 @@ def generate_random_dict(constraints=None):
     dict_['HOME']['int'] = np.random.uniform(-0.05, 0.05, 1)[0]
 
     # Occupation A
-    dict_['A'] = dict()
-    dict_['A']['coeff'] = np.random.uniform(-0.05, 0.05, 5)
-    dict_['A']['int'] = np.random.uniform(-0.05, 0.05, 1)[0]
+    dict_['OCCUPATION A'] = dict()
+    dict_['OCCUPATION A']['coeff'] = np.random.uniform(-0.05, 0.05, 5)
+    dict_['OCCUPATION A']['int'] = np.random.uniform(-0.05, 0.05, 1)[0]
 
     # Occupation B
-    dict_['B'] = dict()
-    dict_['B']['coeff'] = np.random.uniform(-0.05, 0.05, 5)
-    dict_['B']['int'] = np.random.uniform(-0.05, 0.05, 1)[0]
+    dict_['OCCUPATION B'] = dict()
+    dict_['OCCUPATION B']['coeff'] = np.random.uniform(-0.05, 0.05, 5)
+    dict_['OCCUPATION B']['int'] = np.random.uniform(-0.05, 0.05, 1)[0]
 
     # Education
     dict_['EDUCATION'] = dict()
@@ -366,26 +366,26 @@ def print_random_dict(dict_):
     # Adding WORK
     with open('test.robupy.ini', 'a') as file_:
 
-        str_ = ' {0:<15} {1:15.4f} {2:15.4f} \n'
+        str_ = ' {0:<15} {1:15.4f} \n'
 
-        file_.write(' WORK \n\n')
+        for key_ in ['OCCUPATION A', 'OCCUPATION B']:
+            file_.write(key_ + '\n\n')
 
-        # Coefficient
-        for j in range(5):
-            line = ['coeff', dict_['A']['coeff'][j]]
+            # Coefficient
+            for j in range(5):
 
-            line += [dict_['B']['coeff'][j]]
+                line = ['coeff', dict_[key_]['coeff'][j]]
+
+                file_.write(str_.format(*line))
+
+            file_.write('\n')
+
+            # Intercept
+            line = ['int', dict_[key_]['int']]
 
             file_.write(str_.format(*line))
 
-        file_.write('\n')
-
-        # Intercept
-        line = ['int', dict_['A']['int'], dict_['B']['int']]
-
-        file_.write(str_.format(*line))
-
-        file_.write('\n')
+            file_.write('\n')
 
     # Write out a valid specification for the admissible optimizers.
     lines = ['SCIPY-BFGS', 'gtol    1e-05', 'epsilon 1.4901161193847656e-08']

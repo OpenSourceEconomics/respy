@@ -285,11 +285,11 @@ class RobupyCls(object):
         # Initialize model parameters
         self.attr['model_paras'] = dict()
 
-        self.attr['model_paras']['coeffs_a'] = [init_dict['A']['int']]
-        self.attr['model_paras']['coeffs_a'] += init_dict['A']['coeff']
+        self.attr['model_paras']['coeffs_a'] = [init_dict['OCCUPATION A']['int']]
+        self.attr['model_paras']['coeffs_a'] += init_dict['OCCUPATION A']['coeff']
 
-        self.attr['model_paras']['coeffs_b'] = [init_dict['B']['int']]
-        self.attr['model_paras']['coeffs_b'] += init_dict['B']['coeff']
+        self.attr['model_paras']['coeffs_b'] = [init_dict['OCCUPATION B']['int']]
+        self.attr['model_paras']['coeffs_b'] += init_dict['OCCUPATION B']['coeff']
 
         self.attr['model_paras']['coeffs_edu'] = \
             [init_dict['EDUCATION']['int']]

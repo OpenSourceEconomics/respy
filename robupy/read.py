@@ -39,24 +39,21 @@ def read(file_):
             # Prepare dictionary
             if is_keyword:
                 keyword = list_[0]
+                # Special treatment for OCCUPATION, which consists of two
+                # entries.
+                if keyword == 'OCCUPATION':
+                    keyword = list_[0] + ' ' + list_[1]
                 dict_[keyword] = {}
                 continue
 
             # Process blocks of information
-            if keyword not in ['WORK', 'SHOCKS']:
-                dict_ = _process_standard(list_, dict_, keyword)
-            elif keyword in ['WORK']:
-                _process_working(list_, dict_)
-            elif keyword in ['SHOCKS']:
+            if keyword in ['SHOCKS']:
                 dict_ = _process_shocks(list_, dict_)
             else:
-                raise AssertionError
+                dict_ = _process_standard(list_, dict_, keyword)
 
     # Type conversion for Shocks
     dict_['SHOCKS'] = np.array(dict_['SHOCKS'])
-
-    # Cleanup dictionary
-    del dict_['WORK']
 
     # Check quality.
     _check_integrity_read(dict_)
@@ -85,34 +82,6 @@ def _process_shocks(list_, dict_):
 
     # Collect information
     dict_['SHOCKS'] += [list_]
-
-    # Finishing
-    return dict_
-
-
-def _process_working(list_, dict_):
-    """ This function processes the WORKING part of the initialization file.
-    """
-    # Distribute information
-    name, val_b, val_a = list_[0], list_[1], list_[2]
-
-    # Initialize dictionary
-    if 'A' not in dict_.keys():
-        for subgroup in ['A', 'B']:
-            dict_[subgroup] = {}
-            dict_[subgroup]['coeff'] = []
-            dict_[subgroup]['int'] = None
-
-    # Type conversions
-    val_b, val_a = float(val_b), float(val_a)
-
-    # Collect information
-    if name in ['coeff']:
-        dict_['A'][name] += [val_b]
-        dict_['B'][name] += [val_a]
-    else:
-        dict_['A'][name] = val_b
-        dict_['B'][name] = val_a
 
     # Finishing
     return dict_
@@ -181,7 +150,8 @@ def _check_integrity_read(dict_):
     assert (isinstance(dict_, dict))
 
     # Check all keys
-    keys_ = ['BASICS', 'EDUCATION', 'A', 'B', 'HOME', 'INTERPOLATION']
+    keys_ = ['BASICS', 'EDUCATION', 'OCCUPATION A', 'OCCUPATION B']
+    keys_ += ['HOME', 'INTERPOLATION']
     keys_ += ['SHOCKS', 'SOLUTION', 'AMBIGUITY', 'SIMULATION', 'PROGRAM']
     keys_ += ['ESTIMATION']
 
@@ -194,8 +164,8 @@ def _check_integrity_read(dict_):
     assert (isinstance(dict_['BASICS']['delta'], float))
     assert (dict_['BASICS']['delta'] >= 0)
 
-    # Check WORK
-    for label in ['A', 'B']:
+    # Check OCCUPATIONS
+    for label in ['OCCUPATION A', 'OCCUPATION B']:
         assert (isinstance(dict_[label]['int'], float))
         assert (np.isfinite(dict_[label]['int']))
         assert (len(dict_[label]['coeff']) == 5)

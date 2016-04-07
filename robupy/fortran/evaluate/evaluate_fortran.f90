@@ -68,8 +68,6 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
     REAL(our_dble)                  :: shocks_cholesky(4, 4)
     REAL(our_dble)                  :: crit_val_contrib
     REAL(our_dble)                  :: total_payoffs(4)
-    REAL(our_dble)                  :: smoot_payoff(4)
-    REAL(our_dble)                  :: maxim_payoff(4)
     REAL(our_dble)                  :: draws_cond(4)
     REAL(our_dble)                  :: draws_stan(4)
     REAL(our_dble)                  :: prob_choice
