@@ -166,16 +166,26 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
 
                 ! Construct independent normal draws implied by the agents
                 ! state experience. This is need to maintain the correlation
-                ! structure of the disturbances.
+                ! structure of the disturbances. Special care is needed in case
+                ! of a deterministic model, as otherwise a zero division error 
+                ! occurs. 
                 IF (is_working) THEN 
+                    
+                    IF (is_deterministic) THEN
 
-                    IF (choice == 1) THEN
-                        draws_stan(idx) = dist / shocks_cholesky(idx, idx)
+                        prob_wage = HUGE_FLOAT
+
                     ELSE
-                        draws_stan(idx) = (dist - shocks_cholesky(idx, 1) * draws_stan(1)) / shocks_cholesky(idx, idx)
-                    END IF
 
-                    prob_wage = normal_pdf(draws_stan(idx), zero_dble, one_dble) / shocks_cholesky(idx, idx)
+                        IF (choice == 1) THEN
+                            draws_stan(idx) = dist / shocks_cholesky(idx, idx)
+                        ELSE
+                            draws_stan(idx) = (dist - shocks_cholesky(idx, 1) * draws_stan(1)) / shocks_cholesky(idx, idx)
+                        END IF
+
+                        prob_wage = normal_pdf(draws_stan(idx), zero_dble, one_dble) / shocks_cholesky(idx, idx)
+                    
+                    END IF
 
                 ELSE 
                     prob_wage = one_dble

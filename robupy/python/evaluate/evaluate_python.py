@@ -100,16 +100,21 @@ def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
 
                 # Construct independent normal draws implied by the agents
                 # state experience. This is need to maintain the correlation
-                # structure of the disturbances.
+                # structure of the disturbances.  Special care is needed in case
+                # of a deterministic model, as otherwise a zero division error
+                # occurs.
                 if is_working:
-                    if choice == 1:
-                        draws_stan[0] = dist / shocks_cholesky[idx, idx]
+                    if is_deterministic:
+                        prob_wage = HUGE_FLOAT
                     else:
-                        draws_stan[1] = (dist - shocks_cholesky[idx, 0] *
-                            draws_stan[0]) / shocks_cholesky[idx, idx]
+                        if choice == 1:
+                            draws_stan[0] = dist / shocks_cholesky[idx, idx]
+                        else:
+                            draws_stan[1] = (dist - shocks_cholesky[idx, 0] *
+                                draws_stan[0]) / shocks_cholesky[idx, idx]
 
-                    prob_wage = norm.pdf(draws_stan[idx], 0.0, 1.0) / \
-                        shocks_cholesky[idx, idx]
+                        prob_wage = norm.pdf(draws_stan[idx], 0.0, 1.0) / \
+                            shocks_cholesky[idx, idx]
 
                 else:
                     prob_wage = 1.0

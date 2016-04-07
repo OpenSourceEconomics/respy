@@ -127,7 +127,7 @@ class OptimizationClass(object):
         # Antibugging.
         assert (not self.attr['is_locked'])
 
-
+        # TODO: What is going on here.
         #self._check_integrity_results()
 
         # Read in optimizer options

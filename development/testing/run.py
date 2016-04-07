@@ -47,6 +47,12 @@ from modules.auxiliary import compile_package
 
 ''' Main Function.
 '''
+import string
+
+def randomword(length):
+   return ''.join(random.choice(string.ascii_lowercase) for i in range(
+ length))
+
 
 
 def run(hours, compile):
@@ -75,7 +81,9 @@ def run(hours, compile):
     # TODO: Has to go
     random.seed(5)
     # # Evaluation loop.
+
     while True:
+        tmp_dir = randomword(5)
 
         # Set seed.
         seed = random.randrange(1, 100000)
@@ -94,8 +102,8 @@ def run(hours, compile):
         is_success, msg = None, None
 
         # Create a fresh test directory.
-        os.mkdir('test_dir')
-        os.chdir('test_dir')
+        os.mkdir(tmp_dir)
+        os.chdir(tmp_dir)
 
         try:
             test()
@@ -113,7 +121,12 @@ def run(hours, compile):
         update_testing_record(module, method, seed, is_success, msg,
                               full_test_record, start, timeout)
 
+
+        if seed == 20920:
+            import sys
+            sys.exit('problemn again')
         cleanup_testing_infrastructure(True)
+
 
         #  Timeout.
         if timeout < datetime.now() - start:
