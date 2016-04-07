@@ -40,10 +40,15 @@ def generate_random_dict(constraints=None):
 
     # The dictionary also contains the information whether parameters are
     # fixed during an estimation. We need to ensure that at least one
-    # parameter is always free.
-    is_fixed = np.random.choice([True, False], 26)
-    #if sum(is_fixed) == 26:
-    is_fixed[np.random.randint(0, 26)] = True
+    # parameter is always free. Note, that we only sample 17 realizations
+    # even though there are 26 parameters. The last entry decides whether the
+    # full covariance matrix is fixed or not.
+    paras_fixed = np.random.choice([True, False], 17)
+    if sum(paras_fixed) == 17:
+        paras_fixed[np.random.randint(0, 17)] = True
+
+    dict_['ADDITIONAL'] = {}
+    dict_['ADDITIONAL']['paras_fixed'] = paras_fixed
 
     # Basics
     dict_['BASICS'] = {}
@@ -279,6 +284,23 @@ def generate_random_dict(constraints=None):
     return dict_
 
 
+def format_opt_parameters(val, identifier, paras_fixed):
+    """ This function formats the values depending on whether they are fixed
+    during the optimization or not.
+    """
+    # Cut values down to four digits
+    val = np.around(val, decimals=4)
+    # Determine status
+    is_fixed = paras_fixed[identifier]
+    # Formatting
+    if is_fixed:
+        val = '!' + str(val)
+    else:
+        val = str(val)
+    # Finishing
+    return val
+
+
 def print_random_dict(dict_):
     """ Print initialization dictionary to file. The different formatting
     makes the file rather involved. The resulting initialization files are
@@ -287,6 +309,10 @@ def print_random_dict(dict_):
     """
     # Antibugging.
     assert (isinstance(dict_, dict))
+
+    paras_fixed = dict_['ADDITIONAL']['paras_fixed']
+
+    str_base = ' {0:<15} {1:<15} \n'
 
     # Create initialization.
     with open('test.robupy.ini', 'w') as file_:
@@ -297,12 +323,9 @@ def print_random_dict(dict_):
 
                 file_.write(' BASICS \n\n')
 
-                str_ = ' {0:<15} {1:<15} \n'
-
-                file_.write(str_.format('periods', dict_[flag]['periods']))
+                file_.write(str_base.format('periods', dict_[flag]['periods']))
 
                 str_ = ' {0:<15} {1:15.2f} \n'
-
                 file_.write(str_.format('delta', dict_[flag]['delta']))
 
                 file_.write('\n')
@@ -328,20 +351,25 @@ def print_random_dict(dict_):
 
                 file_.write(' ' + flag.upper() + '\n\n')
 
-                str_ = ' {0:<15} {1:15.2f} \n'
-
-                file_.write(str_.format('int', dict_['HOME']['coeffs'][0]))
+                val = dict_['HOME']['coeffs'][0]
+                val = format_opt_parameters(val, 15, paras_fixed)
+                file_.write(str_base.format('int', val))
 
                 file_.write('\n')
+
             if flag in ['SOLUTION', 'SIMULATION', 'PROGRAM', 'INTERPOLATION',
                         'ESTIMATION']:
-
-                str_ = ' {0:<15} {1:<15} \n'
 
                 file_.write(' ' + flag.upper() + '\n\n')
 
                 for keys_ in dict_[flag]:
-                    file_.write(str_.format(keys_, str(dict_[flag][keys_])))
+
+                    str_ = str_base
+                    if keys_ in ['tau']:
+                        str_ = ' {0:<15} {1:15.2f} \n'
+                        file_.write(str_.format(keys_, dict_[flag][keys_]))
+                    else:
+                        file_.write(str_.format(keys_, str(dict_[flag][keys_])))
 
                 file_.write('\n')
 
@@ -349,43 +377,46 @@ def print_random_dict(dict_):
 
                 # Type conversion
                 dict_[flag] = np.array(dict_[flag])
-
-                str_ = ' {0:15.4f} {1:15.4f} {2:15.4f} {3:15.4f}\n'
-
+                str_ = ' {:<15}'*4 + '\n'
                 file_.write(' ' + flag.upper() + '\n\n')
 
-                for j in range(4):
-                    file_.write(str_.format(*dict_[flag][j, :]))
+                for i in range(4):
+                    vals = []
+                    for j in range(4):
+                        val = dict_['SHOCKS'][i, j]
+                        vals += [format_opt_parameters(val, 16,
+                            paras_fixed)]
+                    file_.write(str_.format(*vals))
 
                 file_.write('\n')
 
             if flag in ['EDUCATION']:
-                str_ = ' {0:<15} {1:15.2f} \n'
 
                 file_.write(' ' + flag.upper() + '\n\n')
 
-                file_.write(str_.format('coeff', dict_[flag]['coeffs'][1]))
+                val = dict_['EDUCATION']['coeffs'][0]
+                val = format_opt_parameters(val, 12, paras_fixed)
+                file_.write(str_base.format('int', val))
 
-                file_.write(str_.format('coeff', dict_[flag]['coeffs'][2]))
+                val = dict_['EDUCATION']['coeffs'][1]
+                val = format_opt_parameters(val, 13, paras_fixed)
+                file_.write(str_base.format('coeff', val))
+
+                val = dict_['EDUCATION']['coeffs'][2]
+                val = format_opt_parameters(val, 14, paras_fixed)
+                file_.write(str_base.format('coeff', val))
 
                 file_.write('\n')
 
-                file_.write(str_.format('int', dict_[flag]['coeffs'][0]))
-
-                file_.write('\n')
-
-                str_ = ' {0:<15} {1:<15} \n'
-
-                file_.write(str_.format('start', dict_[flag]['start']))
-
-                file_.write(str_.format('max', dict_[flag]['max']))
+                file_.write(str_base.format('start', dict_[flag]['start']))
+                file_.write(str_base.format('max', dict_[flag]['max']))
 
                 file_.write('\n')
 
     # Adding OCCUPATIONS
     with open('test.robupy.ini', 'a') as file_:
 
-        str_ = ' {0:<15} {1:15.4f} \n'
+        identifier = 0
 
         for key_ in ['OCCUPATION A', 'OCCUPATION B']:
             file_.write(key_ + '\n\n')
@@ -393,15 +424,19 @@ def print_random_dict(dict_):
             # Coefficient
             for j in range(6):
 
-                if j == 0:
-                    line = ['int', dict_[key_]['coeffs'][j]]
-                else:
-                    line = ['coeff', dict_[key_]['coeffs'][j]]
+                val = dict_[key_]['coeffs'][j]
+                val = format_opt_parameters(val, identifier, paras_fixed)
 
-                file_.write(str_.format(*line))
+                if j == 0:
+                    line = ['int', val]
+                else:
+                    line = ['coeff', val]
+
+                identifier += 1
+
+                file_.write(str_base.format(*line))
 
             file_.write('\n')
-
     # Write out a valid specification for the admissible optimizers.
     lines = ['SCIPY-BFGS', 'gtol    1e-05', 'epsilon 1.4901161193847656e-08']
     lines += [' ']

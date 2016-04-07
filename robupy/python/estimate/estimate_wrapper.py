@@ -210,7 +210,7 @@ class OptimizationClass(object):
         relevant for the current evaluation.
         """
         # Distribute class attributes
-        x_all_start, is_fixed = self.attr['x_info']
+        x_all_start, paras_fixed = self.attr['x_info']
 
         # Initialize objects
         x_all = np.tile(np.nan, 26)
@@ -218,7 +218,7 @@ class OptimizationClass(object):
         # Construct the relevant parameters
         j = 0
         for i, val in enumerate(x_all_start):
-            if is_fixed[i]:
+            if paras_fixed[i]:
                 x_all[i] = val
             else:
                 x_all[i] = x_free[j]

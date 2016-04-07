@@ -28,7 +28,7 @@ def check_input(robupy_obj, data_frame):
 
 
 def get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-        shocks_cov, shocks_cholesky, which, is_fixed, is_debug):
+        shocks_cov, shocks_cholesky, which, paras_fixed, is_debug):
     """ Get optimization parameters.
     """
     # Checks
@@ -66,7 +66,7 @@ def get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
     if which == 'free':
         x_free = []
         for i in range(26):
-            if not is_fixed[i]:
+            if not paras_fixed[i]:
                 x_free += [x[i]]
 
         x = np.array(x_free)

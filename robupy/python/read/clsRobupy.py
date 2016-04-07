@@ -40,6 +40,8 @@ class RobupyCls(object):
 
         self.attr['num_draws_prob'] = None
 
+        self.attr['paras_fixed'] = None
+
         self.attr['num_periods'] = None
 
         self.attr['model_paras'] = None
@@ -67,8 +69,6 @@ class RobupyCls(object):
         self.attr['file_sim'] = None
 
         self.attr['file_est'] = None
-
-        self.attr['is_fixed'] = None
 
         self.attr['edu_max'] = None
 
@@ -301,14 +301,14 @@ class RobupyCls(object):
         # Initialize information about optimization parameters
         self.attr['is_fixed'] = []
 
-        self.attr['is_fixed'] = init_dict['OCCUPATION A']['fixed']
-        self.attr['is_fixed'] += init_dict['OCCUPATION B']['fixed']
-        self.attr['is_fixed'] += init_dict['EDUCATION']['fixed']
-        self.attr['is_fixed'] += init_dict['HOME']['fixed']
-        self.attr['is_fixed'] += init_dict['SHOCKS']['fixed'][0:4, 0].tolist()
-        self.attr['is_fixed'] += init_dict['SHOCKS']['fixed'][1:4, 1].tolist()
-        self.attr['is_fixed'] += init_dict['SHOCKS']['fixed'][2:4, 2].tolist()
-        self.attr['is_fixed'] += init_dict['SHOCKS']['fixed'][3:4, 3].tolist()
+        self.attr['paras_fixed'] = init_dict['OCCUPATION A']['fixed']
+        self.attr['paras_fixed'] += init_dict['OCCUPATION B']['fixed']
+        self.attr['paras_fixed'] += init_dict['EDUCATION']['fixed']
+        self.attr['paras_fixed'] += init_dict['HOME']['fixed']
+        self.attr['paras_fixed'] += init_dict['SHOCKS']['fixed'][0:4, 0].tolist()
+        self.attr['paras_fixed'] += init_dict['SHOCKS']['fixed'][1:4, 1].tolist()
+        self.attr['paras_fixed'] += init_dict['SHOCKS']['fixed'][2:4, 2].tolist()
+        self.attr['paras_fixed'] += init_dict['SHOCKS']['fixed'][3:4, 3].tolist()
 
         # Ensure that all elements in the dictionary are of the same
         # type.
@@ -361,6 +361,8 @@ class RobupyCls(object):
 
         is_ambiguous = self.attr['is_ambiguous']
 
+        paras_fixed = self.attr['paras_fixed']
+
         num_periods = self.attr['num_periods']
 
         model_paras = self.attr['model_paras']
@@ -391,8 +393,6 @@ class RobupyCls(object):
 
         maxiter = self.attr['maxiter']
 
-        is_fixed = self.attr['is_fixed']
-
         delta = self.attr['delta']
 
         level = self.attr['level']
@@ -403,9 +403,9 @@ class RobupyCls(object):
         shocks_cov = model_paras['shocks_cov']
 
         # Status of optimization parameters
-        assert isinstance(is_fixed, list)
-        assert (len(is_fixed) == 26)
-        assert (np.all(is_fixed) in [True, False])
+        assert isinstance(paras_fixed, list)
+        assert (len(paras_fixed) == 26)
+        assert (np.all(paras_fixed) in [True, False])
 
         # Debug status
         assert (is_debug in [True, False])

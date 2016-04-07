@@ -41,14 +41,15 @@ def add_gradient_information(robupy_obj, data_frame):
         is_debug, file_sim, edu_max, delta, num_draws_prob, seed_prob, \
         num_draws_emax, seed_emax, level, measure, min_idx, is_ambiguous, \
         is_deterministic, is_myopic, is_interpolated, num_points, version, \
-        maxiter, optimizer, is_fixed, tau = \
+        maxiter, optimizer, paras_fixed, tau = \
         distribute_class_attributes(robupy_obj,
             'model_paras', 'num_periods', 'num_agents', 'edu_start',
             'seed_data', 'is_debug', 'file_sim', 'edu_max', 'delta',
             'num_draws_prob', 'seed_prob', 'num_draws_emax', 'seed_emax',
             'level', 'measure', 'min_idx', 'is_ambiguous',
             'is_deterministic', 'is_myopic', 'is_interpolated',
-            'num_points', 'version', 'maxiter', 'optimizer', 'is_fixed', 'tau')
+            'num_points', 'version', 'maxiter', 'optimizer', 'paras_fixed',
+            'tau')
 
     # Auxiliary objects
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, shocks_cholesky = \
@@ -56,10 +57,10 @@ def add_gradient_information(robupy_obj, data_frame):
 
     # Construct starting values
     x_all = get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-            shocks_cov, shocks_cholesky, 'all', is_fixed, is_debug)
+            shocks_cov, shocks_cholesky, 'all', paras_fixed, is_debug)
 
     x_start = get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-            shocks_cov, shocks_cholesky, 'free', is_fixed, is_debug)
+            shocks_cov, shocks_cholesky, 'free', paras_fixed, is_debug)
 
     # Draw standard normal deviates for the solution and evaluation step.
     periods_draws_prob = create_draws(num_periods, num_draws_prob, seed_prob,
@@ -81,7 +82,7 @@ def add_gradient_information(robupy_obj, data_frame):
 
     opt_obj.set_attr('optimizer', optimizer)
 
-    opt_obj.set_attr('x_info', (x_all, is_fixed))
+    opt_obj.set_attr('x_info', (x_all, paras_fixed))
 
     opt_obj.set_attr('version', version)
 
@@ -117,7 +118,7 @@ def add_gradient_information(robupy_obj, data_frame):
                 # Iterate over all candidate values, but only write the free
                 # ones to file. This ensure that the identifiers line up.
                 for j in range(26):
-                    if not is_fixed[j]:
+                    if not paras_fixed[j]:
                         values = [j, grad.pop(0)]
                         out_file.write(fmt_.format(*values))
                 out_file.write('\n')
