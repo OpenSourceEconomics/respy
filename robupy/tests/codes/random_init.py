@@ -375,7 +375,7 @@ def print_random_dict(dict_):
 
                 file_.write('\n')
 
-    # Adding WORK
+    # Adding OCCUPATIONS
     with open('test.robupy.ini', 'a') as file_:
 
         str_ = ' {0:<15} {1:15.4f} \n'
