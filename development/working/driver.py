@@ -31,19 +31,19 @@ from robupy.python.shared.shared_auxiliary import create_draws
 
 from robupy import simulate, read, solve, evaluate
 robupy_obj = read('model.robupy.ini')
-
-print('starting to simulate')
-data_frame = simulate(robupy_obj)
-
-num_periods = robupy_obj.get_attr('num_periods')
-write_draws(num_periods, 1000)
-
-for version in ['PYTHON', 'FORTRAN']:
-    print('\n', version, '\n')
-    robupy_obj.unlock()
-
-    robupy_obj.set_attr('version', version)
-
-    robupy_obj.lock()
-
-    evaluate(robupy_obj, data_frame)
+#
+# print('starting to simulate')
+# data_frame = simulate(robupy_obj)
+#
+# num_periods = robupy_obj.get_attr('num_periods')
+# write_draws(num_periods, 1000)
+#
+# for version in ['PYTHON', 'FORTRAN']:
+#     print('\n', version, '\n')
+#     robupy_obj.unlock()
+#
+#     robupy_obj.set_attr('version', version)
+#
+#     robupy_obj.lock()
+#
+#     evaluate(robupy_obj, data_frame)

@@ -93,9 +93,14 @@ def _process_standard(list_, dict_, keyword):
     # Distribute information
     name, val = list_[0], list_[1]
 
+    # This aligns the label from the initialization file with the label
+    # inside the ROBUPY logic.
+    if name == 'coeff':
+        name = 'coeffs'
+
     # Prepare container.
-    if (name not in dict_[keyword].keys()) and (name in ['coeff']):
-        dict_[keyword][name] = []
+    if (name not in dict_[keyword].keys()) and (name in ['coeffs']):
+        dict_[keyword]['coeffs'] = []
 
     # Type conversion
     if name in ['agents', 'periods', 'start', 'max', 'draws',
@@ -112,8 +117,8 @@ def _process_standard(list_, dict_, keyword):
         val = float(val)
 
     # Collect information
-    if name in ['coeff']:
-        dict_[keyword][name] += [val]
+    if name in ['coeffs']:
+        dict_[keyword]['coeffs'] += [val]
     else:
         dict_[keyword][name] = val
 
@@ -168,10 +173,10 @@ def _check_integrity_read(dict_):
     for label in ['OCCUPATION A', 'OCCUPATION B']:
         assert (isinstance(dict_[label]['int'], float))
         assert (np.isfinite(dict_[label]['int']))
-        assert (len(dict_[label]['coeff']) == 5)
-        assert (np.all(np.isfinite(dict_[label]['coeff'])))
+        assert (len(dict_[label]['coeffs']) == 5)
+        assert (np.all(np.isfinite(dict_[label]['coeffs'])))
         assert (all(isinstance(coeff, float) for coeff in dict_[label][
-            'coeff']))
+            'coeffs']))
 
     # Check EDUCATION
     for label in ['start', 'max']:
@@ -183,10 +188,10 @@ def _check_integrity_read(dict_):
     assert (isinstance(dict_['EDUCATION']['int'], float))
     assert (np.isfinite(dict_['EDUCATION']['int']))
 
-    assert (len(dict_['EDUCATION']['coeff']) == 2)
-    assert (np.all(np.isfinite(dict_['EDUCATION']['coeff'])))
+    assert (len(dict_['EDUCATION']['coeffs']) == 2)
+    assert (np.all(np.isfinite(dict_['EDUCATION']['coeffs'])))
     assert (all(isinstance(coeff, float) for coeff in dict_['EDUCATION'][
-            'coeff']))
+            'coeffs']))
 
     # Check HOME
     assert (isinstance(dict_['HOME']['int'], float))
