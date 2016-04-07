@@ -244,6 +244,7 @@ class TestClass(object):
         # Set initial constraints
         constraints = dict()
         constraints['apply'] = False
+        constraints['periods'] = np.random.randint(3, 6)
 
         # Initialize request
         init_dict = generate_random_dict(constraints)

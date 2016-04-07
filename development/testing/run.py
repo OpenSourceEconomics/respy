@@ -72,13 +72,15 @@ def run(hours, compile):
 
     start, timeout = datetime.now(), timedelta(hours=hours)
 
+    # TODO: Has to go
+    random.seed(5)
     # # Evaluation loop.
     while True:
 
         # Set seed.
         seed = random.randrange(1, 100000)
         np.random.seed(seed)
-
+        print(seed)
         # Construct test case.
         module, method = get_random_request(test_dict)
         mod = importlib.import_module(module)
