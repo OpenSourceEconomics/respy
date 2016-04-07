@@ -346,14 +346,14 @@ class TestClass(object):
         num_periods, edu_start, edu_max, min_idx, model_paras, num_draws_emax, \
             seed_emax, is_debug, delta, level, is_ambiguous, measure, \
             is_interpolated, num_points, is_deterministic, is_myopic, \
-            num_agents, num_draws_prob, seed_prob, tau = \
+            num_agents, num_draws_prob, seed_prob, tau, is_fixed = \
                 distribute_class_attributes(robupy_obj,
                     'num_periods', 'edu_start', 'edu_max', 'min_idx',
                     'model_paras', 'num_draws_emax', 'seed_emax', 'is_debug',
                     'delta', 'level', 'is_ambiguous', 'measure',
                     'is_interpolated', 'num_points', 'is_deterministic',
                     'is_myopic', 'num_agents', 'num_draws_prob', 'seed_prob',
-                    'tau')
+                    'tau', 'is_fixed')
 
         # Write out random components and interpolation grid to align the
         # three implementations.
@@ -418,7 +418,8 @@ class TestClass(object):
 
         # Evaluation of criterion function
         x0 = get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu,
-                coeffs_home, shocks_cov, shocks_cholesky, is_debug)
+                coeffs_home, shocks_cov, shocks_cholesky, 'all',
+                is_fixed, is_debug)
 
         args = (is_deterministic, is_interpolated, num_draws_emax,is_ambiguous,
             num_periods, num_points, is_myopic, edu_start, is_debug, measure,

@@ -40,6 +40,10 @@ class OptimizationClass(object):
 
         self.attr['maxiter'] = None
 
+        # TODO: Add tests, also relationship to x:free
+        self.attr['x_info'] = None
+
+
         self.attr['args'] = None
 
         # status attributes
@@ -178,18 +182,30 @@ class OptimizationClass(object):
         assert isinstance(maxiter, int)
         assert (maxiter >= 0)
 
-    def crit_func(self, x, *args):
+    def crit_func(self, x_free, *args):
         """ This method serves as a wrapper around the alternative
         implementations of the criterion function.
         """
         # Distribute class attributes
         version = self.attr['version']
+        x_start, is_fixed = self.attr['x_info']
+
+        x_all = np.tile(np.nan, 26)
+
+        j = 0
+        for i, val in enumerate(x_start):
+
+            if is_fixed[i]:
+                x_all[i] = val
+            else:
+                x_all[i] = x_free[j]
+                j = j + 1
 
         # Evaluate criterion function
         if version == 'PYTHON':
-            crit_val = pyth_criterion(x, *args)
+            crit_val = pyth_criterion(x_all, *args)
         elif version in ['F2PY', 'FORTRAN']:
-            crit_val = f2py_criterion(x, *args)
+            crit_val = f2py_criterion(x_all, *args)
         else:
             raise NotImplementedError
 
@@ -197,7 +213,7 @@ class OptimizationClass(object):
         assert np.isfinite(crit_val)
 
         # Document progress
-        self._logging_interim(x, crit_val)
+        self._logging_interim(x_all, crit_val)
 
         # Finishing
         return crit_val

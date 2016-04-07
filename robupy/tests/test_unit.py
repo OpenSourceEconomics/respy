@@ -601,6 +601,9 @@ class TestClass(object):
     def test_9(self):
         """ Testing whether back-and-forth transformation have no effect.
         """
+        # Generate random request
+        is_fixed = np.random.choice([True, False], 26)
+
         for i in range(10):
             # Create random parameter vector
             base = np.random.uniform(size=26)
@@ -609,6 +612,7 @@ class TestClass(object):
             # Apply numerous transformations
             for j in range(10):
                 args = get_model_parameters(x, is_debug=True)
+                args += ('all', is_fixed)
                 x = get_optim_parameters(*args, is_debug=True)
 
             # Checks

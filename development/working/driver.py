@@ -36,7 +36,7 @@ print('starting to simulate')
 data_frame = simulate(robupy_obj)
 
 num_periods = robupy_obj.get_attr('num_periods')
-write_draws(num_periods, 1000)
+#write_draws(num_periods, 1000)
 
 for version in ['FORTRAN']:
     print('\n', version, '\n')

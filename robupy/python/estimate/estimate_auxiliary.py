@@ -66,12 +66,12 @@ def get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
     # Select subset
     if which == 'free':
         x_free = []
-        for val in range(26):
+        for i in range(26):
             if not is_fixed[i]:
                 x_free += [x[i]]
 
         x = np.array(x_free)
-        
+
     # Finishing
     return x
 
