@@ -285,23 +285,16 @@ class RobupyCls(object):
         # Initialize model parameters
         self.attr['model_paras'] = dict()
 
-        self.attr['model_paras']['coeffs_a'] = [init_dict['OCCUPATION A']['int']]
-        self.attr['model_paras']['coeffs_a'] += init_dict['OCCUPATION A'][
-            'coeffs']
-
-        self.attr['model_paras']['coeffs_b'] = [init_dict['OCCUPATION B']['int']]
-        self.attr['model_paras']['coeffs_b'] += init_dict['OCCUPATION B'][
-            'coeffs']
-
-        self.attr['model_paras']['coeffs_edu'] = \
-            [init_dict['EDUCATION']['int']]
-        self.attr['model_paras']['coeffs_edu'] += \
-            init_dict['EDUCATION']['coeffs']
-
-        self.attr['model_paras']['coeffs_home'] = \
-            [init_dict['HOME']['int']]
-
         self.attr['model_paras']['shocks_cov'] = init_dict['SHOCKS']
+
+        self.attr['model_paras']['coeffs_a'] = \
+            init_dict['OCCUPATION A']['coeffs']
+        self.attr['model_paras']['coeffs_b'] = \
+            init_dict['OCCUPATION B']['coeffs']
+        self.attr['model_paras']['coeffs_edu'] = \
+            init_dict['EDUCATION']['coeffs']
+        self.attr['model_paras']['coeffs_home'] = \
+            init_dict['HOME']['coeffs']
 
         # Ensure that all elements in the dictionary are of the same
         # type.
