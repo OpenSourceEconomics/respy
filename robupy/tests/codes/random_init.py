@@ -50,22 +50,25 @@ def generate_random_dict(constraints=None):
 
     # Home
     dict_['HOME'] = dict()
-    dict_['HOME']['int'] = np.random.uniform(-0.05, 0.05, 1)[0]
+    dict_['HOME']['coeffs'] = np.random.uniform(-0.05, 0.05, 1).tolist()
 
     # Occupation A
     dict_['OCCUPATION A'] = dict()
-    dict_['OCCUPATION A']['coeff'] = np.random.uniform(-0.05, 0.05, 5)
-    dict_['OCCUPATION A']['int'] = np.random.uniform(-0.05, 0.05, 1)[0]
+    coeffs = np.random.uniform(-0.05, 0.05, 5).tolist()
+    int_ = np.random.uniform(-0.05, 0.05, 1).tolist()
+    dict_['OCCUPATION A']['coeffs'] = int_ + coeffs
 
     # Occupation B
     dict_['OCCUPATION B'] = dict()
-    dict_['OCCUPATION B']['coeff'] = np.random.uniform(-0.05, 0.05, 5)
-    dict_['OCCUPATION B']['int'] = np.random.uniform(-0.05, 0.05, 1)[0]
+    coeffs = np.random.uniform(-0.05, 0.05, 5).tolist()
+    int_ = np.random.uniform(-0.05, 0.05, 1).tolist()
+    dict_['OCCUPATION B']['coeffs'] = int_ + coeffs
 
     # Education
     dict_['EDUCATION'] = dict()
-    dict_['EDUCATION']['coeff'] = np.random.uniform(-0.05, 0.05, 2)
-    dict_['EDUCATION']['int'] = np.random.uniform(-0.05, 0.05, 1)[0]
+    coeffs = np.random.uniform(-0.05, 0.05, 2).tolist()
+    int_ = np.random.uniform(-0.05, 0.05, 1).tolist()
+    dict_['EDUCATION']['coeffs'] = coeffs + int_
 
     dict_['EDUCATION']['start'] = np.random.randint(1, 10)
     dict_['EDUCATION']['max'] = np.random.randint(
@@ -249,7 +252,7 @@ def generate_random_dict(constraints=None):
         num_agents = constraints['agents']
         # Checks
         assert (num_agents > 0)
-        assert (isinstance(num_agents, int))
+        assert (isinstance(num_agents, int_))
         assert (np.isfinite(num_agents))
         # Replace in initialization files
         dict_['SIMULATION']['agents'] = num_agents
@@ -260,7 +263,7 @@ def generate_random_dict(constraints=None):
         num_draws_prob = constraints['sims']
         # Checks
         assert (num_draws_prob > 0)
-        assert (isinstance(num_draws_prob, int))
+        assert (isinstance(num_draws_prob, int_))
         assert (np.isfinite(num_draws_prob))
         # Replace in initialization files
         dict_['ESTIMATION']['draws'] = num_draws_prob
@@ -297,7 +300,7 @@ def print_random_dict(dict_):
 
                 file_.write('\n')
 
-            if flag in ['HOME', 'AMBIGUITY']:
+            if flag in ['AMBIGUITY']:
 
                 file_.write(' ' + flag.upper() + '\n\n')
 
@@ -306,7 +309,7 @@ def print_random_dict(dict_):
                     str_ = ' {0:<15} {1:15.2f} \n'
 
                     # Special treatment of ambiguity measure. which is a simple
-                    #  string.
+                    # string.
                     if keys_ in ['measure']:
                         str_ = ' {0:<15} {1:<15} \n'
 
@@ -314,6 +317,15 @@ def print_random_dict(dict_):
 
                 file_.write('\n')
 
+            if flag in ['HOME']:
+
+                file_.write(' ' + flag.upper() + '\n\n')
+
+                str_ = ' {0:<15} {1:15.2f} \n'
+
+                file_.write(str_.format('int', dict_['HOME']['coeffs'][0]))
+
+                file_.write('\n')
             if flag in ['SOLUTION', 'SIMULATION', 'PROGRAM', 'INTERPOLATION',
                         'ESTIMATION']:
 
@@ -345,13 +357,13 @@ def print_random_dict(dict_):
 
                 file_.write(' ' + flag.upper() + '\n\n')
 
-                file_.write(str_.format('coeff', dict_[flag]['coeff'][0]))
+                file_.write(str_.format('coeff', dict_[flag]['coeffs'][1]))
 
-                file_.write(str_.format('coeff', dict_[flag]['coeff'][1]))
+                file_.write(str_.format('coeff', dict_[flag]['coeffs'][2]))
 
                 file_.write('\n')
 
-                file_.write(str_.format('int', dict_[flag]['int']))
+                file_.write(str_.format('int', dict_[flag]['coeffs'][0]))
 
                 file_.write('\n')
 
@@ -372,18 +384,14 @@ def print_random_dict(dict_):
             file_.write(key_ + '\n\n')
 
             # Coefficient
-            for j in range(5):
+            for j in range(6):
 
-                line = ['coeff', dict_[key_]['coeff'][j]]
+                if j == 0:
+                    line = ['int', dict_[key_]['coeffs'][j]]
+                else:
+                    line = ['coeff', dict_[key_]['coeffs'][j]]
 
                 file_.write(str_.format(*line))
-
-            file_.write('\n')
-
-            # Intercept
-            line = ['int', dict_[key_]['int']]
-
-            file_.write(str_.format(*line))
 
             file_.write('\n')
 

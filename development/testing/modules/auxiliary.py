@@ -42,14 +42,12 @@ def finalize_testing_record():
         log_file.write('   RUN COMPLETED\n\n')
 
     # Aggregate information from temporary files.
-    if os.path.exists('tracebacks.testing.tmp'):
-
-        with open('report.testing.log', 'a') as outfile:
-            outfile.write('\n---------------------------------------'
-                            '-----------------------------------------\n\n')
-            for line in open('tracebacks.testing.tmp'):
-                outfile.write(line)
-            os.unlink('tracebacks.testing.tmp')
+    with open('report.testing.log', 'a') as outfile:
+        outfile.write('\n---------------------------------------'
+                      '-----------------------------------------\n\n')
+        for line in open('tracebacks.testing.tmp'):
+            outfile.write(line)
+    os.unlink('tracebacks.testing.tmp')
 
 
 def update_testing_record(module, method, seed, is_success, msg,
@@ -85,7 +83,10 @@ def update_testing_record(module, method, seed, is_success, msg,
 
             log_file.write('\n\n')
 
-    # Special care for failures.
+    # Special care for failures and tracebacks
+    if not os.path.exists('tracebacks.testing.tmp'):
+        open('tracebacks.testing.tmp', 'a').close()
+
     if not is_success:
         # Write out the traceback message to file for future inspection.
         with open('tracebacks.testing.tmp', 'a') as log_file:

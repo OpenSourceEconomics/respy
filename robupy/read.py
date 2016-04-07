@@ -196,7 +196,7 @@ def _check_integrity_read(dict_):
     # Check HOME
     assert (len(dict_['HOME']['coeffs']) == 1)
     assert (np.isfinite(dict_['HOME']['coeffs'][0]))
-    assert (isinstance(dict_['HOME'][0], float))
+    assert (isinstance(dict_['HOME']['coeffs'][0], float))
 
     # Check ESTIMATION
     assert (isinstance(dict_['ESTIMATION']['draws'], int))

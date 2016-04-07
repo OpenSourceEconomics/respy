@@ -78,17 +78,14 @@ def run(hours, compile):
 
     start, timeout = datetime.now(), timedelta(hours=hours)
 
-    # TODO: Has to go
-    random.seed(5)
     # # Evaluation loop.
 
     while True:
-        tmp_dir = randomword(5)
 
         # Set seed.
         seed = random.randrange(1, 100000)
         np.random.seed(seed)
-        print(seed)
+
         # Construct test case.
         module, method = get_random_request(test_dict)
         mod = importlib.import_module(module)
@@ -102,6 +99,8 @@ def run(hours, compile):
         is_success, msg = None, None
 
         # Create a fresh test directory.
+        tmp_dir = randomword(5)
+
         os.mkdir(tmp_dir)
         os.chdir(tmp_dir)
 
