@@ -117,10 +117,14 @@ def _process_standard(list_, dict_, keyword):
         val = float(val)
 
     # Collect information
-    if name in ['coeffs']:
+    if name in ['coeffs', 'int']
         dict_[keyword]['coeffs'] += [val]
     else:
         dict_[keyword][name] = val
+
+    # Move value of intercept to first position.
+    if name == 'int':
+        dict_[keyword]['coeffs'][0] = dict_[keyword]['coeffs'][-1]
 
     # Finishing.
     return dict_
@@ -171,9 +175,7 @@ def _check_integrity_read(dict_):
 
     # Check OCCUPATIONS
     for label in ['OCCUPATION A', 'OCCUPATION B']:
-        assert (isinstance(dict_[label]['int'], float))
-        assert (np.isfinite(dict_[label]['int']))
-        assert (len(dict_[label]['coeffs']) == 5)
+        assert (len(dict_[label]['coeffs']) == 6)
         assert (np.all(np.isfinite(dict_[label]['coeffs'])))
         assert (all(isinstance(coeff, float) for coeff in dict_[label][
             'coeffs']))
@@ -185,8 +187,8 @@ def _check_integrity_read(dict_):
 
     assert (dict_['EDUCATION']['max'] > dict_['EDUCATION']['start'])
 
-    assert (isinstance(dict_['EDUCATION']['int'], float))
-    assert (np.isfinite(dict_['EDUCATION']['int']))
+    assert (isinstance(dict_['EDUCATION']['coeffs'], float))
+    assert (np.isfinite(dict_['EDUCATION']['coeffs']))
 
     assert (len(dict_['EDUCATION']['coeffs']) == 2)
     assert (np.all(np.isfinite(dict_['EDUCATION']['coeffs'])))
@@ -194,8 +196,8 @@ def _check_integrity_read(dict_):
             'coeffs']))
 
     # Check HOME
-    assert (isinstance(dict_['HOME']['int'], float))
-    assert (np.isfinite(dict_['HOME']['int']))
+    assert (isinstance(dict_['HOME']['coeffs'], float))
+    assert (np.isfinite(dict_['HOME']['coeffs']))
 
     # Check ESTIMATION
     assert (isinstance(dict_['ESTIMATION']['draws'], int))
