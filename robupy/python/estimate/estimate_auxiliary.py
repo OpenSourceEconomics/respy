@@ -66,32 +66,32 @@ def get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
     return x
 
 
-def get_model_parameters(x, is_debug):
+def get_model_parameters(x_all, is_debug):
     """ Update parameter values. The np.array type is maintained.
     """
     # Checks
     if is_debug:
-        check_optimization_parameters(x)
+        check_optimization_parameters(x_all)
 
     # Occupation A
-    coeffs_a = x[0:6]
+    coeffs_a = x_all[0:6]
 
     # Occupation B
-    coeffs_b = x[6:12]
+    coeffs_b = x_all[6:12]
 
     # Education
-    coeffs_edu = x[12:15]
+    coeffs_edu = x_all[12:15]
 
     # Home
-    coeffs_home = x[15:16]
+    coeffs_home = x_all[15:16]
 
     # Cholesky
     shocks_cholesky = np.tile(0.0, (4, 4))
 
-    shocks_cholesky[0:4, 0] = x[16:20]
-    shocks_cholesky[1:4, 1] = x[20:23]
-    shocks_cholesky[2:4, 2] = x[23:25]
-    shocks_cholesky[3:4, 3] = x[25]
+    shocks_cholesky[0:4, 0] = x_all[16:20]
+    shocks_cholesky[1:4, 1] = x_all[20:23]
+    shocks_cholesky[2:4, 2] = x_all[23:25]
+    shocks_cholesky[3:4, 3] = x_all[25]
 
     # Shocks
     shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
