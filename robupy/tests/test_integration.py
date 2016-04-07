@@ -242,7 +242,6 @@ class TestClass(object):
             # Checks
             np.testing.assert_allclose(base, periods_emax, rtol=1e-06)
 
-
     def test_5(self):
         """ Testing whether the systematic payoff calculation is unaffected by
         the level of ambiguity.

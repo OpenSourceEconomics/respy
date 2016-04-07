@@ -16,7 +16,7 @@ from robupy.python.read.clsRobupy import RobupyCls
 '''
 
 
-def read(file_):
+def read(file_, is_dict=False):
     """ Read an initialization file from disk.
     """
     # Initialization
@@ -65,7 +65,10 @@ def read(file_):
     robupy_obj.lock()
 
     # Finishing.
-    return robupy_obj
+    if is_dict:
+        return robupy_obj, dict_
+    else:
+        return robupy_obj
 
 ''' Auxiliary functions
 '''

@@ -57,6 +57,8 @@ def estimate(robupy_obj, data_frame):
     x_all = get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         shocks_cov, shocks_cholesky, 'all', paras_fixed, is_debug)
 
+
+
     data_array = data_frame.as_matrix()
 
     # Collect arguments that are required for the criterion function. These

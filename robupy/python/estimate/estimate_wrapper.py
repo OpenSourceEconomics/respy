@@ -186,7 +186,7 @@ class OptimizationClass(object):
         version = self.attr['version']
 
         # Get all parameters for the current evaluation
-        x_all = self._get_all_parmeters(x_free)
+        x_all = self._get_all_parameters(x_free)
 
         # Evaluate criterion function
         if version == 'PYTHON':
@@ -205,7 +205,7 @@ class OptimizationClass(object):
         # Finishing
         return crit_val
 
-    def _get_all_parmeters(self, x_free):
+    def _get_all_parameters(self, x_free):
         """ This method constructs the full set of optimization parameters
         relevant for the current evaluation.
         """
@@ -213,16 +213,24 @@ class OptimizationClass(object):
         x_all_start, paras_fixed = self.attr['x_info']
 
         # Initialize objects
-        x_all = np.tile(np.nan, 26)
+        x_all = []
 
         # Construct the relevant parameters
         j = 0
-        for i, val in enumerate(x_all_start):
+        for i in range(16):
             if paras_fixed[i]:
-                x_all[i] = val
+                x_all += [float(x_all_start[i])]
             else:
-                x_all[i] = x_free[j]
+                x_all += [float(x_free[j])]
                 j += 1
+
+        # Special treatment of SHOCKS_COV
+        if paras_fixed[16]:
+            x_all += x_all_start[16:].tolist()
+        else:
+            x_all += x_free[-10:].tolist()
+
+        x_all = np.array(x_all)
 
         # Antibugging
         assert np.all(np.isfinite(x_all))

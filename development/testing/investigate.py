@@ -36,7 +36,7 @@ VERSIONS = ['PYTHON', 'FORTRAN', 'F2PY']
 
 ''' Request
 '''
-seed = 20498#6216748723
+seed = 29025#6216748723
 
 
 ''' Error Reproduction

@@ -65,9 +65,16 @@ def get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
     # Select subset
     if which == 'free':
         x_free = []
-        for i in range(26):
+        for i in range(16):
             if not paras_fixed[i]:
                 x_free += [x[i]]
+
+        # Special treatment fo SHOCKS_COV
+        if not paras_fixed[16]:
+            x_free[16:20] = shocks_cholesky[0:4, 0]
+            x_free[20:23] = shocks_cholesky[1:4, 1]
+            x_free[23:25] = shocks_cholesky[2:4, 2]
+            x_free[25:26] = shocks_cholesky[3:4, 3]
 
         x = np.array(x_free)
 

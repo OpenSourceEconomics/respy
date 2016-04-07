@@ -114,10 +114,11 @@ def generate_random_dict(constraints=None):
     dict_['SIMULATION']['file'] = 'data.robupy'
 
     # SHOCKS
+    dict_['SHOCKS'] = dict()
     shocks_cov = np.identity(4)
     for i, val in enumerate(np.random.uniform(0.05, 1, 4)):
         shocks_cov[i, i] = val
-    dict_['SHOCKS'] = shocks_cov
+    dict_['SHOCKS']['coeffs'] = shocks_cov
 
     # INTERPOLATION
     dict_['INTERPOLATION'] = {}
@@ -256,7 +257,7 @@ def generate_random_dict(constraints=None):
         assert (constraints['is_deterministic'] in [True, False])
         # Replace in initialization files
         if constraints['is_deterministic']:
-            dict_['SHOCKS'] = np.zeros((4, 4))
+            dict_['SHOCKS']['coeffs'] = np.zeros((4, 4))
 
     # Number of agents
     if 'agents' in constraints.keys():
@@ -376,14 +377,13 @@ def print_random_dict(dict_):
             if flag in ['SHOCKS']:
 
                 # Type conversion
-                dict_[flag] = np.array(dict_[flag])
                 str_ = ' {:<15}'*4 + '\n'
                 file_.write(' ' + flag.upper() + '\n\n')
 
                 for i in range(4):
                     vals = []
                     for j in range(4):
-                        val = dict_['SHOCKS'][i, j]
+                        val = dict_['SHOCKS']['coeffs'][i, j]
                         vals += [format_opt_parameters(val, 16,
                             paras_fixed)]
                     file_.write(str_.format(*vals))
@@ -442,7 +442,7 @@ def print_random_dict(dict_):
     lines += [' ']
     lines += ['SCIPY-POWELL', 'xtol 0.0001', 'ftol 0.0001']
 
-    with open('optimization.robupy.opt', 'a') as file_:
+    with open('optimization.robupy.opt', 'w') as file_:
         str_ = ' {0:>25} \n'
         for line in lines:
             file_.write(str_.format(line))

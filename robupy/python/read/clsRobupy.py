@@ -305,10 +305,11 @@ class RobupyCls(object):
         self.attr['paras_fixed'] += init_dict['OCCUPATION B']['fixed']
         self.attr['paras_fixed'] += init_dict['EDUCATION']['fixed']
         self.attr['paras_fixed'] += init_dict['HOME']['fixed']
-        self.attr['paras_fixed'] += init_dict['SHOCKS']['fixed'][0:4, 0].tolist()
-        self.attr['paras_fixed'] += init_dict['SHOCKS']['fixed'][1:4, 1].tolist()
-        self.attr['paras_fixed'] += init_dict['SHOCKS']['fixed'][2:4, 2].tolist()
-        self.attr['paras_fixed'] += init_dict['SHOCKS']['fixed'][3:4, 3].tolist()
+
+        # Special treatment of covariance matrix. Either all components are
+        # fixed or none.
+        self.attr['paras_fixed'] += \
+            init_dict['SHOCKS']['fixed'][0:1, 0].tolist()
 
         # Ensure that all elements in the dictionary are of the same
         # type.
@@ -404,7 +405,7 @@ class RobupyCls(object):
 
         # Status of optimization parameters
         assert isinstance(paras_fixed, list)
-        assert (len(paras_fixed) == 26)
+        assert (len(paras_fixed) == 17)
         assert (np.all(paras_fixed) in [True, False])
 
         # Debug status
