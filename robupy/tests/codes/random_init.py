@@ -38,6 +38,13 @@ def generate_random_dict(constraints=None):
     # Initialize container
     dict_ = dict()
 
+    # The dictionary also contains the information whether parameters are
+    # fixed during an estimation. We need to ensure that at least one
+    # parameter is always free.
+    is_fixed = np.random.choice([True, False], 26)
+    #if sum(is_fixed) == 26:
+    is_fixed[np.random.randint(0, 26)] = True
+
     # Basics
     dict_['BASICS'] = {}
     dict_['BASICS']['periods'] = np.random.randint(1, MAX_PERIODS)
