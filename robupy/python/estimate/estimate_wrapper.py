@@ -40,9 +40,7 @@ class OptimizationClass(object):
 
         self.attr['maxiter'] = None
 
-        # TODO: Add tests, also relationship to x:free
         self.attr['x_info'] = None
-
 
         self.attr['args'] = None
 
@@ -53,21 +51,19 @@ class OptimizationClass(object):
 
         self.attr['value_curre'] = HUGE_FLOAT
 
-
         self.attr['paras_steps'] = None
 
         self.attr['paras_curre'] = None
 
         self.attr['paras_start'] = None
 
-
         self.attr['is_locked'] = False
 
         self.attr['is_first'] = True
 
         self.attr['num_steps'] = 0
-        self.attr['num_evals'] = 0
 
+        self.attr['num_evals'] = 0
 
     def set_attr(self, key, value):
         """ Set attributes.
@@ -188,18 +184,9 @@ class OptimizationClass(object):
         """
         # Distribute class attributes
         version = self.attr['version']
-        x_start, is_fixed = self.attr['x_info']
 
-        x_all = np.tile(np.nan, 26)
-
-        j = 0
-        for i, val in enumerate(x_start):
-
-            if is_fixed[i]:
-                x_all[i] = val
-            else:
-                x_all[i] = x_free[j]
-                j = j + 1
+        # Get all parameters for the current evaluation
+        x_all = self._get_all_parmeters(x_free)
 
         # Evaluate criterion function
         if version == 'PYTHON':
@@ -217,6 +204,31 @@ class OptimizationClass(object):
 
         # Finishing
         return crit_val
+
+    def _get_all_parmeters(self, x_free):
+        """ This method constructs the full set of optimization parameters
+        relevant for the current evaluation.
+        """
+        # Distribute class attributes
+        x_all_start, is_fixed = self.attr['x_info']
+
+        # Initialize objects
+        x_all = np.tile(np.nan, 26)
+
+        # Construct the relevant parameters
+        j = 0
+        for i, val in enumerate(x_all_start):
+            if is_fixed[i]:
+                x_all[i] = val
+            else:
+                x_all[i] = x_free[j]
+                j += 1
+
+        # Antibugging
+        assert np.all(np.isfinite(x_all))
+
+        # Finishing
+        return x_all
 
     @staticmethod
     def _options_read():

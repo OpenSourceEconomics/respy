@@ -40,7 +40,6 @@ def get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
     # Initialize container
     x = np.tile(np.nan, 26)
 
-    print('hello', type(coeffs_a))
     # Occupation A
     x[0:6] = coeffs_a
 

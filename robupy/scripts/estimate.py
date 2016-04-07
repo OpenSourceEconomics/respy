@@ -28,6 +28,7 @@ from robupy import estimate
 """ Auxiliary function
 """
 
+
 def add_gradient_information(robupy_obj, data_frame):
     """ This function adds information about the gradient to the information
     files. It is not part of the estimation modules as it breaks the design
@@ -40,23 +41,25 @@ def add_gradient_information(robupy_obj, data_frame):
         is_debug, file_sim, edu_max, delta, num_draws_prob, seed_prob, \
         num_draws_emax, seed_emax, level, measure, min_idx, is_ambiguous, \
         is_deterministic, is_myopic, is_interpolated, num_points, version, \
-        maxiter, optimizer = \
+        maxiter, optimizer, is_fixed, tau = \
         distribute_class_attributes(robupy_obj,
             'model_paras', 'num_periods', 'num_agents', 'edu_start',
             'seed_data', 'is_debug', 'file_sim', 'edu_max', 'delta',
             'num_draws_prob', 'seed_prob', 'num_draws_emax', 'seed_emax',
             'level', 'measure', 'min_idx', 'is_ambiguous',
             'is_deterministic', 'is_myopic', 'is_interpolated',
-            'num_points', 'version', 'maxiter', 'optimizer')
+            'num_points', 'version', 'maxiter', 'optimizer', 'is_fixed', 'tau')
 
     # Auxiliary objects
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, shocks_cholesky = \
         distribute_model_paras(model_paras, is_debug)
 
-        # Construct starting values
-    x0 = get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-            shocks_cov, shocks_cholesky, is_debug)
+    # Construct starting values
+    x_all = get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+            shocks_cov, shocks_cholesky, 'all', is_fixed, is_debug)
 
+    x_start = get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+            shocks_cov, shocks_cholesky, 'free', is_fixed, is_debug)
 
     # Draw standard normal deviates for the solution and evaluation step.
     periods_draws_prob = create_draws(num_periods, num_draws_prob, seed_prob,
@@ -69,16 +72,18 @@ def add_gradient_information(robupy_obj, data_frame):
     args = (is_deterministic, is_interpolated, num_draws_emax,is_ambiguous,
         num_periods, num_points, is_myopic, edu_start, is_debug, measure,
         edu_max, min_idx, delta, level, data_array, num_agents,
-        num_draws_prob, periods_draws_emax, periods_draws_prob)
+        num_draws_prob, tau, periods_draws_emax, periods_draws_prob)
 
     # Prepare evaluation of the criterion function.
     opt_obj = OptimizationClass()
 
     opt_obj.set_attr('args', args)
 
-    opt_obj.set_attr('optimizer', 'SCIPY-BFGS')
+    opt_obj.set_attr('optimizer', optimizer)
 
-    opt_obj.set_attr('version', 'FORTRAN')
+    opt_obj.set_attr('x_info', (x_all, is_fixed))
+
+    opt_obj.set_attr('version', version)
 
     opt_obj.set_attr('maxiter', 0)
 
@@ -92,12 +97,12 @@ def add_gradient_information(robupy_obj, data_frame):
     original_lines = open('optimization.robupy.info', 'r').readlines()
     fmt_ = '{0:<25}{1:>15}\n'
     original_lines[-5] = fmt_.format(*[' Number of Steps', 0])
-    original_lines[-3] = fmt_.format(*[' Number of Evaluations', len(x0)])
+    original_lines[-3] = fmt_.format(*[' Number of Evaluations', len(x_start)])
 
     # Approximate gradient by forward finite differences.
     epsilon = 1.4901161193847656e-08
-    grad = approx_fprime(x0, opt_obj.crit_func, epsilon, *args)
-
+    grad = approx_fprime(x_start, opt_obj.crit_func, epsilon, *args).tolist()
+    norm = np.amax(np.abs(grad))
     # Write out extended information
     with open('optimization.robupy.info', 'w') as out_file:
         for i, line in enumerate(original_lines):
@@ -108,13 +113,17 @@ def add_gradient_information(robupy_obj, data_frame):
                 fmt_ = '{0:>15}    {1:>15}\n\n'
                 out_file.write(fmt_.format(*['Identifier', 'Start']))
                 fmt_ = '{0:>15}    {1:15.4f}\n'
-                for j, val in enumerate(grad):
-                    values = [j, val]
-                    out_file.write(fmt_.format(*values))
+
+                # Iterate over all candidate values, but only write the free
+                # ones to file. This ensure that the identifiers line up.
+                for j in range(26):
+                    if not is_fixed[j]:
+                        values = [j, grad.pop(0)]
+                        out_file.write(fmt_.format(*values))
                 out_file.write('\n')
 
                 # Add value of infinity norm
-                values = ['Norm', np.amax(np.abs(grad))]
+                values = ['Norm', norm]
                 out_file.write(fmt_.format(*values))
                 out_file.write('\n\n')
 
