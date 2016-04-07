@@ -53,7 +53,8 @@ def read(file_):
                 dict_ = _process_standard(list_, dict_, keyword)
 
     # Type conversion for Shocks
-    dict_['SHOCKS'] = np.array(dict_['SHOCKS'])
+    for key_ in ['coeffs', 'fixed']:
+        dict_['SHOCKS'][key_] = np.array(dict_['SHOCKS'][key_])
 
     # Check quality.
     _check_integrity_read(dict_)
@@ -74,14 +75,26 @@ def _process_shocks(list_, dict_):
     """ This function process the SHOCKS part of the initialization file.
     """
     # Distribute information
-    if isinstance(dict_['SHOCKS'], dict):
-        dict_['SHOCKS'] = []
+    if not dict_['SHOCKS'].keys():
+        dict_['SHOCKS'] = {}
+        dict_['SHOCKS']['coeffs'] = []
+        dict_['SHOCKS']['fixed'] = []
 
     # Type conversion
-    list_ = [float(i) for i in list_]
+    values = []
+    fixed_indicators = []
+    for i, val in enumerate(list_):
+
+        is_fixed = val[0] == '!'
+        if is_fixed:
+            val = val[1:]
+
+        values += [float(val)]
+        fixed_indicators += [is_fixed]
 
     # Collect information
-    dict_['SHOCKS'] += [list_]
+    dict_['SHOCKS']['coeffs'] += [values]
+    dict_['SHOCKS']['fixed'] += [fixed_indicators]
 
     # Finishing
     return dict_
@@ -98,9 +111,15 @@ def _process_standard(list_, dict_, keyword):
     if name == 'coeff':
         name = 'coeffs'
 
+    # Determine whether coefficient is fixed or not.
+    is_fixed = val[0] == '!'
+    if is_fixed:
+        val = val[1:]
+
     # Prepare container.
     if ('coeffs' not in dict_[keyword].keys()) and (name in ['coeffs', 'int']):
         dict_[keyword]['coeffs'] = []
+        dict_[keyword]['fixed'] = []
 
     # Type conversion
     if name in ['agents', 'periods', 'start', 'max', 'draws',
@@ -119,6 +138,7 @@ def _process_standard(list_, dict_, keyword):
     # Collect information
     if name in ['coeffs', 'int']:
         dict_[keyword]['coeffs'] += [val]
+        dict_[keyword]['fixed'] += [is_fixed]
     else:
         dict_[keyword][name] = val
 
@@ -126,6 +146,9 @@ def _process_standard(list_, dict_, keyword):
     if name == 'int':
         dict_[keyword]['coeffs'].insert(0, dict_[keyword]['coeffs'][-1])
         dict_[keyword]['coeffs'].pop()
+
+        dict_[keyword]['fixed'].insert(0, dict_[keyword]['fixed'][-1])
+        dict_[keyword]['fixed'].pop()
 
     # Finishing.
     return dict_
@@ -225,12 +248,18 @@ def _check_integrity_read(dict_):
         assert (os.path.exists(ROOT_DIR + '/fortran/bin/robufort'))
 
     # Check SHOCKS
-    assert (dict_['SHOCKS']).shape == (4, 4)
-    assert (np.all(np.isfinite(dict_['SHOCKS'])))
-    assert (np.all(np.diag(dict_['SHOCKS']) >= 0))
-    assert ((dict_['SHOCKS'].transpose() == dict_['SHOCKS']).all())
-    if not (np.count_nonzero(dict_['SHOCKS']) == 0):
-        assert(np.linalg.det(dict_['SHOCKS']) > 0)
+    for key_ in ['coeffs', 'fixed']:
+        assert dict_['SHOCKS'][key_].shape == (4, 4)
+        assert (np.all(np.isfinite(dict_['SHOCKS'][key_])))
+        if key_ == 'coeffs':
+            assert (np.all(np.diag(dict_['SHOCKS'][key_]) >= 0))
+            assert (np.array_equal(dict_['SHOCKS'][key_].transpose(),
+                dict_['SHOCKS'][key_]))
+            if not (np.count_nonzero(dict_['SHOCKS'][key_]) == 0):
+                assert(np.linalg.det(dict_['SHOCKS'][key_]) > 0)
+        elif key_ == 'fixed':
+            assert (np.all(dict_['SHOCKS'][key_] == False)) or \
+                (np.all(dict_['SHOCKS'][key_] == True))
 
     # Check AMBIGUITY
     assert (dict_['AMBIGUITY']['measure'] in ['kl', 'absolute'])

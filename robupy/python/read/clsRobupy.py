@@ -68,6 +68,8 @@ class RobupyCls(object):
 
         self.attr['file_est'] = None
 
+        self.attr['is_fixed'] = None
+
         self.attr['edu_max'] = None
 
         self.attr['version'] = None
@@ -285,7 +287,7 @@ class RobupyCls(object):
         # Initialize model parameters
         self.attr['model_paras'] = dict()
 
-        self.attr['model_paras']['shocks_cov'] = init_dict['SHOCKS']
+        self.attr['model_paras']['shocks_cov'] = init_dict['SHOCKS']['coeffs']
 
         self.attr['model_paras']['coeffs_a'] = \
             init_dict['OCCUPATION A']['coeffs']
@@ -295,6 +297,18 @@ class RobupyCls(object):
             init_dict['EDUCATION']['coeffs']
         self.attr['model_paras']['coeffs_home'] = \
             init_dict['HOME']['coeffs']
+
+        # Initialize information about optimization parameters
+        self.attr['is_fixed'] = []
+
+        self.attr['is_fixed'] = init_dict['OCCUPATION A']['fixed']
+        self.attr['is_fixed'] += init_dict['OCCUPATION B']['fixed']
+        self.attr['is_fixed'] += init_dict['EDUCATION']['fixed']
+        self.attr['is_fixed'] += init_dict['HOME']['fixed']
+        self.attr['is_fixed'] += init_dict['SHOCKS']['fixed'][0:4, 0].tolist()
+        self.attr['is_fixed'] += init_dict['SHOCKS']['fixed'][1:4, 1].tolist()
+        self.attr['is_fixed'] += init_dict['SHOCKS']['fixed'][2:4, 2].tolist()
+        self.attr['is_fixed'] += init_dict['SHOCKS']['fixed'][3:4, 3].tolist()
 
         # Ensure that all elements in the dictionary are of the same
         # type.
@@ -377,6 +391,8 @@ class RobupyCls(object):
 
         maxiter = self.attr['maxiter']
 
+        is_fixed = self.attr['is_fixed']
+
         delta = self.attr['delta']
 
         level = self.attr['level']
@@ -385,6 +401,11 @@ class RobupyCls(object):
 
         # Auxiliary objects
         shocks_cov = model_paras['shocks_cov']
+
+        # Status of optimization parameters
+        assert isinstance(is_fixed, list)
+        assert (len(is_fixed) == 26)
+        assert (np.all(is_fixed) in [True, False])
 
         # Debug status
         assert (is_debug in [True, False])

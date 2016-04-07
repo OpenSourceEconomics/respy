@@ -29,14 +29,15 @@ def estimate(robupy_obj, data_frame):
         is_debug, file_sim, edu_max, delta, num_draws_prob, seed_prob, \
         num_draws_emax, seed_emax, level, measure, min_idx, is_ambiguous, \
         is_deterministic, is_myopic, is_interpolated, num_points, version, \
-        maxiter, optimizer, tau = \
+        maxiter, optimizer, tau, is_fixed = \
             distribute_class_attributes(robupy_obj,
                 'model_paras', 'num_periods', 'num_agents', 'edu_start',
                 'seed_data', 'is_debug', 'file_sim', 'edu_max', 'delta',
                 'num_draws_prob', 'seed_prob', 'num_draws_emax', 'seed_emax',
                 'level', 'measure', 'min_idx', 'is_ambiguous',
                 'is_deterministic', 'is_myopic', 'is_interpolated',
-                'num_points', 'version', 'maxiter', 'optimizer', 'tau')
+                'num_points', 'version', 'maxiter', 'optimizer', 'tau',
+                'is_fixed')
 
     # Auxiliary objects
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, shocks_cholesky = \
