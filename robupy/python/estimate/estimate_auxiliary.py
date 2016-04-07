@@ -28,7 +28,7 @@ def check_input(robupy_obj, data_frame):
 
 
 def get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-        shocks_cov, shocks_cholesky, is_debug):
+        shocks_cov, shocks_cholesky, which, is_fixed, is_debug):
     """ Get optimization parameters.
     """
     # Checks
@@ -40,6 +40,7 @@ def get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
     # Initialize container
     x = np.tile(np.nan, 26)
 
+    print('hello', type(coeffs_a))
     # Occupation A
     x[0:6] = coeffs_a
 
@@ -62,6 +63,15 @@ def get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
     if is_debug:
         check_optimization_parameters(x)
 
+    # Select subset
+    if which == 'free':
+        x_free = []
+        for val in range(26):
+            if not is_fixed[i]:
+                x_free += [x[i]]
+
+        x = np.array(x_free)
+        
     # Finishing
     return x
 
