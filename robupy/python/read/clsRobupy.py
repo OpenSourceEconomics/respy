@@ -307,7 +307,7 @@ class RobupyCls(object):
         # Special treatment of covariance matrix. Either all components are
         # fixed or none.
         self.attr['paras_fixed'] += \
-            init_dict['SHOCKS']['fixed'][0:1, 0].tolist()
+            init_dict['SHOCKS']['fixed'][0:1].tolist()
 
         # Ensure that all elements in the dictionary are of the same
         # type.

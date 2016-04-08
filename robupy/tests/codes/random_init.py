@@ -116,11 +116,11 @@ def generate_random_dict(constraints=None):
 
     # SHOCKS
     dict_['SHOCKS'] = dict()
-    shocks_cov = np.identity(4)
-    for i, val in enumerate(np.random.uniform(0.05, 1, 4)):
-        shocks_cov[i, i] = val
-    dict_['SHOCKS']['coeffs'] = shocks_cov
-    dict_['SHOCKS']['fixed'] = np.tile(paras_fixed[16:17], (4, 4))
+    shocks = np.zeros(10)
+    for i in [0, 2, 5, 9]:
+        shocks[i] = np.random.uniform(0.05, 1)
+    dict_['SHOCKS']['coeffs'] = shocks
+    dict_['SHOCKS']['fixed'] = np.tile(paras_fixed[16:17], 10)
 
     # INTERPOLATION
     dict_['INTERPOLATION'] = {}
@@ -259,7 +259,7 @@ def generate_random_dict(constraints=None):
         assert (constraints['is_deterministic'] in [True, False])
         # Replace in initialization files
         if constraints['is_deterministic']:
-            dict_['SHOCKS']['coeffs'] = np.zeros((4, 4))
+            dict_['SHOCKS']['coeffs'] = np.zeros(10)
 
     # Number of agents
     if 'agents' in constraints.keys():
@@ -317,7 +317,7 @@ def print_random_dict(dict_):
     paras_fixed += dict_['OCCUPATION B']['fixed'][:]
     paras_fixed += dict_['EDUCATION']['fixed'][:]
     paras_fixed += dict_['HOME']['fixed'][:]
-    paras_fixed += [dict_['SHOCKS']['fixed'][0, 0]][:]
+    paras_fixed += [dict_['SHOCKS']['fixed'][0]][:]
 
     str_base = ' {0:<15} {1:<15} \n'
 
@@ -383,17 +383,13 @@ def print_random_dict(dict_):
             if flag in ['SHOCKS']:
 
                 # Type conversion
-                str_ = ' {:<15}'*4 + '\n'
                 file_.write(' ' + flag.upper() + '\n\n')
 
-                for i in range(4):
-                    vals = []
-                    for j in range(4):
-                        val = dict_['SHOCKS']['coeffs'][i, j]
-                        vals += [format_opt_parameters(val, 16,
-                            paras_fixed)]
-                    file_.write(str_.format(*vals))
-
+                for i in range(10):
+                    val = dict_['SHOCKS']['coeffs'][i]
+                    val = format_opt_parameters(val, 16, paras_fixed)
+                    line = ['coeff', val]
+                    file_.write(str_base.format(*line))
                 file_.write('\n')
 
             if flag in ['EDUCATION']:

@@ -47,10 +47,16 @@ def read(file_, is_dict=False):
                 continue
 
             # Process blocks of information
-            if keyword in ['SHOCKS']:
-                dict_ = _process_shocks(list_, dict_)
-            else:
-                dict_ = _process_standard(list_, dict_, keyword)
+            dict_ = _process_line(list_, dict_, keyword)
+
+    # Constructing the covariance matrix of the shocks
+    shocks = np.zeros((4, 4))
+    shocks[0, 0] = dict_['SHOCKS']['coeffs'][0]
+    shocks[1, :2] = dict_['SHOCKS']['coeffs'][1:3]
+    shocks[2, :3] = dict_['SHOCKS']['coeffs'][3:6]
+    shocks[3, :4] = dict_['SHOCKS']['coeffs'][6:]
+
+    dict_['SHOCKS']['coeffs'] = shocks + shocks.T - np.diag(shocks.diagonal())
 
     # Type conversion for Shocks
     for key_ in ['coeffs', 'fixed']:
@@ -74,36 +80,7 @@ def read(file_, is_dict=False):
 '''
 
 
-def _process_shocks(list_, dict_):
-    """ This function process the SHOCKS part of the initialization file.
-    """
-    # Distribute information
-    if not dict_['SHOCKS'].keys():
-        dict_['SHOCKS'] = {}
-        dict_['SHOCKS']['coeffs'] = []
-        dict_['SHOCKS']['fixed'] = []
-
-    # Type conversion
-    values = []
-    fixed_indicators = []
-    for i, val in enumerate(list_):
-
-        is_fixed = val[0] == '!'
-        if is_fixed:
-            val = val[1:]
-
-        values += [float(val)]
-        fixed_indicators += [is_fixed]
-
-    # Collect information
-    dict_['SHOCKS']['coeffs'] += [values]
-    dict_['SHOCKS']['fixed'] += [fixed_indicators]
-
-    # Finishing
-    return dict_
-
-
-def _process_standard(list_, dict_, keyword):
+def _process_line(list_, dict_, keyword):
     """ This function processes most parts of the initialization file.
     """
     # Distribute information
@@ -252,9 +229,9 @@ def _check_integrity_read(dict_):
 
     # Check SHOCKS
     for key_ in ['coeffs', 'fixed']:
-        assert dict_['SHOCKS'][key_].shape == (4, 4)
         assert (np.all(np.isfinite(dict_['SHOCKS'][key_])))
         if key_ == 'coeffs':
+            assert dict_['SHOCKS'][key_].shape == (4, 4)
             assert (np.all(np.diag(dict_['SHOCKS'][key_]) >= 0))
             assert (np.array_equal(dict_['SHOCKS'][key_].transpose(),
                 dict_['SHOCKS'][key_]))
