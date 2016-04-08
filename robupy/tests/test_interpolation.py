@@ -23,7 +23,7 @@ from robupy.tests.codes.random_init import generate_init
 
 from robupy.python.shared.shared_auxiliary import distribute_class_attributes
 from robupy.python.shared.shared_auxiliary import replace_missing_values
-from robupy.python.shared.shared_auxiliary import distribute_model_paras
+from robupy.python.shared.shared_auxiliary import dist_model_paras
 from robupy.python.shared.shared_auxiliary import create_draws
 
 import robupy.fortran.f2py_debug as fort_debug
@@ -111,7 +111,7 @@ class TestClass(object):
 
         # Auxiliary objects
         _, _, _, _, shocks_cov, shocks_cholesky = \
-            distribute_model_paras(model_paras, is_debug)
+            dist_model_paras(model_paras, is_debug)
 
         # Add some additional objects required for the interfaces to the
         # functions.

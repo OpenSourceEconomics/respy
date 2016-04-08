@@ -12,11 +12,11 @@ import argparse
 import os
 
 # project library
-from robupy.python.estimate.estimate_auxiliary import get_model_parameters
-from robupy.python.estimate.estimate_auxiliary import get_optim_parameters
+from robupy.python.estimate.estimate_auxiliary import dist_optim_paras
+from robupy.python.estimate.estimate_auxiliary import get_optim_paras
 
 from robupy.python.shared.shared_auxiliary import distribute_class_attributes
-from robupy.python.shared.shared_auxiliary import distribute_model_paras
+from robupy.python.shared.shared_auxiliary import dist_model_paras
 from robupy.python.shared.shared_auxiliary import create_draws
 
 from robupy.python.estimate.estimate_wrapper import OptimizationClass
@@ -53,13 +53,13 @@ def add_gradient_information(robupy_obj, data_frame):
 
     # Auxiliary objects
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, shocks_cholesky = \
-        distribute_model_paras(model_paras, is_debug)
+        dist_model_paras(model_paras, is_debug)
 
     # Construct starting values
-    x_all_start = get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+    x_all_start = get_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
             shocks_cov, shocks_cholesky, 'all', paras_fixed, is_debug)
 
-    x_free_start = get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+    x_free_start = get_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
             shocks_cov, shocks_cholesky, 'free', paras_fixed, is_debug)
 
     # Draw standard normal deviates for the solution and evaluation step.
@@ -172,7 +172,7 @@ def estimate_wrapper(resume, single, init_file, gradient):
     # estimation run.
     if resume:
         x0 = np.genfromtxt('paras_steps.robupy.log')
-        args = get_model_parameters(x0, True)[:-1]
+        args = dist_optim_paras(x0, True)[:-1]
         robupy_obj.update_model_paras(*args)
 
     # Set maximum iteration count when only an evaluation of the criterion

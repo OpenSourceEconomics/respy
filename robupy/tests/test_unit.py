@@ -24,11 +24,11 @@ from robupy.python.solve.solve_ambiguity import criterion_ambiguity
 from robupy.python.solve.solve_ambiguity import divergence
 from robupy.python.solve.solve_emax import simulate_emax
 
-from robupy.python.estimate.estimate_auxiliary import get_optim_parameters
-from robupy.python.estimate.estimate_auxiliary import get_model_parameters
+from robupy.python.estimate.estimate_auxiliary import get_optim_paras
+from robupy.python.estimate.estimate_auxiliary import dist_optim_paras
 
 from robupy.python.shared.shared_auxiliary import distribute_class_attributes
-from robupy.python.shared.shared_auxiliary import distribute_model_paras
+from robupy.python.shared.shared_auxiliary import dist_model_paras
 from robupy.python.shared.shared_auxiliary import create_draws
 
 import robupy.fortran.f2py_testing as fort_test
@@ -88,7 +88,7 @@ class TestClass(object):
 
             # Extract auxiliary objects
             _, _, _, _, shocks_cov, shocks_cholesky = \
-                distribute_model_paras(model_paras, is_debug)
+                dist_model_paras(model_paras, is_debug)
 
             # Iterate over a couple of admissible points
             for _ in range(10):
@@ -154,7 +154,7 @@ class TestClass(object):
 
             # Auxiliary objects
             _, _, _, _, shocks_cov, shocks_cholesky = \
-                distribute_model_paras(model_paras, is_debug)
+                dist_model_paras(model_paras, is_debug)
 
             # Sample draws
             draws_standard = np.random.multivariate_normal(np.zeros(4),
@@ -223,7 +223,7 @@ class TestClass(object):
 
         # Auxiliary objects
         _, _, _, _, _, shocks_cholesky = \
-            distribute_model_paras(model_paras, is_debug)
+            dist_model_paras(model_paras, is_debug)
 
         # Sample draws
         draws_standard = np.random.multivariate_normal(np.zeros(4),
@@ -339,7 +339,7 @@ class TestClass(object):
 
         # Auxiliary objects
         _, _, _, _, _, shocks_cholesky = \
-            distribute_model_paras(model_paras, is_debug)
+            dist_model_paras(model_paras, is_debug)
 
         # Sample draws
         draws_standard = np.random.multivariate_normal(np.zeros(4),
@@ -611,9 +611,9 @@ class TestClass(object):
 
             # Apply numerous transformations
             for j in range(10):
-                args = get_model_parameters(x, is_debug=True)
+                args = dist_optim_paras(x, is_debug=True)
                 args += ('all', paras_fixed)
-                x = get_optim_parameters(*args, is_debug=True)
+                x = get_optim_paras(*args, is_debug=True)
 
             # Checks
             np.testing.assert_allclose(base, x)
@@ -646,7 +646,7 @@ class TestClass(object):
 
         # Auxiliary objects
         coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, \
-            shocks_cholesky = distribute_model_paras(model_paras, is_debug)
+            shocks_cholesky = dist_model_paras(model_paras, is_debug)
 
         # Check the state space creation.
         args = (num_periods, edu_start, edu_max, min_idx)

@@ -193,7 +193,7 @@ def check_dataset(data_frame, robupy_obj):
             assert (np.isfinite(data_frame[3][count]) == False)
 
 
-def distribute_model_paras(model_paras, is_debug):
+def dist_model_paras(model_paras, is_debug):
     """ Distribute model parameters.
     """
     coeffs_a = model_paras['coeffs_a']

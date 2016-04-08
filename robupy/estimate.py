@@ -6,11 +6,11 @@ function.
 
 
 # project library
-from robupy.python.estimate.estimate_auxiliary import get_optim_parameters
+from robupy.python.estimate.estimate_auxiliary import get_optim_paras
 from robupy.python.estimate.estimate_auxiliary import check_input
 
 from robupy.python.shared.shared_auxiliary import distribute_class_attributes
-from robupy.python.shared.shared_auxiliary import distribute_model_paras
+from robupy.python.shared.shared_auxiliary import dist_model_paras
 from robupy.python.shared.shared_auxiliary import create_draws
 
 from robupy.python.estimate.estimate_wrapper import OptimizationClass
@@ -41,7 +41,7 @@ def estimate(robupy_obj, data_frame):
 
     # Auxiliary objects
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, shocks_cholesky = \
-        distribute_model_paras(model_paras, is_debug)
+        dist_model_paras(model_paras, is_debug)
 
     # Draw standard normal deviates for the solution and evaluation step.
     periods_draws_prob = create_draws(num_periods, num_draws_prob, seed_prob,
@@ -51,10 +51,10 @@ def estimate(robupy_obj, data_frame):
         is_debug)
 
     # Construct starting values
-    x_free_start = get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+    x_free_start = get_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         shocks_cov, shocks_cholesky, 'free', paras_fixed, is_debug)
 
-    x_all_start = get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+    x_all_start = get_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         shocks_cov, shocks_cholesky, 'all', paras_fixed, is_debug)
 
 

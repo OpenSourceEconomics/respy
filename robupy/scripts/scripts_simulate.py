@@ -9,7 +9,7 @@ import os
 
 import numpy as np
 # project library
-from robupy.python.estimate.estimate_auxiliary import get_model_parameters
+from robupy.python.estimate.estimate_auxiliary import dist_optim_paras
 
 from robupy import simulate
 from robupy import read
@@ -54,7 +54,7 @@ def simulate_wrapper(update, init_file, file_sim):
     # estimation run.
     if update:
         x0 = np.genfromtxt('paras_steps.robupy.log')
-        args = get_model_parameters(x0, True)[:-1]
+        args = dist_optim_paras(x0, True)[:-1]
         robupy_obj.update_model_paras(*args)
 
     # Update file for output.

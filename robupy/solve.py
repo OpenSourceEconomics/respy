@@ -12,8 +12,8 @@ from robupy.python.solve.solve_auxiliary import check_input
 from robupy.python.solve.solve_auxiliary import cleanup
 
 from robupy.python.shared.shared_auxiliary import distribute_class_attributes
-from robupy.python.shared.shared_auxiliary import distribute_model_paras
 from robupy.python.shared.shared_auxiliary import replace_missing_values
+from robupy.python.shared.shared_auxiliary import dist_model_paras
 from robupy.python.shared.shared_auxiliary import add_solution
 from robupy.python.shared.shared_auxiliary import create_draws
 
@@ -52,7 +52,7 @@ def solve(robupy_obj):
 
     # Distribute model parameters
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, shocks_cholesky = \
-        distribute_model_paras(model_paras, is_debug)
+        dist_model_paras(model_paras, is_debug)
 
     # Get the relevant set of disturbances. These are standard normal draws
     # in the case of an ambiguous world. This function is located outside

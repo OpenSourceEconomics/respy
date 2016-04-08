@@ -11,7 +11,7 @@ import pandas as pd
 logger = logging.getLogger('ROBUPY_SIMULATE')
 
 # project library
-from robupy.python.shared.shared_auxiliary import distribute_model_paras
+from robupy.python.shared.shared_auxiliary import dist_model_paras
 
 
 def write_info(robupy_obj, data_frame):
@@ -160,7 +160,7 @@ def get_estimation_vector(model_paras, is_debug):
     """
 
     # Auxiliary objects
-    shocks_cholesky = distribute_model_paras(model_paras, is_debug)[5]
+    shocks_cholesky = dist_model_paras(model_paras, is_debug)[5]
 
     # Collect parameters
     vector = list()

@@ -16,7 +16,7 @@ CONTAINS
 
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE get_model_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, &
+SUBROUTINE get_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, &
                 shocks_cov, shocks_cholesky, x)
 
     !/* external objects        */

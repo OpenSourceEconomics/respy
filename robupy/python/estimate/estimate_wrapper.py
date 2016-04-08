@@ -10,7 +10,7 @@ import shlex
 import os
 
 # project library
-from robupy.python.estimate.estimate_auxiliary import get_model_parameters
+from robupy.python.estimate.estimate_auxiliary import dist_optim_paras
 from robupy.python.estimate.estimate_auxiliary import process_block
 from robupy.python.estimate.estimate_auxiliary import process_cases
 
@@ -374,7 +374,7 @@ class OptimizationClass(object):
                     paras = paras_curre
                 fmt_ = '{0:>15}   \n\n'
                 out_file.write(fmt_.format(*[which]))
-                shocks_cov = get_model_parameters(paras, True)[4]
+                shocks_cov = dist_optim_paras(paras, True)[4]
                 fmt_ = '{0:15.4f}    {1:15.4f}    {2:15.4f}    {3:15.4f}\n'
                 for i in range(4):
                     out_file.write(fmt_.format(*shocks_cov[i, :]))

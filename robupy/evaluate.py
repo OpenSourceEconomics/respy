@@ -12,7 +12,7 @@ from robupy.python.evaluate.evaluate_auxiliary import check_input
 from robupy.python.evaluate.evaluate_auxiliary import check_output
 
 from robupy.python.shared.shared_auxiliary import distribute_class_attributes
-from robupy.python.shared.shared_auxiliary import distribute_model_paras
+from robupy.python.shared.shared_auxiliary import dist_model_paras
 from robupy.python.shared.shared_auxiliary import create_draws
 
 ''' Main function
@@ -39,7 +39,7 @@ def evaluate(robupy_obj, data_frame):
 
     # Distribute model parameters
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, \
-        shocks_cholesky = distribute_model_paras(model_paras, is_debug)
+        shocks_cholesky = dist_model_paras(model_paras, is_debug)
 
     # Draw standard normal deviates for choice probabilities and expected
     # future values.

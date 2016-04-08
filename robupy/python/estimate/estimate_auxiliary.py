@@ -27,7 +27,7 @@ def check_input(robupy_obj, data_frame):
     return True
 
 
-def get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+def get_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         shocks_cov, shocks_cholesky, which, paras_fixed, is_debug):
     """ Get optimization parameters.
     """
@@ -82,7 +82,7 @@ def get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
     return x
 
 
-def get_model_parameters(x_all_curre, is_debug):
+def dist_optim_paras(x_all_curre, is_debug):
     """ Update parameter values. The np.array type is maintained.
     """
     # Checks

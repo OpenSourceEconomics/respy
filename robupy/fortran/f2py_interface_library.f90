@@ -75,7 +75,7 @@ SUBROUTINE f2py_criterion(crit_val, x, is_deterministic, is_interpolated, &
 !-------------------------------------------------------------------------------
 
     !# Distribute model parameters
-    CALL get_model_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, & 
+    CALL get_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, &
                 shocks_cov, shocks_cholesky, x)
 
     ! Solve requested model
@@ -442,49 +442,6 @@ SUBROUTINE f2py_calculate_payoffs_systematic(periods_payoffs_systematic, &
     CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, &
             num_periods, states_number_period, states_all, edu_start, &
             coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
-
-END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE get_model_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, &
-                shocks_cov, shocks_cholesky, x)
-
-    !/* external objects        */
-
-    DOUBLE PRECISION, INTENT(OUT)     :: shocks_cholesky(4, 4)
-    DOUBLE PRECISION, INTENT(OUT)     :: shocks_cov(4, 4)
-    DOUBLE PRECISION, INTENT(OUT)     :: coeffs_home(1)
-    DOUBLE PRECISION, INTENT(OUT)     :: coeffs_edu(3)
-    DOUBLE PRECISION, INTENT(OUT)     :: coeffs_a(6)
-    DOUBLE PRECISION, INTENT(OUT)     :: coeffs_b(6)
-
-    DOUBLE PRECISION, INTENT(IN)      :: x(:)
-
-!-------------------------------------------------------------------------------
-! Algorithm
-!-------------------------------------------------------------------------------
-
-    ! Extract model ingredients
-    coeffs_a = x(1:6)
-
-    coeffs_b = x(7:12)
-
-    coeffs_edu = x(13:15)
-
-    coeffs_home = x(16:16)
-
-    shocks_cholesky = 0.0
-
-    shocks_cholesky(1:4, 1) = x(17:20)
-
-    shocks_cholesky(2:4, 2) = x(21:23)
-
-    shocks_cholesky(3:4, 3) = x(24:25)
-
-    shocks_cholesky(4:4, 4) = x(26:26)
-
-    ! Reconstruct the covariance matrix of reward shocks
-    shocks_cov = MATMUL(shocks_cholesky, TRANSPOSE(shocks_cholesky))
 
 END SUBROUTINE
 !*******************************************************************************

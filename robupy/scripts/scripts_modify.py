@@ -15,7 +15,8 @@ import shutil
 import os
 
 # project library
-from robupy.python.estimate.estimate_auxiliary import get_model_parameters
+from robupy.python.estimate.estimate_auxiliary import dist_optim_paras
+from robupy.python.shared.shared_auxiliary import dist_model_paras
 from robupy.tests.codes.random_init import print_random_dict
 from robupy import read
 
@@ -34,8 +35,8 @@ def distribute_input_arguments(parser):
     identifiers = args.identifiers
     init_file = args.init_file
     values = args.values
-    free = args.free
-    fix = args.fix
+    action = args.action
+    update = args.update
 
     # Special processing for identifiers to allow to pass in ranges.
     identifiers_list = []
@@ -55,38 +56,43 @@ def distribute_input_arguments(parser):
     assert (len(set(identifiers_list)) == len(identifiers_list))
 
     # Checks
+    assert os.path.exists(init_file)
     assert os.path.exists('paras_steps.robupy.log')
     assert isinstance(identifiers, list)
 
     if values is not None:
         assert isinstance(values, list)
-
+        assert (len(values) == len(identifiers_list))
     # Implications
-    if fix or free:
+    if action in ['free', 'fix']:
         assert (values is None)
         assert os.path.exists(init_file)
-    if fix:
-        assert (free is False)
-    if free:
-        assert (fix is False)
+    else:
+        assert (update is False)
 
     # Finishing
-    return identifiers_list, values, fix, free, init_file
+    return identifiers_list, values, action, init_file, update
 
 
 ''' Main function
 '''
 
 
-def change_status(identifiers, is_fixed):
-
-    paras_steps = np.loadtxt(open('paras_steps.robupy.log', 'r'))
-
-    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, _ = \
-        get_model_parameters(paras_steps, True)
+def change_status(identifiers, init_file, is_fixed, update):
 
     # Baseline
     robupy_obj, init_dict = read(init_file, True)
+
+    if update:
+        paras_steps = np.loadtxt(open('paras_steps.robupy.log', 'r'))
+
+        coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, _ = \
+            dist_optim_paras(paras_steps, True)
+
+    else:
+        model_paras = robupy_obj.get_attr('model_paras')
+        coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, _ = \
+            dist_model_paras(model_paras, True)
 
     # Special treatment for covariance matrix
     for identifier in identifiers:
@@ -119,7 +125,7 @@ def change_status(identifiers, is_fixed):
         shutil.move('test.robupy.ini', init_file)
 
 
-def modify_value(identifiers, values):
+def change_value(identifiers, init_file, values):
     """ Provide some additional information during estimation run.
     """
 
@@ -131,9 +137,9 @@ def modify_value(identifiers, values):
     paras_steps = np.genfromtxt('paras_steps.robupy.log')
 
     # Apply modifications
-    for i, j in enumerate(identifiers):
-        assert (not paras_fixed[identifiers])
-        paras_steps[j] = values[i]
+    for i, identifier in enumerate(identifiers):
+        assert (not paras_fixed[identifier])
+        paras_steps[identifier] = values[i]
 
     # Save parametrization to file
     np.savetxt(open('paras_steps.robupy.log', 'wb'), paras_steps, fmt='%15.8f')
@@ -153,24 +159,23 @@ if __name__ == '__main__':
     parser.add_argument('--values', action='store', dest='values',
         nargs='*', default=None, help='updated parameter values', type=float)
 
-    parser.add_argument('--fix', action='store_true', dest='fix',
-        default=False, help='fix parameters')
-
-    parser.add_argument('--free', action='store_true', dest='free',
-        default=False, help='free parameters')
+    parser.add_argument('--action', action='store', dest='action',
+        default=None, help='requested action', type=str, required=True,
+        choices=['fix', 'free', 'change'])
 
     parser.add_argument('--init_file', action='store', dest='init_file',
         default='model.robupy.ini', help='initialization file')
 
-    identifiers, values, fix, free, init_file = \
-        distribute_input_arguments(parser)
+    parser.add_argument('--update', action='store_true', dest='update',
+        default=False, help='update parameter before changing status')
+
+
+    identifiers, values, action, init_file, update = distribute_input_arguments(
+        parser)
 
     # # Select interface
-    if fix or free:
-        if fix:
-            is_fixed = True
-        elif free:
-            is_fixed = False
-        change_status(identifiers, is_fixed)
-    else:
-        modify_value(identifiers, values)
+    if action in ['free', 'fix']:
+        is_fixed = (action == 'fix')
+        change_status(identifiers, init_file, is_fixed, update)
+    elif action in ['change']:
+        change_value(identifiers, init_file, values)

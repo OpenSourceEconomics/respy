@@ -14,12 +14,12 @@ from codes.auxiliary import write_draws
 
 # project library
 from robupy.python.shared.shared_auxiliary import distribute_class_attributes
-from robupy.python.shared.shared_auxiliary import distribute_model_paras
+from robupy.python.shared.shared_auxiliary import dist_model_paras
 from robupy.python.shared.shared_auxiliary import read_draws
 
 from robupy.python.solve.solve_auxiliary import pyth_create_state_space
 
-from robupy.python.estimate.estimate_auxiliary import get_optim_parameters
+from robupy.python.estimate.estimate_auxiliary import get_optim_paras
 from robupy.tests.codes.random_init import generate_random_dict
 from robupy.tests.codes.random_init import print_random_dict
 from robupy.tests.codes.random_init import generate_init
@@ -364,7 +364,7 @@ class TestClass(object):
 
         # Extract coefficients
         coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, \
-            shocks_cholesky = distribute_model_paras(model_paras, True)
+            shocks_cholesky = dist_model_paras(model_paras, True)
 
         # Check the full solution procedure
         measure = 'kl'
@@ -416,7 +416,7 @@ class TestClass(object):
             np.testing.assert_allclose(pyth, alt)
 
         # Evaluation of criterion function
-        x0 = get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu,
+        x0 = get_optim_paras(coeffs_a, coeffs_b, coeffs_edu,
                 coeffs_home, shocks_cov, shocks_cholesky, 'all',
                 paras_fixed, is_debug)
 

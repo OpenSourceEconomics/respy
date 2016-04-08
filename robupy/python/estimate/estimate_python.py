@@ -2,7 +2,7 @@
 """
 
 # standard library
-from robupy.python.estimate.estimate_auxiliary import get_model_parameters
+from robupy.python.estimate.estimate_auxiliary import dist_optim_paras
 from robupy.python.evaluate.evaluate_python import pyth_evaluate
 
 
@@ -21,7 +21,7 @@ def pyth_criterion(x, is_deterministic, is_interpolated, num_draws_emax,
 
     # Distribute model parameters
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, \
-        shocks_cholesky = get_model_parameters(x, is_debug)
+        shocks_cholesky = dist_optim_paras(x, is_debug)
 
     # Evaluate criterion function
     crit_val = pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
