@@ -73,6 +73,16 @@ def dist_input_arguments(parser):
 ''' Main function
 '''
 
+def scripts_modify(identifiers, values, action, init_file):
+
+    # Select interface
+    if action in ['free', 'fix']:
+        is_fixed = (action == 'fix')
+        change_status(identifiers, init_file, is_fixed)
+    elif action in ['change']:
+        change_value(identifiers, init_file, values)
+
+
 
 def change_status(identifiers, init_file, is_fixed):
 
@@ -156,11 +166,7 @@ if __name__ == '__main__':
         default='model.robupy.ini', help='initialization file')
 
     # Process command line arguments
-    identifiers, values, action, init_file = dist_input_arguments(parser)
+    args = dist_input_arguments(parser)
 
-    # Select interface
-    if action in ['free', 'fix']:
-        is_fixed = (action == 'fix')
-        change_status(identifiers, init_file, is_fixed)
-    elif action in ['change']:
-        change_value(identifiers, init_file, values)
+    # Run modifications
+    scripts_modify(*args)

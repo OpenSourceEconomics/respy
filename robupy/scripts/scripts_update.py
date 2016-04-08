@@ -77,7 +77,7 @@ if __name__ == '__main__':
         default='model.robupy.ini', help='initialization file')
 
     # Process command line arguments
-    init_file = dist_input_arguments(parser)
+    args = dist_input_arguments(parser)
 
     # Run update
-    scripts_update(init_file)
+    scripts_update(*args)

@@ -162,7 +162,7 @@ def dist_input_arguments(parser):
 """
 
 
-def estimate_wrapper(resume, single, init_file, gradient):
+def scripts_estimate(resume, single, init_file, gradient):
     """ Wrapper for the estimation.
     """
     # Read in baseline model specification.
@@ -211,6 +211,8 @@ if __name__ == '__main__':
     parser.add_argument('--gradient', action='store_true', dest='gradient',
         default=False, help='gradient information')
 
-    resume, single, init_file, gradient = dist_input_arguments(parser)
+    # Process command line arguments
+    args = dist_input_arguments(parser)
 
-    estimate_wrapper(resume, single, init_file, gradient)
+    # Run estimation 
+    scripts_estimate(*args)

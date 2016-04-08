@@ -44,7 +44,7 @@ def dist_input_arguments(parser):
 """
 
 
-def simulate_wrapper(update, init_file, file_sim):
+def scripts_simulate(update, init_file, file_sim):
     """ Wrapper for the estimation.
     """
     # Read in baseline model specification.
@@ -84,6 +84,8 @@ if __name__ == '__main__':
     parser.add_argument('--file_sim', action='store', dest='file_sim',
         default=None, help='output file')
 
-    update, init_file, file_sim = dist_input_arguments(parser)
+    # Process command line arguments
+    args = dist_input_arguments(parser)
 
-    simulate_wrapper(update, init_file, file_sim)
+    # Run simulation
+    scripts_simulate(*args)
