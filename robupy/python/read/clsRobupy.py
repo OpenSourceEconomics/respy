@@ -299,8 +299,6 @@ class RobupyCls(object):
             init_dict['HOME']['coeffs']
 
         # Initialize information about optimization parameters
-        self.attr['is_fixed'] = []
-
         self.attr['paras_fixed'] = init_dict['OCCUPATION A']['fixed']
         self.attr['paras_fixed'] += init_dict['OCCUPATION B']['fixed']
         self.attr['paras_fixed'] += init_dict['EDUCATION']['fixed']

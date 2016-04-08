@@ -56,10 +56,10 @@ def add_gradient_information(robupy_obj, data_frame):
         distribute_model_paras(model_paras, is_debug)
 
     # Construct starting values
-    x_all = get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+    x_all_start = get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
             shocks_cov, shocks_cholesky, 'all', paras_fixed, is_debug)
 
-    x_start = get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+    x_free_start = get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
             shocks_cov, shocks_cholesky, 'free', paras_fixed, is_debug)
 
     # Draw standard normal deviates for the solution and evaluation step.
@@ -82,7 +82,7 @@ def add_gradient_information(robupy_obj, data_frame):
 
     opt_obj.set_attr('optimizer', optimizer)
 
-    opt_obj.set_attr('x_info', (x_all, paras_fixed))
+    opt_obj.set_attr('x_info', (x_all_start, paras_fixed))
 
     opt_obj.set_attr('version', version)
 
@@ -98,11 +98,11 @@ def add_gradient_information(robupy_obj, data_frame):
     original_lines = open('optimization.robupy.info', 'r').readlines()
     fmt_ = '{0:<25}{1:>15}\n'
     original_lines[-5] = fmt_.format(*[' Number of Steps', 0])
-    original_lines[-3] = fmt_.format(*[' Number of Evaluations', len(x_start)])
+    original_lines[-3] = fmt_.format(*[' Number of Evaluations', len(x_free_start)])
 
     # Approximate gradient by forward finite differences.
     epsilon = 1.4901161193847656e-08
-    grad = approx_fprime(x_start, opt_obj.crit_func, epsilon, *args).tolist()
+    grad = approx_fprime(x_free_start, opt_obj.crit_func, epsilon, *args).tolist()
     norm = np.amax(np.abs(grad))
     # Write out extended information
     with open('optimization.robupy.info', 'w') as out_file:

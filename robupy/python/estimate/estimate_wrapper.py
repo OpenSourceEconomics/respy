@@ -178,7 +178,7 @@ class OptimizationClass(object):
         assert isinstance(maxiter, int)
         assert (maxiter >= 0)
 
-    def crit_func(self, x_free, *args):
+    def crit_func(self, x_free_curre, *args):
         """ This method serves as a wrapper around the alternative
         implementations of the criterion function.
         """
@@ -186,13 +186,13 @@ class OptimizationClass(object):
         version = self.attr['version']
 
         # Get all parameters for the current evaluation
-        x_all = self._get_all_parameters(x_free)
+        x_all_curre = self._get_all_parameters(x_free_curre)
 
         # Evaluate criterion function
         if version == 'PYTHON':
-            crit_val = pyth_criterion(x_all, *args)
+            crit_val = pyth_criterion(x_all_curre, *args)
         elif version in ['F2PY', 'FORTRAN']:
-            crit_val = f2py_criterion(x_all, *args)
+            crit_val = f2py_criterion(x_all_curre, *args)
         else:
             raise NotImplementedError
 
@@ -200,12 +200,12 @@ class OptimizationClass(object):
         assert np.isfinite(crit_val)
 
         # Document progress
-        self._logging_interim(x_all, crit_val)
+        self._logging_interim(x_all_curre, crit_val)
 
         # Finishing
         return crit_val
 
-    def _get_all_parameters(self, x_free):
+    def _get_all_parameters(self, x_free_curr):
         """ This method constructs the full set of optimization parameters
         relevant for the current evaluation.
         """
@@ -213,30 +213,30 @@ class OptimizationClass(object):
         x_all_start, paras_fixed = self.attr['x_info']
 
         # Initialize objects
-        x_all = []
+        x_all_curre = []
 
         # Construct the relevant parameters
         j = 0
         for i in range(16):
             if paras_fixed[i]:
-                x_all += [float(x_all_start[i])]
+                x_all_curre += [float(x_all_start[i])]
             else:
-                x_all += [float(x_free[j])]
+                x_all_curre += [float(x_free_curr[j])]
                 j += 1
 
         # Special treatment of SHOCKS_COV
         if paras_fixed[16]:
-            x_all += x_all_start[16:].tolist()
+            x_all_curre += x_all_start[16:].tolist()
         else:
-            x_all += x_free[-10:].tolist()
+            x_all_curre += x_free_curr[-10:].tolist()
 
-        x_all = np.array(x_all)
+        x_all_curre = np.array(x_all_curre)
 
         # Antibugging
-        assert np.all(np.isfinite(x_all))
+        assert np.all(np.isfinite(x_all_curre))
 
         # Finishing
-        return x_all
+        return x_all_curre
 
     @staticmethod
     def _options_read():

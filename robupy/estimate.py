@@ -51,10 +51,10 @@ def estimate(robupy_obj, data_frame):
         is_debug)
 
     # Construct starting values
-    x_start = get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+    x_free_start = get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         shocks_cov, shocks_cholesky, 'free', paras_fixed, is_debug)
 
-    x_all = get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+    x_all_start = get_optim_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         shocks_cov, shocks_cholesky, 'all', paras_fixed, is_debug)
 
 
@@ -74,7 +74,7 @@ def estimate(robupy_obj, data_frame):
 
     opt_obj.set_attr('args', args)
 
-    opt_obj.set_attr('x_info', (x_all, paras_fixed))
+    opt_obj.set_attr('x_info', (x_all_start, paras_fixed))
 
     opt_obj.set_attr('optimizer', optimizer)
 
@@ -85,7 +85,7 @@ def estimate(robupy_obj, data_frame):
     opt_obj.lock()
 
     # Perform optimization.
-    x, val = opt_obj.optimize(x_start)
+    x, val = opt_obj.optimize(x_free_start)
 
     # Finishing
     return x, val
