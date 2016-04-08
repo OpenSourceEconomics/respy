@@ -49,15 +49,6 @@ def read(file_, is_dict=False):
             # Process blocks of information
             dict_ = _process_line(list_, dict_, keyword)
 
-    # Constructing the covariance matrix of the shocks
-    shocks = np.zeros((4, 4))
-    shocks[0, 0] = dict_['SHOCKS']['coeffs'][0]
-    shocks[1, :2] = dict_['SHOCKS']['coeffs'][1:3]
-    shocks[2, :3] = dict_['SHOCKS']['coeffs'][3:6]
-    shocks[3, :4] = dict_['SHOCKS']['coeffs'][6:]
-
-    dict_['SHOCKS']['coeffs'] = shocks + shocks.T - np.diag(shocks.diagonal())
-
     # Type conversion for Shocks
     for key_ in ['coeffs', 'fixed']:
         dict_['SHOCKS'][key_] = np.array(dict_['SHOCKS'][key_])
@@ -92,12 +83,13 @@ def _process_line(list_, dict_, keyword):
         name = 'coeffs'
 
     # Determine whether coefficient is fixed or not.
-    is_fixed = val[0] == '!'
-    if is_fixed:
-        val = val[1:]
+    if name in ['coeffs']:
+        is_fixed = (len(list_) == 3)
+        if is_fixed:
+            assert (list_[2] == '!')
 
-    # Prepare container.
-    if ('coeffs' not in dict_[keyword].keys()) and (name in ['coeffs', 'int']):
+    # Prepare container for information about coefficients
+    if ('coeffs' not in dict_[keyword].keys()) and (name in ['coeffs']):
         dict_[keyword]['coeffs'] = []
         dict_[keyword]['fixed'] = []
 
@@ -116,19 +108,11 @@ def _process_line(list_, dict_, keyword):
         val = float(val)
 
     # Collect information
-    if name in ['coeffs', 'int']:
+    if name in ['coeffs']:
         dict_[keyword]['coeffs'] += [val]
         dict_[keyword]['fixed'] += [is_fixed]
     else:
         dict_[keyword][name] = val
-
-    # Move value of intercept to first position.
-    if name == 'int':
-        dict_[keyword]['coeffs'].insert(0, dict_[keyword]['coeffs'][-1])
-        dict_[keyword]['coeffs'].pop()
-
-        dict_[keyword]['fixed'].insert(0, dict_[keyword]['fixed'][-1])
-        dict_[keyword]['fixed'].pop()
 
     # Finishing.
     return dict_
@@ -164,9 +148,8 @@ def _check_integrity_read(dict_):
 
     # Check all keys
     keys_ = ['BASICS', 'EDUCATION', 'OCCUPATION A', 'OCCUPATION B']
-    keys_ += ['HOME', 'INTERPOLATION']
-    keys_ += ['SHOCKS', 'SOLUTION', 'AMBIGUITY', 'SIMULATION', 'PROGRAM']
-    keys_ += ['ESTIMATION']
+    keys_ += ['HOME', 'INTERPOLATION', 'SHOCKS', 'SOLUTION']
+    keys_ += ['AMBIGUITY', 'SIMULATION', 'PROGRAM', 'ESTIMATION']
 
     assert (set(keys_) == set(dict_.keys()))
 
@@ -231,12 +214,8 @@ def _check_integrity_read(dict_):
     for key_ in ['coeffs', 'fixed']:
         assert (np.all(np.isfinite(dict_['SHOCKS'][key_])))
         if key_ == 'coeffs':
-            assert dict_['SHOCKS'][key_].shape == (4, 4)
+            assert (dict_['SHOCKS'][key_].shape == (10,))
             assert (np.all(np.diag(dict_['SHOCKS'][key_]) >= 0))
-            assert (np.array_equal(dict_['SHOCKS'][key_].transpose(),
-                dict_['SHOCKS'][key_]))
-            if not (np.count_nonzero(dict_['SHOCKS'][key_]) == 0):
-                assert(np.linalg.det(dict_['SHOCKS'][key_]) > 0)
         elif key_ == 'fixed':
             assert (np.all(dict_['SHOCKS'][key_] == False)) or \
                 (np.all(dict_['SHOCKS'][key_] == True))

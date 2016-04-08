@@ -64,23 +64,17 @@ def generate_random_dict(constraints=None):
 
     # Occupation A
     dict_['OCCUPATION A'] = dict()
-    coeffs = np.random.uniform(-0.05, 0.05, 5).tolist()
-    int_ = np.random.uniform(-0.05, 0.05, 1).tolist()
-    dict_['OCCUPATION A']['coeffs'] = int_ + coeffs
+    dict_['OCCUPATION A']['coeffs'] = np.random.uniform(-0.05, 0.05, 6).tolist()
     dict_['OCCUPATION A']['fixed'] = paras_fixed[0:6]
 
     # Occupation B
     dict_['OCCUPATION B'] = dict()
-    coeffs = np.random.uniform(-0.05, 0.05, 5).tolist()
-    int_ = np.random.uniform(-0.05, 0.05, 1).tolist()
-    dict_['OCCUPATION B']['coeffs'] = int_ + coeffs
+    dict_['OCCUPATION B']['coeffs'] = np.random.uniform(-0.05, 0.05, 6).tolist()
     dict_['OCCUPATION B']['fixed'] = paras_fixed[6:12]
 
     # Education
     dict_['EDUCATION'] = dict()
-    coeffs = np.random.uniform(-0.05, 0.05, 2).tolist()
-    int_ = np.random.uniform(-0.05, 0.05, 1).tolist()
-    dict_['EDUCATION']['coeffs'] = coeffs + int_
+    dict_['EDUCATION']['coeffs'] = np.random.uniform(-0.05, 0.05, 6).tolist()
     dict_['EDUCATION']['fixed'] = paras_fixed[12:15]
 
     dict_['EDUCATION']['start'] = np.random.randint(1, 10)
@@ -267,7 +261,7 @@ def generate_random_dict(constraints=None):
         num_agents = constraints['agents']
         # Checks
         assert (num_agents > 0)
-        assert (isinstance(num_agents, int_))
+        assert (isinstance(num_agents, int))
         assert (np.isfinite(num_agents))
         # Replace in initialization files
         dict_['SIMULATION']['agents'] = num_agents
@@ -278,7 +272,7 @@ def generate_random_dict(constraints=None):
         num_draws_prob = constraints['sims']
         # Checks
         assert (num_draws_prob > 0)
-        assert (isinstance(num_draws_prob, int_))
+        assert (isinstance(num_draws_prob, int))
         assert (np.isfinite(num_draws_prob))
         # Replace in initialization files
         dict_['ESTIMATION']['draws'] = num_draws_prob
@@ -291,20 +285,16 @@ def format_opt_parameters(val, identifier, paras_fixed):
     """ This function formats the values depending on whether they are fixed
     during the optimization or not.
     """
-    # Cut values down to four digits
-    val = np.around(val, decimals=4)
-    # Determine status
-    is_fixed = paras_fixed[identifier]
-    # Formatting
-    if is_fixed:
-        val = '!' + str(val)
-    else:
-        val = str(val)
+    # Initialize baseline line
+    line = ['coeff', val, ' ']
+    if paras_fixed[identifier]:
+        line[-1] = '!'
+
     # Finishing
-    return val
+    return line
 
 
-def print_random_dict(dict_):
+def print_random_dict(dict_, file_name='test.robupy.ini'):
     """ Print initialization dictionary to file. The different formatting
     makes the file rather involved. The resulting initialization files are
     read by PYTHON and FORTRAN routines. Thus, the formatting with respect to
@@ -319,20 +309,26 @@ def print_random_dict(dict_):
     paras_fixed += dict_['HOME']['fixed'][:]
     paras_fixed += [dict_['SHOCKS']['fixed'][0]][:]
 
-    str_base = ' {0:<15} {1:<15} \n'
+    str_optim = ' {0:<10} {1:15.4f} {2:>5} \n'
+
+    # Construct labels. This ensures that the initialization files alway look
+    # identical.
+    labels = ['BASICS', 'AMBIGUITY', 'OCCUPATION A', 'OCCUPATION B']
+    labels += ['EDUCATION', 'HOME', 'SHOCKS',  'SOLUTION']
+    labels += ['SIMULATION', 'ESTIMATION', 'PROGRAM', 'INTERPOLATION']
 
     # Create initialization.
-    with open('test.robupy.ini', 'w') as file_:
+    with open(file_name, 'w') as file_:
 
-        for flag in dict_.keys():
-
+        for flag in labels:
             if flag in ['BASICS']:
 
                 file_.write(' BASICS \n\n')
 
-                file_.write(str_base.format('periods', dict_[flag]['periods']))
+                str_ = ' {0:<10} {1:>15} \n'
+                file_.write(str_.format('periods', dict_[flag]['periods']))
 
-                str_ = ' {0:<15} {1:15.2f} \n'
+                str_ = ' {0:<10} {1:15.4f} \n'
                 file_.write(str_.format('delta', dict_[flag]['delta']))
 
                 file_.write('\n')
@@ -343,12 +339,12 @@ def print_random_dict(dict_):
 
                 for keys_ in dict_[flag]:
 
-                    str_ = ' {0:<15} {1:15.2f} \n'
+                    str_ = ' {0:<10} {1:15.4f} \n'
 
                     # Special treatment of ambiguity measure. which is a simple
                     # string.
                     if keys_ in ['measure']:
-                        str_ = ' {0:<15} {1:<15} \n'
+                        str_ = ' {0:<10} {1:>15} \n'
 
                     file_.write(str_.format(keys_, dict_[flag][keys_]))
 
@@ -359,8 +355,8 @@ def print_random_dict(dict_):
                 file_.write(' ' + flag.upper() + '\n\n')
 
                 val = dict_['HOME']['coeffs'][0]
-                val = format_opt_parameters(val, 15, paras_fixed)
-                file_.write(str_base.format('int', val))
+                line = format_opt_parameters(val, 15, paras_fixed)
+                file_.write(str_optim.format(*line))
 
                 file_.write('\n')
 
@@ -371,11 +367,11 @@ def print_random_dict(dict_):
 
                 for keys_ in dict_[flag]:
 
-                    str_ = str_base
                     if keys_ in ['tau']:
-                        str_ = ' {0:<15} {1:15.2f} \n'
+                        str_ = ' {0:<10} {1:15.0f} \n'
                         file_.write(str_.format(keys_, dict_[flag][keys_]))
                     else:
+                        str_ = ' {0:<10} {1:>15} \n'
                         file_.write(str_.format(keys_, str(dict_[flag][keys_])))
 
                 file_.write('\n')
@@ -387,9 +383,8 @@ def print_random_dict(dict_):
 
                 for i in range(10):
                     val = dict_['SHOCKS']['coeffs'][i]
-                    val = format_opt_parameters(val, 16, paras_fixed)
-                    line = ['coeff', val]
-                    file_.write(str_base.format(*line))
+                    line = format_opt_parameters(val, 16, paras_fixed)
+                    file_.write(str_optim.format(*line))
                 file_.write('\n')
 
             if flag in ['EDUCATION']:
@@ -397,48 +392,43 @@ def print_random_dict(dict_):
                 file_.write(' ' + flag.upper() + '\n\n')
 
                 val = dict_['EDUCATION']['coeffs'][0]
-                val = format_opt_parameters(val, 12, paras_fixed)
-                file_.write(str_base.format('int', val))
+                line = format_opt_parameters(val, 12, paras_fixed)
+                file_.write(str_optim.format(*line))
 
                 val = dict_['EDUCATION']['coeffs'][1]
-                val = format_opt_parameters(val, 13, paras_fixed)
-                file_.write(str_base.format('coeff', val))
+                line = format_opt_parameters(val, 13, paras_fixed)
+                file_.write(str_optim.format(*line))
 
                 val = dict_['EDUCATION']['coeffs'][2]
-                val = format_opt_parameters(val, 14, paras_fixed)
-                file_.write(str_base.format('coeff', val))
+                line = format_opt_parameters(val, 14, paras_fixed)
+                file_.write(str_optim.format(*line))
+
+                file_.write('\n')
+                str_ = ' {0:<10} {1:>15} \n'
+                file_.write(str_.format('start', dict_[flag]['start']))
+                file_.write(str_.format('max', dict_[flag]['max']))
 
                 file_.write('\n')
 
-                file_.write(str_base.format('start', dict_[flag]['start']))
-                file_.write(str_base.format('max', dict_[flag]['max']))
+            if flag in ['OCCUPATION A', 'OCCUPATION B']:
+
+                if flag == 'OCCUPATION A':
+                    identifier = 0
+                if flag == 'OCCUPATION B':
+                    identifier = 6
+
+                file_.write(flag + '\n\n')
+
+                # Coefficient
+                for j in range(6):
+                    val = dict_[flag]['coeffs'][j]
+                    line = format_opt_parameters(val, identifier, paras_fixed)
+                    identifier += 1
+
+                    file_.write(str_optim.format(*line))
 
                 file_.write('\n')
 
-    # Adding OCCUPATIONS
-    with open('test.robupy.ini', 'a') as file_:
-
-        identifier = 0
-
-        for key_ in ['OCCUPATION A', 'OCCUPATION B']:
-            file_.write(key_ + '\n\n')
-
-            # Coefficient
-            for j in range(6):
-
-                val = dict_[key_]['coeffs'][j]
-                val = format_opt_parameters(val, identifier, paras_fixed)
-
-                if j == 0:
-                    line = ['int', val]
-                else:
-                    line = ['coeff', val]
-
-                identifier += 1
-
-                file_.write(str_base.format(*line))
-
-            file_.write('\n')
     # Write out a valid specification for the admissible optimizers.
     lines = ['SCIPY-BFGS', 'gtol    1e-05', 'epsilon 1.4901161193847656e-08']
     lines += [' ']

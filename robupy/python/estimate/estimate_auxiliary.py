@@ -114,12 +114,16 @@ def dist_optim_paras(x_all_curre, is_debug):
 
     # Checks
     if is_debug:
-        args = [coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
-               shocks_cholesky]
+        args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
+               shocks_cholesky)
         assert check_model_parameters(*args)
 
+    # Collect arguments
+    args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov)
+    args += (shocks_cholesky,)
+
     # Finishing
-    return coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, shocks_cholesky
+    return args
 
 
 def check_optimization_parameters(x):

@@ -15,7 +15,6 @@ import shutil
 import os
 
 # project library
-from robupy.python.estimate.estimate_auxiliary import dist_optim_paras
 from robupy.python.shared.shared_auxiliary import dist_model_paras
 from robupy.tests.codes.random_init import print_random_dict
 from robupy import read
@@ -36,7 +35,6 @@ def dist_input_arguments(parser):
     init_file = args.init_file
     values = args.values
     action = args.action
-    update = args.update
 
     # Special processing for identifiers to allow to pass in ranges.
     identifiers_list = []
@@ -67,31 +65,22 @@ def dist_input_arguments(parser):
     if action in ['free', 'fix']:
         assert (values is None)
         assert os.path.exists(init_file)
-    else:
-        assert (update is False)
 
     # Finishing
-    return identifiers_list, values, action, init_file, update
+    return identifiers_list, values, action, init_file
 
 
 ''' Main function
 '''
 
 
-def change_status(identifiers, init_file, is_fixed, update):
+def change_status(identifiers, init_file, is_fixed):
 
     # Baseline
     robupy_obj, init_dict = read(init_file, True)
 
-    if update:
-        paras_steps = np.loadtxt(open('paras_steps.robupy.log', 'r'))
-
-        coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, _ = \
-            dist_optim_paras(paras_steps, True)
-
-    else:
-        model_paras = robupy_obj.get_attr('model_paras')
-        coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, _ = \
+    model_paras = robupy_obj.get_attr('model_paras')
+    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, _ = \
             dist_model_paras(model_paras, True)
 
     # Special treatment for covariance matrix
@@ -116,13 +105,13 @@ def change_status(identifiers, init_file, is_fixed, update):
             init_dict['HOME']['coeffs'][j] = coeffs_home[j]
             init_dict['HOME']['fixed'][j] = is_fixed
         elif identifier in list(range(16, 26)):
-            init_dict['SHOCKS']['coeffs'] = shocks_cov
-            init_dict['SHOCKS']['fixed'] = np.tile(is_fixed, (4, 4))
+            shocks_coeff = shocks_cov[np.tril_indices_from(shocks_cov)].tolist()
+            init_dict['SHOCKS']['coeffs'] = shocks_coeff
+            init_dict['SHOCKS']['fixed'] = np.tile(is_fixed, 1)
         else:
             raise NotImplementedError
 
-        print_random_dict(init_dict)
-        shutil.move('test.robupy.ini', init_file)
+        print_random_dict(init_dict, init_file)
 
 
 def change_value(identifiers, init_file, values):
@@ -166,16 +155,12 @@ if __name__ == '__main__':
     parser.add_argument('--init_file', action='store', dest='init_file',
         default='model.robupy.ini', help='initialization file')
 
-    parser.add_argument('--update', action='store_true', dest='update',
-        default=False, help='update parameter before changing status')
+    # Process command line arguments
+    identifiers, values, action, init_file = dist_input_arguments(parser)
 
-
-    identifiers, values, action, init_file, update = dist_input_arguments(
-        parser)
-
-    # # Select interface
+    # Select interface
     if action in ['free', 'fix']:
         is_fixed = (action == 'fix')
-        change_status(identifiers, init_file, is_fixed, update)
+        change_status(identifiers, init_file, is_fixed)
     elif action in ['change']:
         change_value(identifiers, init_file, values)
