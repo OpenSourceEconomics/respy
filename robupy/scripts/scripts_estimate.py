@@ -15,7 +15,7 @@ import os
 from robupy.python.estimate.estimate_auxiliary import dist_optim_paras
 from robupy.python.estimate.estimate_auxiliary import get_optim_paras
 
-from robupy.python.shared.shared_auxiliary import distribute_class_attributes
+from robupy.python.shared.shared_auxiliary import dist_class_attributes
 from robupy.python.shared.shared_auxiliary import dist_model_paras
 from robupy.python.shared.shared_auxiliary import create_draws
 
@@ -42,7 +42,7 @@ def add_gradient_information(robupy_obj, data_frame):
         num_draws_emax, seed_emax, level, measure, min_idx, is_ambiguous, \
         is_deterministic, is_myopic, is_interpolated, num_points, version, \
         maxiter, optimizer, paras_fixed, tau = \
-        distribute_class_attributes(robupy_obj,
+        dist_class_attributes(robupy_obj,
             'model_paras', 'num_periods', 'num_agents', 'edu_start',
             'seed_data', 'is_debug', 'file_sim', 'edu_max', 'delta',
             'num_draws_prob', 'seed_prob', 'num_draws_emax', 'seed_emax',
@@ -129,7 +129,7 @@ def add_gradient_information(robupy_obj, data_frame):
                 out_file.write('\n\n')
 
 
-def distribute_input_arguments(parser):
+def dist_input_arguments(parser):
     """ Check input for estimation script.
     """
     # Parse arguments
@@ -211,6 +211,6 @@ if __name__ == '__main__':
     parser.add_argument('--gradient', action='store_true', dest='gradient',
         default=False, help='gradient information')
 
-    resume, single, init_file, gradient = distribute_input_arguments(parser)
+    resume, single, init_file, gradient = dist_input_arguments(parser)
 
     estimate_wrapper(resume, single, init_file, gradient)

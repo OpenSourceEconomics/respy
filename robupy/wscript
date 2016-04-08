@@ -29,9 +29,6 @@ def options(opt):
 
     opt.load('compiler_fc')
 
-    opt.add_option('--test', action='store_true', dest='is_test',
-                   default=False, help='run test battery')
-
     opt.add_option('--debug', action='store_true', dest='is_debug',
                    default=False, help='use debug compiler options')
 
@@ -48,7 +45,6 @@ def configure(conf):
 
 def build(bld):
 
-    is_test = bld.options.is_test
     is_debug = bld.options.is_debug
 
     # Start from a clean slate
@@ -64,21 +60,8 @@ def build(bld):
     # Initialize directory structure
     bld.recurse("fortran")
 
-    if is_test:
-        bld.add_post_fun(post)
-
-
 def distclean(bld):
     cleanup_build()
-
-
-def post(bld):
-    """ Run test battery after compilation.
-    """
-    os.chdir(bld.env.project_paths['ROBUPY'] + '/tests')
-
-    pytest.main([])
-
 
 def cleanup_build(is_build=False):
     """ This function deletes all nuisance files from the package

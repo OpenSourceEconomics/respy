@@ -6,7 +6,7 @@ import numpy as np
 
 # project library
 from robupy.python.solve.solve_auxiliary import pyth_create_state_space
-from robupy.python.shared.shared_auxiliary import distribute_class_attributes
+from robupy.python.shared.shared_auxiliary import dist_class_attributes
 
 from robupy import read
 
@@ -23,7 +23,7 @@ def write_interpolation_grid(file_name):
 
     # Distribute class attribute
     num_periods, num_points, edu_start, edu_max, min_idx = \
-        distribute_class_attributes(robupy_obj,
+        dist_class_attributes(robupy_obj,
             'num_periods', 'num_points', 'edu_start', 'edu_max', 'min_idx')
 
     # Determine maximum number of states

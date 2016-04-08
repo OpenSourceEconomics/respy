@@ -21,7 +21,7 @@ from robupy.tests.codes.random_init import generate_random_dict
 from robupy.tests.codes.random_init import print_random_dict
 from robupy.tests.codes.random_init import generate_init
 
-from robupy.python.shared.shared_auxiliary import distribute_class_attributes
+from robupy.python.shared.shared_auxiliary import dist_class_attributes
 from robupy.python.shared.shared_auxiliary import replace_missing_values
 from robupy.python.shared.shared_auxiliary import dist_model_paras
 from robupy.python.shared.shared_auxiliary import create_draws
@@ -66,7 +66,7 @@ class TestClass(object):
 
             # Extract class attributes
             states_number_period, periods_emax = \
-                distribute_class_attributes(robupy_obj,
+                dist_class_attributes(robupy_obj,
                     'states_number_period', 'periods_emax')
 
             # Store and check results
@@ -102,7 +102,7 @@ class TestClass(object):
             mapping_state_idx, is_deterministic, seed_prob, periods_emax, \
             is_ambiguous, model_paras, num_periods, states_all, num_points, \
             edu_start, num_draws_emax, is_debug, measure, edu_max, delta, \
-            level = distribute_class_attributes(robupy_obj,
+            level = dist_class_attributes(robupy_obj,
                 'periods_payoffs_systematic', 'states_number_period',
                 'mapping_state_idx', 'is_deterministic', 'seed_prob',
                 'periods_emax', 'is_ambiguous', 'model_paras', 'num_periods',
@@ -191,7 +191,7 @@ class TestClass(object):
         robupy_obj = read('test.robupy.ini')
 
         # Extract class attributes
-        is_debug, num_periods = distribute_class_attributes(robupy_obj,
+        is_debug, num_periods = dist_class_attributes(robupy_obj,
                 'is_debug', 'num_periods')
 
         # Write out a grid for the interpolation
@@ -262,7 +262,7 @@ class TestClass(object):
 
             # Extract class attributes
             states_number_period, periods_emax = \
-                distribute_class_attributes(robupy_obj,
+                dist_class_attributes(robupy_obj,
                     'states_number_period', 'periods_emax')
 
             # Store and check results

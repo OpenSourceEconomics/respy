@@ -18,7 +18,7 @@ from robupy import read
 """
 
 
-def distribute_input_arguments(parser):
+def dist_input_arguments(parser):
     """ Check input for estimation script.
     """
     # Parse arguments
@@ -84,6 +84,6 @@ if __name__ == '__main__':
     parser.add_argument('--file_sim', action='store', dest='file_sim',
         default=None, help='output file')
 
-    update, init_file, file_sim = distribute_input_arguments(parser)
+    update, init_file, file_sim = dist_input_arguments(parser)
 
     simulate_wrapper(update, init_file, file_sim)

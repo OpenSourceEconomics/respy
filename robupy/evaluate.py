@@ -11,7 +11,7 @@ from robupy.fortran.fortran import fort_evaluate
 from robupy.python.evaluate.evaluate_auxiliary import check_input
 from robupy.python.evaluate.evaluate_auxiliary import check_output
 
-from robupy.python.shared.shared_auxiliary import distribute_class_attributes
+from robupy.python.shared.shared_auxiliary import dist_class_attributes
 from robupy.python.shared.shared_auxiliary import dist_model_paras
 from robupy.python.shared.shared_auxiliary import create_draws
 
@@ -30,7 +30,7 @@ def evaluate(robupy_obj, data_frame):
         edu_max, delta, is_deterministic, version, num_draws_prob, seed_prob, \
         num_draws_emax, seed_emax, is_interpolated, is_ambiguous, num_points, \
         is_myopic, min_idx, measure, level, tau = \
-            distribute_class_attributes(robupy_obj,
+            dist_class_attributes(robupy_obj,
                 'model_paras', 'num_periods', 'num_agents', 'edu_start',
                 'seed_data', 'is_debug', 'edu_max', 'delta', 'is_deterministic',
                 'version', 'num_draws_prob', 'seed_prob', 'num_draws_emax',

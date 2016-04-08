@@ -21,7 +21,7 @@ from robupy.tests.codes.auxiliary import write_draws
 from robupy.python.evaluate.evaluate_auxiliary import check_input
 from robupy.python.evaluate.evaluate_auxiliary import check_output
 
-from robupy.python.shared.shared_auxiliary import distribute_class_attributes
+from robupy.python.shared.shared_auxiliary import dist_class_attributes
 from robupy.python.shared.shared_auxiliary import dist_model_paras
 from robupy.python.shared.shared_auxiliary import create_draws
 

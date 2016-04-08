@@ -25,7 +25,7 @@ from robupy import read
 '''
 
 
-def distribute_input_arguments(parser):
+def dist_input_arguments(parser):
     """ Check input for script.
     """
     # Parse arguments
@@ -170,7 +170,7 @@ if __name__ == '__main__':
         default=False, help='update parameter before changing status')
 
 
-    identifiers, values, action, init_file, update = distribute_input_arguments(
+    identifiers, values, action, init_file, update = dist_input_arguments(
         parser)
 
     # # Select interface

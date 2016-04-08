@@ -14,7 +14,7 @@ from pandas.util.testing import assert_frame_equal
 from robupy.tests.codes.random_init import generate_random_dict
 from robupy.tests.codes.random_init import print_random_dict
 
-from robupy.python.shared.shared_auxiliary import distribute_class_attributes
+from robupy.python.shared.shared_auxiliary import dist_class_attributes
 from robupy.python.shared.shared_constants import FORTRAN_DIR
 
 from robupy import simulate
@@ -132,7 +132,7 @@ class TestClass(object):
         # ROBUPY package. The existence of the file leads to the RESTUD program
         # to write out the random components.
         model_paras, level, edu_start, edu_max, num_agents, num_periods, \
-            num_draws_emax, delta = distribute_class_attributes(robupy_obj,
+            num_draws_emax, delta = dist_class_attributes(robupy_obj,
                 'model_paras', 'level', 'edu_start', 'edu_max', 'num_agents',
                 'num_periods', 'num_draws_emax', 'delta')
 

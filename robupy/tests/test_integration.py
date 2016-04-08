@@ -13,7 +13,7 @@ from codes.auxiliary import write_interpolation_grid
 from codes.auxiliary import write_draws
 
 # project library
-from robupy.python.shared.shared_auxiliary import distribute_class_attributes
+from robupy.python.shared.shared_auxiliary import dist_class_attributes
 from robupy.python.shared.shared_auxiliary import dist_model_paras
 from robupy.python.shared.shared_auxiliary import read_draws
 
@@ -346,7 +346,7 @@ class TestClass(object):
             seed_emax, is_debug, delta, level, is_ambiguous, measure, \
             is_interpolated, num_points, is_deterministic, is_myopic, \
             num_agents, num_draws_prob, seed_prob, tau, paras_fixed = \
-                distribute_class_attributes(robupy_obj,
+                dist_class_attributes(robupy_obj,
                     'num_periods', 'edu_start', 'edu_max', 'min_idx',
                     'model_paras', 'num_draws_emax', 'seed_emax', 'is_debug',
                     'delta', 'level', 'is_ambiguous', 'measure',

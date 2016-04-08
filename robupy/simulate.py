@@ -27,7 +27,7 @@ from robupy.python.simulate.simulate_auxiliary import check_input
 from robupy.python.simulate.simulate_auxiliary import write_info
 from robupy.python.simulate.simulate_auxiliary import write_out
 
-from robupy.python.shared.shared_auxiliary import distribute_class_attributes
+from robupy.python.shared.shared_auxiliary import dist_class_attributes
 from robupy.python.shared.shared_auxiliary import dist_model_paras
 from robupy.python.shared.shared_auxiliary import replace_missing_values
 from robupy.python.shared.shared_auxiliary import check_dataset
@@ -64,7 +64,7 @@ def simulate(robupy_obj):
     periods_payoffs_systematic, mapping_state_idx, periods_emax, model_paras, \
         num_periods, num_agents, states_all, edu_start, seed_data, is_debug, \
         file_sim, edu_max, delta, version = \
-            distribute_class_attributes(robupy_obj,
+            dist_class_attributes(robupy_obj,
                 'periods_payoffs_systematic', 'mapping_state_idx',
                 'periods_emax', 'model_paras', 'num_periods', 'num_agents',
                 'states_all', 'edu_start', 'seed_data', 'is_debug',

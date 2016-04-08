@@ -11,7 +11,7 @@ from robupy.python.solve.solve_auxiliary import logging_solution
 from robupy.python.solve.solve_auxiliary import check_input
 from robupy.python.solve.solve_auxiliary import cleanup
 
-from robupy.python.shared.shared_auxiliary import distribute_class_attributes
+from robupy.python.shared.shared_auxiliary import dist_class_attributes
 from robupy.python.shared.shared_auxiliary import replace_missing_values
 from robupy.python.shared.shared_auxiliary import dist_model_paras
 from robupy.python.shared.shared_auxiliary import add_solution
@@ -40,7 +40,7 @@ def solve(robupy_obj):
         is_deterministic, version, num_draws_emax, seed_emax, is_interpolated, \
         is_ambiguous, num_points, is_myopic, min_idx, measure, level, store, \
         tau = \
-            distribute_class_attributes(robupy_obj,
+            dist_class_attributes(robupy_obj,
                 'model_paras', 'num_periods', 'edu_start', 'is_debug',
                 'edu_max', 'delta', 'is_deterministic', 'version',
                 'num_draws_emax', 'seed_emax', 'is_interpolated',
