@@ -119,15 +119,20 @@ def change_status(identifiers, is_fixed):
         shutil.move('test.robupy.ini', init_file)
 
 
-def modify(identifiers, values):
+def modify_value(identifiers, values):
     """ Provide some additional information during estimation run.
     """
 
-    # Read in baseline
+    # Read in some baseline information
+    robupy_obj = read(init_file)
+
+    paras_fixed = robupy_obj.get_attr('paras_fixed')
+
     paras_steps = np.genfromtxt('paras_steps.robupy.log')
 
     # Apply modifications
     for i, j in enumerate(identifiers):
+        assert (not paras_fixed[identifiers])
         paras_steps[j] = values[i]
 
     # Save parametrization to file
@@ -168,4 +173,4 @@ if __name__ == '__main__':
             is_fixed = False
         change_status(identifiers, is_fixed)
     else:
-        modify(identifiers, values)
+        modify_value(identifiers, values)
