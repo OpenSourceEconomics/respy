@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 """ This script allows to modify parameter values.
+
+    Example:
+
+        robupy-modify --fix --identifiers 1-5 5-9
+
 """
 
 # standard library
@@ -32,6 +37,23 @@ def distribute_input_arguments(parser):
     free = args.free
     fix = args.fix
 
+    # Special processing for identifiers to allow to pass in ranges.
+    identifiers_list = []
+    for identifier in identifiers:
+        is_range = ('-' in identifier)
+        if is_range:
+            identifier = identifier.split('-')
+            assert (len(identifier) == 2)
+            identifier = [int(val) for val in identifier]
+            identifier = list(range(identifier[0], identifier[1] + 1))
+        else:
+            identifier = [int(identifier)]
+
+        identifiers_list += identifier
+
+    # Check duplicates
+    assert (len(set(identifiers_list)) == len(identifiers_list))
+
     # Checks
     assert os.path.exists('paras_steps.robupy.log')
     assert isinstance(identifiers, list)
@@ -49,14 +71,14 @@ def distribute_input_arguments(parser):
         assert (fix is False)
 
     # Finishing
-    return identifiers, values, fix, free, init_file
+    return identifiers_list, values, fix, free, init_file
 
 
 ''' Main function
 '''
 
 
-def change_status(identifiers, fix, free):
+def change_status(identifiers, is_fixed):
 
     paras_steps = np.loadtxt(open('paras_steps.robupy.log', 'r'))
 
@@ -66,44 +88,32 @@ def change_status(identifiers, fix, free):
     # Baseline
     robupy_obj, init_dict = read(init_file, True)
 
-    paras_fixed = robupy_obj.get_attr('paras_fixed')
-
     # Special treatment for covariance matrix
     for identifier in identifiers:
-
         if identifier >= 16:
             identifier = 16
-
-        # Ensure that action is in fact taken.
-        if fix:
-            assert (not paras_fixed[identifier])
-            paras_fixed[identifier] = True
-        elif free:
-            assert paras_fixed[identifier]
-            paras_fixed[identifier] = False
-        else:
-            raise NotImplementedError
 
         if identifier in list(range(0, 6)):
             j = identifier
             init_dict['OCCUPATION A']['coeffs'][j] = coeffs_a[j]
+            init_dict['OCCUPATION A']['fixed'][j] = is_fixed
         elif identifier in list(range(6, 12)):
             j = identifier - 6
             init_dict['OCCUPATION B']['coeffs'][j] = coeffs_b[j]
+            init_dict['OCCUPATION B']['fixed'][j] = is_fixed
         elif identifier in list(range(12, 15)):
             j = identifier - 12
             init_dict['EDUCATION']['coeffs'][j] = coeffs_edu[j]
+            init_dict['EDUCATION']['fixed'][j] = is_fixed
         elif identifier in list(range(15, 16)):
             j = identifier - 15
             init_dict['HOME']['coeffs'][j] = coeffs_home[j]
+            init_dict['HOME']['fixed'][j] = is_fixed
         elif identifier in list(range(16, 26)):
             init_dict['SHOCKS']['coeffs'] = shocks_cov
+            init_dict['SHOCKS']['fixed'] = np.tile(is_fixed, (4, 4))
         else:
             raise NotImplementedError
-
-        # Additional information
-        init_dict['ADDITIONAL'] = dict()
-        init_dict['ADDITIONAL']['paras_fixed'] = paras_fixed
 
         print_random_dict(init_dict)
         shutil.move('test.robupy.ini', init_file)
@@ -133,8 +143,7 @@ if __name__ == '__main__':
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('--identifiers', action='store', dest='identifiers',
-        nargs='*', default=None, help='parameter identifiers', required=True,
-        type=int)
+        nargs='*', default=None, help='parameter identifiers', required=True)
 
     parser.add_argument('--values', action='store', dest='values',
         nargs='*', default=None, help='updated parameter values', type=float)
@@ -151,8 +160,12 @@ if __name__ == '__main__':
     identifiers, values, fix, free, init_file = \
         distribute_input_arguments(parser)
 
-    # Select interface
+    # # Select interface
     if fix or free:
-        change_status(identifiers, fix, free)
+        if fix:
+            is_fixed = True
+        elif free:
+            is_fixed = False
+        change_status(identifiers, is_fixed)
     else:
         modify(identifiers, values)

@@ -299,10 +299,10 @@ class RobupyCls(object):
             init_dict['HOME']['coeffs']
 
         # Initialize information about optimization parameters
-        self.attr['paras_fixed'] = init_dict['OCCUPATION A']['fixed']
-        self.attr['paras_fixed'] += init_dict['OCCUPATION B']['fixed']
-        self.attr['paras_fixed'] += init_dict['EDUCATION']['fixed']
-        self.attr['paras_fixed'] += init_dict['HOME']['fixed']
+        self.attr['paras_fixed'] = init_dict['OCCUPATION A']['fixed'][:]
+        self.attr['paras_fixed'] += init_dict['OCCUPATION B']['fixed'][:]
+        self.attr['paras_fixed'] += init_dict['EDUCATION']['fixed'][:]
+        self.attr['paras_fixed'] += init_dict['HOME']['fixed'][:]
 
         # Special treatment of covariance matrix. Either all components are
         # fixed or none.

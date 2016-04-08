@@ -10,10 +10,6 @@ import sys
 # ROOT DIRECTORY
 sys.path.insert(0, os.environ['ROBUPY'])
 # ROOT DIRECTORY
-ROOT_DIR = os.environ['ROBUPY']
-ROOT_DIR = ROOT_DIR + '/robupy/tests'
-
-sys.path.insert(0, ROOT_DIR)
 
 # project library
 from robupy.python.evaluate.evaluate_python import pyth_evaluate

@@ -43,12 +43,9 @@ def generate_random_dict(constraints=None):
     # parameter is always free. Note, that we only sample 17 realizations
     # even though there are 26 parameters. The last entry decides whether the
     # full covariance matrix is fixed or not.
-    paras_fixed = np.random.choice([True, False], 17)
+    paras_fixed = np.random.choice([True, False], 17).tolist()
     if sum(paras_fixed) == 17:
         paras_fixed[np.random.randint(0, 17)] = True
-
-    dict_['ADDITIONAL'] = {}
-    dict_['ADDITIONAL']['paras_fixed'] = paras_fixed
 
     # Basics
     dict_['BASICS'] = {}
@@ -63,24 +60,28 @@ def generate_random_dict(constraints=None):
     # Home
     dict_['HOME'] = dict()
     dict_['HOME']['coeffs'] = np.random.uniform(-0.05, 0.05, 1).tolist()
+    dict_['HOME']['fixed'] = paras_fixed[15:16]
 
     # Occupation A
     dict_['OCCUPATION A'] = dict()
     coeffs = np.random.uniform(-0.05, 0.05, 5).tolist()
     int_ = np.random.uniform(-0.05, 0.05, 1).tolist()
     dict_['OCCUPATION A']['coeffs'] = int_ + coeffs
+    dict_['OCCUPATION A']['fixed'] = paras_fixed[0:6]
 
     # Occupation B
     dict_['OCCUPATION B'] = dict()
     coeffs = np.random.uniform(-0.05, 0.05, 5).tolist()
     int_ = np.random.uniform(-0.05, 0.05, 1).tolist()
     dict_['OCCUPATION B']['coeffs'] = int_ + coeffs
+    dict_['OCCUPATION B']['fixed'] = paras_fixed[6:12]
 
     # Education
     dict_['EDUCATION'] = dict()
     coeffs = np.random.uniform(-0.05, 0.05, 2).tolist()
     int_ = np.random.uniform(-0.05, 0.05, 1).tolist()
     dict_['EDUCATION']['coeffs'] = coeffs + int_
+    dict_['EDUCATION']['fixed'] = paras_fixed[12:15]
 
     dict_['EDUCATION']['start'] = np.random.randint(1, 10)
     dict_['EDUCATION']['max'] = np.random.randint(
@@ -119,6 +120,7 @@ def generate_random_dict(constraints=None):
     for i, val in enumerate(np.random.uniform(0.05, 1, 4)):
         shocks_cov[i, i] = val
     dict_['SHOCKS']['coeffs'] = shocks_cov
+    dict_['SHOCKS']['fixed'] = np.tile(paras_fixed[16:17], (4, 4))
 
     # INTERPOLATION
     dict_['INTERPOLATION'] = {}
@@ -311,7 +313,11 @@ def print_random_dict(dict_):
     # Antibugging.
     assert (isinstance(dict_, dict))
 
-    paras_fixed = dict_['ADDITIONAL']['paras_fixed']
+    paras_fixed = dict_['OCCUPATION A']['fixed'][:]
+    paras_fixed += dict_['OCCUPATION B']['fixed'][:]
+    paras_fixed += dict_['EDUCATION']['fixed'][:]
+    paras_fixed += dict_['HOME']['fixed'][:]
+    paras_fixed += [dict_['SHOCKS']['fixed'][0, 0]][:]
 
     str_base = ' {0:<15} {1:<15} \n'
 
