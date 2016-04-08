@@ -118,9 +118,16 @@ def add_gradient_information(robupy_obj, data_frame):
                 # Iterate over all candidate values, but only write the free
                 # ones to file. This ensure that the identifiers line up.
                 for j in range(26):
-                    if not paras_fixed[j]:
+
+                    if j < 16:
+                        is_fixed = paras_fixed[j]
+                    else:
+                        is_fixed = paras_fixed[16]
+
+                    if not is_fixed:
                         values = [j, grad.pop(0)]
                         out_file.write(fmt_.format(*values))
+
                 out_file.write('\n')
 
                 # Add value of infinity norm

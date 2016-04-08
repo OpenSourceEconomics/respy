@@ -3,16 +3,24 @@ development tests.
 """
 
 # standard library
+from pandas.util.testing import assert_frame_equal
+
 import numpy as np
 import pandas as pd
+
+import shutil
 import pytest
-from pandas.util.testing import assert_frame_equal
 
 # testing library
 from codes.auxiliary import write_interpolation_grid
 from codes.auxiliary import write_draws
 
 # project library
+from robupy.scripts.scripts_estimate import scripts_estimate
+from robupy.scripts.scripts_simulate import scripts_simulate
+from robupy.scripts.scripts_update import scripts_update
+from robupy.scripts.scripts_modify import scripts_modify
+
 from robupy.python.shared.shared_auxiliary import dist_class_attributes
 from robupy.python.shared.shared_auxiliary import dist_model_paras
 from robupy.python.shared.shared_auxiliary import read_draws
@@ -469,3 +477,65 @@ class TestClass(object):
             if base_val is None:
                 base_val = val
             np.testing.assert_allclose(base_val, val)
+
+    def test_9(self):
+        """ Test the evaluation of the criterion function for random
+        requests, not just at the true values.
+        """
+        # Constraints that ensure that two alternative initialization files
+        # can be used for the same simulated data.
+        constr = dict()
+        constr['periods'] = np.random.randint(1, 4)
+        constr['agents'] = np.random.randint(1, 100)
+        constr['edu'] = (7, 15)
+        constr['maxiter'] = 0
+
+        # Simulate a dataset
+        generate_init(constr)
+        robupy_obj = read('test.robupy.ini')
+        data_frame = simulate(robupy_obj)
+
+        # Evaluate at different points, ensuring that the simulated datset
+        # still fits.
+        generate_init(constr)
+
+        robupy_obj = read('test.robupy.ini')
+        evaluate(robupy_obj, data_frame)
+
+    def test_10(self):
+        """ Test the scripts.
+        """
+        # Constraints that ensure that two alternative initialization files
+        # can be used for the same simulated data.
+        constr = dict()
+        constr['periods'] = np.random.randint(1, 4)
+        constr['agents'] = np.random.randint(1, 100)
+        constr['edu'] = (7, 15)
+        constr['maxiter'] = 0
+
+        # Simulate a dataset
+        generate_init(constr)
+        robupy_obj = read('test.robupy.ini')
+        simulate(robupy_obj)
+
+        # Potentially evaluate at different points.
+        generate_init(constr)
+        shutil.move('data.robupy.paras', 'paras_steps.robupy.log')
+
+        init_file = 'test.robupy.ini'
+        file_sim = 'sim.robupy'
+
+        gradient = np.random.choice([True, False])
+        single = np.random.choice([True, False])
+        resume = np.random.choice([True, False])
+        update = np.random.choice([True, False])
+
+        action = np.random.choice(['fix', 'free', 'value'])
+        num_draws = np.random.randint(1, 27)
+        identifiers = np.random.choice(range(26), num_draws, replace=False)
+        values = np.random.uniform(size=num_draws)
+
+        scripts_estimate(resume, single, init_file, gradient)
+        scripts_simulate(update, init_file, file_sim)
+        scripts_update(init_file)
+        scripts_modify(identifiers, values, action, init_file)

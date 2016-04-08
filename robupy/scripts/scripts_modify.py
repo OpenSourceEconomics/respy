@@ -79,7 +79,7 @@ def scripts_modify(identifiers, values, action, init_file):
     if action in ['free', 'fix']:
         is_fixed = (action == 'fix')
         change_status(identifiers, init_file, is_fixed)
-    elif action in ['change']:
+    elif action in ['value']:
         change_value(identifiers, init_file, values)
 
 
@@ -129,15 +129,10 @@ def change_value(identifiers, init_file, values):
     """
 
     # Read in some baseline information
-    robupy_obj = read(init_file)
-
-    paras_fixed = robupy_obj.get_attr('paras_fixed')
-
     paras_steps = np.genfromtxt('paras_steps.robupy.log')
 
     # Apply modifications
     for i, identifier in enumerate(identifiers):
-        assert (not paras_fixed[identifier])
         paras_steps[identifier] = values[i]
 
     # Save parametrization to file
@@ -160,7 +155,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--action', action='store', dest='action',
         default=None, help='requested action', type=str, required=True,
-        choices=['fix', 'free', 'change'])
+        choices=['fix', 'free', 'value'])
 
     parser.add_argument('--init_file', action='store', dest='init_file',
         default='model.robupy.ini', help='initialization file')
