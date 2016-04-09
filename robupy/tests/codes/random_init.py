@@ -312,7 +312,7 @@ def print_random_dict(dict_, file_name='test.robupy.ini'):
     paras_fixed += dict_['HOME']['fixed'][:]
     paras_fixed += [dict_['SHOCKS']['fixed'][0]][:]
 
-    str_optim = ' {0:<10} {1:15.4f} {2:>5} \n'
+    str_optim = ' {0:<10} {1:20.4f} {2:>5} \n'
 
     # Construct labels. This ensures that the initialization files alway look
     # identical.
@@ -328,10 +328,10 @@ def print_random_dict(dict_, file_name='test.robupy.ini'):
 
                 file_.write(' BASICS \n\n')
 
-                str_ = ' {0:<10} {1:>15} \n'
+                str_ = ' {0:<10} {1:>20} \n'
                 file_.write(str_.format('periods', dict_[flag]['periods']))
 
-                str_ = ' {0:<10} {1:15.4f} \n'
+                str_ = ' {0:<10} {1:20.4f} \n'
                 file_.write(str_.format('delta', dict_[flag]['delta']))
 
                 file_.write('\n')
@@ -342,12 +342,12 @@ def print_random_dict(dict_, file_name='test.robupy.ini'):
 
                 for keys_ in dict_[flag]:
 
-                    str_ = ' {0:<10} {1:15.4f} \n'
+                    str_ = ' {0:<10} {1:20.4f} \n'
 
                     # Special treatment of ambiguity measure. which is a simple
                     # string.
                     if keys_ in ['measure']:
-                        str_ = ' {0:<10} {1:>15} \n'
+                        str_ = ' {0:<10} {1:>20} \n'
 
                     file_.write(str_.format(keys_, dict_[flag][keys_]))
 
@@ -371,10 +371,10 @@ def print_random_dict(dict_, file_name='test.robupy.ini'):
                 for keys_ in dict_[flag]:
 
                     if keys_ in ['tau']:
-                        str_ = ' {0:<10} {1:15.0f} \n'
+                        str_ = ' {0:<10} {1:20.0f} \n'
                         file_.write(str_.format(keys_, dict_[flag][keys_]))
                     else:
-                        str_ = ' {0:<10} {1:>15} \n'
+                        str_ = ' {0:<10} {1:>20} \n'
                         file_.write(str_.format(keys_, str(dict_[flag][keys_])))
 
                 file_.write('\n')
