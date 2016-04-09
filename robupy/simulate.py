@@ -80,7 +80,7 @@ def simulate(robupy_obj):
     # Simulate a dataset with the results from the solution and write out the
     # dataset to a text file. In addition a file summarizing the dataset is
     # produced.
-    logger.info('Staring simulation of model for ' + str(num_agents) +
+    logger.info('Starting simulation of model for ' + str(num_agents) +
         ' agents with seed ' + str(seed_data))
 
     # Collect arguments to pass in different implementations of the simulation.

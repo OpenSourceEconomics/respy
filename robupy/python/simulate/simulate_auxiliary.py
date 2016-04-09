@@ -117,7 +117,7 @@ def write_info(robupy_obj, data_frame):
     # Write out the parametrization of the simulated economy.
     model_paras = robupy_obj.get_attr('model_paras')
     vector = get_estimation_vector(model_paras, True)
-    np.savetxt(open('data.robupy.paras', 'wb'), vector, fmt='%15.8f')
+    np.savetxt(open(file_sim + '.paras', 'wb'), vector, fmt='%15.8f')
 
 
 def write_out(data_frame, file_sim):
@@ -180,6 +180,9 @@ def get_estimation_vector(model_paras, is_debug):
     vector += shocks_cholesky[2:4, 2].tolist()
 
     vector += shocks_cholesky[3:4, 3].tolist()
+
+    # Type conversion
+    vector = np.array(vector)
 
     # Finishing
     return vector
