@@ -215,7 +215,6 @@ def _check_integrity_read(dict_):
         assert (np.all(np.isfinite(dict_['SHOCKS'][key_])))
         if key_ == 'coeffs':
             assert (dict_['SHOCKS'][key_].shape == (10,))
-            assert (np.all(np.diag(dict_['SHOCKS'][key_]) >= 0))
         elif key_ == 'fixed':
             assert (np.all(dict_['SHOCKS'][key_] == False)) or \
                 (np.all(dict_['SHOCKS'][key_] == True))
