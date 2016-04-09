@@ -104,7 +104,7 @@ def simulate(robupy_obj):
     if is_debug:
         check_dataset(data_frame, robupy_obj)
 
-    write_out(data_frame, file_sim)
+    write_out(robupy_obj, data_frame)
 
     write_info(robupy_obj, data_frame)
 

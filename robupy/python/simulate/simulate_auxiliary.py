@@ -120,9 +120,12 @@ def write_info(robupy_obj, data_frame):
     np.savetxt(open(file_sim + '.paras', 'wb'), vector, fmt='%15.8f')
 
 
-def write_out(data_frame, file_sim):
+def write_out(robupy_obj, data_frame):
     """ Write dataset to file.
     """
+    # Distribute class attributes
+    file_sim = robupy_obj.get_attr('file_sim')
+
     formats = []
 
     formats += [_format_integer, _format_integer, _format_integer]
