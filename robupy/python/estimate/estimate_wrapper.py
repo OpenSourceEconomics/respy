@@ -275,7 +275,7 @@ class OptimizationClass(object):
         """
         # Check options for the SCIPY-BFGS algorithm
         options = self.attr['options']['SCIPY-BFGS']
-        gtol, epsilon = options['gtol'], options['epsilon']
+        gtol, epsilon = options['gtol'], options['eps']
 
         assert isinstance(gtol, float)
         assert (gtol > 0)

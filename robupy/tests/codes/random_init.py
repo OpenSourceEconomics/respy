@@ -4,6 +4,8 @@
 # standard library
 import numpy as np
 
+import os
+
 # module-wide variables
 MAX_AGENTS = 1000
 MAX_DRAWS = 100
@@ -434,7 +436,8 @@ def print_random_dict(dict_, file_name='test.robupy.ini'):
     lines += [' ']
     lines += ['SCIPY-POWELL', 'xtol 0.0001', 'ftol 0.0001']
 
-    with open('optimization.robupy.opt', 'w') as file_:
-        str_ = ' {0:>25} \n'
-        for line in lines:
-            file_.write(str_.format(line))
+    if not os.path.exists('optimization.robupy.opt'):
+        with open('optimization.robupy.opt', 'w') as file_:
+            str_ = ' {0:>25} \n'
+            for line in lines:
+                file_.write(str_.format(line))
