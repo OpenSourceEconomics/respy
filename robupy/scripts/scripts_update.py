@@ -80,4 +80,4 @@ if __name__ == '__main__':
     args = dist_input_arguments(parser)
 
     # Run update
-    scripts_update(*args)
+    scripts_update(args)
