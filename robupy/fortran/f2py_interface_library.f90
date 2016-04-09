@@ -63,7 +63,6 @@ SUBROUTINE f2py_criterion(crit_val, x, is_deterministic, is_interpolated, &
     DOUBLE PRECISION, ALLOCATABLE   :: periods_payoffs_systematic(:, :, :)
     DOUBLE PRECISION, ALLOCATABLE   :: periods_emax(:, :)
 
-    DOUBLE PRECISION                :: shocks_cholesky(4, 4) 
     DOUBLE PRECISION                :: shocks_cov(4, 4)
     DOUBLE PRECISION                :: coeffs_home(1)
     DOUBLE PRECISION                :: coeffs_edu(3)
@@ -75,8 +74,8 @@ SUBROUTINE f2py_criterion(crit_val, x, is_deterministic, is_interpolated, &
 !-------------------------------------------------------------------------------
 
     !# Distribute model parameters
-    CALL get_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, &
-                shocks_cov, shocks_cholesky, x)
+    CALL dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, &
+                shocks_cov, x)
 
     ! Solve requested model
     CALL fort_solve(periods_payoffs_systematic, states_number_period, & 

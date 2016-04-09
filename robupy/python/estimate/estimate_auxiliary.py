@@ -2,6 +2,7 @@
 """
 # standard library
 import numpy as np
+import scipy
 
 # project library
 from robupy.python.shared.shared_auxiliary import check_model_parameters
@@ -28,13 +29,19 @@ def check_input(robupy_obj, data_frame):
 
 
 def get_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-        shocks_cov, shocks_cholesky, which, paras_fixed, is_debug):
+        shocks_cov, which, paras_fixed, is_debug):
     """ Get optimization parameters.
     """
+    # Construct Cholesky decomposition
+    if np.count_nonzero(shocks_cov) == 0:
+        shocks_cholesky = np.zeros((4, 4))
+    else:
+        shocks_cholesky = np.linalg.cholesky(shocks_cov)
+
     # Checks
     if is_debug:
-        args = [coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
-                shocks_cholesky]
+        args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
+                shocks_cholesky)
         assert check_model_parameters(*args)
 
     # Initialize container
@@ -120,7 +127,6 @@ def dist_optim_paras(x_all_curre, is_debug):
 
     # Collect arguments
     args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov)
-    args += (shocks_cholesky,)
 
     # Finishing
     return args

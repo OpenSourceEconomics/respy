@@ -20,8 +20,8 @@ def pyth_criterion(x, is_deterministic, is_interpolated, num_draws_emax,
         num_draws_prob, tau, periods_draws_emax, periods_draws_prob)
 
     # Distribute model parameters
-    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, \
-        shocks_cholesky = dist_optim_paras(x, is_debug)
+    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov \
+        = dist_optim_paras(x, is_debug)
 
     # Evaluate criterion function
     crit_val = pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,

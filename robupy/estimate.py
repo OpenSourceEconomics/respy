@@ -52,12 +52,10 @@ def estimate(robupy_obj, data_frame):
 
     # Construct starting values
     x_free_start = get_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-        shocks_cov, shocks_cholesky, 'free', paras_fixed, is_debug)
+        shocks_cov, 'free', paras_fixed, is_debug)
 
     x_all_start = get_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-        shocks_cov, shocks_cholesky, 'all', paras_fixed, is_debug)
-
-
+        shocks_cov, 'all', paras_fixed, is_debug)
 
     data_array = data_frame.as_matrix()
 

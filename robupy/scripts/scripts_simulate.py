@@ -54,7 +54,7 @@ def scripts_simulate(update, init_file, file_sim):
     # estimation run.
     if update:
         x0 = np.genfromtxt('paras_steps.robupy.log')
-        args = dist_optim_paras(x0, True)[:-1]
+        args = dist_optim_paras(x0, True)
         robupy_obj.update_model_paras(*args)
 
     # Update file for output.

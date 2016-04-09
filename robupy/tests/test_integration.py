@@ -425,8 +425,7 @@ class TestClass(object):
 
         # Evaluation of criterion function
         x0 = get_optim_paras(coeffs_a, coeffs_b, coeffs_edu,
-                coeffs_home, shocks_cov, shocks_cholesky, 'all',
-                paras_fixed, is_debug)
+                coeffs_home, shocks_cov, 'all', paras_fixed, is_debug)
 
         args = (is_deterministic, is_interpolated, num_draws_emax,is_ambiguous,
             num_periods, num_points, is_myopic, edu_start, is_debug, measure,

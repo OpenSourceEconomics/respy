@@ -51,8 +51,8 @@ def scripts_update(init_file):
     paras_steps = np.genfromtxt('paras_steps.robupy.log')
 
     # Get and construct ingredients
-    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, \
-        shocks_cholesky = dist_optim_paras(paras_steps, True)
+    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov \
+        = dist_optim_paras(paras_steps, True)
 
     shocks_coeff = shocks_cov[np.tril_indices_from(shocks_cov)].tolist()
 

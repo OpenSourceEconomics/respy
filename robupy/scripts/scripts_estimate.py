@@ -57,10 +57,10 @@ def add_gradient_information(robupy_obj, data_frame):
 
     # Construct starting values
     x_all_start = get_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-            shocks_cov, shocks_cholesky, 'all', paras_fixed, is_debug)
+            shocks_cov, 'all', paras_fixed, is_debug)
 
     x_free_start = get_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-            shocks_cov, shocks_cholesky, 'free', paras_fixed, is_debug)
+            shocks_cov, 'free', paras_fixed, is_debug)
 
     # Draw standard normal deviates for the solution and evaluation step.
     periods_draws_prob = create_draws(num_periods, num_draws_prob, seed_prob,
@@ -181,7 +181,7 @@ def scripts_estimate(resume, single, init_file, gradient):
     # estimation run.
     if resume:
         x0 = np.genfromtxt('paras_steps.robupy.log')
-        args = dist_optim_paras(x0, True)[:-1]
+        args = dist_optim_paras(x0, True)
         robupy_obj.update_model_paras(*args)
 
     # Set maximum iteration count when only an evaluation of the criterion

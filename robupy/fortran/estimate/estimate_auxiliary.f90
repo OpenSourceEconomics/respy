@@ -16,12 +16,11 @@ CONTAINS
 
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE get_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, &
-                shocks_cov, shocks_cholesky, x)
+SUBROUTINE dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, &
+                shocks_cov, x)
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(OUT)     :: shocks_cholesky(:, :)
     REAL(our_dble), INTENT(OUT)     :: shocks_cov(:, :)
     REAL(our_dble), INTENT(OUT)     :: coeffs_home(:)
     REAL(our_dble), INTENT(OUT)     :: coeffs_edu(:)
@@ -29,6 +28,10 @@ SUBROUTINE get_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, &
     REAL(our_dble), INTENT(OUT)     :: coeffs_b(:)
 
     REAL(our_dble), INTENT(IN)      :: x(:)
+
+    !/* internal objects        */
+
+    REAL(our_dble)                  :: shocks_cholesky(4, 4)
 
 !-------------------------------------------------------------------------------
 ! Algorithm
