@@ -70,6 +70,8 @@ class RobupyCls(object):
 
         self.attr['file_est'] = None
 
+        self.attr['file_opt'] = None
+
         self.attr['edu_max'] = None
 
         self.attr['version'] = None
@@ -251,6 +253,8 @@ class RobupyCls(object):
         self.attr['num_draws_emax'] = init_dict['SOLUTION']['draws']
 
         self.attr['num_agents'] = init_dict['SIMULATION']['agents']
+
+        self.attr['file_opt'] = init_dict['ESTIMATION']['options']
 
         self.attr['num_periods'] = init_dict['BASICS']['periods']
 

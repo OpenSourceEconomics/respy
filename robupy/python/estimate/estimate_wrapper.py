@@ -34,6 +34,8 @@ class OptimizationClass(object):
         # constitutive arguments
         self.attr['optimizer'] = None
 
+        self.attr['file_opt'] = None
+
         self.attr['version'] = None
 
         self.attr['options'] = None
@@ -238,14 +240,16 @@ class OptimizationClass(object):
         # Finishing
         return x_all_curre
 
-    @staticmethod
-    def _options_read():
+    def _options_read(self):
         """ Read in the tuning parameters for the optimizers.
         """
+        # Distribute class attributes
+        file_opt = self.attr['file_opt']
+
         # Initialization
         dict_ = {}
 
-        with open('optimization.robupy.opt') as in_file:
+        with open(file_opt) as in_file:
 
             for line in in_file.readlines():
 

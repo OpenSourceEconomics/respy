@@ -97,6 +97,7 @@ def generate_random_dict(constraints=None):
     dict_['ESTIMATION']['optimizer'] = np.random.choice(['SCIPY-BFGS', 'SCIPY-POWELL'])
     dict_['ESTIMATION']['maxiter'] = np.random.randint(1, 10000)
     dict_['ESTIMATION']['tau'] = np.random.uniform(100, 500)
+    dict_['ESTIMATION']['options'] = 'optimization.robupy.opt'
 
     # PROGRAM
     dict_['PROGRAM'] = {}
@@ -431,13 +432,16 @@ def print_random_dict(dict_, file_name='test.robupy.ini'):
 
                 file_.write('\n')
 
-    # Write out a valid specification for the admissible optimizers.
-    lines = ['SCIPY-BFGS', 'gtol    1e-05', 'epsilon 1.4901161193847656e-08']
-    lines += [' ']
-    lines += ['SCIPY-POWELL', 'xtol 0.0001', 'ftol 0.0001']
+    # Write out a valid specification for the admissible optimizers if the
+    # file does not exist.
+    file_opt = dict_['ESTIMATION']['options']
 
-    if not os.path.exists('optimization.robupy.opt'):
-        with open('optimization.robupy.opt', 'w') as file_:
+    if not os.path.exists(file_opt):
+        lines = ['SCIPY-BFGS', 'gtol    1e-05', 'eps 1.4901161193847656e-08']
+        lines += [' ']
+        lines += ['SCIPY-POWELL', 'xtol 0.0001', 'ftol 0.0001']
+
+        with open(file_opt, 'w') as file_:
             str_ = ' {0:>25} \n'
             for line in lines:
                 file_.write(str_.format(line))

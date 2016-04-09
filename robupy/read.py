@@ -97,7 +97,7 @@ def _process_line(list_, dict_, keyword):
     if name in ['agents', 'periods', 'start', 'max', 'draws',
         'seed', 'points', 'maxiter']:
         val = int(val)
-    elif name in ['measure', 'file']:
+    elif name in ['measure', 'file', 'options']:
         val = str(val)
     elif name in ['debug', 'store', 'apply']:
         assert (val.upper() in ['TRUE', 'FALSE'])

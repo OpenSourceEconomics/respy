@@ -29,7 +29,7 @@ def estimate(robupy_obj, data_frame):
         is_debug, file_sim, edu_max, delta, num_draws_prob, seed_prob, \
         num_draws_emax, seed_emax, level, measure, min_idx, is_ambiguous, \
         is_deterministic, is_myopic, is_interpolated, num_points, version, \
-        maxiter, optimizer, tau, paras_fixed = \
+        maxiter, optimizer, tau, paras_fixed, file_opt = \
             dist_class_attributes(robupy_obj,
                 'model_paras', 'num_periods', 'num_agents', 'edu_start',
                 'seed_data', 'is_debug', 'file_sim', 'edu_max', 'delta',
@@ -37,7 +37,7 @@ def estimate(robupy_obj, data_frame):
                 'level', 'measure', 'min_idx', 'is_ambiguous',
                 'is_deterministic', 'is_myopic', 'is_interpolated',
                 'num_points', 'version', 'maxiter', 'optimizer', 'tau',
-                'paras_fixed')
+                'paras_fixed', 'file_opt')
 
     # Auxiliary objects
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, shocks_cholesky = \
@@ -77,6 +77,8 @@ def estimate(robupy_obj, data_frame):
     opt_obj.set_attr('x_info', (x_all_start, paras_fixed))
 
     opt_obj.set_attr('optimizer', optimizer)
+
+    opt_obj.set_attr('file_opt', file_opt)
 
     opt_obj.set_attr('version', version)
 
