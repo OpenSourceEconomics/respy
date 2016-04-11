@@ -353,22 +353,22 @@ class TestClass(object):
         num_periods, edu_start, edu_max, min_idx, model_paras, num_draws_emax, \
             seed_emax, is_debug, delta, level, is_ambiguous, \
             is_interpolated, num_points, is_deterministic, is_myopic, \
-            num_agents, num_draws_prob, seed_prob, tau, paras_fixed = \
+            num_agents_sim, num_draws_prob, seed_prob, tau, paras_fixed = \
                 dist_class_attributes(robupy_obj,
                     'num_periods', 'edu_start', 'edu_max', 'min_idx',
                     'model_paras', 'num_draws_emax', 'seed_emax', 'is_debug',
                     'delta', 'level', 'is_ambiguous',
                     'is_interpolated', 'num_points', 'is_deterministic',
-                    'is_myopic', 'num_agents', 'num_draws_prob', 'seed_prob',
-                    'tau', 'paras_fixed')
+                    'is_myopic', 'num_agents_sim', 'num_draws_prob',
+                    'seed_prob', 'tau', 'paras_fixed')
 
         # Write out random components and interpolation grid to align the
         # three implementations.
-        max_draws = max(num_agents, num_draws_emax, num_draws_prob)
+        max_draws = max(num_agents_sim, num_draws_emax, num_draws_prob)
         write_draws(num_periods, max_draws)
         periods_draws_emax = read_draws(num_periods, num_draws_emax)
         periods_draws_prob = read_draws(num_periods, num_draws_prob)
-        periods_draws_sims = read_draws(num_periods, num_agents)
+        periods_draws_sims = read_draws(num_periods, num_agents_sim)
 
         # Extract coefficients
         coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, \
@@ -394,7 +394,7 @@ class TestClass(object):
 
         # Collect arguments across implementations.
         args = (periods_payoffs_systematic, mapping_state_idx, periods_emax,
-            num_periods, states_all, num_agents, edu_start, edu_max, delta,
+            num_periods, states_all, num_agents_sim, edu_start, edu_max, delta,
             periods_draws_sims, shocks_cholesky)
 
         pyth = pyth_simulate(*args)
@@ -407,7 +407,7 @@ class TestClass(object):
         base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
             is_deterministic, is_interpolated, num_draws_emax,is_ambiguous,
             num_periods, num_points, is_myopic, edu_start, is_debug,
-            edu_max, min_idx, delta, level, data_array, num_agents,
+            edu_max, min_idx, delta, level, data_array, num_agents_sim,
             num_draws_prob, tau)
 
         args = base_args + (seed_emax, seed_prob)
@@ -428,7 +428,7 @@ class TestClass(object):
 
         args = (is_deterministic, is_interpolated, num_draws_emax,is_ambiguous,
             num_periods, num_points, is_myopic, edu_start, is_debug,
-            edu_max, min_idx, delta, level, data_array, num_agents,
+            edu_max, min_idx, delta, level, data_array, num_agents_sim,
             num_draws_prob, tau, periods_draws_emax, periods_draws_prob)
 
         pyth = pyth_criterion(x0, *args)

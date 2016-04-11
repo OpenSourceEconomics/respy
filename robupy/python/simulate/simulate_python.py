@@ -15,7 +15,7 @@ from robupy.python.shared.shared_auxiliary import get_total_value
 
 
 def pyth_simulate(periods_payoffs_systematic, mapping_state_idx,
-        periods_emax, num_periods, states_all, num_agents, edu_start,
+        periods_emax, num_periods, states_all, num_agents_sim, edu_start,
         edu_max, delta, periods_draws_sims, shocks_cholesky):
     """ Wrapper for PYTHON and F2PY implementation of sample simulation.
     """
@@ -23,7 +23,7 @@ def pyth_simulate(periods_payoffs_systematic, mapping_state_idx,
     # the agents actual decision making as traversing the tree.
     shocks_mean = np.tile(0.0, 2)
     periods_draws_sims_transformed = np.tile(np.nan,
-        (num_periods, num_agents, 4))
+        (num_periods, num_agents_sim, 4))
 
     for period in range(num_periods):
         periods_draws_sims_transformed[period, :, :] = \
@@ -34,9 +34,9 @@ def pyth_simulate(periods_payoffs_systematic, mapping_state_idx,
     count = 0
 
     # Initialize data
-    dataset = np.tile(MISSING_FLOAT, (num_agents * num_periods, 8))
+    dataset = np.tile(MISSING_FLOAT, (num_agents_sim * num_periods, 8))
 
-    for i in range(num_agents):
+    for i in range(num_agents_sim):
 
         current_state = states_all[0, 0, :].copy()
 

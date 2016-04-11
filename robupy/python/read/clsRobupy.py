@@ -40,13 +40,15 @@ class RobupyCls(object):
 
         self.attr['num_draws_prob'] = None
 
+        self.attr['num_agents_sim'] = None
+
+        self.attr['num_agents_est'] = None
+
         self.attr['paras_fixed'] = None
 
         self.attr['num_periods'] = None
 
         self.attr['model_paras'] = None
-
-        self.attr['num_agents'] = None
 
         self.attr['num_points'] = None
 
@@ -242,6 +244,10 @@ class RobupyCls(object):
         # auxiliary objects.
         self.attr['is_interpolated'] = init_dict['INTERPOLATION']['apply']
 
+        self.attr['num_agents_sim'] = init_dict['SIMULATION']['agents']
+
+        self.attr['num_agents_est'] = init_dict['ESTIMATION']['agents']
+
         self.attr['num_draws_prob'] = init_dict['ESTIMATION']['draws']
 
         self.attr['num_points'] = init_dict['INTERPOLATION']['points']
@@ -249,8 +255,6 @@ class RobupyCls(object):
         self.attr['optimizer'] = init_dict['ESTIMATION']['optimizer']
 
         self.attr['num_draws_emax'] = init_dict['SOLUTION']['draws']
-
-        self.attr['num_agents'] = init_dict['SIMULATION']['agents']
 
         self.attr['file_opt'] = init_dict['ESTIMATION']['options']
 
@@ -366,6 +370,10 @@ class RobupyCls(object):
 
         num_draws_prob = self.attr['num_draws_prob']
 
+        num_agents_sim = self.attr['num_agents_sim']
+
+        num_agents_est = self.attr['num_agents_est']
+
         is_ambiguous = self.attr['is_ambiguous']
 
         paras_fixed = self.attr['paras_fixed']
@@ -373,8 +381,6 @@ class RobupyCls(object):
         num_periods = self.attr['num_periods']
 
         model_paras = self.attr['model_paras']
-
-        num_agents = self.attr['num_agents']
 
         num_points = self.attr['num_points']
 
@@ -428,9 +434,10 @@ class RobupyCls(object):
             assert (seed > 0)
 
         # Number of agents
-        assert (np.isfinite(num_agents))
-        assert (isinstance(num_agents, int))
-        assert (num_agents > 0)
+        for num_agents in [num_agents_sim, num_agents_est]:
+            assert (np.isfinite(num_agents))
+            assert (isinstance(num_agents, int))
+            assert (num_agents > 0)
 
         # Number of periods
         assert (np.isfinite(num_periods))

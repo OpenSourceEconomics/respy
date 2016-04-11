@@ -22,7 +22,7 @@ def check_input(robupy_obj, data_frame):
         robupy_obj.reset()
 
     # Check that dataset aligns with model specification.
-    check_dataset(data_frame, robupy_obj)
+    check_dataset(data_frame, robupy_obj, 'est')
 
     # Finishing
     return True

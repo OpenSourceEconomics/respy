@@ -13,6 +13,20 @@ from robupy.python.shared.shared_constants import HUGE_FLOAT
 '''
 
 
+def cut_dataset(robupy_obj, data_frame):
+    """ Cut the dataset down to only contain the agents used in the estimation.
+    """
+    # Distribute class attributes
+    num_agents_est = robupy_obj.get_attr('num_agents_est')
+    num_periods = robupy_obj.get_attr('num_periods')
+
+    # Slicing data frame
+    data_frame = data_frame.iloc[:(num_agents_est * num_periods), :]
+
+    # Finishing
+    return data_frame
+
+
 def get_total_value(period, num_periods, delta, payoffs_systematic, draws,
         edu_max, edu_start, mapping_state_idx, periods_emax, k, states_all):
     """ Get total value of all possible states.
@@ -130,16 +144,20 @@ def add_solution(robupy_obj, store, periods_payoffs_systematic,
     return robupy_obj
 
 
-def check_dataset(data_frame, robupy_obj):
+def check_dataset(data_frame, robupy_obj, which):
     """ This routine runs some consistency checks on the simulated data frame.
     """
     # Distribute class attributes
     num_periods = robupy_obj.get_attr('num_periods')
 
-    num_agents = robupy_obj.get_attr('num_agents')
-
     edu_max = robupy_obj.get_attr('edu_max')
 
+    if which == 'est':
+        num_agents = robupy_obj.get_attr('num_agents_est')
+    elif which == 'sim':
+        num_agents = robupy_obj.get_attr('num_agents_sim')
+    else:
+        raise AssertionError
     # Check dimension of data frame
     assert (data_frame.shape == (num_periods * num_agents, 8))
 

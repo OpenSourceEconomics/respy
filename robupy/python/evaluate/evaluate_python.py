@@ -22,7 +22,7 @@ from robupy.python.solve.solve_python import pyth_solve
 def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         shocks_cov, is_deterministic, is_interpolated, num_draws_emax,
         is_ambiguous, num_periods, num_points, is_myopic, edu_start, is_debug,
-        edu_max, min_idx, delta, level, data_array, num_agents,
+        edu_max, min_idx, delta, level, data_array, num_agents_est,
         num_draws_prob, tau, periods_draws_emax, periods_draws_prob):
     """ Evaluate criterion function. This code allows for a deterministic
     model, where there is no random variation in the rewards. If that is the
@@ -49,7 +49,7 @@ def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
     crit_val, j = [], 0
 
     # Calculate the probability over agents and time.
-    for i in range(num_agents):
+    for i in range(num_agents_est):
         for period in range(num_periods):
             # Extract observable components of state space as well as agent
             # decision.

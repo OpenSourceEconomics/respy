@@ -14,6 +14,7 @@ from robupy.python.evaluate.evaluate_auxiliary import check_output
 from robupy.python.shared.shared_auxiliary import dist_class_attributes
 from robupy.python.shared.shared_auxiliary import dist_model_paras
 from robupy.python.shared.shared_auxiliary import create_draws
+from robupy.python.shared.shared_auxiliary import cut_dataset
 
 ''' Main function
 '''
@@ -22,16 +23,21 @@ from robupy.python.shared.shared_auxiliary import create_draws
 def evaluate(robupy_obj, data_frame):
     """ Evaluate the criterion function.
     """
+
+    # If required, cut the dataset to only contain the number of agents
+    # used in the estimation.
+    data_frame = cut_dataset(robupy_obj, data_frame)
+
     # Antibugging
     assert check_input(robupy_obj, data_frame)
 
     # Distribute class attributes
-    model_paras, num_periods, num_agents, edu_start, seed_data, is_debug, \
+    model_paras, num_periods, num_agents_est, edu_start, seed_data, is_debug, \
         edu_max, delta, is_deterministic, version, num_draws_prob, seed_prob, \
         num_draws_emax, seed_emax, is_interpolated, is_ambiguous, num_points, \
         is_myopic, min_idx, level, tau = \
             dist_class_attributes(robupy_obj,
-                'model_paras', 'num_periods', 'num_agents', 'edu_start',
+                'model_paras', 'num_periods', 'num_agents_est', 'edu_start',
                 'seed_data', 'is_debug', 'edu_max', 'delta', 'is_deterministic',
                 'version', 'num_draws_prob', 'seed_prob', 'num_draws_emax',
                 'seed_emax', 'is_interpolated', 'is_ambiguous', 'num_points',
@@ -55,7 +61,7 @@ def evaluate(robupy_obj, data_frame):
     base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
         is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
         num_periods, num_points, is_myopic, edu_start, is_debug,
-        edu_max, min_idx, delta, level, data_array, num_agents,
+        edu_max, min_idx, delta, level, data_array, num_agents_est,
         num_draws_prob, tau)
 
     # Select appropriate interface

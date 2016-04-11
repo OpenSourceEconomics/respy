@@ -62,11 +62,11 @@ def simulate(robupy_obj):
 
     # Distribute class attributes
     periods_payoffs_systematic, mapping_state_idx, periods_emax, model_paras, \
-        num_periods, num_agents, states_all, edu_start, seed_data, is_debug, \
-        file_sim, edu_max, delta, version = \
+        num_periods, num_agents_sim, states_all, edu_start, seed_data, \
+        is_debug, file_sim, edu_max, delta, version = \
             dist_class_attributes(robupy_obj,
                 'periods_payoffs_systematic', 'mapping_state_idx',
-                'periods_emax', 'model_paras', 'num_periods', 'num_agents',
+                'periods_emax', 'model_paras', 'num_periods', 'num_agents_sim',
                 'states_all', 'edu_start', 'seed_data', 'is_debug',
                 'file_sim', 'edu_max', 'delta', 'version')
 
@@ -74,18 +74,18 @@ def simulate(robupy_obj):
     shocks_cholesky = dist_model_paras(model_paras, is_debug)[5]
 
     # Draw draws for the simulation.
-    periods_draws_sims = create_draws(num_periods, num_agents, seed_data,
+    periods_draws_sims = create_draws(num_periods, num_agents_sim, seed_data,
         is_debug)
 
     # Simulate a dataset with the results from the solution and write out the
     # dataset to a text file. In addition a file summarizing the dataset is
     # produced.
-    logger.info('Starting simulation of model for ' + str(num_agents) +
+    logger.info('Starting simulation of model for ' + str(num_agents_sim) +
         ' agents with seed ' + str(seed_data))
 
     # Collect arguments to pass in different implementations of the simulation.
     args = (periods_payoffs_systematic, mapping_state_idx, periods_emax,
-        num_periods, states_all, num_agents, edu_start, edu_max, delta,
+        num_periods, states_all, num_agents_sim, edu_start, edu_max, delta,
         periods_draws_sims, shocks_cholesky)
 
     # Select appropriate interface
@@ -102,7 +102,7 @@ def simulate(robupy_obj):
     # Wrapping up by running some checks on the dataset and then writing out
     # the file and some basic information.
     if is_debug:
-        check_dataset(data_frame, robupy_obj)
+        check_dataset(data_frame, robupy_obj, 'sim')
 
     write_out(robupy_obj, data_frame)
 

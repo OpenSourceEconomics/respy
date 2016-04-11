@@ -12,26 +12,33 @@ from robupy.python.estimate.estimate_auxiliary import check_input
 from robupy.python.shared.shared_auxiliary import dist_class_attributes
 from robupy.python.shared.shared_auxiliary import dist_model_paras
 from robupy.python.shared.shared_auxiliary import create_draws
+from robupy.python.shared.shared_auxiliary import cut_dataset
 
 from robupy.python.estimate.estimate_wrapper import OptimizationClass
 
 ''' Main function
 '''
 
+
 def estimate(robupy_obj, data_frame):
     """ Estimate the model
     """
+
+    # Cut dataset to size in case more agents are passed in than are actually
+    # used in the estimation.
+    data_frame = cut_dataset(robupy_obj, data_frame)
+
     # Antibugging
     assert check_input(robupy_obj, data_frame)
 
     # Distribute class attributes
-    model_paras, num_periods, num_agents, edu_start, seed_data, \
+    model_paras, num_periods, num_agents_est, edu_start, seed_data, \
         is_debug, file_sim, edu_max, delta, num_draws_prob, seed_prob, \
         num_draws_emax, seed_emax, level, min_idx, is_ambiguous, \
         is_deterministic, is_myopic, is_interpolated, num_points, version, \
         maxiter, optimizer, tau, paras_fixed, file_opt = \
             dist_class_attributes(robupy_obj,
-                'model_paras', 'num_periods', 'num_agents', 'edu_start',
+                'model_paras', 'num_periods', 'num_agents_est', 'edu_start',
                 'seed_data', 'is_debug', 'file_sim', 'edu_max', 'delta',
                 'num_draws_prob', 'seed_prob', 'num_draws_emax', 'seed_emax',
                 'level', 'min_idx', 'is_ambiguous',
@@ -63,7 +70,7 @@ def estimate(robupy_obj, data_frame):
     # must be in the correct order already.
     args = (is_deterministic, is_interpolated, num_draws_emax,is_ambiguous,
         num_periods, num_points, is_myopic, edu_start, is_debug,
-        edu_max, min_idx, delta, level, data_array, num_agents,
+        edu_max, min_idx, delta, level, data_array, num_agents_est,
         num_draws_prob, tau, periods_draws_emax, periods_draws_prob)
 
     # Setup optimization class, which handles all the details depending on the

@@ -23,7 +23,7 @@ def write_info(robupy_obj, data_frame):
     seed = robupy_obj.get_attr('seed_data')
 
     # Get basic information
-    num_agents = data_frame[1].value_counts()[0]
+    num_agents_sim = data_frame[1].value_counts()[0]
 
     num_periods = data_frame[0].value_counts()[0]
 
@@ -32,7 +32,7 @@ def write_info(robupy_obj, data_frame):
 
         file_.write('\n Simulated Economy\n\n')
 
-        file_.write('   Number of Agents:       ' + str(num_agents) + '\n\n')
+        file_.write('   Number of Agents:       ' + str(num_agents_sim) + '\n\n')
         file_.write('   Number of Periods:      ' + str(num_periods) + '\n\n')
         file_.write('   Seed:                   ' + str(seed) + '\n\n\n')
         file_.write('   Choices\n\n')
@@ -44,16 +44,16 @@ def write_info(robupy_obj, data_frame):
         for t in range(num_periods):
 
             work_a = np.sum((data_frame[2] == 1) &
-                            (data_frame[1] == t))/num_agents
+                            (data_frame[1] == t))/num_agents_sim
 
             work_b = np.sum((data_frame[2] == 2) & (data_frame[1] ==
-                                                    t))/num_agents
+                                                    t))/num_agents_sim
 
             schooling = np.sum((data_frame[2] == 3) &
-                               (data_frame[1] == t))/num_agents
+                               (data_frame[1] == t))/num_agents_sim
 
             home = np.sum((data_frame[2] == 4) & (data_frame[1] ==
-                                                  t))/num_agents
+                                                  t))/num_agents_sim
 
             fmt_ = '{:>10}' + '{:14.4f}' * 4 + '\n'
             args = [(t + 1), work_a, work_b, schooling, home]

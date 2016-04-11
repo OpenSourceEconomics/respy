@@ -49,6 +49,10 @@ def generate_random_dict(constraints=None):
     if sum(paras_fixed) == 17:
         paras_fixed[np.random.randint(0, 17)] = True
 
+    # Sampling number of agents for the simulation. This is then used as the
+    # upper bound for the dataset used in the estimation.
+    num_agents_sim = np.random.randint(1, MAX_AGENTS)
+
     # Basics
     dict_['BASICS'] = {}
     dict_['BASICS']['periods'] = np.random.randint(1, MAX_PERIODS)
@@ -90,6 +94,7 @@ def generate_random_dict(constraints=None):
 
     # ESTIMATION
     dict_['ESTIMATION'] = {}
+    dict_['ESTIMATION']['agents'] = np.random.randint(1, num_agents_sim)
     dict_['ESTIMATION']['draws'] = np.random.randint(1, MAX_DRAWS)
     dict_['ESTIMATION']['seed'] = np.random.randint(1, 10000)
     dict_['ESTIMATION']['file'] = 'data.robupy'
@@ -107,7 +112,7 @@ def generate_random_dict(constraints=None):
     # SIMULATION
     dict_['SIMULATION'] = {}
     dict_['SIMULATION']['seed'] = np.random.randint(1, 10000)
-    dict_['SIMULATION']['agents'] = np.random.randint(1, MAX_AGENTS)
+    dict_['SIMULATION']['agents'] = num_agents_sim
     dict_['SIMULATION']['file'] = 'data.robupy'
 
     # SHOCKS
@@ -182,6 +187,8 @@ def generate_random_dict(constraints=None):
         assert (max_draws > 0)
         # Replace in initialization file
         dict_['SIMULATION']['agents'] = np.random.randint(1, max_draws)
+        dict_['ESTIMATION']['agents'] = np.random.randint(1, dict_['SIMULATION']['agents'])
+
         dict_['ESTIMATION']['draws'] = np.random.randint(1, max_draws)
         dict_['SOLUTION']['draws'] = np.random.randint(1, max_draws)
 
@@ -258,6 +265,7 @@ def generate_random_dict(constraints=None):
         assert (np.isfinite(num_agents))
         # Replace in initialization files
         dict_['SIMULATION']['agents'] = num_agents
+        dict_['ESTIMATION']['agents'] = num_agents
 
     # Number of simulations for S-ML
     if 'sims' in constraints.keys():
