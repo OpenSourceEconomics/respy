@@ -165,73 +165,54 @@ SUBROUTINE get_worst_case(x_internal, x_start, maxiter, ftol, tiny, &
 
     !/* internal objects        */
 
-    INTEGER(our_int)    :: M    ! Total number of constraints
-    INTEGER(our_int)    :: MEQ  ! Total number of equality constraints
-    INTEGER(our_int)    :: LA   ! MAX(M, 1)
-    INTEGER(our_int)    :: N    ! Number of variables
-
-    REAL(our_dble) :: X(2)         ! Current iterate
-    REAL(our_dble) :: XL(2)        ! Lower bounds for x
-    REAL(our_dble) :: XU(2)        ! Upper bounds for x
-    REAL(our_dble)              :: F            ! Value of objective function
-
-    REAL(our_dble), ALLOCATABLE :: C(:)         ! Stores the constraints
-    REAL(our_dble), ALLOCATABLE :: G(:)         ! Partials of objective function
-    REAL(our_dble), ALLOCATABLE :: A(:, :)      ! Normals of constraints 
-
-    REAL(our_dble)      :: ACC                 ! Final accuracy
-    INTEGER(our_int)    :: ITER                ! Maximum number of iterations
-    INTEGER(our_int)    :: MODE                ! Control for communication
-
-    ! Working spaces
-    REAL(our_dble), ALLOCATABLE     :: W(:)        
-    INTEGER(our_int), ALLOCATABLE   :: JW(:)
-    INTEGER(our_int)                :: L_W
-    INTEGER(our_int)                :: L_JW
-
-    ! Locals
-    INTEGER(our_int)    :: N1
-    INTEGER(our_int)    :: MINEQ
-
-
+    REAL(our_dble)                  :: div
 
     LOGICAL                         :: is_finished
     LOGICAL                         :: is_success
-    REAL(our_dble)                  :: div
+
+    !/* SLQP interface          */
+
+    INTEGER(our_int)                :: M        ! Total number of constraints
+    INTEGER(our_int)                :: MEQ      ! Total number of equality constraints
+    INTEGER(our_int)                :: LA       ! MAX(M, 1)
+    INTEGER(our_int)                :: N        ! Number of variables
+
+    REAL(our_dble)                  :: X(2)     ! Current iterate
+    REAL(our_dble)                  :: XL(2)    ! Lower bounds for x
+    REAL(our_dble)                  :: XU(2)    ! Upper bounds for x
+    REAL(our_dble)                  :: F        ! Value of objective function
+
+    REAL(our_dble), ALLOCATABLE     :: C(:)     ! Stores the constraints
+    REAL(our_dble), ALLOCATABLE     :: G(:)     ! Partials of objective function
+    REAL(our_dble), ALLOCATABLE     :: A(:, :)  ! Normals of constraints 
+
+    REAL(our_dble)                  :: ACC      ! Final accuracy
+    INTEGER(our_int)                :: ITER     ! Maximum number of iterations
+    INTEGER(our_int)                :: MODE     ! Control for communication
+
+    REAL(our_dble), ALLOCATABLE     :: W(:)     ! Working space    
+    INTEGER(our_int), ALLOCATABLE   :: JW(:)    ! Working space 
+    INTEGER(our_int)                :: L_JW     ! Working space 
+    INTEGER(our_int)                :: L_JW     ! Working space 
+
+    INTEGER(our_int)                :: MINEQ    ! Locals
+    INTEGER(our_int)                :: N1       ! Locals
 
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
-
-    !---------------------------------------------------------------------------
-    ! This is hard-coded for the ROBUPY package requirements. What follows 
-    ! below is based on this being 0, 1.
-    !---------------------------------------------------------------------------
-    M = 1
-    MEQ = 1
-    !---------------------------------------------------------------------------
-    !---------------------------------------------------------------------------
-
-    ! Initialize starting values
-    ACC = ftol
-    X = x_start
-
-    ! Derived attributes
-    N = SIZE(x_internal)
-    LA = MAX(1, M)
-
-
-N1 = N + 1
-MINEQ = M - MEQ + N1 + N1
-L_W = (3 * N1 + M) *( N1 + 1) + (N1 - MEQ + 1) * (MINEQ + 2) + 2 * MINEQ + & 
+    
+    ! Preparing SLSQP interface
+    ACC = ftol, X = x_start, M = 1, MEQ = 1
+    N = SIZE(x_internal), LA = MAX(1, M)
+    N1 = N + 1, MINEQ = M - MEQ + N1 + N1
+    L_W = (3 * N1 + M) *( N1 + 1) + (N1 - MEQ + 1) * (MINEQ + 2) + 2 * MINEQ + & 
         (N1 + MINEQ) * (N1 - MEQ) + 2 * MEQ + N1 + (N + 1) * N / 2 + & 
-         2 * M + 3 * N + 3 * N1 + 1
-L_JW = MINEQ
+        2 * M + 3 * N + 3 * N1 + 1
+    L_JW = MINEQ
 
-
-    ALLOCATE(C(LA), G(N + 1), A(LA, N + 1))
-ALLOCATE(W(L_W), JW(L_JW))
-
+    ALLOCATE(C(LA), G(N + 1)), ALLOCATE(A(LA, N + 1))
+    ALLOCATE(W(L_W), JW(L_JW))
 
     ! Decompose upper and lower bounds
     XL = - HUGE_FLOAT; XU = HUGE_FLOAT
