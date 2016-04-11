@@ -167,32 +167,42 @@ SUBROUTINE get_worst_case(x_internal, x_start, maxiter, ftol, tiny, &
 
 
 
-    INTEGER(our_int)                :: MINEQ
-    INTEGER(our_int)                :: MODE
-    INTEGER(our_int)                :: ITER
-    INTEGER(our_int)                :: L_JW
-    INTEGER(our_int)                :: MEQ
-    INTEGER(our_int)                :: L_W
-    INTEGER(our_int)                :: LA
-    INTEGER(our_int)                :: M
-    INTEGER(our_int)                :: N, N1
+INTEGER(our_int)    :: M    ! Total number of constraints
+INTEGER(our_int)    :: MEQ  ! Total number of equality constraints
+INTEGER(our_int)    :: LA   ! MAX(M, 1)
+INTEGER(our_int)    :: N    ! Number of variables
 
-    INTEGER(our_int)                :: JW(7)
+REAL(our_dble), ALLOCATABLE :: X(:)         ! Current iterate
+REAL(our_dble), ALLOCATABLE :: XL(:)        ! Lower bounds for x
+REAL(our_dble), ALLOCATABLE :: XU(:)        ! Upper bounds for x
+REAL(our_dble)              :: F            ! Value of objective function
 
-    REAL(our_dble)                  :: A(1, 3)
-    REAL(our_dble)                  :: ACC
-    REAL(our_dble)                  :: W(144)
-    REAL(our_dble)                  :: XL(2)
-    REAL(our_dble)                  :: XU(2)
-    REAL(our_dble)                  :: C(1)
-    REAL(our_dble)                  :: G(3)
-    REAL(our_dble)                  :: div
+
+REAL(our_dble), ALLOCATABLE :: C(:)         ! Stores the constraints
+REAL(our_dble), ALLOCATABLE :: G(:)         ! Partials of objective function
+REAL(our_dble), ALLOCATABLE :: A(:, :)      ! Normals of constraints 
+
+REAL(our_dble)      :: ACC                 ! Final accuracy
+INTEGER(our_int)    :: ITER                ! Maximum number of iterations
+INTEGER(our_int)    :: MODE                ! Control for communication
+
+! Working spaces
+REAL(our_dble), ALLOCATABLE     :: W(:)        
+INTEGER(our_int), ALLOCATABLE   :: JW(:)
+INTEGER(our_int)                :: L_W
+INTEGER(our_int)                :: L_JW
+
+! Locals
+INTEGER(our_int)    :: N1, MINEQ
+
     REAL(our_dble)                  :: F
 
     REAL(our_dble)                  :: X(2)
 
+
     LOGICAL                         :: is_finished
     LOGICAL                         :: is_success
+    REAL(our_dble)                  :: div
 
 !-------------------------------------------------------------------------------
 ! Algorithm
