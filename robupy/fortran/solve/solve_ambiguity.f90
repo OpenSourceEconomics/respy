@@ -170,7 +170,7 @@ SUBROUTINE get_worst_case(x_internal, x_start, maxiter, ftol, tiny, &
     LOGICAL                         :: is_finished
     LOGICAL                         :: is_success
 
-    !/* SLQP interface          */
+    !/* SLSQP interface          */
 
     INTEGER(our_int)                :: M        ! Total number of constraints
     INTEGER(our_int)                :: MEQ      ! Total number of equality constraints
@@ -193,7 +193,7 @@ SUBROUTINE get_worst_case(x_internal, x_start, maxiter, ftol, tiny, &
     REAL(our_dble), ALLOCATABLE     :: W(:)     ! Working space    
     INTEGER(our_int), ALLOCATABLE   :: JW(:)    ! Working space 
     INTEGER(our_int)                :: L_JW     ! Working space 
-    INTEGER(our_int)                :: L_JW     ! Working space 
+    INTEGER(our_int)                :: L_W      ! Working space 
 
     INTEGER(our_int)                :: MINEQ    ! Locals
     INTEGER(our_int)                :: N1       ! Locals
@@ -203,15 +203,15 @@ SUBROUTINE get_worst_case(x_internal, x_start, maxiter, ftol, tiny, &
 !-------------------------------------------------------------------------------
     
     ! Preparing SLSQP interface
-    ACC = ftol, X = x_start, M = 1, MEQ = 1
-    N = SIZE(x_internal), LA = MAX(1, M)
-    N1 = N + 1, MINEQ = M - MEQ + N1 + N1
+    ACC = ftol; X = x_start; M = 1; MEQ = 1
+    N = SIZE(x_internal); LA = MAX(1, M)
+    N1 = N + 1;  MINEQ = M - MEQ + N1 + N1
     L_W = (3 * N1 + M) *( N1 + 1) + (N1 - MEQ + 1) * (MINEQ + 2) + 2 * MINEQ + & 
         (N1 + MINEQ) * (N1 - MEQ) + 2 * MEQ + N1 + (N + 1) * N / 2 + & 
         2 * M + 3 * N + 3 * N1 + 1
     L_JW = MINEQ
 
-    ALLOCATE(C(LA), G(N + 1)), ALLOCATE(A(LA, N + 1))
+    ALLOCATE(C(LA), G(N + 1)); ALLOCATE(A(LA, N + 1))
     ALLOCATE(W(L_W), JW(L_JW))
 
     ! Decompose upper and lower bounds
@@ -263,13 +263,12 @@ SUBROUTINE get_worst_case(x_internal, x_start, maxiter, ftol, tiny, &
                         mapping_state_idx, states_all, num_periods, & 
                         periods_emax, delta, shocks_cholesky)
 
-            A(1,:2) = divergence_derivative(X, shocks_cov, &
-                            level, tiny)
+            A(1,:2) = divergence_derivative(X, shocks_cov, level, tiny)
 
         END IF
 
         !Call to SLSQP code
-        CALL slsqp(M, MEQ, LA, N, X, XL, XU, F, C, G, A, ACC, &
+        CALL SLSQP(M, MEQ, LA, N, X, XL, XU, F, C, G, A, ACC, &
                 ITER, MODE, W, L_W, JW, L_JW)
 
         ! Check if SLSQP has completed
