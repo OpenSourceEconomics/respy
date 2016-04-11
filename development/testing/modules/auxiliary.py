@@ -136,7 +136,7 @@ def get_random_request(test_dict):
         for value in test_dict[key_]:
             candidates.append((key_, value))
     # Draw a random combination.
-    index = np.random.randint(0, len(candidates) - 1)
+    index = np.random.randint(0, len(candidates))
     module, method = candidates[index]
 
     # Finishing
