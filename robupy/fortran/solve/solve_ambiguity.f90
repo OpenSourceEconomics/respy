@@ -170,29 +170,33 @@ SUBROUTINE get_worst_case(x_internal, x_start, maxiter, ftol, tiny, &
 
     !/* SLSQP Interface         */
 
-    INTEGER(our_int)                :: MINEQ
-    INTEGER(our_int)                :: JW(7)
-    INTEGER(our_int)                :: MODE
-    INTEGER(our_int)                :: ITER
-    INTEGER(our_int)                :: MIEQ
-    INTEGER(our_int)                :: L_JW
-    INTEGER(our_int)                :: MEQ
-    INTEGER(our_int)                :: L_W
-    INTEGER(our_int)                :: LA
-    INTEGER(our_int)                :: N1
-    INTEGER(our_int)                :: M
-    INTEGER(our_int)                :: N
+    INTEGER(our_int)                :: M            ! Total number of constraints
+    INTEGER(our_int)                :: MEQ          ! Total number of equality constraints
+    INTEGER(our_int)                :: LA           ! MAX(M, 1)
+    INTEGER(our_int)                :: N            ! Number of variables
 
-    REAL(our_dble)                  :: A(1, 3)
-    REAL(our_dble)                  :: W(144)
-    REAL(our_dble)                  :: XL(2)
-    REAL(our_dble)                  :: XU(2)
-    REAL(our_dble)                  :: ACC
-    REAL(our_dble)                  :: C(1)
-    REAL(our_dble)                  :: G(3)
-    REAL(our_dble)                  :: X(2)
-    REAL(our_dble)                  :: div
-    REAL(our_dble)                  :: F
+    REAL(our_dble), ALLOCATABLE     :: X(:)         ! Current iterate
+    REAL(our_dble), ALLOCATABLE     :: XL(:)        ! Lower bounds for x
+    REAL(our_dble), ALLOCATABLE     :: XU(:)        ! Upper bounds for x
+    REAL(our_dble)                  :: F            ! Value of objective function
+
+    REAL(our_dble), ALLOCATABLE     :: C(:)         ! Stores the constraints
+    REAL(our_dble), ALLOCATABLE     :: G(:)         ! Partials of objective function
+    REAL(our_dble), ALLOCATABLE     :: A(:, :)      ! Normals of constraints 
+
+    REAL(our_dble)                  :: ACC          ! Final accuracy
+    INTEGER(our_int)                :: ITER         ! Maximum number of iterations
+    INTEGER(our_int)                :: MODE         ! Control for communication
+
+    REAL(our_dble), ALLOCATABLE     :: W(:)         ! Work space
+    INTEGER(our_int), ALLOCATABLE   :: JW(:)        ! Work space
+    INTEGER(our_int)                :: L_W          ! Work space
+    INTEGER(our_int)                :: L_JW         ! Work space
+
+    INTEGER(our_int)                :: LEN_JW       ! Locals
+    INTEGER(our_int)                :: MINEQ        ! Locals
+    INTEGER(our_int)                :: LEN_W        ! Locals
+    INTEGER(our_int)                :: N1           ! Locals
 
 !-------------------------------------------------------------------------------
 ! Algorithm
@@ -212,16 +216,12 @@ SUBROUTINE get_worst_case(x_internal, x_start, maxiter, ftol, tiny, &
     X = x_start
 
     ! Derived attributes
-    M = MEQ + MIEQ
-    N = SIZE(X)
-    LA = MAX(1, M)
-    N1 = N + 1
-    MINEQ = M - MEQ + N1 + N1
-    L_W = (3 * N1 + M) *( N1 + 1) + (N1 - MEQ + 1) * (MINEQ + 2) + 2 * MINEQ + & 
-        (N1 + MINEQ) * (N1 - MEQ) + 2 * MEQ + N1 + (N + 1) * N / 2 + & 
-         2 * M + 3 * N + 3 * N1 + 1
 
-    L_JW = MINEQ
+    M = MEQ + MIEQ; N = SIZE(X); LA = MAX(1, M); N1 = N + 1
+    MINEQ = M - MEQ + N1 + N1; L_JW = MINEQ
+    L_W = (3 * N1 + M) *( N1 + 1) + (N1 - MEQ + 1) * (MINEQ + 2) + & 
+          2 * MINEQ + (N1 + MINEQ) * (N1 - MEQ) + 2 * MEQ + N1 + & 
+          (N + 1) * N / 2 + 2 * M + 3 * N + 3 * N1 + 1
 
     ! Decompose upper and lower bounds
     XL = - HUGE_FLOAT; XU = HUGE_FLOAT
