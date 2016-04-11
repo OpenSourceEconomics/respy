@@ -1066,14 +1066,14 @@ FUNCTION pinv(A, m)
 END FUNCTION
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE get_coefficients(coeffs, Y, X, num_covars, num_agents)
+SUBROUTINE get_coefficients(coeffs, Y, X, num_covars, num_states)
 
     !/* external objects        */
 
     REAL(our_dble), INTENT(OUT)     :: coeffs(:)
 
     INTEGER, INTENT(IN)             :: num_covars
-    INTEGER, INTENT(IN)             :: num_agents
+    INTEGER, INTENT(IN)             :: num_states
 
     REAL(our_dble), INTENT(IN)      :: X(:, :)
     REAL(our_dble), INTENT(IN)      :: Y(:)
@@ -1082,7 +1082,7 @@ SUBROUTINE get_coefficients(coeffs, Y, X, num_covars, num_agents)
 
     REAL(our_dble)                  :: A(num_covars, num_covars)
     REAL(our_dble)                  :: C(num_covars, num_covars)
-    REAL(our_dble)                  :: D(num_covars, num_agents)
+    REAL(our_dble)                  :: D(num_covars, num_states)
 
 !-------------------------------------------------------------------------------
 ! Algorithm
@@ -1099,7 +1099,7 @@ SUBROUTINE get_coefficients(coeffs, Y, X, num_covars, num_agents)
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE point_predictions(Y, X, coeffs, num_agents)
+SUBROUTINE point_predictions(Y, X, coeffs, num_states)
 
     !/* external objects        */
 
@@ -1108,7 +1108,7 @@ SUBROUTINE point_predictions(Y, X, coeffs, num_agents)
     REAL(our_dble), INTENT(IN)      :: coeffs(:)
     REAL(our_dble), INTENT(IN)      :: X(:, :)
 
-    INTEGER(our_int), INTENT(IN)    :: num_agents
+    INTEGER(our_int), INTENT(IN)    :: num_states
 
     !/* internal objects        */
 
@@ -1118,7 +1118,7 @@ SUBROUTINE point_predictions(Y, X, coeffs, num_agents)
 ! Algorithm
 !-------------------------------------------------------------------------------
 
-    DO i = 1, num_agents
+    DO i = 1, num_states
 
         Y(i) = DOT_PRODUCT(coeffs, X(i, :))
 
@@ -1128,7 +1128,7 @@ END SUBROUTINE
 
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE get_r_squared(r_squared, observed, predicted, num_agents)
+SUBROUTINE get_r_squared(r_squared, observed, predicted, num_states)
 
     !/* external objects        */
 
@@ -1137,7 +1137,7 @@ SUBROUTINE get_r_squared(r_squared, observed, predicted, num_agents)
     REAL(our_dble), INTENT(IN)      :: predicted(:)
     REAL(our_dble), INTENT(IN)      :: observed(:)
 
-    INTEGER(our_int), INTENT(IN)    :: num_agents
+    INTEGER(our_int), INTENT(IN)    :: num_states
 
     !/* internal objects        */
 
@@ -1152,12 +1152,12 @@ SUBROUTINE get_r_squared(r_squared, observed, predicted, num_agents)
 !-------------------------------------------------------------------------------
 
     ! Calculate mean of observed data
-    mean_observed = SUM(observed) / DBLE(num_agents)
+    mean_observed = SUM(observed) / DBLE(num_states)
 
     ! Sum of squared residuals
     ss_residuals = zero_dble
 
-    DO i = 1, num_agents
+    DO i = 1, num_states
 
         ss_residuals = ss_residuals + (observed(i) - predicted(i))**2
 
@@ -1166,7 +1166,7 @@ SUBROUTINE get_r_squared(r_squared, observed, predicted, num_agents)
     ! Sum of squared residuals
     ss_total = zero_dble
 
-    DO i = 1, num_agents
+    DO i = 1, num_states
 
         ss_total = ss_total + (observed(i) - mean_observed)**2
 

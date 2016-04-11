@@ -572,7 +572,7 @@ SUBROUTINE wrapper_clip_value(clipped_value, value, lower_bound, upper_bound, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_get_r_squared(r_squared, Y, P, num_agents)
+SUBROUTINE wrapper_get_r_squared(r_squared, Y, P, num_states)
 
     !/* external libraries      */
 
@@ -586,21 +586,21 @@ SUBROUTINE wrapper_get_r_squared(r_squared, Y, P, num_agents)
 
     DOUBLE PRECISION, INTENT(OUT)   :: r_squared
 
-    DOUBLE PRECISION, INTENT(IN)    :: Y(num_agents)
-    DOUBLE PRECISION, INTENT(IN)    :: P(num_agents)
+    DOUBLE PRECISION, INTENT(IN)    :: Y(num_states)
+    DOUBLE PRECISION, INTENT(IN)    :: P(num_states)
     
-    INTEGER, INTENT(IN)             :: num_agents
+    INTEGER, INTENT(IN)             :: num_states
 
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
     
-    CALL get_r_squared(r_squared, Y, P, num_agents)
+    CALL get_r_squared(r_squared, Y, P, num_states)
 
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_point_predictions(Y, X, coeffs, num_agents)
+SUBROUTINE wrapper_point_predictions(Y, X, coeffs, num_states)
 
     !/* external libraries      */
 
@@ -612,18 +612,18 @@ SUBROUTINE wrapper_point_predictions(Y, X, coeffs, num_agents)
 
     !/* external objects        */
 
-    DOUBLE PRECISION, INTENT(OUT)       :: Y(num_agents)
+    DOUBLE PRECISION, INTENT(OUT)       :: Y(num_states)
 
     DOUBLE PRECISION, INTENT(IN)        :: coeffs(:)
     DOUBLE PRECISION, INTENT(IN)        :: X(:,:)
     
-    INTEGER, INTENT(IN)                 :: num_agents
+    INTEGER, INTENT(IN)                 :: num_states
 
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
     
-    CALL point_predictions(Y, X, coeffs, num_agents)
+    CALL point_predictions(Y, X, coeffs, num_states)
 
 END SUBROUTINE
 !*******************************************************************************
@@ -690,7 +690,7 @@ SUBROUTINE wrapper_random_choice(sample, candidates, num_candidates, num_points)
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_get_coefficients(coeffs, Y, X, num_covars, num_agents)
+SUBROUTINE wrapper_get_coefficients(coeffs, Y, X, num_covars, num_states)
 
     !/* external libraries      */
 
@@ -708,13 +708,13 @@ SUBROUTINE wrapper_get_coefficients(coeffs, Y, X, num_covars, num_agents)
     DOUBLE PRECISION, INTENT(IN)    :: Y(:)
     
     INTEGER, INTENT(IN)             :: num_covars
-    INTEGER, INTENT(IN)             :: num_agents
+    INTEGER, INTENT(IN)             :: num_states
 
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
     
-    CALL get_coefficients(coeffs, Y, X, num_covars, num_agents)
+    CALL get_coefficients(coeffs, Y, X, num_covars, num_states)
 
 END SUBROUTINE
 !*******************************************************************************
