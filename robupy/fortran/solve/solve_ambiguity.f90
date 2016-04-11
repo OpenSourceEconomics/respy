@@ -179,6 +179,7 @@ SUBROUTINE get_worst_case(x_internal, x_start, maxiter, ftol, tiny, &
     INTEGER(our_int)                :: MEQ
     INTEGER(our_int)                :: L_W
     INTEGER(our_int)                :: LA
+    INTEGER(our_int)                :: N1
     INTEGER(our_int)                :: M
     INTEGER(our_int)                :: N
 
@@ -214,11 +215,11 @@ SUBROUTINE get_worst_case(x_internal, x_start, maxiter, ftol, tiny, &
     M = MEQ + MIEQ
     N = SIZE(X)
     LA = MAX(1, M)
-    MINEQ = M - MEQ + (N + 1) + (N + 1)
-
-    L_W =  (3 * (N + 1) + M) * ((N + 1) + 1) + ((N + 1) - MEQ + 1) * (MINEQ + 2) + &
-           2 * MINEQ + ((N + 1) + MINEQ) * ((N + 1) - MEQ) + 2 * MEQ + (N + 1) + &
-           ((N + 1) * N) / two_dble + 2 * M + 3 * N + 3 * (N + 1) + 1
+    N1 = N + 1
+    MINEQ = M - MEQ + N1 + N1
+    L_W = (3 * N1 + M) *( N1 + 1) + (N1 - MEQ + 1) * (MINEQ + 2) + 2 * MINEQ + & 
+        (N1 + MINEQ) * (N1 - MEQ) + 2 * MEQ + N1 + (N + 1) * N / 2 + & 
+         2 * M + 3 * N + 3 * N1 + 1
 
     L_JW = MINEQ
 
