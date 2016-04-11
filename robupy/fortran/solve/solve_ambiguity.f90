@@ -165,31 +165,33 @@ SUBROUTINE get_worst_case(x_internal, x_start, maxiter, ftol, tiny, &
 
     !/* internal objects        */
 
-    INTEGER(our_int)                :: mineq
-    INTEGER(our_int)                :: mode
-    INTEGER(our_int)                :: iter
-    INTEGER(our_int)                :: mieq
-    INTEGER(our_int)                :: l_jw
-    INTEGER(our_int)                :: meq
-    INTEGER(our_int)                :: l_w
-    INTEGER(our_int)                :: la
-    INTEGER(our_int)                :: m
-    INTEGER(our_int)                :: n
-
-    INTEGER(our_int)                :: jw(7)
-
-    REAL(our_dble)                  :: a(1, 3)
-    REAL(our_dble)                  :: acc
-    REAL(our_dble)                  :: w(144)
-    REAL(our_dble)                  :: xl(2)
-    REAL(our_dble)                  :: xu(2)
-    REAL(our_dble)                  :: c(1)
-    REAL(our_dble)                  :: g(3)
-    REAL(our_dble)                  :: div
-    REAL(our_dble)                  :: f
-
     LOGICAL                         :: is_finished
     LOGICAL                         :: is_success
+
+    !/* SLSQP Interface         */
+
+    INTEGER(our_int)                :: MINEQ
+    INTEGER(our_int)                :: JW(7)
+    INTEGER(our_int)                :: MODE
+    INTEGER(our_int)                :: ITER
+    INTEGER(our_int)                :: MIEQ
+    INTEGER(our_int)                :: L_JW
+    INTEGER(our_int)                :: MEQ
+    INTEGER(our_int)                :: L_W
+    INTEGER(our_int)                :: LA
+    INTEGER(our_int)                :: M
+    INTEGER(our_int)                :: N
+
+    REAL(our_dble)                  :: A(1, 3)
+    REAL(our_dble)                  :: W(144)
+    REAL(our_dble)                  :: XL(2)
+    REAL(our_dble)                  :: XU(2)
+    REAL(our_dble)                  :: ACC
+    REAL(our_dble)                  :: C(1)
+    REAL(our_dble)                  :: G(3)
+    REAL(our_dble)                  :: X(2)
+    REAL(our_dble)                  :: div
+    REAL(our_dble)                  :: F
 
 !-------------------------------------------------------------------------------
 ! Algorithm
@@ -199,106 +201,109 @@ SUBROUTINE get_worst_case(x_internal, x_start, maxiter, ftol, tiny, &
     ! This is hard-coded for the ROBUPY package requirements. What follows 
     ! below is based on this being 0, 1.
     !---------------------------------------------------------------------------
-    meq = 1         ! Number of equality constraints
-    mieq = 0        ! Number of inequality constraints
+    MEQ = 1         ! Number of equality constraints
+    MIEQ = 0        ! Number of inequality constraints
     !---------------------------------------------------------------------------
     !---------------------------------------------------------------------------
 
     ! Initialize starting values
-    acc = ftol
-    x_internal = x_start
+    ACC = ftol
+    X = x_start
 
     ! Derived attributes
-    m = meq + mieq
-    n = SIZE(x_internal)
-    la = MAX(1, m)
-    mineq = m - meq + (n + 1) + (n + 1)
+    M = MEQ + MIEQ
+    N = SIZE(X)
+    LA = MAX(1, M)
+    MINEQ = M - MEQ + (N + 1) + (N + 1)
 
-    l_w =  (3 * (n + 1) + m) * ((n + 1) + 1) + ((n + 1) - meq + 1) * (mineq + 2) + &
-           2 * mineq + ((n + 1) + mineq) * ((n + 1) - meq) + 2 * meq + (n + 1) + &
-           ((n + 1) * n) / two_dble + 2 * m + 3 * n + 3 * (n + 1) + 1
+    L_W =  (3 * (N + 1) + M) * ((N + 1) + 1) + ((N + 1) - MEQ + 1) * (MINEQ + 2) + &
+           2 * MINEQ + ((N + 1) + MINEQ) * ((N + 1) - MEQ) + 2 * MEQ + (N + 1) + &
+           ((N + 1) * N) / two_dble + 2 * M + 3 * N + 3 * (N + 1) + 1
 
-    l_jw = mineq
+    L_JW = MINEQ
 
     ! Decompose upper and lower bounds
-    xl = - HUGE_FLOAT; xu = HUGE_FLOAT
+    XL = - HUGE_FLOAT; XU = HUGE_FLOAT
 
-    ! Initialize the iteration counter and mode value
-    iter = maxiter
-    mode = zero_int
+    ! Initialize the iteration counter and MODE value
+    ITER = maxiter
+    MODE = zero_int
 
     ! Initialization of SLSQP
     is_finished = .False.
 
     ! Initialize criterion function at starting values
-    f = criterion_ambiguity(x_internal, num_draws_emax, draws_emax, period, &
+    F = criterion_ambiguity(X, num_draws_emax, draws_emax, period, &
             k, payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
             states_all, num_periods, periods_emax, delta, shocks_cholesky)
 
 
-    g(:2) = criterion_ambiguity_derivative(x_internal, tiny, num_draws_emax, &
+    G(:2) = criterion_ambiguity_derivative(X, tiny, num_draws_emax, &
                 draws_emax, period, k, payoffs_systematic, edu_max, & 
                 edu_start, mapping_state_idx, states_all, num_periods, & 
                 periods_emax, delta, shocks_cholesky)
 
     ! Initialize constraint at starting values
-    c = divergence(x_internal, shocks_cov, level)
-    a(1,:2) = divergence_derivative(x_internal, shocks_cov, level, tiny)
+    C = divergence(X, shocks_cov, level)
+    A(1,:2) = divergence_derivative(X, shocks_cov, level, tiny)
 
     ! Iterate until completion
     DO WHILE (.NOT. is_finished)
 
         ! Evaluate criterion function and constraints
-        IF (mode == one_int) THEN
+        IF (MODE == one_int) THEN
 
-            f = criterion_ambiguity(x_internal, num_draws_emax, draws_emax, &
+            F = criterion_ambiguity(X, num_draws_emax, draws_emax, &
                     period, k, payoffs_systematic, edu_max, edu_start, &
                     mapping_state_idx, states_all, num_periods, periods_emax, & 
                     delta, shocks_cholesky)
 
-            c = divergence(x_internal, shocks_cov, level)
+            C = divergence(X, shocks_cov, level)
 
         ! Evaluate gradient of criterion function and constraints. Note that the
-        ! a is of dimension (1, n + 1) and the last element needs to always
+        ! A is of dimension (1, N + 1) and the last element needs to always
         ! be zero.
-        ELSEIF (mode == - one_int) THEN
+        ELSEIF (MODE == - one_int) THEN
 
-            g(:2) = criterion_ambiguity_derivative(x_internal, tiny, &
+            G(:2) = criterion_ambiguity_derivative(X, tiny, &
                         num_draws_emax, draws_emax, period, k, &
                         payoffs_systematic, edu_max, edu_start, & 
                         mapping_state_idx, states_all, num_periods, & 
                         periods_emax, delta, shocks_cholesky)
 
-            a(1,:2) = divergence_derivative(x_internal, shocks_cov, &
+            A(1,:2) = divergence_derivative(X, shocks_cov, &
                             level, tiny)
 
         END IF
 
         !Call to SLSQP code
-        CALL slsqp(m, meq, la, n, x_internal, xl, xu, f, c, g, a, acc, &
-                iter, mode, w, l_w, jw, l_jw)
+        CALL slsqp(M, MEQ, LA, N, X, XL, XU, F, C, G, A, ACC, &
+                ITER, MODE, W, L_W, JW, L_JW)
 
         ! Check if SLSQP has completed
-        IF (.NOT. ABS(mode) == one_int) THEN
+        IF (.NOT. ABS(MODE) == one_int) THEN
             is_finished = .True.
         END IF
 
     END DO
     
+    x_internal = X
+
     ! Stabilization. If the optimization fails the starting values are
     ! used otherwise it happens that the constraint is not satisfied by far.
-    is_success = (mode == zero_int)
+    is_success = (MODE == zero_int)
 
     IF(.NOT. is_success) THEN
         x_internal = x_start
     END IF
 
+    
     ! Logging.
     IF (is_debug) THEN
         ! Evaluate divergence at final value
         div = divergence(x_internal, shocks_cov, level) - level
         ! Write to logging file
-        CALL logging_ambiguity(x_internal, div, mode, period, k, is_success)
+        CALL logging_ambiguity(x_internal, div, MODE, period, k, is_success)
     END IF
 
 END SUBROUTINE
