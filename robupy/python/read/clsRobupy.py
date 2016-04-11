@@ -52,7 +52,7 @@ class RobupyCls(object):
 
         self.attr['num_points'] = None
 
-        self.attr['seed_data'] = None
+        self.attr['seed_sim'] = None
 
         self.attr['seed_prob'] = None
 
@@ -264,7 +264,7 @@ class RobupyCls(object):
 
         self.attr['edu_start'] = init_dict['EDUCATION']['start']
 
-        self.attr['seed_data'] = init_dict['SIMULATION']['seed']
+        self.attr['seed_sim'] = init_dict['SIMULATION']['seed']
 
         self.attr['seed_prob'] = init_dict['ESTIMATION']['seed']
 
@@ -388,7 +388,7 @@ class RobupyCls(object):
 
         is_myopic = self.attr['is_myopic']
 
-        seed_data = self.attr['seed_data']
+        seed_sim = self.attr['seed_sim']
 
         seed_prob = self.attr['seed_prob']
 
@@ -428,7 +428,7 @@ class RobupyCls(object):
         assert (is_myopic in [True, False])
 
         # Seeds
-        for seed in [seed_emax, seed_data, seed_prob]:
+        for seed in [seed_emax, seed_sim, seed_prob]:
             assert (np.isfinite(seed))
             assert (isinstance(seed, int))
             assert (seed > 0)

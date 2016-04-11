@@ -62,26 +62,26 @@ def simulate(robupy_obj):
 
     # Distribute class attributes
     periods_payoffs_systematic, mapping_state_idx, periods_emax, model_paras, \
-        num_periods, num_agents_sim, states_all, edu_start, seed_data, \
+        num_periods, num_agents_sim, states_all, edu_start, seed_sim, \
         is_debug, file_sim, edu_max, delta, version = \
             dist_class_attributes(robupy_obj,
                 'periods_payoffs_systematic', 'mapping_state_idx',
                 'periods_emax', 'model_paras', 'num_periods', 'num_agents_sim',
-                'states_all', 'edu_start', 'seed_data', 'is_debug',
+                'states_all', 'edu_start', 'seed_sim', 'is_debug',
                 'file_sim', 'edu_max', 'delta', 'version')
 
     # Auxiliary objects
     shocks_cholesky = dist_model_paras(model_paras, is_debug)[5]
 
     # Draw draws for the simulation.
-    periods_draws_sims = create_draws(num_periods, num_agents_sim, seed_data,
+    periods_draws_sims = create_draws(num_periods, num_agents_sim, seed_sim,
         is_debug)
 
     # Simulate a dataset with the results from the solution and write out the
     # dataset to a text file. In addition a file summarizing the dataset is
     # produced.
     logger.info('Starting simulation of model for ' + str(num_agents_sim) +
-        ' agents with seed ' + str(seed_data))
+        ' agents with seed ' + str(seed_sim))
 
     # Collect arguments to pass in different implementations of the simulation.
     args = (periods_payoffs_systematic, mapping_state_idx, periods_emax,

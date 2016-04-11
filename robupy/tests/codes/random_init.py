@@ -186,9 +186,9 @@ def generate_random_dict(constraints=None):
         assert (isinstance(max_draws, int))
         assert (max_draws > 0)
         # Replace in initialization file
-        dict_['SIMULATION']['agents'] = np.random.randint(1, max_draws)
-        dict_['ESTIMATION']['agents'] = np.random.randint(1, dict_['SIMULATION']['agents'])
-
+        num_agents_sim = np.random.randint(1, max_draws)
+        dict_['SIMULATION']['agents'] = num_agents_sim
+        dict_['ESTIMATION']['agents'] = np.random.randint(1, num_agents_sim)
         dict_['ESTIMATION']['draws'] = np.random.randint(1, max_draws)
         dict_['SOLUTION']['draws'] = np.random.randint(1, max_draws)
 
@@ -265,7 +265,7 @@ def generate_random_dict(constraints=None):
         assert (np.isfinite(num_agents))
         # Replace in initialization files
         dict_['SIMULATION']['agents'] = num_agents
-        dict_['ESTIMATION']['agents'] = num_agents
+        dict_['ESTIMATION']['agents'] = np.random.randint(1, num_agents)
 
     # Number of simulations for S-ML
     if 'sims' in constraints.keys():

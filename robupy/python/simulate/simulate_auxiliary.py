@@ -20,7 +20,7 @@ def write_info(robupy_obj, data_frame):
     # Distribute class attributes
     file_sim = robupy_obj.get_attr('file_sim')
 
-    seed = robupy_obj.get_attr('seed_data')
+    seed_sim = robupy_obj.get_attr('seed_sim')
 
     # Get basic information
     num_agents_sim = data_frame[1].value_counts()[0]
@@ -34,7 +34,7 @@ def write_info(robupy_obj, data_frame):
 
         file_.write('   Number of Agents:       ' + str(num_agents_sim) + '\n\n')
         file_.write('   Number of Periods:      ' + str(num_periods) + '\n\n')
-        file_.write('   Seed:                   ' + str(seed) + '\n\n\n')
+        file_.write('   Seed:                   ' + str(seed_sim) + '\n\n\n')
         file_.write('   Choices\n\n')
 
         fmt_ = '{:>10}' + '{:>14}' * 4 + '\n\n'

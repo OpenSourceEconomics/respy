@@ -50,7 +50,7 @@ def finalize_testing_record():
     os.unlink('tracebacks.testing.tmp')
 
 
-def update_testing_record(module, method, seed, is_success, msg,
+def update_testing_record(module, method, seed_test, is_success, msg,
         full_test_record, start, timeout):
     """ Maintain a record about the outcomes of the testing efforts.
     """
@@ -92,7 +92,7 @@ def update_testing_record(module, method, seed, is_success, msg,
         with open('tracebacks.testing.tmp', 'a') as log_file:
             string = 'MODULE {0[0]:<25} METHOD {0[1]:<25} SEED: {0[' \
                      '2]:<10} \n\n'
-            log_file.write(string.format([module, method, seed]))
+            log_file.write(string.format([module, method, seed_test]))
             log_file.write(msg)
             log_file.write('\n---------------------------------------'
                            '-----------------------------------------\n\n')

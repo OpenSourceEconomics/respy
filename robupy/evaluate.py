@@ -32,13 +32,13 @@ def evaluate(robupy_obj, data_frame):
     assert check_input(robupy_obj, data_frame)
 
     # Distribute class attributes
-    model_paras, num_periods, num_agents_est, edu_start, seed_data, is_debug, \
+    model_paras, num_periods, num_agents_est, edu_start, seed_sim, is_debug, \
         edu_max, delta, is_deterministic, version, num_draws_prob, seed_prob, \
         num_draws_emax, seed_emax, is_interpolated, is_ambiguous, num_points, \
         is_myopic, min_idx, level, tau = \
             dist_class_attributes(robupy_obj,
                 'model_paras', 'num_periods', 'num_agents_est', 'edu_start',
-                'seed_data', 'is_debug', 'edu_max', 'delta', 'is_deterministic',
+                'seed_sim', 'is_debug', 'edu_max', 'delta', 'is_deterministic',
                 'version', 'num_draws_prob', 'seed_prob', 'num_draws_emax',
                 'seed_emax', 'is_interpolated', 'is_ambiguous', 'num_points',
                 'is_myopic', 'min_idx', 'level', 'tau')

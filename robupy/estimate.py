@@ -32,14 +32,14 @@ def estimate(robupy_obj, data_frame):
     assert check_input(robupy_obj, data_frame)
 
     # Distribute class attributes
-    model_paras, num_periods, num_agents_est, edu_start, seed_data, \
+    model_paras, num_periods, num_agents_est, edu_start, seed_sim, \
         is_debug, file_sim, edu_max, delta, num_draws_prob, seed_prob, \
         num_draws_emax, seed_emax, level, min_idx, is_ambiguous, \
         is_deterministic, is_myopic, is_interpolated, num_points, version, \
         maxiter, optimizer, tau, paras_fixed, file_opt = \
             dist_class_attributes(robupy_obj,
                 'model_paras', 'num_periods', 'num_agents_est', 'edu_start',
-                'seed_data', 'is_debug', 'file_sim', 'edu_max', 'delta',
+                'seed_sim', 'is_debug', 'file_sim', 'edu_max', 'delta',
                 'num_draws_prob', 'seed_prob', 'num_draws_emax', 'seed_emax',
                 'level', 'min_idx', 'is_ambiguous',
                 'is_deterministic', 'is_myopic', 'is_interpolated',
