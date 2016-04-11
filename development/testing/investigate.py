@@ -36,7 +36,7 @@ VERSIONS = ['PYTHON', 'FORTRAN', 'F2PY']
 
 ''' Request
 '''
-seed = 1223#6216748723
+seed = 71353#6216748723
 
 
 ''' Error Reproduction
@@ -46,11 +46,11 @@ cleanup_testing_infrastructure(True)
 np.random.seed(seed)
 
 # Construct test
-for _ in range(10000):
+for _ in range(1):
     test_dict = get_test_dict(TEST_DIR)
     module, method = get_random_request(test_dict)
 
-    module, method = 'test_integration', 'test_2'
+    #module, method = 'test_integration', 'test_2'
     print(module, method)
     mod = importlib.import_module(module)
     test = getattr(mod.TestClass(), method)

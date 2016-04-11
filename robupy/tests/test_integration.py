@@ -507,7 +507,7 @@ class TestClass(object):
         # can be used for the same simulated data.
         constr = dict()
         constr['periods'] = np.random.randint(1, 4)
-        constr['agents'] = np.random.randint(1, 100)
+        constr['agents'] = np.random.randint(5, 100)
         constr['edu'] = (7, 15)
         constr['maxiter'] = 0
 
