@@ -165,39 +165,34 @@ SUBROUTINE get_worst_case(x_internal, x_start, maxiter, ftol, tiny, &
 
     !/* internal objects        */
 
+    INTEGER(our_int)    :: M    ! Total number of constraints
+    INTEGER(our_int)    :: MEQ  ! Total number of equality constraints
+    INTEGER(our_int)    :: LA   ! MAX(M, 1)
+    INTEGER(our_int)    :: N    ! Number of variables
 
+    REAL(our_dble) :: X(2)         ! Current iterate
+    REAL(our_dble) :: XL(2)        ! Lower bounds for x
+    REAL(our_dble) :: XU(2)        ! Upper bounds for x
+    REAL(our_dble)              :: F            ! Value of objective function
 
-INTEGER(our_int)    :: M    ! Total number of constraints
-INTEGER(our_int)    :: MEQ  ! Total number of equality constraints
-INTEGER(our_int)    :: LA   ! MAX(M, 1)
-INTEGER(our_int)    :: N    ! Number of variables
+    REAL(our_dble), ALLOCATABLE :: C(:)         ! Stores the constraints
+    REAL(our_dble), ALLOCATABLE :: G(:)         ! Partials of objective function
+    REAL(our_dble), ALLOCATABLE :: A(:, :)      ! Normals of constraints 
 
-REAL(our_dble), ALLOCATABLE :: X(:)         ! Current iterate
-REAL(our_dble), ALLOCATABLE :: XL(:)        ! Lower bounds for x
-REAL(our_dble), ALLOCATABLE :: XU(:)        ! Upper bounds for x
-REAL(our_dble)              :: F            ! Value of objective function
+    REAL(our_dble)      :: ACC                 ! Final accuracy
+    INTEGER(our_int)    :: ITER                ! Maximum number of iterations
+    INTEGER(our_int)    :: MODE                ! Control for communication
 
+    ! Working spaces
+    REAL(our_dble), ALLOCATABLE     :: W(:)        
+    INTEGER(our_int), ALLOCATABLE   :: JW(:)
+    INTEGER(our_int)                :: L_W
+    INTEGER(our_int)                :: L_JW
 
-REAL(our_dble), ALLOCATABLE :: C(:)         ! Stores the constraints
-REAL(our_dble), ALLOCATABLE :: G(:)         ! Partials of objective function
-REAL(our_dble), ALLOCATABLE :: A(:, :)      ! Normals of constraints 
+    ! Locals
+    INTEGER(our_int)    :: N1
+    INTEGER(our_int)    :: MINEQ
 
-REAL(our_dble)      :: ACC                 ! Final accuracy
-INTEGER(our_int)    :: ITER                ! Maximum number of iterations
-INTEGER(our_int)    :: MODE                ! Control for communication
-
-! Working spaces
-REAL(our_dble), ALLOCATABLE     :: W(:)        
-INTEGER(our_int), ALLOCATABLE   :: JW(:)
-INTEGER(our_int)                :: L_W
-INTEGER(our_int)                :: L_JW
-
-! Locals
-INTEGER(our_int)    :: N1, MINEQ
-
-    REAL(our_dble)                  :: F
-
-    REAL(our_dble)                  :: X(2)
 
 
     LOGICAL                         :: is_finished
@@ -234,15 +229,9 @@ L_W = (3 * N1 + M) *( N1 + 1) + (N1 - MEQ + 1) * (MINEQ + 2) + 2 * MINEQ + &
 L_JW = MINEQ
 
 
+    ALLOCATE(C(LA), G(N + 1), A(LA, N + 1))
+ALLOCATE(W(L_W), JW(L_JW))
 
-
-    MINEQ = M - MEQ + (N + 1) + (N + 1)
-
-    L_W =  (3 * (N + 1) + M) * ((N + 1) + 1) + ((N + 1) - MEQ + 1) * (MINEQ + 2) + &
-           2 * MINEQ + ((N + 1) + MINEQ) * ((N + 1) - MEQ) + 2 * MEQ + (N + 1) + &
-           ((N + 1) * N) / two_dble + 2 * M + 3 * N + 3 * (N + 1) + 1
-
-    L_JW = MINEQ
 
     ! Decompose upper and lower bounds
     XL = - HUGE_FLOAT; XU = HUGE_FLOAT
