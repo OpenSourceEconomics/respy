@@ -21,6 +21,8 @@ MODULE solve_ambiguity
 
     IMPLICIT NONE
 
+    EXTERNAL SLSQP
+
     PUBLIC 
     
 CONTAINS
@@ -177,6 +179,7 @@ SUBROUTINE get_worst_case(x_internal, x_start, maxiter, ftol, tiny, &
     INTEGER(our_int)                :: jw(7)
 
     REAL(our_dble)                  :: a(1, 3)
+    REAL(our_dble)                  :: acc
     REAL(our_dble)                  :: w(144)
     REAL(our_dble)                  :: xl(2)
     REAL(our_dble)                  :: xu(2)
@@ -202,6 +205,7 @@ SUBROUTINE get_worst_case(x_internal, x_start, maxiter, ftol, tiny, &
     !---------------------------------------------------------------------------
 
     ! Initialize starting values
+    acc = ftol
     x_internal = x_start
 
     ! Derived attributes
@@ -271,7 +275,7 @@ SUBROUTINE get_worst_case(x_internal, x_start, maxiter, ftol, tiny, &
         END IF
 
         !Call to SLSQP code
-        CALL slsqp(m, meq, la, n, x_internal, xl, xu, f, c, g, a, ftol, &
+        CALL slsqp(m, meq, la, n, x_internal, xl, xu, f, c, g, a, acc, &
                 iter, mode, w, l_w, jw, l_jw)
 
         ! Check if SLSQP has completed

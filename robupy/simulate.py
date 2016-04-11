@@ -27,9 +27,9 @@ from robupy.python.simulate.simulate_auxiliary import check_input
 from robupy.python.simulate.simulate_auxiliary import write_info
 from robupy.python.simulate.simulate_auxiliary import write_out
 
+from robupy.python.shared.shared_auxiliary import replace_missing_values
 from robupy.python.shared.shared_auxiliary import dist_class_attributes
 from robupy.python.shared.shared_auxiliary import dist_model_paras
-from robupy.python.shared.shared_auxiliary import replace_missing_values
 from robupy.python.shared.shared_auxiliary import check_dataset
 from robupy.python.shared.shared_auxiliary import create_draws
 
