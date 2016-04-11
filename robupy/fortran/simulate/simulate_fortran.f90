@@ -19,7 +19,7 @@ MODULE simulate_fortran
 !*******************************************************************************
 SUBROUTINE fort_simulate(dataset, periods_payoffs_systematic, & 
                 mapping_state_idx, periods_emax, num_periods, states_all, & 
-                num_agents, edu_start, edu_max, delta, periods_draws_sims, & 
+                num_agents_sim, edu_start, edu_max, delta, periods_draws_sims, & 
                 shocks_cholesky)
 
     !/* external objects        */
@@ -37,12 +37,12 @@ SUBROUTINE fort_simulate(dataset, periods_payoffs_systematic, &
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:, :, :, :, :)
     INTEGER(our_int), INTENT(IN)    :: states_all(:, :, :)
-    INTEGER(our_int), INTENT(IN)    :: num_agents
+    INTEGER(our_int), INTENT(IN)    :: num_agents_sim
     INTEGER(our_int), INTENT(IN)    :: edu_max
 
     !/* internal objects        */
 
-    REAL(our_dble)                  :: periods_draws_sims_transformed(num_periods, num_agents, 4)
+    REAL(our_dble)                  :: periods_draws_sims_transformed(num_periods, num_agents_sim, 4)
 
     INTEGER(our_int)                :: current_state(4)
     INTEGER(our_int)                :: edu_lagged
@@ -71,7 +71,7 @@ SUBROUTINE fort_simulate(dataset, periods_payoffs_systematic, &
     DO period = 1, num_periods
         CALL transform_disturbances(periods_draws_sims_transformed(period, :, :), & 
                 periods_draws_sims(period, :, :), shocks_cholesky, shocks_mean, & 
-                num_agents)
+                num_agents_sim)
     END DO
 
     ! Initialize containers
@@ -80,7 +80,7 @@ SUBROUTINE fort_simulate(dataset, periods_payoffs_systematic, &
     ! Iterate over agents and periods
     count = 0
 
-    DO i = 0, (num_agents - 1)
+    DO i = 0, (num_agents_sim - 1)
 
         ! Baseline state
         current_state = states_all(1, 1, :)

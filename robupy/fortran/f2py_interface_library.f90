@@ -9,7 +9,7 @@
 SUBROUTINE f2py_criterion(crit_val, x, is_deterministic, is_interpolated, & 
                 num_draws_emax, is_ambiguous, num_periods, num_points, & 
                 is_myopic, edu_start, is_debug, edu_max, min_idx, &
-                delta, level, data_array, num_agents, num_draws_prob, & 
+                delta, level, data_array, num_agents_est, num_draws_prob, & 
                 tau, periods_draws_emax, periods_draws_prob)
 
     !/* external libraries      */
@@ -31,7 +31,7 @@ SUBROUTINE f2py_criterion(crit_val, x, is_deterministic, is_interpolated, &
     DOUBLE PRECISION, INTENT(IN)   :: x(26)
 
 
-    INTEGER, INTENT(IN)             :: num_agents
+    INTEGER, INTENT(IN)             :: num_agents_est
     INTEGER, INTENT(IN)             :: num_draws_emax, num_draws_prob
     INTEGER, INTENT(IN)             :: num_periods
     INTEGER, INTENT(IN)             :: num_points
@@ -87,7 +87,8 @@ SUBROUTINE f2py_criterion(crit_val, x, is_deterministic, is_interpolated, &
     CALL fort_evaluate(crit_val, periods_payoffs_systematic, & 
             mapping_state_idx, periods_emax, states_all, shocks_cov, & 
             is_deterministic, num_periods, edu_start, edu_max, delta, & 
-            data_array, num_agents, num_draws_prob, periods_draws_prob, tau)
+            data_array, num_agents_est, num_draws_prob, periods_draws_prob, & 
+            tau)
 
 END SUBROUTINE
 !*******************************************************************************
@@ -186,7 +187,7 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, &
                 coeffs_home, shocks_cov, is_deterministic, is_interpolated, & 
                 num_draws_emax, is_ambiguous, num_periods, num_points, &
                 is_myopic, edu_start, is_debug, edu_max, min_idx, &
-                delta, level, data_array, num_agents, num_draws_prob, tau, & 
+                delta, level, data_array, num_agents_est, num_draws_prob, tau, & 
                 periods_draws_emax, periods_draws_prob)
 
     !/* external libraries      */
@@ -205,9 +206,9 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, &
 
     INTEGER, INTENT(IN)             :: num_draws_prob
     INTEGER, INTENT(IN)             :: num_draws_emax
+    INTEGER, INTENT(IN)             :: num_agents_est
     INTEGER, INTENT(IN)             :: num_periods
     INTEGER, INTENT(IN)             :: num_points
-    INTEGER, INTENT(IN)             :: num_agents
     INTEGER, INTENT(IN)             :: edu_start
     INTEGER, INTENT(IN)             :: edu_max
     INTEGER, INTENT(IN)             :: min_idx
@@ -256,14 +257,15 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, &
     CALL fort_evaluate(crit_val, periods_payoffs_systematic, & 
             mapping_state_idx, periods_emax, states_all, shocks_cov, & 
             is_deterministic, num_periods, edu_start, edu_max, delta, &
-            data_array, num_agents, num_draws_prob, periods_draws_prob, tau)
+            data_array, num_agents_est, num_draws_prob, periods_draws_prob, & 
+            tau)
 
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE f2py_simulate(dataset, periods_payoffs_systematic, & 
                 mapping_state_idx, periods_emax, num_periods, states_all, & 
-                num_agents, edu_start, edu_max, delta, periods_draws_sims, & 
+                num_agents_sim, edu_start, edu_max, delta, periods_draws_sims, & 
                 shocks_cholesky)
 
     !/* external libraries      */
@@ -276,7 +278,7 @@ SUBROUTINE f2py_simulate(dataset, periods_payoffs_systematic, &
 
     !/* external objects        */
 
-    DOUBLE PRECISION, INTENT(OUT)   :: dataset(num_agents * num_periods, 8)
+    DOUBLE PRECISION, INTENT(OUT)   :: dataset(num_agents_sim * num_periods, 8)
 
     DOUBLE PRECISION, INTENT(IN)    :: periods_payoffs_systematic(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_sims(:, :, :)
@@ -289,7 +291,7 @@ SUBROUTINE f2py_simulate(dataset, periods_payoffs_systematic, &
 
     INTEGER, INTENT(IN)             :: mapping_state_idx(:, :, :, :, :)
     INTEGER, INTENT(IN)             :: states_all(:, :, :)
-    INTEGER, INTENT(IN)             :: num_agents
+    INTEGER, INTENT(IN)             :: num_agents_sim
     INTEGER, INTENT(IN)             :: edu_max
 
 !-------------------------------------------------------------------------------
@@ -298,7 +300,7 @@ SUBROUTINE f2py_simulate(dataset, periods_payoffs_systematic, &
 
     CALL fort_simulate(dataset, periods_payoffs_systematic, & 
                 mapping_state_idx, periods_emax, num_periods, states_all, & 
-                num_agents, edu_start, edu_max, delta, periods_draws_sims, &
+                num_agents_sim, edu_start, edu_max, delta, periods_draws_sims, &
                 shocks_cholesky)
 
 END SUBROUTINE

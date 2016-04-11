@@ -22,8 +22,8 @@ PROGRAM robufort
 
     INTEGER(our_int)                :: num_draws_emax
     INTEGER(our_int)                :: num_draws_prob
+    INTEGER(our_int)                :: num_agents_est
     INTEGER(our_int)                :: num_periods
-    INTEGER(our_int)                :: num_agents
     INTEGER(our_int)                :: num_points
     INTEGER(our_int)                :: seed_prob
     INTEGER(our_int)                :: seed_emax
@@ -66,7 +66,7 @@ PROGRAM robufort
     CALL read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
             coeffs_edu, edu_start, edu_max, coeffs_home, shocks_cov, &
             shocks_cholesky, num_draws_emax, seed_emax, seed_prob, &
-            num_agents, is_debug, is_deterministic, is_interpolated, & 
+            num_agents_est, is_debug, is_deterministic, is_interpolated, & 
             num_points, min_idx, is_ambiguous, request, &
             num_draws_prob, is_myopic, tau)
 
@@ -97,7 +97,7 @@ PROGRAM robufort
                 seed_prob, is_debug)
 
         ! Read observed dataset from disk
-        CALL read_dataset(data_array, num_periods, num_agents)
+        CALL read_dataset(data_array, num_periods, num_agents_est)
 
         ! Solve the model for a given parametrization.    
         CALL fort_solve(periods_payoffs_systematic, states_number_period, & 
@@ -111,7 +111,8 @@ PROGRAM robufort
         CALL fort_evaluate(crit_val, periods_payoffs_systematic, & 
                 mapping_state_idx, periods_emax, states_all, shocks_cov, & 
                 is_deterministic, num_periods, edu_start, edu_max, delta, & 
-                data_array, num_agents, num_draws_prob, periods_draws_prob, tau)
+                data_array, num_agents_est, num_draws_prob, & 
+                periods_draws_prob, tau)
 
     END IF
 

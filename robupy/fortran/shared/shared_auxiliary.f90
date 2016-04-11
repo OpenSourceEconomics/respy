@@ -758,7 +758,7 @@ END SUBROUTINE
 SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
                 coeffs_edu, edu_start, edu_max, coeffs_home, shocks_cov, &
                 shocks_cholesky, num_draws_emax, seed_emax, seed_prob, &
-                num_agents, is_debug, is_deterministic, is_interpolated, &
+                num_agents_est, is_debug, is_deterministic, is_interpolated, &
                 num_points, min_idx, is_ambiguous, request, &
                 num_draws_prob, is_myopic, tau)
 
@@ -770,10 +770,10 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
 
     !/* external objects        */
 
+    INTEGER(our_int), INTENT(OUT)   :: num_agents_est
     INTEGER(our_int), INTENT(OUT)   :: num_draws_emax
     INTEGER(our_int), INTENT(OUT)   :: num_draws_prob
     INTEGER(our_int), INTENT(OUT)   :: num_periods
-    INTEGER(our_int), INTENT(OUT)   :: num_agents
     INTEGER(our_int), INTENT(OUT)   :: num_points
     INTEGER(our_int), INTENT(OUT)   :: seed_prob
     INTEGER(our_int), INTENT(OUT)   :: seed_emax
@@ -845,9 +845,6 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
         READ(1, 1505) num_draws_emax
         READ(1, 1505) seed_emax
 
-        ! SIMULATION
-        READ(1, 1505) num_agents
-
         ! PROGRAM
         READ(1, *) is_debug
 
@@ -856,6 +853,7 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
         READ(1, 1505) num_points
 
         ! ESTIMATION
+        READ(1, 1505) num_agents_est
         READ(1, 1505) num_draws_prob
         READ(1, 1505) seed_prob
         READ(1, 1510) tau
@@ -882,14 +880,14 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE read_dataset(data_array, num_periods, num_agents)
+SUBROUTINE read_dataset(data_array, num_periods, num_agents_est)
 
     !/* external objects        */
 
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)  :: data_array(:, :)
 
+    INTEGER(our_int), INTENT(IN)                :: num_agents_est
     INTEGER(our_int), INTENT(IN)                :: num_periods
-    INTEGER(our_int), INTENT(IN)                :: num_agents
 
     !/* internal objects        */
 
@@ -901,12 +899,12 @@ SUBROUTINE read_dataset(data_array, num_periods, num_agents)
 !-------------------------------------------------------------------------------
 
     ! Allocate data container
-    ALLOCATE(data_array(num_periods * num_agents, 8))
+    ALLOCATE(data_array(num_periods * num_agents_est, 8))
 
     ! Read observed data to double precision array
     OPEN(UNIT=1, FILE='.data.robufort.dat')
 
-        DO j = 1, num_periods * num_agents
+        DO j = 1, num_periods * num_agents_est
             READ(1, *) (data_array(j, k), k = 1, 8)
         END DO
 

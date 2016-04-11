@@ -75,7 +75,7 @@ def write_robufort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         shocks_cov, is_deterministic, is_interpolated, num_draws_emax,
         is_ambiguous, num_periods, num_points, is_myopic, edu_start,
         is_debug, edu_max, min_idx, delta, level, num_draws_prob,
-        num_agents, seed_prob, seed_emax, tau, request):
+        num_agents_est, seed_prob, seed_emax, tau, request):
     """ Write out model request to hidden file .model.robufort.ini.
     """
 
@@ -127,10 +127,6 @@ def write_robufort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         line = '{0:10d}\n'.format(seed_emax)
         file_.write(line)
 
-        # SIMULATION
-        line = '{0:10d}\n'.format(num_agents)
-        file_.write(line)
-
         # PROGRAM
         line = '{0}'.format(is_debug)
         file_.write(line + '\n')
@@ -143,6 +139,9 @@ def write_robufort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         file_.write(line)
 
         # ESTIMATION
+        line = '{0:10d}\n'.format(num_agents_est)
+        file_.write(line)
+
         line = '{0:10d}\n'.format(num_draws_prob)
         file_.write(line)
 
