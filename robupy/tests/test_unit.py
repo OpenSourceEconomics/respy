@@ -63,12 +63,8 @@ class TestClass(object):
         """
         for _ in range(5):
 
-            # Impose constraints
-            constraints = dict()
-            constraints['measure'] = 'kl'
-
             # Generate random initialization file
-            generate_init(constraints)
+            generate_init()
 
             # Perform toolbox actions
             robupy_obj = read('test.robupy.ini')
@@ -78,13 +74,13 @@ class TestClass(object):
             periods_payoffs_systematic, states_number_period, \
                 mapping_state_idx, is_deterministic, is_ambiguous, \
                 periods_emax, model_paras, num_periods, states_all, \
-                num_draws_emax, edu_start, is_debug, edu_max, measure, delta,\
+                num_draws_emax, edu_start, is_debug, edu_max, delta,\
                 level = dist_class_attributes(robupy_obj,
                     'periods_payoffs_systematic', 'states_number_period',
                     'mapping_state_idx', 'is_deterministic', 'is_ambiguous',
                     'periods_emax', 'model_paras', 'num_periods', 'states_all',
                     'num_draws_emax', 'edu_start', 'is_debug', 'edu_max',
-                    'measure', 'delta', 'level')
+                    'delta', 'level')
 
             # Extract auxiliary objects
             _, _, _, _, shocks_cov, shocks_cholesky = \
@@ -106,14 +102,14 @@ class TestClass(object):
                     payoffs_systematic, edu_max, edu_start,
                     mapping_state_idx, states_all, num_periods,
                     periods_emax, delta, is_debug, shocks_cov, level,
-                    is_ambiguous, measure, is_deterministic,
+                    is_ambiguous, is_deterministic,
                     shocks_cholesky)
 
                 f90 = fort_debug.wrapper_get_payoffs(num_draws_emax,
                     draws_emax, period, k, payoffs_systematic,
                     edu_max, edu_start, mapping_state_idx, states_all,
                     num_periods, periods_emax, delta, is_debug, shocks_cov,
-                    level, is_ambiguous, measure, is_deterministic,
+                    level, is_ambiguous, is_deterministic,
                     shocks_cholesky)
 
                 # Compare returned array on expected future values, ex post
@@ -131,7 +127,6 @@ class TestClass(object):
             constraints = dict()
             constraints['level'] = 0.0
             constraints['version'] = 'PYTHON'
-            constraints['measure'] = 'kl'
 
             # Generate random initialization file
             generate_init(constraints)
@@ -144,12 +139,12 @@ class TestClass(object):
             periods_payoffs_systematic, states_number_period, \
                 mapping_state_idx, is_deterministic, periods_emax, \
                 num_periods, model_paras, states_all, num_draws_emax, \
-                edu_start, edu_max, measure, delta, is_debug = \
+                edu_start, edu_max, delta, is_debug = \
                     dist_class_attributes(robupy_obj,
                         'periods_payoffs_systematic', 'states_number_period',
                         'mapping_state_idx', 'is_deterministic', 'periods_emax',
                         'num_periods', 'model_paras', 'states_all',
-                        'num_draws_emax', 'edu_start', 'edu_max', 'measure',
+                        'num_draws_emax', 'edu_start', 'edu_max',
                         'delta', 'is_debug')
 
             # Auxiliary objects
@@ -173,7 +168,7 @@ class TestClass(object):
             args = [num_draws_emax, draws_standard, period, k,
                 payoffs_systematic, edu_max, edu_start, mapping_state_idx,
                 states_all, num_periods, periods_emax, is_debug, delta,
-                shocks_cov, level, measure, is_deterministic, shocks_cholesky]
+                shocks_cov, level, is_deterministic, shocks_cholesky]
 
             f = fort_debug.wrapper_get_payoffs_ambiguity(*args)
             py = get_payoffs_ambiguity(*args)
@@ -635,12 +630,12 @@ class TestClass(object):
 
         # Extract class attributes
         num_periods, edu_start, edu_max, min_idx, model_paras, num_draws_emax, \
-            seed_emax, is_debug, delta, level, is_ambiguous, measure, \
+            seed_emax, is_debug, delta, level, is_ambiguous, \
             is_interpolated, num_points, is_deterministic, is_myopic = \
                 dist_class_attributes(robupy_obj,
                     'num_periods', 'edu_start', 'edu_max', 'min_idx',
                     'model_paras', 'num_draws_emax', 'seed_emax', 'is_debug',
-                    'delta', 'level', 'is_ambiguous', 'measure',
+                    'delta', 'level', 'is_ambiguous',
                     'is_interpolated', 'num_points', 'is_deterministic',
                     'is_myopic')
 
@@ -677,7 +672,7 @@ class TestClass(object):
         args = (num_periods, max_states_period, periods_draws_emax,
             num_draws_emax, states_number_period, periods_payoffs_systematic,
             edu_max, edu_start, mapping_state_idx, states_all, delta,
-            is_debug, shocks_cov, level, is_ambiguous, measure,
+            is_debug, shocks_cov, level, is_ambiguous,
             is_interpolated, num_points, is_deterministic, shocks_cholesky)
         pyth = pyth_backward_induction(*args)
         f2py = f2py_backward_induction(*args)

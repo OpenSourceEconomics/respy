@@ -76,8 +76,6 @@ class RobupyCls(object):
 
         self.attr['version'] = None
 
-        self.attr['measure'] = None
-
         self.attr['maxiter'] = None
 
         self.attr['delta'] = None
@@ -260,8 +258,6 @@ class RobupyCls(object):
 
         self.attr['maxiter'] = init_dict['ESTIMATION']['maxiter']
 
-        self.attr['measure'] = init_dict['AMBIGUITY']['measure']
-
         self.attr['edu_start'] = init_dict['EDUCATION']['start']
 
         self.attr['seed_data'] = init_dict['SIMULATION']['seed']
@@ -396,8 +392,6 @@ class RobupyCls(object):
 
         is_debug = self.attr['is_debug']
 
-        measure = self.attr['measure']
-
         edu_max = self.attr['edu_max']
 
         version = self.attr['version']
@@ -427,10 +421,6 @@ class RobupyCls(object):
         # Forward-looking agents
         assert (is_myopic in [True, False])
 
-        # Constraints
-        if is_ambiguous and version in ['F2PY', 'FORTRAN']:
-            assert (measure in ['kl'])
-
         # Seeds
         for seed in [seed_emax, seed_data, seed_prob]:
             assert (np.isfinite(seed))
@@ -446,9 +436,6 @@ class RobupyCls(object):
         assert (np.isfinite(num_periods))
         assert (isinstance(num_periods, int))
         assert (num_periods > 0)
-
-        # Measure for ambiguity
-        assert (measure in ['kl', 'absolute'])
 
         # Start of education level
         assert (np.isfinite(edu_start))

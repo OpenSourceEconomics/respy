@@ -351,13 +351,13 @@ class TestClass(object):
 
         # Extract class attributes
         num_periods, edu_start, edu_max, min_idx, model_paras, num_draws_emax, \
-            seed_emax, is_debug, delta, level, is_ambiguous, measure, \
+            seed_emax, is_debug, delta, level, is_ambiguous, \
             is_interpolated, num_points, is_deterministic, is_myopic, \
             num_agents, num_draws_prob, seed_prob, tau, paras_fixed = \
                 dist_class_attributes(robupy_obj,
                     'num_periods', 'edu_start', 'edu_max', 'min_idx',
                     'model_paras', 'num_draws_emax', 'seed_emax', 'is_debug',
-                    'delta', 'level', 'is_ambiguous', 'measure',
+                    'delta', 'level', 'is_ambiguous',
                     'is_interpolated', 'num_points', 'is_deterministic',
                     'is_myopic', 'num_agents', 'num_draws_prob', 'seed_prob',
                     'tau', 'paras_fixed')
@@ -375,10 +375,9 @@ class TestClass(object):
             shocks_cholesky = dist_model_paras(model_paras, True)
 
         # Check the full solution procedure
-        measure = 'kl'
         base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
             is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
-            num_periods, num_points, is_myopic, edu_start, is_debug, measure,
+            num_periods, num_points, is_myopic, edu_start, is_debug,
             edu_max, min_idx, delta, level)
 
         fort = fort_solve(*base_args + (seed_emax, tau))
@@ -407,7 +406,7 @@ class TestClass(object):
 
         base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
             is_deterministic, is_interpolated, num_draws_emax,is_ambiguous,
-            num_periods, num_points, is_myopic, edu_start, is_debug, measure,
+            num_periods, num_points, is_myopic, edu_start, is_debug,
             edu_max, min_idx, delta, level, data_array, num_agents,
             num_draws_prob, tau)
 
@@ -428,7 +427,7 @@ class TestClass(object):
                 coeffs_home, shocks_cov, 'all', paras_fixed, is_debug)
 
         args = (is_deterministic, is_interpolated, num_draws_emax,is_ambiguous,
-            num_periods, num_points, is_myopic, edu_start, is_debug, measure,
+            num_periods, num_points, is_myopic, edu_start, is_debug,
             edu_max, min_idx, delta, level, data_array, num_agents,
             num_draws_prob, tau, periods_draws_emax, periods_draws_prob)
 

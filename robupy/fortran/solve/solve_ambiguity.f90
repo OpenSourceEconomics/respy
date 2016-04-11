@@ -31,7 +31,7 @@ CONTAINS
 SUBROUTINE get_payoffs_ambiguity(emax_simulated, num_draws_emax, draws_emax, & 
                 period, k, payoffs_systematic, edu_max, edu_start, & 
                 mapping_state_idx, states_all, num_periods, periods_emax, & 
-                delta, is_debug, shocks_cov, level, measure, & 
+                delta, is_debug, shocks_cov, level, &
                 is_deterministic, shocks_cholesky)
 
     !/* external objects        */
@@ -57,8 +57,6 @@ SUBROUTINE get_payoffs_ambiguity(emax_simulated, num_draws_emax, draws_emax, &
 
     LOGICAL, INTENT(IN)             :: is_deterministic
     LOGICAL, INTENT(IN)             :: is_debug
-
-    CHARACTER(10), INTENT(IN)       :: measure
 
     !/* internal objects        */
 

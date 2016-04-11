@@ -146,7 +146,7 @@ END SUBROUTINE
 SUBROUTINE wrapper_get_payoffs_ambiguity(emax_simulated, num_draws_emax, & 
                 draws_emax, period, k, payoffs_systematic, edu_max, & 
                 edu_start, mapping_state_idx, states_all, num_periods, & 
-                periods_emax, delta, is_debug, shocks_cov, level, measure, & 
+                periods_emax, delta, is_debug, shocks_cov, level, &
                 is_deterministic, shocks_cholesky)
 
     !/* external libraries      */
@@ -181,8 +181,6 @@ SUBROUTINE wrapper_get_payoffs_ambiguity(emax_simulated, num_draws_emax, &
     LOGICAL, INTENT(IN)             :: is_deterministic
     LOGICAL, INTENT(IN)             :: is_debug
 
-    CHARACTER(10), INTENT(IN)       :: measure
-
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
@@ -190,7 +188,7 @@ SUBROUTINE wrapper_get_payoffs_ambiguity(emax_simulated, num_draws_emax, &
     CALL get_payoffs_ambiguity(emax_simulated, num_draws_emax, draws_emax, & 
             period, k, payoffs_systematic, edu_max, edu_start, & 
             mapping_state_idx, states_all, num_periods, periods_emax, delta, & 
-            is_debug, shocks_cov, level, measure, is_deterministic, & 
+            is_debug, shocks_cov, level, is_deterministic, &
             shocks_cholesky)
 
 END SUBROUTINE
@@ -725,7 +723,7 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, &
                 num_periods, num_states, delta, periods_payoffs_systematic, &
                 edu_max, edu_start, mapping_state_idx, periods_emax, &
                 states_all, is_simulated, num_draws_emax, shocks_cov, level, &
-                is_ambiguous, is_debug, measure, maxe, draws_emax, & 
+                is_ambiguous, is_debug, maxe, draws_emax, &
                 is_deterministic, shocks_cholesky)
 
     !/* external libraries      */
@@ -763,8 +761,6 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, &
     LOGICAL, INTENT(IN)                 :: is_simulated(:)
     LOGICAL, INTENT(IN)                 :: is_ambiguous
     LOGICAL, INTENT(IN)                 :: is_debug
-    
-    CHARACTER(10), INTENT(IN)           :: measure
 
 !-------------------------------------------------------------------------------
 ! Algorithm
@@ -774,7 +770,7 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, &
             num_states, delta, periods_payoffs_systematic, edu_max, &
             edu_start, mapping_state_idx, periods_emax, states_all, &
             is_simulated, num_draws_emax, shocks_cov, level, is_ambiguous, & 
-            is_debug, measure, maxe, draws_emax, is_deterministic, & 
+            is_debug, maxe, draws_emax, is_deterministic, &
             shocks_cholesky)
 
 END SUBROUTINE
@@ -860,7 +856,7 @@ SUBROUTINE wrapper_get_payoffs(emax_simulated, num_draws_emax, &
                 draws_emax, period, k, payoffs_systematic, edu_max, & 
                 edu_start, mapping_state_idx, states_all, num_periods, & 
                 periods_emax, delta, is_debug, shocks_cov, level, & 
-                is_ambiguous, measure, is_deterministic, shocks_cholesky)
+                is_ambiguous, is_deterministic, shocks_cholesky)
 
 
     !/* external libraries      */
@@ -896,8 +892,6 @@ SUBROUTINE wrapper_get_payoffs(emax_simulated, num_draws_emax, &
     LOGICAL, INTENT(IN)                 :: is_ambiguous
     LOGICAL, INTENT(IN)                 :: is_debug
 
-    CHARACTER(10), INTENT(IN)           :: measure
-
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
@@ -905,7 +899,7 @@ SUBROUTINE wrapper_get_payoffs(emax_simulated, num_draws_emax, &
     CALL get_payoffs(emax_simulated, num_draws_emax, draws_emax, period, k, & 
             payoffs_systematic, edu_max, edu_start, mapping_state_idx, & 
             states_all, num_periods, periods_emax, delta, is_debug, & 
-            shocks_cov, level, is_ambiguous, measure, is_deterministic, & 
+            shocks_cov, level, is_ambiguous, is_deterministic, &
             shocks_cholesky)
     
 END SUBROUTINE

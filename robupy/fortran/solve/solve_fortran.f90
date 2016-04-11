@@ -31,7 +31,7 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, &
                 coeffs_b, coeffs_edu, coeffs_home, shocks_cov, &
                 is_deterministic, is_interpolated, num_draws_emax, &
                 periods_draws_emax, is_ambiguous, num_periods, num_points, &
-                edu_start, is_myopic, is_debug, measure, edu_max, min_idx, &
+                edu_start, is_myopic, is_debug, edu_max, min_idx, &
                 delta, level)
 
     !/* external objects        */
@@ -64,8 +64,6 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, &
     LOGICAL, INTENT(IN)                             :: is_ambiguous
     LOGICAL, INTENT(IN)                             :: is_myopic
     LOGICAL, INTENT(IN)                             :: is_debug
-
-    CHARACTER(10), INTENT(IN)                       :: measure
 
     !/* internal objects        */
 
@@ -132,7 +130,7 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, &
                 periods_draws_emax, num_draws_emax, states_number_period, & 
                 periods_payoffs_systematic, edu_max, edu_start, & 
                 mapping_state_idx, states_all, delta, is_debug, &
-                shocks_cov, level, is_ambiguous, measure, is_interpolated, &
+                shocks_cov, level, is_ambiguous, is_interpolated, &
                 num_points, is_deterministic, shocks_cholesky)
 
     END IF

@@ -39,14 +39,14 @@ def add_gradient_information(robupy_obj, data_frame):
 
     model_paras, num_periods, num_agents, edu_start, seed_data, \
         is_debug, file_sim, edu_max, delta, num_draws_prob, seed_prob, \
-        num_draws_emax, seed_emax, level, measure, min_idx, is_ambiguous, \
+        num_draws_emax, seed_emax, level, min_idx, is_ambiguous, \
         is_deterministic, is_myopic, is_interpolated, num_points, version, \
         maxiter, optimizer, paras_fixed, tau, file_opt = \
         dist_class_attributes(robupy_obj,
             'model_paras', 'num_periods', 'num_agents', 'edu_start',
             'seed_data', 'is_debug', 'file_sim', 'edu_max', 'delta',
             'num_draws_prob', 'seed_prob', 'num_draws_emax', 'seed_emax',
-            'level', 'measure', 'min_idx', 'is_ambiguous',
+            'level',  'min_idx', 'is_ambiguous',
             'is_deterministic', 'is_myopic', 'is_interpolated',
             'num_points', 'version', 'maxiter', 'optimizer', 'paras_fixed',
             'tau', 'file_opt')
@@ -71,7 +71,7 @@ def add_gradient_information(robupy_obj, data_frame):
 
     # Collect arguments for the evaluation of the criterion function.
     args = (is_deterministic, is_interpolated, num_draws_emax,is_ambiguous,
-        num_periods, num_points, is_myopic, edu_start, is_debug, measure,
+        num_periods, num_points, is_myopic, edu_start, is_debug,
         edu_max, min_idx, delta, level, data_array, num_agents,
         num_draws_prob, tau, periods_draws_emax, periods_draws_prob)
 

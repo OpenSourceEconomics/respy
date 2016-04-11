@@ -23,7 +23,7 @@ logger = logging.getLogger('ROBUPY_SOLVE')
 
 def pyth_solve(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
         is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
-        num_periods, num_points, is_myopic, edu_start, is_debug, measure,
+        num_periods, num_points, is_myopic, edu_start, is_debug,
         edu_max, min_idx, delta, level, periods_draws_emax):
     """ Solving the model using pure PYTHON code.
     """
@@ -80,7 +80,7 @@ def pyth_solve(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
             periods_draws_emax, num_draws_emax, states_number_period,
             periods_payoffs_systematic, edu_max, edu_start,
             mapping_state_idx, states_all, delta, is_debug, shocks_cov,
-            level, is_ambiguous, measure, is_interpolated, num_points,
+            level, is_ambiguous, is_interpolated, num_points,
             is_deterministic, shocks_cholesky)
 
     logger.info('... finished \n')

@@ -759,7 +759,7 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
                 coeffs_edu, edu_start, edu_max, coeffs_home, shocks_cov, &
                 shocks_cholesky, num_draws_emax, seed_emax, seed_prob, &
                 num_agents, is_debug, is_deterministic, is_interpolated, &
-                num_points, min_idx, is_ambiguous, measure, request, &
+                num_points, min_idx, is_ambiguous, request, &
                 num_draws_prob, is_myopic, tau)
 
     !
@@ -797,7 +797,6 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
     LOGICAL, INTENT(OUT)            :: is_myopic
     LOGICAL, INTENT(OUT)            :: is_debug
 
-    CHARACTER(10), INTENT(OUT)      :: measure
     CHARACTER(10), INTENT(OUT)      :: request
 
     !/* internal objects        */
@@ -825,7 +824,6 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
 
         ! AMBIGUITY
         READ(1, 1510) level
-        READ(1, *) measure
 
         ! WORK
         READ(1, 1500) coeffs_a

@@ -172,7 +172,7 @@ def pyth_calculate_payoffs_systematic(num_periods, states_number_period,
 def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
         num_draws_emax, states_number_period, periods_payoffs_systematic,
         edu_max, edu_start, mapping_state_idx, states_all, delta, is_debug,
-        shocks_cov, level, is_ambiguous, measure, is_interpolated, num_points,
+        shocks_cov, level, is_ambiguous, is_interpolated, num_points,
         is_deterministic, shocks_cholesky):
     """ Backward induction procedure. There are two main threads to this
     function depending on whether interpolation is requested or not.
@@ -229,7 +229,7 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
                 num_states, delta, periods_payoffs_systematic, edu_max,
                 edu_start, mapping_state_idx, periods_emax, states_all,
                 is_simulated, num_draws_emax, shocks_cov, level, is_ambiguous,
-                is_debug, measure, maxe, draws_emax, is_deterministic,
+                is_debug, maxe, draws_emax, is_deterministic,
                 shocks_cholesky)
 
 
@@ -255,7 +255,7 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
                 emax = get_payoffs(num_draws_emax, draws_emax, period, k,
                     payoffs_systematic, edu_max, edu_start,
                     mapping_state_idx, states_all, num_periods, periods_emax,
-                    delta, is_debug, shocks_cov, level, is_ambiguous, measure,
+                    delta, is_debug, shocks_cov, level, is_ambiguous,
                     is_deterministic, shocks_cholesky)
 
                 # Store results
@@ -273,7 +273,7 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
 def get_payoffs(num_draws_emax, draws_emax, period, k, payoffs_systematic,
         edu_max, edu_start, mapping_state_idx, states_all, num_periods,
         periods_emax, delta, is_debug, shocks_cov, level, is_ambiguous,
-        measure, is_deterministic, shocks_cholesky):
+        is_deterministic, shocks_cholesky):
     """ Get payoffs for a particular state.
     """
     # Payoffs require different machinery depending on whether there is
@@ -282,7 +282,7 @@ def get_payoffs(num_draws_emax, draws_emax, period, k, payoffs_systematic,
         emax = get_payoffs_ambiguity(num_draws_emax, draws_emax,
             period, k, payoffs_systematic, edu_max, edu_start,
             mapping_state_idx, states_all, num_periods, periods_emax,
-            delta, is_debug, shocks_cov, level, measure, is_deterministic,
+            delta, is_debug, shocks_cov, level, is_deterministic,
             shocks_cholesky)
     else:
         emax = get_payoffs_risk(num_draws_emax, draws_emax, period, k,
@@ -371,7 +371,7 @@ def get_exogenous_variables(period, num_periods, num_states, delta,
 def get_endogenous_variable(period, num_periods, num_states, delta,
         periods_payoffs_systematic, edu_max, edu_start, mapping_state_idx,
         periods_emax, states_all, is_simulated, num_draws_emax, shocks_cov,
-        level, is_ambiguous, is_debug, measure, maxe, draws_emax,
+        level, is_ambiguous, is_debug, maxe, draws_emax,
         is_deterministic, shocks_cholesky):
     """ Construct endogenous variable for the subset of interpolation points.
     """
@@ -391,7 +391,7 @@ def get_endogenous_variable(period, num_periods, num_states, delta,
         emax_simulated = get_payoffs(num_draws_emax, draws_emax, period, k,
             payoffs_systematic, edu_max, edu_start, mapping_state_idx,
             states_all, num_periods, periods_emax, delta, is_debug,
-            shocks_cov, level, is_ambiguous, measure, is_deterministic,
+            shocks_cov, level, is_ambiguous, is_deterministic,
             shocks_cholesky)
 
         # Construct dependent variable

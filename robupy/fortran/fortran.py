@@ -18,7 +18,7 @@ from robupy.python.shared.shared_constants import FORTRAN_DIR
 
 def fort_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
         is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
-        num_periods, num_points, is_myopic, edu_start, is_debug, measure,
+        num_periods, num_points, is_myopic, edu_start, is_debug,
         edu_max, min_idx, delta, level, data_array, num_agents,
         num_draws_prob, tau, seed_emax, seed_prob):
     """ This function serves as the interface to the FORTRAN implementations.
@@ -27,7 +27,7 @@ def fort_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
     # the ROBUFORT initialization file.
     args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
         is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
-        num_periods, num_points, is_myopic, edu_start, is_debug, measure,
+        num_periods, num_points, is_myopic, edu_start, is_debug,
         edu_max, min_idx, delta, level)
 
     args = args + (num_draws_prob, num_agents, seed_prob, seed_emax,
@@ -50,7 +50,7 @@ def fort_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
 def fort_solve(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
         is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
         num_periods, num_points, is_myopic, edu_start, is_debug,
-        measure, edu_max, min_idx, delta, level, seed_emax, tau):
+        edu_max, min_idx, delta, level, seed_emax, tau):
     """ This function serves as the interface to the FORTRAN implementations.
     """
     # Prepare ROBUFORT execution by collecting arguments and writing them to
@@ -58,7 +58,7 @@ def fort_solve(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
     # placeholders as that are not needed for a solution request.
     args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
         is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
-        num_periods, num_points, is_myopic, edu_start, is_debug, measure,
+        num_periods, num_points, is_myopic, edu_start, is_debug,
         edu_max, min_idx, delta, level)
 
     args = args + (1, 1, 1, seed_emax, tau, 'solve')

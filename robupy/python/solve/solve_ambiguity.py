@@ -15,7 +15,7 @@ from robupy.python.solve.solve_emax import simulate_emax
 
 def get_payoffs_ambiguity(num_draws_emax, draws_emax, period, k,
         payoffs_systematic, edu_max, edu_start, mapping_state_idx, states_all,
-        num_periods, periods_emax, delta, is_debug, shocks_cov, level, measure,
+        num_periods, periods_emax, delta, is_debug, shocks_cov, level,
         is_deterministic, shocks_cholesky):
     """ Determine the worst case payoffs.
     """
@@ -28,7 +28,7 @@ def get_payoffs_ambiguity(num_draws_emax, draws_emax, period, k,
         opt = get_worst_case(num_draws_emax, draws_emax,
             period, k, payoffs_systematic, edu_max, edu_start,
             mapping_state_idx, states_all, num_periods, periods_emax,
-            delta, is_debug, shocks_cov, level, measure, shocks_cholesky)
+            delta, is_debug, shocks_cov, level, shocks_cholesky)
 
     # Simulate the expected future value for the worst case outcome
     simulated = simulate_emax(num_periods, num_draws_emax, period, k,
@@ -69,7 +69,7 @@ def handle_shocks_zero(is_debug, period, k):
 
 def get_worst_case(num_draws_emax, draws_emax, period, k,
         payoffs_systematic, edu_max, edu_start, mapping_state_idx, states_all,
-        num_periods, periods_emax, delta, is_debug, shocks_cov, level, measure,
+        num_periods, periods_emax, delta, is_debug, shocks_cov, level,
         shocks_cholesky):
     """ Determine the worst case outcome for the given parametrization.
     """
@@ -86,18 +86,13 @@ def get_worst_case(num_draws_emax, draws_emax, period, k,
             periods_emax, delta, shocks_cholesky)
 
     # Run optimization
-    if measure == 'absolute':
-        bounds = _prep_absolute(level, is_debug)
-        opt = minimize(criterion_ambiguity, x0, args, method='SLSQP',
-            options=options, bounds=bounds)
-    else:
-        constraints = _prep_kl(shocks_cov, level)
-        opt = minimize(criterion_ambiguity, x0, args, method='SLSQP',
-            options=options, constraints=constraints)
-        # Stabilization. If the optimization fails the starting values are
-        # used otherwise it happens that the constraint is not satisfied by far.
-        if not opt['success']:
-            opt['x'] = x0
+    constraints = _prep_kl(shocks_cov, level)
+    opt = minimize(criterion_ambiguity, x0, args, method='SLSQP',
+        options=options, constraints=constraints)
+    # Stabilization. If the optimization fails the starting values are
+    # used otherwise it happens that the constraint is not satisfied by far.
+    if not opt['success']:
+        opt['x'] = x0
 
     # Logging result to file
     if is_debug:
@@ -200,20 +195,6 @@ def _get_start(is_debug):
     return x0
 
 
-def _prep_absolute(level, is_debug):
-    """ Get bounds.
-    """
-    # Construct appropriate bounds
-    bounds = [[-level, level], [-level, level]]
-
-    # Debugging
-    if is_debug:
-        _checks_ambiguity('_prep_absolute', bounds)
-
-    # Finishing
-    return bounds
-
-
 def _checks_ambiguity(str_, *args):
     """ This checks the integrity of the objects related to the
         solution of the model.
@@ -247,17 +228,6 @@ def _checks_ambiguity(str_, *args):
 
         # Check quality of bounds
         assert (np.isfinite(simulated))
-
-    elif str_ == '_prep_absolute':
-
-        # Distribute input parameters
-        bounds, = args
-
-        # Check quality of bounds
-        assert (len(bounds) == 2)
-
-        for i in range(2):
-            assert (bounds[0] == bounds[i])
 
     else:
 

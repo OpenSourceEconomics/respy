@@ -38,13 +38,13 @@ def solve(robupy_obj):
     # Distribute class attributes
     model_paras, num_periods, edu_start, is_debug, edu_max, delta, \
         is_deterministic, version, num_draws_emax, seed_emax, is_interpolated, \
-        is_ambiguous, num_points, is_myopic, min_idx, measure, level, store, \
+        is_ambiguous, num_points, is_myopic, min_idx, level, store, \
         tau = \
             dist_class_attributes(robupy_obj,
                 'model_paras', 'num_periods', 'edu_start', 'is_debug',
                 'edu_max', 'delta', 'is_deterministic', 'version',
                 'num_draws_emax', 'seed_emax', 'is_interpolated',
-                'is_ambiguous', 'num_points', 'is_myopic', 'min_idx', 'measure',
+                'is_ambiguous', 'num_points', 'is_myopic', 'min_idx',
                 'level', 'store', 'tau')
 
     # Construct auxiliary objects
@@ -65,7 +65,7 @@ def solve(robupy_obj):
     # each interface.
     base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
         is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
-        num_periods, num_points, is_myopic, edu_start, is_debug, measure,
+        num_periods, num_points, is_myopic, edu_start, is_debug,
         edu_max, min_idx, delta, level)
 
     # Select appropriate interface. The additional preparations for the F2PY

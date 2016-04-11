@@ -8,7 +8,7 @@
 !*******************************************************************************
 SUBROUTINE f2py_criterion(crit_val, x, is_deterministic, is_interpolated, & 
                 num_draws_emax, is_ambiguous, num_periods, num_points, & 
-                is_myopic, edu_start, is_debug, measure, edu_max, min_idx, & 
+                is_myopic, edu_start, is_debug, edu_max, min_idx, &
                 delta, level, data_array, num_agents, num_draws_prob, & 
                 tau, periods_draws_emax, periods_draws_prob)
 
@@ -52,8 +52,6 @@ SUBROUTINE f2py_criterion(crit_val, x, is_deterministic, is_interpolated, &
     LOGICAL, INTENT(IN)             :: is_myopic
     LOGICAL, INTENT(IN)             :: is_debug
 
-    CHARACTER(10), INTENT(IN)       :: measure
-
     !/* internal objects            */
 
     INTEGER, ALLOCATABLE            :: mapping_state_idx(:, :, :, :, :)
@@ -83,7 +81,7 @@ SUBROUTINE f2py_criterion(crit_val, x, is_deterministic, is_interpolated, &
             coeffs_edu, coeffs_home, shocks_cov, is_deterministic, & 
             is_interpolated, num_draws_emax, periods_draws_emax, & 
             is_ambiguous, num_periods, num_points, edu_start, is_myopic, & 
-            is_debug, measure, edu_max, min_idx, delta, level)
+            is_debug, edu_max, min_idx, delta, level)
 
     ! Evaluate criterion function for observed data
     CALL fort_evaluate(crit_val, periods_payoffs_systematic, & 
@@ -99,7 +97,7 @@ SUBROUTINE f2py_solve(periods_payoffs_systematic, states_number_period, &
                 coeffs_b, coeffs_edu, coeffs_home, shocks_cov, &
                 is_deterministic, is_interpolated, num_draws_emax, & 
                 is_ambiguous, num_periods, num_points, is_myopic, edu_start, & 
-                is_debug, measure, edu_max, min_idx, delta, level, & 
+                is_debug, edu_max, min_idx, delta, level, &
                 periods_draws_emax, max_states_period)
     
     !
@@ -148,8 +146,6 @@ SUBROUTINE f2py_solve(periods_payoffs_systematic, states_number_period, &
     LOGICAL, INTENT(IN)             :: is_myopic
     LOGICAL, INTENT(IN)             :: is_debug
 
-    CHARACTER(10), INTENT(IN)       :: measure
-
     !/* internal objects        */
 
         ! This container are required as output arguments cannot be of 
@@ -173,7 +169,7 @@ SUBROUTINE f2py_solve(periods_payoffs_systematic, states_number_period, &
             coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, & 
             is_deterministic, is_interpolated, num_draws_emax, & 
             periods_draws_emax, is_ambiguous, num_periods, num_points, & 
-            edu_start, is_myopic, is_debug, measure, edu_max, min_idx, & 
+            edu_start, is_myopic, is_debug, edu_max, min_idx, &
             delta, level)
 
     ! Assign to initial objects for return to PYTHON
@@ -189,7 +185,7 @@ END SUBROUTINE
 SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, & 
                 coeffs_home, shocks_cov, is_deterministic, is_interpolated, & 
                 num_draws_emax, is_ambiguous, num_periods, num_points, &
-                is_myopic, edu_start, is_debug, measure, edu_max, min_idx, &
+                is_myopic, edu_start, is_debug, edu_max, min_idx, &
                 delta, level, data_array, num_agents, num_draws_prob, tau, & 
                 periods_draws_emax, periods_draws_prob)
 
@@ -235,8 +231,6 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, &
     LOGICAL, INTENT(IN)             :: is_myopic
     LOGICAL, INTENT(IN)             :: is_debug
 
-    CHARACTER(10), INTENT(IN)       :: measure
-
     !/* internal */
 
     INTEGER, ALLOCATABLE            :: mapping_state_idx(:, :, :, :, :)
@@ -256,7 +250,7 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, &
             coeffs_b, coeffs_edu, coeffs_home, shocks_cov, is_deterministic, & 
             is_interpolated, num_draws_emax, periods_draws_emax, & 
             is_ambiguous, num_periods, num_points, edu_start, is_myopic, & 
-            is_debug, measure, edu_max, min_idx, delta, level)
+            is_debug, edu_max, min_idx, delta, level)
 
     ! Evaluate the criterion function building on the solution.
     CALL fort_evaluate(crit_val, periods_payoffs_systematic, & 
@@ -314,7 +308,7 @@ SUBROUTINE f2py_backward_induction(periods_emax, num_periods, &
                 max_states_period, periods_draws_emax, num_draws_emax, & 
                 states_number_period, periods_payoffs_systematic, edu_max, & 
                 edu_start, mapping_state_idx, states_all, delta, is_debug, & 
-                shocks_cov, level, is_ambiguous, measure, is_interpolated, & 
+                shocks_cov, level, is_ambiguous, is_interpolated, &
                 num_points, is_deterministic, shocks_cholesky)
 
     !/* external libraries      */
@@ -351,7 +345,6 @@ SUBROUTINE f2py_backward_induction(periods_emax, num_periods, &
     LOGICAL, INTENT(IN)             :: is_ambiguous
     LOGICAL, INTENT(IN)             :: is_debug
 
-    CHARACTER(10), INTENT(IN)       :: measure
 
 !-------------------------------------------------------------------------------
 ! Algorithm
@@ -366,7 +359,7 @@ SUBROUTINE f2py_backward_induction(periods_emax, num_periods, &
             periods_draws_emax, num_draws_emax, states_number_period, &
             periods_payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
             states_all, delta, is_debug, shocks_cov, level, is_ambiguous, & 
-            measure, is_interpolated, num_points, is_deterministic, & 
+            is_interpolated, num_points, is_deterministic, &
             shocks_cholesky)
 
 END SUBROUTINE

@@ -97,7 +97,7 @@ def _process_line(list_, dict_, keyword):
     if name in ['agents', 'periods', 'start', 'max', 'draws',
         'seed', 'points', 'maxiter']:
         val = int(val)
-    elif name in ['measure', 'file', 'options']:
+    elif name in ['file', 'options']:
         val = str(val)
     elif name in ['debug', 'store', 'apply']:
         assert (val.upper() in ['TRUE', 'FALSE'])
@@ -220,7 +220,6 @@ def _check_integrity_read(dict_):
                 (np.all(dict_['SHOCKS'][key_] == True))
 
     # Check AMBIGUITY
-    assert (dict_['AMBIGUITY']['measure'] in ['kl', 'absolute'])
     assert (isinstance(dict_['AMBIGUITY']['level'], float))
     assert (dict_['AMBIGUITY']['level'] >= 0.00)
     assert (np.isfinite(dict_['AMBIGUITY']['level']))

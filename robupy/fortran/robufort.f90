@@ -54,7 +54,6 @@ PROGRAM robufort
     LOGICAL                         :: is_myopic
     LOGICAL                         :: is_debug
 
-    CHARACTER(10)                   :: measure 
     CHARACTER(10)                   :: request
 
 !-------------------------------------------------------------------------------
@@ -68,7 +67,7 @@ PROGRAM robufort
             coeffs_edu, edu_start, edu_max, coeffs_home, shocks_cov, &
             shocks_cholesky, num_draws_emax, seed_emax, seed_prob, &
             num_agents, is_debug, is_deterministic, is_interpolated, & 
-            num_points, min_idx, is_ambiguous, measure, request, & 
+            num_points, min_idx, is_ambiguous, request, &
             num_draws_prob, is_myopic, tau)
 
     ! This part creates (or reads from disk) the draws for the Monte 
@@ -86,7 +85,7 @@ PROGRAM robufort
                 coeffs_b, coeffs_edu, coeffs_home, shocks_cov, & 
                 is_deterministic, is_interpolated, num_draws_emax, & 
                 periods_draws_emax, is_ambiguous, num_periods, num_points, & 
-                edu_start, is_myopic, is_debug, measure, edu_max, min_idx, & 
+                edu_start, is_myopic, is_debug, edu_max, min_idx, &
                 delta, level)
 
     ELSE IF (request == 'evaluate') THEN
@@ -106,7 +105,7 @@ PROGRAM robufort
                 coeffs_b, coeffs_edu, coeffs_home, shocks_cov, & 
                 is_deterministic, is_interpolated, num_draws_emax, & 
                 periods_draws_emax, is_ambiguous, num_periods, num_points, & 
-                edu_start, is_myopic, is_debug, measure, edu_max, min_idx, & 
+                edu_start, is_myopic, is_debug, edu_max, min_idx, &
                 delta, level)
 
         CALL fort_evaluate(crit_val, periods_payoffs_systematic, & 

@@ -74,7 +74,7 @@ def read_data(label, shape):
 def write_robufort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         shocks_cov, is_deterministic, is_interpolated, num_draws_emax,
         is_ambiguous, num_periods, num_points, is_myopic, edu_start,
-        is_debug, measure, edu_max, min_idx, delta, level, num_draws_prob,
+        is_debug, edu_max, min_idx, delta, level, num_draws_prob,
         num_agents, seed_prob, seed_emax, tau, request):
     """ Write out model request to hidden file .model.robufort.ini.
     """
@@ -92,12 +92,6 @@ def write_robufort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         # AMBIGUITY
         line = '{0:15.10f}\n'.format(level)
         file_.write(line)
-
-        if measure == 'kl':
-            line = '{0}'.format(measure)
-            file_.write(line + '\n')
-        else:
-            raise NotImplementedError
 
         # WORK
         for num in [coeffs_a, coeffs_b]:

@@ -56,7 +56,6 @@ def generate_random_dict(constraints=None):
 
     # Operationalization of ambiguity
     dict_['AMBIGUITY'] = dict()
-    dict_['AMBIGUITY']['measure'] = np.random.choice(['kl'])
     dict_['AMBIGUITY']['level'] = np.random.choice([0.00, np.random.uniform()])
 
     # Home
@@ -206,15 +205,6 @@ def generate_random_dict(constraints=None):
         # Replace in initialization file
         dict_['AMBIGUITY']['level'] = level
 
-    # Replace measure of ambiguity
-    if 'measure' in constraints.keys():
-        # Extract objects
-        measure = constraints['measure']
-        # Checks
-        assert (measure in ['kl', 'absolute'])
-        # Replace in initialization file
-        dict_['AMBIGUITY']['measure'] = measure
-
     # Replace number of periods
     if 'periods' in constraints.keys():
         # Extract objects
@@ -343,11 +333,6 @@ def print_random_dict(dict_, file_name='test.robupy.ini'):
                 for keys_ in dict_[flag]:
 
                     str_ = ' {0:<10} {1:20.4f} \n'
-
-                    # Special treatment of ambiguity measure. which is a simple
-                    # string.
-                    if keys_ in ['measure']:
-                        str_ = ' {0:<10} {1:>20} \n'
 
                     file_.write(str_.format(keys_, dict_[flag][keys_]))
 

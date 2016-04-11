@@ -27,14 +27,14 @@ def estimate(robupy_obj, data_frame):
     # Distribute class attributes
     model_paras, num_periods, num_agents, edu_start, seed_data, \
         is_debug, file_sim, edu_max, delta, num_draws_prob, seed_prob, \
-        num_draws_emax, seed_emax, level, measure, min_idx, is_ambiguous, \
+        num_draws_emax, seed_emax, level, min_idx, is_ambiguous, \
         is_deterministic, is_myopic, is_interpolated, num_points, version, \
         maxiter, optimizer, tau, paras_fixed, file_opt = \
             dist_class_attributes(robupy_obj,
                 'model_paras', 'num_periods', 'num_agents', 'edu_start',
                 'seed_data', 'is_debug', 'file_sim', 'edu_max', 'delta',
                 'num_draws_prob', 'seed_prob', 'num_draws_emax', 'seed_emax',
-                'level', 'measure', 'min_idx', 'is_ambiguous',
+                'level', 'min_idx', 'is_ambiguous',
                 'is_deterministic', 'is_myopic', 'is_interpolated',
                 'num_points', 'version', 'maxiter', 'optimizer', 'tau',
                 'paras_fixed', 'file_opt')
@@ -62,7 +62,7 @@ def estimate(robupy_obj, data_frame):
     # Collect arguments that are required for the criterion function. These
     # must be in the correct order already.
     args = (is_deterministic, is_interpolated, num_draws_emax,is_ambiguous,
-        num_periods, num_points, is_myopic, edu_start, is_debug, measure,
+        num_periods, num_points, is_myopic, edu_start, is_debug,
         edu_max, min_idx, delta, level, data_array, num_agents,
         num_draws_prob, tau, periods_draws_emax, periods_draws_prob)
 

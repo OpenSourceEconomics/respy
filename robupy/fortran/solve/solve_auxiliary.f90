@@ -265,7 +265,7 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, &
                 periods_draws_emax, num_draws_emax, states_number_period, & 
                 periods_payoffs_systematic, edu_max, edu_start, & 
                 mapping_state_idx, states_all, delta, is_debug, shocks_cov, & 
-                level, is_ambiguous, measure, is_interpolated, num_points, & 
+                level, is_ambiguous, is_interpolated, num_points, &
                 is_deterministic, shocks_cholesky)
 
     !
@@ -300,8 +300,6 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, &
     LOGICAL, INTENT(IN)                 :: is_interpolated
     LOGICAL, INTENT(IN)                 :: is_ambiguous
     LOGICAL, INTENT(IN)                 :: is_debug
-
-    CHARACTER(10), INTENT(IN)           :: measure
 
     !/* internals objects       */
 
@@ -374,7 +372,7 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, &
                     num_states, delta, periods_payoffs_systematic, edu_max, &
                     edu_start, mapping_state_idx, periods_emax, states_all, &
                     is_simulated, num_draws_emax, shocks_cov, level, &
-                    is_ambiguous, is_debug, measure, maxe, draws_emax, &
+                    is_ambiguous, is_debug, maxe, draws_emax, &
                     is_deterministic, shocks_cholesky)
 
             ! Create prediction model based on the random subset of points where
@@ -403,7 +401,7 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, &
                         period, k, payoffs_systematic, edu_max, edu_start, &
                         mapping_state_idx, states_all, num_periods, &
                         periods_emax, delta, is_debug, shocks_cov, level, &
-                        is_ambiguous, measure, is_deterministic, &
+                        is_ambiguous, is_deterministic, &
                         shocks_cholesky)
 
                 ! Collect information
@@ -427,7 +425,7 @@ END SUBROUTINE
 SUBROUTINE get_payoffs(emax_simulated, num_draws_emax, draws_emax, period, &
                 k, payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
                 states_all, num_periods, periods_emax, delta, is_debug, &
-                shocks_cov, level, is_ambiguous, measure, is_deterministic, &
+                shocks_cov, level, is_ambiguous, is_deterministic, &
                 shocks_cholesky)
 
     !/* external objects        */
@@ -456,8 +454,6 @@ SUBROUTINE get_payoffs(emax_simulated, num_draws_emax, draws_emax, period, &
     LOGICAL, INTENT(IN)                 :: is_ambiguous
     LOGICAL, INTENT(IN)                 :: is_debug
 
-    CHARACTER(10), INTENT(IN)           :: measure
-
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
@@ -469,7 +465,7 @@ SUBROUTINE get_payoffs(emax_simulated, num_draws_emax, draws_emax, period, &
         CALL get_payoffs_ambiguity(emax_simulated, num_draws_emax, &
                 draws_emax, period, k, payoffs_systematic, edu_max, &
                 edu_start, mapping_state_idx, states_all, num_periods, &
-                periods_emax, delta, is_debug, shocks_cov, level, measure, &
+                periods_emax, delta, is_debug, shocks_cov, level, &
                 is_deterministic, shocks_cholesky)
 
     ELSE
@@ -651,7 +647,7 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_periods, &
                 num_states, delta, periods_payoffs_systematic, edu_max, &
                 edu_start, mapping_state_idx, periods_emax, states_all, &
                 is_simulated, num_draws_emax, shocks_cov, level, is_ambiguous, &
-                is_debug, measure, maxe, draws_emax, &
+                is_debug, maxe, draws_emax, &
                 is_deterministic, shocks_cholesky)
 
     !/* external objects        */
@@ -681,8 +677,6 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_periods, &
     LOGICAL, INTENT(IN)                 :: is_simulated(:)
     LOGICAL, INTENT(IN)                 :: is_ambiguous
     LOGICAL, INTENT(IN)                 :: is_debug
-
-    CHARACTER(10), INTENT(IN)           :: measure
 
     !/* internal objects        */
 
@@ -714,7 +708,7 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_periods, &
         CALL get_payoffs(emax_simulated, num_draws_emax, draws_emax, period, &
                 k, payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
                 states_all, num_periods, periods_emax, delta, is_debug, &
-                shocks_cov, level, is_ambiguous, measure, is_deterministic, &
+                shocks_cov, level, is_ambiguous, is_deterministic, &
                 shocks_cholesky)
 
         ! Construct dependent variable

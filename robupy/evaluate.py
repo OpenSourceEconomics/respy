@@ -29,13 +29,13 @@ def evaluate(robupy_obj, data_frame):
     model_paras, num_periods, num_agents, edu_start, seed_data, is_debug, \
         edu_max, delta, is_deterministic, version, num_draws_prob, seed_prob, \
         num_draws_emax, seed_emax, is_interpolated, is_ambiguous, num_points, \
-        is_myopic, min_idx, measure, level, tau = \
+        is_myopic, min_idx, level, tau = \
             dist_class_attributes(robupy_obj,
                 'model_paras', 'num_periods', 'num_agents', 'edu_start',
                 'seed_data', 'is_debug', 'edu_max', 'delta', 'is_deterministic',
                 'version', 'num_draws_prob', 'seed_prob', 'num_draws_emax',
                 'seed_emax', 'is_interpolated', 'is_ambiguous', 'num_points',
-                'is_myopic', 'min_idx', 'measure', 'level', 'tau')
+                'is_myopic', 'min_idx', 'level', 'tau')
 
     # Distribute model parameters
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, \
@@ -54,7 +54,7 @@ def evaluate(robupy_obj, data_frame):
 
     base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
         is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
-        num_periods, num_points, is_myopic, edu_start, is_debug, measure,
+        num_periods, num_points, is_myopic, edu_start, is_debug,
         edu_max, min_idx, delta, level, data_array, num_agents,
         num_draws_prob, tau)
 
