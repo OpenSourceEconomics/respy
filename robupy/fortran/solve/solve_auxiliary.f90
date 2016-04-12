@@ -355,7 +355,7 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, &
 
             ! Constructing indicator for simulation points
             is_simulated = get_simulated_indicator(num_points, num_states, &
-                                period, num_periods, is_debug)
+                                period, is_debug, num_periods)
 
             ! Constructing the dependent variable for all states, including the
             ! ones where simulation will take place. All information will be
@@ -480,8 +480,8 @@ SUBROUTINE get_payoffs(emax_simulated, num_draws_emax, draws_emax, period, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-FUNCTION get_simulated_indicator(num_points, num_states, period, num_periods, &
-            is_debug)
+FUNCTION get_simulated_indicator(num_points, num_states, period, is_debug, &
+            num_periods)
 
     !/* external objects        */
 

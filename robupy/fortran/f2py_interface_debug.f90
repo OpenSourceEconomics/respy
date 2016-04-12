@@ -821,7 +821,7 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE wrapper_get_simulated_indicator(is_simulated, num_points, & 
-                num_states, period, num_periods, is_debug)
+                num_states, period, is_debug, num_periods)
 
     !/* external libraries      */
 
@@ -847,7 +847,7 @@ SUBROUTINE wrapper_get_simulated_indicator(is_simulated, num_points, &
 !-------------------------------------------------------------------------------
     
     is_simulated = get_simulated_indicator(num_points, num_states, period, & 
-                        num_periods, is_debug)
+                        is_debug, num_periods)
 
 END SUBROUTINE
 !*******************************************************************************

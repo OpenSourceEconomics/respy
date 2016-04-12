@@ -210,7 +210,7 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
 
             # Get indicator for interpolation and simulation of states
             is_simulated = get_simulated_indicator(num_points, num_states,
-                period, num_periods, is_debug)
+                period, is_debug, num_periods)
 
             # Constructing the exogenous variable for all states, including the
             # ones where simulation will take place. All information will be
@@ -293,8 +293,8 @@ def get_payoffs(num_draws_emax, draws_emax, period, k, payoffs_systematic,
     return emax
 
 
-def get_simulated_indicator(num_points, num_candidates, period, num_periods,
-        is_debug):
+def get_simulated_indicator(num_points, num_candidates, period, is_debug,
+        num_periods):
     """ Get the indicator for points of interpolation and simulation. The
     unused argument is present to align the interface between the PYTHON and
     FORTRAN implementations.

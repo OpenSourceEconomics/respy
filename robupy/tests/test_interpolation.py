@@ -124,9 +124,8 @@ class TestClass(object):
         num_points = min(num_points, num_states)
 
         # Get the IS_SIMULATED indicator for the subset of points which are
-        # used for the predication model. The integrity of the corresponding
-        # FORTRAN function is tested in test_88().
-        args = (num_points, num_states, period, num_periods, is_debug)
+        # used for the predication model.
+        args = (num_points, num_states, period, is_debug, num_periods)
         is_simulated = get_simulated_indicator(*args)
 
         # Construct the exogenous variables for all points of the state
@@ -204,7 +203,7 @@ class TestClass(object):
         np.testing.assert_equal(len(f90), num_points)
 
         # Check the standard cases of the function.
-        args = (num_points, num_states, period, num_periods, is_debug)
+        args = (num_points, num_states, period, is_debug, num_periods)
         f90 = fort_debug.wrapper_get_simulated_indicator(*args)
 
         np.testing.assert_equal(len(f90), num_states)
@@ -213,7 +212,7 @@ class TestClass(object):
         # Test the standardization across PYTHON, F2PY, and FORTRAN
         # implementations. This is possible as we write out an interpolation
         # grid to disk which is used for both functions.
-        args = (num_points, num_states, period, num_periods, is_debug)
+        args = (num_points, num_states, period, is_debug, num_periods)
         py = get_simulated_indicator(*args)
         f90 = fort_debug.wrapper_get_simulated_indicator(*args)
 
@@ -223,7 +222,7 @@ class TestClass(object):
         # Special case where number of interpolation points are same as the
         # number of candidates. In that case the returned indicator
         # should be all TRUE.
-        args = (num_states, num_states, period, num_periods, True)
+        args = (num_states, num_states, period, True, num_periods)
         f90 = fort_debug.wrapper_get_simulated_indicator(*args)
         np.testing.assert_equal(sum(f90), num_states)
 

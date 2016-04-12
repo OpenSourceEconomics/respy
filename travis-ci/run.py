@@ -13,22 +13,10 @@ if 'TRAVIS' in os.environ.keys():
 
 # Build the package
 os.chdir('robupy')
-
 os.system('./waf distclean; ./waf configure build --debug')
-
 os.chdir('../')
 
 # Run PYTEST battery, some tests are expected to fail due to small numerical
 # differences between PYTHON and FORTRAN implementations.
 os.system('pip install pytest-cov==2.2.1')
 pytest.main('--cov=robupy -v -s')
-
-
-
-# Update coverage statistics.
-os.system('pip install coveralls==1.1')
-
-os.system(' pip install codecov')
-os.system('codecov')
-#return_ = os.system('coveralls')
-#assert (return_ == 0)
