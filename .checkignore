@@ -1,0 +1,5 @@
+# Ignore files
+ez_setup.py
+
+# Ignore folder content
+development/working/*
