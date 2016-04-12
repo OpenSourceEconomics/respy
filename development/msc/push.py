@@ -31,7 +31,6 @@ def push():
             os.system("git push")
             os.chdir('../')
 
-
         os.chdir(HOME)
 
     print('')

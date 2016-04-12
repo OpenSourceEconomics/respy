@@ -44,9 +44,6 @@ def check_input(robupy_obj, data_frame):
     # Check that class instance is locked.
     assert robupy_obj.get_attr('is_locked')
 
-    # Distribute class attributes
-    num_agents_est = robupy_obj.get_attr('num_agents_est')
-
     if robupy_obj.get_attr('is_solved'):
         robupy_obj.reset()
 

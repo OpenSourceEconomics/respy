@@ -68,7 +68,7 @@ def estimate(robupy_obj, data_frame):
 
     # Collect arguments that are required for the criterion function. These
     # must be in the correct order already.
-    args = (is_deterministic, is_interpolated, num_draws_emax,is_ambiguous,
+    args = (is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
         num_periods, num_points, is_myopic, edu_start, is_debug,
         edu_max, min_idx, delta, level, data_array, num_agents_est,
         num_draws_prob, tau, periods_draws_emax, periods_draws_prob)

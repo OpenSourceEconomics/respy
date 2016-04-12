@@ -16,6 +16,7 @@ if not (sys.version_info[0] == 3):
 ''' Functions
 '''
 
+
 def distribute_arguments(parser):
     """ Distribute command line arguments.
     """
@@ -73,7 +74,6 @@ if __name__ == '__main__':
 
     parser.add_argument('--all', action='store_true', dest='is_all',
         default=False, help='clear all')
-
 
     is_all = distribute_arguments(parser)
 

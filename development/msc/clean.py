@@ -56,7 +56,6 @@ def remove_nuisances():
         if 'opt' in file_:
             continue
 
-
         if 'restud/simulation' in file_:
             continue
 

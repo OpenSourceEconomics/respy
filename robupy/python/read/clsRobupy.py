@@ -300,7 +300,6 @@ class RobupyCls(object):
 
         self.attr['model_paras']['shocks_cov'] = shocks + shocks.T - np.diag(shocks.diagonal())
 
-
         self.attr['model_paras']['coeffs_a'] = \
             init_dict['OCCUPATION A']['coeffs']
         self.attr['model_paras']['coeffs_b'] = \
@@ -645,7 +644,8 @@ class RobupyCls(object):
                     # Record finite value
                     is_infinite[period, k, :] = True
                 # Check that all admissible states are finite
-                assert (np.all(np.isfinite(periods_payoffs_systematic[is_infinite==True])))
+                assert (np.all(np.isfinite(periods_payoffs_systematic[
+                    is_infinite == True])))
                 # Check that all inadmissible states are infinite
                 if num_periods > 1:
                     assert (np.all(np.isfinite(periods_payoffs_systematic[is_infinite == False])) == False)

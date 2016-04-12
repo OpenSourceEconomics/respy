@@ -330,7 +330,7 @@ class TestClass(object):
             crit_val = evaluate(robupy_obj, data_frame)
 
             if base_val is None:
-                base_val= crit_val
+                base_val = crit_val
 
             np.testing.assert_allclose(base_val, crit_val, rtol=1e-03, atol=1e-03)
 
@@ -405,7 +405,7 @@ class TestClass(object):
         data_array = pyth
 
         base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
-            is_deterministic, is_interpolated, num_draws_emax,is_ambiguous,
+            is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
             num_periods, num_points, is_myopic, edu_start, is_debug,
             edu_max, min_idx, delta, level, data_array, num_agents_sim,
             num_draws_prob, tau)
@@ -426,7 +426,7 @@ class TestClass(object):
         x0 = get_optim_paras(coeffs_a, coeffs_b, coeffs_edu,
                 coeffs_home, shocks_cov, 'all', paras_fixed, is_debug)
 
-        args = (is_deterministic, is_interpolated, num_draws_emax,is_ambiguous,
+        args = (is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
             num_periods, num_points, is_myopic, edu_start, is_debug,
             edu_max, min_idx, delta, level, data_array, num_agents_sim,
             num_draws_prob, tau, periods_draws_emax, periods_draws_prob)

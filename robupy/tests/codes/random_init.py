@@ -410,7 +410,7 @@ def print_random_dict(dict_, file_name='test.robupy.ini'):
                 file_.write('\n')
 
             if flag in ['OCCUPATION A', 'OCCUPATION B']:
-
+                identifier = None
                 if flag == 'OCCUPATION A':
                     identifier = 0
                 if flag == 'OCCUPATION B':

@@ -40,8 +40,8 @@ def transform_robupy_to_restud(model_paras, level, edu_start, edu_max,
 
         # Write out some basic information about the problem.
         file_.write(' {0:03d} {1:05d} {2:06d} {3:06f}'
-            ' {4:06f}\n'.format(num_periods, num_agents_sim, num_draws_emax,-99.0,
-            500.0))
+            ' {4:06f}\n'.format(num_periods, num_agents_sim, num_draws_emax,
+            -99.0, 500.0))
 
         # Write out coefficients for the two occupations.
         coeffs_a, coeffs_b = model_paras['coeffs_a'], model_paras['coeffs_b']
@@ -56,7 +56,8 @@ def transform_robupy_to_restud(model_paras, level, edu_start, edu_max,
         coeffs_edu = model_paras['coeffs_edu']
         coeffs_home = model_paras['coeffs_home']
 
-        edu_int = coeffs_edu[0] / 1000; edu_coeffs = [edu_int]
+        edu_int = coeffs_edu[0] / 1000
+        edu_coeffs = [edu_int]
         home = coeffs_home[0] / 1000
         for j in range(2):
             edu_coeffs += [-coeffs_edu[j + 1] / 1000]

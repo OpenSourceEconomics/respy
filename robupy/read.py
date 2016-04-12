@@ -20,7 +20,7 @@ def read(file_, is_dict=False):
     """ Read an initialization file from disk.
     """
     # Initialization
-    dict_ = {}
+    dict_, keyword = {}, None
 
     with open(file_) as in_file:
 
@@ -83,6 +83,7 @@ def _process_line(list_, dict_, keyword):
         name = 'coeffs'
 
     # Determine whether coefficient is fixed or not.
+    is_fixed = None
     if name in ['coeffs']:
         is_fixed = (len(list_) == 3)
         if is_fixed:

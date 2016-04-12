@@ -60,8 +60,10 @@ def build(bld):
     # Initialize directory structure
     bld.recurse("fortran")
 
+
 def distclean(bld):
     cleanup_build()
+
 
 def cleanup_build(is_build=False):
     """ This function deletes all nuisance files from the package

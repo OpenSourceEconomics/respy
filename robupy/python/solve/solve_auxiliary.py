@@ -232,7 +232,6 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
                 is_debug, maxe, draws_emax, is_deterministic,
                 shocks_cholesky)
 
-
             # Create prediction model based on the random subset of points where
             # the EMAX is actually simulated and thus dependent and
             # independent variables are available. For the interpolation
@@ -427,6 +426,7 @@ def get_predictions(endogenous, exogenous, maxe, is_simulated, num_points,
 
     # Finishing
     return predictions, results
+
 
 def logging_prediction_model(results):
     """ Write out some basic information to the solutions log file.

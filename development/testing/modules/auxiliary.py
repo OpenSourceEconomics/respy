@@ -30,7 +30,7 @@ def get_testdir(length):
     """ This function creates a random string that is used as the testing
     subdirectory.
     """
-    return ''.join(random.choice(string.ascii_lowercase) for i in range(length))
+    return ''.join(random.choice(string.ascii_lowercase) for _ in range(length))
 
 
 def compile_package():

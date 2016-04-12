@@ -288,6 +288,7 @@ class TestClass(object):
         # implementations.
         def debug_constraint_derivative(x):
             return np.ones(len(x))
+
         def debug_constraint_function(x):
             return np.sum(x) - 10.0
 

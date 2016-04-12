@@ -8,10 +8,10 @@ import logging
 import numpy as np
 import pandas as pd
 
-logger = logging.getLogger('ROBUPY_SIMULATE')
-
 # project library
 from robupy.python.shared.shared_auxiliary import dist_model_paras
+
+logger = logging.getLogger('ROBUPY_SIMULATE')
 
 
 def write_info(robupy_obj, data_frame):
@@ -73,7 +73,7 @@ def write_info(robupy_obj, data_frame):
             for t in range(num_periods):
 
                 is_working = (data_frame[2] == (j + 1)) & (data_frame[1] == t)
-                wages = data_frame[is_working].ix[:,3]
+                wages = data_frame[is_working].ix[:, 3]
                 count = wages.count()
 
                 if count > 0:
@@ -218,7 +218,6 @@ def stop_logging():
     for handler in handlers:
         handler.close()
         logger.removeHandler(handler)
-
 
 
 def check_input(robupy_obj):

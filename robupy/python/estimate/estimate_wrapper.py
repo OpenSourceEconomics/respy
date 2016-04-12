@@ -247,7 +247,7 @@ class OptimizationClass(object):
         file_opt = self.attr['file_opt']
 
         # Initialization
-        dict_ = {}
+        dict_, keyword = {}, None
 
         with open(file_opt) as in_file:
 
