@@ -14,6 +14,8 @@ class CustomBuildCommand(build_py):
     """ Customized setuptools install command - prints a friendly greeting.
     """
     def run(self):
+        """ Overwriting the existing command.
+        """
         os.chdir('robupy')
 
         os.system('./waf distclean; ./waf configure build')
@@ -27,7 +29,8 @@ class CustomBuildCommand(build_py):
 
 
 def setup_package():
-
+    """ First steps towards a reliable build process.
+    """
     metadata = dict(
         name='robupy',
         packages=find_packages(),
