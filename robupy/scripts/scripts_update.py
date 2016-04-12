@@ -7,12 +7,10 @@ values from the last step.
 import numpy as np
 
 import argparse
-import shutil
 import os
 
 # project library
 from robupy.python.estimate.estimate_auxiliary import dist_optim_paras
-from robupy.python.shared.shared_auxiliary import dist_model_paras
 from robupy.tests.codes.random_init import print_random_dict
 from robupy import read
 

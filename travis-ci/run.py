@@ -14,7 +14,7 @@ if 'TRAVIS' in os.environ.keys():
 # Build the package
 os.chdir('robupy')
 
-os.system('./waf configure build')
+os.system('./waf distclean; ./waf configure build --debug')
 
 os.chdir('../')
 
@@ -23,7 +23,12 @@ os.chdir('../')
 os.system('pip install pytest-cov==2.2.1')
 pytest.main('--cov=robupy -v -s')
 
+
+
 # Update coverage statistics.
 os.system('pip install coveralls==1.1')
-return_ = os.system('coveralls')
-assert (return_ == 0)
+
+os.system(' pip install codecov')
+os.system('codecov')
+#return_ = os.system('coveralls')
+#assert (return_ == 0)

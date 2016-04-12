@@ -4,18 +4,18 @@ model.
 """
 
 # standard library
+import numpy as np
 import argparse
 import os
 
-import numpy as np
 # project library
 from robupy.python.estimate.estimate_auxiliary import dist_optim_paras
 
 from robupy import simulate
 from robupy import read
 
-""" Auxiliary function
-"""
+''' Auxiliary function
+'''
 
 
 def dist_input_arguments(parser):
@@ -40,8 +40,8 @@ def dist_input_arguments(parser):
     return update, init_file, file_sim
 
 
-""" Main function
-"""
+''' Main function
+'''
 
 
 def scripts_simulate(update, init_file, file_sim):

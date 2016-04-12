@@ -11,12 +11,12 @@
 import numpy as np
 
 import argparse
-import shutil
 import os
 
 # project library
 from robupy.python.shared.shared_auxiliary import dist_model_paras
 from robupy.tests.codes.random_init import print_random_dict
+
 from robupy import read
 
 
@@ -73,8 +73,11 @@ def dist_input_arguments(parser):
 ''' Main function
 '''
 
-def scripts_modify(identifiers, values, action, init_file):
 
+def scripts_modify(identifiers, values, action, init_file):
+    """ Modify optimization parameters by either changing their status or
+    values.
+    """
     # Select interface
     if action in ['free', 'fix']:
         is_fixed = (action == 'fix')
@@ -83,9 +86,9 @@ def scripts_modify(identifiers, values, action, init_file):
         change_value(identifiers, init_file, values)
 
 
-
 def change_status(identifiers, init_file, is_fixed):
-
+    """ Change the status of the a list of parameters.
+    """
     # Baseline
     robupy_obj, init_dict = read(init_file, True)
 
@@ -93,8 +96,8 @@ def change_status(identifiers, init_file, is_fixed):
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, _ = \
             dist_model_paras(model_paras, True)
 
-    # Special treatment for covariance matrix
     for identifier in identifiers:
+        # Special treatment for covariance matrix
         if identifier >= 16:
             identifier = 16
 
@@ -121,10 +124,11 @@ def change_status(identifiers, init_file, is_fixed):
         else:
             raise NotImplementedError
 
+        # Print dictionary to file
         print_random_dict(init_dict, init_file)
 
 
-def change_value(identifiers, init_file, values):
+def change_value(identifiers, values):
     """ Provide some additional information during estimation run.
     """
 
