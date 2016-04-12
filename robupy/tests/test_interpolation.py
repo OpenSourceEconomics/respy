@@ -125,7 +125,7 @@ class TestClass(object):
 
         # Get the IS_SIMULATED indicator for the subset of points which are
         # used for the predication model.
-        args = (num_points, num_states, period, is_debug, num_periods)
+        args = (num_points, num_states, period, is_debug)
         is_simulated = get_simulated_indicator(*args)
 
         # Construct the exogenous variables for all points of the state
@@ -212,10 +212,11 @@ class TestClass(object):
         # Test the standardization across PYTHON, F2PY, and FORTRAN
         # implementations. This is possible as we write out an interpolation
         # grid to disk which is used for both functions.
-        args = (num_points, num_states, period, is_debug, num_periods)
+        base_args = (num_points, num_states, period, is_debug)
+        args = base_args
         py = get_simulated_indicator(*args)
+        args = base_args + (num_periods, )
         f90 = fort_debug.wrapper_get_simulated_indicator(*args)
-
         np.testing.assert_array_equal(f90, 1*py)
         os.unlink('interpolation.txt')
 

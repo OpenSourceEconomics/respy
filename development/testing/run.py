@@ -12,7 +12,6 @@ import traceback
 import importlib
 import argparse
 import random
-import time
 import sys
 import os
 
@@ -25,14 +24,9 @@ if not hasattr(sys, 'real_prefix'):
 TEST_DIR = os.path.dirname(os.path.realpath(__file__))
 TEST_DIR = TEST_DIR.replace('development/testing', '') + 'robupy/tests'
 
+# PYTEST ensures the path is set up correctly.
 sys.path.insert(0, TEST_DIR)
 import conftest
-
-# Setup for dealing with PYTEST command line options
-import functools
-import inspect
-
-VERSIONS = ['PYTHON', 'FORTRAN', 'F2PY']
 
 # Testing infrastructure
 from modules.auxiliary import cleanup_testing_infrastructure
@@ -44,15 +38,10 @@ from modules.auxiliary import finalize_testing_record
 from modules.auxiliary import update_testing_record
 from modules.auxiliary import send_notification
 from modules.auxiliary import compile_package
+from modules.auxiliary import get_testdir
 
 ''' Main Function.
 '''
-import string
-
-def randomword(length):
-   return ''.join(random.choice(string.ascii_lowercase) for i in range(
- length))
-
 
 
 def run(hours, compile):
@@ -91,15 +80,11 @@ def run(hours, compile):
         mod = importlib.import_module(module)
         test = getattr(mod.TestClass(), method)
 
-        # Deal with PYTEST command line options.
-        if 'versions' in inspect.getargspec(test)[0]:
-            test = functools.partial(test, VERSIONS)
-
         # Run random tes
         is_success, msg = None, None
 
         # Create a fresh test directory.
-        tmp_dir = randomword(5)
+        tmp_dir = get_testdir(5)
 
         os.mkdir(tmp_dir)
         os.chdir(tmp_dir)
@@ -120,12 +105,7 @@ def run(hours, compile):
         update_testing_record(module, method, seed, is_success, msg,
                               full_test_record, start, timeout)
 
-
-        if seed == 20920:
-            import sys
-            sys.exit('problemn again')
         cleanup_testing_infrastructure(True)
-
 
         #  Timeout.
         if timeout < datetime.now() - start:

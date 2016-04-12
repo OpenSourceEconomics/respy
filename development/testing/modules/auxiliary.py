@@ -6,7 +6,9 @@ import numpy as np
 
 import importlib
 import fnmatch
+import string
 import socket
+import random
 import shutil
 import glob
 import os
@@ -22,6 +24,13 @@ ROBUPY_DIR = ROBUPY_DIR.replace('development/testing/modules', '') + 'robupy'
 
 ''' Auxiliary functions
 '''
+
+
+def get_testdir(length):
+    """ This function creates a random string that is used as the testing
+    subdirectory.
+    """
+    return ''.join(random.choice(string.ascii_lowercase) for i in range(length))
 
 
 def compile_package():
