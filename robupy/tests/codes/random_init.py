@@ -51,7 +51,7 @@ def generate_random_dict(constraints=None):
 
     # Sampling number of agents for the simulation. This is then used as the
     # upper bound for the dataset used in the estimation.
-    num_agents_sim = np.random.randint(1, MAX_AGENTS)
+    num_agents_sim = np.random.randint(3, MAX_AGENTS)
 
     # Basics
     dict_['BASICS'] = {}
@@ -184,9 +184,9 @@ def generate_random_dict(constraints=None):
         max_draws = constraints['max_draws']
         # Checks
         assert (isinstance(max_draws, int))
-        assert (max_draws > 0)
+        assert (max_draws > 2)
         # Replace in initialization file
-        num_agents_sim = np.random.randint(1, max_draws)
+        num_agents_sim = np.random.randint(2, max_draws)
         dict_['SIMULATION']['agents'] = num_agents_sim
         dict_['ESTIMATION']['agents'] = np.random.randint(1, num_agents_sim)
         dict_['ESTIMATION']['draws'] = np.random.randint(1, max_draws)
@@ -265,7 +265,10 @@ def generate_random_dict(constraints=None):
         assert (np.isfinite(num_agents))
         # Replace in initialization files
         dict_['SIMULATION']['agents'] = num_agents
-        dict_['ESTIMATION']['agents'] = np.random.randint(1, num_agents)
+        if num_agents == 1:
+            dict_['ESTIMATION']['agents'] = 1
+        else:
+            dict_['ESTIMATION']['agents'] = np.random.randint(1, num_agents)
 
     # Number of simulations for S-ML
     if 'sims' in constraints.keys():
