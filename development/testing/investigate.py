@@ -36,7 +36,7 @@ VERSIONS = ['PYTHON', 'FORTRAN', 'F2PY']
 
 ''' Request
 '''
-seed = 98952  # 6216748723
+seed = 83980 # 6216748723
 
 
 ''' Error Reproduction
@@ -50,7 +50,7 @@ for _ in range(1):
     test_dict = get_test_dict(TEST_DIR)
     module, method = get_random_request(test_dict)
 
-    # module, method = 'test_integration', 'test_2'
+    module, method = 'test_integration', 'test_2'
     print(module, method)
     mod = importlib.import_module(module)
     test = getattr(mod.TestClass(), method)
@@ -60,3 +60,5 @@ for _ in range(1):
         test = functools.partial(test, VERSIONS)
 
     test()
+
+    os.system('python clean.py')
