@@ -83,7 +83,7 @@ def scripts_modify(identifiers, values, action, init_file):
         is_fixed = (action == 'fix')
         change_status(identifiers, init_file, is_fixed)
     elif action in ['value']:
-        change_value(identifiers, init_file, values)
+        change_value(identifiers, values)
 
 
 def change_status(identifiers, init_file, is_fixed):
