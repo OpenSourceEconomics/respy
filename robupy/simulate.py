@@ -113,6 +113,6 @@ def simulate(robupy_obj):
     stop_logging()
 
     # Finishing
-    return data_frame
+    return data_frame, robupy_obj
 
 

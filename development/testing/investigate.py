@@ -36,7 +36,7 @@ VERSIONS = ['PYTHON', 'FORTRAN', 'F2PY']
 
 ''' Request
 '''
-seed = 83980 # 6216748723
+seed = 32007 # 6216748723
 
 
 ''' Error Reproduction
@@ -46,7 +46,7 @@ cleanup_testing_infrastructure(True)
 np.random.seed(seed)
 
 # Construct test
-for _ in range(1):
+for _ in range(1000):
     test_dict = get_test_dict(TEST_DIR)
     module, method = get_random_request(test_dict)
 

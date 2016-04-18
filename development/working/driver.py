@@ -29,7 +29,7 @@ from robupy import simulate, read, solve, evaluate, estimate
 robupy_obj = read('model.robupy.ini')
 
 print('starting to simulate')
-data_frame = simulate(robupy_obj)
+data_frame, _ = simulate(robupy_obj)
 
 num_periods = robupy_obj.get_attr('num_periods')
 #write_draws(num_periods, 1000)

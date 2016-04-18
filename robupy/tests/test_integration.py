@@ -155,7 +155,7 @@ class TestClass(object):
 
             # This part checks the equality of an evaluation of the
             # criterion function.
-            data_frame = simulate(robupy_obj)
+            data_frame, _ = simulate(robupy_obj)
 
             crit_val = evaluate(robupy_obj, data_frame)
 
@@ -325,7 +325,7 @@ class TestClass(object):
 
             # This part checks the equality of an evaluation of the
             # criterion function.
-            data_frame = simulate(robupy_obj)
+            data_frame, _ = simulate(robupy_obj)
 
             crit_val = evaluate(robupy_obj, data_frame)
 
@@ -491,7 +491,7 @@ class TestClass(object):
         # Simulate a dataset
         generate_init(constr)
         robupy_obj = read('test.robupy.ini')
-        data_frame = simulate(robupy_obj)
+        data_frame, _ = simulate(robupy_obj)
 
         # Evaluate at different points, ensuring that the simulated datset
         # still fits.
