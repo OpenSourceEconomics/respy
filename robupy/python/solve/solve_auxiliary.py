@@ -623,7 +623,8 @@ def check_input(robupy_obj):
     assert robupy_obj.get_attr('is_locked')
 
     # Check for previous solution attempt.
-    assert (not robupy_obj.get_attr('is_solved'))
+    if robupy_obj.get_attr('is_solved'):
+        robupy_obj.reset()
 
     # Finishing
     return True
