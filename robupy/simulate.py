@@ -46,15 +46,16 @@ logger = logging.getLogger('ROBUPY_SIMULATE')
 '''
 
 
-def simulate(robupy_obj):
+def simulate(robupy_obj, is_solved=False):
     """ Simulate dataset from model. To keep the different tasks as separate
     as possible, this requires to pass in a solved robupy_obj.
     """
     # Checks
-    assert check_input(robupy_obj)
+    assert check_input(robupy_obj, is_solved)
 
     # Solve the requested economy
-    solve(robupy_obj)
+    if not is_solved:
+        solve(robupy_obj)
 
     # Fire up the logging for the simulation. The logging of the solution
     # step is handled within the solution routines.

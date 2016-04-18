@@ -220,13 +220,19 @@ def stop_logging():
         logger.removeHandler(handler)
 
 
-def check_input(robupy_obj):
+def check_input(robupy_obj, is_solved):
     """ Check input arguments.
     """
+    # Check valid request.
+    assert is_solved in [True, False]
+
     # Check that class instance is locked.
     assert robupy_obj.get_attr('is_locked')
 
-    if robupy_obj.get_attr('is_solved'):
+    # Check that input is solved if not done as part of the simulation step.
+    if is_solved:
+        assert robupy_obj.get_attr('is_solved')
+    else:
         robupy_obj.reset()
 
     # Finishing
