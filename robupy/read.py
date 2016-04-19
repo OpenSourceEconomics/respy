@@ -147,6 +147,14 @@ def _check_integrity_read(dict_):
     # Antibugging
     assert (isinstance(dict_, dict))
 
+    # This allows to use the ROBUPY package also model initialization files
+    # that are only valid for the RESPY package. Both will be separated at a
+    # later stage.
+    without_ambiguity = 'AMBIGUITY' not in dict_.keys()
+    if without_ambiguity:
+        dict_['AMBIGUITY'] = dict()
+        dict_['AMBIGUITY']['level'] = 0.0
+
     # Check all keys
     keys_ = ['BASICS', 'EDUCATION', 'OCCUPATION A', 'OCCUPATION B']
     keys_ += ['HOME', 'INTERPOLATION', 'SHOCKS', 'SOLUTION']
