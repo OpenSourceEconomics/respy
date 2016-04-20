@@ -233,8 +233,8 @@ def dist_model_paras(model_paras, is_debug):
         assert (check_model_parameters(*args))
 
     # Collect arguments
-    args = [coeffs_a, coeffs_b, coeffs_edu, coeffs_home]
-    args += [shocks_cov, shocks_cholesky]
+    args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
+    args += (shocks_cov, shocks_cholesky)
 
     # Finishing
     return args
