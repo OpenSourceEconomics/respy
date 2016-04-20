@@ -537,3 +537,18 @@ class TestClass(object):
         scripts_simulate(update, init_file, file_sim)
         scripts_update(init_file)
         scripts_modify(identifiers, values, action, init_file)
+
+    def test_11(self):
+        """ Test short estimation tasks.
+        """
+        # Constraints that ensures that the maximum number of iterations and
+        # the number of function evaluations is set to the minimum values of
+        # one.
+        constr = dict()
+        constr['is_estimation'] = True
+        generate_init(constr)
+
+        # Run estimation task.
+        robupy_obj = read('test.robupy.ini')
+        data_frame, _ = simulate(robupy_obj)
+        estimate(robupy_obj, data_frame)

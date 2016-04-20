@@ -101,7 +101,6 @@ def generate_random_dict(constraints=None):
     dict_['ESTIMATION']['optimizer'] = np.random.choice(['SCIPY-BFGS', 'SCIPY-POWELL'])
     dict_['ESTIMATION']['maxiter'] = np.random.randint(1, 10000)
     dict_['ESTIMATION']['tau'] = np.random.uniform(100, 500)
-    dict_['ESTIMATION']['options'] = 'optimization.robupy.opt'
 
     # PROGRAM
     dict_['PROGRAM'] = {}
@@ -127,6 +126,17 @@ def generate_random_dict(constraints=None):
     dict_['INTERPOLATION'] = {}
     dict_['INTERPOLATION']['apply'] = np.random.choice([True, False])
     dict_['INTERPOLATION']['points'] = np.random.randint(10, 100)
+
+    # SCIPY-BFGS
+    dict_['SCIPY-BFGS'] = {}
+    dict_['SCIPY-BFGS']['gtol'] = np.random.uniform(0.0000001, 0.1)
+    dict_['SCIPY-BFGS']['eps'] = np.random.uniform(0.0000001, 0.1)
+
+    # SCIPY-BFGS
+    dict_['SCIPY-POWELL'] = {}
+    dict_['SCIPY-POWELL']['xtol'] = np.random.uniform(0.0000001, 0.1)
+    dict_['SCIPY-POWELL']['ftol'] = np.random.uniform(0.0000001, 0.1)
+    dict_['SCIPY-POWELL']['maxfun'] = np.random.randint(1, 100)
 
     # Replace interpolation
     if 'apply' in constraints.keys():
@@ -270,6 +280,15 @@ def generate_random_dict(constraints=None):
         else:
             dict_['ESTIMATION']['agents'] = np.random.randint(1, num_agents)
 
+    # Estimation task, but very small.
+    if 'is_estimation' in constraints.keys():
+        # Checks
+        assert (constraints['is_estimation'] in [True, False])
+        # Replace in initialization files
+        if constraints['is_estimation']:
+            dict_['SCIPY-POWELL']['maxfun'] = 1
+            dict_['ESTIMATION']['maxiter'] = 1
+
     # Number of simulations for S-ML
     if 'sims' in constraints.keys():
         # Extract object
@@ -320,6 +339,7 @@ def print_random_dict(dict_, file_name='test.robupy.ini'):
     labels = ['BASICS', 'AMBIGUITY', 'OCCUPATION A', 'OCCUPATION B']
     labels += ['EDUCATION', 'HOME', 'SHOCKS',  'SOLUTION']
     labels += ['SIMULATION', 'ESTIMATION', 'PROGRAM', 'INTERPOLATION']
+    labels += ['SCIPY-BFGS', 'SCIPY-POWELL']
 
     # Create initialization.
     with open(file_name, 'w') as file_:
@@ -428,16 +448,17 @@ def print_random_dict(dict_, file_name='test.robupy.ini'):
 
                 file_.write('\n')
 
-    # Write out a valid specification for the admissible optimizers if the
-    # file does not exist.
-    file_opt = dict_['ESTIMATION']['options']
+            if flag in ['SCIPY-POWELL', 'SCIPY-BFGS']:
 
-    if not os.path.exists(file_opt):
-        lines = ['SCIPY-BFGS', 'gtol    1e-05', 'eps 1.4901161193847656e-08']
-        lines += [' ']
-        lines += ['SCIPY-POWELL', 'xtol 0.0001', 'ftol 0.0001', 'maxfun 1']
+                file_.write(' ' + flag.upper() + '\n\n')
 
-        with open(file_opt, 'w') as file_:
-            str_ = ' {0:>25} \n'
-            for line in lines:
-                file_.write(str_.format(line))
+                for keys_ in dict_[flag]:
+
+                    if keys_ in ['maxfun']:
+                        str_ = ' {0:<10} {1:>20} \n'
+                        file_.write(str_.format(keys_, dict_[flag][keys_]))
+                    else:
+                        str_ = ' {0:<10} {1:20.4f} \n'
+                        file_.write(str_.format(keys_, dict_[flag][keys_]))
+
+                file_.write('\n')

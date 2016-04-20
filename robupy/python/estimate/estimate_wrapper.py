@@ -7,18 +7,13 @@ from scipy.optimize import fmin_bfgs
 
 import numpy as np
 
-import shlex
+import time
 import os
 
 # project library
 from robupy.python.estimate.estimate_auxiliary import dist_optim_paras
-from robupy.python.estimate.estimate_auxiliary import process_block
-from robupy.python.estimate.estimate_auxiliary import process_cases
-
 from robupy.python.estimate.estimate_python import pyth_criterion
-
 from robupy.python.shared.shared_auxiliary import HUGE_FLOAT
-
 from robupy.fortran.f2py_library import f2py_criterion
 
 
@@ -33,13 +28,13 @@ class OptimizationClass(object):
         self.attr = dict()
 
         # constitutive arguments
-        self.attr['optimizer'] = None
+        self.attr['optimizer_options'] = None
+
+        self.attr['optimizer_used'] = None
 
         self.attr['file_opt'] = None
 
         self.attr['version'] = None
-
-        self.attr['options'] = None
 
         self.attr['maxiter'] = None
 
@@ -82,7 +77,7 @@ class OptimizationClass(object):
         """ Optimize criterion function.
         """
         # Distribute class attributes
-        optimizer = self.attr['optimizer']
+        optimizer_used = self.attr['optimizer_used']
 
         maxiter = self.attr['maxiter']
 
@@ -102,21 +97,21 @@ class OptimizationClass(object):
             rslt['message'] = 'Evaluation of criterion function at starting values.'
 
         else:
-            if optimizer == 'SCIPY-BFGS':
-                gtol, eps = self._options_distribute(optimizer)
+            if optimizer_used == 'SCIPY-BFGS':
+                gtol, eps = self._options_distribute(optimizer_used)
                 rslt_opt = fmin_bfgs(self.crit_func, x0, args=args, gtol=gtol,
                     epsilon=eps, maxiter=maxiter, full_output=True, disp=False)
 
-            elif optimizer == 'SCIPY-POWELL':
-                xtol, ftol, maxfun = self._options_distribute(optimizer)
+            elif optimizer_used == 'SCIPY-POWELL':
+                xtol, ftol, maxfun = self._options_distribute(optimizer_used)
                 rslt_opt = fmin_powell(self.crit_func, x0, args, xtol, ftol,
-                    maxiter, maxfun, full_output=True)
+                    maxiter, maxfun, full_output=True, disp=0)
 
             else:
                 raise NotImplementedError
 
             # Process results to a common dictionary.
-            rslt = self._results_distribute(rslt_opt, optimizer)
+            rslt = self._results_distribute(rslt_opt, optimizer_used)
 
         # Finalizing results
         self._logging_final(rslt)
@@ -124,7 +119,7 @@ class OptimizationClass(object):
         # Finishing
         return rslt['x'], rslt['fun']
 
-    def _results_distribute(self, rslt_opt, optimizer):
+    def _results_distribute(self, rslt_opt, optimizer_used):
         """ Distribute results from the return from each of the optimizers.
         """
         # Initialize dictionary
@@ -141,7 +136,7 @@ class OptimizationClass(object):
 
         # Special treatments for each optimizer to extract message and
         # success indicator.
-        if optimizer == 'SCIPY-POWELL':
+        if optimizer_used == 'SCIPY-POWELL':
             rslt['success'] = (rslt_opt[5] not in [1, 2])
             rslt['message'] = 'Optimization terminated successfully.'
             if rslt_opt[5] == 1:
@@ -149,7 +144,7 @@ class OptimizationClass(object):
             elif rslt_opt[5] == 2:
                 rslt['message'] = 'Maximum number of iterations.'
 
-        elif optimizer == 'SCIPY-BFGS':
+        elif optimizer_used == 'SCIPY-BFGS':
             rslt['success'] = (rslt_opt[5] not in [1, 2])
             rslt['message'] = 'Optimization terminated successfully.'
             if rslt_opt[5] == 1:
@@ -163,21 +158,21 @@ class OptimizationClass(object):
         # Finishing
         return rslt
 
-    def _options_distribute(self, optimizer):
+    def _options_distribute(self, optimizer_used):
         """ Distribute the optimizer specific options.
         """
         # Distribute class attributes
-        options = self.attr['options']
+        options = self.attr['optimizer_options']
 
         # Extract optimizer-specific options
-        options_opt = options[optimizer]
+        options_opt = options[optimizer_used]
 
         # Construct options
-        if optimizer == 'SCIPY-POWELL':
+        if optimizer_used == 'SCIPY-POWELL':
             opts = (options_opt['xtol'], options_opt['ftol'])
             opts += (options_opt['maxfun'],)
 
-        elif optimizer == 'SCIPY-BFGS':
+        elif optimizer_used == 'SCIPY-BFGS':
             opts = (options_opt['gtol'], options_opt['eps'])
 
         # Finishing
@@ -189,8 +184,7 @@ class OptimizationClass(object):
         # Antibugging.
         assert (not self.attr['is_locked'])
 
-        # Read in optimizer options
-        self.attr['options'] = self._options_read()
+        # Check optimizer options
         self._options_check()
 
         # Update status indicator
@@ -222,16 +216,16 @@ class OptimizationClass(object):
         time the class is locked and if the package is running in debug mode.
         """
         # Distribute class attributes
-        optimizer = self.attr['optimizer']
+        optimizer_options = self.attr['optimizer_options']
+
+        optimizer_used = self.attr['optimizer_used']
 
         maxiter = self.attr['maxiter']
-
-        options = self.attr['options']
 
         version = self.attr['version']
 
         # Check that the options for the requested optimizer are available.
-        assert (optimizer in options.keys())
+        assert (optimizer_used in optimizer_options.keys())
 
         # Check that version is available
         assert (version in ['F2PY', 'FORTRAN', 'PYTHON'])
@@ -300,66 +294,35 @@ class OptimizationClass(object):
         # Finishing
         return x_all_curre
 
-    def _options_read(self):
-        """ Read in the tuning parameters for the optimizers.
-        """
-        # Distribute class attributes
-        file_opt = self.attr['file_opt']
-
-        # Initialization
-        dict_, keyword = {}, None
-
-        with open(file_opt) as in_file:
-
-            for line in in_file.readlines():
-
-                # Split line
-                list_ = shlex.split(line)
-
-                # Determine special cases
-                is_empty, is_keyword = process_cases(list_)
-
-                # Applicability
-                if is_empty:
-                    continue
-
-                # Prepare dictionary
-                if is_keyword:
-                    keyword = list_[0]
-                    dict_[keyword] = {}
-                    continue
-
-                # Process blocks of information
-                dict_ = process_block(list_, dict_, keyword)
-
-        return dict_
-
     def _options_check(self):
-        """ Check the options for the admissible optimizers.
+        """ Check the options for all defined optimizers. Regardless of
+        whether they are used for the estimation or not.
         """
         # Check options for the SCIPY-BFGS algorithm
-        options = self.attr['options']['SCIPY-BFGS']
-        gtol, epsilon = options['gtol'], options['eps']
+        if 'SCIPY-BFGS' in self.attr['optimizer_options'].keys():
+            options = self.attr['optimizer_options']['SCIPY-BFGS']
+            gtol, epsilon = options['gtol'], options['eps']
 
-        assert isinstance(gtol, float)
-        assert (gtol > 0)
+            assert isinstance(gtol, float)
+            assert (gtol > 0)
 
-        assert isinstance(epsilon, float)
-        assert (epsilon > 0)
+            assert isinstance(epsilon, float)
+            assert (epsilon > 0)
 
         # Check options for the SCIPY-POWELL algorithm
-        options = self.attr['options']['SCIPY-POWELL']
-        xtol, ftol = options['xtol'], options['ftol']
-        maxfun = options['maxfun']
+        if 'SCIPY-POWELL' in self.attr['optimizer_options'].keys():
+            options = self.attr['optimizer_options']['SCIPY-POWELL']
+            xtol, ftol = options['xtol'], options['ftol']
+            maxfun = options['maxfun']
 
-        assert isinstance(maxfun, int)
-        assert (maxfun > 0)
+            assert isinstance(maxfun, int)
+            assert (maxfun > 0)
 
-        assert isinstance(xtol, float)
-        assert (xtol > 0)
+            assert isinstance(xtol, float)
+            assert (xtol > 0)
 
-        assert isinstance(ftol, float)
-        assert (ftol > 0)
+            assert isinstance(ftol, float)
+            assert (ftol > 0)
 
     def _logging_interim(self, x, crit_val):
         """ This method write out some information during the optimization.
@@ -397,10 +360,11 @@ class OptimizationClass(object):
         if crit_val < value_steps:
             np.savetxt(open('paras_steps.robupy.log', 'wb'), x, fmt='%15.8f')
             with open('optimization.robupy.log', 'a') as out_file:
-                str_ = '{0:<10} {1:<5}\n'.format('Iteration', int(num_steps))
-                out_file.write(str_)
-                str_ = '{0:<10} {1:<5}\n\n\n'.format('Criterion', crit_val)
-                out_file.write(str_)
+                fmt_ = '{0:<10} {1:<25}\n'
+                out_file.write(fmt_.format('Iteration', int(num_steps)))
+                out_file.write(fmt_.format('Criterion', crit_val))
+                out_file.write(fmt_.format('Time', time.ctime()))
+                out_file.write('\n\n')
 
             # Update class attributes
             self.attr['paras_steps'] = x
@@ -462,6 +426,7 @@ class OptimizationClass(object):
             out_file.write(fmt_.format('Success', str(rslt['success'])))
             out_file.write(fmt_.format('Message', rslt['message']))
             out_file.write(fmt_.format('Criterion', self.attr['value_steps']))
+            out_file.write(fmt_.format('Time', time.ctime()))
 
         with open('optimization.robupy.info', 'a') as out_file:
             out_file.write('\n TERMINATED')

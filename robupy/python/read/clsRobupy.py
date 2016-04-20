@@ -34,9 +34,13 @@ class RobupyCls(object):
         self.attr['init_dict'] = init_dict
 
         # Constitutive attributes
+        self.attr['optimizer_options'] = None
+
         self.attr['is_interpolated'] = None
 
         self.attr['num_draws_emax'] = None
+
+        self.attr['optimizer_used'] = None
 
         self.attr['num_draws_prob'] = None
 
@@ -64,15 +68,11 @@ class RobupyCls(object):
 
         self.attr['edu_start'] = None
 
-        self.attr['optimizer'] = None
-
         self.attr['is_debug'] = None
 
         self.attr['file_sim'] = None
 
         self.attr['file_est'] = None
-
-        self.attr['file_opt'] = None
 
         self.attr['edu_max'] = None
 
@@ -244,6 +244,8 @@ class RobupyCls(object):
         # auxiliary objects.
         self.attr['is_interpolated'] = init_dict['INTERPOLATION']['apply']
 
+        self.attr['optimizer_used'] = init_dict['ESTIMATION']['optimizer']
+
         self.attr['num_agents_sim'] = init_dict['SIMULATION']['agents']
 
         self.attr['num_agents_est'] = init_dict['ESTIMATION']['agents']
@@ -252,11 +254,7 @@ class RobupyCls(object):
 
         self.attr['num_points'] = init_dict['INTERPOLATION']['points']
 
-        self.attr['optimizer'] = init_dict['ESTIMATION']['optimizer']
-
         self.attr['num_draws_emax'] = init_dict['SOLUTION']['draws']
-
-        self.attr['file_opt'] = init_dict['ESTIMATION']['options']
 
         self.attr['num_periods'] = init_dict['BASICS']['periods']
 
@@ -328,6 +326,16 @@ class RobupyCls(object):
             self.attr['model_paras'][key_] = \
                 np.array(self.attr['model_paras'][key_])
 
+        # Aggregate all the information provided about optimizer options in
+        # one class attribute for easier access later.
+        OPTIMIZERS = ['SCIPY-BFGS', 'SCIPY-POWELL']
+        self.attr['optimizer_options'] = dict()
+        for optimizer in OPTIMIZERS:
+            is_defined = (optimizer in init_dict.keys())
+            if is_defined:
+                self.attr['optimizer_options'][optimizer] = \
+                    init_dict[optimizer]
+
         # Delete the duplicated information from the initialization
         # dictionary. Special treatment of EDUCATION is required as it
         # contains other information about education than just the
@@ -365,6 +373,8 @@ class RobupyCls(object):
         # Distribute class attributes
         is_interpolated = self.attr['is_interpolated']
 
+        optimizer_used = self.attr['optimizer_used']
+
         num_draws_emax = self.attr['num_draws_emax']
 
         num_draws_prob = self.attr['num_draws_prob']
@@ -392,8 +402,6 @@ class RobupyCls(object):
         seed_prob = self.attr['seed_prob']
 
         seed_emax = self.attr['seed_emax']
-
-        optimizer = self.attr['optimizer']
 
         is_debug = self.attr['is_debug']
 
@@ -498,7 +506,7 @@ class RobupyCls(object):
         assert (maxiter >= 0)
 
         # Optimizers
-        assert (optimizer in ['SCIPY-BFGS', 'SCIPY-POWELL', 'SCIPY-LBFGSB'])
+        assert (optimizer_used in ['SCIPY-BFGS', 'SCIPY-POWELL'])
 
     def _check_integrity_results(self):
         """ This methods check the integrity of the results.

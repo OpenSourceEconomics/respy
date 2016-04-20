@@ -96,7 +96,7 @@ def _process_line(list_, dict_, keyword):
 
     # Type conversion
     if name in ['agents', 'periods', 'start', 'max', 'draws',
-        'seed', 'points', 'maxiter']:
+        'seed', 'points', 'maxiter', 'maxfun']:
         val = int(val)
     elif name in ['file', 'options']:
         val = str(val)
@@ -155,12 +155,13 @@ def _check_integrity_read(dict_):
         dict_['AMBIGUITY'] = dict()
         dict_['AMBIGUITY']['level'] = 0.0
 
-    # Check all keys
+    # Check all required keys are defined. Note that additional keys might
+    # exists due to the specification of optimizer options.
     keys_ = ['BASICS', 'EDUCATION', 'OCCUPATION A', 'OCCUPATION B']
     keys_ += ['HOME', 'INTERPOLATION', 'SHOCKS', 'SOLUTION']
     keys_ += ['AMBIGUITY', 'SIMULATION', 'PROGRAM', 'ESTIMATION']
 
-    assert (set(keys_) == set(dict_.keys()))
+    assert (set(keys_) <= set(dict_.keys()))
 
     # Check BASICS
     assert (isinstance(dict_['BASICS']['periods'], int))

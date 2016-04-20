@@ -46,11 +46,11 @@ cleanup_testing_infrastructure(True)
 np.random.seed(seed)
 
 # Construct test
-for _ in range(1000):
+for _ in range(1):
     test_dict = get_test_dict(TEST_DIR)
     module, method = get_random_request(test_dict)
 
-    module, method = 'test_integration', 'test_2'
+    module, method = 'test_integration', 'test_11'
     print(module, method)
     mod = importlib.import_module(module)
     test = getattr(mod.TestClass(), method)
@@ -61,4 +61,4 @@ for _ in range(1000):
 
     test()
 
-    os.system('python clean.py')
+    #os.system('python clean.py')
