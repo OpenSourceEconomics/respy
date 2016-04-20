@@ -9,7 +9,10 @@ import sys
 
 # ROOT DIRECTORY
 sys.path.insert(0, os.environ['ROBUPY'])
+sys.path.insert(0, os.environ['STRUCT_RECOMPUTATION'])
+
 # ROOT DIRECTORY
+from robupy.python.estimate.estimate_auxiliary import dist_optim_paras
 
 # project library
 from robupy.python.evaluate.evaluate_python import pyth_evaluate
@@ -28,18 +31,6 @@ from robupy.python.shared.shared_auxiliary import create_draws
 from robupy import simulate, read, solve, evaluate, estimate
 robupy_obj = read('model.robupy.ini')
 
-print('starting to simulate')
 data_frame, _ = simulate(robupy_obj)
 
-num_periods = robupy_obj.get_attr('num_periods')
-#write_draws(num_periods, 1000)
-
-for version in ['FORTRAN']:
-    print('\n', version, '\n')
-    robupy_obj.unlock()
-
-    robupy_obj.set_attr('version', version)
-
-    robupy_obj.lock()
-
-    estimate(robupy_obj, data_frame)
+estimate(robupy_obj, data_frame)

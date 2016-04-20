@@ -435,7 +435,7 @@ def print_random_dict(dict_, file_name='test.robupy.ini'):
     if not os.path.exists(file_opt):
         lines = ['SCIPY-BFGS', 'gtol    1e-05', 'eps 1.4901161193847656e-08']
         lines += [' ']
-        lines += ['SCIPY-POWELL', 'xtol 0.0001', 'ftol 0.0001']
+        lines += ['SCIPY-POWELL', 'xtol 0.0001', 'ftol 0.0001', 'maxfun 1']
 
         with open(file_opt, 'w') as file_:
             str_ = ' {0:>25} \n'

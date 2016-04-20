@@ -1,7 +1,0 @@
-                SCIPY-BFGS 
-             gtol    1e-05 
- eps 1.4901161193847656e-08 
-                           
-              SCIPY-POWELL 
-               xtol 0.0001 
-               ftol 0.0001 

@@ -2,7 +2,8 @@
 """
 
 # standard library
-from scipy.optimize import minimize
+from scipy.optimize import fmin_powell
+from scipy.optimize import fmin_bfgs
 
 import numpy as np
 
@@ -85,12 +86,7 @@ class OptimizationClass(object):
 
         maxiter = self.attr['maxiter']
 
-        options = self.attr['options']
-
         args = self.attr['args']
-
-        # Subsetting to relevant set of options
-        options = options[optimizer]
 
         # Special case where just an evaluation at the starting values is
         # requested is accounted for. Note, that the relevant value of the
@@ -107,21 +103,85 @@ class OptimizationClass(object):
 
         else:
             if optimizer == 'SCIPY-BFGS':
-                rslt = minimize(self.crit_func, x0, method='BFGS', args=args,
-                    options=options)
+                gtol, eps = self._options_distribute(optimizer)
+                rslt_opt = fmin_bfgs(self.crit_func, x0, args=args, gtol=gtol,
+                    epsilon=eps, maxiter=maxiter, full_output=True, disp=False)
+
             elif optimizer == 'SCIPY-POWELL':
-                rslt = minimize(self.crit_func, x0, method='POWELL', args=args,
-                    options=options)
-            elif optimizer == 'SCIPY-LBFGSB':
-                raise NotImplementedError
+                xtol, ftol, maxfun = self._options_distribute(optimizer)
+                rslt_opt = fmin_powell(self.crit_func, x0, args, xtol, ftol,
+                    maxiter, maxfun, full_output=True)
+
             else:
                 raise NotImplementedError
+
+            # Process results to a common dictionary.
+            rslt = self._results_distribute(rslt_opt, optimizer)
 
         # Finalizing results
         self._logging_final(rslt)
 
         # Finishing
         return rslt['x'], rslt['fun']
+
+    def _results_distribute(self, rslt_opt, optimizer):
+        """ Distribute results from the return from each of the optimizers.
+        """
+        # Initialize dictionary
+        rslt = dict()
+        rslt['x'] = None
+        rslt['fun'] = None
+        rslt['success'] = None
+        rslt['message'] = None
+
+        # Get the best parametrization and the corresponding value of the
+        # criterion function.
+        rslt['x'] = self.attr['paras_steps']
+        rslt['fun'] = self.attr['value_steps']
+
+        # Special treatments for each optimizer to extract message and
+        # success indicator.
+        if optimizer == 'SCIPY-POWELL':
+            rslt['success'] = (rslt_opt[5] not in [1, 2])
+            rslt['message'] = 'Optimization terminated successfully.'
+            if rslt_opt[5] == 1:
+                rslt['message'] = 'Maximum number of function evaluations.'
+            elif rslt_opt[5] == 2:
+                rslt['message'] = 'Maximum number of iterations.'
+
+        elif optimizer == 'SCIPY-BFGS':
+            rslt['success'] = (rslt_opt[5] not in [1, 2])
+            rslt['message'] = 'Optimization terminated successfully.'
+            if rslt_opt[5] == 1:
+                rslt['message'] = 'Maximum number of iterations exceeded.'
+            elif rslt_opt[5] == 2:
+                rslt['message'] = 'Gradient and/or function calls not changing.'
+
+        else:
+            raise NotImplementedError
+
+        # Finishing
+        return rslt
+
+    def _options_distribute(self, optimizer):
+        """ Distribute the optimizer specific options.
+        """
+        # Distribute class attributes
+        options = self.attr['options']
+
+        # Extract optimizer-specific options
+        options_opt = options[optimizer]
+
+        # Construct options
+        if optimizer == 'SCIPY-POWELL':
+            opts = (options_opt['xtol'], options_opt['ftol'])
+            opts += (options_opt['maxfun'],)
+
+        elif optimizer == 'SCIPY-BFGS':
+            opts = (options_opt['gtol'], options_opt['eps'])
+
+        # Finishing
+        return opts
 
     def lock(self):
         """ Lock class instance.
@@ -290,6 +350,10 @@ class OptimizationClass(object):
         # Check options for the SCIPY-POWELL algorithm
         options = self.attr['options']['SCIPY-POWELL']
         xtol, ftol = options['xtol'], options['ftol']
+        maxfun = options['maxfun']
+
+        assert isinstance(maxfun, int)
+        assert (maxfun > 0)
 
         assert isinstance(xtol, float)
         assert (xtol > 0)
