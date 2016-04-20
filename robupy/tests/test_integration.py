@@ -534,7 +534,7 @@ class TestClass(object):
         values = np.random.uniform(size=num_draws)
 
         scripts_estimate(resume, single, init_file, gradient)
-        scripts_simulate(update, init_file, file_sim, False)
+        scripts_simulate(update, init_file, file_sim, None)
         scripts_update(init_file)
         scripts_modify(identifiers, values, action, init_file)
 
