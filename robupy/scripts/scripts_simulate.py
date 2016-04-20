@@ -71,11 +71,11 @@ def scripts_simulate(update, init_file, file_sim):
 '''
 if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser(description =
+    parser = argparse.ArgumentParser(description=
         'Start of simulation with the ROBUPY package.',
-        formatter_class = argparse.ArgumentDefaultsHelpFormatter)
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    parser.add_argument('--update', action ='store_true',  dest='update',
+    parser.add_argument('--update', action='store_true', dest='update',
         default=False, help='update model parametrization')
 
     parser.add_argument('--init_file', action='store', dest='init_file',
