@@ -32,5 +32,4 @@ from robupy import simulate, read, solve, evaluate, estimate
 robupy_obj = read('model.robupy.ini')
 
 data_frame, _ = simulate(robupy_obj)
-
-estimate(robupy_obj, data_frame)
+#estimate(robupy_obj, data_frame)
