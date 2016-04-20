@@ -361,6 +361,11 @@ def print_random_dict(dict_, file_name='test.robupy.ini'):
 
                 file_.write(' ' + flag.upper() + '\n\n')
 
+                # This function can also be used to print out initialization
+                # files that only work for the RESPY package.
+                if flag not in dict_.keys():
+                    continue
+
                 for keys_ in dict_[flag]:
 
                     str_ = ' {0:<10} {1:20.4f} \n'
@@ -449,6 +454,12 @@ def print_random_dict(dict_, file_name='test.robupy.ini'):
                 file_.write('\n')
 
             if flag in ['SCIPY-POWELL', 'SCIPY-BFGS']:
+
+                # This function can also be used to print out initialization
+                # files without any optimization options. This is enough for
+                # simulation tasks.
+                if flag not in dict_.keys():
+                    continue
 
                 file_.write(' ' + flag.upper() + '\n\n')
 

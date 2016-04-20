@@ -55,7 +55,6 @@ def dist_input_arguments(parser):
 
     # Checks
     assert os.path.exists(init_file)
-    assert os.path.exists('paras_steps.robupy.log')
     assert isinstance(identifiers, list)
 
     if values is not None:
@@ -65,6 +64,8 @@ def dist_input_arguments(parser):
     if action in ['free', 'fix']:
         assert (values is None)
         assert os.path.exists(init_file)
+    elif action in ['change']:
+        assert os.path.exists('paras_steps.robupy.log')
 
     # Finishing
     return identifiers_list, values, action, init_file
