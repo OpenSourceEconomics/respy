@@ -546,6 +546,8 @@ class TestClass(object):
         # one.
         constr = dict()
         constr['is_estimation'] = True
+        constr['level'] = 0.0
+
         generate_init(constr)
 
         # Run estimation task.
