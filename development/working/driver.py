@@ -3,6 +3,8 @@
 """
 
 
+# ROOT DIRECTORY
+f
 # standard library
 import os
 import sys
@@ -10,9 +12,7 @@ import sys
 # ROOT DIRECTORY
 sys.path.insert(0, os.environ['ROBUPY'])
 sys.path.insert(0, os.environ['STRUCT_RECOMPUTATION'])
-
-# ROOT DIRECTORY
-from robupy.python.estimate.estimate_auxiliary import dist_optim_paras
+rom robupy.python.estimate.estimate_auxiliary import dist_optim_paras
 
 # project library
 from robupy.python.evaluate.evaluate_python import pyth_evaluate
