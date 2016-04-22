@@ -46,6 +46,11 @@ def estimate(robupy_obj, data_frame):
                 'maxiter', 'optimizer_used', 'tau', 'paras_fixed',
                 'optimizer_options')
 
+    # The ROBUPY/RESPY package is currently under development and does not
+    # yet support a well-maintained estimation of models with ambiguity.
+    if level != 0.0:
+        raise NotImplementedError
+
     # Auxiliary objects
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, shocks_cholesky = \
         dist_model_paras(model_paras, is_debug)

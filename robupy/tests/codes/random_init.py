@@ -288,6 +288,7 @@ def generate_random_dict(constraints=None):
         if constraints['is_estimation']:
             dict_['SCIPY-POWELL']['maxfun'] = 1
             dict_['ESTIMATION']['maxiter'] = 1
+            dict_['AMBIGUITY']['level'] = 0.000
 
     # Number of simulations for S-ML
     if 'sims' in constraints.keys():

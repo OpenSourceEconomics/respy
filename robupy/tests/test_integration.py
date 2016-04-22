@@ -508,6 +508,7 @@ class TestClass(object):
         constr = dict()
         constr['periods'] = np.random.randint(1, 4)
         constr['agents'] = np.random.randint(5, 100)
+        constr['is_estimation'] = True
         constr['edu'] = (7, 15)
         constr['maxiter'] = 0
 
@@ -547,7 +548,6 @@ class TestClass(object):
         # one.
         constr = dict()
         constr['is_estimation'] = True
-        constr['level'] = 0.0
 
         generate_init(constr)
 
