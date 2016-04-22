@@ -116,8 +116,8 @@ def write_robufort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
 
         # SHOCKS
         for j in range(4):
-            line = ' {0:15.5f} {1:15.5f} {2:15.5f} ' \
-                   '{3:15.5f}\n'.format(*shocks_cov[j])
+            line = ' {0:15.10f} {1:15.10f} {2:15.10f} ' \
+                   '{3:15.10f}\n'.format(*shocks_cov[j])
             file_.write(line)
 
         # SOLUTION
