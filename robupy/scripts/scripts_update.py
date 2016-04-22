@@ -52,13 +52,15 @@ def scripts_update(init_file):
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov \
         = dist_optim_paras(paras_steps, True)
 
-    shocks_coeff = shocks_cov[np.tril_indices_from(shocks_cov)].tolist()
+    shocks_coeffs = shocks_cov[np.triu_indices_from(shocks_cov)].tolist()
+    for i in [0, 4, 7, 9]:
+        shocks_coeffs[i] = np.sqrt(shocks_coeffs[i])
 
     # Update initialization dictionary
     init_dict['OCCUPATION A']['coeffs'] = coeffs_a
     init_dict['OCCUPATION B']['coeffs'] = coeffs_b
     init_dict['EDUCATION']['coeffs'] = coeffs_edu
-    init_dict['SHOCKS']['coeffs'] = shocks_coeff
+    init_dict['SHOCKS']['coeffs'] = shocks_coeffs
     init_dict['HOME']['coeffs'] = coeffs_home
 
     print_random_dict(init_dict, init_file)
@@ -68,8 +70,8 @@ def scripts_update(init_file):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description=
-        'Update model initialization file.',
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+        'Update model initialization file with parameter values from last '
+        'step.', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('--init_file', action='store', dest='init_file',
         default='model.robupy.ini', help='initialization file')

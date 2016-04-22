@@ -117,7 +117,7 @@ def generate_random_dict(constraints=None):
     # SHOCKS
     dict_['SHOCKS'] = dict()
     shocks = np.zeros(10)
-    for i in [0, 2, 5, 9]:
+    for i in [0, 4, 7, 9]:
         shocks[i] = np.random.uniform(0.05, 1)
     dict_['SHOCKS']['coeffs'] = shocks
     dict_['SHOCKS']['fixed'] = np.tile(paras_fixed[16:17], 10)

@@ -188,3 +188,26 @@ class TestClass(object):
             # Assess evaluation
             val = evaluate(robupy_obj, process(robupy_obj))
             np.testing.assert_allclose(val, 1.0)
+
+    @pytest.mark.slow
+    def test_7(self):
+        """ This test just locks in the evaluation of the criterion function
+        for the original Keane & Wolpin data.
+        """
+        # Sample one task
+        resources = ['kw_data_one.ini', 'kw_data_two.ini', 'kw_data_three.ini']
+        fname = np.random.choice(resources)
+
+        # Select expected result
+        if 'one' in fname:
+            rslt = 0.269086624176311
+        elif 'two' in fname:
+            rslt = 1.118242514893393
+        elif 'three' in fname:
+            rslt = 1.848874856961523
+
+        # Evaluate criterion function at true values.
+        robupy_obj = read(TEST_RESOURCES_DIR + '/' + fname)
+        simulate(robupy_obj)
+        val = evaluate(robupy_obj, process(robupy_obj))
+        np.testing.assert_allclose(val, rslt)

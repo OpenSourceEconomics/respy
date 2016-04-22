@@ -290,11 +290,15 @@ class RobupyCls(object):
         self.attr['model_paras'] = dict()
 
         # Constructing the covariance matrix of the shocks
+        shocks_coeffs = init_dict['SHOCKS']['coeffs']
+        for i in [0, 4, 7, 9]:
+            shocks_coeffs[i] **= 2
+
         shocks = np.zeros((4, 4))
-        shocks[0, 0] = init_dict['SHOCKS']['coeffs'][0]
-        shocks[1, :2] = init_dict['SHOCKS']['coeffs'][1:3]
-        shocks[2, :3] = init_dict['SHOCKS']['coeffs'][3:6]
-        shocks[3, :4] = init_dict['SHOCKS']['coeffs'][6:]
+        shocks[0, :] = shocks_coeffs[0:4]
+        shocks[1, 1:] = shocks_coeffs[4:7]
+        shocks[2, 2:] = shocks_coeffs[7:9]
+        shocks[3, 3:] = shocks_coeffs[9:10]
 
         self.attr['model_paras']['shocks_cov'] = shocks + shocks.T - np.diag(shocks.diagonal())
 

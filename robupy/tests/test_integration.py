@@ -538,6 +538,7 @@ class TestClass(object):
         scripts_update(init_file)
         scripts_modify(identifiers, values, action, init_file)
 
+    @pytest.mark.slow
     def test_11(self):
         """ Test short estimation tasks.
         """
