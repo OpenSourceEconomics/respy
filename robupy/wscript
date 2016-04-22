@@ -105,7 +105,7 @@ def cleanup_build(is_build=False):
                 continue
 
             # Keep the initialization files for the regression tests.
-            if 'test_' in match:
+            if ('test_' in match) or ('kw_data' in match):
                 continue
 
         else:
