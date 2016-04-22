@@ -811,6 +811,7 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
     ! Fix formatting
     1500 FORMAT(6(1x,f15.10))
     1510 FORMAT(f15.10)
+    1520 FORMAT(6(1x,f20.10))
 
     1505 FORMAT(i10)
     1515 FORMAT(i10,1x,i10)
@@ -838,7 +839,7 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
 
         ! SHOCKS
         DO j = 1, 4
-            READ(1, 1500) (shocks_cov(j, k), k=1, 4)
+            READ(1, 1520) (shocks_cov(j, k), k=1, 4)
         END DO
 
         ! SOLUTION

@@ -95,9 +95,8 @@ def write_robufort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
 
         # WORK
         for num in [coeffs_a, coeffs_b]:
-            line = ' {0:15.10f} {1:15.10f} {2:15.10f} {3:15.10f}  {4:15.10f}' \
-                        ' {5:15.10f}\n'.format(*num)
-            file_.write(line)
+            fmt_ = ' {:15.10f}' * 6 + '\n'
+            file_.write(fmt_.format(*num))
 
         # EDUCATION
         num = coeffs_edu
@@ -116,9 +115,8 @@ def write_robufort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
 
         # SHOCKS
         for j in range(4):
-            line = ' {0:15.10f} {1:15.10f} {2:15.10f} ' \
-                   '{3:15.10f}\n'.format(*shocks_cov[j])
-            file_.write(line)
+            fmt_ = ' {:20.10f}' * 4 + '\n'
+            file_.write(fmt_.format(*shocks_cov[j, :]))
 
         # SOLUTION
         line = '{0:10d}\n'.format(num_draws_emax)
