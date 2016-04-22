@@ -42,13 +42,24 @@ def compile_package():
     os.chdir(current_directory)
 
 
-def finalize_testing_record():
+def finalize_testing_record(full_test_record):
     """ Add the temporary file with the information about tracebacks to the
     main report.
     """
+
+    # Count total and failed tests.
+    total_tests, failed_tests = 0, 0
+    for module in full_test_record.keys():
+        for method in full_test_record[module].keys():
+            total_tests += sum(full_test_record[module][method])
+            failed_tests += full_test_record[module][method][1]
+
     # Indicate that test run is finished
     with open('report.testing.log', 'a') as log_file:
         log_file.write('   RUN COMPLETED\n\n')
+        fmt_ = '      {0[0]:<15}{0[1]:>9}\n\n'
+        log_file.write(fmt_.format(['TOTAL TESTS', total_tests]))
+        log_file.write(fmt_.format(['FAILED TESTS', failed_tests]))
 
     # Aggregate information from temporary files.
     with open('report.testing.log', 'a') as outfile:

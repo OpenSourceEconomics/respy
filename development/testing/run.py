@@ -111,7 +111,7 @@ def run(hours, compile):
         if timeout < datetime.now() - start:
             break
 
-    finalize_testing_record()
+    finalize_testing_record(full_test_record)
 
 ''' Execution of module as script.
 '''
