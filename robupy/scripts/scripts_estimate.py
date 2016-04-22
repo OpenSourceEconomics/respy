@@ -103,7 +103,7 @@ def add_gradient_information(robupy_obj, data_frame):
     original_lines[-3] = fmt_.format(*[' Number of Evaluations', len(x_free_start)])
 
     # Approximate gradient by forward finite differences.
-    epsilon = 1.4901161193847656e-08
+    epsilon = optimizer_options['SCIPY-BFGS']['epsilon']
     grad = approx_fprime(x_free_start, opt_obj.crit_func, epsilon, *args).tolist()
     norm = np.amax(np.abs(grad))
     # Write out extended information

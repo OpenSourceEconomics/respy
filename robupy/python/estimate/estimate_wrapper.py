@@ -98,9 +98,10 @@ class OptimizationClass(object):
 
         else:
             if optimizer_used == 'SCIPY-BFGS':
-                gtol, eps = self._options_distribute(optimizer_used)
+                gtol, epsilon = self._options_distribute(optimizer_used)
                 rslt_opt = fmin_bfgs(self.crit_func, x0, args=args, gtol=gtol,
-                    epsilon=eps, maxiter=maxiter, full_output=True, disp=False)
+                    epsilon=epsilon, maxiter=maxiter, full_output=True,
+                    disp=False)
 
             elif optimizer_used == 'SCIPY-POWELL':
                 xtol, ftol, maxfun = self._options_distribute(optimizer_used)
@@ -173,7 +174,7 @@ class OptimizationClass(object):
             opts += (options_opt['maxfun'],)
 
         elif optimizer_used == 'SCIPY-BFGS':
-            opts = (options_opt['gtol'], options_opt['eps'])
+            opts = (options_opt['gtol'], options_opt['epsilon'])
 
         # Finishing
         return opts
@@ -301,7 +302,7 @@ class OptimizationClass(object):
         # Check options for the SCIPY-BFGS algorithm
         if 'SCIPY-BFGS' in self.attr['optimizer_options'].keys():
             options = self.attr['optimizer_options']['SCIPY-BFGS']
-            gtol, epsilon = options['gtol'], options['eps']
+            gtol, epsilon = options['gtol'], options['epsilon']
 
             assert isinstance(gtol, float)
             assert (gtol > 0)

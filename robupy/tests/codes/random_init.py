@@ -129,8 +129,8 @@ def generate_random_dict(constraints=None):
 
     # SCIPY-BFGS
     dict_['SCIPY-BFGS'] = {}
+    dict_['SCIPY-BFGS']['epsilon'] = np.random.uniform(0.0000001, 0.1)
     dict_['SCIPY-BFGS']['gtol'] = np.random.uniform(0.0000001, 0.1)
-    dict_['SCIPY-BFGS']['eps'] = np.random.uniform(0.0000001, 0.1)
 
     # SCIPY-BFGS
     dict_['SCIPY-POWELL'] = {}
