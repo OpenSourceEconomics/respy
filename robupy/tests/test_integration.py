@@ -157,7 +157,7 @@ class TestClass(object):
             # criterion function.
             data_frame, _ = simulate(robupy_obj)
 
-            crit_val = evaluate(robupy_obj, data_frame)
+            crit_val = evaluate(robupy_obj)
 
             if base_val is None:
                 base_val = crit_val
@@ -327,7 +327,7 @@ class TestClass(object):
             # criterion function.
             data_frame, _ = simulate(robupy_obj)
 
-            crit_val = evaluate(robupy_obj, data_frame)
+            crit_val = evaluate(robupy_obj)
 
             if base_val is None:
                 base_val = crit_val
@@ -498,7 +498,7 @@ class TestClass(object):
         generate_init(constr)
 
         robupy_obj = read('test.robupy.ini')
-        evaluate(robupy_obj, data_frame)
+        evaluate(robupy_obj)
 
     def test_10(self):
         """ Test the scripts.

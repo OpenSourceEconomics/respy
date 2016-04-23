@@ -33,7 +33,7 @@ class TestClass(object):
         np.testing.assert_allclose(val, 103320.40501)
 
         # Assess evaluation
-        val = evaluate(robupy_obj, process(robupy_obj))
+        val = evaluate(robupy_obj)
         np.testing.assert_allclose(val, 1.9775860444869962)
 
     def test_2(self):
@@ -99,7 +99,7 @@ class TestClass(object):
             (np.testing.assert_allclose(emax[0, 0], [val]))
 
         # Assess evaluation
-        val = evaluate(robupy_obj, process(robupy_obj))
+        val = evaluate(robupy_obj)
         np.testing.assert_allclose(val, 0.00)
 
     def test_3(self):
@@ -115,7 +115,7 @@ class TestClass(object):
         np.testing.assert_allclose(val, 86121.335057)
 
         # Assess evaluation
-        val = evaluate(robupy_obj, process(robupy_obj))
+        val = evaluate(robupy_obj)
         np.testing.assert_allclose(val, 1.9162587639887239)
 
     def test_4(self):
@@ -131,7 +131,7 @@ class TestClass(object):
         np.testing.assert_allclose(val, 75.719528)
 
         # Assess evaluation
-        val = evaluate(robupy_obj, process(robupy_obj))
+        val = evaluate(robupy_obj)
         np.testing.assert_allclose(val, 2.802285449312437)
 
     def test_5(self):
@@ -158,7 +158,7 @@ class TestClass(object):
             np.testing.assert_allclose(val, 88750)
 
             # Assess evaluation
-            val = evaluate(robupy_obj, process(robupy_obj))
+            val = evaluate(robupy_obj)
             np.testing.assert_allclose(val, 1.0)
 
     def test_6(self):
@@ -186,7 +186,7 @@ class TestClass(object):
             np.testing.assert_allclose(val, 88750)
 
             # Assess evaluation
-            val = evaluate(robupy_obj, process(robupy_obj))
+            val = evaluate(robupy_obj)
             np.testing.assert_allclose(val, 1.0)
 
     @pytest.mark.slow
@@ -209,5 +209,5 @@ class TestClass(object):
         # Evaluate criterion function at true values.
         robupy_obj = read(TEST_RESOURCES_DIR + '/' + fname)
         simulate(robupy_obj)
-        val = evaluate(robupy_obj, process(robupy_obj))
+        val = evaluate(robupy_obj)
         np.testing.assert_allclose(val, rslt)

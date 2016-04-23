@@ -26,10 +26,7 @@ from robupy.fortran.fortran import fort_solve
 
 
 def solve(robupy_obj):
-    """ Solve the RESPY model.
-
-    :param robupy_obj: object version of requested model
-    :return: robupy_obj: object version of model with result attributes attached
+    """ Solve the model
     """
     # Checks, cleanup, start logger
     assert check_input(robupy_obj)

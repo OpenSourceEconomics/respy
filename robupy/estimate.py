@@ -28,7 +28,7 @@ def estimate(input):
     """ Estimate the model
     """
     # Depending on the type of input, we need to initialize a fresh instance
-    # of the robupy_obj.
+    # of the robupy_obj or work with the input directly.
     assert (isinstance(input, RobupyCls) or isinstance(input, str))
     if isinstance(input, RobupyCls):
         robupy_obj = input

@@ -18,9 +18,6 @@ from robupy.python.read.clsRobupy import RobupyCls
 
 def read(fname, is_dict=False):
     """ Read and process a RESPY initialization file.
-
-    :param fname: path to initialization file
-    :return: robupy_obj: object version of model
     """
     # Check input
     assert os.path.exists(fname)
