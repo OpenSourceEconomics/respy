@@ -2,11 +2,10 @@
 """
 
 # standard library
+import numpy as np
 import shlex
 import glob
 import os
-
-import numpy as np
 
 # project library
 from robupy.python.shared.shared_constants import ROOT_DIR

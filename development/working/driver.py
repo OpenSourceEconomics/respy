@@ -4,7 +4,6 @@
 
 
 # ROOT DIRECTORY
-
 # standard library
 import os
 import sys

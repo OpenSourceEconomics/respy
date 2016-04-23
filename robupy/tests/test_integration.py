@@ -155,8 +155,6 @@ class TestClass(object):
 
             # This part checks the equality of an evaluation of the
             # criterion function.
-            data_frame, _ = simulate(robupy_obj)
-
             crit_val = evaluate(robupy_obj)
 
             if base_val is None:
