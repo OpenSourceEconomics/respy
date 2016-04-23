@@ -29,9 +29,3 @@ from robupy.python.shared.shared_auxiliary import create_draws
 
 from robupy import simulate, read, solve, evaluate, estimate
 robupy_obj = read('model.robupy.ini')
-
-simulate(robupy_obj)
-
-simulate('model.robupy.ini')
-
-#estimate(robupy_obj, data_frame)
