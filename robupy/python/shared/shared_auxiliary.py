@@ -350,3 +350,20 @@ def transform_disturbances(draws, shocks_cholesky, shocks_mean):
 
     # Finishing
     return draws_transformed
+
+
+def get_robupy_obj(input):
+    """ Depending on the type of input, we need to initialize a fresh instance
+    of the robupy_obj or work with the input directly.
+    """
+    from robupy.python.read.clsRobupy import RobupyCls
+    from robupy.read import read
+
+    assert (isinstance(input, RobupyCls) or isinstance(input, str))
+    if isinstance(input, RobupyCls):
+        robupy_obj = input
+    else:
+        robupy_obj = read(input)
+
+    # Finishing
+    return robupy_obj

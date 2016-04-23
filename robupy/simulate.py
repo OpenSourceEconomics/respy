@@ -1,17 +1,5 @@
 """ This module contains the interface to simulate a dataset and write the
 information to disk.
-
-    Structure of Dataset:
-
-        0   Identifier of Agent
-        1   Time Period
-        2   Choice (1 = Work A, 2 = Work B, 3 = Education, 4 = Home)
-        3   Earnings (missing value if not working)
-        4   Work Experience A
-        5   Work Experience B
-        6   Schooling
-        7   Lagged Schooling
-
 """
 
 # standard library
@@ -29,14 +17,13 @@ from robupy.python.simulate.simulate_auxiliary import write_out
 from robupy.python.shared.shared_auxiliary import replace_missing_values
 from robupy.python.shared.shared_auxiliary import dist_class_attributes
 from robupy.python.shared.shared_auxiliary import dist_model_paras
+from robupy.python.shared.shared_auxiliary import get_robupy_obj
 from robupy.python.shared.shared_auxiliary import check_dataset
 from robupy.python.shared.shared_auxiliary import create_draws
 
 from robupy.fortran.f2py_library import f2py_simulate
 
 from robupy.solve import solve
-from robupy.read import read
-from robupy.python.read.clsRobupy import RobupyCls
 
 # Logging
 from robupy.python.simulate.simulate_python import pyth_simulate
@@ -51,16 +38,9 @@ def simulate(input, is_solved=False):
     """ Simulate dataset of synthetic agent following the model specified in
     the initialization file.
     """
-    # Depending on the type of input, we need to initialize a fresh instance
-    # of the robupy_obj.
-    assert (isinstance(input, RobupyCls) or isinstance(input, str))
-    if isinstance(input, RobupyCls):
-        robupy_obj = input
-    else:
-        assert (not is_solved)
-        robupy_obj = read(input)
-
-    assert check_input(robupy_obj, is_solved)
+    # Process input
+    robupy_obj = get_robupy_obj(input)
+    check_input(robupy_obj, is_solved)
 
     # Solve the requested economy
     if not is_solved:

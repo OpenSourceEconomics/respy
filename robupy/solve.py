@@ -12,8 +12,8 @@ from robupy.python.solve.solve_auxiliary import check_input
 from robupy.python.solve.solve_auxiliary import cleanup
 
 from robupy.python.shared.shared_auxiliary import dist_class_attributes
-from robupy.python.shared.shared_auxiliary import replace_missing_values
 from robupy.python.shared.shared_auxiliary import dist_model_paras
+from robupy.python.shared.shared_auxiliary import get_robupy_obj
 from robupy.python.shared.shared_auxiliary import add_solution
 from robupy.python.shared.shared_auxiliary import create_draws
 
@@ -25,9 +25,12 @@ from robupy.fortran.fortran import fort_solve
 '''
 
 
-def solve(robupy_obj):
+def solve(input):
     """ Solve the model
     """
+    # Process input
+    robupy_obj = get_robupy_obj(input)
+
     # Checks, cleanup, start logger
     assert check_input(robupy_obj)
 

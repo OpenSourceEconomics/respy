@@ -2,9 +2,9 @@
 """
 
 # standard library
+import shlex
 import glob
 import os
-import shlex
 
 import numpy as np
 

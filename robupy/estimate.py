@@ -2,23 +2,19 @@
 function.
 """
 
-# standard library
-
-
 # project library
 from robupy.python.estimate.estimate_auxiliary import get_optim_paras
 from robupy.python.estimate.estimate_auxiliary import check_input
 
 from robupy.python.shared.shared_auxiliary import dist_class_attributes
 from robupy.python.shared.shared_auxiliary import dist_model_paras
+from robupy.python.shared.shared_auxiliary import get_robupy_obj
 from robupy.python.shared.shared_auxiliary import create_draws
 from robupy.python.shared.shared_auxiliary import cut_dataset
 
 from robupy.python.estimate.estimate_wrapper import OptimizationClass
-from robupy.python.read.clsRobupy import RobupyCls
 
 from robupy.process import process
-from robupy.read import read
 
 ''' Main function
 '''
@@ -27,13 +23,9 @@ from robupy.read import read
 def estimate(input):
     """ Estimate the model
     """
-    # Depending on the type of input, we need to initialize a fresh instance
-    # of the robupy_obj or work with the input directly.
-    assert (isinstance(input, RobupyCls) or isinstance(input, str))
-    if isinstance(input, RobupyCls):
-        robupy_obj = input
-    else:
-        robupy_obj = read(input)
+
+    # Process input
+    robupy_obj = get_robupy_obj(input)
 
     # Cut dataset to size in case more agents are passed in than are actually
     # used in the estimation.

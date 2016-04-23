@@ -2,12 +2,12 @@
 """
 
 # standard library
-import numpy as np
 import pandas as pd
+import numpy as np
 
 # project library
 from robupy.python.process.process_auxiliary import check_process
-
+from robupy.python.shared.shared_auxiliary import get_robupy_obj
 from robupy.python.shared.shared_auxiliary import check_dataset
 
 
@@ -15,9 +15,12 @@ from robupy.python.shared.shared_auxiliary import check_dataset
 '''
 
 
-def process(robupy_obj):
+def process(input):
     """ This function processes the dataset from disk.
     """
+    # Process input
+    robupy_obj = get_robupy_obj(input)
+
     # Antibugging
     assert robupy_obj.get_attr('is_locked')
 
