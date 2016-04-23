@@ -155,6 +155,8 @@ class TestClass(object):
 
             # This part checks the equality of an evaluation of the
             # criterion function.
+            data_frame, _ = simulate(robupy_obj)
+
             crit_val = evaluate(robupy_obj)
 
             if base_val is None:
@@ -441,6 +443,7 @@ class TestClass(object):
         # Generate random initialization file
         constraints = dict()
         constraints['maxiter'] = 0
+        constraints['level'] = 0.0
 
         # Generate random initialization file
         generate_init(constraints)
@@ -553,3 +556,42 @@ class TestClass(object):
         robupy_obj = read('test.robupy.ini')
         data_frame, _ = simulate(robupy_obj)
         estimate(robupy_obj)
+
+    def test_12(self):
+        """ This test is motivated by a recent change in the interface. It
+        ensures that it does not matter whether the initialization file is
+        passed in or the class instance directly.
+        """
+        # Constraints that ensures that the maximum number of iterations and
+        # the number of function evaluations is set to the minimum values of
+        # one.
+        constr = dict()
+        constr['maxiter'] = 0
+
+        generate_init(constr)
+
+        # Solve
+        cls_rslt = solve(read('test.robupy.ini')).get_attr('periods_emax')
+        str_rslt = solve('test.robupy.ini').get_attr('periods_emax')
+        np.testing.assert_almost_equal(str_rslt, cls_rslt)
+
+        # Solve
+        cls_rslt = simulate(read('test.robupy.ini'))[0]
+        str_rslt = simulate('test.robupy.ini')[0]
+        assert_frame_equal(str_rslt, cls_rslt)
+
+        # Process
+        cls_rslt = process(read('test.robupy.ini'))
+        str_rslt = process('test.robupy.ini')
+        assert_frame_equal(str_rslt, cls_rslt)
+
+        # Evaluate
+        cls_rslt = evaluate(read('test.robupy.ini'))
+        str_rslt = evaluate('test.robupy.ini')
+        np.testing.assert_almost_equal(str_rslt, cls_rslt)
+
+        # Evaluate
+        cls_rslt = estimate(read('test.robupy.ini'))
+        str_rslt = estimate('test.robupy.ini')
+        for i in range(2):
+            np.testing.assert_almost_equal(str_rslt[i], cls_rslt[i])

@@ -41,7 +41,7 @@ def read(fname, is_dict=False):
             # Prepare dictionary
             if is_keyword:
                 keyword = list_[0]
-                # Special treatment for OCCUPATION, which consists of two
+                # Special treatment for OCCUPATION, which consists of three
                 # entries.
                 if keyword == 'OCCUPATION':
                     keyword = list_[0] + ' ' + list_[1]
