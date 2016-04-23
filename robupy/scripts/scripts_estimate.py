@@ -21,7 +21,6 @@ from robupy.python.shared.shared_auxiliary import create_draws
 
 from robupy.python.estimate.estimate_wrapper import OptimizationClass
 
-from robupy.process import process
 from robupy.read import read
 from robupy import estimate
 
@@ -191,11 +190,8 @@ def scripts_estimate(resume, single, init_file, gradient):
         robupy_obj.set_attr('maxiter', 0)
         robupy_obj.lock()
 
-    # Process dataset
-    data_frame = process(robupy_obj)
-
     # Optimize the criterion function.
-    estimate(robupy_obj, data_frame)
+    estimate(robupy_obj)
 
     if gradient:
         add_gradient_information(robupy_obj, data_frame)

@@ -464,7 +464,7 @@ class TestClass(object):
 
             robupy_obj.lock()
 
-            x, val = estimate(robupy_obj, process(robupy_obj))
+            x, val = estimate(robupy_obj)
 
             # Check for the returned parameters.
             if base_x is None:
@@ -554,4 +554,4 @@ class TestClass(object):
         # Run estimation task.
         robupy_obj = read('test.robupy.ini')
         data_frame, _ = simulate(robupy_obj)
-        estimate(robupy_obj, data_frame)
+        estimate(robupy_obj)

@@ -16,13 +16,17 @@ from robupy.python.shared.shared_auxiliary import cut_dataset
 
 from robupy.python.estimate.estimate_wrapper import OptimizationClass
 
+from robupy.process import process
+
 ''' Main function
 '''
 
 
-def estimate(robupy_obj, data_frame):
+def estimate(robupy_obj):
     """ Estimate the model
     """
+
+    data_frame = process(robupy_obj)
 
     # Cut dataset to size in case more agents are passed in than are actually
     # used in the estimation.
