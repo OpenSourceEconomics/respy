@@ -16,7 +16,6 @@ information to disk.
 
 # standard library
 import pandas as pd
-import numpy as np
 
 import logging
 
@@ -36,6 +35,8 @@ from robupy.python.shared.shared_auxiliary import create_draws
 from robupy.fortran.f2py_library import f2py_simulate
 
 from robupy.solve import solve
+from robupy.read import read
+from robupy.python.read.clsRobupy import RobupyCls
 
 # Logging
 from robupy.python.simulate.simulate_python import pyth_simulate
@@ -46,11 +47,19 @@ logger = logging.getLogger('ROBUPY_SIMULATE')
 '''
 
 
-def simulate(robupy_obj, is_solved=False):
-    """ Simulate dataset from model. To keep the different tasks as separate
-    as possible, this requires to pass in a solved robupy_obj.
+def simulate(input, is_solved=False):
+    """ Simulate dataset of synthetic agent following the model specified in
+    the initialization file.
     """
-    # Checks
+    # Depending on the type of input, we need to initialize a fresh instance
+    # of the robupy_obj.
+    assert (isinstance(input, RobupyCls) or isinstance(input, str))
+    if isinstance(input, RobupyCls):
+        robupy_obj = input
+    else:
+        assert (not is_solved)
+        robupy_obj = read(input)
+
     assert check_input(robupy_obj, is_solved)
 
     # Solve the requested economy

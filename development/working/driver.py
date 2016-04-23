@@ -4,7 +4,7 @@
 
 
 # ROOT DIRECTORY
-f
+
 # standard library
 import os
 import sys
@@ -12,7 +12,7 @@ import sys
 # ROOT DIRECTORY
 sys.path.insert(0, os.environ['ROBUPY'])
 sys.path.insert(0, os.environ['STRUCT_RECOMPUTATION'])
-rom robupy.python.estimate.estimate_auxiliary import dist_optim_paras
+from robupy.python.estimate.estimate_auxiliary import dist_optim_paras
 
 # project library
 from robupy.python.evaluate.evaluate_python import pyth_evaluate
@@ -31,5 +31,8 @@ from robupy.python.shared.shared_auxiliary import create_draws
 from robupy import simulate, read, solve, evaluate, estimate
 robupy_obj = read('model.robupy.ini')
 
-data_frame, _ = simulate(robupy_obj)
+simulate(robupy_obj)
+
+simulate('model.robupy.ini')
+
 #estimate(robupy_obj, data_frame)

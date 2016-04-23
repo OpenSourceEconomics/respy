@@ -16,13 +16,19 @@ from robupy.python.read.clsRobupy import RobupyCls
 '''
 
 
-def read(file_, is_dict=False):
-    """ Read an initialization file from disk.
+def read(fname, is_dict=False):
+    """ Read and process a RESPY initialization file.
+
+    :param fname: path to initialization file
+    :return: robupy_obj: object version of model
     """
+    # Check input
+    assert os.path.exists(fname)
+
     # Initialization
     dict_, keyword = {}, None
 
-    with open(file_) as in_file:
+    with open(fname) as in_file:
 
         for line in in_file.readlines():
 
