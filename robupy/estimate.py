@@ -15,21 +15,30 @@ from robupy.python.shared.shared_auxiliary import create_draws
 from robupy.python.shared.shared_auxiliary import cut_dataset
 
 from robupy.python.estimate.estimate_wrapper import OptimizationClass
+from robupy.python.read.clsRobupy import RobupyCls
 
 from robupy.process import process
+from robupy.read import read
 
 ''' Main function
 '''
 
 
-def estimate(robupy_obj):
+def estimate(input):
     """ Estimate the model
     """
+    # Depending on the type of input, we need to initialize a fresh instance
+    # of the robupy_obj.
+    assert (isinstance(input, RobupyCls) or isinstance(input, str))
+    if isinstance(input, RobupyCls):
+        robupy_obj = input
+    else:
+        robupy_obj = read(input)
 
-    data_frame = process(robupy_obj)
 
     # Cut dataset to size in case more agents are passed in than are actually
     # used in the estimation.
+    data_frame = process(robupy_obj)
     data_frame = cut_dataset(robupy_obj, data_frame)
 
     # Antibugging
