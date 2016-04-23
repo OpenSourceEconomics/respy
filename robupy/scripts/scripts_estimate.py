@@ -21,20 +21,21 @@ from robupy.python.shared.shared_auxiliary import create_draws
 
 from robupy.python.estimate.estimate_wrapper import OptimizationClass
 
-from robupy.read import read
 from robupy import estimate
+from robupy import process
+from robupy import read
 
 """ Auxiliary function
 """
 
 
-def add_gradient_information(robupy_obj, data_frame):
+def add_gradient_information(robupy_obj):
     """ This function adds information about the gradient to the information
     files. It is not part of the estimation modules as it breaks the design
     and requires to carry additional attributes. This results in considerable
     overhead, which appears justified at this point.
     """
-    data_array = data_frame.as_matrix()
+    data_array = process(robupy_obj).as_matrix()
 
     model_paras, num_periods, num_agents_est, edu_start, seed_sim, \
         is_debug, file_sim, edu_max, delta, num_draws_prob, seed_prob, \
@@ -194,7 +195,7 @@ def scripts_estimate(resume, single, init_file, gradient):
     estimate(robupy_obj)
 
     if gradient:
-        add_gradient_information(robupy_obj, data_frame)
+        add_gradient_information(robupy_obj)
 
 ''' Execution of module as script.
 '''

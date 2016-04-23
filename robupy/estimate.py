@@ -35,7 +35,6 @@ def estimate(input):
     else:
         robupy_obj = read(input)
 
-
     # Cut dataset to size in case more agents are passed in than are actually
     # used in the estimation.
     data_frame = process(robupy_obj)
