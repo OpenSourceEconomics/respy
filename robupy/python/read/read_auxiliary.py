@@ -5,6 +5,7 @@ initialization files.
 # standard library
 import numpy as np
 
+import glob
 import sys
 import os
 
@@ -62,7 +63,6 @@ def check_line(group, flag, value):
         if (group, flag) == ('HOME', 'coeff'):
             assert isinstance(value, float)
             assert np.isfinite(value)
-            assert (value >= 0)
 
         if group == 'SIMULATION':
             if flag in ['agents', 'draws', 'seed']:
@@ -88,9 +88,11 @@ def check_line(group, flag, value):
             if flag in ['version']:
                 assert (value in ['FORTRAN', 'F2PY', 'PYTHON'])
                 if value == 'F2PY':
-                    assert (os.path.exists(ROOT_DIR + '/fortran/f2py_library.*.so'))
+                    fname = glob.glob(ROOT_DIR + '/fortran/f2py_library.*.so')[0]
+                    assert os.path.exists(fname)
                 if value == 'FORTRAN':
-                    assert (os.path.exists(ROOT_DIR + '/fortran/bin/robufort'))
+                    fname = ROOT_DIR + '/fortran/bin/robufort'
+                    assert os.path.exists(fname)
 
         if group == 'AMBIGUITY':
             if flag in ['level']:
