@@ -99,6 +99,8 @@ def check_line(group, flag, value):
                 assert (isinstance(value, float))
                 assert (value >= 0.00)
                 assert (np.isfinite(value))
+            else:
+                pass
 
         if group == 'SIMULATION':
             if flag in ['agents', 'seed']:
