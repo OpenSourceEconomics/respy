@@ -110,11 +110,10 @@ def dist_optim_paras(x_all_curre, is_debug):
 
     # Cholesky
     shocks_cholesky = np.tile(0.0, (4, 4))
-
-    shocks_cholesky[0:4, 0] = x_all_curre[16:20]
-    shocks_cholesky[1:4, 1] = x_all_curre[20:23]
-    shocks_cholesky[2:4, 2] = x_all_curre[23:25]
-    shocks_cholesky[3:4, 3] = x_all_curre[25]
+    shocks_cholesky[0, :] = x_all_curre[16:20]
+    shocks_cholesky[1, 1:] = x_all_curre[20:23]
+    shocks_cholesky[2, 2:] = x_all_curre[23:25]
+    shocks_cholesky[3, 3:] = x_all_curre[25]
 
     # Shocks
     shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
