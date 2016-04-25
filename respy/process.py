@@ -15,11 +15,11 @@ from respy.python.shared.shared_auxiliary import check_dataset
 '''
 
 
-def process(input):
+def process(input_):
     """ This function processes the dataset from disk.
     """
-    # Process input
-    respy_obj = get_respy_obj(input)
+    # Process input_
+    respy_obj = get_respy_obj(input_)
 
     # Antibugging
     assert respy_obj.get_attr('is_locked')

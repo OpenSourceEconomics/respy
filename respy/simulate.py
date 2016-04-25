@@ -34,12 +34,12 @@ logger = logging.getLogger('ROBUPY_SIMULATE')
 '''
 
 
-def simulate(input, is_solved=False):
+def simulate(input_, is_solved=False):
     """ Simulate dataset of synthetic agent following the model specified in
     the initialization file.
     """
-    # Process input
-    respy_obj = get_respy_obj(input)
+    # Process input_
+    respy_obj = get_respy_obj(input_)
     check_input(respy_obj, is_solved)
 
     # Solve the requested economy

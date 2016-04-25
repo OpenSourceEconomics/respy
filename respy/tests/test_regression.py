@@ -199,6 +199,7 @@ class TestClass(object):
         fname = np.random.choice(resources)
 
         # Select expected result
+        rslt = None
         if 'one' in fname:
             rslt = 0.269086624176311
         elif 'two' in fname:

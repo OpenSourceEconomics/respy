@@ -169,6 +169,7 @@ class OptimizationClass(object):
         options_opt = options[optimizer_used]
 
         # Construct options
+        opts = None
         if optimizer_used == 'SCIPY-POWELL':
             opts = (options_opt['xtol'], options_opt['ftol'])
             opts += (options_opt['maxfun'],)

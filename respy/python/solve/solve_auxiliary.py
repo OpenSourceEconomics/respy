@@ -341,9 +341,8 @@ def get_exogenous_variables(period, num_periods, num_states, delta,
 
 def get_endogenous_variable(period, num_periods, num_states, delta,
         periods_payoffs_systematic, edu_max, edu_start, mapping_state_idx,
-        periods_emax, states_all, is_simulated, num_draws_emax, shocks_cov,
-        is_debug, maxe, draws_emax,
-        is_deterministic, shocks_cholesky):
+        periods_emax, states_all, is_simulated, num_draws_emax,maxe, draws_emax,
+        shocks_cholesky):
     """ Construct endogenous variable for the subset of interpolation points.
     """
     # Construct auxiliary objects

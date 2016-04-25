@@ -12,7 +12,6 @@ import os
 if not hasattr(sys, 'real_prefix'):
     raise AssertionError('Please use a virtual environment for testing')
 
-
 # Testing infrastructure
 from modules.auxiliary import cleanup_testing_infrastructure
 from modules.auxiliary import get_random_request
@@ -54,10 +53,6 @@ for _ in range(1):
     print(module, method)
     mod = importlib.import_module(module)
     test = getattr(mod.TestClass(), method)
-
-    # Deal with PYTEST command line options.
-    if 'versions' in inspect.getargspec(test)[0]:
-        test = functools.partial(test, VERSIONS)
 
     test()
 

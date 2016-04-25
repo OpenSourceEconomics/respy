@@ -352,18 +352,18 @@ def transform_disturbances(draws, shocks_cholesky, shocks_mean):
     return draws_transformed
 
 
-def get_respy_obj(input):
-    """ Depending on the type of input, we need to initialize a fresh instance
-    of the respy_obj or work with the input directly.
+def get_respy_obj(input_):
+    """ Depending on the type of input_, we need to initialize a fresh instance
+    of the respy_obj or work with the input_ directly.
     """
     from respy.python.read.clsRobupy import RobupyCls
     from respy.read import read
 
-    assert (isinstance(input, RobupyCls) or isinstance(input, str))
-    if isinstance(input, RobupyCls):
-        respy_obj = input
+    assert (isinstance(input_, RobupyCls) or isinstance(input_, str))
+    if isinstance(input_, RobupyCls):
+        respy_obj = input_
     else:
-        respy_obj = read(input)
+        respy_obj = read(input_)
 
     # Finishing
     return respy_obj

@@ -39,13 +39,6 @@ class MetaCls(object):
     """ This class is contains some methods for the MailCls. This makes the
     file self-contained.
     """
-    def __init__(self):
-        """ Initialization of supporting class for the MailCls.
-        """
-        self.is_locked = False
-
-    ''' Meta methods.
-    '''
     def get_status(self):
         """ Get status of class instance.
         """
@@ -107,10 +100,6 @@ class MetaCls(object):
         # Finishing
         self.attr[key] = attr
 
-    @staticmethod
-    def _derived_attributes():
-        """ Calculate derived attributes.
-        """
     @staticmethod
     def _check_integrity():
         """ Check integrity of class instance.

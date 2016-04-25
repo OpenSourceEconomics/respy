@@ -1,1 +1,8 @@
-development/msc/clean.py
+#!/usr/bin/env python
+""" Cleanup of directories.
+"""
+
+# standard library
+import os
+
+os.system('git clean -d -f')

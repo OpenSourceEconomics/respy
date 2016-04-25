@@ -16,7 +16,7 @@ import os
 # testing library
 from modules.clsMail import MailCls
 
-# ROBUPY directory. This allows to compile the debug version of the FORTRAN
+# ROBUPY directory. This allows to compile_ the debug version of the FORTRAN
 # program.
 ROBUPY_DIR = os.path.dirname(os.path.realpath(__file__))
 ROBUPY_DIR = ROBUPY_DIR.replace('development/testing/modules', '') + 'respy'
@@ -118,14 +118,14 @@ def update_testing_record(module, method, seed_test, is_success, msg,
                            '-----------------------------------------\n\n')
 
 
-def get_test_dict(TEST_DIR):
+def get_test_dict(test_dir):
     """ This function constructs a dictionary with the recognized test
     modules as the keys. The corresponding value is a list with all test
     methods inside that module.
     """
     # Process all candidate modules.
     current_directory = os.getcwd()
-    os.chdir(TEST_DIR)
+    os.chdir(test_dir)
     test_modules = []
     for test_file in glob.glob('test_*.py'):
         test_module = test_file.replace('.py', '')
@@ -171,13 +171,13 @@ def distribute_input(parser):
 
     # Distribute arguments.
     notification = args.notification
-    compile = args.compile
+    compile_ = args.compile
     hours = args.hours
 
     # Assertions.
     assert (notification in [True, False])
     assert (isinstance(hours, float))
-    assert (compile in [True, False])
+    assert (compile_ in [True, False])
     assert (hours > 0.0)
 
     # Validity checks
@@ -187,7 +187,7 @@ def distribute_input(parser):
         assert (os.path.exists(os.environ['HOME'] + '/.credentials'))
 
     # Finishing.
-    return hours, notification, compile
+    return hours, notification, compile_
 
 
 def send_notification(hours):

@@ -22,11 +22,11 @@ from respy.fortran.fortran import fort_solve
 '''
 
 
-def solve(input):
+def solve(input_):
     """ Solve the model
     """
-    # Process input
-    respy_obj = get_respy_obj(input)
+    # Process input_
+    respy_obj = get_respy_obj(input_)
 
     # Checks, cleanup, start logger
     assert check_input(respy_obj)

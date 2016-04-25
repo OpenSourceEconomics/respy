@@ -25,13 +25,12 @@ STRUCTURE['SOLUTION'] = ['draws', 'store', 'seed']
 STRUCTURE['SIMULATION'] = ['agents', 'seed', 'file']
 
 STRUCTURE['ESTIMATION'] = ['draws', 'optimizer', 'maxiter', 'seed']
-STRUCTURE['ESTIMATION']+= ['tau', 'file', 'agents']
+STRUCTURE['ESTIMATION'] += ['tau', 'file', 'agents']
 
 STRUCTURE['PROGRAM'] = ['debug', 'version']
 STRUCTURE['INTERPOLATION'] = ['apply', 'points']
 STRUCTURE['SCIPY-BFGS'] = ['gtol', 'epsilon']
 STRUCTURE['SCIPY-POWELL'] = ['maxfun', 'xtol', 'ftol']
-
 
 
 def check_line(group, flag, value):

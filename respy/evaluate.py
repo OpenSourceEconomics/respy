@@ -23,11 +23,11 @@ from respy.process import process
 '''
 
 
-def evaluate(input):
+def evaluate(input_):
     """ Evaluate the criterion function.
     """
-    # Process input
-    respy_obj = get_respy_obj(input)
+    # Process input_
+    respy_obj = get_respy_obj(input_)
 
     # Cut dataset to size in case more agents are passed in than are actually
     # used in the estimation.

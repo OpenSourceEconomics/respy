@@ -7,10 +7,6 @@ import numpy as np
 import pytest
 import scipy
 import statsmodels.api as sm
-from scipy.optimize import approx_fprime
-from scipy.optimize import rosen
-from scipy.optimize import rosen_der
-from scipy.optimize.slsqp import _minimize_slsqp
 from scipy.stats import norm
 
 # testing library
@@ -57,7 +53,7 @@ class TestClass(object):
         """ This function compares the results from the payoff functions across
         implementations.
         """
-        for _ in range(5):
+        for i in range(5):
 
             # Generate random initialization file
             generate_init()
@@ -83,7 +79,7 @@ class TestClass(object):
                 dist_model_paras(model_paras, is_debug)
 
             # Iterate over a couple of admissible points
-            for _ in range(10):
+            for j in range(10):
 
                 # Select random points
                 period = np.random.choice(range(num_periods))
@@ -159,9 +155,6 @@ class TestClass(object):
         # Select systematic payoffs
         payoffs_systematic = periods_payoffs_systematic[period, k, :]
 
-        # Evaluation point
-        x = np.random.random(size=2)
-
         # Evaluation of simulated expected future values
         py = simulate_emax(num_periods, num_draws_emax, period, k,
             draws_standard, payoffs_systematic, edu_max, edu_start,
@@ -180,14 +173,6 @@ class TestClass(object):
         hand-crafted functions. In test_97() we test FORTRAN implementations
         against PYTHON intrinsic routines.
         """
-        for _ in range(10):
-
-            # Draw random request for testing purposes
-            matrix = (np.random.multivariate_normal(np.zeros(4), np.identity(
-                    4), 4))
-            cov = np.dot(matrix, matrix.T)
-            x = np.random.rand(2)
-            tiny = np.random.rand()**2
 
         for _ in range(25):
 
@@ -252,7 +237,7 @@ class TestClass(object):
             # Draw random requests for testing purposes.
             num_draws_emax = np.random.randint(2, 1000)
             dim = np.random.randint(1, 6)
-            mean = np.random.uniform(-0.5, 0.5, (dim))
+            mean = np.random.uniform(-0.5, 0.5, dim)
 
             matrix = (np.random.multivariate_normal(np.zeros(dim),
                 np.identity(dim), dim))

@@ -317,7 +317,7 @@ def print_random_dict(dict_, file_name='test.respy.ini'):
     paras_fixed += dict_['HOME']['fixed'][:]
     paras_fixed += [dict_['SHOCKS']['fixed'][0]][:]
 
-    str_optim = ' {0:<10} {1:20.4f} {2:>5} \n'
+    str_optim = '{0:<10} {1:20.4f} {2:>5} \n'
 
     # Construct labels. This ensures that the initialization files alway look
     # identical.
@@ -332,36 +332,19 @@ def print_random_dict(dict_, file_name='test.respy.ini'):
         for flag in labels:
             if flag in ['BASICS']:
 
-                file_.write(' BASICS \n\n')
+                file_.write('BASICS \n\n')
 
-                str_ = ' {0:<10} {1:>20} \n'
+                str_ = '{0:<10} {1:>20} \n'
                 file_.write(str_.format('periods', dict_[flag]['periods']))
 
-                str_ = ' {0:<10} {1:20.4f} \n'
+                str_ = '{0:<10} {1:20.4f} \n'
                 file_.write(str_.format('delta', dict_[flag]['delta']))
-
-                file_.write('\n')
-
-            if flag in ['AMBIGUITY']:
-
-                file_.write(' ' + flag.upper() + '\n\n')
-
-                # This function can also be used to print out initialization
-                # files that only work for the RESPY package.
-                if flag not in dict_.keys():
-                    continue
-
-                for keys_ in dict_[flag]:
-
-                    str_ = ' {0:<10} {1:20.4f} \n'
-
-                    file_.write(str_.format(keys_, dict_[flag][keys_]))
 
                 file_.write('\n')
 
             if flag in ['HOME']:
 
-                file_.write(' ' + flag.upper() + '\n\n')
+                file_.write(flag.upper() + '\n\n')
 
                 val = dict_['HOME']['coeffs'][0]
                 line = format_opt_parameters(val, 15, paras_fixed)
@@ -372,15 +355,15 @@ def print_random_dict(dict_, file_name='test.respy.ini'):
             if flag in ['SOLUTION', 'SIMULATION', 'PROGRAM', 'INTERPOLATION',
                         'ESTIMATION']:
 
-                file_.write(' ' + flag.upper() + '\n\n')
+                file_.write(flag.upper() + '\n\n')
 
                 for keys_ in dict_[flag]:
 
                     if keys_ in ['tau']:
-                        str_ = ' {0:<10} {1:20.0f} \n'
+                        str_ = '{0:<10} {1:20.0f} \n'
                         file_.write(str_.format(keys_, dict_[flag][keys_]))
                     else:
-                        str_ = ' {0:<10} {1:>20} \n'
+                        str_ = '{0:<10} {1:>20} \n'
                         file_.write(str_.format(keys_, str(dict_[flag][keys_])))
 
                 file_.write('\n')
@@ -388,7 +371,7 @@ def print_random_dict(dict_, file_name='test.respy.ini'):
             if flag in ['SHOCKS']:
 
                 # Type conversion
-                file_.write(' ' + flag.upper() + '\n\n')
+                file_.write(flag.upper() + '\n\n')
 
                 for i in range(10):
                     val = dict_['SHOCKS']['coeffs'][i]
@@ -398,7 +381,7 @@ def print_random_dict(dict_, file_name='test.respy.ini'):
 
             if flag in ['EDUCATION']:
 
-                file_.write(' ' + flag.upper() + '\n\n')
+                file_.write(flag.upper() + '\n\n')
 
                 val = dict_['EDUCATION']['coeffs'][0]
                 line = format_opt_parameters(val, 12, paras_fixed)
@@ -413,7 +396,7 @@ def print_random_dict(dict_, file_name='test.respy.ini'):
                 file_.write(str_optim.format(*line))
 
                 file_.write('\n')
-                str_ = ' {0:<10} {1:>15} \n'
+                str_ = '{0:<10} {1:>15} \n'
                 file_.write(str_.format('start', dict_[flag]['start']))
                 file_.write(str_.format('max', dict_[flag]['max']))
 
@@ -446,15 +429,15 @@ def print_random_dict(dict_, file_name='test.respy.ini'):
                 if flag not in dict_.keys():
                     continue
 
-                file_.write(' ' + flag.upper() + '\n\n')
+                file_.write(flag.upper() + '\n\n')
 
                 for keys_ in dict_[flag]:
 
                     if keys_ in ['maxfun']:
-                        str_ = ' {0:<10} {1:>20} \n'
+                        str_ = '{0:<10} {1:>20} \n'
                         file_.write(str_.format(keys_, dict_[flag][keys_]))
                     else:
-                        str_ = ' {0:<10} {1:20.4f} \n'
+                        str_ = '{0:<10} {1:20.4f} \n'
                         file_.write(str_.format(keys_, dict_[flag][keys_]))
 
                 file_.write('\n')

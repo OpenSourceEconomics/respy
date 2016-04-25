@@ -326,9 +326,9 @@ class RobupyCls(object):
 
         # Aggregate all the information provided about optimizer options in
         # one class attribute for easier access later.
-        OPTIMIZERS = ['SCIPY-BFGS', 'SCIPY-POWELL']
+        optimizers = ['SCIPY-BFGS', 'SCIPY-POWELL']
         self.attr['optimizer_options'] = dict()
-        for optimizer in OPTIMIZERS:
+        for optimizer in optimizers:
             is_defined = (optimizer in init_dict.keys())
             if is_defined:
                 self.attr['optimizer_options'][optimizer] = \

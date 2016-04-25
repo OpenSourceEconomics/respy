@@ -44,11 +44,11 @@ from modules.auxiliary import get_testdir
 '''
 
 
-def run(hours, compile):
+def run(hours, compile_):
     """ Run test battery.
     """
     # Compile the debug version of the ROBUPY program.
-    if compile:
+    if compile_:
         compile_package()
 
     # Get a dictionary with all candidate test cases.
@@ -127,16 +127,16 @@ if __name__ == '__main__':
                         dest='notification', default=False,
                         help='send notification')
 
-    parser.add_argument('--compile', action='store_true',
-                        dest='compile', default=False,
-                        help='compile toolbox with debug flag')
+    parser.add_argument('--compile_', action='store_true',
+                        dest='compile_', default=False,
+                        help='compile_ toolbox with debug flag')
 
     # Start from a clean slate and extract a user's request.
     cleanup_testing_infrastructure(False)
-    hours, notification, compile = distribute_input(parser)
+    hours, notification, compile_ = distribute_input(parser)
 
     # Run testing infrastructure and send a notification (if requested).
-    run(hours, compile)
+    run(hours, compile_)
 
     if notification:
         send_notification(hours)
