@@ -97,6 +97,7 @@ class TestClass(object):
                 # TODO: Are the interfaces  between fort and py still aligned.
                 # TODO: Renumbering all tests.
                 # TODO: Check for unused arguments.
+                # TODO: Travis now strict test passing?
                 py = get_payoffs(num_draws_emax, draws_emax, period, k,
                     payoffs_systematic, edu_max, edu_start, mapping_state_idx,
                     states_all, num_periods, periods_emax, delta,
