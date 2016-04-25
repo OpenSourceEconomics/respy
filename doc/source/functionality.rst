@@ -1,13 +1,20 @@
-Functionality
-=============
+Basis Functionality
+===================
 
-There are three key objects when interacting with the **respy** package.
+There are really three key objects to know to work with the **respy** package.
 
 .. class:: respy.RespyCls(fname)
 
     Class for the management of the user's initialization file.
 
     :param str fname: Path to initialization file
+    :return: Instance of RespyCls
+
+    .. py:classmethod:: update_model_paras(x)
+
+        Function to update model parameterization.
+
+        :param numpy.ndarray x: Model parameterization
 
 .. function:: respy.simulate(respy_obj)
 
@@ -15,11 +22,16 @@ There are three key objects when interacting with the **respy** package.
     initialization file.
 
     :param obj respy_obj: Instance of RespyCls class.
-    :return: Instance of RespyCls with additional information.
+    :return: Instance of RespyCls 
 
 .. function:: respy.estimate(respy_obj)
 
     Estimate a model based on a provided dataset.
 
     :param obj respy_obj: Instance of RespyCls class.
-    :return: Instance of RespyCls with additional information.
+
+    :return: Model parameterization at final step
+    :rtype: numpy.ndarray
+
+    :return: Value of criterion function at final step
+    :rtype: float

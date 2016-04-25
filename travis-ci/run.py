@@ -19,4 +19,4 @@ os.chdir('../')
 # Run PYTEST battery, some tests are expected to fail due to small numerical
 # differences between PYTHON and FORTRAN implementations.
 os.system('pip install pytest-cov==2.2.1')
-assert pytest.main('--cov=respy -v -s -m"(not slow)"')
+pytest.main('--cov=respy -v -s -m"(not slow)"')

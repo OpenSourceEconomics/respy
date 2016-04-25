@@ -1,6 +1,9 @@
 Tutorial 
 ========
 
+Let us explore the basic capabilities of the **respy** package in this tutorial. The script is available `online <https://github.com/restudToolbox/package/blob/master/example/example.py>`_.
+
+
 As a user of the **respy** package, we usually either want to simulate a synthetic sample form the 
 model or start an estimation run. At the heart of our interaction with the **respy** package is 
 the *RobupyCls*. This classes processes the user's model specification. We can initialize an instance of the class by passing in the location of the model initialization file.
@@ -14,7 +17,7 @@ This then allows us to simulate a sample from the model::
 
     from respy import simulate
 
-    simulate('data_one.ini')
+    simulate(respy_obj)
 
 The sample is simulated with the parameters specified in the initialization file, which are discussed in
 Section :ref:`specification`.
@@ -78,3 +81,28 @@ the SIMULATION section of the model initialization file.
     covariance matrix of the shocks and not the covariance matrix directly. The
     Cholesky factors are in order of a flattened upper triangular matrix.
 
+Now that we have some observed data, we can start an estimation. The coefficient values in the initialization file serve as the starting values::
+
+    from respy import estimate
+
+    x, crit_val = estimate(respy_obj)
+
+This directly returns the value of the coefficients at the final step of the optimizer as well as
+the value of the criterion function. However, some additional files appear in the meantime.
+
+
+* **optimization.respy.log**
+
+The provides some information about each step of the optimizer and a final message from the optimizer about convergence.
+
+* **optimization.respy.info**
+
+This file is key to monitor the progress of the estimation run. It is continuously updated and provides information about the current parameterization, the starting values, and the the value at each step.
+
+Finally, the parameters are written to disk:
+
+* *paras_curre.respy.log*, current candidate parameters
+
+* *paras_start.respy.log*, parameters at the start of the optimization
+
+* *paras_steps.respy.log*, parameters at last step of the optimizer
