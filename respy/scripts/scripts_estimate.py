@@ -37,22 +37,22 @@ def add_gradient_information(respy_obj):
     """
     data_array = process(respy_obj).as_matrix()
 
-    model_paras, num_periods, num_agents_est, edu_start, seed_sim, \
-        is_debug, file_sim, edu_max, delta, num_draws_prob, seed_prob, \
+    model_paras, num_periods, num_agents_est, edu_start, \
+        is_debug, edu_max, delta, num_draws_prob, seed_prob, \
         num_draws_emax, seed_emax, min_idx, \
         is_deterministic, is_myopic, is_interpolated, num_points, version, \
-        maxiter, optimizer_used, paras_fixed, tau, optimizer_options = \
+        optimizer_used, paras_fixed, tau, optimizer_options = \
         dist_class_attributes(respy_obj,
             'model_paras', 'num_periods', 'num_agents_est', 'edu_start',
-            'seed_sim', 'is_debug', 'file_sim', 'edu_max', 'delta',
+            'is_debug', 'edu_max', 'delta',
             'num_draws_prob', 'seed_prob', 'num_draws_emax', 'seed_emax',
             'min_idx', 'is_deterministic',
             'is_myopic', 'is_interpolated', 'num_points', 'version',
-            'maxiter', 'optimizer_used', 'paras_fixed', 'tau',
+            'optimizer_used', 'paras_fixed', 'tau',
             'optimizer_options')
 
     # Auxiliary objects
-    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, shocks_cholesky = \
+    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, _ = \
         dist_model_paras(model_paras, is_debug)
 
     # Construct starting values

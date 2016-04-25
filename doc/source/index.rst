@@ -28,10 +28,10 @@ Welcome to respy's documentation!
 **Quality Indicators**
 
 .. image:: https://travis-ci.org/restudToolbox/package.svg?branch=master
-.. image:: https://www.quantifiedcode.com/api/v1/project/b00436d2ca614437b843c7042dba0c26/badge.svg
 .. image:: https://codecov.io/github/respy/package/?branch=master
+.. image:: https://www.quantifiedcode.com/api/v1/project/b00436d2ca614437b843c7042dba0c26/badge.svg
+.. image:: https://api.codacy.com/project/badge/grade/3dd368fb739c49d78d910676c9264a81
 .. image:: https://readthedocs.org/projects/respy/badge/?version=latest
-.. image:: https://api.codacy.com/project/badge/grade/01fb40b41e95440cbaf216c44aeac316
 
 Indices and tables
 ==================

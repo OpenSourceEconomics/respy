@@ -314,8 +314,8 @@ class TestClass(object):
                 np.testing.assert_allclose(pyth[i], alt[i])
 
         # Distribute solution arguments for further use in simulation test.
-        periods_payoffs_systematic, states_number_period, mapping_state_idx, \
-            periods_emax, states_all = pyth
+        periods_payoffs_systematic, _, mapping_state_idx, periods_emax, \
+            states_all = pyth
 
         # Collect arguments across implementations.
         args = (periods_payoffs_systematic, mapping_state_idx, periods_emax,
@@ -478,7 +478,7 @@ class TestClass(object):
 
         # Run estimation task.
         respy_obj = read('test.respy.ini')
-        data_frame, _ = simulate(respy_obj)
+        simulate(respy_obj)
         estimate(respy_obj)
 
     def test_10(self):

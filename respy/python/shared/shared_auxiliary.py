@@ -65,7 +65,7 @@ def _get_future_payoffs(edu_max, edu_start, mapping_state_idx, period,
     """ Get future payoffs for additional choices.
     """
     # Distribute state space
-    exp_a, exp_b, edu, edu_lagged = states_all[period, k, :]
+    exp_a, exp_b, edu, _ = states_all[period, k, :]
 
     # Future utilities
     payoffs_future = np.tile(np.nan, 4)

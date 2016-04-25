@@ -38,20 +38,20 @@ def evaluate(input_):
     assert check_input(respy_obj, data_frame)
 
     # Distribute class attributes
-    model_paras, num_periods, num_agents_est, edu_start, seed_sim, is_debug, \
+    model_paras, num_periods, num_agents_est, edu_start, is_debug, \
         edu_max, delta, is_deterministic, version, num_draws_prob, seed_prob, \
         num_draws_emax, seed_emax, is_interpolated, num_points, \
         is_myopic, min_idx, tau = \
             dist_class_attributes(respy_obj,
                 'model_paras', 'num_periods', 'num_agents_est', 'edu_start',
-                'seed_sim', 'is_debug', 'edu_max', 'delta', 'is_deterministic',
+                'is_debug', 'edu_max', 'delta', 'is_deterministic',
                 'version', 'num_draws_prob', 'seed_prob', 'num_draws_emax',
                 'seed_emax', 'is_interpolated', 'num_points',
                 'is_myopic', 'min_idx', 'tau')
 
     # Distribute model parameters
-    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, \
-        shocks_cholesky = dist_model_paras(model_paras, is_debug)
+    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, _ = \
+        dist_model_paras(model_paras, is_debug)
 
     # Draw standard normal deviates for choice probabilities and expected
     # future values.

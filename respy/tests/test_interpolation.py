@@ -91,19 +91,18 @@ class TestClass(object):
 
         # Extract class attributes
         periods_payoffs_systematic, states_number_period, \
-            mapping_state_idx, is_deterministic, seed_prob, periods_emax, \
+            mapping_state_idx, seed_prob, periods_emax, \
             model_paras, num_periods, states_all, num_points, \
             edu_start, num_draws_emax, is_debug, edu_max, delta, \
             = dist_class_attributes(respy_obj,
                 'periods_payoffs_systematic', 'states_number_period',
-                'mapping_state_idx', 'is_deterministic', 'seed_prob',
+                'mapping_state_idx', 'seed_prob',
                 'periods_emax', 'model_paras', 'num_periods',
                 'states_all', 'num_points', 'edu_start', 'num_draws_emax',
                 'is_debug', 'edu_max', 'delta')
 
         # Auxiliary objects
-        _, _, _, _, shocks_cov, shocks_cholesky = \
-            dist_model_paras(model_paras, is_debug)
+        _, _, _, _, _, shocks_cholesky = dist_model_paras(model_paras, is_debug)
 
         # Add some additional objects required for the interfaces to the
         # functions.
@@ -129,9 +128,9 @@ class TestClass(object):
 
         # Construct the exogenous variables for all points of the state
         # space.
-        args = [period, num_periods, num_states, delta,
+        args = (period, num_periods, num_states, delta,
                 periods_payoffs_systematic, shifts, edu_max, edu_start,
-                mapping_state_idx, periods_emax, states_all]
+                mapping_state_idx, periods_emax, states_all)
 
         py = get_exogenous_variables(*args)
         f90 = fort_debug.wrapper_get_exogenous_variables(*args)

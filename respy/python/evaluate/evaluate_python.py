@@ -10,7 +10,6 @@ from respy.python.evaluate.evaluate_auxiliary import get_smoothed_probability
 
 from respy.python.shared.shared_auxiliary import get_total_value
 from respy.python.shared.shared_constants import SMALL_FLOAT
-from respy.python.shared.shared_constants import TINY_FLOAT
 from respy.python.shared.shared_constants import HUGE_FLOAT
 
 from respy.python.solve.solve_python import pyth_solve
@@ -35,9 +34,8 @@ def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         num_periods, num_points, is_myopic, edu_start, is_debug,
         edu_max, min_idx, delta)
 
-    periods_payoffs_systematic, states_number_period, mapping_state_idx, \
-        periods_emax, states_all = \
-            pyth_solve(*base_args + (periods_draws_emax, ))
+    periods_payoffs_systematic, _, mapping_state_idx, periods_emax, \
+        states_all = pyth_solve(*base_args + (periods_draws_emax, ))
 
     # Construct Cholesky decomposition
     if is_deterministic:
@@ -91,7 +89,7 @@ def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
 
             # Simulate the conditional distribution of alternative-specific
             # value functions and determine the choice probabilities.
-            counts,  prob_obs = np.tile(0, 4), 0.0
+            counts, prob_obs = np.tile(0, 4), 0.0
 
             for s in range(num_draws_prob):
 
