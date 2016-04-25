@@ -10,7 +10,6 @@ from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 
 from respy import evaluate
 from respy import simulate
-from respy import process
 from respy import solve
 from respy import read
 

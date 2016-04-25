@@ -230,8 +230,8 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
             # the EMAX is actually simulated and thus dependent and
             # independent variables are available. For the interpolation
             # points, the actual values are used.
-            predictions, results = get_predictions(endogenous, exogenous,
-                maxe, is_simulated, num_points, num_states, is_debug)
+            predictions = get_predictions(endogenous, exogenous, maxe,
+                is_simulated, num_points, num_states, is_debug)
 
             # Store results
             periods_emax[period, :num_states] = predictions
@@ -391,7 +391,7 @@ def get_predictions(endogenous, exogenous, maxe, is_simulated, num_points,
     logging_prediction_model(results)
 
     # Finishing
-    return predictions, results
+    return predictions
 
 
 def logging_prediction_model(results):

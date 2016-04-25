@@ -4,8 +4,6 @@
 # standard library
 import numpy as np
 
-import os
-
 # module-wide variables
 MAX_AGENTS = 1000
 MAX_DRAWS = 100

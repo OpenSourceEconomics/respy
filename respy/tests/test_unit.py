@@ -64,18 +64,18 @@ class TestClass(object):
 
             # Extract class attributes
             periods_payoffs_systematic, states_number_period, \
-                mapping_state_idx, is_deterministic, \
+                mapping_state_idx, \
                 periods_emax, model_paras, num_periods, states_all, \
                 num_draws_emax, edu_start, is_debug, edu_max, delta,\
                 = dist_class_attributes(respy_obj,
                     'periods_payoffs_systematic', 'states_number_period',
-                    'mapping_state_idx', 'is_deterministic',
+                    'mapping_state_idx',
                     'periods_emax', 'model_paras', 'num_periods', 'states_all',
                     'num_draws_emax', 'edu_start', 'is_debug', 'edu_max',
                     'delta')
 
             # Extract auxiliary objects
-            _, _, _, _, shocks_cov, shocks_cholesky = \
+            _, _, _, _, _, shocks_cholesky = \
                 dist_model_paras(model_paras, is_debug)
 
             # Iterate over a couple of admissible points
@@ -387,12 +387,12 @@ class TestClass(object):
         # Extract class attributes
         num_periods, edu_start, edu_max, min_idx, model_paras, num_draws_emax, \
             seed_emax, is_debug, delta, is_interpolated, num_points, \
-            is_deterministic = \
+            = \
                 dist_class_attributes(respy_obj,
                     'num_periods', 'edu_start', 'edu_max', 'min_idx',
                     'model_paras', 'num_draws_emax', 'seed_emax', 'is_debug',
                     'delta',
-                    'is_interpolated', 'num_points', 'is_deterministic')
+                    'is_interpolated', 'num_points')
 
         # Auxiliary objects
         coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, \

@@ -51,7 +51,7 @@ def estimate(input_):
                 'optimizer_options')
 
     # Auxiliary objects
-    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, shocks_cholesky = \
+    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, _ = \
         dist_model_paras(model_paras, is_debug)
 
     # Draw standard normal deviates for the solution and evaluation step.

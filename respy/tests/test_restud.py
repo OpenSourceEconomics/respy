@@ -3,12 +3,10 @@ RESTUD code for the special cases where they overlap.
 """
 
 # standard library
-import os
-
-import numpy as np
-import pandas as pd
-import pytest
 from pandas.util.testing import assert_frame_equal
+
+import pytest
+import os
 
 # project library
 from respy.tests.codes.random_init import generate_random_dict
@@ -20,10 +18,6 @@ from respy.python.shared.shared_constants import FORTRAN_DIR
 from respy import simulate
 from respy import solve
 from respy import read
-
-
-''' Auxiliary functions
-'''
 
 
 def transform_respy_to_restud(model_paras, edu_start, edu_max,

@@ -11,9 +11,6 @@ import pandas as pd
 # project library
 from respy.python.shared.shared_constants import HUGE_FLOAT
 
-''' Auxiliary  functions
-'''
-
 
 def get_results(num_periods, min_idx):
     """ Add results to container.

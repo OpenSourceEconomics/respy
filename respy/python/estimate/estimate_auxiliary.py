@@ -2,14 +2,10 @@
 """
 # standard library
 import numpy as np
-import scipy
 
 # project library
 from respy.python.shared.shared_auxiliary import check_model_parameters
 from respy.python.shared.shared_auxiliary import check_dataset
-
-''' Auxiliary functions
-'''
 
 
 def check_input(respy_obj, data_frame):

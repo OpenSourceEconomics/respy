@@ -159,7 +159,7 @@ class TestClass(object):
         args = (endogenous, exogenous, maxe, is_simulated, num_points,
             num_states, is_debug)
 
-        py, _ = get_predictions(*args)
+        py = get_predictions(*args)
         f90 = fort_debug.wrapper_get_predictions(*args[:-1])
 
         np.testing.assert_array_almost_equal(py, f90)

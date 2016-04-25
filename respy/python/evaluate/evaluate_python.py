@@ -47,7 +47,7 @@ def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
     crit_val, j = [], 0
 
     # Calculate the probability over agents and time.
-    for i in range(num_agents_est):
+    for _ in range(num_agents_est):
         for period in range(num_periods):
             # Extract observable components of state space as well as agent
             # decision.

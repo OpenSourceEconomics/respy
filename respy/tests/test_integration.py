@@ -416,7 +416,7 @@ class TestClass(object):
         # Simulate a dataset
         generate_init(constr)
         respy_obj = read('test.respy.ini')
-        data_frame, _ = simulate(respy_obj)
+        simulate(respy_obj)
 
         # Evaluate at different points, ensuring that the simulated datset
         # still fits.

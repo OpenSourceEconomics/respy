@@ -26,10 +26,6 @@ TEST_DIR = TEST_DIR.replace('development/testing', '') + '/respy/tests'
 sys.path.insert(0, TEST_DIR)
 import conftest
 
-# Setup for dealing with PYTEST command line options
-import functools
-import inspect
-
 VERSIONS = ['PYTHON', 'FORTRAN', 'F2PY']
 
 
