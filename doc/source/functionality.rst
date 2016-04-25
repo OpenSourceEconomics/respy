@@ -1,4 +1,4 @@
-Basis Functionality
+Major Functionality
 ===================
 
 There are really three key objects to know to work with the **respy** package.

@@ -1,7 +1,7 @@
 .. _specification:
 
-Model
-=====
+Basic Model
+===========
 
 We will now discuss the basic model and first present the basic economic motivation and some notation. Then we show how to specify the particular model specification.
 
