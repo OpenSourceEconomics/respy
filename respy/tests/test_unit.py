@@ -149,15 +149,12 @@ class TestClass(object):
         payoffs_systematic = periods_payoffs_systematic[period, k, :]
 
         # Evaluation of simulated expected future values
-        py = simulate_emax(num_periods, num_draws_emax, period, k,
-            draws_standard, payoffs_systematic, edu_max, edu_start,
-            periods_emax, states_all, mapping_state_idx, delta,
-            shocks_cholesky)
+        args = (num_periods, num_draws_emax, period, k, draws_standard,
+            payoffs_systematic, edu_max, edu_start, periods_emax, states_all,
+            mapping_state_idx, delta, shocks_cholesky)
 
-        f90 = fort_debug.wrapper_simulate_emax(num_periods, num_draws_emax,
-            period, k, draws_standard, payoffs_systematic, edu_max, edu_start,
-            periods_emax, states_all, mapping_state_idx, delta,
-            shocks_cholesky)
+        py = simulate_emax(*args)
+        f90 = fort_debug.wrapper_simulate_emax(*args)
 
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
@@ -178,12 +175,10 @@ class TestClass(object):
             min_idx = min(num_periods, (edu_max - edu_start + 1))
 
             # FORTRAN
-            fort_a, fort_b, fort_c, fort_d = fort_lib.f2py_create_state_space(
-                    num_periods, edu_start, edu_max, min_idx)
-
-            # PYTHON
-            py_a, py_b, py_c, py_d = pyth_create_state_space(num_periods,
-                    edu_start, edu_max, min_idx)
+            args = (num_periods, edu_start, edu_max, min_idx)
+            fort_a, fort_b, fort_c, fort_d = \
+                fort_lib.f2py_create_state_space(*args)
+            py_a, py_b, py_c, py_d = pyth_create_state_space(*args)
 
             # Ensure equivalence
             for obj in [[fort_a, py_a], [fort_b, py_b], [fort_c, py_c], [fort_d, py_d]]:
@@ -391,8 +386,8 @@ class TestClass(object):
 
         # Extract class attributes
         num_periods, edu_start, edu_max, min_idx, model_paras, num_draws_emax, \
-            seed_emax, is_debug, delta, \
-            is_interpolated, num_points, is_deterministic, is_myopic = \
+            seed_emax, is_debug, delta, is_interpolated, num_points, \
+            is_deterministic, is_myopic = \
                 dist_class_attributes(respy_obj,
                     'num_periods', 'edu_start', 'edu_max', 'min_idx',
                     'model_paras', 'num_draws_emax', 'seed_emax', 'is_debug',
@@ -434,7 +429,7 @@ class TestClass(object):
             num_draws_emax, states_number_period, periods_payoffs_systematic,
             edu_max, edu_start, mapping_state_idx, states_all, delta,
             is_debug, shocks_cov, is_interpolated,
-            num_points, is_deterministic, shocks_cholesky)
+            num_points, shocks_cholesky)
 
         pyth = pyth_backward_induction(*args)
         f2py = f2py_backward_induction(*args)

@@ -305,7 +305,7 @@ SUBROUTINE f2py_backward_induction(periods_emax, num_periods, &
                 states_number_period, periods_payoffs_systematic, edu_max, & 
                 edu_start, mapping_state_idx, states_all, delta, is_debug, & 
                 shocks_cov, is_interpolated, num_points, &
-                is_deterministic, shocks_cholesky)
+                shocks_cholesky)
 
     !/* external libraries      */
 
@@ -335,7 +335,6 @@ SUBROUTINE f2py_backward_induction(periods_emax, num_periods, &
     INTEGER, INTENT(IN)             :: edu_start
     INTEGER, INTENT(IN)             :: edu_max
 
-    LOGICAL, INTENT(IN)             :: is_deterministic
     LOGICAL, INTENT(IN)             :: is_interpolated
     LOGICAL, INTENT(IN)             :: is_debug
 
@@ -353,7 +352,7 @@ SUBROUTINE f2py_backward_induction(periods_emax, num_periods, &
             periods_draws_emax, num_draws_emax, states_number_period, &
             periods_payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
             states_all, delta, is_debug, shocks_cov, &
-            is_interpolated, num_points, is_deterministic, &
+            is_interpolated, num_points, &
             shocks_cholesky)
 
 END SUBROUTINE

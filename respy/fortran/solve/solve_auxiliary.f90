@@ -260,7 +260,7 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, &
                 periods_payoffs_systematic, edu_max, edu_start, & 
                 mapping_state_idx, states_all, delta, is_debug, shocks_cov, & 
                 is_interpolated, num_points, &
-                is_deterministic, shocks_cholesky)
+                shocks_cholesky)
 
     !
     ! Development Notes
@@ -289,7 +289,6 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, &
     INTEGER(our_int), INTENT(IN)        :: edu_start
     INTEGER(our_int), INTENT(IN)        :: edu_max
 
-    LOGICAL, INTENT(IN)                 :: is_deterministic
     LOGICAL, INTENT(IN)                 :: is_interpolated
     LOGICAL, INTENT(IN)                 :: is_debug
 

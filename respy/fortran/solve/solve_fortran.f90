@@ -120,7 +120,7 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, &
                 periods_payoffs_systematic, edu_max, edu_start, & 
                 mapping_state_idx, states_all, delta, is_debug, &
                 shocks_cov, is_interpolated, &
-                num_points, is_deterministic, shocks_cholesky)
+                num_points, shocks_cholesky)
 
     END IF
 
