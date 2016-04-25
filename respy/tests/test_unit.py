@@ -141,8 +141,6 @@ class TestClass(object):
         draws_standard = np.random.multivariate_normal(np.zeros(4),
                             np.identity(4), (num_draws_emax,))
 
-        shocks_mean = np.random.normal(size=2)
-
         # Sampling of random period and admissible state index
         period = np.random.choice(range(num_periods))
         k = np.random.choice(range(states_number_period[period]))
@@ -154,12 +152,12 @@ class TestClass(object):
         py = simulate_emax(num_periods, num_draws_emax, period, k,
             draws_standard, payoffs_systematic, edu_max, edu_start,
             periods_emax, states_all, mapping_state_idx, delta,
-            shocks_cholesky, shocks_mean)
+            shocks_cholesky)
 
         f90 = fort_debug.wrapper_simulate_emax(num_periods, num_draws_emax,
             period, k, draws_standard, payoffs_systematic, edu_max, edu_start,
             periods_emax, states_all, mapping_state_idx, delta,
-            shocks_cholesky, shocks_mean)
+            shocks_cholesky)
 
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 

@@ -498,13 +498,10 @@ def get_payoffs(num_draws_emax, draws_emax, period, k,
         states_all, num_periods, periods_emax, delta, shocks_cholesky):
     """ Simulate expected future value under risk.
     """
-    # Auxiliary object
-    shocks_mean = np.tile(0.0, 2)
-
     # Simulate expected future value.
     emax = simulate_emax(num_periods, num_draws_emax, period, k, draws_emax,
         payoffs_systematic, edu_max, edu_start, periods_emax, states_all,
-        mapping_state_idx, delta, shocks_cholesky, shocks_mean)
+        mapping_state_idx, delta, shocks_cholesky)
 
     # Finishing
     return emax
@@ -513,7 +510,7 @@ def get_payoffs(num_draws_emax, draws_emax, period, k,
 
 def simulate_emax(num_periods, num_draws_emax, period, k, draws_emax,
         payoffs_systematic, edu_max, edu_start, periods_emax, states_all,
-        mapping_state_idx, delta, shocks_cholesky, shocks_mean):
+        mapping_state_idx, delta, shocks_cholesky):
     """ Simulate expected future value.
     """
     from respy.python.shared.shared_auxiliary import transform_disturbances

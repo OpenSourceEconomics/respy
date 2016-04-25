@@ -434,20 +434,15 @@ SUBROUTINE get_payoffs(emax_simulated, num_draws_emax, draws_emax, period, &
     INTEGER(our_int), INTENT(IN)        :: period
     INTEGER(our_int), INTENT(IN)        :: k
 
-    REAL(our_dble)       :: shocks_mean(2)
-
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
 
-    ! Auxiliary object
-    shocks_mean = zero_dble
-    
     ! Simulated expected future value
     CALL simulate_emax(emax_simulated, num_periods, num_draws_emax, & 
             period, k, draws_emax, payoffs_systematic, edu_max, edu_start, & 
             periods_emax, states_all, mapping_state_idx, delta, & 
-            shocks_cholesky, shocks_mean)
+            shocks_cholesky)
 
 END SUBROUTINE
 !*******************************************************************************
@@ -1149,7 +1144,7 @@ END SUBROUTINE
 SUBROUTINE simulate_emax(emax_simulated, num_periods, num_draws_emax, period, & 
                 k, draws_emax, payoffs_systematic, edu_max, edu_start, & 
                 periods_emax, states_all, mapping_state_idx, delta, & 
-                shocks_cholesky, shocks_mean)
+                shocks_cholesky)
 
     !/* external objects    */
 
@@ -1168,7 +1163,6 @@ SUBROUTINE simulate_emax(emax_simulated, num_periods, num_draws_emax, period, &
     REAL(our_dble), INTENT(IN)      :: shocks_cholesky(:, :)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
     REAL(our_dble), INTENT(IN)      :: draws_emax(:, :)
-    REAL(our_dble), INTENT(IN)      :: shocks_mean(:)
 
     REAL(our_dble), INTENT(IN)      :: delta
 

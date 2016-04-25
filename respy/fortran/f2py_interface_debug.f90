@@ -86,7 +86,7 @@ END SUBROUTINE
 SUBROUTINE wrapper_simulate_emax(emax_simulated, num_periods, & 
                 num_draws_emax, period, k, draws_emax, payoffs_systematic, & 
                 edu_max, edu_start, periods_emax, states_all, & 
-                mapping_state_idx, delta, shocks_cholesky, shocks_mean)
+                mapping_state_idx, delta, shocks_cholesky)
 
     !/* external libraries      */
 
@@ -104,7 +104,6 @@ SUBROUTINE wrapper_simulate_emax(emax_simulated, num_periods, &
     DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_emax(:,:)
     DOUBLE PRECISION, INTENT(IN)    :: draws_emax(:,:)
-    DOUBLE PRECISION, INTENT(IN)    :: shocks_mean(:)
     DOUBLE PRECISION, INTENT(IN)    :: delta
 
     INTEGER, INTENT(IN)             :: mapping_state_idx(:,:,:,:,:)
@@ -122,7 +121,7 @@ SUBROUTINE wrapper_simulate_emax(emax_simulated, num_periods, &
 
     CALL simulate_emax(emax_simulated, num_periods, num_draws_emax, period, k, & 
             draws_emax, payoffs_systematic, edu_max, edu_start, periods_emax, & 
-            states_all, mapping_state_idx, delta, shocks_cholesky, shocks_mean)
+            states_all, mapping_state_idx, delta, shocks_cholesky)
 
 END SUBROUTINE
 !*******************************************************************************

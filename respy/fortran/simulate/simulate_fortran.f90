@@ -57,7 +57,6 @@ SUBROUTINE fort_simulate(dataset, periods_payoffs_systematic, &
 
     REAL(our_dble)                  :: payoffs_systematic(4)
     REAL(our_dble)                  :: total_payoffs(4)
-    REAL(our_dble)                  :: shocks_mean(2)
     REAL(our_dble)                  :: draws(4)
 
 !-------------------------------------------------------------------------------
@@ -66,8 +65,6 @@ SUBROUTINE fort_simulate(dataset, periods_payoffs_systematic, &
 
     !Standard deviates transformed to the distributions relevant for
     ! the agents actual decision making as traversing the tree.
-    shocks_mean = zero_dble
-
     DO period = 1, num_periods
         CALL transform_disturbances(periods_draws_sims_transformed(period, :, :), & 
                 periods_draws_sims(period, :, :), shocks_cholesky, &

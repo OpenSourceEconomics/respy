@@ -21,7 +21,6 @@ def pyth_simulate(periods_payoffs_systematic, mapping_state_idx,
     """
     # Standard deviates transformed to the distributions relevant for
     # the agents actual decision making as traversing the tree.
-    shocks_mean = np.tile(0.0, 2)
     periods_draws_sims_transformed = np.tile(np.nan,
         (num_periods, num_agents_sim, 4))
 
