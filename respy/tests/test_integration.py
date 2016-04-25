@@ -214,7 +214,7 @@ class TestClass(object):
             assert (np.isfinite(diff))
             assert (diff < 10e-10)
 
-    def test_6(self):
+    def test_4(self):
         """ Testing whether the a simulated dataset and the evaluation of the
         criterion function are the same for a tiny delta and a myopic agent.
         """
@@ -259,7 +259,7 @@ class TestClass(object):
 
             np.testing.assert_allclose(base_val, crit_val, rtol=1e-03, atol=1e-03)
 
-    def test_7(self):
+    def test_5(self):
         """ This methods ensures that the core functions yield the same
         results across implementations.
         """
@@ -360,7 +360,7 @@ class TestClass(object):
         f2py = f2py_criterion(x0, *args)
         np.testing.assert_allclose(pyth, f2py)
 
-    def test_8(self):
+    def test_6(self):
         """ This test ensures that the evaluation of the criterion function
         at the starting value is identical between the different versions.
         """
@@ -401,7 +401,7 @@ class TestClass(object):
                 base_val = val
             np.testing.assert_allclose(base_val, val)
 
-    def test_9(self):
+    def test_7(self):
         """ Test the evaluation of the criterion function for random
         requests, not just at the true values.
         """
@@ -425,7 +425,7 @@ class TestClass(object):
         respy_obj = read('test.respy.ini')
         evaluate(respy_obj)
 
-    def test_10(self):
+    def test_8(self):
         """ Test the scripts.
         """
         # Constraints that ensure that two alternative initialization files
@@ -465,7 +465,7 @@ class TestClass(object):
         scripts_modify(identifiers, values, action, init_file)
 
     @pytest.mark.slow
-    def test_11(self):
+    def test_9(self):
         """ Test short estimation tasks.
         """
         # Constraints that ensures that the maximum number of iterations and
@@ -481,7 +481,7 @@ class TestClass(object):
         data_frame, _ = simulate(respy_obj)
         estimate(respy_obj)
 
-    def test_12(self):
+    def test_10(self):
         """ This test is motivated by a recent change in the interface. It
         ensures that it does not matter whether the initialization file is
         passed in or the class instance directly.

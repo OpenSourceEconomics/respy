@@ -15,7 +15,7 @@ from codes.auxiliary import write_interpolation_grid
 from respy.python.solve.solve_auxiliary import get_payoffs
 from respy.tests.codes.random_init import generate_init
 
-from respy.python.solve.solve_emax import simulate_emax
+from respy.python.solve.solve_auxiliary import simulate_emax
 
 from respy.python.estimate.estimate_auxiliary import get_optim_paras
 from respy.python.estimate.estimate_auxiliary import dist_optim_paras
@@ -102,15 +102,13 @@ class TestClass(object):
                 f90 = fort_debug.wrapper_get_payoffs(num_draws_emax,
                     draws_emax, period, k, payoffs_systematic,
                     edu_max, edu_start, mapping_state_idx, states_all,
-                    num_periods, periods_emax, delta, is_debug, shocks_cov,
-                    is_deterministic,
-                    shocks_cholesky)
+                    num_periods, periods_emax, delta, shocks_cholesky)
 
                 # Compare returned array on expected future values, ex post
                 # payoffs, and future payoffs.
                 np.testing.assert_array_almost_equal(py, f90)
 
-    def test_5(self):
+    def test_2(self):
         """ Compare the evaluation of the criterion function for the ambiguity
         optimization and the simulated expected future value between the FORTRAN
         and PYTHON implementations. These tests are set up a separate test case
@@ -168,7 +166,7 @@ class TestClass(object):
 
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
-    def test_6(self):
+    def test_3(self):
         """ Compare results between FORTRAN and PYTHON of selected
         hand-crafted functions. In test_97() we test FORTRAN implementations
         against PYTHON intrinsic routines.
@@ -228,7 +226,7 @@ class TestClass(object):
             f90 = fort_debug.wrapper_get_r_squared(endog, f90, num_agents)
             np.testing.assert_almost_equal(py, f90)
 
-    def test_7(self):
+    def test_4(self):
         """ Compare results between FORTRAN and PYTHON of selected functions. The
         file fortran/debug_interface.f90 provides the F2PY bindings.
         """
@@ -306,7 +304,7 @@ class TestClass(object):
 
             np.testing.assert_almost_equal(py, f90)
 
-    def test_8(self):
+    def test_5(self):
         """ Testing ten admissible realizations of state space for the first
         three periods.
         """
@@ -361,7 +359,7 @@ class TestClass(object):
         for j, state in enumerate(states):
             assert ((states_all[2, j, :] == state).all())
 
-    def test_9(self):
+    def test_6(self):
         """ Testing whether back-and-forth transformation have no effect.
         """
         # Generate random request
@@ -381,7 +379,7 @@ class TestClass(object):
             # Checks
             np.testing.assert_allclose(base, x)
 
-    def test_10(self):
+    def test_7(self):
         """ Testing the core functions of the solution step for the equality
         of results between the PYTHON and FORTRAN implementations.
         """

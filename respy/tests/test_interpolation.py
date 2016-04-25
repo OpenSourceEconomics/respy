@@ -144,11 +144,9 @@ class TestClass(object):
         # Construct endogenous variable so that the prediction model can be
         # fitted.
         args = (period, num_periods, num_states, delta,
-            periods_payoffs_systematic, edu_max, edu_start,
-            mapping_state_idx, periods_emax, states_all, is_simulated,
-            num_draws_emax, shocks_cov, is_debug,
-            maxe, draws_emax, is_deterministic,
-            shocks_cholesky)
+            periods_payoffs_systematic, edu_max, edu_start, mapping_state_idx,
+            periods_emax, states_all, is_simulated, num_draws_emax,
+            maxe, draws_emax, shocks_cholesky)
 
         py = get_endogenous_variable(*args)
         f90 = fort_debug.wrapper_get_endogenous_variable(*args)
@@ -159,8 +157,8 @@ class TestClass(object):
         endogenous = py
 
         # Get predictions for expected future values
-        args = [endogenous, exogenous, maxe, is_simulated, num_points,
-                num_states, is_debug]
+        args = (endogenous, exogenous, maxe, is_simulated, num_points,
+            num_states, is_debug)
 
         py, _ = get_predictions(*args)
         f90 = fort_debug.wrapper_get_predictions(*args[:-1])

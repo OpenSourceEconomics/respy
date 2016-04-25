@@ -90,7 +90,7 @@ SUBROUTINE wrapper_simulate_emax(emax_simulated, num_periods, &
 
     !/* external libraries      */
 
-    USE evaluate_emax
+    USE solve_auxiliary
 
     !/* setup                   */
 
@@ -466,9 +466,9 @@ END SUBROUTINE
 SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, &
                 num_periods, num_states, delta, periods_payoffs_systematic, &
                 edu_max, edu_start, mapping_state_idx, periods_emax, &
-                states_all, is_simulated, num_draws_emax, shocks_cov, &
-                is_debug, maxe, draws_emax, &
-                is_deterministic, shocks_cholesky)
+                states_all, is_simulated, num_draws_emax, &
+                maxe, draws_emax, &
+                shocks_cholesky)
 
     !/* external libraries      */
 
@@ -486,7 +486,6 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, &
     DOUBLE PRECISION, INTENT(IN)        :: shocks_cholesky(:, :)
     DOUBLE PRECISION, INTENT(IN)        :: periods_emax(:, :)
     DOUBLE PRECISION, INTENT(IN)        :: draws_emax(:, :)
-    DOUBLE PRECISION, INTENT(IN)        :: shocks_cov(:, :)
     DOUBLE PRECISION, INTENT(IN)        :: maxe(:)
     DOUBLE PRECISION, INTENT(IN)        :: delta
 
@@ -500,9 +499,7 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, &
     INTEGER, INTENT(IN)                 :: period
 
 
-    LOGICAL, INTENT(IN)                 :: is_deterministic
     LOGICAL, INTENT(IN)                 :: is_simulated(:)
-    LOGICAL, INTENT(IN)                 :: is_debug
 
 !-------------------------------------------------------------------------------
 ! Algorithm
@@ -511,8 +508,8 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, &
     CALL get_endogenous_variable(exogenous_variable, period, num_periods, &
             num_states, delta, periods_payoffs_systematic, edu_max, &
             edu_start, mapping_state_idx, periods_emax, states_all, &
-            is_simulated, num_draws_emax, shocks_cov, &
-            is_debug, maxe, draws_emax, is_deterministic, &
+            is_simulated, num_draws_emax, &
+            maxe, draws_emax, &
             shocks_cholesky)
 
 END SUBROUTINE
@@ -597,8 +594,7 @@ END SUBROUTINE
 SUBROUTINE wrapper_get_payoffs(emax_simulated, num_draws_emax, & 
                 draws_emax, period, k, payoffs_systematic, edu_max, & 
                 edu_start, mapping_state_idx, states_all, num_periods, & 
-                periods_emax, delta, is_debug, shocks_cov, & 
-                is_deterministic, shocks_cholesky)
+                periods_emax, delta, shocks_cholesky)
 
 
     !/* external libraries      */
@@ -616,7 +612,6 @@ SUBROUTINE wrapper_get_payoffs(emax_simulated, num_draws_emax, &
     DOUBLE PRECISION, INTENT(IN)        :: payoffs_systematic(:)
     DOUBLE PRECISION, INTENT(IN)        :: shocks_cholesky(:, :)
     DOUBLE PRECISION, INTENT(IN)        :: periods_emax(:, :)
-    DOUBLE PRECISION, INTENT(IN)        :: shocks_cov(:, :)
     DOUBLE PRECISION, INTENT(IN)        :: draws_emax(:, :)
     DOUBLE PRECISION, INTENT(IN)        :: delta
 
@@ -628,19 +623,13 @@ SUBROUTINE wrapper_get_payoffs(emax_simulated, num_draws_emax, &
     INTEGER, INTENT(IN)                 :: edu_max
     INTEGER, INTENT(IN)                 :: period
     INTEGER, INTENT(IN)                 :: k 
-
-    LOGICAL, INTENT(IN)                 :: is_deterministic
-    LOGICAL, INTENT(IN)                 :: is_debug
-
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
     
     CALL get_payoffs(emax_simulated, num_draws_emax, draws_emax, period, k, & 
             payoffs_systematic, edu_max, edu_start, mapping_state_idx, & 
-            states_all, num_periods, periods_emax, delta, is_debug, & 
-            shocks_cov, is_deterministic, &
-            shocks_cholesky)
+            states_all, num_periods, periods_emax, delta, shocks_cholesky)
     
 END SUBROUTINE
 !*******************************************************************************

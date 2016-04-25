@@ -8,10 +8,6 @@ MODULE solve_auxiliary
 
     USE shared_constants
 
-    USE evaluate_emax
-
-    USE evaluate_risk
-
 	!/*	setup	*/
 
     IMPLICIT NONE
@@ -367,9 +363,8 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, &
             CALL get_endogenous_variable(endogenous, period, num_periods, &
                     num_states, delta, periods_payoffs_systematic, edu_max, &
                     edu_start, mapping_state_idx, periods_emax, states_all, &
-                    is_simulated, num_draws_emax, shocks_cov, &
-                    is_debug, maxe, draws_emax, &
-                    is_deterministic, shocks_cholesky)
+                    is_simulated, num_draws_emax, &
+                    maxe, draws_emax, shocks_cholesky)
 
             ! Create prediction model based on the random subset of points where
             ! the EMAX is actually simulated and thus endogenous and
@@ -396,9 +391,7 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, &
                 CALL get_payoffs(emax_simulated, num_draws_emax, draws_emax, &
                         period, k, payoffs_systematic, edu_max, edu_start, &
                         mapping_state_idx, states_all, num_periods, &
-                        periods_emax, delta, is_debug, shocks_cov, &
-                        is_deterministic, &
-                        shocks_cholesky)
+                        periods_emax, delta, shocks_cholesky)
 
                 ! Collect information
                 periods_emax(period + 1, k + 1) = emax_simulated
@@ -420,9 +413,7 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE get_payoffs(emax_simulated, num_draws_emax, draws_emax, period, &
                 k, payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
-                states_all, num_periods, periods_emax, delta, is_debug, &
-                shocks_cov, is_deterministic, &
-                shocks_cholesky)
+                states_all, num_periods, periods_emax, delta, shocks_cholesky)
 
     !/* external objects        */
 
@@ -431,7 +422,6 @@ SUBROUTINE get_payoffs(emax_simulated, num_draws_emax, draws_emax, period, &
     REAL(our_dble), INTENT(IN)          :: shocks_cholesky(:, :)
     REAL(our_dble), INTENT(IN)          :: payoffs_systematic(:)
     REAL(our_dble), INTENT(IN)          :: periods_emax(:, :)
-    REAL(our_dble), INTENT(IN)          :: shocks_cov(:, :)
     REAL(our_dble), INTENT(IN)          :: draws_emax(:, :)
     REAL(our_dble), INTENT(IN)          :: delta
 
@@ -444,18 +434,20 @@ SUBROUTINE get_payoffs(emax_simulated, num_draws_emax, draws_emax, period, &
     INTEGER(our_int), INTENT(IN)        :: period
     INTEGER(our_int), INTENT(IN)        :: k
 
-
-    LOGICAL, INTENT(IN)                 :: is_deterministic
-    LOGICAL, INTENT(IN)                 :: is_debug
+    REAL(our_dble)       :: shocks_mean(2)
 
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
 
-    CALL get_payoffs_risk(emax_simulated, num_draws_emax, draws_emax, &
-        period, k, payoffs_systematic, edu_max, edu_start, &
-        mapping_state_idx, states_all, num_periods, periods_emax, &
-        delta, shocks_cholesky)
+    ! Auxiliary object
+    shocks_mean = zero_dble
+    
+    ! Simulated expected future value
+    CALL simulate_emax(emax_simulated, num_periods, num_draws_emax, & 
+            period, k, draws_emax, payoffs_systematic, edu_max, edu_start, & 
+            periods_emax, states_all, mapping_state_idx, delta, & 
+            shocks_cholesky, shocks_mean)
 
 END SUBROUTINE
 !*******************************************************************************
@@ -626,9 +618,8 @@ END SUBROUTINE
 SUBROUTINE get_endogenous_variable(endogenous, period, num_periods, &
                 num_states, delta, periods_payoffs_systematic, edu_max, &
                 edu_start, mapping_state_idx, periods_emax, states_all, &
-                is_simulated, num_draws_emax, shocks_cov, &
-                is_debug, maxe, draws_emax, &
-                is_deterministic, shocks_cholesky)
+                is_simulated, num_draws_emax, maxe, draws_emax, &
+                shocks_cholesky)
 
     !/* external objects        */
 
@@ -637,7 +628,6 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_periods, &
     REAL(our_dble), INTENT(IN)          :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), INTENT(IN)          :: shocks_cholesky(:, :)
     REAL(our_dble), INTENT(IN)          :: periods_emax(:, :)
-    REAL(our_dble), INTENT(IN)          :: shocks_cov(:, :)
     REAL(our_dble), INTENT(IN)          :: draws_emax(:, :)
     REAL(our_dble), INTENT(IN)          :: maxe(:)
     REAL(our_dble), INTENT(IN)          :: delta
@@ -651,10 +641,7 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_periods, &
     INTEGER(our_int), INTENT(IN)        :: edu_max
     INTEGER(our_int), INTENT(IN)        :: period
 
-
-    LOGICAL, INTENT(IN)                 :: is_deterministic
     LOGICAL, INTENT(IN)                 :: is_simulated(:)
-    LOGICAL, INTENT(IN)                 :: is_debug
 
     !/* internal objects        */
 
@@ -685,9 +672,7 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_periods, &
         ! Get payoffs
         CALL get_payoffs(emax_simulated, num_draws_emax, draws_emax, period, &
                 k, payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
-                states_all, num_periods, periods_emax, delta, is_debug, &
-                shocks_cov, is_deterministic, &
-                shocks_cholesky)
+                states_all, num_periods, periods_emax, delta, shocks_cholesky)
 
         ! Construct dependent variable
         endogenous(k + 1) = emax_simulated - maxe(k + 1)
@@ -1158,6 +1143,75 @@ SUBROUTINE get_r_squared(r_squared, observed, predicted, num_states)
         r_squared = one_dble - ss_residuals / ss_total
     END IF
     
+END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE simulate_emax(emax_simulated, num_periods, num_draws_emax, period, & 
+                k, draws_emax, payoffs_systematic, edu_max, edu_start, & 
+                periods_emax, states_all, mapping_state_idx, delta, & 
+                shocks_cholesky, shocks_mean)
+
+    !/* external objects    */
+
+    REAL(our_dble), INTENT(OUT)     :: emax_simulated
+
+    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:, :, :, :, :)
+    INTEGER(our_int), INTENT(IN)    :: states_all(:, :, :)
+    INTEGER(our_int), INTENT(IN)    :: num_draws_emax
+    INTEGER(our_int), INTENT(IN)    :: num_periods
+    INTEGER(our_int), INTENT(IN)    :: edu_start
+    INTEGER(our_int), INTENT(IN)    :: edu_max
+    INTEGER(our_int), INTENT(IN)    :: period
+    INTEGER(our_int), INTENT(IN)    :: k
+
+    REAL(our_dble), INTENT(IN)      :: payoffs_systematic(:)
+    REAL(our_dble), INTENT(IN)      :: shocks_cholesky(:, :)
+    REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
+    REAL(our_dble), INTENT(IN)      :: draws_emax(:, :)
+    REAL(our_dble), INTENT(IN)      :: shocks_mean(:)
+
+    REAL(our_dble), INTENT(IN)      :: delta
+
+    !/* internals objects    */
+
+    INTEGER(our_int)                :: i
+
+    REAL(our_dble)                  :: draws_emax_transformed(num_draws_emax, 4)
+
+    REAL(our_dble)                  :: total_payoffs(4)
+    REAL(our_dble)                  :: draws(4)
+    REAL(our_dble)                  :: maximum
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+    ! Transform disturbances
+    CALL transform_disturbances(draws_emax_transformed, draws_emax, &
+            shocks_cholesky, shocks_mean, num_draws_emax)
+
+    ! Iterate over Monte Carlo draws
+    emax_simulated = zero_dble
+    DO i = 1, num_draws_emax
+
+        ! Select draws for this draw
+        draws = draws_emax_transformed(i, :)
+
+        ! Calculate total value
+        CALL get_total_value(total_payoffs, period, num_periods, delta, &
+                payoffs_systematic, draws, edu_max, edu_start, & 
+                mapping_state_idx, periods_emax, k, states_all)
+   
+        ! Determine optimal choice
+        maximum = MAXVAL(total_payoffs)
+
+        ! Recording expected future value
+        emax_simulated = emax_simulated + maximum
+
+    END DO
+
+    ! Scaling
+    emax_simulated = emax_simulated / num_draws_emax
+
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************

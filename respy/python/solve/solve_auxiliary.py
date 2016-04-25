@@ -3,24 +3,20 @@ where FORTRAN alternatives are available.
 """
 
 # standard library
-import logging
-import os
-import shlex
-
-import numpy as np
 import statsmodels.api as sm
+import numpy as np
+
+import logging
+import shlex
+import os
 
 # project library
-
 from respy.python.shared.shared_auxiliary import get_total_value
 
 from respy.python.shared.shared_constants import INTERPOLATION_INADMISSIBLE_STATES
 from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.shared.shared_constants import MISSING_INT
 from respy.python.shared.shared_constants import HUGE_FLOAT
-
-# Logging
-from respy.python.solve.solve_emax import simulate_emax
 
 logger = logging.getLogger('ROBUPY_SOLVE')
 
@@ -228,9 +224,7 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
             endogenous = get_endogenous_variable(period, num_periods,
                 num_states, delta, periods_payoffs_systematic, edu_max,
                 edu_start, mapping_state_idx, periods_emax, states_all,
-                is_simulated, num_draws_emax, shocks_cov,
-                is_debug, maxe, draws_emax, is_deterministic,
-                shocks_cholesky)
+                is_simulated, num_draws_emax,maxe, draws_emax, shocks_cholesky)
 
             # Create prediction model based on the random subset of points where
             # the EMAX is actually simulated and thus dependent and
@@ -514,3 +508,40 @@ def get_payoffs(num_draws_emax, draws_emax, period, k,
 
     # Finishing
     return emax
+
+
+
+def simulate_emax(num_periods, num_draws_emax, period, k, draws_emax,
+        payoffs_systematic, edu_max, edu_start, periods_emax, states_all,
+        mapping_state_idx, delta, shocks_cholesky, shocks_mean):
+    """ Simulate expected future value.
+    """
+    from respy.python.shared.shared_auxiliary import transform_disturbances
+
+    # Get the transformed set of disturbances
+    draws_emax_transformed = transform_disturbances(draws_emax,
+        shocks_cholesky, shocks_mean)
+
+    # Calculate maximum value
+    emax_simulated = 0.0
+    for i in range(num_draws_emax):
+
+        # Select draws for this draw
+        draws = draws_emax_transformed[i, :]
+
+        # Get total value of admissible states
+        total_payoffs = get_total_value(period, num_periods, delta,
+            payoffs_systematic, draws, edu_max, edu_start, mapping_state_idx,
+            periods_emax, k, states_all)
+
+        # Determine optimal choice
+        maximum = max(total_payoffs)
+
+        # Recording expected future value
+        emax_simulated += maximum
+
+    # Scaling
+    emax_simulated = emax_simulated / num_draws_emax
+
+    # Finishing
+    return emax_simulated
