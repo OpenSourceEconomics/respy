@@ -1,17 +1,13 @@
 """ This module contains all functions required to build the ROBUFORT
 executable. Tedious modifications of the original source code is required to
 get the maximum performance. The main component is an iterative inlining of
-all functionality from the ROBUFORT library. This allows to maintain a
+all functionality from the RESFORT library. This allows to maintain a
 well-organized code without any loss of performance.
 """
 
 # standard library
 import shutil
 import os
-
-
-''' Main function
-'''
 
 
 def resfort_build(self):

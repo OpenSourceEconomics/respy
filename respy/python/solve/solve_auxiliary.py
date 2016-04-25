@@ -20,9 +20,6 @@ from respy.python.shared.shared_constants import HUGE_FLOAT
 
 logger = logging.getLogger('ROBUPY_SOLVE')
 
-''' Main functions
-'''
-
 
 def pyth_create_state_space(num_periods, edu_start, edu_max, min_idx):
     """ Create grid for state space.

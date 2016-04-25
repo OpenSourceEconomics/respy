@@ -39,9 +39,6 @@ from modules.auxiliary import send_notification
 from modules.auxiliary import compile_package
 from modules.auxiliary import get_testdir
 
-''' Main Function.
-'''
-
 
 def run(hours, compile_):
     """ Run test battery.

@@ -18,9 +18,6 @@ from respy.python.shared.shared_auxiliary import cut_dataset
 
 from respy.process import process
 
-''' Main function
-'''
-
 
 def evaluate(respy_obj):
     """ Evaluate the criterion function.

@@ -10,10 +10,6 @@ from respy.python.shared.shared_auxiliary import check_dataset
 from respy.python.shared.shared_constants import HUGE_FLOAT
 
 
-''' Auxiliary functions
-'''
-
-
 def get_smoothed_probability(total_payoffs, idx, tau):
     """ Construct the smoothed choice probabilities.
     """

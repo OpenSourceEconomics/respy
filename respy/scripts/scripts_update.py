@@ -32,10 +32,6 @@ def dist_input_arguments(parser):
     return init_file
 
 
-''' Main function
-'''
-
-
 def scripts_update(init_file):
     """ Update model parametrization in initialization file.
     """

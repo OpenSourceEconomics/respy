@@ -14,10 +14,6 @@ if not (sys.version_info[0] == 3):
     raise AssertionError('Please use Python 3')
 
 
-""" Testing functions
-"""
-
-
 def test():
     """ Run nose tester for the package.
     """

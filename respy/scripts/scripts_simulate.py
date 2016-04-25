@@ -16,9 +16,6 @@ from respy.python.estimate.estimate_auxiliary import dist_optim_paras
 from respy import simulate
 from respy import RespyCls
 
-''' Auxiliary function
-'''
-
 
 def dist_input_arguments(parser):
     """ Check input for estimation script.

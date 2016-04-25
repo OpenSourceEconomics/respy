@@ -26,9 +26,6 @@ from respy.process import process
 from respy import estimate
 from respy import RespyCls
 
-""" Auxiliary function
-"""
-
 
 def add_gradient_information(respy_obj):
     """ This function adds information about the gradient to the information
@@ -168,10 +165,6 @@ def dist_input_arguments(parser):
     return resume, single, init_file, gradient
 
 
-""" Main function
-"""
-
-
 def scripts_estimate(resume, single, init_file, gradient):
     """ Wrapper for the estimation.
     """
@@ -204,7 +197,7 @@ if __name__ == '__main__':
         'Start of estimation run with the ROBUPY package.',
         formatter_class = argparse.ArgumentDefaultsHelpFormatter)
 
-    parser.add_argument('--resume', action ='store_true',  dest='resume',
+    parser.add_argument('--resume', action='store_true', dest='resume',
         default=False, help='resume estimation run')
 
     parser.add_argument('--single', action='store_true', dest='single',
@@ -219,5 +212,5 @@ if __name__ == '__main__':
     # Process command line arguments
     args = dist_input_arguments(parser)
 
-    # Run estimation 
+    # Run estimation
     scripts_estimate(*args)

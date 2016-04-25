@@ -30,9 +30,6 @@ import copy
 import json
 import os
 
-''' Main Class.
-'''
-
 
 class MailCls(object):
     """ This class is used to manage the sending of the notification after a

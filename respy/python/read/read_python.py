@@ -11,9 +11,6 @@ import os
 # project library
 from respy.python.read.read_auxiliary import check_line
 
-''' Main function
-'''
-
 
 def read(fname):
     """ Read and process a RESPY initialization file.

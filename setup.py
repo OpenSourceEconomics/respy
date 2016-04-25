@@ -6,10 +6,6 @@ from setuptools import setup
 import os
 
 
-''' Auxiliary
-'''
-
-
 class CustomBuildCommand(build_py):
     """ Customized setuptools install command - prints a friendly greeting.
     """
