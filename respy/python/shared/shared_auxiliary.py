@@ -6,8 +6,8 @@ import os
 import numpy as np
 
 # project library
-from robupy.python.shared.shared_constants import MISSING_FLOAT
-from robupy.python.shared.shared_constants import HUGE_FLOAT
+from respy.python.shared.shared_constants import MISSING_FLOAT
+from respy.python.shared.shared_constants import HUGE_FLOAT
 
 ''' Auxiliary functions
 '''
@@ -138,7 +138,7 @@ def add_solution(robupy_obj, store, periods_payoffs_systematic,
 
     # Store object to file
     if store:
-        robupy_obj.store('solution.robupy.pkl')
+        robupy_obj.store('solution.respy.pkl')
 
     # Finishing
     return robupy_obj
@@ -293,7 +293,7 @@ def check_model_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
 
     # Check Cholesky decomposition
     assert (shocks_cholesky.shape == (4, 4))
-    aux = np.matmul(shocks_cholesky, shocks_cholesky.T)
+    aux = np.matmul(shocks_cholesky.T, shocks_cholesky)
     np.testing.assert_array_almost_equal(shocks_cov, aux)
 
     # Checks shock matrix
@@ -356,8 +356,8 @@ def get_robupy_obj(input):
     """ Depending on the type of input, we need to initialize a fresh instance
     of the robupy_obj or work with the input directly.
     """
-    from robupy.python.read.clsRobupy import RobupyCls
-    from robupy.read import read
+    from respy.python.read.clsRobupy import RobupyCls
+    from respy.read import read
 
     assert (isinstance(input, RobupyCls) or isinstance(input, str))
     if isinstance(input, RobupyCls):

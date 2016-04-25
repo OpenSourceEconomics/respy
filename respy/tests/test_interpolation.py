@@ -12,24 +12,24 @@ import pytest
 from codes.auxiliary import write_interpolation_grid
 
 # project library
-from robupy.python.solve.solve_auxiliary import get_simulated_indicator
-from robupy.python.solve.solve_auxiliary import get_exogenous_variables
-from robupy.python.solve.solve_auxiliary import get_endogenous_variable
-from robupy.python.solve.solve_auxiliary import get_predictions
+from respy.python.solve.solve_auxiliary import get_simulated_indicator
+from respy.python.solve.solve_auxiliary import get_exogenous_variables
+from respy.python.solve.solve_auxiliary import get_endogenous_variable
+from respy.python.solve.solve_auxiliary import get_predictions
 
-from robupy.tests.codes.random_init import generate_random_dict
-from robupy.tests.codes.random_init import print_random_dict
-from robupy.tests.codes.random_init import generate_init
+from respy.tests.codes.random_init import generate_random_dict
+from respy.tests.codes.random_init import print_random_dict
+from respy.tests.codes.random_init import generate_init
 
-from robupy.python.shared.shared_auxiliary import dist_class_attributes
-from robupy.python.shared.shared_auxiliary import replace_missing_values
-from robupy.python.shared.shared_auxiliary import dist_model_paras
-from robupy.python.shared.shared_auxiliary import create_draws
+from respy.python.shared.shared_auxiliary import dist_class_attributes
+from respy.python.shared.shared_auxiliary import replace_missing_values
+from respy.python.shared.shared_auxiliary import dist_model_paras
+from respy.python.shared.shared_auxiliary import create_draws
 
-import robupy.fortran.f2py_debug as fort_debug
+import respy.fortran.f2py_debug as fort_debug
 
-from robupy import solve
-from robupy import read
+from respy import solve
+from respy import read
 
 
 ''' Main
@@ -61,7 +61,7 @@ class TestClass(object):
             print_random_dict(init_dict)
 
             # Process and solve
-            robupy_obj = read('test.robupy.ini')
+            robupy_obj = read('test.respy.ini')
             robupy_obj = solve(robupy_obj)
 
             # Extract class attributes
@@ -87,7 +87,7 @@ class TestClass(object):
         generate_init()
 
         # Perform toolbox actions
-        robupy_obj = read('test.robupy.ini')
+        robupy_obj = read('test.respy.ini')
         robupy_obj = solve(robupy_obj)
 
         # Extract class attributes
@@ -180,14 +180,14 @@ class TestClass(object):
         generate_init(constr)
 
         # Extract required information
-        robupy_obj = read('test.robupy.ini')
+        robupy_obj = read('test.respy.ini')
 
         # Extract class attributes
         is_debug, num_periods = dist_class_attributes(robupy_obj,
                 'is_debug', 'num_periods')
 
         # Write out a grid for the interpolation
-        max_states_period = write_interpolation_grid('test.robupy.ini')
+        max_states_period = write_interpolation_grid('test.respy.ini')
 
         # Draw random request for testing
         num_states = np.random.randint(1, max_states_period)
@@ -250,7 +250,7 @@ class TestClass(object):
             print_random_dict(init_dict)
 
             # Process and solve
-            robupy_obj = read('test.robupy.ini')
+            robupy_obj = read('test.respy.ini')
             robupy_obj = solve(robupy_obj)
 
             # Extract class attributes

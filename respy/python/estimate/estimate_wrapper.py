@@ -11,10 +11,10 @@ import time
 import os
 
 # project library
-from robupy.python.estimate.estimate_auxiliary import dist_optim_paras
-from robupy.python.estimate.estimate_python import pyth_criterion
-from robupy.python.shared.shared_auxiliary import HUGE_FLOAT
-from robupy.fortran.f2py_library import f2py_criterion
+from respy.python.estimate.estimate_auxiliary import dist_optim_paras
+from respy.python.estimate.estimate_python import pyth_criterion
+from respy.python.shared.shared_auxiliary import HUGE_FLOAT
+from respy.fortran.f2py_library import f2py_criterion
 
 
 class OptimizationClass(object):
@@ -344,23 +344,23 @@ class OptimizationClass(object):
 
         is_first = self.attr['is_first']
 
-        np.savetxt(open('paras_curre.robupy.log', 'wb'), x, fmt='%15.8f')
+        np.savetxt(open('paras_curre.respy.log', 'wb'), x, fmt='%15.8f')
 
         # Recording of starting information
         if is_first:
             self.attr['value_start'] = crit_val
             self.attr['paras_start'] = x
-            np.savetxt(open('paras_start.robupy.log', 'wb'), x, fmt='%15.8f')
-            if os.path.exists('optimization.robupy.log'):
-                os.unlink('optimization.robupy.log')
+            np.savetxt(open('paras_start.respy.log', 'wb'), x, fmt='%15.8f')
+            if os.path.exists('optimization.respy.log'):
+                os.unlink('optimization.respy.log')
 
         paras_start = self.attr['paras_start']
         value_start = self.attr['value_start']
 
         # Recording of information about each step.
         if crit_val < value_steps:
-            np.savetxt(open('paras_steps.robupy.log', 'wb'), x, fmt='%15.8f')
-            with open('optimization.robupy.log', 'a') as out_file:
+            np.savetxt(open('paras_steps.respy.log', 'wb'), x, fmt='%15.8f')
+            with open('optimization.respy.log', 'a') as out_file:
                 fmt_ = '{0:<10} {1:<25}\n'
                 out_file.write(fmt_.format('Iteration', int(num_steps)))
                 out_file.write(fmt_.format('Criterion', crit_val))
@@ -377,7 +377,7 @@ class OptimizationClass(object):
         value_steps = self.attr['value_steps']
 
         # Write information to file.
-        with open('optimization.robupy.info', 'w') as out_file:
+        with open('optimization.respy.info', 'w') as out_file:
             # Write out information about criterion function
             out_file.write('\n Criterion Function\n\n')
             fmt_ = '{0:>15}    {1:>15}    {2:>15}    {3:>15}\n\n'
@@ -422,14 +422,14 @@ class OptimizationClass(object):
         finished.
         """
         fmt_ = '{0:<10} {1:<25}\n'
-        with open('optimization.robupy.log', 'a') as out_file:
+        with open('optimization.respy.log', 'a') as out_file:
             out_file.write('Final Report\n\n')
             out_file.write(fmt_.format('Success', str(rslt['success'])))
             out_file.write(fmt_.format('Message', rslt['message']))
             out_file.write(fmt_.format('Criterion', self.attr['value_steps']))
             out_file.write(fmt_.format('Time', time.ctime()))
 
-        with open('optimization.robupy.info', 'a') as out_file:
+        with open('optimization.respy.info', 'a') as out_file:
             out_file.write('\n TERMINATED')
 
 

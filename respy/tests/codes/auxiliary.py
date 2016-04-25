@@ -5,10 +5,10 @@
 import numpy as np
 
 # project library
-from robupy.python.solve.solve_auxiliary import pyth_create_state_space
-from robupy.python.shared.shared_auxiliary import dist_class_attributes
+from respy.python.solve.solve_auxiliary import pyth_create_state_space
+from respy.python.shared.shared_auxiliary import dist_class_attributes
 
-from robupy import read
+from respy import read
 
 ''' Auxiliary functions.
 '''

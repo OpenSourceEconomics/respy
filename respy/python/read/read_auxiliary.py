@@ -10,7 +10,7 @@ import sys
 import os
 
 # project library
-from robupy.python.shared.shared_constants import ROOT_DIR
+from respy.python.shared.shared_constants import ROOT_DIR
 
 # Hard coded structure of admissible groups and flags in the
 # initialization file.

@@ -2,24 +2,24 @@
 """
 
 # project library
-from robupy.fortran.f2py_library import f2py_create_state_space
-from robupy.fortran.f2py_library import f2py_solve
+from respy.fortran.f2py_library import f2py_create_state_space
+from respy.fortran.f2py_library import f2py_solve
 
-from robupy.python.solve.solve_auxiliary import start_ambiguity_logging
-from robupy.python.solve.solve_auxiliary import summarize_ambiguity
-from robupy.python.solve.solve_auxiliary import logging_solution
-from robupy.python.solve.solve_auxiliary import check_input
-from robupy.python.solve.solve_auxiliary import cleanup
+from respy.python.solve.solve_auxiliary import start_ambiguity_logging
+from respy.python.solve.solve_auxiliary import summarize_ambiguity
+from respy.python.solve.solve_auxiliary import logging_solution
+from respy.python.solve.solve_auxiliary import check_input
+from respy.python.solve.solve_auxiliary import cleanup
 
-from robupy.python.shared.shared_auxiliary import dist_class_attributes
-from robupy.python.shared.shared_auxiliary import dist_model_paras
-from robupy.python.shared.shared_auxiliary import get_robupy_obj
-from robupy.python.shared.shared_auxiliary import add_solution
-from robupy.python.shared.shared_auxiliary import create_draws
+from respy.python.shared.shared_auxiliary import dist_class_attributes
+from respy.python.shared.shared_auxiliary import dist_model_paras
+from respy.python.shared.shared_auxiliary import get_robupy_obj
+from respy.python.shared.shared_auxiliary import add_solution
+from respy.python.shared.shared_auxiliary import create_draws
 
-from robupy.python.solve.solve_python import pyth_solve
+from respy.python.solve.solve_python import pyth_solve
 
-from robupy.fortran.fortran import fort_solve
+from respy.fortran.fortran import fort_solve
 
 ''' Main function
 '''

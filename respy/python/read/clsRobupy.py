@@ -8,7 +8,7 @@ import pandas as pd
 import numpy as np
 
 # project library
-from robupy.python.shared.shared_auxiliary import replace_missing_values
+from respy.python.shared.shared_auxiliary import replace_missing_values
 
 # Special care with derived attributes is required to maintain integrity of
 # the class instance. These derived attributes cannot be changed directly.

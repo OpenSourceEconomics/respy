@@ -7,7 +7,7 @@ import numpy as np
 from scipy.optimize import minimize
 
 # project library
-from robupy.python.solve.solve_emax import simulate_emax
+from respy.python.solve.solve_emax import simulate_emax
 
 ''' Public functions
 '''
@@ -167,7 +167,7 @@ def _write_result(period, k, opt, div):
     """ Write result of optimization problem to loggging file.
     """
 
-    with open('ambiguity.robupy.log', 'a') as file_:
+    with open('ambiguity.respy.log', 'a') as file_:
 
         string = ' PERIOD{0[0]:>7}  STATE{0[1]:>7}\n\n'
         file_.write(string.format([period, k]))

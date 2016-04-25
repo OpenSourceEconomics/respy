@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 # project library
-from robupy.python.shared.shared_auxiliary import dist_model_paras
+from respy.python.shared.shared_auxiliary import dist_model_paras
 
 logger = logging.getLogger('ROBUPY_SIMULATE')
 
@@ -199,7 +199,7 @@ def start_logging():
 
     logger = logging.getLogger('ROBUPY_SIMULATE')
 
-    handler = logging.FileHandler('logging.robupy.sim.log', mode='w',
+    handler = logging.FileHandler('logging.respy.sim.log', mode='w',
                                   delay=False)
 
     handler.setFormatter(formatter)

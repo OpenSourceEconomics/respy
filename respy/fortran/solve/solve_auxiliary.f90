@@ -835,7 +835,7 @@ SUBROUTINE logging_prediction_model(coeffs, r_squared)
     2900 FORMAT(2x,A18,4x,f10.4)
 
     ! Write to file
-    OPEN(UNIT=99, FILE='logging.robupy.sol.log', ACCESS='APPEND')
+    OPEN(UNIT=99, FILE='logging.respy.sol.log', ACCESS='APPEND')
 
         WRITE(99, *) "     Information about Prediction Model"
 
@@ -869,14 +869,14 @@ SUBROUTINE logging_solution(indicator, period, num_states)
 ! Algorithm
 !-------------------------------------------------------------------------------
 
-    OPEN(UNIT=99, FILE='logging.robupy.sol.log', ACCESS='APPEND')
+    OPEN(UNIT=99, FILE='logging.respy.sol.log', ACCESS='APPEND')
 
     ! State space creation
     IF (indicator == 1) THEN
 
         ! Delete  any previous versions
         CLOSE(99, STATUS ='DELETE')
-        OPEN(UNIT=99, FILE='logging.robupy.sol.log', ACCESS='APPEND')
+        OPEN(UNIT=99, FILE='logging.respy.sol.log', ACCESS='APPEND')
 
         WRITE(99, *) " Starting state space creation   "
         WRITE(99, *) ""

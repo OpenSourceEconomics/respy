@@ -19,7 +19,7 @@ from modules.clsMail import MailCls
 # ROBUPY directory. This allows to compile the debug version of the FORTRAN
 # program.
 ROBUPY_DIR = os.path.dirname(os.path.realpath(__file__))
-ROBUPY_DIR = ROBUPY_DIR.replace('development/testing/modules', '') + 'robupy'
+ROBUPY_DIR = ROBUPY_DIR.replace('development/testing/modules', '') + 'respy'
 
 
 ''' Auxiliary functions

@@ -5,12 +5,12 @@ FORTRAN implementations.
 import os
 
 # project library
-from robupy.fortran.fortran_auxiliary import write_robufort_initialization
-from robupy.fortran.fortran_auxiliary import write_dataset
-from robupy.fortran.fortran_auxiliary import get_results
-from robupy.fortran.fortran_auxiliary import read_data
+from respy.fortran.fortran_auxiliary import write_robufort_initialization
+from respy.fortran.fortran_auxiliary import write_dataset
+from respy.fortran.fortran_auxiliary import get_results
+from respy.fortran.fortran_auxiliary import read_data
 
-from robupy.python.shared.shared_constants import FORTRAN_DIR
+from respy.python.shared.shared_constants import FORTRAN_DIR
 
 ''' Main function
 '''

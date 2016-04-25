@@ -36,7 +36,7 @@ def publish(is_local_internal):
     """
 
     # Cleanup
-    os.chdir('package/robupy')
+    os.chdir('package/respy')
     os.system('./waf distclean')
     os.chdir(ROOT_DIR)
 

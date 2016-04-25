@@ -12,11 +12,11 @@ if 'TRAVIS' in os.environ.keys():
     os.system('ln -sf /home/travis/virtualenv/python3.4.2/bin/f2py /home/travis/virtualenv/python3.4.2/bin/f2py3')
 
 # Build the package
-os.chdir('robupy')
+os.chdir('respy')
 os.system('./waf distclean; ./waf configure build --debug')
 os.chdir('../')
 
 # Run PYTEST battery, some tests are expected to fail due to small numerical
 # differences between PYTHON and FORTRAN implementations.
 os.system('pip install pytest-cov==2.2.1')
-pytest.main('--cov=robupy -v -s')
+pytest.main('--cov=respy -v -s')

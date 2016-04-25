@@ -12,18 +12,18 @@ import argparse
 import os
 
 # project library
-from robupy.python.estimate.estimate_auxiliary import dist_optim_paras
-from robupy.python.estimate.estimate_auxiliary import get_optim_paras
+from respy.python.estimate.estimate_auxiliary import dist_optim_paras
+from respy.python.estimate.estimate_auxiliary import get_optim_paras
 
-from robupy.python.shared.shared_auxiliary import dist_class_attributes
-from robupy.python.shared.shared_auxiliary import dist_model_paras
-from robupy.python.shared.shared_auxiliary import create_draws
+from respy.python.shared.shared_auxiliary import dist_class_attributes
+from respy.python.shared.shared_auxiliary import dist_model_paras
+from respy.python.shared.shared_auxiliary import create_draws
 
-from robupy.python.estimate.estimate_wrapper import OptimizationClass
+from respy.python.estimate.estimate_wrapper import OptimizationClass
 
-from robupy import estimate
-from robupy import process
-from robupy import read
+from respy import estimate
+from respy import process
+from respy import read
 
 """ Auxiliary function
 """
@@ -97,7 +97,7 @@ def add_gradient_information(robupy_obj):
     # gradient evaluation. This is required as the information otherwise
     # accounts for the multiple function evaluation during the gradient
     # approximation scheme.
-    original_lines = open('optimization.robupy.info', 'r').readlines()
+    original_lines = open('optimization.respy.info', 'r').readlines()
     fmt_ = '{0:<25}{1:>15}\n'
     original_lines[-5] = fmt_.format(*[' Number of Steps', 0])
     original_lines[-3] = fmt_.format(*[' Number of Evaluations', len(x_free_start)])
@@ -107,7 +107,7 @@ def add_gradient_information(robupy_obj):
     grad = approx_fprime(x_free_start, opt_obj.crit_func, epsilon, *args).tolist()
     norm = np.amax(np.abs(grad))
     # Write out extended information
-    with open('optimization.robupy.info', 'w') as out_file:
+    with open('optimization.respy.info', 'w') as out_file:
         for i, line in enumerate(original_lines):
             out_file.write(line)
             # Insert information about gradient
@@ -161,7 +161,7 @@ def dist_input_arguments(parser):
         assert single
 
     if resume:
-        assert (os.path.exists('paras_steps.robupy.log'))
+        assert (os.path.exists('paras_steps.respy.log'))
 
     # Finishing
     return resume, single, init_file, gradient
@@ -180,7 +180,7 @@ def scripts_estimate(resume, single, init_file, gradient):
     # Update parametrization of the model if resuming from a previous
     # estimation run.
     if resume:
-        x0 = np.genfromtxt('paras_steps.robupy.log')
+        x0 = np.genfromtxt('paras_steps.respy.log')
         args = dist_optim_paras(x0, True)
         robupy_obj.update_model_paras(*args)
 
@@ -212,7 +212,7 @@ if __name__ == '__main__':
         default=False, help='single evaluation')
 
     parser.add_argument('--init_file', action='store', dest='init_file',
-        default='model.robupy.ini', help='initialization file')
+        default='model.respy.ini', help='initialization file')
 
     parser.add_argument('--gradient', action='store_true', dest='gradient',
         default=False, help='gradient information')

@@ -4,12 +4,12 @@ import sys
 import os
 
 # project library
-from robupy.estimate import estimate
-from robupy.evaluate import evaluate
-from robupy.simulate import simulate
-from robupy.process import process
-from robupy.solve import solve
-from robupy.read import read
+from respy.estimate import estimate
+from respy.evaluate import evaluate
+from respy.simulate import simulate
+from respy.process import process
+from respy.solve import solve
+from respy.read import read
 
 # Check for Python 3
 if not (sys.version_info[0] == 3):

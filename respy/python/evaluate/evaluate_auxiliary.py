@@ -6,8 +6,8 @@ criterion function.
 import numpy as np
 
 # project library
-from robupy.python.shared.shared_auxiliary import check_dataset
-from robupy.python.shared.shared_constants import HUGE_FLOAT
+from respy.python.shared.shared_auxiliary import check_dataset
+from respy.python.shared.shared_constants import HUGE_FLOAT
 
 
 ''' Auxiliary functions

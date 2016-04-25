@@ -3,8 +3,8 @@
 # standard library
 
 # project library
-from robupy.python.shared.shared_auxiliary import transform_disturbances
-from robupy.python.shared.shared_auxiliary import get_total_value
+from respy.python.shared.shared_auxiliary import transform_disturbances
+from respy.python.shared.shared_auxiliary import get_total_value
 
 ''' Main function
 '''

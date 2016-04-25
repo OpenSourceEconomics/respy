@@ -10,9 +10,9 @@ import argparse
 import os
 
 # project library
-from robupy.python.estimate.estimate_auxiliary import dist_optim_paras
-from robupy.tests.codes.random_init import print_random_dict
-from robupy import read
+from respy.python.estimate.estimate_auxiliary import dist_optim_paras
+from respy.tests.codes.random_init import print_random_dict
+from respy import read
 
 
 ''' Auxiliary function
@@ -30,7 +30,7 @@ def dist_input_arguments(parser):
 
     # Checks
     assert os.path.exists(init_file)
-    assert os.path.exists('paras_steps.robupy.log')
+    assert os.path.exists('paras_steps.respy.log')
 
     # Finishing
     return init_file
@@ -46,7 +46,7 @@ def scripts_update(init_file):
     # Collect baseline update
     _, init_dict = read(init_file, True)
 
-    paras_steps = np.genfromtxt('paras_steps.robupy.log')
+    paras_steps = np.genfromtxt('paras_steps.respy.log')
 
     # Get and construct ingredients
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov \
@@ -74,7 +74,7 @@ if __name__ == '__main__':
         'step.', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('--init_file', action='store', dest='init_file',
-        default='model.robupy.ini', help='initialization file')
+        default='model.respy.ini', help='initialization file')
 
     # Process command line arguments
     args = dist_input_arguments(parser)

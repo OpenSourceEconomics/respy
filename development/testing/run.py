@@ -22,7 +22,7 @@ if not hasattr(sys, 'real_prefix'):
 # ROBPUPY testing codes. The import of the PYTEST configuration file ensures
 # that the PYTHONPATH is modified to allow for the use of the tests..
 TEST_DIR = os.path.dirname(os.path.realpath(__file__))
-TEST_DIR = TEST_DIR.replace('development/testing', '') + 'robupy/tests'
+TEST_DIR = TEST_DIR.replace('development/testing', '') + 'respy/tests'
 
 # PYTEST ensures the path is set up correctly.
 sys.path.insert(0, TEST_DIR)

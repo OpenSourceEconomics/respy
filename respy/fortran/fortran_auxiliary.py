@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 # project library
-from robupy.python.shared.shared_constants import HUGE_FLOAT
+from respy.python.shared.shared_constants import HUGE_FLOAT
 
 ''' Auxiliary  functions
 '''

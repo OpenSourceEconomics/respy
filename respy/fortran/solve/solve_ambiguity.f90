@@ -571,7 +571,7 @@ SUBROUTINE logging_ambiguity(x_internal, div, mode, period, k, is_success)
     END IF
 
     ! Write to file
-    OPEN(UNIT=1, FILE='ambiguity.robupy.log', ACCESS='APPEND')
+    OPEN(UNIT=1, FILE='ambiguity.respy.log', ACCESS='APPEND')
 
         1000 FORMAT(A,i7,A,i7)
         1010 FORMAT(A17,(2(1x,f10.4)))

@@ -16,37 +16,37 @@ from scipy.stats import norm
 # testing library
 from codes.auxiliary import write_interpolation_grid
 
-from robupy.python.solve.solve_auxiliary import get_payoffs
-from robupy.tests.codes.random_init import generate_init
+from respy.python.solve.solve_auxiliary import get_payoffs
+from respy.tests.codes.random_init import generate_init
 
-from robupy.python.solve.solve_ambiguity import get_payoffs_ambiguity
-from robupy.python.solve.solve_ambiguity import criterion_ambiguity
-from robupy.python.solve.solve_ambiguity import divergence
-from robupy.python.solve.solve_emax import simulate_emax
+from respy.python.solve.solve_ambiguity import get_payoffs_ambiguity
+from respy.python.solve.solve_ambiguity import criterion_ambiguity
+from respy.python.solve.solve_ambiguity import divergence
+from respy.python.solve.solve_emax import simulate_emax
 
-from robupy.python.estimate.estimate_auxiliary import get_optim_paras
-from robupy.python.estimate.estimate_auxiliary import dist_optim_paras
+from respy.python.estimate.estimate_auxiliary import get_optim_paras
+from respy.python.estimate.estimate_auxiliary import dist_optim_paras
 
-from robupy.python.shared.shared_auxiliary import dist_class_attributes
-from robupy.python.shared.shared_auxiliary import dist_model_paras
-from robupy.python.shared.shared_auxiliary import create_draws
+from respy.python.shared.shared_auxiliary import dist_class_attributes
+from respy.python.shared.shared_auxiliary import dist_model_paras
+from respy.python.shared.shared_auxiliary import create_draws
 
-import robupy.fortran.f2py_testing as fort_test
-import robupy.fortran.f2py_library as fort_lib
-import robupy.fortran.f2py_debug as fort_debug
+import respy.fortran.f2py_testing as fort_test
+import respy.fortran.f2py_library as fort_lib
+import respy.fortran.f2py_debug as fort_debug
 
-from robupy.python.solve.solve_auxiliary import pyth_create_state_space
-from robupy.fortran.f2py_library import f2py_create_state_space
+from respy.python.solve.solve_auxiliary import pyth_create_state_space
+from respy.fortran.f2py_library import f2py_create_state_space
 
-from robupy.python.solve.solve_auxiliary import pyth_calculate_payoffs_systematic
-from robupy.fortran.f2py_library import f2py_calculate_payoffs_systematic
+from respy.python.solve.solve_auxiliary import pyth_calculate_payoffs_systematic
+from respy.fortran.f2py_library import f2py_calculate_payoffs_systematic
 
-from robupy.python.solve.solve_auxiliary import pyth_backward_induction
-from robupy.fortran.f2py_library import f2py_backward_induction
+from respy.python.solve.solve_auxiliary import pyth_backward_induction
+from respy.fortran.f2py_library import f2py_backward_induction
 
-from robupy import simulate
-from robupy import solve
-from robupy import read
+from respy import simulate
+from respy import solve
+from respy import read
 
 
 ''' Main
@@ -67,7 +67,7 @@ class TestClass(object):
             generate_init()
 
             # Perform toolbox actions
-            robupy_obj = read('test.robupy.ini')
+            robupy_obj = read('test.respy.ini')
             robupy_obj = solve(robupy_obj)
 
             # Extract class attributes
@@ -132,7 +132,7 @@ class TestClass(object):
             generate_init(constraints)
 
             # Perform toolbox actions
-            robupy_obj = read('test.robupy.ini')
+            robupy_obj = read('test.respy.ini')
             robupy_obj = solve(robupy_obj)
 
             # Extract class attributes
@@ -203,7 +203,7 @@ class TestClass(object):
         generate_init(constraints)
 
         # Perform toolbox actions
-        robupy_obj = read('test.robupy.ini')
+        robupy_obj = read('test.respy.ini')
         robupy_obj = solve(robupy_obj)
 
         # Extract class attributes
@@ -319,7 +319,7 @@ class TestClass(object):
         generate_init(constraints)
 
         # Perform toolbox actions
-        robupy_obj = read('test.robupy.ini')
+        robupy_obj = read('test.respy.ini')
 
         robupy_obj = solve(robupy_obj)
 
@@ -551,7 +551,7 @@ class TestClass(object):
         generate_init(constraints)
 
         # Perform toolbox actions
-        robupy_obj = read('test.robupy.ini')
+        robupy_obj = read('test.respy.ini')
 
         robupy_obj = solve(robupy_obj)
 
@@ -623,11 +623,11 @@ class TestClass(object):
         generate_init()
 
         # Perform toolbox actions
-        robupy_obj = read('test.robupy.ini')
+        robupy_obj = read('test.respy.ini')
 
         # Ensure that backward induction routines use the same grid for the
         # interpolation.
-        write_interpolation_grid('test.robupy.ini')
+        write_interpolation_grid('test.respy.ini')
 
         # Extract class attributes
         num_periods, edu_start, edu_max, min_idx, model_paras, num_draws_emax, \

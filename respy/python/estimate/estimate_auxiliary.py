@@ -5,8 +5,8 @@ import numpy as np
 import scipy
 
 # project library
-from robupy.python.shared.shared_auxiliary import check_model_parameters
-from robupy.python.shared.shared_auxiliary import check_dataset
+from respy.python.shared.shared_auxiliary import check_model_parameters
+from respy.python.shared.shared_auxiliary import check_dataset
 
 ''' Auxiliary functions
 '''
@@ -60,10 +60,10 @@ def get_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
     x[15:16] = coeffs_home
 
     # Shocks
-    x[16:20] = shocks_cholesky[0:4, 0]
-    x[20:23] = shocks_cholesky[1:4, 1]
-    x[23:25] = shocks_cholesky[2:4, 2]
-    x[25:26] = shocks_cholesky[3:4, 3]
+    x[16:20] = shocks_cholesky[0, :]
+    x[20:23] = shocks_cholesky[1, 1:]
+    x[23:25] = shocks_cholesky[2, 2:]
+    x[25:26] = shocks_cholesky[3, 3:]
 
     # Checks
     if is_debug:
@@ -78,10 +78,10 @@ def get_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
 
         # Special treatment fo SHOCKS_COV
         if not paras_fixed[16]:
-            x_free_curre[16:20] = shocks_cholesky[0:4, 0]
-            x_free_curre[20:23] = shocks_cholesky[1:4, 1]
-            x_free_curre[23:25] = shocks_cholesky[2:4, 2]
-            x_free_curre[25:26] = shocks_cholesky[3:4, 3]
+            x_free_curre[16:20] = shocks_cholesky[0, 0]
+            x_free_curre[20:23] = shocks_cholesky[14, 1]
+            x_free_curre[23:25] = shocks_cholesky[2, 2]
+            x_free_curre[25:26] = shocks_cholesky[3, 3]
 
         x = np.array(x_free_curre)
 

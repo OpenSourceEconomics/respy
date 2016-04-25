@@ -3,7 +3,7 @@
 
     Example:
 
-        robupy-modify --fix --identifiers 1-5 5-9
+        respy-modify --fix --identifiers 1-5 5-9
 
 """
 
@@ -14,10 +14,10 @@ import argparse
 import os
 
 # project library
-from robupy.python.shared.shared_auxiliary import dist_model_paras
-from robupy.tests.codes.random_init import print_random_dict
+from respy.python.shared.shared_auxiliary import dist_model_paras
+from respy.tests.codes.random_init import print_random_dict
 
-from robupy import read
+from respy import read
 
 
 ''' Auxiliary function
@@ -65,7 +65,7 @@ def dist_input_arguments(parser):
         assert (values is None)
         assert os.path.exists(init_file)
     elif action in ['change']:
-        assert os.path.exists('paras_steps.robupy.log')
+        assert os.path.exists('paras_steps.respy.log')
 
     # Finishing
     return identifiers_list, values, action, init_file
@@ -137,14 +137,14 @@ def change_value(identifiers, values):
     """
 
     # Read in some baseline information
-    paras_steps = np.genfromtxt('paras_steps.robupy.log')
+    paras_steps = np.genfromtxt('paras_steps.respy.log')
 
     # Apply modifications
     for i, identifier in enumerate(identifiers):
         paras_steps[identifier] = values[i]
 
     # Save parametrization to file
-    np.savetxt(open('paras_steps.robupy.log', 'wb'), paras_steps, fmt='%15.8f')
+    np.savetxt(open('paras_steps.respy.log', 'wb'), paras_steps, fmt='%15.8f')
 
 
 ''' Execution of module as script.
@@ -166,7 +166,7 @@ if __name__ == '__main__':
         choices=['fix', 'free', 'value'])
 
     parser.add_argument('--init_file', action='store', dest='init_file',
-        default='model.robupy.ini', help='initialization file')
+        default='model.respy.ini', help='initialization file')
 
     # Process command line arguments
     args = dist_input_arguments(parser)

@@ -97,7 +97,7 @@ def generate_random_dict(constraints=None):
     dict_['ESTIMATION']['agents'] = np.random.randint(1, num_agents_sim)
     dict_['ESTIMATION']['draws'] = np.random.randint(1, MAX_DRAWS)
     dict_['ESTIMATION']['seed'] = np.random.randint(1, 10000)
-    dict_['ESTIMATION']['file'] = 'data.robupy'
+    dict_['ESTIMATION']['file'] = 'data.respy'
     dict_['ESTIMATION']['optimizer'] = np.random.choice(['SCIPY-BFGS', 'SCIPY-POWELL'])
     dict_['ESTIMATION']['maxiter'] = np.random.randint(1, 10000)
     dict_['ESTIMATION']['tau'] = np.random.uniform(100, 500)
@@ -112,7 +112,7 @@ def generate_random_dict(constraints=None):
     dict_['SIMULATION'] = {}
     dict_['SIMULATION']['seed'] = np.random.randint(1, 10000)
     dict_['SIMULATION']['agents'] = num_agents_sim
-    dict_['SIMULATION']['file'] = 'data.robupy'
+    dict_['SIMULATION']['file'] = 'data.respy'
 
     # SHOCKS
     dict_['SHOCKS'] = dict()
@@ -318,7 +318,7 @@ def format_opt_parameters(val, identifier, paras_fixed):
     return line
 
 
-def print_random_dict(dict_, file_name='test.robupy.ini'):
+def print_random_dict(dict_, file_name='test.respy.ini'):
     """ Print initialization dictionary to file. The different formatting
     makes the file rather involved. The resulting initialization files are
     read by PYTHON and FORTRAN routines. Thus, the formatting with respect to

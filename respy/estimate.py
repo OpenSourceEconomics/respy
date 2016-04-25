@@ -3,18 +3,18 @@ function.
 """
 
 # project library
-from robupy.python.estimate.estimate_auxiliary import get_optim_paras
-from robupy.python.estimate.estimate_auxiliary import check_input
+from respy.python.estimate.estimate_auxiliary import get_optim_paras
+from respy.python.estimate.estimate_auxiliary import check_input
 
-from robupy.python.shared.shared_auxiliary import dist_class_attributes
-from robupy.python.shared.shared_auxiliary import dist_model_paras
-from robupy.python.shared.shared_auxiliary import get_robupy_obj
-from robupy.python.shared.shared_auxiliary import create_draws
-from robupy.python.shared.shared_auxiliary import cut_dataset
+from respy.python.shared.shared_auxiliary import dist_class_attributes
+from respy.python.shared.shared_auxiliary import dist_model_paras
+from respy.python.shared.shared_auxiliary import get_robupy_obj
+from respy.python.shared.shared_auxiliary import create_draws
+from respy.python.shared.shared_auxiliary import cut_dataset
 
-from robupy.python.estimate.estimate_wrapper import OptimizationClass
+from respy.python.estimate.estimate_wrapper import OptimizationClass
 
-from robupy.process import process
+from respy.process import process
 
 ''' Main function
 '''

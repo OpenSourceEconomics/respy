@@ -11,15 +11,15 @@ import numpy as np
 import statsmodels.api as sm
 
 # project library
-from robupy.python.solve.solve_ambiguity import get_payoffs_ambiguity
-from robupy.python.solve.solve_risk import get_payoffs_risk
+from respy.python.solve.solve_ambiguity import get_payoffs_ambiguity
+from respy.python.solve.solve_risk import get_payoffs_risk
 
-from robupy.python.shared.shared_auxiliary import get_total_value
+from respy.python.shared.shared_auxiliary import get_total_value
 
-from robupy.python.shared.shared_constants import INTERPOLATION_INADMISSIBLE_STATES
-from robupy.python.shared.shared_constants import MISSING_FLOAT
-from robupy.python.shared.shared_constants import MISSING_INT
-from robupy.python.shared.shared_constants import HUGE_FLOAT
+from respy.python.shared.shared_constants import INTERPOLATION_INADMISSIBLE_STATES
+from respy.python.shared.shared_constants import MISSING_FLOAT
+from respy.python.shared.shared_constants import MISSING_INT
+from respy.python.shared.shared_constants import HUGE_FLOAT
 
 # Logging
 logger = logging.getLogger('ROBUPY_SOLVE')
@@ -453,7 +453,7 @@ def logging_solution(which):
 
         formatter = logging.Formatter('  %(message)s \n')
         logger = logging.getLogger('ROBUPY_SOLVE')
-        handler = logging.FileHandler('logging.robupy.sol.log', mode='w',
+        handler = logging.FileHandler('logging.respy.sol.log', mode='w',
                                       delay=False)
         handler.setFormatter(formatter)
         logger.setLevel(logging.INFO)
@@ -501,7 +501,7 @@ def summarize_ambiguity(robupy_obj):
 
     dict_ = dict()
 
-    for line in open('ambiguity.robupy.log').readlines():
+    for line in open('ambiguity.respy.log').readlines():
 
         # Split line
         list_ = shlex.split(line)
@@ -536,7 +536,7 @@ def summarize_ambiguity(robupy_obj):
             else:
                 dict_[period]['failure'] += 1
 
-    with open('ambiguity.robupy.log', 'a') as file_:
+    with open('ambiguity.respy.log', 'a') as file_:
 
         file_.write('\nSUMMARY\n\n')
 
@@ -556,22 +556,22 @@ def summarize_ambiguity(robupy_obj):
 
 
 def cleanup():
-    """ Cleanup all selected files. Note that not simply all *.robupy.*
+    """ Cleanup all selected files. Note that not simply all *.respy.*
     files can be deleted as the blank logging files are already created.
     """
-    if os.path.exists('ambiguity.robupy.log'):
-        os.unlink('ambiguity.robupy.log')
+    if os.path.exists('ambiguity.respy.log'):
+        os.unlink('ambiguity.respy.log')
 
 
 def start_ambiguity_logging(is_ambiguous, is_debug):
     """ Start logging for ambiguity.
     """
     # Start logging if required
-    if os.path.exists('ambiguity.robupy.log'):
-        os.remove('ambiguity.robupy.log')
+    if os.path.exists('ambiguity.respy.log'):
+        os.remove('ambiguity.respy.log')
 
     if is_debug and is_ambiguous:
-        open('ambiguity.robupy.log', 'w').close()
+        open('ambiguity.respy.log', 'w').close()
 
 
 def check_prediction_model(predictions_diff, model, num_points, num_states,

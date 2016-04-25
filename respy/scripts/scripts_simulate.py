@@ -10,10 +10,10 @@ import argparse
 import os
 
 # project library
-from robupy.python.estimate.estimate_auxiliary import dist_optim_paras
+from respy.python.estimate.estimate_auxiliary import dist_optim_paras
 
-from robupy import simulate
-from robupy import read
+from respy import simulate
+from respy import read
 
 ''' Auxiliary function
 '''
@@ -36,7 +36,7 @@ def dist_input_arguments(parser):
     assert (os.path.exists(init_file))
 
     if update:
-        assert (os.path.exists('paras_steps.robupy.log'))
+        assert (os.path.exists('paras_steps.respy.log'))
 
     if solved is not None:
         assert (os.path.exists(solved))
@@ -62,7 +62,7 @@ def scripts_simulate(update, init_file, file_sim, solved):
     # Update parametrization of the model if resuming from a previous
     # estimation run.
     if update:
-        x0 = np.genfromtxt('paras_steps.robupy.log')
+        x0 = np.genfromtxt('paras_steps.respy.log')
         args = dist_optim_paras(x0, True)
         robupy_obj.update_model_paras(*args)
 
@@ -88,7 +88,7 @@ if __name__ == '__main__':
         default=False, help='update model parametrization')
 
     parser.add_argument('--init_file', action='store', dest='init_file',
-        default='model.robupy.ini', help='initialization file')
+        default='model.respy.ini', help='initialization file')
 
     parser.add_argument('--file_sim', action='store', dest='file_sim',
         default=None, help='output file')

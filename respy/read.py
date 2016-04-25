@@ -8,10 +8,10 @@ import sys
 import os
 
 # project library
-from robupy.python.read.read_auxiliary import check_line
-from robupy.python.read.clsRobupy import RobupyCls
+from respy.python.read.read_auxiliary import check_line
+from respy.python.read.clsRobupy import RobupyCls
 
-from robupy.python.read.read_auxiliary import STRUCTURE
+from respy.python.read.read_auxiliary import STRUCTURE
 
 ''' Main function
 '''

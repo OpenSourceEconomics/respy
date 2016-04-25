@@ -8,11 +8,11 @@ import logging
 import numpy as np
 
 # project library
-from robupy.python.shared.shared_constants import MISSING_FLOAT
+from respy.python.shared.shared_constants import MISSING_FLOAT
 
-from robupy.python.solve.solve_auxiliary import pyth_calculate_payoffs_systematic
-from robupy.python.solve.solve_auxiliary import pyth_create_state_space
-from robupy.python.solve.solve_auxiliary import pyth_backward_induction
+from respy.python.solve.solve_auxiliary import pyth_calculate_payoffs_systematic
+from respy.python.solve.solve_auxiliary import pyth_create_state_space
+from respy.python.solve.solve_auxiliary import pyth_backward_induction
 
 # Logging
 logger = logging.getLogger('ROBUPY_SOLVE')

@@ -3,21 +3,21 @@ function.
 """
 
 # project library
-from robupy.python.evaluate.evaluate_python import pyth_evaluate
-from robupy.fortran.f2py_library import f2py_evaluate
+from respy.python.evaluate.evaluate_python import pyth_evaluate
+from respy.fortran.f2py_library import f2py_evaluate
 
-from robupy.fortran.fortran import fort_evaluate
+from respy.fortran.fortran import fort_evaluate
 
-from robupy.python.evaluate.evaluate_auxiliary import check_input
-from robupy.python.evaluate.evaluate_auxiliary import check_output
+from respy.python.evaluate.evaluate_auxiliary import check_input
+from respy.python.evaluate.evaluate_auxiliary import check_output
 
-from robupy.python.shared.shared_auxiliary import dist_class_attributes
-from robupy.python.shared.shared_auxiliary import dist_model_paras
-from robupy.python.shared.shared_auxiliary import get_robupy_obj
-from robupy.python.shared.shared_auxiliary import create_draws
-from robupy.python.shared.shared_auxiliary import cut_dataset
+from respy.python.shared.shared_auxiliary import dist_class_attributes
+from respy.python.shared.shared_auxiliary import dist_model_paras
+from respy.python.shared.shared_auxiliary import get_robupy_obj
+from respy.python.shared.shared_auxiliary import create_draws
+from respy.python.shared.shared_auxiliary import cut_dataset
 
-from robupy.process import process
+from respy.process import process
 
 ''' Main function
 '''

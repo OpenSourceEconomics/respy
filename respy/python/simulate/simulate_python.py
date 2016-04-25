@@ -4,9 +4,9 @@ import logging
 import numpy as np
 
 # project library
-from robupy.python.shared.shared_auxiliary import transform_disturbances
-from robupy.python.shared.shared_constants import MISSING_FLOAT
-from robupy.python.shared.shared_auxiliary import get_total_value
+from respy.python.shared.shared_auxiliary import transform_disturbances
+from respy.python.shared.shared_constants import MISSING_FLOAT
+from respy.python.shared.shared_auxiliary import get_total_value
 
 logger = logging.getLogger('ROBUPY_SIMULATE')
 

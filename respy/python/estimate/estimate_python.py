@@ -2,8 +2,8 @@
 """
 
 # standard library
-from robupy.python.estimate.estimate_auxiliary import dist_optim_paras
-from robupy.python.evaluate.evaluate_python import pyth_evaluate
+from respy.python.estimate.estimate_auxiliary import dist_optim_paras
+from respy.python.evaluate.evaluate_python import pyth_evaluate
 
 
 def pyth_criterion(x, is_deterministic, is_interpolated, num_draws_emax,

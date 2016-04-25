@@ -6,14 +6,14 @@ import numpy as np
 from scipy.stats import norm
 
 # project library
-from robupy.python.evaluate.evaluate_auxiliary import get_smoothed_probability
+from respy.python.evaluate.evaluate_auxiliary import get_smoothed_probability
 
-from robupy.python.shared.shared_auxiliary import get_total_value
-from robupy.python.shared.shared_constants import SMALL_FLOAT
-from robupy.python.shared.shared_constants import TINY_FLOAT
-from robupy.python.shared.shared_constants import HUGE_FLOAT
+from respy.python.shared.shared_auxiliary import get_total_value
+from respy.python.shared.shared_constants import SMALL_FLOAT
+from respy.python.shared.shared_constants import TINY_FLOAT
+from respy.python.shared.shared_constants import HUGE_FLOAT
 
-from robupy.python.solve.solve_python import pyth_solve
+from respy.python.solve.solve_python import pyth_solve
 
 ''' Main function
 '''

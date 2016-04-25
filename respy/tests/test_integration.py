@@ -16,42 +16,42 @@ from codes.auxiliary import write_interpolation_grid
 from codes.auxiliary import write_draws
 
 # project library
-from robupy.scripts.scripts_estimate import scripts_estimate
-from robupy.scripts.scripts_simulate import scripts_simulate
-from robupy.scripts.scripts_update import scripts_update
-from robupy.scripts.scripts_modify import scripts_modify
+from respy.scripts.scripts_estimate import scripts_estimate
+from respy.scripts.scripts_simulate import scripts_simulate
+from respy.scripts.scripts_update import scripts_update
+from respy.scripts.scripts_modify import scripts_modify
 
-from robupy.python.shared.shared_auxiliary import dist_class_attributes
-from robupy.python.shared.shared_auxiliary import dist_model_paras
-from robupy.python.shared.shared_auxiliary import read_draws
+from respy.python.shared.shared_auxiliary import dist_class_attributes
+from respy.python.shared.shared_auxiliary import dist_model_paras
+from respy.python.shared.shared_auxiliary import read_draws
 
-from robupy.python.solve.solve_auxiliary import pyth_create_state_space
+from respy.python.solve.solve_auxiliary import pyth_create_state_space
 
-from robupy.python.estimate.estimate_auxiliary import get_optim_paras
-from robupy.tests.codes.random_init import generate_random_dict
-from robupy.tests.codes.random_init import print_random_dict
-from robupy.tests.codes.random_init import generate_init
+from respy.python.estimate.estimate_auxiliary import get_optim_paras
+from respy.tests.codes.random_init import generate_random_dict
+from respy.tests.codes.random_init import print_random_dict
+from respy.tests.codes.random_init import generate_init
 
-from robupy import simulate
-from robupy import evaluate
-from robupy import estimate
-from robupy import process
-from robupy import solve
-from robupy import read
+from respy import simulate
+from respy import evaluate
+from respy import estimate
+from respy import process
+from respy import solve
+from respy import read
 
-from robupy.python.solve.solve_python import pyth_solve
-from robupy.fortran.f2py_library import f2py_solve
-from robupy.fortran.fortran import fort_solve
+from respy.python.solve.solve_python import pyth_solve
+from respy.fortran.f2py_library import f2py_solve
+from respy.fortran.fortran import fort_solve
 
-from robupy.python.simulate.simulate_python import pyth_simulate
-from robupy.fortran.f2py_library import f2py_simulate
+from respy.python.simulate.simulate_python import pyth_simulate
+from respy.fortran.f2py_library import f2py_simulate
 
-from robupy.python.evaluate.evaluate_python import pyth_evaluate
-from robupy.fortran.f2py_library import f2py_evaluate
-from robupy.fortran.fortran import fort_evaluate
+from respy.python.evaluate.evaluate_python import pyth_evaluate
+from respy.fortran.f2py_library import f2py_evaluate
+from respy.fortran.fortran import fort_evaluate
 
-from robupy.python.estimate.estimate_python import pyth_criterion
-from robupy.fortran.f2py_library import f2py_criterion
+from respy.python.estimate.estimate_python import pyth_criterion
+from respy.fortran.f2py_library import f2py_criterion
 
 ''' Main
 '''
@@ -68,7 +68,7 @@ class TestClass(object):
         # Generate random initialization file
         generate_init()
 
-        robupy_obj = read('test.robupy.ini')
+        robupy_obj = read('test.respy.ini')
 
         solve(robupy_obj)
 
@@ -127,13 +127,13 @@ class TestClass(object):
         # three implementations.
         num_periods = init_dict['BASICS']['periods']
         write_draws(num_periods, max_draws)
-        write_interpolation_grid('test.robupy.ini')
+        write_interpolation_grid('test.respy.ini')
 
         # Clean evaluations based on interpolation grid,
         base_val, base_data = None, None
 
         for version in ['PYTHON', 'F2PY', 'FORTRAN']:
-            robupy_obj = read('test.robupy.ini')
+            robupy_obj = read('test.respy.ini')
 
             # Modify the version of the program for the different requests.
             robupy_obj.unlock()
@@ -146,7 +146,7 @@ class TestClass(object):
 
             # This parts checks the equality of simulated dataset for the
             # different versions of the code.
-            data_frame = pd.read_csv('data.robupy.dat', delim_whitespace=True)
+            data_frame = pd.read_csv('data.respy.dat', delim_whitespace=True)
 
             if base_data is None:
                 base_data = data_frame.copy()
@@ -191,7 +191,7 @@ class TestClass(object):
             num_draws_emax = np.random.randint(1, 100)
 
             # Perform toolbox actions
-            robupy_obj = read('test.robupy.ini')
+            robupy_obj = read('test.respy.ini')
 
             robupy_obj.unlock()
 
@@ -237,7 +237,7 @@ class TestClass(object):
             print_random_dict(init_dict)
 
             # Perform toolbox actions
-            robupy_obj = read('test.robupy.ini')
+            robupy_obj = read('test.respy.ini')
 
             robupy_obj = solve(robupy_obj)
 
@@ -276,7 +276,7 @@ class TestClass(object):
             print_random_dict(init_dict)
 
             # Perform toolbox actions
-            robupy_obj = read('test.robupy.ini')
+            robupy_obj = read('test.respy.ini')
 
             robupy_obj = solve(robupy_obj)
 
@@ -302,7 +302,7 @@ class TestClass(object):
 
         for delta in [0.00, 0.000001]:
 
-            robupy_obj = read('test.robupy.ini')
+            robupy_obj = read('test.respy.ini')
 
             robupy_obj.unlock()
 
@@ -316,7 +316,7 @@ class TestClass(object):
 
             # This parts checks the equality of simulated dataset for the
             # different versions of the code.
-            data_frame = pd.read_csv('data.robupy.dat', delim_whitespace=True)
+            data_frame = pd.read_csv('data.respy.dat', delim_whitespace=True)
 
             if base_data is None:
                 base_data = data_frame.copy()
@@ -343,11 +343,11 @@ class TestClass(object):
         generate_init()
 
         # Perform toolbox actions
-        robupy_obj = read('test.robupy.ini')
+        robupy_obj = read('test.respy.ini')
 
         # Ensure that backward induction routines use the same grid for the
         # interpolation.
-        max_states_period = write_interpolation_grid('test.robupy.ini')
+        max_states_period = write_interpolation_grid('test.respy.ini')
 
         # Extract class attributes
         num_periods, edu_start, edu_max, min_idx, model_paras, num_draws_emax, \
@@ -449,7 +449,7 @@ class TestClass(object):
         generate_init(constraints)
 
         # Perform toolbox actions
-        robupy_obj = read('test.robupy.ini')
+        robupy_obj = read('test.respy.ini')
 
         # Simulate a dataset
         simulate(robupy_obj)
@@ -491,14 +491,14 @@ class TestClass(object):
 
         # Simulate a dataset
         generate_init(constr)
-        robupy_obj = read('test.robupy.ini')
+        robupy_obj = read('test.respy.ini')
         data_frame, _ = simulate(robupy_obj)
 
         # Evaluate at different points, ensuring that the simulated datset
         # still fits.
         generate_init(constr)
 
-        robupy_obj = read('test.robupy.ini')
+        robupy_obj = read('test.respy.ini')
         evaluate(robupy_obj)
 
     def test_10(self):
@@ -515,15 +515,15 @@ class TestClass(object):
 
         # Simulate a dataset
         generate_init(constr)
-        robupy_obj = read('test.robupy.ini')
+        robupy_obj = read('test.respy.ini')
         simulate(robupy_obj)
 
         # Potentially evaluate at different points.
         generate_init(constr)
-        shutil.move('data.robupy.paras', 'paras_steps.robupy.log')
+        shutil.move('data.respy.paras', 'paras_steps.respy.log')
 
-        init_file = 'test.robupy.ini'
-        file_sim = 'sim.robupy'
+        init_file = 'test.respy.ini'
+        file_sim = 'sim.respy'
 
         gradient = np.random.choice([True, False])
         single = np.random.choice([True, False])
@@ -553,7 +553,7 @@ class TestClass(object):
         generate_init(constr)
 
         # Run estimation task.
-        robupy_obj = read('test.robupy.ini')
+        robupy_obj = read('test.respy.ini')
         data_frame, _ = simulate(robupy_obj)
         estimate(robupy_obj)
 
@@ -571,27 +571,27 @@ class TestClass(object):
         generate_init(constr)
 
         # Solve
-        cls_rslt = solve(read('test.robupy.ini')).get_attr('periods_emax')
-        str_rslt = solve('test.robupy.ini').get_attr('periods_emax')
+        cls_rslt = solve(read('test.respy.ini')).get_attr('periods_emax')
+        str_rslt = solve('test.respy.ini').get_attr('periods_emax')
         np.testing.assert_almost_equal(str_rslt, cls_rslt)
 
         # Solve
-        cls_rslt = simulate(read('test.robupy.ini'))[0]
-        str_rslt = simulate('test.robupy.ini')[0]
+        cls_rslt = simulate(read('test.respy.ini'))[0]
+        str_rslt = simulate('test.respy.ini')[0]
         assert_frame_equal(str_rslt, cls_rslt)
 
         # Process
-        cls_rslt = process(read('test.robupy.ini'))
-        str_rslt = process('test.robupy.ini')
+        cls_rslt = process(read('test.respy.ini'))
+        str_rslt = process('test.respy.ini')
         assert_frame_equal(str_rslt, cls_rslt)
 
         # Evaluate
-        cls_rslt = evaluate(read('test.robupy.ini'))
-        str_rslt = evaluate('test.robupy.ini')
+        cls_rslt = evaluate(read('test.respy.ini'))
+        str_rslt = evaluate('test.respy.ini')
         np.testing.assert_almost_equal(str_rslt, cls_rslt)
 
         # Evaluate
-        cls_rslt = estimate(read('test.robupy.ini'))
-        str_rslt = estimate('test.robupy.ini')
+        cls_rslt = estimate(read('test.respy.ini'))
+        str_rslt = estimate('test.respy.ini')
         for i in range(2):
             np.testing.assert_almost_equal(str_rslt[i], cls_rslt[i])

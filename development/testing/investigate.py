@@ -20,7 +20,7 @@ from modules.auxiliary import get_test_dict
 
 # Reconstruct directory structure and edits to PYTHONPATH
 TEST_DIR = os.path.dirname(os.path.realpath(__file__))
-TEST_DIR = TEST_DIR.replace('development/testing', '') + '/robupy/tests'
+TEST_DIR = TEST_DIR.replace('development/testing', '') + '/respy/tests'
 
 # ROBPUPY testing codes. The import of the PYTEST configuration file ensures
 # that the PYTHONPATH is modified to allow for the use of the tests..

@@ -10,7 +10,7 @@ import os
 
 # ROOT DIRECTORY
 ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
-ROOT_DIR = ROOT_DIR.replace('/robupy/tests', '')
+ROOT_DIR = ROOT_DIR.replace('/respy/tests', '')
 sys.path.insert(0, ROOT_DIR)
 
 """ The following fixtures are called before each test.

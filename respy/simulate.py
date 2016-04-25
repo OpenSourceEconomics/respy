@@ -8,25 +8,25 @@ import pandas as pd
 import logging
 
 # project library
-from robupy.python.simulate.simulate_auxiliary import start_logging
-from robupy.python.simulate.simulate_auxiliary import stop_logging
-from robupy.python.simulate.simulate_auxiliary import check_input
-from robupy.python.simulate.simulate_auxiliary import write_info
-from robupy.python.simulate.simulate_auxiliary import write_out
+from respy.python.simulate.simulate_auxiliary import start_logging
+from respy.python.simulate.simulate_auxiliary import stop_logging
+from respy.python.simulate.simulate_auxiliary import check_input
+from respy.python.simulate.simulate_auxiliary import write_info
+from respy.python.simulate.simulate_auxiliary import write_out
 
-from robupy.python.shared.shared_auxiliary import replace_missing_values
-from robupy.python.shared.shared_auxiliary import dist_class_attributes
-from robupy.python.shared.shared_auxiliary import dist_model_paras
-from robupy.python.shared.shared_auxiliary import get_robupy_obj
-from robupy.python.shared.shared_auxiliary import check_dataset
-from robupy.python.shared.shared_auxiliary import create_draws
+from respy.python.shared.shared_auxiliary import replace_missing_values
+from respy.python.shared.shared_auxiliary import dist_class_attributes
+from respy.python.shared.shared_auxiliary import dist_model_paras
+from respy.python.shared.shared_auxiliary import get_robupy_obj
+from respy.python.shared.shared_auxiliary import check_dataset
+from respy.python.shared.shared_auxiliary import create_draws
 
-from robupy.fortran.f2py_library import f2py_simulate
+from respy.fortran.f2py_library import f2py_simulate
 
-from robupy.solve import solve
+from respy.solve import solve
 
 # Logging
-from robupy.python.simulate.simulate_python import pyth_simulate
+from respy.python.simulate.simulate_python import pyth_simulate
 
 logger = logging.getLogger('ROBUPY_SIMULATE')
 

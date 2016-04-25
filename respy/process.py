@@ -6,9 +6,9 @@ import pandas as pd
 import numpy as np
 
 # project library
-from robupy.python.process.process_auxiliary import check_process
-from robupy.python.shared.shared_auxiliary import get_robupy_obj
-from robupy.python.shared.shared_auxiliary import check_dataset
+from respy.python.process.process_auxiliary import check_process
+from respy.python.shared.shared_auxiliary import get_robupy_obj
+from respy.python.shared.shared_auxiliary import check_dataset
 
 
 ''' Main function
