@@ -11,8 +11,6 @@ import os
 from respy.python.read.read_auxiliary import check_line
 from respy.python.read.clsRobupy import RobupyCls
 
-from respy.python.read.read_auxiliary import STRUCTURE
-
 ''' Main function
 '''
 
@@ -106,6 +104,7 @@ def read(fname, is_dict=False):
 
 ''' Auxiliary functions
 '''
+
 
 def _type_conversions(flag, value):
     """ Type conversions

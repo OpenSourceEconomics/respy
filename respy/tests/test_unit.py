@@ -673,8 +673,9 @@ class TestClass(object):
         args = (num_periods, max_states_period, periods_draws_emax,
             num_draws_emax, states_number_period, periods_payoffs_systematic,
             edu_max, edu_start, mapping_state_idx, states_all, delta,
-            is_debug, shocks_cov, level, is_ambiguous,
-            is_interpolated, num_points, is_deterministic, shocks_cholesky)
+            is_debug, shocks_cov, level, is_ambiguous, is_interpolated,
+            num_points, is_deterministic, shocks_cholesky)
+
         pyth = pyth_backward_induction(*args)
         f2py = f2py_backward_induction(*args)
         np.testing.assert_allclose(pyth, f2py)

@@ -228,8 +228,8 @@ def dist_model_paras(model_paras, is_debug):
         shocks_cholesky = np.linalg.cholesky(shocks_cov)
 
     if is_debug:
-        args = [coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
-               shocks_cholesky]
+        args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
+            shocks_cholesky)
         assert (check_model_parameters(*args))
 
     # Collect arguments
@@ -278,8 +278,8 @@ def check_model_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
     """ Check the integrity of all model parameters.
     """
     # Checks for all arguments
-    args = [coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
-            shocks_cholesky]
+    args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
+            shocks_cholesky)
     for coeffs in args:
         assert (isinstance(coeffs, np.ndarray))
         assert (np.all(np.isfinite(coeffs)))
@@ -293,7 +293,7 @@ def check_model_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
 
     # Check Cholesky decomposition
     assert (shocks_cholesky.shape == (4, 4))
-    aux = np.matmul(shocks_cholesky.T, shocks_cholesky)
+    aux = np.matmul(shocks_cholesky, shocks_cholesky.T)
     np.testing.assert_array_almost_equal(shocks_cov, aux)
 
     # Checks shock matrix

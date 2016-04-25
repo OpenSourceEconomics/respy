@@ -176,13 +176,13 @@ def get_estimation_vector(model_paras, is_debug):
 
     vector += model_paras['coeffs_home'].tolist()
 
-    vector += shocks_cholesky[0:4, 0].tolist()
+    vector += shocks_cholesky[0, :1].tolist()
 
-    vector += shocks_cholesky[1:4, 1].tolist()
+    vector += shocks_cholesky[1, :2].tolist()
 
-    vector += shocks_cholesky[2:4, 2].tolist()
+    vector += shocks_cholesky[2, :3].tolist()
 
-    vector += shocks_cholesky[3:4, 3].tolist()
+    vector += shocks_cholesky[3, :4].tolist()
 
     # Type conversion
     vector = np.array(vector)
