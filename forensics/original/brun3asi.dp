@@ -1,0 +1,12 @@
+cd prog
+#!/bin/sh
+FILENV=assign.prg
+export FILENV 
+NCPUS=1
+export NCPUS
+assign -a/u/mg22001/prog/in1a   fort.9
+assign -a/u/mg22001/prog/otest  fort.10
+assign -a/m/h1/mg22001/ftest    fort.11
+ja          
+time ./dp3asim
+cost        

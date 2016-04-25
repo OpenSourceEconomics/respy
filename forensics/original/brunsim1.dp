@@ -1,0 +1,15 @@
+cd prog  
+#!/bin/sh
+FILENV=assign.prg
+export FILENV 
+NCPUS=1          
+export NCPUS  
+assign -a/u/mg22001/prog/in1         fort.9
+assign -a/u/mg22001/prog/ouncond1    fort.10
+assign -a/m/h1/mg22001/funcond1      fort.11
+assign -a/u/mg22001/prog/ocond1      fort.12
+assign -a/m/h1/mg22001/fcond1        fort.13
+assign -a/m/h1/mg22001/ftest         fort.14
+assign -a/u/mg22001/prog/seedsim     fort.15
+ja
+time ./dpsim1 

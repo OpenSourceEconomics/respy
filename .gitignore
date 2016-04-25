@@ -1,15 +1,1 @@
-development/vagrant/robustToolbox.box
-development/vagrant/.vagrant
 
-development/analyses/compu/graphs/rslts
-
-development/analyses/robust/simulations/policy/rslts
-development/analyses/robust/simulations/ambiguity/rslts
-
-development/analyses/restud/graphs/rslts
-
-
-dist
-__pycache__
-*.pyc
-*.log
