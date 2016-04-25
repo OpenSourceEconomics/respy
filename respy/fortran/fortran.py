@@ -5,7 +5,7 @@ FORTRAN implementations.
 import os
 
 # project library
-from respy.fortran.fortran_auxiliary import write_robufort_initialization
+from respy.fortran.fortran_auxiliary import write_resfort_initialization
 from respy.fortran.fortran_auxiliary import write_dataset
 from respy.fortran.fortran_auxiliary import get_results
 from respy.fortran.fortran_auxiliary import read_data
@@ -32,7 +32,7 @@ def fort_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
 
     args = args + (num_draws_prob, num_agents_est, seed_prob, seed_emax,
         tau, 'evaluate')
-    write_robufort_initialization(*args)
+    write_resfort_initialization(*args)
 
     # If an evaluation is requested, then a specially formatted dataset is
     # written to a scratch file. This eases the reading of the dataset in
@@ -40,7 +40,7 @@ def fort_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
     write_dataset(data_array)
 
     # Call executable
-    os.system('"' + FORTRAN_DIR + '/bin/robufort"')
+    os.system('"' + FORTRAN_DIR + '/bin/resfort"')
 
     crit_val = read_data('eval', 1)[0]
 
@@ -62,10 +62,10 @@ def fort_solve(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
         edu_max, min_idx, delta, level)
 
     args = args + (1, 1, 1, seed_emax, tau, 'solve')
-    write_robufort_initialization(*args)
+    write_resfort_initialization(*args)
 
     # Call executable
-    os.system('"' + FORTRAN_DIR + '/bin/robufort"')
+    os.system('"' + FORTRAN_DIR + '/bin/resfort"')
 
     # Return arguments depends on the request.
     args = get_results(num_periods, min_idx)

@@ -4,7 +4,7 @@
 !   Interface to ROBUPY library. This is the front-end to all functionality.
 !   Subroutines and functions for the case of risk-only case are in the
 !   evaluate_risk module. Building on the risk-only functionality, the module
-!   robufort_ambugity provided the required subroutines and functions for the
+!   resfort_ambiguity provided the required subroutines and functions for the
 !   case of ambiguity.
 !
 !*******************************************************************************

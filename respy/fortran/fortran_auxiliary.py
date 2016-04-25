@@ -21,9 +21,9 @@ def get_results(num_periods, min_idx):
     # Get the maximum number of states. The special treatment is required as
     # it informs about the dimensions of some of the arrays that are
     # processed below.
-    max_states_period = int(np.loadtxt('.max_states_period.robufort.dat'))
+    max_states_period = int(np.loadtxt('.max_states_period.resfort.dat'))
 
-    os.unlink('.max_states_period.robufort.dat')
+    os.unlink('.max_states_period.resfort.dat')
 
     shape = (num_periods, num_periods, num_periods, min_idx, 2)
     mapping_state_idx = read_data('mapping_state_idx', shape).astype('int')
@@ -52,7 +52,7 @@ def get_results(num_periods, min_idx):
 def read_data(label, shape):
     """ Read results
     """
-    file_ = '.' + label + '.robufort.dat'
+    file_ = '.' + label + '.resfort.dat'
 
     # This special treatment is required as it is crucial for this data
     # to stay of integer type. All other data is transformed to float in
@@ -71,16 +71,16 @@ def read_data(label, shape):
     return data
 
 
-def write_robufort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+def write_resfort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         shocks_cov, is_deterministic, is_interpolated, num_draws_emax,
         is_ambiguous, num_periods, num_points, is_myopic, edu_start,
         is_debug, edu_max, min_idx, delta, level, num_draws_prob,
         num_agents_est, seed_prob, seed_emax, tau, request):
-    """ Write out model request to hidden file .model.robufort.ini.
+    """ Write out model request to hidden file .model.resfort.ini.
     """
 
     # Write out to link file
-    with open('.model.robufort.ini', 'w') as file_:
+    with open('.model.resfort.ini', 'w') as file_:
 
         # BASICS
         line = '{0:10d}\n'.format(num_periods)
@@ -175,11 +175,11 @@ def write_dataset(data_array):
     # HUGE FLOAT. The numpy array is passed in to align the interfaces across
     # implementations
     data_frame = pd.DataFrame(data_array)
-    with open('.data.robufort.dat', 'w') as file_:
+    with open('.data.resfort.dat', 'w') as file_:
         data_frame.to_string(file_, index=False,
             header=None, na_rep=str(HUGE_FLOAT))
 
     # An empty line is added as otherwise this might lead to problems on the
     # TRAVIS servers. The FORTRAN routine read_dataset() raises an error.
-    with open('.data.robufort.dat', 'a') as file_:
+    with open('.data.resfort.dat', 'a') as file_:
         file_.write('\n')

@@ -37,17 +37,17 @@ class CreateRobufortLibrary(Task):
         compiler_options = self.env.compiler_options + ' -fpic'
 
         files = ['shared/shared_constants.f90', 'shared/shared_auxiliary.f90',
-                'robufort_slsqp.f', 'solve/solve_emax.f90',
+                'resfort_slsqp.f', 'solve/solve_emax.f90',
                 'solve/solve_risk.f90', 'solve/solve_ambiguity.f90',
                 'solve/solve_auxiliary.f90', 'solve/solve_fortran.f90',
                 'evaluate/evaluate_auxiliary.f90', 'evaluate/evaluate_fortran.f90',
                 'estimate/estimate_auxiliary.f90', 'simulate/simulate_fortran.f90',
-                'robufort_testing.f90']
+                'resfort_testing.f90']
 
         for file_ in files:
             os.system('gfortran ' + compiler_options + ' -c ' + file_)
 
-        os.system('ar crs libfort_robufort.a *.o *.mod')
+        os.system('ar crs libfort_resfort.a *.o *.mod')
 
         os.chdir(self.env.project_paths['ROBUPY'] + '/fortran')
 
@@ -55,16 +55,16 @@ class CreateRobufortLibrary(Task):
         for file_ in module_files:
             shutil.move(file_, 'include/')
 
-        shutil.move('libfort_robufort.a', 'lib/')
+        shutil.move('libfort_resfort.a', 'lib/')
 
 
 class CreateRobufortExecutable(Task):
 
     def run(self):
 
-        from fortran.build_robufort import robufort_build
+        from fortran.build_resfort import resfort_build
 
-        robufort_build(self)
+        resfort_build(self)
 
 
 class CreateF2pyInterfaces(Task):
@@ -75,15 +75,15 @@ class CreateF2pyInterfaces(Task):
 
         os.system(
             'f2py3 -c -m  f2py_library f2py_interface_library.f90 '
-            '-Iinclude -Llib -lfort_robufort -L/usr/lib/lapack -llapack')
+            '-Iinclude -Llib -lfort_resfort -L/usr/lib/lapack -llapack')
 
         os.system(
             'f2py3 -c -m  f2py_debug f2py_interface_debug.f90 '
-            '-Iinclude -Llib -lfort_robufort -L/usr/lib/lapack -llapack')
+            '-Iinclude -Llib -lfort_resfort -L/usr/lib/lapack -llapack')
 
         os.system(
             'f2py3 -c -m  f2py_testing f2py_interface_testing.f90 '
-            '-Iinclude -Llib -lfort_robufort -L/usr/lib/lapack -llapack')
+            '-Iinclude -Llib -lfort_resfort -L/usr/lib/lapack -llapack')
 
 
 class CreateKeaneWolpinExecutables(Task):

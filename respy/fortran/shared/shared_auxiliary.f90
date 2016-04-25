@@ -669,7 +669,7 @@ SUBROUTINE store_results(mapping_state_idx, states_all, &
         ! Write out results for the store results.
         1800 FORMAT(5(1x,i5))
 
-        OPEN(UNIT=1, FILE='.mapping_state_idx.robufort.dat')
+        OPEN(UNIT=1, FILE='.mapping_state_idx.resfort.dat')
 
         DO period = 1, num_periods
             DO i = 1, num_periods
@@ -686,7 +686,7 @@ SUBROUTINE store_results(mapping_state_idx, states_all, &
 
         2000 FORMAT(4(1x,i5))
 
-        OPEN(UNIT=1, FILE='.states_all.robufort.dat')
+        OPEN(UNIT=1, FILE='.states_all.resfort.dat')
 
         DO period = 1, num_periods
             DO i = 1, max_states_period
@@ -699,7 +699,7 @@ SUBROUTINE store_results(mapping_state_idx, states_all, &
 
         1900 FORMAT(4(1x,f25.15))
 
-        OPEN(UNIT=1, FILE='.periods_payoffs_systematic.robufort.dat')
+        OPEN(UNIT=1, FILE='.periods_payoffs_systematic.resfort.dat')
 
         DO period = 1, num_periods
             DO i = 1, max_states_period
@@ -711,7 +711,7 @@ SUBROUTINE store_results(mapping_state_idx, states_all, &
 
         2100 FORMAT(i5)
 
-        OPEN(UNIT=1, FILE='.states_number_period.robufort.dat')
+        OPEN(UNIT=1, FILE='.states_number_period.resfort.dat')
 
         DO period = 1, num_periods
             WRITE(1, 2100) states_number_period(period)
@@ -722,7 +722,7 @@ SUBROUTINE store_results(mapping_state_idx, states_all, &
 
         2200 FORMAT(i5)
 
-        OPEN(UNIT=1, FILE='.max_states_period.robufort.dat')
+        OPEN(UNIT=1, FILE='.max_states_period.resfort.dat')
 
         WRITE(1, 2200) max_states_period
 
@@ -731,7 +731,7 @@ SUBROUTINE store_results(mapping_state_idx, states_all, &
 
         2400 FORMAT(100000(1x,f25.15))
 
-        OPEN(UNIT=1, FILE='.periods_emax.robufort.dat')
+        OPEN(UNIT=1, FILE='.periods_emax.resfort.dat')
 
         DO period = 1, num_periods
             WRITE(1, 2400) periods_emax(period, :)
@@ -744,7 +744,7 @@ SUBROUTINE store_results(mapping_state_idx, states_all, &
 
         2500 FORMAT(1x,f25.15)
 
-        OPEN(UNIT=1, FILE='.eval.robufort.dat')
+        OPEN(UNIT=1, FILE='.eval.resfort.dat')
 
         WRITE(1, 2500) crit_val
 
@@ -817,7 +817,7 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
     1515 FORMAT(i10,1x,i10)
 
     ! Read model specification
-    OPEN(UNIT=1, FILE='.model.robufort.ini')
+    OPEN(UNIT=1, FILE='.model.resfort.ini')
 
         ! BASICS
         READ(1, 1505) num_periods
@@ -903,7 +903,7 @@ SUBROUTINE read_dataset(data_array, num_periods, num_agents_est)
     ALLOCATE(data_array(num_periods * num_agents_est, 8))
 
     ! Read observed data to double precision array
-    OPEN(UNIT=1, FILE='.data.robufort.dat')
+    OPEN(UNIT=1, FILE='.data.resfort.dat')
 
         DO j = 1, num_periods * num_agents_est
             READ(1, *) (data_array(j, k), k = 1, 8)

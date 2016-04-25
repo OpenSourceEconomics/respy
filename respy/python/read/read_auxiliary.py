@@ -91,7 +91,7 @@ def check_line(group, flag, value):
                     fname = glob.glob(ROOT_DIR + '/fortran/f2py_library.*.so')[0]
                     assert os.path.exists(fname)
                 if value == 'FORTRAN':
-                    fname = ROOT_DIR + '/fortran/bin/robufort'
+                    fname = ROOT_DIR + '/fortran/bin/resfort'
                     assert os.path.exists(fname)
 
         if group == 'AMBIGUITY':

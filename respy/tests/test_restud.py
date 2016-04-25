@@ -26,7 +26,7 @@ from respy import read
 '''
 
 
-def transform_robupy_to_restud(model_paras, level, edu_start, edu_max,
+def transform_respy_to_restud(model_paras, level, edu_start, edu_max,
         num_agents_sim, num_periods, num_draws_emax, delta):
     """ Transform a ROBUPY initialization file to a RESTUD file.
     """
@@ -137,7 +137,7 @@ class TestClass(object):
                 'model_paras', 'level', 'edu_start', 'edu_max',
                 'num_agents_sim', 'num_periods', 'num_draws_emax', 'delta')
 
-        transform_robupy_to_restud(model_paras, level, edu_start, edu_max,
+        transform_respy_to_restud(model_paras, level, edu_start, edu_max,
             num_agents_sim, num_periods, num_draws_emax, delta)
 
         # Solve model using RESTUD code.

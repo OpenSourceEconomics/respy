@@ -10,7 +10,7 @@ SUBROUTINE wrapper_slsqp_debug(x_internal, x_start, maxiter, ftol, num_dim)
 
     !/* external libraries    */
 
-    USE robufort_testing
+    USE resfort_testing
 
     !/* setup    */
 
@@ -39,7 +39,7 @@ SUBROUTINE wrapper_criterion_debug_function(rslt, x, n)
 
     !/* external libraries    */
 
-    USE robufort_testing
+    USE resfort_testing
 
     !/* external objects    */
 
@@ -61,7 +61,7 @@ SUBROUTINE wrapper_criterion_debug_derivative(rslt, x, n)
 
     !/* external libraries    */
 
-    USE robufort_testing
+    USE resfort_testing
 
     !/* external objects    */
 
