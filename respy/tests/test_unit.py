@@ -90,19 +90,16 @@ class TestClass(object):
                 draws_emax = np.random.sample((num_draws_emax, 4))
 
                 # Extract payoffs using PYTHON and FORTRAN codes.
+                args = (num_draws_emax, draws_emax, period, k,
+                    payoffs_systematic, edu_max, edu_start, mapping_state_idx,
+                    states_all, num_periods, periods_emax, delta,
+                    shocks_cholesky)
                 # TODO: Are the interfaces  between fort and py still aligned.
                 # TODO: Renumbering all tests.
                 # TODO: Check for unused arguments.
                 # TODO: Travis now strict test passing?
-                py = get_payoffs(num_draws_emax, draws_emax, period, k,
-                    payoffs_systematic, edu_max, edu_start, mapping_state_idx,
-                    states_all, num_periods, periods_emax, delta,
-                    shocks_cholesky)
-
-                f90 = fort_debug.wrapper_get_payoffs(num_draws_emax,
-                    draws_emax, period, k, payoffs_systematic,
-                    edu_max, edu_start, mapping_state_idx, states_all,
-                    num_periods, periods_emax, delta, shocks_cholesky)
+                py = get_payoffs(*args)
+                f90 = fort_debug.wrapper_get_payoffs(*args)
 
                 # Compare returned array on expected future values, ex post
                 # payoffs, and future payoffs.
