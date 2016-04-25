@@ -13,8 +13,8 @@ The online documentation is available [here](http://respy.readthedocs.org/).
 
 #### Quality Indicators
 
-[![Build Status](https://travis-ci.org/respy/package.svg?branch=master)](https://travis-ci.org/respy/package)
-[![codecov.io](https://codecov.io/github/respy/package/coverage.svg?branch=master)](https://codecov.io/github/respy/package/?branch=master)
+[![Build Status](https://travis-ci.org/restudToolbox/package.svg?branch=master)](https://travis-ci.org/restudToolbox/package)
+[![codecov.io](https://codecov.io/github/robustToolbox/package/coverage.svg?branch=master)](https://codecov.io/github/respy/package/?branch=master)
 [![Code Issues](https://www.quantifiedcode.com/api/v1/project/b00436d2ca614437b843c7042dba0c26/badge.svg)](https://www.quantifiedcode.com/app/project/b00436d2ca614437b843c7042dba0c26)
 [![Codacy Badge](https://api.codacy.com/project/badge/grade/3dd368fb739c49d78d910676c9264a81)](https://www.codacy.com/app/eisenhauer/respy)
 [![Documentation Status](https://readthedocs.org/projects/respy/badge/?version=latest)](http://respy.readthedocs.org/en/latest/?badge=latest)
