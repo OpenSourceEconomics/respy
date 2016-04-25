@@ -22,8 +22,8 @@ Welcome to respy's documentation!
    functionality
    tutorial
    implementation 
-   interface
    contact
+   interface
    bibliography
 
 **Quality Indicators**

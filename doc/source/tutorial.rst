@@ -90,10 +90,9 @@ Now that we have some observed data, we can start an estimation. The coefficient
 This directly returns the value of the coefficients at the final step of the optimizer as well as
 the value of the criterion function. However, some additional files appear in the meantime.
 
-
 * **optimization.respy.log**
 
-The provides some information about each step of the optimizer and a final message from the optimizer about convergence.
+The provides some information about each step of the optimizer and a final message from the optimizer about convergence. See the **SciPy** documentation for details on the convergence message.
 
 * **optimization.respy.info**
 
@@ -101,8 +100,14 @@ This file is key to monitor the progress of the estimation run. It is continuous
 
 Finally, the parameters are written to disk:
 
-* *paras_curre.respy.log*, current candidate parameters
+* **paras_curre.respy.log**, current candidate parameters
 
-* *paras_start.respy.log*, parameters at the start of the optimization
+* **paras_start.respy.log**, parameters at the start of the optimization
 
-* *paras_steps.respy.log*, parameters at last step of the optimizer
+* **paras_steps.respy.log**, parameters at last step of the optimizer
+
+We can now simulate a sample using the estimated parameters, but updating the instance of the *RespyCls* with the parameters returned from the estimation routine.
+::
+    respy_obj.update_model_paras(x)
+
+    respy.simulate(respy_obj)
