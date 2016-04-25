@@ -10,7 +10,6 @@ from respy.python.solve.solve_auxiliary import check_input
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import dist_model_paras
-from respy.python.shared.shared_auxiliary import get_respy_obj
 from respy.python.shared.shared_auxiliary import add_solution
 from respy.python.shared.shared_auxiliary import create_draws
 
@@ -19,12 +18,9 @@ from respy.python.solve.solve_python import pyth_solve
 from respy.fortran.fortran import fort_solve
 
 
-def solve(input_):
+def solve(respy_obj):
     """ Solve the model
     """
-    # Process input_
-    respy_obj = get_respy_obj(input_)
-
     # Checks, cleanup, start logger
     assert check_input(respy_obj)
 

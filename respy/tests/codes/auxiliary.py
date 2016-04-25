@@ -8,7 +8,7 @@ import numpy as np
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 
-from respy import read
+from respy import RespyCls
 
 
 def write_interpolation_grid(file_name):
@@ -16,7 +16,7 @@ def write_interpolation_grid(file_name):
     implementations.
     """
     # Process relevant initialization file
-    respy_obj = read(file_name)
+    respy_obj = RespyCls(file_name)
 
     # Distribute class attribute
     num_periods, num_points, edu_start, edu_max, min_idx = \

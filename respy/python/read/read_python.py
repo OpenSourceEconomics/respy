@@ -3,19 +3,19 @@
 
 # standard library
 import numpy as np
+
 import shlex
 import sys
 import os
 
 # project library
 from respy.python.read.read_auxiliary import check_line
-from respy.python.read.clsRespy import RespyCls
 
 ''' Main function
 '''
 
 
-def read(fname, is_dict=False):
+def read(fname):
     """ Read and process a RESPY initialization file.
     """
     # Check input
@@ -83,16 +83,8 @@ def read(fname, is_dict=False):
     # Check quality.
     _check_integrity_complete(dict_)
 
-    # Construct container
-    respy_obj = RespyCls(dict_)
-
-    respy_obj.lock()
-
-    # Finishing.
-    if is_dict:
-        return respy_obj, dict_
-    else:
-        return respy_obj
+    # Finishing
+    return dict_
 
 ''' Auxiliary functions
 '''

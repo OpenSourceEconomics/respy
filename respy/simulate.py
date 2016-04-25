@@ -17,7 +17,6 @@ from respy.python.simulate.simulate_auxiliary import write_out
 from respy.python.shared.shared_auxiliary import replace_missing_values
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import dist_model_paras
-from respy.python.shared.shared_auxiliary import get_respy_obj
 from respy.python.shared.shared_auxiliary import check_dataset
 from respy.python.shared.shared_auxiliary import create_draws
 
@@ -34,12 +33,11 @@ logger = logging.getLogger('ROBUPY_SIMULATE')
 '''
 
 
-def simulate(input_, is_solved=False):
+def simulate(respy_obj, is_solved=False):
     """ Simulate dataset of synthetic agent following the model specified in
     the initialization file.
     """
     # Process input_
-    respy_obj = get_respy_obj(input_)
     check_input(respy_obj, is_solved)
 
     # Solve the requested economy
@@ -103,6 +101,6 @@ def simulate(input_, is_solved=False):
     stop_logging()
 
     # Finishing
-    return data_frame, respy_obj
+    return respy_obj
 
 

@@ -5,8 +5,8 @@ development tests.
 # standard library
 from pandas.util.testing import assert_frame_equal
 
-import numpy as np
 import pandas as pd
+import numpy as np
 
 import shutil
 import pytest
@@ -32,12 +32,13 @@ from respy.tests.codes.random_init import generate_random_dict
 from respy.tests.codes.random_init import print_random_dict
 from respy.tests.codes.random_init import generate_init
 
-from respy import simulate
-from respy import evaluate
+from respy.evaluate import evaluate
+from respy.process import process
+from respy.solve import solve
+
 from respy import estimate
-from respy import process
-from respy import solve
-from respy import read
+from respy import simulate
+from respy import RespyCls
 
 from respy.python.solve.solve_python import pyth_solve
 from respy.fortran.f2py_library import f2py_solve
@@ -65,7 +66,7 @@ class TestClass(object):
         # Generate random initialization file
         generate_init()
 
-        respy_obj = read('test.respy.ini')
+        respy_obj = RespyCls('test.respy.ini')
 
         solve(respy_obj)
 
@@ -130,7 +131,7 @@ class TestClass(object):
         base_val, base_data = None, None
 
         for version in ['PYTHON', 'F2PY', 'FORTRAN']:
-            respy_obj = read('test.respy.ini')
+            respy_obj = RespyCls('test.respy.ini')
 
             # Modify the version of the program for the different requests.
             respy_obj.unlock()
@@ -152,7 +153,7 @@ class TestClass(object):
 
             # This part checks the equality of an evaluation of the
             # criterion function.
-            data_frame, _ = simulate(respy_obj)
+            simulate(respy_obj)
 
             crit_val = evaluate(respy_obj)
 
@@ -187,7 +188,7 @@ class TestClass(object):
             num_draws_emax = np.random.randint(1, 100)
 
             # Perform toolbox actions
-            respy_obj = read('test.respy.ini')
+            respy_obj = RespyCls('test.respy.ini')
 
             respy_obj.unlock()
 
@@ -224,7 +225,7 @@ class TestClass(object):
 
         for delta in [0.00, 0.000001]:
 
-            respy_obj = read('test.respy.ini')
+            respy_obj = RespyCls('test.respy.ini')
 
             respy_obj.unlock()
 
@@ -247,7 +248,7 @@ class TestClass(object):
 
             # This part checks the equality of an evaluation of the
             # criterion function.
-            data_frame, _ = simulate(respy_obj)
+            simulate(respy_obj)
 
             crit_val = evaluate(respy_obj)
 
@@ -265,7 +266,7 @@ class TestClass(object):
         generate_init()
 
         # Perform toolbox actions
-        respy_obj = read('test.respy.ini')
+        respy_obj = RespyCls('test.respy.ini')
 
         # Ensure that backward induction routines use the same grid for the
         # interpolation.
@@ -370,7 +371,7 @@ class TestClass(object):
         generate_init(constraints)
 
         # Perform toolbox actions
-        respy_obj = read('test.respy.ini')
+        respy_obj = RespyCls('test.respy.ini')
 
         # Simulate a dataset
         simulate(respy_obj)
@@ -412,14 +413,14 @@ class TestClass(object):
 
         # Simulate a dataset
         generate_init(constr)
-        respy_obj = read('test.respy.ini')
+        respy_obj = RespyCls('test.respy.ini')
         simulate(respy_obj)
 
         # Evaluate at different points, ensuring that the simulated datset
         # still fits.
         generate_init(constr)
 
-        respy_obj = read('test.respy.ini')
+        respy_obj = RespyCls('test.respy.ini')
         evaluate(respy_obj)
 
     def test_8(self):
@@ -436,7 +437,7 @@ class TestClass(object):
 
         # Simulate a dataset
         generate_init(constr)
-        respy_obj = read('test.respy.ini')
+        respy_obj = RespyCls('test.respy.ini')
         simulate(respy_obj)
 
         # Potentially evaluate at different points.
@@ -474,45 +475,6 @@ class TestClass(object):
         generate_init(constr)
 
         # Run estimation task.
-        respy_obj = read('test.respy.ini')
+        respy_obj = RespyCls('test.respy.ini')
         simulate(respy_obj)
         estimate(respy_obj)
-
-    def test_10(self):
-        """ This test is motivated by a recent change in the interface. It
-        ensures that it does not matter whether the initialization file is
-        passed in or the class instance directly.
-        """
-        # Constraints that ensures that the maximum number of iterations and
-        # the number of function evaluations is set to the minimum values of
-        # one.
-        constr = dict()
-        constr['maxiter'] = 0
-
-        generate_init(constr)
-
-        # Solve
-        cls_rslt = solve(read('test.respy.ini')).get_attr('periods_emax')
-        str_rslt = solve('test.respy.ini').get_attr('periods_emax')
-        np.testing.assert_almost_equal(str_rslt, cls_rslt)
-
-        # Solve
-        cls_rslt = simulate(read('test.respy.ini'))[0]
-        str_rslt = simulate('test.respy.ini')[0]
-        assert_frame_equal(str_rslt, cls_rslt)
-
-        # Process
-        cls_rslt = process(read('test.respy.ini'))
-        str_rslt = process('test.respy.ini')
-        assert_frame_equal(str_rslt, cls_rslt)
-
-        # Evaluate
-        cls_rslt = evaluate(read('test.respy.ini'))
-        str_rslt = evaluate('test.respy.ini')
-        np.testing.assert_almost_equal(str_rslt, cls_rslt)
-
-        # Evaluate
-        cls_rslt = estimate(read('test.respy.ini'))
-        str_rslt = estimate('test.respy.ini')
-        for i in range(2):
-            np.testing.assert_almost_equal(str_rslt[i], cls_rslt[i])

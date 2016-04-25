@@ -16,8 +16,7 @@ import os
 # project library
 from respy.python.shared.shared_auxiliary import dist_model_paras
 from respy.tests.codes.random_init import print_random_dict
-
-from respy import read
+from respy.python.read.read_python import read
 
 
 def dist_input_arguments(parser):

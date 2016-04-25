@@ -28,8 +28,8 @@ from respy.python.shared.shared_auxiliary import create_draws
 
 import respy.fortran.f2py_debug as fort_debug
 
-from respy import solve
-from respy import read
+from respy.solve import solve
+from respy import RespyCls
 
 
 @pytest.mark.usefixtures('fresh_directory', 'set_seed')
@@ -56,7 +56,7 @@ class TestClass(object):
             print_random_dict(init_dict)
 
             # Process and solve
-            respy_obj = read('test.respy.ini')
+            respy_obj = RespyCls('test.respy.ini')
             respy_obj = solve(respy_obj)
 
             # Extract class attributes
@@ -82,7 +82,7 @@ class TestClass(object):
         generate_init()
 
         # Perform toolbox actions
-        respy_obj = read('test.respy.ini')
+        respy_obj = RespyCls('test.respy.ini')
         respy_obj = solve(respy_obj)
 
         # Extract class attributes
@@ -172,7 +172,7 @@ class TestClass(object):
         generate_init(constr)
 
         # Extract required information
-        respy_obj = read('test.respy.ini')
+        respy_obj = RespyCls('test.respy.ini')
 
         # Extract class attributes
         is_debug, num_periods = dist_class_attributes(respy_obj,
@@ -242,7 +242,7 @@ class TestClass(object):
             print_random_dict(init_dict)
 
             # Process and solve
-            respy_obj = read('test.respy.ini')
+            respy_obj = RespyCls('test.respy.ini')
             respy_obj = solve(respy_obj)
 
             # Extract class attributes

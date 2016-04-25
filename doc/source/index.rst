@@ -19,7 +19,8 @@ Welcome to respy's documentation!
 
    installation
    specification
-   requests
+   functionality
+   tutorial
    implementation 
    interface
    contact

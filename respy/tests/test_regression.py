@@ -8,10 +8,11 @@ import pytest
 # project library
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 
-from respy import evaluate
+from respy.evaluate import evaluate
+from respy.solve import solve
+
+from respy import RespyCls
 from respy import simulate
-from respy import solve
-from respy import read
 
 
 @pytest.mark.usefixtures('fresh_directory', 'set_seed')
@@ -23,7 +24,7 @@ class TestClass(object):
         """
 
         # Solve specified economy
-        respy_obj = read(TEST_RESOURCES_DIR + '/test_first.respy.ini')
+        respy_obj = RespyCls(TEST_RESOURCES_DIR + '/test_first.respy.ini')
         respy_obj = solve(respy_obj)
         simulate(respy_obj)
 
@@ -39,7 +40,7 @@ class TestClass(object):
         """ Compare the solution of simple model against hard-coded results.
         """
         # Solve specified economy
-        respy_obj = read(TEST_RESOURCES_DIR + '/test_second.respy.ini')
+        respy_obj = RespyCls(TEST_RESOURCES_DIR + '/test_second.respy.ini')
         respy_obj = solve(respy_obj)
         simulate(respy_obj)
 
@@ -105,7 +106,7 @@ class TestClass(object):
         """ Test the solution of model with ambiguity.
         """
         # Solve specified economy
-        respy_obj = read(TEST_RESOURCES_DIR + '/test_third.respy.ini')
+        respy_obj = RespyCls(TEST_RESOURCES_DIR + '/test_third.respy.ini')
         respy_obj = solve(respy_obj)
         simulate(respy_obj)
 
@@ -121,7 +122,7 @@ class TestClass(object):
         """ Test the solution of model with ambiguity.
         """
         # Solve specified economy
-        respy_obj = read(TEST_RESOURCES_DIR + '/test_fourth.respy.ini')
+        respy_obj = RespyCls(TEST_RESOURCES_DIR + '/test_fourth.respy.ini')
         respy_obj = solve(respy_obj)
         simulate(respy_obj)
 
@@ -141,7 +142,7 @@ class TestClass(object):
         # Solve specified economy
         for version in ['FORTRAN', 'PYTHON', 'F2PY']:
 
-            respy_obj = read(TEST_RESOURCES_DIR + '/test_fifth.respy.ini')
+            respy_obj = RespyCls(TEST_RESOURCES_DIR + '/test_fifth.respy.ini')
 
             respy_obj.unlock()
 
@@ -169,7 +170,7 @@ class TestClass(object):
         # Solve specified economy
         for version in ['FORTRAN', 'PYTHON', 'F2PY']:
 
-            respy_obj = read(TEST_RESOURCES_DIR + '/test_fifth.respy.ini')
+            respy_obj = RespyCls(TEST_RESOURCES_DIR + '/test_fifth.respy.ini')
 
             respy_obj.unlock()
 
@@ -207,7 +208,7 @@ class TestClass(object):
             rslt = 1.848874856961523
 
         # Evaluate criterion function at true values.
-        respy_obj = read(TEST_RESOURCES_DIR + '/' + fname)
+        respy_obj = RespyCls(TEST_RESOURCES_DIR + '/' + fname)
         simulate(respy_obj)
         val = evaluate(respy_obj)
         np.testing.assert_allclose(val, rslt)

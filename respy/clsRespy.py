@@ -9,6 +9,9 @@ import numpy as np
 
 # project library
 from respy.python.shared.shared_auxiliary import replace_missing_values
+from respy.python.shared.shared_auxiliary import check_model_parameters
+from respy.python.estimate.estimate_auxiliary import dist_optim_paras
+from respy.python.read.read_python import read
 
 # Special care with derived attributes is required to maintain integrity of
 # the class instance. These derived attributes cannot be changed directly.
@@ -26,12 +29,13 @@ class RespyCls(object):
     the toolbox.
     """
 
-    def __init__(self, init_dict):
+    def __init__(self, fname):
         """ Initialization of hand-crafted class for package management.
         """
+        # Distribute class attributes
         self.attr = dict()
 
-        self.attr['init_dict'] = init_dict
+        self.attr['init_dict'] = read(fname)
 
         # Constitutive attributes
         self.attr['optimizer_options'] = None
@@ -114,10 +118,24 @@ class RespyCls(object):
 
         self.attr['is_solved'] = False
 
-    def update_model_paras(self, coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-            shocks_cov):
-        """ Update model parameters.
+        self.lock()
+
+    def update_model_paras(self, input_):
+        """ Update model parameters. This function allows to pass in either
+        the coefficient arrays or the vector of optimization parameters.
         """
+        # Determine use of interface
+        is_optim_paras = (len(input_) == 1)
+
+        if is_optim_paras:
+            coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov = \
+                dist_optim_paras(input_, True)
+
+        # Check integrity
+        shocks_cholesky = np.linalg.cholesky(shocks_cov)
+        check_model_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+            shocks_cov, shocks_cholesky)
+
         # Distribute class attributes
         model_paras = self.attr['model_paras']
 

@@ -1,15 +1,13 @@
 # standard library
 import pytest
-import sys
+
 import os
+import sys
 
 # project library
 from respy.estimate import estimate
-from respy.evaluate import evaluate
 from respy.simulate import simulate
-from respy.process import process
-from respy.solve import solve
-from respy.read import read
+from respy.clsRespy import RespyCls
 
 # Check for Python 3
 if not (sys.version_info[0] == 3):

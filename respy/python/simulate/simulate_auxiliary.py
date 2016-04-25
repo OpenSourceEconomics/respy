@@ -3,10 +3,10 @@ model.
 """
 
 # standard library
-import logging
-
-import numpy as np
 import pandas as pd
+import numpy as np
+
+import logging
 
 # project library
 from respy.python.shared.shared_auxiliary import dist_model_paras

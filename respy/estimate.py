@@ -8,7 +8,6 @@ from respy.python.estimate.estimate_auxiliary import check_input
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import dist_model_paras
-from respy.python.shared.shared_auxiliary import get_respy_obj
 from respy.python.shared.shared_auxiliary import create_draws
 from respy.python.shared.shared_auxiliary import cut_dataset
 
@@ -17,13 +16,9 @@ from respy.python.estimate.estimate_wrapper import OptimizationClass
 from respy.process import process
 
 
-def estimate(input_):
+def estimate(respy_obj):
     """ Estimate the model
     """
-
-    # Process input_
-    respy_obj = get_respy_obj(input_)
-
     # Cut dataset to size in case more agents are passed in than are actually
     # used in the estimation.
     data_frame = process(respy_obj)
@@ -33,9 +28,8 @@ def estimate(input_):
     assert check_input(respy_obj, data_frame)
 
     # Distribute class attributes
-    model_paras, num_periods, num_agents_est, edu_start, \
-        is_debug, edu_max, delta, num_draws_prob, seed_prob, \
-        num_draws_emax, seed_emax, min_idx, \
+    model_paras, num_periods, num_agents_est, edu_start, is_debug, edu_max, \
+        delta, num_draws_prob, seed_prob, num_draws_emax, seed_emax, min_idx,\
         is_deterministic, is_myopic, is_interpolated, num_points, version, \
         maxiter, optimizer_used, tau, paras_fixed, optimizer_options = \
             dist_class_attributes(respy_obj,

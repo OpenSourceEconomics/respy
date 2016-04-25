@@ -7,16 +7,12 @@ import numpy as np
 
 # project library
 from respy.python.process.process_auxiliary import check_process
-from respy.python.shared.shared_auxiliary import get_respy_obj
 from respy.python.shared.shared_auxiliary import check_dataset
 
 
-def process(input_):
+def process(respy_obj):
     """ This function processes the dataset from disk.
     """
-    # Process input_
-    respy_obj = get_respy_obj(input_)
-
     # Antibugging
     assert respy_obj.get_attr('is_locked')
 

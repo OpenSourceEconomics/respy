@@ -21,9 +21,10 @@ from respy.python.shared.shared_auxiliary import create_draws
 
 from respy.python.estimate.estimate_wrapper import OptimizationClass
 
+from respy.process import process
+
 from respy import estimate
-from respy import process
-from respy import read
+from respy import RespyCls
 
 """ Auxiliary function
 """
@@ -175,7 +176,7 @@ def scripts_estimate(resume, single, init_file, gradient):
     """ Wrapper for the estimation.
     """
     # Read in baseline model specification.
-    respy_obj = read(init_file)
+    respy_obj = RespyCls(init_file)
 
     # Update parametrization of the model if resuming from a previous
     # estimation run.

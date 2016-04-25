@@ -18,13 +18,14 @@ from respy.tests.codes.random_init import print_random_dict
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_constants import FORTRAN_DIR
 
+from respy.solve import solve
+
+from respy import RespyCls
 from respy import simulate
-from respy import solve
-from respy import read
 
 
-def transform_respy_to_restud(model_paras, edu_start, edu_max,
-        num_agents_sim, num_periods, num_draws_emax, delta):
+def transform_respy_to_restud(model_paras, edu_start, edu_max, num_agents_sim,
+        num_periods, num_draws_emax, delta):
     """ Transform a ROBUPY initialization file to a RESTUD file.
     """
     # Ensure restrictions
@@ -118,7 +119,7 @@ class TestClass(object):
         open('.restud.testing.scratch', 'a').close()
 
         # Perform toolbox actions
-        respy_obj = read('test.respy.ini')
+        respy_obj = RespyCls('test.respy.ini')
 
         # This flag aligns the random components between the RESTUD program and
         # ROBUPY package. The existence of the file leads to the RESTUD program

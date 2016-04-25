@@ -36,13 +36,10 @@ from respy.fortran.f2py_library import f2py_calculate_payoffs_systematic
 from respy.python.solve.solve_auxiliary import pyth_backward_induction
 from respy.fortran.f2py_library import f2py_backward_induction
 
+from respy.solve import solve
+
+from respy import RespyCls
 from respy import simulate
-from respy import solve
-from respy import read
-
-
-''' Main
-'''
 
 
 @pytest.mark.usefixtures('fresh_directory', 'set_seed')
@@ -59,7 +56,7 @@ class TestClass(object):
             generate_init()
 
             # Perform toolbox actions
-            respy_obj = read('test.respy.ini')
+            respy_obj = RespyCls('test.respy.ini')
             respy_obj = solve(respy_obj)
 
             # Extract class attributes
@@ -119,7 +116,7 @@ class TestClass(object):
         generate_init(constraints)
 
         # Perform toolbox actions
-        respy_obj = read('test.respy.ini')
+        respy_obj = RespyCls('test.respy.ini')
 
         respy_obj = solve(respy_obj)
 
@@ -306,7 +303,7 @@ class TestClass(object):
         generate_init(constraints)
 
         # Perform toolbox actions
-        respy_obj = read('test.respy.ini')
+        respy_obj = RespyCls('test.respy.ini')
 
         respy_obj = solve(respy_obj)
 
@@ -378,7 +375,7 @@ class TestClass(object):
         generate_init()
 
         # Perform toolbox actions
-        respy_obj = read('test.respy.ini')
+        respy_obj = RespyCls('test.respy.ini')
 
         # Ensure that backward induction routines use the same grid for the
         # interpolation.

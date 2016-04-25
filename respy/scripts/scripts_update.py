@@ -12,7 +12,7 @@ import os
 # project library
 from respy.python.estimate.estimate_auxiliary import dist_optim_paras
 from respy.tests.codes.random_init import print_random_dict
-from respy import read
+from respy.python.read.read_python import read
 
 
 def dist_input_arguments(parser):
@@ -40,7 +40,7 @@ def scripts_update(init_file):
     """ Update model parametrization in initialization file.
     """
     # Collect baseline update
-    _, init_dict = read(init_file, True)
+    init_dict = read(init_file)
 
     paras_steps = np.genfromtxt('paras_steps.respy.log')
 

@@ -6,6 +6,7 @@ model.
 # standard library
 import pickle as pkl
 import numpy as np
+
 import argparse
 import os
 
@@ -13,7 +14,7 @@ import os
 from respy.python.estimate.estimate_auxiliary import dist_optim_paras
 
 from respy import simulate
-from respy import read
+from respy import RespyCls
 
 ''' Auxiliary function
 '''
@@ -57,7 +58,7 @@ def scripts_simulate(update, init_file, file_sim, solved):
     if solved is not None:
         respy_obj = pkl.load(open(solved, 'rb'))
     else:
-        respy_obj = read(init_file)
+        respy_obj = RespyCls(init_file)
 
     # Update parametrization of the model if resuming from a previous
     # estimation run.
