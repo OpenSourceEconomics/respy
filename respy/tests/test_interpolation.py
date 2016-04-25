@@ -46,7 +46,6 @@ class TestClass(object):
         # Set initial constraints
         constraints = dict()
         constraints['apply'] = False
-        constraints['level'] = 0.00
         constraints['periods'] = np.random.randint(2, 6)
         constraints['is_deterministic'] = True
 
@@ -93,14 +92,14 @@ class TestClass(object):
         # Extract class attributes
         periods_payoffs_systematic, states_number_period, \
             mapping_state_idx, is_deterministic, seed_prob, periods_emax, \
-            is_ambiguous, model_paras, num_periods, states_all, num_points, \
+            model_paras, num_periods, states_all, num_points, \
             edu_start, num_draws_emax, is_debug, edu_max, delta, \
-            level = dist_class_attributes(respy_obj,
+            = dist_class_attributes(respy_obj,
                 'periods_payoffs_systematic', 'states_number_period',
                 'mapping_state_idx', 'is_deterministic', 'seed_prob',
-                'periods_emax', 'is_ambiguous', 'model_paras', 'num_periods',
+                'periods_emax', 'model_paras', 'num_periods',
                 'states_all', 'num_points', 'edu_start', 'num_draws_emax',
-                'is_debug', 'edu_max', 'delta', 'level')
+                'is_debug', 'edu_max', 'delta')
 
         # Auxiliary objects
         _, _, _, _, shocks_cov, shocks_cholesky = \
@@ -147,7 +146,7 @@ class TestClass(object):
         args = (period, num_periods, num_states, delta,
             periods_payoffs_systematic, edu_max, edu_start,
             mapping_state_idx, periods_emax, states_all, is_simulated,
-            num_draws_emax, shocks_cov, level, is_ambiguous, is_debug,
+            num_draws_emax, shocks_cov, is_debug,
             maxe, draws_emax, is_deterministic,
             shocks_cholesky)
 

@@ -30,7 +30,7 @@ def resfort_build(self):
     cmd = 'gfortran ' + compiler_options + ' -o resfort ' \
           'shared/shared_constants.f90 shared/shared_auxiliary.f90 ' \
           'resfort_slsqp.f  solve/solve_emax.f90 ' \
-          'solve/solve_risk.f90 solve/solve_ambiguity.f90 solve/solve_auxiliary.f90 ' \
+          'solve/solve_risk.f90 solve/solve_auxiliary.f90 ' \
           'solve/solve_fortran.f90  evaluate/evaluate_auxiliary.f90 ' \
           'evaluate/evaluate_fortran.f90 estimate/estimate_auxiliary.f90 ' \
           'simulate/simulate_fortran.f90 ' \

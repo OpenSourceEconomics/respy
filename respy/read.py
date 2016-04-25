@@ -69,14 +69,6 @@ def read(fname, is_dict=False):
     for key_ in ['coeffs', 'fixed']:
         dict_['SHOCKS'][key_] = np.array(dict_['SHOCKS'][key_])
 
-    # This allows to use the ROBUPY package also model initialization files
-    # that are only valid for the RESPY package. Both will be separated at a
-    # later stage.
-    without_ambiguity = 'AMBIGUITY' not in dict_.keys()
-    if without_ambiguity:
-        dict_['AMBIGUITY'] = dict()
-        dict_['AMBIGUITY']['level'] = 0.0
-
     # Check SHOCKS. The covariance matrix can only be constructed after all
     # coefficients are processed. This then allow to check the basic
     # requirements.
@@ -209,7 +201,7 @@ def _check_integrity_complete(dict_):
     # exists due to the specification of optimizer options.
     keys_ = ['BASICS', 'EDUCATION', 'OCCUPATION A', 'OCCUPATION B']
     keys_ += ['HOME', 'INTERPOLATION', 'SHOCKS', 'SOLUTION']
-    keys_ += ['AMBIGUITY', 'SIMULATION', 'PROGRAM', 'ESTIMATION']
+    keys_ += ['SIMULATION', 'PROGRAM', 'ESTIMATION']
     try:
         assert (set(keys_) <= set(dict_.keys()))
     except AssertionError:

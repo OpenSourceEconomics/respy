@@ -19,9 +19,6 @@ from codes.auxiliary import write_interpolation_grid
 from respy.python.solve.solve_auxiliary import get_payoffs
 from respy.tests.codes.random_init import generate_init
 
-from respy.python.solve.solve_ambiguity import get_payoffs_ambiguity
-from respy.python.solve.solve_ambiguity import criterion_ambiguity
-from respy.python.solve.solve_ambiguity import divergence
 from respy.python.solve.solve_emax import simulate_emax
 
 from respy.python.estimate.estimate_auxiliary import get_optim_paras
@@ -31,7 +28,6 @@ from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import dist_model_paras
 from respy.python.shared.shared_auxiliary import create_draws
 
-import respy.fortran.f2py_testing as fort_test
 import respy.fortran.f2py_library as fort_lib
 import respy.fortran.f2py_debug as fort_debug
 
@@ -72,15 +68,15 @@ class TestClass(object):
 
             # Extract class attributes
             periods_payoffs_systematic, states_number_period, \
-                mapping_state_idx, is_deterministic, is_ambiguous, \
+                mapping_state_idx, is_deterministic, \
                 periods_emax, model_paras, num_periods, states_all, \
                 num_draws_emax, edu_start, is_debug, edu_max, delta,\
-                level = dist_class_attributes(respy_obj,
+                = dist_class_attributes(respy_obj,
                     'periods_payoffs_systematic', 'states_number_period',
-                    'mapping_state_idx', 'is_deterministic', 'is_ambiguous',
+                    'mapping_state_idx', 'is_deterministic',
                     'periods_emax', 'model_paras', 'num_periods', 'states_all',
                     'num_draws_emax', 'edu_start', 'is_debug', 'edu_max',
-                    'delta', 'level')
+                    'delta')
 
             # Extract auxiliary objects
             _, _, _, _, shocks_cov, shocks_cholesky = \
@@ -98,212 +94,24 @@ class TestClass(object):
                 draws_emax = np.random.sample((num_draws_emax, 4))
 
                 # Extract payoffs using PYTHON and FORTRAN codes.
+                # TODO: Are the interfaces  between fort and py still aligned.
+                # TODO: Renumbering all tests.
+                # TODO: Check for unused arguments.
                 py = get_payoffs(num_draws_emax, draws_emax, period, k,
-                    payoffs_systematic, edu_max, edu_start,
-                    mapping_state_idx, states_all, num_periods,
-                    periods_emax, delta, is_debug, shocks_cov, level,
-                    is_ambiguous, is_deterministic,
+                    payoffs_systematic, edu_max, edu_start, mapping_state_idx,
+                    states_all, num_periods, periods_emax, delta,
                     shocks_cholesky)
 
                 f90 = fort_debug.wrapper_get_payoffs(num_draws_emax,
                     draws_emax, period, k, payoffs_systematic,
                     edu_max, edu_start, mapping_state_idx, states_all,
                     num_periods, periods_emax, delta, is_debug, shocks_cov,
-                    level, is_ambiguous, is_deterministic,
+                    is_deterministic,
                     shocks_cholesky)
 
                 # Compare returned array on expected future values, ex post
                 # payoffs, and future payoffs.
                 np.testing.assert_array_almost_equal(py, f90)
-
-    def test_2(self):
-        """ This test compares the functions calculating the payoffs under
-        ambiguity.
-        """
-        # Iterate over random test cases
-        for _ in range(5):
-
-            # Generate constraint periods
-            constraints = dict()
-            constraints['level'] = 0.0
-            constraints['version'] = 'PYTHON'
-
-            # Generate random initialization file
-            generate_init(constraints)
-
-            # Perform toolbox actions
-            respy_obj = read('test.respy.ini')
-            respy_obj = solve(respy_obj)
-
-            # Extract class attributes
-            periods_payoffs_systematic, states_number_period, \
-                mapping_state_idx, is_deterministic, periods_emax, \
-                num_periods, model_paras, states_all, num_draws_emax, \
-                edu_start, edu_max, delta, is_debug = \
-                    dist_class_attributes(respy_obj,
-                        'periods_payoffs_systematic', 'states_number_period',
-                        'mapping_state_idx', 'is_deterministic', 'periods_emax',
-                        'num_periods', 'model_paras', 'states_all',
-                        'num_draws_emax', 'edu_start', 'edu_max',
-                        'delta', 'is_debug')
-
-            # Auxiliary objects
-            _, _, _, _, shocks_cov, shocks_cholesky = \
-                dist_model_paras(model_paras, is_debug)
-
-            # Sample draws
-            draws_standard = np.random.multivariate_normal(np.zeros(4),
-                            np.identity(4), (num_draws_emax,))
-
-            # Sampling of random period and admissible state index
-            period = np.random.choice(range(num_periods))
-            k = np.random.choice(range(states_number_period[period]))
-
-            # Select systematic payoffs
-            payoffs_systematic = periods_payoffs_systematic[period, k, :]
-
-            # Set up optimization task
-            level = np.random.uniform(0.01, 1.00)
-
-            args = [num_draws_emax, draws_standard, period, k,
-                payoffs_systematic, edu_max, edu_start, mapping_state_idx,
-                states_all, num_periods, periods_emax, is_debug, delta,
-                shocks_cov, level, is_deterministic, shocks_cholesky]
-
-            f = fort_debug.wrapper_get_payoffs_ambiguity(*args)
-            py = get_payoffs_ambiguity(*args)
-
-            np.testing.assert_allclose(py, f, rtol=1e-05, atol=1e-06)
-
-    def test_3(self):
-        """ This test case compares the results from the SLSQP implementations in
-        PYTHON and FORTRAN for the actual optimization problem.
-        """
-        # Draw random request
-        maxiter = np.random.randint(1, 100)
-        ftol = np.random.uniform(0.000000, 1e-5)
-        x0 = np.random.normal(size=2)
-
-        tiny = 1e-6
-
-        shocks_cov = np.identity(4)*np.random.normal(size=1)**2
-        level = np.random.normal(size=1)**2
-
-        # Setting up PYTHON SLSQP interface for constraints
-        constraint = dict()
-        constraint['type'] = 'eq'
-        constraint['args'] = (shocks_cov, level)
-        constraint['fun'] = divergence
-
-        # Generate constraint periods
-        constraints = dict()
-        constraints['version'] = 'PYTHON'
-
-        # Generate random initialization file
-        generate_init(constraints)
-
-        # Perform toolbox actions
-        respy_obj = read('test.respy.ini')
-        respy_obj = solve(respy_obj)
-
-        # Extract class attributes
-        periods_payoffs_systematic, states_number_period, mapping_state_idx, \
-            periods_emax, num_periods, states_all, num_draws_emax, edu_start, \
-            edu_max, delta, is_debug, model_paras = \
-                dist_class_attributes(respy_obj,
-                    'periods_payoffs_systematic', 'states_number_period',
-                    'mapping_state_idx', 'periods_emax', 'num_periods',
-                    'states_all', 'num_draws_emax', 'edu_start', 'edu_max',
-                    'delta', 'is_debug', 'model_paras')
-
-        # Auxiliary objects
-        _, _, _, _, _, shocks_cholesky = \
-            dist_model_paras(model_paras, is_debug)
-
-        # Sample draws
-        draws_standard = np.random.multivariate_normal(np.zeros(4),
-                                np.identity(4), (num_draws_emax,))
-
-        # Sampling of random period and admissible state index
-        period = np.random.choice(range(num_periods))
-        k = np.random.choice(range(states_number_period[period]))
-
-        # Select systematic payoffs
-        payoffs_systematic = periods_payoffs_systematic[period, k, :]
-
-        args = (num_draws_emax, draws_standard, period, k, payoffs_systematic,
-            edu_max, edu_start, mapping_state_idx, states_all, num_periods,
-            periods_emax, delta, shocks_cholesky)
-
-        opt = _minimize_slsqp(criterion_ambiguity, x0, args, maxiter=maxiter,
-                       ftol=ftol, constraints=constraint)
-
-        # Stabilization. This is done as part of the fortran implementation.
-        if opt['success']:
-            py = opt['x']
-        else:
-            py = x0
-
-        f = fort_debug.wrapper_get_worst_case(x0, maxiter, ftol, tiny,
-            num_draws_emax, draws_standard, period, k, payoffs_systematic,
-            edu_max, edu_start, mapping_state_idx, states_all, num_periods,
-            periods_emax, delta, is_debug, shocks_cov, level,
-            shocks_cholesky)
-
-        # Check equality. If not equal up to the tolerance, also check
-        # whether the result from the FORTRAN implementation is even better.
-        try:
-            np.testing.assert_allclose(py, f, rtol=1e-05, atol=1e-06)
-        except AssertionError:
-            if criterion_ambiguity(f, *args) < criterion_ambiguity(py, *args):
-                pass
-            else:
-                raise AssertionError
-
-    def test_4(self):
-        """ This test case compare the results of a debugging setup for the SLSQP
-        algorithm's PYTHON and FORTRAN implementation
-        """
-        # Sample basic test case
-        maxiter = np.random.randint(1, 100)
-        num_dim = np.random.randint(2, 4)
-        ftol = np.random.uniform(0.000000, 1e-5)
-        x0 = np.random.normal(size=num_dim)
-
-        # Evaluation of Rosenbrock function. We are using the FORTRAN version
-        # in the development of the optimization routines.
-        f90 = fort_test.wrapper_criterion_debug_function(x0, num_dim)
-        py = rosen(x0)
-        np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
-
-        py = rosen_der(x0)
-        f90 = fort_test.wrapper_criterion_debug_derivative(x0, len(x0))
-        np.testing.assert_allclose(py, f90[:-1], rtol=1e-05, atol=1e-06)
-
-        # Test the FORTRAN codes against the PYTHON implementation. This is
-        # expected to fail sometimes due to differences in precision between the
-        # two implementations. In particular, as updating steps of the optimizer
-        # are very sensitive to just small differences in the derivative
-        # information. The same functions are available as a FORTRAN
-        # implementations.
-        def debug_constraint_derivative(x):
-            return np.ones(len(x))
-
-        def debug_constraint_function(x):
-            return np.sum(x) - 10.0
-
-        # Setting up PYTHON SLSQP interface for constraints
-        constraint = dict()
-        constraint['type'] = 'eq'
-        constraint['args'] = ()
-        constraint['fun'] = debug_constraint_function
-        constraint['jac'] = debug_constraint_derivative
-
-        # Evaluate both implementations
-        f = fort_test.wrapper_slsqp_debug(x0, maxiter, ftol, num_dim)
-        py = _minimize_slsqp(rosen, x0, jac=rosen_der, maxiter=maxiter,
-                ftol=ftol,  constraints=constraint)['x']
-        np.testing.assert_allclose(py, f, rtol=1e-05, atol=1e-06)
 
     def test_5(self):
         """ Compare the evaluation of the criterion function for the ambiguity
@@ -366,22 +174,6 @@ class TestClass(object):
 
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
-        # Criterion function for the determination of the worst case outcomes
-        args = (num_draws_emax, draws_standard, period, k, payoffs_systematic,
-            edu_max, edu_start, mapping_state_idx, states_all, num_periods,
-            periods_emax, delta, shocks_cholesky)
-
-        py = criterion_ambiguity(x, *args)
-        f90 = fort_debug.wrapper_criterion_ambiguity(x, *args)
-        np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
-
-        # Evaluation of derivative of criterion function
-        tiny = np.random.uniform(0.000000, 0.5)
-
-        py = approx_fprime(x, criterion_ambiguity, tiny, *args)
-        f90 = fort_debug.wrapper_criterion_ambiguity_derivative(x, tiny, *args)
-        np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
-
     def test_6(self):
         """ Compare results between FORTRAN and PYTHON of selected
         hand-crafted functions. In test_97() we test FORTRAN implementations
@@ -394,18 +186,7 @@ class TestClass(object):
                     4), 4))
             cov = np.dot(matrix, matrix.T)
             x = np.random.rand(2)
-            level = np.random.random(1)
             tiny = np.random.rand()**2
-
-            # Kullback-Leibler (KL) divergence
-            py = divergence(x, cov, level)
-            f90 = fort_debug.wrapper_divergence(x, cov, level)
-            np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
-
-            # Gradient approximation of KL divergence
-            py = approx_fprime(x, divergence, tiny, cov, level)
-            f90 = fort_debug.wrapper_divergence_derivative(x, cov, level, tiny)
-            np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
         for _ in range(25):
 
@@ -631,12 +412,12 @@ class TestClass(object):
 
         # Extract class attributes
         num_periods, edu_start, edu_max, min_idx, model_paras, num_draws_emax, \
-            seed_emax, is_debug, delta, level, is_ambiguous, \
+            seed_emax, is_debug, delta, \
             is_interpolated, num_points, is_deterministic, is_myopic = \
                 dist_class_attributes(respy_obj,
                     'num_periods', 'edu_start', 'edu_max', 'min_idx',
                     'model_paras', 'num_draws_emax', 'seed_emax', 'is_debug',
-                    'delta', 'level', 'is_ambiguous',
+                    'delta',
                     'is_interpolated', 'num_points', 'is_deterministic',
                     'is_myopic')
 
@@ -673,7 +454,7 @@ class TestClass(object):
         args = (num_periods, max_states_period, periods_draws_emax,
             num_draws_emax, states_number_period, periods_payoffs_systematic,
             edu_max, edu_start, mapping_state_idx, states_all, delta,
-            is_debug, shocks_cov, level, is_ambiguous, is_interpolated,
+            is_debug, shocks_cov, is_interpolated,
             num_points, is_deterministic, shocks_cholesky)
 
         pyth = pyth_backward_induction(*args)

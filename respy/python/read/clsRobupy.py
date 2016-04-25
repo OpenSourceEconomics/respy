@@ -12,7 +12,7 @@ from respy.python.shared.shared_auxiliary import replace_missing_values
 
 # Special care with derived attributes is required to maintain integrity of
 # the class instance. These derived attributes cannot be changed directly.
-DERIVED_ATTR = ['is_ambiguous', 'min_idx', 'is_deterministic']
+DERIVED_ATTR = ['min_idx', 'is_deterministic']
 DERIVED_ATTR += ['is_myopic']
 
 # Special care with solution attributes is required. These are only returned
@@ -84,14 +84,10 @@ class RobupyCls(object):
 
         self.attr['store'] = None
 
-        self.attr['level'] = None
-
         self.attr['tau'] = None
 
         # Derived attributes
         self.attr['is_deterministic'] = None
-
-        self.attr['is_ambiguous'] = None
 
         self.attr['is_myopic'] = None
 
@@ -278,8 +274,6 @@ class RobupyCls(object):
 
         self.attr['edu_max'] = init_dict['EDUCATION']['max']
 
-        self.attr['level'] = init_dict['AMBIGUITY']['level']
-
         self.attr['store'] = init_dict['SOLUTION']['store']
 
         self.attr['delta'] = init_dict['BASICS']['delta']
@@ -366,8 +360,6 @@ class RobupyCls(object):
 
         self.attr['is_deterministic'] = (np.count_nonzero(shocks_cov) == 0)
 
-        self.attr['is_ambiguous'] = (self.attr['level'] > 0.00)
-
         self.attr['is_myopic'] = (self.attr['delta'] == 0.00)
 
     def _check_integrity_attributes(self):
@@ -386,8 +378,6 @@ class RobupyCls(object):
         num_agents_sim = self.attr['num_agents_sim']
 
         num_agents_est = self.attr['num_agents_est']
-
-        is_ambiguous = self.attr['is_ambiguous']
 
         paras_fixed = self.attr['paras_fixed']
 
@@ -417,8 +407,6 @@ class RobupyCls(object):
 
         delta = self.attr['delta']
 
-        level = self.attr['level']
-
         tau = self.attr['tau']
 
         # Auxiliary objects
@@ -431,9 +419,6 @@ class RobupyCls(object):
 
         # Debug status
         assert (is_debug in [True, False])
-
-        # Ambiguity in environment
-        assert (is_ambiguous in [True, False])
 
         # Forward-looking agents
         assert (is_myopic in [True, False])
@@ -464,11 +449,6 @@ class RobupyCls(object):
         assert (np.isfinite(num_draws_emax))
         assert (isinstance(num_draws_emax, int))
         assert (num_draws_emax >= 0)
-
-        # Level of ambiguity
-        assert (np.isfinite(level))
-        assert (isinstance(level, float))
-        assert (level >= 0.00)
 
         # Maximum level of education
         assert (np.isfinite(edu_max))

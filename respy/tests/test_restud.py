@@ -26,12 +26,11 @@ from respy import read
 '''
 
 
-def transform_respy_to_restud(model_paras, level, edu_start, edu_max,
+def transform_respy_to_restud(model_paras, edu_start, edu_max,
         num_agents_sim, num_periods, num_draws_emax, delta):
     """ Transform a ROBUPY initialization file to a RESTUD file.
     """
     # Ensure restrictions
-    assert (level == 0.00)
     assert (edu_start == 10)
     assert (edu_max == 20)
 
@@ -107,7 +106,6 @@ class TestClass(object):
         # run with zero draws.
         constraints = dict()
         constraints['edu'] = (10, 20)
-        constraints['level'] = 0.00
         constraints['is_deterministic'] = True
 
         # Generate random initialization file. The RESTUD code uses the same
@@ -132,12 +130,12 @@ class TestClass(object):
         # This flag aligns the random components between the RESTUD program and
         # ROBUPY package. The existence of the file leads to the RESTUD program
         # to write out the random components.
-        model_paras, level, edu_start, edu_max, num_agents_sim, num_periods, \
+        model_paras, edu_start, edu_max, num_agents_sim, num_periods, \
             num_draws_emax, delta = dist_class_attributes(respy_obj,
-                'model_paras', 'level', 'edu_start', 'edu_max',
+                'model_paras', 'edu_start', 'edu_max',
                 'num_agents_sim', 'num_periods', 'num_draws_emax', 'delta')
 
-        transform_respy_to_restud(model_paras, level, edu_start, edu_max,
+        transform_respy_to_restud(model_paras, edu_start, edu_max,
             num_agents_sim, num_periods, num_draws_emax, delta)
 
         # Solve model using RESTUD code.

@@ -1,63 +1,3 @@
-!*******************************************************************************
-!*******************************************************************************
-!
-!   This subroutine is just a wrapper for selected functions of the ROBUFORT 
-!   library. Its sole purpose is to serve as a wrapper for debugging purposes.
-!
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE wrapper_get_worst_case(x_internal, x_start, maxiter, ftol, tiny, &
-                num_draws_emax, draws_standard, period, k, payoffs_systematic, &
-                edu_max, edu_start, mapping_state_idx, states_all, &
-                num_periods, periods_emax, delta, is_debug, shocks_cov, & 
-                level, shocks_cholesky)
-
-    !/* external libraries    */
-
-    USE solve_ambiguity
-
-    !/* setup    */
-
-    IMPLICIT NONE
-
-    !/* external objects    */
-
-    DOUBLE PRECISION, INTENT(IN)    :: shocks_cov(4, 4)
-    DOUBLE PRECISION, INTENT(OUT)   :: x_internal(2)
-    DOUBLE PRECISION, INTENT(IN)    :: x_start(2)
-    DOUBLE PRECISION, INTENT(IN)    :: level
-    DOUBLE PRECISION, INTENT(IN)    :: ftol
-
-    INTEGER, INTENT(IN)             :: maxiter
-
-    DOUBLE PRECISION, INTENT(IN)    :: payoffs_systematic(:)
-    DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(:, :)
-    DOUBLE PRECISION, INTENT(IN)    :: draws_standard(:, :)
-    DOUBLE PRECISION, INTENT(IN)    :: periods_emax(:, :)
-    DOUBLE PRECISION, INTENT(IN)    :: delta
-    DOUBLE PRECISION, INTENT(IN)    :: tiny
-
-    INTEGER, INTENT(IN)             :: mapping_state_idx(:, :, :, :, :)
-    INTEGER, INTENT(IN)             :: states_all(:, :, :)
-    INTEGER, INTENT(IN)             :: num_periods
-    INTEGER, INTENT(IN)             :: num_draws_emax
-    INTEGER, INTENT(IN)             :: edu_start
-    INTEGER, INTENT(IN)             :: edu_max
-    INTEGER, INTENT(IN)             :: period
-    INTEGER, INTENT(IN)             :: k
-
-    LOGICAL, INTENT(IN)             :: is_debug
-
-!-------------------------------------------------------------------------------
-! Algorithm
-!-------------------------------------------------------------------------------
-    
-    CALL get_worst_case(x_internal, x_start, maxiter, ftol, tiny, &
-            num_draws_emax, draws_standard, period, k, payoffs_systematic, & 
-            edu_max, edu_start, mapping_state_idx, states_all, num_periods, &
-            periods_emax, delta, is_debug, shocks_cov, level, shocks_cholesky)
-
-END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
 SUBROUTINE wrapper_normal_pdf(rslt, x, mean, sd)
@@ -143,103 +83,6 @@ SUBROUTINE wrapper_svd(U, S, VT, A, m)
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_get_payoffs_ambiguity(emax_simulated, num_draws_emax, & 
-                draws_emax, period, k, payoffs_systematic, edu_max, & 
-                edu_start, mapping_state_idx, states_all, num_periods, & 
-                periods_emax, delta, is_debug, shocks_cov, level, &
-                is_deterministic, shocks_cholesky)
-
-    !/* external libraries      */
-
-    USE solve_ambiguity
-
-    !/* setup                   */
-
-    IMPLICIT NONE
-
-    !/* external objects        */
-
-    DOUBLE PRECISION, INTENT(OUT)   :: emax_simulated
-
-    INTEGER, INTENT(IN)             :: mapping_state_idx(:,:,:,:,:)
-    INTEGER, INTENT(IN)             :: states_all(:,:,:)
-    INTEGER, INTENT(IN)             :: num_draws_emax
-    INTEGER, INTENT(IN)             :: num_periods
-    INTEGER, INTENT(IN)             :: edu_start
-    INTEGER, INTENT(IN)             :: edu_max
-    INTEGER, INTENT(IN)             :: period
-    INTEGER, INTENT(IN)             :: k
-
-    DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(:, :)
-    DOUBLE PRECISION, INTENT(IN)    :: payoffs_systematic(:)
-    DOUBLE PRECISION, INTENT(IN)    :: periods_emax(:,:)
-    DOUBLE PRECISION, INTENT(IN)    :: draws_emax(:, :)
-    DOUBLE PRECISION, INTENT(IN)    :: shocks_cov(:, :)
-    DOUBLE PRECISION, INTENT(IN)    :: delta
-    DOUBLE PRECISION, INTENT(IN)    :: level
-
-    LOGICAL, INTENT(IN)             :: is_deterministic
-    LOGICAL, INTENT(IN)             :: is_debug
-
-!-------------------------------------------------------------------------------
-! Algorithm
-!-------------------------------------------------------------------------------
-    
-    CALL get_payoffs_ambiguity(emax_simulated, num_draws_emax, draws_emax, & 
-            period, k, payoffs_systematic, edu_max, edu_start, & 
-            mapping_state_idx, states_all, num_periods, periods_emax, delta, & 
-            is_debug, shocks_cov, level, is_deterministic, &
-            shocks_cholesky)
-
-END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE wrapper_criterion_ambiguity_derivative(rslt, x, tiny, &
-                num_draws_emax, draws_emax, period, k, payoffs_systematic, & 
-                edu_max, edu_start, mapping_state_idx, states_all, & 
-                num_periods, periods_emax, delta, shocks_cholesky)
-
-    !/* external libraries      */
-
-    USE solve_ambiguity
-
-    !/* setup                   */
-
-    IMPLICIT NONE
-
-    !/* external objects        */
-
-    DOUBLE PRECISION, INTENT(OUT)   :: rslt(2)
-
-    DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(:, :)
-    DOUBLE PRECISION, INTENT(IN)    :: payoffs_systematic(:)
-    DOUBLE PRECISION, INTENT(IN)    :: periods_emax(:,:)
-    DOUBLE PRECISION, INTENT(IN)    :: draws_emax(:, :)
-    DOUBLE PRECISION, INTENT(IN)    :: delta
-    DOUBLE PRECISION, INTENT(IN)    :: x(:)
-    DOUBLE PRECISION, INTENT(IN)    :: tiny
-
-    INTEGER, INTENT(IN)             :: mapping_state_idx(:,:,:,:,:)
-    INTEGER, INTENT(IN)             :: states_all(:,:,:)
-    INTEGER, INTENT(IN)             :: num_draws_emax
-    INTEGER, INTENT(IN)             :: num_periods
-    INTEGER, INTENT(IN)             :: edu_start
-    INTEGER, INTENT(IN)             :: edu_max
-    INTEGER, INTENT(IN)             :: period
-    INTEGER, INTENT(IN)             :: k
-
-!-------------------------------------------------------------------------------
-! Algorithm
-!-------------------------------------------------------------------------------
-
-    rslt = criterion_ambiguity_derivative(x, tiny, num_draws_emax, &
-            draws_emax, period, k, payoffs_systematic, edu_max, edu_start, & 
-            mapping_state_idx, states_all, num_periods, periods_emax, & 
-            delta, shocks_cholesky)
-
-END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
 SUBROUTINE wrapper_simulate_emax(emax_simulated, num_periods, & 
                 num_draws_emax, period, k, draws_emax, payoffs_systematic, & 
                 edu_max, edu_start, periods_emax, states_all, & 
@@ -282,78 +125,6 @@ SUBROUTINE wrapper_simulate_emax(emax_simulated, num_periods, &
             states_all, mapping_state_idx, delta, shocks_cholesky, shocks_mean)
 
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE wrapper_criterion_ambiguity(emax_simulated, x, num_draws_emax, &
-                draws_emax, period, k, payoffs_systematic, edu_max, & 
-                edu_start, mapping_state_idx, states_all, num_periods, & 
-                periods_emax, delta, shocks_cholesky)
-
-    !/* external libraries      */
-
-    USE solve_ambiguity
-
-    !/* setup                   */
-
-    IMPLICIT NONE
-
-    !/* external objects        */
-
-    DOUBLE PRECISION, INTENT(OUT)   :: emax_simulated
-
-    DOUBLE PRECISION, INTENT(IN)    :: payoffs_systematic(:)
-    DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(:, :)
-    DOUBLE PRECISION, INTENT(IN)    :: periods_emax(:,:)
-    DOUBLE PRECISION, INTENT(IN)    :: draws_emax(:, :)
-    DOUBLE PRECISION, INTENT(IN)    :: delta
-    DOUBLE PRECISION, INTENT(IN)    :: x(:)
-
-    INTEGER, INTENT(IN)             :: mapping_state_idx(:,:,:,:,:)
-    INTEGER, INTENT(IN)             :: states_all(:,:,:)
-    INTEGER, INTENT(IN)             :: num_draws_emax
-    INTEGER, INTENT(IN)             :: num_periods
-    INTEGER, INTENT(IN)             :: edu_start
-    INTEGER, INTENT(IN)             :: edu_max
-    INTEGER, INTENT(IN)             :: period
-    INTEGER, INTENT(IN)             :: k
-
-!-------------------------------------------------------------------------------
-! Algorithm
-!-------------------------------------------------------------------------------
-
-    emax_simulated = criterion_ambiguity(x, num_draws_emax, draws_emax, &
-        period, k, payoffs_systematic, edu_max, edu_start, &
-        mapping_state_idx, states_all, num_periods, periods_emax, delta, & 
-        shocks_cholesky)
-
-END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE wrapper_divergence_derivative(rslt, x, cov, level, tiny)
-
-    !/* external libraries      */
-
-    USE solve_ambiguity
-
-    !/* setup                   */
-
-    IMPLICIT NONE
-
-    !/* external objects        */
-
-    DOUBLE PRECISION, INTENT(IN)   :: cov(4,4)
-    DOUBLE PRECISION, INTENT(OUT)  :: rslt(2)
-    DOUBLE PRECISION, INTENT(IN)   :: level
-    DOUBLE PRECISION, INTENT(IN)   :: x(2)
-    DOUBLE PRECISION, INTENT(IN)   :: tiny
-
-!-------------------------------------------------------------------------------
-! Algorithm
-!-------------------------------------------------------------------------------
-    
-    rslt = divergence_derivative(x, cov, level, tiny)
-
-END SUBROUTINE 
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE wrapper_multivariate_normal(draws, mean, covariance, & 
@@ -510,33 +281,6 @@ SUBROUTINE wrapper_trace(rslt, A)
 !-------------------------------------------------------------------------------
     
     rslt = trace_fun(A)
-
-END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE wrapper_divergence(div, x, cov, level)
-
-    !/* external libraries      */
-
-    USE solve_ambiguity
-
-    !/* setup                   */
-
-    IMPLICIT NONE
-
-    !/* external objects        */
-
-    DOUBLE PRECISION, INTENT(OUT)   :: div(1)
-
-    DOUBLE PRECISION, INTENT(IN)    :: cov(4, 4)
-    DOUBLE PRECISION, INTENT(IN)    :: level
-    DOUBLE PRECISION, INTENT(IN)    :: x(2)
-
-!-------------------------------------------------------------------------------
-! Algorithm
-!-------------------------------------------------------------------------------
-    
-    div = divergence(x, cov, level)
 
 END SUBROUTINE
 !*******************************************************************************
@@ -722,8 +466,8 @@ END SUBROUTINE
 SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, &
                 num_periods, num_states, delta, periods_payoffs_systematic, &
                 edu_max, edu_start, mapping_state_idx, periods_emax, &
-                states_all, is_simulated, num_draws_emax, shocks_cov, level, &
-                is_ambiguous, is_debug, maxe, draws_emax, &
+                states_all, is_simulated, num_draws_emax, shocks_cov, &
+                is_debug, maxe, draws_emax, &
                 is_deterministic, shocks_cholesky)
 
     !/* external libraries      */
@@ -745,8 +489,7 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, &
     DOUBLE PRECISION, INTENT(IN)        :: shocks_cov(:, :)
     DOUBLE PRECISION, INTENT(IN)        :: maxe(:)
     DOUBLE PRECISION, INTENT(IN)        :: delta
-    DOUBLE PRECISION, INTENT(IN)        :: level
- 
+
     INTEGER, INTENT(IN)                 :: mapping_state_idx(:, :, :, :, :)    
     INTEGER, INTENT(IN)                 :: states_all(:, :, :)    
     INTEGER, INTENT(IN)                 :: num_draws_emax
@@ -759,7 +502,6 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, &
 
     LOGICAL, INTENT(IN)                 :: is_deterministic
     LOGICAL, INTENT(IN)                 :: is_simulated(:)
-    LOGICAL, INTENT(IN)                 :: is_ambiguous
     LOGICAL, INTENT(IN)                 :: is_debug
 
 !-------------------------------------------------------------------------------
@@ -769,7 +511,7 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, &
     CALL get_endogenous_variable(exogenous_variable, period, num_periods, &
             num_states, delta, periods_payoffs_systematic, edu_max, &
             edu_start, mapping_state_idx, periods_emax, states_all, &
-            is_simulated, num_draws_emax, shocks_cov, level, is_ambiguous, & 
+            is_simulated, num_draws_emax, shocks_cov, &
             is_debug, maxe, draws_emax, is_deterministic, &
             shocks_cholesky)
 
@@ -855,8 +597,8 @@ END SUBROUTINE
 SUBROUTINE wrapper_get_payoffs(emax_simulated, num_draws_emax, & 
                 draws_emax, period, k, payoffs_systematic, edu_max, & 
                 edu_start, mapping_state_idx, states_all, num_periods, & 
-                periods_emax, delta, is_debug, shocks_cov, level, & 
-                is_ambiguous, is_deterministic, shocks_cholesky)
+                periods_emax, delta, is_debug, shocks_cov, & 
+                is_deterministic, shocks_cholesky)
 
 
     !/* external libraries      */
@@ -877,7 +619,6 @@ SUBROUTINE wrapper_get_payoffs(emax_simulated, num_draws_emax, &
     DOUBLE PRECISION, INTENT(IN)        :: shocks_cov(:, :)
     DOUBLE PRECISION, INTENT(IN)        :: draws_emax(:, :)
     DOUBLE PRECISION, INTENT(IN)        :: delta
-    DOUBLE PRECISION, INTENT(IN)        :: level
 
     INTEGER, INTENT(IN)                 :: mapping_state_idx(:, :, :, :, :)
     INTEGER, INTENT(IN)                 :: states_all(:, :, :)
@@ -889,7 +630,6 @@ SUBROUTINE wrapper_get_payoffs(emax_simulated, num_draws_emax, &
     INTEGER, INTENT(IN)                 :: k 
 
     LOGICAL, INTENT(IN)                 :: is_deterministic
-    LOGICAL, INTENT(IN)                 :: is_ambiguous
     LOGICAL, INTENT(IN)                 :: is_debug
 
 !-------------------------------------------------------------------------------
@@ -899,7 +639,7 @@ SUBROUTINE wrapper_get_payoffs(emax_simulated, num_draws_emax, &
     CALL get_payoffs(emax_simulated, num_draws_emax, draws_emax, period, k, & 
             payoffs_systematic, edu_max, edu_start, mapping_state_idx, & 
             states_all, num_periods, periods_emax, delta, is_debug, & 
-            shocks_cov, level, is_ambiguous, is_deterministic, &
+            shocks_cov, is_deterministic, &
             shocks_cholesky)
     
 END SUBROUTINE

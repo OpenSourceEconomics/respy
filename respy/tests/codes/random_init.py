@@ -58,10 +58,6 @@ def generate_random_dict(constraints=None):
     dict_['BASICS']['periods'] = np.random.randint(1, MAX_PERIODS)
     dict_['BASICS']['delta'] = np.random.random()
 
-    # Operationalization of ambiguity
-    dict_['AMBIGUITY'] = dict()
-    dict_['AMBIGUITY']['level'] = np.random.choice([0.00, np.random.uniform()])
-
     # Home
     dict_['HOME'] = dict()
     dict_['HOME']['coeffs'] = np.random.uniform(-0.05, 0.05, 1).tolist()
@@ -211,17 +207,6 @@ def generate_random_dict(constraints=None):
         # Replace in initialization file
         dict_['SOLUTION']['store'] = store
 
-    # Replace level of ambiguity
-    if 'level' in constraints.keys():
-        # Extract objects
-        level = constraints['level']
-        # Checks
-        assert (np.isfinite(level))
-        assert (level >= 0.0)
-        assert (isinstance(level, float))
-        # Replace in initialization file
-        dict_['AMBIGUITY']['level'] = level
-
     # Replace number of periods
     if 'periods' in constraints.keys():
         # Extract objects
@@ -288,7 +273,6 @@ def generate_random_dict(constraints=None):
         if constraints['is_estimation']:
             dict_['SCIPY-POWELL']['maxfun'] = 1
             dict_['ESTIMATION']['maxiter'] = 1
-            dict_['AMBIGUITY']['level'] = 0.000
 
     # Number of simulations for S-ML
     if 'sims' in constraints.keys():

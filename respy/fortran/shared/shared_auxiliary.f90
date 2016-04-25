@@ -755,11 +755,11 @@ SUBROUTINE store_results(mapping_state_idx, states_all, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
+SUBROUTINE read_specification(num_periods, delta, coeffs_a, coeffs_b, &
                 coeffs_edu, edu_start, edu_max, coeffs_home, shocks_cov, &
                 shocks_cholesky, num_draws_emax, seed_emax, seed_prob, &
                 num_agents_est, is_debug, is_deterministic, is_interpolated, &
-                num_points, min_idx, is_ambiguous, request, &
+                num_points, min_idx, request, &
                 num_draws_prob, is_myopic, tau)
 
     !
@@ -788,12 +788,10 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
     REAL(our_dble), INTENT(OUT)     :: coeffs_a(6)
     REAL(our_dble), INTENT(OUT)     :: coeffs_b(6)
     REAL(our_dble), INTENT(OUT)     :: delta
-    REAL(our_dble), INTENT(OUT)     :: level
     REAL(our_dble), INTENT(OUT)     :: tau
 
     LOGICAL, INTENT(OUT)            :: is_interpolated
     LOGICAL, INTENT(OUT)            :: is_deterministic
-    LOGICAL, INTENT(OUT)            :: is_ambiguous
     LOGICAL, INTENT(OUT)            :: is_myopic
     LOGICAL, INTENT(OUT)            :: is_debug
 
@@ -822,9 +820,6 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
         ! BASICS
         READ(1, 1505) num_periods
         READ(1, 1510) delta
-
-        ! AMBIGUITY
-        READ(1, 1510) level
 
         ! WORK
         READ(1, 1500) coeffs_a
@@ -861,7 +856,6 @@ SUBROUTINE read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
 
         ! AUXILIARY
         READ(1, 1505) min_idx
-        READ(1, *) is_ambiguous
         READ(1, *) is_deterministic
         READ(1, *) is_myopic
 

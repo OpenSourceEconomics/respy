@@ -29,7 +29,6 @@ STRUCTURE['ESTIMATION']+= ['tau', 'file', 'agents']
 
 STRUCTURE['PROGRAM'] = ['debug', 'version']
 STRUCTURE['INTERPOLATION'] = ['apply', 'points']
-STRUCTURE['AMBIGUITY'] = ['level']
 STRUCTURE['SCIPY-BFGS'] = ['gtol', 'epsilon']
 STRUCTURE['SCIPY-POWELL'] = ['maxfun', 'xtol', 'ftol']
 
@@ -93,14 +92,6 @@ def check_line(group, flag, value):
                 if value == 'FORTRAN':
                     fname = ROOT_DIR + '/fortran/bin/resfort'
                     assert os.path.exists(fname)
-
-        if group == 'AMBIGUITY':
-            if flag in ['level']:
-                assert (isinstance(value, float))
-                assert (value >= 0.00)
-                assert (np.isfinite(value))
-            else:
-                pass
 
         if group == 'SIMULATION':
             if flag in ['agents', 'seed']:

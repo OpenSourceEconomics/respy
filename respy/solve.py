@@ -5,11 +5,8 @@
 from respy.fortran.f2py_library import f2py_create_state_space
 from respy.fortran.f2py_library import f2py_solve
 
-from respy.python.solve.solve_auxiliary import start_ambiguity_logging
-from respy.python.solve.solve_auxiliary import summarize_ambiguity
 from respy.python.solve.solve_auxiliary import logging_solution
 from respy.python.solve.solve_auxiliary import check_input
-from respy.python.solve.solve_auxiliary import cleanup
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import dist_model_paras
@@ -34,24 +31,19 @@ def solve(input):
     # Checks, cleanup, start logger
     assert check_input(respy_obj)
 
-    cleanup()
-
     logging_solution('start')
 
     # Distribute class attributes
     model_paras, num_periods, edu_start, is_debug, edu_max, delta, \
         is_deterministic, version, num_draws_emax, seed_emax, is_interpolated, \
-        is_ambiguous, num_points, is_myopic, min_idx, level, store, \
+        num_points, is_myopic, min_idx, store, \
         tau = \
             dist_class_attributes(respy_obj,
                 'model_paras', 'num_periods', 'edu_start', 'is_debug',
                 'edu_max', 'delta', 'is_deterministic', 'version',
                 'num_draws_emax', 'seed_emax', 'is_interpolated',
-                'is_ambiguous', 'num_points', 'is_myopic', 'min_idx',
-                'level', 'store', 'tau')
-
-    # Construct auxiliary objects
-    start_ambiguity_logging(is_ambiguous, is_debug)
+                'num_points', 'is_myopic', 'min_idx',
+                'store', 'tau')
 
     # Distribute model parameters
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, shocks_cholesky = \
@@ -67,9 +59,9 @@ def solve(input):
     # Collect baseline arguments. These are latter amended to account for
     # each interface.
     base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
-        is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
+        is_deterministic, is_interpolated, num_draws_emax,
         num_periods, num_points, is_myopic, edu_start, is_debug,
-        edu_max, min_idx, delta, level)
+        edu_max, min_idx, delta)
 
     # Select appropriate interface. The additional preparations for the F2PY
     # interface are required as only explicit shape arguments can be passed
@@ -90,10 +82,6 @@ def solve(input):
 
     # Attach solution to class instance
     respy_obj = add_solution(respy_obj, store, *solution)
-
-    # Summarize optimizations in case of ambiguity
-    if is_debug and is_ambiguous and (not is_myopic):
-        summarize_ambiguity(respy_obj)
 
     # Orderly shutdown of logging capability.
     logging_solution('stop')

@@ -1,14 +1,5 @@
 !*******************************************************************************
 !*******************************************************************************
-!
-!   Interface to ROBUPY library. This is the front-end to all functionality.
-!   Subroutines and functions for the case of risk-only case are in the
-!   evaluate_risk module. Building on the risk-only functionality, the module
-!   resfort_ambiguity provided the required subroutines and functions for the
-!   case of ambiguity.
-!
-!*******************************************************************************
-!*******************************************************************************
 MODULE solve_fortran
 
 	!/*	external modules	*/
@@ -30,9 +21,9 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, &
                 mapping_state_idx, periods_emax, states_all, coeffs_a, &
                 coeffs_b, coeffs_edu, coeffs_home, shocks_cov, &
                 is_deterministic, is_interpolated, num_draws_emax, &
-                periods_draws_emax, is_ambiguous, num_periods, num_points, &
+                periods_draws_emax, num_periods, num_points, &
                 edu_start, is_myopic, is_debug, edu_max, min_idx, &
-                delta, level)
+                delta)
 
     !/* external objects        */
 
@@ -56,12 +47,10 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, &
     REAL(our_dble), INTENT(IN)                      :: shocks_cov(4, 4)
     REAL(our_dble), INTENT(IN)                      :: coeffs_a(:)
     REAL(our_dble), INTENT(IN)                      :: coeffs_b(:)
-    REAL(our_dble), INTENT(IN)                      :: level
     REAL(our_dble), INTENT(IN)                      :: delta
 
     LOGICAL, INTENT(IN)                             :: is_deterministic
     LOGICAL, INTENT(IN)                             :: is_interpolated
-    LOGICAL, INTENT(IN)                             :: is_ambiguous
     LOGICAL, INTENT(IN)                             :: is_myopic
     LOGICAL, INTENT(IN)                             :: is_debug
 
@@ -130,7 +119,7 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, &
                 periods_draws_emax, num_draws_emax, states_number_period, & 
                 periods_payoffs_systematic, edu_max, edu_start, & 
                 mapping_state_idx, states_all, delta, is_debug, &
-                shocks_cov, level, is_ambiguous, is_interpolated, &
+                shocks_cov, is_interpolated, &
                 num_points, is_deterministic, shocks_cholesky)
 
     END IF

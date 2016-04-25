@@ -45,12 +45,10 @@ PROGRAM resfort
     REAL(our_dble)                  :: coeffs_b(6)
     REAL(our_dble)                  :: crit_val
     REAL(our_dble)                  :: delta
-    REAL(our_dble)                  :: level
     REAL(our_dble)                  :: tau
 
     LOGICAL                         :: is_deterministic
     LOGICAL                         :: is_interpolated
-    LOGICAL                         :: is_ambiguous
     LOGICAL                         :: is_myopic
     LOGICAL                         :: is_debug
 
@@ -63,11 +61,11 @@ PROGRAM resfort
     ! Read specification of model. This is the FORTRAN replacement for the 
     ! clsRobupy instance that carries the model parametrization for the 
     ! PYTHON/F2PY implementations.
-    CALL read_specification(num_periods, delta, level, coeffs_a, coeffs_b, &
+    CALL read_specification(num_periods, delta, coeffs_a, coeffs_b, &
             coeffs_edu, edu_start, edu_max, coeffs_home, shocks_cov, &
             shocks_cholesky, num_draws_emax, seed_emax, seed_prob, &
             num_agents_est, is_debug, is_deterministic, is_interpolated, & 
-            num_points, min_idx, is_ambiguous, request, &
+            num_points, min_idx, request, &
             num_draws_prob, is_myopic, tau)
 
     ! This part creates (or reads from disk) the draws for the Monte 
@@ -84,9 +82,9 @@ PROGRAM resfort
                 mapping_state_idx, periods_emax, states_all, coeffs_a, & 
                 coeffs_b, coeffs_edu, coeffs_home, shocks_cov, & 
                 is_deterministic, is_interpolated, num_draws_emax, & 
-                periods_draws_emax, is_ambiguous, num_periods, num_points, & 
+                periods_draws_emax, num_periods, num_points, &
                 edu_start, is_myopic, is_debug, edu_max, min_idx, &
-                delta, level)
+                delta)
 
     ELSE IF (request == 'evaluate') THEN
 
@@ -104,9 +102,9 @@ PROGRAM resfort
                 mapping_state_idx, periods_emax, states_all, coeffs_a, & 
                 coeffs_b, coeffs_edu, coeffs_home, shocks_cov, & 
                 is_deterministic, is_interpolated, num_draws_emax, & 
-                periods_draws_emax, is_ambiguous, num_periods, num_points, & 
+                periods_draws_emax, num_periods, num_points, &
                 edu_start, is_myopic, is_debug, edu_max, min_idx, &
-                delta, level)
+                delta)
 
         CALL fort_evaluate(crit_val, periods_payoffs_systematic, & 
                 mapping_state_idx, periods_emax, states_all, shocks_cov, & 

@@ -39,14 +39,14 @@ def add_gradient_information(respy_obj):
 
     model_paras, num_periods, num_agents_est, edu_start, seed_sim, \
         is_debug, file_sim, edu_max, delta, num_draws_prob, seed_prob, \
-        num_draws_emax, seed_emax, level, min_idx, is_ambiguous, \
+        num_draws_emax, seed_emax, min_idx, \
         is_deterministic, is_myopic, is_interpolated, num_points, version, \
         maxiter, optimizer_used, paras_fixed, tau, optimizer_options = \
         dist_class_attributes(respy_obj,
             'model_paras', 'num_periods', 'num_agents_est', 'edu_start',
             'seed_sim', 'is_debug', 'file_sim', 'edu_max', 'delta',
             'num_draws_prob', 'seed_prob', 'num_draws_emax', 'seed_emax',
-            'level',  'min_idx', 'is_ambiguous', 'is_deterministic',
+            'min_idx', 'is_deterministic',
             'is_myopic', 'is_interpolated', 'num_points', 'version',
             'maxiter', 'optimizer_used', 'paras_fixed', 'tau',
             'optimizer_options')
@@ -70,9 +70,9 @@ def add_gradient_information(respy_obj):
         is_debug)
 
     # Collect arguments for the evaluation of the criterion function.
-    args = (is_deterministic, is_interpolated, num_draws_emax,is_ambiguous,
+    args = (is_deterministic, is_interpolated, num_draws_emax,
         num_periods, num_points, is_myopic, edu_start, is_debug,
-        edu_max, min_idx, delta, level, data_array, num_agents_est,
+        edu_max, min_idx, delta, data_array, num_agents_est,
         num_draws_prob, tau, periods_draws_emax, periods_draws_prob)
 
     # Prepare evaluation of the criterion function.

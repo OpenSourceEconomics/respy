@@ -7,10 +7,10 @@
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE f2py_criterion(crit_val, x, is_deterministic, is_interpolated, & 
-                num_draws_emax, is_ambiguous, num_periods, num_points, & 
-                is_myopic, edu_start, is_debug, edu_max, min_idx, &
-                delta, level, data_array, num_agents_est, num_draws_prob, & 
-                tau, periods_draws_emax, periods_draws_prob)
+                num_draws_emax, num_periods, num_points, &
+                is_myopic, edu_start, is_debug, edu_max, min_idx, delta, &
+                data_array, num_agents_est, num_draws_prob, tau, & 
+                periods_draws_emax, periods_draws_prob)
 
     !/* external libraries      */
 
@@ -42,13 +42,11 @@ SUBROUTINE f2py_criterion(crit_val, x, is_deterministic, is_interpolated, &
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_emax(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_prob(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: data_array(:, :)
-    DOUBLE PRECISION, INTENT(IN)    :: level
     DOUBLE PRECISION, INTENT(IN)    :: delta 
     DOUBLE PRECISION, INTENT(IN)    :: tau
 
     LOGICAL, INTENT(IN)             :: is_deterministic 
     LOGICAL, INTENT(IN)             :: is_interpolated
-    LOGICAL, INTENT(IN)             :: is_ambiguous
     LOGICAL, INTENT(IN)             :: is_myopic
     LOGICAL, INTENT(IN)             :: is_debug
 
@@ -80,8 +78,8 @@ SUBROUTINE f2py_criterion(crit_val, x, is_deterministic, is_interpolated, &
             mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, & 
             coeffs_edu, coeffs_home, shocks_cov, is_deterministic, & 
             is_interpolated, num_draws_emax, periods_draws_emax, & 
-            is_ambiguous, num_periods, num_points, edu_start, is_myopic, & 
-            is_debug, edu_max, min_idx, delta, level)
+            num_periods, num_points, edu_start, is_myopic, &
+            is_debug, edu_max, min_idx, delta)
 
     ! Evaluate criterion function for observed data
     CALL fort_evaluate(crit_val, periods_payoffs_systematic, & 
@@ -97,9 +95,9 @@ SUBROUTINE f2py_solve(periods_payoffs_systematic, states_number_period, &
                 mapping_state_idx, periods_emax, states_all, coeffs_a, &
                 coeffs_b, coeffs_edu, coeffs_home, shocks_cov, &
                 is_deterministic, is_interpolated, num_draws_emax, & 
-                is_ambiguous, num_periods, num_points, is_myopic, edu_start, & 
-                is_debug, edu_max, min_idx, delta, level, &
-                periods_draws_emax, max_states_period)
+                num_periods, num_points, is_myopic, edu_start, &
+                is_debug, edu_max, min_idx, delta, periods_draws_emax, & 
+                max_states_period)
     
     !
     ! The presence of max_states_period breaks the equality of interfaces. 
@@ -138,12 +136,10 @@ SUBROUTINE f2py_solve(periods_payoffs_systematic, states_number_period, &
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_edu(:)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(:)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(:)
-    DOUBLE PRECISION, INTENT(IN)    :: level
     DOUBLE PRECISION, INTENT(IN)    :: delta 
 
     LOGICAL, INTENT(IN)             :: is_deterministic 
     LOGICAL, INTENT(IN)             :: is_interpolated
-    LOGICAL, INTENT(IN)             :: is_ambiguous
     LOGICAL, INTENT(IN)             :: is_myopic
     LOGICAL, INTENT(IN)             :: is_debug
 
@@ -169,9 +165,9 @@ SUBROUTINE f2py_solve(periods_payoffs_systematic, states_number_period, &
             mapping_state_idx_int, periods_emax_int, states_all_int, & 
             coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, & 
             is_deterministic, is_interpolated, num_draws_emax, & 
-            periods_draws_emax, is_ambiguous, num_periods, num_points, & 
+            periods_draws_emax, num_periods, num_points, &
             edu_start, is_myopic, is_debug, edu_max, min_idx, &
-            delta, level)
+            delta)
 
     ! Assign to initial objects for return to PYTHON
     periods_payoffs_systematic = periods_payoffs_systematic_int   
@@ -185,9 +181,9 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, & 
                 coeffs_home, shocks_cov, is_deterministic, is_interpolated, & 
-                num_draws_emax, is_ambiguous, num_periods, num_points, &
+                num_draws_emax, num_periods, num_points, &
                 is_myopic, edu_start, is_debug, edu_max, min_idx, &
-                delta, level, data_array, num_agents_est, num_draws_prob, tau, & 
+                delta, data_array, num_agents_est, num_draws_prob, tau, & 
                 periods_draws_emax, periods_draws_prob)
 
     !/* external libraries      */
@@ -223,12 +219,10 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, &
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(:)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(:)
     DOUBLE PRECISION, INTENT(IN)    :: delta 
-    DOUBLE PRECISION, INTENT(IN)    :: level
     DOUBLE PRECISION, INTENT(IN)    :: tau
 
     LOGICAL, INTENT(IN)             :: is_deterministic 
     LOGICAL, INTENT(IN)             :: is_interpolated
-    LOGICAL, INTENT(IN)             :: is_ambiguous
     LOGICAL, INTENT(IN)             :: is_myopic
     LOGICAL, INTENT(IN)             :: is_debug
 
@@ -250,8 +244,8 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, &
             mapping_state_idx, periods_emax, states_all, coeffs_a, & 
             coeffs_b, coeffs_edu, coeffs_home, shocks_cov, is_deterministic, & 
             is_interpolated, num_draws_emax, periods_draws_emax, & 
-            is_ambiguous, num_periods, num_points, edu_start, is_myopic, & 
-            is_debug, edu_max, min_idx, delta, level)
+            num_periods, num_points, edu_start, is_myopic, &
+            is_debug, edu_max, min_idx, delta)
 
     ! Evaluate the criterion function building on the solution.
     CALL fort_evaluate(crit_val, periods_payoffs_systematic, & 
@@ -310,8 +304,8 @@ SUBROUTINE f2py_backward_induction(periods_emax, num_periods, &
                 max_states_period, periods_draws_emax, num_draws_emax, & 
                 states_number_period, periods_payoffs_systematic, edu_max, & 
                 edu_start, mapping_state_idx, states_all, delta, is_debug, & 
-                shocks_cov, level, is_ambiguous, is_interpolated, &
-                num_points, is_deterministic, shocks_cholesky)
+                shocks_cov, is_interpolated, num_points, &
+                is_deterministic, shocks_cholesky)
 
     !/* external libraries      */
 
@@ -330,7 +324,6 @@ SUBROUTINE f2py_backward_induction(periods_emax, num_periods, &
     DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: shocks_cov(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: delta
-    DOUBLE PRECISION, INTENT(IN)    :: level
 
     INTEGER, INTENT(IN)             :: mapping_state_idx(:, :, :, :, :)    
     INTEGER, INTENT(IN)             :: states_number_period(:)
@@ -344,7 +337,6 @@ SUBROUTINE f2py_backward_induction(periods_emax, num_periods, &
 
     LOGICAL, INTENT(IN)             :: is_deterministic
     LOGICAL, INTENT(IN)             :: is_interpolated
-    LOGICAL, INTENT(IN)             :: is_ambiguous
     LOGICAL, INTENT(IN)             :: is_debug
 
 
@@ -360,7 +352,7 @@ SUBROUTINE f2py_backward_induction(periods_emax, num_periods, &
     CALL fort_backward_induction(periods_emax, num_periods, &
             periods_draws_emax, num_draws_emax, states_number_period, &
             periods_payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
-            states_all, delta, is_debug, shocks_cov, level, is_ambiguous, & 
+            states_all, delta, is_debug, shocks_cov, &
             is_interpolated, num_points, is_deterministic, &
             shocks_cholesky)
 

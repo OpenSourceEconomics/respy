@@ -176,7 +176,6 @@ class TestClass(object):
         # Generate constraints
         constraints = dict()
         constraints['is_deterministic'] = True
-        constraints['level'] = 0.0
 
         # Generate random initialization file
         generate_init(constraints)
@@ -214,80 +213,6 @@ class TestClass(object):
             # Checks
             assert (np.isfinite(diff))
             assert (diff < 10e-10)
-
-    def test_4(self):
-        """ Testing whether the risk code is identical to the ambiguity code for
-        very, very small levels of ambiguity.
-        """
-        # Generate random initialization dictionary
-        constraints = dict()
-
-        init_dict = generate_random_dict(constraints)
-
-        # Initialize containers
-        base = None
-
-        # Loop over different uncertain environments.
-        for level in [0.00, 0.000000000000001]:
-
-            # Set varying constraints
-            init_dict['AMBIGUITY']['level'] = level
-
-            # Print to dictionary
-            print_random_dict(init_dict)
-
-            # Perform toolbox actions
-            respy_obj = read('test.respy.ini')
-
-            respy_obj = solve(respy_obj)
-
-            # Distribute class attributes
-            periods_emax = respy_obj.get_attr('periods_emax')
-
-            if base is None:
-                base = periods_emax.copy()
-
-            # Checks
-            np.testing.assert_allclose(base, periods_emax, rtol=1e-06)
-
-    def test_5(self):
-        """ Testing whether the systematic payoff calculation is unaffected by
-        the level of ambiguity.
-        """
-        # Select version
-
-        # Generate constraints
-        constraints = dict()
-
-        # Generate random initialization dictionary
-        init_dict = generate_random_dict(constraints)
-
-        # Initialize containers
-        base = None
-
-        # Loop over different uncertain environments.
-        for _ in range(2):
-
-            # Set varying constraints
-            init_dict['AMBIGUITY']['level'] = np.random.choice(
-                [0.00, np.random.uniform()])
-
-            # Print to dictionary
-            print_random_dict(init_dict)
-
-            # Perform toolbox actions
-            respy_obj = read('test.respy.ini')
-
-            respy_obj = solve(respy_obj)
-
-            # Distribute class attributes
-            systematic = respy_obj.get_attr('periods_payoffs_systematic')
-
-            if base is None:
-                base = systematic.copy()
-
-            # Checks
-            np.testing.assert_allclose(base, systematic)
 
     def test_6(self):
         """ Testing whether the a simulated dataset and the evaluation of the
@@ -351,13 +276,13 @@ class TestClass(object):
 
         # Extract class attributes
         num_periods, edu_start, edu_max, min_idx, model_paras, num_draws_emax, \
-            seed_emax, is_debug, delta, level, is_ambiguous, \
+            seed_emax, is_debug, delta, \
             is_interpolated, num_points, is_deterministic, is_myopic, \
             num_agents_sim, num_draws_prob, seed_prob, tau, paras_fixed = \
                 dist_class_attributes(respy_obj,
                     'num_periods', 'edu_start', 'edu_max', 'min_idx',
                     'model_paras', 'num_draws_emax', 'seed_emax', 'is_debug',
-                    'delta', 'level', 'is_ambiguous',
+                    'delta',
                     'is_interpolated', 'num_points', 'is_deterministic',
                     'is_myopic', 'num_agents_sim', 'num_draws_prob',
                     'seed_prob', 'tau', 'paras_fixed')
@@ -376,9 +301,9 @@ class TestClass(object):
 
         # Check the full solution procedure
         base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
-            is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
+            is_deterministic, is_interpolated, num_draws_emax,
             num_periods, num_points, is_myopic, edu_start, is_debug,
-            edu_max, min_idx, delta, level)
+            edu_max, min_idx, delta)
 
         fort = fort_solve(*base_args + (seed_emax, tau))
         pyth = pyth_solve(*base_args + (periods_draws_emax,))
@@ -405,9 +330,9 @@ class TestClass(object):
         data_array = pyth
 
         base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
-            is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
+            is_deterministic, is_interpolated, num_draws_emax,
             num_periods, num_points, is_myopic, edu_start, is_debug,
-            edu_max, min_idx, delta, level, data_array, num_agents_sim,
+            edu_max, min_idx, delta, data_array, num_agents_sim,
             num_draws_prob, tau)
 
         args = base_args + (seed_emax, seed_prob)
@@ -426,9 +351,9 @@ class TestClass(object):
         x0 = get_optim_paras(coeffs_a, coeffs_b, coeffs_edu,
                 coeffs_home, shocks_cov, 'all', paras_fixed, is_debug)
 
-        args = (is_deterministic, is_interpolated, num_draws_emax, is_ambiguous,
+        args = (is_deterministic, is_interpolated, num_draws_emax,
             num_periods, num_points, is_myopic, edu_start, is_debug,
-            edu_max, min_idx, delta, level, data_array, num_agents_sim,
+            edu_max, min_idx, delta, data_array, num_agents_sim,
             num_draws_prob, tau, periods_draws_emax, periods_draws_prob)
 
         pyth = pyth_criterion(x0, *args)
@@ -443,7 +368,6 @@ class TestClass(object):
         # Generate random initialization file
         constraints = dict()
         constraints['maxiter'] = 0
-        constraints['level'] = 0.0
 
         # Generate random initialization file
         generate_init(constraints)

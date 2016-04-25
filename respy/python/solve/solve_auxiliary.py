@@ -11,8 +11,6 @@ import numpy as np
 import statsmodels.api as sm
 
 # project library
-from respy.python.solve.solve_ambiguity import get_payoffs_ambiguity
-from respy.python.solve.solve_risk import get_payoffs_risk
 
 from respy.python.shared.shared_auxiliary import get_total_value
 
@@ -22,6 +20,8 @@ from respy.python.shared.shared_constants import MISSING_INT
 from respy.python.shared.shared_constants import HUGE_FLOAT
 
 # Logging
+from respy.python.solve.solve_emax import simulate_emax
+
 logger = logging.getLogger('ROBUPY_SOLVE')
 
 ''' Main functions
@@ -172,7 +172,7 @@ def pyth_calculate_payoffs_systematic(num_periods, states_number_period,
 def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
         num_draws_emax, states_number_period, periods_payoffs_systematic,
         edu_max, edu_start, mapping_state_idx, states_all, delta, is_debug,
-        shocks_cov, level, is_ambiguous, is_interpolated, num_points,
+        shocks_cov, is_interpolated, num_points,
         is_deterministic, shocks_cholesky):
     """ Backward induction procedure. There are two main threads to this
     function depending on whether interpolation is requested or not.
@@ -228,7 +228,7 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
             endogenous = get_endogenous_variable(period, num_periods,
                 num_states, delta, periods_payoffs_systematic, edu_max,
                 edu_start, mapping_state_idx, periods_emax, states_all,
-                is_simulated, num_draws_emax, shocks_cov, level, is_ambiguous,
+                is_simulated, num_draws_emax, shocks_cov,
                 is_debug, maxe, draws_emax, is_deterministic,
                 shocks_cholesky)
 
@@ -252,10 +252,9 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
 
                 # Simulate the expected future value.
                 emax = get_payoffs(num_draws_emax, draws_emax, period, k,
-                    payoffs_systematic, edu_max, edu_start,
-                    mapping_state_idx, states_all, num_periods, periods_emax,
-                    delta, is_debug, shocks_cov, level, is_ambiguous,
-                    is_deterministic, shocks_cholesky)
+                    payoffs_systematic, edu_max, edu_start, mapping_state_idx,
+                    states_all, num_periods, periods_emax, delta,
+                    shocks_cholesky)
 
                 # Store results
                 periods_emax[period, k] = emax
@@ -267,30 +266,6 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
 
 ''' Auxiliary functions
 '''
-
-
-def get_payoffs(num_draws_emax, draws_emax, period, k, payoffs_systematic,
-        edu_max, edu_start, mapping_state_idx, states_all, num_periods,
-        periods_emax, delta, is_debug, shocks_cov, level, is_ambiguous,
-        is_deterministic, shocks_cholesky):
-    """ Get payoffs for a particular state.
-    """
-    # Payoffs require different machinery depending on whether there is
-    # ambiguity or not.
-    if is_ambiguous:
-        emax = get_payoffs_ambiguity(num_draws_emax, draws_emax,
-            period, k, payoffs_systematic, edu_max, edu_start,
-            mapping_state_idx, states_all, num_periods, periods_emax,
-            delta, is_debug, shocks_cov, level, is_deterministic,
-            shocks_cholesky)
-    else:
-        emax = get_payoffs_risk(num_draws_emax, draws_emax, period, k,
-            payoffs_systematic, edu_max, edu_start, mapping_state_idx,
-            states_all, num_periods, periods_emax, delta, shocks_cholesky)
-
-    # Finishing
-    return emax
-
 
 def get_simulated_indicator(num_points, num_candidates, period, is_debug):
     """ Get the indicator for points of interpolation and simulation.
@@ -367,7 +342,7 @@ def get_exogenous_variables(period, num_periods, num_states, delta,
 def get_endogenous_variable(period, num_periods, num_states, delta,
         periods_payoffs_systematic, edu_max, edu_start, mapping_state_idx,
         periods_emax, states_all, is_simulated, num_draws_emax, shocks_cov,
-        level, is_ambiguous, is_debug, maxe, draws_emax,
+        is_debug, maxe, draws_emax,
         is_deterministic, shocks_cholesky):
     """ Construct endogenous variable for the subset of interpolation points.
     """
@@ -386,9 +361,7 @@ def get_endogenous_variable(period, num_periods, num_states, delta,
         # Simulate the expected future value.
         emax_simulated = get_payoffs(num_draws_emax, draws_emax, period, k,
             payoffs_systematic, edu_max, edu_start, mapping_state_idx,
-            states_all, num_periods, periods_emax, delta, is_debug,
-            shocks_cov, level, is_ambiguous, is_deterministic,
-            shocks_cholesky)
+            states_all, num_periods, periods_emax, delta, shocks_cholesky)
 
         # Construct dependent variable
         endogenous_variable[k] = emax_simulated - maxe[k]
@@ -471,109 +444,6 @@ def logging_solution(which):
         raise NotImplementedError
 
 
-def summarize_ambiguity(respy_obj):
-    """ Summarize optimizations in case of ambiguity.
-    """
-
-    def _process_cases(list_internal):
-        """ Process cases and determine whether keyword or empty line.
-        """
-        # Antibugging
-        assert (isinstance(list_internal, list))
-
-        # Get information
-        is_empty_internal = (len(list_internal) == 0)
-
-        if not is_empty_internal:
-            is_block_internal = list_internal[0].isupper()
-        else:
-            is_block_internal = False
-
-        # Antibugging
-        assert (is_block_internal in [True, False])
-        assert (is_empty_internal in [True, False])
-
-        # Finishing
-        return is_empty_internal, is_block_internal
-
-    # Distribute class attributes
-    num_periods = respy_obj.get_attr('num_periods')
-
-    dict_ = dict()
-
-    for line in open('ambiguity.respy.log').readlines():
-
-        # Split line
-        list_ = shlex.split(line)
-
-        # Determine special cases
-        is_empty, is_block = _process_cases(list_)
-
-        # Applicability
-        if is_empty:
-            continue
-
-        # Prepare dictionary
-        if is_block:
-
-            period = int(list_[1])
-
-            if period in dict_.keys():
-                continue
-
-            dict_[period] = {}
-            dict_[period]['success'] = 0
-            dict_[period]['failure'] = 0
-            dict_[period]['total'] = 0
-
-        # Collect success indicator
-        if list_[0] == 'Success':
-            dict_[period]['total'] += 1
-
-            is_success = (list_[1] == 'True')
-            if is_success:
-                dict_[period]['success'] += 1
-            else:
-                dict_[period]['failure'] += 1
-
-    with open('ambiguity.respy.log', 'a') as file_:
-
-        file_.write('\nSUMMARY\n\n')
-
-        string = '''{0[0]:>10} {0[1]:>10} {0[2]:>10} {0[3]:>10}\n'''
-        file_.write(string.format(['Period', 'Total', 'Success', 'Failure']))
-
-        file_.write('\n')
-
-        for period in range(num_periods):
-            total = dict_[period]['total']
-
-            success = dict_[period]['success']/total
-            failure = dict_[period]['failure']/total
-
-            string = '''{0[0]:>10} {0[1]:>10} {0[2]:10.2f} {0[3]:10.2f}\n'''
-            file_.write(string.format([period, total, success, failure]))
-
-
-def cleanup():
-    """ Cleanup all selected files. Note that not simply all *.respy.*
-    files can be deleted as the blank logging files are already created.
-    """
-    if os.path.exists('ambiguity.respy.log'):
-        os.unlink('ambiguity.respy.log')
-
-
-def start_ambiguity_logging(is_ambiguous, is_debug):
-    """ Start logging for ambiguity.
-    """
-    # Start logging if required
-    if os.path.exists('ambiguity.respy.log'):
-        os.remove('ambiguity.respy.log')
-
-    if is_debug and is_ambiguous:
-        open('ambiguity.respy.log', 'w').close()
-
-
 def check_prediction_model(predictions_diff, model, num_points, num_states,
         is_debug):
     """ Perform some basic consistency checks for the prediction model.
@@ -628,3 +498,20 @@ def check_input(respy_obj):
 
     # Finishing
     return True
+
+
+def get_payoffs(num_draws_emax, draws_emax, period, k,
+        payoffs_systematic, edu_max, edu_start, mapping_state_idx,
+        states_all, num_periods, periods_emax, delta, shocks_cholesky):
+    """ Simulate expected future value under risk.
+    """
+    # Auxiliary object
+    shocks_mean = np.tile(0.0, 2)
+
+    # Simulate expected future value.
+    emax = simulate_emax(num_periods, num_draws_emax, period, k, draws_emax,
+        payoffs_systematic, edu_max, edu_start, periods_emax, states_all,
+        mapping_state_idx, delta, shocks_cholesky, shocks_mean)
+
+    # Finishing
+    return emax
