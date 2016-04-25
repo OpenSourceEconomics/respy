@@ -61,12 +61,12 @@ class TestClass(object):
             print_random_dict(init_dict)
 
             # Process and solve
-            robupy_obj = read('test.respy.ini')
-            robupy_obj = solve(robupy_obj)
+            respy_obj = read('test.respy.ini')
+            respy_obj = solve(respy_obj)
 
             # Extract class attributes
             states_number_period, periods_emax = \
-                dist_class_attributes(robupy_obj,
+                dist_class_attributes(respy_obj,
                     'states_number_period', 'periods_emax')
 
             # Store and check results
@@ -87,15 +87,15 @@ class TestClass(object):
         generate_init()
 
         # Perform toolbox actions
-        robupy_obj = read('test.respy.ini')
-        robupy_obj = solve(robupy_obj)
+        respy_obj = read('test.respy.ini')
+        respy_obj = solve(respy_obj)
 
         # Extract class attributes
         periods_payoffs_systematic, states_number_period, \
             mapping_state_idx, is_deterministic, seed_prob, periods_emax, \
             is_ambiguous, model_paras, num_periods, states_all, num_points, \
             edu_start, num_draws_emax, is_debug, edu_max, delta, \
-            level = dist_class_attributes(robupy_obj,
+            level = dist_class_attributes(respy_obj,
                 'periods_payoffs_systematic', 'states_number_period',
                 'mapping_state_idx', 'is_deterministic', 'seed_prob',
                 'periods_emax', 'is_ambiguous', 'model_paras', 'num_periods',
@@ -180,10 +180,10 @@ class TestClass(object):
         generate_init(constr)
 
         # Extract required information
-        robupy_obj = read('test.respy.ini')
+        respy_obj = read('test.respy.ini')
 
         # Extract class attributes
-        is_debug, num_periods = dist_class_attributes(robupy_obj,
+        is_debug, num_periods = dist_class_attributes(respy_obj,
                 'is_debug', 'num_periods')
 
         # Write out a grid for the interpolation
@@ -250,12 +250,12 @@ class TestClass(object):
             print_random_dict(init_dict)
 
             # Process and solve
-            robupy_obj = read('test.respy.ini')
-            robupy_obj = solve(robupy_obj)
+            respy_obj = read('test.respy.ini')
+            respy_obj = solve(respy_obj)
 
             # Extract class attributes
             states_number_period, periods_emax = \
-                dist_class_attributes(robupy_obj,
+                dist_class_attributes(respy_obj,
                     'states_number_period', 'periods_emax')
 
             # Store and check results

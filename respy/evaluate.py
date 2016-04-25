@@ -13,7 +13,7 @@ from respy.python.evaluate.evaluate_auxiliary import check_output
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import dist_model_paras
-from respy.python.shared.shared_auxiliary import get_robupy_obj
+from respy.python.shared.shared_auxiliary import get_respy_obj
 from respy.python.shared.shared_auxiliary import create_draws
 from respy.python.shared.shared_auxiliary import cut_dataset
 
@@ -27,22 +27,22 @@ def evaluate(input):
     """ Evaluate the criterion function.
     """
     # Process input
-    robupy_obj = get_robupy_obj(input)
+    respy_obj = get_respy_obj(input)
 
     # Cut dataset to size in case more agents are passed in than are actually
     # used in the estimation.
-    data_frame = process(robupy_obj)
-    data_frame = cut_dataset(robupy_obj, data_frame)
+    data_frame = process(respy_obj)
+    data_frame = cut_dataset(respy_obj, data_frame)
 
     # Antibugging
-    assert check_input(robupy_obj, data_frame)
+    assert check_input(respy_obj, data_frame)
 
     # Distribute class attributes
     model_paras, num_periods, num_agents_est, edu_start, seed_sim, is_debug, \
         edu_max, delta, is_deterministic, version, num_draws_prob, seed_prob, \
         num_draws_emax, seed_emax, is_interpolated, is_ambiguous, num_points, \
         is_myopic, min_idx, level, tau = \
-            dist_class_attributes(robupy_obj,
+            dist_class_attributes(respy_obj,
                 'model_paras', 'num_periods', 'num_agents_est', 'edu_start',
                 'seed_sim', 'is_debug', 'edu_max', 'delta', 'is_deterministic',
                 'version', 'num_draws_prob', 'seed_prob', 'num_draws_emax',

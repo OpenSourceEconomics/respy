@@ -28,4 +28,4 @@ from respy.python.shared.shared_auxiliary import dist_model_paras
 from respy.python.shared.shared_auxiliary import create_draws
 
 from respy import simulate, read, solve, evaluate, estimate
-robupy_obj = read('model.respy.ini')
+respy_obj = read('model.respy.ini')

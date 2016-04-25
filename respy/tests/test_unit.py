@@ -67,15 +67,15 @@ class TestClass(object):
             generate_init()
 
             # Perform toolbox actions
-            robupy_obj = read('test.respy.ini')
-            robupy_obj = solve(robupy_obj)
+            respy_obj = read('test.respy.ini')
+            respy_obj = solve(respy_obj)
 
             # Extract class attributes
             periods_payoffs_systematic, states_number_period, \
                 mapping_state_idx, is_deterministic, is_ambiguous, \
                 periods_emax, model_paras, num_periods, states_all, \
                 num_draws_emax, edu_start, is_debug, edu_max, delta,\
-                level = dist_class_attributes(robupy_obj,
+                level = dist_class_attributes(respy_obj,
                     'periods_payoffs_systematic', 'states_number_period',
                     'mapping_state_idx', 'is_deterministic', 'is_ambiguous',
                     'periods_emax', 'model_paras', 'num_periods', 'states_all',
@@ -132,15 +132,15 @@ class TestClass(object):
             generate_init(constraints)
 
             # Perform toolbox actions
-            robupy_obj = read('test.respy.ini')
-            robupy_obj = solve(robupy_obj)
+            respy_obj = read('test.respy.ini')
+            respy_obj = solve(respy_obj)
 
             # Extract class attributes
             periods_payoffs_systematic, states_number_period, \
                 mapping_state_idx, is_deterministic, periods_emax, \
                 num_periods, model_paras, states_all, num_draws_emax, \
                 edu_start, edu_max, delta, is_debug = \
-                    dist_class_attributes(robupy_obj,
+                    dist_class_attributes(respy_obj,
                         'periods_payoffs_systematic', 'states_number_period',
                         'mapping_state_idx', 'is_deterministic', 'periods_emax',
                         'num_periods', 'model_paras', 'states_all',
@@ -203,14 +203,14 @@ class TestClass(object):
         generate_init(constraints)
 
         # Perform toolbox actions
-        robupy_obj = read('test.respy.ini')
-        robupy_obj = solve(robupy_obj)
+        respy_obj = read('test.respy.ini')
+        respy_obj = solve(respy_obj)
 
         # Extract class attributes
         periods_payoffs_systematic, states_number_period, mapping_state_idx, \
             periods_emax, num_periods, states_all, num_draws_emax, edu_start, \
             edu_max, delta, is_debug, model_paras = \
-                dist_class_attributes(robupy_obj,
+                dist_class_attributes(respy_obj,
                     'periods_payoffs_systematic', 'states_number_period',
                     'mapping_state_idx', 'periods_emax', 'num_periods',
                     'states_all', 'num_draws_emax', 'edu_start', 'edu_max',
@@ -319,15 +319,15 @@ class TestClass(object):
         generate_init(constraints)
 
         # Perform toolbox actions
-        robupy_obj = read('test.respy.ini')
+        respy_obj = read('test.respy.ini')
 
-        robupy_obj = solve(robupy_obj)
+        respy_obj = solve(respy_obj)
 
         # Extract class attributes
         periods_payoffs_systematic, states_number_period, mapping_state_idx, \
         periods_emax, num_periods, states_all, num_draws_emax, edu_start, \
         edu_max, delta, model_paras, is_debug = \
-            dist_class_attributes(robupy_obj,
+            dist_class_attributes(respy_obj,
                 'periods_payoffs_systematic', 'states_number_period',
                 'mapping_state_idx', 'periods_emax', 'num_periods',
                 'states_all', 'num_draws_emax', 'edu_start', 'edu_max',
@@ -551,21 +551,21 @@ class TestClass(object):
         generate_init(constraints)
 
         # Perform toolbox actions
-        robupy_obj = read('test.respy.ini')
+        respy_obj = read('test.respy.ini')
 
-        robupy_obj = solve(robupy_obj)
+        respy_obj = solve(respy_obj)
 
-        simulate(robupy_obj)
+        simulate(respy_obj)
 
         # Distribute class attributes
-        states_number_period = robupy_obj.get_attr('states_number_period')
+        states_number_period = respy_obj.get_attr('states_number_period')
 
-        states_all = robupy_obj.get_attr('states_all')
+        states_all = respy_obj.get_attr('states_all')
 
         # The next hard-coded results assume that at least two more
         # years of education are admissible.
-        edu_max = robupy_obj.get_attr('edu_max')
-        edu_start = robupy_obj.get_attr('edu_start')
+        edu_max = respy_obj.get_attr('edu_max')
+        edu_start = respy_obj.get_attr('edu_start')
 
         if edu_max - edu_start < 2:
             return
@@ -623,7 +623,7 @@ class TestClass(object):
         generate_init()
 
         # Perform toolbox actions
-        robupy_obj = read('test.respy.ini')
+        respy_obj = read('test.respy.ini')
 
         # Ensure that backward induction routines use the same grid for the
         # interpolation.
@@ -633,7 +633,7 @@ class TestClass(object):
         num_periods, edu_start, edu_max, min_idx, model_paras, num_draws_emax, \
             seed_emax, is_debug, delta, level, is_ambiguous, \
             is_interpolated, num_points, is_deterministic, is_myopic = \
-                dist_class_attributes(robupy_obj,
+                dist_class_attributes(respy_obj,
                     'num_periods', 'edu_start', 'edu_max', 'min_idx',
                     'model_paras', 'num_draws_emax', 'seed_emax', 'is_debug',
                     'delta', 'level', 'is_ambiguous',

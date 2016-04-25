@@ -91,9 +91,9 @@ def change_status(identifiers, init_file, is_fixed):
     """ Change the status of the a list of parameters.
     """
     # Baseline
-    robupy_obj, init_dict = read(init_file, True)
+    respy_obj, init_dict = read(init_file, True)
 
-    model_paras = robupy_obj.get_attr('model_paras')
+    model_paras = respy_obj.get_attr('model_paras')
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, _ = \
             dist_model_paras(model_paras, True)
 

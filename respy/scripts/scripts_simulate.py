@@ -55,25 +55,25 @@ def scripts_simulate(update, init_file, file_sim, solved):
     """
     # Read in baseline model specification.
     if solved is not None:
-        robupy_obj = pkl.load(open(solved, 'rb'))
+        respy_obj = pkl.load(open(solved, 'rb'))
     else:
-        robupy_obj = read(init_file)
+        respy_obj = read(init_file)
 
     # Update parametrization of the model if resuming from a previous
     # estimation run.
     if update:
         x0 = np.genfromtxt('paras_steps.respy.log')
         args = dist_optim_paras(x0, True)
-        robupy_obj.update_model_paras(*args)
+        respy_obj.update_model_paras(*args)
 
     # Update file for output.
     if file_sim is not None:
-        robupy_obj.unlock()
-        robupy_obj.set_attr('file_sim', file_sim)
-        robupy_obj.lock()
+        respy_obj.unlock()
+        respy_obj.set_attr('file_sim', file_sim)
+        respy_obj.lock()
 
     # Optimize the criterion function.
-    simulate(robupy_obj)
+    simulate(respy_obj)
 
 
 ''' Execution of module as script.

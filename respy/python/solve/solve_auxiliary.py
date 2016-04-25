@@ -471,7 +471,7 @@ def logging_solution(which):
         raise NotImplementedError
 
 
-def summarize_ambiguity(robupy_obj):
+def summarize_ambiguity(respy_obj):
     """ Summarize optimizations in case of ambiguity.
     """
 
@@ -497,7 +497,7 @@ def summarize_ambiguity(robupy_obj):
         return is_empty_internal, is_block_internal
 
     # Distribute class attributes
-    num_periods = robupy_obj.get_attr('num_periods')
+    num_periods = respy_obj.get_attr('num_periods')
 
     dict_ = dict()
 
@@ -616,15 +616,15 @@ def checks(str_, *args):
     return True
 
 
-def check_input(robupy_obj):
+def check_input(respy_obj):
     """ Check input arguments.
     """
     # Check that class instance is locked.
-    assert robupy_obj.get_attr('is_locked')
+    assert respy_obj.get_attr('is_locked')
 
     # Check for previous solution attempt.
-    if robupy_obj.get_attr('is_solved'):
-        robupy_obj.reset()
+    if respy_obj.get_attr('is_solved'):
+        respy_obj.reset()
 
     # Finishing
     return True

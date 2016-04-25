@@ -7,7 +7,7 @@ import numpy as np
 
 # project library
 from respy.python.process.process_auxiliary import check_process
-from respy.python.shared.shared_auxiliary import get_robupy_obj
+from respy.python.shared.shared_auxiliary import get_respy_obj
 from respy.python.shared.shared_auxiliary import check_dataset
 
 
@@ -19,26 +19,26 @@ def process(input):
     """ This function processes the dataset from disk.
     """
     # Process input
-    robupy_obj = get_robupy_obj(input)
+    respy_obj = get_respy_obj(input)
 
     # Antibugging
-    assert robupy_obj.get_attr('is_locked')
+    assert respy_obj.get_attr('is_locked')
 
     # Distribute class attributes
-    num_agents_est = robupy_obj.get_attr('num_agents_est')
+    num_agents_est = respy_obj.get_attr('num_agents_est')
 
-    num_periods = robupy_obj.get_attr('num_periods')
+    num_periods = respy_obj.get_attr('num_periods')
 
-    file_est = robupy_obj.get_attr('file_est')
+    file_est = respy_obj.get_attr('file_est')
 
-    is_debug = robupy_obj.get_attr('is_debug')
+    is_debug = respy_obj.get_attr('is_debug')
 
     # Construct auxiliary objects
     num_rows = num_agents_est * num_periods
 
     # Check integrity of processing request
     if is_debug:
-        assert check_process(file_est + '.dat', robupy_obj)
+        assert check_process(file_est + '.dat', respy_obj)
 
     # Process dataset from files.
     data_frame = pd.read_csv(file_est + '.dat', delim_whitespace=True,
@@ -47,7 +47,7 @@ def process(input):
         nrows=num_rows)
 
     # Check the dataset against the initialization files.
-    check_dataset(data_frame, robupy_obj, 'est')
+    check_dataset(data_frame, respy_obj, 'est')
 
     # Finishing
     return data_frame

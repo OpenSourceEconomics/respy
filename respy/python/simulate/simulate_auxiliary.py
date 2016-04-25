@@ -14,13 +14,13 @@ from respy.python.shared.shared_auxiliary import dist_model_paras
 logger = logging.getLogger('ROBUPY_SIMULATE')
 
 
-def write_info(robupy_obj, data_frame):
+def write_info(respy_obj, data_frame):
     """ Write information about the simulated economy.
     """
     # Distribute class attributes
-    file_sim = robupy_obj.get_attr('file_sim')
+    file_sim = respy_obj.get_attr('file_sim')
 
-    seed_sim = robupy_obj.get_attr('seed_sim')
+    seed_sim = respy_obj.get_attr('seed_sim')
 
     # Get basic information
     num_agents_sim = data_frame[1].value_counts()[0]
@@ -115,16 +115,16 @@ def write_info(robupy_obj, data_frame):
         file_.write(string.format(['Average Experience B', stat]))
 
     # Write out the parametrization of the simulated economy.
-    model_paras = robupy_obj.get_attr('model_paras')
+    model_paras = respy_obj.get_attr('model_paras')
     vector = get_estimation_vector(model_paras, True)
     np.savetxt(open(file_sim + '.paras', 'wb'), vector, fmt='%15.8f')
 
 
-def write_out(robupy_obj, data_frame):
+def write_out(respy_obj, data_frame):
     """ Write dataset to file.
     """
     # Distribute class attributes
-    file_sim = robupy_obj.get_attr('file_sim')
+    file_sim = respy_obj.get_attr('file_sim')
 
     formats = []
 
@@ -220,20 +220,20 @@ def stop_logging():
         logger.removeHandler(handler)
 
 
-def check_input(robupy_obj, is_solved):
+def check_input(respy_obj, is_solved):
     """ Check input arguments.
     """
     # Check valid request.
     assert is_solved in [True, False]
 
     # Check that class instance is locked.
-    assert robupy_obj.get_attr('is_locked')
+    assert respy_obj.get_attr('is_locked')
 
     # Check that input is solved if not done as part of the simulation step.
     if is_solved:
-        assert robupy_obj.get_attr('is_solved')
+        assert respy_obj.get_attr('is_solved')
     else:
-        robupy_obj.reset()
+        respy_obj.reset()
 
     # Finishing
     return True

@@ -12,17 +12,17 @@ from respy.python.shared.shared_auxiliary import check_dataset
 '''
 
 
-def check_input(robupy_obj, data_frame):
+def check_input(respy_obj, data_frame):
     """ Check input arguments.
     """
     # Check that class instance is locked.
-    assert robupy_obj.get_attr('is_locked')
+    assert respy_obj.get_attr('is_locked')
 
-    if robupy_obj.get_attr('is_solved'):
-        robupy_obj.reset()
+    if respy_obj.get_attr('is_solved'):
+        respy_obj.reset()
 
     # Check that dataset aligns with model specification.
-    check_dataset(data_frame, robupy_obj, 'est')
+    check_dataset(data_frame, respy_obj, 'est')
 
     # Finishing
     return True

@@ -68,13 +68,13 @@ class TestClass(object):
         # Generate random initialization file
         generate_init()
 
-        robupy_obj = read('test.respy.ini')
+        respy_obj = read('test.respy.ini')
 
-        solve(robupy_obj)
+        solve(respy_obj)
 
-        simulate(robupy_obj)
+        simulate(respy_obj)
 
-        process(robupy_obj)
+        process(respy_obj)
 
     def test_2(self):
         """ Testing the equality of an evaluation of the criterion function for
@@ -133,16 +133,16 @@ class TestClass(object):
         base_val, base_data = None, None
 
         for version in ['PYTHON', 'F2PY', 'FORTRAN']:
-            robupy_obj = read('test.respy.ini')
+            respy_obj = read('test.respy.ini')
 
             # Modify the version of the program for the different requests.
-            robupy_obj.unlock()
-            robupy_obj.set_attr('version',  version)
-            robupy_obj.lock()
+            respy_obj.unlock()
+            respy_obj.set_attr('version',  version)
+            respy_obj.lock()
 
             # Solve the model
-            robupy_obj = solve(robupy_obj)
-            simulate(robupy_obj)
+            respy_obj = solve(respy_obj)
+            simulate(respy_obj)
 
             # This parts checks the equality of simulated dataset for the
             # different versions of the code.
@@ -155,9 +155,9 @@ class TestClass(object):
 
             # This part checks the equality of an evaluation of the
             # criterion function.
-            data_frame, _ = simulate(robupy_obj)
+            data_frame, _ = simulate(respy_obj)
 
-            crit_val = evaluate(robupy_obj)
+            crit_val = evaluate(respy_obj)
 
             if base_val is None:
                 base_val = crit_val
@@ -191,18 +191,18 @@ class TestClass(object):
             num_draws_emax = np.random.randint(1, 100)
 
             # Perform toolbox actions
-            robupy_obj = read('test.respy.ini')
+            respy_obj = read('test.respy.ini')
 
-            robupy_obj.unlock()
+            respy_obj.unlock()
 
-            robupy_obj.set_attr('num_draws_emax', num_draws_emax)
+            respy_obj.set_attr('num_draws_emax', num_draws_emax)
 
-            robupy_obj.lock()
+            respy_obj.lock()
 
-            robupy_obj = solve(robupy_obj)
+            respy_obj = solve(respy_obj)
 
             # Distribute class attributes
-            periods_emax = robupy_obj.get_attr('periods_emax')
+            periods_emax = respy_obj.get_attr('periods_emax')
 
             if base is None:
                 base = periods_emax.copy()
@@ -237,12 +237,12 @@ class TestClass(object):
             print_random_dict(init_dict)
 
             # Perform toolbox actions
-            robupy_obj = read('test.respy.ini')
+            respy_obj = read('test.respy.ini')
 
-            robupy_obj = solve(robupy_obj)
+            respy_obj = solve(respy_obj)
 
             # Distribute class attributes
-            periods_emax = robupy_obj.get_attr('periods_emax')
+            periods_emax = respy_obj.get_attr('periods_emax')
 
             if base is None:
                 base = periods_emax.copy()
@@ -276,12 +276,12 @@ class TestClass(object):
             print_random_dict(init_dict)
 
             # Perform toolbox actions
-            robupy_obj = read('test.respy.ini')
+            respy_obj = read('test.respy.ini')
 
-            robupy_obj = solve(robupy_obj)
+            respy_obj = solve(respy_obj)
 
             # Distribute class attributes
-            systematic = robupy_obj.get_attr('periods_payoffs_systematic')
+            systematic = respy_obj.get_attr('periods_payoffs_systematic')
 
             if base is None:
                 base = systematic.copy()
@@ -302,17 +302,17 @@ class TestClass(object):
 
         for delta in [0.00, 0.000001]:
 
-            robupy_obj = read('test.respy.ini')
+            respy_obj = read('test.respy.ini')
 
-            robupy_obj.unlock()
+            respy_obj.unlock()
 
-            robupy_obj.set_attr('delta', delta)
+            respy_obj.set_attr('delta', delta)
 
-            robupy_obj.lock()
+            respy_obj.lock()
 
-            solve(robupy_obj)
+            solve(respy_obj)
 
-            simulate(robupy_obj)
+            simulate(respy_obj)
 
             # This parts checks the equality of simulated dataset for the
             # different versions of the code.
@@ -325,9 +325,9 @@ class TestClass(object):
 
             # This part checks the equality of an evaluation of the
             # criterion function.
-            data_frame, _ = simulate(robupy_obj)
+            data_frame, _ = simulate(respy_obj)
 
-            crit_val = evaluate(robupy_obj)
+            crit_val = evaluate(respy_obj)
 
             if base_val is None:
                 base_val = crit_val
@@ -343,7 +343,7 @@ class TestClass(object):
         generate_init()
 
         # Perform toolbox actions
-        robupy_obj = read('test.respy.ini')
+        respy_obj = read('test.respy.ini')
 
         # Ensure that backward induction routines use the same grid for the
         # interpolation.
@@ -354,7 +354,7 @@ class TestClass(object):
             seed_emax, is_debug, delta, level, is_ambiguous, \
             is_interpolated, num_points, is_deterministic, is_myopic, \
             num_agents_sim, num_draws_prob, seed_prob, tau, paras_fixed = \
-                dist_class_attributes(robupy_obj,
+                dist_class_attributes(respy_obj,
                     'num_periods', 'edu_start', 'edu_max', 'min_idx',
                     'model_paras', 'num_draws_emax', 'seed_emax', 'is_debug',
                     'delta', 'level', 'is_ambiguous',
@@ -449,23 +449,23 @@ class TestClass(object):
         generate_init(constraints)
 
         # Perform toolbox actions
-        robupy_obj = read('test.respy.ini')
+        respy_obj = read('test.respy.ini')
 
         # Simulate a dataset
-        simulate(robupy_obj)
+        simulate(respy_obj)
 
         # Iterate over alternative implementations
         base_x, base_val = None, None
 
         for version in ['FORTRAN', 'PYTHON', 'F2PY']:
 
-            robupy_obj.unlock()
+            respy_obj.unlock()
 
-            robupy_obj.set_attr('version', version)
+            respy_obj.set_attr('version', version)
 
-            robupy_obj.lock()
+            respy_obj.lock()
 
-            x, val = estimate(robupy_obj)
+            x, val = estimate(respy_obj)
 
             # Check for the returned parameters.
             if base_x is None:
@@ -491,15 +491,15 @@ class TestClass(object):
 
         # Simulate a dataset
         generate_init(constr)
-        robupy_obj = read('test.respy.ini')
-        data_frame, _ = simulate(robupy_obj)
+        respy_obj = read('test.respy.ini')
+        data_frame, _ = simulate(respy_obj)
 
         # Evaluate at different points, ensuring that the simulated datset
         # still fits.
         generate_init(constr)
 
-        robupy_obj = read('test.respy.ini')
-        evaluate(robupy_obj)
+        respy_obj = read('test.respy.ini')
+        evaluate(respy_obj)
 
     def test_10(self):
         """ Test the scripts.
@@ -515,8 +515,8 @@ class TestClass(object):
 
         # Simulate a dataset
         generate_init(constr)
-        robupy_obj = read('test.respy.ini')
-        simulate(robupy_obj)
+        respy_obj = read('test.respy.ini')
+        simulate(respy_obj)
 
         # Potentially evaluate at different points.
         generate_init(constr)
@@ -553,9 +553,9 @@ class TestClass(object):
         generate_init(constr)
 
         # Run estimation task.
-        robupy_obj = read('test.respy.ini')
-        data_frame, _ = simulate(robupy_obj)
-        estimate(robupy_obj)
+        respy_obj = read('test.respy.ini')
+        data_frame, _ = simulate(respy_obj)
+        estimate(respy_obj)
 
     def test_12(self):
         """ This test is motivated by a recent change in the interface. It

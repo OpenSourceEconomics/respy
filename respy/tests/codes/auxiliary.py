@@ -19,11 +19,11 @@ def write_interpolation_grid(file_name):
     implementations.
     """
     # Process relevant initialization file
-    robupy_obj = read(file_name)
+    respy_obj = read(file_name)
 
     # Distribute class attribute
     num_periods, num_points, edu_start, edu_max, min_idx = \
-        dist_class_attributes(robupy_obj,
+        dist_class_attributes(respy_obj,
             'num_periods', 'num_points', 'edu_start', 'edu_max', 'min_idx')
 
     # Determine maximum number of states

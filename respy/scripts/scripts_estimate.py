@@ -29,20 +29,20 @@ from respy import read
 """
 
 
-def add_gradient_information(robupy_obj):
+def add_gradient_information(respy_obj):
     """ This function adds information about the gradient to the information
     files. It is not part of the estimation modules as it breaks the design
     and requires to carry additional attributes. This results in considerable
     overhead, which appears justified at this point.
     """
-    data_array = process(robupy_obj).as_matrix()
+    data_array = process(respy_obj).as_matrix()
 
     model_paras, num_periods, num_agents_est, edu_start, seed_sim, \
         is_debug, file_sim, edu_max, delta, num_draws_prob, seed_prob, \
         num_draws_emax, seed_emax, level, min_idx, is_ambiguous, \
         is_deterministic, is_myopic, is_interpolated, num_points, version, \
         maxiter, optimizer_used, paras_fixed, tau, optimizer_options = \
-        dist_class_attributes(robupy_obj,
+        dist_class_attributes(respy_obj,
             'model_paras', 'num_periods', 'num_agents_est', 'edu_start',
             'seed_sim', 'is_debug', 'file_sim', 'edu_max', 'delta',
             'num_draws_prob', 'seed_prob', 'num_draws_emax', 'seed_emax',
@@ -175,27 +175,27 @@ def scripts_estimate(resume, single, init_file, gradient):
     """ Wrapper for the estimation.
     """
     # Read in baseline model specification.
-    robupy_obj = read(init_file)
+    respy_obj = read(init_file)
 
     # Update parametrization of the model if resuming from a previous
     # estimation run.
     if resume:
         x0 = np.genfromtxt('paras_steps.respy.log')
         args = dist_optim_paras(x0, True)
-        robupy_obj.update_model_paras(*args)
+        respy_obj.update_model_paras(*args)
 
     # Set maximum iteration count when only an evaluation of the criterion
     # function is requested.
     if single:
-        robupy_obj.unlock()
-        robupy_obj.set_attr('maxiter', 0)
-        robupy_obj.lock()
+        respy_obj.unlock()
+        respy_obj.set_attr('maxiter', 0)
+        respy_obj.lock()
 
     # Optimize the criterion function.
-    estimate(robupy_obj)
+    estimate(respy_obj)
 
     if gradient:
-        add_gradient_information(robupy_obj)
+        add_gradient_information(respy_obj)
 
 ''' Execution of module as script.
 '''

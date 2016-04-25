@@ -92,15 +92,15 @@ def read(fname, is_dict=False):
     _check_integrity_complete(dict_)
 
     # Construct container
-    robupy_obj = RobupyCls(dict_)
+    respy_obj = RobupyCls(dict_)
 
-    robupy_obj.lock()
+    respy_obj.lock()
 
     # Finishing.
     if is_dict:
-        return robupy_obj, dict_
+        return respy_obj, dict_
     else:
-        return robupy_obj
+        return respy_obj
 
 ''' Auxiliary functions
 '''

@@ -17,7 +17,7 @@ from respy.python.simulate.simulate_auxiliary import write_out
 from respy.python.shared.shared_auxiliary import replace_missing_values
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import dist_model_paras
-from respy.python.shared.shared_auxiliary import get_robupy_obj
+from respy.python.shared.shared_auxiliary import get_respy_obj
 from respy.python.shared.shared_auxiliary import check_dataset
 from respy.python.shared.shared_auxiliary import create_draws
 
@@ -39,12 +39,12 @@ def simulate(input, is_solved=False):
     the initialization file.
     """
     # Process input
-    robupy_obj = get_robupy_obj(input)
-    check_input(robupy_obj, is_solved)
+    respy_obj = get_respy_obj(input)
+    check_input(respy_obj, is_solved)
 
     # Solve the requested economy
     if not is_solved:
-        solve(robupy_obj)
+        solve(respy_obj)
 
     # Fire up the logging for the simulation. The logging of the solution
     # step is handled within the solution routines.
@@ -54,7 +54,7 @@ def simulate(input, is_solved=False):
     periods_payoffs_systematic, mapping_state_idx, periods_emax, model_paras, \
         num_periods, num_agents_sim, states_all, edu_start, seed_sim, \
         is_debug, file_sim, edu_max, delta, version = \
-            dist_class_attributes(robupy_obj,
+            dist_class_attributes(respy_obj,
                 'periods_payoffs_systematic', 'mapping_state_idx',
                 'periods_emax', 'model_paras', 'num_periods', 'num_agents_sim',
                 'states_all', 'edu_start', 'seed_sim', 'is_debug',
@@ -92,17 +92,17 @@ def simulate(input, is_solved=False):
     # Wrapping up by running some checks on the dataset and then writing out
     # the file and some basic information.
     if is_debug:
-        check_dataset(data_frame, robupy_obj, 'sim')
+        check_dataset(data_frame, respy_obj, 'sim')
 
-    write_out(robupy_obj, data_frame)
+    write_out(respy_obj, data_frame)
 
-    write_info(robupy_obj, data_frame)
+    write_info(respy_obj, data_frame)
 
     logger.info('... finished \n')
 
     stop_logging()
 
     # Finishing
-    return data_frame, robupy_obj
+    return data_frame, respy_obj
 
 

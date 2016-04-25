@@ -13,7 +13,7 @@ from respy.python.solve.solve_auxiliary import cleanup
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import dist_model_paras
-from respy.python.shared.shared_auxiliary import get_robupy_obj
+from respy.python.shared.shared_auxiliary import get_respy_obj
 from respy.python.shared.shared_auxiliary import add_solution
 from respy.python.shared.shared_auxiliary import create_draws
 
@@ -29,10 +29,10 @@ def solve(input):
     """ Solve the model
     """
     # Process input
-    robupy_obj = get_robupy_obj(input)
+    respy_obj = get_respy_obj(input)
 
     # Checks, cleanup, start logger
-    assert check_input(robupy_obj)
+    assert check_input(respy_obj)
 
     cleanup()
 
@@ -43,7 +43,7 @@ def solve(input):
         is_deterministic, version, num_draws_emax, seed_emax, is_interpolated, \
         is_ambiguous, num_points, is_myopic, min_idx, level, store, \
         tau = \
-            dist_class_attributes(robupy_obj,
+            dist_class_attributes(respy_obj,
                 'model_paras', 'num_periods', 'edu_start', 'is_debug',
                 'edu_max', 'delta', 'is_deterministic', 'version',
                 'num_draws_emax', 'seed_emax', 'is_interpolated',
@@ -89,16 +89,16 @@ def solve(input):
         raise NotImplementedError
 
     # Attach solution to class instance
-    robupy_obj = add_solution(robupy_obj, store, *solution)
+    respy_obj = add_solution(respy_obj, store, *solution)
 
     # Summarize optimizations in case of ambiguity
     if is_debug and is_ambiguous and (not is_myopic):
-        summarize_ambiguity(robupy_obj)
+        summarize_ambiguity(respy_obj)
 
     # Orderly shutdown of logging capability.
     logging_solution('stop')
 
     # Finishing
-    return robupy_obj
+    return respy_obj
 
 

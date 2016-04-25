@@ -13,12 +13,12 @@ from respy.python.shared.shared_constants import HUGE_FLOAT
 '''
 
 
-def cut_dataset(robupy_obj, data_frame):
+def cut_dataset(respy_obj, data_frame):
     """ Cut the dataset down to only contain the agents used in the estimation.
     """
     # Distribute class attributes
-    num_agents_est = robupy_obj.get_attr('num_agents_est')
-    num_periods = robupy_obj.get_attr('num_periods')
+    num_agents_est = respy_obj.get_attr('num_agents_est')
+    num_periods = respy_obj.get_attr('num_periods')
 
     # Slicing data frame
     data_frame = data_frame.iloc[:(num_agents_est * num_periods), :]
@@ -116,46 +116,46 @@ def create_draws(num_periods, num_draws, seed, is_debug):
     return draws
 
 
-def add_solution(robupy_obj, store, periods_payoffs_systematic,
+def add_solution(respy_obj, store, periods_payoffs_systematic,
         states_number_period, mapping_state_idx, periods_emax, states_all):
     """ Add solution to class instance.
     """
-    robupy_obj.unlock()
+    respy_obj.unlock()
 
-    robupy_obj.set_attr('periods_payoffs_systematic', periods_payoffs_systematic)
+    respy_obj.set_attr('periods_payoffs_systematic', periods_payoffs_systematic)
 
-    robupy_obj.set_attr('states_number_period', states_number_period)
+    respy_obj.set_attr('states_number_period', states_number_period)
 
-    robupy_obj.set_attr('mapping_state_idx', mapping_state_idx)
+    respy_obj.set_attr('mapping_state_idx', mapping_state_idx)
 
-    robupy_obj.set_attr('periods_emax', periods_emax)
+    respy_obj.set_attr('periods_emax', periods_emax)
 
-    robupy_obj.set_attr('states_all', states_all)
+    respy_obj.set_attr('states_all', states_all)
 
-    robupy_obj.set_attr('is_solved', True)
+    respy_obj.set_attr('is_solved', True)
 
-    robupy_obj.lock()
+    respy_obj.lock()
 
     # Store object to file
     if store:
-        robupy_obj.store('solution.respy.pkl')
+        respy_obj.store('solution.respy.pkl')
 
     # Finishing
-    return robupy_obj
+    return respy_obj
 
 
-def check_dataset(data_frame, robupy_obj, which):
+def check_dataset(data_frame, respy_obj, which):
     """ This routine runs some consistency checks on the simulated data frame.
     """
     # Distribute class attributes
-    num_periods = robupy_obj.get_attr('num_periods')
+    num_periods = respy_obj.get_attr('num_periods')
 
-    edu_max = robupy_obj.get_attr('edu_max')
+    edu_max = respy_obj.get_attr('edu_max')
 
     if which == 'est':
-        num_agents = robupy_obj.get_attr('num_agents_est')
+        num_agents = respy_obj.get_attr('num_agents_est')
     elif which == 'sim':
-        num_agents = robupy_obj.get_attr('num_agents_sim')
+        num_agents = respy_obj.get_attr('num_agents_sim')
     else:
         raise AssertionError
     # Check dimension of data frame
@@ -304,7 +304,7 @@ def check_model_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
     return True
 
 
-def dist_class_attributes(robupy_obj, *args):
+def dist_class_attributes(respy_obj, *args):
     """ This function distributes a host of class attributes.
     """
     # Initialize container
@@ -312,7 +312,7 @@ def dist_class_attributes(robupy_obj, *args):
 
     # Process requests
     for arg in args:
-        ret.append(robupy_obj.get_attr(arg))
+        ret.append(respy_obj.get_attr(arg))
 
     # Finishing
     return ret
@@ -352,18 +352,18 @@ def transform_disturbances(draws, shocks_cholesky, shocks_mean):
     return draws_transformed
 
 
-def get_robupy_obj(input):
+def get_respy_obj(input):
     """ Depending on the type of input, we need to initialize a fresh instance
-    of the robupy_obj or work with the input directly.
+    of the respy_obj or work with the input directly.
     """
     from respy.python.read.clsRobupy import RobupyCls
     from respy.read import read
 
     assert (isinstance(input, RobupyCls) or isinstance(input, str))
     if isinstance(input, RobupyCls):
-        robupy_obj = input
+        respy_obj = input
     else:
-        robupy_obj = read(input)
+        respy_obj = read(input)
 
     # Finishing
-    return robupy_obj
+    return respy_obj
