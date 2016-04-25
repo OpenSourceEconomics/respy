@@ -48,13 +48,13 @@ SUBROUTINE dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, &
 
     shocks_cholesky = 0.0
 
-    shocks_cholesky(1:4, 1) = x(17:20)
+    shocks_cholesky(1, 1) = x(17)
 
-    shocks_cholesky(2:4, 2) = x(21:23)
+    shocks_cholesky(2, 1:2) = x(18:19)
 
-    shocks_cholesky(3:4, 3) = x(24:25)
+    shocks_cholesky(3, 1:3) = x(20:22)
 
-    shocks_cholesky(4:4, 4) = x(26:26)
+    shocks_cholesky(4, 1:4) = x(23:26)
 
     ! Reconstruct the covariance matrix of reward shocks
     shocks_cov = MATMUL(shocks_cholesky, TRANSPOSE(shocks_cholesky))
