@@ -26,9 +26,8 @@ def pyth_simulate(periods_payoffs_systematic, mapping_state_idx,
         (num_periods, num_agents_sim, 4))
 
     for period in range(num_periods):
-        periods_draws_sims_transformed[period, :, :] = \
-            transform_disturbances(periods_draws_sims[period, :, :],
-                shocks_cholesky, shocks_mean)
+        periods_draws_sims_transformed[period, :, :] = transform_disturbances(
+            periods_draws_sims[period, :, :], shocks_cholesky)
 
     # Simulate agent experiences
     count = 0

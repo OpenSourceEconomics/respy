@@ -70,7 +70,7 @@ SUBROUTINE fort_simulate(dataset, periods_payoffs_systematic, &
 
     DO period = 1, num_periods
         CALL transform_disturbances(periods_draws_sims_transformed(period, :, :), & 
-                periods_draws_sims(period, :, :), shocks_cholesky, shocks_mean, & 
+                periods_draws_sims(period, :, :), shocks_cholesky, &
                 num_agents_sim)
     END DO
 

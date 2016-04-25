@@ -519,8 +519,7 @@ def simulate_emax(num_periods, num_draws_emax, period, k, draws_emax,
     from respy.python.shared.shared_auxiliary import transform_disturbances
 
     # Get the transformed set of disturbances
-    draws_emax_transformed = transform_disturbances(draws_emax,
-        shocks_cholesky, shocks_mean)
+    draws_emax_transformed = transform_disturbances(draws_emax, shocks_cholesky)
 
     # Calculate maximum value
     emax_simulated = 0.0

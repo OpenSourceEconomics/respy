@@ -96,14 +96,13 @@ MODULE shared_auxiliary
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE transform_disturbances(draws_transformed, draws, shocks_cholesky, & 
-                shocks_mean, num_draws)
+                num_draws)
 
     !/* external objects        */
 
     REAL(our_dble), INTENT(OUT)     :: draws_transformed(:, :)
 
     REAL(our_dble), INTENT(IN)      :: shocks_cholesky(:, :)
-    REAL(our_dble), INTENT(IN)      :: shocks_mean(:)
     REAL(our_dble), INTENT(IN)      :: draws(:, :)
 
     INTEGER, INTENT(IN)             :: num_draws
@@ -120,9 +119,6 @@ SUBROUTINE transform_disturbances(draws_transformed, draws, shocks_cholesky, &
         draws_transformed(i:i, :) = &
             TRANSPOSE(MATMUL(shocks_cholesky, TRANSPOSE(draws(i:i, :))))
     END DO
-
-    draws_transformed(:, :2) = draws_transformed(:, :2) + &
-        SPREAD(shocks_mean, 1, num_draws)
 
     DO i = 1, 2
         draws_transformed(:, i) = clip_value(EXP(draws_transformed(:, i)), zero_dble, HUGE_FLOAT)

@@ -1187,7 +1187,7 @@ SUBROUTINE simulate_emax(emax_simulated, num_periods, num_draws_emax, period, &
 !-------------------------------------------------------------------------------
     ! Transform disturbances
     CALL transform_disturbances(draws_emax_transformed, draws_emax, &
-            shocks_cholesky, shocks_mean, num_draws_emax)
+            shocks_cholesky, num_draws_emax)
 
     ! Iterate over Monte Carlo draws
     emax_simulated = zero_dble
