@@ -24,7 +24,6 @@ TEST_DIR = TEST_DIR.replace('development/testing', '') + '/respy/tests'
 # ROBPUPY testing codes. The import of the PYTEST configuration file ensures
 # that the PYTHONPATH is modified to allow for the use of the tests..
 sys.path.insert(0, TEST_DIR)
-import conftest
 
 VERSIONS = ['PYTHON', 'FORTRAN', 'F2PY']
 

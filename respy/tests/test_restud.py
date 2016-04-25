@@ -5,6 +5,9 @@ RESTUD code for the special cases where they overlap.
 # standard library
 from pandas.util.testing import assert_frame_equal
 
+import pandas as pd
+import numpy as np
+
 import pytest
 import os
 
@@ -82,10 +85,6 @@ def transform_respy_to_restud(model_paras, edu_start, edu_max,
         sigmas = np.sqrt(np.diag(shocks_cov)); sigmas[2:] = sigmas[2:]/1000
         line = '{0:10.5f} {1:10.5f} {2:10.5f} {3:10.5f}\n'.format(*sigmas)
         file_.write(line)
-
-
-''' Main
-'''
 
 
 @pytest.mark.usefixtures('fresh_directory', 'set_seed')

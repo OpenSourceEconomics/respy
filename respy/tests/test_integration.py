@@ -53,9 +53,6 @@ from respy.fortran.fortran import fort_evaluate
 from respy.python.estimate.estimate_python import pyth_criterion
 from respy.fortran.f2py_library import f2py_criterion
 
-''' Main
-'''
-
 
 @pytest.mark.usefixtures('fresh_directory', 'set_seed')
 class TestClass(object):

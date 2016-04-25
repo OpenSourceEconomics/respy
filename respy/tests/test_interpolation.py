@@ -3,10 +3,10 @@ development tests.
 """
 
 # standard library
-import os
-
 import numpy as np
+
 import pytest
+import os
 
 # testing library
 from codes.auxiliary import write_interpolation_grid
@@ -30,10 +30,6 @@ import respy.fortran.f2py_debug as fort_debug
 
 from respy import solve
 from respy import read
-
-
-''' Main
-'''
 
 
 @pytest.mark.usefixtures('fresh_directory', 'set_seed')

@@ -18,9 +18,6 @@ from respy.python.solve.solve_python import pyth_solve
 
 from respy.fortran.fortran import fort_solve
 
-''' Main function
-'''
-
 
 def solve(input_):
     """ Solve the model

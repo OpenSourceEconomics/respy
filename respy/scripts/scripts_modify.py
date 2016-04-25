@@ -20,10 +20,6 @@ from respy.tests.codes.random_init import print_random_dict
 from respy import read
 
 
-''' Auxiliary function
-'''
-
-
 def dist_input_arguments(parser):
     """ Check input for script.
     """
@@ -69,10 +65,6 @@ def dist_input_arguments(parser):
 
     # Finishing
     return identifiers_list, values, action, init_file
-
-
-''' Main function
-'''
 
 
 def scripts_modify(identifiers, values, action, init_file):
@@ -147,8 +139,6 @@ def change_value(identifiers, values):
     np.savetxt(open('paras_steps.respy.log', 'wb'), paras_steps, fmt='%15.8f')
 
 
-''' Execution of module as script.
-'''
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description=

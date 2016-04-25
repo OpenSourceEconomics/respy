@@ -197,8 +197,6 @@ def scripts_estimate(resume, single, init_file, gradient):
     if gradient:
         add_gradient_information(respy_obj)
 
-''' Execution of module as script.
-'''
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description =

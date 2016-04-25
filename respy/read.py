@@ -9,7 +9,7 @@ import os
 
 # project library
 from respy.python.read.read_auxiliary import check_line
-from respy.python.read.clsRobupy import RobupyCls
+from respy.python.read.clsRespy import RespyCls
 
 ''' Main function
 '''
@@ -84,7 +84,7 @@ def read(fname, is_dict=False):
     _check_integrity_complete(dict_)
 
     # Construct container
-    respy_obj = RobupyCls(dict_)
+    respy_obj = RespyCls(dict_)
 
     respy_obj.lock()
 

@@ -11,10 +11,6 @@ from respy.python.shared.shared_auxiliary import get_respy_obj
 from respy.python.shared.shared_auxiliary import check_dataset
 
 
-''' Main function
-'''
-
-
 def process(input_):
     """ This function processes the dataset from disk.
     """

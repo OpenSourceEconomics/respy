@@ -10,9 +10,6 @@ from respy.python.shared.shared_auxiliary import dist_class_attributes
 
 from respy import read
 
-''' Auxiliary functions.
-'''
-
 
 def write_interpolation_grid(file_name):
     """ Write out an interpolation grid that can be used across

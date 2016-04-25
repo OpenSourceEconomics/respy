@@ -26,7 +26,6 @@ TEST_DIR = TEST_DIR.replace('development/testing', '') + 'respy/tests'
 
 # PYTEST ensures the path is set up correctly.
 sys.path.insert(0, TEST_DIR)
-import conftest
 
 # Testing infrastructure
 from modules.auxiliary import cleanup_testing_infrastructure

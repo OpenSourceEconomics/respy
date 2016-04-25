@@ -1,5 +1,5 @@
 """ Module that contains the class that carries around information for the
-    ROBUPY package
+    RESPY package
 """
 
 # standard library
@@ -21,7 +21,7 @@ SOLUTION_ATTR = ['periods_payoffs_systematic', 'states_number_period']
 SOLUTION_ATTR += ['mapping_state_idx', 'periods_emax', 'states_all']
 
 
-class RobupyCls(object):
+class RespyCls(object):
     """ This class manages the distribution of the use requests throughout
     the toolbox.
     """
@@ -225,9 +225,6 @@ class RobupyCls(object):
             self.attr[label] = None
 
         self.attr['is_solved'] = False
-
-    ''' Private methods
-    '''
 
     def _update_core_attributes(self):
         """ Calculate derived attributes. This is only called when the class

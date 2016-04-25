@@ -1,16 +1,13 @@
 """ This module contains auxiliary functions that are shared among the requests.
 """
 # standard library
-import os
-
 import numpy as np
+
+import os
 
 # project library
 from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.shared.shared_constants import HUGE_FLOAT
-
-''' Auxiliary functions
-'''
 
 
 def cut_dataset(respy_obj, data_frame):
@@ -355,11 +352,11 @@ def get_respy_obj(input_):
     """ Depending on the type of input_, we need to initialize a fresh instance
     of the respy_obj or work with the input_ directly.
     """
-    from respy.python.read.clsRobupy import RobupyCls
+    from respy.python.read.clsRespy import RespyCls
     from respy.read import read
 
-    assert (isinstance(input_, RobupyCls) or isinstance(input_, str))
-    if isinstance(input_, RobupyCls):
+    assert (isinstance(input_, RespyCls) or isinstance(input_, str))
+    if isinstance(input_, RespyCls):
         respy_obj = input_
     else:
         respy_obj = read(input_)

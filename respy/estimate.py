@@ -16,9 +16,6 @@ from respy.python.estimate.estimate_wrapper import OptimizationClass
 
 from respy.process import process
 
-''' Main function
-'''
-
 
 def estimate(input_):
     """ Estimate the model

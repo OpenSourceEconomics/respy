@@ -12,9 +12,6 @@ from respy.fortran.fortran_auxiliary import read_data
 
 from respy.python.shared.shared_constants import FORTRAN_DIR
 
-''' Main function
-'''
-
 
 def fort_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
         is_deterministic, is_interpolated, num_draws_emax,

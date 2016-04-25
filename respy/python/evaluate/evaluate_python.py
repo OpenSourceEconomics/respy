@@ -14,9 +14,6 @@ from respy.python.shared.shared_constants import HUGE_FLOAT
 
 from respy.python.solve.solve_python import pyth_solve
 
-''' Main function
-'''
-
 
 def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         shocks_cov, is_deterministic, is_interpolated, num_draws_emax,

@@ -15,10 +15,6 @@ from respy.tests.codes.random_init import print_random_dict
 from respy import read
 
 
-''' Auxiliary function
-'''
-
-
 def dist_input_arguments(parser):
     """ Check input for script.
     """
