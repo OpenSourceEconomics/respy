@@ -30,96 +30,11 @@ import copy
 import json
 import os
 
-
-''' Private class.
-'''
-
-
-class MetaCls(object):
-    """ This class is contains some methods for the MailCls. This makes the
-    file self-contained.
-    """
-    def get_status(self):
-        """ Get status of class instance.
-        """
-
-        return self.is_locked
-
-    def lock(self):
-        """ Lock class instance.
-        """
-        # Antibugging
-        assert (self.get_status() is False)
-
-        # Update class attributes
-        self.is_locked = True
-
-        # Finalize
-        self._derived_attributes()
-
-        self._check_integrity()
-
-    def unlock(self):
-        """ Unlock class instance.
-        """
-        # Antibugging
-        assert (self.get_status() is True)
-
-        # Update class attributes
-        self.is_locked = False
-
-    def get_attr(self, key, deep=False):
-        """ Get attributes.
-        """
-        # Antibugging
-        assert (self.get_status() is True)
-        assert (deep in [True, False])
-
-        # Copy requested object
-        if deep:
-            attr = copy.deepcopy(self.attr[key])
-        else:
-            attr = self.attr[key]
-
-        # Finishing.
-        return attr
-
-    def set_attr(self, key, value, deep=False):
-        """ Get attributes.
-        """
-        # Antibugging
-        assert (self.get_status() is False)
-        assert (key in self.attr.keys())
-
-        # Copy requested object
-        if deep:
-            attr = copy.deepcopy(value)
-        else:
-            attr = value
-
-        # Finishing
-        self.attr[key] = attr
-
-    @staticmethod
-    def _check_integrity():
-        """ Check integrity of class instance.
-        """
-
-    def store(self, file_name):
-        """ Store class instance.
-        """
-        # Antibugging
-        assert (self.get_status() is True)
-        assert (isinstance(file_name, str))
-
-        # Store
-        pkl.dump(self, open(file_name, 'wb'))
-
 ''' Main Class.
 '''
 
 
-class MailCls(MetaCls):
+class MailCls(object):
     """ This class is used to manage the sending of the notification after a
     completed test run.
     """
@@ -221,3 +136,79 @@ class MailCls(MetaCls):
         self.attr['username'] = dict_['username']
 
         self.attr['password'] = dict_['password']
+
+    def get_status(self):
+        """ Get status of class instance.
+        """
+
+        return self.is_locked
+
+    def lock(self):
+        """ Lock class instance.
+        """
+        # Antibugging
+        assert (self.get_status() is False)
+
+        # Update class attributes
+        self.is_locked = True
+
+        # Finalize
+        self._derived_attributes()
+
+        self._check_integrity()
+
+    def unlock(self):
+        """ Unlock class instance.
+        """
+        # Antibugging
+        assert (self.get_status() is True)
+
+        # Update class attributes
+        self.is_locked = False
+
+    def get_attr(self, key, deep=False):
+        """ Get attributes.
+        """
+        # Antibugging
+        assert (self.get_status() is True)
+        assert (deep in [True, False])
+
+        # Copy requested object
+        if deep:
+            attr = copy.deepcopy(self.attr[key])
+        else:
+            attr = self.attr[key]
+
+        # Finishing.
+        return attr
+
+    def set_attr(self, key, value, deep=False):
+        """ Get attributes.
+        """
+        # Antibugging
+        assert (self.get_status() is False)
+        assert (key in self.attr.keys())
+
+        # Copy requested object
+        if deep:
+            attr = copy.deepcopy(value)
+        else:
+            attr = value
+
+        # Finishing
+        self.attr[key] = attr
+
+    @staticmethod
+    def _check_integrity():
+        """ Check integrity of class instance.
+        """
+
+    def store(self, file_name):
+        """ Store class instance.
+        """
+        # Antibugging
+        assert (self.get_status() is True)
+        assert (isinstance(file_name, str))
+
+        # Store
+        pkl.dump(self, open(file_name, 'wb'))
