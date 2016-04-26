@@ -63,8 +63,7 @@ def run(hours, compile_):
 
     start, timeout = datetime.now(), timedelta(hours=hours)
 
-    # # Evaluation loop.
-
+    # Evaluation loop.
     while True:
 
         # Set seed.
@@ -109,8 +108,7 @@ def run(hours, compile_):
 
     finalize_testing_record(full_test_record)
 
-''' Execution of module as script.
-'''
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run development test '
                 'battery of ROBUPY package.',

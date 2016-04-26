@@ -57,8 +57,6 @@ def scripts_update(init_file):
 
     print_random_dict(init_dict, init_file)
 
-''' Execution of module as script.
-'''
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description=

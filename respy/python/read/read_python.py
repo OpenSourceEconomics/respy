@@ -83,9 +83,6 @@ def read(fname):
     # Finishing
     return dict_
 
-''' Auxiliary functions
-'''
-
 
 def _type_conversions(flag, value):
     """ Type conversions

@@ -61,8 +61,6 @@ class MailCls(object):
         # Status indicator
         self.is_locked = False
 
-    ''' Public methods.
-    '''
     def send(self):
         """ Send message.
         """

@@ -255,9 +255,6 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
     return periods_emax
 
 
-''' Auxiliary functions
-'''
-
 def get_simulated_indicator(num_points, num_candidates, period, is_debug):
     """ Get the indicator for points of interpolation and simulation.
     """

@@ -44,10 +44,6 @@ def dist_input_arguments(parser):
     return update, init_file, file_sim, solved
 
 
-''' Main function
-'''
-
-
 def scripts_simulate(update, init_file, file_sim, solved):
     """ Wrapper for the estimation.
     """
@@ -74,8 +70,6 @@ def scripts_simulate(update, init_file, file_sim, solved):
     simulate(respy_obj)
 
 
-''' Execution of module as script.
-'''
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description=

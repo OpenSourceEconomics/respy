@@ -20,9 +20,6 @@ class CustomBuildCommand(build_py):
 
         build_py.run(self)
 
-''' Setup
-'''
-
 
 def setup_package():
     """ First steps towards a reliable build process.
