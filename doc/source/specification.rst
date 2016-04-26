@@ -84,15 +84,15 @@ coeff    mean value of non-market alternative
 Key      Interpretation      
 =======  ========================== 
 coeff    :math:`\sigma_{1}`
-coeff    :math:`\sigma_{1,2}`
-coeff    :math:`\sigma_{1,3}`
-coeff    :math:`\sigma_{1,4}`
-coeff    :math:`\sigma_{\epsilon_{2}}`
-coeff    :math:`\sigma_{2,3}`
-coeff    :math:`\sigma_{2,4}`
-coeff    :math:`\sigma_{\epsilon_{3}}`
-coeff    :math:`\sigma_{3,4}`
-coeff    :math:`\sigma_{\epsilon_{4}}`
+coeff    :math:`\sigma_{12}`
+coeff    :math:`\sigma_{13}`
+coeff    :math:`\sigma_{14}`
+coeff    :math:`\sigma_{2}`
+coeff    :math:`\sigma_{23}`
+coeff    :math:`\sigma_{24}`
+coeff    :math:`\sigma_{3}`
+coeff    :math:`\sigma_{34}`
+coeff    :math:`\sigma_{4}`
 =======  ========================== 
 
 **SOLUTION**
