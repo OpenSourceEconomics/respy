@@ -29,6 +29,8 @@ The details for the **EMAX interpolation** are already discussed in detail :ref:
 Program Design
 --------------
 
+We have learned a lot from the codes of the original codes. You can check them out `online <https://github.com/restudToolbox/package/tree/master/forensics>`_, where we also provide upgraded versions of the key modules.
+
 .. todo::
 
    Provide an overview about the basic design of the program.
