@@ -5,13 +5,7 @@ import numpy as np
 
 import tempfile
 import pytest
-import sys
 import os
-
-# ROOT DIRECTORY
-ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
-ROOT_DIR = ROOT_DIR.replace('/respy/tests', '')
-sys.path.insert(0, ROOT_DIR)
 
 
 @pytest.fixture(scope='function')

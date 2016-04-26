@@ -11,7 +11,7 @@ import os
 
 # project library
 from respy.python.estimate.estimate_auxiliary import dist_optim_paras
-from respy.tests.codes.random_init import print_random_dict
+from respy.python.shared.shared_auxiliary import print_init_dict
 from respy.python.read.read_python import read
 
 
@@ -55,7 +55,7 @@ def scripts_update(init_file):
     init_dict['SHOCKS']['coeffs'] = shocks_coeffs
     init_dict['HOME']['coeffs'] = coeffs_home
 
-    print_random_dict(init_dict, init_file)
+    print_init_dict(init_dict, init_file)
 
 if __name__ == '__main__':
 

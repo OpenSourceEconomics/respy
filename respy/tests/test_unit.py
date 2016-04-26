@@ -1,13 +1,10 @@
-""" This modules contains some additional tests that are only used in long-run
-development tests.
-"""
-
 # standard library
+import statsmodels.api as sm
+from scipy.stats import norm
+
 import numpy as np
 import pytest
 import scipy
-import statsmodels.api as sm
-from scipy.stats import norm
 
 # testing library
 from codes.auxiliary import write_interpolation_grid
@@ -61,15 +58,14 @@ class TestClass(object):
 
             # Extract class attributes
             periods_payoffs_systematic, states_number_period, \
-                mapping_state_idx, \
-                periods_emax, model_paras, num_periods, states_all, \
-                num_draws_emax, edu_start, is_debug, edu_max, delta,\
-                = dist_class_attributes(respy_obj,
-                    'periods_payoffs_systematic', 'states_number_period',
-                    'mapping_state_idx',
-                    'periods_emax', 'model_paras', 'num_periods', 'states_all',
-                    'num_draws_emax', 'edu_start', 'is_debug', 'edu_max',
-                    'delta')
+                mapping_state_idx, periods_emax, model_paras, num_periods, \
+                states_all, num_draws_emax, edu_start, is_debug, edu_max, \
+                delta = \
+                    dist_class_attributes(respy_obj,
+                        'periods_payoffs_systematic', 'states_number_period',
+                        'mapping_state_idx', 'periods_emax', 'model_paras',
+                        'num_periods', 'states_all', 'num_draws_emax',
+                        'edu_start', 'is_debug', 'edu_max', 'delta')
 
             # Extract auxiliary objects
             _, _, _, _, _, shocks_cholesky = \
@@ -91,10 +87,7 @@ class TestClass(object):
                     payoffs_systematic, edu_max, edu_start, mapping_state_idx,
                     states_all, num_periods, periods_emax, delta,
                     shocks_cholesky)
-                # TODO: Are the interfaces  between fort and py still aligned.
-                # TODO: Renumbering all tests.
-                # TODO: Check for unused arguments.
-                # TODO: Travis now strict test passing?
+
                 py = get_payoffs(*args)
                 f90 = fort_debug.wrapper_get_payoffs(*args)
 
@@ -387,8 +380,7 @@ class TestClass(object):
                 dist_class_attributes(respy_obj,
                     'num_periods', 'edu_start', 'edu_max', 'min_idx',
                     'model_paras', 'num_draws_emax', 'seed_emax', 'is_debug',
-                    'delta',
-                    'is_interpolated', 'num_points')
+                    'delta', 'is_interpolated', 'num_points')
 
         # Auxiliary objects
         coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, \
@@ -414,8 +406,8 @@ class TestClass(object):
 
         # Carry some results from the systematic payoff calculation for
         # future use and create the required set of disturbances.
-        periods_draws_emax = create_draws(num_periods, num_draws_emax, seed_emax,
-            is_debug)
+        periods_draws_emax = create_draws(num_periods, num_draws_emax,
+            seed_emax, is_debug)
 
         periods_payoffs_systematic = pyth
 
@@ -423,8 +415,7 @@ class TestClass(object):
         args = (num_periods, max_states_period, periods_draws_emax,
             num_draws_emax, states_number_period, periods_payoffs_systematic,
             edu_max, edu_start, mapping_state_idx, states_all, delta,
-            is_debug, shocks_cov, is_interpolated,
-            num_points, shocks_cholesky)
+            is_debug, shocks_cov, is_interpolated, num_points, shocks_cholesky)
 
         pyth = pyth_backward_induction(*args)
         f2py = f2py_backward_induction(*args)

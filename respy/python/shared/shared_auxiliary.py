@@ -346,3 +346,157 @@ def transform_disturbances(draws, shocks_cholesky):
 
     # Finishing
     return draws_transformed
+
+
+def print_init_dict(dict_, file_name='test.respy.ini'):
+    """ Print initialization dictionary to file. The different formatting
+    makes the file rather involved. The resulting initialization files are
+    read by PYTHON and FORTRAN routines. Thus, the formatting with respect to
+    the number of decimal places is rather small.
+    """
+    # Antibugging.
+    assert (isinstance(dict_, dict))
+
+    paras_fixed = dict_['OCCUPATION A']['fixed'][:]
+    paras_fixed += dict_['OCCUPATION B']['fixed'][:]
+    paras_fixed += dict_['EDUCATION']['fixed'][:]
+    paras_fixed += dict_['HOME']['fixed'][:]
+    paras_fixed += [dict_['SHOCKS']['fixed'][0]][:]
+
+    str_optim = '{0:<10} {1:20.4f} {2:>5} \n'
+
+    # Construct labels. This ensures that the initialization files alway look
+    # identical.
+    labels = ['BASICS', 'AMBIGUITY', 'OCCUPATION A', 'OCCUPATION B']
+    labels += ['EDUCATION', 'HOME', 'SHOCKS',  'SOLUTION']
+    labels += ['SIMULATION', 'ESTIMATION', 'PROGRAM', 'INTERPOLATION']
+    labels += ['SCIPY-BFGS', 'SCIPY-POWELL']
+
+    # Create initialization.
+    with open(file_name, 'w') as file_:
+
+        for flag in labels:
+            if flag in ['BASICS']:
+
+                file_.write('BASICS \n\n')
+
+                str_ = '{0:<10} {1:>20} \n'
+                file_.write(str_.format('periods', dict_[flag]['periods']))
+
+                str_ = '{0:<10} {1:20.4f} \n'
+                file_.write(str_.format('delta', dict_[flag]['delta']))
+
+                file_.write('\n')
+
+            if flag in ['HOME']:
+
+                file_.write(flag.upper() + '\n\n')
+
+                val = dict_['HOME']['coeffs'][0]
+                line = format_opt_parameters(val, 15, paras_fixed)
+                file_.write(str_optim.format(*line))
+
+                file_.write('\n')
+
+            if flag in ['SOLUTION', 'SIMULATION', 'PROGRAM', 'INTERPOLATION',
+                        'ESTIMATION']:
+
+                file_.write(flag.upper() + '\n\n')
+
+                for keys_ in dict_[flag]:
+
+                    if keys_ in ['tau']:
+                        str_ = '{0:<10} {1:20.0f} \n'
+                        file_.write(str_.format(keys_, dict_[flag][keys_]))
+                    else:
+                        str_ = '{0:<10} {1:>20} \n'
+                        file_.write(str_.format(keys_, str(dict_[flag][keys_])))
+
+                file_.write('\n')
+
+            if flag in ['SHOCKS']:
+
+                # Type conversion
+                file_.write(flag.upper() + '\n\n')
+
+                for i in range(10):
+                    val = dict_['SHOCKS']['coeffs'][i]
+                    line = format_opt_parameters(val, 16, paras_fixed)
+                    file_.write(str_optim.format(*line))
+                file_.write('\n')
+
+            if flag in ['EDUCATION']:
+
+                file_.write(flag.upper() + '\n\n')
+
+                val = dict_['EDUCATION']['coeffs'][0]
+                line = format_opt_parameters(val, 12, paras_fixed)
+                file_.write(str_optim.format(*line))
+
+                val = dict_['EDUCATION']['coeffs'][1]
+                line = format_opt_parameters(val, 13, paras_fixed)
+                file_.write(str_optim.format(*line))
+
+                val = dict_['EDUCATION']['coeffs'][2]
+                line = format_opt_parameters(val, 14, paras_fixed)
+                file_.write(str_optim.format(*line))
+
+                file_.write('\n')
+                str_ = '{0:<10} {1:>15} \n'
+                file_.write(str_.format('start', dict_[flag]['start']))
+                file_.write(str_.format('max', dict_[flag]['max']))
+
+                file_.write('\n')
+
+            if flag in ['OCCUPATION A', 'OCCUPATION B']:
+                identifier = None
+                if flag == 'OCCUPATION A':
+                    identifier = 0
+                if flag == 'OCCUPATION B':
+                    identifier = 6
+
+                file_.write(flag + '\n\n')
+
+                # Coefficient
+                for j in range(6):
+                    val = dict_[flag]['coeffs'][j]
+                    line = format_opt_parameters(val, identifier, paras_fixed)
+                    identifier += 1
+
+                    file_.write(str_optim.format(*line))
+
+                file_.write('\n')
+
+            if flag in ['SCIPY-POWELL', 'SCIPY-BFGS']:
+
+                # This function can also be used to print out initialization
+                # files without any optimization options. This is enough for
+                # simulation tasks.
+                if flag not in dict_.keys():
+                    continue
+
+                file_.write(flag.upper() + '\n\n')
+
+                for keys_ in dict_[flag]:
+
+                    if keys_ in ['maxfun']:
+                        str_ = '{0:<10} {1:>20} \n'
+                        file_.write(str_.format(keys_, dict_[flag][keys_]))
+                    else:
+                        str_ = '{0:<10} {1:20.4f} \n'
+                        file_.write(str_.format(keys_, dict_[flag][keys_]))
+
+                file_.write('\n')
+
+
+def format_opt_parameters(val, identifier, paras_fixed):
+    """ This function formats the values depending on whether they are fixed
+    during the optimization or not.
+    """
+    # Initialize baseline line
+    line = ['coeff', val, ' ']
+    if paras_fixed[identifier]:
+        line[-1] = '!'
+
+    # Finishing
+    return line

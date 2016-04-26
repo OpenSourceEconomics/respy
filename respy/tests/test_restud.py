@@ -13,9 +13,9 @@ import os
 
 # project library
 from respy.tests.codes.random_init import generate_random_dict
-from respy.tests.codes.random_init import print_random_dict
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
+from respy.python.shared.shared_auxiliary import print_init_dict
 from respy.python.shared.shared_constants import FORTRAN_DIR
 
 from respy.solve import solve
@@ -113,7 +113,7 @@ class TestClass(object):
         if num_draws_emax < num_agents_sim:
             init_dict['SOLUTION']['draws'] = num_agents_sim
 
-        print_random_dict(init_dict)
+        print_init_dict(init_dict)
 
         # Indicate RESTUD code the special case of zero disturbance.
         open('.restud.testing.scratch', 'a').close()
@@ -125,9 +125,10 @@ class TestClass(object):
         # ROBUPY package. The existence of the file leads to the RESTUD program
         # to write out the random components.
         model_paras, edu_start, edu_max, num_agents_sim, num_periods, \
-            num_draws_emax, delta = dist_class_attributes(respy_obj,
-                'model_paras', 'edu_start', 'edu_max',
-                'num_agents_sim', 'num_periods', 'num_draws_emax', 'delta')
+            num_draws_emax, delta = \
+                dist_class_attributes(respy_obj,
+                    'model_paras', 'edu_start', 'edu_max', 'num_agents_sim',
+                    'num_periods', 'num_draws_emax', 'delta')
 
         transform_respy_to_restud(model_paras, edu_start, edu_max,
             num_agents_sim, num_periods, num_draws_emax, delta)

@@ -2,10 +2,6 @@
 !*******************************************************************************
 MODULE IMSL_REPLACEMENTS
 
-    !/* external modules    */
-
-    USE shared_constants
-
     !/* setup   */
 
     IMPLICIT NONE
@@ -60,16 +56,16 @@ SUBROUTINE RNNOR(dim, draw)
 
     !/* external objects    */
 
-    INTEGER, INTENT(IN)   :: dim
+    INTEGER, INTENT(IN)     :: dim
 
-    REAL, INTENT(OUT)   :: draw(dim)
+    REAL, INTENT(OUT)       :: draw(dim)
         
     !/* internal objects    */
 
-    INTEGER             :: g 
+    INTEGER                 :: g 
 
-    REAL, PARAMETER     :: pi = 3.141592653589793238462643383279502884197
-    REAL, ALLOCATABLE   :: u(:), r(:)
+    REAL, PARAMETER         :: pi = 3.141592653589793238462643383279502884197
+    REAL, ALLOCATABLE       :: u(:), r(:)
 
 !------------------------------------------------------------------------------- 
 ! Algorithm
@@ -103,12 +99,13 @@ SUBROUTINE LINDS(N, A, LDA, AINV, LDAINV)
 
     !/* external objects    */
 
-    INTEGER, INTENT(IN)               :: N, LDA, LDAINV
-    REAL, INTENT(IN)                  :: A(N, N)
+    REAL, INTENT(OUT)       :: AINV(N, N)
 
-    REAL, INTENT(OUT)                  :: AINV(N, N)
+    INTEGER, INTENT(IN)     :: LDAINV
+    INTEGER, INTENT(IN)     :: LDA
+    INTEGER, INTENT(IN)     :: N
     
-    !/* internal objects    */
+    REAL, INTENT(IN)        :: A(N, N)
 
 !------------------------------------------------------------------------------- 
 ! Algorithm
@@ -121,34 +118,34 @@ END SUBROUTINE
 !*******************************************************************************
 FUNCTION inverse(A, n)
 
-        !/* external objects        */
+    !/* external objects        */
 
-        INTEGER(our_int), INTENT(IN)    :: n
+    INTEGER, INTENT(IN)     :: n
 
-        REAL, INTENT(IN)      :: A(:, :)
+    REAL, INTENT(IN)        :: A(:, :)
 
-        !/* internal objects        */
+    !/* internal objects        */
 
-        INTEGER(our_int)                :: ipiv(n)
-        INTEGER(our_int)                :: info
+    INTEGER                 :: ipiv(n)
+    INTEGER                 :: info
 
-        REAL(our_dble)                  :: inverse(n, n)
-        REAL(our_dble)                  :: work(n)
+    REAL                    :: inverse(n, n)
+    REAL                    :: work(n)
         
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
         
-        ! Initialize matrix for replacement
-        inverse = A
+    ! Initialize matrix for replacement
+    inverse = A
+    
+    ! SGETRF computes an LU factorization of a general M-by-N matrix A
+    ! using partial pivoting with row interchanges.
+    CALL SGETRF(n, n, inverse, n, ipiv, info)
 
-        ! DGETRF computes an LU factorization of a general M-by-N matrix A
-        ! using partial pivoting with row interchanges.
-        CALL DGETRF(n, n, inverse, n, ipiv, info)
-
-        ! DGETRI computes the inverse of a matrix using the LU factorization
-        ! computed by DGETRF.
-        CALL DGETRI(n, inverse, n, ipiv, work, n, info)
+    ! SGETRI computes the inverse of a matrix using the LU factorization
+    ! computed by DGETRF.
+    CALL SGETRI(n, inverse, n, ipiv, work, n, info)
 
 END FUNCTION
 !*******************************************************************************
@@ -157,15 +154,11 @@ SUBROUTINE RNOPT(seed)
 
     !/* external objects    */
 
-    INTEGER, INTENT(IN)               :: seed
-
-    !/* internal objects    */
+    INTEGER, INTENT(IN)     :: seed
 
 !------------------------------------------------------------------------------- 
 ! Algorithm
 !------------------------------------------------------------------------------- 
-
-
 
 END SUBROUTINE 
 !*******************************************************************************
@@ -174,13 +167,13 @@ SUBROUTINE RNGET(seed)
 
     !/* external objects    */
 
-    INTEGER, INTENT(IN)               :: seed
+    INTEGER, INTENT(IN)     :: seed
 
     !/* internal objects    */
 
-    INTEGER                   :: size
+    INTEGER                 :: size
 
-    INTEGER                   :: auxiliary(55)
+    INTEGER                 :: auxiliary(55)
 
 !------------------------------------------------------------------------------- 
 ! Algorithm
@@ -199,13 +192,12 @@ SUBROUTINE RNSET(seed)
 
     !/* external objects    */
 
-    INTEGER, INTENT(IN)         :: seed
+    INTEGER, INTENT(IN)     :: seed
 
     !/* internal objects    */
 
-    INTEGER                     :: size
-
-    INTEGER                     :: auxiliary(55)
+    INTEGER                 :: auxiliary(55)
+    INTEGER                 :: size
 
 !------------------------------------------------------------------------------- 
 ! Algorithm
@@ -255,15 +247,15 @@ SUBROUTINE shuffle(a)
 
     !/* external objects    */
 
-    INTEGER, INTENT(INOUT)      :: a(:)
+    INTEGER, INTENT(INOUT)  :: a(:)
     
     !/* internal objects    */
     
-    INTEGER                     :: randpos
-    INTEGER                     :: temp
-    INTEGER                     :: i
+    INTEGER                 :: randpos
+    INTEGER                 :: temp
+    INTEGER                 :: i
 
-    REAL                        :: r
+    REAL                    :: r
 
 !------------------------------------------------------------------------------- 
 ! Algorithm

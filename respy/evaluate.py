@@ -5,7 +5,6 @@ function.
 # project library
 from respy.python.evaluate.evaluate_python import pyth_evaluate
 from respy.fortran.f2py_library import f2py_evaluate
-
 from respy.fortran.fortran import fort_evaluate
 
 from respy.python.evaluate.evaluate_auxiliary import check_input
@@ -33,8 +32,8 @@ def evaluate(respy_obj):
     # Distribute class attributes
     model_paras, num_periods, num_agents_est, edu_start, is_debug, \
         edu_max, delta, is_deterministic, version, num_draws_prob, seed_prob, \
-        num_draws_emax, seed_emax, is_interpolated, num_points, \
-        is_myopic, min_idx, tau = \
+        num_draws_emax, seed_emax, is_interpolated, num_points, is_myopic, \
+        min_idx, tau = \
             dist_class_attributes(respy_obj,
                 'model_paras', 'num_periods', 'num_agents_est', 'edu_start',
                 'is_debug', 'edu_max', 'delta', 'is_deterministic',

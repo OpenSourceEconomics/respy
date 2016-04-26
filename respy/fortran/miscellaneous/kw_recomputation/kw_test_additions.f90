@@ -1,9 +1,8 @@
 !*******************************************************************************
 ! This module provides additional functions that allow to test this program 
-! against the ROBUPY package.
+! against the RESPY package.
 !*******************************************************************************
 MODULE PEI_ADDITIONS
- 
 
   IMPLICIT NONE
 
@@ -17,14 +16,14 @@ SUBROUTINE READ_IN_DISTURBANCES(EU1, EU2, C, B)
 
   !/* external objects    */
 
-  REAL, INTENT(INOUT)           :: EU1(:, :)
-  REAL, INTENT(INOUT)           :: EU2(:, :)
-  REAL, INTENT(INOUT)           :: C(:, :)
-  REAL, INTENT(INOUT)           :: B(:, :)
+  REAL, INTENT(INOUT)       :: EU1(:, :)
+  REAL, INTENT(INOUT)       :: EU2(:, :)
+  REAL, INTENT(INOUT)       :: C(:, :)
+  REAL, INTENT(INOUT)       :: B(:, :)
 
   !/* internal objects    */
 
-  LOGICAL                       :: READ_IN
+  LOGICAL                   :: READ_IN
 
 !------------------------------------------------------------------------------- 
 ! Algorithm

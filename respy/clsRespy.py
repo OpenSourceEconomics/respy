@@ -213,7 +213,6 @@ class RespyCls(object):
         # parametrization can only be changed by a special function. The
         # initialization dictionary can only be set initially.
         invalid_attr = DERIVED_ATTR + ['model_paras', 'init_dict']
-
         if key in invalid_attr:
             raise AssertionError('invalid request')
 

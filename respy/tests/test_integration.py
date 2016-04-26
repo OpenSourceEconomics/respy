@@ -23,13 +23,14 @@ from respy.scripts.scripts_modify import scripts_modify
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import dist_model_paras
+from respy.python.shared.shared_auxiliary import print_init_dict
 from respy.python.shared.shared_auxiliary import read_draws
 
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
 
 from respy.python.estimate.estimate_auxiliary import get_optim_paras
 from respy.tests.codes.random_init import generate_random_dict
-from respy.tests.codes.random_init import print_random_dict
+from respy.tests.codes.random_init import print_init_dict
 from respy.tests.codes.random_init import generate_init
 
 from respy.evaluate import evaluate
@@ -119,7 +120,7 @@ class TestClass(object):
                 np.random.randint(10, max_states_period)
 
         # Print out the relevant initialization file.
-        print_random_dict(init_dict)
+        print_init_dict(init_dict)
 
         # Write out random components and interpolation grid to align the
         # three implementations.
@@ -274,16 +275,15 @@ class TestClass(object):
 
         # Extract class attributes
         num_periods, edu_start, edu_max, min_idx, model_paras, num_draws_emax, \
-            seed_emax, is_debug, delta, \
-            is_interpolated, num_points, is_deterministic, is_myopic, \
-            num_agents_sim, num_draws_prob, seed_prob, tau, paras_fixed = \
+            seed_emax, is_debug, delta, is_interpolated, num_points, \
+            is_deterministic, is_myopic, num_agents_sim, num_draws_prob, \
+            seed_prob, tau, paras_fixed = \
                 dist_class_attributes(respy_obj,
                     'num_periods', 'edu_start', 'edu_max', 'min_idx',
                     'model_paras', 'num_draws_emax', 'seed_emax', 'is_debug',
-                    'delta',
-                    'is_interpolated', 'num_points', 'is_deterministic',
-                    'is_myopic', 'num_agents_sim', 'num_draws_prob',
-                    'seed_prob', 'tau', 'paras_fixed')
+                    'delta', 'is_interpolated', 'num_points',
+                    'is_deterministic', 'is_myopic', 'num_agents_sim',
+                    'num_draws_prob', 'seed_prob', 'tau', 'paras_fixed')
 
         # Write out random components and interpolation grid to align the
         # three implementations.

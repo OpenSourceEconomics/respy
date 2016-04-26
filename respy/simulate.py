@@ -20,17 +20,12 @@ from respy.python.shared.shared_auxiliary import dist_model_paras
 from respy.python.shared.shared_auxiliary import check_dataset
 from respy.python.shared.shared_auxiliary import create_draws
 
+from respy.python.simulate.simulate_python import pyth_simulate
 from respy.fortran.f2py_library import f2py_simulate
 
 from respy.solve import solve
 
-# Logging
-from respy.python.simulate.simulate_python import pyth_simulate
-
 logger = logging.getLogger('ROBUPY_SIMULATE')
-
-''' Main function
-'''
 
 
 def simulate(respy_obj, is_solved=False):

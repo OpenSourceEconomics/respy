@@ -18,12 +18,12 @@ from respy.python.solve.solve_auxiliary import get_endogenous_variable
 from respy.python.solve.solve_auxiliary import get_predictions
 
 from respy.tests.codes.random_init import generate_random_dict
-from respy.tests.codes.random_init import print_random_dict
 from respy.tests.codes.random_init import generate_init
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import replace_missing_values
 from respy.python.shared.shared_auxiliary import dist_model_paras
+from respy.python.shared.shared_auxiliary import print_init_dict
 from respy.python.shared.shared_auxiliary import create_draws
 
 import respy.fortran.f2py_debug as fort_debug
@@ -53,7 +53,7 @@ class TestClass(object):
         for _ in range(2):
 
             # Write out request
-            print_random_dict(init_dict)
+            print_init_dict(init_dict)
 
             # Process and solve
             respy_obj = RespyCls('test.respy.ini')
@@ -87,15 +87,15 @@ class TestClass(object):
 
         # Extract class attributes
         periods_payoffs_systematic, states_number_period, \
-            mapping_state_idx, seed_prob, periods_emax, \
-            model_paras, num_periods, states_all, num_points, \
-            edu_start, num_draws_emax, is_debug, edu_max, delta, \
-            = dist_class_attributes(respy_obj,
-                'periods_payoffs_systematic', 'states_number_period',
-                'mapping_state_idx', 'seed_prob',
-                'periods_emax', 'model_paras', 'num_periods',
-                'states_all', 'num_points', 'edu_start', 'num_draws_emax',
-                'is_debug', 'edu_max', 'delta')
+            mapping_state_idx, seed_prob, periods_emax, model_paras, \
+            num_periods, states_all, num_points, edu_start, num_draws_emax, \
+            is_debug, edu_max, delta = \
+                dist_class_attributes(respy_obj,
+                    'periods_payoffs_systematic', 'states_number_period',
+                    'mapping_state_idx', 'seed_prob', 'periods_emax',
+                    'model_paras', 'num_periods', 'states_all', 'num_points',
+                    'edu_start', 'num_draws_emax', 'is_debug', 'edu_max',
+                    'delta')
 
         # Auxiliary objects
         _, _, _, _, _, shocks_cholesky = dist_model_paras(model_paras, is_debug)
@@ -140,8 +140,8 @@ class TestClass(object):
         # fitted.
         args = (period, num_periods, num_states, delta,
             periods_payoffs_systematic, edu_max, edu_start, mapping_state_idx,
-            periods_emax, states_all, is_simulated, num_draws_emax,
-            maxe, draws_emax, shocks_cholesky)
+            periods_emax, states_all, is_simulated, num_draws_emax, maxe,
+            draws_emax, shocks_cholesky)
 
         py = get_endogenous_variable(*args)
         f90 = fort_debug.wrapper_get_endogenous_variable(*args)
@@ -239,7 +239,7 @@ class TestClass(object):
         for _ in range(2):
 
             # Write out request
-            print_random_dict(init_dict)
+            print_init_dict(init_dict)
 
             # Process and solve
             respy_obj = RespyCls('test.respy.ini')

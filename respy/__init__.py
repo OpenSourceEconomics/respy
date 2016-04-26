@@ -15,7 +15,7 @@ if not (sys.version_info[0] == 3):
 
 
 def test():
-    """ Run nose tester for the package.
+    """ Run PYTEST for the package.
     """
 
     package_directory = os.path.dirname(os.path.realpath(__file__))

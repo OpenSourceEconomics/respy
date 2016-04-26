@@ -15,7 +15,7 @@ import os
 
 # project library
 from respy.python.shared.shared_auxiliary import dist_model_paras
-from respy.tests.codes.random_init import print_random_dict
+from respy.python.shared.shared_auxiliary import print_init_dict
 from respy.python.read.read_python import read
 
 from respy import RespyCls
@@ -123,7 +123,7 @@ def change_status(identifiers, init_file, is_fixed):
             raise NotImplementedError
 
         # Print dictionary to file
-        print_random_dict(init_dict, init_file)
+        print_init_dict(init_dict, init_file)
 
 
 def change_value(identifiers, values):

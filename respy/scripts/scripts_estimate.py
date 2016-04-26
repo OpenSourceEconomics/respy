@@ -40,14 +40,12 @@ def add_gradient_information(respy_obj):
         num_draws_emax, seed_emax, min_idx, \
         is_deterministic, is_myopic, is_interpolated, num_points, version, \
         optimizer_used, paras_fixed, tau, optimizer_options = \
-        dist_class_attributes(respy_obj,
-            'model_paras', 'num_periods', 'num_agents_est', 'edu_start',
-            'is_debug', 'edu_max', 'delta',
-            'num_draws_prob', 'seed_prob', 'num_draws_emax', 'seed_emax',
-            'min_idx', 'is_deterministic',
-            'is_myopic', 'is_interpolated', 'num_points', 'version',
-            'optimizer_used', 'paras_fixed', 'tau',
-            'optimizer_options')
+            dist_class_attributes(respy_obj,
+                'model_paras', 'num_periods', 'num_agents_est', 'edu_start',
+                'is_debug', 'edu_max', 'delta', 'num_draws_prob', 'seed_prob',
+                'num_draws_emax', 'seed_emax', 'min_idx', 'is_deterministic',
+                'is_myopic', 'is_interpolated', 'num_points', 'version',
+                'optimizer_used', 'paras_fixed', 'tau', 'optimizer_options')
 
     # Auxiliary objects
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, _ = \
