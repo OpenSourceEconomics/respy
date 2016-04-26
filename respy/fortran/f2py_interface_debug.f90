@@ -465,8 +465,7 @@ END SUBROUTINE
 SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, &
                 num_periods, num_states, delta, periods_payoffs_systematic, &
                 edu_max, edu_start, mapping_state_idx, periods_emax, &
-                states_all, is_simulated, num_draws_emax, &
-                maxe, draws_emax, &
+                states_all, is_simulated, num_draws_emax, maxe, draws_emax, & 
                 shocks_cholesky)
 
     !/* external libraries      */
@@ -513,7 +512,7 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE wrapper_get_exogenous_variables(independent_variables, maxe, &
-                period, num_periods, num_states, delta, 
+                period, num_periods, num_states, delta, &
                 periods_payoffs_systematic, shifts, edu_max, edu_start, &
                 mapping_state_idx, periods_emax, states_all)
 

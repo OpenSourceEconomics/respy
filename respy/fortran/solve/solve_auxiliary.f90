@@ -580,7 +580,7 @@ SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, &
 
         IF (is_inadmissible) THEN
 
-            total_payoffs(3) = interpolation_inadmissible_states
+            total_payoffs(3) = INTERPOLATION_INADMISSIBLE_STATES
 
         END IF
 

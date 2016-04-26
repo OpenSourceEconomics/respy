@@ -17,7 +17,6 @@ TEST_RESOURCES_DIR = ROOT_DIR + '/tests/resources'
 FORTRAN_DIR = ROOT_DIR + '/fortran'
 
 HUGE_FLOAT = 1.0e20
-TINY_FLOAT = 1e-20
 SMALL_FLOAT = 1e-5
 
 # Interpolation
@@ -26,4 +25,4 @@ INTERPOLATION_INADMISSIBLE_STATES = -50000.00
 # Missing values. These allow to aline the treatment of missing values across
 # implementations. There is no NAN available in FORTRAN.
 MISSING_INT = -99
-MISSING_FLOAT = float(MISSING_INT)
+MISSING_FLOAT = -99.00

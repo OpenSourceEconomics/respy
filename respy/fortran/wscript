@@ -81,10 +81,6 @@ class CreateF2pyInterfaces(Task):
             'f2py3 -c -m  f2py_debug f2py_interface_debug.f90 '
             '-Iinclude -Llib -lfort_resfort -L/usr/lib/lapack -llapack')
 
-        os.system(
-            'f2py3 -c -m  f2py_testing f2py_interface_testing.f90 '
-            '-Iinclude -Llib -lfort_resfort -L/usr/lib/lapack -llapack')
-
 
 class CreateKeaneWolpinExecutables(Task):
 
