@@ -7,7 +7,7 @@ Installation
 
 The **respy** package builds on the standard *SciPy Stack*. In particular, we use the **NumPy**, **SciPy** and **pandas** library. In addition, we require **statsmodels**. Please make sure that all these packages are properly installed. For more details on the package dependencies, please check out the requirements file on `GitHub <https://github.com/restudToolbox/package/blob/master/requirements.txt>`_
 
-Please make sure you have a recent version of **pip** installed as well. Once the requirements are taken care of, installation is straightforward:
+Please make sure you have a recent version of **pip** installed as well. Once these requirements are taken care of, installation is straightforward:
 
 .. code-block:: bash
 
