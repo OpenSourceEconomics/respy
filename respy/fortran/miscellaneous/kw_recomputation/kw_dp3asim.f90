@@ -4,7 +4,7 @@
 !   Notes:
 !
 !       There exists and independent copy of this file at 
-!       $ROBUPY/development/tests/random/modules. This is used as part of the 
+!       RESPY/development/tests/random/modules. This is used as part of the
 !       testing efforts. This is required to ensure independence of 
 !       each GITHUB repository.
 !
@@ -19,7 +19,7 @@ PROGRAM dp3asim
   ! breaks are removed. Some consecutive IF statements were changed to ELSEIF. 
   !
   ! The program is amended to read in random components to allow for testing
-  ! its output against the ROBUPY package (if requested).
+  ! its output against the RESPY package (if requested).
   !
   !***************************************************************************** 
 

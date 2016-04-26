@@ -1,4 +1,4 @@
-""" The tests in this module compare the ROBUPY package to the original
+""" The tests in this module compare the RESPY package to the original
 RESTUD code for the special cases where they overlap.
 """
 
@@ -26,7 +26,7 @@ from respy import simulate
 
 def transform_respy_to_restud(model_paras, edu_start, edu_max, num_agents_sim,
         num_periods, num_draws_emax, delta):
-    """ Transform a ROBUPY initialization file to a RESTUD file.
+    """ Transform a RESPY initialization file to a RESTUD file.
     """
     # Ensure restrictions
     assert (edu_start == 10)
@@ -93,7 +93,7 @@ class TestClass(object):
     """ This class groups together some tests.
     """
     def test_1(self):
-        """  Compare results from the RESTUD program and the ROBUPY package.
+        """  Compare results from the RESTUD program and the RESPY package.
         """
         # Impose some constraints on the initialization file which ensures that
         # the problem can be solved by the RESTUD code. The code is adjusted to
@@ -122,7 +122,7 @@ class TestClass(object):
         respy_obj = RespyCls('test.respy.ini')
 
         # This flag aligns the random components between the RESTUD program and
-        # ROBUPY package. The existence of the file leads to the RESTUD program
+        # RESPYY package. The existence of the file leads to the RESTUD program
         # to write out the random components.
         model_paras, edu_start, edu_max, num_agents_sim, num_periods, \
             num_draws_emax, delta = \
@@ -136,7 +136,7 @@ class TestClass(object):
         # Solve model using RESTUD code.
         os.system(FORTRAN_DIR + '/bin/kw_dp3asim')
 
-        # Solve model using ROBUPY package.
+        # Solve model using RESPY package.
         solve(respy_obj)
         simulate(respy_obj)
 

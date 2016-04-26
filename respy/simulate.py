@@ -21,7 +21,7 @@ from respy.fortran.f2py_library import f2py_simulate
 
 from respy.solve import solve
 
-logger = logging.getLogger('ROBUPY_SIMULATE')
+logger = logging.getLogger('RESPY_SIMULATE')
 
 
 def simulate(respy_obj, is_solved=False):

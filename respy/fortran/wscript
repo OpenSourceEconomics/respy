@@ -16,7 +16,7 @@ class CreateDirectoryStructure(Task):
 
     def run(self):
 
-        os.chdir(self.env.project_paths['ROBUPY'] + '/fortran')
+        os.chdir(self.env.project_paths['RESPY'] + '/fortran')
 
         for dir_ in ['include', 'lib', 'bin']:
             try:
@@ -49,7 +49,7 @@ class CreateRobufortLibrary(Task):
 
         os.system('ar crs libfort_resfort.a *.o *.mod')
 
-        os.chdir(self.env.project_paths['ROBUPY'] + '/fortran')
+        os.chdir(self.env.project_paths['RESPY'] + '/fortran')
 
         module_files = glob.glob('*.mod')
         for file_ in module_files:
@@ -71,7 +71,7 @@ class CreateF2pyInterfaces(Task):
 
     def run(self):
 
-        os.chdir(self.env.project_paths['ROBUPY'] + '/fortran')
+        os.chdir(self.env.project_paths['RESPY'] + '/fortran')
 
         os.system(
             'f2py3 -c -m  f2py_library f2py_interface_library.f90 '
@@ -87,7 +87,7 @@ class CreateKeaneWolpinExecutables(Task):
     def run(self):
 
         current_directory = os.getcwd()
-        package_directory = self.env.project_paths['ROBUPY']
+        package_directory = self.env.project_paths['RESPY']
         compiler_options = self.env.compiler_options
         os.chdir(package_directory + '/fortran/miscellaneous/kw_recomputation')
 
@@ -113,7 +113,7 @@ def build(bld):
 
     bld.add_to_group(task_1)
 
-    # Create the ROBUFORT library. This is build in addition to the ROBUFORT
+    # Create the RESFORT library. This is build in addition to the RESFORT
     # executable to allow for the use of an F2PY interface to the core
     # functions as well.
     task_2 = CreateRobufortLibrary(env=bld.env)

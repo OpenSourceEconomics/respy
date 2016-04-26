@@ -7,7 +7,7 @@ import logging
 # project library
 from respy.python.shared.shared_auxiliary import dist_model_paras
 
-logger = logging.getLogger('ROBUPY_SIMULATE')
+logger = logging.getLogger('RESPY_SIMULATE')
 
 
 def write_info(respy_obj, data_frame):
@@ -193,7 +193,7 @@ def start_logging():
 
     formatter = logging.Formatter('  %(message)s \n')
 
-    logger = logging.getLogger('ROBUPY_SIMULATE')
+    logger = logging.getLogger('RESPY_SIMULATE')
 
     handler = logging.FileHandler('logging.respy.sim.log', mode='w',
                                   delay=False)
@@ -209,7 +209,7 @@ def stop_logging():
     """ Ensure orderly shutdown of logging capabilities.
     """
     # Shut down logger and close connection.
-    logger = logging.getLogger('ROBUPY_SIMULATE')
+    logger = logging.getLogger('RESPY_SIMULATE')
     handlers = logger.handlers[:]
     for handler in handlers:
         handler.close()

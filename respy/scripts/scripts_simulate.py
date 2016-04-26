@@ -70,7 +70,7 @@ def scripts_simulate(update, init_file, file_sim, solved):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description=
-        'Start of simulation with the ROBUPY package.',
+        'Start of simulation with the RESPY package.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('--update', action='store_true', dest='update',

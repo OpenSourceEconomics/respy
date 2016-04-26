@@ -10,7 +10,7 @@ from respy.python.solve.solve_auxiliary import pyth_create_state_space
 from respy.python.solve.solve_auxiliary import pyth_backward_induction
 
 # Logging
-logger = logging.getLogger('ROBUPY_SOLVE')
+logger = logging.getLogger('RESPY_SOLVE')
 
 ''' Main function
 '''

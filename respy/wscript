@@ -38,7 +38,7 @@ def configure(conf):
     # Construct environment variables
     conf.env.project_paths = dict()
 
-    conf.env.project_paths['ROBUPY'] = os.getcwd()
+    conf.env.project_paths['RESPY'] = os.getcwd()
 
     conf.load('compiler_fc')
 

@@ -1,4 +1,4 @@
-""" Module for program constants used across the ROBUPY package. This is
+""" Module for program constants used across the RESPY package. This is
 aligned with the constants from the FORTRAN implementation.
 """
 

@@ -18,7 +18,7 @@ def resfort_build(self):
 
     compiler_options = self.env.compiler_options
 
-    path = self.env.project_paths['ROBUPY']
+    path = self.env.project_paths['RESPY']
 
     os.chdir(path + '/fortran')
 

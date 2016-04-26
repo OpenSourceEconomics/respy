@@ -6,7 +6,8 @@ Let us explore the basic capabilities of the **respy** package in this tutorial.
 
 As a user of the **respy** package, we usually either want to simulate a synthetic sample form the 
 model or start an estimation run. At the heart of our interaction with the **respy** package is 
-the *RobupyCls*. This classes processes the user's model specification. We can initialize an instance of the class by passing in the location of the model initialization file.
+the *RespyCls*. This classes processes the user's model specification. We can
+initialize an instance of the class by passing in the location of the model initialization file.
 ::
 
     from respy import RespyCls
@@ -111,3 +112,30 @@ We can now simulate a sample using the estimated parameters, but updating the in
     respy_obj.update_model_paras(x)
 
     respy.simulate(respy_obj)
+
+
+Recomputing Keane & Wolpin (1994)
+---------------------------------
+
+Just using the capabilities outlined so far, it is straightforward to compute some of the key results in the original paper with a simple script::
+
+    #!/usr/bin/env python
+    """ This module recomputes some of the key results of Keane & Wolpin (1994).
+    """
+
+    import respy
+
+    # We can simply iterate over the different model specifications outlined in
+    # Table 1 of the paper.
+    for spec in ['data_one.ini', 'data_two.ini', 'data_three.ini']:
+
+        # Process relevant model initialization file
+        respy_obj = respy.RespyCls(spec)
+
+        # Let us simulate the datasets discussed pn the page 658.
+        respy.simulate(respy_obj)
+
+        # To start estimations for the Monte Carlo exercises. For now, we just
+        # evaluate the model at the starting values, i.e. maxiter set to zero in
+        # the initialization file.
+        respy.estimate(respy_obj)

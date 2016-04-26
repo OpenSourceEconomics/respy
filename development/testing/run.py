@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" Script to start development test battery for the ROBUPY package.
+""" Script to start development test battery for the RESPY package.
 """
 
 # standard library
@@ -43,7 +43,7 @@ from modules.auxiliary import get_testdir
 def run(hours, compile_):
     """ Run test battery.
     """
-    # Compile the debug version of the ROBUPY program.
+    # Compile the debug version of the RESPY program.
     if compile_:
         compile_package()
 
@@ -111,7 +111,7 @@ def run(hours, compile_):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run development test '
-                'battery of ROBUPY package.',
+                'battery of RESPY package.',
                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('--hours', action='store', dest='hours',

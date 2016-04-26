@@ -106,7 +106,7 @@ def _process_line(group, flag, value, is_fixed, dict_):
     """ This function processes most parts of the initialization file.
     """
     # This aligns the label from the initialization file with the label
-    # inside the ROBUPY logic.
+    # inside the RESPY logic.
     if flag == 'coeff':
         flag = 'coeffs'
 

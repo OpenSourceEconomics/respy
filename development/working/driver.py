@@ -9,7 +9,7 @@ import os
 import sys
 
 # ROOT DIRECTORY
-sys.path.insert(0, os.environ['ROBUPY'])
+sys.path.insert(0, os.environ['RESPY'])
 sys.path.insert(0, os.environ['STRUCT_RECOMPUTATION'])
 from respy.python.estimate.estimate_auxiliary import dist_optim_paras
 

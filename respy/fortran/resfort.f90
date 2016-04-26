@@ -59,7 +59,7 @@ PROGRAM resfort
 !-------------------------------------------------------------------------------
 
     ! Read specification of model. This is the FORTRAN replacement for the 
-    ! clsRobupy instance that carries the model parametrization for the 
+    ! RespyCls instance that carries the model parametrization for the
     ! PYTHON/F2PY implementations.
     CALL read_specification(num_periods, delta, coeffs_a, coeffs_b, &
             coeffs_edu, edu_start, edu_max, coeffs_home, shocks_cov, &

@@ -16,10 +16,10 @@ import os
 # testing library
 from modules.clsMail import MailCls
 
-# ROBUPY directory. This allows to compile_ the debug version of the FORTRAN
+# RESPY directory. This allows to compile_ the debug version of the FORTRAN
 # program.
-ROBUPY_DIR = os.path.dirname(os.path.realpath(__file__))
-ROBUPY_DIR = ROBUPY_DIR.replace('development/testing/modules', '') + 'respy'
+RESPY_DIR = os.path.dirname(os.path.realpath(__file__))
+RESPY_DIR = RESPY_DIR.replace('development/testing/modules', '') + 'respy'
 
 
 ''' Auxiliary functions
@@ -34,10 +34,10 @@ def get_testdir(length):
 
 
 def compile_package():
-    """ Compile ROBUPY package in debug mode.
+    """ Compile RESPY package in debug mode.
     """
     current_directory = os.getcwd()
-    os.chdir(ROBUPY_DIR)
+    os.chdir(RESPY_DIR)
     os.system('./waf distclean; ./waf configure build --debug')
     os.chdir(current_directory)
 
@@ -196,7 +196,7 @@ def send_notification(hours):
     # Auxiliary objects.
     hostname = socket.gethostname()
 
-    subject = ' ROBUPY: Completed Testing Battery '
+    subject = ' RESPY: Completed Testing Battery '
 
     message = ' A ' + str(hours) + ' hour run of the testing battery on @' + \
               hostname + ' is completed.'

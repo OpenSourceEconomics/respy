@@ -188,9 +188,9 @@ def scripts_estimate(resume, single, init_file, gradient):
 
 if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser(description =
-        'Start of estimation run with the ROBUPY package.',
-        formatter_class = argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(description=
+        'Start of estimation run with the RESPY package.',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('--resume', action='store_true', dest='resume',
         default=False, help='resume estimation run')

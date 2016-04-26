@@ -15,7 +15,7 @@ from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.shared.shared_constants import MISSING_INT
 from respy.python.shared.shared_constants import HUGE_FLOAT
 
-logger = logging.getLogger('ROBUPY_SOLVE')
+logger = logging.getLogger('RESPY_SOLVE')
 
 
 def pyth_create_state_space(num_periods, edu_start, edu_max, min_idx):
@@ -408,7 +408,7 @@ def logging_solution(which):
     if which == 'start':
 
         formatter = logging.Formatter('  %(message)s \n')
-        logger = logging.getLogger('ROBUPY_SOLVE')
+        logger = logging.getLogger('RESPY_SOLVE')
         handler = logging.FileHandler('logging.respy.sol.log', mode='w',
                                       delay=False)
         handler.setFormatter(formatter)
@@ -417,7 +417,7 @@ def logging_solution(which):
 
     elif which == 'stop':
         # Shut down logger and close connection.
-        logger = logging.getLogger('ROBUPY_SOLVE')
+        logger = logging.getLogger('RESPY_SOLVE')
         handlers = logger.handlers[:]
         for handler in handlers:
             handler.close()
