@@ -125,11 +125,12 @@ class RespyCls(object):
         the coefficient arrays or the vector of optimization parameters.
         """
         # Determine use of interface
-        is_optim_paras = (len(input_) == 1)
-
+        is_optim_paras = (not isinstance(input_, tuple))
         if is_optim_paras:
             coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov = \
                 dist_optim_paras(input_, True)
+        else:
+            coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov = input_
 
         # Check integrity
         shocks_cholesky = np.linalg.cholesky(shocks_cov)

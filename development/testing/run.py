@@ -123,9 +123,9 @@ if __name__ == '__main__':
                         dest='notification', default=False,
                         help='send notification')
 
-    parser.add_argument('--compile_', action='store_true',
-                        dest='compile_', default=False,
-                        help='compile_ toolbox with debug flag')
+    parser.add_argument('--compile', action='store_true',
+                        dest='compile', default=False,
+                        help='compile toolbox with debug flag')
 
     # Start from a clean slate and extract a user's request.
     cleanup_testing_infrastructure(False)

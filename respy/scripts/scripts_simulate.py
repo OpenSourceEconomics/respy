@@ -62,7 +62,7 @@ def scripts_simulate(update, init_file, file_sim, solved):
     if update:
         x0 = np.genfromtxt('paras_steps.respy.log')
         args = dist_optim_paras(x0, True)
-        respy_obj.update_model_paras(*args)
+        respy_obj.update_model_paras(args)
 
     # Update file for output.
     if file_sim is not None:

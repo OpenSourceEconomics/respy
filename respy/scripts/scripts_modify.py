@@ -18,6 +18,8 @@ from respy.python.shared.shared_auxiliary import dist_model_paras
 from respy.tests.codes.random_init import print_random_dict
 from respy.python.read.read_python import read
 
+from respy import RespyCls
+
 
 def dist_input_arguments(parser):
     """ Check input for script.
@@ -82,7 +84,8 @@ def change_status(identifiers, init_file, is_fixed):
     """ Change the status of the a list of parameters.
     """
     # Baseline
-    respy_obj, init_dict = read(init_file, True)
+    init_dict = read(init_file)
+    respy_obj = RespyCls(init_file)
 
     model_paras = respy_obj.get_attr('model_paras')
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, _ = \

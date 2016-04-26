@@ -176,7 +176,7 @@ def scripts_estimate(resume, single, init_file, gradient):
     if resume:
         x0 = np.genfromtxt('paras_steps.respy.log')
         args = dist_optim_paras(x0, True)
-        respy_obj.update_model_paras(*args)
+        respy_obj.update_model_paras(args)
 
     # Set maximum iteration count when only an evaluation of the criterion
     # function is requested.
