@@ -6,11 +6,6 @@
 
 The online documentation is available [here](http://respy.readthedocs.org/).
 
-#### Installation and Testing
- 
-    $ pip install respy
-    $ python -c "import respy; respy.test()"
-
 #### Quality Indicators
 
 [![Build Status](https://travis-ci.org/restudToolbox/package.svg?branch=master)](https://travis-ci.org/restudToolbox/package)
