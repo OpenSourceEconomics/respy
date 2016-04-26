@@ -1,7 +1,3 @@
-""" This module contains the interface for the evaluation of the criterion
-function.
-"""
-
 # project library
 from respy.python.evaluate.evaluate_python import pyth_evaluate
 from respy.fortran.f2py_library import f2py_evaluate

@@ -1,6 +1,3 @@
-""" This module contains the interface to process a dataset from disk.
-"""
-
 # standard library
 import pandas as pd
 import numpy as np

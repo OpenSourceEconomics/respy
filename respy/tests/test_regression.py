@@ -1,5 +1,3 @@
-""" This module contains some regression tests.
-"""
 # standard library
 import numpy as np
 

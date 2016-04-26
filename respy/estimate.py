@@ -1,7 +1,3 @@
-""" This module contains the interface for the estimation of the criterion
-function.
-"""
-
 # project library
 from respy.python.estimate.estimate_auxiliary import get_optim_paras
 from respy.python.estimate.estimate_auxiliary import check_input

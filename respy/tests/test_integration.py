@@ -1,7 +1,3 @@
-""" This modules contains some additional tests that are only used in long-run
-development tests.
-"""
-
 # standard library
 from pandas.util.testing import assert_frame_equal
 
@@ -30,7 +26,6 @@ from respy.python.solve.solve_auxiliary import pyth_create_state_space
 
 from respy.python.estimate.estimate_auxiliary import get_optim_paras
 from respy.tests.codes.random_init import generate_random_dict
-from respy.tests.codes.random_init import print_init_dict
 from respy.tests.codes.random_init import generate_init
 
 from respy.evaluate import evaluate

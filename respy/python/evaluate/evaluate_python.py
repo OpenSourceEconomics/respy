@@ -1,9 +1,6 @@
-""" This module provides the interface to the functionality needed to
-evaluate the likelihood function.
-"""
 # standard library
-import numpy as np
 from scipy.stats import norm
+import numpy as np
 
 # project library
 from respy.python.evaluate.evaluate_auxiliary import get_smoothed_probability
@@ -15,11 +12,11 @@ from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.solve.solve_python import pyth_solve
 
 
-def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-        shocks_cov, is_deterministic, is_interpolated, num_draws_emax,
-        num_periods, num_points, is_myopic, edu_start, is_debug,
-        edu_max, min_idx, delta, data_array, num_agents_est,
-        num_draws_prob, tau, periods_draws_emax, periods_draws_prob):
+def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
+        is_deterministic, is_interpolated, num_draws_emax, num_periods,
+        num_points, is_myopic, edu_start, is_debug,  edu_max, min_idx, delta,
+        data_array, num_agents_est, num_draws_prob, tau, periods_draws_emax,
+        periods_draws_prob):
     """ Evaluate criterion function. This code allows for a deterministic
     model, where there is no random variation in the rewards. If that is the
     case and all agents have corresponding experiences, then one is returned.
@@ -27,9 +24,8 @@ def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
     """
     # Solve requested model.
     base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
-        is_deterministic, is_interpolated, num_draws_emax,
-        num_periods, num_points, is_myopic, edu_start, is_debug,
-        edu_max, min_idx, delta)
+        is_deterministic, is_interpolated, num_draws_emax, num_periods,
+        num_points, is_myopic, edu_start, is_debug, edu_max, min_idx, delta)
 
     periods_payoffs_systematic, _, mapping_state_idx, periods_emax, \
         states_all = pyth_solve(*base_args + (periods_draws_emax, ))

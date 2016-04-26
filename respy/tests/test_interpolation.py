@@ -1,7 +1,3 @@
-""" This modules contains some additional tests that are only used in long-run
-development tests.
-"""
-
 # standard library
 import numpy as np
 

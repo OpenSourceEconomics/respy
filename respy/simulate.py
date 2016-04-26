@@ -1,7 +1,3 @@
-""" This module contains the interface to simulate a dataset and write the
-information to disk.
-"""
-
 # standard library
 import pandas as pd
 

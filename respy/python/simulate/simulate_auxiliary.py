@@ -1,7 +1,3 @@
-""" This module contains some auxiliary functions for the simulation from the
-model.
-"""
-
 # standard library
 import pandas as pd
 import numpy as np

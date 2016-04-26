@@ -1,7 +1,4 @@
 #!/usr/bin/env python
-""" This script serves as a command line tool to ease the estimation of the
-model.
-"""
 
 # standard library
 from scipy.optimize import approx_fprime

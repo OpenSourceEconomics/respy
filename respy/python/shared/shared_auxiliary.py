@@ -1,9 +1,6 @@
-""" This module contains auxiliary functions that are shared among the requests.
-"""
 # standard library
-import os
-
 import numpy as np
+import os
 
 # project library
 from respy.python.shared.shared_constants import MISSING_FLOAT

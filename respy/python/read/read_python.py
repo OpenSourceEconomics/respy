@@ -1,6 +1,3 @@
-""" This module contains the interface to read an initialization file from disk.
-"""
-
 # standard library
 import numpy as np
 

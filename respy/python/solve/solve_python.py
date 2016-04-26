@@ -1,11 +1,6 @@
-""" This module provides the interface to the functionality needed to solve the
-model with PYTHON and F2PY capabilities.
-"""
-
 # standard library
-import logging
-
 import numpy as np
+import logging
 
 # project library
 from respy.python.shared.shared_constants import MISSING_FLOAT
@@ -22,9 +17,9 @@ logger = logging.getLogger('ROBUPY_SOLVE')
 
 
 def pyth_solve(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
-        is_deterministic, is_interpolated, num_draws_emax,
-        num_periods, num_points, is_myopic, edu_start, is_debug,
-        edu_max, min_idx, delta, periods_draws_emax):
+        is_deterministic, is_interpolated, num_draws_emax, num_periods,
+        num_points, is_myopic, edu_start, is_debug, edu_max, min_idx, delta,
+        periods_draws_emax):
     """ Solving the model using pure PYTHON code.
     """
     # Construct Cholesky decomposition

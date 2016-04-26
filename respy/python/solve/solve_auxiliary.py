@@ -1,7 +1,3 @@
-""" This module contains the PYTHON implementations fo several functions
-where FORTRAN alternatives are available.
-"""
-
 # standard library
 import statsmodels.api as sm
 import numpy as np
@@ -11,6 +7,7 @@ import shlex
 import os
 
 # project library
+from respy.python.shared.shared_auxiliary import transform_disturbances
 from respy.python.shared.shared_auxiliary import get_total_value
 
 from respy.python.shared.shared_constants import INTERPOLATION_INADMISSIBLE_STATES
@@ -165,8 +162,7 @@ def pyth_calculate_payoffs_systematic(num_periods, states_number_period,
 def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
         num_draws_emax, states_number_period, periods_payoffs_systematic,
         edu_max, edu_start, mapping_state_idx, states_all, delta, is_debug,
-        shocks_cov, is_interpolated, num_points,
-        shocks_cholesky):
+        shocks_cov, is_interpolated, num_points, shocks_cholesky):
     """ Backward induction procedure. There are two main threads to this
     function depending on whether interpolation is requested or not.
     """
@@ -487,9 +483,9 @@ def check_input(respy_obj):
     return True
 
 
-def get_payoffs(num_draws_emax, draws_emax, period, k,
-        payoffs_systematic, edu_max, edu_start, mapping_state_idx,
-        states_all, num_periods, periods_emax, delta, shocks_cholesky):
+def get_payoffs(num_draws_emax, draws_emax, period, k, payoffs_systematic,
+        edu_max, edu_start, mapping_state_idx, states_all, num_periods,
+        periods_emax, delta, shocks_cholesky):
     """ Simulate expected future value under risk.
     """
     # Simulate expected future value.
@@ -501,14 +497,11 @@ def get_payoffs(num_draws_emax, draws_emax, period, k,
     return emax
 
 
-
 def simulate_emax(num_periods, num_draws_emax, period, k, draws_emax,
         payoffs_systematic, edu_max, edu_start, periods_emax, states_all,
         mapping_state_idx, delta, shocks_cholesky):
     """ Simulate expected future value.
     """
-    from respy.python.shared.shared_auxiliary import transform_disturbances
-
     # Get the transformed set of disturbances
     draws_emax_transformed = transform_disturbances(draws_emax, shocks_cholesky)
 

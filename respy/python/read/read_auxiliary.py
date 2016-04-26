@@ -1,7 +1,3 @@
-""" This module contains some auxiliary functions for the processing of
-initialization files.
-"""
-
 # standard library
 import numpy as np
 

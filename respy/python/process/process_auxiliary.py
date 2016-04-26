@@ -1,7 +1,3 @@
-""" This module contains some auxiliary functions for the processing of
-an observed dataset.
-"""
-
 # standard library
 import os
 

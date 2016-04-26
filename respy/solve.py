@@ -1,6 +1,3 @@
-""" This module contains the interface to solve the model.
-"""
-
 # project library
 from respy.fortran.f2py_library import f2py_create_state_space
 from respy.fortran.f2py_library import f2py_solve

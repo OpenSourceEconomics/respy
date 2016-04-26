@@ -1,7 +1,6 @@
 # standard library
-import logging
-
 import numpy as np
+import logging
 
 # project library
 from respy.python.shared.shared_auxiliary import transform_disturbances

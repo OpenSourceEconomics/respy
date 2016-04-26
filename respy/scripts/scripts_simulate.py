@@ -1,7 +1,4 @@
 #!/usr/bin/env python
-""" This script serves as a command line tool to ease the simulation of the
-model.
-"""
 
 # standard library
 import pickle as pkl
