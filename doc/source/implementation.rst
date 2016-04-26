@@ -1,13 +1,7 @@
+.. _implementation:
+
 Implementation Details
 ======================
-
-Program Design
---------------
-
-.. todo::
-
-   Provide an overview about the basic design of the program.
-
 
 Numerical Methods
 -----------------
@@ -31,3 +25,22 @@ Approximation
 """""""""""""
 
 The details for the **EMAX interpolation** are already discussed in detail :ref:`Eisenhauer (2016) <bibSection>`.
+
+Program Design
+--------------
+
+.. todo::
+
+   Provide an overview about the basic design of the program.
+
+Test Battery
+------------
+
+You can have a look at our tests `online <https://github.com/restudToolbox/package/tree/master/respy/tests>`_. We also build a testing infrastructure, that allows to test the functionality of the **respy** package for numerous alternative parameterizations (`link <https://github.com/restudToolbox/package/tree/master/development/testing>`_). This setup, inspired by the idea of property based testing, has proven tremendously useful to check the validity of the code for numerous admissible parameterizations.
+
+
+
+.. todo::
+
+   Pitch the testing efforts.
+

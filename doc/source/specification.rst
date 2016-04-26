@@ -3,20 +3,19 @@
 Basic Model
 ===========
 
-We will now discuss the basic model and first present the basic economic motivation and some notation. Then we show how to specify the particular model specification.
+We will now discuss the model. We first present the basic economic motivations and then show how to specifcy a particular model parameterization for the **respy** package.
 
 Economics
 ---------
 
-:ref:`Keane & Wolpin (1994) <bibSection>`.
-
+See the discussion in :ref:`Keane & Wolpin (1994) <bibSection>`.
 
 Specification
 -------------
 
-The model is specified in an external initialization file with the following elements. See `here <https://github.com/restudToolbox/package/blob/master/examples/data_one.ini>`_ for a template that parameterizes the first dataset in the original paper (see Table 1). 
+The model is specified in an initialization file. For example, see `here <https://github.com/restudToolbox/package/blob/master/example/data_one.ini>`_ for the specification of the first dataset in the original paper (see Table 1).
 
-We discuss each of the ingredients in more detail below.
+We now discuss each of the ingredients in more details.
 
 **BASICS**
 
@@ -67,8 +66,7 @@ max      maximum level of schooling
 start    initial level of schooling
 =======  ========================== 
 
-Again, there is a small difference between the setup in the original paper. There is no automatic change in sign for the tuition and adjustment costs. Thus, a \$4,000 tution must be specified as -4,000
-
+Again, there is a small difference between the setup in the original paper. There is no automatic change in sign for the tuition and adjustment costs. Thus, a \$4,000 tuition cost must be specified as -4,000
 
 **HOME**
 
@@ -125,7 +123,7 @@ file       file to read observed sample
 tau        smoothing window
 agents     number of agents to read from sample
 maxiter    maximum number of iterations for optimizer
-seed       random seed for approximation of choice probabilities
+seed       random seed for choice probability approximation
 optimizer  optimizer to use
 =========  ==========================
 
@@ -155,8 +153,8 @@ Two alternative optimization algorithms are available for the estimation. In bot
 =======     ==========================
 Key         Interpretation      
 =======     ========================== 
-gtol        Gradient norm must be less than gtol before successful termination.
-epsilon     If fprime is approximated, use this value for the step size.
+gtol        gradient norm must be less than gtol before successful termination 
+epsilon     step size for numerical approximation of first derivatives 
 =======     ========================== 
 
 **SCIPY-POWELL**
@@ -164,7 +162,7 @@ epsilon     If fprime is approximated, use this value for the step size.
 =======     ==========================
 Key         Interpretation      
 =======     ========================== 
-maxfun      Maximum number of function evaluations to make.        
-ftol        Relative error in func(xopt) acceptable for convergence.      
-xtol        Line-search error tolerance.         
+maxfun      maximum number of function evaluations to make
+ftol        relative error in func(xopt) acceptable for convergence      
+xtol        line-search error tolerance         
 =======     ========================== 

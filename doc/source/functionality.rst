@@ -1,7 +1,7 @@
 Major Functionality
 ===================
 
-There are really three key objects to know to work with the **respy** package.
+You really just need to know about three key elements of the package to started.
 
 .. class:: respy.RespyCls(fname)
 
