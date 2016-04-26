@@ -114,8 +114,6 @@ class MailCls(object):
         # Disconnect
         server.quit()
 
-    ''' Private methods.
-    '''
     def _derived_attributes(self):
         """ Construct derived attributes.
         """
