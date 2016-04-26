@@ -132,11 +132,6 @@ SUBROUTINE get_total_value(total_payoffs, period, num_periods, delta, &
                 payoffs_systematic, draws, edu_max, edu_start, &
                 mapping_state_idx, periods_emax, k, states_all)
 
-    !   Development Note:
-    !
-    !       The VECTORIZATION supports the inlining and vectorization
-    !       preparations in the build process.
-
     !/* external objects        */
 
     REAL(our_dble), INTENT(OUT)     :: total_payoffs(:)
@@ -158,7 +153,6 @@ SUBROUTINE get_total_value(total_payoffs, period, num_periods, delta, &
 
     REAL(our_dble)                  :: payoffs_future(4)
     REAL(our_dble)                  :: payoffs_ex_post(4)
-
 
 !-------------------------------------------------------------------------------
 ! Algorithm
@@ -354,7 +348,7 @@ SUBROUTINE multivariate_normal(draws, mean, covariance)
     ! Auxiliary objects
     num_draws_emax = SIZE(draws, 1)
 
-    dim       = SIZE(draws, 2)
+    dim = SIZE(draws, 2)
 
     ! Handle optional arguments
     ALLOCATE(mean_internal(dim)); ALLOCATE(covariance_internal(dim, dim))
@@ -759,7 +753,7 @@ SUBROUTINE read_specification(num_periods, delta, coeffs_a, coeffs_b, &
                 num_draws_prob, is_myopic, tau)
 
     !
-    !   This function serves as the replacement for the clsRobupy and reads in
+    !   This function serves as the replacement for the RespyCls and reads in
     !   all required information about the model parameterization. It just
     !   reads in all required information.
     !

@@ -262,14 +262,6 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, &
                 is_interpolated, num_points, &
                 shocks_cholesky)
 
-    !
-    ! Development Notes
-    ! -----------------
-    !
-    !   The input argument MEASURE is only present to align the interface
-    !   between the FORTRAN and PYTHON implementations.
-    !
-
     !/* external objects        */
 
     REAL(our_dble), INTENT(INOUT)       :: periods_emax(:, :)
@@ -1178,6 +1170,7 @@ SUBROUTINE simulate_emax(emax_simulated, num_periods, num_draws_emax, period, &
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
+
     ! Transform disturbances
     CALL transform_disturbances(draws_emax_transformed, draws_emax, &
             shocks_cholesky, num_draws_emax)

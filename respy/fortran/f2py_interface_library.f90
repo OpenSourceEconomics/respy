@@ -7,10 +7,9 @@
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE f2py_criterion(crit_val, x, is_deterministic, is_interpolated, & 
-                num_draws_emax, num_periods, num_points, &
-                is_myopic, edu_start, is_debug, edu_max, min_idx, delta, &
-                data_array, num_agents_est, num_draws_prob, tau, & 
-                periods_draws_emax, periods_draws_prob)
+                num_draws_emax, num_periods, num_points, is_myopic, edu_start, & 
+                is_debug, edu_max, min_idx, delta, data_array, num_agents_est, & 
+                num_draws_prob, tau, periods_draws_emax, periods_draws_prob)
 
     !/* external libraries      */
 
@@ -28,11 +27,12 @@ SUBROUTINE f2py_criterion(crit_val, x, is_deterministic, is_interpolated, &
 
     DOUBLE PRECISION, INTENT(OUT)   :: crit_val
 
-    DOUBLE PRECISION, INTENT(IN)   :: x(26)
+    DOUBLE PRECISION, INTENT(IN)    :: x(26)
 
 
     INTEGER, INTENT(IN)             :: num_agents_est
-    INTEGER, INTENT(IN)             :: num_draws_emax, num_draws_prob
+    INTEGER, INTENT(IN)             :: num_draws_emax
+    INTEGER, INTENT(IN)             :: num_draws_prob
     INTEGER, INTENT(IN)             :: num_periods
     INTEGER, INTENT(IN)             :: num_points
     INTEGER, INTENT(IN)             :: edu_start
@@ -77,9 +77,8 @@ SUBROUTINE f2py_criterion(crit_val, x, is_deterministic, is_interpolated, &
     CALL fort_solve(periods_payoffs_systematic, states_number_period, & 
             mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, & 
             coeffs_edu, coeffs_home, shocks_cov, is_deterministic, & 
-            is_interpolated, num_draws_emax, periods_draws_emax, & 
-            num_periods, num_points, edu_start, is_myopic, &
-            is_debug, edu_max, min_idx, delta)
+            is_interpolated, num_draws_emax, periods_draws_emax, num_periods, & 
+            num_points, edu_start, is_myopic, is_debug, edu_max, min_idx, delta)
 
     ! Evaluate criterion function for observed data
     CALL fort_evaluate(crit_val, periods_payoffs_systematic, & 
@@ -95,9 +94,8 @@ SUBROUTINE f2py_solve(periods_payoffs_systematic, states_number_period, &
                 mapping_state_idx, periods_emax, states_all, coeffs_a, &
                 coeffs_b, coeffs_edu, coeffs_home, shocks_cov, &
                 is_deterministic, is_interpolated, num_draws_emax, & 
-                num_periods, num_points, is_myopic, edu_start, &
-                is_debug, edu_max, min_idx, delta, periods_draws_emax, & 
-                max_states_period)
+                num_periods, num_points, is_myopic, edu_start, is_debug, &
+                edu_max, min_idx, delta, periods_draws_emax, max_states_period)
     
     !
     ! The presence of max_states_period breaks the equality of interfaces. 
@@ -165,9 +163,8 @@ SUBROUTINE f2py_solve(periods_payoffs_systematic, states_number_period, &
             mapping_state_idx_int, periods_emax_int, states_all_int, & 
             coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, & 
             is_deterministic, is_interpolated, num_draws_emax, & 
-            periods_draws_emax, num_periods, num_points, &
-            edu_start, is_myopic, is_debug, edu_max, min_idx, &
-            delta)
+            periods_draws_emax, num_periods, num_points, edu_start, is_myopic, & 
+            is_debug, edu_max, min_idx, delta)
 
     ! Assign to initial objects for return to PYTHON
     periods_payoffs_systematic = periods_payoffs_systematic_int   
@@ -181,10 +178,9 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, & 
                 coeffs_home, shocks_cov, is_deterministic, is_interpolated, & 
-                num_draws_emax, num_periods, num_points, &
-                is_myopic, edu_start, is_debug, edu_max, min_idx, &
-                delta, data_array, num_agents_est, num_draws_prob, tau, & 
-                periods_draws_emax, periods_draws_prob)
+                num_draws_emax, num_periods, num_points, is_myopic, edu_start, & 
+                is_debug, edu_max, min_idx, delta, data_array, num_agents_est, & 
+                num_draws_prob, tau, periods_draws_emax, periods_draws_prob)
 
     !/* external libraries      */
 
@@ -293,9 +289,9 @@ SUBROUTINE f2py_simulate(dataset, periods_payoffs_systematic, &
 !-------------------------------------------------------------------------------
 
     CALL fort_simulate(dataset, periods_payoffs_systematic, & 
-                mapping_state_idx, periods_emax, num_periods, states_all, & 
-                num_agents_sim, edu_start, edu_max, delta, periods_draws_sims, &
-                shocks_cholesky)
+            mapping_state_idx, periods_emax, num_periods, states_all, & 
+            num_agents_sim, edu_start, edu_max, delta, periods_draws_sims, &
+            shocks_cholesky)
 
 END SUBROUTINE
 !******************************************************************************
@@ -359,8 +355,8 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE f2py_create_state_space(states_all, states_number_period, &
-                mapping_state_idx, max_states_period, num_periods, &
-                edu_start, edu_max, min_idx)
+                mapping_state_idx, max_states_period, num_periods, edu_start, & 
+                edu_max, min_idx)
     
     !/* external libraries      */
 

@@ -94,7 +94,7 @@ PROGRAM resfort
         CALL create_draws(periods_draws_prob, num_periods, num_draws_prob, &
                 seed_prob, is_debug)
 
-        ! Read observed dataset from disk
+        ! Read observed dataset from disk.
         CALL read_dataset(data_array, num_periods, num_agents_est)
 
         ! Solve the model for a given parametrization.    
@@ -115,7 +115,7 @@ PROGRAM resfort
     END IF
 
     ! Store results. These are read in by the PYTHON wrapper and added to the 
-    ! clsRobupy instance.
+    ! RespyCls instance.
     CALL store_results(mapping_state_idx, states_all, &
             periods_payoffs_systematic, states_number_period, periods_emax, &
             num_periods, min_idx, crit_val, request)
