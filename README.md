@@ -4,4 +4,5 @@
 
 > Michael P. Keane, Kenneth I. Wolpin (1994). [The Solution and Estimation of Discrete Choice Dynamic Programming Models by Simulation and Interpolation: Monte Carlo Evidence](http://www.jstor.org/stable/2109768). *The Review of Economics and Statistics*, 76(4): 648-672.
 
-The online documentation is available [here](http://respy.readthedocs.org/).
+Please visit our [online documentation](http://respy.readthedocs.org/) for details.
+
