@@ -38,7 +38,7 @@ class TestClass(object):
         # Set initial constraints
         constraints = dict()
         constraints['apply'] = False
-        constraints['periods'] = np.random.randint(2, 6)
+        constraints['periods'] = np.random.randint(3, 6)
         constraints['is_deterministic'] = True
 
         # Initialize request

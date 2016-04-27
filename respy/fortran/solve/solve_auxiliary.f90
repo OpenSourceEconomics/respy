@@ -1164,7 +1164,7 @@ SUBROUTINE get_pred_info(r_squared, bse, observed, predicted, exogenous, &
     sigma = (one_dble / (num_states - num_covars)) * DOT_PRODUCT(residuals, residuals)
     cova = sigma * pinv(MATMUL(TRANSPOSE(exogenous), exogenous), num_covars)
     DO i = 1, num_covars
-        bse(i) = SQRT(cova(i, i))
+        bse(i) = SQRT(clip_value(cova(i, i), TINY_FLOAT, HUGE_FLOAT))
     END DO
 
     ! Sum of squared residuals
