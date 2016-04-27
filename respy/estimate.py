@@ -5,7 +5,6 @@ from respy.python.estimate.estimate_auxiliary import check_input
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import dist_model_paras
 from respy.python.shared.shared_auxiliary import create_draws
-from respy.python.shared.shared_auxiliary import cut_dataset
 
 from respy.python.estimate.estimate_wrapper import OptimizationClass
 
@@ -15,10 +14,9 @@ from respy.process import process
 def estimate(respy_obj):
     """ Estimate the model
     """
-    # Cut dataset to size in case more agents are passed in than are actually
-    # used in the estimation.
+    # Read in estimation dataset. It only reads in the number of agents
+    # requested for the estimation.
     data_frame = process(respy_obj)
-    data_frame = cut_dataset(respy_obj, data_frame)
 
     # Antibugging
     assert check_input(respy_obj, data_frame)

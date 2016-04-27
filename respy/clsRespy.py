@@ -44,9 +44,9 @@ class RespyCls(object):
 
         self.attr['num_draws_emax'] = None
 
-        self.attr['optimizer_used'] = None
-
         self.attr['num_draws_prob'] = None
+
+        self.attr['optimizer_used'] = None
 
         self.attr['num_agents_sim'] = None
 

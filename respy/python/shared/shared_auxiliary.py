@@ -7,20 +7,6 @@ from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.shared.shared_constants import HUGE_FLOAT
 
 
-def cut_dataset(respy_obj, data_frame):
-    """ Cut the dataset down to only contain the agents used in the estimation.
-    """
-    # Distribute class attributes
-    num_agents_est = respy_obj.get_attr('num_agents_est')
-    num_periods = respy_obj.get_attr('num_periods')
-
-    # Slicing data frame
-    data_frame = data_frame.iloc[:(num_agents_est * num_periods), :]
-
-    # Finishing
-    return data_frame
-
-
 def get_total_value(period, num_periods, delta, payoffs_systematic, draws,
         edu_max, edu_start, mapping_state_idx, periods_emax, k, states_all):
     """ Get total value of all possible states.

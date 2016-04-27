@@ -9,7 +9,6 @@ from respy.python.evaluate.evaluate_auxiliary import check_output
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import dist_model_paras
 from respy.python.shared.shared_auxiliary import create_draws
-from respy.python.shared.shared_auxiliary import cut_dataset
 
 from respy.process import process
 
@@ -17,10 +16,9 @@ from respy.process import process
 def evaluate(respy_obj):
     """ Evaluate the criterion function.
     """
-    # Cut dataset to size in case more agents are passed in than are actually
-    # used in the estimation.
+    # Read in estimation dataset. It only reads in the number of agents
+    # requested for the estimation.
     data_frame = process(respy_obj)
-    data_frame = cut_dataset(respy_obj, data_frame)
 
     # Antibugging
     assert check_input(respy_obj, data_frame)
