@@ -168,9 +168,13 @@ def check_dataset(data_frame, respy_obj, which):
             [num_agents, num_periods, 4, num_periods, num_periods,
                 num_periods,
                 edu_max, 1]):
-        # Agent and time index
-        if i in [0, 1]:
+        # Agent index
+        if i == 1:
             assert (data_frame.max(axis=0)[i] == (max_ - 1))
+
+        if (i == 0) and (which == 'sim'):
+            assert (data_frame.max(axis=0)[i] == (max_ - 1))
+
         # Choice observation
         if i == 2:
             assert (data_frame.max(axis=0)[i] <= max_)
@@ -193,7 +197,7 @@ def check_dataset(data_frame, respy_obj, which):
 
     # Each valid agent indicator occurs as often as periods in the dataset.
     for agent in range(num_agents):
-        assert (data_frame[0].value_counts()[agent] == num_periods)
+        assert (data_frame[0].value_counts().iloc[agent] == num_periods)
 
     # Check valid values of wage observations
     for count in range(num_agents * num_periods):
@@ -362,10 +366,10 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
 
     str_optim = '{0:<10} {1:20.4f} {2:>5} \n'
 
-    # Construct labels. This ensures that the initialization files alway look
+    # Construct labels. This ensures that the initialization files always look
     # identical.
     labels = ['BASICS', 'AMBIGUITY', 'OCCUPATION A', 'OCCUPATION B']
-    labels += ['EDUCATION', 'HOME', 'SHOCKS',  'SOLUTION']
+    labels += ['EDUCATION', 'HOME', 'SHOCKS', 'SOLUTION']
     labels += ['SIMULATION', 'ESTIMATION', 'PROGRAM', 'INTERPOLATION']
     labels += ['SCIPY-BFGS', 'SCIPY-POWELL']
 
@@ -480,7 +484,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                         str_ = '{0:<10} {1:>20} \n'
                         file_.write(str_.format(keys_, dict_[flag][keys_]))
                     else:
-                        str_ = '{0:<10} {1:20.4f} \n'
+                        str_ = '{0:<10} {1:20.15f} \n'
                         file_.write(str_.format(keys_, dict_[flag][keys_]))
 
                 file_.write('\n')

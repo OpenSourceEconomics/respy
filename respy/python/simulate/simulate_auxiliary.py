@@ -19,9 +19,9 @@ def write_info(respy_obj, data_frame):
     seed_sim = respy_obj.get_attr('seed_sim')
 
     # Get basic information
-    num_agents_sim = data_frame[1].value_counts()[0]
+    num_agents_sim = data_frame[1].value_counts().iloc[0]
 
-    num_periods = data_frame[0].value_counts()[0]
+    num_periods = data_frame[0].value_counts().iloc[0]
 
     # Write information to file
     with open(file_sim + '.info', 'w') as file_:
