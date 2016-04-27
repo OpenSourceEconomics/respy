@@ -146,7 +146,7 @@ class OptimizationClass(object):
                 rslt['message'] = 'Maximum number of iterations.'
 
         elif optimizer_used == 'SCIPY-BFGS':
-            rslt['success'] = (rslt_opt[5] not in [1, 2])
+            rslt['success'] = (rslt_opt[6] not in [1, 2])
             rslt['message'] = 'Optimization terminated successfully.'
             if rslt_opt[5] == 1:
                 rslt['message'] = 'Maximum number of iterations exceeded.'

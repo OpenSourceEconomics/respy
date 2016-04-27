@@ -315,7 +315,8 @@ SUBROUTINE wrapper_clip_value(clipped_value, value, lower_bound, upper_bound, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_get_r_squared(r_squared, Y, P, num_states)
+SUBROUTINE wrapper_get_pred_info(r_squared, bse, Y, P, X, num_states, & 
+                num_covars)
 
     !/* external libraries      */
 
@@ -327,18 +328,21 @@ SUBROUTINE wrapper_get_r_squared(r_squared, Y, P, num_states)
 
     !/* external objects        */
 
+    DOUBLE PRECISION, INTENT(OUT)   :: bse(num_covars)
     DOUBLE PRECISION, INTENT(OUT)   :: r_squared
-
+    
+    DOUBLE PRECISION, INTENT(IN)    :: X(num_states, num_covars)
     DOUBLE PRECISION, INTENT(IN)    :: Y(num_states)
     DOUBLE PRECISION, INTENT(IN)    :: P(num_states)
     
     INTEGER, INTENT(IN)             :: num_states
+    INTEGER, INTENT(IN)             :: num_covars
 
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
-    
-    CALL get_r_squared(r_squared, Y, P, num_states)
+
+    CALL get_pred_info(r_squared, bse, Y, P, X, num_states, num_covars)
 
 END SUBROUTINE
 !*******************************************************************************

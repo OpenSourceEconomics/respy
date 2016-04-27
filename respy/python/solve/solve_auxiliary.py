@@ -389,12 +389,11 @@ def logging_prediction_model(results):
     """
     logger.info('    Information about Prediction Model ')
 
-    string = '''{0:>18}    {1:10.4f} {2:10.4f} {3:10.4f} {4:10.4f}'''
-    string += ''' {5:10.4f} {6:10.4f} {7:10.4f} {8:10.4f} {9:10.4f}'''
-
+    string = '      {:<19}' + '{:15.4f}' * 9
     logger.info(string.format('Coefficients', *results.params))
-    string = '''{0:>18}    {1:10.4f}\n'''
+    logger.info(string.format('Standard Errors', *results.bse))
 
+    string = '      {0:<19}{1:15.4f}\n'
     logger.info(string.format('R-squared', results.rsquared))
 
 

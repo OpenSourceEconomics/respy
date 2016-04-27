@@ -2,7 +2,6 @@
 from respy.fortran.f2py_library import f2py_create_state_space
 from respy.fortran.f2py_library import f2py_solve
 
-from respy.python.solve.solve_auxiliary import logging_solution
 from respy.python.solve.solve_auxiliary import check_input
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
@@ -20,8 +19,6 @@ def solve(respy_obj):
     """
     # Checks, cleanup, start logger
     assert check_input(respy_obj)
-
-    logging_solution('start')
 
     # Distribute class attributes
     model_paras, num_periods, edu_start, is_debug, edu_max, delta, \
@@ -70,9 +67,6 @@ def solve(respy_obj):
 
     # Attach solution to class instance
     respy_obj = add_solution(respy_obj, store, *solution)
-
-    # Orderly shutdown of logging capability.
-    logging_solution('stop')
 
     # Finishing
     return respy_obj

@@ -201,10 +201,12 @@ class TestClass(object):
             f90 = fort_debug.wrapper_point_predictions(exog, f90, num_agents)
             np.testing.assert_almost_equal(py, f90)
 
-            # Check coefficient of determination
-            py = results.rsquared
-            f90 = fort_debug.wrapper_get_r_squared(endog, f90, num_agents)
-            np.testing.assert_almost_equal(py, f90)
+            # Check coefficient of determination and the standard errors.
+            py = [results.rsquared, results.bse]
+            f90 = fort_debug.wrapper_get_pred_info(endog, f90, exog,
+                num_agents, num_covars)
+            for i in range(2):
+                np.testing.assert_almost_equal(py[i], f90[i])
 
     def test_4(self):
         """ Compare results between FORTRAN and PYTHON of selected functions. The

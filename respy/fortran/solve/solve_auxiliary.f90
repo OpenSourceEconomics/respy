@@ -692,6 +692,7 @@ SUBROUTINE get_predictions(predictions, endogenous, exogenous, maxe, &
     REAL(our_dble)                    :: endogenous_predicted(num_states)
     REAL(our_dble)                    :: coeffs(9)
     REAL(our_dble)                    :: r_squared
+    REAL(our_dble)                    :: bse(9)
 
     INTEGER(our_int)                  :: i
     INTEGER(our_int)                  :: k
@@ -741,8 +742,9 @@ SUBROUTINE get_predictions(predictions, endogenous, exogenous, maxe, &
 
     END DO
 
-    CALL get_r_squared(r_squared, endogenous_is_available, &
-            endogenous_predicted_available, num_points)
+    CALL get_pred_info(r_squared, bse, endogenous_is_available, &
+            endogenous_predicted_available, exogenous_is_available, & 
+            num_points, 9)
 
     endogenous_predicted = clip_value(endogenous_predicted, &
             zero_dble, HUGE_FLOAT)
@@ -762,26 +764,28 @@ SUBROUTINE get_predictions(predictions, endogenous, exogenous, maxe, &
     END DO
 
     ! Perform some basic logging to spot problems early.
-    CALL logging_prediction_model(coeffs, r_squared)
+    CALL logging_prediction_model(coeffs, r_squared, bse)
 
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE logging_prediction_model(coeffs, r_squared)
+SUBROUTINE logging_prediction_model(coeffs, r_squared, bse)
 
     !/* external objects        */
 
     REAL(our_dble), INTENT(IN)      :: coeffs(:)
     REAL(our_dble), INTENT(IN)      :: r_squared
+    REAL(our_dble), INTENT(IN)      :: bse(:)
 
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
 
     ! Define format for coefficients and R-squared
-    1900 FORMAT(2x,A18,3x,9(1x,f10.4))
+    1900 FORMAT(8x,A12,7x,9(f15.4))
+    1950 FORMAT(8x,A15,4x,9(f15.4))
 
-    2900 FORMAT(2x,A18,4x,f10.4)
+    2900 FORMAT(8x,A9,10x,f15.4)
 
     ! Write to file
     OPEN(UNIT=99, FILE='logging.respy.sol.log', ACCESS='APPEND')
@@ -791,6 +795,10 @@ SUBROUTINE logging_prediction_model(coeffs, r_squared)
         WRITE(99, *) " "
 
         WRITE(99, 1900) 'Coefficients', coeffs
+
+        WRITE(99, *) " "
+
+        WRITE(99, 1950) 'Standard Errors', bse
 
         WRITE(99, *) " "
 
@@ -1077,22 +1085,29 @@ END SUBROUTINE
 
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE get_r_squared(r_squared, observed, predicted, num_states)
+SUBROUTINE get_pred_info(r_squared, bse, observed, predicted, exogenous, & 
+                num_states, num_covars)
 
     !/* external objects        */
 
     REAL(our_dble), INTENT(OUT)     :: r_squared
+    REAL(our_dble), INTENT(OUT)     :: bse(num_covars)
 
     REAL(our_dble), INTENT(IN)      :: predicted(:)
     REAL(our_dble), INTENT(IN)      :: observed(:)
+    REAL(our_dble), INTENT(IN)      :: exogenous(:, :)
 
     INTEGER(our_int), INTENT(IN)    :: num_states
+    INTEGER(our_int), INTENT(IN)    :: num_covars
 
     !/* internal objects        */
 
+    REAL(our_dble)                  :: residuals(num_states)
     REAL(our_dble)                  :: mean_observed
     REAL(our_dble)                  :: ss_residuals
+    REAL(our_dble)                  :: cova(num_covars, num_covars)
     REAL(our_dble)                  :: ss_total
+    REAL(our_dble)                  :: sigma
 
     INTEGER(our_int)                :: i
 
@@ -1103,22 +1118,26 @@ SUBROUTINE get_r_squared(r_squared, observed, predicted, num_states)
     ! Calculate mean of observed data
     mean_observed = SUM(observed) / DBLE(num_states)
 
-    ! Sum of squared residuals
-    ss_residuals = zero_dble
-
+    ! Get array with residuals
     DO i = 1, num_states
+        residuals(i) = observed(i) - predicted(i)
+    END DO
 
-        ss_residuals = ss_residuals + (observed(i) - predicted(i))**2
-
+    ! Construct standard errors
+    sigma = (one_dble / (num_states - num_covars)) * DOT_PRODUCT(residuals, residuals)
+    cova = sigma * pinv(MATMUL(TRANSPOSE(exogenous), exogenous), num_covars)
+    DO i = 1, num_covars
+        bse(i) = SQRT(cova(i, i))
     END DO
 
     ! Sum of squared residuals
+    ss_residuals = SUM(residuals ** 2)
+
+    ! Total sum of squares
     ss_total = zero_dble
 
     DO i = 1, num_states
-
         ss_total = ss_total + (observed(i) - mean_observed)**2
-
     END DO
 
     ! Turning off all randomness during testing requires special case to avoid 

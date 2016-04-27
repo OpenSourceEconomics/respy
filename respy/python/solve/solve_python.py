@@ -8,6 +8,7 @@ from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.solve.solve_auxiliary import pyth_calculate_payoffs_systematic
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
 from respy.python.solve.solve_auxiliary import pyth_backward_induction
+from respy.python.solve.solve_auxiliary import logging_solution
 
 # Logging
 logger = logging.getLogger('RESPY_SOLVE')
@@ -22,6 +23,9 @@ def pyth_solve(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
         periods_draws_emax):
     """ Solving the model using pure PYTHON code.
     """
+    # Initialize logging infrastructure
+    logging_solution('start')
+
     # Construct Cholesky decomposition
     if is_deterministic:
         shocks_cholesky = np.zeros((4, 4))
@@ -78,6 +82,9 @@ def pyth_solve(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
             is_interpolated, num_points, shocks_cholesky)
 
     logger.info('... finished \n')
+
+    # Gentle shutdown of logging infrastructure
+    logging_solution('stop')
 
     # Collect return arguments in tuple
     args = (periods_payoffs_systematic, states_number_period,
