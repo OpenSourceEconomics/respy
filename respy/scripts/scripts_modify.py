@@ -127,7 +127,9 @@ def change_status(identifiers, init_file, is_fixed):
 
 
 def change_value(identifiers, values):
-    """ Provide some additional information during estimation run.
+    """ Provide some additional information during estimation run. Note that
+    the modification refers to the Cholesky factors and not the covariance
+    matrix directly.
     """
 
     # Read in some baseline information

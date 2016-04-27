@@ -83,7 +83,7 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
 ! Algorithm
 !-------------------------------------------------------------------------------
 
-    ! Construct Cholesky decomposition
+   ! Construct Cholesky decomposition
     IF (is_deterministic) THEN
         shocks_cholesky = zero_dble
     ELSE

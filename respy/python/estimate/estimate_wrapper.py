@@ -363,7 +363,7 @@ class OptimizationClass(object):
             np.savetxt(open('paras_steps.respy.log', 'wb'), x, fmt='%15.8f')
             with open('optimization.respy.log', 'a') as out_file:
                 fmt_ = '{0:<10} {1:<25}\n'
-                out_file.write(fmt_.format('Step', int(num_steps + 1)))
+                out_file.write(fmt_.format('Step', int(num_steps)))
                 out_file.write(fmt_.format('Criterion', crit_val))
                 out_file.write(fmt_.format('Time', time.ctime()))
                 out_file.write('\n\n')

@@ -46,18 +46,23 @@ SUBROUTINE dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, &
 
     coeffs_home = x(16:16)
 
+    ! Note that the Cholesky decomposition is the upper triangular in this 
+    ! case. This is required to align the order of optimization parameters with
+    ! the outline of the original authors. 
     shocks_cholesky = 0.0
 
-    shocks_cholesky(1, 1) = x(17)
+    shocks_cholesky(1, 1:) = x(17:20)
 
-    shocks_cholesky(2, 1:2) = x(18:19)
+    shocks_cholesky(2, 2:) = x(21:23)
 
-    shocks_cholesky(3, 1:3) = x(20:22)
+    shocks_cholesky(3, 3:) = x(24:25)
 
-    shocks_cholesky(4, 1:4) = x(23:26)
+    shocks_cholesky(4, 4:) = x(26:26)
+
+    print *, x(22:)
 
     ! Reconstruct the covariance matrix of reward shocks
-    shocks_cov = MATMUL(shocks_cholesky, TRANSPOSE(shocks_cholesky))
+    shocks_cov = MATMUL(TRANSPOSE(shocks_cholesky), shocks_cholesky)
 
 END SUBROUTINE
 !*******************************************************************************

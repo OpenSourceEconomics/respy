@@ -56,10 +56,10 @@ def get_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
     x[15:16] = coeffs_home
 
     # Shocks
-    x[16:17] = shocks_cholesky[0, :1]
-    x[17:19] = shocks_cholesky[1, :2]
-    x[19:22] = shocks_cholesky[2, :3]
-    x[22:26] = shocks_cholesky[3, :4]
+    x[16:20] = shocks_cholesky.T[0, 0:]
+    x[20:23] = shocks_cholesky.T[1, 1:]
+    x[23:25] = shocks_cholesky.T[2, 2:]
+    x[25:26] = shocks_cholesky.T[3, 3:]
 
     # Checks
     if is_debug:
@@ -74,10 +74,10 @@ def get_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
 
         # Special treatment fo SHOCKS_COV
         if not paras_fixed[16]:
-            x_free_curre[16:17] = shocks_cholesky[0, :1]
-            x_free_curre[17:19] = shocks_cholesky[1, :2]
-            x_free_curre[19:22] = shocks_cholesky[2, :3]
-            x_free_curre[22:26] = shocks_cholesky[3, :4]
+            x_free_curre[16:20] = shocks_cholesky.T[0, 0:]
+            x_free_curre[20:23] = shocks_cholesky.T[1, 1:]
+            x_free_curre[23:25] = shocks_cholesky.T[2, 2:]
+            x_free_curre[25:26] = shocks_cholesky.T[3, 3:]
 
         x = np.array(x_free_curre)
 
@@ -104,14 +104,16 @@ def dist_optim_paras(x_all_curre, is_debug):
     # Home
     coeffs_home = x_all_curre[15:16]
 
-    # Cholesky
+    # Cholesky. The additional efforts to sort the values into the Cholesky
+    # matrix are due to the attempt to keep the user interface as close to
+    # the original paper. There the Cholesky matrix is presented as a flattened
+    # upper triangular in Table 1. However, the authors switch to a
+    # flattened lower triangular later in the paper.
     shocks_cholesky = np.tile(0.0, (4, 4))
-    shocks_cholesky[0, :1] = x_all_curre[16:17]
-    shocks_cholesky[1, :2] = x_all_curre[17:19]
-    shocks_cholesky[2, :3] = x_all_curre[19:22]
-    shocks_cholesky[3, :4] = x_all_curre[22:26]
-
-    # Shocks
+    shocks_cholesky.T[0, 0:] = x_all_curre[16:20]
+    shocks_cholesky.T[1, 1:] = x_all_curre[20:23]
+    shocks_cholesky.T[2, 2:] = x_all_curre[23:25]
+    shocks_cholesky.T[3, 3:] = x_all_curre[25:26]
     shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
 
     # Checks
