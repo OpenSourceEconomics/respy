@@ -121,7 +121,7 @@ Just using the capabilities outlined so far, it is straightforward to compute so
         # Process relevant model initialization file
         respy_obj = respy.RespyCls(spec)
 
-        # Let us simulate the datasets discussed pn the page 658.
+        # Let us simulate the datasets discussed on the page 658.
         respy.simulate(respy_obj)
 
         # To start estimations for the Monte Carlo exercises. For now, we just
@@ -129,4 +129,4 @@ Just using the capabilities outlined so far, it is straightforward to compute so
         # the initialization file.
         respy.estimate(respy_obj)
 
-You can download the three initialization files `here <https://github.com/restudToolbox/package/tree/master/forensics/inits>`_
+You can download the three initialization files `here <https://github.com/restudToolbox/package/tree/master/forensics/inits>`_. In an earlier working paper version of their paper (`online <https://www.minneapolisfed.org/research/staff-reports/the-solution-and-estimation-of-discrete-choice-dynamic-programming-models-by-simulation-and-interpolation-monte-carlo-evidence>`_), the original authors provide a full account of the choice distributions for all three specifications. The results from the recomputation line up well with their reports.
