@@ -154,6 +154,8 @@ SUBROUTINE get_total_value(total_payoffs, period, num_periods, delta, &
     REAL(our_dble)                  :: payoffs_future(4)
     REAL(our_dble)                  :: payoffs_ex_post(4)
 
+    LOGICAL                         :: is_inadmissible
+
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
@@ -169,30 +171,36 @@ SUBROUTINE get_total_value(total_payoffs, period, num_periods, delta, &
 
     ! Get future values
     IF (period .NE. (num_periods - one_int)) THEN
-        CALL get_future_payoffs(payoffs_future, edu_max, edu_start, &
-                mapping_state_idx, period,  periods_emax, k, states_all)
-        ELSE
-            payoffs_future = zero_dble
+        CALL get_future_payoffs(payoffs_future, is_inadmissible, edu_max, & 
+                edu_start, mapping_state_idx, period, periods_emax, k, & 
+                states_all)
+    ELSE
+        is_inadmissible = .False.
+        payoffs_future = zero_dble
     END IF
 
     ! Calculate total utilities
     total_payoffs = payoffs_ex_post + delta * payoffs_future
 
     ! This is required to ensure that the agent does not choose any
-    ! inadmissible states.
-    IF (payoffs_future(3) == -HUGE_FLOAT) THEN
-        total_payoffs(3) = -HUGE_FLOAT
+    ! inadmissible states. If the state is inadmissible payoffs_future takes 
+    ! value zero. This aligns the treatment of inadmissible values with the 
+    ! original paper.
+    IF (is_inadmissible) THEN
+        total_payoffs(3) = total_payoffs(3) + INADMISSIBILITY_PENALTY
     END IF
 
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE get_future_payoffs(payoffs_future, edu_max, edu_start, &
+SUBROUTINE get_future_payoffs(payoffs_future, is_inadmissible,  edu_max, edu_start, &
                 mapping_state_idx, period, periods_emax, k, states_all)
 
     !/* external objects        */
 
     REAL(our_dble), INTENT(OUT)     :: payoffs_future(:)
+
+    LOGICAL, INTENT(OUT)            :: is_inadmissible
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:, :, :, :, :)
     INTEGER(our_int), INTENT(IN)    :: states_all(:, :, :)
@@ -202,6 +210,8 @@ SUBROUTINE get_future_payoffs(payoffs_future, edu_max, edu_start, &
     INTEGER(our_int), INTENT(IN)    :: k
 
     REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
+
+
 
     !/* internals objects       */
 
@@ -234,12 +244,13 @@ SUBROUTINE get_future_payoffs(payoffs_future, edu_max, edu_start, &
 	! Increasing schooling. Note that adding an additional year
 	! of schooling is only possible for those that have strictly
 	! less than the maximum level of additional education allowed.
-    IF (edu < edu_max - edu_start) THEN
+    is_inadmissible = (edu .GE. edu_max - edu_start)
+    IF(is_inadmissible) THEN
+        payoffs_future(3) = zero_dble
+    ELSE
         future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1, &
                         exp_b + 1, edu + 1 + 1, 2)
         payoffs_future(3) = periods_emax(period + 1 + 1, future_idx + 1)
-    ELSE
-        payoffs_future(3) = -HUGE_FLOAT
     END IF
 
 	! Staying at home

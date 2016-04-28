@@ -20,7 +20,7 @@ HUGE_FLOAT = 1.0e20
 SMALL_FLOAT = 1e-5
 
 # Interpolation
-INTERPOLATION_INADMISSIBLE_STATES = -50000.00
+INADMISSIBILITY_PENALTY = -40000.00
 
 # Missing values. These allow to aline the treatment of missing values across
 # implementations. There is no NAN available in FORTRAN.

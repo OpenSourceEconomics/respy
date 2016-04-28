@@ -558,8 +558,6 @@ SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, &
 
     INTEGER(our_int)                    :: k
 
-    LOGICAL                             :: is_inadmissible
-
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
@@ -572,16 +570,6 @@ SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, &
         CALL get_total_value(total_payoffs, period, num_periods, delta, & 
                 payoffs_systematic, shifts, edu_max, edu_start, & 
                 mapping_state_idx, periods_emax, k, states_all)
-
-        ! Treatment of inadmissible states, which will show up in the regression
-        ! in some way
-        is_inadmissible = (total_payoffs(3) == -HUGE_FLOAT)
-
-        IF (is_inadmissible) THEN
-
-            total_payoffs(3) = INTERPOLATION_INADMISSIBLE_STATES
-
-        END IF
 
         ! Implement level shifts
         maxe(k + 1) = MAXVAL(total_payoffs)

@@ -3,6 +3,7 @@ import numpy as np
 import os
 
 # project library
+from respy.python.shared.shared_constants import INADMISSIBILITY_PENALTY
 from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.shared.shared_constants import HUGE_FLOAT
 
@@ -23,18 +24,22 @@ def get_total_value(period, num_periods, delta, payoffs_systematic, draws,
 
     # Get future values
     if period != (num_periods - 1):
-        payoffs_future = _get_future_payoffs(edu_max, edu_start,
-            mapping_state_idx, period, periods_emax, k, states_all)
+        payoffs_future, is_inadmissible = _get_future_payoffs(edu_max,
+            edu_start, mapping_state_idx, period, periods_emax, k,
+            states_all)
     else:
+        is_inadmissible = False
         payoffs_future = np.tile(0.0, 4)
 
     # Calculate total utilities
     total_payoffs = payoffs_ex_post + delta * payoffs_future
 
     # This is required to ensure that the agent does not choose any
-    # inadmissible states.
-    if payoffs_future[2] == -HUGE_FLOAT:
-        total_payoffs[2] = -HUGE_FLOAT
+    # inadmissible states. If the state is inadmissible payoffs_future takes
+    # value zero. This aligns the treatment of inadmissible values with the
+    # original paper.
+    if is_inadmissible:
+        total_payoffs[2] += INADMISSIBILITY_PENALTY
 
     # Finishing
     return total_payoffs
@@ -61,18 +66,19 @@ def _get_future_payoffs(edu_max, edu_start, mapping_state_idx, period,
     # Increasing schooling. Note that adding an additional year
     # of schooling is only possible for those that have strictly
     # less than the maximum level of additional education allowed.
-    if edu < edu_max - edu_start:
+    is_inadmissible = (edu >= edu_max - edu_start)
+    if is_inadmissible:
+        payoffs_future[2] = 0.00
+    else:
         future_idx = mapping_state_idx[period + 1, exp_a, exp_b, edu + 1, 1]
         payoffs_future[2] = periods_emax[period + 1, future_idx]
-    else:
-        payoffs_future[2] = -HUGE_FLOAT
 
     # Staying at home
     future_idx = mapping_state_idx[period + 1, exp_a, exp_b, edu, 0]
     payoffs_future[3] = periods_emax[period + 1, future_idx]
 
     # Finishing
-    return payoffs_future
+    return payoffs_future, is_inadmissible
 
 
 def create_draws(num_periods, num_draws, seed, is_debug):

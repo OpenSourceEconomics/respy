@@ -10,7 +10,6 @@ import os
 from respy.python.shared.shared_auxiliary import transform_disturbances
 from respy.python.shared.shared_auxiliary import get_total_value
 
-from respy.python.shared.shared_constants import INTERPOLATION_INADMISSIBLE_STATES
 from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.shared.shared_constants import MISSING_INT
 from respy.python.shared.shared_constants import HUGE_FLOAT
@@ -297,13 +296,6 @@ def get_exogenous_variables(period, num_periods, num_states, delta,
         total_payoffs = get_total_value(period, num_periods, delta,
             payoffs_systematic, shifts, edu_max, edu_start,
             mapping_state_idx, periods_emax, k, states_all)
-
-        # Treatment of inadmissible states, which will show up in the
-        # regression in some way.
-        is_inadmissible = (total_payoffs[2] == -HUGE_FLOAT)
-
-        if is_inadmissible:
-            total_payoffs[2] = INTERPOLATION_INADMISSIBLE_STATES
 
         # Implement level shifts
         maxe[k] = max(total_payoffs)

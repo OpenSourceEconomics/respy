@@ -32,7 +32,7 @@ MODULE shared_constants
     REAL(our_dble), PARAMETER :: HUGE_FLOAT     = 1.0e20_our_dble
 
     ! Interpolation
-    REAL(our_dble), PARAMETER :: INTERPOLATION_INADMISSIBLE_STATES = -50000.00_our_dble
+    REAL(our_dble), PARAMETER :: INADMISSIBILITY_PENALTY = -40000.00_our_dble
 
 !*******************************************************************************
 !*******************************************************************************
