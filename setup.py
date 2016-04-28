@@ -33,7 +33,7 @@ def setup_package():
         description='respy is a Python package for the solution, simulation, and estimation of the prototypical dynamic discrete choice model.',
         author='Philipp Eisenhauer',
         author_email='eisenhauer@policy-lab.org',
-        url='http://respy.readthedocs.org',
+        url='http://respy.readthedocs.io',
         keywords=['Economics', 'Dynamic Discrete Choice Model'],
         classifiers=[],
         setup_requires=['pytest-runner'],
