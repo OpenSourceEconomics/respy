@@ -73,13 +73,6 @@ SUBROUTINE f2py_criterion(crit_val, x, is_deterministic, is_interpolated, &
     CALL dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, &
                 shocks_cholesky, x)
 
-    PRINT *, ''
-    PRINT *, shocks_cholesky(1,:)
-    PRINT *, shocks_cholesky(2,:)
-    PRINT *, shocks_cholesky(3,:)
-    PRINT *, shocks_cholesky(4,:)
-
-
     ! Solve requested model
     CALL fort_solve(periods_payoffs_systematic, states_number_period, & 
             mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, & 

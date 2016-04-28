@@ -22,6 +22,9 @@ def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
     case and all agents have corresponding experiences, then one is returned.
     If a single agent violates the implications, then the zero is returned.
     """
+    # Construct auxiliary object
+    shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
+
     # Solve requested model.
     base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
         is_interpolated, num_draws_emax, num_periods, num_points, is_myopic,
@@ -99,7 +102,7 @@ def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
                                 draws_stan[0]) / shocks_cholesky[idx, idx]
 
                         prob_wage = norm.pdf(draws_stan[idx], 0.0, 1.0) / \
-                            shocks_cholesky[idx, idx]
+                            np.sqrt(shocks_cov[idx, idx])
 
                 else:
                     prob_wage = 1.0

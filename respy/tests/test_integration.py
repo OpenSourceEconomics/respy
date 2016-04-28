@@ -292,6 +292,7 @@ class TestClass(object):
         coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
             dist_model_paras(model_paras, True)
 
+        shocks_cholesky[0, 0] = -0.4
         # Check the full solution procedure
         base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
             shocks_cholesky, is_interpolated, num_draws_emax, num_periods,

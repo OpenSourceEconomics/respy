@@ -29,6 +29,9 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
     REAL(our_dble), INTENT(OUT)     :: rslt
 
 
+    REAL(our_dble), INTENT(IN)      :: periods_payoffs_systematic(:, :, :)
+    REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
+
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:, :, :, :, :)
     INTEGER(our_int), INTENT(IN)    :: states_all(:, :, :)
     INTEGER(our_int), INTENT(IN)    :: num_draws_prob
@@ -45,10 +48,9 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
 
     !/* internal objects        */
 
-    REAL(our_dble), ALLOCATABLE     :: crit_val(:)
+    REAL(our_dble)                  :: shocks_cov(4, 4)
 
-    REAL(our_dble), INTENT(IN)      :: periods_payoffs_systematic(:, :, :)
-    REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
+    REAL(our_dble), ALLOCATABLE     :: crit_val(:)
 
     INTEGER(our_int)                :: edu_lagged
     INTEGER(our_int)                :: counts(4)
@@ -81,6 +83,9 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
+
+    ! Construct auxiliary objects
+    shocks_cov = MATMUL(shocks_cholesky, TRANSPOSE(shocks_cholesky))
 
     ! Initialize container for likelihood contributions
     ALLOCATE(crit_val(num_agents_est * num_periods)); crit_val = zero_dble
@@ -175,7 +180,7 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
                             draws_stan(idx) = (dist - shocks_cholesky(idx, 1) * draws_stan(1)) / shocks_cholesky(idx, idx)
                         END IF
 
-                        prob_wage = normal_pdf(draws_stan(idx), zero_dble, one_dble) / shocks_cholesky(idx, idx)
+                        prob_wage = normal_pdf(draws_stan(idx), zero_dble, one_dble) / SQRT(shocks_cov(idx, idx))
                     
                     END IF
 
