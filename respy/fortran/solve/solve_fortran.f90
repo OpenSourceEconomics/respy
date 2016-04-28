@@ -19,11 +19,10 @@ MODULE solve_fortran
 !*******************************************************************************
 SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, &
                 mapping_state_idx, periods_emax, states_all, coeffs_a, &
-                coeffs_b, coeffs_edu, coeffs_home, shocks_cov, &
-                is_deterministic, is_interpolated, num_draws_emax, &
-                periods_draws_emax, num_periods, num_points, &
-                edu_start, is_myopic, is_debug, edu_max, min_idx, &
-                delta)
+                coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, &
+                is_interpolated, num_draws_emax, periods_draws_emax, & 
+                num_periods, num_points, edu_start, is_myopic, is_debug, & 
+                edu_max, min_idx, delta)
 
     !/* external objects        */
 
@@ -42,14 +41,13 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, &
     INTEGER(our_int), INTENT(IN)                    :: min_idx
 
     REAL(our_dble), INTENT(IN)                      :: periods_draws_emax(:, :, :)
+    REAL(our_dble), INTENT(IN)                      :: shocks_cholesky(:, :)
     REAL(our_dble), INTENT(IN)                      :: coeffs_home(:)
     REAL(our_dble), INTENT(IN)                      :: coeffs_edu(:)
-    REAL(our_dble), INTENT(IN)                      :: shocks_cov(4, 4)
     REAL(our_dble), INTENT(IN)                      :: coeffs_a(:)
     REAL(our_dble), INTENT(IN)                      :: coeffs_b(:)
     REAL(our_dble), INTENT(IN)                      :: delta
 
-    LOGICAL, INTENT(IN)                             :: is_deterministic
     LOGICAL, INTENT(IN)                             :: is_interpolated
     LOGICAL, INTENT(IN)                             :: is_myopic
     LOGICAL, INTENT(IN)                             :: is_debug
@@ -61,18 +59,9 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, &
     INTEGER(our_int)                                :: max_states_period
     INTEGER(our_int)                                :: period
 
-    REAL(our_dble)                                  :: shocks_cholesky(4, 4)
-
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
-
-    ! Construct Cholesky decomposition
-    IF (is_deterministic) THEN
-        shocks_cholesky = zero_dble
-    ELSE
-        CALL cholesky(shocks_cholesky, shocks_cov)
-    END IF
 
     ! Allocate arrays
     ALLOCATE(mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2))
@@ -119,8 +108,7 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, &
                 periods_draws_emax, num_draws_emax, states_number_period, & 
                 periods_payoffs_systematic, edu_max, edu_start, & 
                 mapping_state_idx, states_all, delta, is_debug, &
-                shocks_cov, is_interpolated, &
-                num_points, shocks_cholesky)
+                is_interpolated, num_points, shocks_cholesky)
 
     END IF
 

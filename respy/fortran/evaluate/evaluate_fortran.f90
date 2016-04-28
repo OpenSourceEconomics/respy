@@ -20,7 +20,7 @@ MODULE evaluate_fortran
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
-                periods_emax, states_all, shocks_cov, is_deterministic, &
+                periods_emax, states_all, shocks_cholesky, is_deterministic, &
                 num_periods, edu_start, edu_max, delta, data_array, &
                 num_agents_est, num_draws_prob, periods_draws_prob, tau)
 
@@ -38,8 +38,8 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
     INTEGER(our_int), INTENT(IN)    :: edu_max
 
     REAL(our_dble), INTENT(IN)      :: periods_draws_prob(:, :, :)
+    REAL(our_dble), INTENT(IN)      :: shocks_cholesky(:, :)
     REAL(our_dble), INTENT(IN)      :: data_array(:, :)
-    REAL(our_dble), INTENT(IN)      :: shocks_cov(:, :)
     REAL(our_dble), INTENT(IN)      :: delta
     REAL(our_dble), INTENT(IN)      :: tau
 
@@ -65,7 +65,6 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
 
     REAL(our_dble)                  :: draws_prob_raw(num_draws_prob, 4)
     REAL(our_dble)                  :: payoffs_systematic(4)
-    REAL(our_dble)                  :: shocks_cholesky(4, 4)
     REAL(our_dble)                  :: crit_val_contrib
     REAL(our_dble)                  :: total_payoffs(4)
     REAL(our_dble)                  :: draws_cond(4)
@@ -82,13 +81,6 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
-
-   ! Construct Cholesky decomposition
-    IF (is_deterministic) THEN
-        shocks_cholesky = zero_dble
-    ELSE
-        CALL cholesky(shocks_cholesky, shocks_cov)
-    END IF
 
     ! Initialize container for likelihood contributions
     ALLOCATE(crit_val(num_agents_est * num_periods)); crit_val = zero_dble

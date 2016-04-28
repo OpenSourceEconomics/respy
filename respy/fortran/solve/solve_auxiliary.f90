@@ -258,9 +258,8 @@ END SUBROUTINE
 SUBROUTINE fort_backward_induction(periods_emax, num_periods, &
                 periods_draws_emax, num_draws_emax, states_number_period, & 
                 periods_payoffs_systematic, edu_max, edu_start, & 
-                mapping_state_idx, states_all, delta, is_debug, shocks_cov, & 
-                is_interpolated, num_points, &
-                shocks_cholesky)
+                mapping_state_idx, states_all, delta, is_debug, & 
+                is_interpolated, num_points, shocks_cholesky)
 
     !/* external objects        */
 
@@ -269,7 +268,6 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, &
     REAL(our_dble), INTENT(IN)          :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), INTENT(IN)          :: periods_draws_emax(:, :, :)
     REAL(our_dble), INTENT(IN)          :: shocks_cholesky(:, :)
-    REAL(our_dble), INTENT(IN)          :: shocks_cov(:, :)
     REAL(our_dble), INTENT(IN)          :: delta
 
     INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(:, :, :, :, :)
@@ -292,6 +290,7 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, &
 
     REAL(our_dble)                      :: draws_emax(num_draws_emax, 4)
     REAL(our_dble)                      :: payoffs_systematic(4)
+    REAL(our_dble)                      :: shocks_cov(4, 4)
     REAL(our_dble)                      :: emax_simulated
     REAL(our_dble)                      :: shifts(4)
 
@@ -307,6 +306,9 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, &
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
+
+    ! Construct auxiliary objects
+    shocks_cov = MATMUL(shocks_cholesky, TRANSPOSE(shocks_cholesky))
 
     ! Shifts
     shifts = zero_dble

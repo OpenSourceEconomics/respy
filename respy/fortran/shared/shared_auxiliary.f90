@@ -279,6 +279,9 @@ SUBROUTINE create_draws(draws, num_periods, num_draws_emax, seed, is_debug)
     INTEGER(our_int)                            :: seed_size
     INTEGER(our_int)                            :: period
     INTEGER(our_int)                            :: j
+    INTEGER(our_int)                            :: i
+
+    REAL(our_dble)                              :: deviates(1)
 
     LOGICAL                                     :: READ_IN
 
@@ -322,92 +325,18 @@ SUBROUTINE create_draws(draws, num_periods, num_draws_emax, seed, is_debug)
 
         DO period = 1, num_periods
 
-            CALL multivariate_normal(draws(period, :, :))
+            DO i = 1, num_draws_emax
+
+               CALL standard_normal(deviates)
+
+               draws(period, i, :) = deviates
+
+            END DO
 
         END DO
 
     END IF
    
-END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE multivariate_normal(draws, mean, covariance)
-
-    !/* external objects        */
-
-    REAL(our_dble), INTENT(OUT)           :: draws(:, :)
-
-    REAL(our_dble), INTENT(IN), OPTIONAL  :: covariance(:, :)
-    REAL(our_dble), INTENT(IN), OPTIONAL  :: mean(:)
-
-    !/* internal objects        */
-
-    INTEGER(our_int)                :: num_draws_emax
-    INTEGER(our_int)                :: dim
-    INTEGER(our_int)                :: i
-    INTEGER(our_int)                :: j
-
-    REAL(our_dble), ALLOCATABLE     :: covariance_internal(:, :)
-    REAL(our_dble), ALLOCATABLE     :: mean_internal(:)
-    REAL(our_dble), ALLOCATABLE     :: ch(:, :)
-    REAL(our_dble), ALLOCATABLE     :: z(:, :)
-
-!-------------------------------------------------------------------------------
-! Algorithm
-!-------------------------------------------------------------------------------
-
-    ! Auxiliary objects
-    num_draws_emax = SIZE(draws, 1)
-
-    dim = SIZE(draws, 2)
-
-    ! Handle optional arguments
-    ALLOCATE(mean_internal(dim)); ALLOCATE(covariance_internal(dim, dim))
-
-    IF (PRESENT(mean)) THEN
-
-      mean_internal = mean
-
-    ELSE
-
-      mean_internal = zero_dble
-
-    END IF
-
-    IF (PRESENT(covariance)) THEN
-
-      covariance_internal = covariance
-
-    ELSE
-
-      covariance_internal = zero_dble
-
-      DO j = 1, dim
-
-        covariance_internal(j, j) = one_dble
-
-      END DO
-
-    END IF
-
-    ! Allocate containers
-    ALLOCATE(z(dim, 1)); ALLOCATE(ch(dim, dim))
-
-    ! Initialize containers
-    ch = zero_dble
-
-    ! Construct Cholesky decomposition
-    CALL cholesky(ch, covariance_internal)
-
-    ! Draw deviates
-    DO i = 1, num_draws_emax
-
-       CALL standard_normal(z(:, 1))
-
-       draws(i, :) = MATMUL(ch, z(:, 1)) + mean_internal(:)
-
-    END DO
-
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
@@ -487,50 +416,6 @@ PURE FUNCTION trace_fun(A)
     END DO
 
 END FUNCTION
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE cholesky(factor, matrix)
-
-    !/* external objects        */
-
-    REAL(our_dble), INTENT(OUT)     :: factor(:,:)
-
-    REAL(our_dble), INTENT(IN)      :: matrix(:, :)
-
-    !/* internal objects        */
-
-    INTEGER(our_int)                :: info
-    INTEGER(our_int)                :: i
-    INTEGER(our_int)                :: n
-    INTEGER(our_int)                :: j
-    
-!-------------------------------------------------------------------------------
-! Algorithm
-!-------------------------------------------------------------------------------
-    
-    n = SIZE(matrix, 1)
-
-    ! Initialize matrix for replacement
-    factor = matrix
-
-    ! Compute the Cholesky factorization of a real symmetric positive 
-    ! definite matrix A.
-    CALL DPOTRF('L', n, factor, n, info)
-
-    IF (INFO .NE. zero_int) THEN
-        STOP 'Cholesky factorization factorization failed'
-    END IF
-    
-    ! Replace upper diagonal with zeros.
-    DO i = 1, n
-      DO j = 1, n
-        IF(i .GT. j) THEN
-          factor(j, i) = zero_dble
-        END IF
-      END DO
-    END DO
-
-END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 FUNCTION inverse(A, n)
@@ -757,11 +642,10 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE read_specification(num_periods, delta, coeffs_a, coeffs_b, &
-                coeffs_edu, edu_start, edu_max, coeffs_home, shocks_cov, &
-                shocks_cholesky, num_draws_emax, seed_emax, seed_prob, &
-                num_agents_est, is_debug, is_deterministic, is_interpolated, &
-                num_points, min_idx, request, &
-                num_draws_prob, is_myopic, tau)
+                coeffs_edu, edu_start, edu_max, coeffs_home, shocks_cholesky, & 
+                num_draws_emax, seed_emax, seed_prob, num_agents_est, & 
+                is_debug, is_deterministic, is_interpolated, num_points, & 
+                min_idx, request, num_draws_prob, is_myopic, tau)
 
     !
     !   This function serves as the replacement for the RespyCls and reads in
@@ -783,7 +667,6 @@ SUBROUTINE read_specification(num_periods, delta, coeffs_a, coeffs_b, &
     INTEGER(our_int), INTENT(OUT)   :: min_idx
 
     REAL(our_dble), INTENT(OUT)     :: shocks_cholesky(4, 4)
-    REAL(our_dble), INTENT(OUT)     :: shocks_cov(4, 4)
     REAL(our_dble), INTENT(OUT)     :: coeffs_home(1)
     REAL(our_dble), INTENT(OUT)     :: coeffs_edu(3)
     REAL(our_dble), INTENT(OUT)     :: coeffs_a(6)
@@ -835,7 +718,7 @@ SUBROUTINE read_specification(num_periods, delta, coeffs_a, coeffs_b, &
 
         ! SHOCKS
         DO j = 1, 4
-            READ(1, 1520) (shocks_cov(j, k), k=1, 4)
+            READ(1, 1520) (shocks_cholesky(j, k), k=1, 4)
         END DO
 
         ! SOLUTION
@@ -864,14 +747,6 @@ SUBROUTINE read_specification(num_periods, delta, coeffs_a, coeffs_b, &
         READ(1, *) request
 
     CLOSE(1, STATUS='delete')
-
-    ! Construct auxiliary objects. The case distinction align the reasoning
-    ! between the PYTHON/F2PY implementations.
-    IF (is_deterministic) THEN
-        shocks_cholesky = zero_dble
-    ELSE
-        CALL cholesky(shocks_cholesky, shocks_cov)
-    END IF
 
 END SUBROUTINE
 !*******************************************************************************
