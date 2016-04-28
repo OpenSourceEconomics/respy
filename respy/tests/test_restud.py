@@ -65,7 +65,9 @@ def transform_respy_to_restud(model_paras, edu_start, edu_max, num_agents_sim,
 
         # Write out coefficients of correlation, which need to be constructed
         # based on the covariance matrix.
-        shocks_cov = model_paras['shocks_cov']
+        shocks_cholesky = model_paras['shocks_cholesky']
+        shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
+
         rho = np.identity(4)
         rho_10 = shocks_cov[1][0] / (np.sqrt(shocks_cov[1][1]) * np.sqrt(shocks_cov[0][0]))
         rho_20 = shocks_cov[2][0] / (np.sqrt(shocks_cov[2][2]) * np.sqrt(shocks_cov[0][0]))

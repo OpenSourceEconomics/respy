@@ -68,8 +68,7 @@ class TestClass(object):
                         'edu_start', 'is_debug', 'edu_max', 'delta')
 
             # Extract auxiliary objects
-            _, _, _, _, _, shocks_cholesky = \
-                dist_model_paras(model_paras, is_debug)
+            shocks_cholesky = dist_model_paras(model_paras, is_debug)[-1]
 
             # Iterate over a couple of admissible points
             for j in range(10):
@@ -124,8 +123,7 @@ class TestClass(object):
                 'delta', 'model_paras', 'is_debug')
 
         # Auxiliary objects
-        _, _, _, _, _, shocks_cholesky = \
-            dist_model_paras(model_paras, is_debug)
+        shocks_cholesky = dist_model_paras(model_paras, is_debug)[-1]
 
         # Sample draws
         draws_standard = np.random.multivariate_normal(np.zeros(4),
@@ -262,17 +260,9 @@ class TestClass(object):
 
             np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
-            # Cholesky decomposition
-            f90 = fort_debug.wrapper_cholesky(cov, dim)
-            py = np.linalg.cholesky(cov)
-
-            np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
-
             # Random normal deviates. This only tests the interface, requires
             # visual inspection in IPYTHON notebook as well.
             fort_debug.wrapper_standard_normal(num_draws_emax)
-            fort_debug.wrapper_multivariate_normal(mean, cov, num_draws_emax,
-                dim)
 
             # Clipping values below and above bounds.
             num_values = np.random.randint(1, 10000)
@@ -385,8 +375,8 @@ class TestClass(object):
                     'delta', 'is_interpolated', 'num_points')
 
         # Auxiliary objects
-        coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, \
-            shocks_cholesky = dist_model_paras(model_paras, is_debug)
+        coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
+            dist_model_paras(model_paras, is_debug)
 
         # Check the state space creation.
         args = (num_periods, edu_start, edu_max, min_idx)
@@ -417,7 +407,7 @@ class TestClass(object):
         args = (num_periods, max_states_period, periods_draws_emax,
             num_draws_emax, states_number_period, periods_payoffs_systematic,
             edu_max, edu_start, mapping_state_idx, states_all, delta,
-            is_debug, shocks_cov, is_interpolated, num_points, shocks_cholesky)
+            is_debug, is_interpolated, num_points, shocks_cholesky)
 
         pyth = pyth_backward_induction(*args)
         f2py = f2py_backward_induction(*args)

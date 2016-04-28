@@ -35,7 +35,7 @@ def estimate(respy_obj):
                 'optimizer_options')
 
     # Auxiliary objects
-    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, _ = \
+    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
         dist_model_paras(model_paras, is_debug)
 
     # Draw standard normal deviates for the solution and evaluation step.
@@ -47,10 +47,10 @@ def estimate(respy_obj):
 
     # Construct starting values
     x_free_start = get_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-        shocks_cov, 'free', paras_fixed, is_debug)
+        shocks_cholesky, 'free', paras_fixed, is_debug)
 
     x_all_start = get_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-        shocks_cov, 'all', paras_fixed, is_debug)
+        shocks_cholesky, 'all', paras_fixed, is_debug)
 
     data_array = data_frame.as_matrix()
 

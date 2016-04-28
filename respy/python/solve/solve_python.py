@@ -17,20 +17,13 @@ logger = logging.getLogger('RESPY_SOLVE')
 '''
 
 
-def pyth_solve(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
-        is_deterministic, is_interpolated, num_draws_emax, num_periods,
-        num_points, is_myopic, edu_start, is_debug, edu_max, min_idx, delta,
-        periods_draws_emax):
+def pyth_solve(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
+        is_interpolated, num_draws_emax, num_periods, num_points, is_myopic,
+        edu_start, is_debug, edu_max, min_idx, delta, periods_draws_emax):
     """ Solving the model using pure PYTHON code.
     """
     # Initialize logging infrastructure
     logging_solution('start')
-
-    # Construct Cholesky decomposition
-    if is_deterministic:
-        shocks_cholesky = np.zeros((4, 4))
-    else:
-        shocks_cholesky = np.linalg.cholesky(shocks_cov)
 
     # Creating the state space of the model and collect the results in the
     # package class.
@@ -78,8 +71,8 @@ def pyth_solve(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
         periods_emax = pyth_backward_induction(num_periods, max_states_period,
             periods_draws_emax, num_draws_emax, states_number_period,
             periods_payoffs_systematic, edu_max, edu_start,
-            mapping_state_idx, states_all, delta, is_debug, shocks_cov,
-            is_interpolated, num_points, shocks_cholesky)
+            mapping_state_idx, states_all, delta, is_debug, is_interpolated,
+            num_points, shocks_cholesky)
 
     logger.info('... finished \n')
 

@@ -120,22 +120,16 @@ class RespyCls(object):
 
         self.lock()
 
-    def update_model_paras(self, input_):
-        """ Update model parameters. This function allows to pass in either
-        the coefficient arrays or the vector of optimization parameters.
+    def update_model_paras(self, x):
+        """ Update model parameters.
         """
         # Determine use of interface
-        is_optim_paras = (not isinstance(input_, tuple))
-        if is_optim_paras:
-            coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov = \
-                dist_optim_paras(input_, True)
-        else:
-            coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov = input_
+        coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
+                    dist_optim_paras(x, True)
 
         # Check integrity
-        shocks_cholesky = np.linalg.cholesky(shocks_cov)
         check_model_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-            shocks_cov, shocks_cholesky)
+            shocks_cholesky)
 
         # Distribute class attributes
         model_paras = self.attr['model_paras']
@@ -149,7 +143,7 @@ class RespyCls(object):
 
         model_paras['coeffs_b'] = coeffs_b
 
-        model_paras['shocks_cov'] = shocks_cov
+        model_paras['shocks_cholesky'] = shocks_cholesky
 
         # Update class attributes
         self.attr['model_paras'] = model_paras
@@ -309,7 +303,16 @@ class RespyCls(object):
         shocks[2, 2:] = shocks_coeffs[7:9]
         shocks[3, 3:] = shocks_coeffs[9:10]
 
-        self.attr['model_paras']['shocks_cov'] = shocks + shocks.T - np.diag(shocks.diagonal())
+        shocks_cov = shocks + shocks.T - np.diag(shocks.diagonal())
+
+        # As we call the Cholesky decomposition, we need to handle the
+        # special case of a deterministic model.
+        if np.count_nonzero(shocks_cov) == 0:
+            self.attr['model_paras']['shocks_cholesky'] = np.zeros((4, 4))
+        else:
+            shocks_cholesky = np.linalg.cholesky(shocks_cov)
+            self.attr['model_paras']['shocks_cholesky'] = shocks_cholesky
+
 
         self.attr['model_paras']['coeffs_a'] = \
             init_dict['OCCUPATION A']['coeffs']
@@ -330,7 +333,7 @@ class RespyCls(object):
         # Ensure that all elements in the dictionary are of the same
         # type.
         keys = ['coeffs_a', 'coeffs_b', 'coeffs_edu', 'coeffs_home']
-        keys += ['shocks_cov']
+        keys += ['shocks_cholesky']
         for key_ in keys:
             self.attr['model_paras'][key_] = \
                 np.array(self.attr['model_paras'][key_])
@@ -364,12 +367,12 @@ class RespyCls(object):
         edu_max = self.attr['edu_max']
 
         # Extract auxiliary information
-        shocks_cov = model_paras['shocks_cov']
+        shocks_cholesky = model_paras['shocks_cholesky']
 
         # Update derived attributes
         self.attr['min_idx'] = min(num_periods, (edu_max - edu_start + 1))
 
-        self.attr['is_deterministic'] = (np.count_nonzero(shocks_cov) == 0)
+        self.attr['is_deterministic'] = (np.count_nonzero(shocks_cholesky) == 0)
 
         self.attr['is_myopic'] = (self.attr['delta'] == 0.00)
 
@@ -421,7 +424,7 @@ class RespyCls(object):
         tau = self.attr['tau']
 
         # Auxiliary objects
-        shocks_cov = model_paras['shocks_cov']
+        shocks_cholesky = model_paras['shocks_cholesky']
 
         # Status of optimization parameters
         assert isinstance(paras_fixed, list)
@@ -483,9 +486,9 @@ class RespyCls(object):
         assert (version in ['FORTRAN', 'F2PY', 'PYTHON'])
 
         # Shock distribution
-        assert (isinstance(shocks_cov, np.ndarray))
-        assert (np.all(np.isfinite(shocks_cov)))
-        assert (shocks_cov.shape == (4, 4))
+        assert (isinstance(shocks_cholesky, np.ndarray))
+        assert (np.all(np.isfinite(shocks_cholesky)))
+        assert (shocks_cholesky.shape == (4, 4))
 
         # Interpolation
         assert (is_interpolated in [True, False])

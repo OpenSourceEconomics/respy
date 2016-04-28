@@ -289,14 +289,13 @@ class TestClass(object):
         periods_draws_sims = read_draws(num_periods, num_agents_sim)
 
         # Extract coefficients
-        coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, \
-            shocks_cholesky = dist_model_paras(model_paras, True)
+        coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
+            dist_model_paras(model_paras, True)
 
         # Check the full solution procedure
-        base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
-            is_deterministic, is_interpolated, num_draws_emax,
-            num_periods, num_points, is_myopic, edu_start, is_debug,
-            edu_max, min_idx, delta)
+        base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+            shocks_cholesky, is_interpolated, num_draws_emax, num_periods,
+            num_points, is_myopic, edu_start, is_debug, edu_max, min_idx, delta)
 
         fort = fort_solve(*base_args + (seed_emax, tau))
         pyth = pyth_solve(*base_args + (periods_draws_emax,))
@@ -322,11 +321,10 @@ class TestClass(object):
 
         data_array = pyth
 
-        base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
-            is_deterministic, is_interpolated, num_draws_emax,
-            num_periods, num_points, is_myopic, edu_start, is_debug,
-            edu_max, min_idx, delta, data_array, num_agents_sim,
-            num_draws_prob, tau)
+        base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+            shocks_cholesky, is_deterministic, is_interpolated, num_draws_emax,
+            num_periods, num_points, is_myopic, edu_start, is_debug, edu_max,
+            min_idx, delta, data_array, num_agents_sim, num_draws_prob, tau)
 
         args = base_args + (seed_emax, seed_prob)
         fort = fort_evaluate(*args)
@@ -342,7 +340,7 @@ class TestClass(object):
 
         # Evaluation of criterion function
         x0 = get_optim_paras(coeffs_a, coeffs_b, coeffs_edu,
-                coeffs_home, shocks_cov, 'all', paras_fixed, is_debug)
+                coeffs_home, shocks_cholesky, 'all', paras_fixed, is_debug)
 
         args = (is_deterministic, is_interpolated, num_draws_emax,
             num_periods, num_points, is_myopic, edu_start, is_debug,
@@ -454,7 +452,7 @@ class TestClass(object):
         # sampling of the diagonal terms of the covariance matrix. Otherwise,
         # we sometimes run into the problem of very ill conditioned matrices
         # resulting in a failed Cholesky decomposition.
-        set_ = list(range(16)) + [16 + 20 + 23 + 25]
+        set_ = list(range(16)) + [16, 20, 23, 25]
 
         identifiers = np.random.choice(set_, num_draws, replace=False)
         values = np.random.uniform(size=num_draws)

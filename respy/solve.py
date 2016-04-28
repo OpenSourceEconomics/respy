@@ -22,16 +22,16 @@ def solve(respy_obj):
 
     # Distribute class attributes
     model_paras, num_periods, edu_start, is_debug, edu_max, delta, \
-        is_deterministic, version, num_draws_emax, seed_emax, is_interpolated, \
-        num_points, is_myopic, min_idx, store, tau = \
+        version, num_draws_emax, seed_emax, is_interpolated, num_points, \
+        is_myopic, min_idx, store, tau = \
             dist_class_attributes(respy_obj,
                 'model_paras', 'num_periods', 'edu_start', 'is_debug',
-                'edu_max', 'delta', 'is_deterministic', 'version',
-                'num_draws_emax', 'seed_emax', 'is_interpolated', 'num_points',
-                'is_myopic', 'min_idx', 'store', 'tau')
+                'edu_max', 'delta', 'version', 'num_draws_emax', 'seed_emax',
+                'is_interpolated', 'num_points', 'is_myopic', 'min_idx',
+                'store', 'tau')
 
     # Distribute model parameters
-    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, _ = \
+    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
         dist_model_paras(model_paras, is_debug)
 
     # Get the relevant set of disturbances. These are standard normal draws
@@ -43,10 +43,9 @@ def solve(respy_obj):
 
     # Collect baseline arguments. These are latter amended to account for
     # each interface.
-    base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
-        is_deterministic, is_interpolated, num_draws_emax,
-        num_periods, num_points, is_myopic, edu_start, is_debug,
-        edu_max, min_idx, delta)
+    base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
+        is_interpolated, num_draws_emax, num_periods, num_points, is_myopic,
+        edu_start, is_debug, edu_max, min_idx, delta)
 
     # Select appropriate interface. The additional preparations for the F2PY
     # interface are required as only explicit shape arguments can be passed

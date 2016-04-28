@@ -36,7 +36,7 @@ def evaluate(respy_obj):
                 'is_myopic', 'min_idx', 'tau')
 
     # Distribute model parameters
-    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, _ = \
+    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
         dist_model_paras(model_paras, is_debug)
 
     # Draw standard normal deviates for choice probabilities and expected
@@ -50,7 +50,7 @@ def evaluate(respy_obj):
     # Transform dataset for interface
     data_array = data_frame.as_matrix()
 
-    base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
+    base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
         is_deterministic, is_interpolated, num_draws_emax,
         num_periods, num_points, is_myopic, edu_start, is_debug,
         edu_max, min_idx, delta, data_array, num_agents_est,

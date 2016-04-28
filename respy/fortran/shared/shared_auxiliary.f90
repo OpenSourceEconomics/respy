@@ -281,7 +281,7 @@ SUBROUTINE create_draws(draws, num_periods, num_draws_emax, seed, is_debug)
     INTEGER(our_int)                            :: j
     INTEGER(our_int)                            :: i
 
-    REAL(our_dble)                              :: deviates(1)
+    REAL(our_dble)                              :: deviates(4)
 
     LOGICAL                                     :: READ_IN
 

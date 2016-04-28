@@ -161,10 +161,13 @@ def pyth_calculate_payoffs_systematic(num_periods, states_number_period,
 def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
         num_draws_emax, states_number_period, periods_payoffs_systematic,
         edu_max, edu_start, mapping_state_idx, states_all, delta, is_debug,
-        shocks_cov, is_interpolated, num_points, shocks_cholesky):
+        is_interpolated, num_points, shocks_cholesky):
     """ Backward induction procedure. There are two main threads to this
     function depending on whether interpolation is requested or not.
     """
+    # Construct auxiliary objects
+    shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
+
     # Auxiliary objects. These shifts are used to determine the expected
     # values of the two labor market alternatives. These ar log normal
     # distributed and thus the draws cannot simply set to zero.

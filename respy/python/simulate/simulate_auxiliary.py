@@ -159,7 +159,7 @@ def get_estimation_vector(model_paras, is_debug):
     """
 
     # Auxiliary objects
-    shocks_cholesky = dist_model_paras(model_paras, is_debug)[5]
+    shocks_cholesky = dist_model_paras(model_paras, is_debug)[-1]
 
     # Collect parameters
     vector = list()

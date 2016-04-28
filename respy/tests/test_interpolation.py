@@ -94,7 +94,7 @@ class TestClass(object):
                     'delta')
 
         # Auxiliary objects
-        _, _, _, _, _, shocks_cholesky = dist_model_paras(model_paras, is_debug)
+        shocks_cholesky = dist_model_paras(model_paras, is_debug)[-1]
 
         # Add some additional objects required for the interfaces to the
         # functions.

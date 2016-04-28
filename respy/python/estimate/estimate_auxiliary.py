@@ -25,19 +25,12 @@ def check_input(respy_obj, data_frame):
 
 
 def get_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-        shocks_cov, which, paras_fixed, is_debug):
+        shocks_cholesky, which, paras_fixed, is_debug):
     """ Get optimization parameters.
     """
-    # Construct Cholesky decomposition
-    if np.count_nonzero(shocks_cov) == 0:
-        shocks_cholesky = np.zeros((4, 4))
-    else:
-        shocks_cholesky = np.linalg.cholesky(shocks_cov)
-
     # Checks
     if is_debug:
-        args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
-                shocks_cholesky)
+        args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky)
         assert check_model_parameters(*args)
 
     # Initialize container
@@ -56,7 +49,7 @@ def get_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
     x[15:16] = coeffs_home
 
     # Shocks
-    x[16:26] = shocks_cholesky.T[np.triu_indices_from(shocks_cov)]
+    x[16:26] = shocks_cholesky.T[np.triu_indices_from(shocks_cholesky)]
 
     # Checks
     if is_debug:
@@ -104,16 +97,14 @@ def dist_optim_paras(x_all_curre, is_debug):
     shocks_cholesky.T[1, 1:] = x_all_curre[20:23]
     shocks_cholesky.T[2, 2:] = x_all_curre[23:25]
     shocks_cholesky.T[3, 3:] = x_all_curre[25:26]
-    shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
 
     # Checks
     if is_debug:
-        args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
-               shocks_cholesky)
+        args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky)
         assert check_model_parameters(*args)
 
     # Collect arguments
-    args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov)
+    args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky)
 
     # Finishing
     return args

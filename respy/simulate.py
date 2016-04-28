@@ -50,7 +50,7 @@ def simulate(respy_obj, is_solved=False):
                 'edu_max', 'delta', 'version')
 
     # Auxiliary objects
-    shocks_cholesky = dist_model_paras(model_paras, is_debug)[5]
+    shocks_cholesky = dist_model_paras(model_paras, is_debug)[-1]
 
     # Draw draws for the simulation.
     periods_draws_sims = create_draws(num_periods, num_agents_sim, seed_sim,

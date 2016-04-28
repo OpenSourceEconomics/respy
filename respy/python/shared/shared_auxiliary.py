@@ -209,25 +209,14 @@ def dist_model_paras(model_paras, is_debug):
 
     coeffs_edu = model_paras['coeffs_edu']
     coeffs_home = model_paras['coeffs_home']
-    shocks_cov = model_paras['shocks_cov']
-
-    # Construct cholesky decomposition
-    if np.count_nonzero(shocks_cov) == 0:
-        shocks_cholesky = np.zeros((4, 4))
-    else:
-        shocks_cholesky = np.linalg.cholesky(shocks_cov)
+    shocks_cholesky = model_paras['shocks_cholesky']
 
     if is_debug:
-        args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
-            shocks_cholesky)
+        args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky)
         assert (check_model_parameters(*args))
 
-    # Collect arguments
-    args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
-    args += (shocks_cov, shocks_cholesky)
-
     # Finishing
-    return args
+    return coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky
 
 
 def replace_missing_values(arguments):
@@ -264,12 +253,11 @@ def replace_missing_values(arguments):
 
 
 def check_model_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-        shocks_cov, shocks_cholesky):
+        shocks_cholesky):
     """ Check the integrity of all model parameters.
     """
     # Checks for all arguments
-    args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
-            shocks_cholesky)
+    args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky)
     for coeffs in args:
         assert (isinstance(coeffs, np.ndarray))
         assert (np.all(np.isfinite(coeffs)))
@@ -281,14 +269,9 @@ def check_model_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
     assert (coeffs_edu.size == 3)
     assert (coeffs_home.size == 1)
 
-    # Check Cholesky decomposition
-    assert (shocks_cholesky.shape == (4, 4))
-    aux = np.matmul(shocks_cholesky, shocks_cholesky.T)
-    np.testing.assert_array_almost_equal(shocks_cov, aux)
-
     # Checks shock matrix
-    assert (shocks_cov.shape == (4, 4))
-    np.testing.assert_array_almost_equal(shocks_cov, shocks_cov.T)
+    assert (shocks_cholesky.shape == (4, 4))
+    np.allclose(shocks_cholesky, np.tril(shocks_cholesky))
 
     # Finishing
     return True

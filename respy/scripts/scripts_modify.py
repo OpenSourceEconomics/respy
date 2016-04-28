@@ -88,8 +88,10 @@ def change_status(identifiers, init_file, is_fixed):
     respy_obj = RespyCls(init_file)
 
     model_paras = respy_obj.get_attr('model_paras')
-    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, _ = \
+    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
             dist_model_paras(model_paras, True)
+
+    shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
 
     for identifier in identifiers:
 

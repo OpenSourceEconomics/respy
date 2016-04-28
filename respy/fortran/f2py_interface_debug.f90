@@ -126,35 +126,6 @@ SUBROUTINE wrapper_simulate_emax(emax_simulated, num_periods, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_multivariate_normal(draws, mean, covariance, & 
-                num_draws_emax, dim)
-
-    !/* external libraries      */
-
-    USE shared_auxiliary
-
-    !/* setup                   */
-
-    IMPLICIT NONE
-
-    !/* external objects        */
-
-    INTEGER, INTENT(IN)             :: num_draws_emax
-    INTEGER, INTENT(IN)             :: dim
-
-    DOUBLE PRECISION, INTENT(OUT)   :: draws(num_draws_emax, dim)
-    DOUBLE PRECISION, INTENT(IN)    :: covariance(dim, dim)
-    DOUBLE PRECISION, INTENT(IN)    :: mean(dim)
-
-!-------------------------------------------------------------------------------
-! Algorithm
-!-------------------------------------------------------------------------------
-    
-    CALL multivariate_normal(draws, mean, covariance)
-    
-END SUBROUTINE 
-!*******************************************************************************
-!*******************************************************************************
 SUBROUTINE wrapper_standard_normal(draw, dim)
 
     !/* external libraries      */
@@ -201,33 +172,6 @@ SUBROUTINE wrapper_determinant(det, A)
 !-------------------------------------------------------------------------------
     
     det = determinant(A)
-
-END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE wrapper_cholesky(factor, matrix, n)
-
-    !/* external libraries      */
-
-    USE shared_auxiliary
-    
-    !/* setup                   */
-
-    IMPLICIT NONE
-
-    !/* external objects        */
-
-    DOUBLE PRECISION, INTENT(OUT)   :: factor(n,n)
-
-    DOUBLE PRECISION, INTENT(IN)    :: matrix(:,:)
-
-    INTEGER, INTENT(IN)             :: n
-
-!-------------------------------------------------------------------------------
-! Algorithm
-!-------------------------------------------------------------------------------
-
-    CALL cholesky(factor, matrix)
 
 END SUBROUTINE
 !*******************************************************************************

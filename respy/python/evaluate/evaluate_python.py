@@ -12,7 +12,7 @@ from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.solve.solve_python import pyth_solve
 
 
-def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
+def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
         is_deterministic, is_interpolated, num_draws_emax, num_periods,
         num_points, is_myopic, edu_start, is_debug,  edu_max, min_idx, delta,
         data_array, num_agents_est, num_draws_prob, tau, periods_draws_emax,
@@ -23,18 +23,12 @@ def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
     If a single agent violates the implications, then the zero is returned.
     """
     # Solve requested model.
-    base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
-        is_deterministic, is_interpolated, num_draws_emax, num_periods,
-        num_points, is_myopic, edu_start, is_debug, edu_max, min_idx, delta)
+    base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
+        is_interpolated, num_draws_emax, num_periods, num_points, is_myopic,
+        edu_start, is_debug, edu_max, min_idx, delta)
 
     periods_payoffs_systematic, _, mapping_state_idx, periods_emax, \
         states_all = pyth_solve(*base_args + (periods_draws_emax, ))
-
-    # Construct Cholesky decomposition
-    if is_deterministic:
-        shocks_cholesky = np.zeros((4, 4))
-    else:
-        shocks_cholesky = np.linalg.cholesky(shocks_cov)
 
     # Initialize auxiliary objects
     crit_val, j = [], 0

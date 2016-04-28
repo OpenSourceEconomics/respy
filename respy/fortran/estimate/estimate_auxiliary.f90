@@ -17,21 +17,17 @@ CONTAINS
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, &
-                shocks_cov, x)
+                shocks_cholesky, x)
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(OUT)     :: shocks_cov(:, :)
+    REAL(our_dble), INTENT(OUT)     :: shocks_cholesky(:, :)
     REAL(our_dble), INTENT(OUT)     :: coeffs_home(:)
     REAL(our_dble), INTENT(OUT)     :: coeffs_edu(:)
     REAL(our_dble), INTENT(OUT)     :: coeffs_a(:)
     REAL(our_dble), INTENT(OUT)     :: coeffs_b(:)
 
     REAL(our_dble), INTENT(IN)      :: x(:)
-
-    !/* internal objects        */
-
-    REAL(our_dble)                  :: shocks_cholesky(4, 4)
 
 !-------------------------------------------------------------------------------
 ! Algorithm
@@ -46,9 +42,9 @@ SUBROUTINE dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, &
 
     coeffs_home = x(16:16)
 
-    ! Note that the Cholesky decomposition is the upper triangular in this 
-    ! case. This is required to align the order of optimization parameters with
-    ! the outline of the original authors. 
+    ! Note that the Cholesky decomposition is initially the upper triangular in 
+    ! this case. This is required to align the order of optimization 
+    ! parameters with the outline of the original authors. 
     shocks_cholesky = 0.0
 
     shocks_cholesky(1, 1:) = x(17:20)
@@ -59,8 +55,7 @@ SUBROUTINE dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, &
 
     shocks_cholesky(4, 4:) = x(26:26)
 
-    ! Reconstruct the covariance matrix of reward shocks
-    shocks_cov = MATMUL(TRANSPOSE(shocks_cholesky), shocks_cholesky)
+    shocks_cholesky = TRANSPOSE(shocks_cholesky)
 
 END SUBROUTINE
 !*******************************************************************************
