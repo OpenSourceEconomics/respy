@@ -456,7 +456,7 @@ class TestClass(object):
         # resulting in a failed Cholesky decomposition.
         set_ = list(range(16)) + [16 + 20 + 23 + 25]
 
-        identifiers = np.random.choice(range(26), num_draws, replace=False)
+        identifiers = np.random.choice(set_, num_draws, replace=False)
         values = np.random.uniform(size=num_draws)
 
         scripts_estimate(resume, single, init_file, gradient)
