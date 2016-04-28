@@ -569,10 +569,9 @@ SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, &
 
         payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
-        CALL get_total_value(total_payoffs, &
-                period, num_periods, delta, payoffs_systematic, shifts, &
-                edu_max, edu_start, mapping_state_idx, periods_emax, k, &
-                states_all)
+        CALL get_total_value(total_payoffs, period, num_periods, delta, & 
+                payoffs_systematic, shifts, edu_max, edu_start, & 
+                mapping_state_idx, periods_emax, k, states_all)
 
         ! Treatment of inadmissible states, which will show up in the regression
         ! in some way

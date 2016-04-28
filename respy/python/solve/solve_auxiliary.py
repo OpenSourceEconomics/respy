@@ -209,9 +209,6 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
                 num_states, delta, periods_payoffs_systematic, shifts,
                 edu_max, edu_start, mapping_state_idx, periods_emax, states_all)
 
-            assert (np.all(np.isfinite(periods_emax))), 'emax'
-            assert (np.all(np.isfinite(periods_payoffs_systematic))), 'pyoffs'
-
             # Constructing the dependent variables for at the random subset of
             # points where the EMAX is actually calculated.
             endogenous = get_endogenous_variable(period, num_periods,
