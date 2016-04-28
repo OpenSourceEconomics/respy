@@ -56,10 +56,7 @@ def get_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
     x[15:16] = coeffs_home
 
     # Shocks
-    x[16:20] = shocks_cholesky.T[0, 0:]
-    x[20:23] = shocks_cholesky.T[1, 1:]
-    x[23:25] = shocks_cholesky.T[2, 2:]
-    x[25:26] = shocks_cholesky.T[3, 3:]
+    x[16:26] = shocks_cholesky.T[np.triu_indices_from(shocks_cov)]
 
     # Checks
     if is_debug:
@@ -68,16 +65,9 @@ def get_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
     # Select subset
     if which == 'free':
         x_free_curre = []
-        for i in range(16):
+        for i in range(26):
             if not paras_fixed[i]:
                 x_free_curre += [x[i]]
-
-        # Special treatment fo SHOCKS_COV
-        if not paras_fixed[16]:
-            x_free_curre[16:20] = shocks_cholesky.T[0, 0:]
-            x_free_curre[20:23] = shocks_cholesky.T[1, 1:]
-            x_free_curre[23:25] = shocks_cholesky.T[2, 2:]
-            x_free_curre[25:26] = shocks_cholesky.T[3, 3:]
 
         x = np.array(x_free_curre)
 

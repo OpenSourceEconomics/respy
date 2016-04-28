@@ -275,18 +275,12 @@ class OptimizationClass(object):
 
         # Construct the relevant parameters
         j = 0
-        for i in range(16):
+        for i in range(26):
             if paras_fixed[i]:
                 x_all_curre += [float(x_all_start[i])]
             else:
                 x_all_curre += [float(x_free_curr[j])]
                 j += 1
-
-        # Special treatment of SHOCKS_COV
-        if paras_fixed[16]:
-            x_all_curre += x_all_start[16:].tolist()
-        else:
-            x_all_curre += x_free_curr[-10:].tolist()
 
         x_all_curre = np.array(x_all_curre)
 
