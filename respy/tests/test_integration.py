@@ -271,14 +271,14 @@ class TestClass(object):
         # Extract class attributes
         num_periods, edu_start, edu_max, min_idx, model_paras, num_draws_emax, \
             seed_emax, is_debug, delta, is_interpolated, num_points, \
-            is_deterministic, is_myopic, num_agents_sim, num_draws_prob, \
-            seed_prob, tau, paras_fixed = \
+            is_myopic, num_agents_sim, num_draws_prob, seed_prob, tau, \
+            paras_fixed = \
                 dist_class_attributes(respy_obj,
                     'num_periods', 'edu_start', 'edu_max', 'min_idx',
                     'model_paras', 'num_draws_emax', 'seed_emax', 'is_debug',
-                    'delta', 'is_interpolated', 'num_points',
-                    'is_deterministic', 'is_myopic', 'num_agents_sim',
-                    'num_draws_prob', 'seed_prob', 'tau', 'paras_fixed')
+                    'delta', 'is_interpolated', 'num_points', 'is_myopic',
+                    'num_agents_sim', 'num_draws_prob', 'seed_prob', 'tau',
+                    'paras_fixed')
 
         # Write out random components and interpolation grid to align the
         # three implementations.
@@ -292,7 +292,6 @@ class TestClass(object):
         coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
             dist_model_paras(model_paras, True)
 
-        shocks_cholesky[0, 0] = -0.4
         # Check the full solution procedure
         base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
             shocks_cholesky, is_interpolated, num_draws_emax, num_periods,
@@ -323,7 +322,7 @@ class TestClass(object):
         data_array = pyth
 
         base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-            shocks_cholesky, is_deterministic, is_interpolated, num_draws_emax,
+            shocks_cholesky, is_interpolated, num_draws_emax,
             num_periods, num_points, is_myopic, edu_start, is_debug, edu_max,
             min_idx, delta, data_array, num_agents_sim, num_draws_prob, tau)
 
@@ -343,10 +342,10 @@ class TestClass(object):
         x0 = get_optim_paras(coeffs_a, coeffs_b, coeffs_edu,
                 coeffs_home, shocks_cholesky, 'all', paras_fixed, is_debug)
 
-        args = (is_deterministic, is_interpolated, num_draws_emax,
-            num_periods, num_points, is_myopic, edu_start, is_debug,
-            edu_max, min_idx, delta, data_array, num_agents_sim,
-            num_draws_prob, tau, periods_draws_emax, periods_draws_prob)
+        args = (is_interpolated, num_draws_emax, num_periods, num_points,
+            is_myopic, edu_start, is_debug, edu_max, min_idx, delta,
+            data_array, num_agents_sim, num_draws_prob, tau,
+            periods_draws_emax, periods_draws_prob)
 
         pyth = pyth_criterion(x0, *args)
         f2py = f2py_criterion(x0, *args)

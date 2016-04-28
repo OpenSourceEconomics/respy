@@ -644,8 +644,8 @@ END SUBROUTINE
 SUBROUTINE read_specification(num_periods, delta, coeffs_a, coeffs_b, &
                 coeffs_edu, edu_start, edu_max, coeffs_home, shocks_cholesky, & 
                 num_draws_emax, seed_emax, seed_prob, num_agents_est, & 
-                is_debug, is_deterministic, is_interpolated, num_points, & 
-                min_idx, request, num_draws_prob, is_myopic, tau)
+                is_debug, is_interpolated, num_points, min_idx, request, & 
+                num_draws_prob, is_myopic, tau)
 
     !
     !   This function serves as the replacement for the RespyCls and reads in
@@ -675,7 +675,6 @@ SUBROUTINE read_specification(num_periods, delta, coeffs_a, coeffs_b, &
     REAL(our_dble), INTENT(OUT)     :: tau
 
     LOGICAL, INTENT(OUT)            :: is_interpolated
-    LOGICAL, INTENT(OUT)            :: is_deterministic
     LOGICAL, INTENT(OUT)            :: is_myopic
     LOGICAL, INTENT(OUT)            :: is_debug
 
@@ -740,7 +739,6 @@ SUBROUTINE read_specification(num_periods, delta, coeffs_a, coeffs_b, &
 
         ! AUXILIARY
         READ(1, 1505) min_idx
-        READ(1, *) is_deterministic
         READ(1, *) is_myopic
 
         ! REQUUEST

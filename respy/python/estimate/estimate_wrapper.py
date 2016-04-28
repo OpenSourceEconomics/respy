@@ -402,7 +402,8 @@ class OptimizationClass(object):
                     paras = paras_curre
                 fmt_ = '{0:>15}   \n\n'
                 out_file.write(fmt_.format(*[which]))
-                shocks_cov = dist_optim_paras(paras, True)[4]
+                shocks_cholesky = dist_optim_paras(paras, True)[-1]
+                shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
                 fmt_ = '{0:15.4f}    {1:15.4f}    {2:15.4f}    {3:15.4f}\n'
                 for i in range(4):
                     out_file.write(fmt_.format(*shocks_cov[i, :]))

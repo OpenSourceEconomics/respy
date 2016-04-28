@@ -6,16 +6,16 @@ from respy.python.estimate.estimate_auxiliary import dist_optim_paras
 from respy.python.evaluate.evaluate_python import pyth_evaluate
 
 
-def pyth_criterion(x, is_deterministic, is_interpolated, num_draws_emax,
-        num_periods, num_points, is_myopic, edu_start, is_debug, edu_max,
-        min_idx, delta, data_array, num_agents_est, num_draws_prob, tau,
-        periods_draws_emax, periods_draws_prob):
+def pyth_criterion(x, is_interpolated, num_draws_emax, num_periods,
+        num_points, is_myopic, edu_start, is_debug, edu_max, min_idx, delta,
+        data_array, num_agents_est, num_draws_prob, tau, periods_draws_emax,
+        periods_draws_prob):
     """ This function provides the wrapper for optimization routines.
     """
     # Collect arguments
-    args = (is_deterministic, is_interpolated, num_draws_emax, num_periods,
-        num_points, is_myopic, edu_start, is_debug, edu_max, min_idx, delta,
-        data_array, num_agents_est, num_draws_prob, tau, periods_draws_emax,
+    args = (is_interpolated, num_draws_emax, num_periods, num_points,
+        is_myopic, edu_start, is_debug, edu_max, min_idx, delta, data_array,
+        num_agents_est, num_draws_prob, tau, periods_draws_emax,
         periods_draws_prob)
 
     # Distribute optimization parameters

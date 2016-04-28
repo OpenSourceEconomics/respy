@@ -20,9 +20,9 @@ MODULE evaluate_fortran
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
-                periods_emax, states_all, shocks_cholesky, is_deterministic, &
-                num_periods, edu_start, edu_max, delta, data_array, &
-                num_agents_est, num_draws_prob, periods_draws_prob, tau)
+                periods_emax, states_all, shocks_cholesky, num_periods, & 
+                edu_start, edu_max, delta, data_array, num_agents_est, & 
+                num_draws_prob, periods_draws_prob, tau)
 
     !/* external objects        */
 
@@ -86,6 +86,7 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
 
     ! Construct auxiliary objects
     shocks_cov = MATMUL(shocks_cholesky, TRANSPOSE(shocks_cholesky))
+    is_deterministic = ALL(shocks_cov .EQ. zero_dble)
 
     ! Initialize container for likelihood contributions
     ALLOCATE(crit_val(num_agents_est * num_periods)); crit_val = zero_dble

@@ -6,9 +6,9 @@
 !
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE f2py_criterion(crit_val, x, is_deterministic, is_interpolated, & 
-                num_draws_emax, num_periods, num_points, is_myopic, edu_start, & 
-                is_debug, edu_max, min_idx, delta, data_array, num_agents_est, & 
+SUBROUTINE f2py_criterion(crit_val, x, is_interpolated, num_draws_emax, & 
+                num_periods, num_points, is_myopic, edu_start, is_debug, & 
+                edu_max, min_idx, delta, data_array, num_agents_est, & 
                 num_draws_prob, tau, periods_draws_emax, periods_draws_prob)
 
     !/* external libraries      */
@@ -45,7 +45,6 @@ SUBROUTINE f2py_criterion(crit_val, x, is_deterministic, is_interpolated, &
     DOUBLE PRECISION, INTENT(IN)    :: delta 
     DOUBLE PRECISION, INTENT(IN)    :: tau
 
-    LOGICAL, INTENT(IN)             :: is_deterministic 
     LOGICAL, INTENT(IN)             :: is_interpolated
     LOGICAL, INTENT(IN)             :: is_myopic
     LOGICAL, INTENT(IN)             :: is_debug
@@ -83,9 +82,8 @@ SUBROUTINE f2py_criterion(crit_val, x, is_deterministic, is_interpolated, &
     ! Evaluate criterion function for observed data
     CALL fort_evaluate(crit_val, periods_payoffs_systematic, & 
             mapping_state_idx, periods_emax, states_all, shocks_cholesky, & 
-            is_deterministic, num_periods, edu_start, edu_max, delta, & 
-            data_array, num_agents_est, num_draws_prob, periods_draws_prob, & 
-            tau)
+            num_periods, edu_start, edu_max, delta, data_array, & 
+            num_agents_est, num_draws_prob, periods_draws_prob, tau)
 
 END SUBROUTINE
 !*******************************************************************************
@@ -175,11 +173,11 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, & 
-                coeffs_home, shocks_cholesky, is_deterministic, & 
-                is_interpolated, num_draws_emax, num_periods, num_points, & 
-                is_myopic, edu_start, is_debug, edu_max, min_idx, delta, & 
-                data_array, num_agents_est, num_draws_prob, tau, & 
-                periods_draws_emax, periods_draws_prob)
+                coeffs_home, shocks_cholesky, is_interpolated, & 
+                num_draws_emax, num_periods, num_points, is_myopic, & 
+                edu_start, is_debug, edu_max, min_idx, delta, data_array, & 
+                num_agents_est, num_draws_prob, tau, periods_draws_emax, &
+                periods_draws_prob)
 
     !/* external libraries      */
 
@@ -216,7 +214,6 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, &
     DOUBLE PRECISION, INTENT(IN)    :: delta 
     DOUBLE PRECISION, INTENT(IN)    :: tau
 
-    LOGICAL, INTENT(IN)             :: is_deterministic 
     LOGICAL, INTENT(IN)             :: is_interpolated
     LOGICAL, INTENT(IN)             :: is_myopic
     LOGICAL, INTENT(IN)             :: is_debug
@@ -245,9 +242,8 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, &
     ! Evaluate the criterion function building on the solution.
     CALL fort_evaluate(crit_val, periods_payoffs_systematic, & 
             mapping_state_idx, periods_emax, states_all, shocks_cholesky, & 
-            is_deterministic, num_periods, edu_start, edu_max, delta, &
-            data_array, num_agents_est, num_draws_prob, periods_draws_prob, & 
-            tau)
+            num_periods, edu_start, edu_max, delta, data_array, & 
+            num_agents_est, num_draws_prob, periods_draws_prob, tau)
 
 END SUBROUTINE
 !*******************************************************************************

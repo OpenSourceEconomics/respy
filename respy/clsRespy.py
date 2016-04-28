@@ -15,8 +15,7 @@ from respy.python.read.read_python import read
 
 # Special care with derived attributes is required to maintain integrity of
 # the class instance. These derived attributes cannot be changed directly.
-DERIVED_ATTR = ['min_idx', 'is_deterministic']
-DERIVED_ATTR += ['is_myopic']
+DERIVED_ATTR = ['min_idx', 'is_myopic']
 
 # Special care with solution attributes is required. These are only returned
 # if the class instance was solved.
@@ -91,8 +90,6 @@ class RespyCls(object):
         self.attr['tau'] = None
 
         # Derived attributes
-        self.attr['is_deterministic'] = None
-
         self.attr['is_myopic'] = None
 
         self.attr['min_idx'] = None
@@ -147,11 +144,6 @@ class RespyCls(object):
 
         # Update class attributes
         self.attr['model_paras'] = model_paras
-
-        # Update derived attributes. This is required as the is_deterministic
-        # indicator depends on the value of shocks. The latter is modified
-        # above.
-        self._update_derived_attributes()
 
     def lock(self):
         """ Lock class instance.
@@ -366,13 +358,8 @@ class RespyCls(object):
 
         edu_max = self.attr['edu_max']
 
-        # Extract auxiliary information
-        shocks_cholesky = model_paras['shocks_cholesky']
-
         # Update derived attributes
         self.attr['min_idx'] = min(num_periods, (edu_max - edu_start + 1))
-
-        self.attr['is_deterministic'] = (np.count_nonzero(shocks_cholesky) == 0)
 
         self.attr['is_myopic'] = (self.attr['delta'] == 0.00)
 

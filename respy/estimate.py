@@ -24,15 +24,14 @@ def estimate(respy_obj):
     # Distribute class attributes
     model_paras, num_periods, num_agents_est, edu_start, is_debug, edu_max, \
         delta, num_draws_prob, seed_prob, num_draws_emax, seed_emax, min_idx,\
-        is_deterministic, is_myopic, is_interpolated, num_points, version, \
-        maxiter, optimizer_used, tau, paras_fixed, optimizer_options = \
+        is_myopic, is_interpolated, num_points, version, maxiter, \
+        optimizer_used, tau, paras_fixed, optimizer_options = \
             dist_class_attributes(respy_obj,
                 'model_paras', 'num_periods', 'num_agents_est', 'edu_start',
                 'is_debug', 'edu_max', 'delta', 'num_draws_prob', 'seed_prob',
-                'num_draws_emax', 'seed_emax', 'min_idx', 'is_deterministic',
-                'is_myopic', 'is_interpolated', 'num_points', 'version',
-                'maxiter', 'optimizer_used', 'tau', 'paras_fixed',
-                'optimizer_options')
+                'num_draws_emax', 'seed_emax', 'min_idx', 'is_myopic',
+                'is_interpolated', 'num_points', 'version', 'maxiter',
+                'optimizer_used', 'tau', 'paras_fixed', 'optimizer_options')
 
     # Auxiliary objects
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
@@ -56,9 +55,9 @@ def estimate(respy_obj):
 
     # Collect arguments that are required for the criterion function. These
     # must be in the correct order already.
-    args = (is_deterministic, is_interpolated, num_draws_emax, num_periods,
-        num_points, is_myopic, edu_start, is_debug, edu_max, min_idx, delta,
-        data_array, num_agents_est, num_draws_prob, tau, periods_draws_emax,
+    args = (is_interpolated, num_draws_emax, num_periods, num_points,
+        is_myopic, edu_start, is_debug, edu_max, min_idx, delta, data_array,
+        num_agents_est, num_draws_prob, tau, periods_draws_emax,
         periods_draws_prob)
 
     # Setup optimization class, which handles all the details depending on the

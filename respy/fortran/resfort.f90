@@ -46,7 +46,6 @@ PROGRAM resfort
     REAL(our_dble)                  :: delta
     REAL(our_dble)                  :: tau
 
-    LOGICAL                         :: is_deterministic
     LOGICAL                         :: is_interpolated
     LOGICAL                         :: is_myopic
     LOGICAL                         :: is_debug
@@ -63,8 +62,8 @@ PROGRAM resfort
     CALL read_specification(num_periods, delta, coeffs_a, coeffs_b, &
             coeffs_edu, edu_start, edu_max, coeffs_home, shocks_cholesky, & 
             num_draws_emax, seed_emax, seed_prob, num_agents_est, is_debug, &
-            is_deterministic, is_interpolated, num_points, min_idx, request, &
-            num_draws_prob, is_myopic, tau)
+            is_interpolated, num_points, min_idx, request, num_draws_prob, & 
+            is_myopic, tau)
 
     ! This part creates (or reads from disk) the draws for the Monte 
     ! Carlo integration of the EMAX. For is_debugging purposes, these might 
@@ -104,9 +103,8 @@ PROGRAM resfort
 
         CALL fort_evaluate(crit_val, periods_payoffs_systematic, & 
                 mapping_state_idx, periods_emax, states_all, shocks_cholesky, & 
-                is_deterministic, num_periods, edu_start, edu_max, delta, & 
-                data_array, num_agents_est, num_draws_prob, & 
-                periods_draws_prob, tau)
+                num_periods, edu_start, edu_max, delta, data_array, & 
+                num_agents_est, num_draws_prob, periods_draws_prob, tau)
 
     END IF
 

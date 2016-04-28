@@ -25,15 +25,13 @@ def evaluate(respy_obj):
 
     # Distribute class attributes
     model_paras, num_periods, num_agents_est, edu_start, is_debug, \
-        edu_max, delta, is_deterministic, version, num_draws_prob, seed_prob, \
-        num_draws_emax, seed_emax, is_interpolated, num_points, is_myopic, \
-        min_idx, tau = \
+        edu_max, delta, version, num_draws_prob, seed_prob, num_draws_emax, \
+        seed_emax, is_interpolated, num_points, is_myopic, min_idx, tau = \
             dist_class_attributes(respy_obj,
                 'model_paras', 'num_periods', 'num_agents_est', 'edu_start',
-                'is_debug', 'edu_max', 'delta', 'is_deterministic',
-                'version', 'num_draws_prob', 'seed_prob', 'num_draws_emax',
-                'seed_emax', 'is_interpolated', 'num_points',
-                'is_myopic', 'min_idx', 'tau')
+                'is_debug', 'edu_max', 'delta', 'version', 'num_draws_prob',
+                'seed_prob', 'num_draws_emax', 'seed_emax', 'is_interpolated',
+                'num_points', 'is_myopic', 'min_idx', 'tau')
 
     # Distribute model parameters
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
@@ -51,10 +49,9 @@ def evaluate(respy_obj):
     data_array = data_frame.as_matrix()
 
     base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
-        is_deterministic, is_interpolated, num_draws_emax,
-        num_periods, num_points, is_myopic, edu_start, is_debug,
-        edu_max, min_idx, delta, data_array, num_agents_est,
-        num_draws_prob, tau)
+        is_interpolated, num_draws_emax, num_periods, num_points, is_myopic,
+        edu_start, is_debug, edu_max, min_idx, delta, data_array,
+        num_agents_est, num_draws_prob, tau)
 
     # Select appropriate interface
     if version == 'FORTRAN':
