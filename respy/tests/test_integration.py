@@ -449,6 +449,13 @@ class TestClass(object):
 
         action = np.random.choice(['fix', 'free', 'value'])
         num_draws = np.random.randint(1, 27)
+
+        # The set of identifiers is a little complicated as we only allow
+        # sampling of the diagonal terms of the covariance matrix. Otherwise,
+        # we sometimes run into the problem of very ill conditioned matrices
+        # resulting in a failed Cholesky decomposition.
+        set_ = list(range(16)) + [16 + 20 + 23 + 25]
+
         identifiers = np.random.choice(range(26), num_draws, replace=False)
         values = np.random.uniform(size=num_draws)
 

@@ -42,12 +42,10 @@ def generate_random_dict(constraints=None):
 
     # The dictionary also contains the information whether parameters are
     # fixed during an estimation. We need to ensure that at least one
-    # parameter is always free. Note, that we only sample 17 realizations
-    # even though there are 26 parameters. The last entry decides whether the
-    # full covariance matrix is fixed or not.
-    paras_fixed = np.random.choice([True, False], 17).tolist()
-    if sum(paras_fixed) == 17:
-        paras_fixed[np.random.randint(0, 17)] = True
+    # parameter is always free.
+    paras_fixed = np.random.choice([True, False], 26).tolist()
+    if sum(paras_fixed) == 26:
+        paras_fixed[np.random.randint(0, 26)] = True
 
     # Sampling number of agents for the simulation. This is then used as the
     # upper bound for the dataset used in the estimation.
