@@ -92,9 +92,6 @@ def change_status(identifiers, init_file, is_fixed):
             dist_model_paras(model_paras, True)
 
     for identifier in identifiers:
-        # Special treatment for covariance matrix
-        if identifier >= 16:
-            identifier = 16
 
         if identifier in list(range(0, 6)):
             j = identifier
@@ -113,12 +110,13 @@ def change_status(identifiers, init_file, is_fixed):
             init_dict['HOME']['coeffs'][j] = coeffs_home[j]
             init_dict['HOME']['fixed'][j] = is_fixed
         elif identifier in list(range(16, 26)):
+            j = identifier - 16
             shocks_coeffs = shocks_cov[np.triu_indices_from(
                 shocks_cov)].tolist()
             for i in [0, 4, 7, 9]:
                 shocks_coeffs[i] = np.sqrt(shocks_coeffs[i])
             init_dict['SHOCKS']['coeffs'] = shocks_coeffs
-            init_dict['SHOCKS']['fixed'] = np.tile(is_fixed, 1)
+            init_dict['SHOCKS']['fixed'][j] = is_fixed
         else:
             raise NotImplementedError
 

@@ -348,7 +348,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
     paras_fixed += dict_['OCCUPATION B']['fixed'][:]
     paras_fixed += dict_['EDUCATION']['fixed'][:]
     paras_fixed += dict_['HOME']['fixed'][:]
-    paras_fixed += [dict_['SHOCKS']['fixed'][0]][:]
+    paras_fixed += dict_['SHOCKS']['fixed'].tolist()[:]
 
     str_optim = '{0:<10} {1:20.4f} {2:>5} \n'
 
@@ -408,7 +408,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
 
                 for i in range(10):
                     val = dict_['SHOCKS']['coeffs'][i]
-                    line = format_opt_parameters(val, 16, paras_fixed)
+                    line = format_opt_parameters(val, 16 + i, paras_fixed)
                     file_.write(str_optim.format(*line))
                 file_.write('\n')
 
