@@ -7,10 +7,10 @@ import pytest
 import scipy
 
 # testing library
-from respy.tests.codes.auxiliary import write_interpolation_grid
+from codes.auxiliary import write_interpolation_grid
+from codes.random_init import generate_init
 
 from respy.python.solve.solve_auxiliary import get_payoffs
-from respy.tests.codes.random_init import generate_init
 
 from respy.python.solve.solve_auxiliary import logging_solution
 from respy.python.solve.solve_auxiliary import simulate_emax

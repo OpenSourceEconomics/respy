@@ -8,8 +8,10 @@ import shutil
 import pytest
 
 # testing library
-from respy.tests.codes.auxiliary import write_interpolation_grid
-from respy.tests.codes.auxiliary import write_draws
+from codes.auxiliary import write_interpolation_grid
+from codes.random_init import generate_random_dict
+from codes.random_init import generate_init
+from codes.auxiliary import write_draws
 
 # project library
 from respy.scripts.scripts_estimate import scripts_estimate
@@ -26,8 +28,6 @@ from respy.python.simulate.simulate_auxiliary import logging_simulation
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
 
 from respy.python.estimate.estimate_auxiliary import get_optim_paras
-from respy.tests.codes.random_init import generate_random_dict
-from respy.tests.codes.random_init import generate_init
 
 from respy.evaluate import evaluate
 from respy.process import process

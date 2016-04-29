@@ -5,7 +5,9 @@ import pytest
 import os
 
 # testing library
-from respy.tests.codes.auxiliary import write_interpolation_grid
+from codes.auxiliary import write_interpolation_grid
+from codes.random_init import generate_random_dict
+from codes.random_init import generate_init
 
 # project library
 from respy.python.solve.solve_auxiliary import get_simulated_indicator
@@ -13,9 +15,6 @@ from respy.python.solve.solve_auxiliary import get_exogenous_variables
 from respy.python.solve.solve_auxiliary import get_endogenous_variable
 from respy.python.solve.solve_auxiliary import logging_solution
 from respy.python.solve.solve_auxiliary import get_predictions
-
-from respy.tests.codes.random_init import generate_random_dict
-from respy.tests.codes.random_init import generate_init
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import replace_missing_values
