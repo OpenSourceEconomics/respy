@@ -3,9 +3,9 @@ Installation
 
 .. warning::
 
-    The **respy** package is currently only working with *Python 3*.  While we tested the installation on several UNIX machines, the process is not as robust to changes in the environment as we aim for.
+    While we tested the installation on several UNIX machines, the process is not as robust to changes in the environment as we aim for.
 
-The **respy** package builds on the standard *SciPy Stack*. In particular, we use the **NumPy**, **SciPy** and **pandas** library. In addition, we require **statsmodels**. Please make sure that all these packages are properly installed. For more details on the package dependencies, please check out the requirements file on `GitHub <https://github.com/restudToolbox/package/blob/master/requirements.txt>`_
+The **respy** package is maintained for *Python 2.7* and *Python 3*. We build on the standard *SciPy Stack*. In particular, we use the **NumPy**, **SciPy** and **pandas** library. In addition, we require **statsmodels**. Please make sure that all these packages are properly installed. For more details on the package dependencies, please check out the requirements file on `GitHub <https://github.com/restudToolbox/package/blob/master/requirements.txt>`_
 
 Please make sure you have a recent version of **pip** installed as well. Once these requirements are taken care of, installation is straightforward:
 
@@ -24,7 +24,5 @@ Some tests might actually fail as we test the results from a pure *Python* imple
 .. todo::
 
    There is also a dependency on LAPACK library. This needs to be handled more flexibly in the build process first. It is currently hard-coded in the *wscript*.
-
-   We want the package to work with Python 2 and Python 3.
 
    More robust build process.

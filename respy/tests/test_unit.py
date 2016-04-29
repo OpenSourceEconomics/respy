@@ -12,6 +12,7 @@ from respy.tests.codes.auxiliary import write_interpolation_grid
 from respy.python.solve.solve_auxiliary import get_payoffs
 from respy.tests.codes.random_init import generate_init
 
+from respy.python.solve.solve_auxiliary import logging_solution
 from respy.python.solve.solve_auxiliary import simulate_emax
 
 from respy.python.estimate.estimate_auxiliary import get_optim_paras
@@ -409,6 +410,9 @@ class TestClass(object):
             edu_max, edu_start, mapping_state_idx, states_all, delta,
             is_debug, is_interpolated, num_points, shocks_cholesky)
 
+        logging_solution('start')
         pyth = pyth_backward_induction(*args)
+        logging_solution('stop')
+
         f2py = f2py_backward_induction(*args)
         np.testing.assert_allclose(pyth, f2py)

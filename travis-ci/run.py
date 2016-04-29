@@ -18,3 +18,6 @@ os.system('python setup.py build')
 # differences between PYTHON and FORTRAN implementations.
 os.system('pip install pytest-cov==2.2.1')
 pytest.main('--cov=respy -v -s -m"(not slow)"')
+
+# TOX automation
+os.system('pip install tox; tox')

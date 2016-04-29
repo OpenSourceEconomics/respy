@@ -20,6 +20,7 @@ class CustomDevelopCommand(develop):
 
         develop.run(self)
 
+
 class CustomBuildCommand(build_py):
     """ Customized setuptools install command - prints a friendly greeting.
     """
