@@ -77,7 +77,7 @@ class CreateF2pyInterfaces(Task):
         import sys
         version = sys.version_info[0]
         compiler = 'f2py'
-        if version == 3:
+        if (version == 3) and ('TRAVIS' not in os.environ.keys()):
             compiler = 'f2py3'
 
             if os.system("f2py3") == 1:
