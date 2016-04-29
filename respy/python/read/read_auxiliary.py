@@ -82,7 +82,7 @@ def check_line(group, flag, value):
             if flag in ['version']:
                 assert (value in ['FORTRAN', 'F2PY', 'PYTHON'])
                 if value == 'F2PY':
-                    fname = glob.glob(ROOT_DIR + '/fortran/f2py_library.*.so')[0]
+                    fname = glob.glob(ROOT_DIR + '/fortran/f2py_library*.so')[0]
                     assert os.path.exists(fname)
                 if value == 'FORTRAN':
                     fname = ROOT_DIR + '/fortran/bin/resfort'
