@@ -9,8 +9,8 @@ import os
 assert os.system('python setup.py build') == 0
 
 # TOX automation
-os.system('pip install tox')
-assert os.system('tox -v') == 0
+#os.system('pip install tox')
+#assert os.system('tox -v') == 0
 
 # Run PYTEST battery again for coverage statistic.
 os.system('pip install pytest-cov==2.2.1')
