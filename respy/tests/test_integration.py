@@ -22,6 +22,7 @@ from respy.python.shared.shared_auxiliary import dist_model_paras
 from respy.python.shared.shared_auxiliary import print_init_dict
 from respy.python.shared.shared_auxiliary import read_draws
 
+from respy.python.simulate.simulate_auxiliary import logging_simulation
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
 
 from respy.python.estimate.estimate_auxiliary import get_optim_paras
@@ -309,12 +310,16 @@ class TestClass(object):
         periods_payoffs_systematic, _, mapping_state_idx, periods_emax, \
             states_all = pyth
 
-        # Collect arguments across implementations.
+        # Collect arguments across implementations. We need to set up the
+        # logger as otherwise the handler cannot be found.
         args = (periods_payoffs_systematic, mapping_state_idx, periods_emax,
             num_periods, states_all, num_agents_sim, edu_start, edu_max, delta,
             periods_draws_sims, shocks_cholesky)
 
+        logging_simulation('start')
         pyth = pyth_simulate(*args)
+        logging_simulation('stop')
+
         f2py = f2py_simulate(*args)
 
         np.testing.assert_allclose(pyth, f2py)

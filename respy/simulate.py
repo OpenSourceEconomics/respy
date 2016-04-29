@@ -4,8 +4,7 @@ import pandas as pd
 import logging
 
 # project library
-from respy.python.simulate.simulate_auxiliary import start_logging
-from respy.python.simulate.simulate_auxiliary import stop_logging
+from respy.python.simulate.simulate_auxiliary import logging_simulation
 from respy.python.simulate.simulate_auxiliary import check_input
 from respy.python.simulate.simulate_auxiliary import write_info
 from respy.python.simulate.simulate_auxiliary import write_out
@@ -37,7 +36,7 @@ def simulate(respy_obj, is_solved=False):
 
     # Fire up the logging for the simulation. The logging of the solution
     # step is handled within the solution routines.
-    start_logging()
+    logging_simulation('start')
 
     # Distribute class attributes
     periods_payoffs_systematic, mapping_state_idx, periods_emax, model_paras, \
@@ -89,7 +88,7 @@ def simulate(respy_obj, is_solved=False):
 
     logger.info('... finished \n')
 
-    stop_logging()
+    logging_simulation('stop')
 
     # Finishing
     return respy_obj

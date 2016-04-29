@@ -11,6 +11,7 @@ from respy.tests.codes.auxiliary import write_interpolation_grid
 from respy.python.solve.solve_auxiliary import get_simulated_indicator
 from respy.python.solve.solve_auxiliary import get_exogenous_variables
 from respy.python.solve.solve_auxiliary import get_endogenous_variable
+from respy.python.solve.solve_auxiliary import logging_solution
 from respy.python.solve.solve_auxiliary import get_predictions
 
 from respy.tests.codes.random_init import generate_random_dict
@@ -147,7 +148,11 @@ class TestClass(object):
         # Distribute validated results for further functions.
         endogenous = py
 
-        # Get predictions for expected future values
+        # Get predictions for expected future values. We need to start the
+        # logging to set up the handler for logging the output from the
+        # prediction model.
+        logging_solution('start')
+
         args = (endogenous, exogenous, maxe, is_simulated, num_points,
             num_states, is_debug)
 
@@ -155,6 +160,8 @@ class TestClass(object):
         f90 = fort_debug.wrapper_get_predictions(*args[:-1])
 
         np.testing.assert_array_almost_equal(py, f90)
+
+        logging_solution('stop')
 
     def test_3(self):
         """ This is a special test for auxiliary functions related to the

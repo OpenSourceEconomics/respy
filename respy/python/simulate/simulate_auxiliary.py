@@ -187,33 +187,30 @@ def get_estimation_vector(model_paras, is_debug):
     return vector
 
 
-def start_logging():
-    """ Initialize logging setup for the solution of the model.
+def logging_simulation(which):
+    """ Ensure proper handling of logging.
     """
+    # Antibugging
+    assert (which in ['start', 'stop'])
 
-    formatter = logging.Formatter('  %(message)s \n')
+    # Start logging
+    if which == 'start':
 
-    logger = logging.getLogger('RESPY_SIMULATE')
+        formatter = logging.Formatter('  %(message)s \n')
+        logger = logging.getLogger('RESPY_SIMULATE')
+        handler = logging.FileHandler('logging.respy.sim.log', mode='w',
+                                      delay=False)
+        handler.setFormatter(formatter)
+        logger.setLevel(logging.INFO)
+        logger.addHandler(handler)
 
-    handler = logging.FileHandler('logging.respy.sim.log', mode='w',
-                                  delay=False)
-
-    handler.setFormatter(formatter)
-
-    logger.setLevel(logging.INFO)
-
-    logger.addHandler(handler)
-
-
-def stop_logging():
-    """ Ensure orderly shutdown of logging capabilities.
-    """
-    # Shut down logger and close connection.
-    logger = logging.getLogger('RESPY_SIMULATE')
-    handlers = logger.handlers[:]
-    for handler in handlers:
-        handler.close()
-        logger.removeHandler(handler)
+    elif which == 'stop':
+        # Shut down logger and close connection.
+        logger = logging.getLogger('RESPY_SIMULATE')
+        handlers = logger.handlers[:]
+        for handler in handlers:
+            handler.close()
+            logger.removeHandler(handler)
 
 
 def check_input(respy_obj, is_solved):
