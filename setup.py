@@ -1,10 +1,24 @@
 # standard library
 from setuptools.command.build_py import build_py
+from setuptools.command.develop import develop
 from setuptools import find_packages
 from setuptools import setup
 
 import os
 
+class CustomDevelopCommand(develop):
+    """ Customized setuptools install command - prints a friendly greeting.
+    """
+    def run(self):
+        """ Overwriting the existing command.
+        """
+        os.chdir('respy')
+
+        os.system('./waf distclean; ./waf configure build')
+
+        os.chdir('../')
+
+        develop.run(self)
 
 class CustomBuildCommand(build_py):
     """ Customized setuptools install command - prints a friendly greeting.
@@ -36,11 +50,12 @@ def setup_package():
         url='http://respy.readthedocs.io',
         keywords=['Economics', 'Dynamic Discrete Choice Model'],
         classifiers=[],
-        setup_requires=['pytest-runner'],
+        setup_requires=['pytest-runner', 'pip>=8.0.0'],
         tests_require=['pytest'],
         install_requires=['numpy', 'scipy', 'pandas', 'scipy',
             'statsmodels', 'pytest'],
-        cmdclass={'build_py': CustomBuildCommand},
+        cmdclass={'build_py': CustomBuildCommand, 'develop':
+            CustomDevelopCommand},
         include_package_data=True
         )
 
