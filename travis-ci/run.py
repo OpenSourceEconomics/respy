@@ -11,8 +11,8 @@ import os
 if 'TRAVIS' in os.environ.keys():
     os.system('ln -sf /home/travis/virtualenv/python3.4.2/bin/f2py /home/travis/virtualenv/python3.4.2/bin/f2py3')
 
-# Build the package
-os.chdir('python setup.py build')
+# Build the package.
+os.system('python setup.py build')
 
 # Run PYTEST battery, some tests are expected to fail due to small numerical
 # differences between PYTHON and FORTRAN implementations.
