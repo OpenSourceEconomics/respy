@@ -20,6 +20,6 @@ assert os.system('python setup.py build') == 0
 os.system('pip install pytest-cov==2.2.1')
 assert os.system('py.test --cov=respy -v -s -m"(not slow)" -x') == 0
 
-# TOX automation
+# TOX automation for the development version
 os.system('pip install tox')
 assert os.system('tox -v') == 0
