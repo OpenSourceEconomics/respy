@@ -3,6 +3,7 @@
 """
 
 # standard library
+import pytest
 import os
 
 # If the script is run on TRAVIS-CI, then I need to create a link to F2PY3. So
@@ -15,7 +16,10 @@ assert os.system('python setup.py build') == 0
 
 # TODO: BE REMOVED
 os.system('pip install pytest-cov==2.2.1')
-assert os.system('py.test --cov=respy -v -s -m"(not slow)" -x') == 0
+pytest.main('--cov=respy -v -s -m"(not slow)"')
+
+
+#assert os.system('py.test --cov=respy -v -s -m"(not slow)" -x') == 0
 
 
 print("STARTING TOX")
