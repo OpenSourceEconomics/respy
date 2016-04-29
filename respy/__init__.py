@@ -9,11 +9,6 @@ from respy.estimate import estimate
 from respy.simulate import simulate
 from respy.clsRespy import RespyCls
 
-# Check for Python 3
-if not (sys.version_info[0] == 3):
-    raise AssertionError('Please use Python 3')
-
-
 def test():
     """ Run PYTEST for the package.
     """

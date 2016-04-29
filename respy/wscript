@@ -10,10 +10,6 @@ import os
 top = '.'
 out = '.bld'
 
-# Check for Python 3
-if not (sys.version_info[0] == 3):
-    raise AssertionError('Please use Python 3')
-
 # Set of compiler options.
 DEBUG_OPTIONS = ' -O2  -Wall -Wline-truncation' \
     ' -Wcharacter-truncation  -Wsurprising  -Waliasing' \

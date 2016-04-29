@@ -22,7 +22,7 @@ def resfort_build(self):
 
     os.chdir(path + '/fortran')
 
-    # Compile resfort file according to selected options.
+    # Compile RESFORT file according to selected options.
     cmd = 'gfortran ' + compiler_options + ' -o resfort ' \
           'shared/shared_constants.f90 shared/shared_auxiliary.f90 ' \
           'resfort_slsqp.f ' \
