@@ -13,10 +13,10 @@ if 'TRAVIS' in os.environ.keys():
 # Run PYTEST battery again for coverage statistic.
 assert os.system('pip install -e .') == 0
 os.system('pip install pytest-cov==2.2.1')
-assert os.system('py.test --cov=respy -v -s -m"(not slow)" -x') == 0
+os.system('py.test --cov=respy -v -s -m"(not slow)" -x') == 0
 
 # TOX automation
 os.system('pip install tox')
-assert os.system('tox -v -e py27') == 0
+os.system('tox -v -e py27') == 0
 os.system('cat /home/travis/build/restudToolbox/package/.tox/py27/log/*.log')
 os.system('ls /home/travis/build/restudToolbox/package/.tox/py27/bin')
