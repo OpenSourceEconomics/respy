@@ -73,12 +73,20 @@ class CreateF2pyInterfaces(Task):
 
         os.chdir(self.env.project_paths['RESPY'] + '/fortran')
 
+        # This needs to done in a more professional way.
+        import sys
+        version = sys.version_info[0]
+        compiler = 'f2py'
+        if version == 3:
+            compiler = 'f2py3'
+
+
         os.system(
-            'f2py -c -m  f2py_library f2py_interface_library.f90 '
+            compiler + ' -c -m  f2py_library f2py_interface_library.f90 '
             '-Iinclude -Llib -lfort_resfort -L/usr/lib/lapack -llapack')
 
         os.system(
-            'f2py -c -m  f2py_debug f2py_interface_debug.f90 '
+            compiler + ' -c -m  f2py_debug f2py_interface_debug.f90 '
             '-Iinclude -Llib -lfort_resfort -L/usr/lib/lapack -llapack')
 
 

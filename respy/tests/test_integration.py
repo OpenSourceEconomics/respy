@@ -8,8 +8,8 @@ import shutil
 import pytest
 
 # testing library
-from codes.auxiliary import write_interpolation_grid
-from codes.auxiliary import write_draws
+from respy.tests.codes.auxiliary import write_interpolation_grid
+from respy.tests.codes.auxiliary import write_draws
 
 # project library
 from respy.scripts.scripts_estimate import scripts_estimate

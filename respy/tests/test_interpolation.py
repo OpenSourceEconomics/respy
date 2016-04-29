@@ -5,7 +5,7 @@ import pytest
 import os
 
 # testing library
-from codes.auxiliary import write_interpolation_grid
+from respy.tests.codes.auxiliary import write_interpolation_grid
 
 # project library
 from respy.python.solve.solve_auxiliary import get_simulated_indicator
