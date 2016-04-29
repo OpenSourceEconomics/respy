@@ -11,6 +11,7 @@ import socket
 import random
 import shutil
 import glob
+import sys
 import os
 
 # testing library
@@ -88,6 +89,10 @@ def update_testing_record(module, method, seed_test, is_success, msg,
         log_file.write(string.format(['START', start_time]))
         log_file.write(string.format(['FINISH', end_time]))
         log_file.write(string.format(['UPDATE', current_time]))
+
+        # Note the Python version used during execution.
+        string = '\t{0[0]:<15}{0[1]}.{0[2]}.{0[3]}\n\n'
+        log_file.write(string.format(['PYTHON'] + list(sys.version_info[:3])))
 
         log_file.write('\n\n')
         # Iterate over all modules. There is a potential conflict in the
