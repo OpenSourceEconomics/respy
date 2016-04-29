@@ -451,7 +451,7 @@ class TestClass(object):
         update = np.random.choice([True, False])
 
         action = np.random.choice(['fix', 'free', 'value'])
-        num_draws = np.random.randint(1, 27)
+        num_draws = np.random.randint(1, 20)
 
         # The set of identifiers is a little complicated as we only allow
         # sampling of the diagonal terms of the covariance matrix. Otherwise,

@@ -18,19 +18,20 @@ from modules.auxiliary import get_random_request
 from modules.auxiliary import get_test_dict
 
 # Reconstruct directory structure and edits to PYTHONPATH
-TEST_DIR = os.path.dirname(os.path.realpath(__file__))
-TEST_DIR = TEST_DIR.replace('development/testing', '') + '/respy/tests'
+PACKAGE_DIR = os.path.dirname(os.path.realpath(__file__))
+PACKAGE_DIR = PACKAGE_DIR.replace('development/testing', '')
 
 # ROBPUPY testing codes. The import of the PYTEST configuration file ensures
 # that the PYTHONPATH is modified to allow for the use of the tests..
-sys.path.insert(0, TEST_DIR)
+sys.path.insert(0, PACKAGE_DIR)
+sys.path.insert(0, PACKAGE_DIR + 'respy/tests')
 
 VERSIONS = ['PYTHON', 'FORTRAN', 'F2PY']
 
 
 ''' Request
 '''
-seed = 1223 # 6216748723
+seed = 61985 # 6216748723
 
 
 ''' Error Reproduction
@@ -41,10 +42,10 @@ np.random.seed(seed)
 
 # Construct test
 for _ in range(100):
-    test_dict = get_test_dict(TEST_DIR)
+    test_dict = get_test_dict(PACKAGE_DIR + '/respy/tests')
     module, method = get_random_request(test_dict)
 
-    module, method = 'test_integration', 'test_5'
+    #module, method = 'test_integration', 'test_5'
     print(module, method)
     mod = importlib.import_module(module)
     test = getattr(mod.TestClass(), method)
