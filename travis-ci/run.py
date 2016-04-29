@@ -5,13 +5,6 @@
 # standard library
 import os
 
-# If the script is run on TRAVIS-CI, then I need to create a link to F2PY3. So
-# far I was unable to figure out why that is the case. I am creating the link
-# for both distributions so that the TOX setup works properly.
-if 'TRAVIS' in os.environ.keys():
-    os.system('ln -sf /home/travis/virtualenv/python3.4.2/bin/f2py /home/travis/virtualenv/python3.4.2/bin/f2py3')
-    os.system('ln -sf /home/travis/virtualenv/python3.5.0/bin/f2py /home/travis/virtualenv/python3.5.0/bin/f2py3')
-
 # Build the package.
 assert os.system('python setup.py build') == 0
 
