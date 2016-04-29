@@ -19,13 +19,14 @@ import os
 if not hasattr(sys, 'real_prefix'):
     raise AssertionError('Please use a virtual environment for testing')
 
-# ROBPUPY testing codes. The import of the PYTEST configuration file ensures
+# RESPY testing codes. The import of the PYTEST configuration file ensures
 # that the PYTHONPATH is modified to allow for the use of the tests..
-TEST_DIR = os.path.dirname(os.path.realpath(__file__))
-TEST_DIR = TEST_DIR.replace('development/testing', '') + 'respy/tests'
+PACKAGE_DIR = os.path.dirname(os.path.realpath(__file__))
+PACKAGE_DIR = PACKAGE_DIR.replace('development/testing', '')
 
 # PYTEST ensures the path is set up correctly.
-sys.path.insert(0, TEST_DIR)
+sys.path.insert(0, PACKAGE_DIR + 'respy/tests')
+sys.path.insert(0, PACKAGE_DIR)
 
 # Testing infrastructure
 from modules.auxiliary import cleanup_testing_infrastructure
@@ -48,7 +49,7 @@ def run(hours, compile_):
         compile_package()
 
     # Get a dictionary with all candidate test cases.
-    test_dict = get_test_dict(TEST_DIR)
+    test_dict = get_test_dict(PACKAGE_DIR + 'respy/tests')
 
     # We initialize a dictionary that allows to keep track of each test's
     # success or failure.
