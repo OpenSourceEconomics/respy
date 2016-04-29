@@ -17,6 +17,9 @@ os.system('py.test --cov=respy -v -s -m"(not slow)" -x') == 0
 
 # TOX automation
 os.system('pip install tox')
-os.system('tox -v -e py27') == 0
+os.system('tox -v') == 0
 os.system('cat /home/travis/build/restudToolbox/package/.tox/py27/log/*.log')
 os.system('ls /home/travis/build/restudToolbox/package/.tox/py27/bin')
+
+os.system('cat /home/travis/build/restudToolbox/package/.tox/py35/log/*.log')
+os.system('ls /home/travis/build/restudToolbox/package/.tox/py35/bin')
