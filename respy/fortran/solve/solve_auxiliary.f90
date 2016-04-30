@@ -284,7 +284,9 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, &
 
     !/* internals objects       */
 
+    INTEGER(our_int)                    :: seed_inflated(15)
     INTEGER(our_int)                    :: num_states
+    INTEGER(our_int)                    :: seed_size
     INTEGER(our_int)                    :: period
     INTEGER(our_int)                    :: k
 
@@ -306,6 +308,15 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, &
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
+    
+    ! Set random seed. We need to set the seed here as well as this part of the
+    ! code might be called using F2PY without any previous seed set. This
+    ! ensures that the interpolation grid is identical across draws.
+    seed_inflated(:) = 123
+
+    CALL RANDOM_SEED(size=seed_size)
+
+    CALL RANDOM_SEED(put=seed_inflated)
 
     ! Construct auxiliary objects
     shocks_cov = MATMUL(shocks_cholesky, TRANSPOSE(shocks_cholesky))
@@ -884,6 +895,8 @@ SUBROUTINE random_choice(sample, candidates, num_candidates, num_points)
     INTEGER(our_int)              :: j
     INTEGER(our_int)              :: l
 
+    REAL(our_dble)                :: u(1)
+
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
@@ -894,7 +907,9 @@ SUBROUTINE random_choice(sample, candidates, num_candidates, num_points)
     ! Draw random points from candidates
     DO j = 1, num_candidates
 
-        l = INT(DBLE(num_candidates - j + 1) * RAN(0)) + 1
+        CALL RANDOM_NUMBER(u)
+
+        l = INT(DBLE(num_candidates - j + 1) * u(1)) + 1
 
         IF (l .GT. (num_points - m)) THEN
 
