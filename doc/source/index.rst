@@ -22,6 +22,7 @@ Welcome to respy's documentation!
    functionality
    tutorial
    implementation 
+   environment
    contact
    interface
    bibliography

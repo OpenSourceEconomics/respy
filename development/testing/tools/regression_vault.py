@@ -23,14 +23,12 @@ from respy.evaluate import evaluate
 from respy import RespyCls
 from respy import simulate
 
-np.random.seed(213)
-
-num_tests = 100
+num_tests = 1000
 fname = 'test_vault_' + version + '.respy.pkl'
 
 tests = []
 for _ in range(num_tests):
-
+    print(_)
     init_dict = generate_init(constraints=None)
 
     respy_obj = RespyCls('test.respy.ini')

@@ -14,10 +14,10 @@ addons:
 
 bundler_args: --retry 3
 
-before_install:
+install:
+  - travis_retry travis_wait pip install -r requirements.txt
   - pip install codecov
-
-install: travis_retry travis_wait pip install -r requirements.txt
+  - pip install tox
 
 script:
   - travis_wait tox -v
