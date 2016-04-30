@@ -77,11 +77,11 @@ class CreateF2pyInterfaces(Task):
         import sys
         version = sys.version_info[0]
         compiler = 'f2py'
-        if version == 3:
-            compiler = 'f2py3'
-
-            if os.system('f2py3') == 1:
-                compiler = 'f2py'
+        # if version == 3:
+        #     compiler = 'f2py3'
+        #
+        #     if os.system('f2py3') == 1:
+        #         compiler = 'f2py'
 
         os.system(
             compiler + ' -c -m  f2py_library f2py_interface_library.f90 '
