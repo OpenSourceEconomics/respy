@@ -19,7 +19,7 @@ before_install:
 
 install: travis_retry travis_wait pip install -r requirements.txt
 
-script:  python travis-ci/run.py
+script:  python tools/travis_run.py
 
 after_success:
   - codecov
