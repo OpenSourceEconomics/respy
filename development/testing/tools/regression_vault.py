@@ -43,18 +43,18 @@ for i in range(num_tests):
     tests += [test]
 
     pkl.dump(tests, open(fname, 'wb'))
-
-    # This makes sure that the test can actually be reproduced.
-    print('  ... ensuring recomputability.')
-
-    test_load = pkl.load(open(fname, 'rb'))
-
-    init_dict, crit_val = test_load[-1]
-
-    print_init_dict(init_dict)
-
-    respy_obj = RespyCls('test.respy.ini')
-
-    simulate(respy_obj)
-
-    np.testing.assert_almost_equal(evaluate(respy_obj), crit_val)
+    #
+    # # This makes sure that the test can actually be reproduced.
+    # print('  ... ensuring recomputability.')
+    #
+    # test_load = pkl.load(open(fname, 'rb'))
+    #
+    # init_dict, crit_val = test_load[-1]
+    #
+    # print_init_dict(init_dict)
+    #
+    # respy_obj = RespyCls('test.respy.ini')
+    #
+    # simulate(respy_obj)
+    #
+    # np.testing.assert_almost_equal(evaluate(respy_obj), crit_val)

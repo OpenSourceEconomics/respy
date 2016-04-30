@@ -14,7 +14,7 @@ sp.check_call('pip install --upgrade pip', shell=True)
 
 # Test the most recent PYPI submission. We need to switch to the directory to
 # for the site-packages to avoid the wrong import. This only works for the
-# more recent Python versions. 
+# more recent Python versions.
 version = sys.version_info[:2]
 if version in [(3, 4), (3, 5)]:
     cwd = os.getcwd()
