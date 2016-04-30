@@ -14,7 +14,7 @@ sp.check_call('pip install --upgrade pip', shell=True)
 # Test the most recent PYPI submission. We need to switch to the directory to
 # for the site-packages to avoid the wrong import.
 cwd = os.getcwd()
-site_packages = np.__file__.replace('numpy/__init__.py', '')
+site_packages = np.__path__[0].replace('numpy', '')
 sp.check_call('pip install -vvv --no-binary respy respy', shell=True)
 os.chdir(site_packages)
 sp.check_call('python -c "import respy; respy.test()"', shell=True)

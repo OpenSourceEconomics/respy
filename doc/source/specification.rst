@@ -17,12 +17,12 @@ The model is specified in an initialization file, see `here <https://github.com/
 
 **BASICS**
 
-=======     ======    ================== 
+=======     ======      ================== 
 Key         Value       Interpretation      
-=======     ======    ==================  
-periods      int        number of Periods  
+=======     ======      ==================  
+periods      int        number of periods  
 delta        float      discount factor
-=======     ======    ================== 
+=======     ======      ================== 
 
 **OCCUPATION A**
 
