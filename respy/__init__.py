@@ -18,5 +18,12 @@ def test(opt=None):
     current_directory = os.getcwd()
 
     os.chdir(package_directory)
-    pytest.main(opt)
+
+    if opt is None:
+        opts = '-m"not slow"'
+    else:
+        opts = opt + ' -m"not slow"'
+
+    pytest.main(opts)
+
     os.chdir(current_directory)
