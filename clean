@@ -7,4 +7,4 @@ import os
 
 os.system('git clean -d -f')
 
-os.system('pip uninstall respy')
+os.system('pip uninstall -y respy')
