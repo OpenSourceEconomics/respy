@@ -68,99 +68,97 @@ Again, there is a small difference between the setup in the original paper. Ther
 
 **HOME**
 
-=======  ==========================
-Key      Interpretation      
-=======  ========================== 
-coeff    mean value of non-market alternative
-=======  ========================== 
+======= ======      ==========================
+Key     Value       Interpretation      
+======= ======      ========================== 
+coeff    float      mean value of non-market alternative
+======= ======      ========================== 
 
 **SHOCKS**
 
-=======  ==========================
-Key      Interpretation      
-=======  ========================== 
-coeff    :math:`\sigma_{1}`
-coeff    :math:`\sigma_{12}`
-coeff    :math:`\sigma_{13}`
-coeff    :math:`\sigma_{14}`
-coeff    :math:`\sigma_{2}`
-coeff    :math:`\sigma_{23}`
-coeff    :math:`\sigma_{24}`
-coeff    :math:`\sigma_{3}`
-coeff    :math:`\sigma_{34}`
-coeff    :math:`\sigma_{4}`
-=======  ========================== 
+======= ======      ==========================
+Key     Value       Interpretation      
+======= ======      ========================== 
+coeff    float      :math:`\sigma_{1}`
+coeff    float      :math:`\sigma_{12}`
+coeff    float      :math:`\sigma_{13}`
+coeff    float      :math:`\sigma_{14}`
+coeff    float      :math:`\sigma_{2}`
+coeff    float      :math:`\sigma_{23}`
+coeff    float      :math:`\sigma_{24}`
+coeff    float      :math:`\sigma_{3}`
+coeff    float      :math:`\sigma_{34}`
+coeff    float      :math:`\sigma_{4}`
+======= ======      ========================== 
 
 **SOLUTION**
 
-=======  ==========================
-Key      Interpretation      
-=======  ========================== 
-draws    number of draws for EMAX approximation
-store    store results
-seed     random seed for the EMAX approximation
-=======  ========================== 
+=======     ======      ==========================
+Key         Value       Interpretation      
+=======     ======      ========================== 
+draws       int         number of draws for EMAX approximation
+store       bool        store results
+seed        int         random seed for the EMAX approximation
+=======     ======      ========================== 
 
 **SIMULATION**
 
-=======  ==========================
-Key      Interpretation      
-=======  ========================== 
-file     file to print simulated sample
-agents   number of simulated agents
-seed     random seed for agent experience
-=======  ========================== 
-
+=======     ======      ==========================
+Key         Value       Interpretation      
+=======     ======      ==========================
+file        str         file to print simulated sample
+agents      int         number of simulated agents
+seed        int         random seed for agent experience
+=======     ======      ==========================
 
 **ESTIMATION**
 
-=========  ==========================
-Key        Interpretation      
-=========  ==========================
-file       file to read observed sample
-tau        smoothing window
-agents     number of agents to read from sample
-maxiter    maximum number of iterations for optimizer
-seed       random seed for choice probability approximation
-optimizer  optimizer to use
-=========  ==========================
+==========      ======      ==========================
+Key             Value       Interpretation      
+==========      ======      ==========================
+file            str         file to read observed sample
+tau             float       smoothing window
+agents          int         number of agents to read from sample
+maxiter         int         maximum number of iterations for optimizer
+seed            int         random seed for choice probability approximation
+optimizer       str         optimizer to use
+==========      ======      ==========================
 
 **PROGRAM**
 
-=======     ==========================
-Key         Interpretation      
-=======     ========================== 
-debug       flag to use debug mode
-version     program version
-=======     ========================== 
-
+=======     ======      ==========================
+Key         Value       Interpretation      
+=======     ======      ==========================
+debug       bool        flag to use debug mode
+version     str         program version
+=======     ======      ==========================
 
 **INTERPOLATION**
 
-=======     ==========================
-Key         Interpretation      
-=======     ========================== 
-points      number of interpolation points
-apply       flag to use interpolation
-=======     ========================== 
+=======     ======      ==========================
+Key         Value       Interpretation      
+=======     ======      ==========================
+points      int         number of interpolation points
+apply       bool        flag to use interpolation
+=======     ======      ==========================
 
-Two alternative optimization algorithms are available for the estimation. In both cases, we use the **scipy** package, see their documentation for more details.
+Two alternative optimization algorithms are available for the estimation. In both cases, we use the **SciPy** package, see their documentation for more details.
 
 **SCIPY-BFGS**
 
-=======     ==========================
-Key         Interpretation      
-=======     ========================== 
-gtol        gradient norm must be less than gtol before successful termination 
-epsilon     step size for numerical approximation of first derivatives 
-=======     ========================== 
+=======     ======      ==========================
+Key         Value       Interpretation      
+=======     ======      ==========================
+gtol        float       gradient norm must be less than gtol before successful termination 
+epsilon     float       step size for numerical approximation of first derivatives 
+=======     ======      ==========================
 
 **SCIPY-POWELL**
 
-=======     ==========================
-Key         Interpretation      
-=======     ========================== 
-maxfun      maximum number of function evaluations to make
-ftol        relative error in func(xopt) acceptable for convergence      
-xtol        line-search error tolerance         
-=======     ========================== 
+=======     ======      ==========================
+Key         Value       Interpretation      
+=======     ======      ==========================
+maxfun      int         maximum number of function evaluations to make
+ftol        float       relative error in func(xopt) acceptable for convergence      
+xtol        float       line-search error tolerance         
+=======     ======      ==========================
