@@ -27,6 +27,7 @@ Welcome to respy's documentation!
    interface
    bibliography
    credits
+   details
 
 **Quality Indicators**
 

@@ -32,20 +32,7 @@ the SIMULATION section of the model initialization file.
 
 * **data.respy.dat**
     
-    This file contains the agent choices and state experiences. The simulated dataset has the following structure.
-    
-    ======      ========================      
-    Column      Information
-    ======      ========================      
-    1           agent identifier     
-    2           time period     
-    3           choice, 1 = work A, 2 = work B, 3 = education, 4 = home)     
-    4           earnings (missing value if not working)     
-    5           work experience in occupation A     
-    6           work experience in occupation B     
-    7           years of schooling     
-    8           lagged schooling     
-    ======      ========================
+    This file contains the agent choices and state experiences (:ref:`details <data.respy.dat>`).
 
 * **data.respy.info**
 
@@ -56,20 +43,7 @@ the SIMULATION section of the model initialization file.
 * **data.respy.paras**
 
     This file contains the coefficients used for the simulation of the agent
-    population.
-
-    =======     ========================      
-    Lines       Coefficients
-    =======     ========================       
-    1 -  6      occupation A      
-    7 - 12      occupation B     
-    12 - 15     education     
-    16          home     
-    16 - 26     cholesky factors     
-    =======     ========================
-
-    Note, that the last ten coefficients do refer to the Cholesky factors of the
-    covariance matrix of the shocks and not the covariance matrix itself. 
+    population (:ref:`details <data.respy.paras>`).
 
 Now that we have some observed data, we can start an estimation. Here we are using the simulated data for the estimation. However, you can of also use other data sources. Just make sure they follow the layout of the simulated sample. The coefficient values in the initialization file serve as the starting values::
 
@@ -82,19 +56,13 @@ the value of the criterion function. However, some additional files appear in th
 
 * **optimization.respy.log**
 
-The provides some information about each step of the optimizer and a final message from the optimizer about convergence. See the **SciPy** documentation for details on the convergence message.
+    The provides some information about each step of the optimizer and a final message from the optimizer about convergence. See the **SciPy** documentation for details on the convergence message.
 
 * **optimization.respy.info**
 
-This file is key to monitor the progress of the estimation run. It is continuously updated and provides information about the current parameterization, the starting values, and the the value at each step.
+    This file is key to monitor the progress of the estimation run. It is continuously updated and provides information about the current parameterization, the starting values, and the the value at each step.
 
-Finally, the parameters are written to disk:
-
-* **paras_curre.respy.log**, current candidate parameters
-
-* **paras_start.respy.log**, parameters at the start of the optimization
-
-* **paras_steps.respy.log**, parameters at last step of the optimizer
+Finally, the sets of parameters are written to disk (:ref:`details <paras.respy.log>`).
 
 We can now simulate a sample using the estimated parameters, but updating the instance of the *RespyCls* with the parameters returned from the estimation routine.
 ::

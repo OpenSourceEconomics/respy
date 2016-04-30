@@ -8,7 +8,7 @@ We will now discuss the model. We first present the basic economic motivations a
 Economics
 ---------
 
-See the discussion in :ref:`Keane & Wolpin (1994) <bibSection>`.
+See the exposition in :ref:`Keane & Wolpin (1994) <bibSection>`.
 
 Specification
 -------------

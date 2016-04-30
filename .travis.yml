@@ -19,8 +19,13 @@ install:
   - pip install codecov
   - pip install tox
 
+# Calling each of the TOX environments separately allow to deal with timeout 
+# issues.
 script:
-  - travis_wait tox -v
+  - travis_wait tox -e py27 -v
+  - travis_wait tox -e py33 -v
+  - travis_wait tox -e py34 -v
+  - travis_wait tox -e py35 -v
   - python tools/travis_run.py
 
 after_success:
