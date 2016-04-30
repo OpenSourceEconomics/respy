@@ -9,9 +9,9 @@ import subprocess as sp
 sp.check_call('pip install --upgrade pip', shell=True)
 
 # Download the most recent submission from PYPI and test it.
-#sp.check_call('pip install --no-binary respy -vvv respy', shell=True)
-#sp.check_call('python -c "import respy; respy.test()"', shell=True)
-#sp.check_call('pip uninstall respy', shell=True)
+sp.check_call('pip install --no-binary respy -vvv respy', shell=True)
+sp.check_call('python -c "import respy; respy.test()"', shell=True)
+sp.check_call('pip uninstall respy', shell=True)
 
 # Run PYTEST battery again on package in development mode. This ensure that the
 # current implementation is working properly.

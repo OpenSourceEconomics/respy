@@ -23,7 +23,8 @@ from respy.evaluate import evaluate
 from respy import RespyCls
 from respy import simulate
 
-num_tests = 1000
+np.random.seed(123)
+num_tests = 100
 fname = 'test_vault_' + version + '.respy.pkl'
 
 tests = []
@@ -48,7 +49,9 @@ print('.. done with creation.')
 # Now we make sure that the tests will pass.
 tests = pkl.load(open(fname, 'rb'))
 
-for test in tests:
+for i, test in enumerate(tests):
+
+    print(i)
 
     init_dict, crit_val = test
 
