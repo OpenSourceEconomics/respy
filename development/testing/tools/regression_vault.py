@@ -28,7 +28,7 @@ fname = 'test_vault_' + version + '.respy.pkl'
 
 tests = []
 for i in range(num_tests):
-    print('\n Creating test ', i)
+    print('\n Creating test ' + str(i))
 
     init_dict = generate_init(constraints=None)
 
