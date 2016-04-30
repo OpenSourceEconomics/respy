@@ -3,22 +3,22 @@
 """
 
 # standard library
-import os
+import subprocess as sp
 
 # Ensure that most recent installation of PIP is available
-assert os.system('pip install --upgrade pip')
+sp.check_call('pip install --upgrade pip', shell=True)
 
 # Download the most recent submission from PYPI and test it.
-assert os.system('pip install --no-binary respy -vvv respy')
-assert os.system('python -c "import respy; respy.test()"')
-assert os.system('pip uninstall respy')
+sp.check_call('pip install --no-binary respy -vvv respy', shell=True)
+sp.check_call('python -c "import respy; respy.test()"', shell=True)
+sp.check_call('pip uninstall respy', shell=True)
 
 # TOX automation
-os.system('pip install tox')
-assert os.system('tox -v') == 0
+sp.check_call('pip install tox', shell=True)
+sp.check_call('tox -v', shell=True)
 
 # Run PYTEST battery again on package in development mode. This ensure that the
 # current implementation is working properly.
-assert os.system('pip install -e .') == 0
-os.system('pip install pytest-cov==2.2.1')
-assert os.system('py.test --cov=respy -v -s -m"(not slow)" -x') == 0
+sp.check_call('pip install -e .', shell=True)
+sp.check_call('pip install pytest-cov==2.2.1', shell=True)
+sp.check_call('py.test --cov=respy -v -s -m"(not slow)" -x', shell=True)
