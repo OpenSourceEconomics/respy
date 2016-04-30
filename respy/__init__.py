@@ -9,7 +9,8 @@ from respy.estimate import estimate
 from respy.simulate import simulate
 from respy.clsRespy import RespyCls
 
-def test():
+
+def test(opt=None):
     """ Run PYTEST for the package.
     """
 
@@ -17,5 +18,12 @@ def test():
     current_directory = os.getcwd()
 
     os.chdir(package_directory)
-    pytest.main()
+
+    if opt is None:
+        opts = '-m"not slow"'
+    else:
+        opts = opt + ' -m"not slow"'
+
+    pytest.main(opts)
+
     os.chdir(current_directory)

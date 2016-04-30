@@ -246,6 +246,8 @@ def cleanup_testing_infrastructure(keep_results):
 
         if match == './modules':
             continue
+        if match == './tools':
+            continue
 
         if os.path.isdir(match):
             shutil.rmtree(match)

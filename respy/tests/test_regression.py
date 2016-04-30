@@ -1,10 +1,13 @@
 # standard library
+import pickle as pkl
 import numpy as np
 
 import pytest
+import sys
 
 # project library
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
+from respy.python.shared.shared_auxiliary import print_init_dict
 
 from respy.evaluate import evaluate
 from respy.solve import solve
@@ -210,3 +213,23 @@ class TestClass(object):
         simulate(respy_obj)
         val = evaluate(respy_obj)
         np.testing.assert_allclose(val, rslt)
+
+    def test_8(self):
+        """ This test reproduces the results from evaluations of the
+        criterion function for previously analyzed scenarios.
+        """
+        # Prepare setup
+        version = str(sys.version_info[0])
+        fname = 'test_vault_' + version + '.respy.pkl'
+
+        tests = pkl.load(open(TEST_RESOURCES_DIR + '/' + fname, 'rb'))
+        idx = np.random.randint(0, len(tests))
+        init_dict, crit_val = tests[idx]
+
+        print_init_dict(init_dict)
+
+        respy_obj = RespyCls('test.respy.ini')
+
+        simulate(respy_obj)
+
+        np.testing.assert_almost_equal(evaluate(respy_obj), crit_val)

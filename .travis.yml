@@ -1,16 +1,32 @@
 language: python
 python:
-  - "3.4"
-sudo: required
+  - 2.7
+  - 3.3
+  - 3.4
+  - 3.5
+
+addons:
+  apt:
+    packages: &common_packages
+      - gfortran
+      - libatlas-dev
+      - libatlas-base-dev
+
 bundler_args: --retry 3
-before_install:
-  - python travis-ci/requirements.py
+
+install:
+  - travis_retry travis_wait pip install -r requirements.txt
   - pip install codecov
-# command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
-install: travis_retry travis_wait pip install -r requirements.txt
-# command to run tests, e.g. python setup.py test
-script:  python travis-ci/run.py
-# command to run coveralls.
+  - pip install tox
+
+# Calling each of the TOX environments separately allow to deal with timeout 
+# issues. For some reason, py33 is still timing out consistently.
+script:
+  - travis_wait tox -e py27 -v
+  - travis_wait tox -e py34 -v
+  - travis_wait tox -e py35 -v
+  - python tools/travis_run.py
+
 after_success:
   - codecov
 
