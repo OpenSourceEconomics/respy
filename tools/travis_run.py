@@ -5,12 +5,15 @@
 # standard library
 import os
 
+# Ensure that most recent installation of PIP is available
+assert os.system('pip install --upgrade pip')
 
 # Download the most recent submission from PYPI and test it.
-os.system('pip install --no-binary respy -vvv respy')
-os.system('python -c "import respy; respy.test()"')
+assert os.system('pip install --no-binary respy -vvv respy')
+assert os.system('python -c "import respy; respy.test()"')
+assert os.system('pip uninstall respy')
 
-# # TOX automation
+# TOX automation
 os.system('pip install tox')
 assert os.system('tox -v') == 0
 
