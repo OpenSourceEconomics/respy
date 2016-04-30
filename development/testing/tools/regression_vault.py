@@ -45,7 +45,7 @@ for _ in range(num_tests):
 
     pkl.dump(tests, open(fname, 'wb'))
 
-tests = None
+print('.. done with creation.')
 
 # Now we make sure that the tests will pass.
 tests = pkl.load(open(fname, 'rb'))
