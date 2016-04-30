@@ -23,13 +23,13 @@ from respy.evaluate import evaluate
 from respy import RespyCls
 from respy import simulate
 
-np.random.seed(123)
-num_tests = 100
+num_tests = 1000
 fname = 'test_vault_' + version + '.respy.pkl'
 
 tests = []
-for _ in range(num_tests):
-    print(_)
+for i in range(num_tests):
+    print('\n Creating test ', i)
+
     init_dict = generate_init(constraints=None)
 
     respy_obj = RespyCls('test.respy.ini')
@@ -44,16 +44,12 @@ for _ in range(num_tests):
 
     pkl.dump(tests, open(fname, 'wb'))
 
-print('.. done with creation.')
+    # This makes sure that the test can actually be reproduced.
+    print('  ... ensuring recomputability.')
 
-# Now we make sure that the tests will pass.
-tests = pkl.load(open(fname, 'rb'))
+    test_load = pkl.load(open(fname, 'rb'))
 
-for i, test in enumerate(tests):
-
-    print(i)
-
-    init_dict, crit_val = test
+    init_dict, crit_val = test_load[-1]
 
     print_init_dict(init_dict)
 

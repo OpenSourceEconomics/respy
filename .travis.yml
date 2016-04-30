@@ -20,7 +20,7 @@ install:
   - pip install tox
 
 # Calling each of the TOX environments separately allow to deal with timeout 
-# issues.
+# issues. For some reason, py33 is still timing out consistently.
 script:
   - travis_wait tox -e py27 -v
   - travis_wait tox -e py34 -v

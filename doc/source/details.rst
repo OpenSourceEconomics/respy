@@ -2,6 +2,9 @@ Additional Details
 ==================
 
 
+Output Files
+------------
+
 .. _data.respy.dat:
 * **data.respy.dat**
     
@@ -22,6 +25,9 @@ Additional Details
 
 .. _data.respy.paras:
 * **data.respy.paras**
+
+    This file contains the coefficients used for the simulation of the agent
+    population.
 
     =======     ========================      
     Lines       Coefficients
