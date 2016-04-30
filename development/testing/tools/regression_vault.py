@@ -7,8 +7,16 @@ regression tests. These are included in the test infrastructure.
 import pickle as pkl
 import numpy as np
 
+import sys
+version = str(sys.version_info[0])
+
+if version == '2':
+    sys.path.insert(0, '../../../respy/tests')
+    from codes.random_init import generate_init
+else:
+    from respy.tests.codes.random_init import generate_init
+
 from respy.python.shared.shared_auxiliary import print_init_dict
-from respy.tests.codes.random_init import generate_init
 
 from respy.evaluate import evaluate
 
@@ -17,10 +25,11 @@ from respy import simulate
 
 np.random.seed(213)
 
-NUM_TESTS = 10
+num_tests = 100
+fname = 'test_vault_' + version + '.respy.pkl'
 
 tests = []
-for _ in range(NUM_TESTS):
+for _ in range(num_tests):
 
     init_dict = generate_init(constraints=None)
 
@@ -34,13 +43,12 @@ for _ in range(NUM_TESTS):
 
     tests += [test]
 
-
-    pkl.dump(tests, open('test_list.respy.pkl', 'wb'))
+    pkl.dump(tests, open(fname, 'wb'))
 
 tests = None
 
 # Now we make sure that the tests will pass.
-tests = pkl.load(open('test_list.respy.pkl', 'rb'))
+tests = pkl.load(open(fname, 'rb'))
 
 for test in tests:
 
