@@ -7,8 +7,6 @@ regression tests. These are included in the test infrastructure.
 import pickle as pkl
 import numpy as np
 
-import json
-
 from respy.python.shared.shared_auxiliary import print_init_dict
 from respy.tests.codes.random_init import generate_init
 

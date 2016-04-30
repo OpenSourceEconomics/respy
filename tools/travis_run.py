@@ -15,7 +15,7 @@ sp.check_call('pip uninstall respy', shell=True)
 
 # TOX automation
 sp.check_call('pip install tox', shell=True)
-sp.check_call('tox -v', shell=True)
+sp.check_call('travis_wait tox -v', shell=True)
 
 # Run PYTEST battery again on package in development mode. This ensure that the
 # current implementation is working properly.
