@@ -19,7 +19,7 @@ If you have  **pytest** installed as well, then you can also run the test suite 
 
    $ python -c "import respy; respy.test()"
 
-Some tests might actually fail as we test the results from a pure *Python* implementation against a *Fortran* executable. We keep both implementations aligned as much as possible, but small numerical discrepancies might still arise. So, just check the test output for any large discrepancies. If you find any of those, please let us know. More details about our testing efforts is available in our section on :ref:`implementation`
+Feel free to pass any string of the usual **pytest** options into the test function. Some tests might actually fail as we test the results from a pure *Python* implementation against a *Fortran* executable. We keep both implementations aligned as much as possible, but small numerical discrepancies might still arise. So, just check the test output for any large discrepancies. If you find any of those, please let us know. More details about our testing efforts is available in our section on :ref:`implementation`
 
 .. todo::
 
