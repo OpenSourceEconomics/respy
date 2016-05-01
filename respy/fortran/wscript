@@ -1,74 +1,20 @@
 #!/usr/bin/env python
 
 # standard library
-import shutil
-import glob
 import os
 
 # WAF system
 from waflib.Task import Task
-
-''' Task Generators
-'''
-
-
-class CreateDirectoryStructure(Task):
-
-    def run(self):
-
-        os.chdir(self.env.project_paths['RESPY'] + '/fortran')
-
-        for dir_ in ['include', 'lib', 'bin']:
-            try:
-                os.makedirs(dir_)
-            except OSError:
-                pass
-
-            try:
-                os.remove(dir_)
-            except OSError:
-                pass
-
-
-class CreateResfortLibrary(Task):
-
-    def run(self):
-
-        src = ['shared/shared_constants.f90', 'shared/shared_auxiliary.f90',
-            'resfort_slsqp.f', 'solve/solve_auxiliary.f90',
-            'solve/solve_fortran.f90', 'evaluate/evaluate_auxiliary.f90',
-            'evaluate/evaluate_fortran.f90', 'estimate/estimate_auxiliary.f90',
-            'simulate/simulate_fortran.f90']
-
-        self.bld(features=['fc', 'fcshlib'], source=src, target='resfort')
-
-
-class CreateRobufortExecutable(Task):
-
-    # TODO: Remove build_resfort
-    def run(self):
-
-        # Compile RESFORT file according to selected options.
-        src = ['shared/shared_constants.f90', 'shared/shared_auxiliary.f90',
-            'resfort_slsqp.f ', 'solve/solve_auxiliary.f90 ',
-            'solve/solve_fortran.f90', 'evaluate/evaluate_auxiliary.f90',
-            'evaluate/evaluate_fortran.f90', 'estimate/estimate_auxiliary.f90',
-            'simulate/simulate_fortran.f90', 'resfort.f90']
-
-        self.bld(features=['fc', 'fcprogram'], source=src, target='resfort',
-            lib='lapack')
 
 
 class CreateF2pyInterfaces(Task):
 
     def run(self):
 
-        cwd = os.getcwd()
         os.chdir('fortran')
 
-        print(os.getcwd())
         from numpy import f2py
-        extra_args = '-I/home/peisenha/restudToolbox/package/respy/.bld -L/home/peisenha/restudToolbox/package/respy/.bld/fortran -lresfort -llapack'
+        extra_args = '-I../.bld -L../.bld/fortran -lresfort -llapack'
 
         with open("f2py_interface_library.f90", 'rb') as sourcefile:
             sourcecode = sourcefile.read()
@@ -78,11 +24,10 @@ class CreateF2pyInterfaces(Task):
             sourcecode = sourcefile.read()
         f2py.compile(sourcecode, 'f2py_debug', extra_args, extension='.f90')
 
-        os.chdir(cwd)
+        os.chdir('../')
 
-def build(bld):
 
-    # TODO: TASK ONE WAS DIRECTORY
+def build(ctx):
 
     # # Create the RESFORT library. This is build in addition to the RESFORT
     # # executable to allow for the use of an F2PY interface to the core
@@ -93,12 +38,16 @@ def build(bld):
          'evaluate/evaluate_fortran.f90', 'estimate/estimate_auxiliary.f90',
          'simulate/simulate_fortran.f90']
 
-    bld(features=['fc', 'fcstlib'], source=src, target='resfort')
+    # Temporary add -fpic if required.
+    if '-fpic' not in ctx.env.FCFLAGS:
+        ctx.env.FCFLAGS.append('-fpic')
 
-    bld.add_group()
+    ctx(features=['fc', 'fcstlib'], source=src, target='resfort')
+
+    ctx.add_group()
 
     # Build F2PY interface
-    bld.add_to_group(CreateF2pyInterfaces(env=bld.env))
+    ctx.add_to_group(CreateF2pyInterfaces(env=ctx.env))
 
     # Compile RESFORT executable. We will not use the RESFORT library which
     # is used for the F2PY interface to allow for speed optimizations by
@@ -109,10 +58,9 @@ def build(bld):
          'evaluate/evaluate_fortran.f90', 'estimate/estimate_auxiliary.f90',
          'simulate/simulate_fortran.f90', 'resfort.f90']
 
-    bld(features=['fc', 'fcprogram'], source=src, target='resfort',
+    ctx(features=['fc', 'fcprogram'], source=src, target='resfort',
           lib='lapack')
 
-
     # Build the upgraded Keane and Wolpin (1994) program
-    bld.recurse('miscellaneous/kw_recomputation')
+    ctx.recurse('miscellaneous/kw_recomputation')
 
