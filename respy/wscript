@@ -59,6 +59,10 @@ def build(bld):
 
 def post(ctx):
 
+    if os.path.exists('fortran/bin'):
+        shutil.rmtree('fortran/bin')
+
     os.mkdir('fortran/bin')
 
-    
+    print(ctx.env)
+
