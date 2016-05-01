@@ -15,10 +15,6 @@ import random
 import sys
 import os
 
-# virtual environment
-if not hasattr(sys, 'real_prefix'):
-    raise AssertionError('Please use a virtual environment for testing')
-
 # RESPY testing codes. The import of the PYTEST configuration file ensures
 # that the PYTHONPATH is modified to allow for the use of the tests..
 PACKAGE_DIR = os.path.dirname(os.path.realpath(__file__))

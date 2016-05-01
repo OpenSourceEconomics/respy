@@ -431,7 +431,6 @@ class TestClass(object):
         constr['agents'] = np.random.randint(5, 100)
         constr['is_estimation'] = True
         constr['edu'] = (7, 15)
-        constr['maxiter'] = 0
 
         # Simulate a dataset
         generate_init(constr)

@@ -8,10 +8,6 @@ import importlib
 import sys
 import os
 
-# virtual environment
-if not hasattr(sys, 'real_prefix'):
-    raise AssertionError('Please use a virtual environment for testing')
-
 # Testing infrastructure
 from modules.auxiliary import cleanup_testing_infrastructure
 from modules.auxiliary import get_random_request
@@ -31,7 +27,7 @@ VERSIONS = ['PYTHON', 'FORTRAN', 'F2PY']
 
 ''' Request
 '''
-seed = 61985 # 6216748723
+seed = 36327 # 6216748723
 
 
 ''' Error Reproduction
@@ -45,7 +41,7 @@ for _ in range(100):
     test_dict = get_test_dict(PACKAGE_DIR + '/respy/tests')
     module, method = get_random_request(test_dict)
 
-    module, method = 'test_regression', 'test_8'
+    #module, method = 'test_regression', 'test_8'
     print(module, method)
     mod = importlib.import_module(module)
     test = getattr(mod.TestClass(), method)
