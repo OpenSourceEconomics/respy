@@ -38,11 +38,8 @@ def build(ctx):
          'evaluate/evaluate_fortran.f90', 'estimate/estimate_auxiliary.f90',
          'simulate/simulate_fortran.f90']
 
-    # Temporary add -fpic if required.
-    if '-fpic' not in ctx.env.FCFLAGS:
-        ctx.env.FCFLAGS.append('-fpic')
-
-    ctx(features=['fc', 'fcstlib'], source=src, target='resfort')
+    flags = ctx.env.FCFLAGS + ['-fPIC']
+    ctx(features=['fc', 'fcstlib'], source=src, target='resfort', fcflags=flags)
 
     ctx.add_group()
 
