@@ -93,7 +93,7 @@ def build(bld):
          'evaluate/evaluate_fortran.f90', 'estimate/estimate_auxiliary.f90',
          'simulate/simulate_fortran.f90']
 
-    bld(features=['fc', 'fcshlib'], source=src, target='resfort')
+    bld(features=['fc', 'fcstlib'], source=src, target='resfort')
 
     bld.add_group()
 

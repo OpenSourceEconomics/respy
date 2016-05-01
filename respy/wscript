@@ -13,7 +13,7 @@ DEBUG_OPTIONS = ['-O2', '-Wall', '-Wline-truncation', '-Wcharacter-truncation']
 DEBUG_OPTIONS += ['-Wsurprising', '-Waliasing', '-Wimplicit-interface']
 DEBUG_OPTIONS += ['-Wunused-parameter', '-fwhole-file', '-fcheck=all']
 DEBUG_OPTIONS += ['-fbacktrace', '-g', '-fmax-errors=1', '-ffpe-trap=invalid']
-
+DEBUG_OPTIONS += ['-fpic']
 
 PRODUCTION_OPTIONS = ['-O3']
 
@@ -54,3 +54,11 @@ def build(bld):
     # Initialize directory structure
     bld.recurse("fortran")
 
+    bld.add_post_fun(post)
+
+
+def post(ctx):
+
+    os.mkdir('fortran/bin')
+
+    
