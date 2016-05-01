@@ -30,51 +30,45 @@ class CreateDirectoryStructure(Task):
                 pass
 
 
-class CreateRobufortLibrary(Task):
+class CreateResfortLibrary(Task):
 
     def run(self):
 
-        compiler_options = self.env.compiler_options + ' -fpic'
+        src = ['shared/shared_constants.f90', 'shared/shared_auxiliary.f90',
+            'resfort_slsqp.f', 'solve/solve_auxiliary.f90',
+            'solve/solve_fortran.f90', 'evaluate/evaluate_auxiliary.f90',
+            'evaluate/evaluate_fortran.f90', 'estimate/estimate_auxiliary.f90',
+            'simulate/simulate_fortran.f90']
 
-        files = ['shared/shared_constants.f90', 'shared/shared_auxiliary.f90',
-                'resfort_slsqp.f',
-                'solve/solve_auxiliary.f90', 'solve/solve_fortran.f90',
-                'evaluate/evaluate_auxiliary.f90',
-                'evaluate/evaluate_fortran.f90',
-                'estimate/estimate_auxiliary.f90',
-                'simulate/simulate_fortran.f90']
-
-        for file_ in files:
-            os.system('gfortran ' + compiler_options + ' -c ' + file_)
-
-        os.system('ar crs libfort_resfort.a *.o *.mod')
-
-        os.chdir(self.env.project_paths['RESPY'] + '/fortran')
-
-        module_files = glob.glob('*.mod')
-        for file_ in module_files:
-            shutil.move(file_, 'include/')
-
-        shutil.move('libfort_resfort.a', 'lib/')
+        self.bld(features=['fc', 'fcshlib'], source=src, target='resfort')
 
 
 class CreateRobufortExecutable(Task):
 
+    # TODO: Remove build_resfort
     def run(self):
 
-        from fortran.build_resfort import resfort_build
+        # Compile RESFORT file according to selected options.
+        src = ['shared/shared_constants.f90', 'shared/shared_auxiliary.f90',
+            'resfort_slsqp.f ', 'solve/solve_auxiliary.f90 ',
+            'solve/solve_fortran.f90', 'evaluate/evaluate_auxiliary.f90',
+            'evaluate/evaluate_fortran.f90', 'estimate/estimate_auxiliary.f90',
+            'simulate/simulate_fortran.f90', 'resfort.f90']
 
-        resfort_build(self)
+        self.bld(features=['fc', 'fcprogram'], source=src, target='resfort',
+            lib='lapack')
 
 
 class CreateF2pyInterfaces(Task):
 
     def run(self):
 
-        os.chdir(self.env.project_paths['RESPY'] + '/fortran')
+        cwd = os.getcwd()
+        os.chdir('fortran')
 
+        print(os.getcwd())
         from numpy import f2py
-        extra_args = '-Iinclude -Llib -lfort_resfort -llapack'
+        extra_args = '-I/home/peisenha/restudToolbox/package/respy/.bld -L/home/peisenha/restudToolbox/package/respy/.bld/fortran -lresfort -llapack'
 
         with open("f2py_interface_library.f90", 'rb') as sourcefile:
             sourcecode = sourcefile.read()
@@ -84,66 +78,41 @@ class CreateF2pyInterfaces(Task):
             sourcecode = sourcefile.read()
         f2py.compile(sourcecode, 'f2py_debug', extra_args, extension='.f90')
 
-
-class CreateKeaneWolpinExecutables(Task):
-
-    def run(self):
-
-        current_directory = os.getcwd()
-        package_directory = self.env.project_paths['RESPY']
-        compiler_options = self.env.compiler_options
-        os.chdir(package_directory + '/fortran/miscellaneous/kw_recomputation')
-
-        cmd = ' kw_imsl_replacements.f90 ' \
-              'kw_test_additions.f90 kw_dp3asim.f90 ' \
-              ' -L/usr/lib/lapack -llapack'
-
-        os.system(' gfortran ' + compiler_options + ' -o kw_dp3asim ' + cmd)
-        shutil.move('kw_dp3asim', '../../bin/')
-        os.chdir(current_directory)
-
-''' Build
-'''
-
+        os.chdir(cwd)
 
 def build(bld):
 
-    # Distribute class attributes
-    is_debug = bld.options.is_debug
+    # TODO: TASK ONE WAS DIRECTORY
 
-    # Initialize directory structure
-    task_1 = CreateDirectoryStructure(env=bld.env)
+    # # Create the RESFORT library. This is build in addition to the RESFORT
+    # # executable to allow for the use of an F2PY interface to the core
+    # # functions as well.
+    src = ['shared/shared_constants.f90', 'shared/shared_auxiliary.f90',
+         'resfort_slsqp.f', 'solve/solve_auxiliary.f90',
+         'solve/solve_fortran.f90', 'evaluate/evaluate_auxiliary.f90',
+         'evaluate/evaluate_fortran.f90', 'estimate/estimate_auxiliary.f90',
+         'simulate/simulate_fortran.f90']
 
-    bld.add_to_group(task_1)
+    bld(features=['fc', 'fcshlib'], source=src, target='resfort')
 
-    # Create the RESFORT library. This is build in addition to the RESFORT
-    # executable to allow for the use of an F2PY interface to the core
-    # functions as well.
-    task_2 = CreateRobufortLibrary(env=bld.env)
-
-    bld.add_to_group(task_2)
-
-    task_2.set_run_after(task_1)
-
-    # Create the ROBUFORT executable
-    task_3 = CreateRobufortExecutable(env=bld.env)
-
-    task_3.is_debug = is_debug
-
-    bld.add_to_group(task_3)
-
-    task_3.set_run_after(task_2)
+    bld.add_group()
 
     # Build F2PY interface
-    task_4 = CreateF2pyInterfaces(env=bld.env)
+    bld.add_to_group(CreateF2pyInterfaces(env=bld.env))
 
-    bld.add_to_group(task_4)
+    # Compile RESFORT executable. We will not use the RESFORT library which
+    # is used for the F2PY interface to allow for speed optimizations by
+    # preprocessing.
+    src = ['shared/shared_constants.f90', 'shared/shared_auxiliary.f90',
+         'resfort_slsqp.f', 'solve/solve_auxiliary.f90',
+         'solve/solve_fortran.f90', 'evaluate/evaluate_auxiliary.f90',
+         'evaluate/evaluate_fortran.f90', 'estimate/estimate_auxiliary.f90',
+         'simulate/simulate_fortran.f90', 'resfort.f90']
 
-    task_4.set_run_after(task_3)
+    bld(features=['fc', 'fcprogram'], source=src, target='resfort',
+          lib='lapack')
 
-    # Create the executables for the Keane & Wolpin (1994) comparisons.
-    task_5 = CreateKeaneWolpinExecutables(env=bld.env)
 
-    bld.add_to_group(task_5)
+    # Build the upgraded Keane and Wolpin (1994) program
+    bld.recurse('miscellaneous/kw_recomputation')
 
-    task_5.set_run_after(task_4)

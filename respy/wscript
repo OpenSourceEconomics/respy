@@ -3,20 +3,19 @@
 # standard library
 import fnmatch
 import shutil
-import pytest
-import sys
 import os
 
 top = '.'
 out = '.bld'
 
 # Set of compiler options.
-DEBUG_OPTIONS = ' -O2  -Wall -Wline-truncation' \
-    ' -Wcharacter-truncation  -Wsurprising  -Waliasing' \
-    ' -Wimplicit-interface  -Wunused-parameter  -fwhole-file' \
-    ' -fcheck=all  -fbacktrace -g -fmax-errors=1 -ffpe-trap=invalid'
+DEBUG_OPTIONS = ['-O2', '-Wall', '-Wline-truncation', '-Wcharacter-truncation']
+DEBUG_OPTIONS += ['-Wsurprising', '-Waliasing', '-Wimplicit-interface']
+DEBUG_OPTIONS += ['-Wunused-parameter', '-fwhole-file', '-fcheck=all']
+DEBUG_OPTIONS += ['-fbacktrace', '-g', '-fmax-errors=1', '-ffpe-trap=invalid']
 
-PRODUCTION_OPTIONS = '-O3'
+
+PRODUCTION_OPTIONS = ['-O3']
 
 
 def options(opt):
@@ -27,7 +26,6 @@ def options(opt):
 
     opt.add_option('--debug', action='store_true', dest='is_debug',
                    default=False, help='use debug compiler options')
-
 
 def configure(conf):
 
@@ -43,152 +41,16 @@ def build(bld):
 
     is_debug = bld.options.is_debug
 
-    # Start from a clean slate
-    cleanup_build(True)
-
-    # Select right set of compiler options.
-    if is_debug:
-        compiler_options = DEBUG_OPTIONS
+    # The build is currently only tested for gfortran.
+    if bld.env.FC_NAME == 'GFORTRAN':
+        if is_debug:
+            bld.env.append_unique('FCFLAGS', DEBUG_OPTIONS)
+        else:
+            bld.env.append_unique('FCFLAGS', PRODUCTION_OPTIONS)
     else:
-        compiler_options = PRODUCTION_OPTIONS
-    bld.env.compiler_options = compiler_options
+        raise AssertionError('The build is only tested for GFORTRAN at this '
+                             'point.')
 
     # Initialize directory structure
     bld.recurse("fortran")
 
-
-def distclean(bld):
-    cleanup_build()
-
-
-def cleanup_build(is_build=False):
-    """ This function deletes all nuisance files from the package
-    """
-
-    # Collect all candidates files and directories.
-    matches = []
-    for root, dirnames, filenames in os.walk('.'):
-        for filename in fnmatch.filter(filenames, '*'):
-            matches.append(os.path.join(root, filename))
-        for filename in fnmatch.filter(filenames, '.*'):
-            matches.append(os.path.join(root, filename))
-        for dirname in fnmatch.filter(dirnames, '*'):
-            matches.append(os.path.join(root, dirname))
-
-    # Remove all files, unless explicitly to be saved.
-    for match in matches:
-
-        # If called as part of a build process, these temporary directories
-        # are required.
-        if is_build:
-            if ('.waf' in match) or ('.bld' in match):
-                continue
-
-        # Explicit treatment for files.
-        if os.path.isfile(match):
-            if ('.py' in match) or ('.f' in match) or ('.f90' in match):
-                continue
-
-            # Keep README files for GITHUB
-            if '.md' in match:
-                continue
-
-            # Keep files for build process
-            if (match == './waf') or (match == './wscript'):
-                continue
-
-            if match == './fortran/wscript':
-                continue
-
-            # Keep the initialization files for the regression tests.
-            if ('test_' in match) or ('kw_data' in match):
-                continue
-
-        else:
-
-            if match == './fortran':
-                continue
-
-            if match == './fortran/solve':
-                continue
-
-            if match == './fortran/estimate':
-                continue
-
-            if match == './fortran/evaluate':
-                continue
-
-            if match == './fortran/shared':
-                continue
-
-            if match == './fortran/simulate':
-                continue
-
-            if match == './fortran/miscellaneous':
-                continue
-
-            if match == './fortran/miscellaneous/kw_recomputation':
-                continue
-
-            if match == './python':
-                continue
-
-            if match == './python/estimate':
-                continue
-
-            if match == './python/evaluate':
-                continue
-
-            if match == './python/process':
-                continue
-
-            if match == './python/read':
-                continue
-
-            if match == './python/shared':
-                continue
-
-            if match == './python/simulate':
-                continue
-
-            if match == './python/solve':
-                continue
-
-            if match == './tests':
-                continue
-
-            if match == './scripts':
-                continue
-
-            if match == './tests/codes':
-                continue
-
-            if match == './tests/resources':
-                continue
-
-            if match == './read':
-                continue
-
-            if match == './process':
-                continue
-
-            if match == './evaluate':
-                continue
-
-            if match == './estimate':
-                continue
-            if match == './simulate':
-                continue
-            if match == './solve':
-                continue
-            if match == './shared':
-                continue
-
-        # Remove remaining files and directories.
-        try:
-            os.unlink(match)
-        except Exception:
-            try:
-                shutil.rmtree(match)
-            except Exception:
-                pass

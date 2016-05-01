@@ -1,0 +1,15 @@
+#!/usr/bin/env python
+""" This script builds the upgraded Keane and Wolpin codes for use in the
+testing harness.
+"""
+
+
+def build(bld):
+
+    # Collect sources
+    src = ['kw_imsl_replacements.f90', 'kw_test_additions.f90',
+        'kw_dp3asim.f90']
+
+    # Build the executable
+    bld(features=['fc', 'fcprogram'], source=src, target='kw_dp3asim',
+        lib=['lapack'])
