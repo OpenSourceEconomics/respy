@@ -29,9 +29,9 @@ class CreateF2pyInterfaces(Task):
 
 def build(ctx):
 
-    # # Create the RESFORT library. This is build in addition to the RESFORT
-    # # executable to allow for the use of an F2PY interface to the core
-    # # functions as well.
+    # Create the RESFORT library. This is build in addition to the RESFORT
+    # executable to allow for the use of an F2PY interface to the core
+    # functions as well.
     src = ['shared/shared_constants.f90', 'shared/shared_auxiliary.f90',
          'resfort_slsqp.f', 'solve/solve_auxiliary.f90',
          'solve/solve_fortran.f90', 'evaluate/evaluate_auxiliary.f90',
