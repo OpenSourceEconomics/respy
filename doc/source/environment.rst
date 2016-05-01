@@ -1,7 +1,7 @@
 Development Setup
 =================
 
-We have set up a continuous integration workflow using `Travis CI <https://travis-ci.org/restudToolbox/package>`_. We are using `GitHub <https://github.com/restudToolbox/package>`_ as our online version control system and distribute our software through `PyPI <https://pypi.python.org/pypi/respy>`_. The documentation is build with `Sphinx <http://www.sphinx-doc.org/>`_
+We have set up a continuous integration workflow using `Travis CI <https://travis-ci.org/restudToolbox/package>`_. We are using `GitHub <https://github.com/restudToolbox/package>`_ as our online version control system and distribute our software through `PyPI <https://pypi.python.org/pypi/respy>`_. The documentation is build with `Sphinx <http://www.sphinx-doc.org/>`_. We use `Waf <https://waf.io/>`_ as our build automation tool.
 
 Test Battery
 ------------
