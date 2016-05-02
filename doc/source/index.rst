@@ -34,7 +34,6 @@ Welcome to respy's documentation!
    numerics 
    development
    contact
-   credits
    details
    bibliography
 
@@ -43,3 +42,9 @@ Indices and tables
 
 * :ref:`genindex`
 * :ref:`search`
+
+.. todo::
+
+   I collect all TODOs here.
+
+   use of scripts for estimation, how to run serious estimation

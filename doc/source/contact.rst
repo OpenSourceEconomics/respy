@@ -1,5 +1,5 @@
-Contact and Contribution
-========================
+Contact and Credits
+===================================
 
 If you have any questions or comments, please do not hesitate to contact us directly:
 
@@ -8,3 +8,17 @@ If you have any questions or comments, please do not hesitate to contact us dire
    :alt: Join Chat on Gitter.im
 
 We are always looking for contributers. Feel free to propose any improvement you would like to work on, however you can also check out our `issue tracker <https://gitlab.com/restudToolbox/package/issues>`_ for the most immediate tasks. Please submit any merge requests through `GitLab <https://gitlab.com/restudToolbox/package>`_
+
+
+Credits
+-------
+
+Development Lead
+^^^^^^^^^^^^^^^^
+
+`Philipp Eisenhauer <https://github.com/peisenha>`_
+
+Contributors
+^^^^^^^^^^^^
+
+None yet, want to be the first? 
