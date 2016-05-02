@@ -131,6 +131,20 @@ def generate_random_dict(constraints=None):
     dict_['SCIPY-POWELL']['ftol'] = np.random.uniform(0.0000001, 0.1)
     dict_['SCIPY-POWELL']['maxfun'] = np.random.randint(1, 100)
 
+    '''We now impose selected constraints on the final model specification.
+       These constraints can be very useful in the generation of test cases. '''
+
+    # Address incompatibility issues
+    keys = constraints.keys()
+    if 'is_myopic' in keys:
+        assert 'delta' not in keys
+
+    if 'is_estimation' in keys:
+        assert 'maxiter' not in keys
+
+    if 'agents' in keys:
+        assert 'max_draws' not in keys
+
     # Replace interpolation
     if 'apply' in constraints.keys():
         # Checks
@@ -271,18 +285,7 @@ def generate_random_dict(constraints=None):
             dict_['SCIPY-POWELL']['maxfun'] = 1
             dict_['ESTIMATION']['maxiter'] = 1
 
-    # Number of simulations for S-ML
-    if 'sims' in constraints.keys():
-        # Extract object
-        num_draws_prob = constraints['sims']
-        # Checks
-        assert (num_draws_prob > 0)
-        assert (isinstance(num_draws_prob, int))
-        assert (np.isfinite(num_draws_prob))
-        # Replace in initialization files
-        dict_['ESTIMATION']['draws'] = num_draws_prob
-
-    # Finishing.
+    # Finishing
     return dict_
 
 
