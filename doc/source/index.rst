@@ -8,7 +8,7 @@ Welcome to respy's documentation!
 
 `PyPI <https://pypi.python.org/pypi/respy>`_ | `GitHub <https://github.com/restudToolbox/package>`_  | `Issues <https://gitlab.com/restudToolbox/package/issues>`_
 
-**respy** is a *Python* package for the solution, simulation, and estimation of the prototypical dynamic discrete choice model presented in:
+**respy** is a *Python* package for the solution, simulation, and estimation of the prototypical discrete choice dynamic programming model presented in:
 
     Michael P. Keane, Kenneth I. Wolpin (1994). `The Solution and Estimation of Discrete Choice Dynamic Programming Models by Simulation and Interpolation: Monte Carlo Evidence <http://www.jstor.org/stable/2109768>`_. *The Review of Economics and Statistics*, 76(4): 648-672.
 
@@ -33,12 +33,6 @@ Welcome to respy's documentation!
    contact
    details
    bibliography
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`search`
 
 .. todo::
 

@@ -15,7 +15,7 @@ Output Files
     ======      ========================      
     1           agent identifier     
     2           time period     
-    3           choice, 1 = work A, 2 = work B, 3 = education, 4 = home)     
+    3           choice (1 = occupation A, 2 = occupation B, 3 = education, 4 = home)     
     4           earnings (missing value if not working)     
     5           work experience in occupation A     
     6           work experience in occupation B     
@@ -44,13 +44,13 @@ Output Files
 
 
 .. _paras.respy.log:
-* Parameters logging
+* **Parameters**
 
     * **paras_curre.respy.log**, current candidate parameters
 
     * **paras_start.respy.log**, parameters at the start of the optimization
 
-    * **paras_steps.respy.log**, parameters at last step of the optimizer
+    * **paras_steps.respy.log**, parameters at the last step of the optimization
 
 API Reference
 -------------

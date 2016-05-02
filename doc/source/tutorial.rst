@@ -18,6 +18,8 @@ periods      int        number of periods
 delta        float      discount factor
 =======     ======      ================== 
 
+We now turn to the specification of the two alternative occupations. There are two small differences between the setup in the original paper and the parameterization of the occupations. First, all coefficients enter the return function with a positive sign, while the squared terms enter with a minus in the original paper. Second, the order of covariates is fixed across the two occupations. In the original paper, own experience always comes before other experience. These comments are valid for occupation A and occupation B.
+
 **OCCUPATION A**
 
 =======     ======    ================== 
@@ -25,13 +27,11 @@ Key         Value       Interpretation
 =======     ======    ================== 
 coeff       float       intercept  
 coeff       float       return to schooling
-coeff       float       experience occ. A, linear
-coeff       float       experience occ. A, squared
-coeff       float       experience occ. B, linear  
-coeff       float       experience occ. B, squared
+coeff       float       experience occupation A, linear
+coeff       float       experience occupation A, squared
+coeff       float       experience occupation B, linear  
+coeff       float       experience occupation B, squared
 =======     ======    ================== 
-
-There are two small differences between the setup in the original paper and the parameterization of the occupations. First, all coefficients enter the return function with a positive sign, while the squared terms enter with a minus in the original paper. Second, the order of covariates is fixed across the two occupations. In the original paper, own experience always comes before other experience. These comments are valid for Occupation A and Occupation B.
 
 **OCCUPATION B**
 
@@ -40,10 +40,10 @@ Key         Value       Interpretation
 =======     ======    ================== 
 coeff       float       intercept  
 coeff       float       return to schooling
-coeff       float       experience occ. A, linear
-coeff       float       experience occ. A, squared
-coeff       float       experience occ. B, linear  
-coeff       float       experience occ. B, squared
+coeff       float       experience occupation A, linear
+coeff       float       experience occupation A, squared
+coeff       float       experience occupation B, linear  
+coeff       float       experience occupation B, squared
 =======     ======    ================== 
 
 **EDUCATION**
@@ -161,7 +161,7 @@ xtol        float       line-search error tolerance
 Simulation and Estimation
 -------------------------
 
-Let us explore the basic capabilities of the **respy** package in this tutorial (`script <https://github.com/restudToolbox/package/blob/master/example/example.py>`_).  We usually either want to simulate a synthetic sample form the  model or start an estimation run. Whatever the case, we always initialize an instance of the *RespyCls* first by passing in the path to the initialization file.
+Let us explore the basic capabilities of the **respy** package in this tutorial (`script <https://github.com/restudToolbox/package/blob/master/example/example.py>`_).  We usually either want to simulate a synthetic sample from the  model or start an estimation run. Whatever the case, we always initialize an instance of the *RespyCls* first by passing in the path to the initialization file.
 ::
 
     from respy import RespyCls
@@ -180,8 +180,7 @@ directory.
 * **logging.respy.sol.log**, logging information from the solution algorithm
 * **logging.respy.sim.log**, logging information from the simulation algorithm
 
-The names of the following files depend on that is specified for the filename in
-the SIMULATION section of the model initialization file.
+The names of the following files depend on the specified filename in the SIMULATION section of the model initialization file.
 
 * **data.respy.dat**, simulated dataset with the agent choices and state experiences (:ref:`details <data.respy.dat>`)
 
@@ -189,7 +188,7 @@ the SIMULATION section of the model initialization file.
 
 * **data.respy.paras**, parameterization of model for simulated dataset (:ref:`details <data.respy.paras>`)
 
-Now that we have some observed data, we can start an estimation. Here we are using the simulated data for the estimation. However, you can of also use other data sources. Just make sure they follow the layout of the simulated sample. The coefficient values in the initialization file serve as the starting values::
+Now that we have some observed data, we can start an estimation. Here we are using the simulated data for the estimation. However, you can of course also use other data sources. Just make sure they follow the layout of the simulated sample. The coefficient values in the initialization file serve as the starting values::
 
     from respy import estimate
 
@@ -202,7 +201,7 @@ the value of the criterion function. However, some additional files appear in th
 
 * **optimization.respy.info**, logging information for monitoring of estimation run  
 
-The last file is continuously updated and provides information about the current parameterization, the starting values, and the the value at each step. Finally, the information about the model parameterization during optimization is continuously updated and written to disk (:ref:`details <paras.respy.log>`).
+The last file is continuously updated and provides information about the current parameterization, the starting values, and the value at each step. Finally, the information about the model parameterization during optimization is continuously updated and written to disk (:ref:`details <paras.respy.log>`).
 
 We can now simulate a sample using the estimated parameters, but updating the instance of the *RespyCls* with the parameters returned from the estimation routine.
 ::
