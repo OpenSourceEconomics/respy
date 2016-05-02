@@ -63,30 +63,15 @@ def transform_respy_to_restud(model_paras, edu_start, edu_max, num_agents_sim,
         line = fmt.format(*coeffs)
         file_.write(line)
 
-        # Write out coefficients of correlation, which need to be constructed
-        # based on the covariance matrix.
-        shocks_cholesky = model_paras['shocks_cholesky']
-        shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
-
-        rho = np.identity(4)
-        rho_10 = shocks_cov[1][0] / (np.sqrt(shocks_cov[1][1]) * np.sqrt(shocks_cov[0][0]))
-        rho_20 = shocks_cov[2][0] / (np.sqrt(shocks_cov[2][2]) * np.sqrt(shocks_cov[0][0]))
-        rho_30 = shocks_cov[3][0] / (np.sqrt(shocks_cov[3][3]) * np.sqrt(shocks_cov[0][0]))
-        rho_21 = shocks_cov[2][1] / (np.sqrt(shocks_cov[2][2]) * np.sqrt(shocks_cov[1][1]))
-        rho_31 = shocks_cov[3][1] / (np.sqrt(shocks_cov[3][3]) * np.sqrt(shocks_cov[1][1]))
-        rho_32 = shocks_cov[3][2] / (np.sqrt(shocks_cov[3][3]) * np.sqrt(shocks_cov[2][2]))
-        rho[1, 0] = rho_10; rho[2, 0] = rho_20; rho[3, 0] = rho_30
-        rho[2, 1] = rho_21; rho[3, 1] = rho_31; rho[3, 2] = rho_32
+        # Write out coefficients of correlation and standard deviations in the
+        # standard deviations in the education and home equation required.
+        # This is undone again in the original FORTRAN code. All this is
+        # working only under the imposed absence of any randomness.
+        rho, shocks_cov = np.zeros((4, 4)), np.zeros((4, 4))
         for j in range(4):
             line = ' {0:10.5f} {1:10.5f} {2:10.5f} ' \
                    ' {3:10.5f}\n'.format(*rho[j, :])
             file_.write(line)
-
-        # Write out standard deviations. Scaling for standard deviations in the
-        # education and home equation required. This is undone again in the
-        # original FORTRAN code.
-        sigmas = np.sqrt(np.diag(shocks_cov)); sigmas[2:] = sigmas[2:]/1000
-        line = '{0:10.5f} {1:10.5f} {2:10.5f} {3:10.5f}\n'.format(*sigmas)
         file_.write(line)
 
 
@@ -124,7 +109,7 @@ class TestClass(object):
         respy_obj = RespyCls('test.respy.ini')
 
         # This flag aligns the random components between the RESTUD program and
-        # RESPYY package. The existence of the file leads to the RESTUD program
+        # RESPY package. The existence of the file leads to the RESTUD program
         # to write out the random components.
         model_paras, edu_start, edu_max, num_agents_sim, num_periods, \
             num_draws_emax, delta = \

@@ -41,7 +41,7 @@ for _ in range(100):
     test_dict = get_test_dict(PACKAGE_DIR + '/respy/tests')
     module, method = get_random_request(test_dict)
 
-    #module, method = 'test_regression', 'test_8'
+    module, method = 'test_restud', 'test_1'
     print(module, method)
     mod = importlib.import_module(module)
     test = getattr(mod.TestClass(), method)
