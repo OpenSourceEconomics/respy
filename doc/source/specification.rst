@@ -13,7 +13,9 @@ See the exposition in :ref:`Keane & Wolpin (1994) <bibSection>`.
 Specification
 -------------
 
-The model is specified in an initialization file, see `here <https://github.com/restudToolbox/package/blob/master/example/data_one.ini>`_ for a fully specified request. We turn to each of the ingredients in more details.
+The model is specified in an initialization file. For an example, check out the first specification analyzed in the original paper (Table 1) `online <https://github.com/restudToolbox/package/blob/master/example/data_one.ini>`_.
+
+We turn to each of the ingredients in more details.
 
 **BASICS**
 
@@ -142,7 +144,7 @@ points      int         number of interpolation points
 apply       bool        flag to use interpolation
 =======     ======      ==========================
 
-Two alternative optimization algorithms are available for the estimation. In both cases, we use the **SciPy** package, see their documentation for more details.
+Two alternative optimization algorithms are available for the estimation. In both cases, we use the **SciPy** package. The implementation details are available `here <http://docs.scipy.org/doc/scipy-0.17.0/reference/generated/scipy.optimize.minimize.html>`_
 
 **SCIPY-BFGS**
 

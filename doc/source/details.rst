@@ -51,3 +51,42 @@ Output Files
     * **paras_start.respy.log**, parameters at the start of the optimization
 
     * **paras_steps.respy.log**, parameters at last step of the optimizer
+
+API Reference
+-------------
+
+The API reference provides detailed descriptions of **respy** classes and
+functions. It should be helpful if you plan to extend **respy** with custom components.
+
+.. class:: respy.RespyCls(fname)
+
+    Class to process and manage the user's initialization file.
+
+    :param str fname: Path to initialization file
+    :return: Instance of RespyCls
+
+    .. py:classmethod:: update_model_paras(x)
+
+        Function to update model parameterization.
+
+        :param numpy.ndarray x: Model parameterization
+
+.. function:: respy.simulate(respy_obj)
+
+    Simulate dataset of synthetic agents following the model specified in the
+    initialization file.
+
+    :param obj respy_obj: Instance of RespyCls class 
+    :return: Instance of RespyCls 
+
+.. function:: respy.estimate(respy_obj)
+
+    Estimate a model based on a provided dataset and the model specified in the initialization file.
+
+    :param obj respy_obj: Instance of RespyCls class 
+
+    :return: Model parameterization at final step
+    :rtype: numpy.ndarray
+
+    :return: Value of criterion function at final step
+    :rtype: float

@@ -1,9 +1,7 @@
 Tutorial 
 ========
 
-Let us explore the basic capabilities of the **respy** package in this tutorial (`script <https://github.com/restudToolbox/package/blob/master/example/example.py>`_).
-
-We usually either want to simulate a synthetic sample form the  model or start an estimation run. At the heart of our interaction with the **respy** package is the *RespyCls*. This classes processes the user's model specification. We can initialize an instance of the class by passing in the location of the model initialization file.
+Let us explore the basic capabilities of the **respy** package in this tutorial (`script <https://github.com/restudToolbox/package/blob/master/example/example.py>`_).  We usually either want to simulate a synthetic sample form the  model or start an estimation run. Whatever the case, we always initialize an instance of the *RespyCls* first by passing in the path to the initialization file.
 ::
 
     from respy import RespyCls
@@ -19,31 +17,17 @@ Now we can simulate a sample from the model::
 The sample is simulated with the parameters specified in the initialization file. During the simulation, several files will appear in the current working
 directory.
 
-* **logging.respy.sol.log**
-
-    This file contains logging information from the solution algorithm
-
-* **logging.respy.sim.log**
-
-    This file contains logging information from the simulation algorithm. It is updated as the simulation progresses and also reports the random seed for the random components of the agents' state experiences.
+* **logging.respy.sol.log**, logging information from the solution algorithm
+* **logging.respy.sim.log**, logging information from the simulation algorithm
 
 The names of the following files depend on that is specified for the filename in
 the SIMULATION section of the model initialization file.
 
-* **data.respy.dat**
-    
-    This file contains the agent choices and state experiences (:ref:`details <data.respy.dat>`).
+* **data.respy.dat**, simulated dataset with the agent choices and state experiences (:ref:`details <data.respy.dat>`)
 
-* **data.respy.info**
+* **data.respy.info**, basic descriptives of simulated dataset
 
-    This file provides some basic descriptive information about the simulated
-    agent population such as aggregate choice probabilities and wage
-    distributions.
-
-* **data.respy.paras**
-
-    This file contains the coefficients used for the simulation of the agent
-    population (:ref:`details <data.respy.paras>`).
+* **data.respy.paras**, parameterization of model for simulated dataset (:ref:`details <data.respy.paras>`)
 
 Now that we have some observed data, we can start an estimation. Here we are using the simulated data for the estimation. However, you can of also use other data sources. Just make sure they follow the layout of the simulated sample. The coefficient values in the initialization file serve as the starting values::
 
@@ -54,15 +38,11 @@ Now that we have some observed data, we can start an estimation. Here we are usi
 This directly returns the value of the coefficients at the final step of the optimizer as well as
 the value of the criterion function. However, some additional files appear in the meantime.
 
-* **optimization.respy.log**
+* **optimization.respy.log**, logging information from optimizer
 
-    The provides some information about each step of the optimizer and a final message from the optimizer about convergence. See the **SciPy** documentation for details on the convergence message.
+* **optimization.respy.info**, logging information for monitoring of estimation run  
 
-* **optimization.respy.info**
-
-    This file is key to monitor the progress of the estimation run. It is continuously updated and provides information about the current parameterization, the starting values, and the the value at each step.
-
-Finally, the sets of parameters are written to disk (:ref:`details <paras.respy.log>`).
+The last file is continuously updated and provides information about the current parameterization, the starting values, and the the value at each step. Finally, the information about the model parameterization during optimization is continuously updated and written to disk (:ref:`details <paras.respy.log>`).
 
 We can now simulate a sample using the estimated parameters, but updating the instance of the *RespyCls* with the parameters returned from the estimation routine.
 ::
