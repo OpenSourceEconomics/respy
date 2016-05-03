@@ -6,6 +6,7 @@ import numpy as np
 
 import shutil
 import pytest
+import os
 
 # testing library
 from codes.auxiliary import write_interpolation_grid
@@ -375,7 +376,7 @@ class TestClass(object):
         simulate(respy_obj)
 
         # Iterate over alternative implementations
-        base_x, base_val = None, None
+        base_x, base_val, base_log = None, None, None
 
         for version in ['FORTRAN', 'PYTHON', 'F2PY']:
 
@@ -396,6 +397,11 @@ class TestClass(object):
             if base_val is None:
                 base_val = val
             np.testing.assert_allclose(base_val, val)
+
+            # Check for identical logging
+            if base_log is None:
+                base_log = open('logging.respy.sol.log', 'r').read()
+            assert open('logging.respy.sol.log', 'r').read() == base_log
 
     def test_7(self):
         """ Test the evaluation of the criterion function for random

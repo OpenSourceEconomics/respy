@@ -61,6 +61,9 @@ def pyth_solve(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
     periods_emax = np.tile(MISSING_FLOAT, (i, j))
 
     if is_myopic:
+
+        logger.info('... not required due to myopic agents \n')
+
         # All other objects remain set to MISSING_FLOAT. This align the
         # treatment for the two special cases: (1) is_myopic and (2)
         # is_interpolated.
@@ -74,7 +77,7 @@ def pyth_solve(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
             mapping_state_idx, states_all, delta, is_debug, is_interpolated,
             num_points, shocks_cholesky)
 
-    logger.info('... finished \n')
+        logger.info('... finished \n')
 
     # Gentle shutdown of logging infrastructure
     logging_solution('stop')

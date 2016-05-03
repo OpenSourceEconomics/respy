@@ -326,9 +326,6 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, &
     shifts(1) = clip_value(EXP(shocks_cov(1, 1)/two_dble), zero_dble, HUGE_FLOAT)
     shifts(2) = clip_value(EXP(shocks_cov(2, 2)/two_dble), zero_dble, HUGE_FLOAT)
 
-    ! Logging
-    CALL logging_solution(3)
-
     ! Backward induction
     DO period = (num_periods - 1), 0, -1
 
@@ -408,9 +405,6 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, &
         END IF
 
     END DO
-
-    ! Logging
-    CALL logging_solution(-1)
 
 END SUBROUTINE
 !*******************************************************************************
@@ -790,23 +784,18 @@ SUBROUTINE logging_prediction_model(coeffs, r_squared, bse)
     ! Write to file
     OPEN(UNIT=99, FILE='logging.respy.sol.log', ACCESS='APPEND')
 
-        WRITE(99, *) "     Information about Prediction Model"
-
-        WRITE(99, *) " "
+        WRITE(99, *) "     Information about Prediction Model "
+        WRITE(99, *) 
 
         WRITE(99, 1900) 'Coefficients', coeffs
-
-        WRITE(99, *) " "
+        WRITE(99, *) 
 
         WRITE(99, 1950) 'Standard Errors', bse
-
-        WRITE(99, *) " "
+        WRITE(99, *) 
 
         WRITE(99, 2900) 'R-squared', r_squared
-
-        WRITE(99, *) " "
-
-        WRITE(99, *) " "
+        WRITE(99, *) ''
+        WRITE(99, *) 
 
     CLOSE(99)
 
@@ -835,34 +824,41 @@ SUBROUTINE logging_solution(indicator, period, num_states)
         CLOSE(99, STATUS ='DELETE')
         OPEN(UNIT=99, FILE='logging.respy.sol.log', ACCESS='APPEND')
 
-        WRITE(99, *) " Starting state space creation   "
-        WRITE(99, *) ""
+        WRITE(99, *) " Starting state space creation "
+        WRITE(99, *)
 
     ! Ex Ante Payoffs
     ELSEIF (indicator == 2) THEN
 
-      WRITE(99, *) " Starting calculation of systematic payoffs  "
-      WRITE(99, *) ""
+        WRITE(99, *) " Starting calculation of systematic payoffs "
+        WRITE(99, *)
 
     ! Backward induction procedure
     ELSEIF (indicator == 3) THEN
 
-      WRITE(99, *) " Starting backward induction procedure "
-      WRITE(99, *) ""
+        WRITE(99, *) " Starting backward induction procedure "
+        WRITE(99, *)
 
     ELSEIF (indicator == 4) THEN
 
-        1900 FORMAT(2x,A18,1x,i2,1x,A4,1x,i5,1x,A6)
+        1900 FORMAT(2x,A18,1x,i2,1x,A4,1x,i5,1x,A7)
 
-        WRITE(99, 1900) "... solving period", period, 'with', num_states, 'states'
-        WRITE(99, *) ""
+        WRITE(99, 1900) "... solving period", period, "with", num_states, "states "
+        WRITE(99, *)
 
     ! Finishing
     ELSEIF (indicator == -1) THEN
 
         WRITE(99, *) " ... finished "
         WRITE(99, *) ""
+        WRITE(99, *)
+
+    ! Finishing
+    ELSEIF (indicator == -2) THEN
+
+        WRITE(99, *) " ... not required due to myopic agents "
         WRITE(99, *) ""
+        WRITE(99, *)
 
     END IF
 

@@ -186,7 +186,7 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
         num_states = states_number_period[period]
 
         # Logging.
-        string = '''{0[0]:>18}{0[1]:>3}{0[2]:>5}{0[3]:>6}{0[4]:>7}'''
+        string = '''{0[0]:>18}{0[1]:>3}{0[2]:>5}{0[3]:>6} {0[4]:>6}'''
         logger.info(string.format(['... solving period', period, 'with',
             num_states, 'states']))
 
@@ -379,7 +379,7 @@ def get_predictions(endogenous, exogenous, maxe, is_simulated, num_points,
 def logging_prediction_model(results):
     """ Write out some basic information to the solutions log file.
     """
-    logger.info('    Information about Prediction Model ')
+    logger.info('    Information about Prediction Model')
 
     string = '      {:<19}' + '{:15.4f}' * 9
     logger.info(string.format('Coefficients', *results.params))

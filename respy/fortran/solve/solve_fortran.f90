@@ -93,7 +93,11 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, &
     periods_emax = MISSING_FLOAT
 
     ! Perform backward induction procedure.
+    CALL logging_solution(3)
+
     IF (is_myopic) THEN
+
+        CALL logging_solution(-2)
 
         ! All other objects remain set to MISSING_FLOAT. This align the
         ! treatment for the two special cases: (1) is_myopic and (2)
@@ -101,7 +105,7 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, &
         DO period = 1,  num_periods
             periods_emax(period, :states_number_period(period)) = zero_dble
         END DO
-
+    
     ELSE
 
         CALL fort_backward_induction(periods_emax, num_periods, &
@@ -110,6 +114,8 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, &
                 mapping_state_idx, states_all, delta, is_debug, &
                 is_interpolated, num_points, shocks_cholesky)
 
+        CALL logging_solution(-1)
+        
     END IF
 
 END SUBROUTINE

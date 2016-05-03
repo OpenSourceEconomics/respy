@@ -9,8 +9,6 @@ import os
 import sys
 
 # ROOT DIRECTORY
-sys.path.insert(0, os.environ['RESPY'])
-sys.path.insert(0, os.environ['STRUCT_RECOMPUTATION'])
 from respy.python.estimate.estimate_auxiliary import dist_optim_paras
 
 # project library
@@ -27,5 +25,9 @@ from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import dist_model_paras
 from respy.python.shared.shared_auxiliary import create_draws
 
-from respy import simulate, read, solve, evaluate, estimate
-respy_obj = read('model.respy.ini')
+from respy import simulate, solve, evaluate, estimate, RespyCls
+
+
+respy_obj = RespyCls('model.respy.ini')
+
+solve.solve(respy_obj)
