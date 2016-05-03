@@ -47,7 +47,7 @@ def build(ctx):
                              'point.')
 
     # Initialize directory structure
-    ctx.recurse("fortran")
+    ctx.recurse('fortran')
 
     ctx.add_post_fun(post)
 

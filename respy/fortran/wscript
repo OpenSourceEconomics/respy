@@ -16,11 +16,11 @@ class CreateF2pyInterfaces(Task):
         from numpy import f2py
         extra_args = '-I../.bld -L../.bld/fortran -lresfort -llapack'
 
-        with open("f2py_interface_library.f90", 'rb') as sourcefile:
+        with open('f2py_interface_library.f90', 'rb') as sourcefile:
             sourcecode = sourcefile.read()
         f2py.compile(sourcecode, 'f2py_library', extra_args, extension='.f90')
 
-        with open("f2py_interface_debug.f90", 'rb') as sourcefile:
+        with open('f2py_interface_debug.f90', 'rb') as sourcefile:
             sourcecode = sourcefile.read()
         f2py.compile(sourcecode, 'f2py_debug', extra_args, extension='.f90')
 
