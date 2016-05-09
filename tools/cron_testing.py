@@ -9,7 +9,7 @@ import socket
 import os
 
 # Specify request
-HOURS, NOTIFICATION = 0.000001, True
+HOURS, NOTIFICATION = 12, True
 
 # Get some basic information about the system.
 HOSTNAME = socket.gethostname()
