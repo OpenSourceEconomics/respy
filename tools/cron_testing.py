@@ -9,7 +9,7 @@ import socket
 import os
 
 # Specify request
-HOURS, NOTIFICATION = 0.0000001, True
+HOURS, NOTIFICATION = 6, True
 
 # Get some basic information about the system.
 HOSTNAME = socket.gethostname()
@@ -22,8 +22,7 @@ PACKAGE_DIR = PACKAGE_DIR.replace('/tools', '')
 os.chdir(PACKAGE_DIR + '/development/testing')
 
 # Execute script on the development server.
-#if HOSTNAME == 'zeus':
-if True:
+if HOSTNAME == 'zeus':
     is_available = LOADAVG < 2.5
 
     if is_available:
