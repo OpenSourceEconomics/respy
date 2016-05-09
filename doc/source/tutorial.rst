@@ -58,7 +58,7 @@ max      int        maximum level of schooling
 start    int        initial level of schooling
 ======= ======    ========================== 
 
-Again, there is a small difference between the setup in the original paper. There is no automatic change in sign for the tuition and adjustment costs. Thus, a \$4,000 tuition cost must be specified as -4,000
+Again, there is a small difference between the setup in the original paper. There is no automatic change in sign for the tuition and adjustment costs. Thus, a \$1,000 tuition cost must be specified as -1000.
 
 **HOME**
 
