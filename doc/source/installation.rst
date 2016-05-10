@@ -1,7 +1,7 @@
 Installation
 ============
 
-The **respy** package is maintained for *Python 2.7* and *Python 3.x*. We draw on the standard *SciPy Stack*. In particular, we use the **NumPy**, **SciPy** and **pandas** library. In addition, we use **statsmodels**. Please make sure that all these packages are properly installed. We are also using the *LAPACK* library, which needs to be available in your *gfortran* search path. 
+The **respy** package is supported and tested for *Python 2.7* and *Python 3.x* on Linux. We draw on the standard *SciPy Stack*. In particular, we use the **NumPy**, **SciPy** and **pandas** library. In addition, we use **statsmodels**. Please make sure that all these packages are properly installed. We are also using the *LAPACK* library, which needs to be available in your *gfortran* search path. 
 
 Please make sure you have a recent version of **pip** installed as well to ensure the proper install order of the dependencies. Once these requirements are taken care of, installation is straightforward.
 
