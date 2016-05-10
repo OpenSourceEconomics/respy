@@ -33,6 +33,7 @@ Welcome to respy's documentation!
    contact
    details
    bibliography
+   changelog
 
 .. todo::
 
