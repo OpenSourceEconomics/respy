@@ -24,9 +24,11 @@ os.chdir(PACKAGE_DIR + '/development/testing')
 # Execute script on the development server.
 if HOSTNAME == 'zeus':
     is_available = LOADAVG < 2.5
+    VIRUTALENV_PYTHON = '$HOME/.envs/restudToolbox/bin/python'
 
     if is_available:
-        cmd = 'python run.py --compile --hours ' + str(HOURS)
+        cmd = VIRUTALENV_PYTHON
+        cmd += ' run.py --compile --hours ' + str(HOURS)
         if NOTIFICATION:
             cmd += '  --notification'
 
