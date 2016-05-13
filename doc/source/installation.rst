@@ -7,9 +7,9 @@ Please make sure you have a recent version of **pip** installed as well to ensur
 
 .. code-block:: bash
 
-   $ pip install respy
+   $ pip install --no-binary respy respy
 
-If you have  **pytest** installed, go ahead and run the test suite to ensure a proper installation.
+The *--no-binary* flag is required for now to ensure a compilation of the *FORTRAN* libraries. If you have  **pytest** installed, go ahead and run the test suite to ensure a proper installation.
 
 .. code-block:: bash
 
