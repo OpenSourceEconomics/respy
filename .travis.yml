@@ -30,4 +30,6 @@ script:
 after_success:
   - codecov
 
-
+notifications:
+  slack: policy-lab:LkWqVb15dNvdLjMQOyacTXy6
+  email: false
