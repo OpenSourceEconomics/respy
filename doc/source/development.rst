@@ -11,7 +11,7 @@ The **respy** package contains three alternative implementations for each of the
 Test Battery
 ------------
 
-You can have a look at our tests `online <https://github.com/restudToolbox/package/tree/master/respy/tests>`_. We also build a testing infrastructure, that allows to test the functionality of the **respy** package for numerous alternative parameterizations (`link <https://github.com/restudToolbox/package/tree/master/development/testing>`_). We also upgraded the original *Fortran* codes developed by the authors and compare simulated samples between our package and their implementation. We automate our test execution using **pytest**.
+You can have a look at our tests `online <https://github.com/restudToolbox/package/tree/master/respy/tests>`_. We also build a testing infrastructure, that allows to test the functionality of the **respy** package for numerous alternative parameterizations (`link <https://github.com/restudToolbox/package/tree/master/development/testing>`_). This property-based testing turned out very powerful, as during the estimation the optimizer may visit quite extreme parameterizations of the model. Also, as the **respy** design is settling down, we have numerous regression tests implemented that ensure that simple refactoring does not entail any unintended consequences. We also upgraded the original *Fortran* codes developed by the authors and compare simulated samples between our package and their implementation. We automate our test execution using **pytest**.
 
 Continuous Integration Workflow
 --------------------------------
