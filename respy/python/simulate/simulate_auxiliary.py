@@ -40,16 +40,16 @@ def write_info(respy_obj, data_frame):
         for t in range(num_periods):
 
             work_a = np.sum((data_frame[2] == 1) &
-                            (data_frame[1] == t))/num_agents_sim
+                            (data_frame[1] == t))/float(num_agents_sim)
 
             work_b = np.sum((data_frame[2] == 2) & (data_frame[1] ==
-                                                    t))/num_agents_sim
+                                                    t))/float(num_agents_sim)
 
             schooling = np.sum((data_frame[2] == 3) &
-                               (data_frame[1] == t))/num_agents_sim
+                               (data_frame[1] == t))/float(num_agents_sim)
 
             home = np.sum((data_frame[2] == 4) & (data_frame[1] ==
-                                                  t))/num_agents_sim
+                                                  t))/float(num_agents_sim)
 
             fmt_ = '{:>10}' + '{:14.4f}' * 4 + '\n'
             args = [(t + 1), work_a, work_b, schooling, home]
