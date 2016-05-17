@@ -1,8 +1,10 @@
 # standard library
-import pytest
-
 import os
-import sys
+
+try:
+    import pytest
+except ImportError:
+    pass
 
 # project library
 from respy.estimate import estimate
