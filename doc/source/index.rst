@@ -50,6 +50,7 @@ Welcome to respy's documentation!
    tutorial
    numerics 
    development
+   contributions
    contact
    details
    bibliography
