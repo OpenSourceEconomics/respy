@@ -90,3 +90,24 @@ functions. It should be helpful if you plan to extend **respy** with custom comp
 
     :return: Value of criterion function at final step
     :rtype: float
+
+
+Suggested Citation
+------------------
+
+We appreciate citations for **respy** because it lets us find out how people have been using the library and it motivates further work. Please use the following sample to cite your x.y version of **respy**.
+
+.. code-block:: text
+
+    @misc{respy-x.y,
+      title = {respy x.y},
+      author = {{The respy Team}},
+      year = {2016},
+      howpublished = {\href{http://respy.readthedocs.io}{http://respy.readthedocs.io}},
+    }
+
+If you are unsure about which version of **respy** you are using run:
+
+.. code-block:: bash
+
+   $ pip show respy

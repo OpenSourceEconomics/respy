@@ -49,7 +49,7 @@ def setup_package():
         author='Philipp Eisenhauer',
         author_email='eisenhauer@policy-lab.org',
         url='http://respy.readthedocs.io',
-        keywords=['Economics', 'Dynamic Discrete Choice Model'],
+        keywords=['Economics', ' Dynamic Discrete Choice Model'],
         classifiers=[],
         setup_requires=['pytest-runner', 'pip>=8.0.0'],
         tests_require=['pytest'],

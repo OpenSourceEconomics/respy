@@ -21,7 +21,8 @@ script:
 - travis_wait tox -e py35 -v
 - python tools/travis_run.py
 after_success:
-- codecov
+  - codecov
+
 deploy:
   provider: pypi
   user: peisenha
@@ -30,3 +31,6 @@ deploy:
   on:
     tags: true
     repo: restudToolbox/package
+
+notifications:
+  slack: policy-lab:LkWqVb15dNvdLjMQOyacTXy6
