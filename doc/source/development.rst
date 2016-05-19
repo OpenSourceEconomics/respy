@@ -8,6 +8,11 @@ We learned a lot about the program design from the codes provided by the origina
 
 The **respy** package contains three alternative implementations for each of the key steps of model, i.e. solution, simulation, and estimation. We maintain a pure *Python* implementation with a focus on readability and a pure *Fortran* implementation to evade any performance constraints. In addition, we also provide a *F2PY* implementation, where key functions are written in *Fortran* and called from *Python* to improve performance. However, the main purpose of the *F2PY* implementation is to ease the development process by allowing to incrementally write *FORTRAN* subroutines and test them within a *Python* testing framework. The user can specify the implementation in the *PROGRAM* section of the initialization file. 
 
+Code Quality
+------------
+
+We use several automatic code review tools to ensure the readability and maintainability of our code base. For example, we rely on `Quantified Code <https://www.quantifiedcode.com/app/project/b00436d2ca614437b843c7042dba0c26>`_ and `Codacy <https://www.codacy.com/app/eisenhauer/respy/dashboard>`_. 
+
 Test Battery
 ------------
 
