@@ -4,7 +4,7 @@ Development Setup
 Program Design
 --------------
 
-We learned a lot about the program design from the codes provided by the original authors (`original codes <https://github.com/restudToolbox/package/tree/master/forensics>`_. Our own source code is available on `GitHub <https://github.com/restudToolbox/package>`_ as well.
+We learned a lot about the program design from the codes provided by the original authors (`original codes <https://github.com/restudToolbox/package/tree/master/forensics>`_). Our own source code is available on `GitHub <https://github.com/restudToolbox/package>`_ as well.
 
 The **respy** package contains three alternative implementations for each of the key steps of model, i.e. solution, simulation, and estimation. We maintain a pure *Python* implementation with a focus on readability and a pure *Fortran* implementation to evade any performance constraints. In addition, we also provide a *F2PY* implementation, where key functions are written in *Fortran* and called from *Python* to improve performance. However, the main purpose of the *F2PY* implementation is to ease the development process by allowing to incrementally write *FORTRAN* subroutines and test them within a *Python* testing framework. The user can specify the implementation in the *PROGRAM* section of the initialization file. 
 
