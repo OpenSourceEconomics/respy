@@ -9,7 +9,6 @@ PROGRAM resfort
     USE shared_auxiliary
 
     USE solve_fortran
-USE mpi
 
     !/* setup                   */
 
@@ -74,6 +73,7 @@ USE mpi
 
     ! Execute on request.
     IF (request == 'solve') THEN
+
         ! Solve the model for a given parametrization.    
         CALL fort_solve(periods_payoffs_systematic, states_number_period, & 
                 mapping_state_idx, periods_emax, states_all, coeffs_a, & 
@@ -107,7 +107,7 @@ USE mpi
                 num_agents_est, num_draws_prob, periods_draws_prob, tau)
 
     END IF
-    
+
     ! Store results. These are read in by the PYTHON wrapper and added to the 
     ! RespyCls instance.
     CALL store_results(mapping_state_idx, states_all, &

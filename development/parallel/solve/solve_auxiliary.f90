@@ -4,8 +4,6 @@ MODULE solve_auxiliary
 
 	!/*	external modules	*/
 
-    USE mpi
-
     USE shared_auxiliary
 
     USE shared_constants
@@ -290,7 +288,7 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, &
     INTEGER(our_int)                    :: num_states
     INTEGER(our_int)                    :: seed_size
     INTEGER(our_int)                    :: period
-    INTEGER(our_int)                    :: k, ierr, numprocs, myid, rc, i, size_local, j, mycounts
+    INTEGER(our_int)                    :: k
 
     REAL(our_dble)                      :: draws_emax(num_draws_emax, 4)
     REAL(our_dble)                      :: payoffs_systematic(4)
@@ -306,8 +304,6 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, &
     LOGICAL                             :: any_interpolated
 
     LOGICAL, ALLOCATABLE                :: is_simulated(:)
-
-    INTEGER, ALLOCATABLE                :: global(:), local(:), counts(:), displs(:)
 
 !-------------------------------------------------------------------------------
 ! Algorithm
@@ -330,81 +326,85 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, &
     shifts(1) = clip_value(EXP(shocks_cov(1, 1)/two_dble), zero_dble, HUGE_FLOAT)
     shifts(2) = clip_value(EXP(shocks_cov(2, 2)/two_dble), zero_dble, HUGE_FLOAT)
 
-
-    CALL MPI_INIT(ierr)
-     call MPI_COMM_RANK( MPI_COMM_WORLD, myid, ierr )
-     call MPI_COMM_SIZE( MPI_COMM_WORLD, numprocs, ierr )
-     print *, 'Process ', myid, ' of ', numprocs, ' is alive'
-
-     IF(myid == 0) THEN
-        PRINT *, 'I am root'
-     ELSE
-        CALL SLEEP(2)
-     END IF
-
-     ALLOCATE(counts(numprocs), displs(numprocs))
-
-   
     ! Backward induction
     DO period = (num_periods - 1), 0, -1
-
 
         ! Extract draws and construct auxiliary objects
         draws_emax = periods_draws_emax(period + 1, :, :)
         num_states = states_number_period(period + 1)
 
-        ! Create the full index set. 
-        ALLOCATE(global(states_number_period(period + 1)))
-        global = -99
-            
-        IF(myid == 0) THEN
-            global = [ (i, i=0, num_states - 1) ]
+        ! Logging
+        CALL logging_solution(4, period, num_states)
+
+        ! Distinguish case with and without interpolation
+        any_interpolated = (num_points .LE. num_states) .AND. is_interpolated
+
+        IF (any_interpolated) THEN
+
+            ! Allocate period-specific containers
+            ALLOCATE(is_simulated(num_states)); ALLOCATE(endogenous(num_states))
+            ALLOCATE(maxe(num_states)); ALLOCATE(exogenous(num_states, 9))
+            ALLOCATE(predictions(num_states))
+
+            ! Constructing indicator for simulation points
+            is_simulated = get_simulated_indicator(num_points, num_states, &
+                                period, is_debug, num_periods)
+
+            ! Constructing the dependent variable for all states, including the
+            ! ones where simulation will take place. All information will be
+            ! used in either the construction of the prediction model or the
+            ! prediction step.
+            CALL get_exogenous_variables(exogenous, maxe, period, num_periods, &
+                    num_states, delta, periods_payoffs_systematic, shifts, &
+                    edu_max, edu_start, mapping_state_idx, periods_emax, &
+                    states_all)
+
+            ! Construct endogenous variables for the subset of simulation points.
+            ! The rest is set to missing value.
+            CALL get_endogenous_variable(endogenous, period, num_periods, &
+                    num_states, delta, periods_payoffs_systematic, edu_max, &
+                    edu_start, mapping_state_idx, periods_emax, states_all, &
+                    is_simulated, num_draws_emax, &
+                    maxe, draws_emax, shocks_cholesky)
+
+            ! Create prediction model based on the random subset of points where
+            ! the EMAX is actually simulated and thus endogenous and
+            ! exogenous variables are available. For the interpolation
+            ! points, the actual values are used.
+            CALL get_predictions(predictions, endogenous, exogenous, maxe, &
+                    is_simulated, num_points, num_states)
+
+            ! Store results
+            periods_emax(period + 1, :num_states) = predictions
+
+            ! Deallocate containers
+            DEALLOCATE(is_simulated); DEALLOCATE(exogenous); DEALLOCATE(maxe);
+            DEALLOCATE(endogenous); DEALLOCATE(predictions)
+
+        ELSE
+
+            ! Loop over all possible states
+            DO k = 0, (states_number_period(period + 1) - 1)
+
+                ! Extract payoffs
+                payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
+
+                CALL get_payoffs(emax_simulated, num_draws_emax, draws_emax, &
+                        period, k, payoffs_systematic, edu_max, edu_start, &
+                        mapping_state_idx, states_all, num_periods, &
+                        periods_emax, delta, shocks_cholesky)
+
+                ! Collect information
+                periods_emax(period + 1, k + 1) = emax_simulated
+
+                ! This information is only available if no interpolation is
+                ! used. Otherwise all remain set to missing values (see above).
+
+            END DO
+
         END IF
-
-        ! Determine the number of tasks that each process has to handle.
-        counts = zero_int
-        j = 1
-        DO i = 1, num_states
-            IF(j .GT. numprocs) THEN
-                j = 1
-            END IF
-            counts(j)= counts(j) + 1
-            j = j + 1
-        END DO
-
-
-        DO i = 1, numprocs
-
-            displs(i) = SUM(counts(:i - 1)) 
-
-        END DO
-
-        mycounts = counts(myid + 1)
-
-        ALLOCATE(local(mycounts))
-        local = -99
-        
-        print *, 'Next'
-        !print *, period, num_states
-        !print *, displs
-        !print *, counts
-
-        call MPI_Scatterv(global, counts, displs,         &                            
-                MPI_INTEGER,                  &
-                local, mycounts, MPI_INTEGER, & 
-                0, MPI_COMM_WORLD, ierr) 
-        !
-        if (period == 1) THEN
-            print *, myid, global
-        END IF
-        !IF(myid == 0) THEN
-        DEALLOCATE(global)
-        !END IF
-        DEALLOCATE(local)
 
     END DO
-
- call MPI_FINALIZE(rc)
 
 END SUBROUTINE
 !*******************************************************************************
