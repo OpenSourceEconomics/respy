@@ -49,7 +49,7 @@ def get_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
     x[15:16] = coeffs_home
 
     # Shocks
-    x[16:26] = shocks_cholesky.T[np.triu_indices_from(shocks_cholesky)]
+    x[16:26] = shocks_cholesky.T[np.triu_indices(4)]
 
     # Checks
     if is_debug:
@@ -93,10 +93,11 @@ def dist_optim_paras(x_all_curre, is_debug):
     # upper triangular in Table 1. However, the authors switch to a
     # flattened lower triangular later in the paper.
     shocks_cholesky = np.tile(0.0, (4, 4))
-    shocks_cholesky.T[0, 0:] = x_all_curre[16:20]
-    shocks_cholesky.T[1, 1:] = x_all_curre[20:23]
-    shocks_cholesky.T[2, 2:] = x_all_curre[23:25]
-    shocks_cholesky.T[3, 3:] = x_all_curre[25:26]
+    shocks_cholesky[0, 0:] = x_all_curre[16:20]
+    shocks_cholesky[1, 1:] = x_all_curre[20:23]
+    shocks_cholesky[2, 2:] = x_all_curre[23:25]
+    shocks_cholesky[3, 3:] = x_all_curre[25:26]
+    shocks_cholesky = np.transpose(shocks_cholesky)
 
     # Checks
     if is_debug:

@@ -26,8 +26,15 @@ from respy.python.shared.shared_auxiliary import dist_model_paras
 from respy.python.shared.shared_auxiliary import create_draws
 
 from respy import simulate, solve, evaluate, estimate, RespyCls
-
+import numpy as np
+import pickle as pkl
 
 respy_obj = RespyCls('model.respy.ini')
 
 solve.solve(respy_obj)
+
+respy_obj = pkl.load(open('solution.respy.pkl', 'rb'))
+
+np.testing.assert_equal(respy_obj.get_attr('periods_emax')[0, 0], 157671.41881517219)
+
+
