@@ -86,9 +86,8 @@ for fname in ['master', 'slave']:
 
     assert os.system(cmd) == 0
 
-#os.system('mpiexec ./master')
+os.system('mpiexec ./master')
 
-#os.system('mpiexec ./slave')
 
 
 

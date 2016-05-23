@@ -48,7 +48,8 @@ os.system('python driver.py')
 
 # Test the functionality of the executable for varying number of slaves and
 # varying number of model specifications.
-for i in range(10):
+# TODO: Only checks if executing without problem, later test if same result.    
+for i in range(100000):
     get_random_request()
     num_slaves = np.random.randint(1, 3)
     cmd = 'mpiexec ./master ' + str(num_slaves)

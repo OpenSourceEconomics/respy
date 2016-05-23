@@ -45,6 +45,9 @@ USE shared_auxiliary
 
     CHARACTER(10)                   :: request, arg
 
+    INTEGER(our_int), ALLOCATABLE                :: test_gather_all(:)
+      integer status(MPI_STATUS_SIZE) 
+
 
 INTEGER :: ierr, myrank, myprocs, slavecomm, num_slaves, array(5), root = 0, task
 
@@ -57,6 +60,8 @@ ELSE
 read (arg,*) num_slaves
 END IF
 
+
+ALLOCATE(test_gather_all(num_slaves))
 
 CALL read_specification(num_periods, delta, coeffs_a, coeffs_b, &
         coeffs_edu, edu_start, edu_max, coeffs_home, shocks_cholesky, & 
@@ -78,23 +83,27 @@ call MPI_Init(ierr)
 CALL MPI_COMM_SPAWN('./slave', MPI_ARGV_NULL, num_slaves, MPI_INFO_NULL, 0, MPI_COMM_WORLD, slavecomm, MPI_ERRCODES_IGNORE, ierr)
 
 
-
-! Request task 1
-task = 22
-CALL MPI_Bcast(task, 1, MPI_INT, MPI_ROOT, slavecomm, ierr)
-
-CALL SLEEP(3)
-
+! Request EMAX calculation
+test_gather_all = -99
 
 task = 2
 CALL MPI_Bcast(task, 1, MPI_INT, MPI_ROOT, slavecomm, ierr)
 
+    ! The first slave is kind enough to let the parent process know about the intermediate outcomes.
+DO period = (num_periods - 1), 0, -1
+PRINT *, 'ROOT ', period
+!    CALL MPI_RECV(test_gather_all, num_slaves, MPI_INT, MPI_ANY_SOURCE, & 
+!            MPI_ANY_TAG, slavecomm, status, ierr)
+!
+!    PRINT *, test_gather_all
+END DO
 
+! Shut down orderly
 task = 1
 CALL MPI_Bcast(task, 1, MPI_INT, MPI_ROOT, slavecomm, ierr)
 
 
-CALL MPI_FINALIZE (ierr) ! terminate MPI environment
+CALL MPI_FINALIZE (ierr)
 
 END PROGRAM
 !*******************************************************************************

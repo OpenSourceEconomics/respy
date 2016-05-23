@@ -49,7 +49,7 @@ IMPLICIT NONE
     CHARACTER(10)                   :: request
 
 
-INTEGER :: ierr, myrank, slavecomm, num_slaves, task, root = 0, parentcomm, nprocs
+INTEGER :: ierr, myrank, num_slaves, task, root = 0, parentcomm, nprocs
 LOGICAL :: STAY_AVAILABLE = .TRUE.
 
 
@@ -57,6 +57,8 @@ LOGICAL :: STAY_AVAILABLE = .TRUE.
 
     INTEGER(our_int)                                :: max_states_period
     INTEGER(our_int)                                :: period
+    INTEGER(our_int)                ::  test_gather_part
+    INTEGER(our_int), ALLOCATABLE :: test_gather_all(:), rcounts(:), scounts(:), disps(:)
 
 call MPI_Init(ierr)
 call MPI_Comm_Rank(MPI_COMM_WORLD, myrank, ierr)
@@ -64,8 +66,8 @@ call MPI_Comm_Size(MPI_COMM_WORLD, num_slaves, ierr)
 CALL MPI_COMM_GET_PARENT(parentcomm, ierr)
 
 PRINT *, 'How many of us are there? ', num_slaves
-
-
+ALLOCATE(test_gather_all(num_slaves))
+ALLOCATE(rcounts(num_slaves), scounts(num_slaves), disps(num_slaves))
 
 CALL read_specification(num_periods, delta, coeffs_a, coeffs_b, coeffs_edu, &
     edu_start, edu_max, coeffs_home, shocks_cholesky, num_draws_emax, & 
@@ -122,22 +124,50 @@ DO WHILE (STAY_AVAILABLE)
     
     CALL MPI_Bcast(task, 1, MPI_INT, 0, parentcomm, ierr)
 
-    PRINT *, 'cycling', task
 
-    
-    !
     IF(task == 1) THEN
 
 
-        PRINT *, 'shutting down'
+        PRINT *, 'shutting down', test_gather_all, test_gather_part, myrank
 
         CALL MPI_FINALIZE(ierr)
         STAY_AVAILABLE = .FALSE.
 
     ELSEIF(task == 2) THEN
 
-        PRINT *, ' Calculate EMAX ...'
+        IF (myrank == 1) PRINT *, ' Calculate EMAX ...'
 
+
+        DO period = (num_periods - 1), 0, -1
+
+            IF (myrank == 1) THEN
+                PRINT *, 'Period', i
+                PRINT *, ''
+            END IF
+    
+            test_gather_part = myrank + 99
+
+            scounts(:) = 1
+            rcounts(:) = scounts(:) 
+
+
+            DO j = 1, num_slaves
+                disps(j) = SUM(scounts(:j))
+            END DO
+
+            CALL MPI_ALLGATHERV(test_gather_part, scounts(myrank + 1), MPI_INT, &
+                test_gather_all, rcounts, disps - 1, MPI_INT, MPI_COMM_WORLD, ierr)
+
+
+            ! One slave has to keep the the master updated.
+            IF (myrank == 0) THEN
+
+                ! TODO: This will not work with variable length?
+                CALL MPI_SEND(test_gather_all, num_slaves, MPI_INT, 0, 0, parentcomm, ierr)
+
+            END IF
+
+        END DO
 
         ! Cutting the states_all container to size. The required size is only known
         ! after the state space creation is completed.
