@@ -114,8 +114,9 @@ PROGRAM slave
     INTEGER(our_int)                :: edu_start
     INTEGER(our_int)                :: edu_max
     INTEGER(our_int)                :: min_idx
-    INTEGER(our_int)                :: rank
     INTEGER(our_int)                :: period
+    INTEGER(our_int)                :: count
+    INTEGER(our_int)                :: rank
     INTEGER(our_int)                :: ierr
     INTEGER(our_int)                :: task
     INTEGER(our_int)                :: i
@@ -175,7 +176,6 @@ PROGRAM slave
             edu_max)
 
     ALLOCATE(periods_emax(num_periods, max_states_period))
-    ALLOCATE(periods_emax_slaves(max_states_period))
 
     ! Determine workload and allocate communication information.
     ALLOCATE(rcounts(num_slaves), scounts(num_slaves), disps(num_slaves))
@@ -223,11 +223,14 @@ PROGRAM slave
                 ! Extract draws and construct auxiliary objects
                 draws_emax = periods_draws_emax(period + 1, :, :)
                 num_states = states_number_period(period + 1)
+                ALLOCATE(periods_emax_slaves(num_states))
+
 
                 ! Upper and lower bound of tasks
                 lower_bound = SUM(num_emax_slaves(period + 1, :rank))
                 upper_bound = SUM(num_emax_slaves(period + 1, :rank + 1))
-     
+                
+                count =  1
                 DO k = lower_bound, upper_bound - 1
 
                     ! Extract payoffs
@@ -239,7 +242,9 @@ PROGRAM slave
                             periods_emax, delta, shocks_cholesky)
 
                     ! Collect information
-                    periods_emax_slaves(k + 1) = emax_simulated
+                    periods_emax_slaves(count) = emax_simulated
+
+                    count = count + 1
 
                 END DO
 
@@ -249,15 +254,21 @@ PROGRAM slave
                     disps(i) = SUM(scounts(:i - 1)) 
                 END DO
                 
-                CALL MPI_ALLGATHERV(periods_emax_slaves(lower_bound + 1:upper_bound), & 
-                    scounts(rank + 1), MPI_DOUBLE, periods_emax(period + 1, :), & 
-                    rcounts, disps, MPI_DOUBLE, MPI_COMM_WORLD, ierr)
+                CALL MPI_ALLGATHERV(periods_emax_slaves, scounts(rank + 1), & 
+                        MPI_DOUBLE, periods_emax(period + 1, :), rcounts, & 
+                        disps, MPI_DOUBLE, MPI_COMM_WORLD, ierr)
 
                 ! The leading slave updates the master period by period.
                 IF (rank == 0) THEN
                     CALL MPI_SEND(periods_emax(period + 1, :num_states), & 
                             num_states, MPI_DOUBLE, 0, period, PARENTCOMM, ierr)            
                 END IF
+
+
+                DEALLOCATE(periods_emax_slaves)
+
+
+
 
             END DO
        
