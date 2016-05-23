@@ -203,11 +203,6 @@ DO WHILE (STAY_AVAILABLE)
             draws_emax = periods_draws_emax(period + 1, :, :)
             num_states = states_number_period(period + 1)
 
-!            IF (num_emax_slave(period + 1, myrank + 1) == 0) THEN
- !               CYCLE
-  !          END IF
-
-            PRINT *, 'I am plugging ', myrank
             ! Loop over all possible states
             lower_bound = SUM(num_emax_slave(period + 1, :myrank))
             upper_bound = SUM(num_emax_slave(period + 1, :myrank + 1))

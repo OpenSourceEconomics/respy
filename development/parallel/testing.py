@@ -16,12 +16,10 @@ from respy.fortran.fortran_auxiliary import write_resfort_initialization
 from respy.tests.codes.random_init import generate_init
 
 from respy import RespyCls
+from respy.solve import solve
 
-def get_random_request():
+def get_resfort_init():
 
-    constr = dict()
-    constr['periods'] = np.random.randint(2, 15)
-    generate_init(constr)
     respy_obj = RespyCls('test.respy.ini')
     # Distribute class attributes
     model_paras, num_periods, edu_start, is_debug, edu_max, delta, version, \
@@ -53,14 +51,29 @@ os.system('python driver.py')
 # varying number of model specifications.
 import numpy as np
 # TODO: Only checks if executing without problem, later test if same result.
-for i in range(100000):
-    get_random_request()
+for i in range(1000):
+
+    # This generates the initialization file
+    constr = dict()
+    constr['version'] = 'FORTRAN'
+    constr['apply'] = False
+    generate_init(constr)
+
+    respy_obj = RespyCls('test.respy.ini')
+    respy_obj = solve(respy_obj)
+
+    package = respy_obj.get_attr('periods_emax')[0, 0]
+    # This ensures
+    get_resfort_init()
     base = None
-    for num_slaves in [1, 2, 3]:
+    # TODO: Just draw a random number of slaves
+    num_slaves = np.random.randint(1, 5)
 
-         cmd = 'mpiexec ./master ' + str(num_slaves)
-         assert os.system(cmd) == 0
+    cmd = 'mpiexec ./master ' + str(num_slaves)
+    assert os.system(cmd) == 0
+    base = np.loadtxt('.eval.resfort.dat')
+    print('\n\n Visual Debugging')
+    print(base, package)
+    print('\n\n')
 
-         if base is None:
-             base = np.loadtxt('.eval.resfort.dat')
-         assert base == np.loadtxt('.eval.resfort.dat')
+    np.testing.assert_allclose(base, package)
