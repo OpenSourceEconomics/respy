@@ -64,7 +64,7 @@ PROGRAM master
 ! Algorithm
 !-------------------------------------------------------------------------------
 
-    ! Initialize MPI Environment
+    ! Initialize MPI environment
     CALL MPI_INIT(ierr)
 
     ! Read in requested number of slaves from the command line.

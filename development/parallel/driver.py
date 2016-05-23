@@ -86,7 +86,7 @@ for fname in glob.glob('*.mod'):
 #
 for fname in ['master', 'slave']:
 
-    cmd = 'mpif90  mpi_shared.f90 ' + fname + '.f90 ' + '-o ' + fname + ' '  \
+    cmd = 'mpif90 ' + fname + '.f90 ' + '-o ' + fname + ' '  \
           + ' '.join(DEBUG_OPTIONS) + ' -Iinclude/ -Llib/ -lresfort -llapack '
     print(cmd, '\n')
 
