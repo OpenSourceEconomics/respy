@@ -51,6 +51,12 @@ for file_ in src:
     cmd = 'gfortran -c ' + file_
     os.system(cmd)
 
+cmd = 'mpif90 -c slave.f90 ' + ' '.join(DEBUG_OPTIONS)
+
+os.system(cmd)
+#import sys
+#sys.exit('clean')
+
 import shutil
 import glob
 fnames = ' '.join(glob.glob('*.o'))

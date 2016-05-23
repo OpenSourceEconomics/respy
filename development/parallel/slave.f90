@@ -2,15 +2,24 @@
 !******************************************************************************* 
 PROGRAM slave
 
-USE mpi
+    !/* external modules        */
 
-USE shared_constants
-USE shared_auxiliary
-USE solve_fortran
-USE solve_auxiliary
+    USE shared_constants
+    
+    USE shared_auxiliary
 
+    USE solve_auxiliary
 
-IMPLICIT NONE
+    USE solve_fortran
+
+    USE mpi
+    
+    !/* setup                   */
+
+    IMPLICIT NONE
+
+    !/* objects                 */
+
     INTEGER(our_int), ALLOCATABLE   :: mapping_state_idx(:, :, :, :, :)
     INTEGER(our_int), ALLOCATABLE   :: states_number_period(:)
     INTEGER(our_int), ALLOCATABLE   :: states_all(:, :, :)
@@ -81,9 +90,10 @@ LOGICAL :: STAY_AVAILABLE = .TRUE.
 
     REAL(our_dble), ALLOCATABLE  :: draws_emax(:, :)
 
-call MPI_Init(ierr)
-call MPI_Comm_Rank(MPI_COMM_WORLD, myrank, ierr)
-call MPI_Comm_Size(MPI_COMM_WORLD, num_slaves, ierr)
+
+CALL MPI_INIT(ierr)
+CALL MPI_COMM_RANK(MPI_COMM_WORLD, myrank, ierr)
+CALL MPI_COMM_SIZE(MPI_COMM_WORLD, num_slaves, ierr)
 CALL MPI_COMM_GET_PARENT(parentcomm, ierr)
 
 ALLOCATE(test_gather_all(num_slaves))
@@ -161,52 +171,19 @@ DO WHILE (STAY_AVAILABLE)
 
     ELSEIF(task == 2) THEN
 
-        !IF (myrank == 1) PRINT *, ' Calculate EMAX ...'
-
-    
-       !     test_gather_part = myrank + 99
-
-      !      scounts(:) = 1
-     !       rcounts(:) = scounts(:) 
-
-
-    !        DO j = 1, num_slaves
-   !             disps(j) = SUM(scounts(:j))
-  !          END DO
-
-!CALL MPI_ALLGATHERV(test_gather_part, scounts(myrank + 1), MPI_INT, &
-!      test_gather_all, rcounts, disps - 1, MPI_INT, MPI_COMM_WORLD, ierr)
-        
-        !----------------------------------------------------------------------
-        ! This is the complete backward induction procedure without the interpolation.
-        !----------------------------------------------------------------------
-
-        ! Set random seed. We need to set the seed here as well as this part of the
-        ! code might be called using F2PY without any previous seed set. This
-        ! ensures that the interpolation grid is identical across draws.
-        seed_inflated(:) = 123
-
-        CALL RANDOM_SEED(size=seed_size)
-
-        CALL RANDOM_SEED(put=seed_inflated)
-
         ! Construct auxiliary objects
         shocks_cov = MATMUL(shocks_cholesky, TRANSPOSE(shocks_cholesky))
 
         DO period = (num_periods - 1), 0, -1
 
-            !IF (myrank == 1) THEN
-            !    PRINT *, 'Period', period
-            !    PRINT *, ''
-            !END IF
             ! Extract draws and construct auxiliary objects
             draws_emax = periods_draws_emax(period + 1, :, :)
             num_states = states_number_period(period + 1)
 
-            ! Loop over all possible states
+            ! Upper and lower bound of tasks
             lower_bound = SUM(num_emax_slave(period + 1, :myrank))
             upper_bound = SUM(num_emax_slave(period + 1, :myrank + 1))
-            !PRINT *, myrank, lower_bound, upper_bound
+ 
             DO k = lower_bound, upper_bound - 1
 
                 ! Extract payoffs
@@ -224,36 +201,20 @@ DO WHILE (STAY_AVAILABLE)
 
             scounts(:) = num_emax_slave(period + 1, :)
             rcounts(:) = scounts
-
-
             DO j = 1, num_slaves
                 disps(j) = SUM(scounts(:j - 1)) 
             END DO
             
-     !       IF((myrank == 0) .AND. (period == 0)) THEN
-    !            PRINT *, scounts
-    !            PRINT *, rcounts
-    !            PRINT *, disps
-
-    !        END IF
-
-           ! if(myrank == 0) THEN
-           !     PRINT *, lower_bound + 1, upper_bound
-           ! END IF
-
-CALL MPI_ALLGATHERV(periods_emax_slaves(lower_bound + 1:upper_bound), & 
+    CALL MPI_ALLGATHERV(periods_emax_slaves(lower_bound + 1:upper_bound), & 
         scounts(myrank + 1), MPI_DOUBLE, periods_emax(period + 1, :), & 
         rcounts, disps, MPI_DOUBLE, MPI_COMM_WORLD, ierr)
 
-      !      IF (myrank == 0) THEN
-       !         PRINT *, periods_emax(2, :)
-        !    END IF
-
-            ! One slave has to keep the the master updated each period
+    
+            ! The leading slave updates the master period by period.
             IF (myrank == 0) THEN
                 CALL MPI_SEND(periods_emax(period + 1, :num_states) , num_states, MPI_DOUBLE, 0, period, parentcomm, ierr)            
-
             END IF
+
             END DO
       !----------------------------------------------------------------------
       !----------------------------------------------------------------------
@@ -265,9 +226,6 @@ END DO
 
 
 
-CALL SLEEP(2)
-
-
 END PROGRAM
-!*******************************************************************************
-!******************************************************************************* 
+!******************************************************************************
+!****************************************************************************** 
