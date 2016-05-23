@@ -92,7 +92,15 @@ for fname in ['master', 'slave']:
 
     assert os.system(cmd) == 0
 
-#os.system('mpiexec ./master')
+# Compile testing file.
+cmd = 'mpif90 testing_scalar_parallel.f90 ' + '-o testing  '  \
+          + ' '.join(DEBUG_OPTIONS) + ' -Iinclude/ -Llib/ -lresfort -llapack '
+print(cmd, '\n')
+
+assert os.system(cmd) == 0
+
+
+os.system('mpiexec ./testing')
 
 
 

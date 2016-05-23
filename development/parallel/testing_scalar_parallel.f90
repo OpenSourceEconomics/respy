@@ -133,6 +133,20 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
         CLOSE(1)
 
 END SUBROUTINE
+
+SUBROUTINE record_equality(is_equal)
+
+LOGICAL :: is_equal
+
+IF(.NOT. is_equal) THEN
+
+OPEN (UNIT=5, FILE=".error.testing", STATUS="NEW")  ! Root directory
+CLOSE (UNIT=5)
+END IF
+
+
+END SUBROUTINE
+
 !*******************************************************************************
 !*******************************************************************************
 END MODULE
@@ -159,11 +173,17 @@ PROGRAM master
     IMPLICIT NONE
 
     !/* objects                 */
-    
-    INTEGER(our_int), ALLOCATABLE   :: mapping_state_idx(:, :, :, :, :)
+
+
     INTEGER(our_int), ALLOCATABLE   :: states_all_tmp(:, :, :)
-    INTEGER(our_int), ALLOCATABLE   :: states_number_period(:)
-    INTEGER(our_int), ALLOCATABLE   :: states_all(:, :, :)
+
+    INTEGER(our_int), ALLOCATABLE   :: mapping_state_idx_parallel(:, :, :, :, :)
+    INTEGER(our_int), ALLOCATABLE   :: states_number_period_parallel(:)
+    INTEGER(our_int), ALLOCATABLE   :: states_all_parallel(:, :, :)
+
+    INTEGER(our_int), ALLOCATABLE   :: mapping_state_idx_scalar(:, :, :, :, :)
+    INTEGER(our_int), ALLOCATABLE   :: states_number_period_scalar(:)
+    INTEGER(our_int), ALLOCATABLE   :: states_all_scalar(:, :, :)
 
     INTEGER(our_int)                :: status(MPI_STATUS_SIZE) 
     INTEGER(our_int)                :: max_states_period
@@ -184,8 +204,11 @@ PROGRAM master
     INTEGER(our_int)                :: ierr
     INTEGER(our_int)                :: task
 
-    REAL(our_dble), ALLOCATABLE     :: periods_payoffs_systematic(:, :, :)
-    REAL(our_dble), ALLOCATABLE     :: periods_emax(:, :)
+    REAL(our_dble), ALLOCATABLE     :: periods_payoffs_systematic_parallel(:, :, :)
+    REAL(our_dble), ALLOCATABLE     :: periods_emax_parallel(:, :)
+
+    REAL(our_dble), ALLOCATABLE     :: periods_payoffs_systematic_scalar(:, :, :)
+    REAL(our_dble), ALLOCATABLE     :: periods_emax_scalar(:, :)
 
     REAL(our_dble)                  :: shocks_cholesky(4, 4)
     REAL(our_dble)                  :: coeffs_home(1)
@@ -198,10 +221,11 @@ PROGRAM master
 
     LOGICAL                         :: is_interpolated
     LOGICAL                         :: is_myopic
-    LOGICAL                         :: is_debug
+    LOGICAL                         :: is_debug, is_equal
 
     CHARACTER(10)                   :: request
     CHARACTER(10)                   :: arg
+    REAL(our_dble), ALLOCATABLE     :: periods_draws_emax(:, :, :)
 
 !-------------------------------------------------------------------------------
 ! Algorithm
@@ -225,27 +249,46 @@ PROGRAM master
             is_interpolated, num_points, min_idx, request, num_draws_prob, & 
             is_myopic, tau) 
 
-    ! Execute on request.
-    IF (request == 'solve') THEN
+    ! Create the required random draws for the EMAX calculation in case of 
+    ! scalar execution.
+    CALL create_draws(periods_draws_emax, num_periods, num_draws_emax, &
+            seed_emax, is_debug)
 
-        ! Solve the model for a given parametrization in parallel
-        ! periods_draws_emax
-        CALL fort_solve_parallel(periods_payoffs_systematic, states_number_period, &
-                mapping_state_idx, periods_emax, states_all, coeffs_a, &
-                coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, &
-                is_interpolated, num_draws_emax, num_periods, num_points, & 
-                edu_start, is_myopic, is_debug, edu_max, min_idx, delta, & 
-                num_slaves, SLAVECOMM)
+    ! Solve the model for a given parametrization in parallel
+    CALL fort_solve_parallel(periods_payoffs_systematic_parallel, & 
+            states_number_period_parallel, mapping_state_idx_parallel, & 
+            periods_emax_parallel, states_all_parallel, coeffs_a, &
+            coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, &
+            is_interpolated, num_draws_emax, num_periods, num_points, & 
+            edu_start, is_myopic, is_debug, edu_max, min_idx, delta, & 
+            num_slaves, SLAVECOMM)
 
-    ELSE IF (request == 'evaluate') THEN
+    CALL fort_solve(periods_payoffs_systematic_scalar, &
+            states_number_period_scalar, mapping_state_idx_scalar, & 
+            periods_emax_scalar, states_all_scalar, coeffs_a, &
+            coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, &
+            is_interpolated, num_draws_emax, periods_draws_emax, & 
+            num_periods, num_points, edu_start, is_myopic, is_debug, & 
+            edu_max, min_idx, delta)
 
-    END IF
+    ! Test equality of return arguments.
+    is_equal = ALL(periods_emax_scalar .EQ. periods_emax_parallel)
+    CALL record_equality(is_equal)
 
-    ! Store results. These are read in by the PYTHON wrapper and added to the 
-    ! RespyCls instance.
-    CALL store_results(mapping_state_idx, states_all, &
-            periods_payoffs_systematic, states_number_period, periods_emax, &
-            num_periods, min_idx, crit_val, request)
+    is_equal = ALL(states_number_period_scalar .EQ. states_number_period_parallel)
+    CALL record_equality(is_equal)
+
+    is_equal = ALL(mapping_state_idx_scalar .EQ. mapping_state_idx_parallel)
+    CALL record_equality(is_equal)
+
+    is_equal = ALL(periods_emax_scalar .EQ. periods_emax_parallel)
+    CALL record_equality(is_equal)
+
+    is_equal = ALL(states_all_scalar .EQ. states_all_parallel)
+    CALL record_equality(is_equal)
+
+
+
 
 
 END PROGRAM

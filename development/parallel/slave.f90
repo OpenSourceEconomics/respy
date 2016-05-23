@@ -276,7 +276,6 @@ PROGRAM slave
                 num_states = states_number_period(period + 1)
                 ALLOCATE(periods_emax_slaves(num_states))
 
-
                 ! Upper and lower bound of tasks
                 lower_bound = SUM(num_emax_slaves(period + 1, :rank))
                 upper_bound = SUM(num_emax_slaves(period + 1, :rank + 1))
