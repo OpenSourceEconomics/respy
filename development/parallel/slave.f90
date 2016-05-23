@@ -161,7 +161,6 @@ DO WHILE (STAY_AVAILABLE)
 
             ! One slave has to keep the the master updated.
             IF (myrank == 0) THEN
-
                 ! TODO: This will not work with variable length?
                 CALL MPI_SEND(test_gather_all, num_slaves, MPI_INT, 0, period, parentcomm, ierr)
 

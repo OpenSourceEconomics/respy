@@ -91,11 +91,10 @@ CALL MPI_Bcast(task, 1, MPI_INT, MPI_ROOT, slavecomm, ierr)
 
     ! The first slave is kind enough to let the parent process know about the intermediate outcomes.
 DO period = (num_periods - 1), 0, -1
-PRINT *, 'ROOT ', period
     CALL MPI_RECV(test_gather_all, num_slaves, MPI_INT, MPI_ANY_SOURCE, & 
-            period, slavecomm, status, ierr)
+            MPI_ANY_TAG, slavecomm, status, ierr)
 
-!    PRINT *, test_gather_all
+    PRINT *, 'received period ', test_gather_all
 END DO
 
 ! Shut down orderly
