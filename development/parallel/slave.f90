@@ -60,12 +60,32 @@ LOGICAL :: STAY_AVAILABLE = .TRUE.
     INTEGER(our_int)                ::  test_gather_part
     INTEGER(our_int), ALLOCATABLE :: test_gather_all(:), rcounts(:), scounts(:), disps(:)
 
+    INTEGER(our_int)                    :: seed_inflated(15)
+    INTEGER(our_int)                    :: num_states
+    INTEGER(our_int)                    :: seed_size
+
+
+    REAL(our_dble)                      :: payoffs_systematic(4)
+    REAL(our_dble)                      :: shocks_cov(4, 4)
+    REAL(our_dble)                      :: emax_simulated
+    REAL(our_dble)                      :: shifts(4)
+
+    REAL(our_dble), ALLOCATABLE         :: exogenous(:, :)
+    REAL(our_dble), ALLOCATABLE         :: predictions(:)
+    REAL(our_dble), ALLOCATABLE         :: endogenous(:)
+    REAL(our_dble), ALLOCATABLE         :: maxe(:)
+
+    LOGICAL                             :: any_interpolated
+
+    LOGICAL, ALLOCATABLE                :: is_simulated(:)
+
+    REAL(our_dble), ALLOCATABLE  :: draws_emax(:, :)
+
 call MPI_Init(ierr)
 call MPI_Comm_Rank(MPI_COMM_WORLD, myrank, ierr)
 call MPI_Comm_Size(MPI_COMM_WORLD, num_slaves, ierr)
 CALL MPI_COMM_GET_PARENT(parentcomm, ierr)
 
-PRINT *, 'How many of us are there? ', num_slaves
 ALLOCATE(test_gather_all(num_slaves))
 ALLOCATE(rcounts(num_slaves), scounts(num_slaves), disps(num_slaves))
 
@@ -74,6 +94,7 @@ CALL read_specification(num_periods, delta, coeffs_a, coeffs_b, coeffs_edu, &
     seed_emax, seed_prob, num_agents_est, is_debug, is_interpolated, & 
     num_points, min_idx, request, num_draws_prob, is_myopic, tau)
 
+ALLOCATE(draws_emax(num_draws_emax, 4))
 
 ! Allocate arrays
 ALLOCATE(mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2))
@@ -83,6 +104,8 @@ ALLOCATE(states_number_period(num_periods))
 CALL fort_create_state_space(states_all_tmp, states_number_period, &
             mapping_state_idx, max_states_period, num_periods, edu_start, &
             edu_max)
+
+ALLOCATE(periods_emax(num_periods, max_states_period))
 
 states_all = states_all_tmp(:, :max_states_period, :)
 DEALLOCATE(states_all_tmp)
@@ -119,6 +142,7 @@ task = -99
         !ALLOCATE(states_all_tmp(num_periods, 100000, 4))
         !ALLOCATE(states_number_period(num_periods))
 
+    periods_emax = MISSING_FLOAT
 
 DO WHILE (STAY_AVAILABLE)  
     
@@ -128,7 +152,7 @@ DO WHILE (STAY_AVAILABLE)
     IF(task == 1) THEN
 
 
-        PRINT *, 'shutting down', test_gather_all, test_gather_part, myrank
+        PRINT *, 'shutting down'!, test_gather_all, test_gather_part, myrank
 
         CALL MPI_FINALIZE(ierr)
         STAY_AVAILABLE = .FALSE.
@@ -137,52 +161,70 @@ DO WHILE (STAY_AVAILABLE)
 
         IF (myrank == 1) PRINT *, ' Calculate EMAX ...'
 
+    
+       !     test_gather_part = myrank + 99
+
+      !      scounts(:) = 1
+     !       rcounts(:) = scounts(:) 
+
+
+    !        DO j = 1, num_slaves
+   !             disps(j) = SUM(scounts(:j))
+  !          END DO
+
+!            CALL MPI_ALLGATHERV(test_gather_part, scounts(myrank + 1), MPI_INT, &
+ !               test_gather_all, rcounts, disps - 1, MPI_INT, MPI_COMM_WORLD, ierr)
+        
+        !----------------------------------------------------------------------
+        ! This is the complete backward induction procedure without the interpolation.
+        !----------------------------------------------------------------------
+
+        ! Set random seed. We need to set the seed here as well as this part of the
+        ! code might be called using F2PY without any previous seed set. This
+        ! ensures that the interpolation grid is identical across draws.
+        seed_inflated(:) = 123
+
+        CALL RANDOM_SEED(size=seed_size)
+
+        CALL RANDOM_SEED(put=seed_inflated)
+
+        ! Construct auxiliary objects
+        shocks_cov = MATMUL(shocks_cholesky, TRANSPOSE(shocks_cholesky))
 
         DO period = (num_periods - 1), 0, -1
 
             IF (myrank == 1) THEN
-                PRINT *, 'Period', i
+                PRINT *, 'Period', period
                 PRINT *, ''
             END IF
-    
-            test_gather_part = myrank + 99
+            ! Extract draws and construct auxiliary objects
+            draws_emax = periods_draws_emax(period + 1, :, :)
+            num_states = states_number_period(period + 1)
 
-            scounts(:) = 1
-            rcounts(:) = scounts(:) 
+            ! Loop over all possible states
+            DO k = 0, (states_number_period(period + 1) - 1)
 
+                ! Extract payoffs
+                payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
-            DO j = 1, num_slaves
-                disps(j) = SUM(scounts(:j))
+                CALL get_payoffs(emax_simulated, num_draws_emax, draws_emax, &
+                        period, k, payoffs_systematic, edu_max, edu_start, &
+                        mapping_state_idx, states_all, num_periods, &
+                        periods_emax, delta, shocks_cholesky)
+
+                ! Collect information
+                periods_emax(period + 1, k + 1) = emax_simulated
+
             END DO
 
-            CALL MPI_ALLGATHERV(test_gather_part, scounts(myrank + 1), MPI_INT, &
-                test_gather_all, rcounts, disps - 1, MPI_INT, MPI_COMM_WORLD, ierr)
-
-
-            ! One slave has to keep the the master updated.
+            ! One slave has to keep the the master updated each period
             IF (myrank == 0) THEN
-                ! TODO: This will not work with variable length?
-                CALL MPI_SEND(test_gather_all, num_slaves, MPI_INT, 0, period, parentcomm, ierr)
+                CALL MPI_SEND(periods_emax(period + 1, :num_states) , num_states, MPI_DOUBLE, 0, period, parentcomm, ierr)            
 
             END IF
-
-        END DO
-
-        ! Cutting the states_all container to size. The required size is only known
-        ! after the state space creation is completed.
-        !ALLOCATE(states_all(num_periods, max_states_period, 4))
-        !states_all = states_all_tmp(:, :max_states_period, :)
-        !DEALLOCATE(states_all_tmp)
-
-        ! Calculate the systematic payoffs
-        !CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, &
-        !        num_periods, states_number_period, states_all, edu_start, &
-        !        coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
-
-        ! Initialize containers, which contain a lot of missing values as we
-        ! capture the tree structure in arrays of fixed dimension.
-        !periods_emax = MISSING_FLOAT
-
+            END DO
+      !----------------------------------------------------------------------
+      !----------------------------------------------------------------------
     END IF    
 
 END DO

@@ -5,6 +5,12 @@ PROGRAM master
 USE mpi
 
 USE shared_constants
+USE mpi
+
+USE shared_constants
+USE shared_auxiliary
+USE solve_fortran
+USE solve_auxiliary
 
 USE shared_auxiliary
 
@@ -23,6 +29,7 @@ USE shared_auxiliary
     INTEGER(our_int)                :: edu_start
     INTEGER(our_int)                :: edu_max
     INTEGER(our_int)                :: min_idx
+    INTEGER(our_int), ALLOCATABLE                   :: states_all_tmp(:, :, :)
 
     REAL(our_dble), ALLOCATABLE     :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_draws_emax(:, :, :)
@@ -51,11 +58,10 @@ USE shared_auxiliary
 
 INTEGER :: ierr, myrank, myprocs, slavecomm, num_slaves, array(5), root = 0, task
 
-PRINT *, 'Greetings from master ...'
 
 CALL GETARG(one_int, arg)
 IF (LEN_TRIM(arg) == 0) THEN
-    num_slaves = 2
+    num_slaves = 1
 ELSE
 read (arg,*) num_slaves
 END IF
@@ -78,6 +84,16 @@ CALL create_draws(periods_draws_emax, num_periods, num_draws_emax, seed_emax, &
 call MPI_Init(ierr)
 !call MPI_Comm_Rank(MPI_COMM_WORLD, myrank, ierr)
 !call MPI_Comm_Size(MPI_COMM_WORLD, nprocs, ierr)
+! Allocate arrays
+ALLOCATE(mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2))
+ALLOCATE(states_all_tmp(num_periods, 100000, 4))
+ALLOCATE(states_number_period(num_periods))
+
+CALL fort_create_state_space(states_all_tmp, states_number_period, &
+            mapping_state_idx, max_states_period, num_periods, edu_start, &
+            edu_max)
+
+ALLOCATE(periods_emax(num_periods, max_states_period))
 
 
 CALL MPI_COMM_SPAWN('./slave', MPI_ARGV_NULL, num_slaves, MPI_INFO_NULL, 0, MPI_COMM_WORLD, slavecomm, MPI_ERRCODES_IGNORE, ierr)
@@ -91,18 +107,20 @@ CALL MPI_Bcast(task, 1, MPI_INT, MPI_ROOT, slavecomm, ierr)
 
     ! The first slave is kind enough to let the parent process know about the intermediate outcomes.
 DO period = (num_periods - 1), 0, -1
-    CALL MPI_RECV(test_gather_all, num_slaves, MPI_INT, MPI_ANY_SOURCE, & 
-            MPI_ANY_TAG, slavecomm, status, ierr)
+    
+    num_states = states_number_period(period + 1)
 
-    PRINT *, 'received period ', test_gather_all
+    CALL MPI_RECV(periods_emax(period + 1, :num_states) , num_states, & 
+        MPI_DOUBLE, MPI_ANY_SOURCE,  MPI_ANY_TAG, slavecomm, status, ierr)
 END DO
 
 ! Shut down orderly
 task = 1
 CALL MPI_Bcast(task, 1, MPI_INT, MPI_ROOT, slavecomm, ierr)
-
-
 CALL MPI_FINALIZE (ierr)
+
+PRINT *, 'ROOT ', periods_emax(1, 1)
+
 
 END PROGRAM
 !*******************************************************************************
