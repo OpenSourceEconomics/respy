@@ -5,7 +5,7 @@ DEBUG_OPTIONS += ['-Wsurprising', '-Waliasing', '-Wimplicit-interface']
 DEBUG_OPTIONS += ['-Wunused-parameter', '-fwhole-file', '-fcheck=all']
 DEBUG_OPTIONS += ['-fbacktrace', '-g', '-fmax-errors=1', '-ffpe-trap=invalid']
 
-
+#DEBUG_OPTIONS = []
 import os
 import sys
 import numpy as np
@@ -81,7 +81,7 @@ for fname in glob.glob('*.mod'):
 for fname in ['master', 'slave']:
 
     cmd = 'mpif90  mpi_shared.f90 ' + fname + '.f90 ' + '-o ' + fname + ' '  \
-          + ' '.join(DEBUG_OPTIONS) + ' -Iinclude/ -Llib/ -lresfort -llapack'
+          + ' '.join(DEBUG_OPTIONS) + ' -Iinclude/ -Llib/ -lresfort -llapack '
     print(cmd, '\n')
 
     assert os.system(cmd) == 0

@@ -62,7 +62,7 @@ LOGICAL :: STAY_AVAILABLE = .TRUE.
 
     INTEGER(our_int)                    :: seed_inflated(15)
     INTEGER(our_int)                    :: num_states
-    INTEGER(our_int)                    :: seed_size
+    INTEGER(our_int)                    :: seed_size, lower_bound, upper_bound
 
 
     REAL(our_dble)                      :: payoffs_systematic(4)
@@ -134,7 +134,6 @@ CALL determine_workload(num_emax_slave, num_periods, num_slaves, states_number_p
 
 
 
-PRINT *, 'Greetings from slave ...', myrank
 task = -99
 
         ! Allocate arrays
@@ -152,14 +151,14 @@ DO WHILE (STAY_AVAILABLE)
     IF(task == 1) THEN
 
 
-        PRINT *, 'shutting down'!, test_gather_all, test_gather_part, myrank
+        !PRINT *, 'shutting down'!, test_gather_all, test_gather_part, myrank
 
         CALL MPI_FINALIZE(ierr)
         STAY_AVAILABLE = .FALSE.
 
     ELSEIF(task == 2) THEN
 
-        IF (myrank == 1) PRINT *, ' Calculate EMAX ...'
+        !IF (myrank == 1) PRINT *, ' Calculate EMAX ...'
 
     
        !     test_gather_part = myrank + 99
@@ -172,8 +171,8 @@ DO WHILE (STAY_AVAILABLE)
    !             disps(j) = SUM(scounts(:j))
   !          END DO
 
-!            CALL MPI_ALLGATHERV(test_gather_part, scounts(myrank + 1), MPI_INT, &
- !               test_gather_all, rcounts, disps - 1, MPI_INT, MPI_COMM_WORLD, ierr)
+!CALL MPI_ALLGATHERV(test_gather_part, scounts(myrank + 1), MPI_INT, &
+!      test_gather_all, rcounts, disps - 1, MPI_INT, MPI_COMM_WORLD, ierr)
         
         !----------------------------------------------------------------------
         ! This is the complete backward induction procedure without the interpolation.
@@ -193,16 +192,19 @@ DO WHILE (STAY_AVAILABLE)
 
         DO period = (num_periods - 1), 0, -1
 
-            IF (myrank == 1) THEN
-                PRINT *, 'Period', period
-                PRINT *, ''
-            END IF
+            !IF (myrank == 1) THEN
+            !    PRINT *, 'Period', period
+            !    PRINT *, ''
+            !END IF
             ! Extract draws and construct auxiliary objects
             draws_emax = periods_draws_emax(period + 1, :, :)
             num_states = states_number_period(period + 1)
 
             ! Loop over all possible states
-            DO k = 0, (states_number_period(period + 1) - 1)
+            lower_bound = SUM(num_emax_slave(period + 1, :myrank))
+            upper_bound = SUM(num_emax_slave(period + 1, :myrank + 1))
+            !PRINT *, myrank, lower_bound, upper_bound
+            DO k = lower_bound, upper_bound - 1
 
                 ! Extract payoffs
                 payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
@@ -216,6 +218,30 @@ DO WHILE (STAY_AVAILABLE)
                 periods_emax(period + 1, k + 1) = emax_simulated
 
             END DO
+
+            scounts(:) = num_emax_slave(period + 1, :)
+            rcounts(:) = scounts
+
+
+            DO j = 1, num_slaves
+                disps(j) = SUM(scounts(:j - 1))! - scounts(1)
+            END DO
+            
+            IF((myrank == 0) .AND. (period == 0)) THEN
+                PRINT *, scounts
+                PRINT *, rcounts
+                PRINT *, disps
+
+            END IF
+
+
+CALL MPI_ALLGATHERV(periods_emax(period + 1, lower_bound + 1:upper_bound), & 
+        scounts(myrank + 1), MPI_DOUBLE, periods_emax(period + 1, :), & 
+        rcounts, disps, MPI_DOUBLE, MPI_COMM_WORLD, ierr)
+
+      !      IF (myrank == 0) THEN
+       !         PRINT *, periods_emax(2, :)
+        !    END IF
 
             ! One slave has to keep the the master updated each period
             IF (myrank == 0) THEN

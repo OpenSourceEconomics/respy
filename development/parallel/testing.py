@@ -48,9 +48,19 @@ os.system('python driver.py')
 
 # Test the functionality of the executable for varying number of slaves and
 # varying number of model specifications.
-# TODO: Only checks if executing without problem, later test if same result.    
+import numpy as np
+# TODO: Only checks if executing without problem, later test if same result.
 for i in range(100000):
-    get_random_request()
-    num_slaves = np.random.randint(1, 3)
-    cmd = 'mpiexec ./master ' + str(num_slaves)
-    assert os.system(cmd) == 0
+    constr = dict()
+    constr['periods'] = np.random.randint(2, 5)
+    generate_init(constr)
+    base = None
+    for num_slaves in [1, 2, 3]:
+
+        cmd = 'mpiexec ./master ' + str(num_slaves)
+        assert os.system(cmd) == 0
+
+        if base is None:
+            base = np.loadtxt('.eval.resfort.dat')
+
+        assert base == np.loadtxt('.eval.resfort.dat')

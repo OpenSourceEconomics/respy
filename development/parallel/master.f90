@@ -5,14 +5,11 @@ PROGRAM master
 USE mpi
 
 USE shared_constants
-USE mpi
-
-USE shared_constants
 USE shared_auxiliary
+
 USE solve_fortran
 USE solve_auxiliary
 
-USE shared_auxiliary
 
 
     INTEGER(our_int), ALLOCATABLE   :: mapping_state_idx(:, :, :, :, :)
@@ -61,13 +58,11 @@ INTEGER :: ierr, myrank, myprocs, slavecomm, num_slaves, array(5), root = 0, tas
 
 CALL GETARG(one_int, arg)
 IF (LEN_TRIM(arg) == 0) THEN
-    num_slaves = 1
+    num_slaves = 2
 ELSE
 read (arg,*) num_slaves
 END IF
 
-
-ALLOCATE(test_gather_all(num_slaves))
 
 CALL read_specification(num_periods, delta, coeffs_a, coeffs_b, &
         coeffs_edu, edu_start, edu_max, coeffs_home, shocks_cholesky, & 
@@ -75,15 +70,10 @@ CALL read_specification(num_periods, delta, coeffs_a, coeffs_b, &
         is_interpolated, num_points, min_idx, request, num_draws_prob, & 
         is_myopic, tau)
 
-! This part creates (or reads from disk) the draws for the Monte 
-! Carlo integration of the EMAX. For is_debugging purposes, these might 
-! also be read in from disk or set to zero/one.   
-CALL create_draws(periods_draws_emax, num_periods, num_draws_emax, seed_emax, & 
-    is_debug)
-
 call MPI_Init(ierr)
 !call MPI_Comm_Rank(MPI_COMM_WORLD, myrank, ierr)
 !call MPI_Comm_Size(MPI_COMM_WORLD, nprocs, ierr)
+
 ! Allocate arrays
 ALLOCATE(mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2))
 ALLOCATE(states_all_tmp(num_periods, 100000, 4))
@@ -100,16 +90,12 @@ CALL MPI_COMM_SPAWN('./slave', MPI_ARGV_NULL, num_slaves, MPI_INFO_NULL, 0, MPI_
 
 
 ! Request EMAX calculation
-test_gather_all = -99
-
 task = 2
 CALL MPI_Bcast(task, 1, MPI_INT, MPI_ROOT, slavecomm, ierr)
 
-    ! The first slave is kind enough to let the parent process know about the intermediate outcomes.
+! The first slave is kind enough to let the parent process know about the intermediate outcomes.
 DO period = (num_periods - 1), 0, -1
-    
     num_states = states_number_period(period + 1)
-
     CALL MPI_RECV(periods_emax(period + 1, :num_states) , num_states, & 
         MPI_DOUBLE, MPI_ANY_SOURCE,  MPI_ANY_TAG, slavecomm, status, ierr)
 END DO
@@ -119,9 +105,16 @@ task = 1
 CALL MPI_Bcast(task, 1, MPI_INT, MPI_ROOT, slavecomm, ierr)
 CALL MPI_FINALIZE (ierr)
 
-PRINT *, 'ROOT ', periods_emax(1, 1)
+!PRINT *, 'ROOT ', periods_emax(2, 1)
+!PRINT *, 'ROOT ', periods_emax(2, 2)
+!PRINT *, 'ROOT ', periods_emax(2, 3)
+!PRINT *, 'ROOT ', periods_emax(2, 4)
 
 
+2500 FORMAT(1x,f25.15)
+OPEN(UNIT=1, FILE='.eval.resfort.dat')
+WRITE(1, 2500)  periods_emax(1, 1)
+CLOSE(1)
 END PROGRAM
 !*******************************************************************************
 !******************************************************************************* 
