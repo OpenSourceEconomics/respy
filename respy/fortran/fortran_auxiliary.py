@@ -152,8 +152,7 @@ def write_resfort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         line = '{0}'.format(request)
         file_.write(line + '\n')
 
-        import sys
-        sys.exit('exiting')
+
 def write_dataset(data_array):
     """ Write the dataset to a temporary file. Missing values are set
     to large values.

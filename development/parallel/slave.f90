@@ -6,11 +6,15 @@ USE mpi
 
 USE shared_constants
 USE shared_auxiliary
+USE solve_fortran
 USE solve_auxiliary
 
+
+IMPLICIT NONE
     INTEGER(our_int), ALLOCATABLE   :: mapping_state_idx(:, :, :, :, :)
     INTEGER(our_int), ALLOCATABLE   :: states_number_period(:)
     INTEGER(our_int), ALLOCATABLE   :: states_all(:, :, :)
+    INTEGER(our_int), ALLOCATABLE   :: num_emax_slave(:, :)
 
     INTEGER(our_int)                :: num_draws_emax
     INTEGER(our_int)                :: num_draws_prob
@@ -21,7 +25,7 @@ USE solve_auxiliary
     INTEGER(our_int)                :: seed_emax
     INTEGER(our_int)                :: edu_start
     INTEGER(our_int)                :: edu_max
-    INTEGER(our_int)                :: min_idx
+    INTEGER(our_int)                :: min_idx, i, j, k
 
     REAL(our_dble), ALLOCATABLE     :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_draws_emax(:, :, :)
@@ -45,7 +49,7 @@ USE solve_auxiliary
     CHARACTER(10)                   :: request
 
 
-INTEGER :: ierr, myrank, myprocs, slavecomm, num_slaves, task, root = 0, parentcomm
+INTEGER :: ierr, myrank, slavecomm, num_slaves, task, root = 0, parentcomm, nprocs
 LOGICAL :: STAY_AVAILABLE = .TRUE.
 
 
@@ -56,10 +60,10 @@ LOGICAL :: STAY_AVAILABLE = .TRUE.
 
 call MPI_Init(ierr)
 call MPI_Comm_Rank(MPI_COMM_WORLD, myrank, ierr)
-call MPI_Comm_Size(MPI_COMM_WORLD, nprocs, ierr)
+call MPI_Comm_Size(MPI_COMM_WORLD, num_slaves, ierr)
 CALL MPI_COMM_GET_PARENT(parentcomm, ierr)
 
-PRINT *, 'How many of us are there? ', nprocs
+PRINT *, 'How many of us are there? ', num_slaves
 
 
 
@@ -68,14 +72,40 @@ CALL read_specification(num_periods, delta, coeffs_a, coeffs_b, coeffs_edu, &
     seed_emax, seed_prob, num_agents_est, is_debug, is_interpolated, & 
     num_points, min_idx, request, num_draws_prob, is_myopic, tau)
 
-! In this section each slave figures out their exact workload.
-CALL determine_workload()
+
+! Allocate arrays
+ALLOCATE(mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2))
+ALLOCATE(states_all_tmp(num_periods, 100000, 4))
+ALLOCATE(states_number_period(num_periods))
+
+CALL fort_create_state_space(states_all_tmp, states_number_period, &
+            mapping_state_idx, max_states_period, num_periods, edu_start, &
+            edu_max)
+
+states_all = states_all_tmp(:, :max_states_period, :)
+DEALLOCATE(states_all_tmp)
+
+ALLOCATE(periods_payoffs_systematic(num_periods, max_states_period, 4))
+
+! Calculate the systematic payoffs
+CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, &
+        num_periods, states_number_period, states_all, edu_start, &
+        coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
+
 
 ! This part creates (or reads from disk) the draws for the Monte 
 ! Carlo integration of the EMAX. For is_debugging purposes, these might 
 ! also be read in from disk or set to zero/one.   
-CALL create_draws(periods_draws_emax, num_periods, num_draws_emax, seed_emax, & 
-    is_debug)
+CALL create_draws(periods_draws_emax, num_periods, num_draws_emax, seed_emax, is_debug)
+
+
+CALL determine_workload(num_emax_slave, num_periods, num_slaves, states_number_period)
+
+
+
+
+
+
 
 
 
@@ -87,9 +117,6 @@ task = -99
         !ALLOCATE(states_all_tmp(num_periods, 100000, 4))
         !ALLOCATE(states_number_period(num_periods))
 
-
-!ALLOCATE(periods_payoffs_systematic(num_periods, max_states_period, 4))
-!ALLOCATE(periods_emax(num_periods, max_states_period))
 
 DO WHILE (STAY_AVAILABLE)  
     
@@ -111,11 +138,6 @@ DO WHILE (STAY_AVAILABLE)
 
         PRINT *, ' Calculate EMAX ...'
 
-
-        ! Create the state space of the model
-        !CALL fort_create_state_space(states_all_tmp, states_number_period, &
-        !        mapping_state_idx, max_states_period, num_periods, edu_start, &
-        !        edu_max)
 
         ! Cutting the states_all container to size. The required size is only known
         ! after the state space creation is completed.

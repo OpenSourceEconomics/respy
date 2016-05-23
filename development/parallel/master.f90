@@ -43,15 +43,19 @@ USE shared_auxiliary
     LOGICAL                         :: is_myopic
     LOGICAL                         :: is_debug
 
-    CHARACTER(10)                   :: request
+    CHARACTER(10)                   :: request, arg
 
 
 INTEGER :: ierr, myrank, myprocs, slavecomm, num_slaves, array(5), root = 0, task
 
 PRINT *, 'Greetings from master ...'
 
-
-num_slaves = 2
+CALL GETARG(one_int, arg)
+IF (LEN_TRIM(arg) == 0) THEN
+    num_slaves = 2
+ELSE
+read (arg,*) num_slaves
+END IF
 
 
 CALL read_specification(num_periods, delta, coeffs_a, coeffs_b, &
