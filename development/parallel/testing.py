@@ -51,7 +51,7 @@ os.system('python driver.py')
 # varying number of model specifications.
 import numpy as np
 # TODO: Only checks if executing without problem, later test if same result.
-for i in range(1000):
+for i in range(100000000):
 
     # This generates the initialization file
     constr = dict()
