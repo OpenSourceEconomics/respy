@@ -18,7 +18,10 @@ from respy.tests.codes.random_init import generate_init
 from respy import RespyCls
 
 def get_random_request():
-    generate_init()
+
+    constr = dict()
+    constr['periods'] = np.random.randint(2, 15)
+    generate_init(constr)
     respy_obj = RespyCls('test.respy.ini')
     # Distribute class attributes
     model_paras, num_periods, edu_start, is_debug, edu_max, delta, version, \
@@ -51,16 +54,13 @@ os.system('python driver.py')
 import numpy as np
 # TODO: Only checks if executing without problem, later test if same result.
 for i in range(100000):
-    constr = dict()
-    constr['periods'] = np.random.randint(2, 5)
-    generate_init(constr)
+    get_random_request()
     base = None
     for num_slaves in [1, 2, 3]:
 
-        cmd = 'mpiexec ./master ' + str(num_slaves)
-        assert os.system(cmd) == 0
+         cmd = 'mpiexec ./master ' + str(num_slaves)
+         assert os.system(cmd) == 0
 
-        if base is None:
-            base = np.loadtxt('.eval.resfort.dat')
-
-        assert base == np.loadtxt('.eval.resfort.dat')
+         if base is None:
+             base = np.loadtxt('.eval.resfort.dat')
+         assert base == np.loadtxt('.eval.resfort.dat')
