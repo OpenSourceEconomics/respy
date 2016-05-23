@@ -73,7 +73,7 @@ LOGICAL :: STAY_AVAILABLE = .TRUE.
     REAL(our_dble), ALLOCATABLE         :: exogenous(:, :)
     REAL(our_dble), ALLOCATABLE         :: predictions(:)
     REAL(our_dble), ALLOCATABLE         :: endogenous(:)
-    REAL(our_dble), ALLOCATABLE         :: maxe(:)
+    REAL(our_dble), ALLOCATABLE         :: maxe(:), periods_emax_slaves(:)
 
     LOGICAL                             :: any_interpolated
 
@@ -106,6 +106,9 @@ CALL fort_create_state_space(states_all_tmp, states_number_period, &
             edu_max)
 
 ALLOCATE(periods_emax(num_periods, max_states_period))
+
+ALLOCATE(periods_emax_slaves(max_states_period))
+
 
 states_all = states_all_tmp(:, :max_states_period, :)
 DEALLOCATE(states_all_tmp)
@@ -200,6 +203,11 @@ DO WHILE (STAY_AVAILABLE)
             draws_emax = periods_draws_emax(period + 1, :, :)
             num_states = states_number_period(period + 1)
 
+!            IF (num_emax_slave(period + 1, myrank + 1) == 0) THEN
+ !               CYCLE
+  !          END IF
+
+            PRINT *, 'I am plugging ', myrank
             ! Loop over all possible states
             lower_bound = SUM(num_emax_slave(period + 1, :myrank))
             upper_bound = SUM(num_emax_slave(period + 1, :myrank + 1))
@@ -215,7 +223,7 @@ DO WHILE (STAY_AVAILABLE)
                         periods_emax, delta, shocks_cholesky)
 
                 ! Collect information
-                periods_emax(period + 1, k + 1) = emax_simulated
+                periods_emax_slaves(k + 1) = emax_simulated
 
             END DO
 
@@ -224,18 +232,21 @@ DO WHILE (STAY_AVAILABLE)
 
 
             DO j = 1, num_slaves
-                disps(j) = SUM(scounts(:j - 1))! - scounts(1)
+                disps(j) = SUM(scounts(:j - 1)) 
             END DO
             
-            IF((myrank == 0) .AND. (period == 0)) THEN
-                PRINT *, scounts
-                PRINT *, rcounts
-                PRINT *, disps
+     !       IF((myrank == 0) .AND. (period == 0)) THEN
+    !            PRINT *, scounts
+    !            PRINT *, rcounts
+    !            PRINT *, disps
 
-            END IF
+    !        END IF
 
+           ! if(myrank == 0) THEN
+           !     PRINT *, lower_bound + 1, upper_bound
+           ! END IF
 
-CALL MPI_ALLGATHERV(periods_emax(period + 1, lower_bound + 1:upper_bound), & 
+CALL MPI_ALLGATHERV(periods_emax_slaves(lower_bound + 1:upper_bound), & 
         scounts(myrank + 1), MPI_DOUBLE, periods_emax(period + 1, :), & 
         rcounts, disps, MPI_DOUBLE, MPI_COMM_WORLD, ierr)
 
