@@ -35,7 +35,8 @@ def build(ctx):
     src = ['shared/shared_constants.f90', 'shared/shared_auxiliary.f90',
         'solve/solve_auxiliary.f90', 'solve/solve_fortran.f90',
         'evaluate/evaluate_auxiliary.f90', 'evaluate/evaluate_fortran.f90',
-        'estimate/estimate_auxiliary.f90', 'simulate/simulate_fortran.f90']
+        'estimate/estimate_auxiliary.f90', 'simulate/simulate_fortran.f90',
+        'resfort_library.f90']
 
     flags = ctx.env.FCFLAGS + ['-fPIC']
     ctx(features=['fc', 'fcstlib'], source=src, target='resfort', fcflags=flags)

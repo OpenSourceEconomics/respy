@@ -4,11 +4,7 @@ PROGRAM resfort
 
     !/* external modules        */
 
-    USE evaluate_fortran
-
-    USE shared_auxiliary
-
-    USE solve_fortran
+    USE resfort_library
 
     !/* setup                   */
 
