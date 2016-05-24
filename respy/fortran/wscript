@@ -33,10 +33,9 @@ def build(ctx):
     # executable to allow for the use of an F2PY interface to the core
     # functions as well.
     src = ['shared/shared_constants.f90', 'shared/shared_auxiliary.f90',
-         'resfort_slsqp.f', 'solve/solve_auxiliary.f90',
-         'solve/solve_fortran.f90', 'evaluate/evaluate_auxiliary.f90',
-         'evaluate/evaluate_fortran.f90', 'estimate/estimate_auxiliary.f90',
-         'simulate/simulate_fortran.f90']
+        'solve/solve_auxiliary.f90', 'solve/solve_fortran.f90',
+        'evaluate/evaluate_auxiliary.f90', 'evaluate/evaluate_fortran.f90',
+        'estimate/estimate_auxiliary.f90', 'simulate/simulate_fortran.f90']
 
     flags = ctx.env.FCFLAGS + ['-fPIC']
     ctx(features=['fc', 'fcstlib'], source=src, target='resfort', fcflags=flags)
@@ -50,13 +49,13 @@ def build(ctx):
     # is used for the F2PY interface to allow for speed optimizations by
     # preprocessing.
     src = ['shared/shared_constants.f90', 'shared/shared_auxiliary.f90',
-         'resfort_slsqp.f', 'solve/solve_auxiliary.f90',
-         'solve/solve_fortran.f90', 'evaluate/evaluate_auxiliary.f90',
-         'evaluate/evaluate_fortran.f90', 'estimate/estimate_auxiliary.f90',
-         'simulate/simulate_fortran.f90', 'resfort.f90']
+        'solve/solve_auxiliary.f90', 'solve/solve_fortran.f90',
+        'evaluate/evaluate_auxiliary.f90', 'evaluate/evaluate_fortran.f90',
+        'estimate/estimate_auxiliary.f90', 'simulate/simulate_fortran.f90',
+        'resfort.f90']
 
     ctx(features=['fc', 'fcprogram'], source=src, target='resfort',
-          lib='lapack')
+          lib='lapack resfort')
 
     # Build the upgraded Keane and Wolpin (1994) program
     ctx.recurse('miscellaneous/kw_recomputation')

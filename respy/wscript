@@ -42,6 +42,10 @@ def build(ctx):
             ctx.env.append_unique('FCFLAGS', DEBUG_OPTIONS)
         else:
             ctx.env.append_unique('FCFLAGS', PRODUCTION_OPTIONS)
+
+        # Edit search path for libraries
+        ctx.env.append_unique('STLIBPATH', ['../.bld/fortran'])
+
     else:
         raise AssertionError('The build is only tested for GFORTRAN at this '
                              'point.')
