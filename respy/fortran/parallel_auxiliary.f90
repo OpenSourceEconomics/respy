@@ -126,12 +126,6 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
         CALL MPI_Bcast(task, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
         CALL MPI_FINALIZE (ierr)
 
-        ! Write out result to allow temporary testing against the scalar implementation.
-        2500 FORMAT(1x,f25.15)
-        OPEN(UNIT=1, FILE='.eval.resfort.dat')
-        WRITE(1, 2500)  periods_emax(1, 1)
-        CLOSE(1)
-
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
