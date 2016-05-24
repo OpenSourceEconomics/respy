@@ -45,17 +45,8 @@ def build(ctx):
     # Build F2PY interface
     ctx.add_to_group(CreateF2pyInterfaces(env=ctx.env))
 
-    # Compile RESFORT executable. We will not use the RESFORT library which
-    # is used for the F2PY interface to allow for speed optimizations by
-    # preprocessing.
-    src = ['shared/shared_constants.f90', 'shared/shared_auxiliary.f90',
-        'solve/solve_auxiliary.f90', 'solve/solve_fortran.f90',
-        'evaluate/evaluate_auxiliary.f90', 'evaluate/evaluate_fortran.f90',
-        'estimate/estimate_auxiliary.f90', 'simulate/simulate_fortran.f90',
-        'resfort.f90']
-
-    ctx(features=['fc', 'fcprogram'], source=src, target='resfort',
-          lib='lapack resfort')
+    # Compile RESFORT executable. 
+    ctx(features=['fc', 'fcprogram'], source='resfort.f90', target='resfort')
 
     # Build the upgraded Keane and Wolpin (1994) program
     ctx.recurse('miscellaneous/kw_recomputation')

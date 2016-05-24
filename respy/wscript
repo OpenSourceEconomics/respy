@@ -43,8 +43,12 @@ def build(ctx):
         else:
             ctx.env.append_unique('FCFLAGS', PRODUCTION_OPTIONS)
 
-        # Edit search path for libraries
+        # Enable static libraries
         ctx.env.append_unique('STLIBPATH', ['../.bld/fortran'])
+        ctx.env.append_unique('STLIB', ['resfort'])
+
+        # Enable shared libraries
+        ctx.env.append_unique('LIB', ['lapack'])
 
     else:
         raise AssertionError('The build is only tested for GFORTRAN at this '
@@ -53,7 +57,7 @@ def build(ctx):
     # Initialize directory structure
     ctx.recurse('fortran')
 
-    ctx.add_post_fun(post)
+    #ctx.add_post_fun(post)
 
 
 def distclean(ctx):
