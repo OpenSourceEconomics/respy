@@ -47,8 +47,8 @@ def get_resfort_init():
 
 # Test the functionality of the executable for varying number of slaves and
 # varying number of model specifications.
-np.random.seed(123)
-for i in range(10):
+np.random.seed(3123)
+while True:
 
     # This generates the initialization file
     constr = dict()
