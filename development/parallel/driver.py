@@ -41,66 +41,30 @@ import numpy as np
 #
 os.system('git clean -d -f')
 
-src = ['shared/shared_constants.f90', 'shared/shared_auxiliary.f90',
-    'solve/solve_auxiliary.f90', 'solve/solve_fortran.f90',
-    'evaluate/evaluate_auxiliary.f90', 'evaluate/evaluate_fortran.f90',
-    'estimate/estimate_auxiliary.f90', 'simulate/simulate_fortran.f90',
-    'resfort.f90']
-# Compile all files.
-for file_ in src:
-    cmd = 'gfortran -c ' + file_
-    os.system(cmd)
-
-cmd = 'mpif90 -c slave.f90 ' + ' '.join(DEBUG_OPTIONS)
-
-os.system(cmd)
-#import sys
-#sys.exit('clean')
-
-import shutil
-import glob
-fnames = ' '.join(glob.glob('*.o'))
-cmd = 'ar rc libresfort.a ' + fnames
-os.system(cmd)
-os.mkdir('lib')
-os.mkdir('include')
-shutil.move('libresfort.a', 'lib')
-
-
-for fname in glob.glob('*.mod'):
-    shutil.move(fname, 'include/' + fname)
-
-
-# # Link
-# cmd = 'mpif90 ' + ' '.join(src) + ' -o resfort -llapack ' + ' '.join(DEBUG_OPTIONS)
-# print(cmd)
-# assert os.system(cmd) == 0
-#
-#
-#
-# # Run executable
-# print('\n running\n')
-# os.system('git checkout .model.resfort.ini')
-# assert os.system('mpirun -np 2 ./resfort') == 0
+lib_dir = '/home/peisenha/restudToolbox/package/respy/.bld/fortran'
+inc_dir = '/home/peisenha/restudToolbox/package/respy/.bld'
 
 #
 for fname in ['master', 'slave']:
 
     cmd = 'mpif90 ' + fname + '.f90 ' + '-o ' + fname + ' '  \
-          + ' '.join(DEBUG_OPTIONS) + ' -Iinclude/ -Llib/ -lresfort -llapack '
+          + ' '.join(DEBUG_OPTIONS) + ' -I' + inc_dir + ' -L' + lib_dir + ' ' \
+                                                                        '-lresfort ' \
+                                      '-llapack '
     print(cmd, '\n')
 
     assert os.system(cmd) == 0
 
+os.system('mpiexec ./master')
+
+
 # Compile testing file.
-cmd = 'mpif90 testing_scalar_parallel.f90 ' + '-o testing  '  \
-          + ' '.join(DEBUG_OPTIONS) + ' -Iinclude/ -Llib/ -lresfort -llapack '
-print(cmd, '\n')
+#cmd = 'mpif90 testing_scalar_parallel.f90 ' + '-o testing  '  \
+#          + ' '.join(DEBUG_OPTIONS) + ' -Iinclude/ -Llib/ -lresfort -llapack '
+#print(cmd, '\n')
 
-assert os.system(cmd) == 0
+#assert os.system(cmd) == 0
 
-
-os.system('mpiexec ./testing')
 
 
 

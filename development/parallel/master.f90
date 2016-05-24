@@ -3,12 +3,14 @@
 MODULE master_auxiliary
 
     !/* external modules    */
+    USE resfort_library
 
-    USE shared_auxiliary
 
-    USE shared_constants
+!    USE shared_auxiliary
 
-    USE solve_auxiliary
+!    USE shared_constants
+
+!    USE solve_auxiliary
 
     USE mpi
 

@@ -744,7 +744,7 @@ SUBROUTINE read_specification(num_periods, delta, coeffs_a, coeffs_b, &
         ! REQUUEST
         READ(1, *) request
 
-    CLOSE(1, STATUS='delete')
+    CLOSE(1)
 
 END SUBROUTINE
 !*******************************************************************************
