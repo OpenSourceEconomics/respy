@@ -44,9 +44,6 @@ def get_resfort_init():
     args = args + (1, 1, 1, seed_emax, tau, 'solve')
     write_resfort_initialization(*args)
 
-# Compile
-os.system('python driver.py')
-
 # Test the functionality of the executable for varying number of slaves and
 # varying number of model specifications.
 import numpy as np
@@ -69,11 +66,11 @@ for i in range(10):
     # TODO: Just draw a random number of slaves
     num_slaves = np.random.randint(1, 5)
 
-    cmd = 'mpiexec ./master ' + str(num_slaves)
-    assert os.system(cmd) == 0
-    base = np.loadtxt('.eval.resfort.dat')
-    print('\n\n Visual Debugging')
-    print(base, package)
-    print('\n\n')
-
-    np.testing.assert_allclose(base, package)
+    # cmd = 'mpiexec ./master ' + str(num_slaves)
+    # assert os.system(cmd) == 0
+    # base = np.loadtxt('.eval.resfort.dat')
+    # print('\n\n Visual Debugging')
+    # print(base, package)
+    # print('\n\n')
+    #
+    # np.testing.assert_allclose(base, package)

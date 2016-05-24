@@ -27,6 +27,55 @@ class CreateF2pyInterfaces(Task):
         os.chdir('../')
 
 
+class CreateParallelExecutable(Task):
+
+    def run(self):
+
+        cwd = os.getcwd()
+        os.chdir('/home/peisenha/restudToolbox/package/respy/fortran')
+
+        # # TODO: Major improvements required.
+        lib_dir = '/home/peisenha/restudToolbox/package/respy/.bld/fortran'
+        inc_dir = '/home/peisenha/restudToolbox/package/respy/.bld'
+        DEBUG_OPTIONS = ['-O2', '-Wall', '-Wline-truncation',
+             '-Wcharacter-truncation']
+        DEBUG_OPTIONS += ['-Wsurprising', '-Waliasing', '-Wimplicit-interface']
+        DEBUG_OPTIONS += ['-Wunused-parameter', '-fwhole-file', '-fcheck=all']
+        DEBUG_OPTIONS += ['-fbacktrace', '-g', '-fmax-errors=1',
+             '-ffpe-trap=invalid']
+        #
+        # # DEBUG_OPTIONS = []
+        # #
+        cmd = 'mpif90 parallel_master.f90 ' + '-o resfort_parallel_master ' + \
+              ' '.join(
+                 DEBUG_OPTIONS) + ' -I' + inc_dir + ' -L' + lib_dir + ' ' \
+                                                                      '-lresfort ' \
+                                                                      '-llapack '
+        assert os.system(cmd) == 0
+
+        cmd = 'mpif90 parallel_slave.f90 ' + '-o resfort_parallel_slave ' +\
+              ' '.join(
+            DEBUG_OPTIONS) + ' -I' + inc_dir + ' -L' + lib_dir + ' ' \
+                                                                 '-lresfort ' \
+                                                                 '-llapack '
+
+        assert os.system(cmd) == 0
+
+        # This compiles the testing
+        # Compile testing file.
+        os.chdir('miscellaneous/testing')
+        cmd = 'mpif90 testing_scalar_parallel.f90 ' + '-o ' \
+                                                      'testing_parallel_scalar  '  \
+                  + ' '.join(DEBUG_OPTIONS) + ' -I' + inc_dir + ' -L' + lib_dir + ' ' \
+                                                                 '-lresfort ' \
+                                                                 '-llapack '
+
+        assert os.system(cmd) == 0
+
+
+        os.chdir(cwd)
+
+
 def build(ctx):
 
     # Create the RESFORT library. This is build in addition to the RESFORT
@@ -46,8 +95,12 @@ def build(ctx):
     # Build F2PY interface
     ctx.add_to_group(CreateF2pyInterfaces(env=ctx.env))
 
-    # Compile RESFORT executable.
-    ctx(features=['fc', 'fcprogram'], source='resfort.f90', target='resfort')
+    # Compile scalar RESFORT executable.
+    ctx(features=['fc', 'fcprogram'], source='scalar.f90',
+        target='resfort_scalar')
+
+    # Compile the parallel RESFORT executables.
+    ctx.add_to_group(CreateParallelExecutable(env=ctx.env))
 
     # Build the upgraded Keane and Wolpin (1994) program
     ctx.recurse('miscellaneous/kw_recomputation')
