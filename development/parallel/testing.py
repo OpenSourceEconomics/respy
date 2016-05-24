@@ -21,6 +21,7 @@ from respy.solve import solve
 def get_resfort_init():
 
     respy_obj = RespyCls('test.respy.ini')
+
     # Distribute class attributes
     model_paras, num_periods, edu_start, is_debug, edu_max, delta, version, \
         num_draws_emax, seed_emax, is_interpolated, num_points, is_myopic, \
@@ -46,25 +47,23 @@ def get_resfort_init():
 
 # Test the functionality of the executable for varying number of slaves and
 # varying number of model specifications.
-import numpy as np
-# TODO: Only checks if executing without problem, later test if same result.
 for i in range(10):
 
     # This generates the initialization file
     constr = dict()
-    constr['version'] = 'FORTRAN'
-    constr['apply'] = False
+    #constr['version'] = 'FORTRAN'
+    #constr['apply'] = False
     generate_init(constr)
 
     respy_obj = RespyCls('test.respy.ini')
-    respy_obj = solve(respy_obj)
+    #respy_obj = solve(respy_obj)
 
-    package = respy_obj.get_attr('periods_emax')[0, 0]
-    # This ensures
-    get_resfort_init()
-    base = None
-    # TODO: Just draw a random number of slaves
-    num_slaves = np.random.randint(1, 5)
+    # package = respy_obj.get_attr('periods_emax')[0, 0]
+    # # This ensures
+    # get_resfort_init()
+    # base = None
+    # # TODO: Just draw a random number of slaves
+    # num_slaves = np.random.randint(1, 5)
 
     # cmd = 'mpiexec ./master ' + str(num_slaves)
     # assert os.system(cmd) == 0
