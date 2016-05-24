@@ -57,7 +57,7 @@ def build(ctx):
     # Initialize directory structure
     ctx.recurse('fortran')
 
-    #ctx.add_post_fun(post)
+    ctx.add_post_fun(post)
 
 
 def distclean(ctx):
