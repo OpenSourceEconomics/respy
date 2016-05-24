@@ -35,7 +35,8 @@ def fort_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
     write_dataset(data_array)
 
     # Call executable
-    os.system(FORTRAN_DIR + '/bin/resfort')
+    # TODO: This is no implemented in parallel code base yet.
+    os.system(FORTRAN_DIR + '/bin/resfort_scalar')
 
     crit_val = read_data('eval', 1)[0]
 
@@ -58,7 +59,7 @@ def fort_solve(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
     write_resfort_initialization(*args)
 
     # Call executable
-    os.system(FORTRAN_DIR + '/bin/resfort')
+    os.system(FORTRAN_DIR + '/bin/resfort_scalar')
 
     # Return arguments depends on the request.
     args = get_results(num_periods, min_idx)

@@ -4,9 +4,7 @@ MODULE slave_shared
 
     !/* external modules    */
 
-    USE shared_auxiliary
-
-    USE shared_constants
+    USE resfort_library 
 
     USE mpi
 
@@ -127,13 +125,7 @@ PROGRAM slave
 
     !/* external modules        */
 
-    USE shared_constants
-    
-    USE shared_auxiliary
-
-    USE solve_auxiliary
-
-    USE solve_fortran
+    USE resfort_library
 
     USE slave_shared    
 

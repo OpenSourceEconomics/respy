@@ -47,29 +47,38 @@ def get_resfort_init():
 
 # Test the functionality of the executable for varying number of slaves and
 # varying number of model specifications.
+np.random.seed(123)
 for i in range(10):
 
     # This generates the initialization file
     constr = dict()
-    #constr['version'] = 'FORTRAN'
-    #constr['apply'] = False
+    constr['version'] = 'FORTRAN'
+    constr['apply'] = False
     generate_init(constr)
 
     respy_obj = RespyCls('test.respy.ini')
-    #respy_obj = solve(respy_obj)
+    respy_obj = solve(respy_obj)
 
-    # package = respy_obj.get_attr('periods_emax')[0, 0]
+    package = respy_obj.get_attr('periods_emax')[0, 0]
     # # This ensures
-    # get_resfort_init()
-    # base = None
+    get_resfort_init()
+    base = None
     # # TODO: Just draw a random number of slaves
-    # num_slaves = np.random.randint(1, 5)
+    num_slaves = np.random.randint(1, 5)
 
-    # cmd = 'mpiexec ./master ' + str(num_slaves)
-    # assert os.system(cmd) == 0
-    # base = np.loadtxt('.eval.resfort.dat')
-    # print('\n\n Visual Debugging')
-    # print(base, package)
-    # print('\n\n')
-    #
-    # np.testing.assert_allclose(base, package)
+    cmd = 'mpiexec /home/peisenha/restudToolbox/package/respy/fortran/bin' \
+          '/resfort_parallel_master ' + str(num_slaves)
+    assert os.system(cmd) == 0
+    base = np.loadtxt('.eval.resfort.dat')
+    print('\n\n Visual Debugging')
+    print(base, package)
+    print('\n\n')
+
+    np.testing.assert_allclose(base, package)
+
+    # Testing parallel vs scalar functions
+    num_slaves = np.random.randint(1, 5)
+    cmd = 'mpiexec /home/peisenha/restudToolbox/package/respy/fortran/bin' \
+          '/testing_parallel_scalar ' + str(num_slaves)
+    os.system(cmd)
+    assert not os.path.exists('.error.testing')

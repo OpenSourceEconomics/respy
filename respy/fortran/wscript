@@ -46,7 +46,8 @@ class CreateParallelExecutable(Task):
         #
         # # DEBUG_OPTIONS = []
         # #
-        cmd = 'mpif90 parallel_master.f90 ' + '-o resfort_parallel_master ' + \
+        cmd = 'mpif90 parallel_auxiliary.f90 parallel_master.f90 ' + '-o ' \
+                                                   'resfort_parallel_master ' + \
               ' '.join(
                  DEBUG_OPTIONS) + ' -I' + inc_dir + ' -L' + lib_dir + ' ' \
                                                                       '-lresfort ' \
@@ -63,13 +64,16 @@ class CreateParallelExecutable(Task):
 
         # This compiles the testing
         # Compile testing file.
+        import shutil
         os.chdir('miscellaneous/testing')
-        cmd = 'mpif90 testing_scalar_parallel.f90 ' + '-o ' \
-                                                      'testing_parallel_scalar  '  \
-                  + ' '.join(DEBUG_OPTIONS) + ' -I' + inc_dir + ' -L' + lib_dir + ' ' \
-                                                                 '-lresfort ' \
+        shutil.copy('../../parallel_auxiliary.f90', '.')
+
+        cmd = 'mpif90  ../../parallel_auxiliary.f90 testing_scalar_parallel.f90  ' \
+              + '-o testing_parallel_scalar ' + ' '.join(
+            DEBUG_OPTIONS) + ' -I' + inc_dir + ' -L' + lib_dir + ' -lresfort ' \
                                                                  '-llapack '
 
+        os.system(cmd)
         assert os.system(cmd) == 0
 
 

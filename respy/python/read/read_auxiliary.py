@@ -84,9 +84,11 @@ def check_line(group, flag, value):
                 if value == 'F2PY':
                     fname = glob.glob(ROOT_DIR + '/fortran/f2py_library*.so')[0]
                     assert os.path.exists(fname)
+                # TODO: Checks depend on umber of cores requested.
                 if value == 'FORTRAN':
-                    fname = ROOT_DIR + '/fortran/bin/resfort'
+                    fname = ROOT_DIR + '/fortran/bin/resfort_scalar'
                     assert os.path.exists(fname)
+
 
         if group == 'SIMULATION':
             if flag in ['agents', 'seed']:

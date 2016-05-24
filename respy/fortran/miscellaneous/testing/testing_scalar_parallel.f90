@@ -1,16 +1,6 @@
 !*******************************************************************************
 !******************************************************************************* 
-MODULE master_auxiliary
-
-    !/* external modules    */
-
-    USE shared_auxiliary
-
-    USE shared_constants
-
-    USE solve_auxiliary
-
-    USE mpi
+MODULE testing_auxiliary
 
     !/* setup   */
 
@@ -19,120 +9,6 @@ MODULE master_auxiliary
     PUBLIC
 
 CONTAINS
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period, &
-                mapping_state_idx, periods_emax, states_all, coeffs_a, &
-                coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, &
-                is_interpolated, num_draws_emax, & 
-                num_periods, num_points, edu_start, is_myopic, is_debug, & 
-                edu_max, min_idx, delta, num_slaves, SLAVECOMM)
-
-    !/* external objects        */
-
-    INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: mapping_state_idx(:, :, :, :, :)
-    INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: states_number_period(:)
-    INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: states_all(:, :, :)
-
-    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_payoffs_systematic(:, :, :)
-    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_emax(:, :)
-
-    INTEGER(our_int), INTENT(IN)                    :: num_draws_emax
-    INTEGER(our_int), INTENT(IN)                    :: num_periods
-    INTEGER(our_int), INTENT(IN)                    :: num_points
-    INTEGER(our_int), INTENT(IN)                    :: edu_start
-    INTEGER(our_int), INTENT(IN)                    :: edu_max
-    INTEGER(our_int), INTENT(IN)                    :: min_idx
-
-    REAL(our_dble), INTENT(IN)                      :: shocks_cholesky(:, :)
-    REAL(our_dble), INTENT(IN)                      :: coeffs_home(:)
-    REAL(our_dble), INTENT(IN)                      :: coeffs_edu(:)
-    REAL(our_dble), INTENT(IN)                      :: coeffs_a(:)
-    REAL(our_dble), INTENT(IN)                      :: coeffs_b(:)
-    REAL(our_dble), INTENT(IN)                      :: delta
-
-    LOGICAL, INTENT(IN)                             :: is_interpolated
-    LOGICAL, INTENT(IN)                             :: is_myopic
-    LOGICAL, INTENT(IN)                             :: is_debug
-
-    !NEw external
-    INTEGER(our_int), INTENT(IN)                    :: num_slaves, SLAVECOMM
-
-
-    !/* internal objects        */
-
-    INTEGER(our_int), ALLOCATABLE                   :: states_all_tmp(:, :, :)
-
-    INTEGER(our_int)                                :: max_states_period
-    INTEGER(our_int)                                :: period
-
-
-    !NEW internal
-    INTEGER(our_int)                                :: ierr
-    INTEGER(our_int)                                :: num_states, status, task
-
-!-------------------------------------------------------------------------------
-! Algorithm
-!-------------------------------------------------------------------------------
-
-        ! Spawn the slaves for doing the actual work.
-        CALL MPI_COMM_SPAWN('./slave', MPI_ARGV_NULL, num_slaves, MPI_INFO_NULL, & 
-                0, MPI_COMM_WORLD, SLAVECOMM, MPI_ERRCODES_IGNORE, ierr)
-
-        ! Request EMAX calculation
-        task = 2
-        CALL MPI_Bcast(task, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
-
-        !-----------------------------------------------------------------------
-        ! While waiting for the slaves to finish, the master prepares himself.
-        !-----------------------------------------------------------------------
-
-        ! Allocate arrays
-        ALLOCATE(mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2))
-        ALLOCATE(states_all_tmp(num_periods, 100000, 4))
-        ALLOCATE(states_number_period(num_periods))
-
-        CALL fort_create_state_space(states_all_tmp, states_number_period, &
-                    mapping_state_idx, max_states_period, num_periods, edu_start, &
-                    edu_max)
-
-        ALLOCATE(periods_emax(num_periods, max_states_period))
-
-        ! Calculate the systematic payoffs
-        ALLOCATE(states_all(num_periods, max_states_period, 4))
-        states_all = states_all_tmp(:, :max_states_period, :)
-        DEALLOCATE(states_all_tmp)
-
-        ALLOCATE(periods_payoffs_systematic(num_periods, max_states_period, 4))
-
-        CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, &
-                num_periods, states_number_period, states_all, edu_start, &
-                coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
-       
-        ! The leading slave is kind enough to let the parent process know about the 
-        ! intermediate outcomes.
-        DO period = (num_periods - 1), 0, -1
-
-            num_states = states_number_period(period + 1)
-
-            CALL MPI_RECV(periods_emax(period + 1, :num_states), num_states, & 
-                    MPI_DOUBLE, MPI_ANY_SOURCE, MPI_ANY_TAG, SLAVECOMM, status, & 
-                    ierr)
-
-        END DO
-
-        ! Shut down orderly
-        task = 1
-        CALL MPI_Bcast(task, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
-        CALL MPI_FINALIZE (ierr)
-
-        ! Write out result to allow temporary testing against the scalar implementation.
-        2500 FORMAT(1x,f25.15)
-        OPEN(UNIT=1, FILE='.eval.resfort.dat')
-        WRITE(1, 2500)  periods_emax(1, 1)
-        CLOSE(1)
-
-END SUBROUTINE
 
 SUBROUTINE record_equality(is_equal)
 
@@ -140,7 +16,7 @@ LOGICAL :: is_equal
 
 IF(.NOT. is_equal) THEN
 
-OPEN (UNIT=5, FILE=".error.testing", STATUS="NEW")  ! Root directory
+OPEN (UNIT=5, FILE=".error.testing")  ! Root directory
 CLOSE (UNIT=5)
 END IF
 
@@ -152,19 +28,23 @@ END SUBROUTINE
 END MODULE
 !*******************************************************************************
 !******************************************************************************* 
-PROGRAM master
+PROGRAM testing
 
     !/* external modules        */
 
-    USE master_auxiliary    
+    USE parallel_auxiliary 
 
-    USE shared_constants
+    USE resfort_library
+
+    USE testing_auxiliary    
+
+!    USE shared_constants
     
-    USE shared_auxiliary
+ !   USE shared_auxiliary
 
-    USE solve_auxiliary
+  !  USE solve_auxiliary
 
-    USE solve_fortran
+   ! USE solve_fortran
 
     USE mpi
     
@@ -202,7 +82,7 @@ PROGRAM master
     INTEGER(our_int)                :: min_idx
     INTEGER(our_int)                :: period
     INTEGER(our_int)                :: ierr
-    INTEGER(our_int)                :: task
+    INTEGER(our_int)                :: task, stat
 
     REAL(our_dble), ALLOCATABLE     :: periods_payoffs_systematic_parallel(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_emax_parallel(:, :)
@@ -221,7 +101,7 @@ PROGRAM master
 
     LOGICAL                         :: is_interpolated
     LOGICAL                         :: is_myopic
-    LOGICAL                         :: is_debug, is_equal
+    LOGICAL                         :: is_debug, is_equal, file_exists
 
     CHARACTER(10)                   :: request
     CHARACTER(10)                   :: arg
@@ -230,6 +110,15 @@ PROGRAM master
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
+
+    ! Cleanup
+
+inquire(file='.error.testing',exist=file_exists)
+if ( file_exists ) then
+    open(unit=1234, iostat=stat, file='.error.testing', status='old')
+    close(1234, status='delete')
+END IF
+
 
     ! Initialize MPI environment
     CALL MPI_INIT(ierr)
@@ -272,7 +161,7 @@ PROGRAM master
             edu_max, min_idx, delta)
 
     ! Test equality of return arguments.
-    is_equal = ALL(periods_emax_scalar .EQ. periods_emax_parallel)
+    is_equal = ALL(periods_payoffs_systematic_scalar .EQ. periods_payoffs_systematic_parallel)
     CALL record_equality(is_equal)
 
     is_equal = ALL(states_number_period_scalar .EQ. states_number_period_parallel)
