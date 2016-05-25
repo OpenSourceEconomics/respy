@@ -313,7 +313,6 @@ class RespyCls(object):
             shocks_cholesky = np.linalg.cholesky(shocks_cov)
             self.attr['model_paras']['shocks_cholesky'] = shocks_cholesky
 
-
         self.attr['model_paras']['coeffs_a'] = \
             init_dict['OCCUPATION A']['coeffs']
         self.attr['model_paras']['coeffs_b'] = \
@@ -426,6 +425,8 @@ class RespyCls(object):
         # Parallelism
         assert (is_parallel in [True, False])
         assert (num_procs > 0)
+        if is_parallel:
+            assert (version == 'FORTRAN')
 
         # Status of optimization parameters
         assert isinstance(paras_fixed, list)

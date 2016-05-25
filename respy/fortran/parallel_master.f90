@@ -115,6 +115,10 @@ PROGRAM master
 
     END IF
 
+    ! Cleanup
+    OPEN(UNIT=1, FILE='.model.resfort.ini')
+    CLOSE(1, STATUS='delete')
+    
     ! Store results. These are read in by the PYTHON wrapper and added to the 
     ! RespyCls instance.
     CALL store_results(mapping_state_idx, states_all, &

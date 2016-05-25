@@ -26,3 +26,6 @@ INADMISSIBILITY_PENALTY = -40000.00
 # implementations. There is no NAN available in FORTRAN.
 MISSING_INT = -99
 MISSING_FLOAT = -99.00
+
+# Flag that indicate whether the parallel executables are available.
+IS_PARALLEL = os.path.exists(FORTRAN_DIR + '/bin/resfort_parallel_master')

@@ -20,8 +20,10 @@ from modules.clsMail import MailCls
 # RESPY directory. This allows to compile_ the debug version of the FORTRAN
 # program.
 RESPY_DIR = os.path.dirname(os.path.realpath(__file__))
-RESPY_DIR = RESPY_DIR.replace('development/testing/modules', '') + 'respy'
+RESPY_DIR = RESPY_DIR.replace('development/testing/automated/modules','') + 'respy'
 
+# package imports
+from respy.python.shared.shared_constants import IS_PARALLEL
 
 ''' Auxiliary functions
 '''
@@ -146,6 +148,11 @@ def get_test_dict(test_dir):
         for candidate_method in candidate_methods:
             if 'test_' in candidate_method:
                 test_dict[test_module].append(candidate_method)
+
+    # If the parallel version is not available, we remove the parallel tests.
+    if not IS_PARALLEL:
+        del test_dict['test_parallels']
+
 
     # Finishing
     return test_dict

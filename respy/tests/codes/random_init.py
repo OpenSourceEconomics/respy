@@ -4,7 +4,9 @@
 # standard library
 import numpy as np
 
+# project library
 from respy.python.shared.shared_auxiliary import print_init_dict
+from respy.python.shared.shared_constants import IS_PARALLEL
 
 # module-wide variables
 MAX_AGENTS = 1000
@@ -99,10 +101,14 @@ def generate_random_dict(constraints=None):
     # PROGRAM
     dict_['PROGRAM'] = {}
     dict_['PROGRAM']['debug'] = 'True'
-    dict_['PROGRAM']['parallelism'] = np.random.choice([True, False])
     dict_['PROGRAM']['procs'] = np.random.randint(2, 5)
 
     # Parallelism is only supported in FORTRAN implementation.
+    if IS_PARALLEL:
+        dict_['PROGRAM']['parallelism'] = np.random.choice([True, False])
+    else:
+        dict_['PROGRAM']['parallelism'] = False
+
     versions = ['FORTRAN', 'F2PY', 'PYTHON']
     if dict_['PROGRAM']['parallelism']:
         versions = ['FORTRAN']
@@ -152,6 +158,10 @@ def generate_random_dict(constraints=None):
     if 'agents' in keys:
         assert 'max_draws' not in keys
 
+    if 'parallelism' in keys:
+        if ('version' in keys) and constraints['parallelism']:
+            assert constraints['version'] == 'FORTRAN'
+
     # Replace interpolation
     if 'apply' in constraints.keys():
         # Checks
@@ -200,6 +210,9 @@ def generate_random_dict(constraints=None):
         assert (version in ['PYTHON', 'FORTRAN', 'F2PY'])
         # Replace in initialization file
         dict_['PROGRAM']['version'] = version
+        # Ensure that the constraints are met
+        if dict_['PROGRAM']['version'] != 'FORTRAN':
+            dict_['PROGRAM']['parallelism'] = False
 
     # Ensure that random deviates do not exceed a certain number. This is
     # useful when aligning the randomness across implementations.
@@ -215,6 +228,18 @@ def generate_random_dict(constraints=None):
         dict_['ESTIMATION']['agents'] = np.random.randint(1, num_agents_sim)
         dict_['ESTIMATION']['draws'] = np.random.randint(1, max_draws)
         dict_['SOLUTION']['draws'] = np.random.randint(1, max_draws)
+
+    # Replace parallelism ...
+    if 'parallelism' in constraints.keys():
+        # Extract objects
+        parallelism = constraints['parallelism']
+        # Checks
+        assert (parallelism in [True, False])
+        # Replace in initialization file
+        dict_['PROGRAM']['parallelism'] = parallelism
+        # Ensure that the constraints are met
+        if dict_['PROGRAM']['parallelism']:
+            dict_['PROGRAM']['version'] = 'FORTRAN'
 
     # Replace store attribute
     if 'store' in constraints.keys():

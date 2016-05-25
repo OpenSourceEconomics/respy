@@ -2,7 +2,7 @@
 FORTRAN implementations.
 """
 # standard library
-import os
+import subprocess
 
 # project library
 from respy.fortran.fortran_auxiliary import write_resfort_initialization
@@ -37,9 +37,11 @@ def fort_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
 
     # Call executable
     if not is_parallel:
-        os.system(FORTRAN_DIR + '/bin/resfort_scalar')
+        cmd = FORTRAN_DIR + '/bin/resfort_scalar'
+        subprocess.call(cmd, shell=True)
     else:
-        os.system('mpiexec ' + FORTRAN_DIR + '/bin/resfort_parallel_master')
+        cmd = 'mpiexec ' + FORTRAN_DIR + '/bin/resfort_parallel_master'
+        subprocess.call(cmd, shell=True)
 
     crit_val = read_data('eval', 1)[0]
 
@@ -64,9 +66,11 @@ def fort_solve(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
 
     # Call executable
     if not is_parallel:
-        os.system(FORTRAN_DIR + '/bin/resfort_scalar')
+        cmd = FORTRAN_DIR + '/bin/resfort_scalar'
+        subprocess.call(cmd, shell=True)
     else:
-        os.system('mpiexec ' + FORTRAN_DIR + '/bin/resfort_parallel_master')
+        cmd = 'mpiexec ' + FORTRAN_DIR + '/bin/resfort_parallel_master'
+        subprocess.call(cmd, shell=True)
 
     # Return arguments depends on the request.
     args = get_results(num_periods, min_idx)

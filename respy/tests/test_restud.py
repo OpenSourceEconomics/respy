@@ -8,8 +8,8 @@ from pandas.util.testing import assert_frame_equal
 import pandas as pd
 import numpy as np
 
+import subprocess
 import pytest
-import os
 
 # project library
 from codes.random_init import generate_random_dict
@@ -121,7 +121,8 @@ class TestClass(object):
             num_agents_sim, num_periods, num_draws_emax, delta)
 
         # Solve model using RESTUD code.
-        os.system(FORTRAN_DIR + '/bin/kw_dp3asim')
+        cmd = FORTRAN_DIR + '/bin/kw_dp3asim'
+        subprocess.call(cmd, shell=True)
 
         # Solve model using RESPY package.
         solve(respy_obj)

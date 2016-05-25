@@ -87,6 +87,7 @@ class TestClass(object):
         constraints['is_deterministic'] = is_deterministic
         constraints['is_myopic'] = is_myopic
         constraints['max_draws'] = max_draws
+        constraints['parallelism'] = False
 
         init_dict = generate_random_dict(constraints)
 
@@ -133,7 +134,7 @@ class TestClass(object):
 
             # Modify the version of the program for the different requests.
             respy_obj.unlock()
-            respy_obj.set_attr('version',  version)
+            respy_obj.set_attr('version', version)
             respy_obj.lock()
 
             # Solve the model
@@ -364,6 +365,7 @@ class TestClass(object):
 
         # Generate random initialization file
         constraints = dict()
+        constraints['parallelism'] = False
         constraints['maxiter'] = 0
 
         # Generate random initialization file

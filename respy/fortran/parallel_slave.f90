@@ -62,12 +62,6 @@ SUBROUTINE distribute_inter(num_emax_slaves, period, &
             periods_emax, rcounts, disps, MPI_DOUBLE, & 
             MPI_COMM_WORLD, ierr)
 
-    ! The leading slave updates the master period by period.
-    !IF (rank == 0) THEN
-    !    CALL MPI_SEND(periods_emax(period + 1, :num_states), num_states, & 
-    !        MPI_DOUBLE, 0, period, PARENTCOMM, ierr)            
-    !END IF
-
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
@@ -96,6 +90,8 @@ SUBROUTINE distribute_information(num_emax_slaves, period, &
     INTEGER(our_int)                :: ierr
     INTEGER(our_int)                :: i
 
+    REAL(our_dble)                  :: periods_emax_subset(num_states)
+
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
@@ -117,8 +113,9 @@ SUBROUTINE distribute_information(num_emax_slaves, period, &
             MPI_COMM_WORLD, ierr)
 
     ! The leading slave updates the master period by period.
+    periods_emax_subset = periods_emax(period + 1, :num_states)
     IF (rank == 0) THEN
-        CALL MPI_SEND(periods_emax(period + 1, :num_states), num_states, & 
+        CALL MPI_SEND(periods_emax_subset, num_states, & 
             MPI_DOUBLE, 0, period, PARENTCOMM, ierr)            
     END IF
 
@@ -242,7 +239,7 @@ PROGRAM slave
     LOGICAL                         :: STAY_AVAILABLE = .TRUE.
     LOGICAL                         :: is_interpolated
     LOGICAL                         :: is_myopic
-    LOGICAL                         :: is_debug, any_interpolated
+    LOGICAL                         :: is_debug, any_interpolated, is_head
 
     CHARACTER(225)                  :: exec_dir
      CHARACTER(10)                   :: request
@@ -306,6 +303,12 @@ PROGRAM slave
             seed_emax, is_debug)
 
     periods_emax = MISSING_FLOAT
+
+    IF(rank == zero_int) THEN
+        is_head = .True.
+    ELSE
+        is_head = .False.
+    END IF
 
     DO WHILE (STAY_AVAILABLE)  
         
@@ -416,12 +419,13 @@ PROGRAM slave
                     CALL distribute_inter(num_emax_slaves, period, & 
                         endogenous_slaves, endogenous, rank, num_states, & 
                         PARENTCOMM)
+                    
                     ! Create prediction model based on the random subset of points where
                     ! the EMAX is actually simulated and thus endogenous and
                     ! exogenous variables are available. For the interpolation
                     ! points, the actual values are used.
                     CALL get_predictions(predictions, endogenous, exogenous, maxe, &
-                            is_simulated, num_points, num_states)
+                            is_simulated, num_points, num_states, is_head)
 
                     ! Store results
                     periods_emax(period + 1, :num_states) = predictions

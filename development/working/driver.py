@@ -7,7 +7,9 @@
 # standard library
 import os
 import sys
+import shutil
 
+import time
 # ROOT DIRECTORY
 from respy.python.estimate.estimate_auxiliary import dist_optim_paras
 
@@ -28,21 +30,28 @@ from respy.python.shared.shared_auxiliary import create_draws
 from respy import simulate, solve, evaluate, estimate, RespyCls
 
 
-if True:
+if False:
     cwd = os.getcwd()
     os.chdir('../../respy')
-    assert os.system('./waf distclean; ./waf configure build --debug') == 0
+    assert os.system('./waf distclean; ./waf configure build') == 0
     os.chdir(cwd)
 
 
 respy_obj = RespyCls('model.respy.ini')
+simulate(respy_obj)
 import numpy as np
 base = None
 for is_parallel in [True, False]:
     print('\n\n')
     respy_obj.attr['is_parallel'] = is_parallel
+    start = time.time()
     crit_val = evaluate.evaluate(respy_obj)
+
+    print(time.time() - start)
     if base is None:
         base = crit_val
+
+    if is_parallel:
+        shutil.copy('logging.respy.sol.log', 'logging.parallel')
 
     np.testing.assert_equal(base, crit_val)

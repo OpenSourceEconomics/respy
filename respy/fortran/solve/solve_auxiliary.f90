@@ -302,6 +302,7 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, &
     REAL(our_dble), ALLOCATABLE         :: maxe(:)
 
     LOGICAL                             :: any_interpolated
+    LOGICAL                             :: is_write = .True.
 
     LOGICAL, ALLOCATABLE                :: is_simulated(:)
 
@@ -372,7 +373,7 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, &
             ! exogenous variables are available. For the interpolation
             ! points, the actual values are used.
             CALL get_predictions(predictions, endogenous, exogenous, maxe, &
-                    is_simulated, num_points, num_states)
+                    is_simulated, num_points, num_states, is_write)
 
             ! Store results
             periods_emax(period + 1, :num_states) = predictions
@@ -663,7 +664,7 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE get_predictions(predictions, endogenous, exogenous, maxe, &
-              is_simulated, num_points, num_states)
+              is_simulated, num_points, num_states, is_write)
 
     !/* external objects        */
 
@@ -676,7 +677,9 @@ SUBROUTINE get_predictions(predictions, endogenous, exogenous, maxe, &
     INTEGER, INTENT(IN)               :: num_states
     INTEGER, INTENT(IN)               :: num_points
 
+    LOGICAL, OPTIONAL, INTENT(IN)  :: is_write
     LOGICAL, INTENT(IN)               :: is_simulated(:)
+
 
     !/* internal objects        */
 
@@ -758,7 +761,13 @@ SUBROUTINE get_predictions(predictions, endogenous, exogenous, maxe, &
     END DO
 
     ! Perform some basic logging to spot problems early.
-    CALL logging_prediction_model(coeffs, r_squared, bse)
+
+    ! Deal with optional arguments
+    IF(PRESENT(is_write)) THEN
+        IF(is_write) THEN
+            CALL logging_prediction_model(coeffs, r_squared, bse)
+        END IF
+    END IF
 
 END SUBROUTINE
 !*******************************************************************************
