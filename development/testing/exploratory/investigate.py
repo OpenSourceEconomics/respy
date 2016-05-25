@@ -40,19 +40,34 @@ version = str(sys.version_info[0])
 fname = 'test_vault_' + version + '.respy.pkl'
 tests = pkl.load(open(TEST_RESOURCES_DIR + '/' + fname, 'rb'))
 
-
+print(fname)
 new_tests = []
 
 np.random.seed(123)
 for idx in range(1000):
-    print('\n\n', idx, '\n\n')
+    print(idx)
     init_dict, crit_val = tests[idx]
 
+
+    is_fortran = init_dict['PROGRAM']['version'] == 'FORTRAN'
+
+    init_dict['PROGRAM']['procs'] = np.random.randint(2, 5)
+    if not is_fortran:
+        init_dict['PROGRAM']['parallelism'] = False
+    else:
+        init_dict['PROGRAM']['parallelism'] = np.random.choice([True, False])
 
     print_init_dict(init_dict)
     respy_obj = RespyCls('test.respy.ini')
     simulate(respy_obj)
     np.testing.assert_almost_equal(evaluate(respy_obj), crit_val)
-
-
-
+    #
+    # test = (init_dict, crit_val)
+    #
+    # new_tests += [test]
+    #
+    # pkl.dump(new_tests, open(fname, 'wb'))
+    #
+    #
+    #
+    #
