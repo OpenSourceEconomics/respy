@@ -64,6 +64,7 @@ while True:
 
     constr = dict()
     constr['version'] = 'FORTRAN'
+    # TODO: This constraint has to go later.
     constr['apply'] = False
     generate_init(constr)
 

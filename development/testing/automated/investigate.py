@@ -15,7 +15,7 @@ from modules.auxiliary import get_test_dict
 
 # Reconstruct directory structure and edits to PYTHONPATH
 PACKAGE_DIR = os.path.dirname(os.path.realpath(__file__))
-PACKAGE_DIR = PACKAGE_DIR.replace('development/testing', '')
+PACKAGE_DIR = PACKAGE_DIR.replace('development/testing/automated', '')
 
 # ROBPUPY testing codes. The import of the PYTEST configuration file ensures
 # that the PYTHONPATH is modified to allow for the use of the tests..
@@ -37,11 +37,11 @@ cleanup_testing_infrastructure(True)
 np.random.seed(seed)
 
 # Construct test
-for _ in range(10):
+for _ in range(100):
     test_dict = get_test_dict(PACKAGE_DIR + '/respy/tests')
     module, method = get_random_request(test_dict)
 
-    module, method = 'test_unit', 'test_6'
+    module, method = 'test_parallels', 'test_1'
     print(module, method)
     mod = importlib.import_module(module)
     test = getattr(mod.TestClass(), method)
