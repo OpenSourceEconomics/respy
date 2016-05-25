@@ -99,7 +99,14 @@ def generate_random_dict(constraints=None):
     # PROGRAM
     dict_['PROGRAM'] = {}
     dict_['PROGRAM']['debug'] = 'True'
-    dict_['PROGRAM']['version'] = np.random.choice(['FORTRAN', 'F2PY', 'PYTHON'])
+    dict_['PROGRAM']['parallelism'] = np.random.choice([True, False])
+    dict_['PROGRAM']['procs'] = np.random.randint(2, 5)
+
+    # Parallelism is only supported in FORTRAN implementation.
+    versions = ['FORTRAN', 'F2PY', 'PYTHON']
+    if dict_['PROGRAM']['parallelism']:
+        versions = ['FORTRAN']
+    dict_['PROGRAM']['version'] = np.random.choice(versions)
 
     # SIMULATION
     dict_['SIMULATION'] = {}

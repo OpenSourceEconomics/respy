@@ -57,7 +57,11 @@ class RespyCls(object):
 
         self.attr['model_paras'] = None
 
+        self.attr['is_parallel'] = None
+
         self.attr['num_points'] = None
+
+        self.attr['num_procs'] = None
 
         self.attr['seed_sim'] = None
 
@@ -249,6 +253,8 @@ class RespyCls(object):
 
         self.attr['num_draws_prob'] = init_dict['ESTIMATION']['draws']
 
+        self.attr['is_parallel'] = init_dict['PROGRAM']['parallelism']
+
         self.attr['num_points'] = init_dict['INTERPOLATION']['points']
 
         self.attr['num_draws_emax'] = init_dict['SOLUTION']['draws']
@@ -268,6 +274,8 @@ class RespyCls(object):
         self.attr['file_est'] = init_dict['ESTIMATION']['file']
 
         self.attr['seed_emax'] = init_dict['SOLUTION']['seed']
+
+        self.attr['num_procs'] = init_dict['PROGRAM']['procs']
 
         self.attr['version'] = init_dict['PROGRAM']['version']
 
@@ -350,8 +358,6 @@ class RespyCls(object):
         """ Update derived attributes.
         """
         # Distribute model parameters
-        model_paras = self.attr['model_paras']
-
         num_periods = self.attr['num_periods']
 
         edu_start = self.attr['edu_start']
@@ -380,6 +386,8 @@ class RespyCls(object):
 
         num_agents_est = self.attr['num_agents_est']
 
+        is_parallel = self.attr['is_parallel']
+
         paras_fixed = self.attr['paras_fixed']
 
         num_periods = self.attr['num_periods']
@@ -398,6 +406,8 @@ class RespyCls(object):
 
         seed_emax = self.attr['seed_emax']
 
+        num_procs = self.attr['num_procs']
+
         is_debug = self.attr['is_debug']
 
         edu_max = self.attr['edu_max']
@@ -412,6 +422,10 @@ class RespyCls(object):
 
         # Auxiliary objects
         shocks_cholesky = model_paras['shocks_cholesky']
+
+        # Parallelism
+        assert (is_parallel in [True, False])
+        assert (num_procs > 0)
 
         # Status of optimization parameters
         assert isinstance(paras_fixed, list)

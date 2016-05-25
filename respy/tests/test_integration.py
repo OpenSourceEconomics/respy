@@ -274,13 +274,13 @@ class TestClass(object):
         num_periods, edu_start, edu_max, min_idx, model_paras, num_draws_emax, \
             seed_emax, is_debug, delta, is_interpolated, num_points, \
             is_myopic, num_agents_sim, num_draws_prob, seed_prob, tau, \
-            paras_fixed = \
+            paras_fixed, is_parallel = \
                 dist_class_attributes(respy_obj,
                     'num_periods', 'edu_start', 'edu_max', 'min_idx',
                     'model_paras', 'num_draws_emax', 'seed_emax', 'is_debug',
                     'delta', 'is_interpolated', 'num_points', 'is_myopic',
                     'num_agents_sim', 'num_draws_prob', 'seed_prob', 'tau',
-                    'paras_fixed')
+                    'paras_fixed', 'is_parallel')
 
         # Write out random components and interpolation grid to align the
         # three implementations.
@@ -299,7 +299,7 @@ class TestClass(object):
             shocks_cholesky, is_interpolated, num_draws_emax, num_periods,
             num_points, is_myopic, edu_start, is_debug, edu_max, min_idx, delta)
 
-        fort = fort_solve(*base_args + (seed_emax, tau))
+        fort = fort_solve(*base_args + (seed_emax, tau, is_parallel))
         pyth = pyth_solve(*base_args + (periods_draws_emax,))
         f2py = f2py_solve(*base_args + (periods_draws_emax, max_states_period))
 
@@ -332,7 +332,7 @@ class TestClass(object):
             num_periods, num_points, is_myopic, edu_start, is_debug, edu_max,
             min_idx, delta, data_array, num_agents_sim, num_draws_prob, tau)
 
-        args = base_args + (seed_emax, seed_prob)
+        args = base_args + (seed_emax, seed_prob, is_parallel)
         fort = fort_evaluate(*args)
 
         args = base_args + (periods_draws_emax, periods_draws_prob)

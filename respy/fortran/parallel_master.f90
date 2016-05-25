@@ -69,12 +69,7 @@ PROGRAM master
     CALL MPI_INIT(ierr)
 
     ! Read in requested number of slaves from the command line.
-    CALL GETARG(one_int, arg)
-    IF (LEN_TRIM(arg) == 0) THEN
-        num_slaves = 2
-    ELSE
-        read (arg,*) num_slaves
-    END IF
+    num_slaves = 2
 
     ! Read in model specification.
     CALL read_specification(num_periods, delta, coeffs_a, coeffs_b, &

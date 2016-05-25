@@ -83,11 +83,11 @@ def _type_conversions(flag, value):
     """
     # Type conversion
     if flag in ['agents', 'periods', 'start', 'max', 'draws',
-        'seed', 'points', 'maxiter', 'maxfun']:
+        'seed', 'points', 'maxiter', 'maxfun', 'procs']:
         value = int(value)
     elif flag in ['file', 'options']:
         value = str(value)
-    elif flag in ['debug', 'store', 'apply']:
+    elif flag in ['debug', 'store', 'apply', 'parallelism']:
         assert (value.upper() in ['TRUE', 'FALSE'])
         value = (value.upper() == 'TRUE')
     elif flag in ['version', 'optimizer']:
@@ -147,7 +147,7 @@ def _process_cases(list_):
 
 def _check_integrity_complete(dict_):
     """ Perform some additional checks that are only possible after the full
-    file is processed..
+    file is processed.
     """
     # Antibugging
     assert (isinstance(dict_, dict))
@@ -172,9 +172,23 @@ def _check_integrity_complete(dict_):
         sys.exit(msg)
 
     try:
-       assert (len(dict_['HOME']['coeffs']) == 1)
+        assert (len(dict_['HOME']['coeffs']) == 1)
     except AssertionError:
         msg = '\n Too many coefficients in group HOME.\n'
+        sys.exit(msg)
+
+    try:
+        if dict_['PROGRAM']['parallelism']:
+            assert (dict_['PROGRAM']['version'] == 'FORTRAN')
+    except AssertionError:
+        msg = '\n Parallelism only available with FORTRAN implementation.\n'
+        sys.exit(msg)
+
+    try:
+        if dict_['PROGRAM']['parallelism']:
+            assert (dict_['PROGRAM']['procs'] > 1)
+    except AssertionError:
+        msg = '\n Parallelism requires at least two processors.\n'
         sys.exit(msg)
 
     # Check all required keys are defined. Note that additional keys might

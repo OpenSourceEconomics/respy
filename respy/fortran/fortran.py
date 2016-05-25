@@ -16,7 +16,7 @@ from respy.python.shared.shared_constants import FORTRAN_DIR
 def fort_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
         is_interpolated, num_draws_emax, num_periods, num_points, is_myopic,
         edu_start, is_debug, edu_max, min_idx, delta, data_array,
-        num_agents_est, num_draws_prob, tau, seed_emax, seed_prob):
+        num_agents_est, num_draws_prob, tau, seed_emax, seed_prob, is_parallel):
     """ This function serves as the interface to the FORTRAN implementations.
     """
     # Prepare RESFORT execution by collecting arguments and writing them to
@@ -35,8 +35,10 @@ def fort_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
     write_dataset(data_array)
 
     # Call executable
-    # TODO: This is no implemented in parallel code base yet.
-    os.system(FORTRAN_DIR + '/bin/resfort_scalar')
+    if not is_parallel:
+        os.system(FORTRAN_DIR + '/bin/resfort_scalar')
+    else:
+        os.system('mpiexec ' + FORTRAN_DIR + '/bin/resfort_parallel_master')
 
     crit_val = read_data('eval', 1)[0]
 
@@ -45,7 +47,8 @@ def fort_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
 
 def fort_solve(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
         is_interpolated, num_draws_emax, num_periods, num_points, is_myopic,
-        edu_start, is_debug, edu_max, min_idx, delta, seed_emax, tau):
+        edu_start, is_debug, edu_max, min_idx, delta, seed_emax, tau,
+        is_parallel):
     """ This function serves as the interface to the FORTRAN implementations.
     """
     # Prepare RESFORT execution by collecting arguments and writing them to
@@ -59,7 +62,10 @@ def fort_solve(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
     write_resfort_initialization(*args)
 
     # Call executable
-    os.system(FORTRAN_DIR + '/bin/resfort_scalar')
+    if not is_parallel:
+        os.system(FORTRAN_DIR + '/bin/resfort_scalar')
+    else:
+        os.system('mpiexec ' + FORTRAN_DIR + '/bin/resfort_parallel_master')
 
     # Return arguments depends on the request.
     args = get_results(num_periods, min_idx)

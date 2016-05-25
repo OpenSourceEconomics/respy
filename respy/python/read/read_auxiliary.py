@@ -23,7 +23,7 @@ STRUCTURE['SIMULATION'] = ['agents', 'seed', 'file']
 STRUCTURE['ESTIMATION'] = ['draws', 'optimizer', 'maxiter', 'seed']
 STRUCTURE['ESTIMATION'] += ['tau', 'file', 'agents']
 
-STRUCTURE['PROGRAM'] = ['debug', 'version']
+STRUCTURE['PROGRAM'] = ['debug', 'version', 'parallelism', 'procs']
 STRUCTURE['INTERPOLATION'] = ['apply', 'points']
 STRUCTURE['SCIPY-BFGS'] = ['gtol', 'epsilon']
 STRUCTURE['SCIPY-POWELL'] = ['maxfun', 'xtol', 'ftol']
@@ -77,18 +77,24 @@ def check_line(group, flag, value):
                 assert (value in [True, False])
 
         if group == 'PROGRAM':
-            if flag in ['debug']:
+            if flag in ['debug', 'parallelism']:
                 assert (value in [True, False])
             if flag in ['version']:
                 assert (value in ['FORTRAN', 'F2PY', 'PYTHON'])
                 if value == 'F2PY':
                     fname = glob.glob(ROOT_DIR + '/fortran/f2py_library*.so')[0]
                     assert os.path.exists(fname)
-                # TODO: Checks depend on umber of cores requested.
                 if value == 'FORTRAN':
                     fname = ROOT_DIR + '/fortran/bin/resfort_scalar'
                     assert os.path.exists(fname)
+            if flag in ['procs']:
+                assert isinstance(value, int)
+                assert value > 0
 
+            if flag in ['parallelism']:
+                if value:
+                    fname = ROOT_DIR + '/fortran/bin/resfort_parallel_master'
+                    assert os.path.exists(fname)
 
         if group == 'SIMULATION':
             if flag in ['agents', 'seed']:

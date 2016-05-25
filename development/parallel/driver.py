@@ -30,4 +30,6 @@ from respy import simulate, solve, evaluate, estimate, RespyCls
 
 respy_obj = RespyCls('model.respy.ini')
 
+simulate(respy_obj)
 #solve.solve(respy_obj)
+print(evaluate.evaluate(respy_obj))
