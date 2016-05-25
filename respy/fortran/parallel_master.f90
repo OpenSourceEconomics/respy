@@ -27,13 +27,13 @@ PROGRAM master
     INTEGER(our_int)                :: num_draws_prob
     INTEGER(our_int)                :: num_agents_est
     INTEGER(our_int)                :: num_periods
-    INTEGER(our_int)                :: num_slaves
     INTEGER(our_int)                :: num_points
     INTEGER(our_int)                :: num_states
     INTEGER(our_int)                :: SLAVECOMM
     INTEGER(our_int)                :: seed_prob
     INTEGER(our_int)                :: seed_emax
     INTEGER(our_int)                :: edu_start
+    INTEGER(our_int)                :: num_procs
     INTEGER(our_int)                :: edu_max
     INTEGER(our_int)                :: min_idx
     INTEGER(our_int)                :: period
@@ -58,6 +58,7 @@ PROGRAM master
     LOGICAL                         :: is_myopic
     LOGICAL                         :: is_debug
 
+    CHARACTER(225)                  :: exec_dir
     CHARACTER(10)                   :: request
     CHARACTER(10)                   :: arg
 
@@ -68,15 +69,12 @@ PROGRAM master
     ! Initialize MPI environment
     CALL MPI_INIT(ierr)
 
-    ! Read in requested number of slaves from the command line.
-    num_slaves = 2
-
     ! Read in model specification.
     CALL read_specification(num_periods, delta, coeffs_a, coeffs_b, &
             coeffs_edu, edu_start, edu_max, coeffs_home, shocks_cholesky, & 
             num_draws_emax, seed_emax, seed_prob, num_agents_est, is_debug, & 
             is_interpolated, num_points, min_idx, request, num_draws_prob, & 
-            is_myopic, tau) 
+            is_myopic, tau, num_procs, exec_dir) 
 
     ! Execute on request.
     IF (request == 'solve') THEN
@@ -87,7 +85,7 @@ PROGRAM master
                 coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, &
                 is_interpolated, num_draws_emax, num_periods, num_points, & 
                 edu_start, is_myopic, is_debug, edu_max, min_idx, delta, & 
-                num_slaves, SLAVECOMM)
+                num_procs, SLAVECOMM, exec_dir)
 
     ELSE IF (request == 'evaluate') THEN
 
@@ -107,7 +105,7 @@ PROGRAM master
                 coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, &
                 is_interpolated, num_draws_emax, num_periods, num_points, & 
                 edu_start, is_myopic, is_debug, edu_max, min_idx, delta, & 
-                num_slaves, SLAVECOMM)
+                num_procs, SLAVECOMM, exec_dir)
 
         ! TODO: Parallelize
         CALL fort_evaluate(crit_val, periods_payoffs_systematic, & 

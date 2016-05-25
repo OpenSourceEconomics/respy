@@ -23,12 +23,12 @@ def solve(respy_obj):
     # Distribute class attributes
     model_paras, num_periods, edu_start, is_debug, edu_max, delta, \
         version, num_draws_emax, seed_emax, is_interpolated, num_points, \
-        is_myopic, min_idx, store, tau, is_parallel = \
+        is_myopic, min_idx, store, tau, is_parallel, num_procs = \
             dist_class_attributes(respy_obj,
                 'model_paras', 'num_periods', 'edu_start', 'is_debug',
                 'edu_max', 'delta', 'version', 'num_draws_emax', 'seed_emax',
                 'is_interpolated', 'num_points', 'is_myopic', 'min_idx',
-                'store', 'tau', 'is_parallel')
+                'store', 'tau', 'is_parallel', 'num_procs')
 
     # Distribute model parameters
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
@@ -51,7 +51,7 @@ def solve(respy_obj):
     # interface are required as only explicit shape arguments can be passed
     # into the interface.
     if version == 'FORTRAN':
-        args = base_args + (seed_emax, tau, is_parallel)
+        args = base_args + (seed_emax, tau, is_parallel, num_procs)
         solution = fort_solve(*args)
     elif version == 'PYTHON':
         args = base_args + (periods_draws_emax, )

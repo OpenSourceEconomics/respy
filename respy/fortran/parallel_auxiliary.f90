@@ -22,7 +22,7 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
                 coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, &
                 is_interpolated, num_draws_emax, & 
                 num_periods, num_points, edu_start, is_myopic, is_debug, & 
-                edu_max, min_idx, delta, num_slaves, SLAVECOMM)
+                edu_max, min_idx, delta, num_procs, SLAVECOMM, exec_dir)
 
     !/* external objects        */
 
@@ -52,7 +52,7 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
     LOGICAL, INTENT(IN)                             :: is_debug
 
     !NEw external
-    INTEGER(our_int), INTENT(IN)                    :: num_slaves, SLAVECOMM
+    INTEGER(our_int), INTENT(IN)                    :: num_procs, SLAVECOMM
 
 
     !/* internal objects        */
@@ -67,15 +67,16 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
     INTEGER(our_int)                                :: ierr
     INTEGER(our_int)                                :: num_states, status, task
 
-  CHARACTER(len=255) :: cwd
+  CHARACTER(len=225), INTENT(IN) :: exec_dir
 
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
-        cwd = '/home/peisenha/restudToolbox/package/respy/fortran/bin/resfort_parallel_slave'
-       !#/home/peisenha/restudToolbox/package/respy/fortran/bin
-       CALL MPI_COMM_SPAWN(TRIM(cwd), MPI_ARGV_NULL, num_slaves, &         
-                MPI_INFO_NULL, 0, MPI_COMM_WORLD, SLAVECOMM, MPI_ERRCODES_IGNORE, ierr)
+
+    
+       CALL MPI_COMM_SPAWN(TRIM(exec_dir) // '/resfort_parallel_slave', & 
+                MPI_ARGV_NULL, num_procs - 1, MPI_INFO_NULL, 0, & 
+                MPI_COMM_WORLD, SLAVECOMM, MPI_ERRCODES_IGNORE, ierr)
 
         ! Request EMAX calculation
         task = 2

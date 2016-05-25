@@ -24,9 +24,6 @@ class TestClass(object):
         # Generate random initialization file
         constr = dict()
         constr['version'] = 'FORTRAN'
-        # TODO: This constraint has to go soon.
-        constr['apply'] = False
-
         init_dict = generate_random_dict(constr)
 
         base = None

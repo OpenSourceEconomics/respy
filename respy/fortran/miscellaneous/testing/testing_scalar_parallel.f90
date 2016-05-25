@@ -136,7 +136,7 @@ END IF
             coeffs_edu, edu_start, edu_max, coeffs_home, shocks_cholesky, & 
             num_draws_emax, seed_emax, seed_prob, num_agents_est, is_debug, & 
             is_interpolated, num_points, min_idx, request, num_draws_prob, & 
-            is_myopic, tau) 
+            is_myopic, tau, num_procs) 
 
     ! Create the required random draws for the EMAX calculation in case of 
     ! scalar execution.
@@ -150,7 +150,7 @@ END IF
             coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, &
             is_interpolated, num_draws_emax, num_periods, num_points, & 
             edu_start, is_myopic, is_debug, edu_max, min_idx, delta, & 
-            num_slaves, SLAVECOMM)
+            num_procs, SLAVECOMM)
 
     CALL fort_solve(periods_payoffs_systematic_scalar, &
             states_number_period_scalar, mapping_state_idx_scalar, & 

@@ -21,6 +21,7 @@ PROGRAM resfort
     INTEGER(our_int)                :: num_agents_est
     INTEGER(our_int)                :: num_periods
     INTEGER(our_int)                :: num_points
+    INTEGER(our_int)                :: num_procs
     INTEGER(our_int)                :: seed_prob
     INTEGER(our_int)                :: seed_emax
     INTEGER(our_int)                :: edu_start
@@ -46,6 +47,7 @@ PROGRAM resfort
     LOGICAL                         :: is_myopic
     LOGICAL                         :: is_debug
 
+    CHARACTER(225)                  :: exec_dir
     CHARACTER(10)                   :: request
 
 !-------------------------------------------------------------------------------
@@ -59,7 +61,7 @@ PROGRAM resfort
             coeffs_edu, edu_start, edu_max, coeffs_home, shocks_cholesky, & 
             num_draws_emax, seed_emax, seed_prob, num_agents_est, is_debug, &
             is_interpolated, num_points, min_idx, request, num_draws_prob, & 
-            is_myopic, tau)
+            is_myopic, tau, num_procs, exec_dir)
 
     ! This part creates (or reads from disk) the draws for the Monte 
     ! Carlo integration of the EMAX. For is_debugging purposes, these might 

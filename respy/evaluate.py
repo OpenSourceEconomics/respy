@@ -27,12 +27,13 @@ def evaluate(respy_obj):
     model_paras, num_periods, num_agents_est, edu_start, is_debug, \
         edu_max, delta, version, num_draws_prob, seed_prob, num_draws_emax, \
         seed_emax, is_interpolated, num_points, is_myopic, min_idx, tau, \
-        is_parallel = \
+        is_parallel, num_procs = \
             dist_class_attributes(respy_obj,
                 'model_paras', 'num_periods', 'num_agents_est', 'edu_start',
                 'is_debug', 'edu_max', 'delta', 'version', 'num_draws_prob',
                 'seed_prob', 'num_draws_emax', 'seed_emax', 'is_interpolated',
-                'num_points', 'is_myopic', 'min_idx', 'tau', 'is_parallel')
+                'num_points', 'is_myopic', 'min_idx', 'tau', 'is_parallel',
+                'num_procs')
 
     # Distribute model parameters
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
@@ -56,7 +57,7 @@ def evaluate(respy_obj):
 
     # Select appropriate interface
     if version == 'FORTRAN':
-        args = base_args + (seed_emax, seed_prob, is_parallel)
+        args = base_args + (seed_emax, seed_prob, is_parallel, num_procs)
         crit_val = fort_evaluate(*args)
     elif version == 'PYTHON':
         args = base_args + (periods_draws_emax, periods_draws_prob)

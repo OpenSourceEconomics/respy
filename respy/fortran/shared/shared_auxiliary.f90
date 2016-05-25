@@ -645,7 +645,7 @@ SUBROUTINE read_specification(num_periods, delta, coeffs_a, coeffs_b, &
                 coeffs_edu, edu_start, edu_max, coeffs_home, shocks_cholesky, & 
                 num_draws_emax, seed_emax, seed_prob, num_agents_est, & 
                 is_debug, is_interpolated, num_points, min_idx, request, & 
-                num_draws_prob, is_myopic, tau)
+                num_draws_prob, is_myopic, tau, num_procs, exec_dir)
 
     !
     !   This function serves as the replacement for the RespyCls and reads in
@@ -660,6 +660,7 @@ SUBROUTINE read_specification(num_periods, delta, coeffs_a, coeffs_b, &
     INTEGER(our_int), INTENT(OUT)   :: num_draws_prob
     INTEGER(our_int), INTENT(OUT)   :: num_periods
     INTEGER(our_int), INTENT(OUT)   :: num_points
+    INTEGER(our_int), INTENT(OUT)   :: num_procs
     INTEGER(our_int), INTENT(OUT)   :: seed_prob
     INTEGER(our_int), INTENT(OUT)   :: seed_emax
     INTEGER(our_int), INTENT(OUT)   :: edu_start
@@ -678,8 +679,9 @@ SUBROUTINE read_specification(num_periods, delta, coeffs_a, coeffs_b, &
     LOGICAL, INTENT(OUT)            :: is_myopic
     LOGICAL, INTENT(OUT)            :: is_debug
 
+    CHARACTER(225), INTENT(OUT)      :: exec_dir
     CHARACTER(10), INTENT(OUT)      :: request
-
+    
     !/* internal objects        */
 
     INTEGER(our_int)                :: j
@@ -726,6 +728,7 @@ SUBROUTINE read_specification(num_periods, delta, coeffs_a, coeffs_b, &
 
         ! PROGRAM
         READ(1, *) is_debug
+        READ(1, 1505) num_procs
 
         ! INTERPOLATION
         READ(1, *) is_interpolated
@@ -743,6 +746,9 @@ SUBROUTINE read_specification(num_periods, delta, coeffs_a, coeffs_b, &
 
         ! REQUUEST
         READ(1, *) request
+
+        ! EXECUTABLES
+        READ(1, *) exec_dir
 
     CLOSE(1)
 

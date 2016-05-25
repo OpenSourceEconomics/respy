@@ -28,6 +28,21 @@ from respy.python.shared.shared_auxiliary import create_draws
 from respy import simulate, solve, evaluate, estimate, RespyCls
 
 
-respy_obj = RespyCls('model.respy.ini')
+if True:
+    cwd = os.getcwd()
+    os.chdir('../../respy')
+    assert os.system('./waf distclean; ./waf configure build --debug') == 0
+    os.chdir(cwd)
 
-#solve.solve(respy_obj)
+
+respy_obj = RespyCls('model.respy.ini')
+import numpy as np
+base = None
+for is_parallel in [True, False]:
+    print('\n\n')
+    respy_obj.attr['is_parallel'] = is_parallel
+    crit_val = evaluate.evaluate(respy_obj)
+    if base is None:
+        base = crit_val
+
+    np.testing.assert_equal(base, crit_val)

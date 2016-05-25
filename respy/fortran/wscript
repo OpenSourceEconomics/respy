@@ -62,19 +62,21 @@ class CreateParallelExecutable(Task):
 
         assert os.system(cmd) == 0
 
-        # This compiles the testing
-        # Compile testing file.
-        import shutil
-        os.chdir('miscellaneous/testing')
-        shutil.copy('../../parallel_auxiliary.f90', '.')
 
-        cmd = 'mpif90  ../../parallel_auxiliary.f90 testing_scalar_parallel.f90  ' \
-              + '-o testing_parallel_scalar ' + ' '.join(
-            DEBUG_OPTIONS) + ' -I' + inc_dir + ' -L' + lib_dir + ' -lresfort ' \
-                                                                 '-llapack '
-
-        os.system(cmd)
-        assert os.system(cmd) == 0
+        # TODO: WHat is the best way to reactive this idea? Mave mpi4yp
+        # # This compiles the testing
+        # # Compile testing file.
+        # import shutil
+        # os.chdir('miscellaneous/testing')
+        # shutil.copy('../../parallel_auxiliary.f90', '.')
+        #
+        # cmd = 'mpif90  ../../parallel_auxiliary.f90 testing_scalar_parallel.f90  ' \
+        #       + '-o testing_parallel_scalar ' + ' '.join(
+        #     DEBUG_OPTIONS) + ' -I' + inc_dir + ' -L' + lib_dir + ' -lresfort ' \
+        #                                                          '-llapack '
+        #
+        # os.system(cmd)
+        # assert os.system(cmd) == 0
 
 
         os.chdir(cwd)
