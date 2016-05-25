@@ -48,4 +48,3 @@ for _ in range(10):
 
     test()
 
-    #os.system('python clean.py')
