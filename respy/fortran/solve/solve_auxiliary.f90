@@ -245,7 +245,7 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, &
                 periods_draws_emax, num_draws_emax, states_number_period, & 
                 periods_payoffs_systematic, edu_start, & 
                 mapping_state_idx, states_all, is_debug, & 
-                is_interpolated, num_points, shocks_cholesky)
+                num_points, shocks_cholesky)
 
     !/* external objects        */
 
@@ -263,7 +263,6 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, &
     INTEGER(our_int), INTENT(IN)        :: num_points
     INTEGER(our_int), INTENT(IN)        :: edu_start
 
-    LOGICAL, INTENT(IN)                 :: is_interpolated
     LOGICAL, INTENT(IN)                 :: is_debug
 
     !/* internals objects       */

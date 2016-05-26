@@ -41,7 +41,6 @@ PROGRAM resfort
     REAL(our_dble)                  :: crit_val
     REAL(our_dble)                  :: tau
 
-    LOGICAL                         :: is_interpolated
     LOGICAL                         :: is_myopic
     LOGICAL                         :: is_debug
 
@@ -58,7 +57,7 @@ PROGRAM resfort
     CALL read_specification(num_periods, coeffs_a, coeffs_b, &
             coeffs_edu, edu_start, coeffs_home, shocks_cholesky, & 
             num_draws_emax, seed_emax, seed_prob, num_agents_est, is_debug, &
-            is_interpolated, num_points, min_idx, request, num_draws_prob, & 
+            num_points, min_idx, request, num_draws_prob, & 
             is_myopic, tau, num_procs, exec_dir)
 
     ! This part creates (or reads from disk) the draws for the Monte 
@@ -74,7 +73,7 @@ PROGRAM resfort
         CALL fort_solve(periods_payoffs_systematic, states_number_period, & 
                 mapping_state_idx, periods_emax, states_all, coeffs_a, & 
                 coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, & 
-                is_interpolated, num_draws_emax, periods_draws_emax, & 
+                num_draws_emax, periods_draws_emax, & 
                 num_periods, num_points, edu_start, is_myopic, is_debug, & 
                 min_idx)
 
@@ -93,7 +92,7 @@ PROGRAM resfort
         CALL fort_solve(periods_payoffs_systematic, states_number_period, & 
                 mapping_state_idx, periods_emax, states_all, coeffs_a, & 
                 coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, & 
-                is_interpolated, num_draws_emax, periods_draws_emax, & 
+                num_draws_emax, periods_draws_emax, & 
                 num_periods, num_points, edu_start, is_myopic, is_debug, & 
                 min_idx)
 

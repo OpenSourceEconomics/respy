@@ -28,6 +28,8 @@ MODULE shared_constants
 
     REAL(our_dble)              :: delta
 
+    LOGICAL                     :: is_interpolated
+
     ! Variables that need to be aligned across FORTRAN and PYTHON 
     ! implementations.
     INTEGER(our_int), PARAMETER :: MISSING_INT  = -99_our_int

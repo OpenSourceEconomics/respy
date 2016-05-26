@@ -235,7 +235,6 @@ PROGRAM slave
     REAL(our_dble)                  :: tau, shifts(4)
 
     LOGICAL                         :: STAY_AVAILABLE = .TRUE.
-    LOGICAL                         :: is_interpolated
     LOGICAL                         :: is_myopic
     LOGICAL                         :: is_debug, any_interpolated, is_head
 
@@ -264,7 +263,7 @@ PROGRAM slave
     CALL read_specification(num_periods, coeffs_a, coeffs_b, & 
             coeffs_edu, edu_start, coeffs_home, shocks_cholesky, & 
             num_draws_emax, seed_emax, seed_prob, num_agents_est, is_debug, & 
-            is_interpolated, num_points, min_idx, request, num_draws_prob, & 
+            num_points, min_idx, request, num_draws_prob, & 
             is_myopic, tau, num_procs, exec_dir)
 
     ALLOCATE(draws_emax(num_draws_emax, 4))

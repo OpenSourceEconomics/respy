@@ -6,7 +6,7 @@
 !
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE f2py_criterion(crit_val, x, is_interpolated, num_draws_emax, & 
+SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax, & 
                 num_periods, num_points, is_myopic, edu_start, is_debug, & 
                 edu_max_int, min_idx, delta_int, data_array, num_agents_est, & 
                 num_draws_prob, tau, periods_draws_emax, periods_draws_prob)
@@ -40,7 +40,7 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated, num_draws_emax, &
     DOUBLE PRECISION, INTENT(IN)    :: data_array(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: tau
 
-    LOGICAL, INTENT(IN)             :: is_interpolated
+    LOGICAL, INTENT(IN)             :: is_interpolated_int
     LOGICAL, INTENT(IN)             :: is_myopic
     LOGICAL, INTENT(IN)             :: is_debug
 
@@ -64,6 +64,7 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated, num_draws_emax, &
 !-------------------------------------------------------------------------------
 
     !# Transfer auxiliary variable to global variable.
+    is_interpolated = is_interpolated_int
     edu_max = edu_max_int
     delta = delta_int
 
@@ -74,7 +75,7 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated, num_draws_emax, &
     ! Solve requested model
     CALL fort_solve(periods_payoffs_systematic, states_number_period, & 
             mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, & 
-            coeffs_edu, coeffs_home, shocks_cholesky, is_interpolated, & 
+            coeffs_edu, coeffs_home, shocks_cholesky, & 
             num_draws_emax, periods_draws_emax,num_periods, num_points, & 
             edu_start, is_myopic, is_debug, min_idx)
 
@@ -90,7 +91,7 @@ END SUBROUTINE
 SUBROUTINE f2py_solve(periods_payoffs_systematic, states_number_period, &
                 mapping_state_idx, periods_emax, states_all, coeffs_a, &
                 coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, &
-                is_interpolated, num_draws_emax, num_periods, num_points, & 
+                is_interpolated_int, num_draws_emax, num_periods, num_points, & 
                 is_myopic, edu_start, is_debug, edu_max_int, min_idx, delta_int, & 
                 periods_draws_emax, max_states_period)
     
@@ -133,7 +134,7 @@ SUBROUTINE f2py_solve(periods_payoffs_systematic, states_number_period, &
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(:)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(:)
 
-    LOGICAL, INTENT(IN)             :: is_interpolated
+    LOGICAL, INTENT(IN)             :: is_interpolated_int
     LOGICAL, INTENT(IN)             :: is_myopic
     LOGICAL, INTENT(IN)             :: is_debug
 
@@ -155,6 +156,7 @@ SUBROUTINE f2py_solve(periods_payoffs_systematic, states_number_period, &
 !------------------------------------------------------------------------------- 
 
     !# Transfer auxiliary variable to global variable.
+    is_interpolated = is_interpolated_int
     edu_max = edu_max_int
     delta = delta_int
 
@@ -162,7 +164,7 @@ SUBROUTINE f2py_solve(periods_payoffs_systematic, states_number_period, &
     CALL fort_solve(periods_payoffs_systematic_int, states_number_period_int, & 
             mapping_state_idx_int, periods_emax_int, states_all_int, & 
             coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, & 
-            is_interpolated, num_draws_emax, periods_draws_emax, num_periods, & 
+            num_draws_emax, periods_draws_emax, num_periods, & 
             num_points, edu_start, is_myopic, is_debug, min_idx)
 
     ! Assign to initial objects for return to PYTHON
@@ -176,7 +178,7 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, & 
-                coeffs_home, shocks_cholesky, is_interpolated, & 
+                coeffs_home, shocks_cholesky, is_interpolated_int, & 
                 num_draws_emax, num_periods, num_points, is_myopic, & 
                 edu_start, is_debug, edu_max_int, min_idx, delta_int, data_array, & 
                 num_agents_est, num_draws_prob, tau, periods_draws_emax, &
@@ -215,7 +217,7 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, &
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(:)
     DOUBLE PRECISION, INTENT(IN)    :: tau
 
-    LOGICAL, INTENT(IN)             :: is_interpolated
+    LOGICAL, INTENT(IN)             :: is_interpolated_int
     LOGICAL, INTENT(IN)             :: is_myopic
     LOGICAL, INTENT(IN)             :: is_debug
 
@@ -233,6 +235,7 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, &
 !-------------------------------------------------------------------------------
 
     !# Transfer auxiliary variable to global variable.
+    is_interpolated = is_interpolated_int
     edu_max = edu_max_int
     delta = delta_int
 
@@ -240,7 +243,7 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, &
     CALL fort_solve(periods_payoffs_systematic, states_number_period, &
             mapping_state_idx, periods_emax, states_all, coeffs_a, & 
             coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, & 
-            is_interpolated, num_draws_emax, periods_draws_emax, & 
+            num_draws_emax, periods_draws_emax, & 
             num_periods, num_points, edu_start, is_myopic, &
             is_debug, min_idx)
 
@@ -304,7 +307,7 @@ SUBROUTINE f2py_backward_induction(periods_emax, num_periods, &
                 max_states_period, periods_draws_emax, num_draws_emax, & 
                 states_number_period, periods_payoffs_systematic, edu_max_int, & 
                 edu_start, mapping_state_idx, states_all, delta_int, is_debug, & 
-                is_interpolated, num_points, shocks_cholesky)
+                is_interpolated_int, num_points, shocks_cholesky)
 
     !/* external libraries      */
 
@@ -333,7 +336,7 @@ SUBROUTINE f2py_backward_induction(periods_emax, num_periods, &
     INTEGER, INTENT(IN)             :: num_points
     INTEGER, INTENT(IN)             :: edu_start
 
-    LOGICAL, INTENT(IN)             :: is_interpolated
+    LOGICAL, INTENT(IN)             :: is_interpolated_int
     LOGICAL, INTENT(IN)             :: is_debug
 
 !-------------------------------------------------------------------------------
@@ -341,6 +344,7 @@ SUBROUTINE f2py_backward_induction(periods_emax, num_periods, &
 !-------------------------------------------------------------------------------
     
     !# Transfer auxiliary variable to global variable.
+    is_interpolated = is_interpolated_int
     edu_max = edu_max_int
     delta = delta_int
 
@@ -352,7 +356,7 @@ SUBROUTINE f2py_backward_induction(periods_emax, num_periods, &
     CALL fort_backward_induction(periods_emax, num_periods, &
             periods_draws_emax, num_draws_emax, states_number_period, &
             periods_payoffs_systematic, edu_start, mapping_state_idx, &
-            states_all, is_debug, is_interpolated, num_points, &
+            states_all, is_debug, num_points, &
             shocks_cholesky)
 
 END SUBROUTINE
