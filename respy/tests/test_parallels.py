@@ -56,9 +56,14 @@ class TestClass(object):
         """ This test ensures that the logging files are identical.
         """
 
-        # Generate random initialization file
+        # Generate random initialization file. The number of periods is
+        # higher than usual as only FORTRAN implementations are used to
+        # solve the random request. This ensures that also some cases of
+        # interpolation are explored.
         constr = dict()
         constr['version'] = 'FORTRAN'
+        constr['periods'] = np.random.randint(3, 10)
+
         init_dict = generate_random_dict(constr)
 
         base_log = None
