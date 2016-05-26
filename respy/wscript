@@ -100,7 +100,8 @@ def post(ctx):
     os.mkdir(subdir)
     shutil.copy('.bld/fortran/resfort_scalar', subdir)
 
-    shutil.copy('fortran/miscellaneous/testing/testing_parallel_scalar', subdir)
+    #shutil.copy('fortran/miscellaneous/testing/testing_parallel_scalar',
+    # subdir)
 
     try:
         shutil.copy('fortran/resfort_parallel_master', subdir)
