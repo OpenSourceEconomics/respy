@@ -17,11 +17,9 @@ PROGRAM resfort
     INTEGER(our_int), ALLOCATABLE   :: states_all(:, :, :)
 
     INTEGER(our_int)                :: num_draws_emax
-    INTEGER(our_int)                :: num_draws_prob
     INTEGER(our_int)                :: num_agents_est
     INTEGER(our_int)                :: num_periods
     INTEGER(our_int)                :: num_points
-    INTEGER(our_int)                :: num_procs
     INTEGER(our_int)                :: seed_prob
     INTEGER(our_int)                :: seed_emax
     INTEGER(our_int)                :: edu_start
@@ -40,11 +38,6 @@ PROGRAM resfort
     REAL(our_dble)                  :: coeffs_b(6)
     REAL(our_dble)                  :: crit_val
 
-    LOGICAL                         :: is_myopic
-    LOGICAL                         :: is_debug
-
-    CHARACTER(10)                   :: request
-
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
@@ -54,15 +47,14 @@ PROGRAM resfort
     ! PYTHON/F2PY implementations.
     CALL read_specification(num_periods, coeffs_a, coeffs_b, &
             coeffs_edu, edu_start, coeffs_home, shocks_cholesky, & 
-            num_draws_emax, seed_emax, seed_prob, num_agents_est, is_debug, &
-            num_points, min_idx, request, num_draws_prob, & 
-            is_myopic, num_procs)
+            num_draws_emax, seed_emax, seed_prob, num_agents_est, &
+            num_points, min_idx)
 
     ! This part creates (or reads from disk) the draws for the Monte 
     ! Carlo integration of the EMAX. For is_debugging purposes, these might 
     ! also be read in from disk or set to zero/one.   
     CALL create_draws(periods_draws_emax, num_periods, num_draws_emax, &
-            seed_emax, is_debug)
+            seed_emax)
 
     ! Execute on request.
     IF (request == 'solve') THEN
@@ -72,7 +64,7 @@ PROGRAM resfort
                 mapping_state_idx, periods_emax, states_all, coeffs_a, & 
                 coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, & 
                 num_draws_emax, periods_draws_emax, & 
-                num_periods, num_points, edu_start, is_myopic, is_debug, & 
+                num_periods, num_points, edu_start, & 
                 min_idx)
 
     ELSE IF (request == 'evaluate') THEN
@@ -80,8 +72,8 @@ PROGRAM resfort
         ! This part creates (or reads from disk) the draws for the Monte 
         ! Carlo integration of the choice probabilities. For is_debugging 
         ! purposes, these might also be read in from disk or set to zero/one.   
-        CALL create_draws(periods_draws_prob, num_periods, num_draws_prob, &
-                seed_prob, is_debug)
+        CALL create_draws(periods_draws_prob, num_periods, num_draws_prob, & 
+                seed_prob)
 
         ! Read observed dataset from disk.
         CALL read_dataset(data_array, num_periods, num_agents_est)
@@ -91,13 +83,13 @@ PROGRAM resfort
                 mapping_state_idx, periods_emax, states_all, coeffs_a, & 
                 coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, & 
                 num_draws_emax, periods_draws_emax, & 
-                num_periods, num_points, edu_start, is_myopic, is_debug, & 
+                num_periods, num_points, edu_start, & 
                 min_idx)
 
         CALL fort_evaluate(crit_val, periods_payoffs_systematic, & 
                 mapping_state_idx, periods_emax, states_all, shocks_cholesky, & 
                 num_periods, edu_start, data_array, & 
-                num_agents_est, num_draws_prob, periods_draws_prob)
+                num_agents_est, periods_draws_prob)
 
     END IF
 
@@ -105,7 +97,7 @@ PROGRAM resfort
     ! RespyCls instance.
     CALL store_results(mapping_state_idx, states_all, &
             periods_payoffs_systematic, states_number_period, periods_emax, &
-            num_periods, min_idx, crit_val, request)
+            num_periods, min_idx, crit_val)
 
 !*******************************************************************************
 !*******************************************************************************

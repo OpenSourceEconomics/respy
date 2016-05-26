@@ -196,7 +196,6 @@ PROGRAM slave
     
     INTEGER(our_int)                :: max_states_period
     INTEGER(our_int)                :: num_draws_emax
-    INTEGER(our_int)                :: num_draws_prob
     INTEGER(our_int)                :: num_agents_est
     INTEGER(our_int)                :: lower_bound
     INTEGER(our_int)                :: upper_bound
@@ -207,7 +206,6 @@ PROGRAM slave
     INTEGER(our_int)                :: PARENTCOMM
     INTEGER(our_int)                :: seed_prob
     INTEGER(our_int)                :: seed_emax
-    INTEGER(our_int)                :: num_procs
     INTEGER(our_int)                :: edu_start
     INTEGER(our_int)                :: min_idx
     INTEGER(our_int)                :: period
@@ -235,11 +233,7 @@ PROGRAM slave
     REAL(our_dble)                  :: shifts(4)
 
     LOGICAL                         :: STAY_AVAILABLE = .TRUE.
-    LOGICAL                         :: is_myopic
-    LOGICAL                         :: is_debug, any_interpolated, is_head
-
-     CHARACTER(10)                   :: request
-
+    LOGICAL                         :: any_interpolated, is_head
 
      LOGICAL, ALLOCATABLE   :: is_simulated(:)
      REAL(our_dble), ALLOCATABLE :: endogenous(:)
@@ -261,9 +255,8 @@ PROGRAM slave
     ! Read in model specification.
     CALL read_specification(num_periods, coeffs_a, coeffs_b, & 
             coeffs_edu, edu_start, coeffs_home, shocks_cholesky, & 
-            num_draws_emax, seed_emax, seed_prob, num_agents_est, is_debug, & 
-            num_points, min_idx, request, num_draws_prob, & 
-            is_myopic, num_procs)
+            num_draws_emax, seed_emax, seed_prob, num_agents_est, & 
+            num_points, min_idx)
 
     ALLOCATE(draws_emax(num_draws_emax, 4))
 
@@ -303,7 +296,7 @@ PROGRAM slave
     ! Carlo integration of the EMAX. For is_debugging purposes, these might 
     ! also be read in from disk or set to zero/one.   
     CALL create_draws(periods_draws_emax, num_periods, num_draws_emax, & 
-            seed_emax, is_debug)
+            seed_emax)
 
     periods_emax = MISSING_FLOAT
 
@@ -376,7 +369,7 @@ PROGRAM slave
 
                     ! Constructing indicator for simulation points
                     is_simulated = get_simulated_indicator(num_points, num_states, &
-                                        period, is_debug, num_periods)
+                                        period, num_periods)
 
        
                     ! Constructing the dependent variable for all states, including the

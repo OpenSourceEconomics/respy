@@ -22,16 +22,21 @@ MODULE shared_constants
 
     REAL(our_dble), PARAMETER :: pi        = 3.141592653589793238462643383279502884197_our_dble
     
-    ! Variables that are part of the FORTRAN initialization file and are never 
-    ! to be changed.
+    ! Variables that are part of the FORTRAN initialization file.
+    INTEGER(our_int)            :: num_draws_prob
     INTEGER(our_int)            :: edu_max
+    INTEGER(our_int)            :: num_procs
 
     REAL(our_dble)              :: delta
     REAL(our_dble)              :: tau
 
     LOGICAL                     :: is_interpolated
+    LOGICAL                     :: is_debug
+
+    LOGICAL                     :: is_myopic
 
     CHARACTER(225)              :: exec_dir
+    CHARACTER(10)               :: request
 
     ! Variables that need to be aligned across FORTRAN and PYTHON 
     ! implementations.

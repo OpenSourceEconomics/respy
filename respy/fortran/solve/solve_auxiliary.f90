@@ -244,7 +244,7 @@ END SUBROUTINE
 SUBROUTINE fort_backward_induction(periods_emax, num_periods, &
                 periods_draws_emax, num_draws_emax, states_number_period, & 
                 periods_payoffs_systematic, edu_start, & 
-                mapping_state_idx, states_all, is_debug, & 
+                mapping_state_idx, states_all, & 
                 num_points, shocks_cholesky)
 
     !/* external objects        */
@@ -262,8 +262,6 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, &
     INTEGER(our_int), INTENT(IN)        :: num_periods
     INTEGER(our_int), INTENT(IN)        :: num_points
     INTEGER(our_int), INTENT(IN)        :: edu_start
-
-    LOGICAL, INTENT(IN)                 :: is_debug
 
     !/* internals objects       */
 
@@ -332,7 +330,7 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, &
 
             ! Constructing indicator for simulation points
             is_simulated = get_simulated_indicator(num_points, num_states, &
-                                period, is_debug, num_periods)
+                                period, num_periods)
 
             ! Constructing the dependent variable for all states, including the
             ! ones where simulation will take place. All information will be
@@ -427,7 +425,7 @@ SUBROUTINE get_payoffs(emax_simulated, num_draws_emax, draws_emax, period, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-FUNCTION get_simulated_indicator(num_points, num_states, period, is_debug, &
+FUNCTION get_simulated_indicator(num_points, num_states, period, &
             num_periods)
 
     !/* external objects        */
@@ -436,8 +434,6 @@ FUNCTION get_simulated_indicator(num_points, num_states, period, is_debug, &
     INTEGER(our_int), INTENT(IN)      :: num_states
     INTEGER(our_int), INTENT(IN)      :: num_points
     INTEGER(our_int), INTENT(IN)      :: period
-
-    LOGICAL, INTENT(IN)               :: is_debug
 
     !/* internal objects        */
 

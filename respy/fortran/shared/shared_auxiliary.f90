@@ -258,7 +258,7 @@ SUBROUTINE get_future_payoffs(payoffs_future, is_inadmissible, edu_start, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE create_draws(draws, num_periods, num_draws_emax, seed, is_debug)
+SUBROUTINE create_draws(draws, num_periods, num_draws_emax, seed)
 
     !/* external objects        */
 
@@ -267,8 +267,6 @@ SUBROUTINE create_draws(draws, num_periods, num_draws_emax, seed, is_debug)
     INTEGER(our_int), INTENT(IN)                :: num_draws_emax
     INTEGER(our_int), INTENT(IN)                :: num_periods
     INTEGER(our_int), INTENT(IN)                :: seed
-
-    LOGICAL, INTENT(IN)                         :: is_debug
 
     !/* internal objects        */
 
@@ -514,7 +512,7 @@ END FUNCTION
 !*******************************************************************************
 SUBROUTINE store_results(mapping_state_idx, states_all, &
                 periods_payoffs_systematic, states_number_period, &
-                periods_emax, num_periods, min_idx, crit_val, request)
+                periods_emax, num_periods, min_idx, crit_val)
 
     !/* external objects        */
 
@@ -528,8 +526,6 @@ SUBROUTINE store_results(mapping_state_idx, states_all, &
     REAL(our_dble), INTENT(IN)      :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
     REAL(our_dble), INTENT(IN)      :: crit_val
-
-    CHARACTER(10), INTENT(IN)       :: request
 
     !/* internal objects        */
 
@@ -641,8 +637,7 @@ END SUBROUTINE
 SUBROUTINE read_specification(num_periods, coeffs_a, coeffs_b, &
                 coeffs_edu, edu_start, coeffs_home, shocks_cholesky, & 
                 num_draws_emax, seed_emax, seed_prob, num_agents_est, & 
-                is_debug, num_points, min_idx, request, & 
-                num_draws_prob, is_myopic, num_procs)
+                num_points, min_idx)
 
     !
     !   This function serves as the replacement for the RespyCls and reads in
@@ -654,10 +649,8 @@ SUBROUTINE read_specification(num_periods, coeffs_a, coeffs_b, &
 
     INTEGER(our_int), INTENT(OUT)   :: num_agents_est
     INTEGER(our_int), INTENT(OUT)   :: num_draws_emax
-    INTEGER(our_int), INTENT(OUT)   :: num_draws_prob
     INTEGER(our_int), INTENT(OUT)   :: num_periods
     INTEGER(our_int), INTENT(OUT)   :: num_points
-    INTEGER(our_int), INTENT(OUT)   :: num_procs
     INTEGER(our_int), INTENT(OUT)   :: seed_prob
     INTEGER(our_int), INTENT(OUT)   :: seed_emax
     INTEGER(our_int), INTENT(OUT)   :: edu_start
@@ -668,11 +661,6 @@ SUBROUTINE read_specification(num_periods, coeffs_a, coeffs_b, &
     REAL(our_dble), INTENT(OUT)     :: coeffs_edu(3)
     REAL(our_dble), INTENT(OUT)     :: coeffs_a(6)
     REAL(our_dble), INTENT(OUT)     :: coeffs_b(6)
-
-    LOGICAL, INTENT(OUT)            :: is_myopic
-    LOGICAL, INTENT(OUT)            :: is_debug
-
-    CHARACTER(10), INTENT(OUT)      :: request
     
     !/* internal objects        */
 

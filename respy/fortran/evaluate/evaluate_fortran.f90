@@ -22,7 +22,7 @@ MODULE evaluate_fortran
 SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
                 periods_emax, states_all, shocks_cholesky, num_periods, & 
                 edu_start, data_array, num_agents_est, & 
-                num_draws_prob, periods_draws_prob)
+                periods_draws_prob)
 
     !/* external objects        */
 
@@ -34,7 +34,6 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:, :, :, :, :)
     INTEGER(our_int), INTENT(IN)    :: states_all(:, :, :)
-    INTEGER(our_int), INTENT(IN)    :: num_draws_prob
     INTEGER(our_int), INTENT(IN)    :: num_agents_est
     INTEGER(our_int), INTENT(IN)    :: num_periods
     INTEGER(our_int), INTENT(IN)    :: edu_start

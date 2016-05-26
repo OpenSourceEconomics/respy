@@ -516,7 +516,7 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE wrapper_get_simulated_indicator(is_simulated, num_points, & 
-                num_states, period, is_debug, num_periods)
+                num_states, period, is_debug_int, num_periods)
 
     !/* external libraries      */
 
@@ -535,14 +535,15 @@ SUBROUTINE wrapper_get_simulated_indicator(is_simulated, num_points, &
     INTEGER, INTENT(IN)             :: num_points
     INTEGER, INTENT(IN)             :: period
 
-    LOGICAL, INTENT(IN)             :: is_debug
+    LOGICAL, INTENT(IN)             :: is_debug_int
 
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
     
+    is_debug = is_debug_int
     is_simulated = get_simulated_indicator(num_points, num_states, period, & 
-                        is_debug, num_periods)
+                        num_periods)
 
 END SUBROUTINE
 !*******************************************************************************

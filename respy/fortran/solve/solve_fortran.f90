@@ -21,7 +21,7 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, &
                 mapping_state_idx, periods_emax, states_all, coeffs_a, &
                 coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, &
                 num_draws_emax, periods_draws_emax, & 
-                num_periods, num_points, edu_start, is_myopic, is_debug, & 
+                num_periods, num_points, edu_start, & 
                 min_idx)
 
     !/* external objects        */
@@ -45,9 +45,6 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, &
     REAL(our_dble), INTENT(IN)                      :: coeffs_edu(:)
     REAL(our_dble), INTENT(IN)                      :: coeffs_a(:)
     REAL(our_dble), INTENT(IN)                      :: coeffs_b(:)
-
-    LOGICAL, INTENT(IN)                             :: is_myopic
-    LOGICAL, INTENT(IN)                             :: is_debug
 
     !/* internal objects        */
 
@@ -115,7 +112,7 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, &
         CALL fort_backward_induction(periods_emax, num_periods, &
                 periods_draws_emax, num_draws_emax, states_number_period, & 
                 periods_payoffs_systematic, edu_start, & 
-                mapping_state_idx, states_all, is_debug, &
+                mapping_state_idx, states_all, &
                 num_points, shocks_cholesky)
 
         CALL logging_solution(-1)
