@@ -4,7 +4,7 @@ SUBROUTINE wrapper_normal_pdf(rslt, x, mean, sd)
 
     !/* external libraries      */
 
-    USE evaluate_auxiliary
+    USE resfort_library
 
     !/* setup                   */
 
@@ -31,7 +31,7 @@ SUBROUTINE wrapper_pinv(rslt, A, m)
 
     !/* external libraries      */
 
-    USE solve_auxiliary
+    USE resfort_library
 
     !/* setup                   */
 
@@ -58,7 +58,7 @@ SUBROUTINE wrapper_svd(U, S, VT, A, m)
 
     !/* external libraries      */
 
-    USE solve_auxiliary
+    USE resfort_library
 
     !/* setup                   */
 
@@ -90,7 +90,7 @@ SUBROUTINE wrapper_simulate_emax(emax_simulated, num_periods, &
 
     !/* external libraries      */
 
-    USE solve_auxiliary
+    USE resfort_library
 
     !/* setup                   */
 
@@ -130,7 +130,7 @@ SUBROUTINE wrapper_standard_normal(draw, dim)
 
     !/* external libraries      */
 
-    USE shared_auxiliary
+    USE resfort_library
 
     !/* setup                   */
 
@@ -155,7 +155,7 @@ SUBROUTINE wrapper_determinant(det, A)
 
     !/* external libraries      */
 
-    USE shared_auxiliary
+    USE resfort_library
 
     !/* setup                   */
 
@@ -180,7 +180,7 @@ SUBROUTINE wrapper_inverse(inv, A, n)
 
     !/* external libraries      */
 
-    USE shared_auxiliary
+    USE resfort_library
 
     !/* setup                   */
 
@@ -207,7 +207,7 @@ SUBROUTINE wrapper_trace(rslt, A)
 
     !/* external libraries      */
 
-    USE shared_auxiliary
+    USE resfort_library
 
     !/* setup                   */
 
@@ -233,7 +233,7 @@ SUBROUTINE wrapper_clip_value(clipped_value, value, lower_bound, upper_bound, &
 
     !/* external libraries      */
 
-    USE shared_auxiliary
+    USE resfort_library
 
     !/* setup                   */
 
@@ -264,7 +264,7 @@ SUBROUTINE wrapper_get_pred_info(r_squared, bse, Y, P, X, num_states, &
 
     !/* external libraries      */
 
-    USE solve_auxiliary
+    USE resfort_library
 
     !/* setup                   */
 
@@ -295,7 +295,7 @@ SUBROUTINE wrapper_point_predictions(Y, X, coeffs, num_states)
 
     !/* external libraries      */
 
-    USE solve_auxiliary
+    USE resfort_library
 
     !/* setup                   */
 
@@ -324,7 +324,7 @@ SUBROUTINE wrapper_get_predictions(predictions, endogenous, exogenous, maxe, &
 
     !/* external libraries      */
 
-    USE solve_auxiliary
+    USE resfort_library
 
     !/* setup                   */
 
@@ -357,7 +357,7 @@ SUBROUTINE wrapper_random_choice(sample, candidates, num_candidates, num_points)
 
     !/* external libraries      */
 
-    USE solve_auxiliary
+    USE resfort_library
 
     !/* setup                   */
 
@@ -385,7 +385,7 @@ SUBROUTINE wrapper_get_coefficients(coeffs, Y, X, num_covars, num_states)
 
     !/* external libraries      */
 
-    USE solve_auxiliary
+    USE resfort_library
 
     !/* setup                   */
 
@@ -418,7 +418,7 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, &
 
     !/* external libraries      */
 
-    USE solve_auxiliary
+    USE resfort_library
 
     !/* setup                   */
 
@@ -466,7 +466,7 @@ SUBROUTINE wrapper_get_exogenous_variables(independent_variables, maxe, &
 
     !/* external libraries      */
 
-    USE solve_auxiliary
+    USE resfort_library
 
     !/* setup                   */
 
@@ -508,7 +508,7 @@ SUBROUTINE wrapper_get_simulated_indicator(is_simulated, num_points, &
 
     !/* external libraries      */
 
-    USE solve_auxiliary
+    USE resfort_library
 
     !/* setup                   */
 
@@ -543,7 +543,7 @@ SUBROUTINE wrapper_get_payoffs(emax_simulated, num_draws_emax, &
 
     !/* external libraries      */
 
-    USE solve_auxiliary
+    USE resfort_library
 
     !/* setup                   */
 

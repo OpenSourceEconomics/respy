@@ -13,11 +13,7 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated, num_draws_emax, &
 
     !/* external libraries      */
 
-    USE estimate_auxiliary
-
-    USE evaluate_fortran
-
-    USE solve_fortran
+    USE resfort_library
 
     !/* setup                   */
 
@@ -103,7 +99,7 @@ SUBROUTINE f2py_solve(periods_payoffs_systematic, states_number_period, &
 
     !/* external libraries      */
 
-    USE solve_fortran
+    USE resfort_library
 
     !/* setup                   */
 
@@ -181,9 +177,7 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, &
 
     !/* external libraries      */
 
-    USE evaluate_fortran
-
-    USE solve_fortran
+    USE resfort_library
 
     !/* setup                   */
 
@@ -255,7 +249,7 @@ SUBROUTINE f2py_simulate(dataset, periods_payoffs_systematic, &
 
     !/* external libraries      */
 
-    USE simulate_fortran
+    USE resfort_library
 
     !/* setup                   */
 
@@ -299,7 +293,7 @@ SUBROUTINE f2py_backward_induction(periods_emax, num_periods, &
 
     !/* external libraries      */
 
-    USE solve_auxiliary
+    USE resfort_library
 
     !/* setup                   */
 
@@ -352,7 +346,7 @@ SUBROUTINE f2py_create_state_space(states_all, states_number_period, &
     
     !/* external libraries      */
 
-    USE solve_auxiliary
+    USE resfort_library
 
     !/* setup                   */
 
@@ -387,7 +381,7 @@ SUBROUTINE f2py_calculate_payoffs_systematic(periods_payoffs_systematic, &
 
     !/* external libraries      */
 
-    USE solve_auxiliary
+    USE resfort_library
 
     !/* setup                   */
 
