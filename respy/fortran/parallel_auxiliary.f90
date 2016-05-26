@@ -94,13 +94,13 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
     ALLOCATE(states_all_tmp(num_periods, 100000, 4))
     ALLOCATE(states_number_period(num_periods))
 
-    CALL logging_solution(1)
+    IF(is_myopic) CALL logging_solution(1)
 
     CALL fort_create_state_space(states_all_tmp, states_number_period, &
             mapping_state_idx, max_states_period, num_periods, edu_start, &
             edu_max)
 
-    CALL logging_solution(-1)
+    IF(is_myopic) CALL logging_solution(-1)
 
     ALLOCATE(periods_emax(num_periods, max_states_period))
 
@@ -111,22 +111,23 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
 
     ALLOCATE(periods_payoffs_systematic(num_periods, max_states_period, 4))
 
-    CALL logging_solution(2)
+    IF(is_myopic) CALL logging_solution(2)
     CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, &
             num_periods, states_number_period, states_all, edu_start, &
             coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
 
-    CALL logging_solution(-1)
+    IF(is_myopic) CALL logging_solution(-1)
 
     periods_emax = MISSING_FLOAT
 
     ! Perform backward induction procedure.
-    CALL logging_solution(3)
+    
 
     ! The leading slave is kind enough to let the parent process know about the 
     ! intermediate outcomes.
     IF (is_myopic) THEN
-
+        CALL logging_solution(3)
+        
         CALL logging_solution(-2)
 
         ! All other objects remain set to MISSING_FLOAT. This align the
@@ -142,7 +143,7 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
 
             num_states = states_number_period(period + 1)
 
-            CALL logging_solution(4, period, num_states)
+            
                 
 
             CALL MPI_RECV(periods_emax(period + 1, :num_states), num_states, & 

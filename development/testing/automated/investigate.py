@@ -35,9 +35,12 @@ seed = 3465 # 6216748723
 cleanup_testing_infrastructure(True)
 
 np.random.seed(seed)
-
+import random
 # Construct test
-for _ in range(10000):
+for _ in range(10000000):
+    seed = random.randrange(1, 100000)
+    np.random.seed(seed)
+    print(seed)
     test_dict = get_test_dict(PACKAGE_DIR + '/respy/tests')
     module, method = get_random_request(test_dict)
 

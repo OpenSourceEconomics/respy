@@ -276,9 +276,13 @@ PROGRAM slave
     ALLOCATE(states_all_tmp(num_periods, 100000, 4))
     ALLOCATE(states_number_period(num_periods))
 
+    IF(rank == 0) CALL logging_solution(1)
+
     CALL fort_create_state_space(states_all_tmp, states_number_period, &
             mapping_state_idx, max_states_period, num_periods, edu_start, &
             edu_max)
+
+    IF(rank == 0) CALL logging_solution(-1)
 
     ALLOCATE(periods_emax(num_periods, max_states_period))
 
@@ -292,9 +296,13 @@ PROGRAM slave
     ALLOCATE(periods_payoffs_systematic(num_periods, max_states_period, 4))
 
     ! Calculate the systematic payoffs
+    IF(rank == 0) CALL logging_solution(2)
+
     CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, &
             num_periods, states_number_period, states_all, edu_start, &
             coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
+
+    IF(rank == 0) CALL logging_solution(-1)
 
     ! This part creates (or reads from disk) the draws for the Monte 
     ! Carlo integration of the EMAX. For is_debugging purposes, these might 
@@ -342,6 +350,7 @@ PROGRAM slave
             shifts(1) = clip_value(EXP(shocks_cov(1, 1)/two_dble), zero_dble, HUGE_FLOAT)
             shifts(2) = clip_value(EXP(shocks_cov(2, 2)/two_dble), zero_dble, HUGE_FLOAT)
 
+            IF(rank == 0) CALL logging_solution(3)
 
             DO period = (num_periods - 1), 0, -1
 
@@ -352,6 +361,10 @@ PROGRAM slave
 
                 ALLOCATE(endogenous_slaves(num_states))
 
+
+                IF (rank == 0) THEN
+                     CALL logging_solution(4, period, num_states)        
+                END IF
                 ! Distinguish case with and without interpolation
                 any_interpolated = (num_points .LE. num_states) .AND. is_interpolated
 
@@ -434,7 +447,7 @@ PROGRAM slave
                     ! The leading slave updates the master period by period.
                     IF (rank == 0) THEN
                         CALL MPI_SEND(periods_emax(period + 1, :num_states), num_states, & 
-                            MPI_DOUBLE, 0, period, PARENTCOMM, ierr)            
+                            MPI_DOUBLE, 0, period, PARENTCOMM, ierr)    
                     END IF
                     ! Deallocate containers
                     DEALLOCATE(is_simulated); DEALLOCATE(exogenous); DEALLOCATE(maxe);
