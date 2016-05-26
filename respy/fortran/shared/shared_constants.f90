@@ -27,8 +27,11 @@ MODULE shared_constants
     INTEGER(our_int)            :: edu_max
 
     REAL(our_dble)              :: delta
+    REAL(our_dble)              :: tau
 
     LOGICAL                     :: is_interpolated
+
+    CHARACTER(225)              :: exec_dir
 
     ! Variables that need to be aligned across FORTRAN and PYTHON 
     ! implementations.

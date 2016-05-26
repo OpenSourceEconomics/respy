@@ -9,7 +9,7 @@
 SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax, & 
                 num_periods, num_points, is_myopic, edu_start, is_debug, & 
                 edu_max_int, min_idx, delta_int, data_array, num_agents_est, & 
-                num_draws_prob, tau, periods_draws_emax, periods_draws_prob)
+                num_draws_prob, tau_int, periods_draws_emax, periods_draws_prob)
 
     !/* external libraries      */
 
@@ -38,7 +38,7 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax, &
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_emax(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_prob(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: data_array(:, :)
-    DOUBLE PRECISION, INTENT(IN)    :: tau
+    DOUBLE PRECISION, INTENT(IN)    :: tau_int
 
     LOGICAL, INTENT(IN)             :: is_interpolated_int
     LOGICAL, INTENT(IN)             :: is_myopic
@@ -67,7 +67,8 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax, &
     is_interpolated = is_interpolated_int
     edu_max = edu_max_int
     delta = delta_int
-
+    tau = tau_int
+    
     !# Distribute model parameters
     CALL dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, &
                 shocks_cholesky, x)
@@ -83,7 +84,7 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax, &
     CALL fort_evaluate(crit_val, periods_payoffs_systematic, & 
             mapping_state_idx, periods_emax, states_all, shocks_cholesky, & 
             num_periods, edu_start, data_array, & 
-            num_agents_est, num_draws_prob, periods_draws_prob, tau)
+            num_agents_est, num_draws_prob, periods_draws_prob)
 
 END SUBROUTINE
 !*******************************************************************************
@@ -181,7 +182,7 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, &
                 coeffs_home, shocks_cholesky, is_interpolated_int, & 
                 num_draws_emax, num_periods, num_points, is_myopic, & 
                 edu_start, is_debug, edu_max_int, min_idx, delta_int, data_array, & 
-                num_agents_est, num_draws_prob, tau, periods_draws_emax, &
+                num_agents_est, num_draws_prob, tau_int, periods_draws_emax, &
                 periods_draws_prob)
 
     !/* external libraries      */
@@ -215,7 +216,7 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, &
 
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(:)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(:)
-    DOUBLE PRECISION, INTENT(IN)    :: tau
+    DOUBLE PRECISION, INTENT(IN)    :: tau_int
 
     LOGICAL, INTENT(IN)             :: is_interpolated_int
     LOGICAL, INTENT(IN)             :: is_myopic
@@ -238,6 +239,7 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, &
     is_interpolated = is_interpolated_int
     edu_max = edu_max_int
     delta = delta_int
+    tau = tau_int
 
     ! Solve them model for the given parametrization.
     CALL fort_solve(periods_payoffs_systematic, states_number_period, &
@@ -251,7 +253,7 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, &
     CALL fort_evaluate(crit_val, periods_payoffs_systematic, & 
             mapping_state_idx, periods_emax, states_all, shocks_cholesky, & 
             num_periods, edu_start, data_array, & 
-            num_agents_est, num_draws_prob, periods_draws_prob, tau)
+            num_agents_est, num_draws_prob, periods_draws_prob)
 
 END SUBROUTINE
 !*******************************************************************************

@@ -232,13 +232,12 @@ PROGRAM slave
     REAL(our_dble)                  :: coeffs_edu(3)
     REAL(our_dble)                  :: coeffs_a(6)
     REAL(our_dble)                  :: coeffs_b(6)
-    REAL(our_dble)                  :: tau, shifts(4)
+    REAL(our_dble)                  :: shifts(4)
 
     LOGICAL                         :: STAY_AVAILABLE = .TRUE.
     LOGICAL                         :: is_myopic
     LOGICAL                         :: is_debug, any_interpolated, is_head
 
-    CHARACTER(225)                  :: exec_dir
      CHARACTER(10)                   :: request
 
 
@@ -264,7 +263,7 @@ PROGRAM slave
             coeffs_edu, edu_start, coeffs_home, shocks_cholesky, & 
             num_draws_emax, seed_emax, seed_prob, num_agents_est, is_debug, & 
             num_points, min_idx, request, num_draws_prob, & 
-            is_myopic, tau, num_procs, exec_dir)
+            is_myopic, num_procs)
 
     ALLOCATE(draws_emax(num_draws_emax, 4))
 

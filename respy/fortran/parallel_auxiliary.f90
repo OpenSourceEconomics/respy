@@ -22,7 +22,7 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
                 coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, &
                 num_draws_emax, & 
                 num_periods, num_points, edu_start, is_myopic, is_debug, & 
-                min_idx, num_procs, SLAVECOMM, exec_dir)
+                min_idx, num_procs, SLAVECOMM)
 
     !/* external objects        */
 
@@ -63,8 +63,6 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
     !NEW internal
     INTEGER(our_int)                                :: ierr
     INTEGER(our_int)                                :: num_states, status, task
-
-  CHARACTER(len=225), INTENT(IN) :: exec_dir
 
 !-------------------------------------------------------------------------------
 ! Algorithm

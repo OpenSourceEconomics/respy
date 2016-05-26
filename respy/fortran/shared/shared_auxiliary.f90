@@ -642,7 +642,7 @@ SUBROUTINE read_specification(num_periods, coeffs_a, coeffs_b, &
                 coeffs_edu, edu_start, coeffs_home, shocks_cholesky, & 
                 num_draws_emax, seed_emax, seed_prob, num_agents_est, & 
                 is_debug, num_points, min_idx, request, & 
-                num_draws_prob, is_myopic, tau, num_procs, exec_dir)
+                num_draws_prob, is_myopic, num_procs)
 
     !
     !   This function serves as the replacement for the RespyCls and reads in
@@ -668,12 +668,10 @@ SUBROUTINE read_specification(num_periods, coeffs_a, coeffs_b, &
     REAL(our_dble), INTENT(OUT)     :: coeffs_edu(3)
     REAL(our_dble), INTENT(OUT)     :: coeffs_a(6)
     REAL(our_dble), INTENT(OUT)     :: coeffs_b(6)
-    REAL(our_dble), INTENT(OUT)     :: tau
 
     LOGICAL, INTENT(OUT)            :: is_myopic
     LOGICAL, INTENT(OUT)            :: is_debug
 
-    CHARACTER(225), INTENT(OUT)      :: exec_dir
     CHARACTER(10), INTENT(OUT)      :: request
     
     !/* internal objects        */

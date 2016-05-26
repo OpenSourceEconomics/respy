@@ -39,12 +39,10 @@ PROGRAM resfort
     REAL(our_dble)                  :: coeffs_a(6)
     REAL(our_dble)                  :: coeffs_b(6)
     REAL(our_dble)                  :: crit_val
-    REAL(our_dble)                  :: tau
 
     LOGICAL                         :: is_myopic
     LOGICAL                         :: is_debug
 
-    CHARACTER(225)                  :: exec_dir
     CHARACTER(10)                   :: request
 
 !-------------------------------------------------------------------------------
@@ -58,7 +56,7 @@ PROGRAM resfort
             coeffs_edu, edu_start, coeffs_home, shocks_cholesky, & 
             num_draws_emax, seed_emax, seed_prob, num_agents_est, is_debug, &
             num_points, min_idx, request, num_draws_prob, & 
-            is_myopic, tau, num_procs, exec_dir)
+            is_myopic, num_procs)
 
     ! This part creates (or reads from disk) the draws for the Monte 
     ! Carlo integration of the EMAX. For is_debugging purposes, these might 
@@ -99,7 +97,7 @@ PROGRAM resfort
         CALL fort_evaluate(crit_val, periods_payoffs_systematic, & 
                 mapping_state_idx, periods_emax, states_all, shocks_cholesky, & 
                 num_periods, edu_start, data_array, & 
-                num_agents_est, num_draws_prob, periods_draws_prob, tau)
+                num_agents_est, num_draws_prob, periods_draws_prob)
 
     END IF
 
