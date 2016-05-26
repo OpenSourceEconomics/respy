@@ -26,15 +26,15 @@ MODULE shared_constants
     INTEGER(our_int)            :: num_draws_prob
     INTEGER(our_int)            :: num_procs
     INTEGER(our_int)            :: seed_emax
+    INTEGER(our_int)            :: seed_prob
     INTEGER(our_int)            :: edu_max
     
     REAL(our_dble)              :: delta
     REAL(our_dble)              :: tau
 
     LOGICAL                     :: is_interpolated
-    LOGICAL                     :: is_debug
-
     LOGICAL                     :: is_myopic
+    LOGICAL                     :: is_debug
 
     CHARACTER(225)              :: exec_dir
     CHARACTER(10)               :: request
