@@ -258,13 +258,13 @@ SUBROUTINE get_future_payoffs(payoffs_future, is_inadmissible, edu_start, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE create_draws(draws, num_periods, num_draws_emax, seed)
+SUBROUTINE create_draws(draws, num_periods, num_draws, seed)
 
     !/* external objects        */
 
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)  :: draws(:, :, :)
 
-    INTEGER(our_int), INTENT(IN)                :: num_draws_emax
+    INTEGER(our_int), INTENT(IN)                :: num_draws 
     INTEGER(our_int), INTENT(IN)                :: num_periods
     INTEGER(our_int), INTENT(IN)                :: seed
 
@@ -285,7 +285,7 @@ SUBROUTINE create_draws(draws, num_periods, num_draws_emax, seed)
 !-------------------------------------------------------------------------------
 
     ! Allocate containers
-    ALLOCATE(draws(num_periods, num_draws_emax, 4))
+    ALLOCATE(draws(num_periods, num_draws, 4))
 
     ! Set random seed
     seed_inflated(:) = seed
@@ -305,7 +305,7 @@ SUBROUTINE create_draws(draws, num_periods, num_draws_emax, seed)
 
         DO period = 1, num_periods
 
-            DO j = 1, num_draws_emax
+            DO j = 1, num_draws
 
                 2000 FORMAT(4(1x,f15.10))
                 READ(12,2000) draws(period, j, :)
@@ -320,7 +320,7 @@ SUBROUTINE create_draws(draws, num_periods, num_draws_emax, seed)
 
         DO period = 1, num_periods
 
-            DO i = 1, num_draws_emax
+            DO i = 1, num_draws
 
                CALL standard_normal(deviates)
 
