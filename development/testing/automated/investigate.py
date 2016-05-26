@@ -37,7 +37,7 @@ cleanup_testing_infrastructure(True)
 np.random.seed(seed)
 
 # Construct test
-for _ in range(1000):
+for _ in range(10000):
     test_dict = get_test_dict(PACKAGE_DIR + '/respy/tests')
     module, method = get_random_request(test_dict)
 

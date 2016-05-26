@@ -51,9 +51,6 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, &
     mapping_state_idx    = MISSING_INT
     states_all           = MISSING_INT
 
-    ! Logging
-    CALL logging_solution(1)
-
     ! Construct state space by periods
     DO period = 0, (num_periods - 1)
 
@@ -143,10 +140,7 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, &
         ! Record maximum number of state space realizations by time period
         states_number_period(period + 1) = k
 
-      END DO
-
-      ! Logging
-      CALL logging_solution(-1)
+      END DO      
 
       ! Auxiliary object
       max_states_period = MAXVAL(states_number_period)
@@ -187,9 +181,6 @@ SUBROUTINE fort_calculate_payoffs_systematic(periods_payoffs_systematic, &
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
-
-    ! Logging
-    CALL logging_solution(2)
 
     ! Initialize missing value
     periods_payoffs_systematic = MISSING_FLOAT
@@ -248,9 +239,6 @@ SUBROUTINE fort_calculate_payoffs_systematic(periods_payoffs_systematic, &
         END DO
 
     END DO
-
-    ! Logging
-    CALL logging_solution(-1)
 
 END SUBROUTINE
 !*******************************************************************************
@@ -761,8 +749,6 @@ SUBROUTINE get_predictions(predictions, endogenous, exogenous, maxe, &
     END DO
 
     ! Perform some basic logging to spot problems early.
-
-    ! Deal with optional arguments
     IF(PRESENT(is_write)) THEN
         IF(is_write) THEN
             CALL logging_prediction_model(coeffs, r_squared, bse)

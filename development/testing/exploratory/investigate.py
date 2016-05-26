@@ -44,7 +44,7 @@ print(fname)
 new_tests = []
 
 np.random.seed(123)
-for idx in range(1000):
+for idx in range(1):
     print(idx)
     init_dict, crit_val = tests[idx]
 
