@@ -30,7 +30,6 @@ PROGRAM master
     INTEGER(our_int)                :: num_states
     INTEGER(our_int)                :: SLAVECOMM
     INTEGER(our_int)                :: seed_prob
-    INTEGER(our_int)                :: seed_emax
     INTEGER(our_int)                :: edu_start
     INTEGER(our_int)                :: min_idx
     INTEGER(our_int)                :: period
@@ -61,7 +60,7 @@ PROGRAM master
     ! Read in model specification.
     CALL read_specification(num_periods, coeffs_a, coeffs_b, &
             coeffs_edu, edu_start, coeffs_home, shocks_cholesky, & 
-            num_draws_emax, seed_emax, seed_prob, num_agents_est, & 
+            num_draws_emax, seed_prob, num_agents_est, & 
             num_points, min_idx) 
 
     ! Execute on request.

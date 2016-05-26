@@ -24,9 +24,10 @@ MODULE shared_constants
     
     ! Variables that are part of the FORTRAN initialization file.
     INTEGER(our_int)            :: num_draws_prob
-    INTEGER(our_int)            :: edu_max
     INTEGER(our_int)            :: num_procs
-
+    INTEGER(our_int)            :: seed_emax
+    INTEGER(our_int)            :: edu_max
+    
     REAL(our_dble)              :: delta
     REAL(our_dble)              :: tau
 

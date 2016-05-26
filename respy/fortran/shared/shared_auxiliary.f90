@@ -636,7 +636,7 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE read_specification(num_periods, coeffs_a, coeffs_b, &
                 coeffs_edu, edu_start, coeffs_home, shocks_cholesky, & 
-                num_draws_emax, seed_emax, seed_prob, num_agents_est, & 
+                num_draws_emax, seed_prob, num_agents_est, & 
                 num_points, min_idx)
 
     !
@@ -652,7 +652,6 @@ SUBROUTINE read_specification(num_periods, coeffs_a, coeffs_b, &
     INTEGER(our_int), INTENT(OUT)   :: num_periods
     INTEGER(our_int), INTENT(OUT)   :: num_points
     INTEGER(our_int), INTENT(OUT)   :: seed_prob
-    INTEGER(our_int), INTENT(OUT)   :: seed_emax
     INTEGER(our_int), INTENT(OUT)   :: edu_start
     INTEGER(our_int), INTENT(OUT)   :: min_idx
 

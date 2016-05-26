@@ -21,7 +21,6 @@ PROGRAM resfort
     INTEGER(our_int)                :: num_periods
     INTEGER(our_int)                :: num_points
     INTEGER(our_int)                :: seed_prob
-    INTEGER(our_int)                :: seed_emax
     INTEGER(our_int)                :: edu_start
     INTEGER(our_int)                :: min_idx
 
@@ -47,7 +46,7 @@ PROGRAM resfort
     ! PYTHON/F2PY implementations.
     CALL read_specification(num_periods, coeffs_a, coeffs_b, &
             coeffs_edu, edu_start, coeffs_home, shocks_cholesky, & 
-            num_draws_emax, seed_emax, seed_prob, num_agents_est, &
+            num_draws_emax, seed_prob, num_agents_est, &
             num_points, min_idx)
 
     ! This part creates (or reads from disk) the draws for the Monte 
