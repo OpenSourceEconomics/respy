@@ -23,6 +23,7 @@ MODULE shared_constants
     REAL(our_dble), PARAMETER :: pi        = 3.141592653589793238462643383279502884197_our_dble
     
     ! Variables that are part of the FORTRAN initialization file.
+    INTEGER(our_int)            :: num_draws_emax
     INTEGER(our_int)            :: num_draws_prob
     INTEGER(our_int)            :: num_procs
     INTEGER(our_int)            :: seed_emax

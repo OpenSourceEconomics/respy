@@ -636,8 +636,7 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE read_specification(num_periods, coeffs_a, coeffs_b, &
                 coeffs_edu, edu_start, coeffs_home, shocks_cholesky, & 
-                num_draws_emax, num_agents_est, & 
-                num_points, min_idx)
+                num_agents_est, num_points, min_idx)
 
     !
     !   This function serves as the replacement for the RespyCls and reads in
@@ -648,7 +647,6 @@ SUBROUTINE read_specification(num_periods, coeffs_a, coeffs_b, &
     !/* external objects        */
 
     INTEGER(our_int), INTENT(OUT)   :: num_agents_est
-    INTEGER(our_int), INTENT(OUT)   :: num_draws_emax
     INTEGER(our_int), INTENT(OUT)   :: num_periods
     INTEGER(our_int), INTENT(OUT)   :: num_points
     INTEGER(our_int), INTENT(OUT)   :: edu_start

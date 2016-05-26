@@ -242,7 +242,7 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE fort_backward_induction(periods_emax, num_periods, &
-                periods_draws_emax, num_draws_emax, states_number_period, & 
+                periods_draws_emax, states_number_period, & 
                 periods_payoffs_systematic, edu_start, & 
                 mapping_state_idx, states_all, & 
                 num_points, shocks_cholesky)
@@ -258,7 +258,6 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, &
     INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(:, :, :, :, :)
     INTEGER(our_int), INTENT(IN)        :: states_number_period(:)
     INTEGER(our_int), INTENT(IN)        :: states_all(:, :, :)
-    INTEGER(our_int), INTENT(IN)        :: num_draws_emax
     INTEGER(our_int), INTENT(IN)        :: num_periods
     INTEGER(our_int), INTENT(IN)        :: num_points
     INTEGER(our_int), INTENT(IN)        :: edu_start
@@ -346,7 +345,7 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, &
             CALL get_endogenous_variable(endogenous, period, num_periods, &
                     num_states, periods_payoffs_systematic, &
                     edu_start, mapping_state_idx, periods_emax, states_all, &
-                    is_simulated, num_draws_emax, &
+                    is_simulated, &
                     maxe, draws_emax, shocks_cholesky)
 
             ! Create prediction model based on the random subset of points where
@@ -371,7 +370,7 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, &
                 ! Extract payoffs
                 payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
-                CALL get_payoffs(emax_simulated, num_draws_emax, draws_emax, &
+                CALL get_payoffs(emax_simulated, draws_emax, &
                         period, k, payoffs_systematic, edu_start, &
                         mapping_state_idx, states_all, num_periods, &
                         periods_emax, shocks_cholesky)
@@ -391,7 +390,7 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE get_payoffs(emax_simulated, num_draws_emax, draws_emax, period, &
+SUBROUTINE get_payoffs(emax_simulated, draws_emax, period, &
                 k, payoffs_systematic, edu_start, mapping_state_idx, &
                 states_all, num_periods, periods_emax, shocks_cholesky)
 
@@ -406,7 +405,6 @@ SUBROUTINE get_payoffs(emax_simulated, num_draws_emax, draws_emax, period, &
 
     INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(:, :, :, :, :)
     INTEGER(our_int), INTENT(IN)        :: states_all(:, :, :)
-    INTEGER(our_int), INTENT(IN)        :: num_draws_emax
     INTEGER(our_int), INTENT(IN)        :: num_periods
     INTEGER(our_int), INTENT(IN)        :: edu_start
     INTEGER(our_int), INTENT(IN)        :: period
@@ -417,7 +415,7 @@ SUBROUTINE get_payoffs(emax_simulated, num_draws_emax, draws_emax, period, &
 !-------------------------------------------------------------------------------
 
     ! Simulated expected future value
-    CALL simulate_emax(emax_simulated, num_periods, num_draws_emax, & 
+    CALL simulate_emax(emax_simulated, num_periods, & 
             period, k, draws_emax, payoffs_systematic, edu_start, & 
             periods_emax, states_all, mapping_state_idx, & 
             shocks_cholesky)
@@ -574,7 +572,7 @@ END SUBROUTINE
 SUBROUTINE get_endogenous_variable(endogenous, period, num_periods, &
                 num_states, periods_payoffs_systematic, &
                 edu_start, mapping_state_idx, periods_emax, states_all, &
-                is_simulated, num_draws_emax, maxe, draws_emax, &
+                is_simulated, maxe, draws_emax, &
                 shocks_cholesky)
 
     !/* external objects        */
@@ -589,7 +587,6 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_periods, &
 
     INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(:, :, :, :, :)
     INTEGER(our_int), INTENT(IN)        :: states_all(:, :, :)
-    INTEGER(our_int), INTENT(IN)        :: num_draws_emax
     INTEGER(our_int), INTENT(IN)        :: num_periods
     INTEGER(our_int), INTENT(IN)        :: num_states
     INTEGER(our_int), INTENT(IN)        :: edu_start
@@ -624,7 +621,7 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_periods, &
         payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
         ! Get payoffs
-        CALL get_payoffs(emax_simulated, num_draws_emax, draws_emax, period, &
+        CALL get_payoffs(emax_simulated, draws_emax, period, &
                 k, payoffs_systematic, edu_start, mapping_state_idx, &
                 states_all, num_periods, periods_emax, shocks_cholesky)
 
@@ -1168,7 +1165,7 @@ SUBROUTINE get_pred_info(r_squared, bse, observed, predicted, exogenous, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE simulate_emax(emax_simulated, num_periods, num_draws_emax, period, & 
+SUBROUTINE simulate_emax(emax_simulated, num_periods, period, & 
                 k, draws_emax, payoffs_systematic, edu_start, & 
                 periods_emax, states_all, mapping_state_idx, & 
                 shocks_cholesky)
@@ -1179,7 +1176,6 @@ SUBROUTINE simulate_emax(emax_simulated, num_periods, num_draws_emax, period, &
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:, :, :, :, :)
     INTEGER(our_int), INTENT(IN)    :: states_all(:, :, :)
-    INTEGER(our_int), INTENT(IN)    :: num_draws_emax
     INTEGER(our_int), INTENT(IN)    :: num_periods
     INTEGER(our_int), INTENT(IN)    :: edu_start
     INTEGER(our_int), INTENT(IN)    :: period

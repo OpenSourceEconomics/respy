@@ -195,7 +195,6 @@ PROGRAM slave
     INTEGER(our_int), ALLOCATABLE   :: states_all(:, :, :)
     
     INTEGER(our_int)                :: max_states_period
-    INTEGER(our_int)                :: num_draws_emax
     INTEGER(our_int)                :: num_agents_est
     INTEGER(our_int)                :: lower_bound
     INTEGER(our_int)                :: upper_bound
@@ -253,7 +252,7 @@ PROGRAM slave
     ! Read in model specification.
     CALL read_specification(num_periods, coeffs_a, coeffs_b, & 
             coeffs_edu, edu_start, coeffs_home, shocks_cholesky, & 
-            num_draws_emax, num_agents_est, & 
+            num_agents_est, & 
             num_points, min_idx)
 
     ALLOCATE(draws_emax(num_draws_emax, 4))
@@ -400,7 +399,7 @@ PROGRAM slave
                         payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
                         ! Get payoffs
-                        CALL get_payoffs(emax_simulated, num_draws_emax, draws_emax, period, &
+                        CALL get_payoffs(emax_simulated, draws_emax, period, &
                                 k, payoffs_systematic, edu_start, mapping_state_idx, &
                                 states_all, num_periods, periods_emax, shocks_cholesky)
 
@@ -448,7 +447,7 @@ PROGRAM slave
                         ! Extract payoffs
                         payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
-                        CALL get_payoffs(emax_simulated, num_draws_emax, draws_emax, &
+                        CALL get_payoffs(emax_simulated, draws_emax, &
                                 period, k, payoffs_systematic, edu_start, &
                                 mapping_state_idx, states_all, num_periods, &
                                 periods_emax, shocks_cholesky)

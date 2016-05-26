@@ -23,7 +23,6 @@ PROGRAM master
 
     INTEGER(our_int)                :: status(MPI_STATUS_SIZE) 
     INTEGER(our_int)                :: max_states_period
-    INTEGER(our_int)                :: num_draws_emax
     INTEGER(our_int)                :: num_agents_est
     INTEGER(our_int)                :: num_periods
     INTEGER(our_int)                :: num_points
@@ -59,7 +58,7 @@ PROGRAM master
     ! Read in model specification.
     CALL read_specification(num_periods, coeffs_a, coeffs_b, &
             coeffs_edu, edu_start, coeffs_home, shocks_cholesky, & 
-            num_draws_emax, num_agents_est, & 
+            num_agents_est, & 
             num_points, min_idx) 
 
     ! Execute on request.
@@ -69,7 +68,7 @@ PROGRAM master
         CALL fort_solve_parallel(periods_payoffs_systematic, states_number_period, &
                 mapping_state_idx, periods_emax, states_all, coeffs_a, &
                 coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, &
-                num_draws_emax, num_periods, num_points, & 
+                num_periods, num_points, & 
                 edu_start, min_idx, & 
                 SLAVECOMM)
 
@@ -89,7 +88,7 @@ PROGRAM master
         CALL fort_solve_parallel(periods_payoffs_systematic, states_number_period, &
                 mapping_state_idx, periods_emax, states_all, coeffs_a, &
                 coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, &
-                num_draws_emax, num_periods, num_points, & 
+                num_periods, num_points, & 
                 edu_start, min_idx, & 
                 SLAVECOMM)
         
