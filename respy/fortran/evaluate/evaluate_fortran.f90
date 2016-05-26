@@ -21,7 +21,7 @@ MODULE evaluate_fortran
 !*******************************************************************************
 SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
                 periods_emax, states_all, shocks_cholesky, num_periods, & 
-                edu_start, edu_max, delta, data_array, num_agents_est, & 
+                edu_start, data_array, num_agents_est, & 
                 num_draws_prob, periods_draws_prob, tau)
 
     !/* external objects        */
@@ -38,12 +38,10 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
     INTEGER(our_int), INTENT(IN)    :: num_agents_est
     INTEGER(our_int), INTENT(IN)    :: num_periods
     INTEGER(our_int), INTENT(IN)    :: edu_start
-    INTEGER(our_int), INTENT(IN)    :: edu_max
 
     REAL(our_dble), INTENT(IN)      :: periods_draws_prob(:, :, :)
     REAL(our_dble), INTENT(IN)      :: shocks_cholesky(:, :)
     REAL(our_dble), INTENT(IN)      :: data_array(:, :)
-    REAL(our_dble), INTENT(IN)      :: delta
     REAL(our_dble), INTENT(IN)      :: tau
 
     !/* internal objects        */
@@ -203,7 +201,7 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
 
                 ! Calculate total payoff.
                 CALL get_total_value(total_payoffs, period, num_periods, &
-                        delta, payoffs_systematic, draws, edu_max, edu_start, &
+                        payoffs_systematic, draws, edu_start, &
                         mapping_state_idx, periods_emax, k, states_all)
 
                 ! Record optimal choices

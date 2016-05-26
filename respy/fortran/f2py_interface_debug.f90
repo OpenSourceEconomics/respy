@@ -85,8 +85,8 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE wrapper_simulate_emax(emax_simulated, num_periods, & 
                 num_draws_emax, period, k, draws_emax, payoffs_systematic, & 
-                edu_max, edu_start, periods_emax, states_all, & 
-                mapping_state_idx, delta, shocks_cholesky)
+                edu_max_int, edu_start, periods_emax, states_all, & 
+                mapping_state_idx, delta_int, shocks_cholesky)
 
     !/* external libraries      */
 
@@ -104,14 +104,14 @@ SUBROUTINE wrapper_simulate_emax(emax_simulated, num_periods, &
     DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_emax(:,:)
     DOUBLE PRECISION, INTENT(IN)    :: draws_emax(:,:)
-    DOUBLE PRECISION, INTENT(IN)    :: delta
+    DOUBLE PRECISION, INTENT(IN)    :: delta_int
 
     INTEGER, INTENT(IN)             :: mapping_state_idx(:,:,:,:,:)
     INTEGER, INTENT(IN)             :: states_all(:,:,:)
     INTEGER, INTENT(IN)             :: num_draws_emax
+    INTEGER, INTENT(IN)             :: edu_max_int
     INTEGER, INTENT(IN)             :: num_periods
     INTEGER, INTENT(IN)             :: edu_start
-    INTEGER, INTENT(IN)             :: edu_max
     INTEGER, INTENT(IN)             :: period
     INTEGER, INTENT(IN)             :: k
 
@@ -119,9 +119,13 @@ SUBROUTINE wrapper_simulate_emax(emax_simulated, num_periods, &
 ! Algorithm
 !-------------------------------------------------------------------------------
 
+    !# Transfer auxiliary variable to global variable.
+    edu_max = edu_max_int
+    delta = delta_int
+
     CALL simulate_emax(emax_simulated, num_periods, num_draws_emax, period, k, & 
-            draws_emax, payoffs_systematic, edu_max, edu_start, periods_emax, & 
-            states_all, mapping_state_idx, delta, shocks_cholesky)
+            draws_emax, payoffs_systematic, edu_start, periods_emax, & 
+            states_all, mapping_state_idx, shocks_cholesky)
 
 END SUBROUTINE
 !*******************************************************************************
@@ -411,8 +415,8 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, &
-                num_periods, num_states, delta, periods_payoffs_systematic, &
-                edu_max, edu_start, mapping_state_idx, periods_emax, &
+                num_periods, num_states, delta_int, periods_payoffs_systematic, &
+                edu_max_int, edu_start, mapping_state_idx, periods_emax, &
                 states_all, is_simulated, num_draws_emax, maxe, draws_emax, & 
                 shocks_cholesky)
 
@@ -433,15 +437,15 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, &
     DOUBLE PRECISION, INTENT(IN)        :: periods_emax(:, :)
     DOUBLE PRECISION, INTENT(IN)        :: draws_emax(:, :)
     DOUBLE PRECISION, INTENT(IN)        :: maxe(:)
-    DOUBLE PRECISION, INTENT(IN)        :: delta
+    DOUBLE PRECISION, INTENT(IN)        :: delta_int
 
     INTEGER, INTENT(IN)                 :: mapping_state_idx(:, :, :, :, :)    
     INTEGER, INTENT(IN)                 :: states_all(:, :, :)    
     INTEGER, INTENT(IN)                 :: num_draws_emax
+    INTEGER, INTENT(IN)                 :: edu_max_int    
     INTEGER, INTENT(IN)                 :: num_periods
     INTEGER, INTENT(IN)                 :: num_states
     INTEGER, INTENT(IN)                 :: edu_start
-    INTEGER, INTENT(IN)                 :: edu_max
     INTEGER, INTENT(IN)                 :: period
 
 
@@ -451,8 +455,12 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, &
 ! Algorithm
 !-------------------------------------------------------------------------------
     
+
+    edu_max = edu_max_int
+    delta = delta_int
+
     CALL get_endogenous_variable(exogenous_variable, period, num_periods, &
-            num_states, delta, periods_payoffs_systematic, edu_max, &
+            num_states, periods_payoffs_systematic, &
             edu_start, mapping_state_idx, periods_emax, states_all, &
             is_simulated, num_draws_emax, maxe, draws_emax, shocks_cholesky)
 
@@ -460,8 +468,8 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE wrapper_get_exogenous_variables(independent_variables, maxe, &
-                period, num_periods, num_states, delta, &
-                periods_payoffs_systematic, shifts, edu_max, edu_start, &
+                period, num_periods, num_states, delta_int, &
+                periods_payoffs_systematic, shifts, edu_max_int, edu_start, &
                 mapping_state_idx, periods_emax, states_all)
 
     !/* external libraries      */
@@ -481,23 +489,27 @@ SUBROUTINE wrapper_get_exogenous_variables(independent_variables, maxe, &
     DOUBLE PRECISION, INTENT(IN)        :: periods_payoffs_systematic(:, :, :)
     DOUBLE PRECISION, INTENT(IN)        :: periods_emax(:, :)
     DOUBLE PRECISION, INTENT(IN)        :: shifts(:)
-    DOUBLE PRECISION, INTENT(IN)        :: delta
- 
+    DOUBLE PRECISION, INTENT(IN)        :: delta_int
+
     INTEGER, INTENT(IN)                 :: mapping_state_idx(:, :, :, :, :)    
     INTEGER, INTENT(IN)                 :: states_all(:, :, :)    
+    INTEGER, INTENT(IN)                 :: edu_max_int
     INTEGER, INTENT(IN)                 :: num_periods
     INTEGER, INTENT(IN)                 :: num_states
     INTEGER, INTENT(IN)                 :: edu_start
-    INTEGER, INTENT(IN)                 :: edu_max
     INTEGER, INTENT(IN)                 :: period
 
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
-    
+
+    !# Transfer auxiliary variable to global variable.
+    edu_max = edu_max_int
+    delta = delta_int
+
     CALL get_exogenous_variables(independent_variables, maxe,  period, &
-            num_periods, num_states, delta, periods_payoffs_systematic, &
-            shifts, edu_max, edu_start, mapping_state_idx, periods_emax, &
+            num_periods, num_states, periods_payoffs_systematic, &
+            shifts, edu_start, mapping_state_idx, periods_emax, &
             states_all)
             
 END SUBROUTINE
@@ -536,9 +548,9 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE wrapper_get_payoffs(emax_simulated, num_draws_emax, & 
-                draws_emax, period, k, payoffs_systematic, edu_max, & 
+                draws_emax, period, k, payoffs_systematic, edu_max_int, & 
                 edu_start, mapping_state_idx, states_all, num_periods, & 
-                periods_emax, delta, shocks_cholesky)
+                periods_emax, delta_int, shocks_cholesky)
 
 
     !/* external libraries      */
@@ -557,24 +569,28 @@ SUBROUTINE wrapper_get_payoffs(emax_simulated, num_draws_emax, &
     DOUBLE PRECISION, INTENT(IN)        :: shocks_cholesky(:, :)
     DOUBLE PRECISION, INTENT(IN)        :: periods_emax(:, :)
     DOUBLE PRECISION, INTENT(IN)        :: draws_emax(:, :)
-    DOUBLE PRECISION, INTENT(IN)        :: delta
+    DOUBLE PRECISION, INTENT(IN)        :: delta_int
 
     INTEGER, INTENT(IN)                 :: mapping_state_idx(:, :, :, :, :)
     INTEGER, INTENT(IN)                 :: states_all(:, :, :)
     INTEGER, INTENT(IN)                 :: num_draws_emax
+    INTEGER, INTENT(IN)                 :: edu_max_int
     INTEGER, INTENT(IN)                 :: num_periods
     INTEGER, INTENT(IN)                 :: edu_start
-    INTEGER, INTENT(IN)                 :: edu_max
     INTEGER, INTENT(IN)                 :: period
     INTEGER, INTENT(IN)                 :: k 
     
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
-    
+
+    !# Transfer auxiliary variable to global variable.
+    edu_max = edu_max_int
+    delta = delta_int
+
     CALL get_payoffs(emax_simulated, num_draws_emax, draws_emax, period, k, & 
-            payoffs_systematic, edu_max, edu_start, mapping_state_idx, & 
-            states_all, num_periods, periods_emax, delta, shocks_cholesky)
+            payoffs_systematic, edu_start, mapping_state_idx, & 
+            states_all, num_periods, periods_emax, shocks_cholesky)
     
 END SUBROUTINE
 !*******************************************************************************

@@ -22,7 +22,7 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
                 coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, &
                 is_interpolated, num_draws_emax, & 
                 num_periods, num_points, edu_start, is_myopic, is_debug, & 
-                edu_max, min_idx, delta, num_procs, SLAVECOMM, exec_dir)
+                min_idx, num_procs, SLAVECOMM, exec_dir)
 
     !/* external objects        */
 
@@ -37,7 +37,6 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
     INTEGER(our_int), INTENT(IN)                    :: num_periods
     INTEGER(our_int), INTENT(IN)                    :: num_points
     INTEGER(our_int), INTENT(IN)                    :: edu_start
-    INTEGER(our_int), INTENT(IN)                    :: edu_max
     INTEGER(our_int), INTENT(IN)                    :: min_idx
 
     REAL(our_dble), INTENT(IN)                      :: shocks_cholesky(:, :)
@@ -45,7 +44,6 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
     REAL(our_dble), INTENT(IN)                      :: coeffs_edu(:)
     REAL(our_dble), INTENT(IN)                      :: coeffs_a(:)
     REAL(our_dble), INTENT(IN)                      :: coeffs_b(:)
-    REAL(our_dble), INTENT(IN)                      :: delta
 
     LOGICAL, INTENT(IN)                             :: is_interpolated
     LOGICAL, INTENT(IN)                             :: is_myopic
@@ -97,8 +95,7 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
     IF(is_myopic) CALL logging_solution(1)
 
     CALL fort_create_state_space(states_all_tmp, states_number_period, &
-            mapping_state_idx, max_states_period, num_periods, edu_start, &
-            edu_max)
+            mapping_state_idx, max_states_period, num_periods, edu_start)
 
     IF(is_myopic) CALL logging_solution(-1)
 

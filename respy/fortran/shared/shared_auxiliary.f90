@@ -128,8 +128,8 @@ SUBROUTINE transform_disturbances(draws_transformed, draws, shocks_cholesky, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE get_total_value(total_payoffs, period, num_periods, delta, &
-                payoffs_systematic, draws, edu_max, edu_start, &
+SUBROUTINE get_total_value(total_payoffs, period, num_periods, &
+                payoffs_systematic, draws, edu_start, &
                 mapping_state_idx, periods_emax, k, states_all)
 
     !/* external objects        */
@@ -140,14 +140,12 @@ SUBROUTINE get_total_value(total_payoffs, period, num_periods, delta, &
     INTEGER(our_int), INTENT(IN)    :: states_all(:, :, :)
     INTEGER(our_int), INTENT(IN)    :: num_periods
     INTEGER(our_int), INTENT(IN)    :: edu_start
-    INTEGER(our_int), INTENT(IN)    :: edu_max
     INTEGER(our_int), INTENT(IN)    :: period
     INTEGER(our_int), INTENT(IN)    :: k
 
     REAL(our_dble), INTENT(IN)      :: payoffs_systematic(:)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
     REAL(our_dble), INTENT(IN)      :: draws(:)
-    REAL(our_dble), INTENT(IN)      :: delta
 
     !/* internal objects        */
 
@@ -171,7 +169,7 @@ SUBROUTINE get_total_value(total_payoffs, period, num_periods, delta, &
 
     ! Get future values
     IF (period .NE. (num_periods - one_int)) THEN
-        CALL get_future_payoffs(payoffs_future, is_inadmissible, edu_max, & 
+        CALL get_future_payoffs(payoffs_future, is_inadmissible, & 
                 edu_start, mapping_state_idx, period, periods_emax, k, & 
                 states_all)
     ELSE
@@ -193,7 +191,7 @@ SUBROUTINE get_total_value(total_payoffs, period, num_periods, delta, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE get_future_payoffs(payoffs_future, is_inadmissible,  edu_max, edu_start, &
+SUBROUTINE get_future_payoffs(payoffs_future, is_inadmissible, edu_start, &
                 mapping_state_idx, period, periods_emax, k, states_all)
 
     !/* external objects        */
@@ -205,7 +203,6 @@ SUBROUTINE get_future_payoffs(payoffs_future, is_inadmissible,  edu_max, edu_sta
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:, :, :, :, :)
     INTEGER(our_int), INTENT(IN)    :: states_all(:, :, :)
     INTEGER(our_int), INTENT(IN)    :: edu_start
-    INTEGER(our_int), INTENT(IN)    :: edu_max
     INTEGER(our_int), INTENT(IN)    :: period
     INTEGER(our_int), INTENT(IN)    :: k
 
@@ -641,8 +638,8 @@ SUBROUTINE store_results(mapping_state_idx, states_all, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE read_specification(num_periods, delta, coeffs_a, coeffs_b, &
-                coeffs_edu, edu_start, edu_max, coeffs_home, shocks_cholesky, & 
+SUBROUTINE read_specification(num_periods, coeffs_a, coeffs_b, &
+                coeffs_edu, edu_start, coeffs_home, shocks_cholesky, & 
                 num_draws_emax, seed_emax, seed_prob, num_agents_est, & 
                 is_debug, is_interpolated, num_points, min_idx, request, & 
                 num_draws_prob, is_myopic, tau, num_procs, exec_dir)
@@ -664,7 +661,6 @@ SUBROUTINE read_specification(num_periods, delta, coeffs_a, coeffs_b, &
     INTEGER(our_int), INTENT(OUT)   :: seed_prob
     INTEGER(our_int), INTENT(OUT)   :: seed_emax
     INTEGER(our_int), INTENT(OUT)   :: edu_start
-    INTEGER(our_int), INTENT(OUT)   :: edu_max
     INTEGER(our_int), INTENT(OUT)   :: min_idx
 
     REAL(our_dble), INTENT(OUT)     :: shocks_cholesky(4, 4)
@@ -672,7 +668,6 @@ SUBROUTINE read_specification(num_periods, delta, coeffs_a, coeffs_b, &
     REAL(our_dble), INTENT(OUT)     :: coeffs_edu(3)
     REAL(our_dble), INTENT(OUT)     :: coeffs_a(6)
     REAL(our_dble), INTENT(OUT)     :: coeffs_b(6)
-    REAL(our_dble), INTENT(OUT)     :: delta
     REAL(our_dble), INTENT(OUT)     :: tau
 
     LOGICAL, INTENT(OUT)            :: is_interpolated

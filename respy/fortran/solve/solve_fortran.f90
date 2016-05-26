@@ -22,7 +22,7 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, &
                 coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, &
                 is_interpolated, num_draws_emax, periods_draws_emax, & 
                 num_periods, num_points, edu_start, is_myopic, is_debug, & 
-                edu_max, min_idx, delta)
+                min_idx)
 
     !/* external objects        */
 
@@ -37,7 +37,6 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, &
     INTEGER(our_int), INTENT(IN)                    :: num_periods
     INTEGER(our_int), INTENT(IN)                    :: num_points
     INTEGER(our_int), INTENT(IN)                    :: edu_start
-    INTEGER(our_int), INTENT(IN)                    :: edu_max
     INTEGER(our_int), INTENT(IN)                    :: min_idx
 
     REAL(our_dble), INTENT(IN)                      :: periods_draws_emax(:, :, :)
@@ -46,7 +45,6 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, &
     REAL(our_dble), INTENT(IN)                      :: coeffs_edu(:)
     REAL(our_dble), INTENT(IN)                      :: coeffs_a(:)
     REAL(our_dble), INTENT(IN)                      :: coeffs_b(:)
-    REAL(our_dble), INTENT(IN)                      :: delta
 
     LOGICAL, INTENT(IN)                             :: is_interpolated
     LOGICAL, INTENT(IN)                             :: is_myopic
@@ -72,8 +70,7 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, &
     CALL logging_solution(1)
 
     CALL fort_create_state_space(states_all_tmp, states_number_period, &
-            mapping_state_idx, max_states_period, num_periods, edu_start, &
-            edu_max)
+            mapping_state_idx, max_states_period, num_periods, edu_start)
 
     CALL logging_solution(-1)
 
@@ -118,8 +115,8 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, &
 
         CALL fort_backward_induction(periods_emax, num_periods, &
                 periods_draws_emax, num_draws_emax, states_number_period, & 
-                periods_payoffs_systematic, edu_max, edu_start, & 
-                mapping_state_idx, states_all, delta, is_debug, &
+                periods_payoffs_systematic, edu_start, & 
+                mapping_state_idx, states_all, is_debug, &
                 is_interpolated, num_points, shocks_cholesky)
 
         CALL logging_solution(-1)

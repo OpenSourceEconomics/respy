@@ -209,7 +209,6 @@ PROGRAM slave
     INTEGER(our_int)                :: seed_emax
     INTEGER(our_int)                :: num_procs
     INTEGER(our_int)                :: edu_start
-    INTEGER(our_int)                :: edu_max
     INTEGER(our_int)                :: min_idx
     INTEGER(our_int)                :: period
     INTEGER(our_int)                :: count
@@ -233,7 +232,6 @@ PROGRAM slave
     REAL(our_dble)                  :: coeffs_edu(3)
     REAL(our_dble)                  :: coeffs_a(6)
     REAL(our_dble)                  :: coeffs_b(6)
-    REAL(our_dble)                  :: delta
     REAL(our_dble)                  :: tau, shifts(4)
 
     LOGICAL                         :: STAY_AVAILABLE = .TRUE.
@@ -263,8 +261,8 @@ PROGRAM slave
     CALL MPI_COMM_GET_PARENT(PARENTCOMM, ierr)
 
     ! Read in model specification.
-    CALL read_specification(num_periods, delta, coeffs_a, coeffs_b, & 
-            coeffs_edu, edu_start, edu_max, coeffs_home, shocks_cholesky, & 
+    CALL read_specification(num_periods, coeffs_a, coeffs_b, & 
+            coeffs_edu, edu_start, coeffs_home, shocks_cholesky, & 
             num_draws_emax, seed_emax, seed_prob, num_agents_est, is_debug, & 
             is_interpolated, num_points, min_idx, request, num_draws_prob, & 
             is_myopic, tau, num_procs, exec_dir)
@@ -279,8 +277,7 @@ PROGRAM slave
     IF(rank == 0) CALL logging_solution(1)
 
     CALL fort_create_state_space(states_all_tmp, states_number_period, &
-            mapping_state_idx, max_states_period, num_periods, edu_start, &
-            edu_max)
+            mapping_state_idx, max_states_period, num_periods, edu_start)
 
     IF(rank == 0) CALL logging_solution(-1)
 
@@ -389,8 +386,8 @@ PROGRAM slave
                     ! used in either the construction of the prediction model or the
                     ! prediction step.
                     CALL get_exogenous_variables(exogenous, maxe, period, num_periods, &
-                            num_states, delta, periods_payoffs_systematic, shifts, &
-                            edu_max, edu_start, mapping_state_idx, periods_emax, &
+                            num_states, periods_payoffs_systematic, shifts, &
+                            edu_start, mapping_state_idx, periods_emax, &
                             states_all)
 
 
@@ -415,8 +412,8 @@ PROGRAM slave
 
                         ! Get payoffs
                         CALL get_payoffs(emax_simulated, num_draws_emax, draws_emax, period, &
-                                k, payoffs_systematic, edu_max, edu_start, mapping_state_idx, &
-                                states_all, num_periods, periods_emax, delta, shocks_cholesky)
+                                k, payoffs_systematic, edu_start, mapping_state_idx, &
+                                states_all, num_periods, periods_emax, shocks_cholesky)
 
                         ! Construct dependent variable
                         endogenous_slaves(count) = emax_simulated - maxe(k + 1)
@@ -463,9 +460,9 @@ PROGRAM slave
                         payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
                         CALL get_payoffs(emax_simulated, num_draws_emax, draws_emax, &
-                                period, k, payoffs_systematic, edu_max, edu_start, &
+                                period, k, payoffs_systematic, edu_start, &
                                 mapping_state_idx, states_all, num_periods, &
-                                periods_emax, delta, shocks_cholesky)
+                                periods_emax, shocks_cholesky)
 
                         ! Collect information
                         periods_emax_slaves(count) = emax_simulated

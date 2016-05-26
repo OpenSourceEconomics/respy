@@ -25,7 +25,6 @@ PROGRAM resfort
     INTEGER(our_int)                :: seed_prob
     INTEGER(our_int)                :: seed_emax
     INTEGER(our_int)                :: edu_start
-    INTEGER(our_int)                :: edu_max
     INTEGER(our_int)                :: min_idx
 
     REAL(our_dble), ALLOCATABLE     :: periods_payoffs_systematic(:, :, :)
@@ -40,7 +39,6 @@ PROGRAM resfort
     REAL(our_dble)                  :: coeffs_a(6)
     REAL(our_dble)                  :: coeffs_b(6)
     REAL(our_dble)                  :: crit_val
-    REAL(our_dble)                  :: delta
     REAL(our_dble)                  :: tau
 
     LOGICAL                         :: is_interpolated
@@ -57,8 +55,8 @@ PROGRAM resfort
     ! Read specification of model. This is the FORTRAN replacement for the 
     ! RespyCls instance that carries the model parametrization for the
     ! PYTHON/F2PY implementations.
-    CALL read_specification(num_periods, delta, coeffs_a, coeffs_b, &
-            coeffs_edu, edu_start, edu_max, coeffs_home, shocks_cholesky, & 
+    CALL read_specification(num_periods, coeffs_a, coeffs_b, &
+            coeffs_edu, edu_start, coeffs_home, shocks_cholesky, & 
             num_draws_emax, seed_emax, seed_prob, num_agents_est, is_debug, &
             is_interpolated, num_points, min_idx, request, num_draws_prob, & 
             is_myopic, tau, num_procs, exec_dir)
@@ -78,7 +76,7 @@ PROGRAM resfort
                 coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, & 
                 is_interpolated, num_draws_emax, periods_draws_emax, & 
                 num_periods, num_points, edu_start, is_myopic, is_debug, & 
-                edu_max, min_idx, delta)
+                min_idx)
 
     ELSE IF (request == 'evaluate') THEN
 
@@ -97,11 +95,11 @@ PROGRAM resfort
                 coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, & 
                 is_interpolated, num_draws_emax, periods_draws_emax, & 
                 num_periods, num_points, edu_start, is_myopic, is_debug, & 
-                edu_max, min_idx, delta)
+                min_idx)
 
         CALL fort_evaluate(crit_val, periods_payoffs_systematic, & 
                 mapping_state_idx, periods_emax, states_all, shocks_cholesky, & 
-                num_periods, edu_start, edu_max, delta, data_array, & 
+                num_periods, edu_start, data_array, & 
                 num_agents_est, num_draws_prob, periods_draws_prob, tau)
 
     END IF

@@ -22,6 +22,12 @@ MODULE shared_constants
 
     REAL(our_dble), PARAMETER :: pi        = 3.141592653589793238462643383279502884197_our_dble
     
+    ! Variables that are part of the FORTRAN initialization file and are never 
+    ! to be changed.
+    INTEGER(our_int)            :: edu_max
+
+    REAL(our_dble)              :: delta
+
     ! Variables that need to be aligned across FORTRAN and PYTHON 
     ! implementations.
     INTEGER(our_int), PARAMETER :: MISSING_INT  = -99_our_int
