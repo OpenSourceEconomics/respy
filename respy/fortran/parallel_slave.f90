@@ -195,7 +195,6 @@ PROGRAM slave
     INTEGER(our_int), ALLOCATABLE   :: states_all(:, :, :)
     
     INTEGER(our_int)                :: max_states_period
-    INTEGER(our_int)                :: num_agents_est
     INTEGER(our_int)                :: lower_bound
     INTEGER(our_int)                :: upper_bound
     INTEGER(our_int)                :: num_periods
@@ -252,7 +251,6 @@ PROGRAM slave
     ! Read in model specification.
     CALL read_specification(num_periods, coeffs_a, coeffs_b, & 
             coeffs_edu, edu_start, coeffs_home, shocks_cholesky, & 
-            num_agents_est, & 
             num_points, min_idx)
 
     ALLOCATE(draws_emax(num_draws_emax, 4))

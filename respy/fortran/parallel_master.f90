@@ -23,7 +23,6 @@ PROGRAM master
 
     INTEGER(our_int)                :: status(MPI_STATUS_SIZE) 
     INTEGER(our_int)                :: max_states_period
-    INTEGER(our_int)                :: num_agents_est
     INTEGER(our_int)                :: num_periods
     INTEGER(our_int)                :: num_points
     INTEGER(our_int)                :: num_states
@@ -58,7 +57,6 @@ PROGRAM master
     ! Read in model specification.
     CALL read_specification(num_periods, coeffs_a, coeffs_b, &
             coeffs_edu, edu_start, coeffs_home, shocks_cholesky, & 
-            num_agents_est, & 
             num_points, min_idx) 
 
     ! Execute on request.
@@ -96,7 +94,7 @@ PROGRAM master
         CALL fort_evaluate(crit_val, periods_payoffs_systematic, & 
                 mapping_state_idx, periods_emax, states_all, shocks_cholesky, & 
                 num_periods, edu_start, data_array, & 
-                num_agents_est, periods_draws_prob)
+                periods_draws_prob)
 
     END IF
 

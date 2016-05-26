@@ -16,7 +16,6 @@ PROGRAM resfort
     INTEGER(our_int), ALLOCATABLE   :: states_number_period(:)
     INTEGER(our_int), ALLOCATABLE   :: states_all(:, :, :)
 
-    INTEGER(our_int)                :: num_agents_est
     INTEGER(our_int)                :: num_periods
     INTEGER(our_int)                :: num_points
     INTEGER(our_int)                :: edu_start
@@ -44,7 +43,6 @@ PROGRAM resfort
     ! PYTHON/F2PY implementations.
     CALL read_specification(num_periods, coeffs_a, coeffs_b, &
             coeffs_edu, edu_start, coeffs_home, shocks_cholesky, & 
-            num_agents_est, &
             num_points, min_idx)
 
     ! This part creates (or reads from disk) the draws for the Monte 
@@ -86,7 +84,7 @@ PROGRAM resfort
         CALL fort_evaluate(crit_val, periods_payoffs_systematic, & 
                 mapping_state_idx, periods_emax, states_all, shocks_cholesky, & 
                 num_periods, edu_start, data_array, & 
-                num_agents_est, periods_draws_prob)
+                periods_draws_prob)
 
     END IF
 

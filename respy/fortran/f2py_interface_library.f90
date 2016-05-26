@@ -8,7 +8,7 @@
 !*******************************************************************************
 SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, & 
                 num_periods, num_points, is_myopic_int, edu_start, is_debug_int, & 
-                edu_max_int, min_idx, delta_int, data_array, num_agents_est, & 
+                edu_max_int, min_idx, delta_int, data_array, num_agents_est_int, & 
                 num_draws_prob_int, tau_int, periods_draws_emax, periods_draws_prob)
 
     !/* external libraries      */
@@ -26,7 +26,7 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
     DOUBLE PRECISION, INTENT(IN)    :: delta_int
     DOUBLE PRECISION, INTENT(IN)    :: x(26)
 
-    INTEGER, INTENT(IN)             :: num_agents_est
+    INTEGER, INTENT(IN)             :: num_agents_est_int
     INTEGER, INTENT(IN)             :: num_draws_emax_int
     INTEGER, INTENT(IN)             :: num_draws_prob_int
     INTEGER, INTENT(IN)             :: edu_max_int
@@ -65,6 +65,7 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
 
     !# Transfer auxiliary variable to global variable.
     is_interpolated = is_interpolated_int
+    num_agents_est = num_agents_est_int
     num_draws_emax = num_draws_emax_int
     num_draws_prob = num_draws_prob_int
     is_myopic = is_myopic_int
@@ -88,7 +89,7 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
     CALL fort_evaluate(crit_val, periods_payoffs_systematic, & 
             mapping_state_idx, periods_emax, states_all, shocks_cholesky, & 
             num_periods, edu_start, data_array, & 
-            num_agents_est, periods_draws_prob)
+            periods_draws_prob)
 
 END SUBROUTINE
 !*******************************************************************************
@@ -189,7 +190,7 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, &
                 coeffs_home, shocks_cholesky, is_interpolated_int, & 
                 num_draws_emax_int, num_periods, num_points, is_myopic_int, & 
                 edu_start, is_debug_int, edu_max_int, min_idx, delta_int, data_array, & 
-                num_agents_est, num_draws_prob_int, tau_int, periods_draws_emax, &
+                num_agents_est_int, num_draws_prob_int, tau_int, periods_draws_emax, &
                 periods_draws_prob)
 
     !/* external libraries      */
@@ -206,7 +207,7 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, &
 
     INTEGER, INTENT(IN)             :: num_draws_prob_int
     INTEGER, INTENT(IN)             :: num_draws_emax_int
-    INTEGER, INTENT(IN)             :: num_agents_est
+    INTEGER, INTENT(IN)             :: num_agents_est_int
     INTEGER, INTENT(IN)             :: edu_max_int
     INTEGER, INTENT(IN)             :: num_periods
     INTEGER, INTENT(IN)             :: num_points
@@ -244,6 +245,7 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, &
 
     !# Transfer auxiliary variable to global variable.
     is_interpolated = is_interpolated_int
+    num_agents_est = num_agents_est_int
     num_draws_prob = num_draws_prob_int
     num_draws_emax = num_draws_emax_int
     is_myopic = is_myopic_int
@@ -264,7 +266,7 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, &
     CALL fort_evaluate(crit_val, periods_payoffs_systematic, & 
             mapping_state_idx, periods_emax, states_all, shocks_cholesky, & 
             num_periods, edu_start, data_array, & 
-            num_agents_est, periods_draws_prob)
+            periods_draws_prob)
 
 END SUBROUTINE
 !*******************************************************************************

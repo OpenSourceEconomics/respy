@@ -636,7 +636,7 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE read_specification(num_periods, coeffs_a, coeffs_b, &
                 coeffs_edu, edu_start, coeffs_home, shocks_cholesky, & 
-                num_agents_est, num_points, min_idx)
+                num_points, min_idx)
 
     !
     !   This function serves as the replacement for the RespyCls and reads in
@@ -646,7 +646,6 @@ SUBROUTINE read_specification(num_periods, coeffs_a, coeffs_b, &
 
     !/* external objects        */
 
-    INTEGER(our_int), INTENT(OUT)   :: num_agents_est
     INTEGER(our_int), INTENT(OUT)   :: num_periods
     INTEGER(our_int), INTENT(OUT)   :: num_points
     INTEGER(our_int), INTENT(OUT)   :: edu_start
@@ -731,13 +730,13 @@ SUBROUTINE read_specification(num_periods, coeffs_a, coeffs_b, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE read_dataset(data_array, num_periods, num_agents_est)
+SUBROUTINE read_dataset(data_array, num_periods, num_agents)
 
     !/* external objects        */
 
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)  :: data_array(:, :)
 
-    INTEGER(our_int), INTENT(IN)                :: num_agents_est
+    INTEGER(our_int), INTENT(IN)                :: num_agents
     INTEGER(our_int), INTENT(IN)                :: num_periods
 
     !/* internal objects        */
@@ -750,12 +749,12 @@ SUBROUTINE read_dataset(data_array, num_periods, num_agents_est)
 !-------------------------------------------------------------------------------
 
     ! Allocate data container
-    ALLOCATE(data_array(num_periods * num_agents_est, 8))
+    ALLOCATE(data_array(num_periods * num_agents, 8))
 
     ! Read observed data to double precision array
     OPEN(UNIT=1, FILE='.data.resfort.dat')
 
-        DO j = 1, num_periods * num_agents_est
+        DO j = 1, num_periods * num_agents
             READ(1, *) (data_array(j, k), k = 1, 8)
         END DO
 
