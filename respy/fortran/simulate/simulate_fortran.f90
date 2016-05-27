@@ -18,7 +18,7 @@ MODULE simulate_fortran
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE fort_simulate(dataset, periods_payoffs_systematic, & 
-                mapping_state_idx, periods_emax, num_periods, states_all, & 
+                mapping_state_idx, periods_emax, states_all, & 
                 num_agents_sim, edu_start, periods_draws_sims, & 
                 shocks_cholesky)
 
@@ -31,7 +31,6 @@ SUBROUTINE fort_simulate(dataset, periods_payoffs_systematic, &
     REAL(our_dble), INTENT(IN)      :: shocks_cholesky(:, :)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
 
-    INTEGER(our_int), INTENT(IN)    :: num_periods
     INTEGER(our_int), INTENT(IN)    :: edu_start
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:, :, :, :, :)
@@ -100,7 +99,7 @@ SUBROUTINE fort_simulate(dataset, periods_payoffs_systematic, &
             draws = periods_draws_sims_transformed(period + 1, i + 1, :)
 
             ! Calculate total utilities
-            CALL get_total_value(total_payoffs, period, num_periods, &
+            CALL get_total_value(total_payoffs, period, &
                     payoffs_systematic, draws, edu_start, &
                     mapping_state_idx, periods_emax, k, states_all)
 

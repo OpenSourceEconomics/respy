@@ -128,7 +128,7 @@ SUBROUTINE transform_disturbances(draws_transformed, draws, shocks_cholesky, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE get_total_value(total_payoffs, period, num_periods, &
+SUBROUTINE get_total_value(total_payoffs, period, &
                 payoffs_systematic, draws, edu_start, &
                 mapping_state_idx, periods_emax, k, states_all)
 
@@ -138,7 +138,6 @@ SUBROUTINE get_total_value(total_payoffs, period, num_periods, &
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:, :, :, :, :)
     INTEGER(our_int), INTENT(IN)    :: states_all(:, :, :)
-    INTEGER(our_int), INTENT(IN)    :: num_periods
     INTEGER(our_int), INTENT(IN)    :: edu_start
     INTEGER(our_int), INTENT(IN)    :: period
     INTEGER(our_int), INTENT(IN)    :: k
@@ -258,14 +257,13 @@ SUBROUTINE get_future_payoffs(payoffs_future, is_inadmissible, edu_start, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE create_draws(draws, num_periods, num_draws, seed)
+SUBROUTINE create_draws(draws, num_draws, seed)
 
     !/* external objects        */
 
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)  :: draws(:, :, :)
 
     INTEGER(our_int), INTENT(IN)                :: num_draws 
-    INTEGER(our_int), INTENT(IN)                :: num_periods
     INTEGER(our_int), INTENT(IN)                :: seed
 
     !/* internal objects        */
@@ -512,7 +510,7 @@ END FUNCTION
 !*******************************************************************************
 SUBROUTINE store_results(mapping_state_idx, states_all, &
                 periods_payoffs_systematic, states_number_period, &
-                periods_emax, num_periods, crit_val)
+                periods_emax, crit_val)
 
     !/* external objects        */
 
@@ -520,7 +518,6 @@ SUBROUTINE store_results(mapping_state_idx, states_all, &
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:, :, :, :, :)
     INTEGER(our_int), INTENT(IN)    :: states_number_period(:)
     INTEGER(our_int), INTENT(IN)    :: states_all(:,:,:)
-    INTEGER(our_int), INTENT(IN)    :: num_periods
 
     REAL(our_dble), INTENT(IN)      :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
@@ -633,7 +630,7 @@ SUBROUTINE store_results(mapping_state_idx, states_all, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE read_specification(num_periods, coeffs_a, coeffs_b, &
+SUBROUTINE read_specification(coeffs_a, coeffs_b, &
                 coeffs_edu, edu_start, coeffs_home, shocks_cholesky, & 
                 num_points)
 
@@ -645,7 +642,6 @@ SUBROUTINE read_specification(num_periods, coeffs_a, coeffs_b, &
 
     !/* external objects        */
 
-    INTEGER(our_int), INTENT(OUT)   :: num_periods
     INTEGER(our_int), INTENT(OUT)   :: num_points
     INTEGER(our_int), INTENT(OUT)   :: edu_start
 
@@ -728,14 +724,13 @@ SUBROUTINE read_specification(num_periods, coeffs_a, coeffs_b, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE read_dataset(data_array, num_periods, num_agents)
+SUBROUTINE read_dataset(data_array, num_agents)
 
     !/* external objects        */
 
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)  :: data_array(:, :)
 
     INTEGER(our_int), INTENT(IN)                :: num_agents
-    INTEGER(our_int), INTENT(IN)                :: num_periods
 
     !/* internal objects        */
 

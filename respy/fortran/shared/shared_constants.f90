@@ -26,12 +26,13 @@ MODULE shared_constants
     INTEGER(our_int)            :: num_agents_est
     INTEGER(our_int)            :: num_draws_emax
     INTEGER(our_int)            :: num_draws_prob
+    INTEGER(our_int)            :: num_periods
     INTEGER(our_int)            :: num_procs
     INTEGER(our_int)            :: seed_emax
     INTEGER(our_int)            :: seed_prob
     INTEGER(our_int)            :: edu_max   
     INTEGER(our_int)            :: min_idx
-    
+
     REAL(our_dble)              :: delta
     REAL(our_dble)              :: tau
 

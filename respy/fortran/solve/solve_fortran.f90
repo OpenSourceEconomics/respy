@@ -21,7 +21,7 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, &
                 mapping_state_idx, periods_emax, states_all, coeffs_a, &
                 coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, &
                 periods_draws_emax, & 
-                num_periods, num_points, edu_start)
+                num_points, edu_start)
 
     !/* external objects        */
 
@@ -32,7 +32,6 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, &
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_emax(:, :)
 
-    INTEGER(our_int), INTENT(IN)                    :: num_periods
     INTEGER(our_int), INTENT(IN)                    :: num_points
     INTEGER(our_int), INTENT(IN)                    :: edu_start
 
@@ -63,7 +62,7 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, &
     CALL logging_solution(1)
 
     CALL fort_create_state_space(states_all_tmp, states_number_period, &
-            mapping_state_idx, max_states_period, num_periods, edu_start)
+            mapping_state_idx, max_states_period, edu_start)
 
     CALL logging_solution(-1)
 
@@ -81,7 +80,7 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, &
     CALL logging_solution(2)
 
     CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, &
-            num_periods, states_number_period, states_all, edu_start, &
+            states_number_period, states_all, edu_start, &
             coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
 
     CALL logging_solution(-1)
@@ -106,7 +105,7 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, &
     
     ELSE
 
-        CALL fort_backward_induction(periods_emax, num_periods, &
+        CALL fort_backward_induction(periods_emax, &
                 periods_draws_emax, states_number_period, & 
                 periods_payoffs_systematic, edu_start, & 
                 mapping_state_idx, states_all, &

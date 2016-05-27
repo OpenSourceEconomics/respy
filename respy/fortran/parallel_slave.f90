@@ -122,7 +122,7 @@ SUBROUTINE distribute_information(num_emax_slaves, period, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE determine_workload(num_emax_slaves, num_periods, num_slaves, & 
+SUBROUTINE determine_workload(num_emax_slaves, num_slaves, & 
             states_number_period)
 
     !/* external objects        */
@@ -130,7 +130,6 @@ SUBROUTINE determine_workload(num_emax_slaves, num_periods, num_slaves, &
     INTEGER(our_int), ALLOCATABLE, INTENT(OUT)   :: num_emax_slaves(:, :)
     
     INTEGER(our_int), INTENT(IN)    :: states_number_period(:)
-    INTEGER(our_int), INTENT(IN)    :: num_periods
     INTEGER(our_int), INTENT(IN)    :: num_slaves
 
     !/* internal objects        */
@@ -197,7 +196,6 @@ PROGRAM slave
     INTEGER(our_int)                :: max_states_period
     INTEGER(our_int)                :: lower_bound
     INTEGER(our_int)                :: upper_bound
-    INTEGER(our_int)                :: num_periods
     INTEGER(our_int)                :: num_states
     INTEGER(our_int)                :: num_points
     INTEGER(our_int)                :: num_slaves
@@ -248,7 +246,7 @@ PROGRAM slave
     CALL MPI_COMM_GET_PARENT(PARENTCOMM, ierr)
 
     ! Read in model specification.
-    CALL read_specification(num_periods, coeffs_a, coeffs_b, & 
+    CALL read_specification(coeffs_a, coeffs_b, & 
             coeffs_edu, edu_start, coeffs_home, shocks_cholesky, & 
             num_points)
 
@@ -262,14 +260,14 @@ PROGRAM slave
     IF(rank == 0) CALL logging_solution(1)
 
     CALL fort_create_state_space(states_all_tmp, states_number_period, &
-            mapping_state_idx, max_states_period, num_periods, edu_start)
+            mapping_state_idx, max_states_period, edu_start)
 
     IF(rank == 0) CALL logging_solution(-1)
 
     ALLOCATE(periods_emax(num_periods, max_states_period))
 
     ! Determine workload and allocate communication information.
-    CALL determine_workload(num_emax_slaves, num_periods, num_slaves, & 
+    CALL determine_workload(num_emax_slaves, num_slaves, & 
             states_number_period)
 
     states_all = states_all_tmp(:, :max_states_period, :)
@@ -281,7 +279,7 @@ PROGRAM slave
     IF(rank == 0) CALL logging_solution(2)
 
     CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, &
-            num_periods, states_number_period, states_all, edu_start, &
+            states_number_period, states_all, edu_start, &
             coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
 
     IF(rank == 0) CALL logging_solution(-1)
@@ -289,7 +287,7 @@ PROGRAM slave
     ! This part creates (or reads from disk) the draws for the Monte 
     ! Carlo integration of the EMAX. For is_debugging purposes, these might 
     ! also be read in from disk or set to zero/one.   
-    CALL create_draws(periods_draws_emax, num_periods, num_draws_emax, & 
+    CALL create_draws(periods_draws_emax, num_draws_emax, & 
             seed_emax)
 
     periods_emax = MISSING_FLOAT
@@ -363,14 +361,14 @@ PROGRAM slave
 
                     ! Constructing indicator for simulation points
                     is_simulated = get_simulated_indicator(num_points, num_states, &
-                                        period, num_periods)
+                                        period)
 
        
                     ! Constructing the dependent variable for all states, including the
                     ! ones where simulation will take place. All information will be
                     ! used in either the construction of the prediction model or the
                     ! prediction step.
-                    CALL get_exogenous_variables(exogenous, maxe, period, num_periods, &
+                    CALL get_exogenous_variables(exogenous, maxe, period, &
                             num_states, periods_payoffs_systematic, shifts, &
                             edu_start, mapping_state_idx, periods_emax, &
                             states_all)
@@ -398,7 +396,7 @@ PROGRAM slave
                         ! Get payoffs
                         CALL get_payoffs(emax_simulated, draws_emax, period, &
                                 k, payoffs_systematic, edu_start, mapping_state_idx, &
-                                states_all, num_periods, periods_emax, shocks_cholesky)
+                                states_all, periods_emax, shocks_cholesky)
 
                         ! Construct dependent variable
                         endogenous_slaves(count) = emax_simulated - maxe(k + 1)
@@ -446,7 +444,7 @@ PROGRAM slave
 
                         CALL get_payoffs(emax_simulated, draws_emax, &
                                 period, k, payoffs_systematic, edu_start, &
-                                mapping_state_idx, states_all, num_periods, &
+                                mapping_state_idx, states_all, &
                                 periods_emax, shocks_cholesky)
 
                         ! Collect information

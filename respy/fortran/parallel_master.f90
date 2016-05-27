@@ -23,7 +23,6 @@ PROGRAM master
 
     INTEGER(our_int)                :: status(MPI_STATUS_SIZE) 
     INTEGER(our_int)                :: max_states_period
-    INTEGER(our_int)                :: num_periods
     INTEGER(our_int)                :: num_points
     INTEGER(our_int)                :: num_states
     INTEGER(our_int)                :: SLAVECOMM
@@ -54,7 +53,7 @@ PROGRAM master
     CALL MPI_INIT(ierr)
 
     ! Read in model specification.
-    CALL read_specification(num_periods, coeffs_a, coeffs_b, &
+    CALL read_specification(coeffs_a, coeffs_b, &
             coeffs_edu, edu_start, coeffs_home, shocks_cholesky, & 
             num_points) 
 
@@ -65,7 +64,7 @@ PROGRAM master
         CALL fort_solve_parallel(periods_payoffs_systematic, states_number_period, &
                 mapping_state_idx, periods_emax, states_all, coeffs_a, &
                 coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, &
-                num_periods, num_points, & 
+                num_points, & 
                 edu_start, SLAVECOMM)
 
     ELSE IF (request == 'evaluate') THEN
@@ -73,24 +72,24 @@ PROGRAM master
         ! This part creates (or reads from disk) the draws for the Monte 
         ! Carlo integration of the choice probabilities. For is_debugging 
         ! purposes, these might also be read in from disk or set to zero/one.   
-        CALL create_draws(periods_draws_prob, num_periods, num_draws_prob, &
+        CALL create_draws(periods_draws_prob, num_draws_prob, &
                 seed_prob)
 
         ! Read observed dataset from disk.
-        CALL read_dataset(data_array, num_periods, num_agents_est)
+        CALL read_dataset(data_array, num_agents_est)
 
         ! Solve the model for a given parametrization in parallel
         ! periods_draws_emax
         CALL fort_solve_parallel(periods_payoffs_systematic, states_number_period, &
                 mapping_state_idx, periods_emax, states_all, coeffs_a, &
                 coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, &
-                num_periods, num_points, & 
+                num_points, & 
                 edu_start, SLAVECOMM)
         
        ! TODO: Parallelize
         CALL fort_evaluate(crit_val, periods_payoffs_systematic, & 
                 mapping_state_idx, periods_emax, states_all, shocks_cholesky, & 
-                num_periods, edu_start, data_array, & 
+                edu_start, data_array, & 
                 periods_draws_prob)
 
     END IF
@@ -103,7 +102,7 @@ PROGRAM master
     ! RespyCls instance.
     CALL store_results(mapping_state_idx, states_all, &
             periods_payoffs_systematic, states_number_period, periods_emax, &
-            num_periods, crit_val)
+            crit_val)
 
 END PROGRAM
 !*******************************************************************************

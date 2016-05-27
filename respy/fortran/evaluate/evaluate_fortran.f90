@@ -20,7 +20,7 @@ MODULE evaluate_fortran
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
-                periods_emax, states_all, shocks_cholesky, num_periods, & 
+                periods_emax, states_all, shocks_cholesky, & 
                 edu_start, data_array, periods_draws_prob)
 
     !/* external objects        */
@@ -33,7 +33,6 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:, :, :, :, :)
     INTEGER(our_int), INTENT(IN)    :: states_all(:, :, :)
-    INTEGER(our_int), INTENT(IN)    :: num_periods
     INTEGER(our_int), INTENT(IN)    :: edu_start
 
     REAL(our_dble), INTENT(IN)      :: periods_draws_prob(:, :, :)
@@ -196,7 +195,7 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
                 draws(2) = clip_value(EXP(draws(2)), zero_dble, HUGE_FLOAT)
 
                 ! Calculate total payoff.
-                CALL get_total_value(total_payoffs, period, num_periods, &
+                CALL get_total_value(total_payoffs, period, &
                         payoffs_systematic, draws, edu_start, &
                         mapping_state_idx, periods_emax, k, states_all)
 
