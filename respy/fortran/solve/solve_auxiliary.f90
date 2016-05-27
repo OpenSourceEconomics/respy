@@ -22,7 +22,7 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, &
 
     !/* external objects        */
 
-    INTEGER(our_int), INTENT(INOUT)     :: mapping_state_idx(:, :, :, :, :)
+    INTEGER(our_int), INTENT(INOUT)     :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(INOUT)     :: states_number_period(:)
     INTEGER(our_int), INTENT(INOUT)     :: states_all(:, :, :)
     INTEGER(our_int), INTENT(INOUT)     :: max_states_period
@@ -250,7 +250,7 @@ SUBROUTINE fort_backward_induction(periods_emax, &
     REAL(our_dble), INTENT(IN)          :: periods_draws_emax(:, :, :)
     REAL(our_dble), INTENT(IN)          :: shocks_cholesky(:, :)
 
-    INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(:, :, :, :, :)
+    INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)        :: states_number_period(:)
     INTEGER(our_int), INTENT(IN)        :: states_all(:, :, :)
 
@@ -395,7 +395,7 @@ SUBROUTINE get_payoffs(emax_simulated, draws_emax, period, &
     REAL(our_dble), INTENT(IN)          :: periods_emax(:, :)
     REAL(our_dble), INTENT(IN)          :: draws_emax(:, :)
 
-    INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(:, :, :, :, :)
+    INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)        :: states_all(:, :, :)
     INTEGER(our_int), INTENT(IN)        :: period
     INTEGER(our_int), INTENT(IN)        :: k
@@ -511,7 +511,7 @@ SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, &
     REAL(our_dble), INTENT(IN)          :: periods_emax(:, :)
     REAL(our_dble), INTENT(IN)          :: shifts(:)
 
-    INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(:, :, :, :, :)
+    INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)        :: states_all(:, :, :)
     INTEGER(our_int), INTENT(IN)        :: num_states
     INTEGER(our_int), INTENT(IN)        :: period
@@ -571,7 +571,7 @@ SUBROUTINE get_endogenous_variable(endogenous, period, &
     REAL(our_dble), INTENT(IN)          :: draws_emax(:, :)
     REAL(our_dble), INTENT(IN)          :: maxe(:)
 
-    INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(:, :, :, :, :)
+    INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)        :: states_all(:, :, :)
     INTEGER(our_int), INTENT(IN)        :: num_states
     INTEGER(our_int), INTENT(IN)        :: period
@@ -1156,7 +1156,7 @@ SUBROUTINE simulate_emax(emax_simulated, period, &
 
     REAL(our_dble), INTENT(OUT)     :: emax_simulated
 
-    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:, :, :, :, :)
+    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)    :: states_all(:, :, :)
     INTEGER(our_int), INTENT(IN)    :: period
     INTEGER(our_int), INTENT(IN)    :: k

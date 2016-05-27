@@ -314,6 +314,9 @@ SUBROUTINE f2py_simulate(dataset, periods_payoffs_systematic, &
 ! Algorithm
 !-------------------------------------------------------------------------------
 
+    !# This assignment is required to allow for the explicit shape arguments.
+    min_idx = SIZE(mapping_state_idx, 4)
+
     !# Transfer auxiliary variable to global variable.
     num_periods = num_periods_int
     edu_start = edu_start_int
