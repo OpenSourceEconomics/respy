@@ -197,7 +197,7 @@ PROGRAM slave
     INTEGER(our_int)                :: lower_bound
     INTEGER(our_int)                :: upper_bound
     INTEGER(our_int)                :: num_states
-    INTEGER(our_int)                :: num_points
+    INTEGER(our_int)                :: num_points_interp
     INTEGER(our_int)                :: num_slaves
     INTEGER(our_int)                :: PARENTCOMM
     INTEGER(our_int)                :: period
@@ -247,7 +247,7 @@ PROGRAM slave
     ! Read in model specification.
     CALL read_specification(coeffs_a, coeffs_b, & 
             coeffs_edu, coeffs_home, shocks_cholesky, & 
-            num_points)
+            num_points_interp)
 
     ALLOCATE(draws_emax(num_draws_emax, 4))
 
@@ -345,7 +345,7 @@ PROGRAM slave
                      CALL logging_solution(4, period, num_states)        
                 END IF
                 ! Distinguish case with and without interpolation
-                any_interpolated = (num_points .LE. num_states) .AND. is_interpolated
+                any_interpolated = (num_points_interp .LE. num_states) .AND. is_interpolated
 
                 ! Upper and lower bound of tasks
                 lower_bound = SUM(num_emax_slaves(period + 1, :rank))
@@ -359,7 +359,7 @@ PROGRAM slave
                     ALLOCATE(predictions(num_states))
 
                     ! Constructing indicator for simulation points
-                    is_simulated = get_simulated_indicator(num_points, num_states, &
+                    is_simulated = get_simulated_indicator(num_points_interp, num_states, &
                                         period)
 
        
@@ -417,7 +417,7 @@ PROGRAM slave
                     ! exogenous variables are available. For the interpolation
                     ! points, the actual values are used.
                     CALL get_predictions(predictions, endogenous, exogenous, maxe, &
-                            is_simulated, num_points, num_states, is_head)
+                            is_simulated, num_points_interp, num_states, is_head)
 
                     ! Store results
                     periods_emax(period + 1, :num_states) = predictions

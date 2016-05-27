@@ -328,7 +328,7 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE wrapper_get_predictions(predictions, endogenous, exogenous, maxe, & 
-                is_simulated, num_points, num_states)
+                is_simulated, num_points_interp, num_states)
 
     !/* external libraries      */
 
@@ -347,7 +347,7 @@ SUBROUTINE wrapper_get_predictions(predictions, endogenous, exogenous, maxe, &
     DOUBLE PRECISION, INTENT(IN)                :: maxe(:)
 
     INTEGER, INTENT(IN)                         :: num_states
-    INTEGER, INTENT(IN)                         :: num_points
+    INTEGER, INTENT(IN)                         :: num_points_interp
 
     LOGICAL, INTENT(IN)                         :: is_simulated(:)
 
@@ -356,12 +356,12 @@ SUBROUTINE wrapper_get_predictions(predictions, endogenous, exogenous, maxe, &
 !-------------------------------------------------------------------------------
 
     CALL get_predictions(predictions, endogenous, exogenous, maxe, & 
-            is_simulated, num_points, num_states)
+            is_simulated, num_points_interp, num_states)
 
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_random_choice(sample, candidates, num_candidates, num_points)
+SUBROUTINE wrapper_random_choice(sample, candidates, num_candidates, num_points_interp)
 
     !/* external libraries      */
 
@@ -373,17 +373,17 @@ SUBROUTINE wrapper_random_choice(sample, candidates, num_candidates, num_points)
 
     !/* external objects        */
 
-    INTEGER, INTENT(OUT)            :: sample(num_points)
+    INTEGER, INTENT(OUT)            :: sample(num_points_interp)
 
     INTEGER, INTENT(IN)             :: candidates(:)
     INTEGER, INTENT(IN)             :: num_candidates
-    INTEGER, INTENT(IN)             :: num_points
+    INTEGER, INTENT(IN)             :: num_points_interp
 
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
 
-     CALL random_choice(sample, candidates, num_candidates, num_points)
+     CALL random_choice(sample, candidates, num_candidates, num_points_interp)
 
 
 END SUBROUTINE
@@ -526,7 +526,7 @@ SUBROUTINE wrapper_get_exogenous_variables(independent_variables, maxe, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_get_simulated_indicator(is_simulated, num_points, & 
+SUBROUTINE wrapper_get_simulated_indicator(is_simulated, num_points_interp, &
                 num_states, period, is_debug_int, num_periods_int)
 
     !/* external libraries      */
@@ -543,7 +543,7 @@ SUBROUTINE wrapper_get_simulated_indicator(is_simulated, num_points, &
 
     INTEGER, INTENT(IN)             :: num_periods_int
     INTEGER, INTENT(IN)             :: num_states
-    INTEGER, INTENT(IN)             :: num_points
+    INTEGER, INTENT(IN)             :: num_points_interp
     INTEGER, INTENT(IN)             :: period
 
     LOGICAL, INTENT(IN)             :: is_debug_int
@@ -553,7 +553,7 @@ SUBROUTINE wrapper_get_simulated_indicator(is_simulated, num_points, &
 !-------------------------------------------------------------------------------
     num_periods = num_periods_int
     is_debug = is_debug_int
-    is_simulated = get_simulated_indicator(num_points, num_states, period)
+    is_simulated = get_simulated_indicator(num_points_interp, num_states, period)
 
 END SUBROUTINE
 !*******************************************************************************

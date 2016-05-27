@@ -273,13 +273,13 @@ class TestClass(object):
 
         # Extract class attributes
         num_periods, edu_start, edu_max, min_idx, model_paras, num_draws_emax, \
-            seed_emax, is_debug, delta, is_interpolated, num_points, \
+            seed_emax, is_debug, delta, is_interpolated, num_points_interp, \
             is_myopic, num_agents_sim, num_draws_prob, seed_prob, tau, \
             paras_fixed, is_parallel, num_procs = \
                 dist_class_attributes(respy_obj,
                     'num_periods', 'edu_start', 'edu_max', 'min_idx',
                     'model_paras', 'num_draws_emax', 'seed_emax', 'is_debug',
-                    'delta', 'is_interpolated', 'num_points', 'is_myopic',
+                    'delta', 'is_interpolated', 'num_points_interp', 'is_myopic',
                     'num_agents_sim', 'num_draws_prob', 'seed_prob', 'tau',
                     'paras_fixed', 'is_parallel', 'num_procs')
 
@@ -298,7 +298,7 @@ class TestClass(object):
         # Check the full solution procedure
         base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
             shocks_cholesky, is_interpolated, num_draws_emax, num_periods,
-            num_points, is_myopic, edu_start, is_debug, edu_max, min_idx, delta)
+            num_points_interp, is_myopic, edu_start, is_debug, edu_max, min_idx, delta)
 
         fort = fort_solve(*base_args + (seed_emax, tau, is_parallel, num_procs))
         pyth = pyth_solve(*base_args + (periods_draws_emax,))
@@ -330,7 +330,7 @@ class TestClass(object):
 
         base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
             shocks_cholesky, is_interpolated, num_draws_emax,
-            num_periods, num_points, is_myopic, edu_start, is_debug, edu_max,
+            num_periods, num_points_interp, is_myopic, edu_start, is_debug, edu_max,
             min_idx, delta, data_array, num_agents_sim, num_draws_prob, tau)
 
         args = base_args + (seed_emax, seed_prob, is_parallel, num_procs)
@@ -349,7 +349,7 @@ class TestClass(object):
         x0 = get_optim_paras(coeffs_a, coeffs_b, coeffs_edu,
                 coeffs_home, shocks_cholesky, 'all', paras_fixed, is_debug)
 
-        args = (is_interpolated, num_draws_emax, num_periods, num_points,
+        args = (is_interpolated, num_draws_emax, num_periods, num_points_interp,
             is_myopic, edu_start, is_debug, edu_max, min_idx, delta,
             data_array, num_agents_sim, num_draws_prob, tau,
             periods_draws_emax, periods_draws_prob)

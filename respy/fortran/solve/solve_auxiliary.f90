@@ -240,7 +240,7 @@ SUBROUTINE fort_backward_induction(periods_emax, &
                 periods_draws_emax, states_number_period, & 
                 periods_payoffs_systematic, & 
                 mapping_state_idx, states_all, & 
-                num_points, shocks_cholesky)
+                num_points_interp, shocks_cholesky)
 
     !/* external objects        */
 
@@ -253,7 +253,7 @@ SUBROUTINE fort_backward_induction(periods_emax, &
     INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(:, :, :, :, :)
     INTEGER(our_int), INTENT(IN)        :: states_number_period(:)
     INTEGER(our_int), INTENT(IN)        :: states_all(:, :, :)
-    INTEGER(our_int), INTENT(IN)        :: num_points
+    INTEGER(our_int), INTENT(IN)        :: num_points_interp
 
     !/* internals objects       */
 
@@ -311,7 +311,7 @@ SUBROUTINE fort_backward_induction(periods_emax, &
         CALL logging_solution(4, period, num_states)
 
         ! Distinguish case with and without interpolation
-        any_interpolated = (num_points .LE. num_states) .AND. is_interpolated
+        any_interpolated = (num_points_interp .LE. num_states) .AND. is_interpolated
 
         IF (any_interpolated) THEN
 
@@ -321,7 +321,7 @@ SUBROUTINE fort_backward_induction(periods_emax, &
             ALLOCATE(predictions(num_states))
 
             ! Constructing indicator for simulation points
-            is_simulated = get_simulated_indicator(num_points, num_states, &
+            is_simulated = get_simulated_indicator(num_points_interp, num_states, &
                                 period)
 
             ! Constructing the dependent variable for all states, including the
@@ -346,7 +346,7 @@ SUBROUTINE fort_backward_induction(periods_emax, &
             ! exogenous variables are available. For the interpolation
             ! points, the actual values are used.
             CALL get_predictions(predictions, endogenous, exogenous, maxe, &
-                    is_simulated, num_points, num_states, is_write)
+                    is_simulated, num_points_interp, num_states, is_write)
 
             ! Store results
             periods_emax(period + 1, :num_states) = predictions
@@ -414,18 +414,18 @@ SUBROUTINE get_payoffs(emax_simulated, draws_emax, period, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-FUNCTION get_simulated_indicator(num_points, num_states, period)
+FUNCTION get_simulated_indicator(num_points_interp, num_states, period)
 
     !/* external objects        */
 
     INTEGER(our_int), INTENT(IN)      :: num_states
-    INTEGER(our_int), INTENT(IN)      :: num_points
+    INTEGER(our_int), INTENT(IN)      :: num_points_interp
     INTEGER(our_int), INTENT(IN)      :: period
 
     !/* internal objects        */
 
     INTEGER(our_int)                  :: candidates(num_states)
-    INTEGER(our_int)                  :: sample(num_points)
+    INTEGER(our_int)                  :: sample(num_points_interp)
     INTEGER(our_int)                  :: i
 
     LOGICAL                           :: is_simulated_container(num_states, num_periods)
@@ -466,13 +466,13 @@ FUNCTION get_simulated_indicator(num_points, num_states, period)
     END IF
 
     ! Handle special cases
-    IF (num_points .EQ. num_states) THEN
+    IF (num_points_interp .EQ. num_states) THEN
 
         get_simulated_indicator = .TRUE.
 
         RETURN
 
-    ELSEIF (num_points .GT. num_states) THEN
+    ELSEIF (num_points_interp .GT. num_states) THEN
 
         PRINT *, ' Bad Request in interpolation code'
 
@@ -481,12 +481,12 @@ FUNCTION get_simulated_indicator(num_points, num_states, period)
     END IF
 
     ! Draw a random sample
-    CALL random_choice(sample, candidates, num_states, num_points)
+    CALL random_choice(sample, candidates, num_states, num_points_interp)
 
     ! Update information indicator
     is_simulated = .False.
 
-    DO i = 1, num_points
+    DO i = 1, num_points_interp
 
         is_simulated(sample(i)) = .True.
 
@@ -619,7 +619,7 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE get_predictions(predictions, endogenous, exogenous, maxe, &
-              is_simulated, num_points, num_states, is_write)
+              is_simulated, num_points_interp, num_states, is_write)
 
     !/* external objects        */
 
@@ -630,7 +630,7 @@ SUBROUTINE get_predictions(predictions, endogenous, exogenous, maxe, &
     REAL(our_dble), INTENT(IN)        :: maxe(:)
 
     INTEGER, INTENT(IN)               :: num_states
-    INTEGER, INTENT(IN)               :: num_points
+    INTEGER, INTENT(IN)               :: num_points_interp
 
     LOGICAL, OPTIONAL, INTENT(IN)  :: is_write
     LOGICAL, INTENT(IN)               :: is_simulated(:)
@@ -638,9 +638,9 @@ SUBROUTINE get_predictions(predictions, endogenous, exogenous, maxe, &
 
     !/* internal objects        */
 
-    REAL(our_dble)                    :: endogenous_predicted_available(num_points)
-    REAL(our_dble)                    :: exogenous_is_available(num_points, 9)
-    REAL(our_dble)                    :: endogenous_is_available(num_points)
+    REAL(our_dble)                    :: endogenous_predicted_available(num_points_interp)
+    REAL(our_dble)                    :: exogenous_is_available(num_points_interp, 9)
+    REAL(our_dble)                    :: endogenous_is_available(num_points_interp)
     REAL(our_dble)                    :: endogenous_predicted(num_states)
     REAL(our_dble)                    :: coeffs(9)
     REAL(our_dble)                    :: r_squared
@@ -671,7 +671,7 @@ SUBROUTINE get_predictions(predictions, endogenous, exogenous, maxe, &
 
     ! Fit the prediction model on interpolation points.
     CALL get_coefficients(coeffs, endogenous_is_available, &
-            exogenous_is_available, 9, num_points)
+            exogenous_is_available, 9, num_points_interp)
 
     ! Use the model to predict EMAX for all states and subsequently
     ! replace the values where actual values are available. As in
@@ -696,7 +696,7 @@ SUBROUTINE get_predictions(predictions, endogenous, exogenous, maxe, &
 
     CALL get_pred_info(r_squared, bse, endogenous_is_available, &
             endogenous_predicted_available, exogenous_is_available, & 
-            num_points, 9)
+            num_points_interp, 9)
 
     endogenous_predicted = clip_value(endogenous_predicted, &
             zero_dble, HUGE_FLOAT)
@@ -829,7 +829,7 @@ SUBROUTINE logging_solution(indicator, period, num_states)
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE random_choice(sample, candidates, num_candidates, num_points)
+SUBROUTINE random_choice(sample, candidates, num_candidates, num_points_interp)
 
   !
   ! Source
@@ -845,7 +845,7 @@ SUBROUTINE random_choice(sample, candidates, num_candidates, num_points)
 
     INTEGER, INTENT(IN)           :: num_candidates
     INTEGER, INTENT(IN)           :: candidates(:)
-    INTEGER, INTENT(IN)           :: num_points
+    INTEGER, INTENT(IN)           :: num_points_interp
 
     !/* internal objects    */
 
@@ -869,7 +869,7 @@ SUBROUTINE random_choice(sample, candidates, num_candidates, num_points)
 
         l = INT(DBLE(num_candidates - j + 1) * u(1)) + 1
 
-        IF (l .GT. (num_points - m)) THEN
+        IF (l .GT. (num_points_interp - m)) THEN
 
             CONTINUE
 
@@ -879,7 +879,7 @@ SUBROUTINE random_choice(sample, candidates, num_candidates, num_points)
 
             sample(m) = candidates(j)
 
-            IF (m .GE. num_points) THEN
+            IF (m .GE. num_points_interp) THEN
 
                 RETURN
 

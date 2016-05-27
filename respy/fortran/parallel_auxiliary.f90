@@ -20,7 +20,7 @@ CONTAINS
 SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period, &
                 mapping_state_idx, periods_emax, states_all, coeffs_a, &
                 coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, &
-                num_points, SLAVECOMM)
+                num_points_interp, SLAVECOMM)
 
     !/* external objects        */
 
@@ -31,7 +31,7 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_emax(:, :)
 
-    INTEGER(our_int), INTENT(IN)                    :: num_points
+    INTEGER(our_int), INTENT(IN)                    :: num_points_interp
 
     REAL(our_dble), INTENT(IN)                      :: shocks_cholesky(:, :)
     REAL(our_dble), INTENT(IN)                      :: coeffs_home(:)

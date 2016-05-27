@@ -84,12 +84,12 @@ class TestClass(object):
         # Extract class attributes
         periods_payoffs_systematic, states_number_period, \
             mapping_state_idx, seed_prob, periods_emax, model_paras, \
-            num_periods, states_all, num_points, edu_start, num_draws_emax, \
+            num_periods, states_all, num_points_interp, edu_start, num_draws_emax, \
             is_debug, edu_max, delta = \
                 dist_class_attributes(respy_obj,
                     'periods_payoffs_systematic', 'states_number_period',
                     'mapping_state_idx', 'seed_prob', 'periods_emax',
-                    'model_paras', 'num_periods', 'states_all', 'num_points',
+                    'model_paras', 'num_periods', 'states_all', 'num_points_interp',
                     'edu_start', 'num_draws_emax', 'is_debug', 'edu_max',
                     'delta')
 
@@ -111,11 +111,11 @@ class TestClass(object):
 
         # Slight modification of request which assures that the
         # interpolation code is working.
-        num_points = min(num_points, num_states)
+        num_points_interp = min(num_points_interp, num_states)
 
         # Get the IS_SIMULATED indicator for the subset of points which are
         # used for the predication model.
-        args = (num_points, num_states, period, is_debug)
+        args = (num_points_interp, num_states, period, is_debug)
         is_simulated = get_simulated_indicator(*args)
 
         # Construct the exogenous variables for all points of the state
@@ -152,7 +152,7 @@ class TestClass(object):
         # prediction model.
         logging_solution('start')
 
-        args = (endogenous, exogenous, maxe, is_simulated, num_points,
+        args = (endogenous, exogenous, maxe, is_simulated, num_points_interp,
             num_states, is_debug)
 
         py = get_predictions(*args)
@@ -188,16 +188,16 @@ class TestClass(object):
         candidates = list(range(num_states))
 
         period = np.random.randint(1, num_periods)
-        num_points = np.random.randint(1, num_states + 1)
+        num_points_interp = np.random.randint(1, num_states + 1)
 
         # Check function for random choice and make sure that there are no
         # duplicates.
-        f90 = fort_debug.wrapper_random_choice(candidates, num_states, num_points)
+        f90 = fort_debug.wrapper_random_choice(candidates, num_states, num_points_interp)
         np.testing.assert_equal(len(set(f90)), len(f90))
-        np.testing.assert_equal(len(f90), num_points)
+        np.testing.assert_equal(len(f90), num_points_interp)
 
         # Check the standard cases of the function.
-        args = (num_points, num_states, period, is_debug, num_periods)
+        args = (num_points_interp, num_states, period, is_debug, num_periods)
         f90 = fort_debug.wrapper_get_simulated_indicator(*args)
 
         np.testing.assert_equal(len(f90), num_states)
@@ -206,7 +206,7 @@ class TestClass(object):
         # Test the standardization across PYTHON, F2PY, and FORTRAN
         # implementations. This is possible as we write out an interpolation
         # grid to disk which is used for both functions.
-        base_args = (num_points, num_states, period, is_debug)
+        base_args = (num_points_interp, num_states, period, is_debug)
         args = base_args
         py = get_simulated_indicator(*args)
         args = base_args + (num_periods, )

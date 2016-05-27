@@ -369,11 +369,11 @@ class TestClass(object):
 
         # Extract class attributes
         num_periods, edu_start, edu_max, min_idx, model_paras, num_draws_emax, \
-            seed_emax, is_debug, delta, is_interpolated, num_points, = \
+            seed_emax, is_debug, delta, is_interpolated, num_points_interp, = \
                 dist_class_attributes(respy_obj,
                     'num_periods', 'edu_start', 'edu_max', 'min_idx',
                     'model_paras', 'num_draws_emax', 'seed_emax', 'is_debug',
-                    'delta', 'is_interpolated', 'num_points')
+                    'delta', 'is_interpolated', 'num_points_interp')
 
         # Auxiliary objects
         coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
@@ -408,7 +408,7 @@ class TestClass(object):
         args = (num_periods, max_states_period, periods_draws_emax,
             num_draws_emax, states_number_period, periods_payoffs_systematic,
             edu_max, edu_start, mapping_state_idx, states_all, delta,
-            is_debug, is_interpolated, num_points, shocks_cholesky)
+            is_debug, is_interpolated, num_points_interp, shocks_cholesky)
 
         logging_solution('start')
         pyth = pyth_backward_induction(*args)

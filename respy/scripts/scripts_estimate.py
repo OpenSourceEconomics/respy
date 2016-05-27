@@ -34,13 +34,13 @@ def add_gradient_information(respy_obj):
 
     model_paras, num_periods, num_agents_est, edu_start, is_debug, edu_max, \
         delta, num_draws_prob, seed_prob, num_draws_emax, seed_emax, \
-        min_idx, is_myopic, is_interpolated, num_points, version, \
+        min_idx, is_myopic, is_interpolated, num_points_interp, version, \
         optimizer_used, paras_fixed, tau, optimizer_options = \
             dist_class_attributes(respy_obj,
                 'model_paras', 'num_periods', 'num_agents_est', 'edu_start',
                 'is_debug', 'edu_max', 'delta', 'num_draws_prob', 'seed_prob',
                 'num_draws_emax', 'seed_emax', 'min_idx', 'is_myopic',
-                'is_interpolated', 'num_points', 'version', 'optimizer_used',
+                'is_interpolated', 'num_points_interp', 'version', 'optimizer_used',
                 'paras_fixed', 'tau', 'optimizer_options')
 
     # Auxiliary objects
@@ -62,7 +62,7 @@ def add_gradient_information(respy_obj):
         is_debug)
 
     # Collect arguments for the evaluation of the criterion function.
-    args = (is_interpolated, num_draws_emax, num_periods, num_points,
+    args = (is_interpolated, num_draws_emax, num_periods, num_points_interp,
         is_myopic, edu_start, is_debug, edu_max, min_idx, delta, data_array,
         num_agents_est, num_draws_prob, tau, periods_draws_emax,
         periods_draws_prob)

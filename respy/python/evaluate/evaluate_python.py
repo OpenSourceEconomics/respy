@@ -13,7 +13,7 @@ from respy.python.solve.solve_python import pyth_solve
 
 
 def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
-        is_interpolated, num_draws_emax, num_periods, num_points, is_myopic,
+        is_interpolated, num_draws_emax, num_periods, num_points_interp, is_myopic,
         edu_start, is_debug,  edu_max, min_idx, delta, data_array,
         num_agents_est, num_draws_prob, tau, periods_draws_emax,
         periods_draws_prob):
@@ -28,7 +28,7 @@ def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
 
     # Solve requested model.
     base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
-        is_interpolated, num_draws_emax, num_periods, num_points, is_myopic,
+        is_interpolated, num_draws_emax, num_periods, num_points_interp, is_myopic,
         edu_start, is_debug, edu_max, min_idx, delta)
 
     periods_payoffs_systematic, _, mapping_state_idx, periods_emax, \

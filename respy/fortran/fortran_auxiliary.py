@@ -70,7 +70,7 @@ def read_data(label, shape):
 
 def write_resfort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         shocks_cholesky, is_interpolated, num_draws_emax, num_periods,
-        num_points, is_myopic, edu_start, is_debug, edu_max, min_idx, delta,
+        num_points_interp, is_myopic, edu_start, is_debug, edu_max, min_idx, delta,
         num_draws_prob, num_agents_est, seed_prob, seed_emax, tau,
         num_procs, request):
     """ Write out model request to hidden file .model.resfort.ini.
@@ -128,7 +128,7 @@ def write_resfort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         line = '{0}'.format(is_interpolated)
         file_.write(line + '\n')
 
-        line = '{0:10d}\n'.format(num_points)
+        line = '{0:10d}\n'.format(num_points_interp)
         file_.write(line)
 
         # ESTIMATION

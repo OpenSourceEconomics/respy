@@ -161,7 +161,7 @@ def pyth_calculate_payoffs_systematic(num_periods, states_number_period,
 def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
         num_draws_emax, states_number_period, periods_payoffs_systematic,
         edu_max, edu_start, mapping_state_idx, states_all, delta, is_debug,
-        is_interpolated, num_points, shocks_cholesky):
+        is_interpolated, num_points_interp, shocks_cholesky):
     """ Backward induction procedure. There are two main threads to this
     function depending on whether interpolation is requested or not.
     """
@@ -194,13 +194,13 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
         # Thus, for some periods the number of interpolation points is
         # larger than the actual number of states. In that case no
         # interpolation is needed.
-        any_interpolated = (num_points <= num_states) and is_interpolated
+        any_interpolated = (num_points_interp <= num_states) and is_interpolated
 
         # Case distinction
         if any_interpolated:
 
             # Get indicator for interpolation and simulation of states
-            is_simulated = get_simulated_indicator(num_points, num_states,
+            is_simulated = get_simulated_indicator(num_points_interp, num_states,
                 period, is_debug)
 
             # Constructing the exogenous variable for all states, including the
@@ -223,7 +223,7 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
             # independent variables are available. For the interpolation
             # points, the actual values are used.
             predictions = get_predictions(endogenous, exogenous, maxe,
-                is_simulated, num_points, num_states, is_debug)
+                is_simulated, num_points_interp, num_states, is_debug)
 
             # Store results
             periods_emax[period, :num_states] = predictions
@@ -250,12 +250,12 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
     return periods_emax
 
 
-def get_simulated_indicator(num_points, num_candidates, period, is_debug):
+def get_simulated_indicator(num_points_interp, num_candidates, period, is_debug):
     """ Get the indicator for points of interpolation and simulation.
     """
     # Drawing random interpolation points
     interpolation_points = np.random.choice(range(num_candidates),
-        size=num_points, replace=False)
+        size=num_points_interp, replace=False)
 
     # Constructing an indicator whether a state will be simulated or
     # interpolated.
@@ -345,7 +345,7 @@ def get_endogenous_variable(period, num_periods, num_states, delta,
     return endogenous_variable
 
 
-def get_predictions(endogenous, exogenous, maxe, is_simulated, num_points,
+def get_predictions(endogenous, exogenous, maxe, is_simulated, num_points_interp,
         num_states, is_debug):
     """ Fit an OLS regression of the exogenous variables on the endogenous
     variables and use the results to predict the endogenous variables for all
@@ -366,7 +366,7 @@ def get_predictions(endogenous, exogenous, maxe, is_simulated, num_points,
     predictions[is_simulated] = endogenous[is_simulated] + maxe[is_simulated]
 
     # Checks
-    check_prediction_model(endogenous_predicted, model, num_points,
+    check_prediction_model(endogenous_predicted, model, num_points_interp,
         num_states, is_debug)
 
     # Write out some basic information to spot problems easily.
@@ -418,7 +418,7 @@ def logging_solution(which):
         raise NotImplementedError
 
 
-def check_prediction_model(predictions_diff, model, num_points, num_states,
+def check_prediction_model(predictions_diff, model, num_points_interp, num_states,
         is_debug):
     """ Perform some basic consistency checks for the prediction model.
     """
@@ -433,7 +433,7 @@ def check_prediction_model(predictions_diff, model, num_points, num_states,
     # necessarily satisfied in that case. For ease of application, we do not
     # ensure that the same number of interpolation points is available.
     if not (is_debug and os.path.exists('interpolation.txt')):
-        assert (model.nobs == min(num_points, num_states))
+        assert (model.nobs == min(num_points_interp, num_states))
 
 
 def checks(str_, *args):

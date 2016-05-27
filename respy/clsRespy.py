@@ -59,7 +59,7 @@ class RespyCls(object):
 
         self.attr['is_parallel'] = None
 
-        self.attr['num_points'] = None
+        self.attr['num_points_interp'] = None
 
         self.attr['num_procs'] = None
 
@@ -255,7 +255,7 @@ class RespyCls(object):
 
         self.attr['is_parallel'] = init_dict['PROGRAM']['parallelism']
 
-        self.attr['num_points'] = init_dict['INTERPOLATION']['points']
+        self.attr['num_points_interp'] = init_dict['INTERPOLATION']['points']
 
         self.attr['num_draws_emax'] = init_dict['SOLUTION']['draws']
 
@@ -393,7 +393,7 @@ class RespyCls(object):
 
         model_paras = self.attr['model_paras']
 
-        num_points = self.attr['num_points']
+        num_points_interp = self.attr['num_points_interp']
 
         edu_start = self.attr['edu_start']
 
@@ -494,8 +494,8 @@ class RespyCls(object):
 
         # Interpolation
         assert (is_interpolated in [True, False])
-        assert (isinstance(num_points, int))
-        assert (num_points > 0)
+        assert (isinstance(num_points_interp, int))
+        assert (num_points_interp > 0)
 
         # Simulation of S-ML
         assert (isinstance(num_draws_prob, int))

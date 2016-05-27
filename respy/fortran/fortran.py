@@ -14,7 +14,7 @@ from respy.python.shared.shared_constants import FORTRAN_DIR
 
 
 def fort_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
-        is_interpolated, num_draws_emax, num_periods, num_points, is_myopic,
+        is_interpolated, num_draws_emax, num_periods, num_points_interp, is_myopic,
         edu_start, is_debug, edu_max, min_idx, delta, data_array,
         num_agents_est, num_draws_prob, tau, seed_emax, seed_prob,
         is_parallel, num_procs):
@@ -23,7 +23,7 @@ def fort_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
     # Prepare RESFORT execution by collecting arguments and writing them to
     # the RESFORT initialization file.
     args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
-        is_interpolated, num_draws_emax, num_periods, num_points, is_myopic,
+        is_interpolated, num_draws_emax, num_periods, num_points_interp, is_myopic,
         edu_start, is_debug, edu_max, min_idx, delta)
 
     args = args + (num_draws_prob, num_agents_est, seed_prob, seed_emax,
@@ -49,7 +49,7 @@ def fort_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
 
 
 def fort_solve(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
-        is_interpolated, num_draws_emax, num_periods, num_points, is_myopic,
+        is_interpolated, num_draws_emax, num_periods, num_points_interp, is_myopic,
         edu_start, is_debug, edu_max, min_idx, delta, seed_emax, tau,
         is_parallel, num_procs):
     """ This function serves as the interface to the FORTRAN implementations.
@@ -58,7 +58,7 @@ def fort_solve(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
     # the RESFORT initialization file. The last arguments are just
     # placeholders as that are not needed for a solution request.
     args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
-        is_interpolated, num_draws_emax, num_periods, num_points, is_myopic,
+        is_interpolated, num_draws_emax, num_periods, num_points_interp, is_myopic,
         edu_start, is_debug, edu_max, min_idx, delta)
 
     args = args + (1, 1, 1, seed_emax, tau, num_procs, 'solve')

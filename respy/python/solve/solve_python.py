@@ -18,7 +18,7 @@ logger = logging.getLogger('RESPY_SOLVE')
 
 
 def pyth_solve(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
-        is_interpolated, num_draws_emax, num_periods, num_points, is_myopic,
+        is_interpolated, num_draws_emax, num_periods, num_points_interp, is_myopic,
         edu_start, is_debug, edu_max, min_idx, delta, periods_draws_emax):
     """ Solving the model using pure PYTHON code.
     """
@@ -75,7 +75,7 @@ def pyth_solve(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
             periods_draws_emax, num_draws_emax, states_number_period,
             periods_payoffs_systematic, edu_max, edu_start,
             mapping_state_idx, states_all, delta, is_debug, is_interpolated,
-            num_points, shocks_cholesky)
+            num_points_interp, shocks_cholesky)
 
         logger.info('... finished \n')
 

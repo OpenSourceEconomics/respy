@@ -19,9 +19,9 @@ def write_interpolation_grid(file_name):
     respy_obj = RespyCls(file_name)
 
     # Distribute class attribute
-    num_periods, num_points, edu_start, edu_max, min_idx = \
+    num_periods, num_points_interp, edu_start, edu_max, min_idx = \
         dist_class_attributes(respy_obj,
-            'num_periods', 'num_points', 'edu_start', 'edu_max', 'min_idx')
+            'num_periods', 'num_points_interp', 'edu_start', 'edu_max', 'min_idx')
 
     # Determine maximum number of states
     _, states_number_period, _, max_states_period = \
@@ -35,7 +35,7 @@ def write_interpolation_grid(file_name):
 
         # Construct auxiliary objects
         num_states = states_number_period[period]
-        any_interpolation = (num_states - num_points) > 0
+        any_interpolation = (num_states - num_points_interp) > 0
 
         # Check applicability
         if not any_interpolation:
@@ -43,7 +43,7 @@ def write_interpolation_grid(file_name):
 
         # Draw points for interpolation
         indicators = np.random.choice(range(num_states),
-            size=(num_states - num_points), replace=False)
+            size=(num_states - num_points_interp), replace=False)
 
         # Replace indicators
         for i in range(num_states):

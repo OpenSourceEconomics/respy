@@ -7,7 +7,7 @@
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, & 
-                num_periods_int, num_points, is_myopic_int, edu_start_int, is_debug_int, & 
+                num_periods_int, num_points_interp, is_myopic_int, edu_start_int, is_debug_int, &
                 edu_max_int, min_idx_int, delta_int, data_array, num_agents_est_int, & 
                 num_draws_prob_int, tau_int, periods_draws_emax, periods_draws_prob)
 
@@ -31,7 +31,7 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
     INTEGER, INTENT(IN)             :: num_draws_prob_int
     INTEGER, INTENT(IN)             :: edu_max_int
     INTEGER, INTENT(IN)             :: num_periods_int
-    INTEGER, INTENT(IN)             :: num_points
+    INTEGER, INTENT(IN)             :: num_points_interp
     INTEGER, INTENT(IN)             :: edu_start_int
     INTEGER, INTENT(IN)             :: min_idx_int
 
@@ -85,7 +85,7 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
     CALL fort_solve(periods_payoffs_systematic, states_number_period, & 
             mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, & 
             coeffs_edu, coeffs_home, shocks_cholesky, & 
-            periods_draws_emax, num_points)
+            periods_draws_emax, num_points_interp)
 
     ! Evaluate criterion function for observed data
     CALL fort_evaluate(crit_val, periods_payoffs_systematic, & 
@@ -99,7 +99,7 @@ END SUBROUTINE
 SUBROUTINE f2py_solve(periods_payoffs_systematic, states_number_period, &
                 mapping_state_idx, periods_emax, states_all, coeffs_a, &
                 coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, &
-                is_interpolated_int, num_draws_emax_int, num_periods_int, num_points, & 
+                is_interpolated_int, num_draws_emax_int, num_periods_int, num_points_interp, &
                 is_myopic_int, edu_start_int, is_debug_int, edu_max_int, min_idx_int, delta_int, & 
                 periods_draws_emax, max_states_period)
     
@@ -131,7 +131,7 @@ SUBROUTINE f2py_solve(periods_payoffs_systematic, states_number_period, &
     INTEGER, INTENT(IN)             :: num_draws_emax_int
     INTEGER, INTENT(IN)             :: edu_max_int 
     INTEGER, INTENT(IN)             :: num_periods_int
-    INTEGER, INTENT(IN)             :: num_points
+    INTEGER, INTENT(IN)             :: num_points_interp
     INTEGER, INTENT(IN)             :: edu_start_int
     INTEGER, INTENT(IN)             :: min_idx_int
 
@@ -179,7 +179,7 @@ SUBROUTINE f2py_solve(periods_payoffs_systematic, states_number_period, &
             mapping_state_idx_int, periods_emax_int, states_all_int, & 
             coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, & 
             periods_draws_emax, & 
-            num_points)
+            num_points_interp)
 
     ! Assign to initial objects for return to PYTHON
     periods_payoffs_systematic = periods_payoffs_systematic_int   
@@ -193,7 +193,7 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, & 
                 coeffs_home, shocks_cholesky, is_interpolated_int, & 
-                num_draws_emax_int, num_periods_int, num_points, is_myopic_int, & 
+                num_draws_emax_int, num_periods_int, num_points_interp, is_myopic_int, &
                 edu_start_int, is_debug_int, edu_max_int, min_idx_int, delta_int, data_array, & 
                 num_agents_est_int, num_draws_prob_int, tau_int, periods_draws_emax, &
                 periods_draws_prob)
@@ -215,7 +215,7 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, &
     INTEGER, INTENT(IN)             :: num_agents_est_int
     INTEGER, INTENT(IN)             :: edu_max_int
     INTEGER, INTENT(IN)             :: num_periods_int
-    INTEGER, INTENT(IN)             :: num_points
+    INTEGER, INTENT(IN)             :: num_points_interp
     INTEGER, INTENT(IN)             :: edu_start_int
     INTEGER, INTENT(IN)             :: min_idx_int
 
@@ -267,7 +267,7 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, &
             mapping_state_idx, periods_emax, states_all, coeffs_a, & 
             coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, & 
             periods_draws_emax, & 
-            num_points)
+            num_points_interp)
 
     ! Evaluate the criterion function building on the solution.
     CALL fort_evaluate(crit_val, periods_payoffs_systematic, & 
@@ -331,7 +331,7 @@ SUBROUTINE f2py_backward_induction(periods_emax, num_periods_int, &
                 max_states_period, periods_draws_emax, num_draws_emax_int, & 
                 states_number_period, periods_payoffs_systematic, edu_max_int, & 
                 edu_start_int, mapping_state_idx, states_all, delta_int, is_debug_int, & 
-                is_interpolated_int, num_points, shocks_cholesky)
+                is_interpolated_int, num_points_interp, shocks_cholesky)
 
     !/* external libraries      */
 
@@ -357,7 +357,7 @@ SUBROUTINE f2py_backward_induction(periods_emax, num_periods_int, &
     INTEGER, INTENT(IN)             :: num_draws_emax_int
     INTEGER, INTENT(IN)             :: edu_max_int
     INTEGER, INTENT(IN)             :: num_periods_int
-    INTEGER, INTENT(IN)             :: num_points
+    INTEGER, INTENT(IN)             :: num_points_interp
     INTEGER, INTENT(IN)             :: edu_start_int
 
     LOGICAL, INTENT(IN)             :: is_interpolated_int
@@ -384,7 +384,7 @@ SUBROUTINE f2py_backward_induction(periods_emax, num_periods_int, &
     CALL fort_backward_induction(periods_emax, &
             periods_draws_emax, states_number_period, &
             periods_payoffs_systematic, mapping_state_idx, &
-            states_all, num_points, &
+            states_all, num_points_interp, &
             shocks_cholesky)
 
 END SUBROUTINE

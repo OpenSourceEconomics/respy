@@ -630,7 +630,7 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE read_specification(coeffs_a, coeffs_b, &
                 coeffs_edu, coeffs_home, shocks_cholesky, & 
-                num_points)
+                num_points_interp)
 
     !
     !   This function serves as the replacement for the RespyCls and reads in
@@ -640,7 +640,7 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, &
 
     !/* external objects        */
 
-    INTEGER(our_int), INTENT(OUT)   :: num_points
+    INTEGER(our_int), INTENT(OUT)   :: num_points_interp
 
     REAL(our_dble), INTENT(OUT)     :: shocks_cholesky(4, 4)
     REAL(our_dble), INTENT(OUT)     :: coeffs_home(1)
@@ -698,7 +698,7 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, &
 
         ! INTERPOLATION
         READ(1, *) is_interpolated
-        READ(1, 1505) num_points
+        READ(1, 1505) num_points_interp
 
         ! ESTIMATION
         READ(1, 1505) num_agents_est
