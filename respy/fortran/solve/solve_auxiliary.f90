@@ -240,7 +240,7 @@ SUBROUTINE fort_backward_induction(periods_emax, &
                 periods_draws_emax, states_number_period, & 
                 periods_payoffs_systematic, & 
                 mapping_state_idx, states_all, & 
-                num_points_interp, shocks_cholesky)
+                shocks_cholesky)
 
     !/* external objects        */
 
@@ -253,7 +253,6 @@ SUBROUTINE fort_backward_induction(periods_emax, &
     INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(:, :, :, :, :)
     INTEGER(our_int), INTENT(IN)        :: states_number_period(:)
     INTEGER(our_int), INTENT(IN)        :: states_all(:, :, :)
-    INTEGER(our_int), INTENT(IN)        :: num_points_interp
 
     !/* internals objects       */
 
@@ -346,7 +345,7 @@ SUBROUTINE fort_backward_induction(periods_emax, &
             ! exogenous variables are available. For the interpolation
             ! points, the actual values are used.
             CALL get_predictions(predictions, endogenous, exogenous, maxe, &
-                    is_simulated, num_points_interp, num_states, is_write)
+                    is_simulated, num_states, is_write)
 
             ! Store results
             periods_emax(period + 1, :num_states) = predictions
@@ -619,7 +618,7 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE get_predictions(predictions, endogenous, exogenous, maxe, &
-              is_simulated, num_points_interp, num_states, is_write)
+              is_simulated, num_states, is_write)
 
     !/* external objects        */
 
@@ -630,7 +629,6 @@ SUBROUTINE get_predictions(predictions, endogenous, exogenous, maxe, &
     REAL(our_dble), INTENT(IN)        :: maxe(:)
 
     INTEGER, INTENT(IN)               :: num_states
-    INTEGER, INTENT(IN)               :: num_points_interp
 
     LOGICAL, OPTIONAL, INTENT(IN)  :: is_write
     LOGICAL, INTENT(IN)               :: is_simulated(:)
@@ -695,8 +693,7 @@ SUBROUTINE get_predictions(predictions, endogenous, exogenous, maxe, &
     END DO
 
     CALL get_pred_info(r_squared, bse, endogenous_is_available, &
-            endogenous_predicted_available, exogenous_is_available, & 
-            num_points_interp, 9)
+            endogenous_predicted_available, exogenous_is_available, num_points_interp, 9)
 
     endogenous_predicted = clip_value(endogenous_predicted, &
             zero_dble, HUGE_FLOAT)

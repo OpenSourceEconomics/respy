@@ -25,6 +25,7 @@ MODULE shared_constants
     ! Variables that are part of the FORTRAN initialization file and remain 
     ! unchanged during the run. These are often used to construct explicit 
     ! shaped arrays.
+    INTEGER(our_int)            :: num_points_interp
     INTEGER(our_int)            :: num_agents_est
     INTEGER(our_int)            :: num_draws_emax
     INTEGER(our_int)            :: num_draws_prob

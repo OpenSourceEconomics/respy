@@ -328,7 +328,7 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE wrapper_get_predictions(predictions, endogenous, exogenous, maxe, & 
-                is_simulated, num_points_interp, num_states)
+                is_simulated, num_points_interp_int, num_states)
 
     !/* external libraries      */
 
@@ -347,7 +347,7 @@ SUBROUTINE wrapper_get_predictions(predictions, endogenous, exogenous, maxe, &
     DOUBLE PRECISION, INTENT(IN)                :: maxe(:)
 
     INTEGER, INTENT(IN)                         :: num_states
-    INTEGER, INTENT(IN)                         :: num_points_interp
+    INTEGER, INTENT(IN)                         :: num_points_interp_int
 
     LOGICAL, INTENT(IN)                         :: is_simulated(:)
 
@@ -355,8 +355,10 @@ SUBROUTINE wrapper_get_predictions(predictions, endogenous, exogenous, maxe, &
 ! Algorithm
 !-------------------------------------------------------------------------------
 
+    num_points_interp = num_points_interp_int
+
     CALL get_predictions(predictions, endogenous, exogenous, maxe, & 
-            is_simulated, num_points_interp, num_states)
+            is_simulated, num_states)
 
 END SUBROUTINE
 !*******************************************************************************

@@ -16,8 +16,6 @@ PROGRAM resfort
     INTEGER(our_int), ALLOCATABLE   :: states_number_period(:)
     INTEGER(our_int), ALLOCATABLE   :: states_all(:, :, :)
 
-    INTEGER(our_int)                :: num_points_interp
-
     REAL(our_dble), ALLOCATABLE     :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_draws_emax(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_draws_prob(:, :, :)
@@ -39,8 +37,7 @@ PROGRAM resfort
     ! RespyCls instance that carries the model parametrization for the
     ! PYTHON/F2PY implementations.
     CALL read_specification(coeffs_a, coeffs_b, &
-            coeffs_edu, coeffs_home, shocks_cholesky, & 
-            num_points_interp)
+            coeffs_edu, coeffs_home, shocks_cholesky)
 
     ! This part creates (or reads from disk) the draws for the Monte 
     ! Carlo integration of the EMAX. For is_debugging purposes, these might 
@@ -55,8 +52,7 @@ PROGRAM resfort
         CALL fort_solve(periods_payoffs_systematic, states_number_period, & 
                 mapping_state_idx, periods_emax, states_all, coeffs_a, & 
                 coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, & 
-                periods_draws_emax, & 
-                num_points_interp)
+                periods_draws_emax)
 
     ELSE IF (request == 'evaluate') THEN
 
@@ -73,8 +69,7 @@ PROGRAM resfort
         CALL fort_solve(periods_payoffs_systematic, states_number_period, & 
                 mapping_state_idx, periods_emax, states_all, coeffs_a, & 
                 coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, & 
-                periods_draws_emax, & 
-                num_points_interp)
+                periods_draws_emax)
 
         CALL fort_evaluate(crit_val, periods_payoffs_systematic, & 
                 mapping_state_idx, periods_emax, states_all, shocks_cholesky, & 

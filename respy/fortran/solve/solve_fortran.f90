@@ -20,8 +20,7 @@ MODULE solve_fortran
 SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, &
                 mapping_state_idx, periods_emax, states_all, coeffs_a, &
                 coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, &
-                periods_draws_emax, & 
-                num_points_interp)
+                periods_draws_emax)
 
     !/* external objects        */
 
@@ -31,8 +30,6 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, &
 
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_emax(:, :)
-
-    INTEGER(our_int), INTENT(IN)                    :: num_points_interp
 
     REAL(our_dble), INTENT(IN)                      :: periods_draws_emax(:, :, :)
     REAL(our_dble), INTENT(IN)                      :: shocks_cholesky(:, :)
@@ -108,7 +105,7 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, &
                 periods_draws_emax, states_number_period, & 
                 periods_payoffs_systematic, & 
                 mapping_state_idx, states_all, &
-                num_points_interp, shocks_cholesky)
+                shocks_cholesky)
 
         CALL logging_solution(-1)
         

@@ -23,7 +23,6 @@ PROGRAM master
 
     INTEGER(our_int)                :: status(MPI_STATUS_SIZE) 
     INTEGER(our_int)                :: max_states_period
-    INTEGER(our_int)                :: num_points_interp
     INTEGER(our_int)                :: num_states
     INTEGER(our_int)                :: SLAVECOMM
     INTEGER(our_int)                :: period
@@ -53,8 +52,7 @@ PROGRAM master
 
     ! Read in model specification.
     CALL read_specification(coeffs_a, coeffs_b, &
-            coeffs_edu, coeffs_home, shocks_cholesky, & 
-            num_points_interp)
+            coeffs_edu, coeffs_home, shocks_cholesky)
 
     ! Execute on request.
     IF (request == 'solve') THEN
@@ -63,7 +61,6 @@ PROGRAM master
         CALL fort_solve_parallel(periods_payoffs_systematic, states_number_period, &
                 mapping_state_idx, periods_emax, states_all, coeffs_a, &
                 coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, &
-                num_points_interp, &
                 SLAVECOMM)
 
     ELSE IF (request == 'evaluate') THEN
@@ -82,7 +79,6 @@ PROGRAM master
         CALL fort_solve_parallel(periods_payoffs_systematic, states_number_period, &
                 mapping_state_idx, periods_emax, states_all, coeffs_a, &
                 coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, &
-                num_points_interp, &
                 SLAVECOMM)
         
        ! TODO: Parallelize

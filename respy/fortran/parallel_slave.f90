@@ -197,7 +197,6 @@ PROGRAM slave
     INTEGER(our_int)                :: lower_bound
     INTEGER(our_int)                :: upper_bound
     INTEGER(our_int)                :: num_states
-    INTEGER(our_int)                :: num_points_interp
     INTEGER(our_int)                :: num_slaves
     INTEGER(our_int)                :: PARENTCOMM
     INTEGER(our_int)                :: period
@@ -246,8 +245,7 @@ PROGRAM slave
 
     ! Read in model specification.
     CALL read_specification(coeffs_a, coeffs_b, & 
-            coeffs_edu, coeffs_home, shocks_cholesky, & 
-            num_points_interp)
+            coeffs_edu, coeffs_home, shocks_cholesky)
 
     ALLOCATE(draws_emax(num_draws_emax, 4))
 
@@ -417,7 +415,7 @@ PROGRAM slave
                     ! exogenous variables are available. For the interpolation
                     ! points, the actual values are used.
                     CALL get_predictions(predictions, endogenous, exogenous, maxe, &
-                            is_simulated, num_points_interp, num_states, is_head)
+                            is_simulated, num_states, is_head)
 
                     ! Store results
                     periods_emax(period + 1, :num_states) = predictions

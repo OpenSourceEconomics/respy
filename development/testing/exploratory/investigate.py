@@ -44,18 +44,9 @@ print(fname)
 new_tests = []
 
 np.random.seed(123)
-for idx in range(1):
+for idx in range(1000):
     print(idx)
     init_dict, crit_val = tests[idx]
-
-
-    is_fortran = init_dict['PROGRAM']['version'] == 'FORTRAN'
-
-    init_dict['PROGRAM']['procs'] = np.random.randint(2, 5)
-    if not is_fortran:
-        init_dict['PROGRAM']['parallelism'] = False
-    else:
-        init_dict['PROGRAM']['parallelism'] = np.random.choice([True, False])
 
     print_init_dict(init_dict)
     respy_obj = RespyCls('test.respy.ini')
