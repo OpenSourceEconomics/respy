@@ -91,8 +91,6 @@ def change_status(identifiers, init_file, is_fixed):
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
             dist_model_paras(model_paras, True)
 
-    shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
-
     for identifier in identifiers:
 
         if identifier in list(range(0, 6)):
@@ -113,10 +111,7 @@ def change_status(identifiers, init_file, is_fixed):
             init_dict['HOME']['fixed'][j] = is_fixed
         elif identifier in list(range(16, 26)):
             j = identifier - 16
-            shocks_coeffs = shocks_cov[np.triu_indices_from(
-                shocks_cov)].tolist()
-            for i in [0, 4, 7, 9]:
-                shocks_coeffs[i] = np.sqrt(shocks_coeffs[i])
+            shocks_coeffs = shocks_cholesky[np.triu_indices(4)].tolist()
             init_dict['SHOCKS']['coeffs'] = shocks_coeffs
             init_dict['SHOCKS']['fixed'][j] = is_fixed
         else:
