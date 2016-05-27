@@ -248,7 +248,7 @@ SUBROUTINE fort_backward_induction(periods_emax, &
 
     REAL(our_dble), INTENT(IN)          :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), INTENT(IN)          :: periods_draws_emax(:, :, :)
-    REAL(our_dble), INTENT(IN)          :: shocks_cholesky(:, :)
+    REAL(our_dble), INTENT(IN)          :: shocks_cholesky(4, 4)
 
     INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)        :: states_number_period(:)
@@ -390,7 +390,7 @@ SUBROUTINE get_payoffs(emax_simulated, draws_emax, period, &
 
     REAL(our_dble), INTENT(OUT)         :: emax_simulated
 
-    REAL(our_dble), INTENT(IN)          :: shocks_cholesky(:, :)
+    REAL(our_dble), INTENT(IN)          :: shocks_cholesky(4, 4)
     REAL(our_dble), INTENT(IN)          :: payoffs_systematic(:)
     REAL(our_dble), INTENT(IN)          :: periods_emax(:, :)
     REAL(our_dble), INTENT(IN)          :: draws_emax(:, :)
@@ -566,7 +566,7 @@ SUBROUTINE get_endogenous_variable(endogenous, period, &
     REAL(our_dble), INTENT(OUT)         :: endogenous(:)
 
     REAL(our_dble), INTENT(IN)          :: periods_payoffs_systematic(:, :, :)
-    REAL(our_dble), INTENT(IN)          :: shocks_cholesky(:, :)
+    REAL(our_dble), INTENT(IN)          :: shocks_cholesky(4, 4)
     REAL(our_dble), INTENT(IN)          :: periods_emax(:, :)
     REAL(our_dble), INTENT(IN)          :: draws_emax(:, :)
     REAL(our_dble), INTENT(IN)          :: maxe(:)
@@ -1162,7 +1162,7 @@ SUBROUTINE simulate_emax(emax_simulated, period, &
     INTEGER(our_int), INTENT(IN)    :: k
 
     REAL(our_dble), INTENT(IN)      :: payoffs_systematic(:)
-    REAL(our_dble), INTENT(IN)      :: shocks_cholesky(:, :)
+    REAL(our_dble), INTENT(IN)      :: shocks_cholesky(4, 4)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
     REAL(our_dble), INTENT(IN)      :: draws_emax(:, :)
 

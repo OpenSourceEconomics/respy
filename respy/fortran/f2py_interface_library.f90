@@ -137,7 +137,7 @@ SUBROUTINE f2py_solve(periods_payoffs_systematic, states_number_period, &
     INTEGER, INTENT(IN)             :: min_idx_int
 
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_emax(:, :, :)
-    DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(:, :)
+    DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(4, 4)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_home(:)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_edu(:)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(:)
@@ -222,7 +222,7 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, &
 
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_emax(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_prob(:, :, :)
-    DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(:, :)
+    DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(4, 4)
     DOUBLE PRECISION, INTENT(IN)    :: data_array(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_home(:)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_edu(:)
@@ -298,7 +298,7 @@ SUBROUTINE f2py_simulate(dataset, periods_payoffs_systematic, &
 
     DOUBLE PRECISION, INTENT(IN)    :: periods_payoffs_systematic(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_sims(:, :, :)
-    DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(:, :)
+    DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(4, 4)
     DOUBLE PRECISION, INTENT(IN)    :: periods_emax(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: delta_int
 
@@ -351,7 +351,7 @@ SUBROUTINE f2py_backward_induction(periods_emax, num_periods_int, &
 
     DOUBLE PRECISION, INTENT(IN)    :: periods_payoffs_systematic(:, :, :   )
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_emax(:, :, :)
-    DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(:, :)
+    DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(4, 4)
     DOUBLE PRECISION, INTENT(IN)    :: delta_int
 
     INTEGER, INTENT(IN)             :: mapping_state_idx(:, :, :, :, :)    

@@ -35,7 +35,7 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
     INTEGER(our_int), INTENT(IN)    :: states_all(:, :, :)
 
     REAL(our_dble), INTENT(IN)      :: periods_draws_prob(:, :, :)
-    REAL(our_dble), INTENT(IN)      :: shocks_cholesky(:, :)
+    REAL(our_dble), INTENT(IN)      :: shocks_cholesky(4, 4)
     REAL(our_dble), INTENT(IN)      :: data_array(:, :)
 
     !/* internal objects        */

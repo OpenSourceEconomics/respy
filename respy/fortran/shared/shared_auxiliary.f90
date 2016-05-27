@@ -102,7 +102,7 @@ SUBROUTINE transform_disturbances(draws_transformed, draws, shocks_cholesky, &
 
     REAL(our_dble), INTENT(OUT)     :: draws_transformed(:, :)
 
-    REAL(our_dble), INTENT(IN)      :: shocks_cholesky(:, :)
+    REAL(our_dble), INTENT(IN)      :: shocks_cholesky(4, 4)
     REAL(our_dble), INTENT(IN)      :: draws(:, :)
 
     INTEGER, INTENT(IN)             :: num_draws

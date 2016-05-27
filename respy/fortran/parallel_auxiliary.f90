@@ -31,7 +31,7 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_emax(:, :)
 
-    REAL(our_dble), INTENT(IN)                      :: shocks_cholesky(:, :)
+    REAL(our_dble), INTENT(IN)                      :: shocks_cholesky(4, 4)
     REAL(our_dble), INTENT(IN)                      :: coeffs_home(:)
     REAL(our_dble), INTENT(IN)                      :: coeffs_edu(:)
     REAL(our_dble), INTENT(IN)                      :: coeffs_a(:)

@@ -21,7 +21,7 @@ SUBROUTINE dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, &
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(OUT)     :: shocks_cholesky(:, :)
+    REAL(our_dble), INTENT(OUT)     :: shocks_cholesky(4, 4)
     REAL(our_dble), INTENT(OUT)     :: coeffs_home(:)
     REAL(our_dble), INTENT(OUT)     :: coeffs_edu(:)
     REAL(our_dble), INTENT(OUT)     :: coeffs_a(:)

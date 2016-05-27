@@ -101,7 +101,7 @@ SUBROUTINE wrapper_simulate_emax(emax_simulated, num_periods_int, &
     DOUBLE PRECISION, INTENT(OUT)   :: emax_simulated
 
     DOUBLE PRECISION, INTENT(IN)    :: payoffs_systematic(:)
-    DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(:, :)
+    DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(4, 4)
     DOUBLE PRECISION, INTENT(IN)    :: periods_emax(:,:)
     DOUBLE PRECISION, INTENT(IN)    :: draws_emax(:,:)
     DOUBLE PRECISION, INTENT(IN)    :: delta_int
@@ -439,7 +439,7 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, &
     DOUBLE PRECISION, INTENT(OUT)       :: exogenous_variable(num_states)
 
     DOUBLE PRECISION, INTENT(IN)        :: periods_payoffs_systematic(:, :, :)
-    DOUBLE PRECISION, INTENT(IN)        :: shocks_cholesky(:, :)
+    DOUBLE PRECISION, INTENT(IN)        :: shocks_cholesky(4, 4)
     DOUBLE PRECISION, INTENT(IN)        :: periods_emax(:, :)
     DOUBLE PRECISION, INTENT(IN)        :: draws_emax(:, :)
     DOUBLE PRECISION, INTENT(IN)        :: maxe(:)
@@ -579,7 +579,7 @@ SUBROUTINE wrapper_get_payoffs(emax_simulated, num_draws_emax_int, &
     DOUBLE PRECISION, INTENT(OUT)       :: emax_simulated
 
     DOUBLE PRECISION, INTENT(IN)        :: payoffs_systematic(:)
-    DOUBLE PRECISION, INTENT(IN)        :: shocks_cholesky(:, :)
+    DOUBLE PRECISION, INTENT(IN)        :: shocks_cholesky(4, 4)
     DOUBLE PRECISION, INTENT(IN)        :: periods_emax(:, :)
     DOUBLE PRECISION, INTENT(IN)        :: draws_emax(:, :)
     DOUBLE PRECISION, INTENT(IN)        :: delta_int
