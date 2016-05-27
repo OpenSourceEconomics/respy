@@ -42,7 +42,7 @@ class CreateParallelExecutable(Task):
         DEBUG_OPTIONS += ['-Wsurprising', '-Waliasing', '-Wimplicit-interface']
         DEBUG_OPTIONS += ['-Wunused-parameter', '-fwhole-file', '-fcheck=all']
         DEBUG_OPTIONS += ['-fbacktrace', '-g', '-fmax-errors=1',
-             '-ffpe-trap=invalid']
+             '-ffpe-trap=invalid', '-ffree-line-length-0']
         #
         # # DEBUG_OPTIONS = []
         # #

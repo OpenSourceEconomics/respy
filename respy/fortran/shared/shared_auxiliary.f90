@@ -1,5 +1,5 @@
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 MODULE shared_auxiliary
 
 	!/*	external modules	*/
@@ -93,10 +93,9 @@ MODULE shared_auxiliary
 
 
  CONTAINS
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE transform_disturbances(draws_transformed, draws, shocks_cholesky, & 
-                num_draws)
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE transform_disturbances(draws_transformed, draws, shocks_cholesky, num_draws)
 
     !/* external objects        */
 
@@ -111,13 +110,12 @@ SUBROUTINE transform_disturbances(draws_transformed, draws, shocks_cholesky, &
 
     INTEGER(our_int)                :: i
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 
     DO i = 1, num_draws
-        draws_transformed(i:i, :) = &
-            TRANSPOSE(MATMUL(shocks_cholesky, TRANSPOSE(draws(i:i, :))))
+        draws_transformed(i:i, :) = TRANSPOSE(MATMUL(shocks_cholesky, TRANSPOSE(draws(i:i, :))))
     END DO
 
     DO i = 1, 2
@@ -126,11 +124,9 @@ SUBROUTINE transform_disturbances(draws_transformed, draws, shocks_cholesky, &
 
 
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE get_total_value(total_payoffs, period, &
-                payoffs_systematic, draws, &
-                mapping_state_idx, periods_emax, k, states_all)
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE get_total_value(total_payoffs, period, payoffs_systematic, draws, mapping_state_idx, periods_emax, k, states_all)
 
     !/* external objects        */
 
@@ -152,9 +148,9 @@ SUBROUTINE get_total_value(total_payoffs, period, &
 
     LOGICAL                         :: is_inadmissible
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 
     ! Initialize containers
     payoffs_ex_post = zero_dble
@@ -167,9 +163,7 @@ SUBROUTINE get_total_value(total_payoffs, period, &
 
     ! Get future values
     IF (period .NE. (num_periods - one_int)) THEN
-        CALL get_future_payoffs(payoffs_future, is_inadmissible, & 
-                mapping_state_idx, period, periods_emax, k, & 
-                states_all)
+        CALL get_future_payoffs(payoffs_future, is_inadmissible, mapping_state_idx, period, periods_emax, k, states_all)
     ELSE
         is_inadmissible = .False.
         payoffs_future = zero_dble
@@ -187,10 +181,9 @@ SUBROUTINE get_total_value(total_payoffs, period, &
     END IF
 
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE get_future_payoffs(payoffs_future, is_inadmissible, &
-                mapping_state_idx, period, periods_emax, k, states_all)
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE get_future_payoffs(payoffs_future, is_inadmissible, mapping_state_idx, period, periods_emax, k, states_all)
 
     !/* external objects        */
 
@@ -205,8 +198,6 @@ SUBROUTINE get_future_payoffs(payoffs_future, is_inadmissible, &
 
     REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
 
-
-
     !/* internals objects       */
 
     INTEGER(our_int)                :: edu_lagged
@@ -215,9 +206,9 @@ SUBROUTINE get_future_payoffs(payoffs_future, is_inadmissible, &
     INTEGER(our_int)                :: exp_b
     INTEGER(our_int)                :: edu
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 
     ! Distribute state space
     exp_a = states_all(period + 1, k + 1, 1)
@@ -226,13 +217,11 @@ SUBROUTINE get_future_payoffs(payoffs_future, is_inadmissible, &
     edu_lagged = states_all(period + 1, k + 1, 4)
 
 	! Working in occupation A
-    future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1 + 1, &
-                    exp_b + 1, edu + 1, 1)
+    future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1 + 1, exp_b + 1, edu + 1, 1)
     payoffs_future(1) = periods_emax(period + 1 + 1, future_idx + 1)
 
 	!Working in occupation B
-    future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1, &
-                    exp_b + 1 + 1, edu + 1, 1)
+    future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1, exp_b + 1 + 1, edu + 1, 1)
     payoffs_future(2) = periods_emax(period + 1 + 1, future_idx + 1)
 
 	! Increasing schooling. Note that adding an additional year
@@ -242,19 +231,17 @@ SUBROUTINE get_future_payoffs(payoffs_future, is_inadmissible, &
     IF(is_inadmissible) THEN
         payoffs_future(3) = zero_dble
     ELSE
-        future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1, &
-                        exp_b + 1, edu + 1 + 1, 2)
+        future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1, exp_b + 1, edu + 1 + 1, 2)
         payoffs_future(3) = periods_emax(period + 1 + 1, future_idx + 1)
     END IF
 
 	! Staying at home
-    future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1, &
-                    exp_b + 1, edu + 1, 1)
+    future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1, exp_b + 1, edu + 1, 1)
     payoffs_future(4) = periods_emax(period + 1 + 1, future_idx + 1)
 
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE create_draws(draws, num_draws, seed)
 
     !/* external objects        */
@@ -276,9 +263,9 @@ SUBROUTINE create_draws(draws, num_draws, seed)
 
     LOGICAL                                     :: READ_IN
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 
     ! Allocate containers
     ALLOCATE(draws(num_periods, num_draws, 4))
@@ -329,8 +316,8 @@ SUBROUTINE create_draws(draws, num_draws, seed)
     END IF
    
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE standard_normal(draw)
 
     !/* external objects        */
@@ -345,9 +332,9 @@ SUBROUTINE standard_normal(draw)
     REAL(our_dble), ALLOCATABLE     :: u(:)
     REAL(our_dble), ALLOCATABLE     :: r(:)
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 
     ! Auxiliary objects
     dim = SIZE(draw)
@@ -374,8 +361,8 @@ SUBROUTINE standard_normal(draw)
     END DO
 
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 PURE FUNCTION trace_fun(A)
 
     !/* external objects        */
@@ -389,9 +376,9 @@ PURE FUNCTION trace_fun(A)
     INTEGER(our_int)            :: i
     INTEGER(our_int)            :: n
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 
     ! Get dimension
     n = SIZE(A, DIM = 1)
@@ -407,8 +394,8 @@ PURE FUNCTION trace_fun(A)
     END DO
 
 END FUNCTION
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 FUNCTION inverse(A, n)
 
     !/* external objects        */
@@ -425,9 +412,9 @@ FUNCTION inverse(A, n)
     REAL(our_dble)                  :: inverse(n, n)
     REAL(our_dble)                  :: work(n)
     
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
     
     ! Initialize matrix for replacement
     inverse = A
@@ -449,8 +436,8 @@ FUNCTION inverse(A, n)
     END IF
 
 END FUNCTION
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 FUNCTION determinant(A)
 
     !/* external objects        */
@@ -469,9 +456,9 @@ FUNCTION determinant(A)
 
     REAL(our_dble), ALLOCATABLE   :: B(:, :)
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
     
     ! Auxiliary objects
     N = SIZE(A, 1)
@@ -504,11 +491,9 @@ FUNCTION determinant(A)
 
 
 END FUNCTION
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE store_results(mapping_state_idx, states_all, &
-                periods_payoffs_systematic, states_number_period, &
-                periods_emax, crit_val)
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE store_results(mapping_state_idx, states_all, periods_payoffs_systematic, states_number_period, periods_emax, crit_val)
 
     !/* external objects        */
 
@@ -529,9 +514,9 @@ SUBROUTINE store_results(mapping_state_idx, states_all, &
     INTEGER(our_int)                :: j
     INTEGER(our_int)                :: k
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 
     ! This is a break in design as otherwise I need to carry the integer up
     ! from the solution level.
@@ -626,10 +611,9 @@ SUBROUTINE store_results(mapping_state_idx, states_all, &
     END IF
 
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE read_specification(coeffs_a, coeffs_b, &
-                coeffs_edu, coeffs_home, shocks_cholesky)
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky)
 
     !
     !   This function serves as the replacement for the RespyCls and reads in
@@ -650,9 +634,9 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, &
     INTEGER(our_int)                :: j
     INTEGER(our_int)                :: k
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 
     ! Fix formatting
     1500 FORMAT(6(1x,f15.10))
@@ -716,8 +700,8 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, &
     CLOSE(1)
 
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE read_dataset(data_array, num_agents)
 
     !/* external objects        */
@@ -731,9 +715,9 @@ SUBROUTINE read_dataset(data_array, num_agents)
     INTEGER(our_int)                            :: j
     INTEGER(our_int)                            :: k
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 
     ! Allocate data container
     ALLOCATE(data_array(num_periods * num_agents, 8))
@@ -826,6 +810,6 @@ FUNCTION clip_value_2(value, lower_bound, upper_bound)
     END DO
 
 END FUNCTION
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 END MODULE
