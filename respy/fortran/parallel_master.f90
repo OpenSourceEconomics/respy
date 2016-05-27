@@ -1,5 +1,5 @@
-!*******************************************************************************
-!******************************************************************************* 
+!******************************************************************************
+!******************************************************************************
 PROGRAM master
 
     !/* external modules        */
@@ -17,17 +17,11 @@ PROGRAM master
     !/* objects                 */
     
     INTEGER(our_int), ALLOCATABLE   :: mapping_state_idx(:, :, :, :, :)
-    INTEGER(our_int), ALLOCATABLE   :: states_all_tmp(:, :, :)
     INTEGER(our_int), ALLOCATABLE   :: states_number_period(:)
     INTEGER(our_int), ALLOCATABLE   :: states_all(:, :, :)
 
-    INTEGER(our_int)                :: status(MPI_STATUS_SIZE) 
-    INTEGER(our_int)                :: max_states_period
-    INTEGER(our_int)                :: num_states
     INTEGER(our_int)                :: SLAVECOMM
-    INTEGER(our_int)                :: period
     INTEGER(our_int)                :: ierr
-    INTEGER(our_int)                :: task
 
     REAL(our_dble), ALLOCATABLE     :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_draws_prob(:, :, :)
@@ -41,11 +35,9 @@ PROGRAM master
     REAL(our_dble)                  :: coeffs_b(6)
     REAL(our_dble)                  :: crit_val
 
-    CHARACTER(10)                   :: arg
-
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 
     ! Initialize MPI environment
     CALL MPI_INIT(ierr)
@@ -61,16 +53,13 @@ PROGRAM master
 
     ELSE IF (request == 'evaluate') THEN
 
-        ! This part creates (or reads from disk) the draws for the Monte 
-        ! Carlo integration of the choice probabilities. For is_debugging 
-        ! purposes, these might also be read in from disk or set to zero/one.   
+        ! This part creates (or reads from disk) the draws for the Monte Carlo integration of the choice probabilities. For is_debugging purposes, these might also be read in from disk or set to zero/one.   
         CALL create_draws(periods_draws_prob, num_draws_prob, seed_prob)
 
         ! Read observed dataset from disk.
         CALL read_dataset(data_array, num_agents_est)
 
-        ! Solve the model for a given parametrization in parallel
-        ! periods_draws_emax
+        ! Solve the model for a given parametrization in parallel  s
         CALL fort_solve_parallel(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, SLAVECOMM)
         
        ! TODO: Parallelize
@@ -82,10 +71,9 @@ PROGRAM master
     OPEN(UNIT=1, FILE='.model.resfort.ini')
     CLOSE(1, STATUS='delete')
     
-    ! Store results. These are read in by the PYTHON wrapper and added to the 
-    ! RespyCls instance.
+    ! Store results. These are read in by the PYTHON wrapper and added to the  RespyCls instance.
     CALL store_results(mapping_state_idx, states_all, periods_payoffs_systematic, states_number_period, periods_emax, crit_val)
 
 END PROGRAM
-!*******************************************************************************
-!******************************************************************************* 
+!******************************************************************************
+!******************************************************************************

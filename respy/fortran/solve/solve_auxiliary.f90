@@ -1,5 +1,5 @@
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 MODULE solve_auxiliary
 
 	!/*	external modules	*/
@@ -15,8 +15,8 @@ MODULE solve_auxiliary
     PUBLIC
 
 CONTAINS
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_state_idx, max_states_period)
 
     !/* external objects        */
@@ -36,9 +36,9 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
     INTEGER(our_int)                    :: edu
     INTEGER(our_int)                    :: k
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 
     ! Initialize output
     states_number_period = MISSING_INT
@@ -60,29 +60,22 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
                 ! Loop over all admissible additional education levels
                 DO edu = 0, num_periods
 
-                    ! Agent cannot attain more additional education
-                    ! than (EDU_MAX - EDU_START).
+                    ! Agent cannot attain more additional education than (EDU_MAX - EDU_START).
                     IF (edu .GT. edu_max - edu_start) THEN
                         CYCLE
                     END IF
 
-                    ! Loop over all admissible values for leisure. Note that
-                    ! the leisure variable takes only zero/value. The time path
-                    ! does not matter.
+                    ! Loop over all admissible values for leisure. Note that the leisure variable takes only zero/value. The time path does not matter.
                     DO edu_lagged = 0, 1
 
-                        ! Check if lagged education admissible. (1) In the
-                        ! first period all agents have lagged schooling equal
-                        ! to one.
+                        ! Check if lagged education admissible. (1) In the first period all agents have lagged schooling equal to one.
                         IF (edu_lagged .EQ. zero_int) THEN
                             IF (period .EQ. zero_int) THEN
                                 CYCLE
                             END IF
                         END IF
 
-                        ! (2) Whenever an agent has not acquired any additional
-                        ! education and we are not in the first period,
-                        ! then this cannot be the case.
+                        ! (2) Whenever an agent has not acquired any additional education and we are not in the first period, then this cannot be the case.
                         IF (edu_lagged .EQ. one_int) THEN
                             IF (edu .EQ. zero_int) THEN
                                 IF (period .GT. zero_int) THEN
@@ -91,8 +84,7 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
                             END IF
                         END IF
 
-                        ! (3) Whenever an agent has only acquired additional
-                        ! education, then edu_lagged cannot be zero.
+                        ! (3) Whenever an agent has only acquired additional education, then edu_lagged cannot be zero.
                         IF (edu_lagged .EQ. zero_int) THEN
                             IF (edu .EQ. period) THEN
                                 CYCLE
@@ -102,10 +94,7 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
                         ! Check if admissible for time constraints
                         total = edu + exp_a + exp_b
 
-                        ! Note that the total number of activities does not
-                        ! have is less or equal to the total possible number of
-                        ! activities as the rest is implicitly filled with
-                        ! leisure.
+                        ! Note that the total number of activities does not have is less or equal to the total possible number of activities as the rest is implicitly filled with leisure.
                         IF (total .GT. period) THEN
                             CYCLE
                         END IF
@@ -139,8 +128,8 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
       max_states_period = MAXVAL(states_number_period)
 
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
 
     !/* external objects        */
@@ -167,9 +156,9 @@ SUBROUTINE fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_
 
     REAL(our_dble)                      :: payoff
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 
     ! Initialize missing value
     periods_payoffs_systematic = MISSING_FLOAT
@@ -204,8 +193,7 @@ SUBROUTINE fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_
             ! Calculate systematic part of schooling utility
             payoff = coeffs_edu(1)
 
-            ! Tuition cost for higher education if agents move
-            ! beyond high school.
+            ! Tuition cost for higher education if agents move beyond high school.
             IF(edu + edu_start >= 12) THEN
 
                 payoff = payoff + coeffs_edu(2)
@@ -228,8 +216,8 @@ SUBROUTINE fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_
     END DO
 
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_number_period, periods_payoffs_systematic, mapping_state_idx, states_all, shocks_cholesky)
 
     !/* external objects        */
@@ -268,13 +256,11 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
 
     LOGICAL, ALLOCATABLE                :: is_simulated(:)
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
     
-    ! Set random seed. We need to set the seed here as well as this part of the
-    ! code might be called using F2PY without any previous seed set. This
-    ! ensures that the interpolation grid is identical across draws.
+    ! Set random seed. We need to set the seed here as well as this part of the code might be called using F2PY without any previous seed set. This ensures that the interpolation grid is identical across draws.
     seed_inflated(:) = 123
 
     CALL RANDOM_SEED(size=seed_size)
@@ -312,20 +298,14 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
             ! Constructing indicator for simulation points
             is_simulated = get_simulated_indicator(num_points_interp, num_states, period)
 
-            ! Constructing the dependent variable for all states, including the
-            ! ones where simulation will take place. All information will be
-            ! used in either the construction of the prediction model or the
-            ! prediction step.
+            ! Constructing the dependent variable for all states, including the ones where simulation will take place. All information will be used in either the construction of the prediction model or the prediction step.
             CALL get_exogenous_variables(exogenous, maxe, period, num_states, periods_payoffs_systematic, shifts, mapping_state_idx, periods_emax, states_all)
 
             ! Construct endogenous variables for the subset of simulation points.
             ! The rest is set to missing value.
             CALL get_endogenous_variable(endogenous, period, num_states, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, is_simulated, maxe, draws_emax, shocks_cholesky)
 
-            ! Create prediction model based on the random subset of points where
-            ! the EMAX is actually simulated and thus endogenous and
-            ! exogenous variables are available. For the interpolation
-            ! points, the actual values are used.
+            ! Create prediction model based on the random subset of points where the EMAX is actually simulated and thus endogenous and exogenous variables are available. For the interpolation points, the actual values are used.
             CALL get_predictions(predictions, endogenous, exogenous, maxe, is_simulated, num_states, is_write)
 
             ! Store results
@@ -348,9 +328,6 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
                 ! Collect information
                 periods_emax(period + 1, k + 1) = emax_simulated
 
-                ! This information is only available if no interpolation is
-                ! used. Otherwise all remain set to missing values (see above).
-
             END DO
 
         END IF
@@ -358,8 +335,8 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
     END DO
 
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE get_payoffs(emax_simulated, draws_emax, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, shocks_cholesky)
 
     !/* external objects        */
@@ -376,16 +353,16 @@ SUBROUTINE get_payoffs(emax_simulated, draws_emax, period, k, payoffs_systematic
     INTEGER(our_int), INTENT(IN)        :: period
     INTEGER(our_int), INTENT(IN)        :: k
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 
     ! Simulated expected future value
     CALL simulate_emax(emax_simulated, period, k, draws_emax, payoffs_systematic, periods_emax, states_all, mapping_state_idx, shocks_cholesky)
 
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 FUNCTION get_simulated_indicator(num_points, num_states, period)
 
     !/* external objects        */
@@ -405,9 +382,9 @@ FUNCTION get_simulated_indicator(num_points, num_states, period)
     LOGICAL                           :: is_simulated(num_states)
     LOGICAL                           :: READ_IN
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 
     ! Initialize set of candidate values
     candidates = (/ (i, i = 1, num_states) /)
@@ -468,8 +445,8 @@ FUNCTION get_simulated_indicator(num_points, num_states, period)
     get_simulated_indicator = is_simulated
 
 END FUNCTION
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, num_states, periods_payoffs_systematic, shifts, mapping_state_idx, periods_emax, states_all)
 
     !/* external objects        */
@@ -495,9 +472,9 @@ SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, num_stat
 
     INTEGER(our_int)                    :: k
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 
     ! Construct exogenous variable for all states
     DO k = 0, (num_states - 1)
@@ -521,8 +498,8 @@ SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, num_stat
     independent_variables(:, 9) = one_dble
 
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE get_endogenous_variable(endogenous, period, num_states, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, is_simulated, maxe, draws_emax, shocks_cholesky)
 
     !/* external objects        */
@@ -549,9 +526,9 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_states, periods_payof
 
     INTEGER(our_int)                    :: k
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 
     ! Initialize missing values
     endogenous = MISSING_FLOAT
@@ -577,8 +554,8 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_states, periods_payof
     END DO
 
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE get_predictions(predictions, endogenous, exogenous, maxe, is_simulated, num_states, is_write)
 
     !/* external objects        */
@@ -608,9 +585,9 @@ SUBROUTINE get_predictions(predictions, endogenous, exogenous, maxe, is_simulate
     INTEGER(our_int)                  :: i
     INTEGER(our_int)                  :: k
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 
     ! Select pairs where both endogenous and exogenous information is available.
     i = 1
@@ -631,13 +608,10 @@ SUBROUTINE get_predictions(predictions, endogenous, exogenous, maxe, is_simulate
     ! Fit the prediction model on interpolation points.
     CALL get_coefficients(coeffs, endogenous_is_available, exogenous_is_available, 9, num_points_interp)
 
-    ! Use the model to predict EMAX for all states and subsequently
-    ! replace the values where actual values are available. As in
-    ! Keane & Wolpin (1994), negative predictions are truncated to zero.
+    ! Use the model to predict EMAX for all states and subsequently replace the values where actual values are available. As in Keane & Wolpin (1994), negative predictions are truncated to zero.
     CALL point_predictions(endogenous_predicted, exogenous, coeffs, num_states)
 
-    ! Construct coefficient of determination for the subset of interpolation
-    ! points.
+    ! Construct coefficient of determination for the subset of interpolation points.
     i = 1
 
     DO k = 0, (num_states - 1)
@@ -656,8 +630,7 @@ SUBROUTINE get_predictions(predictions, endogenous, exogenous, maxe, is_simulate
 
     endogenous_predicted = clip_value(endogenous_predicted, zero_dble, HUGE_FLOAT)
 
-    ! Construct predicted EMAX for all states and the replace
-    ! interpolation points with simulated values.
+    ! Construct predicted EMAX for all states and the replace interpolation points with simulated values.
     predictions = endogenous_predicted + maxe
 
     DO k = 0, (num_states - 1)
@@ -678,8 +651,8 @@ SUBROUTINE get_predictions(predictions, endogenous, exogenous, maxe, is_simulate
     END IF
 
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE logging_prediction_model(coeffs, r_squared, bse)
 
     !/* external objects        */
@@ -688,9 +661,9 @@ SUBROUTINE logging_prediction_model(coeffs, r_squared, bse)
     REAL(our_dble), INTENT(IN)      :: r_squared
     REAL(our_dble), INTENT(IN)      :: bse(:)
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 
     ! Define format for coefficients and R-squared
     1900 FORMAT(8x,A12,7x,9(f15.4))
@@ -717,8 +690,8 @@ SUBROUTINE logging_prediction_model(coeffs, r_squared, bse)
     CLOSE(99)
 
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE logging_solution(indicator, period, num_states)
 
     !/* external objects        */
@@ -728,9 +701,9 @@ SUBROUTINE logging_solution(indicator, period, num_states)
     INTEGER(our_int), INTENT(IN), OPTIONAL  :: num_states
     INTEGER(our_int), INTENT(IN), OPTIONAL  :: period
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 
     OPEN(UNIT=99, FILE='logging.respy.sol.log', ACCESS='APPEND')
 
@@ -782,8 +755,8 @@ SUBROUTINE logging_solution(indicator, period, num_states)
   CLOSE(99)
 
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE random_choice(sample, candidates, num_candidates, num_draws)
 
   !
@@ -810,9 +783,9 @@ SUBROUTINE random_choice(sample, candidates, num_candidates, num_draws)
 
     REAL(our_dble)                :: u(1)
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 
     ! Initialize auxiliary objects
     m = 0
@@ -846,8 +819,8 @@ SUBROUTINE random_choice(sample, candidates, num_candidates, num_draws)
 
 
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE svd(U, S, VT, A, m)
 
     !/* external objects        */
@@ -868,9 +841,9 @@ SUBROUTINE svd(U, S, VT, A, m)
     REAL(our_dble), ALLOCATABLE     :: IWORK(:)
     REAL(our_dble), ALLOCATABLE     :: WORK(:)
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 
     ! Auxiliary objects
     LWORK =  M * (7 + 4 * M)
@@ -882,8 +855,8 @@ SUBROUTINE svd(U, S, VT, A, m)
     CALL DGESDD( 'A', m, m, A, m, S, U, m, VT, m, WORK, LWORK, IWORK, INFO)
 
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 FUNCTION pinv(A, m)
 
     !/* external objects        */
@@ -905,9 +878,9 @@ FUNCTION pinv(A, m)
     REAL(our_dble)                  :: cutoff
     REAL(our_dble)                  :: S(m)
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 
     CALL svd(U, S, VT, A, m)
 
@@ -938,8 +911,8 @@ FUNCTION pinv(A, m)
     pinv = MATMUL(TRANSPOSE(VT), pinv)
 
 END FUNCTION
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE get_coefficients(coeffs, Y, X, num_covars, num_states)
 
     !/* external objects        */
@@ -969,13 +942,12 @@ SUBROUTINE get_coefficients(coeffs, Y, X, num_covars, num_states)
 
     LOGICAL                         :: IS_TEMPORARY
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 
 
-    ! This temporary modification allows to run the more restricted 
-    ! interpolation model for the structRecomputation project. 
+    ! This temporary modification allows to run the more restricted interpolation model for the structRecomputation project. 
     INQUIRE(FILE='.structRecomputation.tmp', EXIST=IS_TEMPORARY)
 
     IF(IS_TEMPORARY) THEN
@@ -1008,8 +980,8 @@ SUBROUTINE get_coefficients(coeffs, Y, X, num_covars, num_states)
     END IF
 
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE point_predictions(Y, X, coeffs, num_states)
 
     !/* external objects        */
@@ -1025,9 +997,9 @@ SUBROUTINE point_predictions(Y, X, coeffs, num_states)
 
     INTEGER(our_int)                 :: i
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 
     DO i = 1, num_states
 
@@ -1037,8 +1009,8 @@ SUBROUTINE point_predictions(Y, X, coeffs, num_states)
 
 END SUBROUTINE
 
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE get_pred_info(r_squared, bse, observed, predicted, exogenous, num_states, num_covars)
 
     !/* external objects        */
@@ -1064,9 +1036,9 @@ SUBROUTINE get_pred_info(r_squared, bse, observed, predicted, exogenous, num_sta
 
     INTEGER(our_int)                :: i
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 
     ! Calculate mean of observed data
     mean_observed = SUM(observed) / DBLE(num_states)
@@ -1093,8 +1065,7 @@ SUBROUTINE get_pred_info(r_squared, bse, observed, predicted, exogenous, num_sta
         ss_total = ss_total + (observed(i) - mean_observed)**2
     END DO
 
-    ! Turning off all randomness during testing requires special case to avoid 
-    ! an error due to the division by zero. 
+    ! Turning off all randomness during testing requires special case to avoid an error due to the division by zero. 
     IF (ss_residuals .EQ. zero_dble) THEN
         r_squared = one_dble
     ELSE
@@ -1102,8 +1073,8 @@ SUBROUTINE get_pred_info(r_squared, bse, observed, predicted, exogenous, num_sta
     END IF
     
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE simulate_emax(emax_simulated, period, k, draws_emax, payoffs_systematic, periods_emax, states_all, mapping_state_idx, shocks_cholesky)
 
     !/* external objects    */
@@ -1130,9 +1101,9 @@ SUBROUTINE simulate_emax(emax_simulated, period, k, draws_emax, payoffs_systemat
     REAL(our_dble)                  :: draws(4)
     REAL(our_dble)                  :: maximum
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 
     ! Transform disturbances
     CALL transform_disturbances(draws_emax_transformed, draws_emax, shocks_cholesky, num_draws_emax)
@@ -1159,6 +1130,6 @@ SUBROUTINE simulate_emax(emax_simulated, period, k, draws_emax, payoffs_systemat
     emax_simulated = emax_simulated / num_draws_emax
 
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 END MODULE

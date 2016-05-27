@@ -1,5 +1,5 @@
-!*******************************************************************************
-!******************************************************************************* 
+!*****************************************************************************
+!***************************************************************************** 
 PROGRAM resfort
 
     !/* external modules        */
@@ -29,9 +29,9 @@ PROGRAM resfort
     REAL(our_dble)                  :: coeffs_b(6)
     REAL(our_dble)                  :: crit_val
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 
     ! Read specification of model. This is the FORTRAN replacement for the RespyCls instance that carries the model parametrization for the PYTHON/F2PY implementations.
     CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky)
@@ -63,6 +63,6 @@ PROGRAM resfort
     ! Store results. These are read in by the PYTHON wrapper and added to the RespyCls instance.
     CALL store_results(mapping_state_idx, states_all, periods_payoffs_systematic, states_number_period, periods_emax, crit_val)
 
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 END PROGRAM

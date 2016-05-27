@@ -1,5 +1,5 @@
-    !*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 MODULE solve_fortran
 
 	!/*	external modules	*/
@@ -15,8 +15,8 @@ MODULE solve_fortran
     PUBLIC
 
  CONTAINS
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax)
 
     !/* external objects        */
@@ -42,9 +42,9 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, mapping_
     INTEGER(our_int)                                :: max_states_period
     INTEGER(our_int)                                :: period
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 
     ! Allocate arrays
     ALLOCATE(mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2))
@@ -58,8 +58,7 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, mapping_
 
     CALL logging_solution(-1)
 
-    ! Cutting the states_all container to size. The required size is only known
-    ! after the state space creation is completed.
+    ! Cutting the states_all container to size. The required size is only known after the state space creation is completed.
     ALLOCATE(states_all(num_periods, max_states_period, 4))
     states_all = states_all_tmp(:, :max_states_period, :)
     DEALLOCATE(states_all_tmp)
@@ -75,8 +74,7 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, mapping_
 
     CALL logging_solution(-1)
     
-    ! Initialize containers, which contain a lot of missing values as we
-    ! capture the tree structure in arrays of fixed dimension.
+    ! Initialize containers, which contain a lot of missing values as we capture the tree structure in arrays of fixed dimension.
     periods_emax = MISSING_FLOAT
 
     ! Perform backward induction procedure.
@@ -86,9 +84,7 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, mapping_
 
         CALL logging_solution(-2)
 
-        ! All other objects remain set to MISSING_FLOAT. This align the
-        ! treatment for the two special cases: (1) is_myopic and (2)
-        ! is_interpolated.
+        ! All other objects remain set to MISSING_FLOAT. This align the treatment for the two special cases: (1) is_myopic and (2) is_interpolated.
         DO period = 1,  num_periods
             periods_emax(period, :states_number_period(period)) = zero_dble
         END DO
@@ -102,6 +98,6 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, mapping_
     END IF
 
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 END MODULE

@@ -1,5 +1,5 @@
-!*******************************************************************************
-!******************************************************************************* 
+!******************************************************************************
+!******************************************************************************
 MODULE slave_shared
 
     !/* external modules    */
@@ -15,8 +15,8 @@ MODULE slave_shared
     PUBLIC
 
 CONTAINS
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE distribute_inter(num_emax_slaves, period, periods_emax_slaves, periods_emax, rank, num_states, PARENTCOMM)
     
     !/* external objects        */
@@ -40,9 +40,9 @@ SUBROUTINE distribute_inter(num_emax_slaves, period, periods_emax_slaves, period
     INTEGER(our_int)                :: ierr
     INTEGER(our_int)                :: i
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 
     ! Auxiliary objects
     num_slaves = SIZE(num_emax_slaves, 2)
@@ -59,8 +59,8 @@ SUBROUTINE distribute_inter(num_emax_slaves, period, periods_emax_slaves, period
     CALL MPI_ALLGATHERV(periods_emax_slaves, scounts(rank + 1), MPI_DOUBLE, periods_emax, rcounts, disps, MPI_DOUBLE, MPI_COMM_WORLD, ierr)
 
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE distribute_information(num_emax_slaves, period, periods_emax_slaves, periods_emax, rank, num_states, PARENTCOMM)
     
     !/* external objects        */
@@ -86,9 +86,9 @@ SUBROUTINE distribute_information(num_emax_slaves, period, periods_emax_slaves, 
 
     REAL(our_dble)                  :: periods_emax_subset(num_states)
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 
     ! Auxiliary objects
     num_slaves = SIZE(num_emax_slaves, 2)
@@ -111,8 +111,8 @@ SUBROUTINE distribute_information(num_emax_slaves, period, periods_emax_slaves, 
     END IF
 
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE determine_workload(num_emax_slaves, num_slaves, states_number_period)
 
     !/* external objects        */
@@ -128,9 +128,9 @@ SUBROUTINE determine_workload(num_emax_slaves, num_slaves, states_number_period)
     INTEGER(our_int)                :: j
     INTEGER(our_int)                :: i
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
     
     ALLOCATE(num_emax_slaves(num_periods, num_slaves))
 
@@ -156,11 +156,11 @@ SUBROUTINE determine_workload(num_emax_slaves, num_slaves, states_number_period)
     END DO
 
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 END MODULE
-!*******************************************************************************
-!******************************************************************************* 
+!******************************************************************************
+!******************************************************************************
 PROGRAM slave
 
     !/* external modules        */
@@ -223,9 +223,9 @@ PROGRAM slave
          INTEGER(our_int)                    :: seed_inflated(15)
     INTEGER(our_int)                    :: seed_size
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 
     ! Initialize MPI environment
     CALL MPI_INIT(ierr)
@@ -266,9 +266,7 @@ PROGRAM slave
 
     IF(rank == 0) CALL logging_solution(-1)
 
-    ! This part creates (or reads from disk) the draws for the Monte 
-    ! Carlo integration of the EMAX. For is_debugging purposes, these might 
-    ! also be read in from disk or set to zero/one.   
+    ! This part creates (or reads from disk) the draws for the Monte Carlo integration of the EMAX. For is_debugging purposes, these might  also be read in from disk or set to zero/one.   
     CALL create_draws(periods_draws_emax, num_draws_emax, seed_emax)
 
     periods_emax = MISSING_FLOAT
@@ -293,9 +291,7 @@ PROGRAM slave
         ! Evaluate EMAX.
         ELSEIF(task == 2) THEN
 
-            ! Set random seed. We need to set the seed here as well as this part of the
-            ! code might be called using F2PY without any previous seed set. This
-            ! ensures that the interpolation grid is identical across draws.
+            ! Set random seed. We need to set the seed here as well as this part of the code might be called using F2PY without any previous seed set. This ensures that the interpolation grid is identical across draws.
             seed_inflated(:) = 123
 
             CALL RANDOM_SEED(size=seed_size)
@@ -344,10 +340,7 @@ PROGRAM slave
                     is_simulated = get_simulated_indicator(num_points_interp, num_states, period)
 
        
-                    ! Constructing the dependent variable for all states, including the
-                    ! ones where simulation will take place. All information will be
-                    ! used in either the construction of the prediction model or the
-                    ! prediction step.
+                    ! Constructing the dependent variable for all states, including the ones where simulation will take place. All information will be used in either the construction of the prediction model or the prediction step.
                     CALL get_exogenous_variables(exogenous, maxe, period, num_states, periods_payoffs_systematic, shifts, mapping_state_idx, periods_emax, states_all)
 
 
@@ -356,8 +349,7 @@ PROGRAM slave
                     endogenous = MISSING_FLOAT
                     endogenous_slaves = MISSING_FLOAT
 
-                    ! Construct dependent variables for the subset of interpolation
-                    ! points.
+                    ! Construct dependent variables for the subset of interpolation points.
                     count = 1
                     DO k = lower_bound, upper_bound - 1
 
@@ -386,16 +378,12 @@ PROGRAM slave
                     ! TODO: POLYMORPHISM
                     CALL distribute_inter(num_emax_slaves, period, endogenous_slaves, endogenous, rank, num_states, PARENTCOMM)
                     
-                    ! Create prediction model based on the random subset of points where
-                    ! the EMAX is actually simulated and thus endogenous and
-                    ! exogenous variables are available. For the interpolation
-                    ! points, the actual values are used.
+                    ! Create prediction model based on the random subset of points where the EMAX is actually simulated and thus endogenous and exogenous variables are available. For the interpolation  points, the actual values are used.
                     CALL get_predictions(predictions, endogenous, exogenous, maxe, is_simulated, num_states, is_head)
 
                     ! Store results
                     periods_emax(period + 1, :num_states) = predictions
 
-                    ! TODO: Keep master updates, somebody please!!
                     ! The leading slave updates the master period by period.
                     IF (rank == 0) THEN
                         CALL MPI_SEND(periods_emax(period + 1, :num_states), num_states, MPI_DOUBLE, 0, period, PARENTCOMM, ierr)    
@@ -437,5 +425,5 @@ PROGRAM slave
     END DO
 
 END PROGRAM
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************

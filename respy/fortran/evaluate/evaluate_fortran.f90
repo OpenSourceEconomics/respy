@@ -1,5 +1,5 @@
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 MODULE evaluate_fortran
 
 	!/*	external modules	*/
@@ -17,8 +17,8 @@ MODULE evaluate_fortran
     PUBLIC
 
  CONTAINS
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_array, periods_draws_prob)
 
     !/* external objects        */
@@ -70,9 +70,9 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, pe
     LOGICAL                         :: is_deterministic
     LOGICAL                         :: is_working
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 
     ! Construct auxiliary objects
     shocks_cov = MATMUL(shocks_cholesky, TRANSPOSE(shocks_cholesky))
@@ -87,8 +87,7 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, pe
 
         DO period = 0, num_periods -1
 
-            ! Extract observable components of state space as well as agent
-            ! decision.
+            ! Extract observable components of state space as well as agent decision.
             exp_a = INT(data_array(j, 5))
             exp_b = INT(data_array(j, 6))
             edu = INT(data_array(j, 7))
@@ -97,16 +96,13 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, pe
             choice = INT(data_array(j, 3))
             is_working = (choice == 1) .OR. (choice == 2)
 
-            ! Transform total years of education to additional years of
-            ! education and create an index from the choice.
+            ! Transform total years of education to additional years of education and create an index from the choice.
             edu = edu - edu_start
 
             ! This is only done for alignment
             idx = choice
 
-            ! Get state indicator to obtain the systematic component of the
-            ! agents payoffs. These feed into the simulation of choice
-            ! probabilities.
+            ! Get state indicator to obtain the systematic component of the agents payoffs. These feed into the simulation of choice probabilities.
             k = mapping_state_idx(period + 1, exp_a + 1, exp_b + 1, edu + 1, edu_lagged + 1)
             payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
@@ -116,21 +112,14 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, pe
             ! Prepare to calculate product of likelihood contributions.
             crit_val_contrib = 1.0
 
-            ! If an agent is observed working, then the the labor market shocks
-            ! are observed and the conditional distribution is used to determine
-            ! the choice probabilities.
+            ! If an agent is observed working, then the the labor market shocks are observed and the conditional distribution is used to determine the choice probabilities.
             dist = zero_dble
             IF (is_working) THEN
 
-                ! Calculate the disturbance, which follows a normal
-                ! distribution.
+                ! Calculate the disturbance, which follows a normal distribution.
                 dist = clip_value(LOG(data_array(j, 4)), -HUGE_FLOAT, HUGE_FLOAT) - clip_value(LOG(payoffs_systematic(idx)), -HUGE_FLOAT, HUGE_FLOAT) 
 
-                ! If there is no random variation in payoffs, then the
-                ! observed wages need to be identical their systematic
-                ! components. The discrepancy between the observed wages and
-                ! their systematic components might be small due to the
-                ! reading in of the dataset.
+                ! If there is no random variation in payoffs, then the observed wages need to be identical their systematic components. The discrepancy between the observed wages and their systematic components might be small due to the reading in of the dataset.
                 IF (is_deterministic) THEN
                     IF (dist .GT. SMALL_FLOAT) THEN
                         rslt = zero_dble
@@ -141,8 +130,7 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, pe
 
             END IF
 
-            ! Simulate the conditional distribution of alternative-specific
-            ! value functions and determine the choice probabilities.
+            ! Simulate the conditional distribution of alternative-specific value functions and determine the choice probabilities.
             counts = zero_int
             prob_obs = zero_dble
 
@@ -151,11 +139,7 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, pe
                 ! Extract deviates from (un-)conditional normal distributions.
                 draws_stan = draws_prob_raw(s, :)
 
-                ! Construct independent normal draws implied by the agents
-                ! state experience. This is need to maintain the correlation
-                ! structure of the disturbances. Special care is needed in case
-                ! of a deterministic model, as otherwise a zero division error 
-                ! occurs. 
+                ! Construct independent normal draws implied by the agents state experience. This is need to maintain the correlation structure of the disturbances. Special care is needed in case of a deterministic model, as otherwise a zero division error occurs. 
                 IF (is_working) THEN 
                     
                     IF (is_deterministic) THEN
@@ -178,14 +162,10 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, pe
                     prob_wage = one_dble
                 END IF
 
-                ! As deviates are aligned with the state experiences, create
-                ! the conditional draws. Note, that the realization of the
-                ! random component of wages align withe their observed
-                ! counterpart in the data.
+                ! As deviates are aligned with the state experiences, create the conditional draws. Note, that the realization of the random component of wages align withe their observed counterpart in the data.
                 draws_cond = MATMUL(draws_stan, TRANSPOSE(shocks_cholesky))
 
-                ! Extract deviates from (un-)conditional normal distributions
-                ! and transform labor market shocks.
+                ! Extract deviates from (un-)conditional normal distributions and transform labor market shocks.
                 draws = draws_cond
                 draws(1) = clip_value(EXP(draws(1)), zero_dble, HUGE_FLOAT)
                 draws(2) = clip_value(EXP(draws(2)), zero_dble, HUGE_FLOAT)
@@ -205,8 +185,7 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, pe
             ! Determine relative shares
             prob_obs = prob_obs / num_draws_prob
 
-            ! If there is no random variation in payoffs, then this implies a
-            ! unique optimal choice.
+            ! If there is no random variation in payoffs, then this implies a unique optimal choice.
             IF (is_deterministic) THEN
                 IF  ((counts(idx) .EQ. num_draws_prob) .EQV. .FALSE.) THEN
                     rslt = zero_dble
@@ -227,14 +206,12 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, pe
     crit_val = clip_value(LOG(crit_val), -HUGE_FLOAT, HUGE_FLOAT)
     rslt = -SUM(crit_val) / (num_agents_est * num_periods)
 
-    ! If there is no random variation in payoffs and no agent violated the
-    ! implications of observed wages and choices, then the evaluation return
-    ! a value of one.
+    ! If there is no random variation in payoffs and no agent violated the implications of observed wages and choices, then the evaluation return a value of one.
     IF (is_deterministic) THEN
         rslt = 1.0
     END IF
     
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 END MODULE

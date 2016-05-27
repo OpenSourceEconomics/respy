@@ -1,5 +1,5 @@
-!*******************************************************************************
-!******************************************************************************* 
+!******************************************************************************
+!******************************************************************************
 MODULE parallel_auxiliary
 
     !/* external modules    */
@@ -15,8 +15,8 @@ MODULE parallel_auxiliary
     PUBLIC
 
 CONTAINS
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, SLAVECOMM)
 
     !/* external objects        */
@@ -50,12 +50,11 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
     INTEGER(our_int)                                :: ierr
     INTEGER(our_int)                                :: num_states, status, task
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 
-    ! If agents are not myopic, then we start a number of slaves and request to 
-    ! help in the calculation of the EMAX.
+    ! If agents are not myopic, then we start a number of slaves and request to help in the calculation of the EMAX.
     IF (.NOT. is_myopic) THEN
      
         CALL MPI_COMM_SPAWN(TRIM(exec_dir) // '/resfort_parallel_slave', MPI_ARGV_NULL, num_procs - 1, MPI_INFO_NULL, 0, MPI_COMM_WORLD, SLAVECOMM, MPI_ERRCODES_IGNORE, ierr)
@@ -65,8 +64,7 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
      
     END IF
     
-    ! While we are waiting for the slaves to work on the EMAX calculation, the
-    ! master can get some work done.
+    ! While we are waiting for the slaves to work on the EMAX calculation, the master can get some work done.
 
     ! Allocate arrays
     ALLOCATE(mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2))
@@ -98,16 +96,13 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
     ! Perform backward induction procedure.
     
 
-    ! The leading slave is kind enough to let the parent process know about the 
-    ! intermediate outcomes.
+    ! The leading slave is kind enough to let the parent process know about the  intermediate outcomes.
     IF (is_myopic) THEN
         CALL logging_solution(3)
         
         CALL logging_solution(-2)
 
-        ! All other objects remain set to MISSING_FLOAT. This align the
-        ! treatment for the two special cases: (1) is_myopic and (2)
-        ! is_interpolated.
+        ! All other objects remain set to MISSING_FLOAT. This align the treatment for the two special cases: (1) is_myopic and (2) is_interpolated.
         DO period = 1,  num_periods
             periods_emax(period, :states_number_period(period)) = zero_dble
         END DO
@@ -136,6 +131,6 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
 
 
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 END MODULE

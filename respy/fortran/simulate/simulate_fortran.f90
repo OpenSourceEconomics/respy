@@ -1,5 +1,5 @@
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 MODULE simulate_fortran
 
 	!/*	external modules	*/
@@ -15,8 +15,8 @@ MODULE simulate_fortran
     PUBLIC
 
  CONTAINS
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE fort_simulate(dataset, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, num_agents_sim, periods_draws_sims, shocks_cholesky)
 
     !/* external objects        */
@@ -51,12 +51,11 @@ SUBROUTINE fort_simulate(dataset, periods_payoffs_systematic, mapping_state_idx,
     REAL(our_dble)                  :: total_payoffs(4)
     REAL(our_dble)                  :: draws(4)
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 
-    !Standard deviates transformed to the distributions relevant for
-    ! the agents actual decision making as traversing the tree.
+    !Standard deviates transformed to the distributions relevant for the agents actual decision making as traversing the tree.
     DO period = 1, num_periods
         CALL transform_disturbances(periods_draws_sims_transformed(period, :, :), periods_draws_sims(period, :, :), shocks_cholesky, num_agents_sim)
     END DO
