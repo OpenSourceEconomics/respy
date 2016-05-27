@@ -121,6 +121,8 @@ SUBROUTINE wrapper_simulate_emax(emax_simulated, num_periods_int, &
 
     !# Transfer auxiliary variable to global variable.
     num_draws_emax = num_draws_emax_int
+    num_periods = num_periods_int
+
     edu_max = edu_max_int
     delta = delta_int
 
@@ -457,7 +459,8 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, &
 !-------------------------------------------------------------------------------
     
     num_draws_emax = num_draws_emax_int
-    num_periods = num_periods_int
+        num_periods = num_periods_int
+
     edu_max = edu_max_int
     delta = delta_int
 
@@ -552,7 +555,7 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE wrapper_get_payoffs(emax_simulated, num_draws_emax_int, & 
                 draws_emax, period, k, payoffs_systematic, edu_max_int, & 
-                edu_start, mapping_state_idx, states_all, & 
+                edu_start, mapping_state_idx, states_all, num_periods_int, & 
                 periods_emax, delta_int, shocks_cholesky)
 
 
@@ -588,8 +591,9 @@ SUBROUTINE wrapper_get_payoffs(emax_simulated, num_draws_emax_int, &
 !-------------------------------------------------------------------------------
 
     !# Transfer auxiliary variable to global variable.
-    num_draws_emax = num_draws_emax_int
     num_periods = num_periods_int
+
+    num_draws_emax = num_draws_emax_int
     edu_max = edu_max_int
     delta = delta_int
 
