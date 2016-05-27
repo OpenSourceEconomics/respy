@@ -17,8 +17,7 @@ MODULE solve_auxiliary
 CONTAINS
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE fort_create_state_space(states_all, states_number_period, &
-                mapping_state_idx, max_states_period)
+SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_state_idx, max_states_period)
 
     !/* external objects        */
 
@@ -118,8 +117,7 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, &
                         states_all(period + 1, k + 1, 4) = edu_lagged
 
                         ! Collect mapping of state space to array index.
-                        mapping_state_idx(period + 1, exp_a + 1, exp_b + 1, &
-                            edu + 1 , edu_lagged + 1) = k
+                        mapping_state_idx(period + 1, exp_a + 1, exp_b + 1, edu + 1 , edu_lagged + 1) = k
 
                         ! Update count
                         k = k + 1
@@ -143,9 +141,7 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE fort_calculate_payoffs_systematic(periods_payoffs_systematic, &
-                states_number_period, states_all, &
-                coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
+SUBROUTINE fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
 
     !/* external objects        */
 
@@ -199,13 +195,11 @@ SUBROUTINE fort_calculate_payoffs_systematic(periods_payoffs_systematic, &
             covars(6) = exp_b ** 2
 
             ! Calculate systematic part of payoff in occupation A
-            periods_payoffs_systematic(period, k, 1) =  &
-                clip_value(EXP(DOT_PRODUCT(covars, coeffs_a)), zero_dble, HUGE_FLOAT)
+            periods_payoffs_systematic(period, k, 1) =  clip_value(EXP(DOT_PRODUCT(covars, coeffs_a)), zero_dble, HUGE_FLOAT)
                 
 
             ! Calculate systematic part of payoff in occupation B
-            periods_payoffs_systematic(period, k, 2) = &
-                clip_value(EXP(DOT_PRODUCT(covars, coeffs_b)), zero_dble, HUGE_FLOAT)
+            periods_payoffs_systematic(period, k, 2) = clip_value(EXP(DOT_PRODUCT(covars, coeffs_b)), zero_dble, HUGE_FLOAT)
 
             ! Calculate systematic part of schooling utility
             payoff = coeffs_edu(1)
@@ -236,11 +230,7 @@ SUBROUTINE fort_calculate_payoffs_systematic(periods_payoffs_systematic, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE fort_backward_induction(periods_emax, &
-                periods_draws_emax, states_number_period, & 
-                periods_payoffs_systematic, & 
-                mapping_state_idx, states_all, & 
-                shocks_cholesky)
+SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_number_period, periods_payoffs_systematic, mapping_state_idx, states_all, shocks_cholesky)
 
     !/* external objects        */
 
@@ -320,32 +310,23 @@ SUBROUTINE fort_backward_induction(periods_emax, &
             ALLOCATE(predictions(num_states))
 
             ! Constructing indicator for simulation points
-            is_simulated = get_simulated_indicator(num_points_interp, num_states, &
-                                period)
+            is_simulated = get_simulated_indicator(num_points_interp, num_states, period)
 
             ! Constructing the dependent variable for all states, including the
             ! ones where simulation will take place. All information will be
             ! used in either the construction of the prediction model or the
             ! prediction step.
-            CALL get_exogenous_variables(exogenous, maxe, period, &
-                    num_states, periods_payoffs_systematic, shifts, &
-                    mapping_state_idx, periods_emax, &
-                    states_all)
+            CALL get_exogenous_variables(exogenous, maxe, period, num_states, periods_payoffs_systematic, shifts, mapping_state_idx, periods_emax, states_all)
 
             ! Construct endogenous variables for the subset of simulation points.
             ! The rest is set to missing value.
-            CALL get_endogenous_variable(endogenous, period, &
-                    num_states, periods_payoffs_systematic, &
-                     mapping_state_idx, periods_emax, states_all, &
-                    is_simulated, &
-                    maxe, draws_emax, shocks_cholesky)
+            CALL get_endogenous_variable(endogenous, period, num_states, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, is_simulated, maxe, draws_emax, shocks_cholesky)
 
             ! Create prediction model based on the random subset of points where
             ! the EMAX is actually simulated and thus endogenous and
             ! exogenous variables are available. For the interpolation
             ! points, the actual values are used.
-            CALL get_predictions(predictions, endogenous, exogenous, maxe, &
-                    is_simulated, num_states, is_write)
+            CALL get_predictions(predictions, endogenous, exogenous, maxe, is_simulated, num_states, is_write)
 
             ! Store results
             periods_emax(period + 1, :num_states) = predictions
@@ -362,10 +343,7 @@ SUBROUTINE fort_backward_induction(periods_emax, &
                 ! Extract payoffs
                 payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
-                CALL get_payoffs(emax_simulated, draws_emax, &
-                        period, k, payoffs_systematic, &
-                        mapping_state_idx, states_all, &
-                        periods_emax, shocks_cholesky)
+                CALL get_payoffs(emax_simulated, draws_emax, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, shocks_cholesky)
 
                 ! Collect information
                 periods_emax(period + 1, k + 1) = emax_simulated
@@ -382,9 +360,7 @@ SUBROUTINE fort_backward_induction(periods_emax, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE get_payoffs(emax_simulated, draws_emax, period, &
-                k, payoffs_systematic, mapping_state_idx, &
-                states_all, periods_emax, shocks_cholesky)
+SUBROUTINE get_payoffs(emax_simulated, draws_emax, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, shocks_cholesky)
 
     !/* external objects        */
 
@@ -405,10 +381,7 @@ SUBROUTINE get_payoffs(emax_simulated, draws_emax, period, &
 !-------------------------------------------------------------------------------
 
     ! Simulated expected future value
-    CALL simulate_emax(emax_simulated, & 
-            period, k, draws_emax, payoffs_systematic, & 
-            periods_emax, states_all, mapping_state_idx, & 
-            shocks_cholesky)
+    CALL simulate_emax(emax_simulated, period, k, draws_emax, payoffs_systematic, periods_emax, states_all, mapping_state_idx, shocks_cholesky)
 
 END SUBROUTINE
 !*******************************************************************************
@@ -497,10 +470,7 @@ FUNCTION get_simulated_indicator(num_points, num_states, period)
 END FUNCTION
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, &
-                num_states, periods_payoffs_systematic, &
-                shifts, mapping_state_idx, periods_emax, &
-                states_all)
+SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, num_states, periods_payoffs_systematic, shifts, mapping_state_idx, periods_emax, states_all)
 
     !/* external objects        */
 
@@ -534,9 +504,7 @@ SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, &
 
         payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
-        CALL get_total_value(total_payoffs, period, & 
-                payoffs_systematic, shifts, & 
-                mapping_state_idx, periods_emax, k, states_all)
+        CALL get_total_value(total_payoffs, period, payoffs_systematic, shifts, mapping_state_idx, periods_emax, k, states_all)
 
         ! Implement level shifts
         maxe(k + 1) = MAXVAL(total_payoffs)
@@ -555,11 +523,7 @@ SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE get_endogenous_variable(endogenous, period, &
-                num_states, periods_payoffs_systematic, &
-                mapping_state_idx, periods_emax, states_all, &
-                is_simulated, maxe, draws_emax, &
-                shocks_cholesky)
+SUBROUTINE get_endogenous_variable(endogenous, period, num_states, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, is_simulated, maxe, draws_emax, shocks_cholesky)
 
     !/* external objects        */
 
@@ -605,9 +569,7 @@ SUBROUTINE get_endogenous_variable(endogenous, period, &
         payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
         ! Get payoffs
-        CALL get_payoffs(emax_simulated, draws_emax, period, &
-                k, payoffs_systematic, mapping_state_idx, &
-                states_all, periods_emax, shocks_cholesky)
+        CALL get_payoffs(emax_simulated, draws_emax, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, shocks_cholesky)
 
         ! Construct dependent variable
         endogenous(k + 1) = emax_simulated - maxe(k + 1)
@@ -617,8 +579,7 @@ SUBROUTINE get_endogenous_variable(endogenous, period, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE get_predictions(predictions, endogenous, exogenous, maxe, &
-              is_simulated, num_states, is_write)
+SUBROUTINE get_predictions(predictions, endogenous, exogenous, maxe, is_simulated, num_states, is_write)
 
     !/* external objects        */
 
@@ -668,8 +629,7 @@ SUBROUTINE get_predictions(predictions, endogenous, exogenous, maxe, &
     END DO
 
     ! Fit the prediction model on interpolation points.
-    CALL get_coefficients(coeffs, endogenous_is_available, &
-            exogenous_is_available, 9, num_points_interp)
+    CALL get_coefficients(coeffs, endogenous_is_available, exogenous_is_available, 9, num_points_interp)
 
     ! Use the model to predict EMAX for all states and subsequently
     ! replace the values where actual values are available. As in
@@ -692,11 +652,9 @@ SUBROUTINE get_predictions(predictions, endogenous, exogenous, maxe, &
 
     END DO
 
-    CALL get_pred_info(r_squared, bse, endogenous_is_available, &
-            endogenous_predicted_available, exogenous_is_available, num_points_interp, 9)
+    CALL get_pred_info(r_squared, bse, endogenous_is_available, endogenous_predicted_available, exogenous_is_available, num_points_interp, 9)
 
-    endogenous_predicted = clip_value(endogenous_predicted, &
-            zero_dble, HUGE_FLOAT)
+    endogenous_predicted = clip_value(endogenous_predicted, zero_dble, HUGE_FLOAT)
 
     ! Construct predicted EMAX for all states and the replace
     ! interpolation points with simulated values.
@@ -1081,8 +1039,7 @@ END SUBROUTINE
 
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE get_pred_info(r_squared, bse, observed, predicted, exogenous, & 
-                num_states, num_covars)
+SUBROUTINE get_pred_info(r_squared, bse, observed, predicted, exogenous, num_states, num_covars)
 
     !/* external objects        */
 
@@ -1147,10 +1104,7 @@ SUBROUTINE get_pred_info(r_squared, bse, observed, predicted, exogenous, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE simulate_emax(emax_simulated, period, & 
-                k, draws_emax, payoffs_systematic, & 
-                periods_emax, states_all, mapping_state_idx, & 
-                shocks_cholesky)
+SUBROUTINE simulate_emax(emax_simulated, period, k, draws_emax, payoffs_systematic, periods_emax, states_all, mapping_state_idx, shocks_cholesky)
 
     !/* external objects    */
 
@@ -1181,8 +1135,7 @@ SUBROUTINE simulate_emax(emax_simulated, period, &
 !-------------------------------------------------------------------------------
 
     ! Transform disturbances
-    CALL transform_disturbances(draws_emax_transformed, draws_emax, &
-            shocks_cholesky, num_draws_emax)
+    CALL transform_disturbances(draws_emax_transformed, draws_emax, shocks_cholesky, num_draws_emax)
 
     ! Iterate over Monte Carlo draws
     emax_simulated = zero_dble
@@ -1192,9 +1145,7 @@ SUBROUTINE simulate_emax(emax_simulated, period, &
         draws = draws_emax_transformed(i, :)
 
         ! Calculate total value
-        CALL get_total_value(total_payoffs, period, &
-                payoffs_systematic, draws, & 
-                mapping_state_idx, periods_emax, k, states_all)
+        CALL get_total_value(total_payoffs, period, payoffs_systematic, draws, mapping_state_idx, periods_emax, k, states_all)
    
         ! Determine optimal choice
         maximum = MAXVAL(total_payoffs)

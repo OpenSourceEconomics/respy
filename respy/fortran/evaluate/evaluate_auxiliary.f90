@@ -37,8 +37,7 @@ FUNCTION get_smoothed_probability(total_payoffs, idx)
 
     maxim_payoff = MAXVAL(total_payoffs)
 
-    smoot_payoff = clip_value(EXP((total_payoffs - maxim_payoff)/tau), & 
-        zero_dble, HUGE_FLOAT)
+    smoot_payoff = clip_value(EXP((total_payoffs - maxim_payoff)/tau), zero_dble, HUGE_FLOAT)
 
     get_smoothed_probability = smoot_payoff(idx) / SUM(smoot_payoff)
 

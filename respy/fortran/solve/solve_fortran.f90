@@ -17,10 +17,7 @@ MODULE solve_fortran
  CONTAINS
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, &
-                mapping_state_idx, periods_emax, states_all, coeffs_a, &
-                coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, &
-                periods_draws_emax)
+SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax)
 
     !/* external objects        */
 
@@ -57,8 +54,7 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, &
     ! Create the state space of the model
     CALL logging_solution(1)
 
-    CALL fort_create_state_space(states_all_tmp, states_number_period, &
-            mapping_state_idx, max_states_period)
+    CALL fort_create_state_space(states_all_tmp, states_number_period, mapping_state_idx, max_states_period)
 
     CALL logging_solution(-1)
 
@@ -75,9 +71,7 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, &
     ! Calculate the systematic payoffs
     CALL logging_solution(2)
 
-    CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, &
-            states_number_period, states_all, &
-            coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
+    CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
 
     CALL logging_solution(-1)
     
@@ -101,11 +95,7 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, &
     
     ELSE
 
-        CALL fort_backward_induction(periods_emax, &
-                periods_draws_emax, states_number_period, & 
-                periods_payoffs_systematic, & 
-                mapping_state_idx, states_all, &
-                shocks_cholesky)
+        CALL fort_backward_induction(periods_emax, periods_draws_emax, states_number_period, periods_payoffs_systematic, mapping_state_idx, states_all, shocks_cholesky)
 
         CALL logging_solution(-1)
         

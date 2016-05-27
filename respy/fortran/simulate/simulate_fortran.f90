@@ -17,10 +17,7 @@ MODULE simulate_fortran
  CONTAINS
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE fort_simulate(dataset, periods_payoffs_systematic, & 
-                mapping_state_idx, periods_emax, states_all, & 
-                num_agents_sim, periods_draws_sims, & 
-                shocks_cholesky)
+SUBROUTINE fort_simulate(dataset, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, num_agents_sim, periods_draws_sims, shocks_cholesky)
 
     !/* external objects        */
 
@@ -61,9 +58,7 @@ SUBROUTINE fort_simulate(dataset, periods_payoffs_systematic, &
     !Standard deviates transformed to the distributions relevant for
     ! the agents actual decision making as traversing the tree.
     DO period = 1, num_periods
-        CALL transform_disturbances(periods_draws_sims_transformed(period, :, :), & 
-                periods_draws_sims(period, :, :), shocks_cholesky, &
-                num_agents_sim)
+        CALL transform_disturbances(periods_draws_sims_transformed(period, :, :), periods_draws_sims(period, :, :), shocks_cholesky, num_agents_sim)
     END DO
 
     ! Initialize containers
@@ -97,9 +92,7 @@ SUBROUTINE fort_simulate(dataset, periods_payoffs_systematic, &
             draws = periods_draws_sims_transformed(period + 1, i + 1, :)
 
             ! Calculate total utilities
-            CALL get_total_value(total_payoffs, period, &
-                    payoffs_systematic, draws, &
-                    mapping_state_idx, periods_emax, k, states_all)
+            CALL get_total_value(total_payoffs, period, payoffs_systematic, draws, mapping_state_idx, periods_emax, k, states_all)
 
             ! Write relevant state space for period to data frame
             dataset(count + 1, 5:8) = current_state

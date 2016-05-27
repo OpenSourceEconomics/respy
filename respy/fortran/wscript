@@ -14,7 +14,8 @@ class CreateF2pyInterfaces(Task):
         os.chdir('fortran')
 
         from numpy import f2py
-        extra_args = '-I../.bld -L../.bld/fortran -lresfort -llapack'
+        extra_args = '--f90flags="-ffree-line-length-0" -I../.bld -L../.bld/fortran -lresfort ' \
+                     '-llapack'
 
         with open('f2py_interface_library.f90', 'rb') as sourcefile:
             sourcecode = sourcefile.read()

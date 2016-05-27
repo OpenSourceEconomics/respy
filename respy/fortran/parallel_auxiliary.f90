@@ -17,10 +17,7 @@ MODULE parallel_auxiliary
 CONTAINS
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period, &
-                mapping_state_idx, periods_emax, states_all, coeffs_a, &
-                coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, &
-                SLAVECOMM)
+SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, SLAVECOMM)
 
     !/* external objects        */
 
@@ -61,9 +58,7 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
     ! help in the calculation of the EMAX.
     IF (.NOT. is_myopic) THEN
      
-        CALL MPI_COMM_SPAWN(TRIM(exec_dir) // '/resfort_parallel_slave', & 
-                MPI_ARGV_NULL, num_procs - 1, MPI_INFO_NULL, 0, & 
-                MPI_COMM_WORLD, SLAVECOMM, MPI_ERRCODES_IGNORE, ierr)
+        CALL MPI_COMM_SPAWN(TRIM(exec_dir) // '/resfort_parallel_slave', MPI_ARGV_NULL, num_procs - 1, MPI_INFO_NULL, 0, MPI_COMM_WORLD, SLAVECOMM, MPI_ERRCODES_IGNORE, ierr)
 
         task = 2
         CALL MPI_Bcast(task, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
@@ -80,8 +75,7 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
 
     IF(is_myopic) CALL logging_solution(1)
 
-    CALL fort_create_state_space(states_all_tmp, states_number_period, &
-            mapping_state_idx, max_states_period)
+    CALL fort_create_state_space(states_all_tmp, states_number_period, mapping_state_idx, max_states_period)
 
     IF(is_myopic) CALL logging_solution(-1)
 
@@ -95,9 +89,7 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
     ALLOCATE(periods_payoffs_systematic(num_periods, max_states_period, 4))
 
     IF(is_myopic) CALL logging_solution(2)
-    CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, &
-            states_number_period, states_all, &
-            coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
+    CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
 
     IF(is_myopic) CALL logging_solution(-1)
 
@@ -129,9 +121,7 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
             
                 
 
-            CALL MPI_RECV(periods_emax(period + 1, :num_states), num_states, & 
-                    MPI_DOUBLE, MPI_ANY_SOURCE, MPI_ANY_TAG, SLAVECOMM, status, & 
-                    ierr)
+            CALL MPI_RECV(periods_emax(period + 1, :num_states), num_states, MPI_DOUBLE, MPI_ANY_SOURCE, MPI_ANY_TAG, SLAVECOMM, status, ierr)
 
         END DO
 

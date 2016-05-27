@@ -19,9 +19,7 @@ MODULE evaluate_fortran
  CONTAINS
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
-                periods_emax, states_all, shocks_cholesky, & 
-                data_array, periods_draws_prob)
+SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_array, periods_draws_prob)
 
     !/* external objects        */
 
@@ -126,8 +124,7 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
 
                 ! Calculate the disturbance, which follows a normal
                 ! distribution.
-                dist = clip_value(LOG(data_array(j, 4)), -HUGE_FLOAT, HUGE_FLOAT) - &
-                    clip_value(LOG(payoffs_systematic(idx)), -HUGE_FLOAT, HUGE_FLOAT) 
+                dist = clip_value(LOG(data_array(j, 4)), -HUGE_FLOAT, HUGE_FLOAT) - clip_value(LOG(payoffs_systematic(idx)), -HUGE_FLOAT, HUGE_FLOAT) 
 
                 ! If there is no random variation in payoffs, then the
                 ! observed wages need to be identical their systematic
@@ -194,9 +191,7 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, &
                 draws(2) = clip_value(EXP(draws(2)), zero_dble, HUGE_FLOAT)
 
                 ! Calculate total payoff.
-                CALL get_total_value(total_payoffs, period, &
-                        payoffs_systematic, draws, &
-                        mapping_state_idx, periods_emax, k, states_all)
+                CALL get_total_value(total_payoffs, period, payoffs_systematic, draws, mapping_state_idx, periods_emax, k, states_all)
 
                 ! Record optimal choices
                 counts(MAXLOC(total_payoffs)) = counts(MAXLOC(total_payoffs)) + 1

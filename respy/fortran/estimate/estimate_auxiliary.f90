@@ -16,8 +16,7 @@ CONTAINS
 
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, &
-                shocks_cholesky, x)
+SUBROUTINE dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x)
 
     !/* external objects        */
 

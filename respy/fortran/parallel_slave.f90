@@ -17,9 +17,7 @@ MODULE slave_shared
 CONTAINS
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE distribute_inter(num_emax_slaves, period, & 
-                periods_emax_slaves, periods_emax, rank, num_states, & 
-                PARENTCOMM)
+SUBROUTINE distribute_inter(num_emax_slaves, period, periods_emax_slaves, periods_emax, rank, num_states, PARENTCOMM)
     
     !/* external objects        */
 
@@ -58,16 +56,12 @@ SUBROUTINE distribute_inter(num_emax_slaves, period, &
     END DO
     
     ! Aggregate the EMAX contributions across the slaves.    
-    CALL MPI_ALLGATHERV(periods_emax_slaves, scounts(rank + 1), MPI_DOUBLE, & 
-            periods_emax, rcounts, disps, MPI_DOUBLE, & 
-            MPI_COMM_WORLD, ierr)
+    CALL MPI_ALLGATHERV(periods_emax_slaves, scounts(rank + 1), MPI_DOUBLE, periods_emax, rcounts, disps, MPI_DOUBLE, MPI_COMM_WORLD, ierr)
 
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE distribute_information(num_emax_slaves, period, & 
-                periods_emax_slaves, periods_emax, rank, num_states, & 
-                PARENTCOMM)
+SUBROUTINE distribute_information(num_emax_slaves, period, periods_emax_slaves, periods_emax, rank, num_states, PARENTCOMM)
     
     !/* external objects        */
 
@@ -108,22 +102,18 @@ SUBROUTINE distribute_information(num_emax_slaves, period, &
     END DO
     
     ! Aggregate the EMAX contributions across the slaves.    
-    CALL MPI_ALLGATHERV(periods_emax_slaves, scounts(rank + 1), MPI_DOUBLE, & 
-            periods_emax(period + 1, :), rcounts, disps, MPI_DOUBLE, & 
-            MPI_COMM_WORLD, ierr)
+    CALL MPI_ALLGATHERV(periods_emax_slaves, scounts(rank + 1), MPI_DOUBLE, periods_emax(period + 1, :), rcounts, disps, MPI_DOUBLE, MPI_COMM_WORLD, ierr)
 
     ! The leading slave updates the master period by period.
     periods_emax_subset = periods_emax(period + 1, :num_states)
     IF (rank == 0) THEN
-        CALL MPI_SEND(periods_emax_subset, num_states, & 
-            MPI_DOUBLE, 0, period, PARENTCOMM, ierr)            
+        CALL MPI_SEND(periods_emax_subset, num_states, MPI_DOUBLE, 0, period, PARENTCOMM, ierr)            
     END IF
 
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE determine_workload(num_emax_slaves, num_slaves, & 
-            states_number_period)
+SUBROUTINE determine_workload(num_emax_slaves, num_slaves, states_number_period)
 
     !/* external objects        */
 
@@ -244,8 +234,7 @@ PROGRAM slave
     CALL MPI_COMM_GET_PARENT(PARENTCOMM, ierr)
 
     ! Read in model specification.
-    CALL read_specification(coeffs_a, coeffs_b, & 
-            coeffs_edu, coeffs_home, shocks_cholesky)
+    CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky)
 
     ALLOCATE(draws_emax(num_draws_emax, 4))
 
@@ -256,16 +245,14 @@ PROGRAM slave
 
     IF(rank == 0) CALL logging_solution(1)
 
-    CALL fort_create_state_space(states_all_tmp, states_number_period, &
-            mapping_state_idx, max_states_period)
+    CALL fort_create_state_space(states_all_tmp, states_number_period, mapping_state_idx, max_states_period)
 
     IF(rank == 0) CALL logging_solution(-1)
 
     ALLOCATE(periods_emax(num_periods, max_states_period))
 
     ! Determine workload and allocate communication information.
-    CALL determine_workload(num_emax_slaves, num_slaves, & 
-            states_number_period)
+    CALL determine_workload(num_emax_slaves, num_slaves, states_number_period)
 
     states_all = states_all_tmp(:, :max_states_period, :)
     DEALLOCATE(states_all_tmp)
@@ -275,17 +262,14 @@ PROGRAM slave
     ! Calculate the systematic payoffs
     IF(rank == 0) CALL logging_solution(2)
 
-    CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, &
-            states_number_period, states_all, &
-            coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
+    CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
 
     IF(rank == 0) CALL logging_solution(-1)
 
     ! This part creates (or reads from disk) the draws for the Monte 
     ! Carlo integration of the EMAX. For is_debugging purposes, these might 
     ! also be read in from disk or set to zero/one.   
-    CALL create_draws(periods_draws_emax, num_draws_emax, & 
-            seed_emax)
+    CALL create_draws(periods_draws_emax, num_draws_emax, seed_emax)
 
     periods_emax = MISSING_FLOAT
 
@@ -357,18 +341,14 @@ PROGRAM slave
                     ALLOCATE(predictions(num_states))
 
                     ! Constructing indicator for simulation points
-                    is_simulated = get_simulated_indicator(num_points_interp, num_states, &
-                                        period)
+                    is_simulated = get_simulated_indicator(num_points_interp, num_states, period)
 
        
                     ! Constructing the dependent variable for all states, including the
                     ! ones where simulation will take place. All information will be
                     ! used in either the construction of the prediction model or the
                     ! prediction step.
-                    CALL get_exogenous_variables(exogenous, maxe, period, &
-                            num_states, periods_payoffs_systematic, shifts, &
-                            mapping_state_idx, periods_emax, &
-                            states_all)
+                    CALL get_exogenous_variables(exogenous, maxe, period, num_states, periods_payoffs_systematic, shifts, mapping_state_idx, periods_emax, states_all)
 
 
 
@@ -391,9 +371,7 @@ PROGRAM slave
                         payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
                         ! Get payoffs
-                        CALL get_payoffs(emax_simulated, draws_emax, period, &
-                                k, payoffs_systematic, mapping_state_idx, &
-                                states_all, periods_emax, shocks_cholesky)
+                        CALL get_payoffs(emax_simulated, draws_emax, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, shocks_cholesky)
 
                         ! Construct dependent variable
                         endogenous_slaves(count) = emax_simulated - maxe(k + 1)
@@ -406,16 +384,13 @@ PROGRAM slave
 
                     ! Distribute exogenous information
                     ! TODO: POLYMORPHISM
-                    CALL distribute_inter(num_emax_slaves, period, & 
-                        endogenous_slaves, endogenous, rank, num_states, & 
-                        PARENTCOMM)
+                    CALL distribute_inter(num_emax_slaves, period, endogenous_slaves, endogenous, rank, num_states, PARENTCOMM)
                     
                     ! Create prediction model based on the random subset of points where
                     ! the EMAX is actually simulated and thus endogenous and
                     ! exogenous variables are available. For the interpolation
                     ! points, the actual values are used.
-                    CALL get_predictions(predictions, endogenous, exogenous, maxe, &
-                            is_simulated, num_states, is_head)
+                    CALL get_predictions(predictions, endogenous, exogenous, maxe, is_simulated, num_states, is_head)
 
                     ! Store results
                     periods_emax(period + 1, :num_states) = predictions
@@ -423,8 +398,7 @@ PROGRAM slave
                     ! TODO: Keep master updates, somebody please!!
                     ! The leading slave updates the master period by period.
                     IF (rank == 0) THEN
-                        CALL MPI_SEND(periods_emax(period + 1, :num_states), num_states, & 
-                            MPI_DOUBLE, 0, period, PARENTCOMM, ierr)    
+                        CALL MPI_SEND(periods_emax(period + 1, :num_states), num_states, MPI_DOUBLE, 0, period, PARENTCOMM, ierr)    
                     END IF
                     ! Deallocate containers
                     DEALLOCATE(is_simulated); DEALLOCATE(exogenous); DEALLOCATE(maxe);
@@ -439,10 +413,7 @@ PROGRAM slave
                         ! Extract payoffs
                         payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
-                        CALL get_payoffs(emax_simulated, draws_emax, &
-                                period, k, payoffs_systematic, &
-                                mapping_state_idx, states_all, &
-                                periods_emax, shocks_cholesky)
+                        CALL get_payoffs(emax_simulated, draws_emax, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, shocks_cholesky)
 
                         ! Collect information
                         periods_emax_slaves(count) = emax_simulated
@@ -451,9 +422,7 @@ PROGRAM slave
 
                     END DO
                     
-                    CALL distribute_information(num_emax_slaves, period, & 
-                        periods_emax_slaves, periods_emax, rank, num_states, & 
-                        PARENTCOMM)
+                    CALL distribute_information(num_emax_slaves, period, periods_emax_slaves, periods_emax, rank, num_states, PARENTCOMM)
     
           
                 END IF

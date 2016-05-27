@@ -18,15 +18,15 @@ SUBROUTINE wrapper_normal_pdf(rslt, x, mean, sd)
     DOUBLE PRECISION, INTENT(IN)       :: mean
     DOUBLE PRECISION, INTENT(IN)       :: sd
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 
     rslt = normal_pdf(x, mean, sd)
 
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE wrapper_pinv(rslt, A, m)
 
     !/* external libraries      */
@@ -45,15 +45,15 @@ SUBROUTINE wrapper_pinv(rslt, A, m)
     
     INTEGER, INTENT(IN)             :: m
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 
     rslt = pinv(A, m)
     
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE wrapper_svd(U, S, VT, A, m)
 
     !/* external libraries      */
@@ -74,19 +74,16 @@ SUBROUTINE wrapper_svd(U, S, VT, A, m)
     
     INTEGER, INTENT(IN)             :: m
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
     
     CALL svd(U, S, VT, A, m)
 
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE wrapper_simulate_emax(emax_simulated, num_periods_int, & 
-                num_draws_emax_int, period, k, draws_emax, payoffs_systematic, & 
-                edu_max_int, edu_start_int, periods_emax, states_all, & 
-                mapping_state_idx, delta_int, shocks_cholesky)
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE wrapper_simulate_emax(emax_simulated, num_periods_int, num_draws_emax_int, period, k, draws_emax, payoffs_systematic, edu_max_int, edu_start_int, periods_emax, states_all, mapping_state_idx, delta_int, shocks_cholesky)
 
     !/* external libraries      */
 
@@ -115,9 +112,9 @@ SUBROUTINE wrapper_simulate_emax(emax_simulated, num_periods_int, &
     INTEGER, INTENT(IN)             :: period
     INTEGER, INTENT(IN)             :: k
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 
     !# Transfer auxiliary variable to global variable.
     num_draws_emax = num_draws_emax_int
@@ -127,13 +124,11 @@ SUBROUTINE wrapper_simulate_emax(emax_simulated, num_periods_int, &
     edu_max = edu_max_int
     delta = delta_int
 
-    CALL simulate_emax(emax_simulated, period, k, & 
-            draws_emax, payoffs_systematic, periods_emax, & 
-            states_all, mapping_state_idx, shocks_cholesky)
+    CALL simulate_emax(emax_simulated, period, k, draws_emax, payoffs_systematic, periods_emax, states_all, mapping_state_idx, shocks_cholesky)
 
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE wrapper_standard_normal(draw, dim)
 
     !/* external libraries      */
@@ -150,15 +145,15 @@ SUBROUTINE wrapper_standard_normal(draw, dim)
     
     DOUBLE PRECISION, INTENT(OUT)   :: draw(dim)
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
     
     CALL standard_normal(draw)
 
 END SUBROUTINE 
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE wrapper_determinant(det, A)
 
     !/* external libraries      */
@@ -175,15 +170,15 @@ SUBROUTINE wrapper_determinant(det, A)
 
     DOUBLE PRECISION, INTENT(IN)    :: A(:, :)
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
     
     det = determinant(A)
 
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE wrapper_inverse(inv, A, n)
 
     !/* external libraries      */
@@ -202,15 +197,15 @@ SUBROUTINE wrapper_inverse(inv, A, n)
 
     INTEGER, INTENT(IN)             :: n
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 
     inv = inverse(A, n)
 
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE wrapper_trace(rslt, A)
 
     !/* external libraries      */
@@ -227,17 +222,16 @@ SUBROUTINE wrapper_trace(rslt, A)
 
     DOUBLE PRECISION, INTENT(IN)  :: A(:,:)
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
     
     rslt = trace_fun(A)
 
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE wrapper_clip_value(clipped_value, value, lower_bound, upper_bound, & 
-            num_values)
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE wrapper_clip_value(clipped_value, value, lower_bound, upper_bound, num_values)
 
     !/* external libraries      */
 
@@ -257,18 +251,17 @@ SUBROUTINE wrapper_clip_value(clipped_value, value, lower_bound, upper_bound, &
 
     INTEGER, INTENT(IN)                 :: num_values
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
     
     clipped_value = clip_value(value, lower_bound, upper_bound)
 
 
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE wrapper_get_pred_info(r_squared, bse, Y, P, X, num_states, & 
-                num_covars)
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE wrapper_get_pred_info(r_squared, bse, Y, P, X, num_states, num_covars)
 
     !/* external libraries      */
 
@@ -290,15 +283,15 @@ SUBROUTINE wrapper_get_pred_info(r_squared, bse, Y, P, X, num_states, &
     INTEGER, INTENT(IN)             :: num_states
     INTEGER, INTENT(IN)             :: num_covars
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 
     CALL get_pred_info(r_squared, bse, Y, P, X, num_states, num_covars)
 
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE wrapper_point_predictions(Y, X, coeffs, num_states)
 
     !/* external libraries      */
@@ -318,17 +311,16 @@ SUBROUTINE wrapper_point_predictions(Y, X, coeffs, num_states)
     
     INTEGER, INTENT(IN)                 :: num_states
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
     
     CALL point_predictions(Y, X, coeffs, num_states)
 
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE wrapper_get_predictions(predictions, endogenous, exogenous, maxe, & 
-                is_simulated, num_points_interp_int, num_states)
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE wrapper_get_predictions(predictions, endogenous, exogenous, maxe, is_simulated, num_points_interp_int, num_states)
 
     !/* external libraries      */
 
@@ -351,18 +343,17 @@ SUBROUTINE wrapper_get_predictions(predictions, endogenous, exogenous, maxe, &
 
     LOGICAL, INTENT(IN)                         :: is_simulated(:)
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 
     num_points_interp = num_points_interp_int
 
-    CALL get_predictions(predictions, endogenous, exogenous, maxe, & 
-            is_simulated, num_states)
+    CALL get_predictions(predictions, endogenous, exogenous, maxe, is_simulated, num_states)
 
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE wrapper_random_choice(sample, candidates, num_candidates, num_points)
 
     !/* external libraries      */
@@ -381,16 +372,16 @@ SUBROUTINE wrapper_random_choice(sample, candidates, num_candidates, num_points)
     INTEGER, INTENT(IN)             :: num_candidates
     INTEGER, INTENT(IN)             :: num_points
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 
      CALL random_choice(sample, candidates, num_candidates, num_points)
 
 
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE wrapper_get_coefficients(coeffs, Y, X, num_covars, num_states)
 
     !/* external libraries      */
@@ -411,20 +402,16 @@ SUBROUTINE wrapper_get_coefficients(coeffs, Y, X, num_covars, num_states)
     INTEGER, INTENT(IN)             :: num_covars
     INTEGER, INTENT(IN)             :: num_states
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
     
     CALL get_coefficients(coeffs, Y, X, num_covars, num_states)
 
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, &
-                num_periods_int, num_states, delta_int, periods_payoffs_systematic, &
-                edu_max_int, edu_start_int, mapping_state_idx, periods_emax, &
-                states_all, is_simulated, num_draws_emax_int, maxe, draws_emax, & 
-                shocks_cholesky)
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_periods_int, num_states, delta_int, periods_payoffs_systematic, edu_max_int, edu_start_int, mapping_state_idx, periods_emax, states_all, is_simulated, num_draws_emax_int, maxe, draws_emax, shocks_cholesky)
 
     !/* external libraries      */
 
@@ -457,9 +444,9 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, &
 
     LOGICAL, INTENT(IN)                 :: is_simulated(:)
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
     
     num_draws_emax = num_draws_emax_int
         edu_start = edu_start_int
@@ -469,18 +456,12 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, &
     edu_max = edu_max_int
     delta = delta_int
 
-    CALL get_endogenous_variable(exogenous_variable, period, &
-            num_states, periods_payoffs_systematic, &
-            mapping_state_idx, periods_emax, states_all, &
-            is_simulated, maxe, draws_emax, shocks_cholesky)
+    CALL get_endogenous_variable(exogenous_variable, period, num_states, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, is_simulated, maxe, draws_emax, shocks_cholesky)
 
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE wrapper_get_exogenous_variables(independent_variables, maxe, &
-                period, num_periods_int, num_states, delta_int, &
-                periods_payoffs_systematic, shifts, edu_max_int, edu_start_int, &
-                mapping_state_idx, periods_emax, states_all)
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE wrapper_get_exogenous_variables(independent_variables, maxe, period, num_periods_int, num_states, delta_int, periods_payoffs_systematic, shifts, edu_max_int, edu_start_int, mapping_state_idx, periods_emax, states_all)
 
     !/* external libraries      */
 
@@ -509,9 +490,9 @@ SUBROUTINE wrapper_get_exogenous_variables(independent_variables, maxe, &
     INTEGER, INTENT(IN)                 :: edu_start_int
     INTEGER, INTENT(IN)                 :: period
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 
     !# Transfer auxiliary variable to global variable.
     num_periods = num_periods_int
@@ -520,16 +501,12 @@ SUBROUTINE wrapper_get_exogenous_variables(independent_variables, maxe, &
     edu_max = edu_max_int
     delta = delta_int
 
-    CALL get_exogenous_variables(independent_variables, maxe,  period, &
-            num_states, periods_payoffs_systematic, &
-            shifts, mapping_state_idx, periods_emax, &
-            states_all)
+    CALL get_exogenous_variables(independent_variables, maxe,  period, num_states, periods_payoffs_systematic, shifts, mapping_state_idx, periods_emax, states_all)
             
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE wrapper_get_simulated_indicator(is_simulated, num_points, &
-                num_states, period, is_debug_int, num_periods_int)
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE wrapper_get_simulated_indicator(is_simulated, num_points, num_states, period, is_debug_int, num_periods_int)
 
     !/* external libraries      */
 
@@ -550,20 +527,17 @@ SUBROUTINE wrapper_get_simulated_indicator(is_simulated, num_points, &
 
     LOGICAL, INTENT(IN)             :: is_debug_int
 
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
     num_periods = num_periods_int
     is_debug = is_debug_int
     is_simulated = get_simulated_indicator(num_points, num_states, period)
 
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE wrapper_get_payoffs(emax_simulated, num_draws_emax_int, & 
-                draws_emax, period, k, payoffs_systematic, edu_max_int, & 
-                edu_start_int, mapping_state_idx, states_all, num_periods_int, & 
-                periods_emax, delta_int, shocks_cholesky)
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE wrapper_get_payoffs(emax_simulated, num_draws_emax_int, draws_emax, period, k, payoffs_systematic, edu_max_int, edu_start_int, mapping_state_idx, states_all, num_periods_int, periods_emax, delta_int, shocks_cholesky)
 
 
     !/* external libraries      */
@@ -593,9 +567,9 @@ SUBROUTINE wrapper_get_payoffs(emax_simulated, num_draws_emax_int, &
     INTEGER, INTENT(IN)                 :: period
     INTEGER, INTENT(IN)                 :: k 
     
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 ! Algorithm
-!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 
     !# This assignment is required to allow for the explicit shape arguments.
     min_idx = SIZE(mapping_state_idx, 4)
@@ -608,10 +582,8 @@ SUBROUTINE wrapper_get_payoffs(emax_simulated, num_draws_emax_int, &
     edu_max = edu_max_int
     delta = delta_int
 
-    CALL get_payoffs(emax_simulated, draws_emax, period, k, & 
-            payoffs_systematic, mapping_state_idx, & 
-            states_all, periods_emax, shocks_cholesky)
+    CALL get_payoffs(emax_simulated, draws_emax, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, shocks_cholesky)
     
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
+!******************************************************************************
+!******************************************************************************
