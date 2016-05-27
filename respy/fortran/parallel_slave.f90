@@ -4,6 +4,8 @@ MODULE slave_shared
 
     !/* external modules    */
 
+    USE parallel_constants
+
     USE resfort_library 
 
     USE mpi
@@ -17,12 +19,11 @@ MODULE slave_shared
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE distribute_inter(num_emax_slaves, period, periods_emax_slaves, periods_emax, rank, num_states, PARENTCOMM)
+SUBROUTINE distribute_inter(num_emax_slaves, period, periods_emax_slaves, periods_emax, rank, num_states)
     
     !/* external objects        */
 
     INTEGER(our_int), INTENT(IN)    :: num_emax_slaves(:, :)
-    INTEGER(our_int), INTENT(IN)    :: PARENTCOMM
     INTEGER(our_int), INTENT(IN)    :: num_states
     INTEGER(our_int), INTENT(IN)    :: period
     INTEGER(our_int), INTENT(IN)    :: rank
@@ -37,7 +38,6 @@ SUBROUTINE distribute_inter(num_emax_slaves, period, periods_emax_slaves, period
     INTEGER(our_int), ALLOCATABLE   :: disps(:)
 
     INTEGER(our_int)                :: num_slaves
-    INTEGER(our_int)                :: ierr
     INTEGER(our_int)                :: i
 
 !------------------------------------------------------------------------------
@@ -61,12 +61,11 @@ SUBROUTINE distribute_inter(num_emax_slaves, period, periods_emax_slaves, period
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE distribute_information(num_emax_slaves, period, periods_emax_slaves, periods_emax, rank, num_states, PARENTCOMM)
+SUBROUTINE distribute_information(num_emax_slaves, period, periods_emax_slaves, periods_emax, rank, num_states)
     
     !/* external objects        */
 
     INTEGER(our_int), INTENT(IN)    :: num_emax_slaves(:, :)
-    INTEGER(our_int), INTENT(IN)    :: PARENTCOMM
     INTEGER(our_int), INTENT(IN)    :: num_states
     INTEGER(our_int), INTENT(IN)    :: period
     INTEGER(our_int), INTENT(IN)    :: rank
@@ -107,7 +106,7 @@ SUBROUTINE distribute_information(num_emax_slaves, period, periods_emax_slaves, 
     ! The leading slave updates the master period by period.
     periods_emax_subset = periods_emax(period + 1, :num_states)
     IF (rank == 0) THEN
-        CALL MPI_SEND(periods_emax_subset, num_states, MPI_DOUBLE, 0, period, PARENTCOMM, ierr)            
+        CALL MPI_SEND(periods_emax_subset, num_states, MPI_DOUBLE, 0, period, ierr)            
     END IF
 
 END SUBROUTINE
@@ -188,11 +187,9 @@ PROGRAM slave
     INTEGER(our_int)                :: upper_bound
     INTEGER(our_int)                :: num_states
     INTEGER(our_int)                :: num_slaves
-    INTEGER(our_int)                :: PARENTCOMM
     INTEGER(our_int)                :: period
     INTEGER(our_int)                :: count
     INTEGER(our_int)                :: rank
-    INTEGER(our_int)                :: ierr
     INTEGER(our_int)                :: task
     INTEGER(our_int)                :: k
 
@@ -376,7 +373,7 @@ PROGRAM slave
 
                     ! Distribute exogenous information
                     ! TODO: POLYMORPHISM
-                    CALL distribute_inter(num_emax_slaves, period, endogenous_slaves, endogenous, rank, num_states, PARENTCOMM)
+                    CALL distribute_inter(num_emax_slaves, period, endogenous_slaves, endogenous, rank, num_states)
                     
                     ! Create prediction model based on the random subset of points where the EMAX is actually simulated and thus endogenous and exogenous variables are available. For the interpolation  points, the actual values are used.
                     CALL get_predictions(predictions, endogenous, exogenous, maxe, is_simulated, num_states, is_head)
@@ -410,7 +407,7 @@ PROGRAM slave
 
                     END DO
                     
-                    CALL distribute_information(num_emax_slaves, period, periods_emax_slaves, periods_emax, rank, num_states, PARENTCOMM)
+                    CALL distribute_information(num_emax_slaves, period, periods_emax_slaves, periods_emax, rank, num_states)
     
           
                 END IF

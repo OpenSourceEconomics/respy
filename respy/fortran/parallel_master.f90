@@ -4,6 +4,8 @@ PROGRAM master
 
     !/* external modules        */
 
+    USE parallel_constants
+
     USE parallel_auxiliary    
 
     USE resfort_library 
@@ -20,8 +22,6 @@ PROGRAM master
     INTEGER(our_int), ALLOCATABLE   :: states_number_period(:)
     INTEGER(our_int), ALLOCATABLE   :: states_all(:, :, :)
 
-    INTEGER(our_int)                :: SLAVECOMM
-    INTEGER(our_int)                :: ierr
 
     REAL(our_dble), ALLOCATABLE     :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_draws_prob(:, :, :)
@@ -49,7 +49,7 @@ PROGRAM master
     IF (request == 'solve') THEN
 
         ! Solve the model for a given parametrization in parallel.
-        CALL fort_solve_parallel(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, SLAVECOMM)
+        CALL fort_solve_parallel(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky)
 
     ELSE IF (request == 'evaluate') THEN
 
@@ -60,7 +60,7 @@ PROGRAM master
         CALL read_dataset(data_array, num_agents_est)
 
         ! Solve the model for a given parametrization in parallel  s
-        CALL fort_solve_parallel(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, SLAVECOMM)
+        CALL fort_solve_parallel(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky)
         
        ! TODO: Parallelize
         CALL fort_evaluate(crit_val, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_array, periods_draws_prob)
