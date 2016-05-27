@@ -17,7 +17,6 @@ PROGRAM resfort
     INTEGER(our_int), ALLOCATABLE   :: states_all(:, :, :)
 
     INTEGER(our_int)                :: num_points
-    INTEGER(our_int)                :: edu_start
 
     REAL(our_dble), ALLOCATABLE     :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_draws_emax(:, :, :)
@@ -40,7 +39,7 @@ PROGRAM resfort
     ! RespyCls instance that carries the model parametrization for the
     ! PYTHON/F2PY implementations.
     CALL read_specification(coeffs_a, coeffs_b, &
-            coeffs_edu, edu_start, coeffs_home, shocks_cholesky, & 
+            coeffs_edu, coeffs_home, shocks_cholesky, & 
             num_points)
 
     ! This part creates (or reads from disk) the draws for the Monte 
@@ -57,7 +56,7 @@ PROGRAM resfort
                 mapping_state_idx, periods_emax, states_all, coeffs_a, & 
                 coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, & 
                 periods_draws_emax, & 
-                num_points, edu_start)
+                num_points)
 
     ELSE IF (request == 'evaluate') THEN
 
@@ -75,11 +74,11 @@ PROGRAM resfort
                 mapping_state_idx, periods_emax, states_all, coeffs_a, & 
                 coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, & 
                 periods_draws_emax, & 
-                num_points, edu_start)
+                num_points)
 
         CALL fort_evaluate(crit_val, periods_payoffs_systematic, & 
                 mapping_state_idx, periods_emax, states_all, shocks_cholesky, & 
-                edu_start, data_array, & 
+                data_array, & 
                 periods_draws_prob)
 
     END IF

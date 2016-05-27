@@ -200,7 +200,6 @@ PROGRAM slave
     INTEGER(our_int)                :: num_points
     INTEGER(our_int)                :: num_slaves
     INTEGER(our_int)                :: PARENTCOMM
-    INTEGER(our_int)                :: edu_start
     INTEGER(our_int)                :: period
     INTEGER(our_int)                :: count
     INTEGER(our_int)                :: rank
@@ -247,7 +246,7 @@ PROGRAM slave
 
     ! Read in model specification.
     CALL read_specification(coeffs_a, coeffs_b, & 
-            coeffs_edu, edu_start, coeffs_home, shocks_cholesky, & 
+            coeffs_edu, coeffs_home, shocks_cholesky, & 
             num_points)
 
     ALLOCATE(draws_emax(num_draws_emax, 4))
@@ -260,7 +259,7 @@ PROGRAM slave
     IF(rank == 0) CALL logging_solution(1)
 
     CALL fort_create_state_space(states_all_tmp, states_number_period, &
-            mapping_state_idx, max_states_period, edu_start)
+            mapping_state_idx, max_states_period)
 
     IF(rank == 0) CALL logging_solution(-1)
 
@@ -279,7 +278,7 @@ PROGRAM slave
     IF(rank == 0) CALL logging_solution(2)
 
     CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, &
-            states_number_period, states_all, edu_start, &
+            states_number_period, states_all, &
             coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
 
     IF(rank == 0) CALL logging_solution(-1)
@@ -370,7 +369,7 @@ PROGRAM slave
                     ! prediction step.
                     CALL get_exogenous_variables(exogenous, maxe, period, &
                             num_states, periods_payoffs_systematic, shifts, &
-                            edu_start, mapping_state_idx, periods_emax, &
+                            mapping_state_idx, periods_emax, &
                             states_all)
 
 
@@ -395,7 +394,7 @@ PROGRAM slave
 
                         ! Get payoffs
                         CALL get_payoffs(emax_simulated, draws_emax, period, &
-                                k, payoffs_systematic, edu_start, mapping_state_idx, &
+                                k, payoffs_systematic, mapping_state_idx, &
                                 states_all, periods_emax, shocks_cholesky)
 
                         ! Construct dependent variable
@@ -443,7 +442,7 @@ PROGRAM slave
                         payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
                         CALL get_payoffs(emax_simulated, draws_emax, &
-                                period, k, payoffs_systematic, edu_start, &
+                                period, k, payoffs_systematic, &
                                 mapping_state_idx, states_all, &
                                 periods_emax, shocks_cholesky)
 

@@ -19,7 +19,7 @@ MODULE simulate_fortran
 !*******************************************************************************
 SUBROUTINE fort_simulate(dataset, periods_payoffs_systematic, & 
                 mapping_state_idx, periods_emax, states_all, & 
-                num_agents_sim, edu_start, periods_draws_sims, & 
+                num_agents_sim, periods_draws_sims, & 
                 shocks_cholesky)
 
     !/* external objects        */
@@ -30,8 +30,6 @@ SUBROUTINE fort_simulate(dataset, periods_payoffs_systematic, &
     REAL(our_dble), INTENT(IN)      :: periods_draws_sims(:, :, :)
     REAL(our_dble), INTENT(IN)      :: shocks_cholesky(:, :)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
-
-    INTEGER(our_int), INTENT(IN)    :: edu_start
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:, :, :, :, :)
     INTEGER(our_int), INTENT(IN)    :: states_all(:, :, :)
@@ -100,7 +98,7 @@ SUBROUTINE fort_simulate(dataset, periods_payoffs_systematic, &
 
             ! Calculate total utilities
             CALL get_total_value(total_payoffs, period, &
-                    payoffs_systematic, draws, edu_start, &
+                    payoffs_systematic, draws, &
                     mapping_state_idx, periods_emax, k, states_all)
 
             ! Write relevant state space for period to data frame

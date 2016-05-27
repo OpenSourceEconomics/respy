@@ -85,7 +85,7 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE wrapper_simulate_emax(emax_simulated, num_periods_int, & 
                 num_draws_emax_int, period, k, draws_emax, payoffs_systematic, & 
-                edu_max_int, edu_start, periods_emax, states_all, & 
+                edu_max_int, edu_start_int, periods_emax, states_all, & 
                 mapping_state_idx, delta_int, shocks_cholesky)
 
     !/* external libraries      */
@@ -111,7 +111,7 @@ SUBROUTINE wrapper_simulate_emax(emax_simulated, num_periods_int, &
     INTEGER, INTENT(IN)             :: num_draws_emax_int
     INTEGER, INTENT(IN)             :: edu_max_int
     INTEGER, INTENT(IN)             :: num_periods_int
-    INTEGER, INTENT(IN)             :: edu_start
+    INTEGER, INTENT(IN)             :: edu_start_int
     INTEGER, INTENT(IN)             :: period
     INTEGER, INTENT(IN)             :: k
 
@@ -121,13 +121,14 @@ SUBROUTINE wrapper_simulate_emax(emax_simulated, num_periods_int, &
 
     !# Transfer auxiliary variable to global variable.
     num_draws_emax = num_draws_emax_int
+    edu_start = edu_start_int
     num_periods = num_periods_int
 
     edu_max = edu_max_int
     delta = delta_int
 
     CALL simulate_emax(emax_simulated, period, k, & 
-            draws_emax, payoffs_systematic, edu_start, periods_emax, & 
+            draws_emax, payoffs_systematic, periods_emax, & 
             states_all, mapping_state_idx, shocks_cholesky)
 
 END SUBROUTINE
@@ -419,7 +420,7 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, &
                 num_periods_int, num_states, delta_int, periods_payoffs_systematic, &
-                edu_max_int, edu_start, mapping_state_idx, periods_emax, &
+                edu_max_int, edu_start_int, mapping_state_idx, periods_emax, &
                 states_all, is_simulated, num_draws_emax_int, maxe, draws_emax, & 
                 shocks_cholesky)
 
@@ -448,7 +449,7 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, &
     INTEGER, INTENT(IN)                 :: edu_max_int    
     INTEGER, INTENT(IN)                 :: num_periods_int
     INTEGER, INTENT(IN)                 :: num_states
-    INTEGER, INTENT(IN)                 :: edu_start
+    INTEGER, INTENT(IN)                 :: edu_start_int
     INTEGER, INTENT(IN)                 :: period
 
 
@@ -459,6 +460,8 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, &
 !-------------------------------------------------------------------------------
     
     num_draws_emax = num_draws_emax_int
+        edu_start = edu_start_int
+
         num_periods = num_periods_int
 
     edu_max = edu_max_int
@@ -466,7 +469,7 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, &
 
     CALL get_endogenous_variable(exogenous_variable, period, &
             num_states, periods_payoffs_systematic, &
-            edu_start, mapping_state_idx, periods_emax, states_all, &
+            mapping_state_idx, periods_emax, states_all, &
             is_simulated, maxe, draws_emax, shocks_cholesky)
 
 END SUBROUTINE
@@ -474,7 +477,7 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE wrapper_get_exogenous_variables(independent_variables, maxe, &
                 period, num_periods_int, num_states, delta_int, &
-                periods_payoffs_systematic, shifts, edu_max_int, edu_start, &
+                periods_payoffs_systematic, shifts, edu_max_int, edu_start_int, &
                 mapping_state_idx, periods_emax, states_all)
 
     !/* external libraries      */
@@ -501,7 +504,7 @@ SUBROUTINE wrapper_get_exogenous_variables(independent_variables, maxe, &
     INTEGER, INTENT(IN)                 :: edu_max_int
     INTEGER, INTENT(IN)                 :: num_periods_int
     INTEGER, INTENT(IN)                 :: num_states
-    INTEGER, INTENT(IN)                 :: edu_start
+    INTEGER, INTENT(IN)                 :: edu_start_int
     INTEGER, INTENT(IN)                 :: period
 
 !-------------------------------------------------------------------------------
@@ -510,12 +513,14 @@ SUBROUTINE wrapper_get_exogenous_variables(independent_variables, maxe, &
 
     !# Transfer auxiliary variable to global variable.
     num_periods = num_periods_int
+    edu_start = edu_start_int
+
     edu_max = edu_max_int
     delta = delta_int
 
     CALL get_exogenous_variables(independent_variables, maxe,  period, &
             num_states, periods_payoffs_systematic, &
-            shifts, edu_start, mapping_state_idx, periods_emax, &
+            shifts, mapping_state_idx, periods_emax, &
             states_all)
             
 END SUBROUTINE
@@ -555,7 +560,7 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE wrapper_get_payoffs(emax_simulated, num_draws_emax_int, & 
                 draws_emax, period, k, payoffs_systematic, edu_max_int, & 
-                edu_start, mapping_state_idx, states_all, num_periods_int, & 
+                edu_start_int, mapping_state_idx, states_all, num_periods_int, & 
                 periods_emax, delta_int, shocks_cholesky)
 
 
@@ -582,7 +587,7 @@ SUBROUTINE wrapper_get_payoffs(emax_simulated, num_draws_emax_int, &
     INTEGER, INTENT(IN)                 :: num_draws_emax_int
     INTEGER, INTENT(IN)                 :: edu_max_int
     INTEGER, INTENT(IN)                 :: num_periods_int
-    INTEGER, INTENT(IN)                 :: edu_start
+    INTEGER, INTENT(IN)                 :: edu_start_int
     INTEGER, INTENT(IN)                 :: period
     INTEGER, INTENT(IN)                 :: k 
     
@@ -592,13 +597,14 @@ SUBROUTINE wrapper_get_payoffs(emax_simulated, num_draws_emax_int, &
 
     !# Transfer auxiliary variable to global variable.
     num_periods = num_periods_int
+    edu_start = edu_start_int
 
     num_draws_emax = num_draws_emax_int
     edu_max = edu_max_int
     delta = delta_int
 
     CALL get_payoffs(emax_simulated, draws_emax, period, k, & 
-            payoffs_systematic, edu_start, mapping_state_idx, & 
+            payoffs_systematic, mapping_state_idx, & 
             states_all, periods_emax, shocks_cholesky)
     
 END SUBROUTINE

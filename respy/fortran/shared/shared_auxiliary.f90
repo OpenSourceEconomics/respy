@@ -129,7 +129,7 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE get_total_value(total_payoffs, period, &
-                payoffs_systematic, draws, edu_start, &
+                payoffs_systematic, draws, &
                 mapping_state_idx, periods_emax, k, states_all)
 
     !/* external objects        */
@@ -138,7 +138,6 @@ SUBROUTINE get_total_value(total_payoffs, period, &
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:, :, :, :, :)
     INTEGER(our_int), INTENT(IN)    :: states_all(:, :, :)
-    INTEGER(our_int), INTENT(IN)    :: edu_start
     INTEGER(our_int), INTENT(IN)    :: period
     INTEGER(our_int), INTENT(IN)    :: k
 
@@ -169,7 +168,7 @@ SUBROUTINE get_total_value(total_payoffs, period, &
     ! Get future values
     IF (period .NE. (num_periods - one_int)) THEN
         CALL get_future_payoffs(payoffs_future, is_inadmissible, & 
-                edu_start, mapping_state_idx, period, periods_emax, k, & 
+                mapping_state_idx, period, periods_emax, k, & 
                 states_all)
     ELSE
         is_inadmissible = .False.
@@ -190,7 +189,7 @@ SUBROUTINE get_total_value(total_payoffs, period, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE get_future_payoffs(payoffs_future, is_inadmissible, edu_start, &
+SUBROUTINE get_future_payoffs(payoffs_future, is_inadmissible, &
                 mapping_state_idx, period, periods_emax, k, states_all)
 
     !/* external objects        */
@@ -201,7 +200,6 @@ SUBROUTINE get_future_payoffs(payoffs_future, is_inadmissible, edu_start, &
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:, :, :, :, :)
     INTEGER(our_int), INTENT(IN)    :: states_all(:, :, :)
-    INTEGER(our_int), INTENT(IN)    :: edu_start
     INTEGER(our_int), INTENT(IN)    :: period
     INTEGER(our_int), INTENT(IN)    :: k
 
@@ -631,7 +629,7 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE read_specification(coeffs_a, coeffs_b, &
-                coeffs_edu, edu_start, coeffs_home, shocks_cholesky, & 
+                coeffs_edu, coeffs_home, shocks_cholesky, & 
                 num_points)
 
     !
@@ -643,7 +641,6 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, &
     !/* external objects        */
 
     INTEGER(our_int), INTENT(OUT)   :: num_points
-    INTEGER(our_int), INTENT(OUT)   :: edu_start
 
     REAL(our_dble), INTENT(OUT)     :: shocks_cholesky(4, 4)
     REAL(our_dble), INTENT(OUT)     :: coeffs_home(1)

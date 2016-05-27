@@ -26,7 +26,6 @@ PROGRAM master
     INTEGER(our_int)                :: num_points
     INTEGER(our_int)                :: num_states
     INTEGER(our_int)                :: SLAVECOMM
-    INTEGER(our_int)                :: edu_start
     INTEGER(our_int)                :: period
     INTEGER(our_int)                :: ierr
     INTEGER(our_int)                :: task
@@ -54,7 +53,7 @@ PROGRAM master
 
     ! Read in model specification.
     CALL read_specification(coeffs_a, coeffs_b, &
-            coeffs_edu, edu_start, coeffs_home, shocks_cholesky, & 
+            coeffs_edu, coeffs_home, shocks_cholesky, & 
             num_points) 
 
     ! Execute on request.
@@ -65,7 +64,7 @@ PROGRAM master
                 mapping_state_idx, periods_emax, states_all, coeffs_a, &
                 coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, &
                 num_points, & 
-                edu_start, SLAVECOMM)
+                SLAVECOMM)
 
     ELSE IF (request == 'evaluate') THEN
 
@@ -84,12 +83,12 @@ PROGRAM master
                 mapping_state_idx, periods_emax, states_all, coeffs_a, &
                 coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, &
                 num_points, & 
-                edu_start, SLAVECOMM)
+                SLAVECOMM)
         
        ! TODO: Parallelize
         CALL fort_evaluate(crit_val, periods_payoffs_systematic, & 
                 mapping_state_idx, periods_emax, states_all, shocks_cholesky, & 
-                edu_start, data_array, & 
+                data_array, & 
                 periods_draws_prob)
 
     END IF

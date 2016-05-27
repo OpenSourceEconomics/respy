@@ -30,6 +30,7 @@ MODULE shared_constants
     INTEGER(our_int)            :: num_procs
     INTEGER(our_int)            :: seed_emax
     INTEGER(our_int)            :: seed_prob
+    INTEGER(our_int)            :: edu_start
     INTEGER(our_int)            :: edu_max   
     INTEGER(our_int)            :: min_idx
 
