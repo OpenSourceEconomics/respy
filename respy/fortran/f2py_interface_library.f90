@@ -8,7 +8,7 @@
 !*******************************************************************************
 SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, & 
                 num_periods, num_points, is_myopic_int, edu_start, is_debug_int, & 
-                edu_max_int, min_idx, delta_int, data_array, num_agents_est_int, & 
+                edu_max_int, min_idx_int, delta_int, data_array, num_agents_est_int, & 
                 num_draws_prob_int, tau_int, periods_draws_emax, periods_draws_prob)
 
     !/* external libraries      */
@@ -33,7 +33,7 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
     INTEGER, INTENT(IN)             :: num_periods
     INTEGER, INTENT(IN)             :: num_points
     INTEGER, INTENT(IN)             :: edu_start
-    INTEGER, INTENT(IN)             :: min_idx
+    INTEGER, INTENT(IN)             :: min_idx_int
 
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_emax(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_prob(:, :, :)
@@ -70,6 +70,7 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
     num_draws_prob = num_draws_prob_int
     is_myopic = is_myopic_int
     is_debug = is_debug_int
+    min_idx = min_idx_int
     edu_max = edu_max_int
     delta = delta_int
     tau = tau_int
@@ -83,7 +84,7 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
             mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, & 
             coeffs_edu, coeffs_home, shocks_cholesky, & 
             periods_draws_emax,num_periods, num_points, & 
-            edu_start, min_idx)
+            edu_start)
 
     ! Evaluate criterion function for observed data
     CALL fort_evaluate(crit_val, periods_payoffs_systematic, & 
@@ -98,7 +99,7 @@ SUBROUTINE f2py_solve(periods_payoffs_systematic, states_number_period, &
                 mapping_state_idx, periods_emax, states_all, coeffs_a, &
                 coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, &
                 is_interpolated_int, num_draws_emax_int, num_periods, num_points, & 
-                is_myopic_int, edu_start, is_debug_int, edu_max_int, min_idx, delta_int, & 
+                is_myopic_int, edu_start, is_debug_int, edu_max_int, min_idx_int, delta_int, & 
                 periods_draws_emax, max_states_period)
     
     !
@@ -117,7 +118,7 @@ SUBROUTINE f2py_solve(periods_payoffs_systematic, states_number_period, &
 
     !/* external objects        */
 
-    INTEGER, INTENT(OUT)            :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
+    INTEGER, INTENT(OUT)            :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx_int, 2)
     INTEGER, INTENT(OUT)            :: states_all(num_periods, max_states_period, 4)
     INTEGER, INTENT(OUT)            :: states_number_period(num_periods)
 
@@ -131,7 +132,7 @@ SUBROUTINE f2py_solve(periods_payoffs_systematic, states_number_period, &
     INTEGER, INTENT(IN)             :: num_periods
     INTEGER, INTENT(IN)             :: num_points
     INTEGER, INTENT(IN)             :: edu_start
-    INTEGER, INTENT(IN)             :: min_idx
+    INTEGER, INTENT(IN)             :: min_idx_int
 
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_emax(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(:, :)
@@ -166,6 +167,7 @@ SUBROUTINE f2py_solve(periods_payoffs_systematic, states_number_period, &
     num_draws_emax = num_draws_emax_int
     is_myopic = is_myopic_int
     is_debug = is_debug_int
+    min_idx = min_idx_int
     edu_max = edu_max_int
     delta = delta_int
 
@@ -174,7 +176,7 @@ SUBROUTINE f2py_solve(periods_payoffs_systematic, states_number_period, &
             mapping_state_idx_int, periods_emax_int, states_all_int, & 
             coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, & 
             periods_draws_emax, num_periods, & 
-            num_points, edu_start, min_idx)
+            num_points, edu_start)
 
     ! Assign to initial objects for return to PYTHON
     periods_payoffs_systematic = periods_payoffs_systematic_int   
@@ -189,7 +191,7 @@ END SUBROUTINE
 SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, & 
                 coeffs_home, shocks_cholesky, is_interpolated_int, & 
                 num_draws_emax_int, num_periods, num_points, is_myopic_int, & 
-                edu_start, is_debug_int, edu_max_int, min_idx, delta_int, data_array, & 
+                edu_start, is_debug_int, edu_max_int, min_idx_int, delta_int, data_array, & 
                 num_agents_est_int, num_draws_prob_int, tau_int, periods_draws_emax, &
                 periods_draws_prob)
 
@@ -212,7 +214,7 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, &
     INTEGER, INTENT(IN)             :: num_periods
     INTEGER, INTENT(IN)             :: num_points
     INTEGER, INTENT(IN)             :: edu_start
-    INTEGER, INTENT(IN)             :: min_idx
+    INTEGER, INTENT(IN)             :: min_idx_int
 
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_emax(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_prob(:, :, :)
@@ -250,6 +252,7 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, &
     num_draws_emax = num_draws_emax_int
     is_myopic = is_myopic_int
     is_debug = is_debug_int
+    min_idx = min_idx_int
     edu_max = edu_max_int
     delta = delta_int
     tau = tau_int
@@ -259,8 +262,7 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, &
             mapping_state_idx, periods_emax, states_all, coeffs_a, & 
             coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, & 
             periods_draws_emax, & 
-            num_periods, num_points, edu_start, &
-            min_idx)
+            num_periods, num_points, edu_start)
 
     ! Evaluate the criterion function building on the solution.
     CALL fort_evaluate(crit_val, periods_payoffs_systematic, & 
@@ -381,7 +383,7 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE f2py_create_state_space(states_all, states_number_period, &
                 mapping_state_idx, max_states_period, num_periods, edu_start, & 
-                edu_max_int, min_idx)
+                edu_max_int, min_idx_int)
     
     !/* external libraries      */
 
@@ -393,7 +395,7 @@ SUBROUTINE f2py_create_state_space(states_all, states_number_period, &
 
     !/* external objects        */
 
-    INTEGER, INTENT(OUT)            :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
+    INTEGER, INTENT(OUT)            :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx_int, 2)
     INTEGER, INTENT(OUT)            :: states_all(num_periods, 100000, 4)
     INTEGER, INTENT(OUT)            :: states_number_period(num_periods)
     INTEGER, INTENT(OUT)            :: max_states_period
@@ -401,13 +403,14 @@ SUBROUTINE f2py_create_state_space(states_all, states_number_period, &
     INTEGER, INTENT(IN)             :: num_periods
     INTEGER, INTENT(IN)             :: edu_max_int
     INTEGER, INTENT(IN)             :: edu_start
-    INTEGER, INTENT(IN)             :: min_idx
+    INTEGER, INTENT(IN)             :: min_idx_int
 
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
 
     !# Transfer auxiliary variable to global variable.
+    min_idx = min_idx_int
     edu_max = edu_max_int
 
     CALL fort_create_state_space(states_all, states_number_period, &

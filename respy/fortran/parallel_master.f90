@@ -28,7 +28,6 @@ PROGRAM master
     INTEGER(our_int)                :: num_states
     INTEGER(our_int)                :: SLAVECOMM
     INTEGER(our_int)                :: edu_start
-    INTEGER(our_int)                :: min_idx
     INTEGER(our_int)                :: period
     INTEGER(our_int)                :: ierr
     INTEGER(our_int)                :: task
@@ -57,7 +56,7 @@ PROGRAM master
     ! Read in model specification.
     CALL read_specification(num_periods, coeffs_a, coeffs_b, &
             coeffs_edu, edu_start, coeffs_home, shocks_cholesky, & 
-            num_points, min_idx) 
+            num_points) 
 
     ! Execute on request.
     IF (request == 'solve') THEN
@@ -67,8 +66,7 @@ PROGRAM master
                 mapping_state_idx, periods_emax, states_all, coeffs_a, &
                 coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, &
                 num_periods, num_points, & 
-                edu_start, min_idx, & 
-                SLAVECOMM)
+                edu_start, SLAVECOMM)
 
     ELSE IF (request == 'evaluate') THEN
 
@@ -87,8 +85,7 @@ PROGRAM master
                 mapping_state_idx, periods_emax, states_all, coeffs_a, &
                 coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, &
                 num_periods, num_points, & 
-                edu_start, min_idx, & 
-                SLAVECOMM)
+                edu_start, SLAVECOMM)
         
        ! TODO: Parallelize
         CALL fort_evaluate(crit_val, periods_payoffs_systematic, & 
@@ -106,7 +103,7 @@ PROGRAM master
     ! RespyCls instance.
     CALL store_results(mapping_state_idx, states_all, &
             periods_payoffs_systematic, states_number_period, periods_emax, &
-            num_periods, min_idx, crit_val)
+            num_periods, crit_val)
 
 END PROGRAM
 !*******************************************************************************

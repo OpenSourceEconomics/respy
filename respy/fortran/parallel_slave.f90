@@ -203,7 +203,6 @@ PROGRAM slave
     INTEGER(our_int)                :: num_slaves
     INTEGER(our_int)                :: PARENTCOMM
     INTEGER(our_int)                :: edu_start
-    INTEGER(our_int)                :: min_idx
     INTEGER(our_int)                :: period
     INTEGER(our_int)                :: count
     INTEGER(our_int)                :: rank
@@ -251,7 +250,7 @@ PROGRAM slave
     ! Read in model specification.
     CALL read_specification(num_periods, coeffs_a, coeffs_b, & 
             coeffs_edu, edu_start, coeffs_home, shocks_cholesky, & 
-            num_points, min_idx)
+            num_points)
 
     ALLOCATE(draws_emax(num_draws_emax, 4))
 

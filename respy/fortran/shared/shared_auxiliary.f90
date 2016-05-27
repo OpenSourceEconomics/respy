@@ -512,7 +512,7 @@ END FUNCTION
 !*******************************************************************************
 SUBROUTINE store_results(mapping_state_idx, states_all, &
                 periods_payoffs_systematic, states_number_period, &
-                periods_emax, num_periods, min_idx, crit_val)
+                periods_emax, num_periods, crit_val)
 
     !/* external objects        */
 
@@ -521,7 +521,6 @@ SUBROUTINE store_results(mapping_state_idx, states_all, &
     INTEGER(our_int), INTENT(IN)    :: states_number_period(:)
     INTEGER(our_int), INTENT(IN)    :: states_all(:,:,:)
     INTEGER(our_int), INTENT(IN)    :: num_periods
-    INTEGER(our_int), INTENT(IN)    :: min_idx
 
     REAL(our_dble), INTENT(IN)      :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
@@ -636,7 +635,7 @@ END SUBROUTINE
 !*******************************************************************************
 SUBROUTINE read_specification(num_periods, coeffs_a, coeffs_b, &
                 coeffs_edu, edu_start, coeffs_home, shocks_cholesky, & 
-                num_points, min_idx)
+                num_points)
 
     !
     !   This function serves as the replacement for the RespyCls and reads in
@@ -649,7 +648,6 @@ SUBROUTINE read_specification(num_periods, coeffs_a, coeffs_b, &
     INTEGER(our_int), INTENT(OUT)   :: num_periods
     INTEGER(our_int), INTENT(OUT)   :: num_points
     INTEGER(our_int), INTENT(OUT)   :: edu_start
-    INTEGER(our_int), INTENT(OUT)   :: min_idx
 
     REAL(our_dble), INTENT(OUT)     :: shocks_cholesky(4, 4)
     REAL(our_dble), INTENT(OUT)     :: coeffs_home(1)

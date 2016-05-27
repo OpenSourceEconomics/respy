@@ -27,7 +27,7 @@ VERSIONS = ['PYTHON', 'FORTRAN', 'F2PY']
 
 ''' Request
 '''
-seed = 3465 # 6216748723
+seed = 71150 # 6216748723
 
 
 ''' Error Reproduction
@@ -35,16 +35,13 @@ seed = 3465 # 6216748723
 cleanup_testing_infrastructure(True)
 
 np.random.seed(seed)
-import random
+
 # Construct test
-for _ in range(10000000):
-    seed = random.randrange(1, 100000)
-    np.random.seed(seed)
-    print(seed)
+for _ in range(1):
     test_dict = get_test_dict(PACKAGE_DIR + '/respy/tests')
     module, method = get_random_request(test_dict)
 
-    module, method = 'test_parallels', 'test_3'
+    module, method = 'test_integration', 'test_8'
     print(module, method)
     mod = importlib.import_module(module)
     test = getattr(mod.TestClass(), method)

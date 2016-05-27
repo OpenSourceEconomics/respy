@@ -1,4 +1,4 @@
-!*******************************************************************************
+    !*******************************************************************************
 !*******************************************************************************
 MODULE solve_fortran
 
@@ -21,8 +21,7 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, &
                 mapping_state_idx, periods_emax, states_all, coeffs_a, &
                 coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, &
                 periods_draws_emax, & 
-                num_periods, num_points, edu_start, & 
-                min_idx)
+                num_periods, num_points, edu_start)
 
     !/* external objects        */
 
@@ -36,7 +35,6 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, &
     INTEGER(our_int), INTENT(IN)                    :: num_periods
     INTEGER(our_int), INTENT(IN)                    :: num_points
     INTEGER(our_int), INTENT(IN)                    :: edu_start
-    INTEGER(our_int), INTENT(IN)                    :: min_idx
 
     REAL(our_dble), INTENT(IN)                      :: periods_draws_emax(:, :, :)
     REAL(our_dble), INTENT(IN)                      :: shocks_cholesky(:, :)
