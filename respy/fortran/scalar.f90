@@ -33,11 +33,8 @@ PROGRAM resfort
 ! Algorithm
 !-------------------------------------------------------------------------------
 
-    ! Read specification of model. This is the FORTRAN replacement for the 
-    ! RespyCls instance that carries the model parametrization for the
-    ! PYTHON/F2PY implementations.
-    CALL read_specification(coeffs_a, coeffs_b, &
-            coeffs_edu, coeffs_home, shocks_cholesky)
+    ! Read specification of model. This is the FORTRAN replacement for the RespyCls instance that carries the model parametrization for the PYTHON/F2PY implementations.
+    CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky)
 
     ! This part creates (or reads from disk) the draws for the Monte 
     ! Carlo integration of the EMAX. For is_debugging purposes, these might 
