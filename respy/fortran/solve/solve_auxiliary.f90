@@ -414,18 +414,18 @@ SUBROUTINE get_payoffs(emax_simulated, draws_emax, period, &
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-FUNCTION get_simulated_indicator(num_points_interp, num_states, period)
+FUNCTION get_simulated_indicator(num_points, num_states, period)
 
     !/* external objects        */
 
     INTEGER(our_int), INTENT(IN)      :: num_states
-    INTEGER(our_int), INTENT(IN)      :: num_points_interp
+    INTEGER(our_int), INTENT(IN)      :: num_points
     INTEGER(our_int), INTENT(IN)      :: period
 
     !/* internal objects        */
 
     INTEGER(our_int)                  :: candidates(num_states)
-    INTEGER(our_int)                  :: sample(num_points_interp)
+    INTEGER(our_int)                  :: sample(num_points)
     INTEGER(our_int)                  :: i
 
     LOGICAL                           :: is_simulated_container(num_states, num_periods)
@@ -466,13 +466,13 @@ FUNCTION get_simulated_indicator(num_points_interp, num_states, period)
     END IF
 
     ! Handle special cases
-    IF (num_points_interp .EQ. num_states) THEN
+    IF (num_points .EQ. num_states) THEN
 
         get_simulated_indicator = .TRUE.
 
         RETURN
 
-    ELSEIF (num_points_interp .GT. num_states) THEN
+    ELSEIF (num_points .GT. num_states) THEN
 
         PRINT *, ' Bad Request in interpolation code'
 
@@ -481,12 +481,12 @@ FUNCTION get_simulated_indicator(num_points_interp, num_states, period)
     END IF
 
     ! Draw a random sample
-    CALL random_choice(sample, candidates, num_states, num_points_interp)
+    CALL random_choice(sample, candidates, num_states, num_points)
 
     ! Update information indicator
     is_simulated = .False.
 
-    DO i = 1, num_points_interp
+    DO i = 1, num_points
 
         is_simulated(sample(i)) = .True.
 
@@ -829,7 +829,7 @@ SUBROUTINE logging_solution(indicator, period, num_states)
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE random_choice(sample, candidates, num_candidates, num_points_interp)
+SUBROUTINE random_choice(sample, candidates, num_candidates, num_draws)
 
   !
   ! Source
@@ -845,7 +845,7 @@ SUBROUTINE random_choice(sample, candidates, num_candidates, num_points_interp)
 
     INTEGER, INTENT(IN)           :: num_candidates
     INTEGER, INTENT(IN)           :: candidates(:)
-    INTEGER, INTENT(IN)           :: num_points_interp
+    INTEGER, INTENT(IN)           :: num_draws
 
     !/* internal objects    */
 
@@ -869,7 +869,7 @@ SUBROUTINE random_choice(sample, candidates, num_candidates, num_points_interp)
 
         l = INT(DBLE(num_candidates - j + 1) * u(1)) + 1
 
-        IF (l .GT. (num_points_interp - m)) THEN
+        IF (l .GT. (num_draws - m)) THEN
 
             CONTINUE
 
@@ -879,7 +879,7 @@ SUBROUTINE random_choice(sample, candidates, num_candidates, num_points_interp)
 
             sample(m) = candidates(j)
 
-            IF (m .GE. num_points_interp) THEN
+            IF (m .GE. num_draws) THEN
 
                 RETURN
 

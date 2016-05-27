@@ -22,7 +22,9 @@ MODULE shared_constants
 
     REAL(our_dble), PARAMETER :: pi        = 3.141592653589793238462643383279502884197_our_dble
     
-    ! Variables that are part of the FORTRAN initialization file.
+    ! Variables that are part of the FORTRAN initialization file and remain 
+    ! unchanged during the run. These are often used to construct explicit 
+    ! shaped arrays.
     INTEGER(our_int)            :: num_agents_est
     INTEGER(our_int)            :: num_draws_emax
     INTEGER(our_int)            :: num_draws_prob
