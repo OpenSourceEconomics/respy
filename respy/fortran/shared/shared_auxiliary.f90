@@ -500,7 +500,7 @@ SUBROUTINE store_results(mapping_state_idx, states_all, periods_payoffs_systemat
     INTEGER(our_int), INTENT(IN)    :: states_number_period(:)
     INTEGER(our_int), INTENT(IN)    :: states_all(:,:,:)
 
-    REAL(our_dble), INTENT(IN)      :: periods_payoffs_systematic(:, :, :)
+    REAL(our_dble), INTENT(IN)      :: periods_payoffs_systematic(num_periods, max_states_period, 4)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
     REAL(our_dble), INTENT(IN)      :: crit_val
 
