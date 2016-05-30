@@ -39,7 +39,6 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, mapping_
 
     INTEGER(our_int), ALLOCATABLE                   :: states_all_tmp(:, :, :)
 
-    INTEGER(our_int)                                :: max_states_period
     INTEGER(our_int)                                :: period
 
 !------------------------------------------------------------------------------
@@ -54,7 +53,7 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, mapping_
     ! Create the state space of the model
     CALL logging_solution(1)
 
-    CALL fort_create_state_space(states_all_tmp, states_number_period, mapping_state_idx, max_states_period)
+    CALL fort_create_state_space(states_all_tmp, states_number_period, mapping_state_idx)
 
     CALL logging_solution(-1)
 

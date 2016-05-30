@@ -17,14 +17,13 @@ MODULE solve_auxiliary
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_state_idx, max_states_period)
+SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_state_idx)
 
     !/* external objects        */
 
     INTEGER(our_int), INTENT(INOUT)     :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(INOUT)     :: states_number_period(:)
     INTEGER(our_int), INTENT(INOUT)     :: states_all(:, :, :)
-    INTEGER(our_int), INTENT(INOUT)     :: max_states_period
 
     !/* internals objects       */
 

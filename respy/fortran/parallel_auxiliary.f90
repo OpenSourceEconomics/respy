@@ -40,7 +40,6 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
 
     INTEGER(our_int), ALLOCATABLE                   :: states_all_tmp(:, :, :)
 
-    INTEGER(our_int)                                :: max_states_period
     INTEGER(our_int)                                :: num_states
     INTEGER(our_int)                                :: period
     INTEGER(our_int)            :: status
@@ -62,7 +61,7 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
 
     IF(is_myopic) CALL logging_solution(1)
 
-    CALL fort_create_state_space(states_all_tmp, states_number_period, mapping_state_idx, max_states_period)
+    CALL fort_create_state_space(states_all_tmp, states_number_period, mapping_state_idx)
 
     IF(is_myopic) CALL logging_solution(-1)
 

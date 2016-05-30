@@ -506,7 +506,6 @@ SUBROUTINE store_results(mapping_state_idx, states_all, periods_payoffs_systemat
 
     !/* internal objects        */
 
-    INTEGER(our_int)                :: max_states_period
     INTEGER(our_int)                :: period
     INTEGER(our_int)                :: i
     INTEGER(our_int)                :: j
@@ -515,10 +514,6 @@ SUBROUTINE store_results(mapping_state_idx, states_all, periods_payoffs_systemat
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
-
-    ! This is a break in design as otherwise I need to carry the integer up
-    ! from the solution level.
-    max_states_period = MAXVAL(states_number_period)
 
     IF (request == 'solve') THEN
 

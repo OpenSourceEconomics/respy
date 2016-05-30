@@ -47,6 +47,9 @@ MODULE shared_constants
     CHARACTER(225)              :: exec_dir
     CHARACTER(10)               :: request
 
+
+    INTEGER(our_int)            :: max_states_period
+
     ! Housekeeping variables
     INTEGER(our_int)            :: seed_inflated(15)
     INTEGER(our_int)            :: seed_size

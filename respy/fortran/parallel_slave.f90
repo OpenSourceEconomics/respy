@@ -170,7 +170,6 @@ PROGRAM slave
     INTEGER(our_int), ALLOCATABLE   :: num_emax_slaves(:, :)
     INTEGER(our_int), ALLOCATABLE   :: states_all(:, :, :)
     
-    INTEGER(our_int)                :: max_states_period
     INTEGER(our_int)                :: lower_bound
     INTEGER(our_int)                :: upper_bound
     INTEGER(our_int)                :: num_states
@@ -229,7 +228,7 @@ PROGRAM slave
 
     IF(rank == 0) CALL logging_solution(1)
 
-    CALL fort_create_state_space(states_all_tmp, states_number_period, mapping_state_idx, max_states_period)
+    CALL fort_create_state_space(states_all_tmp, states_number_period, mapping_state_idx)
 
     IF(rank == 0) CALL logging_solution(-1)
 
