@@ -43,7 +43,7 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
     INTEGER(our_int)                                :: max_states_period
     INTEGER(our_int)                                :: num_states
     INTEGER(our_int)                                :: period
-    INTEGER(our_int)                                :: status
+    INTEGER(our_int)            :: status
 
 !------------------------------------------------------------------------------
 ! Algorithm

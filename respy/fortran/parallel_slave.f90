@@ -19,15 +19,13 @@ MODULE slave_shared
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE distribute_inter(num_emax_slaves, period, periods_emax_slaves, periods_emax, rank, num_states, PARENTCOMM)
+SUBROUTINE distribute_inter(num_emax_slaves, period, periods_emax_slaves, periods_emax, num_states)
     
     !/* external objects  f      */
 
     INTEGER(our_int), INTENT(IN)    :: num_emax_slaves(:, :)
-    INTEGER(our_int), INTENT(IN)    :: PARENTCOMM
     INTEGER(our_int), INTENT(IN)    :: num_states
     INTEGER(our_int), INTENT(IN)    :: period
-    INTEGER(our_int), INTENT(IN)    :: rank
  
     REAL(our_dble), INTENT(IN)      :: periods_emax_slaves(:)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:)
@@ -38,15 +36,11 @@ SUBROUTINE distribute_inter(num_emax_slaves, period, periods_emax_slaves, period
     INTEGER(our_int), ALLOCATABLE   :: scounts(:)
     INTEGER(our_int), ALLOCATABLE   :: disps(:)
 
-    INTEGER(our_int)                :: num_slaves
     INTEGER(our_int)                :: i
 
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
-
-    ! Auxiliary objects
-    num_slaves = SIZE(num_emax_slaves, 2)
 
     ! Parameterize the communication.
     ALLOCATE(rcounts(num_slaves), scounts(num_slaves), disps(num_slaves))
@@ -62,15 +56,13 @@ SUBROUTINE distribute_inter(num_emax_slaves, period, periods_emax_slaves, period
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE distribute_information(num_emax_slaves, period, periods_emax_slaves, periods_emax, rank, num_states, PARENTCOMM)
+SUBROUTINE distribute_information(num_emax_slaves, period, periods_emax_slaves, periods_emax, num_states)
     
     !/* external objects        */
 
     INTEGER(our_int), INTENT(IN)    :: num_emax_slaves(:, :)
-    INTEGER(our_int), INTENT(IN)    :: PARENTCOMM
     INTEGER(our_int), INTENT(IN)    :: num_states
     INTEGER(our_int), INTENT(IN)    :: period
-    INTEGER(our_int), INTENT(IN)    :: rank
  
     REAL(our_dble), INTENT(IN)      :: periods_emax_slaves(:)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
@@ -81,7 +73,6 @@ SUBROUTINE distribute_information(num_emax_slaves, period, periods_emax_slaves, 
     INTEGER(our_int), ALLOCATABLE   :: scounts(:)
     INTEGER(our_int), ALLOCATABLE   :: disps(:)
 
-    INTEGER(our_int)                :: num_slaves
     INTEGER(our_int)                :: i
 
     REAL(our_dble)                  :: periods_emax_subset(num_states)
@@ -89,9 +80,6 @@ SUBROUTINE distribute_information(num_emax_slaves, period, periods_emax_slaves, 
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
-
-    ! Auxiliary objects
-    num_slaves = SIZE(num_emax_slaves, 2)
 
     ! Parameterize the communication.
     ALLOCATE(rcounts(num_slaves), scounts(num_slaves), disps(num_slaves))
@@ -113,14 +101,13 @@ SUBROUTINE distribute_information(num_emax_slaves, period, periods_emax_slaves, 
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE determine_workload(num_emax_slaves, num_slaves, states_number_period)
+SUBROUTINE determine_workload(num_emax_slaves, states_number_period)
 
     !/* external objects        */
 
     INTEGER(our_int), ALLOCATABLE, INTENT(OUT)   :: num_emax_slaves(:, :)
     
     INTEGER(our_int), INTENT(IN)    :: states_number_period(:)
-    INTEGER(our_int), INTENT(IN)    :: num_slaves
 
     !/* internal objects        */
 
@@ -187,11 +174,8 @@ PROGRAM slave
     INTEGER(our_int)                :: lower_bound
     INTEGER(our_int)                :: upper_bound
     INTEGER(our_int)                :: num_states
-    INTEGER(our_int)                :: num_slaves
-    INTEGER(our_int)                :: PARENTCOMM
     INTEGER(our_int)                :: period
     INTEGER(our_int)                :: count
-    INTEGER(our_int)                :: rank
     INTEGER(our_int)                :: task
     INTEGER(our_int)                :: k
 
@@ -212,14 +196,15 @@ PROGRAM slave
     REAL(our_dble)                  :: coeffs_b(6)
     REAL(our_dble)                  :: shifts(4)
 
+    LOGICAL, ALLOCATABLE            :: is_simulated(:)
+    
     LOGICAL                         :: STAY_AVAILABLE = .TRUE.
     LOGICAL                         :: any_interpolated, is_head
-
-     LOGICAL, ALLOCATABLE   :: is_simulated(:)
-     REAL(our_dble), ALLOCATABLE :: endogenous(:)
-     REAL(our_dble), ALLOCATABLE :: maxe(:), exogenous(:, :), predictions(:)
+    
+    REAL(our_dble), ALLOCATABLE     :: endogenous(:)
+    REAL(our_dble), ALLOCATABLE     :: maxe(:), exogenous(:, :), predictions(:)
      
-         INTEGER(our_int)                    :: seed_inflated(15)
+    INTEGER(our_int)                    :: seed_inflated(15)
     INTEGER(our_int)                    :: seed_size
 
 !------------------------------------------------------------------------------
@@ -251,7 +236,7 @@ PROGRAM slave
     ALLOCATE(periods_emax(num_periods, max_states_period))
 
     ! Determine workload and allocate communication information.
-    CALL determine_workload(num_emax_slaves, num_slaves, states_number_period)
+    CALL determine_workload(num_emax_slaves, states_number_period)
 
     states_all = states_all_tmp(:, :max_states_period, :)
     DEALLOCATE(states_all_tmp)
@@ -375,7 +360,7 @@ PROGRAM slave
 
                     ! Distribute exogenous information
                     ! TODO: POLYMORPHISM
-                    CALL distribute_inter(num_emax_slaves, period, endogenous_slaves, endogenous, rank, num_states, PARENTCOMM)
+                    CALL distribute_inter(num_emax_slaves, period, endogenous_slaves, endogenous, num_states)
                     
                     ! Create prediction model based on the random subset of points where the EMAX is actually simulated and thus endogenous and exogenous variables are available. For the interpolation  points, the actual values are used.
                     CALL get_predictions(predictions, endogenous, exogenous, maxe, is_simulated, num_states, is_head)
@@ -409,7 +394,7 @@ PROGRAM slave
 
                     END DO
                     
-                    CALL distribute_information(num_emax_slaves, period, periods_emax_slaves, periods_emax, rank, num_states, PARENTCOMM)
+                    CALL distribute_information(num_emax_slaves, period, periods_emax_slaves, periods_emax, num_states)
     
           
                 END IF

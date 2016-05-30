@@ -12,12 +12,13 @@ MODULE parallel_constants
 !   Parallel Inputs
 !------------------------------------------------------------------------------
     
-    ! MPI Constants
-    INTEGER(our_int)            :: ierr
+    ! MPI Variables
     INTEGER(our_int)            :: SLAVECOMM
-
-    ! Auxiliary variables that allow for explicit shape arrays.
-
+    INTEGER(our_int)            :: PARENTCOMM
+    INTEGER(our_int)            :: num_slaves
+    INTEGER(our_int)            :: ierr
+    INTEGER(our_int)            :: rank
+    
 !******************************************************************************
 !******************************************************************************
 END MODULE 
