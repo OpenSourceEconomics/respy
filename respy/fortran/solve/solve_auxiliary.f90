@@ -300,8 +300,7 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
             ! Constructing the dependent variable for all states, including the ones where simulation will take place. All information will be used in either the construction of the prediction model or the prediction step.
             CALL get_exogenous_variables(exogenous, maxe, period, num_states, periods_payoffs_systematic, shifts, mapping_state_idx, periods_emax, states_all)
 
-            ! Construct endogenous variables for the subset of simulation points.
-            ! The rest is set to missing value.
+            ! Construct endogenous variables for the subset of simulation points. The rest is set to missing value.
             CALL get_endogenous_variable(endogenous, period, num_states, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, is_simulated, maxe, draws_emax, shocks_cholesky)
 
             ! Create prediction model based on the random subset of points where the EMAX is actually simulated and thus endogenous and exogenous variables are available. For the interpolation points, the actual values are used.
