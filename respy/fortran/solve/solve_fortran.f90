@@ -30,10 +30,10 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, mapping_
 
     REAL(our_dble), INTENT(IN)                      :: periods_draws_emax(:, :, :)
     REAL(our_dble), INTENT(IN)                      :: shocks_cholesky(4, 4)
-    REAL(our_dble), INTENT(IN)                      :: coeffs_home(:)
-    REAL(our_dble), INTENT(IN)                      :: coeffs_edu(:)
-    REAL(our_dble), INTENT(IN)                      :: coeffs_a(:)
-    REAL(our_dble), INTENT(IN)                      :: coeffs_b(:)
+    REAL(our_dble), INTENT(IN)                      :: coeffs_home(1)
+    REAL(our_dble), INTENT(IN)                      :: coeffs_edu(3)
+    REAL(our_dble), INTENT(IN)                      :: coeffs_a(6)
+    REAL(our_dble), INTENT(IN)                      :: coeffs_b(6)
 
     !/* internal objects        */
 
