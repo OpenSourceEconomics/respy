@@ -135,8 +135,8 @@ SUBROUTINE fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_
 
     REAL(our_dble), INTENT(INOUT)       :: periods_payoffs_systematic(num_periods, max_states_period, 4)
 
-    REAL(our_dble), INTENT(IN)          :: coeffs_home(:)
-    REAL(our_dble), INTENT(IN)          :: coeffs_edu(:)
+    REAL(our_dble), INTENT(IN)          :: coeffs_home(1)
+    REAL(our_dble), INTENT(IN)          :: coeffs_edu(3)
     REAL(our_dble), INTENT(IN)          :: coeffs_a(:)
     REAL(our_dble), INTENT(IN)          :: coeffs_b(:)
 
