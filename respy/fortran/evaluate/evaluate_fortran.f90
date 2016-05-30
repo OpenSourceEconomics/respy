@@ -26,8 +26,8 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, pe
     REAL(our_dble), INTENT(OUT)     :: rslt
 
     REAL(our_dble), INTENT(IN)      :: periods_payoffs_systematic(num_periods, max_states_period, 4)
+    REAL(our_dble), INTENT(IN)      :: periods_draws_prob(num_periods, num_draws_prob, 4)
     REAL(our_dble), INTENT(IN)      :: data_array(num_agents_est * num_periods, 8)
-    REAL(our_dble), INTENT(IN)      :: periods_draws_prob(:, :, :)
     REAL(our_dble), INTENT(IN)      :: shocks_cholesky(4, 4)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
 
@@ -37,7 +37,18 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, pe
     !/* internal objects        */
 
     REAL(our_dble)                  :: crit_val(num_agents_est * num_periods)
+    REAL(our_dble)                  :: draws_prob_raw(num_draws_prob, 4)
+    REAL(our_dble)                  :: payoffs_systematic(4)
+    REAL(our_dble)                  :: crit_val_contrib
     REAL(our_dble)                  :: shocks_cov(4, 4)
+    REAL(our_dble)                  :: total_payoffs(4)
+    REAL(our_dble)                  :: draws_cond(4)
+    REAL(our_dble)                  :: draws_stan(4)
+    REAL(our_dble)                  :: prob_choice
+    REAL(our_dble)                  :: prob_wage
+    REAL(our_dble)                  :: prob_obs
+    REAL(our_dble)                  :: draws(4)
+    REAL(our_dble)                  :: dist
 
     INTEGER(our_int)                :: edu_lagged
     INTEGER(our_int)                :: counts(4)
@@ -51,18 +62,6 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, pe
     INTEGER(our_int)                :: s
     INTEGER(our_int)                :: k
     INTEGER(our_int)                :: j
-
-    REAL(our_dble)                  :: draws_prob_raw(num_draws_prob, 4)
-    REAL(our_dble)                  :: payoffs_systematic(4)
-    REAL(our_dble)                  :: crit_val_contrib
-    REAL(our_dble)                  :: total_payoffs(4)
-    REAL(our_dble)                  :: draws_cond(4)
-    REAL(our_dble)                  :: draws_stan(4)
-    REAL(our_dble)                  :: prob_choice
-    REAL(our_dble)                  :: prob_wage
-    REAL(our_dble)                  :: prob_obs
-    REAL(our_dble)                  :: draws(4)
-    REAL(our_dble)                  :: dist
 
     LOGICAL                         :: is_deterministic
     LOGICAL                         :: is_working
