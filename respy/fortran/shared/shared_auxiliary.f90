@@ -138,7 +138,7 @@ SUBROUTINE get_total_value(total_payoffs, period, payoffs_systematic, draws, map
     INTEGER(our_int), INTENT(IN)    :: k
 
     REAL(our_dble), INTENT(IN)      :: payoffs_systematic(4)
-    REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
+    REAL(our_dble), INTENT(IN)      :: periods_emax(num_periods, max_states_period)
     REAL(our_dble), INTENT(IN)      :: draws(4)
 
     !/* internal objects        */
@@ -196,7 +196,7 @@ SUBROUTINE get_future_payoffs(payoffs_future, is_inadmissible, mapping_state_idx
     INTEGER(our_int), INTENT(IN)    :: period
     INTEGER(our_int), INTENT(IN)    :: k
 
-    REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
+    REAL(our_dble), INTENT(IN)      :: periods_emax(num_periods, max_states_period)
 
     !/* internals objects       */
 

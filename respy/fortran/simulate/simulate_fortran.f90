@@ -26,7 +26,7 @@ SUBROUTINE fort_simulate(dataset, periods_payoffs_systematic, mapping_state_idx,
     REAL(our_dble), INTENT(IN)      :: periods_payoffs_systematic(num_periods, max_states_period, 4)
     REAL(our_dble), INTENT(IN)      :: periods_draws_sims(num_periods, num_agents_sim, 4)
     REAL(our_dble), INTENT(IN)      :: shocks_cholesky(4, 4)
-    REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
+    REAL(our_dble), INTENT(IN)      :: periods_emax(num_periods, max_states_period)
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
