@@ -99,18 +99,18 @@ def post(ctx):
 
     # Copy the RESFORT executables back to package directory
     os.mkdir(subdir)
-    shutil.copy('.bld/fortran/resfort_scalar', subdir)
+    shutil.move('.bld/fortran/resfort_scalar', subdir)
 
-    #shutil.copy('fortran/miscellaneous/testing/testing_parallel_scalar',
+    #shutil.move('fortran/miscellaneous/testing/testing_parallel_scalar',
     # subdir)
 
     try:
-        shutil.copy('fortran/resfort_parallel_master', subdir)
-        shutil.copy('fortran/resfort_parallel_slave', subdir)
+        shutil.move('fortran/resfort_parallel_master', subdir)
+        shutil.move('fortran/resfort_parallel_slave', subdir)
     except:
         pass
 
     # Copy the KW executable.
     src = '.bld/fortran/miscellaneous/kw_recomputation/kw_dp3asim'
-    shutil.copy(src, subdir)
+    shutil.move(src, subdir)
 

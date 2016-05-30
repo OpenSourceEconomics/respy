@@ -50,7 +50,7 @@ class CreateParallelExecutable(Task):
 
 
         cmd = 'mpif90 parallelism/parallel_constants.f90 ' \
-              'parallel_auxiliary.f90 parallel_master.f90 ' + '-o ' \
+              'parallelism/parallel_auxiliary.f90 resfort_parallel.f90 ' + '-o ' \
                                                    'resfort_parallel_master ' + \
               ' '.join(
                  DEBUG_OPTIONS) + ' -I' + inc_dir + ' -L' + lib_dir + ' ' \
@@ -58,7 +58,7 @@ class CreateParallelExecutable(Task):
                                                                       '-llapack '
         assert os.system(cmd) == 0
 
-        cmd = 'mpif90 parallelism/parallel_constants.f90 parallel_slave.f90 ' + '-o resfort_parallel_slave ' +\
+        cmd = 'mpif90 parallelism/parallel_constants.f90 parallelism/parallel_slave.f90 ' + '-o resfort_parallel_slave ' +\
               ' '.join(
             DEBUG_OPTIONS) + ' -I' + inc_dir + ' -L' + lib_dir + ' ' \
                                                                  '-lresfort ' \
@@ -105,7 +105,7 @@ def build(ctx):
     ctx.add_to_group(CreateF2pyInterfaces(env=ctx.env))
 
     # Compile scalar RESFORT executable.
-    ctx(features=['fc', 'fcprogram'], source='scalar.f90',
+    ctx(features=['fc', 'fcprogram'], source='resfort_scalar.f90',
         target='resfort_scalar')
 
     # Compile the parallel RESFORT executables.
