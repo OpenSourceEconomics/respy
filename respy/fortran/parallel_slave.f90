@@ -65,7 +65,7 @@ SUBROUTINE distribute_information(num_emax_slaves, period, periods_emax_slaves, 
     INTEGER(our_int), INTENT(IN)    :: period
  
     REAL(our_dble), INTENT(IN)      :: periods_emax_slaves(num_states)
-    REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
+    REAL(our_dble), INTENT(IN)      :: periods_emax(num_periods, max_states_period)
 
     !/* internal objects        */
 
