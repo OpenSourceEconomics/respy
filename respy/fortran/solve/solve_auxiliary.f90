@@ -234,9 +234,7 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
 
     !/* internals objects       */
 
-    INTEGER(our_int)                    :: seed_inflated(15)
     INTEGER(our_int)                    :: num_states
-    INTEGER(our_int)                    :: seed_size
     INTEGER(our_int)                    :: period
     INTEGER(our_int)                    :: k
 

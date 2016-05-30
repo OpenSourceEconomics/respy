@@ -253,8 +253,6 @@ SUBROUTINE create_draws(draws, num_draws, seed)
 
     !/* internal objects        */
 
-    INTEGER(our_int)                            :: seed_inflated(15)
-    INTEGER(our_int)                            :: seed_size
     INTEGER(our_int)                            :: period
     INTEGER(our_int)                            :: j
     INTEGER(our_int)                            :: i

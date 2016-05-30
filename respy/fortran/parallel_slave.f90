@@ -206,9 +206,6 @@ PROGRAM slave
     LOGICAL                         :: any_interpolated
     LOGICAL                         :: is_head
      
-    INTEGER(our_int)                :: seed_inflated(15)
-    INTEGER(our_int)                :: seed_size
-
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------

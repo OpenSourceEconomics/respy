@@ -47,6 +47,11 @@ MODULE shared_constants
     CHARACTER(225)              :: exec_dir
     CHARACTER(10)               :: request
 
+    ! Housekeeping variables
+    INTEGER(our_int)            :: seed_inflated(15)
+    INTEGER(our_int)            :: seed_size
+
+
     ! Variables that need to be aligned across FORTRAN and PYTHON 
     ! implementations.
     INTEGER(our_int), PARAMETER :: MISSING_INT  = -99_our_int
