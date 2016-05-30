@@ -449,11 +449,11 @@ SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, num_stat
     !/* external objects        */
 
     REAL(our_dble), INTENT(OUT)         :: independent_variables(:, :)
-    REAL(our_dble), INTENT(OUT)         :: maxe(:)
+    REAL(our_dble), INTENT(OUT)         :: maxe(num_states)
 
     REAL(our_dble), INTENT(IN)          :: periods_payoffs_systematic(:, :, :)
-    REAL(our_dble), INTENT(IN)          :: periods_emax(:, :)
-    REAL(our_dble), INTENT(IN)          :: shifts(:)
+    REAL(our_dble), INTENT(IN)          :: periods_emax(num_periods, max_states_period)
+    REAL(our_dble), INTENT(IN)          :: shifts(4)
 
     INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 4)
