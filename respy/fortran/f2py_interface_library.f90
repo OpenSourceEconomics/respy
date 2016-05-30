@@ -60,10 +60,10 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
 ! Algorithm
 !------------------------------------------------------------------------------
 
+    ! Assign global RESFORT variables 
     max_states_period = SIZE(states_all, 2)
 
-    !# Transfer auxiliary variable to global variable.
-
+    ! Transfer global RESFORT variables
     num_points_interp = num_points_interp_int
     is_interpolated = is_interpolated_int
     num_agents_est = num_agents_est_int
@@ -92,11 +92,7 @@ END SUBROUTINE
 !******************************************************************************
 SUBROUTINE f2py_solve(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, is_interpolated_int, num_draws_emax_int, num_periods_int, num_points_interp_int, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, min_idx_int, delta_int, periods_draws_emax, max_states_period_int)
     
-    !
-    ! The presence of max_states_period breaks the equality of interfaces. 
-    ! However, this is required so that the size of the return arguments is
-    ! known from the beginning.
-    !
+    ! The presence of max_states_period breaks the equality of interfaces.  However, this is required so that the size of the return arguments is known from the beginning.
 
     !/* external libraries      */
 
@@ -152,7 +148,7 @@ SUBROUTINE f2py_solve(periods_payoffs_systematic, states_number_period, mapping_
 ! Algorithm
 !----------------------------------------------------------------------------- 
 
-    !# Transfer auxiliary variable to global variable.
+    !# Transfer global RESFORT variables
     max_states_period = max_states_period_int
     num_points_interp = num_points_interp_int
     is_interpolated = is_interpolated_int
@@ -230,8 +226,10 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, 
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    !# Transfer auxiliary variable to global variable.
+    ! Assign global RESPFRT variables
     max_states_period = SIZE(states_all, 2)
+
+    ! Transfer global RESFORT variables
     num_points_interp = num_points_interp_int
     is_interpolated = is_interpolated_int
     num_agents_est = num_agents_est_int
@@ -287,16 +285,17 @@ SUBROUTINE f2py_simulate(dataset, periods_payoffs_systematic, mapping_state_idx,
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    !# This assignment is required to allow for the explicit shape arguments.
+    ! Assign global RESPFRT variables
     min_idx = SIZE(mapping_state_idx, 4)
     max_states_period = SIZE(states_all, 2)
 
-    !# Transfer auxiliary variable to global variable.
+    ! Transfer global RESFORT variables
     num_periods = num_periods_int
     edu_start = edu_start_int
     edu_max = edu_max_int
     delta = delta_int
 
+    ! Call function of interest
     CALL fort_simulate(dataset, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, num_agents_sim, periods_draws_sims, shocks_cholesky)
 
 END SUBROUTINE
@@ -342,9 +341,9 @@ SUBROUTINE f2py_backward_induction(periods_emax, num_periods_int, max_states_per
     max_states_period = max_states_period_int
     num_points_interp = num_points_interp_int
     is_interpolated = is_interpolated_int
+    num_draws_emax = num_draws_emax_int
     num_periods = num_periods_int
     edu_start = edu_start_int
-    num_draws_emax = num_draws_emax_int
     is_debug = is_debug_int
     edu_max = edu_max_int
     delta = delta_int
@@ -384,7 +383,7 @@ SUBROUTINE f2py_create_state_space(states_all, states_number_period, mapping_sta
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    !# Transfer auxiliary variable to global variable.
+    !# Transfer global RESFORT variables
     max_states_period = max_states_period_int
     num_periods = num_periods_int
     edu_start = edu_start_int
@@ -429,9 +428,12 @@ SUBROUTINE f2py_calculate_payoffs_systematic(periods_payoffs_systematic, num_per
 ! Algorithm
 !------------------------------------------------------------------------------
     
+    ! Transfer global RESOFORT variables
     max_states_period = max_states_period_int
     num_periods = num_periods_int
     edu_start = edu_start_int
+
+    ! Call function of interest
     CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
 
 END SUBROUTINE

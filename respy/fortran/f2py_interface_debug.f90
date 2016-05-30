@@ -22,6 +22,7 @@ SUBROUTINE wrapper_normal_pdf(rslt, x, mean, sd)
 ! Algorithm
 !------------------------------------------------------------------------------
 
+    ! Call function of interest
     rslt = normal_pdf(x, mean, sd)
 
 END SUBROUTINE
@@ -49,6 +50,7 @@ SUBROUTINE wrapper_pinv(rslt, A, m)
 ! Algorithm
 !------------------------------------------------------------------------------
 
+    ! Call function of interest
     rslt = pinv(A, m)
     
 END SUBROUTINE
@@ -78,6 +80,7 @@ SUBROUTINE wrapper_svd(U, S, VT, A, m)
 ! Algorithm
 !------------------------------------------------------------------------------
     
+    ! Call function of interest
     CALL svd(U, S, VT, A, m)
 
 END SUBROUTINE
@@ -115,17 +118,19 @@ SUBROUTINE wrapper_get_future_value(emax_simulated, num_periods_int, num_draws_e
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
-
-    !# Transfer auxiliary variable to global variable.
+    
+    ! Assign global RESFORT variables
     max_states_period = SIZE(states_all, 2)
     min_idx = SIZE(mapping_state_idx, 4)
-    num_draws_emax = num_draws_emax_int
-    edu_start = edu_start_int
-    num_periods = num_periods_int
 
+    !# Transfer global RESFORT variables
+    num_draws_emax = num_draws_emax_int
+    num_periods = num_periods_int
+    edu_start = edu_start_int
     edu_max = edu_max_int
     delta = delta_int
 
+    ! Call function of interest
     CALL get_future_value(emax_simulated, draws_emax, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, shocks_cholesky)
 
 END SUBROUTINE
@@ -150,7 +155,8 @@ SUBROUTINE wrapper_standard_normal(draw, dim)
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
-    
+
+    ! Call function of interest
     CALL standard_normal(draw)
 
 END SUBROUTINE 
@@ -175,7 +181,8 @@ SUBROUTINE wrapper_determinant(det, A)
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
-    
+
+    ! Call function of interest
     det = determinant(A)
 
 END SUBROUTINE
@@ -203,6 +210,7 @@ SUBROUTINE wrapper_inverse(inv, A, n)
 ! Algorithm
 !------------------------------------------------------------------------------
 
+    ! Call function of interest
     inv = inverse(A, n)
 
 END SUBROUTINE
@@ -227,7 +235,8 @@ SUBROUTINE wrapper_trace(rslt, A)
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
-    
+
+    ! Call function of interest
     rslt = trace_fun(A)
 
 END SUBROUTINE
@@ -256,7 +265,8 @@ SUBROUTINE wrapper_clip_value(clipped_value, value, lower_bound, upper_bound, nu
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
-    
+
+    ! Call function of interest
     clipped_value = clip_value(value, lower_bound, upper_bound)
 
 
@@ -289,6 +299,7 @@ SUBROUTINE wrapper_get_pred_info(r_squared, bse, Y, P, X, num_states, num_covars
 ! Algorithm
 !------------------------------------------------------------------------------
 
+    ! Call function of interest
     CALL get_pred_info(r_squared, bse, Y, P, X, num_states, num_covars)
 
 END SUBROUTINE
@@ -316,7 +327,8 @@ SUBROUTINE wrapper_point_predictions(Y, X, coeffs, num_states)
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
-    
+
+    ! Call function of interest
     CALL point_predictions(Y, X, coeffs, num_states)
 
 END SUBROUTINE
@@ -348,9 +360,11 @@ SUBROUTINE wrapper_get_predictions(predictions, endogenous, exogenous, maxe, is_
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
-
+    
+    ! Transfer global RESFORT variables
     num_points_interp = num_points_interp_int
 
+    ! Call function of interest
     CALL get_predictions(predictions, endogenous, exogenous, maxe, is_simulated, num_states)
 
 END SUBROUTINE
@@ -378,8 +392,8 @@ SUBROUTINE wrapper_random_choice(sample, candidates, num_candidates, num_points)
 ! Algorithm
 !------------------------------------------------------------------------------
 
+    ! Call function of interest
      CALL random_choice(sample, candidates, num_candidates, num_points)
-
 
 END SUBROUTINE
 !******************************************************************************
@@ -407,7 +421,8 @@ SUBROUTINE wrapper_get_coefficients(coeffs, Y, X, num_covars, num_states)
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
-    
+
+    ! Call function of interest
     CALL get_coefficients(coeffs, Y, X, num_covars, num_states)
 
 END SUBROUTINE
@@ -450,14 +465,14 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_perio
 ! Algorithm
 !------------------------------------------------------------------------------
     
+    ! Transfer global RESFORT variables
     num_draws_emax = num_draws_emax_int
-        edu_start = edu_start_int
-
-        num_periods = num_periods_int
-
+    num_periods = num_periods_int
+    edu_start = edu_start_int
     edu_max = edu_max_int
     delta = delta_int
 
+    ! Call function of interest
     CALL get_endogenous_variable(exogenous_variable, period, num_states, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, is_simulated, maxe, draws_emax, shocks_cholesky)
 
 END SUBROUTINE
@@ -496,16 +511,17 @@ SUBROUTINE wrapper_get_exogenous_variables(independent_variables, maxe, period, 
 ! Algorithm
 !------------------------------------------------------------------------------
 
+    !# Assign global RESFORT variables
     max_states_period = SIZE(states_all, 2)
     min_idx = SIZE(mapping_state_idx, 4)
 
-    !# Transfer auxiliary variable to global variable.
+    !# Transfer global RESFORT variables
     num_periods = num_periods_int
     edu_start = edu_start_int
-
     edu_max = edu_max_int
     delta = delta_int
 
+    ! Call function of interest
     CALL get_exogenous_variables(independent_variables, maxe,  period, num_states, periods_payoffs_systematic, shifts, mapping_state_idx, periods_emax, states_all)
             
 END SUBROUTINE
@@ -535,8 +551,12 @@ SUBROUTINE wrapper_get_simulated_indicator(is_simulated, num_points, num_states,
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
+
+    !# Transfer global RESFORT variables
     num_periods = num_periods_int
     is_debug = is_debug_int
+
+    ! Call function of interest
     is_simulated = get_simulated_indicator(num_points, num_states, period)
 
 END SUBROUTINE
