@@ -497,7 +497,7 @@ SUBROUTINE store_results(mapping_state_idx, states_all, periods_payoffs_systemat
 
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
-    INTEGER(our_int), INTENT(IN)    :: states_number_period(:)
+    INTEGER(our_int), INTENT(IN)    :: states_number_period(num_periods)
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
 
     REAL(our_dble), INTENT(IN)      :: periods_payoffs_systematic(num_periods, max_states_period, 4)

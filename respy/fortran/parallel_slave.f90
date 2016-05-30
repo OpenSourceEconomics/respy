@@ -107,7 +107,7 @@ SUBROUTINE determine_workload(num_emax_slaves, states_number_period)
 
     INTEGER(our_int), ALLOCATABLE, INTENT(OUT)   :: num_emax_slaves(:, :)
     
-    INTEGER(our_int), INTENT(IN)    :: states_number_period(:)
+    INTEGER(our_int), INTENT(IN)    :: states_number_period(num_periods)
 
     !/* internal objects        */
 

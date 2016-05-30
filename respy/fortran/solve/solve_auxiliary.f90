@@ -22,7 +22,7 @@ SUBROUTINE fort_create_state_space(states_all_tmp, states_number_period, mapping
     !/* external objects        */
 
     INTEGER(our_int), INTENT(INOUT)     :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
-    INTEGER(our_int), INTENT(INOUT)     :: states_number_period(:)
+    INTEGER(our_int), INTENT(INOUT)     :: states_number_period(num_periods)
     INTEGER(our_int), INTENT(INOUT)     :: states_all_tmp(:, :, :)
 
     !/* internals objects       */
@@ -140,7 +140,7 @@ SUBROUTINE fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_
     REAL(our_dble), INTENT(IN)          :: coeffs_a(:)
     REAL(our_dble), INTENT(IN)          :: coeffs_b(:)
 
-    INTEGER(our_int), INTENT(IN)        :: states_number_period(:)
+    INTEGER(our_int), INTENT(IN)        :: states_number_period(num_periods)
     INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 4)
 
     !/* internals objects       */
@@ -228,7 +228,7 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
     REAL(our_dble), INTENT(IN)          :: shocks_cholesky(4, 4)
 
     INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
-    INTEGER(our_int), INTENT(IN)        :: states_number_period(:)
+    INTEGER(our_int), INTENT(IN)        :: states_number_period(num_periods)
     INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 4)
 
     !/* internals objects       */
