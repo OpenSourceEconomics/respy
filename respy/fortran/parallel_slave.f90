@@ -28,7 +28,7 @@ SUBROUTINE distribute_inter(num_emax_slaves, period, endogenous_slaves, endogeno
     INTEGER(our_int), INTENT(IN)    :: period
  
     REAL(our_dble), INTENT(IN)      :: endogenous_slaves(num_states)
-    REAL(our_dble), INTENT(IN)      :: endogenous(:)
+    REAL(our_dble), INTENT(INOUT)      :: endogenous(:)
 
     !/* internal objects        */
 
@@ -65,7 +65,7 @@ SUBROUTINE distribute_information(num_emax_slaves, period, periods_emax_slaves, 
     INTEGER(our_int), INTENT(IN)    :: period
  
     REAL(our_dble), INTENT(IN)      :: periods_emax_slaves(num_states)
-    REAL(our_dble), INTENT(IN)      :: periods_emax(num_periods, max_states_period)
+    REAL(our_dble), INTENT(INOUT)      :: periods_emax(num_periods, max_states_period)
 
     !/* internal objects        */
 
@@ -75,7 +75,7 @@ SUBROUTINE distribute_information(num_emax_slaves, period, periods_emax_slaves, 
 
     INTEGER(our_int)                :: i
 
-    REAL(our_dble)                  :: periods_emax_subset(num_states)
+    REAL(our_dble)                  :: periods_emax_subset(num_states), temporary(max_states_period)
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -90,8 +90,8 @@ SUBROUTINE distribute_information(num_emax_slaves, period, periods_emax_slaves, 
     END DO
     
     ! Aggregate the EMAX contributions across the slaves.    
-    CALL MPI_ALLGATHERV(periods_emax_slaves, scounts(rank + 1), MPI_DOUBLE, periods_emax(period + 1, :), rcounts, disps, MPI_DOUBLE, MPI_COMM_WORLD, ierr)
-
+    CALL MPI_ALLGATHERV(periods_emax_slaves, scounts(rank + 1), MPI_DOUBLE, temporary, rcounts, disps, MPI_DOUBLE, MPI_COMM_WORLD, ierr)
+    periods_emax(period + 1, :) = temporary
     ! The leading slave updates the master period by period.
     periods_emax_subset = periods_emax(period + 1, :num_states)
     IF (rank == 0) THEN
@@ -154,6 +154,7 @@ PROGRAM slave
 
     USE resfort_library
 
+    USE parallel_constants
     USE slave_shared    
 
     USE mpi
@@ -188,6 +189,8 @@ PROGRAM slave
     REAL(our_dble), ALLOCATABLE     :: predictions(:)
     REAL(our_dble), ALLOCATABLE     :: endogenous(:)
     REAL(our_dble), ALLOCATABLE     :: maxe(:)
+
+    REAL(our_dble), ALLOCATABLE     :: temporary_subset(:)
 
     REAL(our_dble)                  :: shocks_cholesky(4, 4)
     REAL(our_dble)                  :: payoffs_systematic(4)
@@ -369,7 +372,13 @@ PROGRAM slave
 
                     ! The leading slave updates the master period by period.
                     IF (rank == 0) THEN
-                        CALL MPI_SEND(periods_emax(period + 1, :num_states), num_states, MPI_DOUBLE, 0, period, PARENTCOMM, ierr)    
+                        ALLOCATE(temporary_subset(num_states))
+                        temporary_subset = periods_emax(period + 1, :num_states)
+                        CALL MPI_SEND(temporary_subset, num_states, MPI_DOUBLE, 0, period, PARENTCOMM, ierr)    
+
+                        DEALLOCATE(temporary_subset)
+
+
                     END IF
                     ! Deallocate containers
                     DEALLOCATE(is_simulated); DEALLOCATE(exogenous); DEALLOCATE(maxe);

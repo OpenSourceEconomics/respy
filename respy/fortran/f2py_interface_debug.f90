@@ -118,6 +118,7 @@ SUBROUTINE wrapper_simulate_emax(emax_simulated, num_periods_int, num_draws_emax
 
     !# Transfer auxiliary variable to global variable.
     max_states_period = SIZE(states_all, 2)
+    min_idx = SIZE(mapping_state_idx, 4)
     num_draws_emax = num_draws_emax_int
     edu_start = edu_start_int
     num_periods = num_periods_int
@@ -494,6 +495,9 @@ SUBROUTINE wrapper_get_exogenous_variables(independent_variables, maxe, period, 
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
+
+    max_states_period = SIZE(states_all, 2)
+    min_idx = SIZE(mapping_state_idx, 4)
 
     !# Transfer auxiliary variable to global variable.
     num_periods = num_periods_int

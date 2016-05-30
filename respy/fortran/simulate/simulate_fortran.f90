@@ -35,6 +35,8 @@ SUBROUTINE fort_simulate(dataset, periods_payoffs_systematic, mapping_state_idx,
     !/* internal objects        */
 
     REAL(our_dble)                  :: periods_draws_sims_transformed(num_periods, num_agents_sim, 4)
+    REAL(our_dble)                  :: draws_sims_transformed(num_agents_sim, 4)
+    REAL(our_dble)                  :: draws_sims(num_agents_sim, 4)
 
     INTEGER(our_int)                :: current_state(4)
     INTEGER(our_int)                :: edu_lagged
@@ -57,7 +59,10 @@ SUBROUTINE fort_simulate(dataset, periods_payoffs_systematic, mapping_state_idx,
 
     !Standard deviates transformed to the distributions relevant for the agents actual decision making as traversing the tree.
     DO period = 1, num_periods
-        CALL transform_disturbances(periods_draws_sims_transformed(period, :, :), periods_draws_sims(period, :, :), shocks_cholesky, num_agents_sim)
+        draws_sims = periods_draws_sims(period, :, :)
+        CALL transform_disturbances(draws_sims_transformed, draws_sims, shocks_cholesky, num_agents_sim)
+        periods_draws_sims_transformed(period, :, :) = draws_sims_transformed
+
     END DO
 
     ! Initialize containers

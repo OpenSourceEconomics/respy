@@ -52,13 +52,3 @@ for idx in range(1000):
     respy_obj = RespyCls('test.respy.ini')
     simulate(respy_obj)
     np.testing.assert_almost_equal(evaluate(respy_obj), crit_val)
-    #
-    # test = (init_dict, crit_val)
-    #
-    # new_tests += [test]
-    #
-    # pkl.dump(new_tests, open(fname, 'wb'))
-    #
-    #
-    #
-    #
