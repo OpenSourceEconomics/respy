@@ -99,10 +99,10 @@ SUBROUTINE transform_disturbances(draws_transformed, draws, shocks_cholesky, num
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(OUT)     :: draws_transformed(:, :)
+    REAL(our_dble), INTENT(OUT)     :: draws_transformed(num_draws, 4)
 
     REAL(our_dble), INTENT(IN)      :: shocks_cholesky(4, 4)
-    REAL(our_dble), INTENT(IN)      :: draws(:, :)
+    REAL(our_dble), INTENT(IN)      :: draws(num_draws, 4)
 
     INTEGER, INTENT(IN)             :: num_draws
 
@@ -497,8 +497,8 @@ SUBROUTINE store_results(mapping_state_idx, states_all, periods_payoffs_systemat
 
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
-    INTEGER(our_int), INTENT(IN)    :: states_number_period(num_periods)
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
+    INTEGER(our_int), INTENT(IN)    :: states_number_period(num_periods)
 
     REAL(our_dble), INTENT(IN)      :: periods_payoffs_systematic(num_periods, max_states_period, 4)
     REAL(our_dble), INTENT(IN)      :: periods_emax(num_periods, max_states_period)
