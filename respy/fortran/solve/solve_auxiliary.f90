@@ -8,6 +8,8 @@ MODULE solve_auxiliary
 
     USE shared_constants
 
+    USE shared_utilities
+
 	!/*	setup	*/
 
     IMPLICIT NONE
@@ -555,18 +557,24 @@ END SUBROUTINE
 !******************************************************************************
 SUBROUTINE get_predictions(predictions, endogenous, exogenous, maxe, is_simulated, num_states, is_write)
 
+    ! DEVELOPMENT NOTE
+    !
+    !   The exogenous array remains assumed shape for now due to the 
+    !   modification for the STRUCT_RECOMPUTATION project.
+    !
+
     !/* external objects        */
 
-    REAL(our_dble), INTENT(OUT)       :: predictions(:)
+    REAL(our_dble), INTENT(OUT)       :: predictions(num_states)
 
     REAL(our_dble), INTENT(IN)        :: exogenous(:, :)
-    REAL(our_dble), INTENT(IN)        :: endogenous(:)
-    REAL(our_dble), INTENT(IN)        :: maxe(:)
+    REAL(our_dble), INTENT(IN)        :: endogenous(num_states)
+    REAL(our_dble), INTENT(IN)        :: maxe(num_states)
 
     INTEGER, INTENT(IN)               :: num_states
 
+    LOGICAL, INTENT(IN)               :: is_simulated(num_states)
     LOGICAL, OPTIONAL, INTENT(IN)     :: is_write
-    LOGICAL, INTENT(IN)               :: is_simulated(:)
 
 
     !/* internal objects        */
@@ -654,9 +662,9 @@ SUBROUTINE logging_prediction_model(coeffs, r_squared, bse)
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(IN)      :: coeffs(:)
+    REAL(our_dble), INTENT(IN)      :: coeffs(6)
     REAL(our_dble), INTENT(IN)      :: r_squared
-    REAL(our_dble), INTENT(IN)      :: bse(:)
+    REAL(our_dble), INTENT(IN)      :: bse(1)
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -752,162 +760,6 @@ SUBROUTINE logging_solution(indicator, period, num_states)
   CLOSE(99)
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
-SUBROUTINE random_choice(sample, candidates, num_candidates, num_draws)
-
-  !
-  ! Source
-  ! ------
-  !
-  !   KNUTH, D. The art of computer programming. Vol II.
-  !     Seminumerical Algorithms. Reading, Mass: AddisonWesley, 1969
-  !
-
-    !/* external objects    */
-
-    INTEGER, INTENT(OUT)          :: sample(:)
-
-    INTEGER, INTENT(IN)           :: num_candidates
-    INTEGER, INTENT(IN)           :: candidates(:)
-    INTEGER, INTENT(IN)           :: num_draws
-
-    !/* internal objects    */
-
-    INTEGER(our_int)              :: m
-    INTEGER(our_int)              :: j
-    INTEGER(our_int)              :: l
-
-    REAL(our_dble)                :: u(1)
-
-!------------------------------------------------------------------------------
-! Algorithm
-!------------------------------------------------------------------------------
-
-    ! Initialize auxiliary objects
-    m = 0
-
-    ! Draw random points from candidates
-    DO j = 1, num_candidates
-
-        CALL RANDOM_NUMBER(u)
-
-        l = INT(DBLE(num_candidates - j + 1) * u(1)) + 1
-
-        IF (l .GT. (num_draws - m)) THEN
-
-            CONTINUE
-
-        ELSE
-
-            m = m + 1
-
-            sample(m) = candidates(j)
-
-            IF (m .GE. num_draws) THEN
-
-                RETURN
-
-            END IF
-
-        END IF
-
-    END DO
-
-
-END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
-SUBROUTINE svd(U, S, VT, A, m)
-
-    !/* external objects        */
-
-    REAL(our_dble), INTENT(OUT)     :: VT(:, :)
-    REAL(our_dble), INTENT(OUT)     :: U(:, :)
-    REAL(our_dble), INTENT(OUT)     :: S(:)
-
-    REAL(our_dble), INTENT(IN)      :: A(:, :)
-
-    INTEGER(our_int), INTENT(IN)    :: m
-
-    !/* internal objects        */
-
-    INTEGER(our_int)                :: LWORK
-    INTEGER(our_int)                :: INFO
-
-    REAL(our_dble), ALLOCATABLE     :: IWORK(:)
-    REAL(our_dble), ALLOCATABLE     :: WORK(:)
-
-!------------------------------------------------------------------------------
-! Algorithm
-!------------------------------------------------------------------------------
-
-    ! Auxiliary objects
-    LWORK =  M * (7 + 4 * M)
-
-    ! Allocate containers
-    ALLOCATE(WORK(LWORK)); ALLOCATE(IWORK(8 * M))
-
-    ! Call LAPACK routine
-    CALL DGESDD( 'A', m, m, A, m, S, U, m, VT, m, WORK, LWORK, IWORK, INFO)
-
-END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
-FUNCTION pinv(A, m)
-
-    !/* external objects        */
-
-    REAL(our_dble)                  :: pinv(m, m)
-
-    REAL(our_dble), INTENT(IN)      :: A(:, :)
-
-    INTEGER(our_int), INTENT(IN)    :: m
-
-
-    !/* internal objects        */
-
-    INTEGER(our_int)                :: i
-
-    REAL(our_dble)                  :: VT(m, m)
-    REAL(our_dble)                  :: UT(m, m)
-    REAL(our_dble)                  :: U(m, m)
-    REAL(our_dble)                  :: cutoff
-    REAL(our_dble)                  :: S(m)
-
-!------------------------------------------------------------------------------
-! Algorithm
-!------------------------------------------------------------------------------
-
-    CALL svd(U, S, VT, A, m)
-
-    cutoff = 1e-15_our_dble * MAXVAL(S)
-
-    DO i = 1, M
-
-        IF (S(i) .GT. cutoff) THEN
-
-            S(i) = one_dble / S(i)
-
-        ELSE
-
-            S(i) = zero_dble
-
-        END IF
-
-    END DO
-
-    UT = TRANSPOSE(U)
-
-    DO i = 1, M
-
-        pinv(i, :) = S(i) * UT(i,:)
-
-    END DO
-
-    pinv = MATMUL(TRANSPOSE(VT), pinv)
-
-END FUNCTION
 !******************************************************************************
 !******************************************************************************
 SUBROUTINE get_coefficients(coeffs, Y, X, num_covars, num_states)
@@ -1083,11 +935,11 @@ SUBROUTINE simulate_emax(emax_simulated, period, k, draws_emax, payoffs_systemat
     INTEGER(our_int), INTENT(IN)    :: period
     INTEGER(our_int), INTENT(IN)    :: k
 
-    REAL(our_dble), INTENT(IN)      :: payoffs_systematic(:)
-    REAL(our_dble), INTENT(IN)      :: shocks_cholesky(4, 4)
     REAL(our_dble), INTENT(IN)      :: periods_emax(num_periods, max_states_period)
-    REAL(our_dble), INTENT(IN)      :: draws_emax(:, :)
-
+    REAL(our_dble), INTENT(IN)      :: draws_emax(num_draws_emax, 4)
+    REAL(our_dble), INTENT(IN)      :: payoffs_systematic(4)
+    REAL(our_dble), INTENT(IN)      :: shocks_cholesky(4, 4)
+ 
     !/* internals objects    */
 
     INTEGER(our_int)                :: i
