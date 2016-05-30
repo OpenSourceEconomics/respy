@@ -23,7 +23,7 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, mapping_
 
     INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: mapping_state_idx(:, :, :, :, :)
     INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: states_number_period(:)
-    INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: states_all(:, :, :)
+    INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: states_all(num_periods, max_states_period, 4)
 
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_emax(: ,:)
