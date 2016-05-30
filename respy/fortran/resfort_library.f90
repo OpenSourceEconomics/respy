@@ -6,6 +6,8 @@ MODULE resfort_library
 
     USE shared_constants
 
+    USE shared_utilities
+
 
     USE solve_fortran
 
