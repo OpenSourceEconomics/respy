@@ -83,7 +83,7 @@ SUBROUTINE wrapper_svd(U, S, VT, A, m)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE wrapper_simulate_emax(emax_simulated, num_periods_int, num_draws_emax_int, period, k, draws_emax, payoffs_systematic, edu_max_int, edu_start_int, periods_emax, states_all, mapping_state_idx, delta_int, shocks_cholesky)
+SUBROUTINE wrapper_get_future_value(emax_simulated, num_periods_int, num_draws_emax_int, period, k, draws_emax, payoffs_systematic, edu_max_int, edu_start_int, periods_emax, states_all, mapping_state_idx, delta_int, shocks_cholesky)
 
     !/* external libraries      */
 
@@ -126,7 +126,7 @@ SUBROUTINE wrapper_simulate_emax(emax_simulated, num_periods_int, num_draws_emax
     edu_max = edu_max_int
     delta = delta_int
 
-    CALL simulate_emax(emax_simulated, draws_emax, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, shocks_cholesky)
+    CALL get_future_value(emax_simulated, draws_emax, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, shocks_cholesky)
 
 END SUBROUTINE
 !******************************************************************************

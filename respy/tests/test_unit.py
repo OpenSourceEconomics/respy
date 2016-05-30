@@ -11,7 +11,7 @@ from codes.auxiliary import write_interpolation_grid
 from codes.random_init import generate_init
 
 from respy.python.solve.solve_auxiliary import logging_solution
-from respy.python.solve.solve_auxiliary import simulate_emax
+from respy.python.solve.solve_auxiliary import get_future_value
 
 from respy.python.estimate.estimate_auxiliary import get_optim_paras
 from respy.python.estimate.estimate_auxiliary import dist_optim_paras
@@ -89,8 +89,8 @@ class TestClass(object):
             payoffs_systematic, edu_max, edu_start, periods_emax, states_all,
             mapping_state_idx, delta, shocks_cholesky)
 
-        py = simulate_emax(*args)
-        f90 = fort_debug.wrapper_simulate_emax(*args)
+        py = get_future_value(*args)
+        f90 = fort_debug.wrapper_get_future_value(*args)
 
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 

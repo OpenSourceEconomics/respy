@@ -237,7 +237,7 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
                 payoffs_systematic = periods_payoffs_systematic[period, k, :]
 
                 # Simulate the expected future value.
-                emax = simulate_emax(num_periods, num_draws_emax, period, k,
+                emax = get_future_value(num_periods, num_draws_emax, period, k,
                     draws_emax, payoffs_systematic, edu_max, edu_start,
                     periods_emax, states_all, mapping_state_idx, delta,
                     shocks_cholesky)
@@ -334,7 +334,7 @@ def get_endogenous_variable(period, num_periods, num_states, delta,
         payoffs_systematic = periods_payoffs_systematic[period, k, :]
 
         # Simulate the expected future value.
-        emax_simulated = simulate_emax(num_periods, num_draws_emax, period, k,
+        emax_simulated = get_future_value(num_periods, num_draws_emax, period, k,
             draws_emax, payoffs_systematic, edu_max, edu_start, periods_emax,
             states_all, mapping_state_idx, delta, shocks_cholesky)
 
@@ -474,7 +474,7 @@ def check_input(respy_obj):
     return True
 
 
-def simulate_emax(num_periods, num_draws_emax, period, k, draws_emax,
+def get_future_value(num_periods, num_draws_emax, period, k, draws_emax,
         payoffs_systematic, edu_max, edu_start, periods_emax, states_all,
         mapping_state_idx, delta, shocks_cholesky):
     """ Simulate expected future value.
