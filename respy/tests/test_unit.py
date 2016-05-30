@@ -390,6 +390,9 @@ class TestClass(object):
         states_all, states_number_period = pyth[:2]
         mapping_state_idx, max_states_period = pyth[2:]
 
+        # Cutting to size
+        states_all = states_all[:, :max(states_number_period), :]
+        
         # Check calculation of systematic components of payoffs.
         args = (num_periods, states_number_period, states_all, edu_start,
             coeffs_a, coeffs_b, coeffs_edu, coeffs_home, max_states_period)

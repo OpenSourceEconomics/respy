@@ -17,13 +17,13 @@ MODULE solve_auxiliary
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_state_idx)
+SUBROUTINE fort_create_state_space(states_all_tmp, states_number_period, mapping_state_idx)
 
     !/* external objects        */
 
     INTEGER(our_int), INTENT(INOUT)     :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(INOUT)     :: states_number_period(:)
-    INTEGER(our_int), INTENT(INOUT)     :: states_all(:, :, :)
+    INTEGER(our_int), INTENT(INOUT)     :: states_all_tmp(:, :, :)
 
     !/* internals objects       */
 
@@ -42,7 +42,7 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
     ! Initialize output
     states_number_period = MISSING_INT
     mapping_state_idx    = MISSING_INT
-    states_all           = MISSING_INT
+    states_all_tmp       = MISSING_INT
 
     ! Construct state space by periods
     DO period = 0, (num_periods - 1)
@@ -99,10 +99,10 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
                         END IF
 
                         ! Collect all possible realizations of state space
-                        states_all(period + 1, k + 1, 1) = exp_a
-                        states_all(period + 1, k + 1, 2) = exp_b
-                        states_all(period + 1, k + 1, 3) = edu
-                        states_all(period + 1, k + 1, 4) = edu_lagged
+                        states_all_tmp(period + 1, k + 1, 1) = exp_a
+                        states_all_tmp(period + 1, k + 1, 2) = exp_b
+                        states_all_tmp(period + 1, k + 1, 3) = edu
+                        states_all_tmp(period + 1, k + 1, 4) = edu_lagged
 
                         ! Collect mapping of state space to array index.
                         mapping_state_idx(period + 1, exp_a + 1, exp_b + 1, edu + 1 , edu_lagged + 1) = k
@@ -141,7 +141,7 @@ SUBROUTINE fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_
     REAL(our_dble), INTENT(IN)          :: coeffs_b(:)
 
     INTEGER(our_int), INTENT(IN)        :: states_number_period(:)
-    INTEGER(our_int), INTENT(IN)        :: states_all(:, :, :)
+    INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 4)
 
     !/* internals objects       */
 
@@ -229,7 +229,7 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
 
     INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)        :: states_number_period(:)
-    INTEGER(our_int), INTENT(IN)        :: states_all(:, :, :)
+    INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 4)
 
     !/* internals objects       */
 
@@ -346,7 +346,7 @@ SUBROUTINE get_payoffs(emax_simulated, draws_emax, period, k, payoffs_systematic
     REAL(our_dble), INTENT(IN)          :: draws_emax(:, :)
 
     INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
-    INTEGER(our_int), INTENT(IN)        :: states_all(:, :, :)
+    INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 4)
     INTEGER(our_int), INTENT(IN)        :: period
     INTEGER(our_int), INTENT(IN)        :: k
 
@@ -456,7 +456,7 @@ SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, num_stat
     REAL(our_dble), INTENT(IN)          :: shifts(:)
 
     INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
-    INTEGER(our_int), INTENT(IN)        :: states_all(:, :, :)
+    INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 4)
     INTEGER(our_int), INTENT(IN)        :: num_states
     INTEGER(our_int), INTENT(IN)        :: period
 
@@ -510,7 +510,7 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_states, periods_payof
     REAL(our_dble), INTENT(IN)          :: maxe(:)
 
     INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
-    INTEGER(our_int), INTENT(IN)        :: states_all(:, :, :)
+    INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 4)
     INTEGER(our_int), INTENT(IN)        :: num_states
     INTEGER(our_int), INTENT(IN)        :: period
 
@@ -1079,7 +1079,7 @@ SUBROUTINE simulate_emax(emax_simulated, period, k, draws_emax, payoffs_systemat
     REAL(our_dble), INTENT(OUT)     :: emax_simulated
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
-    INTEGER(our_int), INTENT(IN)    :: states_all(:, :, :)
+    INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
     INTEGER(our_int), INTENT(IN)    :: period
     INTEGER(our_int), INTENT(IN)    :: k
 
