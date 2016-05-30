@@ -22,7 +22,6 @@ PROGRAM master
     INTEGER(our_int), ALLOCATABLE   :: states_number_period(:)
     INTEGER(our_int), ALLOCATABLE   :: states_all(:, :, :)
 
-
     REAL(our_dble), ALLOCATABLE     :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_draws_prob(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_emax(:, :)
@@ -59,7 +58,7 @@ PROGRAM master
         ! Read observed dataset from disk.
         CALL read_dataset(data_array, num_agents_est)
 
-        ! Solve the model for a given parametrization in parallel  s
+        ! Solve the model for a given parametrization in parallel.
         CALL fort_solve_parallel(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky)
         
        ! TODO: Parallelize
@@ -68,8 +67,7 @@ PROGRAM master
     END IF
 
     ! Cleanup
-    OPEN(UNIT=1, FILE='.model.resfort.ini')
-    CLOSE(1, STATUS='delete')
+    OPEN(UNIT=1, FILE='.model.resfort.ini'); CLOSE(1, STATUS='delete')
     
     ! Store results. These are read in by the PYTHON wrapper and added to the  RespyCls instance.
     CALL store_results(mapping_state_idx, states_all, periods_payoffs_systematic, states_number_period, periods_emax, crit_val)

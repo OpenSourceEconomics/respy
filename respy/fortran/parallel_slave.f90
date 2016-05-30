@@ -23,11 +23,11 @@ SUBROUTINE distribute_inter(num_emax_slaves, period, periods_emax_slaves, period
     
     !/* external objects  f      */
 
-    INTEGER(our_int), INTENT(IN)    :: num_emax_slaves(:, :)
+    INTEGER(our_int), INTENT(IN)    :: num_emax_slaves(num_periods, num_slaves)
     INTEGER(our_int), INTENT(IN)    :: num_states
     INTEGER(our_int), INTENT(IN)    :: period
  
-    REAL(our_dble), INTENT(IN)      :: periods_emax_slaves(:)
+    REAL(our_dble), INTENT(IN)      :: periods_emax_slaves(num_states)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:)
 
     !/* internal objects        */
@@ -60,11 +60,11 @@ SUBROUTINE distribute_information(num_emax_slaves, period, periods_emax_slaves, 
     
     !/* external objects        */
 
-    INTEGER(our_int), INTENT(IN)    :: num_emax_slaves(:, :)
+    INTEGER(our_int), INTENT(IN)    :: num_emax_slaves(num_periods, num_slaves)
     INTEGER(our_int), INTENT(IN)    :: num_states
     INTEGER(our_int), INTENT(IN)    :: period
  
-    REAL(our_dble), INTENT(IN)      :: periods_emax_slaves(:)
+    REAL(our_dble), INTENT(IN)      :: periods_emax_slaves(num_states)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
 
     !/* internal objects        */
@@ -185,6 +185,10 @@ PROGRAM slave
     REAL(our_dble), ALLOCATABLE     :: endogenous_slaves(:)
     REAL(our_dble), ALLOCATABLE     :: periods_emax(:, :)
     REAL(our_dble), ALLOCATABLE     :: draws_emax(:, :)
+    REAL(our_dble), ALLOCATABLE     :: exogenous(:, :)
+    REAL(our_dble), ALLOCATABLE     :: predictions(:)
+    REAL(our_dble), ALLOCATABLE     :: endogenous(:)
+    REAL(our_dble), ALLOCATABLE     :: maxe(:)
 
     REAL(our_dble)                  :: shocks_cholesky(4, 4)
     REAL(our_dble)                  :: payoffs_systematic(4)
@@ -199,13 +203,11 @@ PROGRAM slave
     LOGICAL, ALLOCATABLE            :: is_simulated(:)
     
     LOGICAL                         :: STAY_AVAILABLE = .TRUE.
-    LOGICAL                         :: any_interpolated, is_head
-    
-    REAL(our_dble), ALLOCATABLE     :: endogenous(:)
-    REAL(our_dble), ALLOCATABLE     :: maxe(:), exogenous(:, :), predictions(:)
+    LOGICAL                         :: any_interpolated
+    LOGICAL                         :: is_head
      
-    INTEGER(our_int)                    :: seed_inflated(15)
-    INTEGER(our_int)                    :: seed_size
+    INTEGER(our_int)                :: seed_inflated(15)
+    INTEGER(our_int)                :: seed_size
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -226,6 +228,7 @@ PROGRAM slave
     ALLOCATE(mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2))
     ALLOCATE(states_all_tmp(num_periods, 100000, 4))
     ALLOCATE(states_number_period(num_periods))
+
 
     IF(rank == 0) CALL logging_solution(1)
 

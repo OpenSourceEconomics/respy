@@ -18,7 +18,7 @@ MODULE parallel_constants
     INTEGER(our_int)            :: num_slaves
     INTEGER(our_int)            :: ierr
     INTEGER(our_int)            :: rank
-    
+        
 !******************************************************************************
 !******************************************************************************
 END MODULE 
