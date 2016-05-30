@@ -49,8 +49,8 @@ class CreateParallelExecutable(Task):
         # #
 
 
-        cmd = 'mpif90 parallelism/parallel_constants.f90 ' \
-              'parallelism/parallel_auxiliary.f90 resfort_parallel.f90 ' + '-o ' \
+        cmd = 'mpif90 parallelism/parallelism_constants.f90 ' \
+              'parallelism/parallelism_auxiliary.f90 resfort_parallel.f90 ' + '-o ' \
                                                    'resfort_parallel_master ' + \
               ' '.join(
                  DEBUG_OPTIONS) + ' -I' + inc_dir + ' -L' + lib_dir + ' ' \
@@ -58,7 +58,7 @@ class CreateParallelExecutable(Task):
                                                                       '-llapack '
         assert os.system(cmd) == 0
 
-        cmd = 'mpif90 parallelism/parallel_constants.f90 parallelism/parallel_slave.f90 ' + '-o resfort_parallel_slave ' +\
+        cmd = 'mpif90 parallelism/parallelism_constants.f90 parallelism/parallelism_slave.f90 ' + '-o resfort_parallel_slave ' +\
               ' '.join(
             DEBUG_OPTIONS) + ' -I' + inc_dir + ' -L' + lib_dir + ' ' \
                                                                  '-lresfort ' \
