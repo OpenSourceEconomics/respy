@@ -26,7 +26,7 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, mapping_
     INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: states_all(:, :, :)
 
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_payoffs_systematic(:, :, :)
-    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_emax(:, :)
+    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_emax(: ,:)
 
     REAL(our_dble), INTENT(IN)                      :: periods_draws_emax(:, :, :)
     REAL(our_dble), INTENT(IN)                      :: shocks_cholesky(4, 4)

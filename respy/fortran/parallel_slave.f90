@@ -19,7 +19,7 @@ MODULE slave_shared
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE distribute_inter(num_emax_slaves, period, periods_emax_slaves, periods_emax, num_states)
+SUBROUTINE distribute_inter(num_emax_slaves, period, endogenous_slaves, endogenous, num_states)
     
     !/* external objects  f      */
 
@@ -27,8 +27,8 @@ SUBROUTINE distribute_inter(num_emax_slaves, period, periods_emax_slaves, period
     INTEGER(our_int), INTENT(IN)    :: num_states
     INTEGER(our_int), INTENT(IN)    :: period
  
-    REAL(our_dble), INTENT(IN)      :: periods_emax_slaves(num_states)
-    REAL(our_dble), INTENT(IN)      :: periods_emax(:)
+    REAL(our_dble), INTENT(IN)      :: endogenous_slaves(num_states)
+    REAL(our_dble), INTENT(IN)      :: endogenous(:)
 
     !/* internal objects        */
 
@@ -51,7 +51,7 @@ SUBROUTINE distribute_inter(num_emax_slaves, period, periods_emax_slaves, period
     END DO
     
     ! Aggregate the EMAX contributions across the slaves.    
-    CALL MPI_ALLGATHERV(periods_emax_slaves, scounts(rank + 1), MPI_DOUBLE, periods_emax, rcounts, disps, MPI_DOUBLE, MPI_COMM_WORLD, ierr)
+    CALL MPI_ALLGATHERV(endogenous_slaves, scounts(rank + 1), MPI_DOUBLE, endogenous, rcounts, disps, MPI_DOUBLE, MPI_COMM_WORLD, ierr)
 
 END SUBROUTINE
 !******************************************************************************
