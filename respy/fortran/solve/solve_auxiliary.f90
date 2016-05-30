@@ -340,10 +340,10 @@ SUBROUTINE get_payoffs(emax_simulated, draws_emax, period, k, payoffs_systematic
 
     REAL(our_dble), INTENT(OUT)         :: emax_simulated
 
-    REAL(our_dble), INTENT(IN)          :: shocks_cholesky(4, 4)
-    REAL(our_dble), INTENT(IN)          :: payoffs_systematic(:)
     REAL(our_dble), INTENT(IN)          :: periods_emax(num_periods, max_states_period)
-    REAL(our_dble), INTENT(IN)          :: draws_emax(:, :)
+    REAL(our_dble), INTENT(IN)          :: draws_emax(num_draws_emax, 4)
+    REAL(our_dble), INTENT(IN)          :: shocks_cholesky(4, 4)
+    REAL(our_dble), INTENT(IN)          :: payoffs_systematic(4)
 
     INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 4)
