@@ -224,7 +224,7 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
     REAL(our_dble), INTENT(INOUT)       :: periods_emax(num_periods, max_states_period)
 
     REAL(our_dble), INTENT(IN)          :: periods_payoffs_systematic(num_periods, max_states_period, 4)
-    REAL(our_dble), INTENT(IN)          :: periods_draws_emax(:, :, :)
+    REAL(our_dble), INTENT(IN)          :: periods_draws_emax(num_periods, num_draws_emax, 4)
     REAL(our_dble), INTENT(IN)          :: shocks_cholesky(4, 4)
 
     INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
