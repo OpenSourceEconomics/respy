@@ -10,8 +10,6 @@ import scipy
 from codes.auxiliary import write_interpolation_grid
 from codes.random_init import generate_init
 
-from respy.python.solve.solve_auxiliary import get_payoffs
-
 from respy.python.solve.solve_auxiliary import logging_solution
 from respy.python.solve.solve_auxiliary import simulate_emax
 
@@ -45,57 +43,6 @@ class TestClass(object):
     """ This class groups together some tests.
     """
     def test_1(self):
-        """ This function compares the results from the payoff functions across
-        implementations.
-        """
-        for i in range(5):
-
-            # Generate random initialization file
-            generate_init()
-
-            # Perform toolbox actions
-            respy_obj = RespyCls('test.respy.ini')
-            respy_obj = solve(respy_obj)
-
-            # Extract class attributes
-            periods_payoffs_systematic, states_number_period, \
-                mapping_state_idx, periods_emax, model_paras, num_periods, \
-                states_all, num_draws_emax, edu_start, is_debug, edu_max, \
-                delta = \
-                    dist_class_attributes(respy_obj,
-                        'periods_payoffs_systematic', 'states_number_period',
-                        'mapping_state_idx', 'periods_emax', 'model_paras',
-                        'num_periods', 'states_all', 'num_draws_emax',
-                        'edu_start', 'is_debug', 'edu_max', 'delta')
-
-            # Extract auxiliary objects
-            shocks_cholesky = dist_model_paras(model_paras, is_debug)[-1]
-
-            # Iterate over a couple of admissible points
-            for j in range(10):
-
-                # Select random points
-                period = np.random.choice(range(num_periods))
-                k = np.random.choice(range(states_number_period[period]))
-
-                # Finalize extraction of ingredients
-                payoffs_systematic = periods_payoffs_systematic[period, k, :]
-                draws_emax = np.random.sample((num_draws_emax, 4))
-
-                # Extract payoffs using PYTHON and FORTRAN codes.
-                args = (num_draws_emax, draws_emax, period, k,
-                    payoffs_systematic, edu_max, edu_start, mapping_state_idx,
-                    states_all, num_periods, periods_emax, delta,
-                    shocks_cholesky)
-
-                py = get_payoffs(*args)
-                f90 = fort_debug.wrapper_get_payoffs(*args)
-
-                # Compare returned array on expected future values, ex post
-                # payoffs, and future payoffs.
-                np.testing.assert_array_almost_equal(py, f90)
-
-    def test_2(self):
         """ Compare the evaluation of the criterion function for the ambiguity
         optimization and the simulated expected future value between the FORTRAN
         and PYTHON implementations. These tests are set up a separate test case
@@ -147,7 +94,7 @@ class TestClass(object):
 
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
-    def test_3(self):
+    def test_2(self):
         """ Compare results between FORTRAN and PYTHON of selected
         hand-crafted functions. In test_97() we test FORTRAN implementations
         against PYTHON intrinsic routines.
@@ -207,7 +154,7 @@ class TestClass(object):
             for i in range(2):
                 np.testing.assert_almost_equal(py[i], f90[i])
 
-    def test_4(self):
+    def test_3(self):
         """ Compare results between FORTRAN and PYTHON of selected functions. The
         file fortran/debug_interface.f90 provides the F2PY bindings.
         """
@@ -332,7 +279,7 @@ class TestClass(object):
         for j, state in enumerate(states):
             assert ((states_all[2, j, :] == state).all())
 
-    def test_6(self):
+    def test_4(self):
         """ Testing whether back-and-forth transformation have no effect.
         """
         # Generate random request
@@ -352,7 +299,7 @@ class TestClass(object):
             # Checks
             np.testing.assert_allclose(base, x)
 
-    def test_7(self):
+    def test_5(self):
         """ Testing the core functions of the solution step for the equality
         of results between the PYTHON and FORTRAN implementations.
         """

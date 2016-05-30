@@ -321,7 +321,7 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
                 ! Extract payoffs
                 payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
-                CALL get_payoffs(emax_simulated, draws_emax, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, shocks_cholesky)
+                CALL simulate_emax(emax_simulated, draws_emax, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, shocks_cholesky)
 
                 ! Collect information
                 periods_emax(period + 1, k + 1) = emax_simulated
@@ -331,32 +331,6 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
         END IF
 
     END DO
-
-END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
-SUBROUTINE get_payoffs(emax_simulated, draws_emax, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, shocks_cholesky)
-
-    !/* external objects        */
-
-    REAL(our_dble), INTENT(OUT)         :: emax_simulated
-
-    REAL(our_dble), INTENT(IN)          :: periods_emax(num_periods, max_states_period)
-    REAL(our_dble), INTENT(IN)          :: draws_emax(num_draws_emax, 4)
-    REAL(our_dble), INTENT(IN)          :: shocks_cholesky(4, 4)
-    REAL(our_dble), INTENT(IN)          :: payoffs_systematic(4)
-
-    INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
-    INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 4)
-    INTEGER(our_int), INTENT(IN)        :: period
-    INTEGER(our_int), INTENT(IN)        :: k
-
-!------------------------------------------------------------------------------
-! Algorithm
-!------------------------------------------------------------------------------
-
-    ! Simulated expected future value
-    CALL simulate_emax(emax_simulated, period, k, draws_emax, payoffs_systematic, periods_emax, states_all, mapping_state_idx, shocks_cholesky)
 
 END SUBROUTINE
 !******************************************************************************
@@ -544,7 +518,7 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_states, periods_payof
         payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
         ! Get payoffs
-        CALL get_payoffs(emax_simulated, draws_emax, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, shocks_cholesky)
+        CALL simulate_emax(emax_simulated, draws_emax, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, shocks_cholesky)
 
         ! Construct dependent variable
         endogenous(k + 1) = emax_simulated - maxe(k + 1)
@@ -923,7 +897,7 @@ SUBROUTINE get_pred_info(r_squared, bse, observed, predicted, exogenous, num_sta
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE simulate_emax(emax_simulated, period, k, draws_emax, payoffs_systematic, periods_emax, states_all, mapping_state_idx, shocks_cholesky)
+SUBROUTINE simulate_emax(emax_simulated, draws_emax, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, shocks_cholesky)
 
     !/* external objects    */
 

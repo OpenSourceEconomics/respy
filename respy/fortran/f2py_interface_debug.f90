@@ -126,7 +126,7 @@ SUBROUTINE wrapper_simulate_emax(emax_simulated, num_periods_int, num_draws_emax
     edu_max = edu_max_int
     delta = delta_int
 
-    CALL simulate_emax(emax_simulated, period, k, draws_emax, payoffs_systematic, periods_emax, states_all, mapping_state_idx, shocks_cholesky)
+    CALL simulate_emax(emax_simulated, draws_emax, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, shocks_cholesky)
 
 END SUBROUTINE
 !******************************************************************************
@@ -539,57 +539,6 @@ SUBROUTINE wrapper_get_simulated_indicator(is_simulated, num_points, num_states,
     is_debug = is_debug_int
     is_simulated = get_simulated_indicator(num_points, num_states, period)
 
-END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
-SUBROUTINE wrapper_get_payoffs(emax_simulated, num_draws_emax_int, draws_emax, period, k, payoffs_systematic, edu_max_int, edu_start_int, mapping_state_idx, states_all, num_periods_int, periods_emax, delta_int, shocks_cholesky)
-
-
-    !/* external libraries      */
-
-    USE resfort_library
-
-    !/* setup                   */
-
-    IMPLICIT NONE
-
-    !/* external objects        */
-
-    DOUBLE PRECISION, INTENT(OUT)       :: emax_simulated
-
-    DOUBLE PRECISION, INTENT(IN)        :: payoffs_systematic(:)
-    DOUBLE PRECISION, INTENT(IN)        :: shocks_cholesky(4, 4)
-    DOUBLE PRECISION, INTENT(IN)        :: periods_emax(:, :)
-    DOUBLE PRECISION, INTENT(IN)        :: draws_emax(:, :)
-    DOUBLE PRECISION, INTENT(IN)        :: delta_int
-
-    INTEGER, INTENT(IN)                 :: mapping_state_idx(:, :, :, :, :)
-    INTEGER, INTENT(IN)                 :: states_all(:, :, :)
-    INTEGER, INTENT(IN)                 :: num_draws_emax_int
-    INTEGER, INTENT(IN)                 :: edu_max_int
-    INTEGER, INTENT(IN)                 :: num_periods_int
-    INTEGER, INTENT(IN)                 :: edu_start_int
-    INTEGER, INTENT(IN)                 :: period
-    INTEGER, INTENT(IN)                 :: k 
-    
-!------------------------------------------------------------------------------
-! Algorithm
-!------------------------------------------------------------------------------
-
-    !# This assignment is required to allow for the explicit shape arguments.
-    max_states_period = SIZE(states_all, 2)
-    min_idx = SIZE(mapping_state_idx, 4)
-
-    !# Transfer auxiliary variable to global variable.
-    num_periods = num_periods_int
-    edu_start = edu_start_int
-
-    num_draws_emax = num_draws_emax_int
-    edu_max = edu_max_int
-    delta = delta_int
-
-    CALL get_payoffs(emax_simulated, draws_emax, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, shocks_cholesky)
-    
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************

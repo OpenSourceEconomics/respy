@@ -349,7 +349,7 @@ PROGRAM slave
                         payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
                         ! Get payoffs
-                        CALL get_payoffs(emax_simulated, draws_emax, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, shocks_cholesky)
+                        CALL simulate_emax(emax_simulated, draws_emax, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, shocks_cholesky)
 
                         ! Construct dependent variable
                         endogenous_slaves(count) = emax_simulated - maxe(k + 1)
@@ -393,7 +393,7 @@ PROGRAM slave
                         ! Extract payoffs
                         payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
-                        CALL get_payoffs(emax_simulated, draws_emax, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, shocks_cholesky)
+                        CALL simulate_emax(emax_simulated, draws_emax, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, shocks_cholesky)
 
                         ! Collect information
                         periods_emax_slaves(count) = emax_simulated
