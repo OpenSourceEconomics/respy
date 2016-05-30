@@ -25,22 +25,19 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, pe
 
     REAL(our_dble), INTENT(OUT)     :: rslt
 
-
     REAL(our_dble), INTENT(IN)      :: periods_payoffs_systematic(num_periods, max_states_period, 4)
+    REAL(our_dble), INTENT(IN)      :: data_array(num_agents_est * num_periods, 8)
+    REAL(our_dble), INTENT(IN)      :: periods_draws_prob(:, :, :)
+    REAL(our_dble), INTENT(IN)      :: shocks_cholesky(4, 4)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:, :)
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
 
-    REAL(our_dble), INTENT(IN)      :: periods_draws_prob(:, :, :)
-    REAL(our_dble), INTENT(IN)      :: shocks_cholesky(4, 4)
-    REAL(our_dble), INTENT(IN)      :: data_array(:, :)
-
     !/* internal objects        */
 
+    REAL(our_dble)                  :: crit_val(num_agents_est * num_periods)
     REAL(our_dble)                  :: shocks_cov(4, 4)
-
-    REAL(our_dble), ALLOCATABLE     :: crit_val(:)
 
     INTEGER(our_int)                :: edu_lagged
     INTEGER(our_int)                :: counts(4)
@@ -79,7 +76,7 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, pe
     is_deterministic = ALL(shocks_cov .EQ. zero_dble)
 
     ! Initialize container for likelihood contributions
-    ALLOCATE(crit_val(num_agents_est * num_periods)); crit_val = zero_dble
+    crit_val = zero_dble
 
     j = 1
 
