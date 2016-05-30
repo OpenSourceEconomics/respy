@@ -501,20 +501,20 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_states, periods_payof
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(OUT)         :: endogenous(:)
+    REAL(our_dble), INTENT(OUT)         :: endogenous(num_states)
 
-    REAL(our_dble), INTENT(IN)          :: periods_payoffs_systematic(:, :, :)
+    REAL(our_dble), INTENT(IN)          :: periods_payoffs_systematic(num_periods, max_states_period, 4)
+    REAL(our_dble), INTENT(IN)          :: periods_emax(num_periods, max_states_period)
+    REAL(our_dble), INTENT(IN)          :: draws_emax(num_periods, max_states_period)
     REAL(our_dble), INTENT(IN)          :: shocks_cholesky(4, 4)
-    REAL(our_dble), INTENT(IN)          :: periods_emax(:, :)
-    REAL(our_dble), INTENT(IN)          :: draws_emax(:, :)
-    REAL(our_dble), INTENT(IN)          :: maxe(:)
+    REAL(our_dble), INTENT(IN)          :: maxe(num_states)
 
     INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 4)
     INTEGER(our_int), INTENT(IN)        :: num_states
     INTEGER(our_int), INTENT(IN)        :: period
 
-    LOGICAL, INTENT(IN)                 :: is_simulated(:)
+    LOGICAL, INTENT(IN)                 :: is_simulated(num_states)
 
     !/* internal objects        */
 
@@ -565,7 +565,7 @@ SUBROUTINE get_predictions(predictions, endogenous, exogenous, maxe, is_simulate
 
     INTEGER, INTENT(IN)               :: num_states
 
-    LOGICAL, OPTIONAL, INTENT(IN)  :: is_write
+    LOGICAL, OPTIONAL, INTENT(IN)     :: is_write
     LOGICAL, INTENT(IN)               :: is_simulated(:)
 
 
