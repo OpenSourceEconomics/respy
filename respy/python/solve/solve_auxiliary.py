@@ -237,9 +237,9 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
                 payoffs_systematic = periods_payoffs_systematic[period, k, :]
 
                 # Simulate the expected future value.
-                emax = get_payoffs(num_draws_emax, draws_emax, period, k,
-                    payoffs_systematic, edu_max, edu_start, mapping_state_idx,
-                    states_all, num_periods, periods_emax, delta,
+                emax = simulate_emax(num_periods, num_draws_emax, period, k,
+                    draws_emax, payoffs_systematic, edu_max, edu_start,
+                    periods_emax, states_all, mapping_state_idx, delta,
                     shocks_cholesky)
 
                 # Store results
@@ -334,9 +334,9 @@ def get_endogenous_variable(period, num_periods, num_states, delta,
         payoffs_systematic = periods_payoffs_systematic[period, k, :]
 
         # Simulate the expected future value.
-        emax_simulated = get_payoffs(num_draws_emax, draws_emax, period, k,
-            payoffs_systematic, edu_max, edu_start, mapping_state_idx,
-            states_all, num_periods, periods_emax, delta, shocks_cholesky)
+        emax_simulated = simulate_emax(num_periods, num_draws_emax, period, k,
+            draws_emax, payoffs_systematic, edu_max, edu_start, periods_emax,
+            states_all, mapping_state_idx, delta, shocks_cholesky)
 
         # Construct dependent variable
         endogenous_variable[k] = emax_simulated - maxe[k]
@@ -472,20 +472,6 @@ def check_input(respy_obj):
 
     # Finishing
     return True
-
-
-def get_payoffs(num_draws_emax, draws_emax, period, k, payoffs_systematic,
-        edu_max, edu_start, mapping_state_idx, states_all, num_periods,
-        periods_emax, delta, shocks_cholesky):
-    """ Simulate expected future value under risk.
-    """
-    # Simulate expected future value.
-    emax = simulate_emax(num_periods, num_draws_emax, period, k, draws_emax,
-        payoffs_systematic, edu_max, edu_start, periods_emax, states_all,
-        mapping_state_idx, delta, shocks_cholesky)
-
-    # Finishing
-    return emax
 
 
 def simulate_emax(num_periods, num_draws_emax, period, k, draws_emax,
