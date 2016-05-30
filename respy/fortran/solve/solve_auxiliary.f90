@@ -133,7 +133,7 @@ SUBROUTINE fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(INOUT)       :: periods_payoffs_systematic(:, :, :)
+    REAL(our_dble), INTENT(INOUT)       :: periods_payoffs_systematic(num_periods, max_states_period, 4)
 
     REAL(our_dble), INTENT(IN)          :: coeffs_home(:)
     REAL(our_dble), INTENT(IN)          :: coeffs_edu(:)
@@ -223,7 +223,7 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
 
     REAL(our_dble), INTENT(INOUT)       :: periods_emax(:, :)
 
-    REAL(our_dble), INTENT(IN)          :: periods_payoffs_systematic(:, :, :)
+    REAL(our_dble), INTENT(IN)          :: periods_payoffs_systematic(num_periods, max_states_period, 4)
     REAL(our_dble), INTENT(IN)          :: periods_draws_emax(:, :, :)
     REAL(our_dble), INTENT(IN)          :: shocks_cholesky(4, 4)
 
