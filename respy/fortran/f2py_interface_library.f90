@@ -60,7 +60,10 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
 ! Algorithm
 !------------------------------------------------------------------------------
 
+    max_states_period = SIZE(states_all, 2)
+
     !# Transfer auxiliary variable to global variable.
+
     num_points_interp = num_points_interp_int
     is_interpolated = is_interpolated_int
     num_agents_est = num_agents_est_int
@@ -228,6 +231,7 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, 
 !------------------------------------------------------------------------------
 
     !# Transfer auxiliary variable to global variable.
+    max_states_period = SIZE(states_all, 2)
     num_points_interp = num_points_interp_int
     is_interpolated = is_interpolated_int
     num_agents_est = num_agents_est_int
