@@ -331,7 +331,6 @@ class TestClass(object):
         pyth = pyth_create_state_space(*args)
         f2py = f2py_create_state_space(*args)
         for i in range(4):
-            print(i)
             np.testing.assert_allclose(pyth[i], f2py[i])
 
         # Carry some results from the state space creation for future use.
