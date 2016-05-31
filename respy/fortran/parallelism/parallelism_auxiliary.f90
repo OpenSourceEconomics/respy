@@ -142,7 +142,7 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
     INTEGER(our_int)                                :: period
     INTEGER(our_int)            :: status
 
-    REAL(our_dble), ALLOCATABLE :: temporary_subset(:)
+    !REAL(our_dble), ALLOCATABLE :: temporary_subset(:)
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -159,12 +159,12 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
 
             num_states = states_number_period(period + 1)
 
-            ALLOCATE(temporary_subset(num_states))
-            CALL MPI_RECV(temporary_subset, num_states, MPI_DOUBLE, MPI_ANY_SOURCE, MPI_ANY_TAG, SLAVECOMM, status, ierr)
+            !ALLOCATE(temporary_subset(num_states))
+            CALL MPI_RECV(periods_emax(period + 1, :num_states), num_states, MPI_DOUBLE, MPI_ANY_SOURCE, MPI_ANY_TAG, SLAVECOMM, status, ierr)
 
-            periods_emax(period + 1, :num_states) = temporary_subset
+            !periods_emax(period + 1, :num_states) = temporary_subset
 
-            DEALLOCATE(temporary_subset)
+            !DEALLOCATE(temporary_subset)
         END DO
 
         CALL logging_solution(-1)
