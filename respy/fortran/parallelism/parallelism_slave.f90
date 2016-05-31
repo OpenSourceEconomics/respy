@@ -92,11 +92,10 @@ PROGRAM resfort_parallel_slave
     IF(rank == 0) CALL logging_solution(-1)
 
     ! This part creates (or reads from disk) the draws for the Monte Carlo integration of the EMAX. For is_debugging purposes, these might  also be read in from disk or set to zero/one.   
-    ALLOCATE(draws_emax(num_draws_emax, 4))
-
     CALL create_draws(periods_draws_emax, num_draws_emax, seed_emax)
 
-    periods_emax = MISSING_FLOAT
+
+    ALLOCATE(draws_emax(num_draws_emax, 4))
 
     IF(rank == zero_int) THEN
         is_head = .True.

@@ -28,7 +28,7 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, mapping_
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_emax(: ,:)
 
-    REAL(our_dble), INTENT(IN)                      :: periods_draws_emax(:, :, :)
+    REAL(our_dble), INTENT(IN)                      :: periods_draws_emax(num_periods, num_draws_emax, 4)
     REAL(our_dble), INTENT(IN)                      :: shocks_cholesky(4, 4)
     REAL(our_dble), INTENT(IN)                      :: coeffs_home(1)
     REAL(our_dble), INTENT(IN)                      :: coeffs_edu(3)
@@ -57,12 +57,11 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, mapping_
 
     CALL logging_solution(-1)
 
-    ! Perform backward induction procedure.
+    ! Perform backward induction procedure (if required)
     CALL logging_solution(3)
 
     IF (is_myopic) THEN
 
-        ! All other objects remain set to MISSING_FLOAT. This align the treatment for the two special cases: (1) is_myopic and (2) is_interpolated.
         DO period = 1,  num_periods
             periods_emax(period, :states_number_period(period)) = zero_dble
         END DO

@@ -32,6 +32,7 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
 
     !/* internals objects       */
 
+    INTEGER(our_int)                    :: states_all_tmp(num_periods, 100000, 4)
     INTEGER(our_int)                    :: edu_lagged
     INTEGER(our_int)                    :: period
     INTEGER(our_int)                    :: total
@@ -39,8 +40,6 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
     INTEGER(our_int)                    :: exp_b
     INTEGER(our_int)                    :: edu
     INTEGER(our_int)                    :: k
-
-    INTEGER(our_int)                    :: states_all_tmp(num_periods, 100000, 4)
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -179,9 +178,6 @@ SUBROUTINE fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
-
-    ! Initialize missing value
-    periods_payoffs_systematic = MISSING_FLOAT
 
     ! Calculate systematic instantaneous payoffs
     DO period = num_periods, 1, -1
