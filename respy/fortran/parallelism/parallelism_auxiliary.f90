@@ -153,7 +153,6 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
 
     CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
 
-
     ! The leading slave is kind enough to let the parent process know about the  intermediate outcomes.
      DO period = (num_periods - 1), 0, -1
 
