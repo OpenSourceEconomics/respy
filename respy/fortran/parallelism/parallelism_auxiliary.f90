@@ -118,8 +118,6 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
 
     !/* internal objects        */
 
-    INTEGER(our_int), ALLOCATABLE                   :: states_all_tmp(:, :, :)
-
     INTEGER(our_int)                                :: num_states
     INTEGER(our_int)                                :: period
     INTEGER(our_int)            :: status
@@ -135,26 +133,20 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
         CALL MPI_COMM_SPAWN(TRIM(exec_dir) // '/resfort_parallel_slave', MPI_ARGV_NULL, (num_procs - 1), MPI_INFO_NULL, 0, MPI_COMM_WORLD, SLAVECOMM, MPI_ERRCODES_IGNORE, ierr)
         CALL MPI_Bcast(2, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
     END IF
-    
-    ! While we are waiting for the slaves to work on the EMAX calculation, the master can get some work done.
-    ALLOCATE(mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2))
-    ALLOCATE(states_all_tmp(num_periods, 100000, 4))
-    ALLOCATE(states_number_period(num_periods))
+  
+
 
     IF(is_myopic) CALL logging_solution(1)
 
-    CALL fort_create_state_space(states_all_tmp, states_number_period, mapping_state_idx)
+    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx)
 
     IF(is_myopic) CALL logging_solution(-1)
 
+
     ALLOCATE(periods_emax(num_periods, max_states_period))
-
-    ! Calculate the systematic payoffs
-    ALLOCATE(states_all(num_periods, max_states_period, 4))
-    states_all = states_all_tmp(:, :max_states_period, :)
-    DEALLOCATE(states_all_tmp)
-
     ALLOCATE(periods_payoffs_systematic(num_periods, max_states_period, 4))
+    periods_emax = MISSING_FLOAT
+
 
     IF(is_myopic) CALL logging_solution(2)
 
@@ -162,7 +154,6 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
 
     IF(is_myopic) CALL logging_solution(-1)
 
-    periods_emax = MISSING_FLOAT
 
 
     ! The leading slave is kind enough to let the parent process know about the  intermediate outcomes.

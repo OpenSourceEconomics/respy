@@ -37,30 +37,19 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, mapping_
 
     !/* internal objects        */
 
-    INTEGER(our_int), ALLOCATABLE                   :: states_all_tmp(:, :, :)
-
     INTEGER(our_int)                                :: period
 
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    ! Allocate arrays
-    ALLOCATE(mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2))
-    ALLOCATE(states_all_tmp(num_periods, 100000, 4))
-    ALLOCATE(states_number_period(num_periods))
-
+  
     ! Create the state space of the model
     CALL logging_solution(1)
 
-    CALL fort_create_state_space(states_all_tmp, states_number_period, mapping_state_idx)
+    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx)
 
     CALL logging_solution(-1)
-
-    ! Cutting the states_all container to size. The required size is only known after the state space creation is completed.
-    ALLOCATE(states_all(num_periods, max_states_period, 4))
-    states_all = states_all_tmp(:, :max_states_period, :)
-    DEALLOCATE(states_all_tmp)
 
     ! Allocate arrays
     ALLOCATE(periods_payoffs_systematic(num_periods, max_states_period, 4))

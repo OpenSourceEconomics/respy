@@ -357,7 +357,7 @@ SUBROUTINE f2py_backward_induction(periods_emax, num_periods_int, max_states_per
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE f2py_create_state_space(states_all, states_number_period, mapping_state_idx, max_states_period_int, num_periods_int, edu_start_int, edu_max_int, min_idx_int)
+SUBROUTINE f2py_create_state_space(states_all_int, states_number_period_int, mapping_state_idx_int, max_states_period_int, num_periods_int, edu_start_int, edu_max_int, min_idx_int)
     
     !/* external libraries      */
 
@@ -369,15 +369,21 @@ SUBROUTINE f2py_create_state_space(states_all, states_number_period, mapping_sta
 
     !/* external objects        */
 
-    INTEGER, INTENT(OUT)            :: mapping_state_idx(num_periods_int, num_periods_int, num_periods_int, min_idx_int, 2)
-    INTEGER, INTENT(OUT)            :: states_all(num_periods_int, 100000, 4)
-    INTEGER, INTENT(OUT)            :: states_number_period(num_periods_int)
+    INTEGER, INTENT(OUT)            :: mapping_state_idx_int(num_periods_int, num_periods_int, num_periods_int, min_idx_int, 2)
+    INTEGER, INTENT(OUT)            :: states_all_int(num_periods_int, 100000, 4)
+    INTEGER, INTENT(OUT)            :: states_number_period_int(num_periods_int)
     INTEGER, INTENT(OUT)            :: max_states_period_int
 
     INTEGER, INTENT(IN)             :: num_periods_int
-    INTEGER, INTENT(IN)             :: edu_max_int
     INTEGER, INTENT(IN)             :: edu_start_int
+    INTEGER, INTENT(IN)             :: edu_max_int
     INTEGER, INTENT(IN)             :: min_idx_int
+
+    !/* internal objects        */
+
+    INTEGER, ALLOCATABLE            :: mapping_state_idx(:, :, :, :, :)
+    INTEGER, ALLOCATABLE            :: states_number_period(:)
+    INTEGER, ALLOCATABLE            :: states_all(:, :, :)
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -389,8 +395,13 @@ SUBROUTINE f2py_create_state_space(states_all, states_number_period, mapping_sta
     edu_start = edu_start_int
     min_idx = min_idx_int
     edu_max = edu_max_int
+    states_all_int = MISSING_INT
 
     CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx)
+
+    states_all_int(:, :max_states_period, :) = states_all
+    mapping_state_idx_int = mapping_state_idx
+    states_number_period_int = states_number_period
 
     ! Updated global variables
     max_states_period_int = max_states_period

@@ -20,7 +20,6 @@ PROGRAM resfort_parallel_slave
 
     INTEGER(our_int), ALLOCATABLE   :: mapping_state_idx(:, :, :, :, :)
     INTEGER(our_int), ALLOCATABLE   :: states_number_period(:)
-    INTEGER(our_int), ALLOCATABLE   :: states_all_tmp(:, :, :)
     INTEGER(our_int), ALLOCATABLE   :: num_emax_slaves(:, :)
     INTEGER(our_int), ALLOCATABLE   :: states_all(:, :, :)
     
@@ -75,26 +74,19 @@ PROGRAM resfort_parallel_slave
     ALLOCATE(draws_emax(num_draws_emax, 4))
 
     ! Allocate arrays
-    ALLOCATE(mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2))
-    ALLOCATE(states_all_tmp(num_periods, 100000, 4))
-    ALLOCATE(states_number_period(num_periods))
-
-
     IF(rank == 0) CALL logging_solution(1)
 
-    CALL fort_create_state_space(states_all_tmp, states_number_period, mapping_state_idx)
+    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx)
 
     IF(rank == 0) CALL logging_solution(-1)
 
+
     ALLOCATE(periods_emax(num_periods, max_states_period))
+    ALLOCATE(periods_payoffs_systematic(num_periods, max_states_period, 4))
 
     ! Determine workload and allocate communication information.
     CALL determine_workload(num_emax_slaves, states_number_period)
 
-    states_all = states_all_tmp(:, :max_states_period, :)
-    DEALLOCATE(states_all_tmp)
-
-    ALLOCATE(periods_payoffs_systematic(num_periods, max_states_period, 4))
 
     ! Calculate the systematic payoffs
     IF(rank == 0) CALL logging_solution(2)

@@ -19,13 +19,13 @@ MODULE solve_auxiliary
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_create_state_space(states_all_tmp, states_number_period, mapping_state_idx)
+SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_state_idx)
 
     !/* external objects        */
 
-    INTEGER(our_int), INTENT(INOUT)     :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
-    INTEGER(our_int), INTENT(INOUT)     :: states_number_period(num_periods)
-    INTEGER(our_int), INTENT(INOUT)     :: states_all_tmp(:, :, :)
+    INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)     :: mapping_state_idx(:, :, :, :, :)
+    INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)     :: states_number_period(:)
+    INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)     :: states_all(:, :, :)
 
     !/* internals objects       */
 
@@ -37,9 +37,16 @@ SUBROUTINE fort_create_state_space(states_all_tmp, states_number_period, mapping
     INTEGER(our_int)                    :: edu
     INTEGER(our_int)                    :: k
 
+    INTEGER(our_int)                      :: states_all_tmp(num_periods, 100000, 4)
+
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
+
+    ! Allocate arrays
+    ALLOCATE(mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2))
+    ALLOCATE(states_number_period(num_periods))
+
 
     ! Initialize output
     states_number_period = MISSING_INT
@@ -127,6 +134,9 @@ SUBROUTINE fort_create_state_space(states_all_tmp, states_number_period, mapping
 
       ! Auxiliary object
       max_states_period = MAXVAL(states_number_period)
+
+    ALLOCATE(states_all(num_periods, max_states_period, 4))
+    states_all = states_all_tmp(:, :max_states_period, :)
 
 END SUBROUTINE
 !******************************************************************************
