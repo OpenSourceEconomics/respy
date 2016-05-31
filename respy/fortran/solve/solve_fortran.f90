@@ -46,12 +46,9 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, mapping_
     ! Create the state space of the model
     CALL logging_solution(1)
 
-    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, periods_emax)
+    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, periods_emax, periods_payoffs_systematic)
 
     CALL logging_solution(-1)
-
-    ! Allocate arrays
-    ALLOCATE(periods_payoffs_systematic(num_periods, max_states_period, 4))
 
     ! Calculate the systematic payoffs
     CALL logging_solution(2)
@@ -59,7 +56,7 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, mapping_
     CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
 
     CALL logging_solution(-1)
-    
+
     ! Perform backward induction procedure.
     CALL logging_solution(3)
 

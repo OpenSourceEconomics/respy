@@ -135,16 +135,12 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
     END IF
   
 
-
     IF(is_myopic) CALL logging_solution(1)
 
-    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, periods_emax)
+    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, periods_emax, periods_payoffs_systematic)
 
     IF(is_myopic) CALL logging_solution(-1)
 
-
-    ALLOCATE(periods_payoffs_systematic(num_periods, max_states_period, 4))
-    periods_emax = MISSING_FLOAT
 
 
     IF(is_myopic) CALL logging_solution(2)

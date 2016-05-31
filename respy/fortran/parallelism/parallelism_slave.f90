@@ -71,17 +71,14 @@ PROGRAM resfort_parallel_slave
     ! Read in model specification.
     CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky)
 
-    ALLOCATE(draws_emax(num_draws_emax, 4))
 
     ! Allocate arrays
     IF(rank == 0) CALL logging_solution(1)
 
-    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, periods_emax)
+    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, periods_emax, periods_payoffs_systematic)
 
     IF(rank == 0) CALL logging_solution(-1)
 
-
-    ALLOCATE(periods_payoffs_systematic(num_periods, max_states_period, 4))
 
     ! Determine workload and allocate communication information.
     CALL determine_workload(num_emax_slaves, states_number_period)
@@ -95,6 +92,8 @@ PROGRAM resfort_parallel_slave
     IF(rank == 0) CALL logging_solution(-1)
 
     ! This part creates (or reads from disk) the draws for the Monte Carlo integration of the EMAX. For is_debugging purposes, these might  also be read in from disk or set to zero/one.   
+    ALLOCATE(draws_emax(num_draws_emax, 4))
+
     CALL create_draws(periods_draws_emax, num_draws_emax, seed_emax)
 
     periods_emax = MISSING_FLOAT

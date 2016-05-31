@@ -385,6 +385,7 @@ SUBROUTINE f2py_create_state_space(states_all_int, states_number_period_int, map
     INTEGER, ALLOCATABLE            :: states_number_period(:)
     INTEGER, ALLOCATABLE            :: states_all(:, :, :)
 
+    DOUBLE PRECISION, ALLOCATABLE            :: periods_payoffs_systematic(:, :, :)
     DOUBLE PRECISION, ALLOCATABLE            :: periods_emax(:, :)
 
 !------------------------------------------------------------------------------
@@ -399,7 +400,7 @@ SUBROUTINE f2py_create_state_space(states_all_int, states_number_period_int, map
     edu_max = edu_max_int
     states_all_int = MISSING_INT
 
-    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, periods_emax)
+    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, periods_emax, periods_payoffs_systematic)
 
     states_all_int(:, :max_states_period, :) = states_all
     mapping_state_idx_int = mapping_state_idx

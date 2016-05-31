@@ -19,7 +19,7 @@ MODULE solve_auxiliary
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_state_idx, periods_emax)
+SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_state_idx, periods_emax, periods_payoffs_systematic)
 
     !/* external objects        */
 
@@ -27,6 +27,7 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
     INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)     :: states_number_period(:)
     INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)     :: states_all(:, :, :)
 
+    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_emax(:, :)
 
     !/* internals objects       */
@@ -39,16 +40,15 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
     INTEGER(our_int)                    :: edu
     INTEGER(our_int)                    :: k
 
-    INTEGER(our_int)                      :: states_all_tmp(num_periods, 100000, 4)
+    INTEGER(our_int)                    :: states_all_tmp(num_periods, 100000, 4)
 
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    ! Allocate arrays
+    ! Allocate containers that contain information about the model structure
     ALLOCATE(mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2))
     ALLOCATE(states_number_period(num_periods))
-
 
     ! Initialize output
     states_number_period = MISSING_INT
@@ -132,16 +132,20 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
         ! Record maximum number of state space realizations by time period
         states_number_period(period + 1) = k
 
-      END DO      
+    END DO      
 
-      ! Auxiliary object
-      max_states_period = MAXVAL(states_number_period)
-
+    ! Auxiliary object
+    max_states_period = MAXVAL(states_number_period)
+    
+    ! Initialize a host of containers, whose dimensions are not clear.
     ALLOCATE(states_all(num_periods, max_states_period, 4))
     states_all = states_all_tmp(:, :max_states_period, :)
 
     ALLOCATE(periods_emax(num_periods, max_states_period))
     periods_emax = MISSING_FLOAT
+
+    ALLOCATE(periods_payoffs_systematic(num_periods, max_states_period, 4))
+    periods_payoffs_systematic = MISSING_FLOAT
 
 END SUBROUTINE
 !******************************************************************************
