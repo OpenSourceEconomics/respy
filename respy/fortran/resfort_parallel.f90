@@ -46,7 +46,6 @@ PROGRAM resfort_parallel
 
     ! Start army of slaves that are available to help with the computations
     CALL MPI_COMM_SPAWN(TRIM(exec_dir) // '/resfort_parallel_slave', MPI_ARGV_NULL, (num_procs - 1), MPI_INFO_NULL, 0, MPI_COMM_WORLD, SLAVECOMM, MPI_ERRCODES_IGNORE, ierr)
-    CALL MPI_Bcast(2, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
 
     ! Execute on request.
     IF (request == 'solve') THEN

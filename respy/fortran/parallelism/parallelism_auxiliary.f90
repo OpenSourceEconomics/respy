@@ -140,15 +140,18 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
 
     INTEGER(our_int)                                :: num_states
     INTEGER(our_int)                                :: period
-    INTEGER(our_int)            :: status
+    INTEGER(our_int)                                :: status
 
-    REAL(our_dble), ALLOCATABLE :: package(:)
+    REAL(our_dble), ALLOCATABLE                     :: package(:)
 
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
-  
-
+      
+    ! Instruct slaves to assist in the calculation of the EMAX
+    CALL MPI_Bcast(2, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
+    
+    ! As the slaves are plugging along, the master prepares the containers for the results
     CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, periods_emax, periods_payoffs_systematic)
 
     CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
