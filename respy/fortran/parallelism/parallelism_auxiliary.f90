@@ -100,6 +100,26 @@ SUBROUTINE determine_workload(num_emax_slaves, states_number_period)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
+SUBROUTINE fort_evaluate_parallel(crit_val, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_array, periods_draws_prob)
+
+    REAL(our_dble), INTENT(OUT)     :: crit_val
+
+    REAL(our_dble), INTENT(IN)      :: periods_payoffs_systematic(num_periods, max_states_period, 4)
+    REAL(our_dble), INTENT(IN)      :: periods_draws_prob(num_periods, num_draws_prob, 4)
+    REAL(our_dble), INTENT(IN)      :: data_array(:, :)
+    REAL(our_dble), INTENT(IN)      :: shocks_cholesky(4, 4)
+    REAL(our_dble), INTENT(IN)      :: periods_emax(num_periods, max_states_period)
+
+    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
+    INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
+
+    PRINT *, 'about to evaluate in parallel'
+
+END SUBROUTINE
+
+
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
 
     !/* external objects        */

@@ -31,7 +31,7 @@ from respy import simulate, solve, evaluate, estimate, RespyCls
 import numpy as np
 import pickle as pkl
 
-if False:
+if True:
     cwd = os.getcwd()
     os.chdir('../../respy')
     assert os.system('./waf distclean; ./waf configure build') == 0
@@ -40,19 +40,4 @@ if False:
 
 respy_obj = RespyCls('model.respy.ini')
 simulate(respy_obj)
-import numpy as np
-base = None
-for is_parallel in [True, False]:
-    print('\n\n')
-    respy_obj.attr['is_parallel'] = is_parallel
-    start = time.time()
-    crit_val = evaluate.evaluate(respy_obj)
-
-    print(time.time() - start)
-    if base is None:
-        base = crit_val
-
-    if is_parallel:
-        shutil.copy('logging.respy.sol.log', 'logging.parallel')
-
-    np.testing.assert_equal(base, crit_val)
+evaluate.evaluate(respy_obj)

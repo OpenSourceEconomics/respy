@@ -251,7 +251,13 @@ PROGRAM resfort_parallel_slave
                 DEALLOCATE(endogenous_slaves)
     
             END DO
-       
+        
+        ! Evaluate criterion function
+        ELSEIF(task == 2) THEN
+
+            PRINT *, 'Ready to evaluate'
+
+
         END IF    
 
     END DO

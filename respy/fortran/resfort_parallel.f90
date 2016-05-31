@@ -61,10 +61,12 @@ PROGRAM resfort_parallel
         ! Solve the model for a given parametrization in parallel.
         CALL fort_solve_parallel(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
         
-       ! TODO: Parallelize
+        ! Evaluate criterion function in parallel
         CALL fort_evaluate(crit_val, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_array, periods_draws_prob)
 
     END IF
+
+    ! Shut down the army of slaves in an orderly fashion
     
     ! Store results. These are read in by the PYTHON wrapper and added to the  RespyCls instance.
     CALL store_results(mapping_state_idx, states_all, periods_payoffs_systematic, states_number_period, periods_emax, crit_val)
