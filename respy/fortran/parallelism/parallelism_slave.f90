@@ -71,7 +71,6 @@ PROGRAM resfort_parallel_slave
     ! Read in model specification.
     CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky)
 
-
     ! Allocate arrays
     IF(rank == 0) CALL logging_solution(1)
 
@@ -79,10 +78,8 @@ PROGRAM resfort_parallel_slave
 
     IF(rank == 0) CALL logging_solution(-1)
 
-
     ! Determine workload and allocate communication information.
     CALL determine_workload(num_emax_slaves, states_number_period)
-
 
     ! Calculate the systematic payoffs
     IF(rank == 0) CALL logging_solution(2)
@@ -94,14 +91,11 @@ PROGRAM resfort_parallel_slave
     ! This part creates (or reads from disk) the draws for the Monte Carlo integration of the EMAX. For is_debugging purposes, these might  also be read in from disk or set to zero/one.   
     CALL create_draws(periods_draws_emax, num_draws_emax, seed_emax)
 
-
     ALLOCATE(draws_emax(num_draws_emax, 4))
 
-    IF(rank == zero_int) THEN
-        is_head = .True.
-    ELSE
-        is_head = .False.
-    END IF
+    is_head = .False.
+    IF(rank == zero_int) is_head = .True.
+    
 
     DO WHILE (STAY_AVAILABLE)  
         
@@ -124,7 +118,6 @@ PROGRAM resfort_parallel_slave
 
             CALL RANDOM_SEED(put=seed_inflated)
 
-
             ! Construct auxiliary objects
             shocks_cov = MATMUL(shocks_cholesky, TRANSPOSE(shocks_cholesky))
 
@@ -145,9 +138,8 @@ PROGRAM resfort_parallel_slave
                 ALLOCATE(endogenous_slaves(num_states))
 
 
-                IF (rank == 0) THEN
-                     CALL logging_solution(4, period, num_states)        
-                END IF
+                IF (rank == 0) CALL logging_solution(4, period, num_states)        
+
                 ! Distinguish case with and without interpolation
                 any_interpolated = (num_points_interp .LE. num_states) .AND. is_interpolated
 
@@ -164,12 +156,9 @@ PROGRAM resfort_parallel_slave
 
                     ! Constructing indicator for simulation points
                     is_simulated = get_simulated_indicator(num_points_interp, num_states, period)
-
        
                     ! Constructing the dependent variable for all states, including the ones where simulation will take place. All information will be used in either the construction of the prediction model or the prediction step.
                     CALL get_exogenous_variables(exogenous, maxe, period, num_states, periods_payoffs_systematic, shifts, mapping_state_idx, periods_emax, states_all)
-
-
 
                     ! Initialize missing values
                     endogenous = MISSING_FLOAT
@@ -195,13 +184,9 @@ PROGRAM resfort_parallel_slave
                         endogenous_slaves(count) = emax_simulated - maxe(k + 1)
                         count = count + 1 
 
-
-
                     END DO
                     
-
                     ! Distribute exogenous information
-                    ! TODO: POLYMORPHISM
                     CALL distribute_information(num_emax_slaves, period, endogenous_slaves, endogenous)
                     
                     ! Create prediction model based on the random subset of points where the EMAX is actually simulated and thus endogenous and exogenous variables are available. For the interpolation  points, the actual values are used.
@@ -211,14 +196,11 @@ PROGRAM resfort_parallel_slave
                     periods_emax(period + 1, :num_states) = predictions
 
                     ! The leading slave updates the master period by period.
-                    IF (rank == 0) THEN
-                        CALL MPI_SEND(periods_emax(period + 1, :num_states), num_states, MPI_DOUBLE, 0, period, PARENTCOMM, ierr)    
+                    IF (rank == 0) CALL MPI_SEND(periods_emax(period + 1, :num_states), num_states, MPI_DOUBLE, 0, period, PARENTCOMM, ierr)    
 
-                    END IF
                     ! Deallocate containers
                     DEALLOCATE(is_simulated); DEALLOCATE(exogenous); DEALLOCATE(maxe);
                     DEALLOCATE(endogenous); DEALLOCATE(predictions)
-
 
                  ELSE
 
@@ -240,15 +222,11 @@ PROGRAM resfort_parallel_slave
                     CALL distribute_information(num_emax_slaves, period, periods_emax_slaves, periods_emax(period + 1, :))
                     
                     ! The leading slave updates the master period by period.
-                    IF (rank == 0) THEN
-                        CALL MPI_SEND(periods_emax(period + 1, :num_states), num_states, MPI_DOUBLE, 0, period, PARENTCOMM, ierr)            
-                    END IF
-
+                    IF (rank == 0) CALL MPI_SEND(periods_emax(period + 1, :num_states), num_states, MPI_DOUBLE, 0, period, PARENTCOMM, ierr)            
           
                 END IF
 
-                DEALLOCATE(periods_emax_slaves)
-                DEALLOCATE(endogenous_slaves)
+                DEALLOCATE(periods_emax_slaves); DEALLOCATE(endogenous_slaves)
     
             END DO
         
@@ -256,7 +234,6 @@ PROGRAM resfort_parallel_slave
         ELSEIF(task == 3) THEN
 
             PRINT *, 'Ready to evaluate'
-
 
         END IF    
 
