@@ -1,161 +1,14 @@
 !******************************************************************************
 !******************************************************************************
-MODULE slave_shared
-
-    !/* external modules    */
-
-    USE parallel_constants
-
-    USE resfort_library 
-
-    USE mpi
-
-    !/* setup   */
-
-    IMPLICIT NONE
-
-    PUBLIC
-
-CONTAINS
-!******************************************************************************
-!******************************************************************************
-SUBROUTINE distribute_inter(num_emax_slaves, period, endogenous_slaves, endogenous, num_states)
-    
-    !/* external objects  f      */
-
-    INTEGER(our_int), INTENT(IN)    :: num_emax_slaves(num_periods, num_slaves)
-    INTEGER(our_int), INTENT(IN)    :: num_states
-    INTEGER(our_int), INTENT(IN)    :: period
- 
-    REAL(our_dble), INTENT(IN)      :: endogenous_slaves(num_states)
-    REAL(our_dble), INTENT(INOUT)      :: endogenous(:)
-
-    !/* internal objects        */
-
-    INTEGER(our_int), ALLOCATABLE   :: rcounts(:)
-    INTEGER(our_int), ALLOCATABLE   :: scounts(:)
-    INTEGER(our_int), ALLOCATABLE   :: disps(:)
-
-    INTEGER(our_int)                :: i
-
-!------------------------------------------------------------------------------
-! Algorithm
-!------------------------------------------------------------------------------
-
-    ! Parameterize the communication.
-    ALLOCATE(rcounts(num_slaves), scounts(num_slaves), disps(num_slaves))
-    scounts(:) = num_emax_slaves(period + 1, :)
-    rcounts(:) = scounts
-    DO i = 1, num_slaves
-        disps(i) = SUM(scounts(:i - 1)) 
-    END DO
-    
-    ! Aggregate the EMAX contributions across the slaves.    
-    CALL MPI_ALLGATHERV(endogenous_slaves, scounts(rank + 1), MPI_DOUBLE, endogenous, rcounts, disps, MPI_DOUBLE, MPI_COMM_WORLD, ierr)
-
-END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
-SUBROUTINE distribute_information(num_emax_slaves, period, periods_emax_slaves, periods_emax, num_states)
-    
-    !/* external objects        */
-
-    INTEGER(our_int), INTENT(IN)    :: num_emax_slaves(num_periods, num_slaves)
-    INTEGER(our_int), INTENT(IN)    :: num_states
-    INTEGER(our_int), INTENT(IN)    :: period
- 
-    REAL(our_dble), INTENT(IN)      :: periods_emax_slaves(num_states)
-    REAL(our_dble), INTENT(INOUT)      :: periods_emax(num_periods, max_states_period)
-
-    !/* internal objects        */
-
-    INTEGER(our_int), ALLOCATABLE   :: rcounts(:)
-    INTEGER(our_int), ALLOCATABLE   :: scounts(:)
-    INTEGER(our_int), ALLOCATABLE   :: disps(:)
-
-    INTEGER(our_int)                :: i
-
-    REAL(our_dble)                  :: periods_emax_subset(num_states), temporary(max_states_period)
-
-!------------------------------------------------------------------------------
-! Algorithm
-!------------------------------------------------------------------------------
-
-    ! Parameterize the communication.
-    ALLOCATE(rcounts(num_slaves), scounts(num_slaves), disps(num_slaves))
-    scounts(:) = num_emax_slaves(period + 1, :)
-    rcounts(:) = scounts
-    DO i = 1, num_slaves
-        disps(i) = SUM(scounts(:i - 1)) 
-    END DO
-    
-    ! Aggregate the EMAX contributions across the slaves.    
-    CALL MPI_ALLGATHERV(periods_emax_slaves, scounts(rank + 1), MPI_DOUBLE, temporary, rcounts, disps, MPI_DOUBLE, MPI_COMM_WORLD, ierr)
-    periods_emax(period + 1, :) = temporary
-    ! The leading slave updates the master period by period.
-    periods_emax_subset = periods_emax(period + 1, :num_states)
-    IF (rank == 0) THEN
-        CALL MPI_SEND(periods_emax_subset, num_states, MPI_DOUBLE, 0, period, PARENTCOMM, ierr)            
-    END IF
-
-END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
-SUBROUTINE determine_workload(num_emax_slaves, states_number_period)
-
-    !/* external objects        */
-
-    INTEGER(our_int), ALLOCATABLE, INTENT(OUT)   :: num_emax_slaves(:, :)
-    
-    INTEGER(our_int), INTENT(IN)    :: states_number_period(num_periods)
-
-    !/* internal objects        */
-
-    INTEGER(our_int)                :: period
-    INTEGER(our_int)                :: j
-    INTEGER(our_int)                :: i
-
-!------------------------------------------------------------------------------
-! Algorithm
-!------------------------------------------------------------------------------
-    
-    ALLOCATE(num_emax_slaves(num_periods, num_slaves))
-
-    num_emax_slaves = zero_int
-
-    DO period = 1, num_periods
-
-        j = 1
-
-        DO i = 1, states_number_period(period)
-            
-            IF (j .GT. num_slaves) THEN
-            
-                j = 1
-
-            END IF
-
-            num_emax_slaves(period, j) = num_emax_slaves(period, j) + 1
-
-            j = j + 1
-
-        END DO
-    END DO
-
-END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
-END MODULE
-!******************************************************************************
-!******************************************************************************
-PROGRAM slave
+PROGRAM resfort_parallel_slave
 
     !/* external modules        */
 
     USE resfort_library
 
     USE parallel_constants
-    USE slave_shared    
+    
+    USE parallel_auxiliary
 
     USE mpi
     
@@ -189,8 +42,6 @@ PROGRAM slave
     REAL(our_dble), ALLOCATABLE     :: predictions(:)
     REAL(our_dble), ALLOCATABLE     :: endogenous(:)
     REAL(our_dble), ALLOCATABLE     :: maxe(:)
-
-    REAL(our_dble), ALLOCATABLE     :: temporary_subset(:)
 
     REAL(our_dble)                  :: shocks_cholesky(4, 4)
     REAL(our_dble)                  :: payoffs_systematic(4)
@@ -362,7 +213,7 @@ PROGRAM slave
 
                     ! Distribute exogenous information
                     ! TODO: POLYMORPHISM
-                    CALL distribute_inter(num_emax_slaves, period, endogenous_slaves, endogenous, num_states)
+                    CALL distribute_information(num_emax_slaves, period, endogenous_slaves, endogenous)
                     
                     ! Create prediction model based on the random subset of points where the EMAX is actually simulated and thus endogenous and exogenous variables are available. For the interpolation  points, the actual values are used.
                     CALL get_predictions(predictions, endogenous, exogenous, maxe, is_simulated, num_states, is_head)
@@ -372,12 +223,7 @@ PROGRAM slave
 
                     ! The leading slave updates the master period by period.
                     IF (rank == 0) THEN
-                        ALLOCATE(temporary_subset(num_states))
-                        temporary_subset = periods_emax(period + 1, :num_states)
-                        CALL MPI_SEND(temporary_subset, num_states, MPI_DOUBLE, 0, period, PARENTCOMM, ierr)    
-
-                        DEALLOCATE(temporary_subset)
-
+                        CALL MPI_SEND(periods_emax(period + 1, :num_states), num_states, MPI_DOUBLE, 0, period, PARENTCOMM, ierr)    
 
                     END IF
                     ! Deallocate containers
@@ -402,8 +248,13 @@ PROGRAM slave
 
                     END DO
                     
-                    CALL distribute_information(num_emax_slaves, period, periods_emax_slaves, periods_emax, num_states)
-    
+                    CALL distribute_information(num_emax_slaves, period, periods_emax_slaves, periods_emax(period + 1, :))
+                    
+                    ! The leading slave updates the master period by period.
+                    IF (rank == 0) THEN
+                        CALL MPI_SEND(periods_emax(period + 1, :num_states), num_states, MPI_DOUBLE, 0, period, PARENTCOMM, ierr)            
+                    END IF
+
           
                 END IF
 

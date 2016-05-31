@@ -603,6 +603,9 @@ SUBROUTINE store_results(mapping_state_idx, states_all, periods_payoffs_systemat
 
     END IF
 
+    ! Remove FORTRAN initialization file. 
+    OPEN(UNIT=1, FILE='.model.resfort.ini'); CLOSE(1, STATUS='delete')
+
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************

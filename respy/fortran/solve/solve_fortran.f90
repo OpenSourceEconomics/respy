@@ -81,12 +81,12 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, mapping_
 
     IF (is_myopic) THEN
 
-        CALL logging_solution(-2)
-
         ! All other objects remain set to MISSING_FLOAT. This align the treatment for the two special cases: (1) is_myopic and (2) is_interpolated.
         DO period = 1,  num_periods
             periods_emax(period, :states_number_period(period)) = zero_dble
         END DO
+
+        CALL logging_solution(-2)
     
     ELSE
 

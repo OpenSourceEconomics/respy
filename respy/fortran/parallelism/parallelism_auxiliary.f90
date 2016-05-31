@@ -19,7 +19,88 @@ MODULE parallel_auxiliary
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky)
+SUBROUTINE distribute_information(num_emax_slaves, period, send_slave, recieve_slaves)
+    
+    !/* external objects        */
+
+    INTEGER(our_int), INTENT(IN)    :: num_emax_slaves(num_periods, num_slaves)
+    INTEGER(our_int), INTENT(IN)    :: period
+ 
+    REAL(our_dble), INTENT(IN)      :: send_slave(:)
+    REAL(our_dble), INTENT(INOUT)   :: recieve_slaves(:)
+
+    !/* internal objects        */
+
+    INTEGER(our_int), ALLOCATABLE   :: rcounts(:)
+    INTEGER(our_int), ALLOCATABLE   :: scounts(:)
+    INTEGER(our_int), ALLOCATABLE   :: disps(:)
+
+    INTEGER(our_int)                :: i
+
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    ! Parameterize the communication.
+    ALLOCATE(rcounts(num_slaves), scounts(num_slaves), disps(num_slaves))
+    scounts(:) = num_emax_slaves(period + 1, :)
+    rcounts(:) = scounts
+    DO i = 1, num_slaves
+        disps(i) = SUM(scounts(:i - 1)) 
+    END DO
+    
+    ! Aggregate the EMAX contributions across the slaves.    
+    CALL MPI_ALLGATHERV(send_slave, scounts(rank + 1), MPI_DOUBLE, recieve_slaves, rcounts, disps, MPI_DOUBLE, MPI_COMM_WORLD, ierr)
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE determine_workload(num_emax_slaves, states_number_period)
+
+    !/* external objects        */
+
+    INTEGER(our_int), ALLOCATABLE, INTENT(OUT)   :: num_emax_slaves(:, :)
+    
+    INTEGER(our_int), INTENT(IN)    :: states_number_period(num_periods)
+
+    !/* internal objects        */
+
+    INTEGER(our_int)                :: period
+    INTEGER(our_int)                :: j
+    INTEGER(our_int)                :: i
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+    
+    ALLOCATE(num_emax_slaves(num_periods, num_slaves))
+
+    num_emax_slaves = zero_int
+
+    DO period = 1, num_periods
+
+        j = 1
+
+        DO i = 1, states_number_period(period)
+            
+            IF (j .GT. num_slaves) THEN
+            
+                j = 1
+
+            END IF
+
+            num_emax_slaves(period, j) = num_emax_slaves(period, j) + 1
+
+            j = j + 1
+
+        END DO
+    END DO
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
 
     !/* external objects        */
 
@@ -30,7 +111,6 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_emax(:, :)
 
-    REAL(our_dble), INTENT(IN)                      :: shocks_cholesky(4, 4)
     REAL(our_dble), INTENT(IN)                      :: coeffs_home(1)
     REAL(our_dble), INTENT(IN)                      :: coeffs_edu(3)
     REAL(our_dble), INTENT(IN)                      :: coeffs_a(6)
