@@ -76,12 +76,11 @@ PROGRAM resfort_parallel_slave
     ! Allocate arrays
     IF(rank == 0) CALL logging_solution(1)
 
-    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx)
+    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, periods_emax)
 
     IF(rank == 0) CALL logging_solution(-1)
 
 
-    ALLOCATE(periods_emax(num_periods, max_states_period))
     ALLOCATE(periods_payoffs_systematic(num_periods, max_states_period, 4))
 
     ! Determine workload and allocate communication information.

@@ -19,13 +19,15 @@ MODULE solve_auxiliary
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_state_idx)
+SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_state_idx, periods_emax)
 
     !/* external objects        */
 
     INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)     :: mapping_state_idx(:, :, :, :, :)
     INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)     :: states_number_period(:)
     INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)     :: states_all(:, :, :)
+
+    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_emax(:, :)
 
     !/* internals objects       */
 
@@ -137,6 +139,9 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
 
     ALLOCATE(states_all(num_periods, max_states_period, 4))
     states_all = states_all_tmp(:, :max_states_period, :)
+
+    ALLOCATE(periods_emax(num_periods, max_states_period))
+    periods_emax = MISSING_FLOAT
 
 END SUBROUTINE
 !******************************************************************************

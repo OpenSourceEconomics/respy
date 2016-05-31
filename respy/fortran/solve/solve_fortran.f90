@@ -43,17 +43,15 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, mapping_
 ! Algorithm
 !------------------------------------------------------------------------------
 
-  
     ! Create the state space of the model
     CALL logging_solution(1)
 
-    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx)
+    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, periods_emax)
 
     CALL logging_solution(-1)
 
     ! Allocate arrays
     ALLOCATE(periods_payoffs_systematic(num_periods, max_states_period, 4))
-    ALLOCATE(periods_emax(num_periods, max_states_period))
 
     ! Calculate the systematic payoffs
     CALL logging_solution(2)
@@ -62,9 +60,6 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, mapping_
 
     CALL logging_solution(-1)
     
-    ! Initialize containers, which contain a lot of missing values as we capture the tree structure in arrays of fixed dimension.
-    periods_emax = MISSING_FLOAT
-
     ! Perform backward induction procedure.
     CALL logging_solution(3)
 
