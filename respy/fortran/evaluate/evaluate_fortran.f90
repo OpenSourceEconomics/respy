@@ -21,13 +21,17 @@ MODULE evaluate_fortran
 !******************************************************************************
 SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_array, periods_draws_prob)
 
+    !   DEVELOPMENT NOTES
+    !
+    !   This routine accepts assumed shape arrays to allow its use during parallel execution as well. This is also the reasoning behind relaxing the alignment with the PYTHON counterpart.
+
     !/* external objects        */
 
     REAL(our_dble), INTENT(OUT)     :: rslt
 
     REAL(our_dble), INTENT(IN)      :: periods_payoffs_systematic(num_periods, max_states_period, 4)
     REAL(our_dble), INTENT(IN)      :: periods_draws_prob(num_periods, num_draws_prob, 4)
-    REAL(our_dble), INTENT(IN)      :: data_array(num_agents_est * num_periods, 8)
+    REAL(our_dble), INTENT(IN)      :: data_array(:, :)
     REAL(our_dble), INTENT(IN)      :: shocks_cholesky(4, 4)
     REAL(our_dble), INTENT(IN)      :: periods_emax(num_periods, max_states_period)
 
@@ -36,7 +40,8 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, pe
 
     !/* internal objects        */
 
-    REAL(our_dble)                  :: crit_val(num_agents_est * num_periods)
+    REAL(our_dble), ALLOCATABLE    :: crit_val(:)
+
     REAL(our_dble)                  :: draws_prob_raw(num_draws_prob, 4)
     REAL(our_dble)                  :: payoffs_systematic(4)
     REAL(our_dble)                  :: crit_val_contrib
@@ -54,11 +59,11 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, pe
     INTEGER(our_int)                :: counts(4)
     INTEGER(our_int)                :: choice
     INTEGER(our_int)                :: period
+    INTEGER(our_int)                :: num_obs
     INTEGER(our_int)                :: exp_a
     INTEGER(our_int)                :: exp_b
     INTEGER(our_int)                :: idx
     INTEGER(our_int)                :: edu
-    INTEGER(our_int)                :: i
     INTEGER(our_int)                :: s
     INTEGER(our_int)                :: k
     INTEGER(our_int)                :: j
@@ -71,17 +76,19 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, pe
 !------------------------------------------------------------------------------
 
     ! Construct auxiliary objects
+    num_obs = SIZE(data_array, 1)
+
     shocks_cov = MATMUL(shocks_cholesky, TRANSPOSE(shocks_cholesky))
     is_deterministic = ALL(shocks_cov .EQ. zero_dble)
 
     ! Initialize container for likelihood contributions
+    ALLOCATE(crit_val(num_obs))
     crit_val = zero_dble
 
-    j = 1
+    
+    DO j = 1, num_obs
 
-    DO i = 0, num_agents_est - 1
-
-        DO period = 0, num_periods -1
+            period = INT(data_array(j, 2)) 
 
             ! Extract observable components of state space as well as agent decision.
             exp_a = INT(data_array(j, 5))
@@ -192,15 +199,11 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, pe
             ! Adjust  and record likelihood contribution
             crit_val(j) = prob_obs
 
-            j = j + 1
-
         END DO
-
-    END DO
 
     ! Scaling
     crit_val = clip_value(LOG(crit_val), -HUGE_FLOAT, HUGE_FLOAT)
-    rslt = -SUM(crit_val) / (num_agents_est * num_periods)
+    rslt = -SUM(crit_val) / num_obs
 
     ! If there is no random variation in payoffs and no agent violated the implications of observed wages and choices, then the evaluation return a value of one.
     IF (is_deterministic) THEN
