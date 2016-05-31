@@ -147,12 +147,6 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
-
-    ! If agents are not myopic, then we start a number of slaves and request to help in the calculation of the EMAX.
-    IF (.NOT. is_myopic) THEN
-        CALL MPI_COMM_SPAWN(TRIM(exec_dir) // '/resfort_parallel_slave', MPI_ARGV_NULL, (num_procs - 1), MPI_INFO_NULL, 0, MPI_COMM_WORLD, SLAVECOMM, MPI_ERRCODES_IGNORE, ierr)
-        CALL MPI_Bcast(2, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
-    END IF
   
 
     IF(is_myopic) CALL logging_solution(1)
@@ -168,7 +162,6 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
     CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
 
     IF(is_myopic) CALL logging_solution(-1)
-
 
 
     ! The leading slave is kind enough to let the parent process know about the  intermediate outcomes.
