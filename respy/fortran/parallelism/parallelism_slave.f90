@@ -253,7 +253,7 @@ PROGRAM resfort_parallel_slave
             END DO
         
         ! Evaluate criterion function
-        ELSEIF(task == 2) THEN
+        ELSEIF(task == 3) THEN
 
             PRINT *, 'Ready to evaluate'
 
