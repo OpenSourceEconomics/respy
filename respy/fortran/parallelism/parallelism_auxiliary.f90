@@ -142,7 +142,7 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
     INTEGER(our_int)                                :: period
     INTEGER(our_int)            :: status
 
-    REAL(our_dble), ALLOCATABLE :: temporary_subset(:)
+    REAL(our_dble), ALLOCATABLE :: package(:)
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -154,24 +154,21 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
     CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
 
     ! The leading slave is kind enough to let the parent process know about the  intermediate outcomes.
-     DO period = (num_periods - 1), 0, -1
+    DO period = (num_periods - 1), 0, -1
 
-            num_states = states_number_period(period + 1)
+        num_states = states_number_period(period + 1)
 
-            ALLOCATE(temporary_subset(num_states))
-            CALL MPI_RECV(temporary_subset, num_states, MPI_DOUBLE, MPI_ANY_SOURCE, MPI_ANY_TAG, SLAVECOMM, status, ierr)
+        ALLOCATE(package(num_states))
+        
+        CALL MPI_RECV(package, num_states, MPI_DOUBLE, MPI_ANY_SOURCE, MPI_ANY_TAG, SLAVECOMM, status, ierr)
+        
+        periods_emax(period + 1, :num_states) = package
 
-            periods_emax(period + 1, :num_states) = temporary_subset
+        DEALLOCATE(package)
+        
+    END DO
 
-            DEALLOCATE(temporary_subset)
-        END DO
-
-        CALL logging_solution(-1)
-
-        ! Shut down orderly
-        CALL MPI_Bcast(1, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
-        CALL MPI_FINALIZE (ierr)
-
+    CALL logging_solution(-1)
 
 
 END SUBROUTINE
