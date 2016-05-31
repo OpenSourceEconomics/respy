@@ -149,36 +149,13 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
 !------------------------------------------------------------------------------
   
 
-    IF(is_myopic) CALL logging_solution(1)
-
     CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, periods_emax, periods_payoffs_systematic)
-
-    IF(is_myopic) CALL logging_solution(-1)
-
-
-
-    IF(is_myopic) CALL logging_solution(2)
 
     CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
 
-    IF(is_myopic) CALL logging_solution(-1)
-
 
     ! The leading slave is kind enough to let the parent process know about the  intermediate outcomes.
-    IF (is_myopic) THEN
-
-        CALL logging_solution(3)
-   
-        ! All other objects remain set to MISSING_FLOAT. This align the treatment for the two special cases: (1) is_myopic and (2) is_interpolated.
-        DO period = 1,  num_periods
-            periods_emax(period, :states_number_period(period)) = zero_dble
-        END DO
-     
-        CALL logging_solution(-2)
-
-    ELSE
-
-        DO period = (num_periods - 1), 0, -1
+     DO period = (num_periods - 1), 0, -1
 
             num_states = states_number_period(period + 1)
 
@@ -196,7 +173,6 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
         CALL MPI_Bcast(1, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
         CALL MPI_FINALIZE (ierr)
 
-    END IF
 
 
 END SUBROUTINE
