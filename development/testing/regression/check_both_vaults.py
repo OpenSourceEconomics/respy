@@ -13,9 +13,12 @@ script_file = 'check_vault.py'
 
 # doing execfile() on this file will alter the current interpreter's
 # environment so you can import libraries in the virtualenv
-activate_this_file = "/path/to/virtualenv/bin/activate_this.py"
+activate_this_file = "/home/peisenha/.envs/restudToolbox/bin/activate_this.py"
 
-execfile(activate_this_file, dict(__file__=activate_this_file))
+#execfile(activate_this_file, dict(__file__=activate_this_file))
+
+exec(open(activate_this_file).read())
+
 for python in [python2_bin]:
-    p = subprocess.Popen([python, script_file])
-    p.wait()
+    subprocess.Popen([python, script_file])
+#    p.wait()
