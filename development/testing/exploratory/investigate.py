@@ -46,9 +46,9 @@ new_tests = []
 np.random.seed(123)
 for idx in range(1000):
     print(idx)
-    init_dict, crit_val = tests[idx]
+    init_dict, crit_val = tests[167]
 
     print_init_dict(init_dict)
     respy_obj = RespyCls('test.respy.ini')
     simulate(respy_obj)
-    np.testing.assert_almost_equal(evaluate(respy_obj), crit_val)
+    print(evaluate(respy_obj), crit_val)
