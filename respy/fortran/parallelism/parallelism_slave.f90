@@ -84,7 +84,7 @@ PROGRAM resfort_parallel_slave
     IF(rank == 0) CALL logging_solution(-1)
 
     ! Determine workload and allocate communication information.
-    ALLOCATE(num_emax_slaves(num_periods, num_slaves), num_obs_slaves(num_slaves))
+    ALLOCATE(num_emax_slaves(num_periods, num_slaves), num_obs_slaves(num_slaves), draws_emax(num_draws_emax, 4))
 
     DO period = 1, num_periods
         CALL determine_workload(num_emax_slaves(period, :), states_number_period(period))   
@@ -101,8 +101,6 @@ PROGRAM resfort_parallel_slave
 
     ! This part creates (or reads from disk) the draws for the Monte Carlo integration of the EMAX. For is_debugging purposes, these might  also be read in from disk or set to zero/one.   
     CALL create_draws(periods_draws_emax, num_draws_emax, seed_emax)
-
-    ALLOCATE(draws_emax(num_draws_emax, 4))
 
     is_head = .False.
     IF(rank == zero_int) is_head = .True.
@@ -161,9 +159,7 @@ PROGRAM resfort_parallel_slave
                  IF (any_interpolated) THEN
 
                     ! Allocate period-specific containers
-                    ALLOCATE(is_simulated(num_states)); ALLOCATE(endogenous(num_states))
-                    ALLOCATE(maxe(num_states)); ALLOCATE(exogenous(num_states, 9))
-                    ALLOCATE(predictions(num_states))
+                    ALLOCATE(is_simulated(num_states), endogenous(num_states), maxe(num_states), exogenous(num_states, 9), predictions(num_states))
 
                     ! Constructing indicator for simulation points
                     is_simulated = get_simulated_indicator(num_points_interp, num_states, period)
