@@ -41,7 +41,6 @@ FUNCTION get_smoothed_probability(total_payoffs, idx)
 
     get_smoothed_probability = smoot_payoff(idx) / SUM(smoot_payoff)
 
-
 END FUNCTION
 !******************************************************************************
 !******************************************************************************

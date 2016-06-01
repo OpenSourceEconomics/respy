@@ -11,14 +11,5 @@ python2_bin = "/home/peisenha/.envs/restudToolbox2/bin/python"
 # path to the script that must run under the virtualenv
 script_file = 'check_vault.py'
 
-# doing execfile() on this file will alter the current interpreter's
-# environment so you can import libraries in the virtualenv
-activate_this_file = "/home/peisenha/.envs/restudToolbox/bin/activate_this.py"
-
-#execfile(activate_this_file, dict(__file__=activate_this_file))
-
-exec(open(activate_this_file).read())
-
-for python in [python2_bin]:
-    subprocess.Popen([python, script_file])
-#    p.wait()
+for python_bin in [python2_bin, python3_bin]:
+    subprocess.call([python_bin, script_file])

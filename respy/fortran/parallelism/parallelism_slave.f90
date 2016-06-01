@@ -173,7 +173,7 @@ PROGRAM resfort_parallel_slave
 
                         ! Skip over points that will be predicted
                         IF (.NOT. is_simulated(k + 1)) THEN
-                        count = count + 1 
+                            count = count + 1 
                             CYCLE
                         END IF
 

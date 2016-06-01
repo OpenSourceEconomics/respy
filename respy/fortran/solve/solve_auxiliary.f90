@@ -266,71 +266,51 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
 ! Algorithm
 !------------------------------------------------------------------------------
     
-    ! Set random seed. We need to set the seed here as well as this part of the code might be called using F2PY without any previous seed set. This ensures that the interpolation grid is identical across draws.
     seed_inflated(:) = 123
 
     CALL RANDOM_SEED(size=seed_size)
 
     CALL RANDOM_SEED(put=seed_inflated)
 
-    ! Construct auxiliary objects
     shocks_cov = MATMUL(shocks_cholesky, TRANSPOSE(shocks_cholesky))
 
-    ! Shifts
     shifts = zero_dble
     shifts(1) = clip_value(EXP(shocks_cov(1, 1)/two_dble), zero_dble, HUGE_FLOAT)
     shifts(2) = clip_value(EXP(shocks_cov(2, 2)/two_dble), zero_dble, HUGE_FLOAT)
 
-    ! Backward induction
     DO period = (num_periods - 1), 0, -1
 
-        ! Extract draws and construct auxiliary objects
         draws_emax = periods_draws_emax(period + 1, :, :)
         num_states = states_number_period(period + 1)
 
-        ! Logging
         CALL logging_solution(4, period, num_states)
 
-        ! Distinguish case with and without interpolation
         any_interpolated = (num_points_interp .LE. num_states) .AND. is_interpolated
 
         IF (any_interpolated) THEN
 
-            ! Allocate period-specific containers
-            ALLOCATE(is_simulated(num_states)); ALLOCATE(endogenous(num_states))
-            ALLOCATE(maxe(num_states)); ALLOCATE(exogenous(num_states, 9))
-            ALLOCATE(predictions(num_states))
+            ALLOCATE(is_simulated(num_states), endogenous(num_states), maxe(num_states), exogenous(num_states, 9), predictions(num_states))
 
-            ! Constructing indicator for simulation points
             is_simulated = get_simulated_indicator(num_points_interp, num_states, period)
 
-            ! Constructing the dependent variable for all states, including the ones where simulation will take place. All information will be used in either the construction of the prediction model or the prediction step.
             CALL get_exogenous_variables(exogenous, maxe, period, num_states, periods_payoffs_systematic, shifts, mapping_state_idx, periods_emax, states_all)
 
-            ! Construct endogenous variables for the subset of simulation points. The rest is set to missing value.
             CALL get_endogenous_variable(endogenous, period, num_states, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, is_simulated, maxe, draws_emax, shocks_cholesky)
 
-            ! Create prediction model based on the random subset of points where the EMAX is actually simulated and thus endogenous and exogenous variables are available. For the interpolation points, the actual values are used.
             CALL get_predictions(predictions, endogenous, exogenous, maxe, is_simulated, num_states, is_write)
 
-            ! Store results
             periods_emax(period + 1, :num_states) = predictions
 
-            ! Deallocate containers
-            DEALLOCATE(is_simulated); DEALLOCATE(exogenous); DEALLOCATE(maxe);
-            DEALLOCATE(endogenous); DEALLOCATE(predictions)
+            DEALLOCATE(is_simulated, exogenous, maxe, endogenous, predictions)
 
         ELSE
 
-            ! Loop over all possible states
             DO k = 0, (states_number_period(period + 1) - 1)
 
-                ! Extract payoffs
                 payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
                 CALL get_future_value(emax_simulated, draws_emax, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, shocks_cholesky)
 
-                ! Collect information
                 periods_emax(period + 1, k + 1) = emax_simulated
 
             END DO
@@ -430,10 +410,10 @@ SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, num_stat
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(OUT)         :: independent_variables(:, :)
+    REAL(our_dble), INTENT(OUT)         :: independent_variables(num_states, 9)
     REAL(our_dble), INTENT(OUT)         :: maxe(num_states)
 
-    REAL(our_dble), INTENT(IN)          :: periods_payoffs_systematic(:, :, :)
+    REAL(our_dble), INTENT(IN)          :: periods_payoffs_systematic(num_periods, num_states, 4)
     REAL(our_dble), INTENT(IN)          :: periods_emax(num_periods, max_states_period)
     REAL(our_dble), INTENT(IN)          :: shifts(4)
 

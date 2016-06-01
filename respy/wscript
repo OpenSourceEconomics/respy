@@ -2,6 +2,7 @@
 
 # standard library
 import shutil
+import glob
 import os
 
 top = '.'
@@ -76,11 +77,16 @@ def distclean(ctx):
     except OSError:
         pass
 
-    for fname in ['f2py_debug.so', 'f2py_library.so']:
-        try:
-            os.unlink('fortran/' + fname)
-        except OSError:
-            pass
+    os.chdir('fortran')
+    libs = glob.glob('*.so')
+    os.chdir('../')
+
+    if libs:
+        for fname in libs:
+            try:
+                os.unlink('fortran/' + fname)
+            except OSError:
+                pass
 
     for fname in ['resfort_parallel_master', 'resfort_parallel_slave']:
         try:
