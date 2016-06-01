@@ -15,7 +15,7 @@ import os
 PACKAGE_DIR = os.path.dirname(os.path.realpath(__file__))
 PACKAGE_DIR = PACKAGE_DIR.replace('development/testing/regression', '')
 
-PYTHON_VERSION = str(sys.version_info[0])
+PYTHON_VERSION = sys.version_info[0]
 
 ################################################################################
 # Compile
@@ -48,7 +48,7 @@ from respy import simulate
 ################################################################################
 # RUN
 ################################################################################
-fname = 'test_vault_' + str(sys.version_info[0]) + '.respy.pkl'
+fname = 'test_vault_' + str(PYTHON_VERSION) + '.respy.pkl'
 tests = pkl.load(open(TEST_RESOURCES_DIR + '/' + fname, 'rb'))
 
 for idx in range(len(tests)):
