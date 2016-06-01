@@ -35,11 +35,11 @@ SUBROUTINE distribute_information(num_emax_slaves, period, send_slave, recieve_s
 
     !/* internal objects        */
 
-    INTEGER(our_int), ALLOCATABLE   :: rcounts(:)
-    INTEGER(our_int), ALLOCATABLE   :: scounts(:)
-    INTEGER(our_int), ALLOCATABLE   :: disps(:)
+    INTEGER(our_int), ALLOCATABLE       :: rcounts(:)
+    INTEGER(our_int), ALLOCATABLE       :: scounts(:)
+    INTEGER(our_int), ALLOCATABLE       :: disps(:)
 
-    INTEGER(our_int)                :: i
+    INTEGER(our_int)                    :: i
 
 
 !------------------------------------------------------------------------------
@@ -106,7 +106,6 @@ SUBROUTINE fort_evaluate_parallel(crit_val)
     ! Instruct slaves to assist in the calculation of the EMAX
     CALL MPI_Bcast(3, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
 
-    ! Receive results from lead slave
     CALL MPI_RECV(crit_val, 1, MPI_DOUBLE, MPI_ANY_SOURCE, MPI_ANY_TAG, SLAVECOMM, status, ierr)
 
 END SUBROUTINE
