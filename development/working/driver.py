@@ -40,4 +40,4 @@ if True:
 
 respy_obj = RespyCls('model.respy.ini')
 simulate(respy_obj)
-evaluate.evaluate(respy_obj)
+print(evaluate.evaluate(respy_obj))

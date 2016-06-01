@@ -603,8 +603,9 @@ SUBROUTINE store_results(mapping_state_idx, states_all, periods_payoffs_systemat
 
     END IF
 
-    ! Remove FORTRAN initialization file. 
+    ! Remove FORTRAN initialization files. 
     OPEN(UNIT=1, FILE='.model.resfort.ini'); CLOSE(1, STATUS='delete')
+    OPEN(UNIT=1, FILE='.data.resfort.dat'); CLOSE(1, STATUS='delete')
 
 END SUBROUTINE
 !******************************************************************************
@@ -725,7 +726,7 @@ SUBROUTINE read_dataset(data_array, num_agents)
             READ(1, *) (data_array(j, k), k = 1, 8)
         END DO
 
-    CLOSE(1, STATUS='delete')
+    CLOSE(1)
 
 END SUBROUTINE
 !******************************************************************************

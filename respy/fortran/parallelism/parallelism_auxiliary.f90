@@ -102,6 +102,8 @@ END SUBROUTINE
 !******************************************************************************
 SUBROUTINE fort_evaluate_parallel(crit_val, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_array, periods_draws_prob)
 
+    !/* external objects        */
+
     REAL(our_dble), INTENT(OUT)     :: crit_val
 
     REAL(our_dble), INTENT(IN)      :: periods_payoffs_systematic(num_periods, max_states_period, 4)
@@ -113,11 +115,21 @@ SUBROUTINE fort_evaluate_parallel(crit_val, periods_payoffs_systematic, mapping_
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
 
+
+    INTEGER(our_int)        :: status
+    REAL(our_dble) :: val = zero_dble
+
+
     PRINT *, 'about to evaluate in parallel'
 
+    ! Instruct slaves to assist in the calculation of the EMAX
+    CALL MPI_Bcast(3, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
+
+    CALL MPI_RECV(crit_val, 1, MPI_DOUBLE, MPI_ANY_SOURCE, MPI_ANY_TAG, SLAVECOMM, status, ierr)
+
+    PRINT *, crit_val, 'CRIT VAL'
+
 END SUBROUTINE
-
-
 !******************************************************************************
 !******************************************************************************
 SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home)

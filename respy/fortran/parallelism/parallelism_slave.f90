@@ -22,7 +22,8 @@ PROGRAM resfort_parallel_slave
     INTEGER(our_int), ALLOCATABLE   :: states_number_period(:)
     INTEGER(our_int), ALLOCATABLE   :: num_emax_slaves(:, :)
     INTEGER(our_int), ALLOCATABLE   :: states_all(:, :, :)
-    
+    REAL(our_dble), ALLOCATABLE      :: periods_draws_prob(:, :, :)
+
     INTEGER(our_int)                :: lower_bound
     INTEGER(our_int)                :: upper_bound
     INTEGER(our_int)                :: num_states
@@ -41,6 +42,7 @@ PROGRAM resfort_parallel_slave
     REAL(our_dble), ALLOCATABLE     :: predictions(:)
     REAL(our_dble), ALLOCATABLE     :: endogenous(:)
     REAL(our_dble), ALLOCATABLE     :: maxe(:)
+    REAL(our_dble), ALLOCATABLE     :: data_array(:, :)
 
     REAL(our_dble)                  :: shocks_cholesky(4, 4)
     REAL(our_dble)                  :: payoffs_systematic(4)
@@ -58,6 +60,8 @@ PROGRAM resfort_parallel_slave
     LOGICAL                         :: any_interpolated
     LOGICAL                         :: is_head
      
+
+    REAL(our_dble)      :: crit_val, partial_crit
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
@@ -70,6 +74,7 @@ PROGRAM resfort_parallel_slave
 
     ! Read in model specification.
     CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky)
+
 
     ! Allocate arrays
     IF(rank == 0) CALL logging_solution(1)
@@ -233,8 +238,19 @@ PROGRAM resfort_parallel_slave
         ! Evaluate criterion function
         ELSEIF(task == 3) THEN
 
-            PRINT *, 'Ready to evaluate'
 
+    ! Read observed dataset from disk.
+    CALL read_dataset(data_array, num_agents_est)
+
+        CALL create_draws(periods_draws_prob, num_draws_prob, seed_prob)
+        
+            CALL fort_evaluate(partial_crit, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_array, periods_draws_prob)
+            
+            CALL MPI_REDUCE(partial_crit, crit_val, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
+
+            ! The leading slave updates the master 
+            IF (rank == 0) CALL MPI_SEND(crit_val, 1, MPI_DOUBLE, 0, 1, PARENTCOMM, ierr)            
+          
         END IF    
 
     END DO
