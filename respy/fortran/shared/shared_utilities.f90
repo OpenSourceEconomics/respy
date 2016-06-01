@@ -43,10 +43,13 @@ SUBROUTINE svd(U, S, VT, A, m)
 
     INTEGER(our_int) , ALLOCATABLE     :: IWORK(:)
     REAL(our_dble), ALLOCATABLE     :: WORK(:)
+    REAL(our_dble)                  :: A_sub(m, m)
 
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
+
+    A_sub = A
 
     ! Auxiliary objects
     LWORK =  M * (7 + 4 * M)
@@ -55,7 +58,7 @@ SUBROUTINE svd(U, S, VT, A, m)
     ALLOCATE(WORK(LWORK)); ALLOCATE(IWORK(8 * M))
 
     ! Call LAPACK routine
-    CALL DGESDD( 'A', m, m, A, m, S, U, m, VT, m, WORK, LWORK, IWORK, INFO)
+    CALL DGESDD( 'A', m, m, A_sub, m, S, U, m, VT, m, WORK, LWORK, IWORK, INFO)
 
 END SUBROUTINE
 !******************************************************************************
