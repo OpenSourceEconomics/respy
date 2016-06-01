@@ -10,6 +10,8 @@ MODULE shared_utilities
 
     !/* external modules    */
 
+    USE shared_lapack_interfaces
+    
     USE shared_constants
 
     !/* setup   */
@@ -39,7 +41,7 @@ SUBROUTINE svd(U, S, VT, A, m)
     INTEGER(our_int)                :: LWORK
     INTEGER(our_int)                :: INFO
 
-    REAL(our_dble), ALLOCATABLE     :: IWORK(:)
+    INTEGER(our_int) , ALLOCATABLE     :: IWORK(:)
     REAL(our_dble), ALLOCATABLE     :: WORK(:)
 
 !------------------------------------------------------------------------------

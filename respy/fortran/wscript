@@ -91,7 +91,8 @@ def build(ctx):
     # Create the RESFORT library. This is build in addition to the RESFORT
     # executable to allow for the use of an F2PY interface to the core
     # functions as well.
-    src = ['shared/shared_constants.f90', 'shared/shared_auxiliary.f90',
+    src = ['shared/shared_constants.f90', 'shared/shared_lapack_interfaces.f90',
+                                          'shared/shared_auxiliary.f90',
         'shared/shared_utilities.f90', 'solve/solve_auxiliary.f90',
         'solve/solve_fortran.f90', 'evaluate/evaluate_auxiliary.f90',
         'evaluate/evaluate_fortran.f90', 'estimate/estimate_auxiliary.f90',
