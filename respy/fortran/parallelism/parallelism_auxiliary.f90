@@ -27,29 +27,27 @@ SUBROUTINE distribute_information(num_emax_slaves, period, send_slave, recieve_s
 
     !/* external objects        */
 
+    REAL(our_dble), INTENT(INOUT)       :: recieve_slaves(:)    
+     
+    REAL(our_dble), INTENT(IN)          :: send_slave(:)
+
     INTEGER(our_int), INTENT(IN)        :: num_emax_slaves(num_periods, num_slaves)
     INTEGER(our_int), INTENT(IN)        :: period
- 
-    REAL(our_dble), INTENT(IN)          :: send_slave(:)
-    REAL(our_dble), INTENT(INOUT)       :: recieve_slaves(:)
 
     !/* internal objects        */
 
-    INTEGER(our_int), ALLOCATABLE       :: rcounts(:)
-    INTEGER(our_int), ALLOCATABLE       :: scounts(:)
-    INTEGER(our_int), ALLOCATABLE       :: disps(:)
-
+    INTEGER(our_int)                    :: rcounts(num_slaves)
+    INTEGER(our_int)                    :: scounts(num_slaves)
+    INTEGER(our_int)                    :: disps(num_slaves)
     INTEGER(our_int)                    :: i
-
 
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
 
     ! Parameterize the communication.
-    ALLOCATE(rcounts(num_slaves), scounts(num_slaves), disps(num_slaves))
-    scounts(:) = num_emax_slaves(period + 1, :)
-    rcounts(:) = scounts
+    scounts = num_emax_slaves(period + 1, :)
+    rcounts = scounts
     DO i = 1, num_slaves
         disps(i) = SUM(scounts(:i - 1)) 
     END DO
@@ -99,7 +97,7 @@ SUBROUTINE fort_evaluate_parallel(crit_val)
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(INOUT)       :: crit_val
+    REAL(our_dble), INTENT(OUT)         :: crit_val
 
 !------------------------------------------------------------------------------
 ! Algorithm

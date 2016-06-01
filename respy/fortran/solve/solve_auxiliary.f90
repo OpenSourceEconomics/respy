@@ -202,7 +202,6 @@ SUBROUTINE fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_
             ! Calculate systematic part of payoff in occupation A
             periods_payoffs_systematic(period, k, 1) =  clip_value(EXP(DOT_PRODUCT(covars, coeffs_a)), zero_dble, HUGE_FLOAT)
                 
-
             ! Calculate systematic part of payoff in occupation B
             periods_payoffs_systematic(period, k, 2) = clip_value(EXP(DOT_PRODUCT(covars, coeffs_b)), zero_dble, HUGE_FLOAT)
 
@@ -210,18 +209,11 @@ SUBROUTINE fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_
             payoff = coeffs_edu(1)
 
             ! Tuition cost for higher education if agents move beyond high school.
-            IF(edu + edu_start >= 12) THEN
-
-                payoff = payoff + coeffs_edu(2)
-
-            END IF
+            IF(edu + edu_start >= 12) payoff = payoff + coeffs_edu(2)
 
             ! Psychic cost of going back to school
-            IF(edu_lagged == 0) THEN
+            IF(edu_lagged == 0) payoff = payoff + coeffs_edu(3)
 
-                payoff = payoff + coeffs_edu(3)
-
-            END IF
             periods_payoffs_systematic(period, k, 3) = payoff
 
             ! Calculate systematic part of payoff in home production
