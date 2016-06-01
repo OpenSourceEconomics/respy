@@ -44,3 +44,4 @@ for idx in range(len(tests)):
     respy_obj = RespyCls('test.respy.ini')
     simulate(respy_obj)
     np.testing.assert_almost_equal(evaluate(respy_obj), crit_val)
+
