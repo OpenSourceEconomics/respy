@@ -95,6 +95,8 @@ END SUBROUTINE
 !******************************************************************************
 SUBROUTINE fort_evaluate_parallel(crit_val)
 
+    !   This routine instructs the slaves to evaluate the criterion function and waits for the lead slave to send the result.
+
     !/* external objects        */
 
     REAL(our_dble), INTENT(INOUT)       :: crit_val
@@ -103,7 +105,6 @@ SUBROUTINE fort_evaluate_parallel(crit_val)
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    ! Instruct slaves to assist in the calculation of the EMAX
     CALL MPI_Bcast(3, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
 
     CALL MPI_RECV(crit_val, 1, MPI_DOUBLE, MPI_ANY_SOURCE, MPI_ANY_TAG, SLAVECOMM, status, ierr)
