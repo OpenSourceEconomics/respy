@@ -23,9 +23,7 @@ PROGRAM resfort_parallel
     INTEGER(our_int), ALLOCATABLE   :: states_all(:, :, :)
 
     REAL(our_dble), ALLOCATABLE     :: periods_payoffs_systematic(:, :, :)
-    REAL(our_dble), ALLOCATABLE     :: periods_draws_prob(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_emax(:, :)
-    REAL(our_dble), ALLOCATABLE     :: data_array(:, :)
 
     REAL(our_dble)                  :: shocks_cholesky(4, 4)
     REAL(our_dble)                  :: coeffs_home(1)
@@ -52,10 +50,6 @@ PROGRAM resfort_parallel
         CALL fort_solve_parallel(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
 
     ELSE IF (request == 'evaluate') THEN
-
-        CALL create_draws(periods_draws_prob, num_draws_prob, seed_prob)
-
-        CALL read_dataset(data_array, num_agents_est)
 
         CALL fort_solve_parallel(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
         
