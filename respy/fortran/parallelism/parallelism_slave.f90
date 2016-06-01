@@ -75,7 +75,6 @@ PROGRAM resfort_parallel_slave
     ! Read in model specification.
     CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky)
 
-
     ! Allocate arrays
     IF(rank == 0) CALL logging_solution(1)
 
@@ -239,17 +238,17 @@ PROGRAM resfort_parallel_slave
         ELSEIF(task == 3) THEN
 
 
-    ! Read observed dataset from disk.
-    CALL read_dataset(data_array, num_agents_est)
+            ! Read observed dataset from disk.
+            CALL read_dataset(data_array, num_agents_est)
 
-        CALL create_draws(periods_draws_prob, num_draws_prob, seed_prob)
+            CALL create_draws(periods_draws_prob, num_draws_prob, seed_prob)
         
             CALL fort_evaluate(partial_crit, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_array, periods_draws_prob)
             
             CALL MPI_REDUCE(partial_crit, crit_val, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
-
+            
             ! The leading slave updates the master 
-            IF (rank == 0) CALL MPI_SEND(crit_val, 1, MPI_DOUBLE, 0, 1, PARENTCOMM, ierr)            
+            IF (rank == 0) CALL MPI_SEND(crit_val, 1, MPI_DOUBLE, 0, 75, PARENTCOMM, ierr)            
           
         END IF    
 

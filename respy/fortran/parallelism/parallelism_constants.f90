@@ -4,6 +4,8 @@ MODULE parallel_constants
 
     USE resfort_library
 
+    USE mpi
+
     !/* setup                   */
 
     IMPLICIT NONE
@@ -13,6 +15,7 @@ MODULE parallel_constants
 !------------------------------------------------------------------------------
     
     ! MPI Variables
+    INTEGER(our_int)            :: status(MPI_STATUS_SIZE)
     INTEGER(our_int)            :: PARENTCOMM
     INTEGER(our_int)            :: SLAVECOMM
     INTEGER(our_int)            :: num_slaves
