@@ -13,7 +13,7 @@ import os
 
 # Reconstruct directory structure and edits to PYTHONPATH
 PACKAGE_DIR = os.path.dirname(os.path.realpath(__file__))
-PACKAGE_DIR = PACKAGE_DIR.replace('development/testing/exploratory', '')
+PACKAGE_DIR = PACKAGE_DIR.replace('development/testing/regression', '')
 
 ################################################################################
 # Compile
@@ -37,7 +37,6 @@ from respy import simulate
 fname = 'test_vault_' + str(sys.version_info[0]) + '.respy.pkl'
 tests = pkl.load(open(TEST_RESOURCES_DIR + '/' + fname, 'rb'))
 
-print(fname)
 for idx in range(len(tests)):
     print('\n Evaluation ', idx)
     init_dict, crit_val = tests[idx]
