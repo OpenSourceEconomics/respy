@@ -56,6 +56,48 @@ SUBROUTINE distribute_information(num_emax_slaves, period, send_slave, recieve_s
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
+SUBROUTINE get_observation_workload(num_obs_slaves, num_obs)
+
+    !/* external objects        */
+
+    INTEGER(our_int), ALLOCATABLE, INTENT(OUT) :: num_obs_slaves(:)
+    
+    INTEGER(our_int), INTENT(IN)    :: num_obs
+
+    !/* internal objects        */
+
+    INTEGER(our_int)                :: j
+    INTEGER(our_int)                :: i
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+ 
+    ALLOCATE(num_obs_slaves(num_slaves))
+
+    num_obs_slaves = zero_int
+
+        j = 1
+
+        DO i = 1, num_obs
+
+            IF (j .GT. num_slaves) THEN
+            
+                j = 1
+
+            END IF
+
+            num_obs_slaves(j) = num_obs_slaves(j) + 1
+
+            j = j + 1
+
+        END DO
+
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE determine_workload(num_emax_slaves, states_number_period)
 
     !/* external objects        */

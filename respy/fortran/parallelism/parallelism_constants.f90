@@ -14,7 +14,6 @@ MODULE parallel_constants
 !   Parallel Inputs
 !------------------------------------------------------------------------------
     
-    ! MPI Variables
     INTEGER(our_int)            :: status(MPI_STATUS_SIZE)
     INTEGER(our_int)            :: PARENTCOMM
     INTEGER(our_int)            :: SLAVECOMM

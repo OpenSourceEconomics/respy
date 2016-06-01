@@ -65,8 +65,7 @@ PROGRAM resfort_parallel
         CALL fort_solve_parallel(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
         
         ! Evaluate criterion function in parallel
-!        CALL fort_evaluate_parallel(crit_val)
-        CALL fort_evaluate(crit_val, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_array, periods_draws_prob)
+        CALL fort_evaluate_parallel(crit_val)
 
     END IF
 
