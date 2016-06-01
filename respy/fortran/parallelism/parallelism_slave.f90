@@ -23,7 +23,6 @@ PROGRAM resfort_parallel_slave
     INTEGER(our_int), ALLOCATABLE   :: num_emax_slaves(:, :)
     INTEGER(our_int), ALLOCATABLE   :: num_obs_slaves(:)
     INTEGER(our_int), ALLOCATABLE   :: states_all(:, :, :)
-    REAL(our_dble), ALLOCATABLE      :: periods_draws_prob(:, :, :)
 
     INTEGER(our_int)                :: lower_bound
     INTEGER(our_int)                :: upper_bound
@@ -35,15 +34,17 @@ PROGRAM resfort_parallel_slave
 
     REAL(our_dble), ALLOCATABLE     :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_draws_emax(:, :, :)
+    REAL(our_dble), ALLOCATABLE     :: periods_draws_prob(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_emax_slaves(:)
     REAL(our_dble), ALLOCATABLE     :: endogenous_slaves(:)
     REAL(our_dble), ALLOCATABLE     :: periods_emax(:, :)
     REAL(our_dble), ALLOCATABLE     :: draws_emax(:, :)
+    REAL(our_dble), ALLOCATABLE     :: data_array(:, :)
+    REAL(our_dble), ALLOCATABLE     :: data_slave(:, :)
     REAL(our_dble), ALLOCATABLE     :: exogenous(:, :)
     REAL(our_dble), ALLOCATABLE     :: predictions(:)
     REAL(our_dble), ALLOCATABLE     :: endogenous(:)
     REAL(our_dble), ALLOCATABLE     :: maxe(:)
-    REAL(our_dble), ALLOCATABLE     :: data_array(:, :), data_slave(:, :)
 
     REAL(our_dble)                  :: shocks_cholesky(4, 4)
     REAL(our_dble)                  :: payoffs_systematic(4)
@@ -51,9 +52,11 @@ PROGRAM resfort_parallel_slave
     REAL(our_dble)                  :: emax_simulated
     REAL(our_dble)                  :: coeffs_home(1)
     REAL(our_dble)                  :: coeffs_edu(3)
+    REAL(our_dble)                  :: partial_crit
     REAL(our_dble)                  :: coeffs_a(6)
     REAL(our_dble)                  :: coeffs_b(6)
     REAL(our_dble)                  :: shifts(4)
+    REAL(our_dble)                  :: crit_val
 
     LOGICAL, ALLOCATABLE            :: is_simulated(:)
     
@@ -61,8 +64,6 @@ PROGRAM resfort_parallel_slave
     LOGICAL                         :: any_interpolated
     LOGICAL                         :: is_head
     
-
-    REAL(our_dble)      :: crit_val, partial_crit
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
@@ -86,11 +87,10 @@ PROGRAM resfort_parallel_slave
     ! Determine workload and allocate communication information.
     ALLOCATE(num_emax_slaves(num_periods, num_slaves), num_obs_slaves(num_slaves), draws_emax(num_draws_emax, 4))
 
+    CALL determine_workload(num_obs_slaves, (num_agents_est * num_periods))
     DO period = 1, num_periods
         CALL determine_workload(num_emax_slaves(period, :), states_number_period(period))   
     END DO
-
-    CALL determine_workload(num_obs_slaves, (num_agents_est * num_periods))
 
     ! Calculate the systematic payoffs
     IF(rank == 0) CALL logging_solution(2)
@@ -105,7 +105,6 @@ PROGRAM resfort_parallel_slave
     is_head = .False.
     IF(rank == zero_int) is_head = .True.
     
-
     DO WHILE (STAY_AVAILABLE)  
         
         ! Waiting for request from master to perform an action.
@@ -142,10 +141,7 @@ PROGRAM resfort_parallel_slave
                 ! Extract draws and construct auxiliary objects
                 draws_emax = periods_draws_emax(period + 1, :, :)
                 num_states = states_number_period(period + 1)
-                ALLOCATE(periods_emax_slaves(num_states))
-
-                ALLOCATE(endogenous_slaves(num_states))
-
+                ALLOCATE(periods_emax_slaves(num_states), endogenous_slaves(num_states))
 
                 IF (rank == 0) CALL logging_solution(4, period, num_states)        
 
@@ -206,8 +202,7 @@ PROGRAM resfort_parallel_slave
                     IF (rank == 0) CALL MPI_SEND(periods_emax(period + 1, :num_states), num_states, MPI_DOUBLE, 0, period, PARENTCOMM, ierr)    
 
                     ! Deallocate containers
-                    DEALLOCATE(is_simulated); DEALLOCATE(exogenous); DEALLOCATE(maxe);
-                    DEALLOCATE(endogenous); DEALLOCATE(predictions)
+                    DEALLOCATE(is_simulated, exogenous, maxe, endogenous, predictions)
 
                  ELSE
 
@@ -233,7 +228,7 @@ PROGRAM resfort_parallel_slave
           
                 END IF
 
-                DEALLOCATE(periods_emax_slaves); DEALLOCATE(endogenous_slaves)
+                DEALLOCATE(periods_emax_slaves, endogenous_slaves)
     
             END DO
         

@@ -2,7 +2,7 @@
 !******************************************************************************
 MODULE evaluate_auxiliary
 
-	!/*	external modules	*/
+	!/*	external modules	  */
 
     USE shared_constants
 

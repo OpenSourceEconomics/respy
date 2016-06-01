@@ -2,7 +2,7 @@
 !******************************************************************************
 MODULE parallel_auxiliary
 
-    !/* external modules    */
+    !/* external modules        */
 
     USE parallel_constants
 
@@ -10,7 +10,7 @@ MODULE parallel_auxiliary
 
     USE mpi
 
-    !/* setup   */
+    !/* setup                   */
 
     IMPLICIT NONE
 
@@ -21,13 +21,17 @@ CONTAINS
 !******************************************************************************
 SUBROUTINE distribute_information(num_emax_slaves, period, send_slave, recieve_slaves)
     
+    ! DEVELOPMENT NOTES
+    !
+    ! The assumed-shape input arguments allow to use this subroutine repeatedly.
+
     !/* external objects        */
 
-    INTEGER(our_int), INTENT(IN)    :: num_emax_slaves(num_periods, num_slaves)
-    INTEGER(our_int), INTENT(IN)    :: period
+    INTEGER(our_int), INTENT(IN)        :: num_emax_slaves(num_periods, num_slaves)
+    INTEGER(our_int), INTENT(IN)        :: period
  
-    REAL(our_dble), INTENT(IN)      :: send_slave(:)
-    REAL(our_dble), INTENT(INOUT)   :: recieve_slaves(:)
+    REAL(our_dble), INTENT(IN)          :: send_slave(:)
+    REAL(our_dble), INTENT(INOUT)       :: recieve_slaves(:)
 
     !/* internal objects        */
 
@@ -50,7 +54,6 @@ SUBROUTINE distribute_information(num_emax_slaves, period, send_slave, recieve_s
         disps(i) = SUM(scounts(:i - 1)) 
     END DO
     
-    ! Aggregate the EMAX contributions across the slaves.    
     CALL MPI_ALLGATHERV(send_slave, scounts(rank + 1), MPI_DOUBLE, recieve_slaves, rcounts, disps, MPI_DOUBLE, MPI_COMM_WORLD, ierr)
 
 END SUBROUTINE
@@ -94,9 +97,7 @@ SUBROUTINE fort_evaluate_parallel(crit_val)
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(INOUT)     :: crit_val
-
-    !/* internal objects        */
+    REAL(our_dble), INTENT(INOUT)       :: crit_val
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -136,15 +137,12 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
 ! Algorithm
 !------------------------------------------------------------------------------
       
-    ! Instruct slaves to assist in the calculation of the EMAX
     CALL MPI_Bcast(2, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
     
-    ! As the slaves are plugging along, the master prepares the containers for the results
     CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, periods_emax, periods_payoffs_systematic)
 
     CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
 
-    ! The leading slave is kind enough to let the parent process know about the  intermediate outcomes.
     DO period = (num_periods - 1), 0, -1
 
         num_states = states_number_period(period + 1)
