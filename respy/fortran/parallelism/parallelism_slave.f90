@@ -84,7 +84,13 @@ PROGRAM resfort_parallel_slave
     IF(rank == 0) CALL logging_solution(-1)
 
     ! Determine workload and allocate communication information.
-    CALL determine_workload(num_emax_slaves, states_number_period)
+    ALLOCATE(num_emax_slaves(num_periods, num_slaves), num_obs_slaves(num_slaves))
+
+    DO period = 1, num_periods
+        CALL determine_workload(num_emax_slaves(period, :), states_number_period(period))   
+    END DO
+
+    CALL determine_workload(num_obs_slaves, (num_agents_est * num_periods))
 
     ! Calculate the systematic payoffs
     IF(rank == 0) CALL logging_solution(2)
@@ -240,8 +246,6 @@ PROGRAM resfort_parallel_slave
 
             ! If the evaluation is requested for the first time. The data container is not allocated, so all preparations for the evaluation are taken.
             IF (.NOT. ALLOCATED(data_array)) THEN
-
-                CALL get_observation_workload(num_obs_slaves, (num_agents_est * num_periods))
 
                 CALL read_dataset(data_array, num_agents_est)
 

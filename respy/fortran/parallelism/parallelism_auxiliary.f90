@@ -56,87 +56,35 @@ SUBROUTINE distribute_information(num_emax_slaves, period, send_slave, recieve_s
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_observation_workload(num_obs_slaves, num_obs)
+SUBROUTINE determine_workload(jobs_slaves, jobs_total)
 
     !/* external objects        */
 
-    INTEGER(our_int), ALLOCATABLE, INTENT(OUT) :: num_obs_slaves(:)
+    INTEGER(our_int), INTENT(INOUT)     :: jobs_slaves(num_slaves)
     
-    INTEGER(our_int), INTENT(IN)    :: num_obs
+    INTEGER(our_int), INTENT(IN)        :: jobs_total 
 
     !/* internal objects        */
 
-    INTEGER(our_int)                :: j
-    INTEGER(our_int)                :: i
-
-!------------------------------------------------------------------------------
-! Algorithm
-!------------------------------------------------------------------------------
-
- 
-    ALLOCATE(num_obs_slaves(num_slaves))
-
-    num_obs_slaves = zero_int
-
-        j = 1
-
-        DO i = 1, num_obs
-
-            IF (j .GT. num_slaves) THEN
-            
-                j = 1
-
-            END IF
-
-            num_obs_slaves(j) = num_obs_slaves(j) + 1
-
-            j = j + 1
-
-        END DO
-
-
-END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
-SUBROUTINE determine_workload(num_emax_slaves, states_number_period)
-
-    !/* external objects        */
-
-    INTEGER(our_int), ALLOCATABLE, INTENT(OUT)   :: num_emax_slaves(:, :)
-    
-    INTEGER(our_int), INTENT(IN)    :: states_number_period(num_periods)
-
-    !/* internal objects        */
-
-    INTEGER(our_int)                :: period
-    INTEGER(our_int)                :: j
-    INTEGER(our_int)                :: i
+    INTEGER(our_int)                    :: j
+    INTEGER(our_int)                    :: i
 
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
     
-    ALLOCATE(num_emax_slaves(num_periods, num_slaves))
+    jobs_slaves = zero_int
 
-    num_emax_slaves = zero_int
+    j = 1
 
-    DO period = 1, num_periods
-
-        j = 1
-
-        DO i = 1, states_number_period(period)
+    DO i = 1, jobs_total
             
-            IF (j .GT. num_slaves) THEN
-            
-                j = 1
+        IF (j .GT. num_slaves) j = 1
 
-            END IF
+        jobs_slaves(j) = jobs_slaves(j) + 1
 
-            num_emax_slaves(period, j) = num_emax_slaves(period, j) + 1
+        j = j + 1
 
-            j = j + 1
-
-        END DO
     END DO
 
 END SUBROUTINE
