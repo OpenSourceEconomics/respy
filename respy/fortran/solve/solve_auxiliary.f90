@@ -622,9 +622,9 @@ SUBROUTINE logging_prediction_model(coeffs, r_squared, bse)
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(IN)      :: coeffs(6)
+    REAL(our_dble), INTENT(IN)      :: coeffs(9)
     REAL(our_dble), INTENT(IN)      :: r_squared
-    REAL(our_dble), INTENT(IN)      :: bse(1)
+    REAL(our_dble), INTENT(IN)      :: bse(9)
 
 !------------------------------------------------------------------------------
 ! Algorithm
