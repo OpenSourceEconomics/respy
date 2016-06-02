@@ -51,7 +51,7 @@ from respy import simulate
 fname = 'test_vault_' + str(PYTHON_VERSION) + '.respy.pkl'
 tests = pkl.load(open(TEST_RESOURCES_DIR + '/' + fname, 'rb'))
 
-for idx in range(len(tests)):
+for idx, _ in enumerate(tests):
     print('\n Evaluation ', idx, 'with version ', PYTHON_VERSION)
     init_dict, crit_val = tests[idx]
     print_init_dict(init_dict)

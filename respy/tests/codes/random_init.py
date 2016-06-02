@@ -158,8 +158,7 @@ def generate_random_dict(constraints=None):
     if 'agents' in keys:
         assert 'max_draws' not in keys
 
-    if 'parallelism' in keys:
-        if ('version' in keys) and constraints['parallelism']:
+    if ('parallelism' in keys) and ('version' in keys) and constraints['parallelism']:
             assert constraints['version'] == 'FORTRAN'
 
     # Replace interpolation

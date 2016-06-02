@@ -92,10 +92,9 @@ def check_line(group, flag, value):
                 assert isinstance(value, int)
                 assert value > 0
 
-            if flag in ['parallelism']:
-                if value:
-                    fname = EXEC_DIR + '/resfort_parallel_master'
-                    assert os.path.exists(fname)
+            if flag in ['parallelism'] and value:
+                fname = EXEC_DIR + '/resfort_parallel_master'
+                assert os.path.exists(fname)
 
         if group == 'SIMULATION':
             if flag in ['agents', 'seed']:
