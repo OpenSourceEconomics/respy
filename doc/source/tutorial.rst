@@ -100,7 +100,7 @@ seed        int         random seed for the EMAX approximation
 =======     ======      ==========================
 Key         Value       Interpretation      
 =======     ======      ==========================
-file        str         file to print simulated sample
+file        str         file to print simulated sample, *.dat* added automatically
 agents      int         number of simulated agents
 seed        int         random seed for agent experience
 =======     ======      ==========================
@@ -110,7 +110,7 @@ seed        int         random seed for agent experience
 ==========      ======      ==========================
 Key             Value       Interpretation      
 ==========      ======      ==========================
-file            str         file to read observed sample
+file            str         file to read observed sample, *.dat* added automatically
 tau             float       smoothing window
 agents          int         number of agents to read from sample
 maxiter         int         maximum number of iterations for optimizer
@@ -180,7 +180,7 @@ directory.
 * **logging.respy.sol.log**, logging information from the solution algorithm
 * **logging.respy.sim.log**, logging information from the simulation algorithm
 
-The names of the following files depend on the specified filename in the SIMULATION section of the model initialization file.
+The names of the following files depend on the specified filename in the SIMULATION section of the model initialization file, where we specified *data.respy*. The extensions are automatically added.
 
 * **data.respy.dat**, simulated dataset with the agent choices and state experiences (:ref:`details <data.respy.dat>`)
 
@@ -188,7 +188,7 @@ The names of the following files depend on the specified filename in the SIMULAT
 
 * **data.respy.paras**, parameterization of model for simulated dataset (:ref:`details <data.respy.paras>`)
 
-Now that we have some observed data, we can start an estimation. Here we are using the simulated data for the estimation. However, you can of course also use other data sources. Just make sure they follow the layout of the simulated sample. The coefficient values in the initialization file serve as the starting values::
+Now that we have some observed data, we can start an estimation. Here we are using the simulated data for the estimation. However, you can of course also use other data sources. Just make sure they follow the layout of the simulated sample and remember that the *.dat* extension will be added automatically to the filename specified in the ESTIMATION section. The coefficient values in the initialization file serve as the starting values::
 
     from respy import estimate
 

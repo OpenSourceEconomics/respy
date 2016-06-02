@@ -18,12 +18,9 @@ addons:
 bundler_args: --retry 3
 
 install:
-  - travis_retry travis_wait pip install -r requirements.txt
-  - pip install codecov
-  - pip install tox
-
-# Calling each of the TOX environments separately allow to deal with timeout 
-# issues. For some reason, py33 is still timing out consistently.
+- travis_retry travis_wait pip install -r requirements.txt
+- pip install codecov
+- pip install tox
 script:
 #  - travis_wait tox -e py27 -v
 #  - travis_wait tox -e py34 -v
