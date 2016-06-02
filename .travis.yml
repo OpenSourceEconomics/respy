@@ -1,8 +1,8 @@
 language: python
 python:
-  - 2.7
-  - 3.3
-  - 3.4
+#  - 2.7
+#  - 3.3
+#  - 3.4
   - 3.5
 
 addons:
@@ -11,6 +11,9 @@ addons:
       - gfortran
       - libatlas-dev
       - libatlas-base-dev
+      - libcr-dev 
+      - mpich2 
+      - mpich2-doc
 
 bundler_args: --retry 3
 
@@ -22,9 +25,9 @@ install:
 # Calling each of the TOX environments separately allow to deal with timeout 
 # issues. For some reason, py33 is still timing out consistently.
 script:
-  - travis_wait tox -e py27 -v
-  - travis_wait tox -e py34 -v
-  - travis_wait tox -e py35 -v
+#  - travis_wait tox -e py27 -v
+#  - travis_wait tox -e py34 -v
+#  - travis_wait tox -e py35 -v
   - python tools/travis_run.py
 
 after_success:
