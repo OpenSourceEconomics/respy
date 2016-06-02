@@ -27,7 +27,7 @@ VERSIONS = ['PYTHON', 'FORTRAN', 'F2PY']
 
 ''' Request
 '''
-seed = 1223 # 6216748723
+seed = 46434 # 6216748723
 
 
 ''' Error Reproduction
@@ -41,7 +41,7 @@ for _ in range(1):
     test_dict = get_test_dict(PACKAGE_DIR + '/respy/tests')
     module, method = get_random_request(test_dict)
 
-    module, method = 'test_parallels', 'test_1'
+    #module, method = 'test_parallels', 'test_1'
     print(module, method)
     mod = importlib.import_module(module)
     test = getattr(mod.TestClass(), method)
