@@ -447,6 +447,9 @@ SUBROUTINE f2py_calculate_payoffs_systematic(periods_payoffs_systematic, num_per
     num_periods = num_periods_int
     edu_start = edu_start_int
 
+    ! Initialize with missing values
+    periods_payoffs_systematic = MISSING_FLOAT
+
     ! Call function of interest
     CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
 
