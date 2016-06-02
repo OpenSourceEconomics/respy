@@ -49,13 +49,15 @@ class CreateParallelExecutable(Task):
         # #
 
 
+        print(self.env)
+
         cmd = 'mpif90 parallelism/parallelism_constants.f90 ' \
               'parallelism/parallelism_auxiliary.f90 resfort_parallel.f90 ' + '-o ' \
                                                    'resfort_parallel_master ' + \
               ' '.join(
                  DEBUG_OPTIONS) + ' -I' + inc_dir + ' -L' + lib_dir + ' ' \
                                                                       '-lresfort ' \
-                                                                      '-llapack '
+                                                                      '-llapack -lmpi '
         assert os.system(cmd) == 0
 
         cmd = 'mpif90 parallelism/parallelism_constants.f90 ' \
@@ -110,8 +112,25 @@ def build(ctx):
     ctx(features=['fc', 'fcprogram'], source='resfort_scalar.f90',
         target='resfort_scalar')
 
-    # Compile the parallel RESFORT executables.
-    ctx.add_to_group(CreateParallelExecutable(env=ctx.env))
+    # Compile the parallel RESFORT executables. We follow the master/slave
+    # design pattern.
+    if ctx.env['PARALLELISM']:
+
+        master = ['parallelism/parallelism_constants.f90',
+            'parallelism/parallelism_auxiliary.f90',
+            'resfort_parallel.f90']
+
+        ctx(features=['fc', 'fcprogram'], source=master,
+            target='resfort_parallel_master')
+
+        ctx.add_group()
+
+        slave = ['parallelism/parallelism_constants.f90',
+            'parallelism/parallelism_auxiliary.f90',
+            'parallelism/parallelism_slave.f90']
+
+        ctx(features=['fc', 'fcprogram'], source=slave,
+             target='resfort_parallel_slave')
 
     # Build the upgraded Keane and Wolpin (1994) program
     ctx.recurse('miscellaneous/kw_recomputation')

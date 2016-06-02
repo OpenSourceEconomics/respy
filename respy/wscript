@@ -33,6 +33,19 @@ def configure(ctx):
     ctx.load('compiler_fc')
     ctx.check_fortran()
 
+    ctx.check_fc(msg='Checking for LAPACK library (required)', lib='lapack',
+        mandatory=True)
+
+    # Check for MPI compiler. If present, we will simply replace the compiler
+    #  abd build the parallel implementation as well.
+    ctx.env['PARALLELISM'] = True
+    try:
+        ctx.find_program('mpifort')
+        ctx.env['FC'] = 'mpifort'
+        ctx.env['COMPILER_FORTRAN'] = 'mpifort'
+    except ctx.errors.ConfigurationError:
+        ctx.env['PARALLELISM'] = False
+
 
 def build(ctx):
 
@@ -58,65 +71,3 @@ def build(ctx):
 
     # Initialize directory structure
     ctx.recurse('fortran')
-
-    ctx.add_post_fun(post)
-
-
-def distclean(ctx):
-    """ Cleanup build
-    """
-    # Remove build
-    try:
-        shutil.rmtree('.bld')
-    except OSError:
-        pass
-
-    # Remove libraries and executables
-    try:
-        shutil.rmtree('fortran/bin')
-    except OSError:
-        pass
-
-    os.chdir('fortran')
-    libs = glob.glob('*.so')
-    os.chdir('../')
-
-    if libs:
-        for fname in libs:
-            try:
-                os.unlink('fortran/' + fname)
-            except OSError:
-                pass
-
-    for fname in ['resfort_parallel_master', 'resfort_parallel_slave']:
-        try:
-            os.unlink('fortran/' + fname)
-        except OSError:
-            pass
-
-
-def post(ctx):
-    """ This function performs some housekeeping tasks
-    """
-    # Create subdirectory for FORTRAN executables
-    subdir = 'fortran/bin'
-    if os.path.exists(subdir):
-        shutil.rmtree(subdir)
-
-    # Copy the RESFORT executables back to package directory
-    os.mkdir(subdir)
-    shutil.move('.bld/fortran/resfort_scalar', subdir)
-
-    #shutil.move('fortran/miscellaneous/testing/testing_parallel_scalar',
-    # subdir)
-
-    try:
-        shutil.move('fortran/resfort_parallel_master', subdir)
-        shutil.move('fortran/resfort_parallel_slave', subdir)
-    except:
-        pass
-
-    # Copy the KW executable.
-    src = '.bld/fortran/miscellaneous/kw_recomputation/kw_dp3asim'
-    shutil.move(src, subdir)
-

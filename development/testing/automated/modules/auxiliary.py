@@ -151,8 +151,7 @@ def get_test_dict(test_dir):
 
     # If the parallel version is not available, we remove the parallel tests.
     if not IS_PARALLEL:
-        del test_dict['test_parallels']
-
+        del test_dict['test_parallelism']
 
     # Finishing
     return test_dict

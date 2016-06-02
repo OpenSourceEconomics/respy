@@ -121,7 +121,7 @@ class TestClass(object):
             num_agents_sim, num_periods, num_draws_emax, delta)
 
         # Solve model using RESTUD code.
-        cmd = FORTRAN_DIR + '/bin/kw_dp3asim'
+        cmd = FORTRAN_DIR + '/miscellaneous/kw_recomputation/kw_dp3asim'
         subprocess.call(cmd, shell=True)
 
         # Solve model using RESPY package.
