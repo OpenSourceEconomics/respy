@@ -1,8 +1,8 @@
 language: python
 python:
-#  - 2.7
-#  - 3.3
-#  - 3.4
+  - 2.7
+  - 3.3
+  - 3.4
   - 3.5
 
 addons:
@@ -11,20 +11,17 @@ addons:
       - gfortran
       - libatlas-dev
       - libatlas-base-dev
-      - libcr-dev 
-      - mpich2 
-      - mpich2-doc
 
 bundler_args: --retry 3
 
 install:
-- travis_retry travis_wait pip install -r requirements.txt
-- pip install codecov
-- pip install tox
+  - travis_retry travis_wait pip install -r requirements.txt
+  - pip install codecov
+  - pip install tox
 script:
-#  - travis_wait tox -e py27 -v
-#  - travis_wait tox -e py34 -v
-#  - travis_wait tox -e py35 -v
+  - travis_wait tox -e py27 -v
+  - travis_wait tox -e py34 -v
+  - travis_wait tox -e py35 -v
   - python tools/travis_run.py
 
 after_success:
