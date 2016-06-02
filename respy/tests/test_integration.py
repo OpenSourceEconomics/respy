@@ -367,6 +367,7 @@ class TestClass(object):
         constraints = dict()
         constraints['parallelism'] = False
         constraints['maxiter'] = 0
+        constraints['apply'] = False
 
         # Generate random initialization file
         generate_init(constraints)
