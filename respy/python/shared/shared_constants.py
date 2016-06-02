@@ -29,3 +29,4 @@ MISSING_FLOAT = -99.00
 
 # Flag that indicate whether the parallel executables are available.
 IS_PARALLEL = os.path.exists(FORTRAN_DIR + '/resfort_parallel_master')
+
