@@ -16,7 +16,7 @@ from codes.random_init import generate_random_dict
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import print_init_dict
-from respy.python.shared.shared_constants import FORTRAN_DIR
+from respy.python.shared.shared_constants import EXEC_DIR
 
 from respy.solve import solve
 
@@ -121,7 +121,7 @@ class TestClass(object):
             num_agents_sim, num_periods, num_draws_emax, delta)
 
         # Solve model using RESTUD code.
-        cmd = FORTRAN_DIR + '/miscellaneous/kw_recomputation/kw_dp3asim'
+        cmd = EXEC_DIR + '/kw_dp3asim'
         subprocess.call(cmd, shell=True)
 
         # Solve model using RESPY package.

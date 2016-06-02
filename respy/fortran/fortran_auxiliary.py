@@ -156,8 +156,7 @@ def write_resfort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         file_.write(line + '\n')
 
         # Directory for executables
-        exec_dir = os.path.dirname(os.path.realpath(__file__))
-        exec_dir = exec_dir.replace('fortran', '.bld/fortran')
+        exec_dir = os.path.dirname(os.path.realpath(__file__)) + '/bin'
 
         line = '"{0}"'.format(exec_dir)
         file_.write(line + '\n')

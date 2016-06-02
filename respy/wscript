@@ -71,3 +71,27 @@ def build(ctx):
 
     # Initialize directory structure
     ctx.recurse('fortran')
+
+    ctx.add_post_fun(post)
+
+
+def post(ctx):
+    """ This function performs some housekeeping tasks. We keep all the
+    executables in a single directory.
+    """
+    # Create subdirectory for FORTRAN executables
+    subdir = 'fortran/bin'
+    if os.path.exists(subdir):
+        shutil.rmtree(subdir)
+
+    # Copy the RESFORT executable back to package directory
+    os.mkdir(subdir)
+    shutil.copy('.bld/fortran/resfort_scalar', subdir)
+
+    if ctx.env['PARALLELISM']:
+        shutil.copy('.bld/fortran/resfort_parallel_master', subdir)
+        shutil.copy('.bld/fortran/resfort_parallel_slave', subdir)
+
+    # Copy the KW executable.
+    src = '.bld/fortran/miscellaneous/kw_recomputation/kw_dp3asim'
+    shutil.copy(src, subdir)

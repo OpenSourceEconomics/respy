@@ -10,7 +10,7 @@ from respy.fortran.fortran_auxiliary import write_dataset
 from respy.fortran.fortran_auxiliary import get_results
 from respy.fortran.fortran_auxiliary import read_data
 
-from respy.python.shared.shared_constants import FORTRAN_DIR
+from respy.python.shared.shared_constants import EXEC_DIR
 
 
 def fort_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
@@ -37,10 +37,10 @@ def fort_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
 
     # Call executable
     if not is_parallel:
-        cmd = FORTRAN_DIR + '/resfort_scalar'
+        cmd = EXEC_DIR + '/resfort_scalar'
         subprocess.call(cmd, shell=True)
     else:
-        cmd = 'mpiexec ' + FORTRAN_DIR + '/resfort_parallel_master'
+        cmd = 'mpiexec ' + EXEC_DIR + '/resfort_parallel_master'
         subprocess.call(cmd, shell=True)
 
     crit_val = read_data('eval', 1)[0]
@@ -66,10 +66,10 @@ def fort_solve(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
 
     # Call executable
     if not is_parallel:
-        cmd = FORTRAN_DIR + '/resfort_scalar'
+        cmd = EXEC_DIR + '/resfort_scalar'
         subprocess.call(cmd, shell=True)
     else:
-        cmd = 'mpiexec ' + FORTRAN_DIR + '/resfort_parallel_master'
+        cmd = 'mpiexec ' + EXEC_DIR + '/resfort_parallel_master'
         subprocess.call(cmd, shell=True)
 
     # Return arguments depends on the request.

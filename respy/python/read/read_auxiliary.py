@@ -6,6 +6,7 @@ import sys
 import os
 
 # project library
+from respy.python.shared.shared_constants import EXEC_DIR
 from respy.python.shared.shared_constants import ROOT_DIR
 
 # Hard coded structure of admissible groups and flags in the
@@ -85,7 +86,7 @@ def check_line(group, flag, value):
                     fname = glob.glob(ROOT_DIR + '/fortran/f2py_library*.so')[0]
                     assert os.path.exists(fname)
                 if value == 'FORTRAN':
-                    fname = ROOT_DIR + '/.bld/fortran/resfort_scalar'
+                    fname = EXEC_DIR + '/resfort_scalar'
                     assert os.path.exists(fname)
             if flag in ['procs']:
                 assert isinstance(value, int)
@@ -93,7 +94,7 @@ def check_line(group, flag, value):
 
             if flag in ['parallelism']:
                 if value:
-                    fname = ROOT_DIR + '/.bld/fortran/resfort_parallel_master'
+                    fname = EXEC_DIR + '/resfort_parallel_master'
                     assert os.path.exists(fname)
 
         if group == 'SIMULATION':

@@ -14,7 +14,7 @@ TEST_DIR = ROOT_DIR + '/tests'
 TEST_RESOURCES_DIR = ROOT_DIR + '/tests/resources'
 
 # Directory with the FORTRAN resources
-FORTRAN_DIR = ROOT_DIR + '/.bld/fortran'
+EXEC_DIR = ROOT_DIR + '/fortran/bin'
 
 HUGE_FLOAT = 1.0e20
 SMALL_FLOAT = 1e-5
@@ -28,5 +28,5 @@ MISSING_INT = -99
 MISSING_FLOAT = -99.00
 
 # Flag that indicate whether the parallel executables are available.
-IS_PARALLEL = os.path.exists(FORTRAN_DIR + '/resfort_parallel_master')
+IS_PARALLEL = os.path.exists(EXEC_DIR + '/resfort_parallel_master')
 
