@@ -4,9 +4,9 @@ PROGRAM resfort_parallel
 
     !/* external modules        */
 
-    USE parallel_constants
+    USE parallelism_constants
 
-    USE parallel_auxiliary    
+    USE parallelism_auxiliary    
 
     USE resfort_library 
     

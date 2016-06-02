@@ -1,4 +1,4 @@
-MODULE parallel_constants
+MODULE parallelism_constants
     
     !/* external modules    */
 

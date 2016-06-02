@@ -1,10 +1,10 @@
 !******************************************************************************
 !******************************************************************************
-MODULE parallel_auxiliary
+MODULE parallelism_auxiliary
 
     !/* external modules        */
 
-    USE parallel_constants
+    USE parallelism_constants
 
     USE resfort_library
 

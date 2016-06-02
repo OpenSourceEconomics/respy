@@ -4,11 +4,11 @@ PROGRAM resfort_parallel_slave
 
     !/* external modules        */
 
-    USE resfort_library
-
-    USE parallel_constants
+    USE parallelism_constants
     
-    USE parallel_auxiliary
+    USE parallelism_auxiliary
+
+    USE resfort_library
 
     USE mpi
     
