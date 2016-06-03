@@ -28,66 +28,6 @@ class CreateF2pyInterfaces(Task):
         os.chdir('../')
 
 
-class CreateParallelExecutable(Task):
-
-    def run(self):
-
-        cwd = os.getcwd()
-        os.chdir('/home/peisenha/restudToolbox/package/respy/fortran')
-
-        # # TODO: Major improvements required.
-        lib_dir = '/home/peisenha/restudToolbox/package/respy/.bld/fortran'
-        inc_dir = '/home/peisenha/restudToolbox/package/respy/.bld'
-        DEBUG_OPTIONS = ['-O2', '-Wall', '-Wline-truncation',
-             '-Wcharacter-truncation']
-        DEBUG_OPTIONS += ['-Wsurprising', '-Waliasing', '-Wimplicit-interface']
-        DEBUG_OPTIONS += ['-Wunused-parameter', '-fwhole-file', '-fcheck=all']
-        DEBUG_OPTIONS += ['-fbacktrace', '-g', '-fmax-errors=1',
-             '-ffpe-trap=invalid', '-ffree-line-length-0']
-        #
-        # # DEBUG_OPTIONS = []
-        # #
-
-
-        print(self.env)
-
-        cmd = 'mpif90 parallelism/parallelism_constants.f90 ' \
-              'parallelism/parallelism_auxiliary.f90 resfort_parallel.f90 ' + '-o ' \
-                                                   'resfort_parallel_master ' + \
-              ' '.join(
-                 DEBUG_OPTIONS) + ' -I' + inc_dir + ' -L' + lib_dir + ' ' \
-                                                                      '-lresfort ' \
-                                                                      '-llapack -lmpi '
-        assert os.system(cmd) == 0
-
-        cmd = 'mpif90 parallelism/parallelism_constants.f90 ' \
-              'parallelism/parallelism_auxiliary.f90 parallelism/parallelism_slave.f90 ' + '-o resfort_parallel_slave ' +\
-              ' '.join(
-            DEBUG_OPTIONS) + ' -I' + inc_dir + ' -L' + lib_dir + ' ' \
-                                                                 '-lresfort ' \
-                                                                 '-llapack '
-
-        assert os.system(cmd) == 0
-
-        # TODO: WHat is the best way to reactive this idea? Mave mpi4yp
-        # # This compiles the testing
-        # # Compile testing file.
-        # import shutil
-        # os.chdir('miscellaneous/testing')
-        # shutil.copy('../../parallel_auxiliary.f90', '.')
-        #
-        # cmd = 'mpif90  ../../parallel_auxiliary.f90 testing_scalar_parallel.f90  ' \
-        #       + '-o testing_parallel_scalar ' + ' '.join(
-        #     DEBUG_OPTIONS) + ' -I' + inc_dir + ' -L' + lib_dir + ' -lresfort ' \
-        #                                                          '-llapack '
-        #
-        # os.system(cmd)
-        # assert os.system(cmd) == 0
-
-
-        os.chdir(cwd)
-
-
 def build(ctx):
 
     # Create the RESFORT library. This is build in addition to the RESFORT
