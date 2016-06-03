@@ -36,10 +36,8 @@ SUBROUTINE f2py_powell(fval, p_final, p_start, func_dim_int)
 ! Algorithm
 !------------------------------------------------------------------------------
     
-
     ! Must be at least two dimensions
     func_dim = func_dim_int
-
 
     ALLOCATE(xi(func_dim, func_dim))
 
