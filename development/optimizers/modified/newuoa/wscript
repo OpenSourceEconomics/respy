@@ -61,8 +61,8 @@ def build(ctx):
     ctx.env.append_unique('STLIB', ['optimizers'])
 
 
-    src = ['../../../../respy/fortran/shared/shared_constants.f90', 'bigden.f', 'biglag.f', 'calfun.f', 'newuoa.f90', 'newuob.f',
-        'trsapp.f', 'criterion.f90', 'update.f']
+    src = ['../../../../respy/fortran/shared/shared_constants.f90', 'bigden.f', 'biglag.f', 'calfun.f',  'criterion.f90', 'newuob.f90', 'newuoa.f90',
+        'trsapp.f', 'update.f']
 
     flags = ctx.env.FCFLAGS + ['-fPIC']
 
@@ -75,7 +75,11 @@ def build(ctx):
          fcflags=flags)
     ctx.add_group()
 
+    # Build F2PY interface
+
+    ctx.add_to_group(CreateF2pyInterfaces(env=ctx.env))
+
+
+    # Compile scalar RESFORT executable.
     ctx(features=['fc', 'fcprogram'], source='main.f90',
         target='newuoa')
-    # Build F2PY interface
-    #ctx.add_to_group(CreateF2pyInterfaces(env=ctx.env))

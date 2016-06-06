@@ -1,36 +1,68 @@
-      SUBROUTINE NEWUOB (N,NPT,X,RHOBEG,RHOEND,IPRINT,MAXFUN,XBASE,
-     1  XOPT,XNEW,XPT,FVAL,GQ,HQ,PQ,BMAT,ZMAT,NDIM,D,VLAG,W)
+MODULE submodule
+
+  !/* external modules  */
+  
+  USE shared_constants
+
+  USE criterion_function
+
+!  IMPLICIT NONE
+
+  !/* setup */
+
+  PRIVATE
+
+  PUBLIC:: NEWUOB
+
+CONTAINS
+
+      SUBROUTINE NEWUOB (N,NPT,X,RHOBEG,RHOEND,IPRINT,MAXFUN,XBASE, XOPT,XNEW,XPT,FVAL,GQ,HQ,PQ,BMAT,ZMAT,NDIM,D,VLAG,W)
       IMPLICIT REAL*8 (A-H,O-Z)
-      DIMENSION X(*),XBASE(*),XOPT(*),XNEW(*),XPT(NPT,*),FVAL(*),
-     1  GQ(*),HQ(*),PQ(*),BMAT(NDIM,*),ZMAT(NPT,*),D(*),VLAG(*),W(*)
-C
-C     The arguments N, NPT, X, RHOBEG, RHOEND, IPRINT and MAXFUN are identical
-C       to the corresponding arguments in SUBROUTINE NEWUOA.
-C     XBASE will hold a shift of origin that should reduce the contributions
-C       from rounding errors to values of the model and Lagrange functions.
-C     XOPT will be set to the displacement from XBASE of the vector of
-C       variables that provides the least calculated F so far.
-C     XNEW will be set to the displacement from XBASE of the vector of
-C       variables for the current calculation of F.
-C     XPT will contain the interpolation point coordinates relative to XBASE.
-C     FVAL will hold the values of F at the interpolation points.
-C     GQ will hold the gradient of the quadratic model at XBASE.
-C     HQ will hold the explicit second derivatives of the quadratic model.
-C     PQ will contain the parameters of the implicit second derivatives of
-C       the quadratic model.
-C     BMAT will hold the last N columns of H.
-C     ZMAT will hold the factorization of the leading NPT by NPT submatrix of
-C       H, this factorization being ZMAT times Diag(DZ) times ZMAT^T, where
-C       the elements of DZ are plus or minus one, as specified by IDZ.
-C     NDIM is the first dimension of BMAT and has the value NPT+N.
-C     D is reserved for trial steps from XOPT.
-C     VLAG will contain the values of the Lagrange functions at a new point X.
-C       They are part of a product that requires VLAG to be of length NDIM.
-C     The array W will be used for working space. Its length must be at least
-C       10*NDIM = 10*(NPT+N).
-C
-C     Set some constants.
-C
+      DIMENSION XBASE(*),XOPT(*),XNEW(*),XPT(NPT,*),FVAL(*), GQ(*),HQ(*),PQ(*),BMAT(NDIM,*),ZMAT(NPT,*),D(*),VLAG(*),W(*)
+
+      REAL(our_dble), INTENT(INOUT):: X(:)
+
+ 
+       INTERFACE
+
+        SUBROUTINE CALFUN (N,X,F)
+        IMPLICIT REAL*8 (A-H,O-Z)
+        DIMENSION X(*),Y(10,10)
+        END SUBROUTINE
+
+
+       END INTERFACE
+
+
+
+!C
+!C     The arguments N, NPT, X, RHOBEG, RHOEND, IPRINT and MAXFUN are identical
+!C       to the corresponding arguments in SUBROUTINE NEWUOA.
+!C     XBASE will hold a shift of origin that should reduce the contributions
+!C       from rounding errors to values of the model and Lagrange functions.
+!C     XOPT will be set to the displacement from XBASE of the vector of
+!C       variables that provides the least calculated F so far.
+!C     XNEW will be set to the displacement from XBASE of the vector of
+!C       variables for the current calculation of F.
+!C     XPT will contain the interpolation point coordinates relative to XBASE.
+!C     FVAL will hold the values of F at the interpolation points.
+!C     GQ will hold the gradient of the quadratic model at XBASE.
+!C     HQ will hold the explicit second derivatives of the quadratic model.
+!C     PQ will contain the parameters of the implicit second derivatives of
+!C       the quadratic model.
+!C     BMAT will hold the last N columns of H.
+!C     ZMAT will hold the factorization of the leading NPT by NPT submatrix of
+!C       H, this factorization being ZMAT times Diag(DZ) times ZMAT^T, where
+!C       the elements of DZ are plus or minus one, as specified by IDZ.
+!C     NDIM is the first dimension of BMAT and has the value NPT+N.
+!C     D is reserved for trial steps from XOPT.
+!C     VLAG will contain the values of the Lagrange functions at a new point X.
+!C       They are part of a product that requires VLAG to be of length NDIM.
+!C     The array W will be used for working space. Its length must be at least
+!C       10*NDIM = 10*(NPT+N).
+!C
+!C     Set some constants.
+!C
       HALF=0.5D0
       ONE=1.0D0
       TENTH=0.1D0
@@ -39,9 +71,9 @@ C
       NH=(N*NP)/2
       NPTM=NPT-NP
       NFTEST=MAX0(MAXFUN,1)
-C
-C     Set the initial elements of XPT, BMAT, HQ, PQ and ZMAT to zero.
-C
+!C
+!C     Set the initial elements of XPT, BMAT, HQ, PQ and ZMAT to zero.
+!C
       DO 20 J=1,N
       XBASE(J)=X(J)
       DO 10 K=1,NPT
@@ -54,11 +86,11 @@ C
       PQ(K)=ZERO
       DO 40 J=1,NPTM
    40 ZMAT(K,J)=ZERO
-C
-C     Begin the initialization procedure. NF becomes one more than the number
-C     of function values so far. The coordinates of the displacement of the
-C     next initial interpolation point from XBASE are set in XPT(NF,.).
-C
+!C
+!C     Begin the initialization procedure. NF becomes one more than the number
+!C     of function values so far. The coordinates of the displacement of the
+!C     next initial interpolation point from XBASE are set in XPT(NF,.).
+!C
       RHOSQ=RHOBEG*RHOBEG
       RECIP=ONE/RHOSQ
       RECIQ=DSQRT(HALF)/RHOSQ
@@ -88,11 +120,11 @@ C
           XPT(NF,IPT)=XIPT
           XPT(NF,JPT)=XJPT
       END IF
-C
-C     Calculate the next value of F, label 70 being reached immediately
-C     after this calculation. The least function value so far and its index
-C     are required.
-C
+!C
+!C     Calculate the next value of F, label 70 being reached immediately
+!C     after this calculation. The least function value so far and its index
+!C     are required.
+!C
       DO 60 J=1,N
    60 X(J)=XPT(NF,J)+XBASE(J)
       GOTO 310
@@ -105,10 +137,10 @@ C
           FOPT=F
           KOPT=NF
       END IF
-C
-C     Set the nonzero initial elements of BMAT and the quadratic model in
-C     the cases when NF is at most 2*N+1.
-C
+!C
+!C     Set the nonzero initial elements of BMAT and the quadratic model in
+!C     the cases when NF is at most 2*N+1.
+!C
       IF (NFM .LE. 2*N) THEN
           IF (NFM .GE. 1 .AND. NFM .LE. N) THEN
               GQ(NFM)=(F-FBEG)/RHOBEG
@@ -128,10 +160,10 @@ C
               HQ(IH)=(GQ(NFMM)-TEMP)/RHOBEG
               GQ(NFMM)=HALF*(GQ(NFMM)+TEMP)
           END IF
-C
-C     Set the off-diagonal second derivatives of the Lagrange functions and
-C     the initial quadratic model.
-C
+!C
+!C     Set the off-diagonal second derivatives of the Lagrange functions and
+!C     the initial quadratic model.
+!C
       ELSE
           IH=(IPT*(IPT-1))/2+JPT
           IF (XIPT .LT. ZERO) IPT=IPT+N
@@ -143,9 +175,9 @@ C
           HQ(IH)=(FBEG-FVAL(IPT+1)-FVAL(JPT+1)+F)/(XIPT*XJPT)
       END IF
       IF (NF .LT. NPT) GOTO 50
-C
-C     Begin the iterative procedure, because the initial model is complete.
-C
+!C
+!C     Begin the iterative procedure, because the initial model is complete.
+!C
       RHO=RHOBEG
       DELTA=RHO
       IDZ=1
@@ -157,13 +189,12 @@ C
       XOPT(I)=XPT(KOPT,I)
    80 XOPTSQ=XOPTSQ+XOPT(I)**2
    90 NFSAV=NF
-C
-C     Generate the next trust region step and test its length. Set KNEW
-C     to -1 if the purpose of the next F will be to improve the model.
-C
+!C
+!C     Generate the next trust region step and test its length. Set KNEW
+!C     to -1 if the purpose of the next F will be to improve the model.
+!C
   100 KNEW=0
-      CALL TRSAPP (N,NPT,XOPT,XPT,GQ,HQ,PQ,DELTA,D,W,W(NP),
-     1  W(NP+N),W(NP+2*N),CRVMIN)
+      CALL TRSAPP (N,NPT,XOPT,XPT,GQ,HQ,PQ,DELTA,D,W,W(NP), W(NP+N),W(NP+2*N),CRVMIN)
       DSQ=ZERO
       DO 110 I=1,N
   110 DSQ=DSQ+D(I)**2
@@ -178,10 +209,10 @@ C
           IF (TEMP .LE. DMAX1(DIFFA,DIFFB,DIFFC)) GOTO 460
           GOTO 490
       END IF
-C
-C     Shift XBASE if XOPT may be too far from XBASE. First make the changes
-C     to BMAT that do not depend on ZMAT.
-C
+!C
+!C     Shift XBASE if XOPT may be too far from XBASE. First make the changes
+!C     to BMAT that do not depend on ZMAT.
+!C
   120 IF (DSQ .LE. 1.0D-3*XOPTSQ) THEN
           TEMPQ=0.25D0*XOPTSQ
           DO 140 K=1,NPT
@@ -199,9 +230,9 @@ C
           IP=NPT+I
           DO 140 J=1,I
   140     BMAT(IP,J)=BMAT(IP,J)+VLAG(I)*W(J)+W(I)*VLAG(J)
-C
-C     Then the revisions of BMAT that depend on ZMAT are calculated.
-C
+!C
+!C     Then the revisions of BMAT that depend on ZMAT are calculated.
+!C
           DO 180 K=1,NPTM
           SUMZ=ZERO
           DO 150 I=1,NPT
@@ -221,10 +252,10 @@ C
           IF (K .LT. IDZ) TEMP=-TEMP
           DO 180 J=1,I
   180     BMAT(IP,J)=BMAT(IP,J)+TEMP*VLAG(J)
-C
-C     The following instructions complete the shift of XBASE, including
-C     the changes to the parameters of the quadratic model.
-C
+!C
+!C     The following instructions complete the shift of XBASE, including
+!C     the changes to the parameters of the quadratic model.
+!C
           IH=0
           DO 200 J=1,N
           W(J)=ZERO
@@ -242,19 +273,18 @@ C
   210     XOPT(J)=ZERO
           XOPTSQ=ZERO
       END IF
-C
-C     Pick the model step if KNEW is positive. A different choice of D
-C     may be made later, if the choice of D by BIGLAG causes substantial
-C     cancellation in DENOM.
-C
+!C
+!C     Pick the model step if KNEW is positive. A different choice of D
+!C     may be made later, if the choice of D by BIGLAG causes substantial
+!C     cancellation in DENOM.
+!C
       IF (KNEW .GT. 0) THEN
-          CALL BIGLAG (N,NPT,XOPT,XPT,BMAT,ZMAT,IDZ,NDIM,KNEW,DSTEP,
-     1      D,ALPHA,VLAG,VLAG(NPT+1),W,W(NP),W(NP+N))
+          CALL BIGLAG (N,NPT,XOPT,XPT,BMAT,ZMAT,IDZ,NDIM,KNEW,DSTEP, D,ALPHA,VLAG,VLAG(NPT+1),W,W(NP),W(NP+N))
       END IF
-C
-C     Calculate VLAG and BETA for the current choice of D. The first NPT
-C     components of W_check will be held in W.
-C
+!C
+!C     Calculate VLAG and BETA for the current choice of D. The first NPT
+!C     components of W_check will be held in W.
+!C
       DO 230 K=1,NPT
       SUMA=ZERO
       SUMB=ZERO
@@ -293,21 +323,20 @@ C
   280 DX=DX+D(J)*XOPT(J)
       BETA=DX*DX+DSQ*(XOPTSQ+DX+DX+HALF*DSQ)+BETA-BSUM
       VLAG(KOPT)=VLAG(KOPT)+ONE
-C
-C     If KNEW is positive and if the cancellation in DENOM is unacceptable,
-C     then BIGDEN calculates an alternative model step, XNEW being used for
-C     working space.
-C
+!C
+!C     If KNEW is positive and if the cancellation in DENOM is unacceptable,
+!C     then BIGDEN calculates an alternative model step, XNEW being used for
+!C     working space.
+!C
       IF (KNEW .GT. 0) THEN
           TEMP=ONE+ALPHA*BETA/VLAG(KNEW)**2
           IF (DABS(TEMP) .LE. 0.8D0) THEN
-              CALL BIGDEN (N,NPT,XOPT,XPT,BMAT,ZMAT,IDZ,NDIM,KOPT,
-     1          KNEW,D,W,VLAG,BETA,XNEW,W(NDIM+1),W(6*NDIM+1))
+              CALL BIGDEN (N,NPT,XOPT,XPT,BMAT,ZMAT,IDZ,NDIM,KOPT, KNEW,D,W,VLAG,BETA,XNEW,W(NDIM+1),W(6*NDIM+1))
           END IF
       END IF
-C
-C     Calculate the next value of the objective function.
-C
+!C
+!C     Calculate the next value of the objective function.
+!C
   290 DO 300 I=1,N
       XNEW(I)=XOPT(I)+D(I)
   300 X(I)=XBASE(I)+XNEW(I)
@@ -315,22 +344,25 @@ C
   310 IF (NF .GT. NFTEST) THEN
           NF=NF-1
           IF (IPRINT .GT. 0) PRINT 320
-  320     FORMAT (/4X,'Return from NEWUOA because CALFUN has been',
-     1      ' called MAXFUN times.')
+  320     FORMAT (/4X,'Return from NEWUOA because CALFUN has been called MAXFUN times.')
           GOTO 530
       END IF
+      
+
       CALL CALFUN (N,X,F)
+!      F =  criterion_func(X)
+
+
       IF (IPRINT .EQ. 3) THEN
           PRINT 330, NF,F,(X(I),I=1,N)
-  330      FORMAT (/4X,'Function number',I6,'    F =',1PD18.10,
-     1       '    The corresponding X is:'/(2X,5D15.6))
+  330      FORMAT (/4X,'Function number',I6,'    F =',1PD18.10, '    The corresponding X is:'/(2X,5D15.6))
       END IF
       IF (NF .LE. NPT) GOTO 70
       IF (KNEW .EQ. -1) GOTO 530
-C
-C     Use the quadratic model to predict the change in F due to the step D,
-C     and set DIFF to the error of this prediction.
-C
+!C
+!C     Use the quadratic model to predict the change in F due to the step D,
+!C     and set DIFF to the error of this prediction.
+!C
       VQUAD=ZERO
       IH=0
       DO 340 J=1,N
@@ -347,11 +379,11 @@ C
       DIFFB=DIFFA
       DIFFA=DABS(DIFF)
       IF (DNORM .GT. RHO) NFSAV=NF
-C
-C     Update FOPT and XOPT if the new F is the least value of the objective
-C     function so far. The branch when KNEW is positive occurs if D is not
-C     a trust region step.
-C
+!C
+!C     Update FOPT and XOPT if the new F is the least value of the objective
+!C     function so far. The branch when KNEW is positive occurs if D is not
+!C     a trust region step.
+!C
       FSAVE=FOPT
       IF (F .LT. FOPT) THEN
           FOPT=F
@@ -362,13 +394,12 @@ C
       END IF
       KSAVE=KNEW
       IF (KNEW .GT. 0) GOTO 410
-C
-C     Pick the next value of DELTA after a trust region step.
-C
+!C
+!C     Pick the next value of DELTA after a trust region step.
+!C
       IF (VQUAD .GE. ZERO) THEN
           IF (IPRINT .GT. 0) PRINT 370
-  370     FORMAT (/4X,'Return from NEWUOA because a trust',
-     1      ' region step has failed to reduce Q.')
+  370     FORMAT (/4X,'Return from NEWUOA because a trust region step has failed to reduce Q.')
           GOTO 530
       END IF
       RATIO=(F-FSAVE)/VQUAD
@@ -380,9 +411,9 @@ C
           DELTA=DMAX1(HALF*DELTA,DNORM+DNORM)
       END IF
       IF (DELTA .LE. 1.5D0*RHO) DELTA=RHO
-C
-C     Set KNEW to the index of the next interpolation point to be deleted.
-C
+!C
+!C     Set KNEW to the index of the next interpolation point to be deleted.
+!C
       RHOSQ=DMAX1(TENTH*DELTA,RHO)**2
       KTEMP=0
       DETRAT=ZERO
@@ -407,11 +438,11 @@ C
       END IF
   400 CONTINUE
       IF (KNEW .EQ. 0) GOTO 460
-C
-C     Update BMAT, ZMAT and IDZ, so that the KNEW-th interpolation point
-C     can be moved. Begin the updating of the quadratic model, starting
-C     with the explicit second derivative term.
-C
+!C
+!C     Update BMAT, ZMAT and IDZ, so that the KNEW-th interpolation point
+!C     can be moved. Begin the updating of the quadratic model, starting
+!C     with the explicit second derivative term.
+!C
   410 CALL UPDATE (N,NPT,BMAT,ZMAT,IDZ,NDIM,VLAG,BETA,KNEW,W)
       FVAL(KNEW)=F
       IH=0
@@ -421,10 +452,10 @@ C
       IH=IH+1
   420 HQ(IH)=HQ(IH)+TEMP*XPT(KNEW,J)
       PQ(KNEW)=ZERO
-C
-C     Update the other second derivative parameters, and then the gradient
-C     vector of the model. Also include the new interpolation point.
-C
+!C
+!C     Update the other second derivative parameters, and then the gradient
+!C     vector of the model. Also include the new interpolation point.
+!C
       DO 440 J=1,NPTM
       TEMP=DIFF*ZMAT(KNEW,J)
       IF (J .LT. IDZ) TEMP=-TEMP
@@ -435,11 +466,11 @@ C
       GQ(I)=GQ(I)+DIFF*BMAT(KNEW,I)
       GQSQ=GQSQ+GQ(I)**2
   450 XPT(KNEW,I)=XNEW(I)
-C
-C     If a trust region step makes a small change to the objective function,
-C     then calculate the gradient of the least Frobenius norm interpolant at
-C     XBASE, and store it in W, using VLAG for a vector of right hand sides.
-C
+!C
+!C     If a trust region step makes a small change to the objective function,
+!C     then calculate the gradient of the least Frobenius norm interpolant at
+!C     XBASE, and store it in W, using VLAG for a vector of right hand sides.
+!C
       IF (KSAVE .EQ. 0 .AND. DELTA .EQ. RHO) THEN
           IF (DABS(RATIO) .GT. 1.0D-2) THEN
               ITEST=0
@@ -453,10 +484,10 @@ C
   710         SUM=SUM+BMAT(K,I)*VLAG(K)
               GISQ=GISQ+SUM*SUM
   720         W(I)=SUM
-C
-C     Test whether to replace the new quadratic model by the least Frobenius
-C     norm interpolant, making the replacement if the test is satisfied.
-C
+!C
+!C     Test whether to replace the new quadratic model by the least Frobenius
+!C     norm interpolant, making the replacement if the test is satisfied.
+!C
               ITEST=ITEST+1
               IF (GQSQ .LT. 1.0D2*GISQ) ITEST=0
               IF (ITEST .GE. 3) THEN
@@ -478,17 +509,17 @@ C
           END IF
       END IF
       IF (F .LT. FSAVE) KOPT=KNEW
-C
-C     If a trust region step has provided a sufficient decrease in F, then
-C     branch for another trust region calculation. The case KSAVE>0 occurs
-C     when the new function value was calculated by a model step.
-C
+!C
+!C     If a trust region step has provided a sufficient decrease in F, then
+!C     branch for another trust region calculation. The case KSAVE>0 occurs
+!C     when the new function value was calculated by a model step.
+!C
       IF (F .LE. FSAVE+TENTH*VQUAD) GOTO 100
       IF (KSAVE .GT. 0) GOTO 100
-C
-C     Alternatively, find out if the interpolation points are close enough
-C     to the best point so far.
-C
+!C
+!C     Alternatively, find out if the interpolation points are close enough
+!C     to the best point so far.
+!C
       KNEW=0
   460 DISTSQ=4.0D0*DELTA*DELTA
       DO 480 K=1,NPT
@@ -500,10 +531,10 @@ C
           DISTSQ=SUM
       END IF
   480 CONTINUE
-C
-C     If KNEW is positive, then set DSTEP, and branch back for the next
-C     iteration, which will generate a "model step".
-C
+!C
+!C     If KNEW is positive, then set DSTEP, and branch back for the next
+!C     iteration, which will generate a "model step".
+!C
       IF (KNEW .GT. 0) THEN
           DSTEP=DMAX1(DMIN1(TENTH*DSQRT(DISTSQ),HALF*DELTA),RHO)
           DSQ=DSTEP*DSTEP
@@ -511,10 +542,10 @@ C
       END IF
       IF (RATIO .GT. ZERO) GOTO 100
       IF (DMAX1(DELTA,DNORM) .GT. RHO) GOTO 100
-C
-C     The calculations with the current value of RHO are complete. Pick the
-C     next values of RHO and DELTA.
-C
+!C
+!C     The calculations with the current value of RHO are complete. Pick the
+!C     next values of RHO and DELTA.
+!C
   490 IF (RHO .GT. RHOEND) THEN
           DELTA=HALF*RHO
           RATIO=RHO/RHOEND
@@ -530,18 +561,16 @@ C
               IF (IPRINT .GE. 3) PRINT 500
   500         FORMAT (5X)
               PRINT 510, RHO,NF
-  510         FORMAT (/4X,'New RHO =',1PD11.4,5X,'Number of',
-     1          ' function values =',I6)
+  510         FORMAT (/4X,'New RHO =',1PD11.4,5X,'Number of function values =',I6)
               PRINT 520, FOPT,(XBASE(I)+XOPT(I),I=1,N)
-  520         FORMAT (4X,'Least value of F =',1PD23.15,9X,
-     1          'The corresponding X is:'/(2X,5D15.6))
+  520         FORMAT (4X,'Least value of F =',1PD23.15,9X, 'The corresponding X is:'/(2X,5D15.6))
           END IF
           GOTO 90
       END IF
-C
-C     Return from the calculation, after another Newton-Raphson step, if
-C     it is too short to have been tried before.
-C
+!C
+!C     Return from the calculation, after another Newton-Raphson step, if
+!C     it is too short to have been tried before.
+!C
       IF (KNEW .EQ. -1) GOTO 290
   530 IF (FOPT .LE. F) THEN
           DO 540 I=1,N
@@ -550,9 +579,10 @@ C
       END IF
       IF (IPRINT .GE. 1) THEN
           PRINT 550, NF
-  550     FORMAT (/4X,'At the return from NEWUOA',5X,
-     1      'Number of function values =',I6)
+  550     FORMAT (/4X,'At the return from NEWUOA',5X, 'Number of function values =',I6)
           PRINT 520, F,(X(I),I=1,N)
       END IF
       RETURN
       END
+
+END MODULE

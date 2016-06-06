@@ -4,6 +4,8 @@ MODULE call_newuoa
   
   USE shared_constants
 
+  USE submodule
+  
 !  IMPLICIT NONE
 
   !/* setup */
@@ -14,9 +16,22 @@ MODULE call_newuoa
 
 CONTAINS
 
-      SUBROUTINE NEWUOA (N,NPT,X,RHOBEG,RHOEND,IPRINT,MAXFUN,W)
+      SUBROUTINE NEWUOA (NPT, X, RHOBEG, RHOEND, IPRINT, MAXFUN)
       IMPLICIT REAL*8 (A-H,O-Z)
-      DIMENSION X(*),W(*)
+
+      INTEGER(our_int)  :: N
+      REAL(our_dble), INTENT(INOUT)  :: X(:)
+
+      REAL(our_dble) :: W(10000)
+
+
+      ! Main modifications:
+      !
+      !
+      !
+      !
+      !
+      !
 !C
 !C     This subroutine seeks the least value of a function of many variables,
 !C     by a trust region method that forms quadratic models by interpolation.
@@ -51,6 +66,8 @@ CONTAINS
 !C     Partition the working space array, so that different parts of it can be
 !C     treated separately by the subroutine that performs the main calculation.
 !C
+
+      N = SIZE(X)
       NP=N+1
       NPTM=NPT-NP
       IF (NPT .LT. N+2 .OR. NPT .GT. ((N+2)*NP)/2) THEN
