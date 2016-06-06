@@ -15,11 +15,10 @@ MODULE newuoa_interface
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE NEWUOA (X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, NUM_PARAS)
+SUBROUTINE NEWUOA (FUNC, X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN)
 
     !/* external objects        */
 
-    INTEGER(our_int), INTENT(IN)    :: NUM_PARAS
     INTEGER(our_int), INTENT(IN)    :: IPRINT
     INTEGER(our_int), INTENT(IN)    :: MAXFUN
     INTEGER(our_int), INTENT(IN)    :: NPT
@@ -27,8 +26,23 @@ SUBROUTINE NEWUOA (X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, NUM_PARAS)
     REAL(our_dble), INTENT(IN)      :: RHOBEG
     REAL(our_dble), INTENT(IN)      :: RHOEND
 
-    REAL(our_dble), INTENT(INOUT)   :: X(NUM_PARAS)
+    REAL(our_dble), INTENT(INOUT)   :: X(:)
+
+    INTERFACE
+
+        FUNCTION FUNC(X)
     
+            USE shared_constants
+
+            IMPLICIT NONE
+    
+            REAL(our_dble), INTENT(IN)  :: X(:)
+            REAL(our_dble)              :: FUNC
+    
+        END FUNCTION  
+
+    END INTERFACE
+
     !/*  internal objects       */
 
     INTEGER(our_int)                :: N
@@ -100,16 +114,32 @@ SUBROUTINE NEWUOA (X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, NUM_PARAS)
 !C     The partition requires the first NPT*(NPT+N)+5*N*(N+3)/2 elements of
 !C     W plus the space that is needed by the last array of NEWUOB.
 !C
-      CALL NEWUOB (N,NPT,X,RHOBEG,RHOEND,IPRINT,MAXFUN,W(IXB), W(IXO),W(IXN),W(IXP),W(IFV),W(IGQ),W(IHQ),W(IPQ),W(IBMAT), W(IZMAT),NDIM,W(ID),W(IVL),W(IW))
+      CALL NEWUOB (FUNC, N,NPT,X,RHOBEG,RHOEND,IPRINT,MAXFUN,W(IXB), W(IXO),W(IXN),W(IXP),W(IFV),W(IGQ),W(IHQ),W(IPQ),W(IBMAT), W(IZMAT),NDIM,W(ID),W(IVL),W(IW))
    20 RETURN
       END
 !******************************************************************************
 !******************************************************************************
-      SUBROUTINE NEWUOB (N,NPT,X,RHOBEG,RHOEND,IPRINT,MAXFUN,XBASE, XOPT,XNEW,XPT,FVAL,GQ,HQ,PQ,BMAT,ZMAT,NDIM,D,VLAG,W)
+      SUBROUTINE NEWUOB (FUNC, N,NPT,X,RHOBEG,RHOEND,IPRINT,MAXFUN,XBASE, XOPT,XNEW,XPT,FVAL,GQ,HQ,PQ,BMAT,ZMAT,NDIM,D,VLAG,W)
       IMPLICIT REAL*8 (A-H,O-Z)
       DIMENSION XBASE(*),XOPT(*),XNEW(*),XPT(NPT,*),FVAL(*), GQ(*),HQ(*),PQ(*),BMAT(NDIM,*),ZMAT(NPT,*),D(*),VLAG(*),W(*)
 
+
       REAL(our_dble), INTENT(INOUT):: X(N)
+
+    INTERFACE
+
+        FUNCTION FUNC(X)
+    
+            USE shared_constants
+
+            IMPLICIT NONE
+    
+            REAL(our_dble), INTENT(IN)  :: X(:)
+            REAL(our_dble)              :: FUNC
+    
+        END FUNCTION  
+
+    END INTERFACE
 
 !------------------------------------------------------------------------------
 ! Algorithm

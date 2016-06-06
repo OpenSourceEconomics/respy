@@ -15,7 +15,7 @@ MODULE bfgs_function
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE dfpmin(p, gtol, iter, fret, func, dfunc)
+SUBROUTINE dfpmin(func, dfunc, p, gtol, iter, fret)
 
     !/* external objects        */
 
