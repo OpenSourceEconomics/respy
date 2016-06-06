@@ -15,7 +15,7 @@ MODULE bfgs_function
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE dfpmin(func, dfunc, p, gtol, iter, fret)
+SUBROUTINE dfpmin(func, dfunc, p, gtol, iter, fret, maxiter)
 
     !/* external objects        */
 
@@ -25,6 +25,7 @@ SUBROUTINE dfpmin(func, dfunc, p, gtol, iter, fret)
 	REAL(our_dble), INTENT(IN) 		:: gtol
 
 	INTEGER(our_int), INTENT(OUT) 	:: iter
+	INTEGER(our_int), INTENT(IN)	:: maxiter
 
 	INTERFACE
 
@@ -53,9 +54,6 @@ SUBROUTINE dfpmin(func, dfunc, p, gtol, iter, fret)
 	END INTERFACE
 
     !/* internal objects        */
-
-!	INTEGER(our_int) 				:: ITMAX = 200
-	INTEGER(our_int) 				:: ITMAX = 200000000
 
 	INTEGER(our_int) 				:: its
 	INTEGER(our_int) 				:: i
@@ -97,7 +95,7 @@ SUBROUTINE dfpmin(func, dfunc, p, gtol, iter, fret)
 	
 	stpmax = STPMX * MAX(SQRT(DOT_PRODUCT(p, p)), REAL(size(p), our_dble))
 	
-	DO its =1, ITMAX
+	DO its = 1, maxiter
 
 		iter = its
 
