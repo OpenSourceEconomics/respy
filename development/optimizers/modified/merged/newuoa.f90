@@ -1,4 +1,11 @@
-MODULE newuoa_interface
+MODULE newuoa_module
+
+    !
+    !   M. J. D. Powell, "The NEWUOA software for unconstrained optimization 
+    !   without derivatives", in Large-Scale Nonlinear Optimization, Series: 
+    !   Nonconvex Optimization and Its Applications , Vol. 83, Di Pillo, 
+    !   Gianni; Roma, Massimo (Eds.) 2006, New York: Springer US.
+    !
 
     !/* external modules  */
 
@@ -13,7 +20,7 @@ MODULE newuoa_interface
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE NEWUOA (FUNC, X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN)
+SUBROUTINE NEWUOA (FUNC, X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUCCESS, MESSAGE)
 
     !/* external objects        */
 
@@ -25,6 +32,10 @@ SUBROUTINE NEWUOA (FUNC, X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN)
     REAL(our_dble), INTENT(IN)      :: RHOEND
 
     REAL(our_dble), INTENT(INOUT)   :: X(:)
+
+    LOGICAL, INTENT(OUT)            :: SUCCESS
+
+    CHARACTER(150)                  :: MESSAGE
 
     INTERFACE
 
@@ -85,44 +96,50 @@ SUBROUTINE NEWUOA (FUNC, X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN)
 !C     treated separately by the subroutine that performs the main calculation.
 !C
 
-      N = SIZE(X)
-      NP=N+1
-      NPTM=NPT-NP
-      IF (NPT .LT. N+2 .OR. NPT .GT. ((N+2)*NP)/2) THEN
-          PRINT 10
-   10     FORMAT (/4X,'Return from NEWUOA because NPT is not in',   ' the required interval')
-          GO TO 20
-      END IF
-      NDIM=NPT+N
-      IXB=1
-      IXO=IXB+N
-      IXN=IXO+N
-      IXP=IXN+N
-      IFV=IXP+N*NPT
-      IGQ=IFV+NPT
-      IHQ=IGQ+N
-      IPQ=IHQ+(N*NP)/2
-      IBMAT=IPQ+NPT
-      IZMAT=IBMAT+NDIM*N
-      ID=IZMAT+NPT*NPTM
-      IVL=ID+N
-      IW=IVL+NDIM
+
+    MESSAGE = 'Successful return from NEWUOA.'
+    SUCCESS = .True.
+
+    N = SIZE(X)
+    NP=N+1
+    NPTM=NPT-NP
+    IF (NPT .LT. N+2 .OR. NPT .GT. ((N+2)*NP)/2) THEN
+      MESSAGE = 'Return from NEWUOA because NPT is not in the required interval.'
+      SUCCESS = .False.
+      GO TO 20
+    END IF
+    NDIM=NPT+N
+    IXB=1
+    IXO=IXB+N
+    IXN=IXO+N
+    IXP=IXN+N
+    IFV=IXP+N*NPT
+    IGQ=IFV+NPT
+    IHQ=IGQ+N
+    IPQ=IHQ+(N*NP)/2
+    IBMAT=IPQ+NPT
+    IZMAT=IBMAT+NDIM*N
+    ID=IZMAT+NPT*NPTM
+    IVL=ID+N
+    IW=IVL+NDIM
 !C
 !C     The above settings provide a partition of W for subroutine NEWUOB.
 !C     The partition requires the first NPT*(NPT+N)+5*N*(N+3)/2 elements of
 !C     W plus the space that is needed by the last array of NEWUOB.
 !C
-      CALL NEWUOB (FUNC, N,NPT,X,RHOBEG,RHOEND,IPRINT,MAXFUN,W(IXB), W(IXO),W(IXN),W(IXP),W(IFV),W(IGQ),W(IHQ),W(IPQ),W(IBMAT), W(IZMAT),NDIM,W(ID),W(IVL),W(IW))
-   20 RETURN
-      END
+    CALL NEWUOB (FUNC, N,NPT,X,RHOBEG,RHOEND,IPRINT,MAXFUN,W(IXB), W(IXO),W(IXN),W(IXP),W(IFV),W(IGQ),W(IHQ),W(IPQ),W(IBMAT), W(IZMAT),NDIM,W(ID),W(IVL),W(IW),SUCCESS,MESSAGE)
+    20 RETURN
+    END
 !******************************************************************************
 !******************************************************************************
-      SUBROUTINE NEWUOB (FUNC, N,NPT,X,RHOBEG,RHOEND,IPRINT,MAXFUN,XBASE, XOPT,XNEW,XPT,FVAL,GQ,HQ,PQ,BMAT,ZMAT,NDIM,D,VLAG,W)
+    SUBROUTINE NEWUOB (FUNC, N,NPT,X,RHOBEG,RHOEND,IPRINT,MAXFUN,XBASE, XOPT,XNEW,XPT,FVAL,GQ,HQ,PQ,BMAT,ZMAT,NDIM,D,VLAG,W,SUCCESS,MESSAGE)
       IMPLICIT REAL*8 (A-H,O-Z)
       DIMENSION XBASE(*),XOPT(*),XNEW(*),XPT(NPT,*),FVAL(*), GQ(*),HQ(*),PQ(*),BMAT(NDIM,*),ZMAT(NPT,*),D(*),VLAG(*),W(*)
 
-
       REAL(our_dble), INTENT(INOUT):: X(N)
+
+      CHARACTER(150)    :: MESSAGE
+      LOGICAL           :: SUCCESS
 
     INTERFACE
 
@@ -450,8 +467,9 @@ SUBROUTINE NEWUOA (FUNC, X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN)
       NF=NF+1
   310 IF (NF .GT. NFTEST) THEN
           NF=NF-1
-          IF (IPRINT .GT. 0) PRINT 320
-  320     FORMAT (/4X,'Return from NEWUOA because CALFUN has been called MAXFUN times.')
+        MESSAGE = 'Return from NEWUOA because CALFUN has been called MAXFUN times.'
+        SUCCESS = .False.
+
           GOTO 530
       END IF
       F = func(X)
@@ -500,8 +518,8 @@ SUBROUTINE NEWUOA (FUNC, X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN)
 !C     Pick the next value of DELTA after a trust region step.
 !C
       IF (VQUAD .GE. ZERO) THEN
-          IF (IPRINT .GT. 0) PRINT 370
-  370     FORMAT (/4X,'Return from NEWUOA because a trust region step has failed to reduce Q.')
+            MESSAGE = 'Return from NEWUOA because a trust region step has failed to reduce Q.'
+            SUCCESS = .False.
           GOTO 530
       END IF
       RATIO=(F-FSAVE)/VQUAD

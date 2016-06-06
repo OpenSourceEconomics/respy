@@ -9,9 +9,8 @@
 SUBROUTINE f2py_newuoa(fval, p_final, p_start, func_dim_int)
 
 
-  USE newuoa_interface
+  USE newuoa_module
 
-  USE bfgs_function
   USE criterion_function
 
 
@@ -27,6 +26,9 @@ SUBROUTINE f2py_newuoa(fval, p_final, p_start, func_dim_int)
 
   DOUBLE PRECISION :: RHOEND, RHOBEG
 
+  CHARACTER(150):: MESSAGE
+  LOGICAL :: SUCCESS
+
    IPRINT=0
       MAXFUN=50000
       RHOBEG= MAXVAL(p_start)
@@ -34,12 +36,12 @@ SUBROUTINE f2py_newuoa(fval, p_final, p_start, func_dim_int)
 
 
     
-!    p_final = p_start
+    p_final = p_start
   NPT=min(func_dim_int * 2, func_dim_int+2)
 
-CALL NEWUOA (criterion_func, p_final, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN)   
+  CALL NEWUOA (criterion_func, p_final, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUCCESS, MESSAGE)   
 
-!fval = fret
+  fval = criterion_func(p_final)
 
 
 END SUBROUTINE
@@ -48,7 +50,7 @@ END SUBROUTINE
 SUBROUTINE f2py_bfgs(fval, p_final, p_start, func_dim_int)
 
 
-  USE bfgs_function
+  USE dfpmin_module
   USE criterion_function
 
   INTEGER , INTENT(IN) :: func_dim_int
@@ -60,17 +62,19 @@ SUBROUTINE f2py_bfgs(fval, p_final, p_start, func_dim_int)
   DOUBLE PRECISION, INTENT(OUT)  :: p_final(func_dim_int)
 
     INTEGER :: iter
-    DOUBLE PRECISION:: gtol = 1e-08
-    DOUBLE PRECISION :: fret
-INTEGER     :: maxiter = 200000000
+    DOUBLE PRECISION:: gtol = 1e-08, stpmx = 100.0_our_dble
+INTEGER     :: maxiter = 200
 
 
-  CHARACTER(50):: message
+  CHARACTER(150):: message
   LOGICAL :: success
     
-    p_final = p_start
-    CALL dfpmin(criterion_func, criterion_dfunc, p_final, gtol, iter, fret, maxiter, success, message)
-    fval = fret
+  
 
+    p_final = p_start
+
+    CALL dfpmin(criterion_func, criterion_dfunc, p_final, gtol, iter, maxiter, stpmx, success, message)
+
+    fval = criterion_func(p_final)
 
 END SUBROUTINE

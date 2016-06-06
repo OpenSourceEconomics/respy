@@ -1,4 +1,9 @@
-MODULE bfgs_function
+MODULE dfpmin_module
+
+	!
+	!	Optimize a function using gradient information using the quasi-Newton 
+	!	method of Broyden, Fletcher, Goldfarb, and Shanno (BFGS)
+	!
 
 	!/*	external modules	*/
 	
@@ -15,13 +20,12 @@ MODULE bfgs_function
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE dfpmin(func, dfunc, p, gtol, iter, fret, maxiter, success, message)
+SUBROUTINE dfpmin(func, dfunc, p, gtol, iter, maxiter, stpmx, success, message)
 
     !/* external objects        */
 
-	REAL(our_dble), INTENT(OUT) 	:: fret
-
 	REAL(our_dble), INTENT(INOUT) 	:: p(:)
+	REAL(our_dble), INTENT(IN) 		:: stpmx
 	REAL(our_dble), INTENT(IN) 		:: gtol
 
 	INTEGER(our_int), INTENT(OUT) 	:: iter
@@ -29,7 +33,7 @@ SUBROUTINE dfpmin(func, dfunc, p, gtol, iter, fret, maxiter, success, message)
 
 	LOGICAL, INTENT(OUT)			:: success
 
-	CHARACTER(50), INTENT(OUT)		:: message
+	CHARACTER(150), INTENT(OUT)		:: message
 
 	INTERFACE
 
@@ -63,7 +67,6 @@ SUBROUTINE dfpmin(func, dfunc, p, gtol, iter, fret, maxiter, success, message)
 	INTEGER(our_int) 				:: i
 
 	REAL(our_dble)					:: hessin(SIZE(p), SIZE(p))
-	REAL(our_dble) 					:: STPMX = 100.0_our_dble
 	REAL(our_dble), PARAMETER 		:: EPS = epsilon(p)
 	REAL(our_dble) 					:: TOLX = 4.0_our_dble * EPS
 	REAL(our_dble) 					:: pnew(SIZE(p))
@@ -74,6 +77,7 @@ SUBROUTINE dfpmin(func, dfunc, p, gtol, iter, fret, maxiter, success, message)
 	REAL(our_dble) 					:: stpmax
 	REAL(our_dble) 					:: sumdg
 	REAL(our_dble) 					:: sumxi
+	REAL(our_dble)					:: fret
 	REAL(our_dble) 					:: den
 	REAL(our_dble) 					:: fac
 	REAL(our_dble) 					:: fad
@@ -97,7 +101,7 @@ SUBROUTINE dfpmin(func, dfunc, p, gtol, iter, fret, maxiter, success, message)
 	
 	xi = -g
 	
-	stpmax = STPMX * MAX(SQRT(DOT_PRODUCT(p, p)), REAL(size(p), our_dble))
+	stpmax = stpmx * MAX(SQRT(DOT_PRODUCT(p, p)), REAL(size(p), our_dble))
 	
 	DO its = 1, maxiter
 
@@ -109,14 +113,7 @@ SUBROUTINE dfpmin(func, dfunc, p, gtol, iter, fret, maxiter, success, message)
 		xi = pnew - p
 		p = pnew
 
-		IF (MAXVAL(ABS(xi) / max(ABS(p), one_dble)) < TOLX) THEN
-
-			success = .True.
-			message = 'Sucess for whatever reason'
-			RETURN
-
-		END IF
-
+	
 		dg = g
 		g = dfunc(p)
 		den = max(fret, one_dble)
@@ -124,7 +121,7 @@ SUBROUTINE dfpmin(func, dfunc, p, gtol, iter, fret, maxiter, success, message)
 		IF (MAXVAL(ABS(g) * max(ABS(p), one_dble) / den) < gtol) THEN
 
 			success = .True.
-			message = 'Sucess for whatever reason'
+			message = 'Gradient less than requested.'
 
 			RETURN
 
@@ -152,7 +149,7 @@ SUBROUTINE dfpmin(func, dfunc, p, gtol, iter, fret, maxiter, success, message)
 	END DO
 
 	success = .False.
-	message = 'too many iterations'
+	message = 'Exceeded maximum number of iterations.'
 	
 END SUBROUTINE 
 !******************************************************************************
@@ -235,8 +232,8 @@ SUBROUTINE lnsrch(xold, fold, g, p, x, f, stpmax, check, func)
 		
 		IF (alam < alamin) THEN
 
-			x(:)=xold(:)
-			check=.true.
+			x(:) = xold(:)
+			check = .True.
 			RETURN
 
 		ELSEIF (f <= fold + ALF * alam * slope) THEN
@@ -245,11 +242,11 @@ SUBROUTINE lnsrch(xold, fold, g, p, x, f, stpmax, check, func)
 		
 		ELSE
 		
-			if (alam == one_dble) then
+			IF (alam == one_dble) THEN
 		
 				tmplam = -slope / (two_dble * (f -fold - slope))
 		
-			else
+			ELSE
 		
 				rhs1 = f - fold - alam * slope
 				rhs2 = f2 - fold2 - alam2 * slope
@@ -288,12 +285,22 @@ SUBROUTINE lnsrch(xold, fold, g, p, x, f, stpmax, check, func)
 END SUBROUTINE 
 !******************************************************************************
 !******************************************************************************
-	FUNCTION outerprod(a,b)
-	REAL(our_dble), DIMENSION(:), INTENT(IN) :: a,b
-	REAL(our_dble), DIMENSION(size(a),size(b)) :: outerprod
-	outerprod = spread(a,dim=2,ncopies=size(b)) * &
-		spread(b,dim=1,ncopies=size(a))
-	END FUNCTION outerprod
+PURE FUNCTION outerprod(a,b)
+
+    !/* external objects        */
+
+	REAL(our_dble), INTENT(IN) 		:: a(:)
+	REAL(our_dble), INTENT(IN) 		:: b(:)
+
+	REAL(our_dble)					:: outerprod(SIZE(a), SIZE(b))
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+	outerprod = spread(a, dim=2, ncopies=size(b)) * spread(b, dim=1, ncopies=size(a))
+
+END FUNCTION
 !******************************************************************************
 !******************************************************************************
 END MODULE
