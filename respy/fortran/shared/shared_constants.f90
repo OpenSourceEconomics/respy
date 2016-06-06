@@ -16,8 +16,10 @@ MODULE shared_constants
     INTEGER(our_int), PARAMETER :: three_int    = 3_our_int
 
     REAL(our_dble), PARAMETER   :: zero_dble    = 0.00_our_dble
+    REAL(our_dble), PARAMETER   :: half_dble    = 0.50_our_dble
     REAL(our_dble), PARAMETER   :: one_dble     = 1.00_our_dble
     REAL(our_dble), PARAMETER   :: two_dble     = 2.00_our_dble
+    REAL(our_dble), PARAMETER   :: three_dble   = 3.00_our_dble
 
     REAL(our_dble), PARAMETER   :: pi           = 3.141592653589793238462643383279502884197_our_dble
     

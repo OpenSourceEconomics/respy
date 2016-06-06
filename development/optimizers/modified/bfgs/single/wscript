@@ -61,7 +61,7 @@ def build(ctx):
     ctx.env.append_unique('STLIB', ['optimizers'])
 
 
-    src = ['shared_constants.f90', 'criterion.f90',
+    src = ['../../../../../respy/fortran/shared/shared_constants.f90', 'criterion.f90',
             'dfpmin.f90', 'bfgs_library.f90']
 
     flags = ctx.env.FCFLAGS + ['-fPIC']
