@@ -61,7 +61,6 @@ def build(ctx):
     ctx.env.append_unique('STLIB', ['optimizers'])
 
     src = ['nrtype.f90', 'shared_variables.f90', 'criterion.f90',
-        'nrutil.f90', 'nr.f90', 'lnsrch.f90',
             'dfpmin.f90', 'bfgs_library.f90']
 
     flags = ctx.env.FCFLAGS + ['-fPIC']

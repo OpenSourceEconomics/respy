@@ -4,11 +4,16 @@ import pickle as pkl
 import os
 
 
-from f2py_library import *
-
 import numpy as np
 
 np.random.seed(123)#
+
+ 
+if True:
+    assert os.system('./waf distclean; ./waf configure build --debug') == 0
+
+
+from f2py_library import *
 
 #rslt = []
 rslt = pkl.load(open('regresion_vault.pkl', 'rb'))
