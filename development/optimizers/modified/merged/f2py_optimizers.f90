@@ -62,7 +62,7 @@ SUBROUTINE f2py_bfgs(fval, p_final, p_start, func_dim_int)
 
     
     p_final = p_start
-    CALL dfpmin(p_final, gtol, iter, fret, criterion_func, criterion_dfunc, func_dim_int)
+    CALL dfpmin(p_final, gtol, iter, fret, criterion_func, criterion_dfunc)
     fval = fret
 
 

@@ -15,16 +15,15 @@ MODULE bfgs_function
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE dfpmin(p, gtol, iter, fret, func, dfunc, num_paras)
+SUBROUTINE dfpmin(p, gtol, iter, fret, func, dfunc)
 
     !/* external objects        */
 
 	REAL(our_dble), INTENT(OUT) 	:: fret
 
-	REAL(our_dble), INTENT(INOUT) 	:: p(num_paras)
+	REAL(our_dble), INTENT(INOUT) 	:: p(:)
 	REAL(our_dble), INTENT(IN) 		:: gtol
 
-	INTEGER(our_int), INTENT(IN) 	:: num_paras
 	INTEGER(our_int), INTENT(OUT) 	:: iter
 
 	INTERFACE
@@ -61,15 +60,15 @@ SUBROUTINE dfpmin(p, gtol, iter, fret, func, dfunc, num_paras)
 	INTEGER(our_int) 				:: its
 	INTEGER(our_int) 				:: i
 
-	REAL(our_dble)					:: hessin(num_paras, num_paras)
+	REAL(our_dble)					:: hessin(SIZE(p), SIZE(p))
 	REAL(our_dble) 					:: STPMX = 100.0_our_dble
 	REAL(our_dble), PARAMETER 		:: EPS = epsilon(p)
 	REAL(our_dble) 					:: TOLX = 4.0_our_dble * EPS
-	REAL(our_dble) 					:: pnew(num_paras)
-	REAL(our_dble) 					:: hdg(num_paras)
-	REAL(our_dble) 					:: xi(num_paras)
-	REAL(our_dble) 					:: dg(num_paras)
-	REAL(our_dble) 					:: g(num_paras)
+	REAL(our_dble) 					:: pnew(SIZE(p))
+	REAL(our_dble) 					:: hdg(SIZE(p))
+	REAL(our_dble) 					:: xi(SIZE(p))
+	REAL(our_dble) 					:: dg(SIZE(p))
+	REAL(our_dble) 					:: g(SIZE(p))
 	REAL(our_dble) 					:: stpmax
 	REAL(our_dble) 					:: sumdg
 	REAL(our_dble) 					:: sumxi
@@ -90,7 +89,7 @@ SUBROUTINE dfpmin(p, gtol, iter, fret, func, dfunc, num_paras)
 	
 	! Initialize Hessian
 	hessin = zero_dble
-	DO i = 1, num_paras
+	DO i = 1, SIZE(p)
 		hessin(i, i) = one_dble
 	END DO
 	
