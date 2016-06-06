@@ -5,69 +5,8 @@ MODULE bfgs_function
 
 	IMPLICIT NONE
 
-	
-	INTERFACE outerprod
-		MODULE PROCEDURE outerprod_r
-	END INTERFACE
-
-	INTERFACE assert_eq
-		MODULE PROCEDURE assert_eq2,assert_eq3,assert_eq4,assert_eqn
-	END INTERFACE
-
-
 CONTAINS
-
-		FUNCTION assert_eq2(n1,n2,string)
-	CHARACTER(LEN=*), INTENT(IN) :: string
-	INTEGER, INTENT(IN) :: n1,n2
-	INTEGER :: assert_eq2
-	if (n1 == n2) then
-		assert_eq2=n1
-	else
-		write (*,*) 'nrerror: an assert_eq failed with this tag:', &
-			string
-		STOP 'program terminated by assert_eq2'
-	end if
-	END FUNCTION assert_eq2
-!BL
-	FUNCTION assert_eq3(n1,n2,n3,string)
-	CHARACTER(LEN=*), INTENT(IN) :: string
-	INTEGER, INTENT(IN) :: n1,n2,n3
-	INTEGER :: assert_eq3
-	if (n1 == n2 .and. n2 == n3) then
-		assert_eq3=n1
-	else
-		write (*,*) 'nrerror: an assert_eq failed with this tag:', &
-			string
-		STOP 'program terminated by assert_eq3'
-	end if
-	END FUNCTION assert_eq3
-!BL
-	FUNCTION assert_eq4(n1,n2,n3,n4,string)
-	CHARACTER(LEN=*), INTENT(IN) :: string
-	INTEGER, INTENT(IN) :: n1,n2,n3,n4
-	INTEGER :: assert_eq4
-	if (n1 == n2 .and. n2 == n3 .and. n3 == n4) then
-		assert_eq4=n1
-	else
-		write (*,*) 'nrerror: an assert_eq failed with this tag:', &
-			string
-		STOP 'program terminated by assert_eq4'
-	end if
-	END FUNCTION assert_eq4
-!BL
-	FUNCTION assert_eqn(nn,string)
-	CHARACTER(LEN=*), INTENT(IN) :: string
-	INTEGER, DIMENSION(:), INTENT(IN) :: nn
-	INTEGER :: assert_eqn
-	if (all(nn(2:) == nn(1))) then
-		assert_eqn=nn(1)
-	else
-		write (*,*) 'nrerror: an assert_eq failed with this tag:', &
-			string
-		STOP 'program terminated by assert_eqn'
-	end if
-	END FUNCTION assert_eqn
+	
 
 	FUNCTION vabs(v)
 	REAL(SP), DIMENSION(:), INTENT(IN) :: v
@@ -81,12 +20,20 @@ CONTAINS
 	STOP 'program terminated by nrerror'
 	END SUBROUTINE nrerror
 
-	FUNCTION outerprod_r(a,b)
+
+	FUNCTION outerprod(a,b)
 	REAL(SP), DIMENSION(:), INTENT(IN) :: a,b
-	REAL(SP), DIMENSION(size(a),size(b)) :: outerprod_r
-	outerprod_r = spread(a,dim=2,ncopies=size(b)) * &
+	REAL(SP), DIMENSION(size(a),size(b)) :: outerprod
+	outerprod = spread(a,dim=2,ncopies=size(b)) * &
 		spread(b,dim=1,ncopies=size(a))
-	END FUNCTION outerprod_r
+	END FUNCTION outerprod
+
+
+
+
+
+
+
 !BL
 	SUBROUTINE unit_matrix(mat)
 	REAL(SP), DIMENSION(:,:), INTENT(OUT) :: mat
@@ -161,7 +108,6 @@ CONTAINS
 	END SUBROUTINE dfpmin
 
 	SUBROUTINE lnsrch(xold,fold,g,p,x,f,stpmax,check,func)
-	IMPLICIT NONE
 	REAL(SP), DIMENSION(:), INTENT(IN) :: xold,g
 	REAL(SP), DIMENSION(:), INTENT(INOUT) :: p
 	REAL(SP), INTENT(IN) :: fold,stpmax
@@ -180,7 +126,7 @@ CONTAINS
 	INTEGER(our_int) :: ndum
 	REAL(SP) :: a,alam,alam2,alamin,b,disc,f2,fold2,pabs,rhs1,rhs2,slope,&
 		tmplam
-	ndum=assert_eq(size(g),size(p),size(x),size(xold),'lnsrch')
+	ndum=size(g)
 	check=.false.
 	pabs=vabs(p(:))
 	if (pabs > stpmax) p(:)=p(:)*stpmax/pabs
