@@ -22,7 +22,8 @@ MODULE shared_constants
     REAL(our_dble), PARAMETER   :: three_dble   = 3.00_our_dble
 
     REAL(our_dble), PARAMETER   :: pi           = 3.141592653589793238462643383279502884197_our_dble
-    
+    REAL(our_dble), PARAMETER   :: eps          = epsilon(one_dble)
+
     ! Variables that are part of the FORTRAN initialization file and remain unchanged during the run. These are often used to construct explicit-shape arrays.
     INTEGER(our_int)            :: num_points_interp
     INTEGER(our_int)            :: num_agents_est

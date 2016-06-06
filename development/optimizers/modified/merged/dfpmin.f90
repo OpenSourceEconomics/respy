@@ -25,6 +25,7 @@ SUBROUTINE dfpmin(func, dfunc, p, gtol, iter, maxiter, stpmx, success, message)
     !/* external objects        */
 
 	REAL(our_dble), INTENT(INOUT) 	:: p(:)
+	
 	REAL(our_dble), INTENT(IN) 		:: stpmx
 	REAL(our_dble), INTENT(IN) 		:: gtol
 
@@ -67,7 +68,6 @@ SUBROUTINE dfpmin(func, dfunc, p, gtol, iter, maxiter, stpmx, success, message)
 	INTEGER(our_int) 				:: i
 
 	REAL(our_dble)					:: hessin(SIZE(p), SIZE(p))
-	REAL(our_dble), PARAMETER 		:: EPS = epsilon(p)
 	REAL(our_dble) 					:: pnew(SIZE(p))
 	REAL(our_dble) 					:: hdg(SIZE(p))
 	REAL(our_dble) 					:: xi(SIZE(p))
@@ -133,7 +133,7 @@ SUBROUTINE dfpmin(func, dfunc, p, gtol, iter, maxiter, stpmx, success, message)
 		sumdg = DOT_PRODUCT(dg, dg)
 		sumxi = DOT_PRODUCT(xi, xi)
 
-		IF (fac ** 2 > EPS * sumdg * sumxi) THEN
+		IF (fac ** 2 > eps * sumdg * sumxi) THEN
 
 			fac = one_dble / fac
 			fad = one_dble / fae
@@ -188,7 +188,6 @@ SUBROUTINE lnsrch(xold, fold, g, p, x, f, stpmax, check, func)
     !/* internal objects        */
 
 	REAL(our_dble), PARAMETER 		:: ALF=1.0e-4_our_dble
-	REAL(our_dble), PARAMETER 		:: TOLX=epsilon(x)
 
 	INTEGER(our_int) 				:: ndum
 
@@ -220,7 +219,7 @@ SUBROUTINE lnsrch(xold, fold, g, p, x, f, stpmax, check, func)
 
 	slope = DOT_PRODUCT(g, p)
 	
-	alamin = TOLX / MAXVAL(ABS(p)/MAX(ABS(xold), one_dble))
+	alamin = eps / MAXVAL(ABS(p)/MAX(ABS(xold), one_dble))
 
 	alam = 1.0
 

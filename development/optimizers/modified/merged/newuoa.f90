@@ -3,10 +3,10 @@ MODULE newuoa_module
     !
     !   M. J. D. Powell, "The NEWUOA software for unconstrained optimization 
     !   without derivatives", in Large-Scale Nonlinear Optimization, Series: 
-    !   Nonconvex Optimization and Its Applications , Vol. 83, Di Pillo, 
+    !   Nonconvex Optimization and Its Applications, Vol. 83, Di Pillo, 
     !   Gianni; Roma, Massimo (Eds.) 2006, New York: Springer US.
     !
-
+    
     !/* external modules  */
 
     USE shared_constants
@@ -95,7 +95,6 @@ SUBROUTINE NEWUOA (FUNC, X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUCCESS, MESSAG
 !C     Partition the working space array, so that different parts of it can be
 !C     treated separately by the subroutine that performs the main calculation.
 !C
-
 
     MESSAGE = 'Successful return from NEWUOA.'
     SUCCESS = .True.
