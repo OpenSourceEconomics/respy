@@ -33,7 +33,7 @@ SUBROUTINE f2py_newuoa(fval, p_final, p_start, func_dim_int)
 !    p_final = p_start
   NPT=min(func_dim_int * 2, func_dim_int+2)
 
-CALL NEWUOA (p_final, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN)   
+CALL NEWUOA (p_final, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, func_dim_int)   
 
 !fval = fret
 
@@ -41,3 +41,29 @@ CALL NEWUOA (p_final, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN)
 END SUBROUTINE
 !------------------------------------------------------------------------------
 !------------------------------------------------------------------------------
+SUBROUTINE f2py_bfgs(fval, p_final, p_start, func_dim_int)
+
+
+  USE bfgs_function
+  USE criterion_function
+
+  INTEGER , INTENT(IN) :: func_dim_int
+
+  DOUBLE PRECISION, INTENT(IN)  :: p_start(func_dim_int)
+
+    DOUBLE PRECISION, INTENT(OUT)      :: fval
+
+  DOUBLE PRECISION, INTENT(OUT)  :: p_final(func_dim_int)
+
+    INTEGER :: iter
+    DOUBLE PRECISION:: gtol = 1e-08
+    DOUBLE PRECISION :: fret
+
+
+    
+    p_final = p_start
+    CALL dfpmin(p_final, gtol, iter, fret, criterion_func, criterion_dfunc, func_dim_int)
+    fval = fret
+
+
+END SUBROUTINE

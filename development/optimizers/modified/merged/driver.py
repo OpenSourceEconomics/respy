@@ -6,7 +6,6 @@ import os
 
 import numpy as np
 
-np.random.seed(123)#
 
  
 if True:
@@ -15,21 +14,57 @@ if True:
 
 from f2py_library import *
 
-#rslt = []
-rslt = pkl.load(open('regresion_vault.pkl', 'rb'))
 
-for i in range(100):
+task = 'check'
+
+###############################################################################
+#   ŃEWUOA
+###############################################################################
+np.random.seed(123)
+
+if task == 'check': 
+    rslt = pkl.load(open('regresion_vault_newuoa.pkl', 'rb'))
+elif task == 'create':
+    rslt = []
+
+for i in range(1000):
+
     dim = np.random.randint(2, 10)    
 
     p_start = np.random.uniform(-0.0, 0.1, size=dim)
 
     fval, p_final = f2py_newuoa(p_start, dim)
 
+    if task == 'check':
+        np.testing.assert_almost_equal(rslt[i], [fval] + p_final.tolist())
+    else:
+        rslt += [[fval] + p_final.tolist()]
 
-#    rslt += [[fval] + p_final.tolist()]
-    print('Testing ', i, p_final)
+if task == 'create':
+    pkl.dump(rslt, open('regresion_vault_newuoa.pkl', 'wb'))
 
-    np.testing.assert_almost_equal(rslt[i], [fval] + p_final.tolist())
+###############################################################################
+#   BFGS
+###############################################################################
+np.random.seed(123)
 
-# Store regression vault.
-pkl.dump(rslt, open('regresion_vault.pkl', 'wb'))
+if task == 'check': 
+    rslt = pkl.load(open('regresion_vault_bfgs.pkl', 'rb'))
+elif task == 'create':
+    rslt = []
+
+for i in range(1000):
+
+    dim = np.random.randint(2, 10)    
+
+    p_start = np.random.uniform(-0.0, 0.1, size=dim)
+
+    fval, p_final = f2py_bfgs(p_start, dim)
+
+    if task == 'check':
+        np.testing.assert_almost_equal(rslt[i], [fval] + p_final.tolist())
+    else:
+        rslt += [[fval] + p_final.tolist()]
+
+if task == 'create':
+    pkl.dump(rslt, open('regresion_vault_bfgs.pkl', 'wb'))

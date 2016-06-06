@@ -63,7 +63,7 @@ def build(ctx):
 
 
     src = ['../../../../respy/fortran/shared/shared_constants.f90',
-        'criterion.f90', 'newuoa.f90']
+        'criterion.f90', 'newuoa.f90', 'dfpmin.f90']
 
     flags = ctx.env.FCFLAGS + ['-fPIC']
 
@@ -79,8 +79,3 @@ def build(ctx):
     # Build F2PY interface
 
     ctx.add_to_group(CreateF2pyInterfaces(env=ctx.env))
-
-
-    # Compile scalar RESFORT executable.
-    ctx(features=['fc', 'fcprogram'], source='main.f90',
-        target='newuoa')

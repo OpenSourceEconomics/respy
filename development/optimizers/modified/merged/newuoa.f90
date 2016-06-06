@@ -15,10 +15,11 @@ MODULE newuoa_interface
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE NEWUOA (X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN)
+SUBROUTINE NEWUOA (X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, NUM_PARAS)
 
     !/* external objects        */
 
+    INTEGER(our_int), INTENT(IN)    :: NUM_PARAS
     INTEGER(our_int), INTENT(IN)    :: IPRINT
     INTEGER(our_int), INTENT(IN)    :: MAXFUN
     INTEGER(our_int), INTENT(IN)    :: NPT
@@ -26,7 +27,7 @@ SUBROUTINE NEWUOA (X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN)
     REAL(our_dble), INTENT(IN)      :: RHOBEG
     REAL(our_dble), INTENT(IN)      :: RHOEND
 
-    REAL(our_dble), INTENT(INOUT)   :: X(:)
+    REAL(our_dble), INTENT(INOUT)   :: X(NUM_PARAS)
     
     !/*  internal objects       */
 
