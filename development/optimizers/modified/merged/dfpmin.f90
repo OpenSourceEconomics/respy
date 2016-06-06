@@ -68,7 +68,6 @@ SUBROUTINE dfpmin(func, dfunc, p, gtol, iter, maxiter, stpmx, success, message)
 
 	REAL(our_dble)					:: hessin(SIZE(p), SIZE(p))
 	REAL(our_dble), PARAMETER 		:: EPS = epsilon(p)
-	REAL(our_dble) 					:: TOLX = 4.0_our_dble * EPS
 	REAL(our_dble) 					:: pnew(SIZE(p))
 	REAL(our_dble) 					:: hdg(SIZE(p))
 	REAL(our_dble) 					:: xi(SIZE(p))
