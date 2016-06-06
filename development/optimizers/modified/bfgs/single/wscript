@@ -56,10 +56,13 @@ def build(ctx):
     else:
         ctx.env.append_unique('FCFLAGS', PRODUCTION_OPTIONS)
 
+    # Enable static libraries
+    ctx.env.append_unique('STLIBPATH', ['../.bld'])
+    ctx.env.append_unique('STLIB', ['optimizers'])
 
-    src = ['nrtype.f90', 'shared_variables.f90', 'criterion.f90', 
-        'nrutil.f90',  'linmin.f90',
-            'powell.f90', 'powell_library.f90']
+    src = ['nrtype.f90', 'shared_variables.f90', 'criterion.f90',
+        'nrutil.f90', 'nr.f90', 'lnsrch.f90',
+            'dfpmin.f90', 'bfgs_library.f90']
 
     flags = ctx.env.FCFLAGS + ['-fPIC']
 
@@ -69,7 +72,7 @@ def build(ctx):
 
 
     ctx(features=['fc', 'fcstlib'], source=src,  target='optimizers',
-        fcflags=flags)
+         fcflags=flags)
     ctx.add_group()
 
     # Build F2PY interface

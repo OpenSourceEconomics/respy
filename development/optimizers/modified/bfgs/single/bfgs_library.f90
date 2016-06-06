@@ -1,10 +1,11 @@
 !******************************************************************************
 !******************************************************************************
-MODULE powell_library
+MODULE bfgs_library
 
-    USE powell_function, ONLY: powell 
+    USE bfgs_function, ONLY: dfpmin 
     USE nrtype
     USE shared_variables
+    USE criterion_function, ONLY: criterion_func, criterion_dfunc
 !******************************************************************************
 !******************************************************************************
 END MODULE
