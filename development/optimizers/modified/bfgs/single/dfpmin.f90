@@ -7,7 +7,7 @@ MODULE bfgs_function
 
 	
 	INTERFACE outerprod
-		MODULE PROCEDURE outerprod_r,outerprod_d
+		MODULE PROCEDURE outerprod_r
 	END INTERFACE
 
 	INTERFACE assert_eq
@@ -88,13 +88,6 @@ CONTAINS
 		spread(b,dim=1,ncopies=size(a))
 	END FUNCTION outerprod_r
 !BL
-	FUNCTION outerprod_d(a,b)
-	REAL(DP), DIMENSION(:), INTENT(IN) :: a,b
-	REAL(DP), DIMENSION(size(a),size(b)) :: outerprod_d
-	outerprod_d = spread(a,dim=2,ncopies=size(b)) * &
-		spread(b,dim=1,ncopies=size(a))
-	END FUNCTION outerprod_d
-
 	SUBROUTINE unit_matrix(mat)
 	REAL(SP), DIMENSION(:,:), INTENT(OUT) :: mat
 	INTEGER(our_int) :: i,n
