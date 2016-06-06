@@ -1,7 +1,7 @@
 MODULE bfgs_function
 
 
-	USE nrtype
+	USE shared_constants
 
 	IMPLICIT NONE
 
@@ -9,8 +9,8 @@ CONTAINS
 	
 
 	FUNCTION vabs(v)
-	REAL(SP), DIMENSION(:), INTENT(IN) :: v
-	REAL(SP) :: vabs
+	REAL(our_dble), DIMENSION(:), INTENT(IN) :: v
+	REAL(our_dble) :: vabs
 	vabs=sqrt(dot_product(v,v))
 	END FUNCTION vabs
 
@@ -22,8 +22,8 @@ CONTAINS
 
 
 	FUNCTION outerprod(a,b)
-	REAL(SP), DIMENSION(:), INTENT(IN) :: a,b
-	REAL(SP), DIMENSION(size(a),size(b)) :: outerprod
+	REAL(our_dble), DIMENSION(:), INTENT(IN) :: a,b
+	REAL(our_dble), DIMENSION(size(a),size(b)) :: outerprod
 	outerprod = spread(a,dim=2,ncopies=size(b)) * &
 		spread(b,dim=1,ncopies=size(a))
 	END FUNCTION outerprod
@@ -36,47 +36,47 @@ CONTAINS
 
 !BL
 	SUBROUTINE unit_matrix(mat)
-	REAL(SP), DIMENSION(:,:), INTENT(OUT) :: mat
+	REAL(our_dble), DIMENSION(:,:), INTENT(OUT) :: mat
 	INTEGER(our_int) :: i,n
 	n=min(size(mat,1),size(mat,2))
-	mat(:,:)=0.0_sp
+	mat(:,:)=0.0_our_dble
 	do i=1,n
-		mat(i,i)=1.0_sp
+		mat(i,i)=1.0_our_dble
 	end do
 	END SUBROUTINE unit_matrix
 
 	SUBROUTINE dfpmin(p,gtol,iter,fret,func,dfunc)
 	INTEGER(our_int), INTENT(OUT) :: iter
-	REAL(SP), INTENT(IN) :: gtol
-	REAL(SP), INTENT(OUT) :: fret
-	REAL(SP), DIMENSION(:), INTENT(INOUT) :: p
+	REAL(our_dble), INTENT(IN) :: gtol
+	REAL(our_dble), INTENT(OUT) :: fret
+	REAL(our_dble), DIMENSION(:), INTENT(INOUT) :: p
 	INTERFACE
 		FUNCTION func(p)
-		USE nrtype
+		USE shared_constants
 		IMPLICIT NONE
-		REAL(SP), DIMENSION(:), INTENT(IN) :: p
-		REAL(SP) :: func
+		REAL(our_dble), DIMENSION(:), INTENT(IN) :: p
+		REAL(our_dble) :: func
 		END FUNCTION func
 !BL
 		FUNCTION dfunc(p)
-		USE nrtype
+		USE shared_constants
 		IMPLICIT NONE
-		REAL(SP), DIMENSION(:), INTENT(IN) :: p
-		REAL(SP), DIMENSION(size(p)) :: dfunc
+		REAL(our_dble), DIMENSION(:), INTENT(IN) :: p
+		REAL(our_dble), DIMENSION(size(p)) :: dfunc
 		END FUNCTION dfunc
 	END INTERFACE
 	INTEGER(our_int), PARAMETER :: ITMAX=200
-	REAL(SP), PARAMETER :: STPMX=100.0_sp,EPS=epsilon(p),TOLX=4.0_sp*EPS
+	REAL(our_dble), PARAMETER :: STPMX=100.0_our_dble,EPS=epsilon(p),TOLX=4.0_our_dble*EPS
 	INTEGER(our_int) :: its
 	LOGICAL :: check
-	REAL(SP) :: den,fac,fad,fae,fp,stpmax,sumdg,sumxi
-	REAL(SP), DIMENSION(size(p)) :: dg,g,hdg,pnew,xi
-	REAL(SP), DIMENSION(size(p),size(p)) :: hessin
+	REAL(our_dble) :: den,fac,fad,fae,fp,stpmax,sumdg,sumxi
+	REAL(our_dble), DIMENSION(size(p)) :: dg,g,hdg,pnew,xi
+	REAL(our_dble), DIMENSION(size(p),size(p)) :: hessin
 	fp=func(p)
 	g=dfunc(p)
 	call unit_matrix(hessin)
 	xi=-g
-	stpmax=STPMX*max(vabs(p),real(size(p),sp))
+	stpmax=STPMX*max(vabs(p),real(size(p),our_dble))
 	do its=1,ITMAX
 		iter=its
 		call lnsrch(p,fp,g,xi,pnew,fret,stpmax,check,func)
@@ -84,11 +84,11 @@ CONTAINS
 		xi=pnew-p
 		p=pnew
 
-		if (maxval(abs(xi)/max(abs(p),1.0_sp)) < TOLX) RETURN
+		if (maxval(abs(xi)/max(abs(p),1.0_our_dble)) < TOLX) RETURN
 		dg=g
 		g=dfunc(p)
-		den=max(fret,1.0_sp)
-		if (maxval(abs(g)*max(abs(p),1.0_sp)/den) < gtol) RETURN
+		den=max(fret,1.0_our_dble)
+		if (maxval(abs(g)*max(abs(p),1.0_our_dble)/den) < gtol) RETURN
 		dg=g-dg
 		hdg=matmul(hessin,dg)
 		fac=dot_product(dg,xi)
@@ -96,8 +96,8 @@ CONTAINS
 		sumdg=dot_product(dg,dg)
 		sumxi=dot_product(xi,xi)
 		if (fac**2 > EPS*sumdg*sumxi) then
-			fac=1.0_sp/fac
-			fad=1.0_sp/fae
+			fac=1.0_our_dble/fac
+			fad=1.0_our_dble/fae
 			dg=fac*xi-fad*hdg
 			hessin=hessin+fac*outerprod(xi,xi)-&
 				fad*outerprod(hdg,hdg)+fae*outerprod(dg,dg)
@@ -108,30 +108,30 @@ CONTAINS
 	END SUBROUTINE dfpmin
 
 	SUBROUTINE lnsrch(xold,fold,g,p,x,f,stpmax,check,func)
-	REAL(SP), DIMENSION(:), INTENT(IN) :: xold,g
-	REAL(SP), DIMENSION(:), INTENT(INOUT) :: p
-	REAL(SP), INTENT(IN) :: fold,stpmax
-	REAL(SP), DIMENSION(:), INTENT(OUT) :: x
-	REAL(SP), INTENT(OUT) :: f
-	LOGICAL(LGT), INTENT(OUT) :: check
+	REAL(our_dble), DIMENSION(:), INTENT(IN) :: xold,g
+	REAL(our_dble), DIMENSION(:), INTENT(INOUT) :: p
+	REAL(our_dble), INTENT(IN) :: fold,stpmax
+	REAL(our_dble), DIMENSION(:), INTENT(OUT) :: x
+	REAL(our_dble), INTENT(OUT) :: f
+	LOGICAL, INTENT(OUT) :: check
 	INTERFACE
 		FUNCTION func(x)
-		USE nrtype
+		USE shared_constants
 		IMPLICIT NONE
-		REAL(SP) :: func
-		REAL(SP), DIMENSION(:), INTENT(IN) :: x
+		REAL(our_dble) :: func
+		REAL(our_dble), DIMENSION(:), INTENT(IN) :: x
 		END FUNCTION func
 	END INTERFACE
-	REAL(SP), PARAMETER :: ALF=1.0e-4_sp,TOLX=epsilon(x)
+	REAL(our_dble), PARAMETER :: ALF=1.0e-4_our_dble,TOLX=epsilon(x)
 	INTEGER(our_int) :: ndum
-	REAL(SP) :: a,alam,alam2,alamin,b,disc,f2,fold2,pabs,rhs1,rhs2,slope,&
+	REAL(our_dble) :: a,alam,alam2,alamin,b,disc,f2,fold2,pabs,rhs1,rhs2,slope,&
 		tmplam
 	ndum=size(g)
 	check=.false.
 	pabs=vabs(p(:))
 	if (pabs > stpmax) p(:)=p(:)*stpmax/pabs
 	slope=dot_product(g,p)
-	alamin=TOLX/maxval(abs(p(:))/max(abs(xold(:)),1.0_sp))
+	alamin=TOLX/maxval(abs(p(:))/max(abs(xold(:)),1.0_our_dble))
 	alam=1.0
 	do
 		x(:)=xold(:)+alam*p(:)
@@ -144,7 +144,7 @@ CONTAINS
 			RETURN
 		else
 			if (alam == 1.0) then
-				tmplam=-slope/(2.0_sp*(f-fold-slope))
+				tmplam=-slope/(2.0_our_dble*(f-fold-slope))
 			else
 				rhs1=f-fold-alam*slope
 				rhs2=f2-fold2-alam2*slope
@@ -152,23 +152,23 @@ CONTAINS
 				b=(-alam2*rhs1/alam**2+alam*rhs2/alam2**2)/&
 					(alam-alam2)
 				if (a == 0.0) then
-					tmplam=-slope/(2.0_sp*b)
+					tmplam=-slope/(2.0_our_dble*b)
 				else
-					disc=b*b-3.0_sp*a*slope
+					disc=b*b-3.0_our_dble*a*slope
 					if (disc < 0.0) THEN
 disc = 0.001
 
 END IF
 
-					tmplam=(-b+sqrt(disc))/(3.0_sp*a)
+					tmplam=(-b+sqrt(disc))/(3.0_our_dble*a)
 				end if
-				if (tmplam > 0.5_sp*alam) tmplam=0.5_sp*alam
+				if (tmplam > 0.5_our_dble*alam) tmplam=0.5_our_dble*alam
 			end if
 		end if
 		alam2=alam
 		f2=f
 		fold2=fold
-		alam=max(tmplam,0.1_sp*alam)
+		alam=max(tmplam,0.1_our_dble*alam)
 	end do
 	END SUBROUTINE lnsrch
 

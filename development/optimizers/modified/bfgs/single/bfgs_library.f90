@@ -3,8 +3,7 @@
 MODULE bfgs_library
 
     USE bfgs_function, ONLY: dfpmin 
-    USE nrtype
-    USE shared_variables
+    USE shared_constants
     USE criterion_function, ONLY: criterion_func, criterion_dfunc
 !******************************************************************************
 !******************************************************************************

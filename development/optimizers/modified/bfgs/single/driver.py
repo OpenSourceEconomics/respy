@@ -26,7 +26,9 @@ for i in range(100):
 
     fval, p_final = f2py_bfgs(p_start, dim)
 
-#    rslt += [[fval] + p_final.tolist()]
+ #   rslt += [[fval] + p_final.tolist()]
+    print('Testing ', i)
+
     np.testing.assert_almost_equal(rslt[i], [fval] + p_final.tolist())
 
 # Store regression vault.
