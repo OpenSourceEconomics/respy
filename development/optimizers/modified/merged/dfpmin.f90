@@ -20,12 +20,12 @@ MODULE dfpmin_module
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE dfpmin(func, dfunc, p, gtol, iter, maxiter, stpmx, success, message)
+SUBROUTINE dfpmin(func, dfunc, p, gtol, maxiter, stpmx, success, message, iter)
 
     !/* external objects        */
 
 	REAL(our_dble), INTENT(INOUT) 	:: p(:)
-	
+
 	REAL(our_dble), INTENT(IN) 		:: stpmx
 	REAL(our_dble), INTENT(IN) 		:: gtol
 

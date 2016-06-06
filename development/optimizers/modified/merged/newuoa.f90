@@ -20,9 +20,11 @@ MODULE newuoa_module
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE NEWUOA (FUNC, X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUCCESS, MESSAGE)
+SUBROUTINE NEWUOA (FUNC, X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUCCESS, MESSAGE, NF)
 
     !/* external objects        */
+
+    INTEGER(our_int), INTENT(OUT)   :: NF
 
     INTEGER(our_int), INTENT(IN)    :: IPRINT
     INTEGER(our_int), INTENT(IN)    :: MAXFUN
@@ -56,7 +58,7 @@ SUBROUTINE NEWUOA (FUNC, X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUCCESS, MESSAG
 
     INTEGER(our_int)                :: N
 
-    REAL(our_dble)                  :: W(10000)
+    REAL(our_dble)                  :: W(100000)
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -126,14 +128,14 @@ SUBROUTINE NEWUOA (FUNC, X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUCCESS, MESSAG
 !C     The partition requires the first NPT*(NPT+N)+5*N*(N+3)/2 elements of
 !C     W plus the space that is needed by the last array of NEWUOB.
 !C
-    CALL NEWUOB (FUNC, N,NPT,X,RHOBEG,RHOEND,IPRINT,MAXFUN,W(IXB), W(IXO),W(IXN),W(IXP),W(IFV),W(IGQ),W(IHQ),W(IPQ),W(IBMAT), W(IZMAT),NDIM,W(ID),W(IVL),W(IW),SUCCESS,MESSAGE)
+    CALL NEWUOB (NF,FUNC,N,NPT,X,RHOBEG,RHOEND,IPRINT,MAXFUN,W(IXB),W(IXO),W(IXN),W(IXP),W(IFV),W(IGQ),W(IHQ),W(IPQ),W(IBMAT), W(IZMAT),NDIM,W(ID),W(IVL),W(IW),SUCCESS,MESSAGE)
     20 RETURN
     END
 !******************************************************************************
 !******************************************************************************
-    SUBROUTINE NEWUOB (FUNC, N,NPT,X,RHOBEG,RHOEND,IPRINT,MAXFUN,XBASE, XOPT,XNEW,XPT,FVAL,GQ,HQ,PQ,BMAT,ZMAT,NDIM,D,VLAG,W,SUCCESS,MESSAGE)
+    SUBROUTINE NEWUOB (NF,FUNC,N,NPT,X,RHOBEG,RHOEND,IPRINT,MAXFUN,XBASE,XOPT,XNEW,XPT,FVAL,GQ,HQ,PQ,BMAT,ZMAT,NDIM,D,VLAG,W,SUCCESS,MESSAGE)
       IMPLICIT REAL*8 (A-H,O-Z)
-      DIMENSION XBASE(*),XOPT(*),XNEW(*),XPT(NPT,*),FVAL(*), GQ(*),HQ(*),PQ(*),BMAT(NDIM,*),ZMAT(NPT,*),D(*),VLAG(*),W(*)
+      DIMENSION XBASE(*),XOPT(*),XNEW(*),XPT(NPT,*),FVAL(*),GQ(*),HQ(*),PQ(*),BMAT(NDIM,*),ZMAT(NPT,*),D(*),VLAG(*),W(*)
 
       REAL(our_dble), INTENT(INOUT):: X(N)
 
@@ -402,7 +404,7 @@ SUBROUTINE NEWUOA (FUNC, X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUCCESS, MESSAG
 !C     cancellation in DENOM.
 !C
       IF (KNEW .GT. 0) THEN
-          CALL BIGLAG (N,NPT,XOPT,XPT,BMAT,ZMAT,IDZ,NDIM,KNEW,DSTEP, D,ALPHA,VLAG,VLAG(NPT+1),W,W(NP),W(NP+N))
+          CALL BIGLAG (N,NPT,XOPT,XPT,BMAT,ZMAT,IDZ,NDIM,KNEW,DSTEP,D,ALPHA,VLAG,VLAG(NPT+1),W,W(NP),W(NP+N))
       END IF
 !C
 !C     Calculate VLAG and BETA for the current choice of D. The first NPT
@@ -454,7 +456,7 @@ SUBROUTINE NEWUOA (FUNC, X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUCCESS, MESSAG
       IF (KNEW .GT. 0) THEN
           TEMP=ONE+ALPHA*BETA/VLAG(KNEW)**2
           IF (DABS(TEMP) .LE. 0.8D0) THEN
-              CALL BIGDEN (N,NPT,XOPT,XPT,BMAT,ZMAT,IDZ,NDIM,KOPT, KNEW,D,W,VLAG,BETA,XNEW,W(NDIM+1),W(6*NDIM+1))
+              CALL BIGDEN (N,NPT,XOPT,XPT,BMAT,ZMAT,IDZ,NDIM,KOPT,KNEW,D,W,VLAG,BETA,XNEW,W(NDIM+1),W(6*NDIM+1))
           END IF
       END IF
 !C
