@@ -349,8 +349,8 @@ CONTAINS
       END IF
       
 
-      CALL CALFUN (N,X,F)
-!      F =  criterion_func(X)
+!      CALL CALFUN (N,X,F)
+      F =  criterion_func(X)
 
 
       IF (IPRINT .EQ. 3) THEN
