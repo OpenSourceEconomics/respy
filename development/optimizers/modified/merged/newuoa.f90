@@ -2,8 +2,6 @@ MODULE newuoa_interface
 
     !/* external modules  */
 
-    USE criterion_function
-
     USE shared_constants
 
     !/* setup */
@@ -456,7 +454,7 @@ SUBROUTINE NEWUOA (FUNC, X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN)
   320     FORMAT (/4X,'Return from NEWUOA because CALFUN has been called MAXFUN times.')
           GOTO 530
       END IF
-      F = criterion_func(X)
+      F = func(X)
       IF (IPRINT .EQ. 3) THEN
           PRINT 330, NF,F,(X(I),I=1,N)
   330      FORMAT (/4X,'Function number',I6,'    F =',1PD18.10, '    The corresponding X is:'/(2X,5D15.6))
