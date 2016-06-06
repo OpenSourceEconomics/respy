@@ -15,7 +15,7 @@ MODULE bfgs_function
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE dfpmin(func, dfunc, p, gtol, iter, fret, maxiter)
+SUBROUTINE dfpmin(func, dfunc, p, gtol, iter, fret, maxiter, success, message)
 
     !/* external objects        */
 
@@ -26,6 +26,10 @@ SUBROUTINE dfpmin(func, dfunc, p, gtol, iter, fret, maxiter)
 
 	INTEGER(our_int), INTENT(OUT) 	:: iter
 	INTEGER(our_int), INTENT(IN)	:: maxiter
+
+	LOGICAL, INTENT(OUT)			:: success
+
+	CHARACTER(50), INTENT(OUT)		:: message
 
 	INTERFACE
 
@@ -105,13 +109,26 @@ SUBROUTINE dfpmin(func, dfunc, p, gtol, iter, fret, maxiter)
 		xi = pnew - p
 		p = pnew
 
-		if (MAXVAL(ABS(xi) / max(ABS(p), one_dble)) < TOLX) RETURN
+		IF (MAXVAL(ABS(xi) / max(ABS(p), one_dble)) < TOLX) THEN
+
+			success = .True.
+			message = 'Sucess for whatever reason'
+			RETURN
+
+		END IF
 
 		dg = g
 		g = dfunc(p)
 		den = max(fret, one_dble)
 
-		if (MAXVAL(ABS(g) * max(ABS(p), one_dble) / den) < gtol) RETURN
+		IF (MAXVAL(ABS(g) * max(ABS(p), one_dble) / den) < gtol) THEN
+
+			success = .True.
+			message = 'Sucess for whatever reason'
+
+			RETURN
+
+		END IF
 
 		dg =  g - dg
 		hdg = matmul(hessin, dg)
@@ -134,7 +151,8 @@ SUBROUTINE dfpmin(func, dfunc, p, gtol, iter, fret, maxiter)
 	
 	END DO
 
-	CALL nrerror('dfpmin: too many iterations')
+	success = .False.
+	message = 'too many iterations'
 	
 END SUBROUTINE 
 !******************************************************************************
@@ -268,13 +286,6 @@ SUBROUTINE lnsrch(xold, fold, g, p, x, f, stpmax, check, func)
 	END DO
 
 END SUBROUTINE 
-!******************************************************************************
-!******************************************************************************
-	SUBROUTINE nrerror(string)
-	CHARACTER(LEN=*), INTENT(IN) :: string
-	write (*,*) 'nrerror: ',string
-	STOP 'program terminated by nrerror'
-	END SUBROUTINE nrerror
 !******************************************************************************
 !******************************************************************************
 	FUNCTION outerprod(a,b)

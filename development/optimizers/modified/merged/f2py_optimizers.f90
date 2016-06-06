@@ -64,9 +64,12 @@ SUBROUTINE f2py_bfgs(fval, p_final, p_start, func_dim_int)
     DOUBLE PRECISION :: fret
 INTEGER     :: maxiter = 200000000
 
+
+  CHARACTER(50):: message
+  LOGICAL :: success
     
     p_final = p_start
-    CALL dfpmin(criterion_func, criterion_dfunc, p_final, gtol, iter, fret, maxiter)
+    CALL dfpmin(criterion_func, criterion_dfunc, p_final, gtol, iter, fret, maxiter, success, message)
     fval = fret
 
 
