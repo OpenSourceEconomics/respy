@@ -1,5 +1,4 @@
 MODULE criterion_function
-
     !/* external modules        */
 
     USE shared_constants   
