@@ -1,4 +1,9 @@
 MODULE nrtype
+
+   INTEGER, PARAMETER          :: our_int      = selected_int_kind(9)
+    INTEGER, PARAMETER          :: our_dble     = selected_real_kind(15, 307)
+
+
 	INTEGER, PARAMETER :: I4B = SELECTED_INT_KIND(9)
 	INTEGER, PARAMETER :: I2B = SELECTED_INT_KIND(4)
 	INTEGER, PARAMETER :: I1B = SELECTED_INT_KIND(2)

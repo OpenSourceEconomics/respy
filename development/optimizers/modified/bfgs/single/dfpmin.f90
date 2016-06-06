@@ -1,8 +1,11 @@
 MODULE bfgs_function
 
-	
+
 	USE nrtype
 
+	IMPLICIT NONE
+
+	
 	INTERFACE outerprod
 		MODULE PROCEDURE outerprod_r,outerprod_d
 	END INTERFACE
@@ -94,7 +97,7 @@ CONTAINS
 
 	SUBROUTINE unit_matrix(mat)
 	REAL(SP), DIMENSION(:,:), INTENT(OUT) :: mat
-	INTEGER(I4B) :: i,n
+	INTEGER(our_int) :: i,n
 	n=min(size(mat,1),size(mat,2))
 	mat(:,:)=0.0_sp
 	do i=1,n
@@ -103,8 +106,7 @@ CONTAINS
 	END SUBROUTINE unit_matrix
 
 	SUBROUTINE dfpmin(p,gtol,iter,fret,func,dfunc)
-	IMPLICIT NONE
-	INTEGER(I4B), INTENT(OUT) :: iter
+	INTEGER(our_int), INTENT(OUT) :: iter
 	REAL(SP), INTENT(IN) :: gtol
 	REAL(SP), INTENT(OUT) :: fret
 	REAL(SP), DIMENSION(:), INTENT(INOUT) :: p
@@ -123,9 +125,9 @@ CONTAINS
 		REAL(SP), DIMENSION(size(p)) :: dfunc
 		END FUNCTION dfunc
 	END INTERFACE
-	INTEGER(I4B), PARAMETER :: ITMAX=200
+	INTEGER(our_int), PARAMETER :: ITMAX=200
 	REAL(SP), PARAMETER :: STPMX=100.0_sp,EPS=epsilon(p),TOLX=4.0_sp*EPS
-	INTEGER(I4B) :: its
+	INTEGER(our_int) :: its
 	LOGICAL :: check
 	REAL(SP) :: den,fac,fad,fae,fp,stpmax,sumdg,sumxi
 	REAL(SP), DIMENSION(size(p)) :: dg,g,hdg,pnew,xi
@@ -182,7 +184,7 @@ CONTAINS
 		END FUNCTION func
 	END INTERFACE
 	REAL(SP), PARAMETER :: ALF=1.0e-4_sp,TOLX=epsilon(x)
-	INTEGER(I4B) :: ndum
+	INTEGER(our_int) :: ndum
 	REAL(SP) :: a,alam,alam2,alamin,b,disc,f2,fold2,pabs,rhs1,rhs2,slope,&
 		tmplam
 	ndum=assert_eq(size(g),size(p),size(x),size(xold),'lnsrch')
