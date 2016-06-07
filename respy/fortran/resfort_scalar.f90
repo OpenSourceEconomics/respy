@@ -16,7 +16,6 @@ PROGRAM resfort_scalar
     INTEGER(our_int), ALLOCATABLE   :: states_number_period(:)
     INTEGER(our_int), ALLOCATABLE   :: states_all(:, :, :)
 
-    REAL(our_dble), ALLOCATABLE     :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_draws_emax(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_draws_prob(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_emax(:, :)

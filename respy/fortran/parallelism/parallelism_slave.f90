@@ -32,7 +32,6 @@ PROGRAM resfort_parallel_slave
     INTEGER(our_int)                :: task
     INTEGER(our_int)                :: k
 
-    REAL(our_dble), ALLOCATABLE     :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_draws_emax(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_draws_prob(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_emax_slaves(:)

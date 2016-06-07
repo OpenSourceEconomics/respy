@@ -22,7 +22,6 @@ PROGRAM resfort_parallel
     INTEGER(our_int), ALLOCATABLE   :: states_number_period(:)
     INTEGER(our_int), ALLOCATABLE   :: states_all(:, :, :)
 
-    REAL(our_dble), ALLOCATABLE     :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_emax(:, :)
 
     REAL(our_dble)                  :: shocks_cholesky(4, 4)
