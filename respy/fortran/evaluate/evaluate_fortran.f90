@@ -10,8 +10,6 @@ MODULE evaluate_fortran
 
     USE shared_constants
 
-    USE shared_containers
-
 	!/*	setup	*/
 
     IMPLICIT NONE
@@ -21,7 +19,7 @@ MODULE evaluate_fortran
  CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_array, periods_draws_prob)
+SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_evaluate, periods_draws_prob)
 
     !   DEVELOPMENT NOTES
     !
@@ -33,7 +31,7 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, pe
 
     REAL(our_dble), INTENT(IN)      :: periods_payoffs_systematic(num_periods, max_states_period, 4)
     REAL(our_dble), INTENT(IN)      :: periods_draws_prob(num_periods, num_draws_prob, 4)
-    REAL(our_dble), INTENT(IN)      :: data_array(:, :)
+    REAL(our_dble), INTENT(IN)      :: data_evaluate(:, :)
     REAL(our_dble), INTENT(IN)      :: shocks_cholesky(4, 4)
     REAL(our_dble), INTENT(IN)      :: periods_emax(num_periods, max_states_period)
 
@@ -42,7 +40,7 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, pe
 
     !/* internal objects        */
 
-    REAL(our_dble), ALLOCATABLE    :: crit_val(:)
+    REAL(our_dble), ALLOCATABLE     :: crit_val(:)
 
     REAL(our_dble)                  :: draws_prob_raw(num_draws_prob, 4)
     REAL(our_dble)                  :: payoffs_systematic(4)
@@ -78,7 +76,7 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, pe
 !------------------------------------------------------------------------------
 
     ! Construct auxiliary objects
-    num_obs = SIZE(data_array, 1)
+    num_obs = SIZE(data_evaluate, 1)
 
     shocks_cov = MATMUL(shocks_cholesky, TRANSPOSE(shocks_cholesky))
     is_deterministic = ALL(shocks_cov .EQ. zero_dble)
@@ -90,15 +88,15 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, pe
     
     DO j = 1, num_obs
 
-            period = INT(data_array(j, 2)) 
+            period = INT(data_evaluate(j, 2)) 
 
             ! Extract observable components of state space as well as agent decision.
-            exp_a = INT(data_array(j, 5))
-            exp_b = INT(data_array(j, 6))
-            edu = INT(data_array(j, 7))
-            edu_lagged = INT(data_array(j, 8))
+            exp_a = INT(data_evaluate(j, 5))
+            exp_b = INT(data_evaluate(j, 6))
+            edu = INT(data_evaluate(j, 7))
+            edu_lagged = INT(data_evaluate(j, 8))
 
-            choice = INT(data_array(j, 3))
+            choice = INT(data_evaluate(j, 3))
             is_working = (choice == 1) .OR. (choice == 2)
 
             ! Transform total years of education to additional years of education and create an index from the choice.
@@ -122,7 +120,7 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, pe
             IF (is_working) THEN
 
                 ! Calculate the disturbance, which follows a normal distribution.
-                dist = clip_value(LOG(data_array(j, 4)), -HUGE_FLOAT, HUGE_FLOAT) - clip_value(LOG(payoffs_systematic(idx)), -HUGE_FLOAT, HUGE_FLOAT) 
+                dist = clip_value(LOG(data_evaluate(j, 4)), -HUGE_FLOAT, HUGE_FLOAT) - clip_value(LOG(payoffs_systematic(idx)), -HUGE_FLOAT, HUGE_FLOAT) 
 
                 ! If there is no random variation in payoffs, then the observed wages need to be identical their systematic components. The discrepancy between the observed wages and their systematic components might be small due to the reading in of the dataset.
                 IF (is_deterministic) THEN
