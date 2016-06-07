@@ -9,7 +9,6 @@ import sys
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.python.shared.shared_auxiliary import print_init_dict
 
-from respy.evaluate import evaluate
 from respy.solve import solve
 
 from respy import RespyCls
@@ -202,16 +201,16 @@ class TestClass(object):
         # Select expected result
         rslt = None
         if 'one' in fname:
-            rslt = 0.269086624176311
+            rslt = 0.2630538893945306
         elif 'two' in fname:
-            rslt = 1.118242514893393
+            rslt = 1.1100581279463677
         elif 'three' in fname:
-            rslt = 1.886413771393631
+            rslt = 1.886031913454861
 
         # Evaluate criterion function at true values.
         respy_obj = RespyCls(TEST_RESOURCES_DIR + '/' + fname)
         simulate(respy_obj)
-        val = evaluate(respy_obj)
+        _, val = estimate(respy_obj)
         np.testing.assert_allclose(val, rslt)
 
     def test_8(self):
@@ -229,8 +228,6 @@ class TestClass(object):
         print_init_dict(init_dict)
 
         respy_obj = RespyCls('test.respy.ini')
-
-        respy_obj.attr['maxiter'] = 0
 
         simulate(respy_obj)
 
