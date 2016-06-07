@@ -13,7 +13,6 @@ PROGRAM resfort_scalar
     !/* objects                 */
 
     INTEGER(our_int), ALLOCATABLE   :: states_number_period(:)
-    INTEGER(our_int), ALLOCATABLE   :: states_all(:, :, :)
 
     REAL(our_dble), ALLOCATABLE     :: periods_draws_emax(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_draws_prob(:, :, :)

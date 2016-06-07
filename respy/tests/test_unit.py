@@ -118,7 +118,7 @@ class TestClass(object):
 
             # Ensure equivalence
             for obj in [[fort_a, py_a], [fort_b, py_b], [fort_c, py_c], [fort_d, py_d]]:
-                    np.testing.assert_allclose(obj[0], obj[1])
+                np.testing.assert_allclose(obj[0], obj[1])
 
         for _ in range(100):
 

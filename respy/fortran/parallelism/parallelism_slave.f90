@@ -21,7 +21,6 @@ PROGRAM resfort_parallel_slave
     INTEGER(our_int), ALLOCATABLE   :: states_number_period(:)
     INTEGER(our_int), ALLOCATABLE   :: num_emax_slaves(:, :)
     INTEGER(our_int), ALLOCATABLE   :: num_obs_slaves(:)
-    INTEGER(our_int), ALLOCATABLE   :: states_all(:, :, :)
 
     INTEGER(our_int)                :: lower_bound
     INTEGER(our_int)                :: upper_bound
