@@ -13,6 +13,7 @@ MODULE shared_containers
 
     REAL(our_dble), ALLOCATABLE     :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: data_array(:, :)
+    REAL(our_dble), ALLOCATABLE     :: periods_emax(:, :)
 
 !******************************************************************************
 !******************************************************************************

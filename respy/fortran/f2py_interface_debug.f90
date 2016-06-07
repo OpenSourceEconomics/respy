@@ -86,7 +86,7 @@ SUBROUTINE wrapper_svd(U, S, VT, A, m)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE wrapper_get_future_value(emax_simulated, num_periods_int, num_draws_emax_int, period, k, draws_emax, payoffs_systematic, edu_max_int, edu_start_int, periods_emax, states_all, mapping_state_idx_int, delta_int, shocks_cholesky)
+SUBROUTINE wrapper_get_future_value(emax_simulated, num_periods_int, num_draws_emax_int, period, k, draws_emax, payoffs_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all, mapping_state_idx_int, delta_int, shocks_cholesky)
 
     !/* external libraries      */
 
@@ -102,7 +102,7 @@ SUBROUTINE wrapper_get_future_value(emax_simulated, num_periods_int, num_draws_e
 
     DOUBLE PRECISION, INTENT(IN)    :: payoffs_systematic(:)
     DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(4, 4)
-    DOUBLE PRECISION, INTENT(IN)    :: periods_emax(:,:)
+    DOUBLE PRECISION, INTENT(IN)    :: periods_emax_int(:,:)
     DOUBLE PRECISION, INTENT(IN)    :: draws_emax(:,:)
     DOUBLE PRECISION, INTENT(IN)    :: delta_int
 
@@ -131,7 +131,7 @@ SUBROUTINE wrapper_get_future_value(emax_simulated, num_periods_int, num_draws_e
     delta = delta_int
 
     ! Call function of interest
-    CALL get_future_value(emax_simulated, draws_emax, period, k, payoffs_systematic, mapping_state_idx_int, states_all, periods_emax, shocks_cholesky)
+    CALL get_future_value(emax_simulated, draws_emax, period, k, payoffs_systematic, mapping_state_idx_int, states_all, periods_emax_int, shocks_cholesky)
 
 END SUBROUTINE
 !******************************************************************************
@@ -429,7 +429,7 @@ SUBROUTINE wrapper_get_coefficients(coeffs, Y, X, num_covars, num_states)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_periods_int, num_states, delta_int, periods_payoffs_systematic_int, edu_max_int, edu_start_int, mapping_state_idx_int, periods_emax, states_all, is_simulated, num_draws_emax_int, maxe, draws_emax, shocks_cholesky)
+SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_periods_int, num_states, delta_int, periods_payoffs_systematic_int, edu_max_int, edu_start_int, mapping_state_idx_int, periods_emax_int, states_all, is_simulated, num_draws_emax_int, maxe, draws_emax, shocks_cholesky)
 
     !/* external libraries      */
 
@@ -445,7 +445,7 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_perio
 
     DOUBLE PRECISION, INTENT(IN)        :: periods_payoffs_systematic_int(:, :, :)
     DOUBLE PRECISION, INTENT(IN)        :: shocks_cholesky(4, 4)
-    DOUBLE PRECISION, INTENT(IN)        :: periods_emax(:, :)
+    DOUBLE PRECISION, INTENT(IN)        :: periods_emax_int(:, :)
     DOUBLE PRECISION, INTENT(IN)        :: draws_emax(:, :)
     DOUBLE PRECISION, INTENT(IN)        :: maxe(:)
     DOUBLE PRECISION, INTENT(IN)        :: delta_int
@@ -474,12 +474,12 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_perio
     delta = delta_int
 
     ! Call function of interest
-    CALL get_endogenous_variable(exogenous_variable, period, num_states, periods_payoffs_systematic_int, mapping_state_idx_int, periods_emax, states_all, is_simulated, maxe, draws_emax, shocks_cholesky)
+    CALL get_endogenous_variable(exogenous_variable, period, num_states, periods_payoffs_systematic_int, mapping_state_idx_int, periods_emax_int, states_all, is_simulated, maxe, draws_emax, shocks_cholesky)
 
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE wrapper_get_exogenous_variables(independent_variables, maxe, period, num_periods_int, num_states, delta_int, periods_payoffs_systematic_int, shifts, edu_max_int, edu_start_int, mapping_state_idx_int, periods_emax, states_all)
+SUBROUTINE wrapper_get_exogenous_variables(independent_variables, maxe, period, num_periods_int, num_states, delta_int, periods_payoffs_systematic_int, shifts, edu_max_int, edu_start_int, mapping_state_idx_int, periods_emax_int, states_all)
 
     !/* external libraries      */
 
@@ -496,7 +496,7 @@ SUBROUTINE wrapper_get_exogenous_variables(independent_variables, maxe, period, 
 
 
     DOUBLE PRECISION, INTENT(IN)        :: periods_payoffs_systematic_int(:, :, :)
-    DOUBLE PRECISION, INTENT(IN)        :: periods_emax(:, :)
+    DOUBLE PRECISION, INTENT(IN)        :: periods_emax_int(:, :)
     DOUBLE PRECISION, INTENT(IN)        :: shifts(:)
     DOUBLE PRECISION, INTENT(IN)        :: delta_int
 
@@ -523,7 +523,7 @@ SUBROUTINE wrapper_get_exogenous_variables(independent_variables, maxe, period, 
     delta = delta_int
 
     ! Call function of interest
-    CALL get_exogenous_variables(independent_variables, maxe,  period, num_states, periods_payoffs_systematic_int, shifts, mapping_state_idx_int, periods_emax, states_all)
+    CALL get_exogenous_variables(independent_variables, maxe,  period, num_states, periods_payoffs_systematic_int, shifts, mapping_state_idx_int, periods_emax_int, states_all)
             
 END SUBROUTINE
 !******************************************************************************

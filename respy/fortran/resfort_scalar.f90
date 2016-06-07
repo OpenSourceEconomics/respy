@@ -17,7 +17,6 @@ PROGRAM resfort_scalar
 
     REAL(our_dble), ALLOCATABLE     :: periods_draws_emax(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_draws_prob(:, :, :)
-    REAL(our_dble), ALLOCATABLE     :: periods_emax(:, :)
 
     REAL(our_dble)                  :: shocks_cholesky(4, 4)
     REAL(our_dble)                  :: coeffs_home(1)
