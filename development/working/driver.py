@@ -31,10 +31,10 @@ from respy import simulate, solve, evaluate, estimate, RespyCls
 import numpy as np
 import pickle as pkl
 
-if False:
+if True:
     cwd = os.getcwd()
     os.chdir('../../respy')
-    assert os.system('./waf distclean; ./waf configure build') == 0
+    assert os.system('./waf distclean; ./waf configure build --debug') == 0
     os.chdir(cwd)
 
 
