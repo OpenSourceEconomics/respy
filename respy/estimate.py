@@ -81,7 +81,6 @@ def estimate(respy_obj):
     # Perform optimization.
     x, val = opt_obj.optimize(x_free_start)
 
-
     # Finishing
     return x, val
 
