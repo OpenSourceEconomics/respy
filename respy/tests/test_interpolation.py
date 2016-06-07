@@ -24,7 +24,7 @@ from respy.python.shared.shared_auxiliary import create_draws
 
 import respy.fortran.f2py_debug as fort_debug
 
-from respy.solve import solve
+from respy import solve
 from respy import RespyCls
 
 

@@ -18,8 +18,7 @@ from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import print_init_dict
 from respy.python.shared.shared_constants import EXEC_DIR
 
-from respy.solve import solve
-
+from respy import solve
 from respy import RespyCls
 from respy import simulate
 

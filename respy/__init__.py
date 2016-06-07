@@ -9,10 +9,13 @@ except ImportError:
 # project library
 from respy.estimate import estimate
 from respy.simulate import simulate
+from respy.solve import solve
+
 from respy.clsRespy import RespyCls
 
 __version__ = '2.0.0'
 __name__ = 'respy'
+
 
 def test(opt=None):
     """ Run PYTEST for the package.

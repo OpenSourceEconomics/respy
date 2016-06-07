@@ -32,8 +32,7 @@ from respy.fortran.f2py_library import f2py_calculate_payoffs_systematic
 from respy.python.solve.solve_auxiliary import pyth_backward_induction
 from respy.fortran.f2py_library import f2py_backward_induction
 
-from respy.solve import solve
-
+from respy import solve
 from respy import RespyCls
 from respy import simulate
 

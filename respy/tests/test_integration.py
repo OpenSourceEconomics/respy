@@ -6,7 +6,6 @@ import numpy as np
 
 import shutil
 import pytest
-import os
 
 # testing library
 from codes.auxiliary import write_interpolation_grid
@@ -30,10 +29,9 @@ from respy.python.solve.solve_auxiliary import pyth_create_state_space
 
 from respy.python.estimate.estimate_auxiliary import get_optim_paras
 
-from respy.evaluate import evaluate
 from respy.process import process
-from respy.solve import solve
 
+from respy.solve import solve
 from respy import estimate
 from respy import simulate
 from respy import RespyCls
@@ -83,13 +81,14 @@ class TestClass(object):
         max_draws = np.random.randint(10, 100)
 
         # Generate random initialization file
-        constraints = dict()
-        constraints['is_deterministic'] = is_deterministic
-        constraints['is_myopic'] = is_myopic
-        constraints['max_draws'] = max_draws
-        constraints['parallelism'] = False
+        constr = dict()
+        constr['is_deterministic'] = is_deterministic
+        constr['is_myopic'] = is_myopic
+        constr['max_draws'] = max_draws
+        constr['parallelism'] = False
+        constr['maxiter'] = 0
 
-        init_dict = generate_random_dict(constraints)
+        init_dict = generate_random_dict(constr)
 
         # The use of the interpolation routines is a another special case.
         # Constructing a request that actually involves the use of the
@@ -154,7 +153,7 @@ class TestClass(object):
             # criterion function.
             simulate(respy_obj)
 
-            crit_val = evaluate(respy_obj)
+            _, crit_val = estimate(respy_obj)
 
             if base_val is None:
                 base_val = crit_val
@@ -163,7 +162,7 @@ class TestClass(object):
                                        atol=1e-06)
 
             # We know even more for the deterministic case.
-            if constraints['is_deterministic']:
+            if constr['is_deterministic']:
                 assert (crit_val in [0.0, 1.0])
 
     def test_3(self):
@@ -171,11 +170,11 @@ class TestClass(object):
         draws to simulate the expected future value should have no effect.
         """
         # Generate constraints
-        constraints = dict()
-        constraints['is_deterministic'] = True
+        constr = dict()
+        constr['is_deterministic'] = True
 
         # Generate random initialization file
-        generate_init(constraints)
+        generate_init(constr)
 
         # Initialize auxiliary objects
         base = None
@@ -217,7 +216,10 @@ class TestClass(object):
         """
 
         # Generate random initialization dictionary
-        generate_init()
+        constr = dict()
+        constr['maxiter'] = 0
+
+        generate_init(constr)
 
         # Iterate over alternative discount rates.
         base_data, base_val = None, None
@@ -249,7 +251,7 @@ class TestClass(object):
             # criterion function.
             simulate(respy_obj)
 
-            crit_val = evaluate(respy_obj)
+            _, crit_val = estimate(respy_obj)
 
             if base_val is None:
                 base_val = crit_val
@@ -364,13 +366,13 @@ class TestClass(object):
         """
 
         # Generate random initialization file
-        constraints = dict()
-        constraints['parallelism'] = False
-        constraints['maxiter'] = 0
-        constraints['apply'] = False
+        constr = dict()
+        constr['parallelism'] = False
+        constr['maxiter'] = 0
+        constr['apply'] = False
 
         # Generate random initialization file
-        generate_init(constraints)
+        generate_init(constr)
 
         # Perform toolbox actions
         respy_obj = RespyCls('test.respy.ini')
@@ -428,7 +430,7 @@ class TestClass(object):
         generate_init(constr)
 
         respy_obj = RespyCls('test.respy.ini')
-        evaluate(respy_obj)
+        estimate(respy_obj)
 
     def test_8(self):
         """ Test the scripts.

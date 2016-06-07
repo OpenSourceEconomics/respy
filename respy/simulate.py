@@ -4,6 +4,8 @@ import pandas as pd
 import logging
 
 # project library
+from respy.solve import solve
+
 from respy.python.simulate.simulate_auxiliary import logging_simulation
 from respy.python.simulate.simulate_auxiliary import check_input
 from respy.python.simulate.simulate_auxiliary import write_info
@@ -18,7 +20,6 @@ from respy.python.shared.shared_auxiliary import create_draws
 from respy.python.simulate.simulate_python import pyth_simulate
 from respy.fortran.f2py_library import f2py_simulate
 
-from respy.solve import solve
 
 logger = logging.getLogger('RESPY_SIMULATE')
 
