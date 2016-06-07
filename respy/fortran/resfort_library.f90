@@ -23,6 +23,8 @@ MODULE resfort_library
     USE evaluate_auxiliary
 
 
+    USE estimate_fortran
+    
     USE estimate_auxiliary
 
 

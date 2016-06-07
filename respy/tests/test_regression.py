@@ -14,7 +14,7 @@ from respy.solve import solve
 
 from respy import RespyCls
 from respy import simulate
-
+from respy import estimate
 
 @pytest.mark.usefixtures('fresh_directory', 'set_seed')
 class TestClass(object):
@@ -34,7 +34,7 @@ class TestClass(object):
         np.testing.assert_allclose(val, 103320.40501)
 
         # Assess evaluation
-        val = evaluate(respy_obj)
+        _, val = estimate(respy_obj)
         np.testing.assert_allclose(val, 1.9775860444869962)
 
     def test_2(self):

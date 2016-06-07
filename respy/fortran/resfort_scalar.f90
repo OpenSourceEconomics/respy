@@ -3,7 +3,7 @@
 PROGRAM resfort_scalar
 
     !/* external modules        */
-   
+
     USE resfort_library
 
     !/* setup                   */
@@ -19,6 +19,12 @@ PROGRAM resfort_scalar
     REAL(our_dble)                  :: coeffs_b(6)
     REAL(our_dble)                  :: crit_val
 
+    REAL(our_dble)                  :: x_start(26), rhobeg, rhoend
+
+    INTEGER(our_int)                :: i, npt, maxfun, iter
+
+    LOGICAL :: success
+    CHARACTER(150) :: message
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
@@ -43,10 +49,30 @@ PROGRAM resfort_scalar
         ! Read observed dataset from disk.
         CALL read_dataset(data_array, num_agents_est)
 
-        ! Solve the model for a given parametrization.    
-        CALL fort_solve(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax)
+        ! Prepare interface for evaluation of criterion function
+        CALL get_optim_paras(x_start, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky)
 
-        CALL fort_evaluate(crit_val, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_array, periods_draws_prob)
+        ! Evaluate criterion function.
+        crit_val = fort_criterion(x_start)
+
+!        DO i = 1, 26
+
+!            PRINT *, x_start(i)!
+
+ !       END DO
+        
+ !       PRINT *, ''
+ !       PRINT *, ''
+        
+ !       PRINT *, crit_val
+!
+!        npt = min(26 * 2, 26+2)
+!        rhobeg = maxval(x_start)
+!        rhoend = 1e-6 * rhobeg
+!        maxfun = 5000
+
+!      CALL NEWUOA (fort_criterion, x_start, npt, rhobeg, rhoend, 0, maxfun, success, message, iter)   
+
 
     END IF
 

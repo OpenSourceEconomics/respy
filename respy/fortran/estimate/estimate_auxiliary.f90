@@ -57,4 +57,35 @@ SUBROUTINE dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
+SUBROUTINE get_optim_paras(x, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky)
+
+    !/* external objects        */
+
+    REAL(our_dble), INTENT(OUT)      :: x(26)
+
+    REAL(our_dble), INTENT(IN)     :: shocks_cholesky(4, 4)
+    REAL(our_dble), INTENT(IN)     :: coeffs_home(1)
+    REAL(our_dble), INTENT(IN)     :: coeffs_edu(3)
+    REAL(our_dble), INTENT(IN)     :: coeffs_a(6)
+    REAL(our_dble), INTENT(IN)     :: coeffs_b(6)
+
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+
+        x(1:6) = coeffs_a
+        x(7:12) = coeffs_b
+        x(13:15) = coeffs_edu
+        x(16) = coeffs_home(1)
+
+        x(17:20) = shocks_cholesky(1, :)
+        x(21:23) = shocks_cholesky(2, 2:)
+        x(24:25) = shocks_cholesky(3, 3:)
+        x(26:26) = shocks_cholesky(4, 4:)
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
 END MODULE

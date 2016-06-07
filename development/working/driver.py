@@ -2,6 +2,15 @@
 """ I will now try to run some estimations.
 """
 
+import os
+if True:
+    cwd = os.getcwd()
+    os.chdir('../../respy')
+    assert os.system('./waf distclean; ./waf configure build --debug') == 0
+    os.chdir(cwd)
+
+
+
 
 # ROOT DIRECTORY
 # standard library
@@ -31,11 +40,6 @@ from respy import simulate, solve, evaluate, estimate, RespyCls
 import numpy as np
 import pickle as pkl
 
-if True:
-    cwd = os.getcwd()
-    os.chdir('../../respy')
-    assert os.system('./waf distclean; ./waf configure build --debug') == 0
-    os.chdir(cwd)
 
 
 respy_obj = RespyCls('model.respy.ini')
