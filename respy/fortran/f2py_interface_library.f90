@@ -6,7 +6,7 @@
 !
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, num_periods_int, num_points_interp_int, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, min_idx_int, delta_int, data_array_int, num_agents_est_int, num_draws_prob_int, tau_int, periods_draws_emax, periods_draws_prob)
+SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, num_periods_int, num_points_interp_int, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, min_idx_int, delta_int, data_array_int, num_agents_est_int, num_draws_prob_int, tau_int, periods_draws_emax_int, periods_draws_prob)
 
     !/* external libraries      */
 
@@ -32,7 +32,7 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
     INTEGER, INTENT(IN)             :: edu_start_int
     INTEGER, INTENT(IN)             :: min_idx_int
 
-    DOUBLE PRECISION, INTENT(IN)    :: periods_draws_emax(:, :, :)
+    DOUBLE PRECISION, INTENT(IN)    :: periods_draws_emax_int(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_prob(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: data_array_int(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: tau_int
@@ -76,7 +76,7 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
     CALL dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x)
 
     ! Solve requested model
-    CALL fort_solve(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax)
+    CALL fort_solve(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax_int)
 
     ! Evaluate criterion function for observed data
     CALL fort_evaluate(crit_val, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_array, periods_draws_prob)
@@ -84,7 +84,7 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE f2py_solve(periods_payoffs_systematic_int, states_number_period_int, mapping_state_idx_int, periods_emax_int, states_all_int, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, is_interpolated_int, num_draws_emax_int, num_periods_int, num_points_interp_int, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, min_idx_int, delta_int, periods_draws_emax, max_states_period_int)
+SUBROUTINE f2py_solve(periods_payoffs_systematic_int, states_number_period_int, mapping_state_idx_int, periods_emax_int, states_all_int, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, is_interpolated_int, num_draws_emax_int, num_periods_int, num_points_interp_int, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, min_idx_int, delta_int, periods_draws_emax_int, max_states_period_int)
     
     ! The presence of max_states_period breaks the equality of interfaces.  However, this is required so that the size of the return arguments is known from the beginning.
 
@@ -114,7 +114,7 @@ SUBROUTINE f2py_solve(periods_payoffs_systematic_int, states_number_period_int, 
     INTEGER, INTENT(IN)             :: edu_start_int
     INTEGER, INTENT(IN)             :: min_idx_int
 
-    DOUBLE PRECISION, INTENT(IN)    :: periods_draws_emax(:, :, :)
+    DOUBLE PRECISION, INTENT(IN)    :: periods_draws_emax_int(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(4, 4)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_home(:)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_edu(:)
@@ -143,7 +143,7 @@ SUBROUTINE f2py_solve(periods_payoffs_systematic_int, states_number_period_int, 
     delta = delta_int
 
     ! Call FORTRAN solution
-    CALL fort_solve(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax)
+    CALL fort_solve(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax_int)
 
     ! Assign to initial objects for return to PYTHON
     periods_payoffs_systematic_int = periods_payoffs_systematic
@@ -155,7 +155,7 @@ SUBROUTINE f2py_solve(periods_payoffs_systematic_int, states_number_period_int, 
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, is_interpolated_int, num_draws_emax_int, num_periods_int, num_points_interp_int, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, min_idx_int, delta_int, data_array_int, num_agents_est_int, num_draws_prob_int, tau_int, periods_draws_emax, periods_draws_prob)
+SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, is_interpolated_int, num_draws_emax_int, num_periods_int, num_points_interp_int, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, min_idx_int, delta_int, data_array_int, num_agents_est_int, num_draws_prob_int, tau_int, periods_draws_emax_int, periods_draws_prob)
 
     !/* external libraries      */
 
@@ -178,7 +178,7 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, 
     INTEGER, INTENT(IN)             :: edu_start_int
     INTEGER, INTENT(IN)             :: min_idx_int
 
-    DOUBLE PRECISION, INTENT(IN)    :: periods_draws_emax(:, :, :)
+    DOUBLE PRECISION, INTENT(IN)    :: periods_draws_emax_int(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_prob(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(4, 4)
     DOUBLE PRECISION, INTENT(IN)    :: data_array_int(:, :)
@@ -215,7 +215,7 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, 
     tau = tau_int
 
     ! Solve them model for the given parametrization.
-    CALL fort_solve(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax)
+    CALL fort_solve(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax_int)
 
     ! Evaluate the criterion function building on the solution.
     CALL fort_evaluate(crit_val, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_array, periods_draws_prob)
@@ -271,7 +271,7 @@ SUBROUTINE f2py_simulate(dataset, periods_payoffs_systematic_int, mapping_state_
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE f2py_backward_induction(periods_emax_int, num_periods_int, max_states_period_int, periods_draws_emax, num_draws_emax_int, states_number_period_int, periods_payoffs_systematic_int, edu_max_int, edu_start_int, mapping_state_idx_int, states_all_int, delta_int, is_debug_int, is_interpolated_int, num_points_interp_int, shocks_cholesky)
+SUBROUTINE f2py_backward_induction(periods_emax_int, num_periods_int, max_states_period_int, periods_draws_emax_int, num_draws_emax_int, states_number_period_int, periods_payoffs_systematic_int, edu_max_int, edu_start_int, mapping_state_idx_int, states_all_int, delta_int, is_debug_int, is_interpolated_int, num_points_interp_int, shocks_cholesky)
 
     !/* external libraries      */
 
@@ -286,7 +286,7 @@ SUBROUTINE f2py_backward_induction(periods_emax_int, num_periods_int, max_states
     DOUBLE PRECISION, INTENT(OUT)   :: periods_emax_int(num_periods_int, max_states_period_int)
 
     DOUBLE PRECISION, INTENT(IN)    :: periods_payoffs_systematic_int(:, :, :   )
-    DOUBLE PRECISION, INTENT(IN)    :: periods_draws_emax(:, :, :)
+    DOUBLE PRECISION, INTENT(IN)    :: periods_draws_emax_int(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(4, 4)
     DOUBLE PRECISION, INTENT(IN)    :: delta_int
 
@@ -322,7 +322,7 @@ SUBROUTINE f2py_backward_induction(periods_emax_int, num_periods_int, max_states
     periods_emax_int = MISSING_FLOAT
 
     ! Call actual function of interest
-    CALL fort_backward_induction(periods_emax_int, periods_draws_emax, states_number_period_int, periods_payoffs_systematic_int, mapping_state_idx_int, states_all_int, shocks_cholesky)
+    CALL fort_backward_induction(periods_emax_int, periods_draws_emax_int, states_number_period_int, periods_payoffs_systematic_int, mapping_state_idx_int, states_all_int, shocks_cholesky)
 
 END SUBROUTINE
 !******************************************************************************
