@@ -532,6 +532,16 @@ SUBROUTINE store_results(mapping_state_idx, states_all, periods_payoffs_systemat
 
         CLOSE(1)
 
+
+    ! Write out value of criterion function if evaluated.
+    ELSEIF (request == 'estimate') THEN
+
+        OPEN(UNIT=1, FILE='.eval.resfort.dat')
+
+        WRITE(1, 2500) crit_val
+
+        CLOSE(1)
+
     END IF
 
     ! Remove FORTRAN initialization files. 

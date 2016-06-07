@@ -117,8 +117,11 @@ class OptimizationClass(object):
         # Finalizing results
         self._logging_final(rslt)
 
+        # TODO: Cleanup?
+        x_final = self._get_all_parameters(rslt['x'])
+
         # Finishing
-        return rslt['x'], rslt['fun']
+        return x_final, rslt['fun']
 
     def _results_distribute(self, rslt_opt, optimizer_used):
         """ Distribute results from the return from each of the optimizers.

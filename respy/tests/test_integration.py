@@ -365,14 +365,17 @@ class TestClass(object):
         at the starting value is identical between the different versions.
         """
 
+        max_draws = np.random.randint(10, 100)
+
         # Generate random initialization file
         constr = dict()
         constr['parallelism'] = False
         constr['maxiter'] = 0
         constr['apply'] = False
+        constr['max_draws'] = max_draws
 
         # Generate random initialization file
-        generate_init(constr)
+        init_dict = generate_init(constr)
 
         # Perform toolbox actions
         respy_obj = RespyCls('test.respy.ini')
@@ -382,6 +385,9 @@ class TestClass(object):
 
         # Iterate over alternative implementations
         base_x, base_val, base_log = None, None, None
+
+        num_periods = init_dict['BASICS']['periods']
+        write_draws(num_periods, max_draws)
 
         for version in ['FORTRAN', 'PYTHON', 'F2PY']:
 

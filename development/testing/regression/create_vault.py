@@ -18,25 +18,29 @@ else:
 
 from respy.python.shared.shared_auxiliary import print_init_dict
 
-from respy.evaluate import evaluate
 
 from respy import RespyCls
 from respy import simulate
+from respy import estimate
 
-num_tests = 1000
+num_tests = 500
 fname = 'test_vault_' + version + '.respy.pkl'
 
 tests = []
 for i in range(num_tests):
     print('\n Creating test ' + str(i))
 
-    init_dict = generate_init(constraints=None)
+    constr = dict()
+    constr['maxiter'] = 0
+    constr['version'] = np.random.choice(['PYTHON', 'FORTRAN'])
+
+    init_dict = generate_init(constr)
 
     respy_obj = RespyCls('test.respy.ini')
 
     simulate(respy_obj)
 
-    crit_val = evaluate(respy_obj)
+    crit_val = estimate(respy_obj)[1]
 
     test = (init_dict, crit_val)
 
@@ -57,4 +61,4 @@ for i in range(num_tests):
     #
     # simulate(respy_obj)
     #
-    # np.testing.assert_almost_equal(evaluate(respy_obj), crit_val)
+    # np.testing.assert_almost_equal(estimate(respy_obj)[1], crit_val)

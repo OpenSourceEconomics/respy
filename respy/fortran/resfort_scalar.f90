@@ -75,8 +75,6 @@ PROGRAM resfort_scalar
 
   ELSE IF (request == 'estimate') THEN
 
-        PRINT *, 'I am evaluating estimating'
-
         ! This part creates (or reads from disk) the draws for the Monte Carlo integration of the choice probabilities. For is_debugging purposes, these might also be read in from disk or set to zero/one.   
         CALL create_draws(periods_draws_prob, num_draws_prob, seed_prob)
 

@@ -202,11 +202,11 @@ class TestClass(object):
         # Select expected result
         rslt = None
         if 'one' in fname:
-            rslt = 0.2630538893945306
+            rslt = 0.269086624176311
         elif 'two' in fname:
-            rslt = 1.1100581279463677
+            rslt = 1.118242514893393
         elif 'three' in fname:
-            rslt = 1.886031913454861
+            rslt = 1.897514129951827
 
         # Evaluate criterion function at true values.
         respy_obj = RespyCls(TEST_RESOURCES_DIR + '/' + fname)
@@ -214,7 +214,6 @@ class TestClass(object):
         _, val = estimate(respy_obj)
         np.testing.assert_allclose(val, rslt)
 
-    @pytest.mark.skipif(True, reason='Revising test vaults')
     def test_8(self):
         """ This test reproduces the results from evaluations of the
         criterion function for previously analyzed scenarios.

@@ -41,9 +41,10 @@ os.chdir(cwd)
 # take place first.
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.python.shared.shared_auxiliary import print_init_dict
-from respy.evaluate import evaluate
+
 from respy import RespyCls
 from respy import simulate
+from respy import estimate
 
 ################################################################################
 # RUN
@@ -54,8 +55,10 @@ tests = pkl.load(open(TEST_RESOURCES_DIR + '/' + fname, 'rb'))
 for idx, _ in enumerate(tests):
     print('\n Evaluation ', idx, 'with version ', PYTHON_VERSION)
     init_dict, crit_val = tests[idx]
+
+    init_dict['ESTIMATION']['maxiter'] = 0
     print_init_dict(init_dict)
     respy_obj = RespyCls('test.respy.ini')
     simulate(respy_obj)
-    np.testing.assert_almost_equal(evaluate(respy_obj), crit_val)
+    np.testing.assert_almost_equal(estimate(respy_obj)[1], crit_val)
 
