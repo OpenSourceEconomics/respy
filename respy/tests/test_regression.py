@@ -100,7 +100,7 @@ class TestClass(object):
             (np.testing.assert_allclose(emax[0, 0], [val]))
 
         # Assess evaluation
-        val = evaluate(respy_obj)
+        _, val = estimate(respy_obj)
         np.testing.assert_allclose(val, 0.00)
 
     def test_3(self):
@@ -116,7 +116,7 @@ class TestClass(object):
         np.testing.assert_allclose(val, 86121.335057)
 
         # Assess evaluation
-        val = evaluate(respy_obj)
+        _, val = estimate(respy_obj)
         np.testing.assert_allclose(val, 1.9162587639887239)
 
     def test_4(self):
@@ -132,7 +132,7 @@ class TestClass(object):
         np.testing.assert_allclose(val, 75.719528)
 
         # Assess evaluation
-        val = evaluate(respy_obj)
+        _, val = estimate(respy_obj)
         np.testing.assert_allclose(val, 2.802285449312437)
 
     def test_5(self):
@@ -159,7 +159,7 @@ class TestClass(object):
             np.testing.assert_allclose(val, 88750)
 
             # Assess evaluation
-            val = evaluate(respy_obj)
+            _, val = estimate(respy_obj)
             np.testing.assert_allclose(val, 1.0)
 
     def test_6(self):
@@ -187,7 +187,7 @@ class TestClass(object):
             np.testing.assert_allclose(val, 88750)
 
             # Assess evaluation
-            val = evaluate(respy_obj)
+            _, val = estimate(respy_obj)
             np.testing.assert_allclose(val, 1.0)
 
     @pytest.mark.slow
@@ -230,6 +230,9 @@ class TestClass(object):
 
         respy_obj = RespyCls('test.respy.ini')
 
+        respy_obj.attr['maxiter'] = 0
+
         simulate(respy_obj)
 
-        np.testing.assert_almost_equal(evaluate(respy_obj), crit_val)
+        _, val = estimate(respy_obj)
+        np.testing.assert_almost_equal(val, crit_val)
