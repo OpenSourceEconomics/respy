@@ -9,8 +9,9 @@ MODULE shared_containers
 !******************************************************************************
 !******************************************************************************
 
-    REAL(our_dble), ALLOCATABLE     :: periods_payoffs_systematic(:, :, :)
+    INTEGER(our_int), ALLOCATABLE   :: mapping_state_idx(:, :, :, :, :)
 
+    REAL(our_dble), ALLOCATABLE     :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: data_array(:, :)
 
 !******************************************************************************

@@ -43,7 +43,6 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
 
     !/* internal objects            */
 
-    INTEGER, ALLOCATABLE            :: mapping_state_idx(:, :, :, :, :)
     INTEGER, ALLOCATABLE            :: states_number_period(:)
     INTEGER, ALLOCATABLE            :: states_all(:, :, :)
 
@@ -90,7 +89,7 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE f2py_solve(periods_payoffs_systematic_int, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, is_interpolated_int, num_draws_emax_int, num_periods_int, num_points_interp_int, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, min_idx_int, delta_int, periods_draws_emax, max_states_period_int)
+SUBROUTINE f2py_solve(periods_payoffs_systematic, states_number_period, mapping_state_idx_int, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, is_interpolated_int, num_draws_emax_int, num_periods_int, num_points_interp_int, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, min_idx_int, delta_int, periods_draws_emax, max_states_period_int)
     
     ! The presence of max_states_period breaks the equality of interfaces.  However, this is required so that the size of the return arguments is known from the beginning.
 
@@ -104,11 +103,11 @@ SUBROUTINE f2py_solve(periods_payoffs_systematic_int, states_number_period, mapp
 
     !/* external objects        */
 
-    INTEGER, INTENT(OUT)            :: mapping_state_idx(num_periods_int, num_periods_int, num_periods_int, min_idx_int, 2)
+    INTEGER, INTENT(OUT)            :: mapping_state_idx_int(num_periods_int, num_periods_int, num_periods_int, min_idx_int, 2)
     INTEGER, INTENT(OUT)            :: states_all(num_periods_int, max_states_period_int, 4)
     INTEGER, INTENT(OUT)            :: states_number_period(num_periods_int)
 
-    DOUBLE PRECISION, INTENT(OUT)   :: periods_payoffs_systematic_int(num_periods_int, max_states_period_int, 4)
+    DOUBLE PRECISION, INTENT(OUT)   :: periods_payoffs_systematic(num_periods_int, max_states_period_int, 4)
     DOUBLE PRECISION, INTENT(OUT)   :: periods_emax(num_periods_int, max_states_period_int)
     DOUBLE PRECISION, INTENT(IN)    :: delta_int
 
@@ -164,7 +163,6 @@ SUBROUTINE f2py_solve(periods_payoffs_systematic_int, states_number_period, mapp
     CALL fort_solve(periods_payoffs_systematic_int, states_number_period_int, mapping_state_idx_int, periods_emax_int, states_all_int, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax)
 
     ! Assign to initial objects for return to PYTHON
-    periods_payoffs_systematic_int = periods_payoffs_systematic
     states_number_period = states_number_period_int
     mapping_state_idx = mapping_state_idx_int 
     periods_emax = periods_emax_int 
@@ -214,7 +212,6 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, 
 
     !/* internal */
 
-    INTEGER, ALLOCATABLE            :: mapping_state_idx(:, :, :, :, :)
     INTEGER, ALLOCATABLE            :: states_number_period(:)
     INTEGER, ALLOCATABLE            :: states_all(:, :, :)
 
@@ -252,7 +249,7 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, 
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE f2py_simulate(dataset, periods_payoffs_systematic, mapping_state_idx, periods_emax, num_periods_int, states_all, num_agents_sim, edu_start_int, edu_max_int, delta_int, periods_draws_sims, shocks_cholesky)
+SUBROUTINE f2py_simulate(dataset, periods_payoffs_systematic, mapping_state_int, periods_emax, num_periods_int, states_all, num_agents_sim, edu_start_int, edu_max_int, delta_int, periods_draws_sims, shocks_cholesky)
 
     !/* external libraries      */
 
@@ -266,7 +263,7 @@ SUBROUTINE f2py_simulate(dataset, periods_payoffs_systematic, mapping_state_idx,
 
     DOUBLE PRECISION, INTENT(OUT)   :: dataset(num_agents_sim * num_periods_int, 8)
 
-    DOUBLE PRECISION, INTENT(IN)    :: periods_payoffs_systematic_int(:, :, :)
+    DOUBLE PRECISION, INTENT(IN)    :: periods_payoffs_systematic(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_sims(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(4, 4)
     DOUBLE PRECISION, INTENT(IN)    :: periods_emax(:, :)
@@ -276,7 +273,7 @@ SUBROUTINE f2py_simulate(dataset, periods_payoffs_systematic, mapping_state_idx,
     INTEGER, INTENT(IN)             :: edu_max_int
     INTEGER, INTENT(IN)             :: edu_start_int
 
-    INTEGER, INTENT(IN)             :: mapping_state_idx(:, :, :, :, :)
+    INTEGER, INTENT(IN)             :: mapping_state_int(:, :, :, :, :)
     INTEGER, INTENT(IN)             :: states_all(:, :, :)
     INTEGER, INTENT(IN)             :: num_agents_sim
 
@@ -289,7 +286,7 @@ SUBROUTINE f2py_simulate(dataset, periods_payoffs_systematic, mapping_state_idx,
     max_states_period = SIZE(states_all, 2)
 
     ! Transfer global RESFORT variables
-    periods_payoffs_systematic = periods_payoffs_systematic_int
+    mapping_state = mapping_state_int
     num_periods = num_periods_int
     edu_start = edu_start_int
     edu_max = edu_max_int
@@ -301,7 +298,7 @@ SUBROUTINE f2py_simulate(dataset, periods_payoffs_systematic, mapping_state_idx,
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE f2py_backward_induction(periods_emax, num_periods_int, max_states_period_int, periods_draws_emax, num_draws_emax_int, states_number_period, periods_payoffs_systematic_int, edu_max_int, edu_start_int, mapping_state_idx, states_all, delta_int, is_debug_int, is_interpolated_int, num_points_interp_int, shocks_cholesky)
+SUBROUTINE f2py_backward_induction(periods_emax, num_periods_int, max_states_period_int, periods_draws_emax, num_draws_emax_int, states_number_period, periods_payoffs_systematic, edu_max_int, edu_start_int, mapping_state_int, states_all, delta_int, is_debug_int, is_interpolated_int, num_points_interp_int, shocks_cholesky)
 
     !/* external libraries      */
 
@@ -315,12 +312,12 @@ SUBROUTINE f2py_backward_induction(periods_emax, num_periods_int, max_states_per
 
     DOUBLE PRECISION, INTENT(OUT)   :: periods_emax(num_periods_int, max_states_period_int)
 
-    DOUBLE PRECISION, INTENT(IN)    :: periods_payoffs_systematic_int(:, :, :   )
+    DOUBLE PRECISION, INTENT(IN)    :: periods_payoffs_systematic(:, :, :   )
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_emax(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(4, 4)
     DOUBLE PRECISION, INTENT(IN)    :: delta_int
 
-    INTEGER, INTENT(IN)             :: mapping_state_idx(:, :, :, :, :)    
+    INTEGER, INTENT(IN)             :: mapping_state_int(:, :, :, :, :)    
     INTEGER, INTENT(IN)             :: states_number_period(:)
     INTEGER, INTENT(IN)             :: states_all(:, :, :)
     INTEGER, INTENT(IN)             :: max_states_period_int
@@ -338,7 +335,7 @@ SUBROUTINE f2py_backward_induction(periods_emax, num_periods_int, max_states_per
 !------------------------------------------------------------------------------
     
     !# Transfer auxiliary variable to global variable.
-    periods_payoffs_systematic = periods_payoffs_systematic_int
+    mapping_state = mapping_state_int
     max_states_period = max_states_period_int
     num_points_interp = num_points_interp_int
     is_interpolated = is_interpolated_int
@@ -370,7 +367,7 @@ SUBROUTINE f2py_create_state_space(states_all_int, states_number_period_int, map
 
     !/* external objects        */
 
-    INTEGER, INTENT(OUT)            :: mapping_state_idx_int(num_periods_int, num_periods_int, num_periods_int, min_idx_int, 2)
+    INTEGER, INTENT(OUT)            :: mapping_state_idx(num_periods_int, num_periods_int, num_periods_int, min_idx_int, 2)
     INTEGER, INTENT(OUT)            :: states_all_int(num_periods_int, 100000, 4)
     INTEGER, INTENT(OUT)            :: states_number_period_int(num_periods_int)
     INTEGER, INTENT(OUT)            :: max_states_period_int
@@ -382,11 +379,10 @@ SUBROUTINE f2py_create_state_space(states_all_int, states_number_period_int, map
 
     !/* internal objects        */
 
-    INTEGER, ALLOCATABLE            :: mapping_state_idx(:, :, :, :, :)
     INTEGER, ALLOCATABLE            :: states_number_period(:)
     INTEGER, ALLOCATABLE            :: states_all(:, :, :)
 
-    DOUBLE PRECISION, ALLOCATABLE            :: periods_emax(:, :)
+    DOUBLE PRECISION, ALLOCATABLE   :: periods_emax(:, :)
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -403,7 +399,6 @@ SUBROUTINE f2py_create_state_space(states_all_int, states_number_period_int, map
     CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, periods_emax, periods_payoffs_systematic)
 
     states_all_int(:, :max_states_period, :) = states_all
-    mapping_state_idx_int = mapping_state_idx
     states_number_period_int = states_number_period
 
     ! Updated global variables
@@ -413,7 +408,7 @@ SUBROUTINE f2py_create_state_space(states_all_int, states_number_period_int, map
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE f2py_calculate_payoffs_systematic(periods_payoffs_systematic_int, num_periods_int, states_number_period, states_all, edu_start_int, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, max_states_period_int)
+SUBROUTINE f2py_calculate_payoffs_systematic(periods_payoffs_systematic, num_periods_int, states_number_period, states_all, edu_start_int, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, max_states_period_int)
 
     !/* external libraries      */
 
@@ -425,7 +420,7 @@ SUBROUTINE f2py_calculate_payoffs_systematic(periods_payoffs_systematic_int, num
 
     !/* external objects        */
 
-    DOUBLE PRECISION, INTENT(OUT)   :: periods_payoffs_systematic_int(num_periods_int, max_states_period_int, 4)
+    DOUBLE PRECISION, INTENT(OUT)   :: periods_payoffs_systematic(num_periods_int, max_states_period_int, 4)
 
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_home(1)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_edu(3)
@@ -443,7 +438,6 @@ SUBROUTINE f2py_calculate_payoffs_systematic(periods_payoffs_systematic_int, num
 !------------------------------------------------------------------------------
     
     ! Transfer global RESOFORT variables
-    periods_payoffs_systematic = periods_payoffs_systematic_int
     max_states_period = max_states_period_int
     num_periods = num_periods_int
     edu_start = edu_start_int

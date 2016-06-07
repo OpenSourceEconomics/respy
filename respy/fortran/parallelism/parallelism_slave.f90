@@ -18,7 +18,6 @@ PROGRAM resfort_parallel_slave
 
     !/* objects                 */
 
-    INTEGER(our_int), ALLOCATABLE   :: mapping_state_idx(:, :, :, :, :)
     INTEGER(our_int), ALLOCATABLE   :: states_number_period(:)
     INTEGER(our_int), ALLOCATABLE   :: num_emax_slaves(:, :)
     INTEGER(our_int), ALLOCATABLE   :: num_obs_slaves(:)

@@ -86,7 +86,7 @@ SUBROUTINE wrapper_svd(U, S, VT, A, m)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE wrapper_get_future_value(emax_simulated, num_periods_int, num_draws_emax_int, period, k, draws_emax, payoffs_systematic, edu_max_int, edu_start_int, periods_emax, states_all, mapping_state_idx, delta_int, shocks_cholesky)
+SUBROUTINE wrapper_get_future_value(emax_simulated, num_periods_int, num_draws_emax_int, period, k, draws_emax, payoffs_systematic, edu_max_int, edu_start_int, periods_emax, states_all, mapping_state_idx_int, delta_int, shocks_cholesky)
 
     !/* external libraries      */
 
@@ -106,7 +106,7 @@ SUBROUTINE wrapper_get_future_value(emax_simulated, num_periods_int, num_draws_e
     DOUBLE PRECISION, INTENT(IN)    :: draws_emax(:,:)
     DOUBLE PRECISION, INTENT(IN)    :: delta_int
 
-    INTEGER, INTENT(IN)             :: mapping_state_idx(:,:,:,:,:)
+    INTEGER, INTENT(IN)             :: mapping_state_idx_int(:,:,:,:,:)
     INTEGER, INTENT(IN)             :: states_all(:,:,:)
     INTEGER, INTENT(IN)             :: num_draws_emax_int
     INTEGER, INTENT(IN)             :: edu_max_int
@@ -124,6 +124,7 @@ SUBROUTINE wrapper_get_future_value(emax_simulated, num_periods_int, num_draws_e
     min_idx = SIZE(mapping_state_idx, 4)
 
     !# Transfer global RESFORT variables
+    mapping_state_idx = mapping_state_idx_int
     num_draws_emax = num_draws_emax_int
     num_periods = num_periods_int
     edu_start = edu_start_int
@@ -428,7 +429,7 @@ SUBROUTINE wrapper_get_coefficients(coeffs, Y, X, num_covars, num_states)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_periods_int, num_states, delta_int, periods_payoffs_systematic_int, edu_max_int, edu_start_int, mapping_state_idx, periods_emax, states_all, is_simulated, num_draws_emax_int, maxe, draws_emax, shocks_cholesky)
+SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_periods_int, num_states, delta_int, periods_payoffs_systematic, edu_max_int, edu_start_int, mapping_state_idx_int, periods_emax, states_all, is_simulated, num_draws_emax_int, maxe, draws_emax, shocks_cholesky)
 
     !/* external libraries      */
 
@@ -442,14 +443,14 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_perio
 
     DOUBLE PRECISION, INTENT(OUT)       :: exogenous_variable(num_states)
 
-    DOUBLE PRECISION, INTENT(IN)        :: periods_payoffs_systematic_int(:, :, :)
+    DOUBLE PRECISION, INTENT(IN)        :: periods_payoffs_systematic(:, :, :)
     DOUBLE PRECISION, INTENT(IN)        :: shocks_cholesky(4, 4)
     DOUBLE PRECISION, INTENT(IN)        :: periods_emax(:, :)
     DOUBLE PRECISION, INTENT(IN)        :: draws_emax(:, :)
     DOUBLE PRECISION, INTENT(IN)        :: maxe(:)
     DOUBLE PRECISION, INTENT(IN)        :: delta_int
 
-    INTEGER, INTENT(IN)                 :: mapping_state_idx(:, :, :, :, :)    
+    INTEGER, INTENT(IN)                 :: mapping_state_idx_int(:, :, :, :, :)    
     INTEGER, INTENT(IN)                 :: states_all(:, :, :)    
     INTEGER, INTENT(IN)                 :: num_draws_emax_int
     INTEGER, INTENT(IN)                 :: edu_max_int    
@@ -466,7 +467,7 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_perio
 !------------------------------------------------------------------------------
     
     ! Transfer global RESFORT variables
-    periods_payoffs_systematic = periods_payoffs_systematic_int
+    mapping_state_idx = mapping_state_idx_int
     num_draws_emax = num_draws_emax_int
     num_periods = num_periods_int
     edu_start = edu_start_int
@@ -479,7 +480,7 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_perio
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE wrapper_get_exogenous_variables(independent_variables, maxe, period, num_periods_int, num_states, delta_int, periods_payoffs_systematic_int, shifts, edu_max_int, edu_start_int, mapping_state_idx, periods_emax, states_all)
+SUBROUTINE wrapper_get_exogenous_variables(independent_variables, maxe, period, num_periods_int, num_states, delta_int, periods_payoffs_systematic, shifts, edu_max_int, edu_start_int, mapping_state_idx_int, periods_emax, states_all)
 
     !/* external libraries      */
 
@@ -495,12 +496,12 @@ SUBROUTINE wrapper_get_exogenous_variables(independent_variables, maxe, period, 
     DOUBLE PRECISION, INTENT(OUT)        :: maxe(num_states)
 
 
-    DOUBLE PRECISION, INTENT(IN)        :: periods_payoffs_systematic_int(:, :, :)
+    DOUBLE PRECISION, INTENT(IN)        :: periods_payoffs_systematic(:, :, :)
     DOUBLE PRECISION, INTENT(IN)        :: periods_emax(:, :)
     DOUBLE PRECISION, INTENT(IN)        :: shifts(:)
     DOUBLE PRECISION, INTENT(IN)        :: delta_int
 
-    INTEGER, INTENT(IN)                 :: mapping_state_idx(:, :, :, :, :)    
+    INTEGER, INTENT(IN)                 :: mapping_state_idx_int(:, :, :, :, :)    
     INTEGER, INTENT(IN)                 :: states_all(:, :, :)    
     INTEGER, INTENT(IN)                 :: edu_max_int
     INTEGER, INTENT(IN)                 :: num_periods_int
@@ -514,10 +515,10 @@ SUBROUTINE wrapper_get_exogenous_variables(independent_variables, maxe, period, 
 
     !# Assign global RESFORT variables
     max_states_period = SIZE(states_all, 2)
-    min_idx = SIZE(mapping_state_idx, 4)
+    min_idx = SIZE(mapping_state_idx_int, 4)
 
     !# Transfer global RESFORT variables
-    periods_payoffs_systematic = periods_payoffs_systematic_int
+    mapping_state_idx = mapping_state_idx_int
     num_periods = num_periods_int
     edu_start = edu_start_int
     edu_max = edu_max_int
