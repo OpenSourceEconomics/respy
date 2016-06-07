@@ -9,8 +9,8 @@ from codes.random_init import generate_random_dict
 # project library
 from respy.python.shared.shared_auxiliary import print_init_dict
 from respy.python.shared.shared_constants import IS_PARALLEL
-from respy.evaluate import evaluate
 
+from respy import estimate
 from respy import simulate
 from respy import RespyCls
 
@@ -27,6 +27,7 @@ class TestClass(object):
         # Generate random initialization file
         constr = dict()
         constr['version'] = 'FORTRAN'
+        constr['maxiter'] = 0
         init_dict = generate_random_dict(constr)
 
         base = None
@@ -37,7 +38,7 @@ class TestClass(object):
 
             respy_obj = RespyCls('test.respy.ini')
             respy_obj = simulate(respy_obj)
-            crit_val = evaluate(respy_obj)
+            x, crit_val = estimate(respy_obj)
 
             if base is None:
                 base = crit_val
