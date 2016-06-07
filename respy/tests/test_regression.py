@@ -11,9 +11,11 @@ from respy.python.shared.shared_auxiliary import print_init_dict
 
 from respy.solve import solve
 
+from respy.evaluate import evaluate
 from respy import RespyCls
 from respy import simulate
 from respy import estimate
+
 
 @pytest.mark.usefixtures('fresh_directory', 'set_seed')
 class TestClass(object):
@@ -231,5 +233,5 @@ class TestClass(object):
 
         simulate(respy_obj)
 
-        _, val = estimate(respy_obj)
+        val = evaluate(respy_obj)
         np.testing.assert_almost_equal(val, crit_val)

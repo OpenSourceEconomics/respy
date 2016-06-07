@@ -27,6 +27,8 @@ def options(ctx):
     ctx.add_option('--debug', action='store_true', dest='is_debug',
                    default=False, help='use debug compiler options')
 
+    ctx.add_option('--without_mpi', action='store_true', dest='without_mpi',
+        default=False, help='without parallelism')
 
 def configure(ctx):
 
@@ -44,6 +46,10 @@ def configure(ctx):
         ctx.env['FC'] = 'mpifort'
         ctx.env['COMPILER_FORTRAN'] = 'mpifort'
     except ctx.errors.ConfigurationError:
+        ctx.env['PARALLELISM'] = False
+
+    # User explicitly requested omitting the parallel implementation.
+    if ctx.options.without_mpi:
         ctx.env['PARALLELISM'] = False
 
 

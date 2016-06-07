@@ -73,6 +73,21 @@ PROGRAM resfort_scalar
 
 !      CALL NEWUOA (fort_criterion, x_start, npt, rhobeg, rhoend, 0, maxfun, success, message, iter)   
 
+  ELSE IF (request == 'estimate') THEN
+
+        PRINT *, 'I am evaluating estimating'
+
+        ! This part creates (or reads from disk) the draws for the Monte Carlo integration of the choice probabilities. For is_debugging purposes, these might also be read in from disk or set to zero/one.   
+        CALL create_draws(periods_draws_prob, num_draws_prob, seed_prob)
+
+        ! Read observed dataset from disk.
+        CALL read_dataset(data_array, num_agents_est)
+
+        ! Prepare interface for evaluation of criterion function
+        CALL get_optim_paras(x_start, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky)
+
+        ! Evaluate criterion function.
+        crit_val = fort_criterion(x_start)
 
     END IF
 
