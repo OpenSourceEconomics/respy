@@ -8,6 +8,7 @@ MODULE resfort_library
 
     USE shared_utilities
 
+    USE shared_containers
 
     USE solve_fortran
 

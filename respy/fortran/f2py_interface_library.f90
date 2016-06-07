@@ -6,7 +6,7 @@
 !
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, num_periods_int, num_points_interp_int, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, min_idx_int, delta_int, data_array, num_agents_est_int, num_draws_prob_int, tau_int, periods_draws_emax, periods_draws_prob)
+SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, num_periods_int, num_points_interp_int, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, min_idx_int, delta_int, data_array_int, num_agents_est_int, num_draws_prob_int, tau_int, periods_draws_emax, periods_draws_prob)
 
     !/* external libraries      */
 
@@ -34,7 +34,7 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
 
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_emax(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_prob(:, :, :)
-    DOUBLE PRECISION, INTENT(IN)    :: data_array(:, :)
+    DOUBLE PRECISION, INTENT(IN)    :: data_array_int(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: tau_int
 
     LOGICAL, INTENT(IN)             :: is_interpolated_int
@@ -70,6 +70,7 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
     num_draws_emax = num_draws_emax_int
     num_draws_prob = num_draws_prob_int
     num_periods = num_periods_int
+    data_array = data_array_int
     is_myopic = is_myopic_int
     edu_start = edu_start_int
     is_debug = is_debug_int
@@ -174,7 +175,7 @@ SUBROUTINE f2py_solve(periods_payoffs_systematic, states_number_period, mapping_
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, is_interpolated_int, num_draws_emax_int, num_periods_int, num_points_interp_int, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, min_idx_int, delta_int, data_array, num_agents_est_int, num_draws_prob_int, tau_int, periods_draws_emax, periods_draws_prob)
+SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, is_interpolated_int, num_draws_emax_int, num_periods_int, num_points_interp_int, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, min_idx_int, delta_int, data_array_int, num_agents_est_int, num_draws_prob_int, tau_int, periods_draws_emax, periods_draws_prob)
 
     !/* external libraries      */
 
@@ -200,7 +201,7 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, 
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_emax(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_prob(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(4, 4)
-    DOUBLE PRECISION, INTENT(IN)    :: data_array(:, :)
+    DOUBLE PRECISION, INTENT(IN)    :: data_array_int(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_home(:)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_edu(:)
     DOUBLE PRECISION, INTENT(IN)    :: delta_int
@@ -236,6 +237,7 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, 
     num_draws_prob = num_draws_prob_int
     num_draws_emax = num_draws_emax_int
     num_periods = num_periods_int
+    data_array = data_array_int
     edu_start = edu_start_int
     is_myopic = is_myopic_int
     is_debug = is_debug_int

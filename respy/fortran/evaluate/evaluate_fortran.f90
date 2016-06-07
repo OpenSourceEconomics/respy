@@ -10,6 +10,8 @@ MODULE evaluate_fortran
 
     USE shared_constants
 
+    USE shared_containers
+
 	!/*	setup	*/
 
     IMPLICIT NONE

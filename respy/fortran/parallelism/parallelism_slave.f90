@@ -39,7 +39,6 @@ PROGRAM resfort_parallel_slave
     REAL(our_dble), ALLOCATABLE     :: endogenous_slaves(:)
     REAL(our_dble), ALLOCATABLE     :: periods_emax(:, :)
     REAL(our_dble), ALLOCATABLE     :: draws_emax(:, :)
-    REAL(our_dble), ALLOCATABLE     :: data_array(:, :)
     REAL(our_dble), ALLOCATABLE     :: data_slave(:, :)
     REAL(our_dble), ALLOCATABLE     :: exogenous(:, :)
     REAL(our_dble), ALLOCATABLE     :: predictions(:)
