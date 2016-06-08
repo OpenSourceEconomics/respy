@@ -428,4 +428,3 @@ class OptimizationClass(object):
         with open('optimization.respy.info', 'a') as out_file:
             out_file.write('\n TERMINATED')
 
-
