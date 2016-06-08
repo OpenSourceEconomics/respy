@@ -42,7 +42,3 @@ def build(ctx):
 
         ctx(features=['fc', 'fcprogram'], source=slave,
              target='resfort_parallel_slave')
-
-    # Build the upgraded Keane and Wolpin (1994) program
-    ctx.recurse('miscellaneous/kw_recomputation')
-

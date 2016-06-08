@@ -2,7 +2,6 @@
 
 # standard library
 import shutil
-import glob
 import os
 
 top = '.'
@@ -29,6 +28,7 @@ def options(ctx):
 
     ctx.add_option('--without_mpi', action='store_true', dest='without_mpi',
         default=False, help='without parallelism')
+
 
 def configure(ctx):
 
@@ -102,5 +102,9 @@ def post(ctx):
         shutil.copy('.bld/fortran/resfort_parallel_slave', subdir)
 
     # Copy the KW executable.
+    fname = 'tests/resources/kw_dp3asim'
+    if os.path.exists(fname):
+        os.unlink(fname)
+
     src = '.bld/tests/resources/kw_dp3asim'
     shutil.copy(src, 'tests/resources')

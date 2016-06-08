@@ -18,7 +18,9 @@ from respy.python.shared.shared_auxiliary import check_dataset
 from respy.python.shared.shared_auxiliary import create_draws
 
 from respy.python.simulate.simulate_python import pyth_simulate
-from respy.fortran.f2py_debug import f2py_simulate
+
+# TODO: This needs to be removed once the FORTRAN simulation is ready.
+from respy.tests.resources.f2py_interface import f2py_simulate
 
 
 logger = logging.getLogger('RESPY_SIMULATE')

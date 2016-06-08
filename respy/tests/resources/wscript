@@ -25,7 +25,6 @@ class CreateF2pyInterfaces(Task):
         f2py.compile(sourcecode, 'f2py_interface', extra_args,
             extension='.f90')
 
-
         os.chdir('../../')
 
 
