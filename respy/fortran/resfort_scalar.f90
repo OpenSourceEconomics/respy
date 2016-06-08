@@ -19,12 +19,8 @@ PROGRAM resfort_scalar
     REAL(our_dble)                  :: coeffs_b(6)
     REAL(our_dble)                  :: crit_val
 
-    REAL(our_dble)                  :: x_start(26), rhobeg, rhoend
-
-    INTEGER(our_int)                :: i, npt, maxfun, iter
-
-    LOGICAL :: success
-    CHARACTER(150) :: message
+    REAL(our_dble)                  :: x_start(26)
+    
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
