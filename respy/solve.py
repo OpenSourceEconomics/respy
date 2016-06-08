@@ -13,6 +13,7 @@ def solve(respy_obj):
     # Checks, cleanup, start logger
     assert check_input(respy_obj)
 
+    # Distribute class attributes
     store = respy_obj.get_attr('store')
     version = respy_obj.get_attr('version')
 
