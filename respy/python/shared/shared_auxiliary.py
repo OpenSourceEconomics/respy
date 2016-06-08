@@ -346,7 +346,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
     labels = ['BASICS', 'AMBIGUITY', 'OCCUPATION A', 'OCCUPATION B']
     labels += ['EDUCATION', 'HOME', 'SHOCKS', 'SOLUTION']
     labels += ['SIMULATION', 'ESTIMATION', 'PROGRAM', 'INTERPOLATION']
-    labels += ['SCIPY-BFGS', 'SCIPY-POWELL']
+    labels += ['SCIPY-BFGS', 'SCIPY-POWELL', 'FORT-NEWUOA']
 
     # Create initialization.
     with open(file_name, 'w') as file_:
@@ -443,7 +443,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
 
                 file_.write('\n')
 
-            if flag in ['SCIPY-POWELL', 'SCIPY-BFGS']:
+            if flag in ['SCIPY-POWELL', 'SCIPY-BFGS', 'FORT-NEWUOA']:
 
                 # This function can also be used to print out initialization
                 # files without any optimization options. This is enough for
@@ -455,7 +455,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
 
                 for keys_ in dict_[flag]:
 
-                    if keys_ in ['maxfun']:
+                    if keys_ in ['maxfun', 'npt']:
                         str_ = '{0:<10} {1:>20} \n'
                         file_.write(str_.format(keys_, dict_[flag][keys_]))
                     else:

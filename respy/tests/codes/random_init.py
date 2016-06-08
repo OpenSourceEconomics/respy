@@ -144,6 +144,17 @@ def generate_random_dict(constraints=None):
     dict_['SCIPY-POWELL']['ftol'] = np.random.uniform(0.0000001, 0.1)
     dict_['SCIPY-POWELL']['maxfun'] = np.random.randint(1, 100)
 
+    # FORT-NEWUOA
+    rhobeg = np.random.uniform(0.0000001, 0.1)
+
+    dict_['FORT-NEWUOA'] = {}
+    dict_['FORT-NEWUOA']['maxfun'] = np.random.randint(1, 100)
+    dict_['FORT-NEWUOA']['rhobeg'] = rhobeg
+    dict_['FORT-NEWUOA']['rhoend'] = np.random.uniform(0.01, 0.99) * rhobeg
+
+    lower, upper = 26 + 2, (26 + 1) * (26 + 2) / 2
+    dict_['FORT-NEWUOA']['npt'] = np.random.randint(lower, upper)
+
     '''We now impose selected constraints on the final model specification.
        These constraints can be very useful in the generation of test cases. '''
 

@@ -1,13 +1,11 @@
 # standard library
 import numpy as np
 
-import glob
 import sys
 import os
 
 # project library
 from respy.python.shared.shared_constants import EXEC_DIR
-from respy.python.shared.shared_constants import ROOT_DIR
 
 # Hard coded structure of admissible groups and flags in the
 # initialization file.
@@ -28,6 +26,7 @@ STRUCTURE['PROGRAM'] = ['debug', 'version', 'parallelism', 'procs']
 STRUCTURE['INTERPOLATION'] = ['apply', 'points']
 STRUCTURE['SCIPY-BFGS'] = ['gtol', 'epsilon']
 STRUCTURE['SCIPY-POWELL'] = ['maxfun', 'xtol', 'ftol']
+STRUCTURE['FORT-NEWUOA'] = ['maxfun', 'npt', 'rhobeg', 'rhoend']
 
 
 def check_line(group, flag, value):

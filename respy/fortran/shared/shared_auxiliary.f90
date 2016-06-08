@@ -565,7 +565,7 @@ END IF
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky)
+SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, maxiter, optimizer_used, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend)
 
     !
     !   This function serves as the replacement for the RespyCls and reads in
@@ -580,7 +580,17 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
     REAL(our_dble), INTENT(OUT)     :: coeffs_edu(3)
     REAL(our_dble), INTENT(OUT)     :: coeffs_a(6)
     REAL(our_dble), INTENT(OUT)     :: coeffs_b(6)
-    
+
+    INTEGER(our_int), INTENT(OUT)   :: maxiter
+
+    REAL(our_dble), INTENT(OUT)     :: newuoa_rhobeg
+    REAL(our_dble), INTENT(OUT)     :: newuoa_rhoend
+
+    INTEGER(our_int), INTENT(OUT)   :: newuoa_maxfun    
+    INTEGER(our_int), INTENT(OUT)   :: newuoa_npt
+
+    CHARACTER(225)                  :: optimizer_used
+
     !/* internal objects        */
 
     INTEGER(our_int)                :: j
@@ -634,6 +644,7 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
         READ(1, 1505) num_points_interp
 
         ! ESTIMATION
+        READ(1, 1505) maxiter        
         READ(1, 1505) num_agents_est
         READ(1, 1505) num_draws_prob
         READ(1, 1505) seed_prob
@@ -652,6 +663,14 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
 
         ! EXECUTABLES
         READ(1, *) exec_dir
+
+        ! OPTIMIZERS
+        READ(1, *) optimizer_used
+
+        READ(1, 1505) newuoa_npt
+        READ(1, 1505) newuoa_maxfun
+        READ(1, 1500) newuoa_rhobeg
+        READ(1, 1500) newuoa_rhoend
 
     CLOSE(1)
 

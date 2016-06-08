@@ -18,24 +18,60 @@ from respy.python.shared.shared_constants import EXEC_DIR, HUGE_FLOAT
 
 def resfort_interface(respy_obj, request, data_array=None):
 
+    model_paras, num_periods, edu_start, is_debug, edu_max, delta, \
+        version, num_draws_emax, seed_emax, is_interpolated, num_points_interp, \
+        is_myopic, min_idx, store, tau, is_parallel, num_procs, \
+        num_agents_sim, num_draws_prob, num_agents_est, seed_prob, seed_sim, \
+        paras_fixed, optimizer_options, optimizer_used, maxiter = \
+            dist_class_attributes(respy_obj,
+                'model_paras', 'num_periods', 'edu_start', 'is_debug',
+                'edu_max', 'delta', 'version', 'num_draws_emax', 'seed_emax',
+                'is_interpolated', 'num_points_interp', 'is_myopic', 'min_idx',
+                'store', 'tau', 'is_parallel', 'num_procs', 'num_agents_sim',
+                'num_draws_prob', 'num_agents_est', 'seed_prob', 'seed_sim',
+                'paras_fixed', 'optimizer_options', 'optimizer_used', 'maxiter')
+
+    # Special treatment required for the FORT optimizers. Since they are
+    # written to the FORTRAN initialization file, we need a valid request for
+    # all optimizers internally.
+    assert (optimizer_used in optimizer_options.keys())
+
+    for optimizer in ['FORT-NEWUOA']:
+        # Skip if actually used in the estimation.
+        if optimizer == optimizer_used:
+            continue
+        # Skip if defined by user.
+        if optimizer in optimizer_options.keys():
+            continue
+
+        if optimizer in ['FORT-NEWUOA']:
+            optimizer_options[optimizer] = dict()
+            optimizer_options[optimizer]['npt'] = 40
+            optimizer_options[optimizer]['rhobeg'] = 0.1
+            optimizer_options[optimizer]['rhoend'] = 0.0001
+            optimizer_options[optimizer]['maxfun'] = 20
+
+    # Check all optimizers
+    if optimizer_used in ['FORT-NEWUOA']:
+
+        for name in ['maxfun', 'npt']:
+            assert isinstance(optimizer_options[optimizer_used][name], int)
+            assert (optimizer_options[optimizer_used][name] > 0)
+
+        for name in ['rhobeg', 'rhoend']:
+            assert isinstance(optimizer_options[optimizer_used][name], float)
+            assert (optimizer_options[optimizer_used][name] > 0)
+
+        assert (optimizer_options[optimizer_used]['rhobeg'] >
+                optimizer_options[optimizer_used]['rhoend'])
+
+
     if request == 'estimate':
         assert data_array is not None
         # If an evaluation is requested, then a specially formatted dataset is
         # written to a scratch file. This eases the reading of the dataset in
         # FORTRAN.
         write_dataset(data_array)
-
-    model_paras, num_periods, edu_start, is_debug, edu_max, delta, \
-        version, num_draws_emax, seed_emax, is_interpolated, num_points_interp, \
-        is_myopic, min_idx, store, tau, is_parallel, num_procs, \
-        num_agents_sim, num_draws_prob, num_agents_est, seed_prob, seed_sim, \
-        paras_fixed = \
-            dist_class_attributes(respy_obj,
-                'model_paras', 'num_periods', 'edu_start', 'is_debug',
-                'edu_max', 'delta', 'version', 'num_draws_emax', 'seed_emax',
-                'is_interpolated', 'num_points_interp', 'is_myopic', 'min_idx',
-                'store', 'tau', 'is_parallel', 'num_procs', 'num_agents_sim',
-                'num_draws_prob', 'num_agents_est', 'seed_prob', 'seed_sim', 'paras_fixed')
 
     # Distribute model parameters
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
@@ -46,7 +82,8 @@ def resfort_interface(respy_obj, request, data_array=None):
         edu_start, is_debug, edu_max, min_idx, delta)
 
     args = args + (num_draws_prob, num_agents_est, num_agents_sim, seed_prob,
-    seed_emax, tau, num_procs, request, seed_sim)
+    seed_emax, tau, num_procs, request, seed_sim, optimizer_options,
+    optimizer_used, maxiter)
 
     write_resfort_initialization(*args)
 
@@ -145,7 +182,7 @@ def write_resfort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         shocks_cholesky, is_interpolated, num_draws_emax, num_periods,
         num_points_interp, is_myopic, edu_start, is_debug, edu_max, min_idx, delta,
         num_draws_prob, num_agents_est, num_agents_sim, seed_prob, seed_emax,
-        tau, num_procs, request, seed_sim):
+        tau, num_procs, request, seed_sim, optimizer_options, optimizer_used, maxiter):
     """ Write out model request to hidden file .model.resfort.ini.
     """
 
@@ -205,6 +242,9 @@ def write_resfort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         file_.write(line)
 
         # ESTIMATION
+        line = '{0:10d}\n'.format(maxiter)
+        file_.write(line)
+
         line = '{0:10d}\n'.format(num_agents_est)
         file_.write(line)
 
@@ -240,6 +280,22 @@ def write_resfort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
 
         line = '"{0}"'.format(exec_dir)
         file_.write(line + '\n')
+
+        # Optimizers
+        line = '"{0}"\n'.format(optimizer_used)
+        file_.write(line)
+
+        line = '{0:10d}\n'.format(optimizer_options['FORT-NEWUOA']['npt'])
+        file_.write(line)
+
+        line = '{0:10d}\n'.format(optimizer_options['FORT-NEWUOA']['maxfun'])
+        file_.write(line)
+
+        line = ' {0:15.10f}\n'.format(optimizer_options['FORT-NEWUOA']['rhobeg'])
+        file_.write(line)
+
+        line = ' {0:15.10f}\n'.format(optimizer_options['FORT-NEWUOA']['rhoend'])
+        file_.write(line)
 
 
 def write_dataset(data_array):

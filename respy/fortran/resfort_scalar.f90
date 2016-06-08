@@ -24,26 +24,27 @@ PROGRAM resfort_scalar
     REAL(our_dble), ALLOCATABLE     :: periods_draws_sims(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: data_sim(:, :)
 
-    INTEGER(our_int)   :: iter
 
-    INTEGER(our_int)     :: maxfun
-    INTEGER(our_int)    :: npt
+    INTEGER(our_int)                :: maxiter
+    INTEGER(our_int)                :: newuoa_maxfun
+    INTEGER(our_int)                :: newuoa_npt
     
-    REAL(our_dble)      :: rhobeg
-    REAL(our_dble)  :: rhoend
+    REAL(our_dble)                  :: newuoa_rhobeg
+    REAL(our_dble)                  :: newuoa_rhoend
 
-    LOGICAL      :: success
 
+    INTEGER(our_int)                :: iter
+    LOGICAL                         :: success
     CHARACTER(150)                  :: message
 
-
+    CHARACTER(225)                  :: optimizer_used
 
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
 
 
-    CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky)
+    CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, maxiter, optimizer_used, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend)
 
     CALL create_draws(periods_draws_emax, num_draws_emax, seed_emax)
 
@@ -63,24 +64,23 @@ PROGRAM resfort_scalar
         CALL get_optim_paras(x_start, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky)
 
 
-        crit_val = fort_criterion(x_start)
-        PRINT *, 'I am estimating :) '
-
-        npt =  min(26 * 2, 26 + 2)
-
-        rhobeg = 0.1
-        rhoend = 1e-6 * rhobeg
-        maxfun = 20
-
-
-        PRINT *, 'START ', x_start(:3)
-
         x_final = x_start
 
-        CALL NEWUOA (fort_criterion, x_final, npt, rhobeg, rhoend, zero_int, maxfun, success, message, iter)
+ 
+        IF (maxiter == zero_int) THEN
 
+            crit_val = fort_criterion(x_final)
 
-        PRINT *, 'Final ', x_start(:3)
+        ELSEIF (optimizer_used == 'FORT-NEWUOA') THEN
+
+            CALL NEWUOA(fort_criterion, x_final, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, zero_int, newuoa_maxfun, success, message, iter)
+
+        ELSE
+
+            PRINT *, 'Program terminated ...'
+            STOP
+
+        END IF
 
 
   ELSE IF (request == 'simulate') THEN
