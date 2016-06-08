@@ -1,15 +1,13 @@
 #!/usr/bin/env python
 
 # standard library
-from scipy.optimize import approx_fprime
-
-import numpy as np
-
 import argparse
 import os
 
+import numpy as np
+from scipy.optimize import approx_fprime
+
 # project library
-from respy.python.estimate.estimate_auxiliary import dist_optim_paras
 from respy.python.estimate.estimate_auxiliary import get_optim_paras
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
@@ -18,7 +16,7 @@ from respy.python.shared.shared_auxiliary import create_draws
 
 from respy.python.estimate.estimate_wrapper import OptimizationClass
 
-from respy.process import process
+from respy.python.process.process_python import process
 
 from respy import estimate
 from respy import RespyCls
