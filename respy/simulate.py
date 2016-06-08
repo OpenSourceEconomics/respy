@@ -19,7 +19,7 @@ from respy.python.shared.shared_auxiliary import create_draws
 
 from respy.python.simulate.simulate_python import pyth_simulate
 
-from respy.fortran.fortran import resfort_interface
+from respy.fortran.interface import resfort_interface
 
 logger = logging.getLogger('RESPY_SIMULATE')
 

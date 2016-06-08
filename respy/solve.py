@@ -8,7 +8,7 @@ from respy.python.shared.shared_auxiliary import create_draws
 
 from respy.python.solve.solve_python import pyth_solve
 
-from respy.fortran.fortran import resfort_interface
+from respy.fortran.interface import resfort_interface
 
 
 def solve(respy_obj):

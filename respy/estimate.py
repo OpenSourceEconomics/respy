@@ -1,5 +1,5 @@
 # project library
-from respy.fortran.fortran import resfort_interface
+from respy.fortran.interface import resfort_interface
 from respy.python.estimate.estimate_auxiliary import check_input
 from respy.python.estimate.estimate_auxiliary import get_optim_paras
 from respy.python.estimate.estimate_wrapper import OptimizationClass

@@ -18,7 +18,7 @@ from respy.python.simulate.simulate_auxiliary import logging_simulation
 from respy.python.solve.solve_auxiliary import logging_solution
 from respy.python.solve.solve_auxiliary import get_future_value
 
-from respy.fortran.fortran import resfort_interface
+from respy.fortran.interface import resfort_interface
 from respy.python.solve.solve_python import pyth_solve
 from respy.python.simulate.simulate_python import pyth_simulate
 from respy.python.evaluate.evaluate_python import pyth_evaluate
