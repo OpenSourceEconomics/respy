@@ -127,7 +127,7 @@ class TestClass(object):
         # Clean evaluations based on interpolation grid,
         base_val, base_data = None, None
 
-        for version in ['PYTHON', 'F2PY', 'FORTRAN']:
+        for version in ['PYTHON', 'FORTRAN']:
             respy_obj = RespyCls('test.respy.ini')
 
             # Modify the version of the program for the different requests.
@@ -384,7 +384,7 @@ class TestClass(object):
         num_periods = init_dict['BASICS']['periods']
         write_draws(num_periods, max_draws)
 
-        for version in ['FORTRAN', 'PYTHON', 'F2PY']:
+        for version in ['FORTRAN', 'PYTHON']:
 
             respy_obj.unlock()
 

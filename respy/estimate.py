@@ -64,7 +64,7 @@ def estimate(respy_obj):
 
     # Setup optimization class, which handles all the details depending on the
     # request.
-    if version in ['PYTHON', 'F2PY']:
+    if version in ['PYTHON']:
         opt_obj = OptimizationClass()
 
         opt_obj.set_attr('args', args)
@@ -84,7 +84,7 @@ def estimate(respy_obj):
         # Perform optimization.
         x, val = opt_obj.optimize(x_free_start)
 
-    else:
+    elif version in ['FORTRAN']:
 
         val = fort_estimate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
             shocks_cholesky, is_interpolated, num_draws_emax, num_periods, num_points_interp, is_myopic,
@@ -94,6 +94,9 @@ def estimate(respy_obj):
 
         x = x_all_start
 
+    else:
+
+        raise NotImplementedError
     # Finishing
     return x, val
 

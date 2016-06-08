@@ -1,7 +1,4 @@
 # project library
-from respy.fortran.f2py_library import f2py_create_state_space
-from respy.fortran.f2py_library import f2py_solve
-
 from respy.python.solve.solve_auxiliary import check_input
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
@@ -47,20 +44,13 @@ def solve(respy_obj):
         is_interpolated, num_draws_emax, num_periods, num_points_interp, is_myopic,
         edu_start, is_debug, edu_max, min_idx, delta)
 
-    # Select appropriate interface. The additional preparations for the F2PY
-    # interface are required as only explicit shape arguments can be passed
-    # into the interface.
+    # Select appropriate interface.
     if version == 'FORTRAN':
         args = base_args + (seed_emax, tau, is_parallel, num_procs)
         solution = fort_solve(*args)
     elif version == 'PYTHON':
         args = base_args + (periods_draws_emax, )
         solution = pyth_solve(*args)
-    elif version == 'F2PY':
-        args = (num_periods, edu_start, edu_max, min_idx)
-        max_states_period = f2py_create_state_space(*args)[3]
-        args = base_args + (periods_draws_emax, max_states_period)
-        solution = f2py_solve(*args)
     else:
         raise NotImplementedError
 

@@ -233,7 +233,7 @@ class OptimizationClass(object):
         assert (optimizer_used in optimizer_options.keys())
 
         # Check that version is available
-        assert (version in ['F2PY', 'FORTRAN', 'PYTHON'])
+        assert (version in ['FORTRAN', 'PYTHON'])
 
         # Check that the requested number of iterations is valid
         assert isinstance(maxiter, int)
@@ -252,8 +252,6 @@ class OptimizationClass(object):
         # Evaluate criterion function
         if version == 'PYTHON':
             crit_val = pyth_criterion(x_all_curre, *args)
-        elif version in ['F2PY', 'FORTRAN']:
-            crit_val = f2py_criterion(x_all_curre, *args)
         else:
             raise NotImplementedError
 

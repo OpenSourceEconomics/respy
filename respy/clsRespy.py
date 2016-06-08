@@ -485,7 +485,7 @@ class RespyCls(object):
         assert (delta >= 0.00)
 
         # Version version of package
-        assert (version in ['FORTRAN', 'F2PY', 'PYTHON'])
+        assert (version in ['FORTRAN', 'PYTHON'])
 
         # Shock distribution
         assert (isinstance(shocks_cholesky, np.ndarray))

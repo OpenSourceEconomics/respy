@@ -70,7 +70,7 @@ def simulate(respy_obj, is_solved=False):
     # Select appropriate interface
     if version == 'PYTHON':
         data_array = pyth_simulate(*args)
-    elif version in ['FORTRAN', 'F2PY']:
+    elif version in ['FORTRAN']:
         data_array = f2py_simulate(*args)
     else:
         raise NotImplementedError

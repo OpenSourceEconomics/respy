@@ -81,10 +81,7 @@ def check_line(group, flag, value):
             if flag in ['debug', 'parallelism']:
                 assert (value in [True, False])
             if flag in ['version']:
-                assert (value in ['FORTRAN', 'F2PY', 'PYTHON'])
-                if value == 'F2PY':
-                    fname = glob.glob(ROOT_DIR + '/fortran/f2py_library*.so')[0]
-                    assert os.path.exists(fname)
+                assert (value in ['FORTRAN', 'PYTHON'])
                 if value == 'FORTRAN':
                     fname = EXEC_DIR + '/resfort_scalar'
                     assert os.path.exists(fname)

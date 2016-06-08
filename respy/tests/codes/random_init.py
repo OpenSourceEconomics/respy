@@ -109,7 +109,7 @@ def generate_random_dict(constraints=None):
     else:
         dict_['PROGRAM']['parallelism'] = False
 
-    versions = ['FORTRAN', 'F2PY', 'PYTHON']
+    versions = ['FORTRAN', 'PYTHON']
     if dict_['PROGRAM']['parallelism']:
         versions = ['FORTRAN']
     dict_['PROGRAM']['version'] = np.random.choice(versions)
@@ -206,7 +206,7 @@ def generate_random_dict(constraints=None):
         # Extract objects
         version = constraints['version']
         # Checks
-        assert (version in ['PYTHON', 'FORTRAN', 'F2PY'])
+        assert (version in ['PYTHON', 'FORTRAN'])
         # Replace in initialization file
         dict_['PROGRAM']['version'] = version
         # Ensure that the constraints are met

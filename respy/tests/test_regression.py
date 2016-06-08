@@ -141,7 +141,7 @@ class TestClass(object):
         all versions should yield the same result without any additional effort.
         """
         # Solve specified economy
-        for version in ['FORTRAN', 'PYTHON', 'F2PY']:
+        for version in ['FORTRAN', 'PYTHON']:
 
             respy_obj = RespyCls(TEST_RESOURCES_DIR + '/test_fifth.respy.ini')
 
@@ -169,7 +169,7 @@ class TestClass(object):
         environment is ambiguous or not.
         """
         # Solve specified economy
-        for version in ['FORTRAN', 'PYTHON', 'F2PY']:
+        for version in ['FORTRAN', 'PYTHON']:
 
             respy_obj = RespyCls(TEST_RESOURCES_DIR + '/test_fifth.respy.ini')
 

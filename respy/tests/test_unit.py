@@ -154,8 +154,7 @@ class TestClass(object):
                 np.testing.assert_almost_equal(py[i], f90[i])
 
     def test_3(self):
-        """ Compare results between FORTRAN and PYTHON of selected functions. The
-        file fortran/debug_interface.f90 provides the F2PY bindings.
+        """ Compare results between FORTRAN and PYTHON of selected functions.
         """
         for _ in range(10):
 
