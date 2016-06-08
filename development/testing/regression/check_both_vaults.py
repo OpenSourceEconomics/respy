@@ -12,4 +12,4 @@ python2_bin = "/home/peisenha/.envs/restudToolbox2/bin/python"
 script_file = 'check_vault.py'
 
 for python_bin in [python2_bin, python3_bin]:
-    subprocess.call([python_bin, script_file])
+    assert (subprocess.call([python_bin, script_file]) == 0)

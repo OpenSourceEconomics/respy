@@ -39,14 +39,14 @@ def respy_interface(respy_obj, request, data_array=None):
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = dist_model_paras(
         model_paras, is_debug)
 
-    # Draw standard normal deviates for the solution and evaluation step.
-    periods_draws_emax = create_draws(num_periods, num_draws_emax, seed_emax,
-        is_debug)
-
     if request == 'estimate':
 
         periods_draws_prob = create_draws(num_periods, num_draws_prob,
             seed_prob, is_debug)
+
+        # Draw standard normal deviates for the solution and evaluation step.
+        periods_draws_emax = create_draws(num_periods, num_draws_emax,
+            seed_emax, is_debug)
 
         # Construct starting values
         x_free_start = get_optim_paras(coeffs_a, coeffs_b, coeffs_edu,
@@ -87,6 +87,10 @@ def respy_interface(respy_obj, request, data_array=None):
         periods_draws_sims = create_draws(num_periods, num_agents_sim, seed_sim,
             is_debug)
 
+        # Draw standard normal deviates for the solution and evaluation step.
+        periods_draws_emax = create_draws(num_periods, num_draws_emax,
+            seed_emax, is_debug)
+
         # Simulate a dataset with the results from the solution and write out
         # the dataset to a text file. In addition a file summarizing the
         # dataset is produced.
@@ -103,6 +107,10 @@ def respy_interface(respy_obj, request, data_array=None):
         args = data_array
 
     elif request == 'solve':
+
+        # Draw standard normal deviates for the solution and evaluation step.
+        periods_draws_emax = create_draws(num_periods, num_draws_emax,
+            seed_emax, is_debug)
 
         # Collect baseline arguments. These are latter amended to account for
         # each interface.
