@@ -11,6 +11,7 @@ from respy.python.estimate.estimate_wrapper import OptimizationClass
 from respy.process import process
 from respy.fortran.fortran import resfort_interface
 
+
 def estimate(respy_obj):
     """ Estimate the model
     """

@@ -26,7 +26,6 @@ from respy.python.estimate.estimate_auxiliary import dist_optim_paras
 # project library
 from respy.python.evaluate.evaluate_python import pyth_evaluate
 
-from respy.tests.codes.auxiliary import write_draws
 
 from respy.python.evaluate.evaluate_auxiliary import check_input
 from respy.python.evaluate.evaluate_auxiliary import check_output

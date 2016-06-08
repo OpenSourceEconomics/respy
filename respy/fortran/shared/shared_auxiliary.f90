@@ -658,11 +658,11 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE read_dataset(data_array, num_agents)
+SUBROUTINE read_dataset(data_est, num_agents)
 
     !/* external objects        */
 
-    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)  :: data_array(:, :)
+    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)  :: data_est(:, :)
 
     INTEGER(our_int), INTENT(IN)                :: num_agents
 
@@ -676,13 +676,13 @@ SUBROUTINE read_dataset(data_array, num_agents)
 !------------------------------------------------------------------------------
 
     ! Allocate data container
-    ALLOCATE(data_array(num_periods * num_agents, 8))
+    ALLOCATE(data_est(num_periods * num_agents, 8))
 
     ! Read observed data to double precision array
     OPEN(UNIT=1, FILE='.data.resfort.dat')
 
         DO j = 1, num_periods * num_agents
-            READ(1, *) (data_array(j, k), k = 1, 8)
+            READ(1, *) (data_est(j, k), k = 1, 8)
         END DO
 
     CLOSE(1)

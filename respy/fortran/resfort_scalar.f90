@@ -43,7 +43,7 @@ PROGRAM resfort_scalar
 
         CALL create_draws(periods_draws_prob, num_draws_prob, seed_prob)
 
-        CALL read_dataset(data_array, num_agents_est)
+        CALL read_dataset(data_est, num_agents_est)
 
         CALL get_optim_paras(x_start, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky)
 

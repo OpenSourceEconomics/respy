@@ -5,6 +5,7 @@ from scipy.stats import norm
 import numpy as np
 import pytest
 import scipy
+import sys
 
 # testing library
 from codes.auxiliary import write_interpolation_grid
@@ -26,6 +27,7 @@ from respy.python.estimate.estimate_python import pyth_criterion
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import dist_model_paras
 from respy.python.shared.shared_auxiliary import create_draws
+from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
 
@@ -33,10 +35,17 @@ from respy.python.solve.solve_auxiliary import pyth_calculate_payoffs_systematic
 
 from respy.python.solve.solve_auxiliary import pyth_backward_induction
 
-import resources.f2py_interface as fort_debug
-
 from respy import solve
 from respy import RespyCls
+
+# Edit of PYTHONPATH required for PYTHON 2 as no __init__.py in tests
+# subdirectory. If __init__.py is added, the path resolution for PYTEST
+# breaks down.
+if sys.version_info[0] == 2:
+    sys.path.insert(0, TEST_RESOURCES_DIR)
+    import f2py_interface as fort_debug
+else:
+    import resources.f2py_interface as fort_debug
 
 
 @pytest.mark.usefixtures('fresh_directory', 'set_seed')

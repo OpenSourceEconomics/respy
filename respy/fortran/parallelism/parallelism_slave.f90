@@ -228,9 +228,9 @@ PROGRAM resfort_parallel_slave
         ELSEIF (task == 3) THEN
 
             ! If the evaluation is requested for the first time. The data container is not allocated, so all preparations for the evaluation are taken.
-            IF (.NOT. ALLOCATED(data_array)) THEN
+            IF (.NOT. ALLOCATED(data_est)) THEN
 
-                CALL read_dataset(data_array, num_agents_est)
+                CALL read_dataset(data_est, num_agents_est)
 
                 CALL create_draws(periods_draws_prob, num_draws_prob, seed_prob)
 
@@ -241,7 +241,7 @@ PROGRAM resfort_parallel_slave
                 ! Allocate dataset
                 ALLOCATE(data_slave(num_obs_slaves(rank + 1), 8))
 
-                data_slave = data_array(lower_bound:upper_bound, :)
+                data_slave = data_est(lower_bound:upper_bound, :)
 
             END IF
 

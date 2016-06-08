@@ -17,7 +17,7 @@ MODULE shared_containers
     REAL(our_dble), ALLOCATABLE     :: periods_draws_prob(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_draws_emax(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_emax(:, :)
-    REAL(our_dble), ALLOCATABLE     :: data_array(:, :)
+    REAL(our_dble), ALLOCATABLE     :: data_est(:, :)
 
 !******************************************************************************
 !******************************************************************************

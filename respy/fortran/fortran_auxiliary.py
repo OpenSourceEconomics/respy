@@ -40,11 +40,11 @@ def get_results(num_periods, min_idx, num_agents_sim):
 
     # This is only present if we simulated.
     data_array = None
-    try:
+
+    if os.path.exists('.data.resfort.dat'):
         shape = (num_periods * num_agents_sim, 8)
         data_array = read_data('data', shape)
-    except FileNotFoundError:
-        pass
+
     # Update class attributes with solution
     args = (periods_payoffs_systematic, states_number_period,
         mapping_state_idx, periods_emax, states_all, data_array)
