@@ -102,5 +102,5 @@ def post(ctx):
         shutil.copy('.bld/fortran/resfort_parallel_slave', subdir)
 
     # Copy the KW executable.
-    src = '.bld/fortran/miscellaneous/kw_recomputation/kw_dp3asim'
-    shutil.copy(src, subdir)
+    src = '.bld/tests/resources/kw_dp3asim'
+    shutil.copy(src, 'tests/resources')

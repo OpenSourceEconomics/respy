@@ -7,6 +7,8 @@ import os
 from waflib.Task import Task
 
 
+
+
 class CreateF2pyInterfaces(Task):
 
     def run(self):
@@ -23,6 +25,7 @@ class CreateF2pyInterfaces(Task):
         f2py.compile(sourcecode, 'f2py_interface', extra_args,
             extension='.f90')
 
+
         os.chdir('../../')
 
 
@@ -31,4 +34,9 @@ def build(ctx):
     # Build F2PY interface
     ctx.add_to_group(CreateF2pyInterfaces(env=ctx.env))
 
-    # TODO: MOVE KW_RECOMP here as well.
+    # Collect sources
+    src = ['kw_imsl_replacements.f90', 'kw_test_additions.f90',
+        'kw_dp3asim.f90']
+
+    # Build the executable
+    ctx(features=['fc', 'fcprogram'], source=src, target='kw_dp3asim')
