@@ -17,11 +17,11 @@ MODULE simulate_fortran
  CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_simulate(dataset, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, num_agents_sim, periods_draws_sims, shocks_cholesky)
+SUBROUTINE fort_simulate(data_sim, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, num_agents_sim, periods_draws_sims, shocks_cholesky)
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(OUT)     :: dataset(num_periods * num_agents_sim, 8)
+    REAL(our_dble), INTENT(OUT)     :: data_sim(:, :)
 
     REAL(our_dble), INTENT(IN)      :: periods_payoffs_systematic(num_periods, max_states_period, 4)
     REAL(our_dble), INTENT(IN)      :: periods_draws_sims(num_periods, num_agents_sim, 4)
@@ -57,6 +57,7 @@ SUBROUTINE fort_simulate(dataset, periods_payoffs_systematic, mapping_state_idx,
 ! Algorithm
 !------------------------------------------------------------------------------
 
+
     !Standard deviates transformed to the distributions relevant for the agents actual decision making as traversing the tree.
     DO period = 1, num_periods
         draws_sims = periods_draws_sims(period, :, :)
@@ -66,7 +67,7 @@ SUBROUTINE fort_simulate(dataset, periods_payoffs_systematic, mapping_state_idx,
     END DO
 
     ! Initialize containers
-    dataset = MISSING_FLOAT
+    data_sim = MISSING_FLOAT
 
     ! Iterate over agents and periods
     count = 0
@@ -88,8 +89,8 @@ SUBROUTINE fort_simulate(dataset, periods_payoffs_systematic, mapping_state_idx,
             k = mapping_state_idx(period + 1, exp_a + 1, exp_b + 1, edu + 1, edu_lagged + 1)
 
             ! Write agent identifier and current period to data frame
-            dataset(count + 1, 1) = DBLE(i)
-            dataset(count + 1, 2) = DBLE(period)
+            data_sim(count + 1, 1) = DBLE(i)
+            data_sim(count + 1, 2) = DBLE(period)
 
             ! Calculate ex post payoffs
             payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
@@ -99,15 +100,15 @@ SUBROUTINE fort_simulate(dataset, periods_payoffs_systematic, mapping_state_idx,
             CALL get_total_value(total_payoffs, period, payoffs_systematic, draws, mapping_state_idx, periods_emax, k, states_all)
 
             ! Write relevant state space for period to data frame
-            dataset(count + 1, 5:8) = current_state
+            data_sim(count + 1, 5:8) = current_state
 
             ! Special treatment for education
-            dataset(count + 1, 7) = dataset(count + 1, 7) + edu_start
+            data_sim(count + 1, 7) = data_sim(count + 1, 7) + edu_start
 
             ! Determine and record optimal choice
             choice = MAXLOC(total_payoffs)
 
-            dataset(count + 1, 3) = DBLE(choice(1))
+            data_sim(count + 1, 3) = DBLE(choice(1))
 
             !# Update work experiences and education
             IF (choice(1) .EQ. one_int) THEN
@@ -130,11 +131,11 @@ SUBROUTINE fort_simulate(dataset, periods_payoffs_systematic, mapping_state_idx,
 
             ! Record earnings
             IF (choice(1) .EQ. one_int) THEN
-                dataset(count + 1, 4) = payoffs_systematic(1) * draws(1)
+                data_sim(count + 1, 4) = payoffs_systematic(1) * draws(1)
             END IF
 
             IF (choice(1) .EQ. two_int) THEN
-                dataset(count + 1, 4) = payoffs_systematic(2) * draws(2)
+                data_sim(count + 1, 4) = payoffs_systematic(2) * draws(2)
             END IF
 
             ! Update row indicator

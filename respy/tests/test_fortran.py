@@ -17,7 +17,7 @@ from respy.python.simulate.simulate_auxiliary import logging_simulation
 from respy.python.solve.solve_auxiliary import logging_solution
 from respy.python.solve.solve_auxiliary import get_future_value
 
-from respy.fortran.fortran import fort_solve
+from respy.fortran.fortran import resfort_interface
 from respy.python.solve.solve_python import pyth_solve
 from respy.python.simulate.simulate_python import pyth_simulate
 from respy.python.evaluate.evaluate_python import pyth_evaluate
@@ -292,7 +292,6 @@ class TestClass(object):
         f2py = fort_debug.f2py_backward_induction(*args)
         np.testing.assert_allclose(pyth, f2py)
 
-
     def test_5(self):
         """ This methods ensures that the core functions yield the same
         results across implementations.
@@ -333,8 +332,7 @@ class TestClass(object):
         is_interpolated, num_draws_emax, num_periods, num_points_interp, is_myopic,
         edu_start, is_debug, edu_max, min_idx, delta)
 
-        fort = fort_solve(*base_args + (seed_emax, tau, is_parallel,
-        num_procs))
+        fort = resfort_interface(respy_obj, 'solve')
         pyth = pyth_solve(*base_args + (periods_draws_emax,))
         f2py = fort_debug.f2py_solve(*base_args + (periods_draws_emax, max_states_period))
 
@@ -352,8 +350,13 @@ class TestClass(object):
         states_all, num_agents_sim, edu_start, edu_max, delta, periods_draws_sims,
         shocks_cholesky)
 
+        args_py = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
+            is_interpolated, num_draws_emax, num_periods, num_points_interp,
+            is_myopic, edu_start, is_debug, edu_max, min_idx, delta,
+            periods_draws_emax, num_agents_sim, periods_draws_sims)
+
         logging_simulation('start')
-        pyth = pyth_simulate(*args)
+        pyth = pyth_simulate(*args_py)
         logging_simulation('stop')
 
         f2py = fort_debug.f2py_simulate(*args)

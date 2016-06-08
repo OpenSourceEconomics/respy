@@ -75,13 +75,13 @@ def build(ctx):
         raise AssertionError('The build is only tested for GFORTRAN at this '
                              'point.')
 
-    #ctx.recurse('fortran')
+    ctx.recurse('fortran')
 
     ctx.add_group()
 
     ctx.recurse('tests/resources')
 
-    #ctx.add_post_fun(post)
+    ctx.add_post_fun(post)
 
 
 def post(ctx):
@@ -106,5 +106,5 @@ def post(ctx):
     if os.path.exists(fname):
         os.unlink(fname)
 
-    src = '.bld/tests/resources/kw_dp3asim'
-    shutil.copy(src, 'tests/resources')
+    #src = '.bld/tests/resources/kw_dp3asim'
+    #shutil.copy(src, 'tests/resources')

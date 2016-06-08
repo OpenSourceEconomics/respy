@@ -19,46 +19,47 @@ from respy.python.shared.shared_auxiliary import create_draws
 
 from respy.python.simulate.simulate_python import pyth_simulate
 
-# TODO: This needs to be removed once the FORTRAN simulation is ready.
-from respy.python.shared.shared_constants import ROOT_DIR
-import sys
-sys.path.insert(0, ROOT_DIR + '/tests/resources')
-from f2py_interface import f2py_simulate
-
+from respy.fortran.fortran import resfort_interface
 
 logger = logging.getLogger('RESPY_SIMULATE')
 
 
-def simulate(respy_obj, is_solved=False):
+def simulate(respy_obj):
     """ Simulate dataset of synthetic agent following the model specified in
     the initialization file.
     """
-    # Process input_
-    check_input(respy_obj, is_solved)
-
-    # Solve the requested economy
-    if not is_solved:
-        solve(respy_obj)
 
     # Fire up the logging for the simulation. The logging of the solution
     # step is handled within the solution routines.
     logging_simulation('start')
 
     # Distribute class attributes
-    periods_payoffs_systematic, mapping_state_idx, periods_emax, model_paras, \
-        num_periods, num_agents_sim, states_all, edu_start, seed_sim, \
-        is_debug, edu_max, delta, version = \
+    model_paras, \
+        num_periods, num_agents_sim, edu_start, seed_sim, \
+        is_debug, edu_max, delta, version, model_paras, is_interpolated, \
+        num_draws_emax, \
+        num_points_interp, is_myopic, min_idx, seed_emax, num_agents_est, \
+        num_draws_prob, tau, seed_prob, is_parallel, num_procs = \
             dist_class_attributes(respy_obj,
-                'periods_payoffs_systematic', 'mapping_state_idx',
-                'periods_emax', 'model_paras', 'num_periods', 'num_agents_sim',
-                'states_all', 'edu_start', 'seed_sim', 'is_debug',
-                'edu_max', 'delta', 'version')
+                'model_paras', 'num_periods', 'num_agents_sim',
+                 'edu_start', 'seed_sim', 'is_debug',
+                'edu_max', 'delta', 'version', 'model_paras',
+                'is_interpolated', 'num_draws_emax', 'num_points_interp',
+                'is_myopic', 'min_idx', 'seed_emax', 'num_agents_est',
+                'num_draws_prob', 'tau', 'seed_prob', 'is_parallel', 'num_procs')
+
+    # Distribute model parameters
+    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
+        dist_model_paras(model_paras, is_debug)
 
     # Auxiliary objects
     shocks_cholesky = dist_model_paras(model_paras, is_debug)[-1]
 
     # Draw draws for the simulation.
     periods_draws_sims = create_draws(num_periods, num_agents_sim, seed_sim,
+        is_debug)
+
+    periods_draws_emax = create_draws(num_periods, num_draws_emax, seed_emax,
         is_debug)
 
     # Simulate a dataset with the results from the solution and write out the
@@ -68,15 +69,17 @@ def simulate(respy_obj, is_solved=False):
         ' agents with seed ' + str(seed_sim))
 
     # Collect arguments to pass in different implementations of the simulation.
-    args = (periods_payoffs_systematic, mapping_state_idx, periods_emax,
-        num_periods, states_all, num_agents_sim, edu_start, edu_max, delta,
-        periods_draws_sims, shocks_cholesky)
 
     # Select appropriate interface
     if version == 'PYTHON':
-        data_array = pyth_simulate(*args)
+        data_array = pyth_simulate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+            shocks_cholesky, is_interpolated, num_draws_emax, num_periods,
+            num_points_interp,
+            is_myopic, edu_start, is_debug, edu_max, min_idx, delta,
+            periods_draws_emax, num_agents_sim, periods_draws_sims)
+
     elif version in ['FORTRAN']:
-        data_array = f2py_simulate(*args)
+        data_array = resfort_interface(respy_obj, 'simulate')
     else:
         raise NotImplementedError
 

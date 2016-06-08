@@ -12,7 +12,7 @@ import pandas as pd
 from respy.python.shared.shared_constants import HUGE_FLOAT
 
 
-def get_results(num_periods, min_idx):
+def get_results(num_periods, min_idx, num_agents_sim):
     """ Add results to container.
     """
     # Get the maximum number of states. The special treatment is required as
@@ -38,9 +38,16 @@ def get_results(num_periods, min_idx):
     shape = (num_periods, max_states_period)
     periods_emax = read_data('periods_emax', shape)
 
+    # This is only present if we simulated.
+    data_array = None
+    try:
+        shape = (num_periods * num_agents_sim, 8)
+        data_array = read_data('data', shape)
+    except FileNotFoundError:
+        pass
     # Update class attributes with solution
     args = (periods_payoffs_systematic, states_number_period,
-        mapping_state_idx, periods_emax, states_all)
+        mapping_state_idx, periods_emax, states_all, data_array)
 
     # Finishing
     return args
@@ -71,8 +78,8 @@ def read_data(label, shape):
 def write_resfort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         shocks_cholesky, is_interpolated, num_draws_emax, num_periods,
         num_points_interp, is_myopic, edu_start, is_debug, edu_max, min_idx, delta,
-        num_draws_prob, num_agents_est, seed_prob, seed_emax, tau,
-        num_procs, request):
+        num_draws_prob, num_agents_est, num_agents_sim, seed_prob, seed_emax,
+        tau, num_procs, request, seed_sim):
     """ Write out model request to hidden file .model.resfort.ini.
     """
 
@@ -142,6 +149,13 @@ def write_resfort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         file_.write(line)
 
         line = '{0:15.10f}\n'.format(tau)
+        file_.write(line)
+
+        # SIMULATION
+        line = '{0:10d}\n'.format(num_agents_sim)
+        file_.write(line)
+
+        line = '{0:10d}\n'.format(seed_sim)
         file_.write(line)
 
         # Auxiliary

@@ -422,7 +422,7 @@ FUNCTION determinant(A)
 END FUNCTION
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE store_results(mapping_state_idx, states_all, periods_payoffs_systematic, states_number_period, periods_emax, crit_val)
+SUBROUTINE store_results(mapping_state_idx, states_all, periods_payoffs_systematic, states_number_period, periods_emax, crit_val, dataset)
 
     !/* external objects        */
 
@@ -434,6 +434,8 @@ SUBROUTINE store_results(mapping_state_idx, states_all, periods_payoffs_systemat
     REAL(our_dble), INTENT(IN)      :: periods_payoffs_systematic(num_periods, max_states_period, 4)
     REAL(our_dble), INTENT(IN)      :: periods_emax(num_periods, max_states_period)
     REAL(our_dble), INTENT(IN)      :: crit_val
+    REAL(our_dble), INTENT(IN)      :: dataset(num_periods * num_agents_sim, 8)
+
 
     !/* internal objects        */
 
@@ -446,7 +448,7 @@ SUBROUTINE store_results(mapping_state_idx, states_all, periods_payoffs_systemat
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    IF (request == 'solve') THEN
+    IF ((request == 'solve') .OR. (request == 'simulate')) THEN
 
         ! Write out results for the store results.
         1800 FORMAT(5(1x,i5))
@@ -521,6 +523,17 @@ SUBROUTINE store_results(mapping_state_idx, states_all, periods_payoffs_systemat
 
         CLOSE(1)
 
+
+        IF (request == 'simulate') THEN
+    
+            OPEN(UNIT=1, FILE='.data.resfort.dat')
+            DO period = 1, num_periods * num_agents_sim
+                WRITE(1, 2400) dataset(period, :)
+            END DO
+
+            CLOSE(1)
+        END IF
+
     ! Write out value of criterion function if evaluated.
     ELSEIF (request == 'evaluate') THEN
 
@@ -546,8 +559,9 @@ SUBROUTINE store_results(mapping_state_idx, states_all, periods_payoffs_systemat
 
     ! Remove FORTRAN initialization files. 
     OPEN(UNIT=1, FILE='.model.resfort.ini'); CLOSE(1, STATUS='delete')
+IF (.NOT. request == 'simulate') THEN
     OPEN(UNIT=1, FILE='.data.resfort.dat'); CLOSE(1, STATUS='delete')
-
+END IF
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
@@ -624,6 +638,10 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
         READ(1, 1505) num_draws_prob
         READ(1, 1505) seed_prob
         READ(1, 1510) tau
+
+        ! SIMULATION
+        READ(1, 1505) num_agents_sim
+        READ(1, 1505) seed_sim
 
         ! AUXILIARY
         READ(1, 1505) min_idx

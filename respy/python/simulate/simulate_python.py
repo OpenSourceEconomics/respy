@@ -6,6 +6,7 @@ import logging
 from respy.python.shared.shared_auxiliary import transform_disturbances
 from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.shared.shared_auxiliary import get_total_value
+from respy.python.solve.solve_python import pyth_solve
 
 logger = logging.getLogger('RESPY_SIMULATE')
 
@@ -13,11 +14,22 @@ logger = logging.getLogger('RESPY_SIMULATE')
 '''
 
 
-def pyth_simulate(periods_payoffs_systematic, mapping_state_idx,
-        periods_emax, num_periods, states_all, num_agents_sim, edu_start,
-        edu_max, delta, periods_draws_sims, shocks_cholesky):
+def pyth_simulate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
+        is_interpolated, num_draws_emax, num_periods, num_points_interp,
+        is_myopic, edu_start, is_debug, edu_max, min_idx, delta,
+        periods_draws_emax, num_agents_sim, periods_draws_sims):
     """ Wrapper for PYTHON and F2PY implementation of sample simulation.
     """
+
+    # First we need to solve the underlying model.
+    periods_payoffs_systematic, states_number_period, mapping_state_idx, \
+        periods_emax, states_all = \
+        pyth_solve(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
+            is_interpolated, num_draws_emax, num_periods, num_points_interp,
+            is_myopic, edu_start, is_debug, edu_max, min_idx, delta,
+            periods_draws_emax)
+
+
     # Standard deviates transformed to the distributions relevant for
     # the agents actual decision making as traversing the tree.
     periods_draws_sims_transformed = np.tile(np.nan,

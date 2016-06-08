@@ -74,6 +74,7 @@ def transform_respy_to_restud(model_paras, edu_start, edu_max, num_agents_sim,
         file_.write(line)
 
 
+@pytest.mark.skipif(True, reason='No parallelism available')
 @pytest.mark.usefixtures('fresh_directory', 'set_seed')
 class TestClass(object):
     """ This class groups together some tests.

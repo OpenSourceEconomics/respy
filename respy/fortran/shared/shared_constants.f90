@@ -27,11 +27,13 @@ MODULE shared_constants
     ! Variables that are part of the FORTRAN initialization file and remain unchanged during the run. These are often used to construct explicit-shape arrays.
     INTEGER(our_int)            :: num_points_interp
     INTEGER(our_int)            :: num_agents_est
+    INTEGER(our_int)            :: num_agents_sim
     INTEGER(our_int)            :: num_draws_emax
     INTEGER(our_int)            :: num_draws_prob
     INTEGER(our_int)            :: num_periods
     INTEGER(our_int)            :: num_procs
     INTEGER(our_int)            :: seed_emax
+    INTEGER(our_int)            :: seed_sim
     INTEGER(our_int)            :: seed_prob
     INTEGER(our_int)            :: edu_start
     INTEGER(our_int)            :: edu_max   

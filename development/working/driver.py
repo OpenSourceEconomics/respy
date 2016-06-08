@@ -6,7 +6,8 @@ import os
 if True:
     cwd = os.getcwd()
     os.chdir('../../respy')
-    assert os.system('./waf distclean; ./waf configure build --debug') == 0
+    assert os.system('./waf distclean; ./waf configure build --debug '
+                     '--without_mpi') == 0
     os.chdir(cwd)
 
 
@@ -24,9 +25,7 @@ from respy.python.estimate.estimate_auxiliary import dist_optim_paras
 
 # project library
 from respy.python.evaluate.evaluate_python import pyth_evaluate
-from respy.fortran.f2py_library import f2py_evaluate
 
-from respy.fortran.fortran import fort_evaluate
 from respy.tests.codes.auxiliary import write_draws
 
 from respy.python.evaluate.evaluate_auxiliary import check_input
@@ -36,12 +35,10 @@ from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import dist_model_paras
 from respy.python.shared.shared_auxiliary import create_draws
 
-from respy import simulate, solve, evaluate, estimate, RespyCls
+from respy import simulate, RespyCls
 import numpy as np
 import pickle as pkl
 
 
-
 respy_obj = RespyCls('model.respy.ini')
 simulate(respy_obj)
-print(evaluate.evaluate(respy_obj))

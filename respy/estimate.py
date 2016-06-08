@@ -9,7 +9,7 @@ from respy.python.shared.shared_auxiliary import create_draws
 from respy.python.estimate.estimate_wrapper import OptimizationClass
 
 from respy.process import process
-from respy.fortran.fortran import fort_estimate
+from respy.fortran.fortran import resfort_interface
 
 def estimate(respy_obj):
     """ Estimate the model
@@ -86,11 +86,7 @@ def estimate(respy_obj):
 
     elif version in ['FORTRAN']:
 
-        val = fort_estimate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-            shocks_cholesky, is_interpolated, num_draws_emax, num_periods, num_points_interp, is_myopic,
-            edu_start, is_debug, edu_max, min_idx, delta, data_array,
-            num_agents_est, num_draws_prob, tau, seed_emax, seed_prob,
-            is_parallel, num_procs)
+        val = resfort_interface(respy_obj, 'estimate', data_array)
 
         x = x_all_start
 

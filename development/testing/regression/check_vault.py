@@ -34,7 +34,8 @@ else:
 cwd = os.getcwd()
 os.chdir(PACKAGE_DIR + '/respy')
 subprocess.call(python_bin + ' waf distclean', shell=True)
-subprocess.call(python_bin + ' waf configure build --debug', shell=True)
+subprocess.call(python_bin + ' waf configure build --debug --without_mpi',
+    shell=True)
 os.chdir(cwd)
 
 # Import package. The late import is required as the compilation needs to
@@ -56,7 +57,6 @@ for idx, _ in enumerate(tests):
     print('\n Evaluation ', idx, 'with version ', PYTHON_VERSION)
     init_dict, crit_val = tests[idx]
 
-    init_dict['ESTIMATION']['maxiter'] = 0
     print_init_dict(init_dict)
     respy_obj = RespyCls('test.respy.ini')
     simulate(respy_obj)
