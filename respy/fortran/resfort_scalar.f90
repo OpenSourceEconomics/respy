@@ -26,6 +26,13 @@ PROGRAM resfort_scalar
 
 
     INTEGER(our_int)                :: maxiter
+
+
+    INTEGER(our_int)                :: bfgs_maxiter
+    REAL(our_dble)                  :: bfgs_stpmx
+    REAL(our_dble)                  :: bfgs_gtol
+
+
     INTEGER(our_int)                :: newuoa_maxfun
     INTEGER(our_int)                :: newuoa_npt
     
@@ -44,7 +51,7 @@ PROGRAM resfort_scalar
 !------------------------------------------------------------------------------
 
 
-    CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, maxiter, optimizer_used, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend)
+    CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, maxiter, optimizer_used, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend, bfgs_gtol, bfgs_stpmx, bfgs_maxiter)
 
     CALL create_draws(periods_draws_emax, num_draws_emax, seed_emax)
 
@@ -73,7 +80,11 @@ PROGRAM resfort_scalar
 
         ELSEIF (optimizer_used == 'FORT-NEWUOA') THEN
 
-            CALL NEWUOA(fort_criterion, x_final, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, zero_int, newuoa_maxfun, success, message, iter)
+            CALL newuoa(fort_criterion, x_final, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, zero_int, newuoa_maxfun, success, message, iter)
+
+       ELSEIF (optimizer_used == 'FORT-BFGS') THEN
+
+            CALL dfpmin(fort_criterion, fort_dcriterion, x_final, bfgs_gtol, bfgs_maxiter, bfgs_stpmx, success, message, iter)
 
         ELSE
 

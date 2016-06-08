@@ -565,7 +565,7 @@ END IF
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, maxiter, optimizer_used, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend)
+SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, maxiter, optimizer_used, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend, bfgs_gtol, bfgs_stpmx, bfgs_maxiter)
 
     !
     !   This function serves as the replacement for the RespyCls and reads in
@@ -589,6 +589,10 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
     INTEGER(our_int), INTENT(OUT)   :: newuoa_maxfun    
     INTEGER(our_int), INTENT(OUT)   :: newuoa_npt
 
+    INTEGER(our_int)                :: bfgs_maxiter
+    REAL(our_dble)                  :: bfgs_stpmx
+    REAL(our_dble)                  :: bfgs_gtol
+    
     CHARACTER(225)                  :: optimizer_used
 
     !/* internal objects        */
@@ -671,6 +675,10 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
         READ(1, 1505) newuoa_maxfun
         READ(1, 1500) newuoa_rhobeg
         READ(1, 1500) newuoa_rhoend
+
+        READ(1, 1500) bfgs_gtol
+        READ(1, 1500) bfgs_stpmx
+        READ(1, 1505) bfgs_maxiter
 
     CLOSE(1)
 

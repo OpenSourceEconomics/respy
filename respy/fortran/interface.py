@@ -38,7 +38,7 @@ def resfort_interface(respy_obj, request, data_array=None):
     if request == 'estimate':
         assert (optimizer_used in optimizer_options.keys())
 
-    for optimizer in ['FORT-NEWUOA']:
+    for optimizer in ['FORT-NEWUOA', 'FORT-BFGS']:
 
         # Skip if defined by user.
         if optimizer in optimizer_options.keys():
@@ -50,6 +50,12 @@ def resfort_interface(respy_obj, request, data_array=None):
             optimizer_options[optimizer]['rhobeg'] = 0.1
             optimizer_options[optimizer]['rhoend'] = 0.0001
             optimizer_options[optimizer]['maxfun'] = 20
+
+        if optimizer in ['FORT-BFGS']:
+            optimizer_options[optimizer] = dict()
+            optimizer_options[optimizer]['gtol'] = 0.00001
+            optimizer_options[optimizer]['maxiter'] = 10
+            optimizer_options[optimizer]['stpmx'] = 100.0
 
     # Check all optimizers
     if optimizer_used in ['FORT-NEWUOA']:
@@ -64,6 +70,15 @@ def resfort_interface(respy_obj, request, data_array=None):
 
         assert (optimizer_options[optimizer_used]['rhobeg'] >
                 optimizer_options[optimizer_used]['rhoend'])
+
+    elif optimizer_used in ['FORT-BFGS']:
+
+        assert isinstance(optimizer_options[optimizer_used]['maxiter'], int)
+        assert (optimizer_options[optimizer_used]['maxiter'] > 0)
+
+        for name in ['stpmx', 'gtol']:
+            assert isinstance(optimizer_options[optimizer_used][name], float)
+            assert (optimizer_options[optimizer_used][name] > 0)
 
 
     if request == 'estimate':
@@ -295,6 +310,15 @@ def write_resfort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         file_.write(line)
 
         line = ' {0:15.10f}\n'.format(optimizer_options['FORT-NEWUOA']['rhoend'])
+        file_.write(line)
+
+        line = ' {0:15.10f}\n'.format(optimizer_options['FORT-BFGS']['gtol'])
+        file_.write(line)
+
+        line = ' {0:15.10f}\n'.format(optimizer_options['FORT-BFGS']['stpmx'])
+        file_.write(line)
+
+        line = '{0:10d}\n'.format(optimizer_options['FORT-BFGS']['maxiter'])
         file_.write(line)
 
 

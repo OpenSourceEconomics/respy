@@ -14,6 +14,8 @@ MAX_DRAWS = 100
 MAX_PERIODS = 5
 
 
+OPTIMIZERS = ['SCIPY-BFGS', 'SCIPY-POWELL', 'FORT-NEWUOA', 'FORT-BFGS']
+
 def generate_init(constraints=None):
     """ Get a random initialization file.
     """
@@ -94,7 +96,7 @@ def generate_random_dict(constraints=None):
     dict_['ESTIMATION']['draws'] = np.random.randint(1, MAX_DRAWS)
     dict_['ESTIMATION']['seed'] = np.random.randint(1, 10000)
     dict_['ESTIMATION']['file'] = 'data.respy'
-    dict_['ESTIMATION']['optimizer'] = np.random.choice(['SCIPY-BFGS', 'SCIPY-POWELL'])
+    dict_['ESTIMATION']['optimizer'] = np.random.choice(OPTIMIZERS)
     dict_['ESTIMATION']['maxiter'] = np.random.randint(1, 10000)
     dict_['ESTIMATION']['tau'] = np.random.uniform(100, 500)
 
@@ -154,6 +156,12 @@ def generate_random_dict(constraints=None):
 
     lower, upper = 26 + 2, (26 + 1) * (26 + 2) / 2
     dict_['FORT-NEWUOA']['npt'] = np.random.randint(lower, upper)
+
+    # FORT-BFGS
+    dict_['FORT-BFGS'] = {}
+    dict_['FORT-BFGS']['maxiter'] = np.random.randint(1, 100)
+    dict_['FORT-BFGS']['stpmx'] = np.random.uniform(75, 125)
+    dict_['FORT-BFGS']['gtol'] = np.random.uniform(0.0001, 0.1)
 
     '''We now impose selected constraints on the final model specification.
        These constraints can be very useful in the generation of test cases. '''

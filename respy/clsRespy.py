@@ -339,7 +339,7 @@ class RespyCls(object):
 
         # Aggregate all the information provided about optimizer options in
         # one class attribute for easier access later.
-        optimizers = ['SCIPY-BFGS', 'SCIPY-POWELL', 'FORT-NEWUOA']
+        optimizers = ['SCIPY-BFGS', 'SCIPY-POWELL', 'FORT-NEWUOA', 'FORT-BFGS']
         self.attr['optimizer_options'] = dict()
         for optimizer in optimizers:
             is_defined = (optimizer in init_dict.keys())
@@ -506,7 +506,8 @@ class RespyCls(object):
         assert (maxiter >= 0)
 
         # Optimizers
-        assert (optimizer_used in ['SCIPY-BFGS', 'SCIPY-POWELL', 'FORT-NEWUOA'])
+        assert (optimizer_used in ['SCIPY-BFGS', 'SCIPY-POWELL',
+            'FORT-NEWUOA', 'FORT-BFGS'])
 
     def _check_integrity_results(self):
         """ This methods check the integrity of the results.

@@ -27,6 +27,7 @@ STRUCTURE['INTERPOLATION'] = ['apply', 'points']
 STRUCTURE['SCIPY-BFGS'] = ['gtol', 'epsilon']
 STRUCTURE['SCIPY-POWELL'] = ['maxfun', 'xtol', 'ftol']
 STRUCTURE['FORT-NEWUOA'] = ['maxfun', 'npt', 'rhobeg', 'rhoend']
+STRUCTURE['FORT-BFGS'] = ['maxiter', 'stpmx', 'gtol']
 
 
 def check_line(group, flag, value):

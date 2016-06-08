@@ -49,4 +49,48 @@ FUNCTION fort_criterion(x)
 END FUNCTION
 !******************************************************************************
 !******************************************************************************
+FUNCTION fort_dcriterion(x)
+
+    !/* external objects        */
+
+    REAL(our_dble), INTENT(IN)      :: x(:)
+    REAL(our_dble)                  :: fort_dcriterion(SIZE(x))
+
+    !/* internals objects       */
+
+    REAL(our_dble)                  :: ei(26)
+    REAL(our_dble)                  :: d(26)
+    REAL(our_dble)                  :: f0
+    REAL(our_dble)                  :: f1
+
+    INTEGER(our_int)                :: j
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    ! Initialize containers
+    ei = zero_dble
+
+    ! Evaluate baseline
+    f0 = fort_criterion(x)
+
+    ! Iterate over increments
+    DO j = 1, 26
+
+        ei(j) = one_dble
+
+        d = 0.00001 * ei
+
+        f1 = fort_criterion(x)
+
+        fort_dcriterion(j) = (f1 - f0) / d(j)
+
+        ei(j) = zero_dble
+
+    END DO
+
+END FUNCTION
+!******************************************************************************
+!******************************************************************************
 END MODULE

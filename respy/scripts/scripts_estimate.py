@@ -175,7 +175,7 @@ def scripts_estimate(resume, single, init_file, gradient):
     estimate(respy_obj)
 
     if gradient:
-        raise NotImplementedError
+        # TODO: This is only running with PYTHON
         add_gradient_information(respy_obj)
 
 if __name__ == '__main__':
