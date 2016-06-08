@@ -20,7 +20,10 @@ from respy.python.shared.shared_auxiliary import create_draws
 from respy.python.simulate.simulate_python import pyth_simulate
 
 # TODO: This needs to be removed once the FORTRAN simulation is ready.
-from respy.tests.resources.f2py_interface import f2py_simulate
+from respy.python.shared.shared_constants import ROOT_DIR
+import sys
+sys.path.insert(0, ROOT_DIR + '/tests/resources')
+from f2py_interface import f2py_simulate
 
 
 logger = logging.getLogger('RESPY_SIMULATE')
