@@ -34,12 +34,12 @@ def resfort_interface(respy_obj, request, data_array=None):
     # Special treatment required for the FORT optimizers. Since they are
     # written to the FORTRAN initialization file, we need a valid request for
     # all optimizers internally.
-    assert (optimizer_used in optimizer_options.keys())
+
+    if request == 'estimate':
+        assert (optimizer_used in optimizer_options.keys())
 
     for optimizer in ['FORT-NEWUOA']:
-        # Skip if actually used in the estimation.
-        if optimizer == optimizer_used:
-            continue
+
         # Skip if defined by user.
         if optimizer in optimizer_options.keys():
             continue
