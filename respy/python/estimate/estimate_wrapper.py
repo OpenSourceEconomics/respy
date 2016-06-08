@@ -14,7 +14,7 @@ import os
 from respy.python.estimate.estimate_auxiliary import dist_optim_paras
 from respy.python.estimate.estimate_python import pyth_criterion
 from respy.python.shared.shared_auxiliary import HUGE_FLOAT
-from respy.fortran.f2py_library import f2py_criterion
+from respy.fortran.f2py_debug import f2py_criterion
 
 
 class OptimizationClass(object):

@@ -20,17 +20,17 @@ from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import dist_model_paras
 from respy.python.shared.shared_auxiliary import create_draws
 
-import respy.fortran.f2py_library as fort_lib
+import respy.fortran.f2py_debug as fort_lib
 import respy.fortran.f2py_debug as fort_debug
 
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
-from respy.fortran.f2py_library import f2py_create_state_space
+from respy.fortran.f2py_debug import f2py_create_state_space
 
 from respy.python.solve.solve_auxiliary import pyth_calculate_payoffs_systematic
-from respy.fortran.f2py_library import f2py_calculate_payoffs_systematic
+from respy.fortran.f2py_debug import f2py_calculate_payoffs_systematic
 
 from respy.python.solve.solve_auxiliary import pyth_backward_induction
-from respy.fortran.f2py_library import f2py_backward_induction
+from respy.fortran.f2py_debug import f2py_backward_induction
 
 from respy import solve
 from respy import RespyCls

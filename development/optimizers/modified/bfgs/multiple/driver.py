@@ -2,7 +2,7 @@
 import os
 
 
-from f2py_library import *
+from f2py_debug import *
 
 import numpy as np
 np.random.seed(123)

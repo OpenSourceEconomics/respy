@@ -37,17 +37,17 @@ from respy import simulate
 from respy import RespyCls
 
 from respy.python.solve.solve_python import pyth_solve
-from respy.fortran.f2py_library import f2py_solve
+from respy.fortran.f2py_debug import f2py_solve
 from respy.fortran.fortran import fort_solve
 
 from respy.python.simulate.simulate_python import pyth_simulate
-from respy.fortran.f2py_library import f2py_simulate
+from respy.fortran.f2py_debug import f2py_simulate
 
 from respy.python.evaluate.evaluate_python import pyth_evaluate
-from respy.fortran.f2py_library import f2py_evaluate
+from respy.fortran.f2py_debug import f2py_evaluate
 
 from respy.python.estimate.estimate_python import pyth_criterion
-from respy.fortran.f2py_library import f2py_criterion
+from respy.fortran.f2py_debug import f2py_criterion
 
 
 @pytest.mark.usefixtures('fresh_directory', 'set_seed')
