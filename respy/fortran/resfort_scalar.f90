@@ -41,39 +41,6 @@ PROGRAM resfort_scalar
         ! Solve the model for a given parametrization.    
         CALL fort_solve(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax)
 
-    ELSE IF (request == 'evaluate') THEN
-
-        ! This part creates (or reads from disk) the draws for the Monte Carlo integration of the choice probabilities. For is_debugging purposes, these might also be read in from disk or set to zero/one.   
-        CALL create_draws(periods_draws_prob, num_draws_prob, seed_prob)
-
-        ! Read observed dataset from disk.
-        CALL read_dataset(data_array, num_agents_est)
-
-        ! Prepare interface for evaluation of criterion function
-        CALL get_optim_paras(x_start, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky)
-
-        ! Evaluate criterion function.
-        crit_val = fort_criterion(x_start)
-        
-
-!        DO i = 1, 26
-
-!            PRINT *, x_start(i)!
-
- !       END DO
-        
- !       PRINT *, ''
- !       PRINT *, ''
-        
- !       PRINT *, crit_val
-!
-!        npt = min(26 * 2, 26+2)
-!        rhobeg = maxval(x_start)
-!        rhoend = 1e-6 * rhobeg
-!        maxfun = 5000
-
-!      CALL NEWUOA (fort_criterion, x_start, npt, rhobeg, rhoend, 0, maxfun, success, message, iter)   
-
   ELSE IF (request == 'estimate') THEN
 
         ! This part creates (or reads from disk) the draws for the Monte Carlo integration of the choice probabilities. For is_debugging purposes, these might also be read in from disk or set to zero/one.   

@@ -45,7 +45,6 @@ from respy.fortran.f2py_library import f2py_simulate
 
 from respy.python.evaluate.evaluate_python import pyth_evaluate
 from respy.fortran.f2py_library import f2py_evaluate
-from respy.fortran.fortran import fort_evaluate
 
 from respy.python.estimate.estimate_python import pyth_criterion
 from respy.fortran.f2py_library import f2py_criterion
@@ -335,17 +334,13 @@ class TestClass(object):
             num_periods, num_points_interp, is_myopic, edu_start, is_debug, edu_max,
             min_idx, delta, data_array, num_agents_sim, num_draws_prob, tau)
 
-        args = base_args + (seed_emax, seed_prob, is_parallel, num_procs)
-        fort = fort_evaluate(*args)
-
         args = base_args + (periods_draws_emax, periods_draws_prob)
         pyth = pyth_evaluate(*args)
 
         args = base_args + (periods_draws_emax, periods_draws_prob)
         f2py = f2py_evaluate(*args)
 
-        for alt in [f2py, fort]:
-            np.testing.assert_allclose(pyth, alt)
+        np.testing.assert_allclose(pyth, f2py)
 
         # Evaluation of criterion function
         x0 = get_optim_paras(coeffs_a, coeffs_b, coeffs_edu,
