@@ -54,6 +54,7 @@ PROGRAM resfort_scalar
 
         ! Evaluate criterion function.
         crit_val = fort_criterion(x_start)
+        
 
 !        DO i = 1, 26
 
