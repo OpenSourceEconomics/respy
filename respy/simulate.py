@@ -22,8 +22,12 @@ def simulate(respy_obj):
     """
 
     # Distribute class attributes
-    version = respy_obj.get_attr('version')
     is_debug = respy_obj.get_attr('is_debug')
+    version = respy_obj.get_attr('version')
+
+    # Fire up the logging for the simulation. The logging of the solution
+    # step is handled within the solution routines.
+    logging_simulation('start')
 
     # Select appropriate interface
     if version in ['PYTHON']:

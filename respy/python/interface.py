@@ -1,10 +1,10 @@
 """ This module serves as the interface to the basic PYTHON functionality.
 """
 
+# standard library
 import logging
 
 # project library
-from respy.python.simulate.simulate_auxiliary import logging_simulation
 from respy.python.estimate.estimate_auxiliary import get_optim_paras
 from respy.python.estimate.estimate_wrapper import OptimizationClass
 
@@ -83,21 +83,18 @@ def respy_interface(respy_obj, request, data_array=None):
 
     elif request == 'simulate':
 
-        # Fire up the logging for the simulation. The logging of the solution
-        # step is handled within the solution routines.
-        logging_simulation('start')
-
         # Draw draws for the simulation.
         periods_draws_sims = create_draws(num_periods, num_agents_sim, seed_sim,
             is_debug)
 
-        # Simulate a dataset with the results from the solution and write out the
-        # dataset to a text file. In addition a file summarizing the dataset is
-        # produced.
+        # Simulate a dataset with the results from the solution and write out
+        # the dataset to a text file. In addition a file summarizing the
+        # dataset is produced.
         logger.info('Starting simulation of model for ' + str(
             num_agents_sim) + ' agents with seed ' + str(seed_sim))
 
-        # Collect arguments to pass in different implementations of the simulation.
+        # Collect arguments to pass in different implementations of the
+        # simulation.
         data_array = pyth_simulate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
             shocks_cholesky, is_interpolated, num_draws_emax, num_periods,
             num_points_interp, is_myopic, edu_start, is_debug, edu_max, min_idx,
@@ -105,35 +102,14 @@ def respy_interface(respy_obj, request, data_array=None):
 
         args = data_array
 
-        logging_simulation('stop')
-
     elif request == 'solve':
-
-        # Distribute class attributes
-        model_paras, num_periods, edu_start, is_debug, edu_max, delta, version, num_draws_emax, seed_emax, is_interpolated, num_points_interp, is_myopic, min_idx, store, tau, is_parallel, num_procs, num_agents_sim = dist_class_attributes(
-            respy_obj, 'model_paras', 'num_periods', 'edu_start', 'is_debug',
-            'edu_max', 'delta', 'version', 'num_draws_emax', 'seed_emax',
-            'is_interpolated', 'num_points_interp', 'is_myopic', 'min_idx',
-            'store', 'tau', 'is_parallel', 'num_procs', 'num_agents_sim')
-
-        # Distribute model parameters
-        coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = dist_model_paras(
-            model_paras, is_debug)
-
-        # Get the relevant set of disturbances. These are standard normal draws
-        # in the case of an ambiguous world. This function is located outside
-        # the actual bare solution algorithm to ease testing across
-        # implementations.
-        periods_draws_emax = create_draws(num_periods, num_draws_emax,
-            seed_emax, is_debug)
 
         # Collect baseline arguments. These are latter amended to account for
         # each interface.
-        base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
-        is_interpolated, num_draws_emax, num_periods, num_points_interp,
-        is_myopic, edu_start, is_debug, edu_max, min_idx, delta)
+        args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
+            is_interpolated, num_draws_emax, num_periods, num_points_interp,
+            is_myopic, edu_start, is_debug, edu_max, min_idx, delta, periods_draws_emax)
 
-        args = base_args + (periods_draws_emax,)
         args = pyth_solve(*args)
 
     return args

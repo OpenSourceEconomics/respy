@@ -232,7 +232,7 @@ class OptimizationClass(object):
         assert (optimizer_used in optimizer_options.keys())
 
         # Check that version is available
-        assert (version in ['FORTRAN', 'PYTHON'])
+        assert (version in ['PYTHON'])
 
         # Check that the requested number of iterations is valid
         assert isinstance(maxiter, int)
