@@ -11,6 +11,7 @@ import pandas as pd
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import dist_model_paras
+from respy.python.estimate.estimate_auxiliary import get_optim_paras
 
 from respy.python.shared.shared_constants import EXEC_DIR, HUGE_FLOAT
 
@@ -27,14 +28,14 @@ def resfort_interface(respy_obj, request, data_array=None):
     model_paras, num_periods, edu_start, is_debug, edu_max, delta, \
         version, num_draws_emax, seed_emax, is_interpolated, num_points_interp, \
         is_myopic, min_idx, store, tau, is_parallel, num_procs, \
-        num_agents_sim, num_draws_prob, num_agents_est, seed_prob, seed_sim\
-        = \
+        num_agents_sim, num_draws_prob, num_agents_est, seed_prob, seed_sim, \
+        paras_fixed = \
             dist_class_attributes(respy_obj,
                 'model_paras', 'num_periods', 'edu_start', 'is_debug',
                 'edu_max', 'delta', 'version', 'num_draws_emax', 'seed_emax',
                 'is_interpolated', 'num_points_interp', 'is_myopic', 'min_idx',
                 'store', 'tau', 'is_parallel', 'num_procs', 'num_agents_sim',
-                'num_draws_prob', 'num_agents_est', 'seed_prob', 'seed_sim')
+                'num_draws_prob', 'num_agents_est', 'seed_prob', 'seed_sim', 'paras_fixed')
 
     # Distribute model parameters
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
@@ -61,7 +62,14 @@ def resfort_interface(respy_obj, request, data_array=None):
     if request == 'solve':
         args = get_results(num_periods, min_idx, num_agents_sim)[:-1]
     elif request == 'estimate':
-        args = read_data('eval', 1)[0]
+        val = read_data('eval', 1)[0]
+
+        # TODO: Just a placehodlder for now.
+        x_all_start = get_optim_paras(coeffs_a, coeffs_b, coeffs_edu,
+            coeffs_home, shocks_cholesky, 'all', paras_fixed, is_debug)
+
+        args = (x_all_start, val)
+
     elif request == 'simulate':
         # TODO: pass abck the solution as well?
         args = get_results(num_periods, min_idx, num_agents_sim)[-1]
