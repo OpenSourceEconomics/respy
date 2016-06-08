@@ -159,6 +159,7 @@ def generate_random_dict(constraints=None):
 
     # FORT-BFGS
     dict_['FORT-BFGS'] = {}
+    dict_['FORT-BFGS']['epsilon'] = np.random.uniform(0.0001, 0.1)
     dict_['FORT-BFGS']['maxiter'] = np.random.randint(1, 100)
     dict_['FORT-BFGS']['stpmx'] = np.random.uniform(75, 125)
     dict_['FORT-BFGS']['gtol'] = np.random.uniform(0.0001, 0.1)

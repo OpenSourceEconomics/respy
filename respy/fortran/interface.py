@@ -53,6 +53,7 @@ def resfort_interface(respy_obj, request, data_array=None):
 
         if optimizer in ['FORT-BFGS']:
             optimizer_options[optimizer] = dict()
+            optimizer_options[optimizer]['epsilon'] = 0.00001
             optimizer_options[optimizer]['gtol'] = 0.00001
             optimizer_options[optimizer]['maxiter'] = 10
             optimizer_options[optimizer]['stpmx'] = 100.0
@@ -76,7 +77,7 @@ def resfort_interface(respy_obj, request, data_array=None):
         assert isinstance(optimizer_options[optimizer_used]['maxiter'], int)
         assert (optimizer_options[optimizer_used]['maxiter'] > 0)
 
-        for name in ['stpmx', 'gtol']:
+        for name in ['stpmx', 'gtol', 'epsilon']:
             assert isinstance(optimizer_options[optimizer_used][name], float)
             assert (optimizer_options[optimizer_used][name] > 0)
 
@@ -310,6 +311,9 @@ def write_resfort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         file_.write(line)
 
         line = ' {0:15.10f}\n'.format(optimizer_options['FORT-NEWUOA']['rhoend'])
+        file_.write(line)
+
+        line = ' {0:15.10f}\n'.format(optimizer_options['FORT-BFGS']['epsilon'])
         file_.write(line)
 
         line = ' {0:15.10f}\n'.format(optimizer_options['FORT-BFGS']['gtol'])

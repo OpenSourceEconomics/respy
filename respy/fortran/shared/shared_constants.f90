@@ -42,6 +42,9 @@ MODULE shared_constants
     REAL(our_dble)              :: delta
     REAL(our_dble)              :: tau
 
+    REAL(our_dble)              :: bfgs_epsilon
+
+
     LOGICAL                     :: is_interpolated
     LOGICAL                     :: is_myopic
     LOGICAL                     :: is_debug

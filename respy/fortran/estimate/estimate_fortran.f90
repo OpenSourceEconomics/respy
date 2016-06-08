@@ -80,9 +80,9 @@ FUNCTION fort_dcriterion(x)
 
         ei(j) = one_dble
 
-        d = 0.00001 * ei
+        d = bfgs_epsilon * ei
 
-        f1 = fort_criterion(x)
+        f1 = fort_criterion(x + d)
 
         fort_dcriterion(j) = (f1 - f0) / d(j)
 
