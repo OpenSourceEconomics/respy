@@ -75,8 +75,11 @@ def build(ctx):
         raise AssertionError('The build is only tested for GFORTRAN at this '
                              'point.')
 
-    # Initialize directory structure
     ctx.recurse('fortran')
+
+    ctx.add_group()
+
+    ctx.recurse('tests/resources')
 
     ctx.add_post_fun(post)
 

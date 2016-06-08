@@ -1,0 +1,34 @@
+#!/usr/bin/env python
+
+# standard library
+import os
+
+# WAF system
+from waflib.Task import Task
+
+
+class CreateF2pyInterfaces(Task):
+
+    def run(self):
+
+        os.chdir('tests/resources')
+
+        from numpy import f2py
+        extra_args = '--f90flags="-ffree-line-length-0" -I../../.bld ' \
+                     '-L../../.bld/fortran -lresfort ' \
+                     '-llapack'
+
+        with open('f2py_interface.f90', 'rb') as sourcefile:
+            sourcecode = sourcefile.read()
+        f2py.compile(sourcecode, 'f2py_interface', extra_args,
+            extension='.f90')
+
+        os.chdir('../../')
+
+
+def build(ctx):
+
+    # Build F2PY interface
+    ctx.add_to_group(CreateF2pyInterfaces(env=ctx.env))
+
+    # TODO: MOVE KW_RECOMP here as well.

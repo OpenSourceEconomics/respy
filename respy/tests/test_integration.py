@@ -19,15 +19,10 @@ from respy.scripts.scripts_simulate import scripts_simulate
 from respy.scripts.scripts_update import scripts_update
 from respy.scripts.scripts_modify import scripts_modify
 
-from respy.python.shared.shared_auxiliary import dist_class_attributes
-from respy.python.shared.shared_auxiliary import dist_model_paras
 from respy.python.shared.shared_auxiliary import print_init_dict
-from respy.python.shared.shared_auxiliary import read_draws
 
-from respy.python.simulate.simulate_auxiliary import logging_simulation
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
 
-from respy.python.estimate.estimate_auxiliary import get_optim_paras
 
 from respy.process import process
 
@@ -35,19 +30,6 @@ from respy.solve import solve
 from respy import estimate
 from respy import simulate
 from respy import RespyCls
-
-from respy.python.solve.solve_python import pyth_solve
-from respy.fortran.f2py_debug import f2py_solve
-from respy.fortran.fortran import fort_solve
-
-from respy.python.simulate.simulate_python import pyth_simulate
-from respy.fortran.f2py_debug import f2py_simulate
-
-from respy.python.evaluate.evaluate_python import pyth_evaluate
-from respy.fortran.f2py_debug import f2py_evaluate
-
-from respy.python.estimate.estimate_python import pyth_criterion
-from respy.fortran.f2py_debug import f2py_criterion
 
 
 @pytest.mark.usefixtures('fresh_directory', 'set_seed')
@@ -258,104 +240,6 @@ class TestClass(object):
             np.testing.assert_allclose(base_val, crit_val, rtol=1e-03, atol=1e-03)
 
     def test_5(self):
-        """ This methods ensures that the core functions yield the same
-        results across implementations.
-        """
-
-        # Generate random initialization file
-        generate_init()
-
-        # Perform toolbox actions
-        respy_obj = RespyCls('test.respy.ini')
-
-        # Ensure that backward induction routines use the same grid for the
-        # interpolation.
-        max_states_period = write_interpolation_grid('test.respy.ini')
-
-        # Extract class attributes
-        num_periods, edu_start, edu_max, min_idx, model_paras, num_draws_emax, \
-            seed_emax, is_debug, delta, is_interpolated, num_points_interp, \
-            is_myopic, num_agents_sim, num_draws_prob, seed_prob, tau, \
-            paras_fixed, is_parallel, num_procs = \
-                dist_class_attributes(respy_obj,
-                    'num_periods', 'edu_start', 'edu_max', 'min_idx',
-                    'model_paras', 'num_draws_emax', 'seed_emax', 'is_debug',
-                    'delta', 'is_interpolated', 'num_points_interp', 'is_myopic',
-                    'num_agents_sim', 'num_draws_prob', 'seed_prob', 'tau',
-                    'paras_fixed', 'is_parallel', 'num_procs')
-
-        # Write out random components and interpolation grid to align the
-        # three implementations.
-        max_draws = max(num_agents_sim, num_draws_emax, num_draws_prob)
-        write_draws(num_periods, max_draws)
-        periods_draws_emax = read_draws(num_periods, num_draws_emax)
-        periods_draws_prob = read_draws(num_periods, num_draws_prob)
-        periods_draws_sims = read_draws(num_periods, num_agents_sim)
-
-        # Extract coefficients
-        coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
-            dist_model_paras(model_paras, True)
-
-        # Check the full solution procedure
-        base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-            shocks_cholesky, is_interpolated, num_draws_emax, num_periods,
-            num_points_interp, is_myopic, edu_start, is_debug, edu_max, min_idx, delta)
-
-        fort = fort_solve(*base_args + (seed_emax, tau, is_parallel, num_procs))
-        pyth = pyth_solve(*base_args + (periods_draws_emax,))
-        f2py = f2py_solve(*base_args + (periods_draws_emax, max_states_period))
-
-        for alt in [f2py, fort]:
-            for i in range(5):
-                np.testing.assert_allclose(pyth[i], alt[i])
-
-        # Distribute solution arguments for further use in simulation test.
-        periods_payoffs_systematic, _, mapping_state_idx, periods_emax, \
-            states_all = pyth
-
-        # Collect arguments across implementations. We need to set up the
-        # logger as otherwise the handler cannot be found.
-        args = (periods_payoffs_systematic, mapping_state_idx, periods_emax,
-            num_periods, states_all, num_agents_sim, edu_start, edu_max, delta,
-            periods_draws_sims, shocks_cholesky)
-
-        logging_simulation('start')
-        pyth = pyth_simulate(*args)
-        logging_simulation('stop')
-
-        f2py = f2py_simulate(*args)
-
-        np.testing.assert_allclose(pyth, f2py)
-
-        data_array = pyth
-
-        base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-            shocks_cholesky, is_interpolated, num_draws_emax,
-            num_periods, num_points_interp, is_myopic, edu_start, is_debug, edu_max,
-            min_idx, delta, data_array, num_agents_sim, num_draws_prob, tau)
-
-        args = base_args + (periods_draws_emax, periods_draws_prob)
-        pyth = pyth_evaluate(*args)
-
-        args = base_args + (periods_draws_emax, periods_draws_prob)
-        f2py = f2py_evaluate(*args)
-
-        np.testing.assert_allclose(pyth, f2py)
-
-        # Evaluation of criterion function
-        x0 = get_optim_paras(coeffs_a, coeffs_b, coeffs_edu,
-                coeffs_home, shocks_cholesky, 'all', paras_fixed, is_debug)
-
-        args = (is_interpolated, num_draws_emax, num_periods, num_points_interp,
-            is_myopic, edu_start, is_debug, edu_max, min_idx, delta,
-            data_array, num_agents_sim, num_draws_prob, tau,
-            periods_draws_emax, periods_draws_prob)
-
-        pyth = pyth_criterion(x0, *args)
-        f2py = f2py_criterion(x0, *args)
-        np.testing.assert_allclose(pyth, f2py)
-
-    def test_6(self):
         """ This test ensures that the evaluation of the criterion function
         at the starting value is identical between the different versions.
         """
@@ -409,7 +293,7 @@ class TestClass(object):
                 base_log = open('logging.respy.sol.log', 'r').read()
             assert open('logging.respy.sol.log', 'r').read() == base_log
 
-    def test_7(self):
+    def test_6(self):
         """ Test the evaluation of the criterion function for random
         requests, not just at the true values.
         """
@@ -433,7 +317,7 @@ class TestClass(object):
         respy_obj = RespyCls('test.respy.ini')
         estimate(respy_obj)
 
-    def test_8(self):
+    def test_7(self):
         """ Test the scripts.
         """
         # Constraints that ensure that two alternative initialization files
@@ -486,7 +370,7 @@ class TestClass(object):
             pass
 
     @pytest.mark.slow
-    def test_9(self):
+    def test_8(self):
         """ Test short estimation tasks.
         """
         # Constraints that ensures that the maximum number of iterations and
