@@ -3,7 +3,7 @@
 """
 
 import os
-if True:
+if False:
     cwd = os.getcwd()
     os.chdir('../../respy')
     assert os.system('./waf distclean; ./waf configure build --debug '
@@ -34,10 +34,11 @@ from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import dist_model_paras
 from respy.python.shared.shared_auxiliary import create_draws
 
-from respy import simulate, RespyCls
+from respy import simulate, RespyCls, estimate
 import numpy as np
 import pickle as pkl
 
 
 respy_obj = RespyCls('model.respy.ini')
 simulate(respy_obj)
+estimate(respy_obj)

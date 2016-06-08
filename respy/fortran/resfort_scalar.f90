@@ -18,10 +18,25 @@ PROGRAM resfort_scalar
     REAL(our_dble)                  :: coeffs_a(6)
     REAL(our_dble)                  :: coeffs_b(6)
     REAL(our_dble)                  :: x_start(26)
+    REAL(our_dble)                  :: x_final(26)
     REAL(our_dble)                  :: crit_val
 
     REAL(our_dble), ALLOCATABLE     :: periods_draws_sims(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: data_sim(:, :)
+
+    INTEGER(our_int)   :: iter
+
+    INTEGER(our_int)     :: maxfun
+    INTEGER(our_int)    :: npt
+    
+    REAL(our_dble)      :: rhobeg
+    REAL(our_dble)  :: rhoend
+
+    LOGICAL      :: success
+
+    CHARACTER(150)                  :: message
+
+
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -47,7 +62,26 @@ PROGRAM resfort_scalar
 
         CALL get_optim_paras(x_start, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky)
 
+
         crit_val = fort_criterion(x_start)
+        PRINT *, 'I am estimating :) '
+
+        npt =  min(26 * 2, 26 + 2)
+
+        rhobeg = 0.1
+        rhoend = 1e-6 * rhobeg
+        maxfun = 20
+
+
+        PRINT *, 'START ', x_start(:3)
+
+        x_final = x_start
+
+        CALL NEWUOA (fort_criterion, x_final, npt, rhobeg, rhoend, zero_int, maxfun, success, message, iter)
+
+
+        PRINT *, 'Final ', x_start(:3)
+
 
   ELSE IF (request == 'simulate') THEN
 

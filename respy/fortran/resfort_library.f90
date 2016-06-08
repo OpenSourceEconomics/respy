@@ -28,6 +28,10 @@ MODULE resfort_library
     USE estimate_auxiliary
 
 
+    USE dfpmin_module
+
+    USE newuoa_module
+
 !******************************************************************************
 !******************************************************************************
 END MODULE
