@@ -30,3 +30,6 @@ MISSING_FLOAT = -99.00
 # Flag that indicate whether the parallel executables are available.
 IS_PARALLEL = os.path.exists(EXEC_DIR + '/resfort_parallel_master')
 
+# Each implementation has its own set of optimizers available.
+OPTIMIZERS_PYTH = ['SCIPY-BFGS', 'SCIPY-POWELL']
+OPTIMIZERS_FORT = ['FORT-NEWUOA', 'FORT-BFGS']

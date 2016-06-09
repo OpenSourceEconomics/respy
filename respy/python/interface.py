@@ -19,6 +19,9 @@ from respy.python.shared.shared_auxiliary import create_draws
 
 from respy.python.solve.solve_python import pyth_solve
 
+from respy.python.shared.shared_constants import OPTIMIZERS_PYTH
+
+
 logger = logging.getLogger('RESPY_SIMULATE')
 
 
@@ -43,6 +46,9 @@ def respy_interface(respy_obj, request, data_array=None):
         model_paras, is_debug)
 
     if request == 'estimate':
+        # Check that selected optimizer is in line with version of program.
+        if maxiter > 0:
+            assert optimizer_used in OPTIMIZERS_PYTH
 
         periods_draws_prob = create_draws(num_periods, num_draws_prob,
             seed_prob, is_debug)

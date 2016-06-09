@@ -2,13 +2,7 @@
 """
 
 # standard library
-from scipy.optimize import fmin_powell
-from scipy.optimize import fmin_bfgs
-
 import numpy as np
-
-import time
-import os
 
 # project library
 from respy.python.estimate.estimate_python import pyth_criterion
@@ -45,8 +39,6 @@ class OptimizationClass(object):
 
         is_step = (self.attr['value_step'] > fval)
 
-
-        # Current
         if True:
             self.attr['num_eval'] += 1
 
@@ -54,8 +46,6 @@ class OptimizationClass(object):
             fname = 'opt_info_current.respy.log'
             np.savetxt(open(fname, 'wb'), info_current, fmt='%15.8f')
 
-
-        # Starting values
         if is_start:
             info_start = np.concatenate(([0, fval], x))
             fname = 'opt_info_start.respy.log'

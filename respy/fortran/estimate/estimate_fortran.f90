@@ -4,6 +4,11 @@ MODULE estimate_fortran
 
     !/* external modules    */
 
+    USE dfpmin_module
+
+    USE newuoa_module
+
+
     USE estimate_auxiliary
 
     USE solve_fortran
@@ -21,6 +26,68 @@ MODULE estimate_fortran
 CONTAINS
 !******************************************************************************
 !******************************************************************************
+SUBROUTINE fort_estimate(crit_val, success, message, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, optimizer_used, maxiter, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, newuoa_maxfun, bfgs_gtol, bfgs_maxiter, bfgs_stpmx)
+
+    !/* external objects    */
+
+    REAL(our_dble), INTENT(OUT)     :: crit_val
+
+    REAL(our_dble), INTENT(IN)      :: shocks_cholesky(4, 4)
+    REAL(our_dble), INTENT(IN)      :: coeffs_home(1)
+    REAL(our_dble), INTENT(IN)      :: coeffs_edu(3)
+    REAL(our_dble), INTENT(IN)      :: coeffs_a(6)
+    REAL(our_dble), INTENT(IN)      :: coeffs_b(6)
+
+    INTEGER(our_int), INTENT(IN)    :: maxiter
+    INTEGER(our_int), INTENT(IN)    :: newuoa_maxfun
+    INTEGER(our_int), INTENT(IN)    :: newuoa_npt
+    
+
+    INTEGER(our_int)                :: bfgs_maxiter
+    REAL(our_dble)                  :: bfgs_stpmx
+    REAL(our_dble)                  :: bfgs_gtol
+
+    REAL(our_dble), INTENT(IN)      :: newuoa_rhobeg
+    REAL(our_dble), INTENT(IN)      :: newuoa_rhoend
+
+    CHARACTER(225), INTENT(IN)      :: optimizer_used
+
+    !/* internal objects    */
+
+    REAL(our_dble)                  :: x_start(26)
+    REAL(our_dble)                  :: x_final(26)
+    
+    INTEGER(our_int)                :: iter
+
+    LOGICAL, INTENT(OUT)                         :: success
+    CHARACTER(150), INTENT(OUT)                  :: message
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+    
+    CALL get_optim_paras(x_start, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky)
+
+    x_final = x_start
+
+ 
+    IF (maxiter == zero_int) THEN
+
+    ELSEIF (optimizer_used == 'FORT-NEWUOA') THEN
+
+        CALL newuoa(fort_criterion, x_final, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, zero_int, newuoa_maxfun, success, message, iter)
+        
+    ELSEIF (optimizer_used == 'FORT-BFGS') THEN
+
+        CALL dfpmin(fort_criterion, fort_dcriterion, x_final, bfgs_gtol, bfgs_maxiter, bfgs_stpmx, success, message, iter)
+
+    END IF
+    
+    crit_val = fort_criterion(x_final)
+
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
 FUNCTION fort_criterion(x)
 
     !/* external objects    */
@@ -36,12 +103,18 @@ FUNCTION fort_criterion(x)
     REAL(our_dble)                  :: coeffs_a(6)
     REAL(our_dble)                  :: coeffs_b(6)
 
-    INTEGER(our_int)                :: i
+    INTEGER(our_int), SAVE          :: num_step = zero_int
+    INTEGER(our_int), SAVE          :: num_eval = zero_int
+
+    REAL(our_dble), SAVE            :: value_step = HUGE_FLOAT
+
+    LOGICAL                         :: is_start
+    LOGICAL                         :: is_step
 
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
-
+   
     CALL dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x)
 
     CALL fort_solve(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax)
@@ -49,44 +122,38 @@ FUNCTION fort_criterion(x)
     CALL fort_evaluate(fort_criterion, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_est, periods_draws_prob)
 
 
-    ! TODO, JUST TO GET THE TESTS TO RUN AGAIN.
-     19 FORMAT(1x,f25.15)
+    num_eval = num_eval + 1
 
-        OPEN(UNIT=1, FILE='opt_info_start.respy.log')
-
-        WRITE(1, 19) zero_dble
-        WRITE(1, 19) fort_criterion
-
-        DO i = 1, 26
-            WRITE(1, 19) x(i)
-        END DO
-
-        CLOSE(1)
+    is_start = (num_eval == 1)
 
 
-        OPEN(UNIT=1, FILE='opt_info_step.respy.log')
 
-        WRITE(1, 19) one_dble
-        WRITE(1, 19) fort_criterion
+    is_step = (value_step .GT. fort_criterion) 
+ 
+    IF (is_step) THEN
 
-        DO i = 1, 26
-            WRITE(1, 19) x(i)
-        END DO
+        num_step = num_step + 1
 
-        CLOSE(1)
+        value_step = fort_criterion
 
+    END IF
 
-        OPEN(UNIT=1, FILE='opt_info_current.respy.log')
+    
+    CALL write_out_information(num_eval, fort_criterion, x, 'current')
 
-        WRITE(1, 19) one_dble
-        WRITE(1, 19) fort_criterion
+    IF (is_start) THEN
 
-        DO i = 1, 26
-            WRITE(1, 19) x(i)
-        END DO
+        CALL write_out_information(zero_int, fort_criterion, x, 'start')
 
-        CLOSE(1)
+    END IF
 
+    IF (is_step) THEN
+
+        CALL write_out_information(num_step, fort_criterion, x, 'step')
+
+    END IF
+
+    
 END FUNCTION
 !******************************************************************************
 !******************************************************************************

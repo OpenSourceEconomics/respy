@@ -13,6 +13,42 @@ MODULE estimate_auxiliary
     PUBLIC
 
 CONTAINS
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE write_out_information(counter, fval, x, which)
+
+    !/* external objects        */
+
+    INTEGER(our_int), INTENT(IN)    :: counter
+
+    REAL(our_dble), INTENT(IN)      :: x(26)
+    REAL(our_dble), INTENT(IN)      :: fval 
+
+    CHARACTER(*), INTENT(IN)        :: which
+
+    !/* internal objects        */
+
+    INTEGER(our_int)                :: i
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+    
+    20 FORMAT(5(1x,i10))
+    30 FORMAT(1x,f45.15)
+
+    OPEN(UNIT=1, FILE='opt_info_' // TRIM(which) // '.respy.log')
+
+        WRITE(1, 20) counter
+        WRITE(1, 30) fval
+
+        DO i = 1, 26
+            WRITE(1, 30) x(i)
+        END DO
+
+    CLOSE(1)
+
+END SUBROUTINE
 
 !******************************************************************************
 !******************************************************************************

@@ -2,18 +2,18 @@
 FORTRAN implementations.
 """
 # standard library
+import numpy as np
+import pandas as pd
+
 import subprocess
 import os
 
 # project library
-import numpy as np
-import pandas as pd
-
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import dist_model_paras
-from respy.python.estimate.estimate_auxiliary import get_optim_paras
-
-from respy.python.shared.shared_constants import EXEC_DIR, HUGE_FLOAT
+from respy.python.shared.shared_constants import OPTIMIZERS_FORT
+from respy.python.shared.shared_constants import HUGE_FLOAT
+from respy.python.shared.shared_constants import EXEC_DIR
 
 
 def resfort_interface(respy_obj, request, data_array=None):
@@ -22,7 +22,7 @@ def resfort_interface(respy_obj, request, data_array=None):
     # This is required so the initialization file for FORTRAN is complete.
     respy_obj = add_optimizers(respy_obj)
 
-
+    # Distribute class attributes
     model_paras, num_periods, edu_start, is_debug, edu_max, delta, \
         version, num_draws_emax, seed_emax, is_interpolated, num_points_interp, \
         is_myopic, min_idx, store, tau, is_parallel, num_procs, \
@@ -37,6 +37,10 @@ def resfort_interface(respy_obj, request, data_array=None):
                 'paras_fixed', 'optimizer_options', 'optimizer_used', 'maxiter')
 
     if request == 'estimate':
+        # Check that selected optimizer is in line with version of program.
+        if maxiter > 0:
+            assert optimizer_used in OPTIMIZERS_FORT
+
         assert data_array is not None
         # If an evaluation is requested, then a specially formatted dataset is
         # written to a scratch file. This eases the reading of the dataset in
@@ -68,19 +72,10 @@ def resfort_interface(respy_obj, request, data_array=None):
     # Return arguments depends on the request.
     if request == 'solve':
         args = get_results(num_periods, min_idx, num_agents_sim)[:-1]
-    elif request == 'estimate':
-        val = read_data('eval', 1)[0]
-
-        # TODO: Just a placehodlder for now.
-        x_all_start = get_optim_paras(coeffs_a, coeffs_b, coeffs_edu,
-            coeffs_home, shocks_cholesky, 'all', paras_fixed, is_debug)
-
-        args = (x_all_start, val)
-
     elif request == 'simulate':
-        # TODO: pass abck the solution as well?
         args = get_results(num_periods, min_idx, num_agents_sim)[-1]
-
+    elif request == 'estimate':
+        pass
 
     return args
 

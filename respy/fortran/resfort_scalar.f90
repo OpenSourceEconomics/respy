@@ -68,32 +68,7 @@ PROGRAM resfort_scalar
 
         CALL read_dataset(data_est, num_agents_est)
 
-        CALL get_optim_paras(x_start, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky)
-
-
-        x_final = x_start
-
- 
-        IF (maxiter == zero_int) THEN
-
-            crit_val = fort_criterion(x_final)
-
-        ELSEIF (optimizer_used == 'FORT-NEWUOA') THEN
-
-            CALL newuoa(fort_criterion, x_final, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, zero_int, newuoa_maxfun, success, message, iter)
-
-
-       ELSEIF (optimizer_used == 'FORT-BFGS') THEN
-
-            CALL dfpmin(fort_criterion, fort_dcriterion, x_final, bfgs_gtol, bfgs_maxiter, bfgs_stpmx, success, message, iter)
-
-        ELSE
-
-            PRINT *, 'Program terminated due to misspecified optimizer ...'
-            STOP
-
-        END IF
-
+        CALL fort_estimate(crit_val, success, message, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, optimizer_used, maxiter, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, newuoa_maxfun, bfgs_gtol, bfgs_maxiter, bfgs_stpmx)
 
   ELSE IF (request == 'simulate') THEN
 
