@@ -82,13 +82,14 @@ PROGRAM resfort_scalar
 
             CALL newuoa(fort_criterion, x_final, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, zero_int, newuoa_maxfun, success, message, iter)
 
+
        ELSEIF (optimizer_used == 'FORT-BFGS') THEN
 
             CALL dfpmin(fort_criterion, fort_dcriterion, x_final, bfgs_gtol, bfgs_maxiter, bfgs_stpmx, success, message, iter)
 
         ELSE
 
-            PRINT *, 'Program terminated ...'
+            PRINT *, 'Program terminated due to misspecified optimizer ...'
             STOP
 
         END IF

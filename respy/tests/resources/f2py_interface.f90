@@ -539,7 +539,7 @@ SUBROUTINE wrapper_get_future_value(emax_simulated, num_periods_int, num_draws_e
 !------------------------------------------------------------------------------
     
     ! Assign global RESFORT variables
-    max_states_period = SIZE(states_all, 2)
+    max_states_period = SIZE(states_all_int, 2)
     min_idx = SIZE(mapping_state_idx_int, 4)
 
     !# Transfer global RESFORT variables

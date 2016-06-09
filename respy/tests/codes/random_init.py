@@ -116,6 +116,15 @@ def generate_random_dict(constraints=None):
         versions = ['FORTRAN']
     dict_['PROGRAM']['version'] = np.random.choice(versions)
 
+    # TODO: This should be aggregated and clearly marked.
+    # The optimizer has to align with the Program version.
+    if dict_['PROGRAM']['version'] == 'FORTRAN':
+        dict_['ESTIMATION']['optimizer'] = np.random.choice(['FORT-NEWUOA',
+            'FORT-BFGS'])
+    else:
+        dict_['ESTIMATION']['optimizer'] = np.random.choice(['SCIPY-BFGS',
+            'SCIPY-POWELL'])
+
     # SIMULATION
     dict_['SIMULATION'] = {}
     dict_['SIMULATION']['seed'] = np.random.randint(1, 10000)

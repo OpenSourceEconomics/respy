@@ -4,6 +4,7 @@
 # standard library
 import numpy as np
 
+import subprocess
 import importlib
 import sys
 import os
@@ -24,10 +25,17 @@ sys.path.insert(0, PACKAGE_DIR + 'respy/tests')
 
 VERSIONS = ['PYTHON', 'FORTRAN', 'F2PY']
 
+# Recompiling during debugging
+if True:
+    cwd = os.getcwd()
+    os.chdir(PACKAGE_DIR + '/respy')
+    subprocess.call('./waf distclean', shell=True)
+    subprocess.call('./waf configure build --debug --without_mpi', shell=True)
+    os.chdir(cwd)
 
 ''' Request
 '''
-seed = 29321 # 6216748723
+seed = 69504 # 6216748723
 
 
 ''' Error Reproduction
