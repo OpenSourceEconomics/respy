@@ -38,4 +38,4 @@ def build(ctx):
         'kw_dp3asim.f90']
 
     # Build the executable
-    #ctx(features=['fc', 'fcprogram'], source=src, target='kw_dp3asim')
+    ctx(features=['fc', 'fcprogram'], source=src, target='kw_dp3asim')

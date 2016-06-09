@@ -2,6 +2,7 @@
 
 # standard library
 import shutil
+import glob
 import os
 
 top = '.'
@@ -52,8 +53,10 @@ def configure(ctx):
     if ctx.options.without_mpi:
         ctx.env['PARALLELISM'] = False
 
-
 def build(ctx):
+
+    ctx.add_pre_fun(pre)
+
 
     is_debug = ctx.options.is_debug
 
@@ -88,10 +91,7 @@ def post(ctx):
     """ This function performs some housekeeping tasks. We keep all the
     executables in a single directory.
     """
-    # Create subdirectory for FORTRAN executables
     subdir = 'fortran/bin'
-    if os.path.exists(subdir):
-        shutil.rmtree(subdir)
 
     # Copy the RESFORT executable back to package directory
     os.mkdir(subdir)
@@ -102,9 +102,16 @@ def post(ctx):
         shutil.copy('.bld/fortran/resfort_parallel_slave', subdir)
 
     # Copy the KW executable.
-    fname = 'tests/resources/kw_dp3asim'
-    if os.path.exists(fname):
-        os.unlink(fname)
+    src = '.bld/tests/resources/kw_dp3asim'
+    shutil.copy(src, 'tests/resources')
 
-    #src = '.bld/tests/resources/kw_dp3asim'
-    #shutil.copy(src, 'tests/resources')
+
+def pre(ctx):
+    """ Clean up some directories.
+    """
+
+    if os.path.exists('fortran/bin'):
+        shutil.rmtree('fortran/bin')
+
+    if os.path.exists('tests/resources/kw_dp3asim'):
+        os.unlink('tests/resources/kw_dp3asim')
