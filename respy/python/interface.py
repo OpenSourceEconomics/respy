@@ -81,9 +81,9 @@ def respy_interface(respy_obj, request, data_array=None):
 
         elif optimizer_used == 'SCIPY-POWELL':
 
-            maxfun = optimizer_options['SCIPY-POWEL']['maxfun']
-            xtol = optimizer_options['SCIPY-POWEL']['xtol']
-            ftol = optimizer_options['SCIPY-POWEL']['ftol']
+            maxfun = optimizer_options['SCIPY-POWELL']['maxfun']
+            xtol = optimizer_options['SCIPY-POWELL']['xtol']
+            ftol = optimizer_options['SCIPY-POWELL']['ftol']
 
             fmin_powell(opt_obj.crit_func, x_all_start, args, xtol, ftol,
                 maxiter, maxfun, disp=0)
