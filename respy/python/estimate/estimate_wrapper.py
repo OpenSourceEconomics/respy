@@ -11,9 +11,7 @@ import time
 import os
 
 # project library
-from respy.python.estimate.estimate_auxiliary import dist_optim_paras
-from respy.python.estimate.estimate_python import pyth_criterion
-from respy.python.shared.shared_auxiliary import HUGE_FLOAT
+from respy.python.estimate.estimate_python import pyth_wrapper, pyth_criterion
 
 
 class OptimizationClass(object):
@@ -42,25 +40,9 @@ class OptimizationClass(object):
         self.attr['args'] = None
 
         # status attributes
-        self.attr['value_steps'] = HUGE_FLOAT
-
-        self.attr['value_start'] = HUGE_FLOAT
-
-        self.attr['value_curre'] = HUGE_FLOAT
-
-        self.attr['paras_steps'] = None
-
-        self.attr['paras_curre'] = None
-
-        self.attr['paras_start'] = None
-
         self.attr['is_locked'] = False
 
         self.attr['is_first'] = True
-
-        self.attr['num_steps'] = 0
-
-        self.attr['num_evals'] = 0
 
     def set_attr(self, key, value):
         """ Set attributes.
@@ -98,68 +80,23 @@ class OptimizationClass(object):
         else:
             if optimizer_used == 'SCIPY-BFGS':
                 gtol, epsilon = self._options_distribute(optimizer_used)
-                rslt_opt = fmin_bfgs(self.crit_func, x0, args=args, gtol=gtol,
+                fmin_bfgs(self.crit_func, x0, args=args, gtol=gtol,
                     epsilon=epsilon, maxiter=maxiter, full_output=True,
                     disp=False)
 
             elif optimizer_used == 'SCIPY-POWELL':
                 xtol, ftol, maxfun = self._options_distribute(optimizer_used)
-                rslt_opt = fmin_powell(self.crit_func, x0, args, xtol, ftol,
+                fmin_powell(self.crit_func, x0, args, xtol, ftol,
                     maxiter, maxfun, full_output=True, disp=0)
 
             else:
                 raise NotImplementedError
 
-            # Process results to a common dictionary.
-            rslt = self._results_distribute(rslt_opt, optimizer_used)
+        # Reset teh static variables
+        pyth_wrapper.fval_step = np.inf
+        pyth_wrapper.num_steps = -1
+        pyth_criterion.num_evals = 0
 
-        # Finalizing results
-        self._logging_final(rslt)
-
-        # TODO: Cleanup?
-        x_final = self._get_all_parameters(rslt['x'])
-
-        # Finishing
-        return x_final, rslt['fun']
-
-    def _results_distribute(self, rslt_opt, optimizer_used):
-        """ Distribute results from the return from each of the optimizers.
-        """
-        # Initialize dictionary
-        rslt = dict()
-        rslt['x'] = None
-        rslt['fun'] = None
-        rslt['success'] = None
-        rslt['message'] = None
-
-        # Get the best parametrization and the corresponding value of the
-        # criterion function.
-        rslt['x'] = self.attr['paras_steps']
-        rslt['fun'] = self.attr['value_steps']
-
-        # Special treatments for each optimizer to extract message and
-        # success indicator.
-        if optimizer_used == 'SCIPY-POWELL':
-            rslt['success'] = (rslt_opt[5] not in [1, 2])
-            rslt['message'] = 'Optimization terminated successfully.'
-            if rslt_opt[5] == 1:
-                rslt['message'] = 'Maximum number of function evaluations.'
-            elif rslt_opt[5] == 2:
-                rslt['message'] = 'Maximum number of iterations.'
-
-        elif optimizer_used == 'SCIPY-BFGS':
-            rslt['success'] = (rslt_opt[6] not in [1, 2])
-            rslt['message'] = 'Optimization terminated successfully.'
-            if rslt_opt[5] == 1:
-                rslt['message'] = 'Maximum number of iterations exceeded.'
-            elif rslt_opt[5] == 2:
-                rslt['message'] = 'Gradient and/or function calls not changing.'
-
-        else:
-            raise NotImplementedError
-
-        # Finishing
-        return rslt
 
     def _options_distribute(self, optimizer_used):
         """ Distribute the optimizer specific options.
@@ -187,9 +124,6 @@ class OptimizationClass(object):
         """
         # Antibugging.
         assert (not self.attr['is_locked'])
-
-        # Check optimizer options
-        self._options_check()
 
         # Update status indicator
         self.attr['is_locked'] = True
@@ -242,23 +176,14 @@ class OptimizationClass(object):
         """ This method serves as a wrapper around the alternative
         implementations of the criterion function.
         """
-        # Distribute class attributes
-        version = self.attr['version']
-
         # Get all parameters for the current evaluation
         x_all_curre = self._get_all_parameters(x_free_curre)
 
         # Evaluate criterion function
-        if version == 'PYTHON':
-            crit_val = pyth_criterion(x_all_curre, *args)
-        else:
-            raise NotImplementedError
+        crit_val = pyth_wrapper(x_all_curre, *args)
 
         # Antibugging.
         assert np.isfinite(crit_val)
-
-        # Document progress
-        self._logging_interim(x_all_curre, crit_val)
 
         # Finishing
         return crit_val
@@ -289,142 +214,3 @@ class OptimizationClass(object):
 
         # Finishing
         return x_all_curre
-
-    def _options_check(self):
-        """ Check the options for all defined optimizers. Regardless of
-        whether they are used for the estimation or not.
-        """
-        # Check options for the SCIPY-BFGS algorithm
-        if 'SCIPY-BFGS' in self.attr['optimizer_options'].keys():
-            options = self.attr['optimizer_options']['SCIPY-BFGS']
-            gtol, epsilon = options['gtol'], options['epsilon']
-
-            assert isinstance(gtol, float)
-            assert (gtol > 0)
-
-            assert isinstance(epsilon, float)
-            assert (epsilon > 0)
-
-        # Check options for the SCIPY-POWELL algorithm
-        if 'SCIPY-POWELL' in self.attr['optimizer_options'].keys():
-            options = self.attr['optimizer_options']['SCIPY-POWELL']
-            xtol, ftol = options['xtol'], options['ftol']
-            maxfun = options['maxfun']
-
-            assert isinstance(maxfun, int)
-            assert (maxfun > 0)
-
-            assert isinstance(xtol, float)
-            assert (xtol > 0)
-
-            assert isinstance(ftol, float)
-            assert (ftol > 0)
-
-    def _logging_interim(self, x, crit_val):
-        """ This method write out some information during the optimization.
-        """
-        # Recording of current evaluation
-        self.attr['num_evals'] += 1
-        self.attr['value_curre'] = crit_val
-        self.attr['paras_curre'] = x
-
-        # Distribute class attributes
-        paras_curre = self.attr['paras_curre']
-
-        value_curre = self.attr['value_curre']
-        value_steps = self.attr['value_steps']
-
-        num_steps = self.attr['num_steps']
-        num_evals = self.attr['num_evals']
-
-        is_first = self.attr['is_first']
-
-        np.savetxt(open('paras_curre.respy.log', 'wb'), x, fmt='%15.8f')
-
-        # Recording of starting information
-        if is_first:
-            self.attr['value_start'] = crit_val
-            self.attr['paras_start'] = x
-            np.savetxt(open('paras_start.respy.log', 'wb'), x, fmt='%15.8f')
-            if os.path.exists('optimization.respy.log'):
-                os.unlink('optimization.respy.log')
-
-        paras_start = self.attr['paras_start']
-        value_start = self.attr['value_start']
-
-        # Recording of information about each step.
-        if crit_val < value_steps:
-            np.savetxt(open('paras_steps.respy.log', 'wb'), x, fmt='%15.8f')
-            with open('optimization.respy.log', 'a') as out_file:
-                fmt_ = '{0:<10} {1:<25}\n'
-                out_file.write(fmt_.format('Step', int(num_steps) + 1))
-                out_file.write(fmt_.format('Criterion', crit_val))
-                out_file.write(fmt_.format('Time', time.ctime()))
-                out_file.write('\n\n')
-
-            # Update class attributes
-            self.attr['paras_steps'] = x
-            self.attr['value_steps'] = crit_val
-            self.attr['num_steps'] = num_steps + 1
-            self.attr['is_first'] = False
-
-        paras_steps = self.attr['paras_steps']
-        value_steps = self.attr['value_steps']
-
-        # Write information to file.
-        with open('optimization.respy.info', 'w') as out_file:
-            # Write out information about criterion function
-            out_file.write('\n Criterion Function\n\n')
-            fmt_ = '{0:>15}    {1:>15}    {2:>15}    {3:>15}\n\n'
-            out_file.write(fmt_.format(*['', 'Start', 'Step', 'Current']))
-            fmt_ = '{0:>15}    {1:15.4f}    {2:15.4f}    {3:15.4f}\n\n'
-            paras = ['', value_start, value_steps, value_curre]
-            out_file.write(fmt_.format(*paras))
-
-            # Write out information about the optimization parameters directly.
-            out_file.write('\n Optimization Parameters\n\n')
-            fmt_ = '{0:>15}    {1:>15}    {2:>15}    {3:>15}\n\n'
-            out_file.write(fmt_.format(*['Identifier', 'Start', 'Step', 'Current']))
-            fmt_ = '{0:>15}    {1:15.4f}    {2:15.4f}    {3:15.4f}\n'
-            for i, _ in enumerate(paras_curre):
-                paras = [i, paras_start[i], paras_steps[i], paras_curre[i]]
-                out_file.write(fmt_.format(*paras))
-
-            # Write out the current covariance matrix of the reward shocks.
-            out_file.write('\n\n Covariance Matrix \n\n')
-
-            for which in ['Start', 'Step', 'Current']:
-                if which == 'Start':
-                    paras = paras_start
-                elif which == 'Step':
-                    paras = paras_steps
-                else:
-                    paras = paras_curre
-                fmt_ = '{0:>15}   \n\n'
-                out_file.write(fmt_.format(*[which]))
-                shocks_cholesky = dist_optim_paras(paras, True)[-1]
-                shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
-                fmt_ = '{0:15.4f}    {1:15.4f}    {2:15.4f}    {3:15.4f}\n'
-                for i in range(4):
-                    out_file.write(fmt_.format(*shocks_cov[i, :]))
-                out_file.write('\n')
-
-            fmt_ = '\n{0:<25}{1:>15}\n'
-            out_file.write(fmt_.format(*[' Number of Steps', num_steps]))
-            out_file.write(fmt_.format(*[' Number of Evaluations', num_evals]))
-
-    def _logging_final(self, rslt):
-        """ This method writes out some information when the optimization is
-        finished.
-        """
-        fmt_ = '{0:<10} {1:<25}\n'
-        with open('optimization.respy.log', 'a') as out_file:
-            out_file.write('Final Report\n\n')
-            out_file.write(fmt_.format('Success', str(rslt['success'])))
-            out_file.write(fmt_.format('Message', rslt['message']))
-            out_file.write(fmt_.format('Criterion', self.attr['value_steps']))
-            out_file.write(fmt_.format('Time', time.ctime()))
-
-        with open('optimization.respy.info', 'a') as out_file:
-            out_file.write('\n TERMINATED')
-

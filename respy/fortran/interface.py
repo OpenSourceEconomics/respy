@@ -2,8 +2,8 @@
 FORTRAN implementations.
 """
 # standard library
-import os
 import subprocess
+import os
 
 # project library
 import numpy as np
@@ -18,6 +18,11 @@ from respy.python.shared.shared_constants import EXEC_DIR, HUGE_FLOAT
 
 def resfort_interface(respy_obj, request, data_array=None):
 
+    # Add mock specification for FORTRAN optimizers if not defined by user.
+    # This is required so the initialization file for FORTRAN is complete.
+    respy_obj = add_optimizers(respy_obj)
+
+
     model_paras, num_periods, edu_start, is_debug, edu_max, delta, \
         version, num_draws_emax, seed_emax, is_interpolated, num_points_interp, \
         is_myopic, min_idx, store, tau, is_parallel, num_procs, \
@@ -30,57 +35,6 @@ def resfort_interface(respy_obj, request, data_array=None):
                 'store', 'tau', 'is_parallel', 'num_procs', 'num_agents_sim',
                 'num_draws_prob', 'num_agents_est', 'seed_prob', 'seed_sim',
                 'paras_fixed', 'optimizer_options', 'optimizer_used', 'maxiter')
-
-    # Special treatment required for the FORT optimizers. Since they are
-    # written to the FORTRAN initialization file, we need a valid request for
-    # all optimizers internally.
-
-    if request == 'estimate':
-        assert (optimizer_used in optimizer_options.keys())
-
-    for optimizer in ['FORT-NEWUOA', 'FORT-BFGS']:
-
-        # Skip if defined by user.
-        if optimizer in optimizer_options.keys():
-            continue
-
-        if optimizer in ['FORT-NEWUOA']:
-            optimizer_options[optimizer] = dict()
-            optimizer_options[optimizer]['npt'] = 40
-            optimizer_options[optimizer]['rhobeg'] = 0.1
-            optimizer_options[optimizer]['rhoend'] = 0.0001
-            optimizer_options[optimizer]['maxfun'] = 20
-
-        if optimizer in ['FORT-BFGS']:
-            optimizer_options[optimizer] = dict()
-            optimizer_options[optimizer]['epsilon'] = 0.00001
-            optimizer_options[optimizer]['gtol'] = 0.00001
-            optimizer_options[optimizer]['maxiter'] = 10
-            optimizer_options[optimizer]['stpmx'] = 100.0
-
-    # Check all optimizers
-    if optimizer_used in ['FORT-NEWUOA']:
-
-        for name in ['maxfun', 'npt']:
-            assert isinstance(optimizer_options[optimizer_used][name], int)
-            assert (optimizer_options[optimizer_used][name] > 0)
-
-        for name in ['rhobeg', 'rhoend']:
-            assert isinstance(optimizer_options[optimizer_used][name], float)
-            assert (optimizer_options[optimizer_used][name] > 0)
-
-        assert (optimizer_options[optimizer_used]['rhobeg'] >
-                optimizer_options[optimizer_used]['rhoend'])
-
-    elif optimizer_used in ['FORT-BFGS']:
-
-        assert isinstance(optimizer_options[optimizer_used]['maxiter'], int)
-        assert (optimizer_options[optimizer_used]['maxiter'] > 0)
-
-        for name in ['stpmx', 'gtol', 'epsilon']:
-            assert isinstance(optimizer_options[optimizer_used][name], float)
-            assert (optimizer_options[optimizer_used][name] > 0)
-
 
     if request == 'estimate':
         assert data_array is not None
@@ -130,6 +84,37 @@ def resfort_interface(respy_obj, request, data_array=None):
 
     return args
 
+
+def add_optimizers(respy_obj):
+
+    optimizer_options = respy_obj.get_attr('optimizer_options')
+
+
+    for optimizer in ['FORT-NEWUOA', 'FORT-BFGS']:
+
+        # Skip if defined by user.
+        if optimizer in optimizer_options.keys():
+            continue
+
+        if optimizer in ['FORT-NEWUOA']:
+            optimizer_options[optimizer] = dict()
+            optimizer_options[optimizer]['npt'] = 40
+            optimizer_options[optimizer]['rhobeg'] = 0.1
+            optimizer_options[optimizer]['rhoend'] = 0.0001
+            optimizer_options[optimizer]['maxfun'] = 20
+
+        if optimizer in ['FORT-BFGS']:
+            optimizer_options[optimizer] = dict()
+            optimizer_options[optimizer]['epsilon'] = 0.00001
+            optimizer_options[optimizer]['gtol'] = 0.00001
+            optimizer_options[optimizer]['maxiter'] = 10
+            optimizer_options[optimizer]['stpmx'] = 100.0
+
+    respy_obj.unlock()
+    respy_obj.set_attr('optimizer_options', optimizer_options)
+    respy_obj.lock()
+
+    return respy_obj
 
 def get_results(num_periods, min_idx, num_agents_sim):
     """ Add results to container.

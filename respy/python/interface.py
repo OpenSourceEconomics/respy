@@ -57,10 +57,7 @@ def respy_interface(respy_obj, request, data_array=None):
 
         # Collect arguments that are required for the criterion function. These
         # must be in the correct order already.
-        args = (is_interpolated, num_draws_emax, num_periods, num_points_interp,
-            is_myopic, edu_start, is_debug, edu_max, min_idx, delta, data_array,
-            num_agents_est, num_draws_prob, tau, periods_draws_emax,
-            periods_draws_prob)
+        args = (is_interpolated, num_draws_emax, num_periods, num_points_interp, is_myopic, edu_start, is_debug, edu_max, min_idx, delta, data_array, num_agents_est, num_draws_prob, tau, periods_draws_emax, periods_draws_prob)
 
         opt_obj = OptimizationClass()
 
@@ -84,8 +81,7 @@ def respy_interface(respy_obj, request, data_array=None):
     elif request == 'simulate':
 
         # Draw draws for the simulation.
-        periods_draws_sims = create_draws(num_periods, num_agents_sim, seed_sim,
-            is_debug)
+        periods_draws_sims = create_draws(num_periods, num_agents_sim, seed_sim, is_debug)
 
         # Draw standard normal deviates for the solution and evaluation step.
         periods_draws_emax = create_draws(num_periods, num_draws_emax,

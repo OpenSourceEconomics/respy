@@ -3,7 +3,7 @@
 """
 
 import os
-if True:
+if False:
     cwd = os.getcwd()
     os.chdir('../../respy')
     assert os.system('./waf distclean; ./waf configure build --debug '

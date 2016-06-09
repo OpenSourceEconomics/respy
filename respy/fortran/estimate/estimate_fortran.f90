@@ -35,7 +35,9 @@ FUNCTION fort_criterion(x)
     REAL(our_dble)                  :: coeffs_edu(3)
     REAL(our_dble)                  :: coeffs_a(6)
     REAL(our_dble)                  :: coeffs_b(6)
-    
+
+    INTEGER(our_int)                :: i
+
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
@@ -45,6 +47,45 @@ FUNCTION fort_criterion(x)
     CALL fort_solve(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax)
 
     CALL fort_evaluate(fort_criterion, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_est, periods_draws_prob)
+
+
+    ! TODO, JUST TO GET THE TESTS TO RUN AGAIN.
+     19 FORMAT(1x,f25.15)
+
+        OPEN(UNIT=1, FILE='opt_info_start.respy.log')
+
+        WRITE(1, 19) zero_dble
+        WRITE(1, 19) fort_criterion
+
+        DO i = 1, 26
+            WRITE(1, 19) x(i)
+        END DO
+
+        CLOSE(1)
+
+
+        OPEN(UNIT=1, FILE='opt_info_step.respy.log')
+
+        WRITE(1, 19) one_dble
+        WRITE(1, 19) fort_criterion
+
+        DO i = 1, 26
+            WRITE(1, 19) x(i)
+        END DO
+
+        CLOSE(1)
+
+
+        OPEN(UNIT=1, FILE='opt_info_current.respy.log')
+
+        WRITE(1, 19) one_dble
+        WRITE(1, 19) fort_criterion
+
+        DO i = 1, 26
+            WRITE(1, 19) x(i)
+        END DO
+
+        CLOSE(1)
 
 END FUNCTION
 !******************************************************************************

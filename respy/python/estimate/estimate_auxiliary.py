@@ -5,23 +5,6 @@ import numpy as np
 
 # project library
 from respy.python.shared.shared_auxiliary import check_model_parameters
-from respy.python.shared.shared_auxiliary import check_dataset
-
-
-def check_input(respy_obj, data_frame):
-    """ Check input arguments.
-    """
-    # Check that class instance is locked.
-    assert respy_obj.get_attr('is_locked')
-
-    if respy_obj.get_attr('is_solved'):
-        respy_obj.reset()
-
-    # Check that dataset aligns with model specification.
-    check_dataset(data_frame, respy_obj, 'est')
-
-    # Finishing
-    return True
 
 
 def get_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
