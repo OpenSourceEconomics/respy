@@ -71,11 +71,13 @@ def resfort_interface(respy_obj, request, data_array=None):
 
     # Return arguments depends on the request.
     if request == 'solve':
-        args = get_results(num_periods, min_idx, num_agents_sim)[:-1]
+        results = get_results(num_periods, min_idx, num_agents_sim, 'solve')
+        args = results[:-1]
     elif request == 'simulate':
-        args = get_results(num_periods, min_idx, num_agents_sim)[-1]
+        results = get_results(num_periods, min_idx, num_agents_sim, 'simulate')
+        args = (results[:-1], results[-1])
     elif request == 'estimate':
-        pass
+        args = None
 
     return args
 
@@ -111,7 +113,7 @@ def add_optimizers(respy_obj):
 
     return respy_obj
 
-def get_results(num_periods, min_idx, num_agents_sim):
+def get_results(num_periods, min_idx, num_agents_sim, which):
     """ Add results to container.
     """
     # Get the maximum number of states. The special treatment is required as
@@ -137,12 +139,14 @@ def get_results(num_periods, min_idx, num_agents_sim):
     shape = (num_periods, max_states_period)
     periods_emax = read_data('periods_emax', shape)
 
-    # This is only present if we simulated.
-    data_array = None
-
-    if os.path.exists('.data.resfort.dat'):
+    # In case of  a simulation, we can also process the simulated dataset.
+    if which == 'solve':
+        data_array = None
+    elif which == 'simulate':
         shape = (num_periods * num_agents_sim, 8)
-        data_array = read_data('data', shape)
+        data_array = read_data('simulated', shape)
+    else:
+        raise AssertionError
 
     # Update class attributes with solution
     args = (periods_payoffs_systematic, states_number_period,

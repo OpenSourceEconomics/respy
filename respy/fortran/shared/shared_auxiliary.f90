@@ -523,45 +523,24 @@ SUBROUTINE store_results(mapping_state_idx, states_all, periods_payoffs_systemat
 
         CLOSE(1)
 
-
-        IF (request == 'simulate') THEN
-    
-            OPEN(UNIT=1, FILE='.data.resfort.dat')
-            DO period = 1, num_periods * num_agents_sim
-                WRITE(1, 2400) dataset(period, :)
-            END DO
-
-            CLOSE(1)
-        END IF
-
-    ! Write out value of criterion function if evaluated.
-    ELSEIF (request == 'evaluate') THEN
-
-        2500 FORMAT(1x,f25.15)
-
-        OPEN(UNIT=1, FILE='.eval.resfort.dat')
-
-        WRITE(1, 2500) crit_val
-
-        CLOSE(1)
-
-
-    ! Write out value of criterion function if evaluated.
-    ELSEIF (request == 'estimate') THEN
-
-        OPEN(UNIT=1, FILE='.eval.resfort.dat')
-
-        WRITE(1, 2500) crit_val
-
-        CLOSE(1)
-
     END IF
 
-    ! Remove FORTRAN initialization files. 
+    IF (request == 'simulate') THEN
+    
+        OPEN(UNIT=1, FILE='.simulated.resfort.dat')
+        
+        DO period = 1, num_periods * num_agents_sim
+            WRITE(1, 2400) dataset(period, :)
+        END DO
+
+        CLOSE(1)
+    
+    END IF
+
+    ! Remove temporary files
     OPEN(UNIT=1, FILE='.model.resfort.ini'); CLOSE(1, STATUS='delete')
-IF (.NOT. request == 'simulate') THEN
     OPEN(UNIT=1, FILE='.data.resfort.dat'); CLOSE(1, STATUS='delete')
-END IF
+
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************

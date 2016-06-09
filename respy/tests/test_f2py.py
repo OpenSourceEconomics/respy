@@ -352,32 +352,24 @@ class TestClass(object):
         # Distribute solution arguments for further use in simulation test.
         periods_payoffs_systematic, _, mapping_state_idx, periods_emax, states_all = pyth
 
-        # Collect arguments across implementations. We need to set up the
-        # logger as otherwise the handler cannot be found.
-        args = (
-        periods_payoffs_systematic, mapping_state_idx, periods_emax, num_periods,
-        states_all, num_agents_sim, edu_start, edu_max, delta, periods_draws_sims,
-        shocks_cholesky)
-
-        args_py = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
-            is_interpolated, num_draws_emax, num_periods, num_points_interp,
-            is_myopic, edu_start, is_debug, edu_max, min_idx, delta,
-            periods_draws_emax, num_agents_sim, periods_draws_sims)
+        args = (periods_payoffs_systematic, mapping_state_idx, \
+            periods_emax, states_all, shocks_cholesky, num_periods, edu_start,
+            edu_max, delta, num_agents_sim, periods_draws_sims)
 
         logging_simulation('start')
-        pyth = pyth_simulate(*args_py)
+        pyth = pyth_simulate(*args)
         logging_simulation('stop')
 
         f2py = fort_debug.f2py_simulate(*args)
-
         np.testing.assert_allclose(pyth, f2py)
+
 
         data_array = pyth
 
         base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
-        is_interpolated, num_draws_emax, num_periods, num_points_interp, is_myopic,
-        edu_start, is_debug, edu_max, min_idx, delta, data_array, num_agents_sim,
-        num_draws_prob, tau)
+         is_interpolated, num_draws_emax, num_periods, num_points_interp, is_myopic,
+         edu_start, is_debug, edu_max, min_idx, delta, data_array, num_agents_sim,
+         num_draws_prob, tau)
 
         args = base_args + (periods_draws_emax, periods_draws_prob)
         pyth = pyth_evaluate(*args)

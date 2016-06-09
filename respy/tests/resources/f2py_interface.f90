@@ -223,7 +223,7 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, 
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE f2py_simulate(dataset, periods_payoffs_systematic_int, mapping_state_idx_int, periods_emax_int, num_periods_int, states_all_int, num_agents_sim_int, edu_start_int, edu_max_int, delta_int, periods_draws_sims, shocks_cholesky)
+SUBROUTINE f2py_simulate(dataset, periods_payoffs_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, shocks_cholesky, num_periods_int, edu_start_int, edu_max_int, delta_int, num_agents_sim_int, periods_draws_sims)
 
     !/* external libraries      */
 
