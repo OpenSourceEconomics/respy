@@ -202,7 +202,7 @@ class TestClass(object):
         # Select expected result
         rslt = None
         if 'one' in fname:
-            rslt = 0.269086624176311
+            rslt = 0.261487735867433
         elif 'two' in fname:
             rslt = 1.118242514893393
         elif 'three' in fname:
