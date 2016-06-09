@@ -176,7 +176,8 @@ def scripts_estimate(resume, single, init_file, gradient):
 
     if gradient:
         # TODO: This is only running with PYTHON
-        add_gradient_information(respy_obj)
+        pass
+        #add_gradient_information(respy_obj)
 
 if __name__ == '__main__':
 

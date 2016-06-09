@@ -2,6 +2,9 @@
 """
 
 # standard library
+from scipy.optimize import fmin_powell
+from scipy.optimize import fmin_bfgs
+
 import logging
 
 # project library
@@ -59,24 +62,31 @@ def respy_interface(respy_obj, request, data_array=None):
         # must be in the correct order already.
         args = (is_interpolated, num_draws_emax, num_periods, num_points_interp, is_myopic, edu_start, is_debug, edu_max, min_idx, delta, data_array, num_agents_est, num_draws_prob, tau, periods_draws_emax, periods_draws_prob)
 
+        # Special case where just an evaluation at the starting values is
+        # requested is accounted for. Note, that the relevant value of the
+        # criterion function is always the one indicated by the class
+        # attribute and not the value returned by the optimization algorithm.
         opt_obj = OptimizationClass()
 
-        opt_obj.set_attr('args', args)
+        if maxiter == 0:
+            opt_obj.crit_func(x_all_start, *args)
 
-        opt_obj.set_attr('optimizer_options', optimizer_options)
+        elif optimizer_used == 'SCIPY-BFGS':
 
-        opt_obj.set_attr('x_info', (x_all_start, paras_fixed))
+            epsilon = optimizer_options['SCIPY-BFGS']['epsilon']
+            gtol = optimizer_options['SCIPY-BFGS']['gtol']
 
-        opt_obj.set_attr('optimizer_used', optimizer_used)
+            fmin_bfgs(opt_obj.crit_func, x_all_start, args=args, gtol=gtol,
+                epsilon=epsilon, maxiter=maxiter, full_output=True, disp=False)
 
-        opt_obj.set_attr('version', version)
+        elif optimizer_used == 'SCIPY-POWELL':
 
-        opt_obj.set_attr('maxiter', maxiter)
+            maxfun = optimizer_options['SCIPY-POWEL']['maxfun']
+            xtol = optimizer_options['SCIPY-POWEL']['xtol']
+            ftol = optimizer_options['SCIPY-POWEL']['ftol']
 
-        opt_obj.lock()
-
-        # Perform optimization.
-        args = opt_obj.optimize(x_free_start)
+            fmin_powell(opt_obj.crit_func, x_all_start, args, xtol, ftol,
+                maxiter, maxfun, disp=0)
 
     elif request == 'simulate':
 
