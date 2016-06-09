@@ -26,6 +26,7 @@ sys.path.insert(0, PACKAGE_DIR)
 
 # Testing infrastructure
 from modules.auxiliary import cleanup_testing_infrastructure
+from modules.auxiliary import initialize_record_canvas
 from modules.auxiliary import get_random_request
 from modules.auxiliary import distribute_input
 from modules.auxiliary import get_test_dict
@@ -56,9 +57,9 @@ def run(hours, compile_):
             full_test_record[key_][value] = [0, 0]
 
     # Start with a clean slate.
-    cleanup_testing_infrastructure(False)
-
     start, timeout = datetime.now(), timedelta(hours=hours)
+    cleanup_testing_infrastructure(False)
+    initialize_record_canvas(full_test_record, start, timeout)
 
     # Evaluation loop.
     while True:
@@ -66,14 +67,13 @@ def run(hours, compile_):
         # Set seed.
         seed = random.randrange(1, 100000)
         np.random.seed(seed)
-
         print(seed)
         # Construct test case.
         module, method = get_random_request(test_dict)
         mod = importlib.import_module(module)
         test = getattr(mod.TestClass(), method)
 
-        # Run random tes
+        # Run random test
         is_success, msg = None, None
 
         # Create a fresh test directory.
@@ -96,8 +96,7 @@ def run(hours, compile_):
 
         # Record iteration
         update_testing_record(module, method, seed, is_success, msg,
-                              full_test_record, start, timeout)
-
+            full_test_record)
         cleanup_testing_infrastructure(True)
 
         #  Timeout.

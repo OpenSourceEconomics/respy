@@ -4,12 +4,14 @@ from datetime import datetime
 
 import numpy as np
 
+import fileinput
 import importlib
 import fnmatch
 import string
 import socket
 import random
 import shutil
+import shlex
 import glob
 import sys
 import os
@@ -64,65 +66,90 @@ def finalize_testing_record(full_test_record):
         log_file.write(fmt_.format(['TOTAL TESTS', total_tests]))
         log_file.write(fmt_.format(['FAILED TESTS', failed_tests]))
 
-    # Aggregate information from temporary files.
-    with open('report.testing.log', 'a') as outfile:
-        outfile.write('\n---------------------------------------'
-                      '-----------------------------------------\n\n')
-        for line in open('tracebacks.testing.tmp'):
-            outfile.write(line)
-    os.unlink('tracebacks.testing.tmp')
 
-
-def update_testing_record(module, method, seed_test, is_success, msg,
-        full_test_record, start, timeout):
-    """ Maintain a record about the outcomes of the testing efforts.
+def initialize_record_canvas(full_test_record, start, timeout):
+    """ This function initializes the raw log file.
     """
-    # Formatting of time objects.
     start_time = start.strftime("%Y-%m-%d %H:%M:%S")
     end_time = (start + timeout).strftime("%Y-%m-%d %H:%M:%S")
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    # Write out overview information such as the number of successful and
-    # failed test runs.
     with open('report.testing.log', 'w') as log_file:
         # Write out some header information.
         log_file.write('\n\n')
-        string = '\t{0[0]:<15}{0[1]:<20}\n\n'
-        log_file.write(string.format(['START', start_time]))
-        log_file.write(string.format(['FINISH', end_time]))
-        log_file.write(string.format(['UPDATE', current_time]))
+        str_ = '\t{0[0]:<15}{0[1]:<20}\n\n'
+        log_file.write(str_.format(['START', start_time]))
+        log_file.write(str_.format(['FINISH', end_time]))
+        log_file.write(str_.format(['UPDATE', current_time]))
 
         # Note the Python version used during execution.
-        string = '\t{0[0]:<15}{0[1]}.{0[2]}.{0[3]}\n\n'
-        log_file.write(string.format(['PYTHON'] + list(sys.version_info[:3])))
+        str_ = '\t{0[0]:<15}{0[1]}.{0[2]}.{0[3]}\n\n'
+        log_file.write(str_.format(['PYTHON'] + list(sys.version_info[:3])))
 
         log_file.write('\n\n')
         # Iterate over all modules. There is a potential conflict in the
         # namespace.
         for module_ in full_test_record.keys():
-            string = '\t{0[0]:<29}{0[1]:<20}{0[2]:<20} \n\n'
-            log_file.write(string.format([module_, 'Success', 'Failure']))
+            str_ = '\t{0[0]:<29}{0[1]:<20}{0[2]:<20} \n\n'
+            log_file.write(str_.format([module_, 'Success', 'Failure']))
             # Iterate over all methods in the particular module.
             for method_ in sorted(full_test_record[module_]):
-                string = '\t\t{0[0]:<25}{0[1]:<20}{0[2]:<20} \n'
+                str_ = '\t\t{0[0]:<25}{0[1]:<20}{0[2]:<20} \n'
                 success, failure = full_test_record[module_][method_]
-                log_file.write(string.format([method_, success, failure]))
+                log_file.write(str_.format([method_, success, failure]))
 
             log_file.write('\n\n')
 
-    # Special care for failures and tracebacks
-    if not os.path.exists('tracebacks.testing.tmp'):
-        open('tracebacks.testing.tmp', 'a').close()
+        log_file.write('-' * 79)
+        log_file.write('\n' + '-' * 79)
 
+
+def update_testing_record(module, method, seed_test, is_success, msg,
+        full_test_record):
+    """ Maintain a record about the outcomes of the testing efforts.
+    """
+    # Formatting of time objects.
+
+    str_ = '\t\t{0[0]:<25}{0[1]:<20}{0[2]:<20} \n'
+    success, failure = full_test_record[module][method]
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    update_line = '\t{0[0]:<15}{0[1]:<20}\n\n'.format(['UPDATE', current_time])
+    is_module, is_method, is_update = False, False, False
+
+    for line in fileinput.input('report.testing.log', inplace=True):
+
+        list_ = shlex.split(line)
+        # Skip empty lines
+        if len(list_) > 0:
+            if list_[0] == module:
+                is_module = True
+                is_method = False
+
+            if list_[0] == method:
+                is_method = True
+
+            is_update = (list_[0] == 'UPDATE')
+
+        if is_method and is_module or is_update:
+            if is_update:
+                new_line = update_line
+            else:
+                new_line = str_.format([method, success, failure])
+            print(new_line.rstrip())
+
+            is_module, is_update = False, False
+        else:
+            print(line.rstrip())
+
+    # Append Error message
     if not is_success:
         # Write out the traceback message to file for future inspection.
-        with open('tracebacks.testing.tmp', 'a') as log_file:
-            string = 'MODULE {0[0]:<25} METHOD {0[1]:<25} SEED: {0[' \
+        with open('report.testing.log', 'a') as log_file:
+            str_ = '\nMODULE {0[0]:<25} METHOD {0[1]:<25} SEED: {0[' \
                      '2]:<10} \n\n'
-            log_file.write(string.format([module, method, seed_test]))
+            log_file.write(str_.format([module, method, seed_test]))
             log_file.write(msg)
-            log_file.write('\n---------------------------------------'
-                           '-----------------------------------------\n\n')
+            log_file.write('\n' + '-' * 79 + '\n\n')
 
 
 def get_test_dict(test_dir):
