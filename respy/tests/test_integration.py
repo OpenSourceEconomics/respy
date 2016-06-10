@@ -316,7 +316,6 @@ class TestClass(object):
         respy_obj = RespyCls('test.respy.ini')
         estimate(respy_obj)
 
-    @pytest.mark.skipif(True, reason='Refactoring estimation args')
     def test_7(self):
         """ Test the scripts.
         """

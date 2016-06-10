@@ -75,11 +75,13 @@ SUBROUTINE fort_estimate(crit_val, success, message, coeffs_a, coeffs_b, coeffs_
     ELSEIF (optimizer_used == 'FORT-NEWUOA') THEN
 
         ! This is required to keep the original design of the algorithm intact
-        maxfun_int = MIN(maxfun, newuoa_maxfun)
+        maxfun_int = MIN(maxfun, newuoa_maxfun) - 1 
 
         CALL newuoa(fort_criterion, x_final, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, zero_int, maxfun_int, success, message, iter)
         
     ELSEIF (optimizer_used == 'FORT-BFGS') THEN
+
+        PRINT *, num_eval, maxfun
 
         CALL dfpmin(fort_criterion, fort_dcriterion, x_final, bfgs_gtol, bfgs_maxiter, bfgs_stpmx, maxfun, success, message, iter)
 
@@ -116,7 +118,13 @@ FUNCTION fort_criterion(x)
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
-   
+
+    ! Ensuring that the criterion function is not evaluated more than specified. However, there is the special request of MAXFUN equal to zero which needs to be allowed.
+    IF ((num_eval == maxfun) .AND. (maxfun .GT. zero_int)) THEN
+        fort_criterion = -HUGE_FLOAT
+        RETURN
+    END IF
+
     CALL dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x)
 
     CALL fort_solve(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax)

@@ -25,9 +25,6 @@ PROGRAM resfort_scalar
     REAL(our_dble), ALLOCATABLE     :: data_sim(:, :)
 
 
-    INTEGER(our_int)                :: maxfun
-
-
     INTEGER(our_int)                :: bfgs_maxiter
     REAL(our_dble)                  :: bfgs_stpmx
     REAL(our_dble)                  :: bfgs_gtol

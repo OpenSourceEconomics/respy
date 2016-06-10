@@ -344,9 +344,7 @@ def generate_random_dict(constraints=None):
         assert (constraints['is_estimation'] in [True, False])
         # Replace in initialization files
         if constraints['is_estimation']:
-            dict_['SCIPY-POWELL']['maxfun'] = 1 # TODO: This can probably go
-            # once the new estimation setup is running.
-            dict_['ESTIMATION']['maxfun'] = 1
+            dict_['ESTIMATION']['maxfun'] = np.random.randint(1, 10)
 
     # Finishing
     return dict_

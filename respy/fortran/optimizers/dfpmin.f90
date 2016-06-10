@@ -92,7 +92,7 @@ SUBROUTINE dfpmin(func, dfunc, p, gtol, maxiter, stpmx, maxfun, success, message
 
 	fp = func(p)
 	g = dfunc(p)
-	
+
 	! Initialize Hessian
 	hessin = zero_dble
 	DO i = 1, SIZE(p)
@@ -107,7 +107,7 @@ SUBROUTINE dfpmin(func, dfunc, p, gtol, maxiter, stpmx, maxfun, success, message
 
 		iter = its
 
-		CALL lnsrch(p, fp, g, xi, pnew, fret, stpmax, check, func)
+		CALL lnsrch(p, fp, g, xi, pnew, fret, stpmax, check, func, maxfun)
 
 		IF (num_eval == maxfun) THEN
 
@@ -163,7 +163,7 @@ SUBROUTINE dfpmin(func, dfunc, p, gtol, maxiter, stpmx, maxfun, success, message
 END SUBROUTINE 
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE lnsrch(xold, fold, g, p, x, f, stpmax, check, func)
+SUBROUTINE lnsrch(xold, fold, g, p, x, f, stpmax, check, func, maxfun)
 
     !/* external objects        */
 
@@ -178,6 +178,8 @@ SUBROUTINE lnsrch(xold, fold, g, p, x, f, stpmax, check, func)
 	REAL(our_dble), INTENT(INOUT) 	:: p(:)
 	
 	LOGICAL, INTENT(OUT) 			:: check
+
+	INTEGER(our_int), INTENT(IN)	:: maxfun
 
 	INTERFACE
 
@@ -237,9 +239,10 @@ SUBROUTINE lnsrch(xold, fold, g, p, x, f, stpmax, check, func)
 		x(:) = xold(:) + alam * p(:)
 		
 		f = func(x)
-		
-		IF (num_eval == maxfun) RETURN
-
+	
+		IF (num_eval == maxfun) THEN
+			RETURN
+		END IF
 
 		IF (alam < alamin) THEN
 
