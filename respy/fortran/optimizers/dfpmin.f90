@@ -20,7 +20,7 @@ MODULE dfpmin_module
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE dfpmin(func, dfunc, p, gtol, maxiter, stpmx, success, message, iter)
+SUBROUTINE dfpmin(func, dfunc, p, gtol, maxiter, stpmx, maxfun, success, message, iter)
 
     !/* external objects        */
 
@@ -29,8 +29,9 @@ SUBROUTINE dfpmin(func, dfunc, p, gtol, maxiter, stpmx, success, message, iter)
 	REAL(our_dble), INTENT(IN) 		:: stpmx
 	REAL(our_dble), INTENT(IN) 		:: gtol
 
-	INTEGER(our_int), INTENT(OUT) 	:: iter
 	INTEGER(our_int), INTENT(IN)	:: maxiter
+	INTEGER(our_int), INTENT(IN)	:: maxfun
+	INTEGER(our_int), INTENT(OUT) 	:: iter
 
 	LOGICAL, INTENT(OUT)			:: success
 
@@ -88,7 +89,7 @@ SUBROUTINE dfpmin(func, dfunc, p, gtol, maxiter, stpmx, success, message, iter)
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
-
+	
 	fp = func(p)
 	g = dfunc(p)
 	

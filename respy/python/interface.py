@@ -21,7 +21,7 @@ from respy.python.solve.solve_python import pyth_solve
 
 from respy.python.shared.shared_constants import OPTIMIZERS_PYTH
 
-
+from respy.python.estimate.estimate_wrapper import MaxfunError
 logger = logging.getLogger('RESPY_SIMULATE')
 
 
@@ -73,6 +73,8 @@ def respy_interface(respy_obj, request, data_array=None):
         # attribute and not the value returned by the optimization algorithm.
         opt_obj = OptimizationClass()
 
+        opt_obj.maxfun = maxfun
+
         if maxfun == 0:
             opt_obj.crit_func(x_all_start, *args)
 
@@ -82,9 +84,12 @@ def respy_interface(respy_obj, request, data_array=None):
             bfgs_epsilon = optimizer_options['SCIPY-BFGS']['epsilon']
             bfgs_gtol = optimizer_options['SCIPY-BFGS']['gtol']
 
-            fmin_bfgs(opt_obj.crit_func, x_all_start, args=args, gtol=bfgs_gtol,
-                epsilon=bfgs_epsilon, maxiter=bfgs_maxiter, full_output=True,
-                disp=False)
+            try:
+                fmin_bfgs(opt_obj.crit_func, x_all_start, args=args, gtol=bfgs_gtol,
+                    epsilon=bfgs_epsilon, maxiter=bfgs_maxiter, full_output=True,
+                    disp=False)
+            except MaxfunError:
+                pass
 
         elif optimizer_used == 'SCIPY-POWELL':
 
@@ -93,8 +98,11 @@ def respy_interface(respy_obj, request, data_array=None):
             powell_xtol = optimizer_options['SCIPY-POWELL']['xtol']
             powell_ftol = optimizer_options['SCIPY-POWELL']['ftol']
 
-            fmin_powell(opt_obj.crit_func, x_all_start, args, powell_xtol,
-                powell_ftol, powell_maxiter, powell_maxfun, disp=0)
+            try:
+                fmin_powell(opt_obj.crit_func, x_all_start, args, powell_xtol,
+                    powell_ftol, powell_maxiter, powell_maxfun, disp=0)
+            except MaxfunError:
+                pass
 
     elif request == 'simulate':
 

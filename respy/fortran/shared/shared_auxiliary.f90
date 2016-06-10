@@ -544,7 +544,7 @@ SUBROUTINE store_results(mapping_state_idx, states_all, periods_payoffs_systemat
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, maxiter, optimizer_used, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend, bfgs_epsilon, bfgs_gtol, bfgs_stpmx, bfgs_maxiter)
+SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, maxfun, optimizer_used, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend, bfgs_epsilon, bfgs_gtol, bfgs_stpmx, bfgs_maxiter)
 
     !
     !   This function serves as the replacement for the RespyCls and reads in
@@ -560,7 +560,7 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
     REAL(our_dble), INTENT(OUT)     :: coeffs_a(6)
     REAL(our_dble), INTENT(OUT)     :: coeffs_b(6)
 
-    INTEGER(our_int), INTENT(OUT)   :: maxiter
+    INTEGER(our_int), INTENT(OUT)   :: maxfun
 
     REAL(our_dble), INTENT(OUT)     :: newuoa_rhobeg
     REAL(our_dble), INTENT(OUT)     :: newuoa_rhoend
@@ -628,7 +628,7 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
         READ(1, 1505) num_points_interp
 
         ! ESTIMATION
-        READ(1, 1505) maxiter        
+        READ(1, 1505) maxfun        
         READ(1, 1505) num_agents_est
         READ(1, 1505) num_draws_prob
         READ(1, 1505) seed_prob

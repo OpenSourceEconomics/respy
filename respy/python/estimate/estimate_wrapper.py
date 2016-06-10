@@ -23,6 +23,7 @@ class OptimizationClass(object):
         self.attr['num_eval'] = 0
 
         self.attr['value_step'] = np.inf
+        self.maxfun = np.inf
 
     def crit_func(self, x, *args):
         """ This method serves as a wrapper around the alternative
@@ -61,8 +62,15 @@ class OptimizationClass(object):
             np.savetxt(open(fname, 'wb'), info_step, fmt='%15.8f')
 
 
+        # TODO: Renaming num_evals
+        # Enforce a maximum number of function evaluations
+        if self.maxfun == self.attr['num_eval']:
+            raise MaxfunError
 
 
 
         # Finishing
         return fval
+
+class MaxfunError(Exception):
+    pass

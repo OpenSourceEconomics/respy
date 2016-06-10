@@ -26,7 +26,7 @@ MODULE estimate_fortran
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_estimate(crit_val, success, message, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, optimizer_used, maxiter, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, newuoa_maxfun, bfgs_gtol, bfgs_maxiter, bfgs_stpmx)
+SUBROUTINE fort_estimate(crit_val, success, message, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, optimizer_used, maxfun, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, newuoa_maxfun, bfgs_gtol, bfgs_maxiter, bfgs_stpmx)
 
     !/* external objects    */
 
@@ -38,7 +38,7 @@ SUBROUTINE fort_estimate(crit_val, success, message, coeffs_a, coeffs_b, coeffs_
     REAL(our_dble), INTENT(IN)      :: coeffs_a(6)
     REAL(our_dble), INTENT(IN)      :: coeffs_b(6)
 
-    INTEGER(our_int), INTENT(IN)    :: maxiter
+    INTEGER(our_int), INTENT(IN)    :: maxfun
     INTEGER(our_int), INTENT(IN)    :: newuoa_maxfun
     INTEGER(our_int), INTENT(IN)    :: newuoa_npt
     
@@ -58,7 +58,7 @@ SUBROUTINE fort_estimate(crit_val, success, message, coeffs_a, coeffs_b, coeffs_
     REAL(our_dble)                  :: x_final(26)
     
     INTEGER(our_int)                :: iter
-
+    INTEGER(our_int)                :: maxfun_int
     LOGICAL, INTENT(OUT)                         :: success
     CHARACTER(150), INTENT(OUT)                  :: message
 !------------------------------------------------------------------------------
@@ -70,15 +70,18 @@ SUBROUTINE fort_estimate(crit_val, success, message, coeffs_a, coeffs_b, coeffs_
     x_final = x_start
 
  
-    IF (maxiter == zero_int) THEN
+    IF (maxfun == zero_int) THEN
 
     ELSEIF (optimizer_used == 'FORT-NEWUOA') THEN
 
-        CALL newuoa(fort_criterion, x_final, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, zero_int, newuoa_maxfun, success, message, iter)
+        ! This is required to keep the original design of the algorithm intact
+        maxfun_int = MIN(maxfun, newuoa_maxfun)
+
+        CALL newuoa(fort_criterion, x_final, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, zero_int, maxfun_int, success, message, iter)
         
     ELSEIF (optimizer_used == 'FORT-BFGS') THEN
 
-        CALL dfpmin(fort_criterion, fort_dcriterion, x_final, bfgs_gtol, bfgs_maxiter, bfgs_stpmx, success, message, iter)
+        CALL dfpmin(fort_criterion, fort_dcriterion, x_final, bfgs_gtol, bfgs_maxiter, bfgs_stpmx, maxfun, success, message, iter)
 
     END IF
     
@@ -104,7 +107,6 @@ FUNCTION fort_criterion(x)
     REAL(our_dble)                  :: coeffs_b(6)
 
     INTEGER(our_int), SAVE          :: num_step = zero_int
-    INTEGER(our_int), SAVE          :: num_eval = zero_int
 
     REAL(our_dble), SAVE            :: value_step = HUGE_FLOAT
 

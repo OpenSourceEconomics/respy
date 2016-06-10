@@ -52,6 +52,9 @@ MODULE shared_constants
     CHARACTER(225)              :: exec_dir
     CHARACTER(10)               :: request
 
+    ! This variable needs to be accessible for the optimizers and the criterion function    
+    INTEGER(our_int)            :: num_eval = zero_int
+
     ! Variable that allows to use explicit-shape arrays as the input arguments to a whole host of subroutines.
     INTEGER(our_int)            :: max_states_period
 
