@@ -66,7 +66,7 @@ class TestClass(object):
         constr['is_myopic'] = is_myopic
         constr['max_draws'] = max_draws
         constr['parallelism'] = False
-        constr['maxiter'] = 0
+        constr['maxfun'] = 0
 
         init_dict = generate_random_dict(constr)
 
@@ -197,7 +197,7 @@ class TestClass(object):
 
         # Generate random initialization dictionary
         constr = dict()
-        constr['maxiter'] = 0
+        constr['maxfun'] = 0
 
         generate_init(constr)
 
@@ -248,7 +248,7 @@ class TestClass(object):
         # Generate random initialization file
         constr = dict()
         constr['parallelism'] = False
-        constr['maxiter'] = 0
+        constr['maxfun'] = 0
         constr['apply'] = False
         constr['max_draws'] = max_draws
 
@@ -302,7 +302,7 @@ class TestClass(object):
         constr['periods'] = np.random.randint(1, 4)
         constr['agents'] = np.random.randint(1, 100)
         constr['edu'] = (7, 15)
-        constr['maxiter'] = 0
+        constr['maxfun'] = 0
 
         # Simulate a dataset
         generate_init(constr)
@@ -316,6 +316,7 @@ class TestClass(object):
         respy_obj = RespyCls('test.respy.ini')
         estimate(respy_obj)
 
+    @pytest.mark.skipif(True, reason='Refactoring estimation args')
     def test_7(self):
         """ Test the scripts.
         """

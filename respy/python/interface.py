@@ -30,14 +30,13 @@ def respy_interface(respy_obj, request, data_array=None):
     # Distribute class attributes
     model_paras, num_periods, num_agents_est, edu_start, is_debug, edu_max, \
         delta, num_draws_prob, seed_prob, num_draws_emax, seed_emax, \
-        min_idx, is_myopic, is_interpolated, num_points_interp, version, \
-        maxiter, optimizer_used, tau, paras_fixed, optimizer_options, \
+        min_idx, is_myopic, is_interpolated, num_points_interp, version, maxfun, optimizer_used, tau, paras_fixed, optimizer_options, \
         is_parallel, num_procs, seed_sim, num_agents_sim = \
             dist_class_attributes( respy_obj, 'model_paras', 'num_periods',
                 'num_agents_est', 'edu_start', 'is_debug', 'edu_max', 'delta',
                 'num_draws_prob', 'seed_prob', 'num_draws_emax', 'seed_emax',
                 'min_idx', 'is_myopic', 'is_interpolated',
-                'num_points_interp', 'version', 'maxiter', 'optimizer_used',
+                'num_points_interp', 'version', 'maxfun', 'optimizer_used',
                 'tau', 'paras_fixed', 'optimizer_options', 'is_parallel',
                 'num_procs', 'seed_sim', 'num_agents_sim')
 
@@ -47,7 +46,7 @@ def respy_interface(respy_obj, request, data_array=None):
 
     if request == 'estimate':
         # Check that selected optimizer is in line with version of program.
-        if maxiter > 0:
+        if maxfun > 0:
             assert optimizer_used in OPTIMIZERS_PYTH
 
         periods_draws_prob = create_draws(num_periods, num_draws_prob,
@@ -74,25 +73,27 @@ def respy_interface(respy_obj, request, data_array=None):
         # attribute and not the value returned by the optimization algorithm.
         opt_obj = OptimizationClass()
 
-        if maxiter == 0:
+        if maxfun == 0:
             opt_obj.crit_func(x_all_start, *args)
 
         elif optimizer_used == 'SCIPY-BFGS':
 
-            epsilon = optimizer_options['SCIPY-BFGS']['epsilon']
-            gtol = optimizer_options['SCIPY-BFGS']['gtol']
+            bfgs_maxiter = optimizer_options['SCIPY-BFGS']['maxiter']
+            bfgs_epsilon = optimizer_options['SCIPY-BFGS']['epsilon']
+            bfgs_gtol = optimizer_options['SCIPY-BFGS']['gtol']
 
-            fmin_bfgs(opt_obj.crit_func, x_all_start, args=args, gtol=gtol,
-                epsilon=epsilon, maxiter=maxiter, full_output=True, disp=False)
+            fmin_bfgs(opt_obj.crit_func, x_all_start, args=args, gtol=bfgs_gtol,
+                epsilon=bfgs_epsilon, maxiter=bfgs_maxiter, full_output=True,
+                disp=False)
 
         elif optimizer_used == 'SCIPY-POWELL':
 
-            maxfun = optimizer_options['SCIPY-POWELL']['maxfun']
-            xtol = optimizer_options['SCIPY-POWELL']['xtol']
-            ftol = optimizer_options['SCIPY-POWELL']['ftol']
+            powell_maxfun = optimizer_options['SCIPY-POWELL']['maxfun']
+            powell_xtol = optimizer_options['SCIPY-POWELL']['xtol']
+            powell_ftol = optimizer_options['SCIPY-POWELL']['ftol']
 
-            fmin_powell(opt_obj.crit_func, x_all_start, args, xtol, ftol,
-                maxiter, maxfun, disp=0)
+            fmin_powell(opt_obj.crit_func, x_all_start, args, powell_xtol,
+                powell_ftol, None, powell_maxfun, disp=0)
 
     elif request == 'simulate':
 

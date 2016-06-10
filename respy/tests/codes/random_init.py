@@ -97,7 +97,7 @@ def generate_random_dict(constraints=None):
     dict_['ESTIMATION']['seed'] = np.random.randint(1, 10000)
     dict_['ESTIMATION']['file'] = 'data.respy'
     dict_['ESTIMATION']['optimizer'] = np.random.choice(OPTIMIZERS)
-    dict_['ESTIMATION']['maxiter'] = np.random.randint(1, 10000)
+    dict_['ESTIMATION']['maxfun'] = np.random.randint(1, 10000)
     dict_['ESTIMATION']['tau'] = np.random.uniform(100, 500)
 
     # PROGRAM
@@ -148,6 +148,7 @@ def generate_random_dict(constraints=None):
     dict_['SCIPY-BFGS'] = {}
     dict_['SCIPY-BFGS']['epsilon'] = np.random.uniform(0.0000001, 0.1)
     dict_['SCIPY-BFGS']['gtol'] = np.random.uniform(0.0000001, 0.1)
+    dict_['SCIPY-BFGS']['maxiter'] = np.random.randint(1, 10)
 
     # SCIPY-BFGS
     dict_['SCIPY-POWELL'] = {}
@@ -182,7 +183,7 @@ def generate_random_dict(constraints=None):
         assert 'delta' not in keys
 
     if 'is_estimation' in keys:
-        assert 'maxiter' not in keys
+        assert 'maxfun' not in keys
 
     if 'agents' in keys:
         assert 'max_draws' not in keys
@@ -208,14 +209,14 @@ def generate_random_dict(constraints=None):
         dict_['INTERPOLATION']['points'] = points
 
     # Replace number of iterations
-    if 'maxiter' in constraints.keys():
+    if 'maxfun' in constraints.keys():
         # Extract objects
-        maxiter = constraints['maxiter']
+        maxfun = constraints['maxfun']
         # Checks
-        assert (isinstance(maxiter, int))
-        assert (maxiter >= 0)
+        assert (isinstance(maxfun, int))
+        assert (maxfun >= 0)
         # Replace in initialization files
-        dict_['ESTIMATION']['maxiter'] = maxiter
+        dict_['ESTIMATION']['maxfun'] = maxfun
 
     # Replace education
     if 'edu' in constraints.keys():
@@ -343,7 +344,7 @@ def generate_random_dict(constraints=None):
         # Replace in initialization files
         if constraints['is_estimation']:
             dict_['SCIPY-POWELL']['maxfun'] = 1
-            dict_['ESTIMATION']['maxiter'] = 1
+            dict_['ESTIMATION']['maxfun'] = 1
 
     # Finishing
     return dict_

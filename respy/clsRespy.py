@@ -85,7 +85,7 @@ class RespyCls(object):
 
         self.attr['version'] = None
 
-        self.attr['maxiter'] = None
+        self.attr['maxfun'] = None
 
         self.attr['delta'] = None
 
@@ -261,7 +261,7 @@ class RespyCls(object):
 
         self.attr['num_periods'] = init_dict['BASICS']['periods']
 
-        self.attr['maxiter'] = init_dict['ESTIMATION']['maxiter']
+        self.attr['maxfun'] = init_dict['ESTIMATION']['maxfun']
 
         self.attr['edu_start'] = init_dict['EDUCATION']['start']
 
@@ -413,7 +413,7 @@ class RespyCls(object):
 
         version = self.attr['version']
 
-        maxiter = self.attr['maxiter']
+        maxfun = self.attr['maxfun']
 
         delta = self.attr['delta']
 
@@ -502,8 +502,8 @@ class RespyCls(object):
         assert (num_draws_prob > 0)
 
         # Maximum number of iterations
-        assert (isinstance(maxiter, int))
-        assert (maxiter >= 0)
+        assert (isinstance(maxfun, int))
+        assert (maxfun >= 0)
 
         # Optimizers
         assert (optimizer_used in ['SCIPY-BFGS', 'SCIPY-POWELL',

@@ -27,18 +27,18 @@ def resfort_interface(respy_obj, request, data_array=None):
         version, num_draws_emax, seed_emax, is_interpolated, num_points_interp, \
         is_myopic, min_idx, store, tau, is_parallel, num_procs, \
         num_agents_sim, num_draws_prob, num_agents_est, seed_prob, seed_sim, \
-        paras_fixed, optimizer_options, optimizer_used, maxiter = \
+        paras_fixed, optimizer_options, optimizer_used, maxfun = \
             dist_class_attributes(respy_obj,
                 'model_paras', 'num_periods', 'edu_start', 'is_debug',
                 'edu_max', 'delta', 'version', 'num_draws_emax', 'seed_emax',
                 'is_interpolated', 'num_points_interp', 'is_myopic', 'min_idx',
                 'store', 'tau', 'is_parallel', 'num_procs', 'num_agents_sim',
                 'num_draws_prob', 'num_agents_est', 'seed_prob', 'seed_sim',
-                'paras_fixed', 'optimizer_options', 'optimizer_used', 'maxiter')
+                'paras_fixed', 'optimizer_options', 'optimizer_used', 'maxfun')
 
     if request == 'estimate':
         # Check that selected optimizer is in line with version of program.
-        if maxiter > 0:
+        if maxfun > 0:
             assert optimizer_used in OPTIMIZERS_FORT
 
         assert data_array is not None
@@ -57,7 +57,7 @@ def resfort_interface(respy_obj, request, data_array=None):
 
     args = args + (num_draws_prob, num_agents_est, num_agents_sim, seed_prob,
     seed_emax, tau, num_procs, request, seed_sim, optimizer_options,
-    optimizer_used, maxiter)
+    optimizer_used, maxfun)
 
     write_resfort_initialization(*args)
 
@@ -182,7 +182,7 @@ def write_resfort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         shocks_cholesky, is_interpolated, num_draws_emax, num_periods,
         num_points_interp, is_myopic, edu_start, is_debug, edu_max, min_idx, delta,
         num_draws_prob, num_agents_est, num_agents_sim, seed_prob, seed_emax,
-        tau, num_procs, request, seed_sim, optimizer_options, optimizer_used, maxiter):
+        tau, num_procs, request, seed_sim, optimizer_options, optimizer_used, maxfun):
     """ Write out model request to hidden file .model.resfort.ini.
     """
 
@@ -242,7 +242,7 @@ def write_resfort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         file_.write(line)
 
         # ESTIMATION
-        line = '{0:10d}\n'.format(maxiter)
+        line = '{0:10d}\n'.format(maxfun)
         file_.write(line)
 
         line = '{0:10d}\n'.format(num_agents_est)

@@ -78,7 +78,7 @@ def add_gradient_information(respy_obj):
 
     opt_obj.set_attr('version', version)
 
-    opt_obj.set_attr('maxiter', 0)
+    opt_obj.set_attr('maxfun', 0)
 
     opt_obj.lock()
 
@@ -168,7 +168,7 @@ def scripts_estimate(resume, single, init_file, gradient):
     # function is requested.
     if single:
         respy_obj.unlock()
-        respy_obj.set_attr('maxiter', 0)
+        respy_obj.set_attr('maxfun', 0)
         respy_obj.lock()
 
     # Optimize the criterion function.
