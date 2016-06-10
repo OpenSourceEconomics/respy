@@ -89,7 +89,7 @@ SUBROUTINE dfpmin(func, dfunc, p, gtol, maxiter, stpmx, maxfun, success, message
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
-	
+
 	fp = func(p)
 	g = dfunc(p)
 	
@@ -108,6 +108,15 @@ SUBROUTINE dfpmin(func, dfunc, p, gtol, maxiter, stpmx, maxfun, success, message
 		iter = its
 
 		CALL lnsrch(p, fp, g, xi, pnew, fret, stpmax, check, func)
+
+		IF (num_eval == maxfun) THEN
+
+			success = .False.
+			message = 'Maximum number of evaluations reached.'
+
+			RETURN
+
+		END IF
 
 		fp = fret		
 		xi = pnew - p
@@ -229,6 +238,9 @@ SUBROUTINE lnsrch(xold, fold, g, p, x, f, stpmax, check, func)
 		
 		f = func(x)
 		
+		IF (num_eval == maxfun) RETURN
+
+
 		IF (alam < alamin) THEN
 
 			x(:) = xold(:)
