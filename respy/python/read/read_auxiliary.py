@@ -25,7 +25,7 @@ STRUCTURE['ESTIMATION'] += ['tau', 'file', 'agents']
 STRUCTURE['PROGRAM'] = ['debug', 'version', 'parallelism', 'procs']
 STRUCTURE['INTERPOLATION'] = ['apply', 'points']
 STRUCTURE['SCIPY-BFGS'] = ['gtol', 'epsilon', 'maxiter']
-STRUCTURE['SCIPY-POWELL'] = ['maxfun', 'xtol', 'ftol']
+STRUCTURE['SCIPY-POWELL'] = ['maxfun', 'xtol', 'ftol', 'maxiter']
 STRUCTURE['FORT-NEWUOA'] = ['maxfun', 'npt', 'rhobeg', 'rhoend']
 STRUCTURE['FORT-BFGS'] = ['maxiter', 'stpmx', 'gtol', 'epsilon']
 

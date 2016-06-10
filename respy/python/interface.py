@@ -88,12 +88,13 @@ def respy_interface(respy_obj, request, data_array=None):
 
         elif optimizer_used == 'SCIPY-POWELL':
 
+            powell_maxiter = optimizer_options['SCIPY-POWELL']['maxiter']
             powell_maxfun = optimizer_options['SCIPY-POWELL']['maxfun']
             powell_xtol = optimizer_options['SCIPY-POWELL']['xtol']
             powell_ftol = optimizer_options['SCIPY-POWELL']['ftol']
 
             fmin_powell(opt_obj.crit_func, x_all_start, args, powell_xtol,
-                powell_ftol, None, powell_maxfun, disp=0)
+                powell_ftol, powell_maxiter, powell_maxfun, disp=0)
 
     elif request == 'simulate':
 

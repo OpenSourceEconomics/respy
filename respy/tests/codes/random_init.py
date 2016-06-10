@@ -155,6 +155,7 @@ def generate_random_dict(constraints=None):
     dict_['SCIPY-POWELL']['xtol'] = np.random.uniform(0.0000001, 0.1)
     dict_['SCIPY-POWELL']['ftol'] = np.random.uniform(0.0000001, 0.1)
     dict_['SCIPY-POWELL']['maxfun'] = np.random.randint(1, 100)
+    dict_['SCIPY-POWELL']['maxiter'] = np.random.randint(1, 100)
 
     # FORT-NEWUOA
     rhobeg = np.random.uniform(0.0000001, 0.1)
@@ -343,7 +344,8 @@ def generate_random_dict(constraints=None):
         assert (constraints['is_estimation'] in [True, False])
         # Replace in initialization files
         if constraints['is_estimation']:
-            dict_['SCIPY-POWELL']['maxfun'] = 1
+            dict_['SCIPY-POWELL']['maxfun'] = 1 # TODO: This can probably go
+            # once the new estimation setup is running.
             dict_['ESTIMATION']['maxfun'] = 1
 
     # Finishing

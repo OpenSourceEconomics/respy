@@ -110,9 +110,13 @@ def _check_input(respy_obj, data_frame):
 
     if 'SCIPY-POWELL' in optimizer_options.keys():
 
+        maxiter = optimizer_options['SCIPY-POWELL']['maxiter']
         maxfun = optimizer_options['SCIPY-POWELL']['maxfun']
         xtol = optimizer_options['SCIPY-POWELL']['xtol']
         ftol = optimizer_options['SCIPY-POWELL']['ftol']
+
+        assert isinstance(maxiter, int)
+        assert (maxiter > 0)
 
         assert isinstance(maxfun, int)
         assert (maxfun > 0)

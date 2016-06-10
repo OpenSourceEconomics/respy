@@ -31,34 +31,36 @@ else:
 # We need to be explicit about the PYTHON version as otherwise the F2PY
 # libraries are not compiled in accordance with the PYTHON version used by
 # for the execution of the script.
-if True:
-    cwd = os.getcwd()
-    os.chdir(PACKAGE_DIR + '/respy')
-    subprocess.call(python_bin + ' waf distclean', shell=True)
-    subprocess.call(python_bin + ' waf configure build --debug --without_mpi',
-        shell=True)
-    os.chdir(cwd)
+cwd = os.getcwd()
+os.chdir(PACKAGE_DIR + '/respy')
+subprocess.call(python_bin + ' waf distclean', shell=True)
+subprocess.call(python_bin + ' waf configure build --debug --without_mpi',
+    shell=True)
+os.chdir(cwd)
 
 # Import package. The late import is required as the compilation needs to
 # take place first.
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
-from respy.python.shared.shared_auxiliary import print_init_dict
-
-from respy import RespyCls
-from respy import simulate
-from respy import estimate
 
 ################################################################################
 # RUN
 ################################################################################
-idx = 3
-
 fname = 'test_vault_' + str(PYTHON_VERSION) + '.respy.pkl'
-tests = pkl.load(open(TEST_RESOURCES_DIR + '/' + fname, 'rb'))
-print('\n Test ', idx, 'with version ', PYTHON_VERSION)
-init_dict, crit_val = tests[idx]
-print_init_dict(init_dict)
-respy_obj = RespyCls('test.respy.ini')
-simulate(respy_obj)
-np.testing.assert_almost_equal(estimate(respy_obj)[1], crit_val)
+tests_old = pkl.load(open(TEST_RESOURCES_DIR + '/' + fname, 'rb'))
 
+tests_new = []
+for idx, _ in enumerate(tests_old):
+    print('\n Modfiying Test ', idx, 'with version ', PYTHON_VERSION)
+    init_dict, crit_val = tests_old[idx]
+
+    # TEMPORARY
+    init_dict['ESTIMATION']['maxfun'] = 0
+
+    del init_dict['ESTIMATION']['maxiter']
+
+    init_dict['SCIPY-BFGS']['maxiter'] = 1
+    init_dict['SCIPY-POWELL']['maxiter'] = 1
+
+    tests_new += [(init_dict, crit_val)]
+
+pkl.dump(tests_new, open(fname, 'wb'))
