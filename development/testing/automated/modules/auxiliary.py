@@ -61,7 +61,7 @@ def finalize_testing_record(full_test_record):
 
     # Indicate that test run is finished
     with open('report.testing.log', 'a') as log_file:
-        log_file.write('\tRUN COMPLETED\n\n')
+        log_file.write('\n\tRUN COMPLETED\n\n')
         fmt_ = '\t\t{0[0]:<15}{0[1]:>9}\n\n'
         log_file.write(fmt_.format(['TOTAL TESTS', total_tests]))
         log_file.write(fmt_.format(['FAILED TESTS', failed_tests]))
