@@ -1,16 +1,18 @@
 #!/usr/bin/env python
 
-
+# standard library
 import numpy as np
 import time
 import os
+
+# project library
+from respy.python.estimate.estimate_auxiliary import dist_optim_paras
 
 file_current = 'opt_info_current.respy.log'
 file_start = 'opt_info_start.respy.log'
 file_step = 'opt_info_step.respy.log'
 
 
-from respy.python.estimate.estimate_auxiliary import dist_optim_paras
 
 def update_information(num_start, value_start, paras_start, num_steps,
         value_step, paras_step, num_evals, value_current, paras_current):

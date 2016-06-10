@@ -204,7 +204,7 @@ class TestClass(object):
         if 'one' in fname:
             rslt = 0.261487735867433
         elif 'two' in fname:
-            rslt = 1.118242514893393
+            rslt = 1.126138097174159
         elif 'three' in fname:
             rslt = 1.904800495149656
 
