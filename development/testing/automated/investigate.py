@@ -26,7 +26,7 @@ sys.path.insert(0, PACKAGE_DIR + 'respy/tests')
 VERSIONS = ['PYTHON', 'FORTRAN', 'F2PY']
 
 # Recompiling during debugging
-if False:
+if True:
     cwd = os.getcwd()
     os.chdir(PACKAGE_DIR + '/respy')
     subprocess.call('./waf distclean', shell=True)

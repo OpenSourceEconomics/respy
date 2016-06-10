@@ -58,7 +58,7 @@ SUBROUTINE NEWUOA (FUNC, X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUCCESS, MESSAG
 
     INTEGER(our_int)                :: N
 
-    REAL(our_dble)                  :: W(100000)
+    REAL(our_dble), ALLOCATABLE     :: W(:)
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -123,6 +123,11 @@ SUBROUTINE NEWUOA (FUNC, X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUCCESS, MESSAG
     ID=IZMAT+NPT*NPTM
     IVL=ID+N
     IW=IVL+NDIM
+
+    ! The dimension of the working space W is directly linked to the other 
+    ! input parameters (see interface below).
+    ALLOCATE(W(MAX(IXB, IXO, IXN, IXP, IFV, IGQ, IHQ, IPQ, IBMAT, IZMAT, ID, IVL, IW)))
+
 !C
 !C     The above settings provide a partition of W for subroutine NEWUOB.
 !C     The partition requires the first NPT*(NPT+N)+5*N*(N+3)/2 elements of
