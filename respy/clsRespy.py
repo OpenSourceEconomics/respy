@@ -37,6 +37,8 @@ class RespyCls(object):
         self.attr['init_dict'] = read(fname)
 
         # Constitutive attributes
+        self.attr['num_points_interp'] = None
+
         self.attr['optimizer_options'] = None
 
         self.attr['is_interpolated'] = None
@@ -59,11 +61,7 @@ class RespyCls(object):
 
         self.attr['is_parallel'] = None
 
-        self.attr['num_points_interp'] = None
-
         self.attr['num_procs'] = None
-
-        self.attr['seed_sim'] = None
 
         self.attr['seed_prob'] = None
 
@@ -74,6 +72,8 @@ class RespyCls(object):
         self.attr['is_solved'] = None
 
         self.attr['edu_start'] = None
+
+        self.attr['seed_sim'] = None
 
         self.attr['is_debug'] = None
 

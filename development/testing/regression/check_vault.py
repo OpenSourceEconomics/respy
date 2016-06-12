@@ -20,7 +20,7 @@ PYTHON_VERSION = sys.version_info[0]
 ################################################################################
 # Compile
 ################################################################################
-python3_bin = "/home/peisenha/.envs/restudToolbox/bin/python"
+python3_bin = "/home/peisenha/.envs/restudToolbox3/bin/python"
 python2_bin = "/home/peisenha/.envs/restudToolbox2/bin/python"
 
 if PYTHON_VERSION == 2:
