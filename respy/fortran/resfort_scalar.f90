@@ -37,11 +37,13 @@ PROGRAM resfort_scalar
     INTEGER(our_int)                :: newuoa_npt
     
     REAL(our_dble)                  :: newuoa_rhobeg
-    REAL(our_dble)                  :: newuoa_rhoend
+    REAL(our_dble)                  :: newuoa_rhoend    
 
-
+    INTEGER(our_int)            :: num_procs
     INTEGER(our_int)                :: iter
     LOGICAL                         :: success
+
+
     CHARACTER(150)                  :: message
 
     CHARACTER(225)                  :: optimizer_used
@@ -51,20 +53,20 @@ PROGRAM resfort_scalar
 !------------------------------------------------------------------------------
 
 
-    CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, delta, tau, seed_sim, seed_emax, seed_prob, maxfun, optimizer_used, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend, bfgs_epsilon, bfgs_gtol, bfgs_stpmx, bfgs_maxiter)
+    CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, is_debug, is_interpolated, maxfun, optimizer_used, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend, bfgs_epsilon, bfgs_gtol, bfgs_stpmx, bfgs_maxiter)
 
-    CALL create_draws(periods_draws_emax, num_draws_emax, seed_emax)
+    CALL create_draws(periods_draws_emax, num_draws_emax, seed_emax, is_debug)
 
     ALLOCATE(data_sim(num_periods * num_agents_sim, 8))
 
 
     IF (request == 'solve') THEN
 
-        CALL fort_solve(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax, delta)
+        CALL fort_solve(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax, delta, is_debug, is_interpolated)
 
     ELSE IF (request == 'estimate') THEN
 
-        CALL create_draws(periods_draws_prob, num_draws_prob, seed_prob)
+        CALL create_draws(periods_draws_prob, num_draws_prob, seed_prob, is_debug)
 
         CALL read_dataset(data_est, num_agents_est)
 
@@ -72,9 +74,9 @@ PROGRAM resfort_scalar
 
   ELSE IF (request == 'simulate') THEN
 
-        CALL create_draws(periods_draws_sims, num_agents_sim, seed_sim)
+        CALL create_draws(periods_draws_sims, num_agents_sim, seed_sim, is_debug)
 
-        CALL fort_solve(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax, delta)
+        CALL fort_solve(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax, delta, is_debug, is_interpolated)
 
         CALL fort_simulate(data_sim, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, num_agents_sim, periods_draws_sims, shocks_cholesky, delta)
 

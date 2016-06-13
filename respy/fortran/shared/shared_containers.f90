@@ -24,6 +24,12 @@ MODULE shared_containers
     REAL(our_dble)                  :: delta
     REAL(our_dble)                  :: tau
 
+    ! Parameters for the optimization
+    INTEGER(our_int)            :: maxfun
+
+    LOGICAL                     :: is_interpolated
+    LOGICAL                     :: is_debug
+
 !******************************************************************************
 !******************************************************************************
 END MODULE 

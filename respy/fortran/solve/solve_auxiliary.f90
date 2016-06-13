@@ -234,7 +234,7 @@ SUBROUTINE fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_number_period, periods_payoffs_systematic, mapping_state_idx, states_all, shocks_cholesky, delta)
+SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_number_period, periods_payoffs_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated)
 
     !/* external objects        */
 
@@ -248,6 +248,9 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
     INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 4)
     INTEGER(our_int), INTENT(IN)        :: states_number_period(num_periods)
+
+    LOGICAL, INTENT(IN)                 :: is_interpolated
+    LOGICAL, INTENT(IN)                 :: is_debug
 
     !/* internals objects       */
 
@@ -302,7 +305,7 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
 
             ALLOCATE(is_simulated(num_states), endogenous(num_states), maxe(num_states), exogenous(num_states, 9), predictions(num_states))
 
-            is_simulated = get_simulated_indicator(num_points_interp, num_states, period)
+            is_simulated = get_simulated_indicator(num_points_interp, num_states, period, is_debug)
 
             CALL get_exogenous_variables(exogenous, maxe, period, num_states, periods_payoffs_systematic, shifts, mapping_state_idx, periods_emax, states_all, delta)
 
@@ -333,13 +336,15 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-FUNCTION get_simulated_indicator(num_points, num_states, period)
+FUNCTION get_simulated_indicator(num_points, num_states, period, is_debug)
 
     !/* external objects        */
 
     INTEGER(our_int), INTENT(IN)      :: num_states
     INTEGER(our_int), INTENT(IN)      :: num_points
     INTEGER(our_int), INTENT(IN)      :: period
+
+    LOGICAL, INTENT(IN)               :: is_debug 
 
     !/* internal objects        */
 
