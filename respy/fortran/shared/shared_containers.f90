@@ -1,5 +1,7 @@
 MODULE shared_containers
 
+    ! This module declares all those variables that are required as part of the evaluation of the criterion function.
+
     USE shared_constants
 
     !/* setup                   */
@@ -18,6 +20,8 @@ MODULE shared_containers
     REAL(our_dble), ALLOCATABLE     :: periods_draws_emax(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: periods_emax(:, :)
     REAL(our_dble), ALLOCATABLE     :: data_est(:, :)
+
+    REAL(our_dble)                  :: delta
 
 !******************************************************************************
 !******************************************************************************

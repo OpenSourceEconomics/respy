@@ -55,6 +55,7 @@ else:
     import resources.f2py_interface as fort_debug
 
 
+@pytest.mark.skipif(True, reason='No parallelism available')
 @pytest.mark.usefixtures('fresh_directory', 'set_seed')
 class TestClass(object):
     """ This class groups together some tests.

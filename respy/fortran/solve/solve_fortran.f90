@@ -17,7 +17,7 @@ MODULE solve_fortran
  CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax)
+SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax, delta)
 
     !/* external objects        */
 
@@ -34,7 +34,8 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, mapping_
     REAL(our_dble), INTENT(IN)                      :: coeffs_edu(3)
     REAL(our_dble), INTENT(IN)                      :: coeffs_a(6)
     REAL(our_dble), INTENT(IN)                      :: coeffs_b(6)
-
+    REAL(our_dble), INTENT(IN)                      :: delta
+    
     !/* internal objects        */
 
     INTEGER(our_int)                                :: period
@@ -69,7 +70,7 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, mapping_
     
     ELSE
 
-        CALL fort_backward_induction(periods_emax, periods_draws_emax, states_number_period, periods_payoffs_systematic, mapping_state_idx, states_all, shocks_cholesky)
+        CALL fort_backward_induction(periods_emax, periods_draws_emax, states_number_period, periods_payoffs_systematic, mapping_state_idx, states_all, shocks_cholesky, delta)
 
         CALL logging_solution(-1)
         

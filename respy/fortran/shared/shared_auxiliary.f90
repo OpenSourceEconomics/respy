@@ -57,7 +57,7 @@ SUBROUTINE transform_disturbances(draws_transformed, draws, shocks_cholesky, num
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_total_value(total_payoffs, period, payoffs_systematic, draws, mapping_state_idx, periods_emax, k, states_all)
+SUBROUTINE get_total_value(total_payoffs, period, payoffs_systematic, draws, mapping_state_idx, periods_emax, k, states_all, delta)
 
     !/* external objects        */
 
@@ -71,7 +71,8 @@ SUBROUTINE get_total_value(total_payoffs, period, payoffs_systematic, draws, map
     REAL(our_dble), INTENT(IN)      :: payoffs_systematic(4)
     REAL(our_dble), INTENT(IN)      :: periods_emax(num_periods, max_states_period)
     REAL(our_dble), INTENT(IN)      :: draws(4)
-
+    REAL(our_dble), INTENT(IN)      :: delta
+    
     !/* internal objects        */
 
     REAL(our_dble)                  :: payoffs_future(4)
@@ -544,7 +545,7 @@ SUBROUTINE store_results(mapping_state_idx, states_all, periods_payoffs_systemat
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, maxfun, optimizer_used, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend, bfgs_epsilon, bfgs_gtol, bfgs_stpmx, bfgs_maxiter)
+SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, delta, maxfun, optimizer_used, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend, bfgs_epsilon, bfgs_gtol, bfgs_stpmx, bfgs_maxiter)
 
     !
     !   This function serves as the replacement for the RespyCls and reads in
@@ -559,6 +560,7 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
     REAL(our_dble), INTENT(OUT)     :: coeffs_edu(3)
     REAL(our_dble), INTENT(OUT)     :: coeffs_a(6)
     REAL(our_dble), INTENT(OUT)     :: coeffs_b(6)
+    REAL(our_dble), INTENT(OUT)     :: delta
 
     INTEGER(our_int), INTENT(OUT)   :: maxfun
 
