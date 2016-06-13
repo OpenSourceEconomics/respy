@@ -81,8 +81,6 @@ SUBROUTINE fort_estimate(crit_val, success, message, coeffs_a, coeffs_b, coeffs_
         
     ELSEIF (optimizer_used == 'FORT-BFGS') THEN
 
-        PRINT *, num_eval, maxfun
-
         CALL dfpmin(fort_criterion, fort_dcriterion, x_final, bfgs_gtol, bfgs_maxiter, bfgs_stpmx, maxfun, success, message, iter)
 
     END IF
@@ -129,7 +127,7 @@ FUNCTION fort_criterion(x)
 
     CALL fort_solve(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax, delta)
 
-    CALL fort_evaluate(fort_criterion, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_est, periods_draws_prob, delta)
+    CALL fort_evaluate(fort_criterion, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_est, periods_draws_prob, delta, tau)
 
 
     num_eval = num_eval + 1

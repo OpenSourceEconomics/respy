@@ -17,13 +17,14 @@ MODULE evaluate_auxiliary
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-FUNCTION get_smoothed_probability(total_payoffs, idx)
+FUNCTION get_smoothed_probability(total_payoffs, idx, tau)
 
     !/* external objects        */
 
     INTEGER(our_int), INTENT(IN)    :: idx
 
     REAL(our_dble), INTENT(IN)      :: total_payoffs(4)
+    REAL(our_dble), INTENT(IN)      :: tau
 
     !/*  internal objects       */
 

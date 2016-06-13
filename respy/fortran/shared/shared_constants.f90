@@ -39,8 +39,6 @@ MODULE shared_constants
     INTEGER(our_int)            :: edu_max   
     INTEGER(our_int)            :: min_idx
 
-    REAL(our_dble)              :: tau
-
     REAL(our_dble)              :: bfgs_epsilon
 
 

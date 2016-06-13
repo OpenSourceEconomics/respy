@@ -19,7 +19,7 @@ MODULE evaluate_fortran
  CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_evaluate, periods_draws_prob, delta)
+SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_evaluate, periods_draws_prob, delta, tau)
 
     !   DEVELOPMENT NOTES
     !
@@ -35,7 +35,8 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, pe
     REAL(our_dble), INTENT(IN)      :: shocks_cholesky(4, 4)
     REAL(our_dble), INTENT(IN)      :: data_evaluate(:, :)
     REAL(our_dble), INTENT(IN)      :: delta
-    
+    REAL(our_dble), INTENT(IN)      :: tau
+        
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
 
@@ -181,7 +182,7 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, pe
                 counts(MAXLOC(total_payoffs)) = counts(MAXLOC(total_payoffs)) + 1
 
                 ! Get the smoothed choice probability
-                prob_choice = get_smoothed_probability(total_payoffs, idx)
+                prob_choice = get_smoothed_probability(total_payoffs, idx, tau)
                 prob_obs = prob_obs + prob_choice * prob_wage
 
             END DO
