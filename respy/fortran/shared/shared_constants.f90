@@ -56,11 +56,6 @@ MODULE shared_constants
     ! Variable that allows to use explicit-shape arrays as the input arguments to a whole host of subroutines.
     INTEGER(our_int)            :: max_states_period
 
-    ! Housekeeping variables
-    INTEGER(our_int)            :: seed_inflated(15)
-    INTEGER(our_int)            :: seed_size
-
-
     ! Variables that need to be aligned across FORTRAN and PYTHON  implementations.
     INTEGER(our_int), PARAMETER :: MISSING_INT                  = -99_our_int
 

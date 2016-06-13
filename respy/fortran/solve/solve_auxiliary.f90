@@ -268,8 +268,10 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
 
     LOGICAL                             :: any_interpolated
     LOGICAL                             :: is_write = .True.
-
+    
     LOGICAL, ALLOCATABLE                :: is_simulated(:)
+    INTEGER(our_int)                    :: seed_inflated(15)
+    INTEGER(our_int)                    :: seed_size
 
 !------------------------------------------------------------------------------
 ! Algorithm
