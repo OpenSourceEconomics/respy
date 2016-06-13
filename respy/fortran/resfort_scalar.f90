@@ -24,6 +24,9 @@ PROGRAM resfort_scalar
     REAL(our_dble), ALLOCATABLE     :: periods_draws_sims(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: data_sim(:, :)
 
+    INTEGER(our_int)                :: seed_prob
+    INTEGER(our_int)                :: seed_emax
+    INTEGER(our_int)                :: seed_sim
 
     INTEGER(our_int)                :: bfgs_maxiter
     REAL(our_dble)                  :: bfgs_stpmx
@@ -48,7 +51,7 @@ PROGRAM resfort_scalar
 !------------------------------------------------------------------------------
 
 
-    CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, delta, tau, maxfun, optimizer_used, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend, bfgs_epsilon, bfgs_gtol, bfgs_stpmx, bfgs_maxiter)
+    CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, delta, tau, seed_sim, seed_emax, seed_prob, maxfun, optimizer_used, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend, bfgs_epsilon, bfgs_gtol, bfgs_stpmx, bfgs_maxiter)
 
     CALL create_draws(periods_draws_emax, num_draws_emax, seed_emax)
 
