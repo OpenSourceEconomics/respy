@@ -22,7 +22,7 @@ script:
   - travis_wait tox -e py27 -v
   - travis_wait tox -e py34 -v
   - travis_wait tox -e py35 -v
-  - python tools/travis_run.py
+  - python tools/travis/run.py
 
 after_success:
   - codecov

@@ -8,7 +8,7 @@ allows.
 import os
 
 # Specify request
-HOURS, NOTIFICATION = 0.0000001, True
+HOURS, NOTIFICATION = 6, True
 
 # Get some basic information about the system.
 LOADAVG = os.getloadavg()[2]
