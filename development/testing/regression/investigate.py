@@ -51,7 +51,7 @@ from respy import estimate
 ################################################################################
 # RUN
 ################################################################################
-idx = 3
+idx = 4
 
 fname = 'test_vault_' + str(PYTHON_VERSION) + '.respy.pkl'
 tests = pkl.load(open(TEST_RESOURCES_DIR + '/' + fname, 'rb'))

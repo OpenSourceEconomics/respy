@@ -93,11 +93,10 @@ SUBROUTINE dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_optim_paras(x, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky)
+SUBROUTINE get_free_optim_paras(x, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed)
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(OUT)     :: x(26)
 
     REAL(our_dble), INTENT(IN)      :: shocks_cholesky(4, 4)
     REAL(our_dble), INTENT(IN)      :: coeffs_home(1)
@@ -105,25 +104,63 @@ SUBROUTINE get_optim_paras(x, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
     REAL(our_dble), INTENT(IN)      :: coeffs_a(6)
     REAL(our_dble), INTENT(IN)      :: coeffs_b(6)
 
+    LOGICAL, INTENT(IN)             :: paras_fixed(26)
+
+    REAL(our_dble), INTENT(OUT)     :: x(COUNT(.not. paras_fixed))
+
+
+    INTEGER(our_int)                :: i
+    INTEGER(our_int)                :: j
+
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    x(1:6) = coeffs_a(:)
-        
-    x(7:12) = coeffs_b(:)
-        
-    x(13:15) = coeffs_edu(:)
-        
-    x(16:16) = coeffs_home(:)
+    j = 1
 
-    x(17:20) = shocks_cholesky(1, :)
-        
-    x(21:23) = shocks_cholesky(2, 2:)
-        
-    x(24:25) = shocks_cholesky(3, 3:)
-        
-    x(26:26) = shocks_cholesky(4, 4:)
+    DO i = 1, 26
+
+        IF(paras_fixed(i)) CYCLE
+
+        ! Occupation A
+        IF(i == 1)  x(j) = coeffs_a(1)
+        IF(i == 2)  x(j) = coeffs_a(2)
+        IF(i == 3)  x(j) = coeffs_a(3)
+        IF(i == 4)  x(j) = coeffs_a(4)
+        IF(i == 5)  x(j) = coeffs_a(5)
+        IF(i == 6)  x(j) = coeffs_a(6)
+
+        ! Occupation B
+        IF(i == 7)  x(j) = coeffs_b(1)
+        IF(i == 8)  x(j) = coeffs_b(2)
+        IF(i == 9)  x(j) = coeffs_b(3)
+        IF(i == 10) x(j) = coeffs_b(4)
+        IF(i == 11) x(j) = coeffs_b(5)
+        IF(i == 12) x(j) = coeffs_b(6)
+
+        ! Education
+        IF(i == 13) x(j) = coeffs_edu(1)
+        IF(i == 14) x(j) = coeffs_edu(2)
+        IF(i == 15) x(j) = coeffs_edu(3)
+
+        ! Home
+        IF(i == 16) x(j) = coeffs_home(1)
+
+        ! Cholesky
+        IF(i == 17) x(j) = shocks_cholesky(1, 1)
+        IF(i == 18) x(j) = shocks_cholesky(1, 2)
+        IF(i == 19) x(j) = shocks_cholesky(1, 3)
+        IF(i == 20) x(j) = shocks_cholesky(1, 4)
+        IF(i == 21) x(j) = shocks_cholesky(2, 2)
+        IF(i == 22) x(j) = shocks_cholesky(2, 3)
+        IF(i == 23) x(j) = shocks_cholesky(2, 4)
+        IF(i == 24) x(j) = shocks_cholesky(3, 3)
+        IF(i == 25) x(j) = shocks_cholesky(3, 4)
+        IF(i == 26) x(j) = shocks_cholesky(4, 4)
+
+        j = j + 1
+
+    END DO
 
 END SUBROUTINE
 !******************************************************************************

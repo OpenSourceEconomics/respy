@@ -554,7 +554,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_payoffs
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, is_debug, is_interpolated, is_myopic, request, exec_dir, maxfun, optimizer_used, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend, bfgs_epsilon, bfgs_gtol, bfgs_stpmx, bfgs_maxiter)
+SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, is_debug, is_interpolated, is_myopic, request, exec_dir, maxfun, paras_fixed, optimizer_used, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend, bfgs_epsilon, bfgs_gtol, bfgs_stpmx, bfgs_maxiter)
 
     !
     !   This function serves as the replacement for the RespyCls and reads in
@@ -595,9 +595,11 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
 
     CHARACTER(10), INTENT(OUT)      :: request
 
+
     LOGICAL, INTENT(OUT)            :: is_interpolated
     LOGICAL, INTENT(OUT)            :: is_myopic 
     LOGICAL, INTENT(OUT)            :: is_debug
+    LOGICAL, INTENT(OUT)            :: paras_fixed(26)
 
     !/* internal objects        */
 
@@ -665,6 +667,7 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
         ! AUXILIARY
         READ(1, 1505) min_idx
         READ(1, *) is_myopic
+        READ(1, *) paras_fixed
 
         ! REQUUEST
         READ(1, *) request

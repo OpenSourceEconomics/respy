@@ -17,8 +17,6 @@ PROGRAM resfort_scalar
     REAL(our_dble)                  :: coeffs_edu(3)
     REAL(our_dble)                  :: coeffs_a(6)
     REAL(our_dble)                  :: coeffs_b(6)
-    REAL(our_dble)                  :: x_start(26)
-    REAL(our_dble)                  :: x_final(26)
     REAL(our_dble)                  :: crit_val
 
     REAL(our_dble), ALLOCATABLE     :: periods_draws_sims(:, :, :)
@@ -55,7 +53,7 @@ PROGRAM resfort_scalar
 !------------------------------------------------------------------------------
 
 
-    CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, is_debug, is_interpolated, is_myopic, request, exec_dir, maxfun, optimizer_used, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend, bfgs_epsilon, bfgs_gtol, bfgs_stpmx, bfgs_maxiter)
+    CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, is_debug, is_interpolated, is_myopic, request, exec_dir, maxfun, paras_fixed, optimizer_used, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend, bfgs_epsilon, bfgs_gtol, bfgs_stpmx, bfgs_maxiter)
 
     CALL create_draws(periods_draws_emax, num_draws_emax, seed_emax, is_debug)
 
@@ -72,7 +70,7 @@ PROGRAM resfort_scalar
 
         CALL read_dataset(data_est, num_agents_est)
 
-        CALL fort_estimate(crit_val, success, message, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, optimizer_used, maxfun, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, newuoa_maxfun, bfgs_gtol, bfgs_maxiter, bfgs_stpmx)
+        CALL fort_estimate(crit_val, success, message, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed, optimizer_used, maxfun, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, newuoa_maxfun, bfgs_gtol, bfgs_maxiter, bfgs_stpmx)
 
   ELSE IF (request == 'simulate') THEN
 

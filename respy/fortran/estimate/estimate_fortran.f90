@@ -26,7 +26,7 @@ MODULE estimate_fortran
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_estimate(crit_val, success, message, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, optimizer_used, maxfun, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, newuoa_maxfun, bfgs_gtol, bfgs_maxiter, bfgs_stpmx)
+SUBROUTINE fort_estimate(crit_val, success, message, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed, optimizer_used, maxfun, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, newuoa_maxfun, bfgs_gtol, bfgs_maxiter, bfgs_stpmx)
 
     !/* external objects    */
 
@@ -52,41 +52,46 @@ SUBROUTINE fort_estimate(crit_val, success, message, coeffs_a, coeffs_b, coeffs_
 
     CHARACTER(225), INTENT(IN)      :: optimizer_used
 
+    LOGICAL, INTENT(IN)             :: paras_fixed(26) 
     !/* internal objects    */
 
-    REAL(our_dble)                  :: x_start(26)
-    REAL(our_dble)                  :: x_final(26)
+    REAL(our_dble)                  :: x_free_start(COUNT(.not. paras_fixed))
+    REAL(our_dble)                  :: x_free_final(COUNT(.not. paras_fixed))
     
     INTEGER(our_int)                :: iter
     INTEGER(our_int)                :: maxfun_int
     LOGICAL, INTENT(OUT)                         :: success
     CHARACTER(150), INTENT(OUT)                  :: message
+
+    LOGICAL, PARAMETER :: all_free(26) = .False.
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
     
-    CALL get_optim_paras(x_start, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky)
+    CALL get_free_optim_paras(x_free_start, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed)
 
-    x_final = x_start
+    CALL get_free_optim_paras(x_all_start, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, all_free)
 
- 
+    x_free_final = x_free_start
+
+
     IF (maxfun == zero_int) THEN
+
 
     ELSEIF (optimizer_used == 'FORT-NEWUOA') THEN
 
         ! This is required to keep the original design of the algorithm intact
         maxfun_int = MIN(maxfun, newuoa_maxfun) - 1 
 
-        CALL newuoa(fort_criterion, x_final, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, zero_int, maxfun_int, success, message, iter)
+        CALL newuoa(fort_criterion, x_free_final, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, zero_int, maxfun_int, success, message, iter)
         
     ELSEIF (optimizer_used == 'FORT-BFGS') THEN
 
-        CALL dfpmin(fort_criterion, fort_dcriterion, x_final, bfgs_gtol, bfgs_maxiter, bfgs_stpmx, maxfun, success, message, iter)
+        CALL dfpmin(fort_criterion, fort_dcriterion, x_free_final, bfgs_gtol, bfgs_maxiter, bfgs_stpmx, maxfun, success, message, iter)
 
     END IF
     
-    crit_val = fort_criterion(x_final)
-
+    crit_val = fort_criterion(x_free_final)
 
 END SUBROUTINE
 !******************************************************************************
@@ -113,6 +118,7 @@ FUNCTION fort_criterion(x)
     LOGICAL                         :: is_start
     LOGICAL                         :: is_step
 
+    INTEGER(our_int)                :: i, j, k
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
@@ -123,7 +129,28 @@ FUNCTION fort_criterion(x)
         RETURN
     END IF
 
-    CALL dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x)
+
+    ! GET the current parameters
+    j = 1
+    k = 1
+
+    DO i =1, 26
+
+        IF(paras_fixed(i)) THEN
+
+            x_all_current(i) = x_all_start(i)
+
+        ELSE
+            x_all_current(i) = x(j)
+            j = j + 1
+
+        END IF
+
+
+    END DO
+
+
+    CALL dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x_all_current)
 
     CALL fort_solve(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max)
 
@@ -147,17 +174,17 @@ FUNCTION fort_criterion(x)
     END IF
 
     
-    CALL write_out_information(num_eval, fort_criterion, x, 'current')
+    CALL write_out_information(num_eval, fort_criterion, x_all_current, 'current')
 
     IF (is_start) THEN
 
-        CALL write_out_information(zero_int, fort_criterion, x, 'start')
+        CALL write_out_information(zero_int, fort_criterion, x_all_current, 'start')
 
     END IF
 
     IF (is_step) THEN
 
-        CALL write_out_information(num_step, fort_criterion, x, 'step')
+        CALL write_out_information(num_step, fort_criterion, x_all_current, 'step')
 
     END IF
 
@@ -174,8 +201,8 @@ FUNCTION fort_dcriterion(x)
 
     !/* internals objects       */
 
-    REAL(our_dble)                  :: ei(26)
-    REAL(our_dble)                  :: d(26)
+    REAL(our_dble)                  :: ei(COUNT(.NOT. paras_fixed))
+    REAL(our_dble)                  :: d(COUNT(.NOT. paras_fixed))
     REAL(our_dble)                  :: f0
     REAL(our_dble)                  :: f1
 
@@ -191,9 +218,7 @@ FUNCTION fort_dcriterion(x)
     ! Evaluate baseline
     f0 = fort_criterion(x)
 
-    ! TODO: I need to be careful about the derivative in case of fixed parameters.
-    ! Iterate over increments
-    DO j = 1, 26
+    DO j = 1, COUNT(.NOT. paras_fixed)
 
         ei(j) = one_dble
 
