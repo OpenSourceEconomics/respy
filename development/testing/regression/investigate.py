@@ -20,7 +20,7 @@ PYTHON_VERSION = sys.version_info[0]
 ################################################################################
 # Compile
 ################################################################################
-python3_bin = "/home/peisenha/.envs/restudToolbox/bin/python"
+python3_bin = "/home/peisenha/.envs/restudToolbox3/bin/python"
 python2_bin = "/home/peisenha/.envs/restudToolbox2/bin/python"
 
 if PYTHON_VERSION == 2:
@@ -51,7 +51,7 @@ from respy import estimate
 ################################################################################
 # RUN
 ################################################################################
-idx = 4
+idx = 499
 
 fname = 'test_vault_' + str(PYTHON_VERSION) + '.respy.pkl'
 tests = pkl.load(open(TEST_RESOURCES_DIR + '/' + fname, 'rb'))

@@ -100,7 +100,6 @@ def check_optimization_parameters(x):
     # Perform checks
     assert (isinstance(x, np.ndarray))
     assert (x.dtype == np.float)
-    assert (x.shape == (26,))
     assert (np.all(np.isfinite(x)))
 
     # Finishing

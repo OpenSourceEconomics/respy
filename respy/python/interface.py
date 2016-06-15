@@ -75,8 +75,12 @@ def respy_interface(respy_obj, request, data_array=None):
 
         opt_obj.maxfun = maxfun
 
+        opt_obj.paras_fixed = paras_fixed
+
+        opt_obj.x_all_start = x_all_start
+
         if maxfun == 0:
-            opt_obj.crit_func(x_all_start, *args)
+            opt_obj.crit_func(x_free_start, *args)
 
         elif optimizer_used == 'SCIPY-BFGS':
 
@@ -85,7 +89,7 @@ def respy_interface(respy_obj, request, data_array=None):
             bfgs_gtol = optimizer_options['SCIPY-BFGS']['gtol']
 
             try:
-                fmin_bfgs(opt_obj.crit_func, x_all_start, args=args, gtol=bfgs_gtol,
+                fmin_bfgs(opt_obj.crit_func, x_free_start, args=args, gtol=bfgs_gtol,
                     epsilon=bfgs_epsilon, maxiter=bfgs_maxiter, full_output=True,
                     disp=False)
             except MaxfunError:
@@ -99,7 +103,7 @@ def respy_interface(respy_obj, request, data_array=None):
             powell_ftol = optimizer_options['SCIPY-POWELL']['ftol']
 
             try:
-                fmin_powell(opt_obj.crit_func, x_all_start, args, powell_xtol,
+                fmin_powell(opt_obj.crit_func, x_free_start, args, powell_xtol,
                     powell_ftol, powell_maxiter, powell_maxfun, disp=0)
             except MaxfunError:
                 pass
