@@ -9,7 +9,7 @@ import os
 # Edits to PYTHONPATH
 PACKAGE_DIR = os.path.dirname(os.path.realpath(__file__))
 PACKAGE_DIR = PACKAGE_DIR.replace('/python/monitoring', '')
-sys.path.insert(i, PACKAGE_DIR)
+sys.path.insert(0, PACKAGE_DIR)
 
 # project library
 from respy.python.estimate.estimate_auxiliary import dist_optim_paras
