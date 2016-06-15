@@ -23,7 +23,6 @@ os.chdir(PACKAGE_DIR + '/development/testing/automated')
 is_available = LOADAVG < 0.5
 VIRUTALENV_PYTHON = '$HOME/.envs/restudToolbox3/bin/python'
 
-print(os.getcwd())
 if is_available:
     cmd = VIRUTALENV_PYTHON
     cmd += ' run.py --compile --hours ' + str(HOURS)

@@ -43,7 +43,7 @@ def compile_package():
     """
     current_directory = os.getcwd()
     os.chdir(RESPY_DIR)
-    os.system('./waf distclean; ./waf configure build --debug')
+    os.system('./waf distclean; ./waf configure build --debug --without_mpi')
     os.chdir(current_directory)
 
 
