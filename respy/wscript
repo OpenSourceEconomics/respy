@@ -43,9 +43,9 @@ def configure(ctx):
     #  abd build the parallel implementation as well.
     ctx.env['PARALLELISM'] = True
     try:
-        ctx.find_program('mpifort')
-        ctx.env['FC'] = 'mpifort'
-        ctx.env['COMPILER_FORTRAN'] = 'mpifort'
+        ctx.find_program('mpif90')
+        ctx.env['FC'] = 'mpif90'
+        ctx.env['COMPILER_FORTRAN'] = 'mpif90'
     except ctx.errors.ConfigurationError:
         ctx.env['PARALLELISM'] = False
 
