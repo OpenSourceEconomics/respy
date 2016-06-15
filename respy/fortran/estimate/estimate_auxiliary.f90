@@ -97,7 +97,6 @@ SUBROUTINE get_free_optim_paras(x, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, 
 
     !/* external objects        */
 
-
     REAL(our_dble), INTENT(IN)      :: shocks_cholesky(4, 4)
     REAL(our_dble), INTENT(IN)      :: coeffs_home(1)
     REAL(our_dble), INTENT(IN)      :: coeffs_edu(3)
@@ -108,6 +107,9 @@ SUBROUTINE get_free_optim_paras(x, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, 
 
     REAL(our_dble), INTENT(OUT)     :: x(COUNT(.not. paras_fixed))
 
+    !/* internal objects        */    
+
+    REAL(our_dble)                  :: x_internal(26)
 
     INTEGER(our_int)                :: i
     INTEGER(our_int)                :: j
@@ -116,48 +118,31 @@ SUBROUTINE get_free_optim_paras(x, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, 
 ! Algorithm
 !------------------------------------------------------------------------------
 
+    x_internal(1:6) = coeffs_a(:)
+        
+    x_internal(7:12) = coeffs_b(:)
+        
+    x_internal(13:15) = coeffs_edu(:)
+        
+    x_internal(16:16) = coeffs_home(:)
+
+    x_internal(17:20) = shocks_cholesky(1, :)
+        
+    x_internal(21:23) = shocks_cholesky(2, 2:)
+        
+    x_internal(24:25) = shocks_cholesky(3, 3:)
+        
+    x_internal(26:26) = shocks_cholesky(4, 4:)
+
+
     j = 1
 
     DO i = 1, 26
 
         IF(paras_fixed(i)) CYCLE
 
-        ! Occupation A
-        IF(i == 1)  x(j) = coeffs_a(1)
-        IF(i == 2)  x(j) = coeffs_a(2)
-        IF(i == 3)  x(j) = coeffs_a(3)
-        IF(i == 4)  x(j) = coeffs_a(4)
-        IF(i == 5)  x(j) = coeffs_a(5)
-        IF(i == 6)  x(j) = coeffs_a(6)
-
-        ! Occupation B
-        IF(i == 7)  x(j) = coeffs_b(1)
-        IF(i == 8)  x(j) = coeffs_b(2)
-        IF(i == 9)  x(j) = coeffs_b(3)
-        IF(i == 10) x(j) = coeffs_b(4)
-        IF(i == 11) x(j) = coeffs_b(5)
-        IF(i == 12) x(j) = coeffs_b(6)
-
-        ! Education
-        IF(i == 13) x(j) = coeffs_edu(1)
-        IF(i == 14) x(j) = coeffs_edu(2)
-        IF(i == 15) x(j) = coeffs_edu(3)
-
-        ! Home
-        IF(i == 16) x(j) = coeffs_home(1)
-
-        ! Cholesky
-        IF(i == 17) x(j) = shocks_cholesky(1, 1)
-        IF(i == 18) x(j) = shocks_cholesky(1, 2)
-        IF(i == 19) x(j) = shocks_cholesky(1, 3)
-        IF(i == 20) x(j) = shocks_cholesky(1, 4)
-        IF(i == 21) x(j) = shocks_cholesky(2, 2)
-        IF(i == 22) x(j) = shocks_cholesky(2, 3)
-        IF(i == 23) x(j) = shocks_cholesky(2, 4)
-        IF(i == 24) x(j) = shocks_cholesky(3, 3)
-        IF(i == 25) x(j) = shocks_cholesky(3, 4)
-        IF(i == 26) x(j) = shocks_cholesky(4, 4)
-
+        x(j) = x_internal(i)
+        
         j = j + 1
 
     END DO

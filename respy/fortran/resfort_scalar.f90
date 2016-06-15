@@ -15,38 +15,31 @@ PROGRAM resfort_scalar
     REAL(our_dble)                  :: shocks_cholesky(4, 4)
     REAL(our_dble)                  :: coeffs_home(1)
     REAL(our_dble)                  :: coeffs_edu(3)
+    REAL(our_dble)                  :: newuoa_rhobeg
+    REAL(our_dble)                  :: newuoa_rhoend    
     REAL(our_dble)                  :: coeffs_a(6)
     REAL(our_dble)                  :: coeffs_b(6)
+    REAL(our_dble)                  :: bfgs_stpmx
+    REAL(our_dble)                  :: bfgs_gtol
     REAL(our_dble)                  :: crit_val
 
     REAL(our_dble), ALLOCATABLE     :: periods_draws_sims(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: data_sim(:, :)
 
+    INTEGER(our_int)                :: newuoa_maxfun
+    INTEGER(our_int)                :: bfgs_maxiter
+    INTEGER(our_int)                :: newuoa_npt
+    INTEGER(our_int)                :: num_procs
     INTEGER(our_int)                :: seed_prob
     INTEGER(our_int)                :: seed_emax
     INTEGER(our_int)                :: seed_sim
-
-    INTEGER(our_int)                :: bfgs_maxiter
-    REAL(our_dble)                  :: bfgs_stpmx
-    REAL(our_dble)                  :: bfgs_gtol
-
-
-    INTEGER(our_int)                :: newuoa_maxfun
-    INTEGER(our_int)                :: newuoa_npt
-    
-    REAL(our_dble)                  :: newuoa_rhobeg
-    REAL(our_dble)                  :: newuoa_rhoend    
-
-    INTEGER(our_int)            :: num_procs
-    INTEGER(our_int)                :: iter
+ 
     LOGICAL                         :: success
 
-
-    CHARACTER(150)                  :: message
-
     CHARACTER(225)                  :: optimizer_used
+    CHARACTER(225)                  :: exec_dir
+    CHARACTER(150)                  :: message
     CHARACTER(10)                   :: request
-    CHARACTER(225)              :: exec_dir
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -83,7 +76,7 @@ PROGRAM resfort_scalar
     END IF
 
 
-    CALL store_results(request, mapping_state_idx, states_all, periods_payoffs_systematic, states_number_period, periods_emax, crit_val, data_sim)
+    CALL store_results(request, mapping_state_idx, states_all, periods_payoffs_systematic, states_number_period, periods_emax, data_sim)
 
 !******************************************************************************
 !******************************************************************************

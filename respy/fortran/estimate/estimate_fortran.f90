@@ -118,7 +118,9 @@ FUNCTION fort_criterion(x)
     LOGICAL                         :: is_start
     LOGICAL                         :: is_step
 
-    INTEGER(our_int)                :: i, j, k
+    INTEGER(our_int)                :: i
+    INTEGER(our_int)                :: j
+    
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
@@ -129,23 +131,21 @@ FUNCTION fort_criterion(x)
         RETURN
     END IF
 
-
-    ! GET the current parameters
+    ! Construct the full set of current parameters
     j = 1
-    k = 1
 
-    DO i =1, 26
+    DO i = 1, 26
 
         IF(paras_fixed(i)) THEN
 
             x_all_current(i) = x_all_start(i)
 
         ELSE
+            
             x_all_current(i) = x(j)
             j = j + 1
 
         END IF
-
 
     END DO
 
