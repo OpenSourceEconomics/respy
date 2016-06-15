@@ -334,7 +334,7 @@ class TestClass(object):
 
         # Potentially evaluate at different points.
         generate_init(constr)
-        shutil.move('data.respy.paras', 'paras_steps.respy.log')
+        shutil.move('data.respy.paras', 'opt_info_step.respy.log')
 
         init_file = 'test.respy.ini'
         file_sim = 'sim.respy'

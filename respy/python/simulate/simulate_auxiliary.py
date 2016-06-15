@@ -113,6 +113,7 @@ def write_info(respy_obj, data_frame):
     # Write out the parametrization of the simulated economy.
     model_paras = respy_obj.get_attr('model_paras')
     vector = get_estimation_vector(model_paras, True)
+    vector = np.concatenate(([-1, -99.0], vector))
     np.savetxt(open(file_sim + '.paras', 'wb'), vector, fmt='%15.8f')
 
 
