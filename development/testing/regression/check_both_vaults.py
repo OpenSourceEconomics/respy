@@ -1,15 +1,11 @@
 #!/usr/bin/env python
-
-
 import subprocess
 
-# path to a python interpreter that runs any python script
-# under the virtualenv /path/to/virtualenv/
-python3_bin = "$HOME/.envs/restudToolbox/bin/python"
-python2_bin = "$HOME/.envs/restudToolbox2/bin/python"
+from config import python2_exec
+from config import python3_exec
 
 # path to the script that must run under the virtualenv
 script_file = 'check_vault.py'
 
-for python_bin in [python2_bin, python3_bin]:
+for python_bin in [python2_exec, python3_exec]:
     assert (subprocess.call([python_bin, script_file]) == 0)

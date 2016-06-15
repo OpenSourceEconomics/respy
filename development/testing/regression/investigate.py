@@ -11,6 +11,9 @@ import subprocess
 import sys
 import os
 
+from config import python2_exec
+from config import python3_exec
+
 # Reconstruct directory structure and edits to PYTHONPATH
 PACKAGE_DIR = os.path.dirname(os.path.realpath(__file__))
 PACKAGE_DIR = PACKAGE_DIR.replace('development/testing/regression', '')
@@ -20,13 +23,10 @@ PYTHON_VERSION = sys.version_info[0]
 ################################################################################
 # Compile
 ################################################################################
-python3_bin = "$HOME/.envs/restudToolbox3/bin/python"
-python2_bin = "$HOME/.envs/restudToolbox2/bin/python"
-
 if PYTHON_VERSION == 2:
-    python_bin = python2_bin
+    python_exec = python2_exec
 else:
-    python_bin = python3_bin
+    python_exec = python3_exec
 
 # We need to be explicit about the PYTHON version as otherwise the F2PY
 # libraries are not compiled in accordance with the PYTHON version used by
@@ -34,9 +34,9 @@ else:
 if True:
     cwd = os.getcwd()
     os.chdir(PACKAGE_DIR + '/respy')
-    subprocess.call(python_bin + ' waf distclean', shell=True)
-    subprocess.call(python_bin + ' waf configure build --debug --without_mpi',
-        shell=True)
+    subprocess.call(python_exec + ' waf distclean', shell=True)
+    subprocess.call(python_exec + ' waf configure build --debug --without_mpi',
+                    shell=True)
     os.chdir(cwd)
 
 # Import package. The late import is required as the compilation needs to
