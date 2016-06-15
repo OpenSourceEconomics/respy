@@ -17,12 +17,12 @@ PACKAGE_DIR = os.path.dirname(os.path.realpath(__file__))
 PACKAGE_DIR = PACKAGE_DIR.replace('/tools/ec2', '')
 
 # Move into the testing directory
-os.chdir(PACKAGE_DIR + '/development/testing')
+os.chdir(PACKAGE_DIR + '/development/testing/automated')
 
 # Execute script on the development server.
 is_available = LOADAVG < 0.5
 VIRUTALENV_PYTHON = '$HOME/.envs/restudToolbox3/bin/python'
-print(os.getcwd())
+
 if is_available:
     cmd = VIRUTALENV_PYTHON
     cmd += ' run.py --compile --hours ' + str(HOURS)
