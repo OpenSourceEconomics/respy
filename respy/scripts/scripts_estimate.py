@@ -33,13 +33,13 @@ def add_gradient_information(respy_obj):
     model_paras, num_periods, num_agents_est, edu_start, is_debug, edu_max, \
         delta, num_draws_prob, seed_prob, num_draws_emax, seed_emax, \
         min_idx, is_myopic, is_interpolated, num_points_interp, version, \
-        optimizer_used, paras_fixed, tau, optimizer_options = \
+        optimizer_used, paras_fixed, tau, optimizer_options, maxfun = \
             dist_class_attributes(respy_obj,
                 'model_paras', 'num_periods', 'num_agents_est', 'edu_start',
                 'is_debug', 'edu_max', 'delta', 'num_draws_prob', 'seed_prob',
                 'num_draws_emax', 'seed_emax', 'min_idx', 'is_myopic',
                 'is_interpolated', 'num_points_interp', 'version', 'optimizer_used',
-                'paras_fixed', 'tau', 'optimizer_options')
+                'paras_fixed', 'tau', 'optimizer_options', 'maxfun')
 
     # Auxiliary objects
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
@@ -68,19 +68,11 @@ def add_gradient_information(respy_obj):
     # Prepare evaluation of the criterion function.
     opt_obj = OptimizationClass()
 
-    opt_obj.set_attr('args', args)
+    opt_obj.maxfun = maxfun
 
-    opt_obj.set_attr('optimizer_options', optimizer_options)
+    opt_obj.paras_fixed = paras_fixed
 
-    opt_obj.set_attr('x_info', (x_all_start, paras_fixed))
-
-    opt_obj.set_attr('optimizer_used', optimizer_used)
-
-    opt_obj.set_attr('version', version)
-
-    opt_obj.set_attr('maxfun', 0)
-
-    opt_obj.lock()
+    opt_obj.x_all_start = x_all_start
 
     # The information about the gradient is simply added to the original
     # information later. Note that the original file is read before the
@@ -146,7 +138,7 @@ def dist_input_arguments(parser):
         assert single
 
     if resume:
-        assert (os.path.exists('paras_steps.respy.log'))
+        assert (os.path.exists('opt_info_step.respy.log'))
 
     # Finishing
     return resume, single, init_file, gradient
@@ -161,7 +153,7 @@ def scripts_estimate(resume, single, init_file, gradient):
     # Update parametrization of the model if resuming from a previous
     # estimation run.
     if resume:
-        x0 = np.genfromtxt('paras_steps.respy.log')
+        x0 = np.genfromtxt('opt_info_step.respy.log')
         respy_obj.update_model_paras(x0)
 
     # Set maximum iteration count when only an evaluation of the criterion

@@ -62,7 +62,7 @@ def dist_input_arguments(parser):
         assert (values is None)
         assert os.path.exists(init_file)
     elif action in ['change']:
-        assert os.path.exists('paras_steps.respy.log')
+        assert os.path.exists('opt_info_step.respy.log')
 
     # Finishing
     return identifiers_list, values, action, init_file
@@ -128,14 +128,17 @@ def change_value(identifiers, values):
     """
 
     # Read in some baseline information
-    paras_steps = np.genfromtxt('paras_steps.respy.log')
+    step_info = np.genfromtxt('opt_info_step.respy.log')
+    step_paras = step_info[2:]
 
     # Apply modifications
     for i, identifier in enumerate(identifiers):
-        paras_steps[identifier] = values[i]
+        step_paras[identifier] = values[i]
+
+    step_info = np.concatenate((step_info[2:], step_paras))
 
     # Save parametrization to file
-    np.savetxt(open('paras_steps.respy.log', 'wb'), paras_steps, fmt='%15.8f')
+    np.savetxt(open('opt_info_step.respy.log', 'wb'), step_info, fmt='%15.8f')
 
 
 if __name__ == '__main__':
