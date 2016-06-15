@@ -55,7 +55,6 @@ else:
     import resources.f2py_interface as fort_debug
 
 
-@pytest.mark.skipif(True, reason='refactoring in progress, reactivated later')
 @pytest.mark.usefixtures('fresh_directory', 'set_seed')
 class TestClass(object):
     """ This class groups together some tests.
@@ -370,7 +369,6 @@ class TestClass(object):
 
         f2py = fort_debug.f2py_simulate(*args)
         np.testing.assert_allclose(pyth, f2py)
-
 
         data_array = pyth
 

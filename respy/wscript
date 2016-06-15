@@ -57,7 +57,6 @@ def build(ctx):
 
     ctx.add_pre_fun(pre)
 
-
     is_debug = ctx.options.is_debug
 
     # The build is currently only tested for gfortran.

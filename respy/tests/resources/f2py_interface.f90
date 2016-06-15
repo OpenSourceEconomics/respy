@@ -76,10 +76,10 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
     CALL dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x)
 
     ! Solve requested model
-    CALL fort_solve(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax_int)
+    CALL fort_solve(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax_int, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max)
 
     ! Evaluate criterion function for observed data
-    CALL fort_evaluate(crit_val, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_est, periods_draws_prob_int)
+    CALL fort_evaluate(crit_val, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_est, periods_draws_prob_int, delta, tau, edu_start, edu_max)
 
 END SUBROUTINE
 !******************************************************************************
@@ -143,7 +143,7 @@ SUBROUTINE f2py_solve(periods_payoffs_systematic_int, states_number_period_int, 
     delta = delta_int
 
     ! Call FORTRAN solution
-    CALL fort_solve(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax_int)
+    CALL fort_solve(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax_int, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max)
 
     ! Assign to initial objects for return to PYTHON
     periods_payoffs_systematic_int = periods_payoffs_systematic
@@ -214,11 +214,11 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, 
     delta = delta_int
     tau = tau_int
 
-    ! Solve them model for the given parametrization.
-    CALL fort_solve(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax_int)
+    ! Solve requested model
+    CALL fort_solve(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax_int, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max)
 
-    ! Evaluate the criterion function building on the solution.
-    CALL fort_evaluate(crit_val, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_est, periods_draws_prob_int)
+    ! Evaluate criterion function for observed data
+    CALL fort_evaluate(crit_val, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_est, periods_draws_prob_int, delta, tau, edu_start, edu_max)
 
 END SUBROUTINE
 !******************************************************************************
@@ -267,7 +267,7 @@ SUBROUTINE f2py_simulate(dataset, periods_payoffs_systematic_int, mapping_state_
     delta = delta_int
 
     ! Call function of interest
-    CALL fort_simulate(dataset, periods_payoffs_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, num_agents_sim, periods_draws_sims, shocks_cholesky)
+    CALL fort_simulate(dataset, periods_payoffs_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, num_agents_sim, periods_draws_sims, shocks_cholesky, delta, edu_start, edu_max)
 
 END SUBROUTINE
 !******************************************************************************
@@ -323,7 +323,7 @@ SUBROUTINE f2py_backward_induction(periods_emax_int, num_periods_int, max_states
     periods_emax_int = MISSING_FLOAT
 
     ! Call actual function of interest
-    CALL fort_backward_induction(periods_emax_int, periods_draws_emax_int, states_number_period_int, periods_payoffs_systematic_int, mapping_state_idx_int, states_all_int, shocks_cholesky)
+    CALL fort_backward_induction(periods_emax_int, periods_draws_emax_int, states_number_period_int, periods_payoffs_systematic_int, mapping_state_idx_int, states_all_int, shocks_cholesky, delta, is_debug, is_interpolated, edu_start, edu_max)
 
 END SUBROUTINE
 !******************************************************************************
@@ -364,7 +364,7 @@ SUBROUTINE f2py_create_state_space(states_all_int, states_number_period_int, map
     
     states_all_int = MISSING_INT
     
-    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, periods_emax, periods_payoffs_systematic)
+    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, periods_emax, periods_payoffs_systematic, edu_start, edu_max)
 
     states_all_int(:, :max_states_period, :) = states_all
     states_number_period_int = states_number_period
@@ -414,7 +414,7 @@ SUBROUTINE f2py_calculate_payoffs_systematic(periods_payoffs_systematic_int, num
     periods_payoffs_systematic_int = MISSING_FLOAT
 
     ! Call function of interest
-    CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic_int, states_number_period_int, states_all_int, coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
+    CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic_int, states_number_period_int, states_all_int, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start)
 
 END SUBROUTINE
 !******************************************************************************
@@ -550,7 +550,7 @@ SUBROUTINE wrapper_get_future_value(emax_simulated, num_periods_int, num_draws_e
     delta = delta_int
 
     ! Call function of interest
-    CALL get_future_value(emax_simulated, draws_emax, period, k, payoffs_systematic, mapping_state_idx_int, states_all_int, periods_emax_int, shocks_cholesky)
+    CALL get_future_value(emax_simulated, draws_emax, period, k, payoffs_systematic, mapping_state_idx_int, states_all_int, periods_emax_int, shocks_cholesky, delta, edu_start, edu_max)
 
 END SUBROUTINE
 !******************************************************************************
@@ -893,7 +893,7 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_perio
     delta = delta_int
 
     ! Call function of interest
-    CALL get_endogenous_variable(exogenous_variable, period, num_states, periods_payoffs_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_simulated, maxe, draws_emax, shocks_cholesky)
+    CALL get_endogenous_variable(exogenous_variable, period, num_states, periods_payoffs_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_simulated, maxe, draws_emax, shocks_cholesky, delta, edu_start, edu_max)
 
 END SUBROUTINE
 !******************************************************************************
@@ -942,8 +942,8 @@ SUBROUTINE wrapper_get_exogenous_variables(independent_variables, maxe, period, 
     delta = delta_int
 
     ! Call function of interest
-    CALL get_exogenous_variables(independent_variables, maxe,  period, num_states, periods_payoffs_systematic_int, shifts, mapping_state_idx_int, periods_emax_int, states_all_int)
-            
+    CALL get_exogenous_variables(independent_variables, maxe, period, num_states, periods_payoffs_systematic_int, shifts, mapping_state_idx_int, periods_emax_int, states_all_int, delta, edu_start, edu_max)
+
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
@@ -977,7 +977,7 @@ SUBROUTINE wrapper_get_simulated_indicator(is_simulated, num_points, num_states,
     is_debug = is_debug_int
 
     ! Call function of interest
-    is_simulated = get_simulated_indicator(num_points, num_states, period)
+    is_simulated = get_simulated_indicator(num_points, num_states, period, .True.)
 
 END SUBROUTINE
 !******************************************************************************
