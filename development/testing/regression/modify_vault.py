@@ -5,7 +5,6 @@
 from __future__ import print_function
 
 import pickle as pkl
-import numpy as np
 
 import subprocess
 import sys
