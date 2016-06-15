@@ -4,6 +4,7 @@ implementations and optimizers.
 
 
 import subprocess
+import sys
 import os
 
 import atexit
@@ -35,7 +36,7 @@ class MonitorCls(object):
             os.unlink('optimization.respy.info')
 
         fname = ROOT_DIR + '/python/monitoring/monitoring_child.py'
-        self.proc = subprocess.Popen(['python', fname])
+        self.proc = subprocess.Popen([sys.executable, fname])
         atexit.register(self.proc.terminate)
 
     def stop(self):

@@ -3,7 +3,13 @@
 # standard library
 import numpy as np
 import time
+import sys
 import os
+
+# Adding PYTHONPATH
+ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
+ROOT_DIR = ROOT_DIR.replace('/respy/python/monitoring', '')
+sys.path.insert(0, ROOT_DIR)
 
 # project library
 from respy.python.estimate.estimate_auxiliary import dist_optim_paras
