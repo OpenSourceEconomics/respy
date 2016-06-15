@@ -47,13 +47,15 @@ PROGRAM resfort_scalar
     CHARACTER(150)                  :: message
 
     CHARACTER(225)                  :: optimizer_used
+    CHARACTER(10)                   :: request
+    CHARACTER(225)              :: exec_dir
 
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
 
 
-    CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, is_debug, is_interpolated, maxfun, optimizer_used, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend, bfgs_epsilon, bfgs_gtol, bfgs_stpmx, bfgs_maxiter)
+    CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, is_debug, is_interpolated, is_myopic, request, exec_dir, maxfun, optimizer_used, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend, bfgs_epsilon, bfgs_gtol, bfgs_stpmx, bfgs_maxiter)
 
     CALL create_draws(periods_draws_emax, num_draws_emax, seed_emax, is_debug)
 
@@ -62,7 +64,7 @@ PROGRAM resfort_scalar
 
     IF (request == 'solve') THEN
 
-        CALL fort_solve(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax, delta, is_debug, is_interpolated)
+        CALL fort_solve(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max)
 
     ELSE IF (request == 'estimate') THEN
 
@@ -76,14 +78,14 @@ PROGRAM resfort_scalar
 
         CALL create_draws(periods_draws_sims, num_agents_sim, seed_sim, is_debug)
 
-        CALL fort_solve(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax, delta, is_debug, is_interpolated)
+        CALL fort_solve(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max)
 
-        CALL fort_simulate(data_sim, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, num_agents_sim, periods_draws_sims, shocks_cholesky, delta)
+        CALL fort_simulate(data_sim, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, num_agents_sim, periods_draws_sims, shocks_cholesky, delta, edu_start, edu_max)
 
     END IF
 
 
-    CALL store_results(mapping_state_idx, states_all, periods_payoffs_systematic, states_number_period, periods_emax, crit_val, data_sim)
+    CALL store_results(request, mapping_state_idx, states_all, periods_payoffs_systematic, states_number_period, periods_emax, crit_val, data_sim)
 
 !******************************************************************************
 !******************************************************************************

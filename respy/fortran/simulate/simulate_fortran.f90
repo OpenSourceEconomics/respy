@@ -17,7 +17,7 @@ MODULE simulate_fortran
  CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_simulate(data_sim, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, num_agents_sim, periods_draws_sims, shocks_cholesky, delta)
+SUBROUTINE fort_simulate(data_sim, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, num_agents_sim, periods_draws_sims, shocks_cholesky, delta, edu_start, edu_max)
 
     !/* external objects        */
 
@@ -32,6 +32,8 @@ SUBROUTINE fort_simulate(data_sim, periods_payoffs_systematic, mapping_state_idx
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
     INTEGER(our_int), INTENT(IN)    :: num_agents_sim
+    INTEGER(our_int), INTENT(IN)    :: edu_start
+    INTEGER(our_int), INTENT(IN)    :: edu_max
 
     !/* internal objects        */
 
@@ -98,7 +100,7 @@ SUBROUTINE fort_simulate(data_sim, periods_payoffs_systematic, mapping_state_idx
             draws = periods_draws_sims_transformed(period + 1, i + 1, :)
 
             ! Calculate total utilities
-            CALL get_total_value(total_payoffs, period, payoffs_systematic, draws, mapping_state_idx, periods_emax, k, states_all, delta)
+            CALL get_total_value(total_payoffs, period, payoffs_systematic, draws, mapping_state_idx, periods_emax, k, states_all, delta, edu_start, edu_max)
 
             ! Write relevant state space for period to data frame
             data_sim(count + 1, 5:8) = current_state

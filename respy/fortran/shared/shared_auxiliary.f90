@@ -57,7 +57,7 @@ SUBROUTINE transform_disturbances(draws_transformed, draws, shocks_cholesky, num
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_total_value(total_payoffs, period, payoffs_systematic, draws, mapping_state_idx, periods_emax, k, states_all, delta)
+SUBROUTINE get_total_value(total_payoffs, period, payoffs_systematic, draws, mapping_state_idx, periods_emax, k, states_all, delta, edu_start, edu_max)
 
     !/* external objects        */
 
@@ -65,6 +65,8 @@ SUBROUTINE get_total_value(total_payoffs, period, payoffs_systematic, draws, map
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
+    INTEGER(our_int), INTENT(IN)    :: edu_start
+    INTEGER(our_int), INTENT(IN)    :: edu_max
     INTEGER(our_int), INTENT(IN)    :: period
     INTEGER(our_int), INTENT(IN)    :: k
 
@@ -95,7 +97,7 @@ SUBROUTINE get_total_value(total_payoffs, period, payoffs_systematic, draws, map
 
     ! Get future values
     IF (period .NE. (num_periods - one_int)) THEN
-        CALL get_future_payoffs(payoffs_future, is_inadmissible, mapping_state_idx, period, periods_emax, k, states_all)
+        CALL get_future_payoffs(payoffs_future, is_inadmissible, mapping_state_idx, period, periods_emax, k, states_all, edu_start, edu_max)
     ELSE
         is_inadmissible = .False.
         payoffs_future = zero_dble
@@ -115,7 +117,7 @@ SUBROUTINE get_total_value(total_payoffs, period, payoffs_systematic, draws, map
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_future_payoffs(payoffs_future, is_inadmissible, mapping_state_idx, period, periods_emax, k, states_all)
+SUBROUTINE get_future_payoffs(payoffs_future, is_inadmissible, mapping_state_idx, period, periods_emax, k, states_all, edu_start, edu_max)
 
     !/* external objects        */
 
@@ -127,6 +129,8 @@ SUBROUTINE get_future_payoffs(payoffs_future, is_inadmissible, mapping_state_idx
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
     INTEGER(our_int), INTENT(IN)    :: period
     INTEGER(our_int), INTENT(IN)    :: k
+    INTEGER(our_int), INTENT(IN)    :: edu_start
+    INTEGER(our_int), INTENT(IN)    :: edu_max
 
     REAL(our_dble), INTENT(IN)      :: periods_emax(num_periods, max_states_period)
 
@@ -427,7 +431,7 @@ FUNCTION determinant(A)
 END FUNCTION
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE store_results(mapping_state_idx, states_all, periods_payoffs_systematic, states_number_period, periods_emax, crit_val, dataset)
+SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_payoffs_systematic, states_number_period, periods_emax, crit_val, dataset)
 
     !/* external objects        */
 
@@ -441,6 +445,7 @@ SUBROUTINE store_results(mapping_state_idx, states_all, periods_payoffs_systemat
     REAL(our_dble), INTENT(IN)      :: crit_val
     REAL(our_dble), INTENT(IN)      :: dataset(num_periods * num_agents_sim, 8)
 
+    CHARACTER(10), INTENT(IN)       :: request
 
     !/* internal objects        */
 
@@ -549,7 +554,7 @@ SUBROUTINE store_results(mapping_state_idx, states_all, periods_payoffs_systemat
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, is_debug, is_interpolated, maxfun, optimizer_used, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend, bfgs_epsilon, bfgs_gtol, bfgs_stpmx, bfgs_maxiter)
+SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, is_debug, is_interpolated, is_myopic, request, exec_dir, maxfun, optimizer_used, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend, bfgs_epsilon, bfgs_gtol, bfgs_stpmx, bfgs_maxiter)
 
     !
     !   This function serves as the replacement for the RespyCls and reads in
@@ -573,19 +578,25 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
     INTEGER(our_int), INTENT(OUT)   :: num_procs
     INTEGER(our_int), INTENT(OUT)   :: seed_prob
     INTEGER(our_int), INTENT(OUT)   :: seed_emax    
+    INTEGER(our_int), INTENT(OUT)   :: edu_start
     INTEGER(our_int), INTENT(OUT)   :: seed_sim
+    INTEGER(our_int), INTENT(OUT)   :: edu_max
     INTEGER(our_int), INTENT(OUT)   :: maxfun
 
     INTEGER(our_int), INTENT(OUT)   :: newuoa_maxfun    
     INTEGER(our_int), INTENT(OUT)   :: newuoa_npt
-    INTEGER(our_int)                :: bfgs_maxiter
-    REAL(our_dble)                  :: bfgs_stpmx
-    REAL(our_dble)                  :: bfgs_gtol    
-    REAL(our_dble)                  :: bfgs_epsilon
+    INTEGER(our_int), INTENT(OUT)   :: bfgs_maxiter
+    REAL(our_dble), INTENT(OUT)     :: bfgs_stpmx
+    REAL(our_dble), INTENT(OUT)     :: bfgs_gtol    
+    REAL(our_dble), INTENT(OUT)     :: bfgs_epsilon
 
-    CHARACTER(225)                  :: optimizer_used
+    CHARACTER(225), INTENT(OUT)     :: optimizer_used
+    CHARACTER(225), INTENT(OUT)     :: exec_dir
+
+    CHARACTER(10), INTENT(OUT)      :: request
 
     LOGICAL, INTENT(OUT)            :: is_interpolated
+    LOGICAL, INTENT(OUT)            :: is_myopic 
     LOGICAL, INTENT(OUT)            :: is_debug
 
     !/* internal objects        */

@@ -19,7 +19,7 @@ MODULE solve_auxiliary
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_state_idx, periods_emax, periods_payoffs_systematic)
+SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_state_idx, periods_emax, periods_payoffs_systematic, edu_start, edu_max)
 
     !/* external objects        */
 
@@ -29,6 +29,9 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
 
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_emax(:, :)
+
+    INTEGER(our_int), INTENT(IN)                    :: edu_start
+    INTEGER(our_int), INTENT(IN)                    :: edu_max
 
     !/* internals objects       */
 
@@ -157,7 +160,7 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
+SUBROUTINE fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start, edu_max)
 
     !/* external objects        */
 
@@ -170,6 +173,8 @@ SUBROUTINE fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_
 
     INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 4)
     INTEGER(our_int), INTENT(IN)        :: states_number_period(num_periods)
+    INTEGER(our_int), INTENT(IN)        :: edu_start
+    INTEGER(our_int), INTENT(IN)        :: edu_max
 
     !/* internals objects       */
 
@@ -234,7 +239,7 @@ SUBROUTINE fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_number_period, periods_payoffs_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated)
+SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_number_period, periods_payoffs_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, edu_start, edu_max)
 
     !/* external objects        */
 
@@ -248,6 +253,8 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
     INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 4)
     INTEGER(our_int), INTENT(IN)        :: states_number_period(num_periods)
+    INTEGER(our_int), INTENT(IN)        :: edu_start
+    INTEGER(our_int), INTENT(IN)        :: edu_max
 
     LOGICAL, INTENT(IN)                 :: is_interpolated
     LOGICAL, INTENT(IN)                 :: is_debug
@@ -307,9 +314,9 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
 
             is_simulated = get_simulated_indicator(num_points_interp, num_states, period, is_debug)
 
-            CALL get_exogenous_variables(exogenous, maxe, period, num_states, periods_payoffs_systematic, shifts, mapping_state_idx, periods_emax, states_all, delta)
+            CALL get_exogenous_variables(exogenous, maxe, period, num_states, periods_payoffs_systematic, shifts, mapping_state_idx, periods_emax, states_all, delta, edu_start, edu_max)
 
-            CALL get_endogenous_variable(endogenous, period, num_states, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, is_simulated, maxe, draws_emax, shocks_cholesky, delta)
+            CALL get_endogenous_variable(endogenous, period, num_states, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, is_simulated, maxe, draws_emax, shocks_cholesky, delta, edu_start, edu_max)
 
             CALL get_predictions(predictions, endogenous, exogenous, maxe, is_simulated, num_states, is_write)
 
@@ -323,7 +330,7 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
 
                 payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
-                CALL get_future_value(emax_simulated, draws_emax, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, shocks_cholesky, delta)
+                CALL get_future_value(emax_simulated, draws_emax, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, shocks_cholesky, delta, edu_start, edu_max)
 
                 periods_emax(period + 1, k + 1) = emax_simulated
 
@@ -422,7 +429,7 @@ FUNCTION get_simulated_indicator(num_points, num_states, period, is_debug)
 END FUNCTION
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, num_states, periods_payoffs_systematic, shifts, mapping_state_idx, periods_emax, states_all, delta)
+SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, num_states, periods_payoffs_systematic, shifts, mapping_state_idx, periods_emax, states_all, delta, edu_start, edu_max)
 
     !/* external objects        */
 
@@ -437,8 +444,9 @@ SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, num_stat
     INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 4)
     INTEGER(our_int), INTENT(IN)        :: num_states
+    INTEGER(our_int), INTENT(IN)        :: edu_start
+    INTEGER(our_int), INTENT(IN)        :: edu_max
     INTEGER(our_int), INTENT(IN)        :: period
-
 
     !/* internal objects        */
 
@@ -457,7 +465,7 @@ SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, num_stat
 
         payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
-        CALL get_total_value(total_payoffs, period, payoffs_systematic, shifts, mapping_state_idx, periods_emax, k, states_all, delta)
+        CALL get_total_value(total_payoffs, period, payoffs_systematic, shifts, mapping_state_idx, periods_emax, k, states_all, delta, edu_start, edu_max)
 
         ! Implement level shifts
         maxe(k + 1) = MAXVAL(total_payoffs)
@@ -476,7 +484,7 @@ SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, num_stat
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_endogenous_variable(endogenous, period, num_states, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, is_simulated, maxe, draws_emax, shocks_cholesky, delta)
+SUBROUTINE get_endogenous_variable(endogenous, period, num_states, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, is_simulated, maxe, draws_emax, shocks_cholesky, delta, edu_start, edu_max)
 
     !/* external objects        */
 
@@ -492,6 +500,8 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_states, periods_payof
     INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 4)
     INTEGER(our_int), INTENT(IN)        :: num_states
+    INTEGER(our_int), INTENT(IN)        :: edu_start
+    INTEGER(our_int), INTENT(IN)        :: edu_max
     INTEGER(our_int), INTENT(IN)        :: period
 
     LOGICAL, INTENT(IN)                 :: is_simulated(num_states)
@@ -523,7 +533,7 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_states, periods_payof
         payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
         ! Get payoffs
-        CALL get_future_value(emax_simulated, draws_emax, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, shocks_cholesky, delta)
+        CALL get_future_value(emax_simulated, draws_emax, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, shocks_cholesky, delta, edu_start, edu_max)
 
         ! Construct dependent variable
         endogenous(k + 1) = emax_simulated - maxe(k + 1)
@@ -902,7 +912,7 @@ SUBROUTINE get_pred_info(r_squared, bse, observed, predicted, exogenous, num_sta
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_future_value(emax_simulated, draws_emax, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, shocks_cholesky, delta)
+SUBROUTINE get_future_value(emax_simulated, draws_emax, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, shocks_cholesky, delta, edu_start, edu_max)
 
     !/* external objects    */
 
@@ -910,6 +920,8 @@ SUBROUTINE get_future_value(emax_simulated, draws_emax, period, k, payoffs_syste
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
+    INTEGER(our_int), INTENT(IN)    :: edu_start
+    INTEGER(our_int), INTENT(IN)    :: edu_max
     INTEGER(our_int), INTENT(IN)    :: period
     INTEGER(our_int), INTENT(IN)    :: k
 
@@ -944,7 +956,7 @@ SUBROUTINE get_future_value(emax_simulated, draws_emax, period, k, payoffs_syste
         draws = draws_emax_transformed(i, :)
 
         ! Calculate total value
-        CALL get_total_value(total_payoffs, period, payoffs_systematic, draws, mapping_state_idx, periods_emax, k, states_all, delta)
+        CALL get_total_value(total_payoffs, period, payoffs_systematic, draws, mapping_state_idx, periods_emax, k, states_all, delta, edu_start, edu_max)
    
         ! Determine optimal choice
         maximum = MAXVAL(total_payoffs)

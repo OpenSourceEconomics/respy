@@ -10,7 +10,8 @@ MODULE shared_containers
 
 !******************************************************************************
 !******************************************************************************
-
+    
+    ! Containers required for the evaluation of the criterion function
     INTEGER(our_int), ALLOCATABLE   :: mapping_state_idx(:, :, :, :, :)
     INTEGER(our_int), ALLOCATABLE   :: states_number_period(:)
     INTEGER(our_int), ALLOCATABLE   :: states_all(:, :, :)
@@ -21,14 +22,19 @@ MODULE shared_containers
     REAL(our_dble), ALLOCATABLE     :: periods_emax(:, :)
     REAL(our_dble), ALLOCATABLE     :: data_est(:, :)
 
+    REAL(our_dble)                  :: bfgs_epsilon
     REAL(our_dble)                  :: delta
     REAL(our_dble)                  :: tau
 
+    INTEGER(our_int)                :: edu_start
+    INTEGER(our_int)                :: edu_max   
+
+    LOGICAL                         :: is_interpolated
+    LOGICAL                         :: is_debug
+    LOGICAL                         :: is_myopic
+
     ! Parameters for the optimization
     INTEGER(our_int)            :: maxfun
-
-    LOGICAL                     :: is_interpolated
-    LOGICAL                     :: is_debug
 
 !******************************************************************************
 !******************************************************************************

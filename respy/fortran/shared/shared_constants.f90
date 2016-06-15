@@ -32,21 +32,12 @@ MODULE shared_constants
     INTEGER(our_int)            :: num_draws_emax
     INTEGER(our_int)            :: num_draws_prob
     INTEGER(our_int)            :: num_periods                                                                                                                                                                          
-    INTEGER(our_int)            :: edu_start
-    INTEGER(our_int)            :: edu_max   
     INTEGER(our_int)            :: min_idx
-
-    REAL(our_dble)              :: bfgs_epsilon
-
-    LOGICAL                     :: is_myopic
-
-    CHARACTER(225)              :: exec_dir
-    CHARACTER(10)               :: request
 
     ! This variable needs to be accessible during optimization. It is defined here as it is required by the optimizers as well.     
     INTEGER(our_int)            :: num_eval = zero_int
 
-    ! Variables that need to be aligned across FORTRAN and PYTHON  implementations.
+    ! Variables that need to be aligned across FORTRAN and PYTHON implementations.
     INTEGER(our_int), PARAMETER :: MISSING_INT                  = -99_our_int
 
     REAL(our_dble), PARAMETER   :: INADMISSIBILITY_PENALTY      = -40000.00_our_dble
