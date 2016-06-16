@@ -52,7 +52,7 @@ mod = importlib.import_module(module)
 test = getattr(mod.TestClass(), method)
 
 count = 0
-for i in range(2):
+for i in range(10000):
     test()
     count = count +1
     print('completed ', count)

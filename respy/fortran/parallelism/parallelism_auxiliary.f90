@@ -170,7 +170,7 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, coeffs_a, coeffs_b
         
     ELSEIF (optimizer_used == 'FORT-BFGS') THEN
 
-        CALL dfpmin(fort_criterion, fort_dcriterion, x_free_final, bfgs_gtol, bfgs_maxiter, bfgs_stpmx, maxfun, success, message, iter)
+        CALL dfpmin(fort_criterion_parallel, fort_dcriterion_parallel, x_free_final, bfgs_gtol, bfgs_maxiter, bfgs_stpmx, maxfun, success, message, iter)
 
     END IF
     
@@ -250,8 +250,6 @@ FUNCTION fort_criterion_parallel(x)
 
     num_eval = num_eval + 1
 
-    PRINT *, 'eval ', num_eval, fort_criterion_parallel
-
     is_start = (num_eval == 1)
 
 
@@ -282,6 +280,49 @@ FUNCTION fort_criterion_parallel(x)
     END IF
 
     
+END FUNCTION
+!******************************************************************************
+!******************************************************************************
+FUNCTION fort_dcriterion_parallel(x)
+
+    !/* external objects        */
+
+    REAL(our_dble), INTENT(IN)      :: x(:)
+    REAL(our_dble)                  :: fort_dcriterion_parallel(SIZE(x))
+
+    !/* internals objects       */
+
+    REAL(our_dble)                  :: ei(COUNT(.NOT. paras_fixed))
+    REAL(our_dble)                  :: d(COUNT(.NOT. paras_fixed))
+    REAL(our_dble)                  :: f0
+    REAL(our_dble)                  :: f1
+
+    INTEGER(our_int)                :: j
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    ! Initialize containers
+    ei = zero_dble
+
+    ! Evaluate baseline
+    f0 = fort_criterion_parallel(x)
+
+    DO j = 1, COUNT(.NOT. paras_fixed)
+
+        ei(j) = one_dble
+
+        d = bfgs_epsilon * ei
+
+        f1 = fort_criterion_parallel(x + d)
+
+        fort_dcriterion_parallel(j) = (f1 - f0) / d(j)
+
+        ei(j) = zero_dble
+
+    END DO
+
 END FUNCTION
 !******************************************************************************
 !******************************************************************************
