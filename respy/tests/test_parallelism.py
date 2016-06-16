@@ -27,7 +27,7 @@ class TestClass(object):
         # Generate random initialization file
         constr = dict()
         constr['version'] = 'FORTRAN'
-        constr['maxfun'] = 0
+        constr['maxfun'] = np.random.randint(0, 10)
         init_dict = generate_random_dict(constr)
 
         base = None

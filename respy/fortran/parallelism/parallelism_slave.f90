@@ -59,7 +59,7 @@ PROGRAM resfort_parallel_slave
     REAL(our_dble)                  :: newuoa_rhobeg
     REAL(our_dble)                  :: newuoa_rhoend    
     REAL(our_dble)                  :: bfgs_stpmx
-    REAL(our_dble)                  :: bfgs_gtol
+    REAL(our_dble)                  :: bfgs_gtol 
 
     REAL(our_dble), ALLOCATABLE     :: periods_draws_sims(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: data_sim(:, :)
@@ -127,8 +127,16 @@ PROGRAM resfort_parallel_slave
         ! Waiting for request from master to perform an action.
         CALL MPI_Bcast(task, 1, MPI_INT, 0, PARENTCOMM, ierr)
 
-        ! Shutting down operations.
-        IF(task == 1) THEN
+        ! Updating parameterization
+        IF(task == 0) THEN
+
+            CALL MPI_Bcast(x_all_current, 26, MPI_DOUBLE, 0, PARENTCOMM, ierr)
+
+            CALL dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x_all_current)
+            
+            CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start)
+
+        ELSEIF(task == 1) THEN
 
             CALL MPI_FINALIZE(ierr)
             STAY_AVAILABLE = .FALSE.
@@ -278,12 +286,8 @@ PROGRAM resfort_parallel_slave
 
             ! The leading slave updates the master 
             IF (rank == 0) THEN
-            x_all_current = zero_dble
              CALL MPI_SEND(crit_val, 1, MPI_DOUBLE, 0, 75, PARENTCOMM, ierr)            
-            CALL write_out_information(zero_int, crit_val, x_all_current, 'current')
-            CALL write_out_information(zero_int, crit_val, x_all_current, 'step')
-            CALL write_out_information(zero_int, crit_val, x_all_current, 'start')
-
+         
             END IF
 
 

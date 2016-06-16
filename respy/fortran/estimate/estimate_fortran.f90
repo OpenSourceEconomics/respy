@@ -111,7 +111,7 @@ FUNCTION fort_criterion(x)
     REAL(our_dble)                  :: coeffs_a(6)
     REAL(our_dble)                  :: coeffs_b(6)
 
-    INTEGER(our_int), SAVE          :: num_step = zero_int
+    INTEGER(our_int), SAVE          :: num_step = - one_int
 
     REAL(our_dble), SAVE            :: value_step = HUGE_FLOAT
 
@@ -160,7 +160,6 @@ FUNCTION fort_criterion(x)
     num_eval = num_eval + 1
 
     is_start = (num_eval == 1)
-
 
 
     is_step = (value_step .GT. fort_criterion) 

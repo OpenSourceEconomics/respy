@@ -158,7 +158,6 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, coeffs_a, coeffs_b
 
     x_free_final = x_free_start
 
-
     IF (maxfun == zero_int) THEN
 
 
@@ -171,14 +170,13 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, coeffs_a, coeffs_b
         
     ELSEIF (optimizer_used == 'FORT-BFGS') THEN
 
-        CALL dfpmin(fort_criterion, fort_dcriterion, x_free_final, bfgs_gtol, bfgs_maxiter, bfgs_stpmx, maxfun, success, message, iter)
+        CALL dfpmin(fort_criterion_parallel, fort_dcriterion_parallel, x_free_final, bfgs_gtol, bfgs_maxiter, bfgs_stpmx, maxfun, success, message, iter)
 
     END IF
     
-    crit_val = fort_criterion(x_free_final)
+    crit_val = fort_criterion_parallel(x_free_final)
 
 END SUBROUTINE
-
 !******************************************************************************
 !******************************************************************************
 FUNCTION fort_criterion_parallel(x)
@@ -186,7 +184,7 @@ FUNCTION fort_criterion_parallel(x)
     !/* external objects    */
 
     REAL(our_dble), INTENT(IN)      :: x(:)
-    REAL(our_dble)                  :: fort_criterion
+    REAL(our_dble)                  :: fort_criterion_parallel
 
     !/* internal objects    */
     
@@ -196,7 +194,7 @@ FUNCTION fort_criterion_parallel(x)
     REAL(our_dble)                  :: coeffs_a(6)
     REAL(our_dble)                  :: coeffs_b(6)
 
-    INTEGER(our_int), SAVE          :: num_step = zero_int
+    INTEGER(our_int), SAVE          :: num_step = - one_int
 
     REAL(our_dble), SAVE            :: value_step = HUGE_FLOAT
 
@@ -205,14 +203,15 @@ FUNCTION fort_criterion_parallel(x)
 
     INTEGER(our_int)                :: i
     INTEGER(our_int)                :: j
-    
+        LOGICAL, PARAMETER :: all_free(26) = .False.
+
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
 
     ! Ensuring that the criterion function is not evaluated more than specified. However, there is the special request of MAXFUN equal to zero which needs to be allowed.
     IF ((num_eval == maxfun) .AND. (maxfun .GT. zero_int)) THEN
-        fort_criterion = -HUGE_FLOAT
+        fort_criterion_parallel = -HUGE_FLOAT
         RETURN
     END IF
 
@@ -235,11 +234,18 @@ FUNCTION fort_criterion_parallel(x)
     END DO
 
 
-    CALL dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x_all_current)
 
-    CALL fort_solve(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max)
+    !  Update parameter that each slave is working with.
+    CALL MPI_Bcast(0, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
+     
+    CALL MPI_Bcast(x_all_current, 26, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
 
-    CALL fort_evaluate(fort_criterion, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_est, periods_draws_prob, delta, tau, edu_start, edu_max)
+
+    ! Solve the model    
+    CALL fort_solve_parallel(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start, edu_max)
+
+    CALL fort_evaluate_parallel(fort_criterion_parallel)
+
 
 
     num_eval = num_eval + 1
@@ -248,32 +254,75 @@ FUNCTION fort_criterion_parallel(x)
 
 
 
-    is_step = (value_step .GT. fort_criterion) 
+    is_step = (value_step .GT. fort_criterion_parallel) 
  
     IF (is_step) THEN
 
         num_step = num_step + 1
 
-        value_step = fort_criterion
+        value_step = fort_criterion_parallel
 
     END IF
 
     
-    CALL write_out_information(num_eval, fort_criterion, x_all_current, 'current')
+    CALL write_out_information(num_eval, fort_criterion_parallel, x_all_current, 'current')
 
     IF (is_start) THEN
 
-        CALL write_out_information(zero_int, fort_criterion, x_all_current, 'start')
+        CALL write_out_information(zero_int, fort_criterion_parallel, x_all_current, 'start')
 
     END IF
 
     IF (is_step) THEN
 
-        CALL write_out_information(num_step, fort_criterion, x_all_current, 'step')
+        CALL write_out_information(num_step, fort_criterion_parallel, x_all_current, 'step')
 
     END IF
 
     
+END FUNCTION
+!******************************************************************************
+!******************************************************************************
+FUNCTION fort_dcriterion_parallel(x)
+
+    !/* external objects        */
+
+    REAL(our_dble), INTENT(IN)      :: x(:)
+    REAL(our_dble)                  :: fort_dcriterion_parallel(SIZE(x))
+
+    !/* internals objects       */
+
+    REAL(our_dble)                  :: ei(COUNT(.NOT. paras_fixed))
+    REAL(our_dble)                  :: d(COUNT(.NOT. paras_fixed))
+    REAL(our_dble)                  :: f0
+    REAL(our_dble)                  :: f1
+
+    INTEGER(our_int)                :: j
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    ! Initialize containers
+    ei = zero_dble
+
+    ! Evaluate baseline
+    f0 = fort_criterion_parallel(x)
+
+    DO j = 1, COUNT(.NOT. paras_fixed)
+
+        ei(j) = one_dble
+
+        d = bfgs_epsilon * ei
+
+        f1 = fort_criterion_parallel(x + d)
+
+        fort_dcriterion_parallel(j) = (f1 - f0) / d(j)
+
+        ei(j) = zero_dble
+
+    END DO
+
 END FUNCTION
 !******************************************************************************
 !******************************************************************************

@@ -4,7 +4,9 @@
 # standard library
 from __future__ import print_function
 
+
 import pickle as pkl
+import numpy as np
 
 import subprocess
 import sys
@@ -52,13 +54,11 @@ for idx, _ in enumerate(tests_old):
     print('\n Modfiying Test ', idx, 'with version ', PYTHON_VERSION)
     init_dict, crit_val = tests_old[idx]
 
-    # TEMPORARY
-    init_dict['ESTIMATION']['maxfun'] = 0
+    #
+    version = init_dict["PROGRAM"]['version']
 
-    del init_dict['ESTIMATION']['maxiter']
-
-    init_dict['SCIPY-BFGS']['maxiter'] = 1
-    init_dict['SCIPY-POWELL']['maxiter'] = 1
+    if version == "FORTRAN":
+        init_dict["PROGRAM"]['parallelism'] = np.random.choice([True, False])
 
     tests_new += [(init_dict, crit_val)]
 
