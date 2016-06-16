@@ -241,8 +241,12 @@ def generate_random_dict(constraints=None):
         # Replace in initialization file
         dict_['PROGRAM']['version'] = version
         # Ensure that the constraints are met
-        if dict_['PROGRAM']['version'] != 'FORTRAN':
+        if version != 'FORTRAN':
             dict_['PROGRAM']['parallelism'] = False
+        if version == 'FORTRAN':
+            dict_['ESTIMATION']['optimizer'] = np.random.choice(['FORT-NEWUOA', 'FORT-BFGS'])
+        else:
+            dict_['ESTIMATION']['optimizer'] = np.random.choice(['SCIPY-BFGS', 'SCIPY-POWELL'])
 
     # Ensure that random deviates do not exceed a certain number. This is
     # useful when aligning the randomness across implementations.

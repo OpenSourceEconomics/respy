@@ -126,7 +126,7 @@ SUBROUTINE NEWUOA (FUNC, X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUCCESS, MESSAG
 
     ! The dimension of the working space W is directly linked to the other 
     ! input parameters (see interface below).
-    ALLOCATE(W(15000))
+    ALLOCATE(W(20000))
 
 !C
 !C     The above settings provide a partition of W for subroutine NEWUOB.
