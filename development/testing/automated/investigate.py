@@ -51,7 +51,6 @@ print(module, method)
 mod = importlib.import_module(module)
 test = getattr(mod.TestClass(), method)
 
-for _ in range(1):
-	print(_)
+while True:
 	test()
 

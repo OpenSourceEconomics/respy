@@ -30,9 +30,6 @@ class TestClass(object):
         constr['maxiter'] = 0
         init_dict = generate_random_dict(constr)
 
-        # TODO: Remove later
-        init_dict['PROGRAM']['procs'] = 2
-
         base = None
         for is_parallel in [False, True]:
 
@@ -42,7 +39,7 @@ class TestClass(object):
             respy_obj = RespyCls('test.respy.ini')
             respy_obj = simulate(respy_obj)
             x, crit_val = estimate(respy_obj)
-            print(crit_val)
+            print('insisde', crit_val)
             if base is None:
                 base = crit_val
             np.testing.assert_almost_equal(base, crit_val)

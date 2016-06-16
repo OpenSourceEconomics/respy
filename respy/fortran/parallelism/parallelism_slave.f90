@@ -138,7 +138,6 @@ PROGRAM resfort_parallel_slave
         ELSEIF(task == 2) THEN
 
             ! Set random seed. We need to set the seed here as well as this part of the code might be called using F2PY without any previous seed set. This ensures that the interpolation grid is identical across draws.
-            
             ! TODO: ?????????????????????????
             seed_inflated(:) = 123
 

@@ -68,32 +68,19 @@ PROGRAM resfort_parallel
 
         CALL fort_solve_parallel(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start, edu_max)
 
-    !ELSE IF (request == 'estimate') THEN
-
-     !   CALL create_draws(periods_draws_prob, num_draws_prob, seed_prob, is_debug)
-
-    !    CALL read_dataset(data_est, num_agents_est)
-
-    !    CALL fort_estimate(crit_val, success, message, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed, optimizer_used, maxfun, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, newuoa_maxfun, bfgs_gtol, bfgs_maxiter, bfgs_stpmx)
-
     ELSE IF (request == 'estimate') THEN 
-        ! JUS HERE DURING DEBUGGING'
-        CALL create_draws(periods_draws_sims, num_agents_sim, seed_sim, is_debug)
 
-        CALL fort_solve(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max)
+        CALL fort_solve_parallel(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start, edu_max)
 
         CALL fort_evaluate_parallel(crit_val)
 
         PRINT *, 'crit_val', crit_val
 
-    ! TODO: There is nothing parallel about it
-  ELSE IF (request == 'simulate') THEN
-
-
+    ELSE IF (request == 'simulate') THEN
 
         CALL create_draws(periods_draws_sims, num_agents_sim, seed_sim, is_debug)
 
-        CALL fort_solve(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max)
+        CALL fort_solve_parallel(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start, edu_max)
 
         CALL fort_simulate(data_sim, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, num_agents_sim, periods_draws_sims, shocks_cholesky, delta, edu_start, edu_max)
 
