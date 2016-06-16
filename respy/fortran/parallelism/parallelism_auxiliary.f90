@@ -158,7 +158,6 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, coeffs_a, coeffs_b
 
     x_free_final = x_free_start
 
-
     IF (maxfun == zero_int) THEN
 
 
@@ -178,6 +177,113 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, coeffs_a, coeffs_b
     crit_val = fort_criterion(x_free_final)
 
 END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+FUNCTION fort_criterion_parallel(x)
+
+    !/* external objects    */
+
+    REAL(our_dble), INTENT(IN)      :: x(:)
+    REAL(our_dble)                  :: fort_criterion_parallel
+
+    !/* internal objects    */
+    
+    REAL(our_dble)                  :: shocks_cholesky(4, 4)
+    REAL(our_dble)                  :: coeffs_home(1)
+    REAL(our_dble)                  :: coeffs_edu(3)
+    REAL(our_dble)                  :: coeffs_a(6)
+    REAL(our_dble)                  :: coeffs_b(6)
+
+    INTEGER(our_int), SAVE          :: num_step = zero_int
+
+    REAL(our_dble), SAVE            :: value_step = HUGE_FLOAT
+
+    LOGICAL                         :: is_start
+    LOGICAL                         :: is_step
+
+    INTEGER(our_int)                :: i
+    INTEGER(our_int)                :: j
+        LOGICAL, PARAMETER :: all_free(26) = .False.
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    ! Ensuring that the criterion function is not evaluated more than specified. However, there is the special request of MAXFUN equal to zero which needs to be allowed.
+    IF ((num_eval == maxfun) .AND. (maxfun .GT. zero_int)) THEN
+        fort_criterion_parallel = -HUGE_FLOAT
+        RETURN
+    END IF
+
+    ! Construct the full set of current parameters
+    j = 1
+
+    DO i = 1, 26
+
+        IF(paras_fixed(i)) THEN
+
+            x_all_current(i) = x_all_start(i)
+
+        ELSE
+            
+            x_all_current(i) = x(j)
+            j = j + 1
+
+        END IF
+
+    END DO
+
+
+
+    !  Update parameter that each slave is working with.
+    CALL MPI_Bcast(0, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
+
+    CALL get_free_optim_paras(x_all_start, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, all_free)
+        
+    CALL MPI_Bcast(x_all_start, 26, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
+
+
+    ! Solve the model    
+    CALL fort_solve_parallel(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start, edu_max)
+
+
+
+    CALL fort_evaluate_parallel(fort_criterion_parallel)
+
+
+    num_eval = num_eval + 1
+
+    is_start = (num_eval == 1)
+
+
+
+    is_step = (value_step .GT. fort_criterion_parallel) 
+ 
+    IF (is_step) THEN
+
+        num_step = num_step + 1
+
+        value_step = fort_criterion_parallel
+
+    END IF
+
+    
+    CALL write_out_information(num_eval, fort_criterion_parallel, x_all_current, 'current')
+
+    IF (is_start) THEN
+
+        CALL write_out_information(zero_int, fort_criterion_parallel, x_all_current, 'start')
+
+    END IF
+
+    IF (is_step) THEN
+
+        CALL write_out_information(num_step, fort_criterion_parallel, x_all_current, 'step')
+
+    END IF
+
+    
+END FUNCTION
 !******************************************************************************
 !******************************************************************************
 SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start, edu_max)
