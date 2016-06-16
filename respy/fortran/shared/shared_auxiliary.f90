@@ -490,7 +490,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_payoffs
         CLOSE(1)
 
 
-        1900 FORMAT(4(1x,f25.15))
+        1900 FORMAT(4(1x,f45.15))
 
         OPEN(UNIT=1, FILE='.periods_payoffs_systematic.resfort.dat')
 
@@ -522,7 +522,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_payoffs
         CLOSE(1)
 
 
-        2400 FORMAT(100000(1x,f25.15))
+        2400 FORMAT(100000(1x,f45.15))
 
         OPEN(UNIT=1, FILE='.periods_emax.resfort.dat')
 

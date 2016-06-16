@@ -153,7 +153,7 @@ def scripts_estimate(resume, single, init_file, gradient):
     # Update parametrization of the model if resuming from a previous
     # estimation run.
     if resume:
-        x0 = np.genfromtxt('opt_info_step.respy.log')
+        x0 = np.genfromtxt('opt_info_step.respy.log')[2:]
         respy_obj.update_model_paras(x0)
 
     # Set maximum iteration count when only an evaluation of the criterion

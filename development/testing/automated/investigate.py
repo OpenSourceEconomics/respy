@@ -23,8 +23,6 @@ PACKAGE_DIR = PACKAGE_DIR.replace('development/testing/automated', '')
 sys.path.insert(0, PACKAGE_DIR)
 sys.path.insert(0, PACKAGE_DIR + 'respy/tests')
 
-VERSIONS = ['PYTHON', 'FORTRAN', 'F2PY']
-
 # Recompiling during debugging
 if False:
     cwd = os.getcwd()
@@ -35,7 +33,7 @@ if False:
 
 ''' Request
 '''
-seed = 1223 # 6216748723
+seed = 88228 # 6216748723
 
 
 ''' Error Reproduction
@@ -48,10 +46,12 @@ np.random.seed(seed)
 test_dict = get_test_dict(PACKAGE_DIR + '/respy/tests')
 module, method = get_random_request(test_dict)
 
-module, method = 'test_integration', 'test_7'
+module, method = 'test_integration', 'test_8'
 print(module, method)
 mod = importlib.import_module(module)
 test = getattr(mod.TestClass(), method)
 
-test()
+for _ in range(10):
+	print(_)
+	test()
 
