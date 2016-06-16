@@ -134,8 +134,6 @@ PROGRAM resfort_parallel_slave
 
             CALL dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x_all_current)
         
-            CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start)
-
         ELSEIF(task == 1) THEN
 
             CALL MPI_FINALIZE(ierr)
