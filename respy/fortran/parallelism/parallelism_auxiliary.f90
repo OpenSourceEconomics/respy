@@ -167,7 +167,7 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, coeffs_a, coeffs_b
         ! This is required to keep the original design of the algorithm intact
         maxfun_int = MIN(maxfun, newuoa_maxfun) - 1 
 
-        CALL newuoa(fort_criterion, x_free_final, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, zero_int, maxfun_int, success, message, iter)
+        CALL newuoa(fort_criterion_parallel, x_free_final, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, zero_int, maxfun_int, success, message, iter)
         
     ELSEIF (optimizer_used == 'FORT-BFGS') THEN
 
@@ -178,6 +178,103 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, coeffs_a, coeffs_b
     crit_val = fort_criterion(x_free_final)
 
 END SUBROUTINE
+
+!******************************************************************************
+!******************************************************************************
+FUNCTION fort_criterion_parallel(x)
+
+    !/* external objects    */
+
+    REAL(our_dble), INTENT(IN)      :: x(:)
+    REAL(our_dble)                  :: fort_criterion
+
+    !/* internal objects    */
+    
+    REAL(our_dble)                  :: shocks_cholesky(4, 4)
+    REAL(our_dble)                  :: coeffs_home(1)
+    REAL(our_dble)                  :: coeffs_edu(3)
+    REAL(our_dble)                  :: coeffs_a(6)
+    REAL(our_dble)                  :: coeffs_b(6)
+
+    INTEGER(our_int), SAVE          :: num_step = zero_int
+
+    REAL(our_dble), SAVE            :: value_step = HUGE_FLOAT
+
+    LOGICAL                         :: is_start
+    LOGICAL                         :: is_step
+
+    INTEGER(our_int)                :: i
+    INTEGER(our_int)                :: j
+    
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    ! Ensuring that the criterion function is not evaluated more than specified. However, there is the special request of MAXFUN equal to zero which needs to be allowed.
+    IF ((num_eval == maxfun) .AND. (maxfun .GT. zero_int)) THEN
+        fort_criterion = -HUGE_FLOAT
+        RETURN
+    END IF
+
+    ! Construct the full set of current parameters
+    j = 1
+
+    DO i = 1, 26
+
+        IF(paras_fixed(i)) THEN
+
+            x_all_current(i) = x_all_start(i)
+
+        ELSE
+            
+            x_all_current(i) = x(j)
+            j = j + 1
+
+        END IF
+
+    END DO
+
+
+    CALL dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x_all_current)
+
+    CALL fort_solve(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max)
+
+    CALL fort_evaluate(fort_criterion, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_est, periods_draws_prob, delta, tau, edu_start, edu_max)
+
+
+    num_eval = num_eval + 1
+
+    is_start = (num_eval == 1)
+
+
+
+    is_step = (value_step .GT. fort_criterion) 
+ 
+    IF (is_step) THEN
+
+        num_step = num_step + 1
+
+        value_step = fort_criterion
+
+    END IF
+
+    
+    CALL write_out_information(num_eval, fort_criterion, x_all_current, 'current')
+
+    IF (is_start) THEN
+
+        CALL write_out_information(zero_int, fort_criterion, x_all_current, 'start')
+
+    END IF
+
+    IF (is_step) THEN
+
+        CALL write_out_information(num_step, fort_criterion, x_all_current, 'step')
+
+    END IF
+
+    
+END FUNCTION
 !******************************************************************************
 !******************************************************************************
 SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start, edu_max)

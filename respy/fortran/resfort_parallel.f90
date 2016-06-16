@@ -68,10 +68,14 @@ PROGRAM resfort_parallel
         CALL fort_solve_parallel(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start, edu_max)
 
     ELSE IF (request == 'estimate') THEN 
+        PRINT *, 'estimating in parallel'
+        ! TODO: SOME OF THOSE ROUTINES CAN GO after real parallelism
+        CALL create_draws(periods_draws_prob, num_draws_prob, seed_prob, is_debug)
 
-        CALL fort_solve_parallel(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start, edu_max)
+        CALL read_dataset(data_est, num_agents_est)
 
-        CALL fort_evaluate_parallel(crit_val)
+        CALL fort_estimate_parallel(crit_val, success, message, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed, optimizer_used, maxfun, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, newuoa_maxfun, bfgs_gtol, bfgs_maxiter, bfgs_stpmx)
+
 
     ELSE IF (request == 'simulate') THEN
 
