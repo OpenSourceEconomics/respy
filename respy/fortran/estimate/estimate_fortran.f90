@@ -160,7 +160,7 @@ FUNCTION fort_criterion(x)
     num_eval = num_eval + 1
 
     is_start = (num_eval == 1)
-
+    PRINT *, 'eval_sc ', num_eval, fort_criterion 
 
 
     is_step = (value_step .GT. fort_criterion) 

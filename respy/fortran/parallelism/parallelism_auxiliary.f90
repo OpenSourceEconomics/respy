@@ -166,7 +166,7 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, coeffs_a, coeffs_b
         ! This is required to keep the original design of the algorithm intact
         maxfun_int = MIN(maxfun, newuoa_maxfun) - 1 
 
-        CALL newuoa(fort_criterion, x_free_final, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, zero_int, maxfun_int, success, message, iter)
+        CALL newuoa(fort_criterion_parallel, x_free_final, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, zero_int, maxfun_int, success, message, iter)
         
     ELSEIF (optimizer_used == 'FORT-BFGS') THEN
 
@@ -174,7 +174,7 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, coeffs_a, coeffs_b
 
     END IF
     
-    crit_val = fort_criterion(x_free_final)
+    crit_val = fort_criterion_parallel(x_free_final)
 
 END SUBROUTINE
 !******************************************************************************
@@ -237,21 +237,23 @@ FUNCTION fort_criterion_parallel(x)
 
     !  Update parameter that each slave is working with.
     CALL MPI_Bcast(0, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
+     
+    CALL MPI_Bcast(x_all_current, 26, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
 
-    CALL get_free_optim_paras(x_all_start, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, all_free)
-        
-    CALL MPI_Bcast(x_all_start, 26, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
+    ! Ech slave solves the mode
+!    CALL MPI_Bcast(2, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
 
 
     ! Solve the model    
     CALL fort_solve_parallel(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start, edu_max)
 
-
-
     CALL fort_evaluate_parallel(fort_criterion_parallel)
 
 
+
     num_eval = num_eval + 1
+
+    PRINT *, 'eval ', num_eval, fort_criterion_parallel
 
     is_start = (num_eval == 1)
 

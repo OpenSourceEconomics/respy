@@ -130,11 +130,10 @@ PROGRAM resfort_parallel_slave
         ! Updating parameterization
         IF(task == 0) THEN
 
-            PRINT *, 'I am watiting'
             CALL MPI_Bcast(x_all_current, 26, MPI_DOUBLE, 0, PARENTCOMM, ierr)
 
             CALL dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x_all_current)
-            
+
         ELSEIF(task == 1) THEN
 
             CALL MPI_FINALIZE(ierr)
@@ -285,12 +284,8 @@ PROGRAM resfort_parallel_slave
 
             ! The leading slave updates the master 
             IF (rank == 0) THEN
-            x_all_current = zero_dble
              CALL MPI_SEND(crit_val, 1, MPI_DOUBLE, 0, 75, PARENTCOMM, ierr)            
-            CALL write_out_information(zero_int, crit_val, x_all_current, 'current')
-            CALL write_out_information(zero_int, crit_val, x_all_current, 'step')
-            CALL write_out_information(zero_int, crit_val, x_all_current, 'start')
-
+         
             END IF
 
 
