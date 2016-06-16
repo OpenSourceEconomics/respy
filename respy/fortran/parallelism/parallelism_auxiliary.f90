@@ -110,6 +110,76 @@ SUBROUTINE fort_evaluate_parallel(crit_val)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
+SUBROUTINE fort_estimate_parallel(crit_val, success, message, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed, optimizer_used, maxfun, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, newuoa_maxfun, bfgs_gtol, bfgs_maxiter, bfgs_stpmx)
+
+    !/* external objects    */
+
+    REAL(our_dble), INTENT(OUT)     :: crit_val
+
+    REAL(our_dble), INTENT(IN)      :: shocks_cholesky(4, 4)
+    REAL(our_dble), INTENT(IN)      :: coeffs_home(1)
+    REAL(our_dble), INTENT(IN)      :: coeffs_edu(3)
+    REAL(our_dble), INTENT(IN)      :: coeffs_a(6)
+    REAL(our_dble), INTENT(IN)      :: coeffs_b(6)
+
+    INTEGER(our_int), INTENT(IN)    :: maxfun
+    INTEGER(our_int), INTENT(IN)    :: newuoa_maxfun
+    INTEGER(our_int), INTENT(IN)    :: newuoa_npt
+    
+
+    INTEGER(our_int)                :: bfgs_maxiter
+    REAL(our_dble)                  :: bfgs_stpmx
+    REAL(our_dble)                  :: bfgs_gtol
+
+    REAL(our_dble), INTENT(IN)      :: newuoa_rhobeg
+    REAL(our_dble), INTENT(IN)      :: newuoa_rhoend
+
+    CHARACTER(225), INTENT(IN)      :: optimizer_used
+
+    LOGICAL, INTENT(IN)             :: paras_fixed(26) 
+    !/* internal objects    */
+
+    REAL(our_dble)                  :: x_free_start(COUNT(.not. paras_fixed))
+    REAL(our_dble)                  :: x_free_final(COUNT(.not. paras_fixed))
+    
+    INTEGER(our_int)                :: iter
+    INTEGER(our_int)                :: maxfun_int
+    LOGICAL, INTENT(OUT)                         :: success
+    CHARACTER(150), INTENT(OUT)                  :: message
+
+    LOGICAL, PARAMETER :: all_free(26) = .False.
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+    
+    CALL get_free_optim_paras(x_free_start, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed)
+
+    CALL get_free_optim_paras(x_all_start, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, all_free)
+
+    x_free_final = x_free_start
+
+
+    IF (maxfun == zero_int) THEN
+
+
+    ELSEIF (optimizer_used == 'FORT-NEWUOA') THEN
+
+        ! This is required to keep the original design of the algorithm intact
+        maxfun_int = MIN(maxfun, newuoa_maxfun) - 1 
+
+        CALL newuoa(fort_criterion, x_free_final, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, zero_int, maxfun_int, success, message, iter)
+        
+    ELSEIF (optimizer_used == 'FORT-BFGS') THEN
+
+        CALL dfpmin(fort_criterion, fort_dcriterion, x_free_final, bfgs_gtol, bfgs_maxiter, bfgs_stpmx, maxfun, success, message, iter)
+
+    END IF
+    
+    crit_val = fort_criterion(x_free_final)
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start, edu_max)
 
     !/* external objects        */

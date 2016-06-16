@@ -45,7 +45,7 @@ def compile_package():
     """
     current_directory = os.getcwd()
     os.chdir(RESPY_DIR)
-    os.system(PYTHON_EXEC + ' waf distclean; ' + PYTHON_EXEC + ' waf configure build --debug --without_mpi')
+    os.system(PYTHON_EXEC + ' waf distclean; ' + PYTHON_EXEC + ' waf configure build --debug')
     os.chdir(current_directory)
 
 
