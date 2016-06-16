@@ -24,6 +24,8 @@ from modules.clsMail import MailCls
 RESPY_DIR = os.path.dirname(os.path.realpath(__file__))
 RESPY_DIR = RESPY_DIR.replace('development/testing/automated/modules','') + 'respy'
 
+PYTHON_EXEC = sys.executable
+
 # package imports
 from respy.python.shared.shared_constants import IS_PARALLEL
 
@@ -43,7 +45,7 @@ def compile_package():
     """
     current_directory = os.getcwd()
     os.chdir(RESPY_DIR)
-    os.system('./waf distclean; ./waf configure build --debug --without_mpi')
+    os.system(PYTHON_EXEC + ' waf distclean; ' + PYTHON_EXEC + ' waf configure build --debug --without_mpi')
     os.chdir(current_directory)
 
 
