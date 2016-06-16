@@ -81,7 +81,6 @@ PROGRAM resfort_parallel_slave
 
     INTEGER(our_int)                    :: seed_inflated(15), seed_size
 
-
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
@@ -278,8 +277,16 @@ PROGRAM resfort_parallel_slave
 	    CALL MPI_REDUCE(partial_crit, crit_val, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
 
             ! The leading slave updates the master 
-            IF (rank == 0) CALL MPI_SEND(crit_val, 1, MPI_DOUBLE, 0, 75, PARENTCOMM, ierr)            
-          
+            IF (rank == 0) THEN
+            x_all_current = zero_dble
+             CALL MPI_SEND(crit_val, 1, MPI_DOUBLE, 0, 75, PARENTCOMM, ierr)            
+            CALL write_out_information(zero_int, crit_val, x_all_current, 'current')
+            CALL write_out_information(zero_int, crit_val, x_all_current, 'step')
+            CALL write_out_information(zero_int, crit_val, x_all_current, 'start')
+
+            END IF
+
+
         END IF    
 
     END DO
