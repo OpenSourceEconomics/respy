@@ -194,7 +194,7 @@ FUNCTION fort_criterion_parallel(x)
     REAL(our_dble)                  :: coeffs_a(6)
     REAL(our_dble)                  :: coeffs_b(6)
 
-    INTEGER(our_int), SAVE          :: num_step = zero_int
+    INTEGER(our_int), SAVE          :: num_step = - one_int
 
     REAL(our_dble), SAVE            :: value_step = HUGE_FLOAT
 
