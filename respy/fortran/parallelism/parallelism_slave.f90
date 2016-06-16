@@ -55,7 +55,32 @@ PROGRAM resfort_parallel_slave
     LOGICAL                         :: STAY_AVAILABLE = .TRUE.
     LOGICAL                         :: any_interpolated
     LOGICAL                         :: is_head
-    
+
+    REAL(our_dble)                  :: newuoa_rhobeg
+    REAL(our_dble)                  :: newuoa_rhoend    
+    REAL(our_dble)                  :: bfgs_stpmx
+    REAL(our_dble)                  :: bfgs_gtol
+
+    REAL(our_dble), ALLOCATABLE     :: periods_draws_sims(:, :, :)
+    REAL(our_dble), ALLOCATABLE     :: data_sim(:, :)
+
+    INTEGER(our_int)                :: newuoa_maxfun
+    INTEGER(our_int)                :: bfgs_maxiter
+    INTEGER(our_int)                :: newuoa_npt
+    INTEGER(our_int)                :: num_procs
+    INTEGER(our_int)                :: seed_prob
+    INTEGER(our_int)                :: seed_emax
+    INTEGER(our_int)                :: seed_sim
+ 
+    LOGICAL                         :: success
+
+    CHARACTER(225)                  :: optimizer_used
+    CHARACTER(225)                  :: exec_dir
+    CHARACTER(150)                  :: message
+    CHARACTER(10)                   :: request
+
+    INTEGER(our_int)                    :: seed_inflated(15), seed_size
+
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
@@ -67,12 +92,12 @@ PROGRAM resfort_parallel_slave
     CALL MPI_COMM_GET_PARENT(PARENTCOMM, ierr)
 
     ! Read in model specification.
-    CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky)
+    CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, is_debug, is_interpolated, is_myopic, request, exec_dir, maxfun, paras_fixed, optimizer_used, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend, bfgs_epsilon, bfgs_gtol, bfgs_stpmx, bfgs_maxiter)
 
     ! Allocate arrays
     IF(rank == 0) CALL logging_solution(1)
 
-    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, periods_emax, periods_payoffs_systematic)
+    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, periods_emax, periods_payoffs_systematic, edu_start, edu_max)
 
     IF(rank == 0) CALL logging_solution(-1)
 
@@ -87,12 +112,12 @@ PROGRAM resfort_parallel_slave
     ! Calculate the systematic payoffs
     IF(rank == 0) CALL logging_solution(2)
 
-    CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
+    CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start)
 
     IF(rank == 0) CALL logging_solution(-1)
 
     ! This part creates (or reads from disk) the draws for the Monte Carlo integration of the EMAX. For is_debugging purposes, these might  also be read in from disk or set to zero/one.   
-    CALL create_draws(periods_draws_emax, num_draws_emax, seed_emax)
+    CALL create_draws(periods_draws_emax, num_draws_emax, seed_emax, is_debug)
 
     is_head = .False.
     IF(rank == zero_int) is_head = .True.
@@ -112,6 +137,7 @@ PROGRAM resfort_parallel_slave
         ELSEIF(task == 2) THEN
 
             ! Set random seed. We need to set the seed here as well as this part of the code might be called using F2PY without any previous seed set. This ensures that the interpolation grid is identical across draws.
+            ! TODO: ?????????????????????????
             seed_inflated(:) = 123
 
             CALL RANDOM_SEED(size=seed_size)
@@ -150,10 +176,10 @@ PROGRAM resfort_parallel_slave
                     ALLOCATE(is_simulated(num_states), endogenous(num_states), maxe(num_states), exogenous(num_states, 9), predictions(num_states))
 
                     ! Constructing indicator for simulation points
-                    is_simulated = get_simulated_indicator(num_points_interp, num_states, period)
+                    is_simulated = get_simulated_indicator(num_points_interp, num_states, period, is_debug)
        
                     ! Constructing the dependent variable for all states, including the ones where simulation will take place. All information will be used in either the construction of the prediction model or the prediction step.
-                    CALL get_exogenous_variables(exogenous, maxe, period, num_states, periods_payoffs_systematic, shifts, mapping_state_idx, periods_emax, states_all)
+                    CALL get_exogenous_variables(exogenous, maxe, period, num_states, periods_payoffs_systematic, shifts, mapping_state_idx, periods_emax, states_all, delta, edu_start, edu_max)
 
                     ! Initialize missing values
                     endogenous = MISSING_FLOAT
@@ -173,7 +199,7 @@ PROGRAM resfort_parallel_slave
                         payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
                         ! Get payoffs
-                        CALL get_future_value(emax_simulated, draws_emax, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, shocks_cholesky)
+                        CALL get_future_value(emax_simulated, draws_emax, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, shocks_cholesky, delta, edu_start, edu_max)
 
                         ! Construct dependent variable
                         endogenous_slaves(count) = emax_simulated - maxe(k + 1)
@@ -204,7 +230,7 @@ PROGRAM resfort_parallel_slave
                         ! Extract payoffs
                         payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
-                        CALL get_future_value(emax_simulated, draws_emax, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, shocks_cholesky)
+                        CALL get_future_value(emax_simulated, draws_emax, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, shocks_cholesky, delta, edu_start, edu_max)
 
                         ! Collect information
                         periods_emax_slaves(count) = emax_simulated
@@ -232,7 +258,7 @@ PROGRAM resfort_parallel_slave
 
                 CALL read_dataset(data_est, num_agents_est)
 
-                CALL create_draws(periods_draws_prob, num_draws_prob, seed_prob)
+                CALL create_draws(periods_draws_prob, num_draws_prob, seed_prob, is_debug)
 
                 ! Upper and lower bound of tasks
                 lower_bound = SUM(num_obs_slaves(:rank)) + 1
@@ -246,13 +272,21 @@ PROGRAM resfort_parallel_slave
             END IF
 
             ! Evaluate criterion function    
-            CALL fort_evaluate(partial_crit, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_slave, periods_draws_prob)
-            
-            CALL MPI_REDUCE(partial_crit, crit_val, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
+            CALL fort_evaluate(partial_crit, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_slave, periods_draws_prob, delta, tau, edu_start, edu_max)
+           
+	    CALL MPI_REDUCE(partial_crit, crit_val, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
 
             ! The leading slave updates the master 
-            IF (rank == 0) CALL MPI_SEND(crit_val, 1, MPI_DOUBLE, 0, 75, PARENTCOMM, ierr)            
-          
+            IF (rank == 0) THEN
+            x_all_current = zero_dble
+             CALL MPI_SEND(crit_val, 1, MPI_DOUBLE, 0, 75, PARENTCOMM, ierr)            
+            CALL write_out_information(zero_int, crit_val, x_all_current, 'current')
+            CALL write_out_information(zero_int, crit_val, x_all_current, 'step')
+            CALL write_out_information(zero_int, crit_val, x_all_current, 'start')
+
+            END IF
+
+
         END IF    
 
     END DO

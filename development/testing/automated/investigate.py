@@ -28,12 +28,12 @@ if False:
     cwd = os.getcwd()
     os.chdir(PACKAGE_DIR + '/respy')
     subprocess.call('./waf distclean', shell=True)
-    subprocess.call('./waf configure build --debug --without_mpi', shell=True)
+    subprocess.call('./waf configure build --debug', shell=True)
     os.chdir(cwd)
 
 ''' Request
 '''
-seed = 88228 # 6216748723
+seed = 91004 # 6216748723
 
 
 ''' Error Reproduction
@@ -51,7 +51,6 @@ print(module, method)
 mod = importlib.import_module(module)
 test = getattr(mod.TestClass(), method)
 
-for _ in range(10):
-	print(_)
-	test()
+while True:
+    test()
 
