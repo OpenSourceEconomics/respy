@@ -41,9 +41,12 @@ class MonitorCls(object):
 
     def _terminate(self):
 
-        self.proc.terminate()
-        self.proc.communicate()
-
+        try:
+            self.proc.terminate()
+            self.proc.communicate()
+        except:
+            pass
+        
     def stop(self):
 
         self._terminate()
