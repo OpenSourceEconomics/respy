@@ -42,6 +42,7 @@ class MonitorCls(object):
     def stop(self):
 
         self.proc.terminate()
+        self.proc.communicate()
 
         # We make sure that the final information is up to date.
         args = []
