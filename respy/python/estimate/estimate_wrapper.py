@@ -36,7 +36,7 @@ class OptimizationClass(object):
         if self.attr['num_eval'] == 0:
             is_start = True
         else:
-            is_start = True
+            is_start = False
 
         # Evaluate criterion function
         x_all_start = self.x_all_start
