@@ -202,7 +202,7 @@ FUNCTION fort_criterion_parallel(x)
     LOGICAL                         :: is_step
 
     INTEGER(our_int)                :: i
-    INTEGER(our_int)                :: j
+    INTEGER(our_int)                :: j, num_states, period
         LOGICAL, PARAMETER :: all_free(26) = .False.
 
 !------------------------------------------------------------------------------
@@ -234,7 +234,6 @@ FUNCTION fort_criterion_parallel(x)
     END DO
 
 
-
     !  Update parameter that each slave is working with.
     CALL MPI_Bcast(0, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
      
@@ -242,7 +241,19 @@ FUNCTION fort_criterion_parallel(x)
 
 
     ! Solve the model    
-    CALL fort_solve_parallel(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start, edu_max)
+    CALL MPI_Bcast(2, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
+    
+    ! THis block is only temporary until the slave is extracted ....
+    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, periods_emax, periods_payoffs_systematic, edu_start, edu_max)
+
+    DO period = (num_periods - 1), 0, -1
+
+        num_states = states_number_period(period + 1)
+        
+        CALL MPI_RECV(periods_emax(period + 1, :num_states) , num_states, MPI_DOUBLE, MPI_ANY_SOURCE, MPI_ANY_TAG, SLAVECOMM, status, ierr)
+        
+    END DO
+
 
     CALL fort_evaluate_parallel(fort_criterion_parallel)
 
