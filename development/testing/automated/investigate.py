@@ -27,8 +27,8 @@ sys.path.insert(0, PACKAGE_DIR + 'respy/tests')
 if False:
     cwd = os.getcwd()
     os.chdir(PACKAGE_DIR + '/respy')
-    assert subprocess.call('./waf distclean', shell=True) == 0
-    assert subprocess.call('./waf configure build --debug', shell=True) == 0
+    subprocess.check_call('./waf distclean', shell=True)
+    subprocess.check_call('./waf configure build --debug', shell=True)
     os.chdir(cwd)
 
 ''' Request

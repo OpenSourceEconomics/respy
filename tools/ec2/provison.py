@@ -1,5 +1,5 @@
 apt get update
-subprocess.call(['apt-get', 'upgrade', '-y'])
+subprocess.check_call(['apt-get', 'upgrade', '-y'])
 
 # installed version is too old.
 apt_packages = ['python-pip', 'gfortran', 'libatlas-dev', 'libatlas-base-dev']

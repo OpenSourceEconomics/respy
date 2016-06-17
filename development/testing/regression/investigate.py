@@ -34,8 +34,8 @@ else:
 if True:
     cwd = os.getcwd()
     os.chdir(PACKAGE_DIR + '/respy')
-    assert subprocess.call(python_exec + ' waf distclean', shell=True) == 0
-    assert subprocess.call(python_exec + ' waf configure build --debug --without_mpi',shell=True) == 0
+    subprocess.check_call(python_exec + ' waf distclean', shell=True)
+    subprocess.check_call(python_exec + ' waf configure build --debug', shell=True)
     os.chdir(cwd)
 
 # Import package. The late import is required as the compilation needs to

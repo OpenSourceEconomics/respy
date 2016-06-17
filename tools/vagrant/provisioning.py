@@ -15,12 +15,12 @@ apt_packages += ['git']
 pyt_packages = ['numpy', 'respy']
 
 # Housekeeping
-subprocess.call(['apt-get', 'update'])
-subprocess.call(['apt-get', 'upgrade'])
+subprocess.check_call(['apt-get', 'update'])
+subprocess.check_call(['apt-get', 'upgrade'])
 
 # Install some basic packages using the Advanced Packaging Tool.
 for package in apt_packages:
-    subprocess.call(['apt-get', 'install', '-y', package])
+    subprocess.check_call(['apt-get', 'install', '-y', package])
 
 # Install packages using the PIP package manager.
 for package in pyt_packages:
@@ -32,5 +32,5 @@ for package in pyt_packages:
     if 'respy' in package:
         cmd = ['pip', 'install', '--no-binary', 'respy', package]
 
-    subprocess.call(cmd)
+    subprocess.check_call(cmd)
 

@@ -37,12 +37,16 @@ class MonitorCls(object):
 
         fname = ROOT_DIR + '/python/monitoring/monitoring_child.py'
         self.proc = subprocess.Popen([sys.executable, fname])
-        atexit.register(self.proc.terminate)
+        atexit.register(self._terminate)
 
-    def stop(self):
+    def _terminate(self):
 
         self.proc.terminate()
         self.proc.communicate()
+
+    def stop(self):
+
+        self._terminate()
 
         # We make sure that the final information is up to date.
         args = []

@@ -34,8 +34,8 @@ else:
 # for the execution of the script.
 cwd = os.getcwd()
 os.chdir(PACKAGE_DIR + '/respy')
-subprocess.call(python_exec + ' waf distclean', shell=True)
-subprocess.call(python_exec + ' waf configure build --debug --without_mpi',
+subprocess.check_call(python_exec + ' waf distclean', shell=True)
+subprocess.check_call(python_exec + ' waf configure build --debug --without_mpi',
                 shell=True)
 os.chdir(cwd)
 

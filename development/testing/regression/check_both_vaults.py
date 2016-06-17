@@ -8,4 +8,4 @@ from config import python3_exec
 script_file = 'check_vault.py'
 
 for python_bin in [python2_exec, python3_exec]:
-    assert (subprocess.call([python_bin, script_file]) == 0)
+    subprocess.check_call([python_bin, script_file])
