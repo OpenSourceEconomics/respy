@@ -64,10 +64,10 @@ def resfort_interface(respy_obj, request, data_array=None):
     # Call executable
     if not is_parallel:
         cmd = EXEC_DIR + '/resfort_scalar'
-        subprocess.call(cmd, shell=True)
+        assert subprocess.call(cmd, shell=True) == 0
     else:
         cmd = 'mpiexec ' + EXEC_DIR + '/resfort_parallel_master'
-        subprocess.call(cmd, shell=True)
+        assert subprocess.call(cmd, shell=True) == 0
 
     # Return arguments depends on the request.
     if request == 'solve':

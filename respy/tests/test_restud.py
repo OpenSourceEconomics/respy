@@ -121,7 +121,7 @@ class TestClass(object):
 
         # Solve model using RESTUD code.
         cmd = TEST_RESOURCES_DIR + '/kw_dp3asim'
-        subprocess.call(cmd, shell=True)
+        assert subprocess.call(cmd, shell=True) == 0
 
         # Solve model using RESPY package.
         solve(respy_obj)
