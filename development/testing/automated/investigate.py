@@ -33,7 +33,7 @@ if False:
 
 ''' Request
 '''
-seed = 91004 # 6216748723
+seed = 21860 # 6216748723
 
 
 ''' Error Reproduction
@@ -46,7 +46,7 @@ np.random.seed(seed)
 test_dict = get_test_dict(PACKAGE_DIR + '/respy/tests')
 module, method = get_random_request(test_dict)
 
-module, method = 'test_parallelism', 'test_1'
+#module, method = 'test_parallelism', 'test_1'
 print(module, method)
 mod = importlib.import_module(module)
 test = getattr(mod.TestClass(), method)
