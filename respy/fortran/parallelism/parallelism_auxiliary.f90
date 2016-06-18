@@ -160,6 +160,8 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, coeffs_a, coeffs_b
 
     IF (maxfun == zero_int) THEN
 
+        success = .True.
+        message = 'Single evaluation of criterion function at starting values.'
 
     ELSEIF (optimizer_used == 'FORT-NEWUOA') THEN
 
@@ -175,6 +177,8 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, coeffs_a, coeffs_b
     END IF
     
     crit_val = fort_criterion_parallel(x_free_final)
+
+    CALL logging_estimation_final(success, message, crit_val)
 
 END SUBROUTINE
 !******************************************************************************

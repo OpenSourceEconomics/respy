@@ -15,6 +15,98 @@ MODULE estimate_auxiliary
 CONTAINS
 !******************************************************************************
 !******************************************************************************
+SUBROUTINE logging_estimation_final(success, message, crit_val)
+
+    !/* external objects        */
+
+    LOGICAL, INTENT(IN)             :: success
+    
+    CHARACTER(*), INTENT(IN)        :: message
+
+    REAL(our_dble), INTENT(IN)      :: crit_val
+
+    !/* internal objects        */
+
+    INTEGER(our_int)                :: today(3)
+    INTEGER(our_int)                :: now(3)
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+    
+    ! Formatting
+    5503 FORMAT(1x, A4,21X,i2,'/',i2,'/',i4)
+    5504 FORMAT(1x, A4,23X,i2,':',i2,':',i2)
+    5505 FORMAT(1x, A4, 25X, i6)
+    5506 FORMAT(1x, A9 ,1X, f25.15)
+    5510 FORMAT(1x, A12)
+ 
+    ! Obtain information about system time
+    CALL IDATE(today)
+    CALL ITIME(now)
+
+    ! Write to file
+    OPEN(UNIT=99, FILE='optimization.respy.log', ACCESS='APPEND')
+        WRITE(99, *) 
+        WRITE(99, 5510) 'FINAL REPORT'
+        WRITE(99, *) 
+
+        IF (success) THEN
+            WRITE(99, *) 'Success True'
+        ELSE
+            WRITE(99, *) 'Success False'
+        END IF
+
+        WRITE(99, *) 'Message ', message
+        WRITE(99, *) 
+        WRITE(99, 5506) 'Criterion', crit_val
+        WRITE(99, 5504) 'Time', now
+        WRITE(99, 5503) 'Date', today(2), today(1), today(3) 
+
+    CLOSE(99)
+
+END SUBROUTINE    
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE logging_estimation_step(num_step, crit_val)
+
+    !/* external objects        */
+
+    INTEGER(our_int), INTENT(IN)    :: num_step
+
+    REAL(our_dble), INTENT(IN)      :: crit_val
+
+    !/* internal objects        */
+
+    INTEGER(our_int)                :: today(3)
+    INTEGER(our_int)                :: now(3)
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+    
+    ! Formatting
+    5503 FORMAT(1x,A4,21X,i2,'/',i2,'/',i4)
+    5504 FORMAT(1x,A4,23X,i2,':',i2,':',i2)
+    5505 FORMAT(1x,A4, 25X, i6)
+    5506 FORMAT(1x,A9 ,1X, f25.15)
+ 
+    ! Obtain information about system time
+    CALL IDATE(today)
+    CALL ITIME(now)
+
+    ! Write to file
+    OPEN(UNIT=99, FILE='optimization.respy.log', ACCESS='APPEND')
+        WRITE(99, 5505) 'Step', num_step
+        WRITE(99, 5506) 'Criterion', crit_val
+        WRITE(99, 5504) 'Time', now
+        WRITE(99, 5503) 'Date', today(2), today(1), today(3) 
+        WRITE(99, *) 
+    CLOSE(99)
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE write_out_information(counter, fval, x, which)
 
     !/* external objects        */

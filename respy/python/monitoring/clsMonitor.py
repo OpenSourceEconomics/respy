@@ -71,24 +71,3 @@ class MonitorCls(object):
             self.proc.communicate()
         except OSError:
             pass
-
-
-# TODO: Incorporate?
-#        fmt_ = '{0:<10} {1:<25}\n'
-#        with open('optimization.respy.log', 'a') as out_file:
-#            out_file.write('Final Report\n\n')
-#            out_file.write(fmt_.format('Success', True))
-#            out_file.write(fmt_.format('Message', 'update messages'))
-#            out_file.write(fmt_.format('Criterion', self.attr['value_steps']))
-#            out_file.write(fmt_.format('Time', time.ctime()))
-
-            #     np.savetxt(open('paras_steps.respy.log', 'wb'), x,
-            # fmt='%15.8f')
-            #     with open('optimization.respy.log', 'a') as out_file:
-            #         fmt_ = '{0:<10} {1:<25}\n'
-            #         out_file.write(fmt_.format('Step', int(num_steps) + 1))
-            #         out_file.write(fmt_.format('Criterion', crit_val))
-            #         out_file.write(fmt_.format('Time', time.ctime()))
-            #         out_file.write('\n\n')
-
-            # Update class attributes

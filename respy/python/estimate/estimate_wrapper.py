@@ -62,12 +62,12 @@ class OptimizationClass(object):
 
             info_current = np.concatenate(([self.attr['num_eval'], fval], x_all_current))
             fname = 'opt_info_current.respy.log'
-            np.savetxt(open(fname, 'wb'), info_current, fmt='%15.8f')
+            np.savetxt(open(fname, 'wb'), info_current, fmt='%45.15f')
 
         if is_start:
             info_start = np.concatenate(([0, fval], x_all_current))
             fname = 'opt_info_start.respy.log'
-            np.savetxt(open(fname, 'wb'), info_start, fmt='%15.8f')
+            np.savetxt(open(fname, 'wb'), info_start, fmt='%45.15f')
 
         if is_step:
 
@@ -76,16 +76,16 @@ class OptimizationClass(object):
 
             info_step = np.concatenate(([self.attr['num_step'], fval], x_all_current))
             fname = 'opt_info_step.respy.log'
-            np.savetxt(open(fname, 'wb'), info_step, fmt='%15.8f')
+            np.savetxt(open(fname, 'wb'), info_step, fmt='%45.15f')
 
             with open('optimization.respy.log', 'a') as out_file:
-                fmt_ = '{0:>4}' + ' ' * 25 + '{1:>6}\n'
+                fmt_ = ' {0:>4}' + ' ' * 25 + '{1:>6}\n'
                 out_file.write(fmt_.format(*['Step', self.attr['num_step']]))
-                fmt_ = '{0:>9} ' + '{1:25.15f}\n'
+                fmt_ = ' {0:>9} ' + '{1:25.15f}\n'
                 out_file.write(fmt_.format(*['Criterion', fval]))
-                fmt_ = '{0:<9} {1:>25}\n'
+                fmt_ = ' {0:<9} {1:>25}\n'
                 out_file.write(fmt_.format(*['Time', time.strftime("%H:%M:%S")]))
-                fmt_ = '{0:<9} {1:>25}\n\n'
+                fmt_ = ' {0:<9} {1:>25}\n\n'
                 out_file.write(fmt_.format(*['Date', time.strftime("%d/%m/%Y")]))
 
         # Enforce a maximum number of function evaluations

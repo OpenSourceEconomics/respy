@@ -26,45 +26,6 @@ MODULE shared_auxiliary
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE logging_estimation_step(num_step, fort_criterion)
-
-    !/* external objects        */
-
-    INTEGER(our_int), INTENT(IN)    :: num_step
-
-    REAL(our_dble), INTENT(IN)      :: fort_criterion
-
-    !/* internal objects        */
-
-    INTEGER(our_int)                :: today(3)
-    INTEGER(our_int)                :: now(3)
-
-!------------------------------------------------------------------------------
-! Algorithm
-!------------------------------------------------------------------------------
-    
-    ! Formatting
-    5503 FORMAT(A4,21X,i2,'/',i2,'/',i4)
-    5504 FORMAT(A4,23X,i2,':',i2,':',i2)
-    5505 FORMAT(A4, 25X, i6)
-    5506 FORMAT(A9 ,1X, f25.15)
- 
-    ! Obtain information about system time
-    CALL IDATE(today)
-    CALL ITIME(now)
-
-    ! Write to file
-    OPEN(UNIT=99, FILE='optimization.respy.log', ACCESS='APPEND')
-        WRITE(99, 5505) 'Step', num_step
-        WRITE(99, 5506) 'Criterion', fort_criterion
-        WRITE(99, 5504) 'Time', now
-        WRITE(99, 5503) 'Date', today(2), today(1), today(3) 
-        WRITE(99, *) 
-    CLOSE(99)
-
-END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
 SUBROUTINE transform_disturbances(draws_transformed, draws, shocks_cholesky, num_draws)
 
     !/* external objects        */

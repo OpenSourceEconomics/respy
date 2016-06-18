@@ -5,7 +5,10 @@
 from scipy.optimize import fmin_powell
 from scipy.optimize import fmin_bfgs
 
+import numpy as np
+
 import logging
+import time
 
 # project library
 from respy.python.estimate.estimate_auxiliary import get_optim_paras
@@ -82,6 +85,10 @@ def respy_interface(respy_obj, request, data_array=None):
         if maxfun == 0:
             opt_obj.crit_func(x_free_start, *args)
 
+            success = True
+            message = 'Single evaluation of criterion function at starting ' \
+                      'values.'
+
         elif optimizer_used == 'SCIPY-BFGS':
 
             bfgs_maxiter = optimizer_options['SCIPY-BFGS']['maxiter']
@@ -89,11 +96,21 @@ def respy_interface(respy_obj, request, data_array=None):
             bfgs_gtol = optimizer_options['SCIPY-BFGS']['gtol']
 
             try:
-                fmin_bfgs(opt_obj.crit_func, x_free_start, args=args, gtol=bfgs_gtol,
+                rslt = fmin_bfgs(opt_obj.crit_func, x_free_start, args=args,
+                           gtol=bfgs_gtol,
                     epsilon=bfgs_epsilon, maxiter=bfgs_maxiter, full_output=True,
                     disp=False)
+
+                success = (rslt[6] not in [1, 2])
+                rslt = 'Optimization terminated successfully.'
+                if rslt[5] == 1:
+                    message = 'Maximum number of iterations exceeded.'
+                elif rslt == 2:
+                    message = 'Gradient and/or function calls not changing.'
+
             except MaxfunError:
-                pass
+                success = False
+                message = 'Maximum number of iterations exceeded.'
 
         elif optimizer_used == 'SCIPY-POWELL':
 
@@ -103,10 +120,35 @@ def respy_interface(respy_obj, request, data_array=None):
             powell_ftol = optimizer_options['SCIPY-POWELL']['ftol']
 
             try:
-                fmin_powell(opt_obj.crit_func, x_free_start, args, powell_xtol,
+                rslt = fmin_powell(opt_obj.crit_func, x_free_start, args,
+                              powell_xtol,
                     powell_ftol, powell_maxiter, powell_maxfun, disp=0)
+
+                success = (rslt[5] not in [1, 2])
+                message = 'Optimization terminated successfully.'
+                if rslt[5] == 1:
+                    message = 'Maximum number of function evaluations.'
+                elif rslt[5] == 2:
+                    message = 'Maximum number of iterations.'
+
             except MaxfunError:
-                pass
+                success = False
+                message = 'Maximum number of iterations exceeded.'
+
+        # Finalize estimation log
+        fval = np.genfromtxt('opt_info_step.respy.log')[1]
+
+        with open('optimization.respy.log', 'a') as out_file:
+            fmt_ = '{0:>4}' + ' ' * 25 + '{1:>6}\n'
+            out_file.write('\n FINAL REPORT\n\n')
+            out_file.write(' Success ' + str(success) + '\n')
+            out_file.write(' Message ' + message + '\n\n')
+            fmt_ = ' {0:>9} ' + '{1:25.15f}\n'
+            out_file.write(fmt_.format(*['Criterion', fval]))
+            fmt_ = ' {0:<9} {1:>25}\n'
+            out_file.write(fmt_.format(*['Time', time.strftime("%H:%M:%S")]))
+            fmt_ = ' {0:<9} {1:>25}\n\n'
+            out_file.write(fmt_.format(*['Date', time.strftime("%d/%m/%Y")]))
 
     elif request == 'simulate':
 
