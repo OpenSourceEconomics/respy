@@ -185,6 +185,8 @@ FUNCTION fort_criterion(x)
 
         CALL write_out_information(num_step, fort_criterion, x_all_current, 'step')
 
+        CALL logging_estimation(num_step, fort_criterion)
+        
     END IF
 
     
