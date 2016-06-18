@@ -234,6 +234,19 @@ class RespyCls(object):
 
         self.attr['is_solved'] = False
 
+    def check_equal_solution(self, other):
+        """ This method allows to compare two class instances with respect to the equality of their solution attributes.
+        """
+        assert (isinstance(other, RespyCls))
+
+        for key_ in SOLUTION_ATTR:
+            try:
+                np.testing.assert_almost_equal(self.attr[key_], other.attr[key_])
+            except AssertionError:
+                return False
+
+        return True
+
     def _update_core_attributes(self):
         """ Calculate derived attributes. This is only called when the class
         is initialized
@@ -689,3 +702,4 @@ class RespyCls(object):
 
         # Finishing.
         return True
+

@@ -45,18 +45,8 @@ class TestClass(object):
             np.testing.assert_almost_equal(base, crit_val)
 
     def test_2(self):
-
-        pass
-        # Testing parallel vs scalar functions
-        #num_slaves = np.random.randint(1, 5)
-        #cmd = 'mpiexec /home/peisenha/restudToolbox/package/respy/fortran/bin' \
-        #      '/testing_parallel_scalar ' + str(num_slaves)
-        #assert not os.path.exists('.error.testing')
-
-    def test_3(self):
         """ This test ensures that the logging files are identical.
         """
-
         # Generate random initialization file. The number of periods is
         # higher than usual as only FORTRAN implementations are used to
         # solve the random request. This ensures that also some cases of

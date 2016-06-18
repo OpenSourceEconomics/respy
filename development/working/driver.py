@@ -34,10 +34,30 @@ from respy.python.shared.shared_auxiliary import dist_model_paras
 from respy.python.shared.shared_auxiliary import create_draws
 
 from respy import simulate, RespyCls, estimate
+from respy.solve import solve
 import numpy as np
-import pickle as pkl
 
+import pickle as pkl
+sys.path.insert(0, '/home/peisenha/Dropbox/business/office/workspace/software/repositories/organizations/restudToolbox/package/respy/tests')
+from codes.auxiliary import write_draws
+
+
+num_periods = 2
+max_draws = 1000
+write_draws(num_periods, max_draws)
 
 respy_obj = RespyCls('model.respy.ini')
-simulate(respy_obj)
-estimate(respy_obj)
+respy_fort = solve(respy_obj)
+
+respy_obj = RespyCls('model.respy.ini')
+respy_obj.attr['version'] = 'PYTHON'
+respy_pyth =  solve(respy_obj)
+
+print(respy_pyth == respy_fort)
+print(respy_pyth.check_equal_solution(respy_fort))
+
+
+
+
+
+
