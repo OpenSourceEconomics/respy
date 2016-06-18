@@ -288,7 +288,7 @@ FUNCTION fort_criterion_parallel(x)
 
         CALL write_out_information(num_step, fort_criterion_parallel, x_all_current, 'step')
 
-        CALL logging_estimation(num_step, fort_criterion_parallel)
+        CALL logging_estimation_step(num_step, fort_criterion_parallel)
 
     END IF
 

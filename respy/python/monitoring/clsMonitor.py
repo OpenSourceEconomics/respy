@@ -2,31 +2,26 @@
 implementations and optimizers.
 """
 
-
+# standard library
 import subprocess
+import atexit
 import sys
 import os
 
-import atexit
-
-from respy.python.shared.shared_constants import ROOT_DIR
-
+# project library
 from respy.python.monitoring.monitoring_child import update_information
 from respy.python.monitoring.monitoring_child import get_information
+from respy.python.shared.shared_constants import ROOT_DIR
+
 
 class MonitorCls(object):
 
-
     def __init__(self):
-        # Distribute class attributes
-        self.attr = dict()
-
-        self.attr['working'] = True
 
         self.proc = None
 
     def start(self):
-        """
+        """ This method starts the daemon process after some initial cleanup.
         """
 
         if os.path.exists('optimization.respy.log'):
@@ -35,19 +30,22 @@ class MonitorCls(object):
         if os.path.exists('optimization.respy.info'):
             os.unlink('optimization.respy.info')
 
+        for which in ['start', 'step', 'current']:
+            fname = 'opt_info_' + which + '.respy.log'
+            if os.path.exists(fname):
+                os.unlink(fname)
+
+        # Start a subprocess and make sure that it is terminated even in the
+        # event of an unexpected shutdown of the main process. This makes
+        # ensures that there are no zombie processes.
         fname = ROOT_DIR + '/python/monitoring/monitoring_child.py'
         self.proc = subprocess.Popen([sys.executable, fname])
         atexit.register(self._terminate)
 
-    def _terminate(self):
-
-        try:
-            self.proc.terminate()
-            self.proc.communicate()
-        except:
-            pass
-        
     def stop(self):
+        """ Stop the daemon process and make sure that the information
+        provided to the main process is updated with the most recent results.
+        """
 
         self._terminate()
 
@@ -64,6 +62,16 @@ class MonitorCls(object):
         fval, x = get_information('step')[1:]
 
         return x, fval
+
+    def _terminate(self):
+        """ Terminate daemon process.
+        """
+        try:
+            self.proc.terminate()
+            self.proc.communicate()
+        except OSError:
+            pass
+
 
 # TODO: Incorporate?
 #        fmt_ = '{0:<10} {1:<25}\n'

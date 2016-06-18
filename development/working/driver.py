@@ -47,17 +47,9 @@ max_draws = 1000
 write_draws(num_periods, max_draws)
 
 respy_obj = RespyCls('model.respy.ini')
-respy_fort = solve(respy_obj)
-
-respy_obj = RespyCls('model.respy.ini')
-respy_obj.attr['version'] = 'PYTHON'
-respy_pyth =  solve(respy_obj)
-
-print(respy_pyth == respy_fort)
-print(respy_pyth.check_equal_solution(respy_fort))
-
-
-
-
-
-
+x, crit_val = estimate(respy_obj)
+#print('working PYTHON')
+#respy_obj = RespyCls('model.respy.ini')
+#respy_obj.attr['version'] = 'PYTHON'
+#respy_obj.attr['optimizer_used'] = 'SCIPY-POWELL'
+#x, crit_val = estimate(respy_obj)

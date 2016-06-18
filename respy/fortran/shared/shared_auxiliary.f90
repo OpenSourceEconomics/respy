@@ -26,8 +26,7 @@ MODULE shared_auxiliary
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-
-SUBROUTINE logging_estimation(num_step, fort_criterion)
+SUBROUTINE logging_estimation_step(num_step, fort_criterion)
 
     !/* external objects        */
 
