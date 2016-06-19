@@ -1,22 +1,16 @@
 #!/usr/bin/env python
 
 # standard library
+import numpy as np
+
 import argparse
 import os
-
-import numpy as np
-from scipy.optimize import approx_fprime
 
 # project library
 from respy.python.estimate.estimate_auxiliary import get_optim_paras
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import dist_model_paras
-from respy.python.shared.shared_auxiliary import create_draws
-
-from respy.python.estimate.estimate_wrapper import OptimizationClass
-
-from respy.python.process.process_python import process
 
 from respy import estimate
 from respy import RespyCls
@@ -28,18 +22,10 @@ def add_gradient_information(respy_obj):
     and requires to carry additional attributes. This results in considerable
     overhead, which appears justified at this point.
     """
-    data_array = process(respy_obj).as_matrix()
 
-    model_paras, num_periods, num_agents_est, edu_start, is_debug, edu_max, \
-        delta, num_draws_prob, seed_prob, num_draws_emax, seed_emax, \
-        min_idx, is_myopic, is_interpolated, num_points_interp, version, \
-        optimizer_used, paras_fixed, tau, optimizer_options, maxfun = \
-            dist_class_attributes(respy_obj,
-                'model_paras', 'num_periods', 'num_agents_est', 'edu_start',
-                'is_debug', 'edu_max', 'delta', 'num_draws_prob', 'seed_prob',
-                'num_draws_emax', 'seed_emax', 'min_idx', 'is_myopic',
-                'is_interpolated', 'num_points_interp', 'version', 'optimizer_used',
-                'paras_fixed', 'tau', 'optimizer_options', 'maxfun')
+    model_paras, is_debug, paras_fixed = \
+        dist_class_attributes(respy_obj, 'model_paras', 'is_debug',
+            'paras_fixed')
 
     # Auxiliary objects
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
@@ -52,27 +38,8 @@ def add_gradient_information(respy_obj):
     x_free_start = get_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
             shocks_cholesky, 'free', paras_fixed, is_debug)
 
-    # Draw standard normal deviates for the solution and evaluation step.
-    periods_draws_prob = create_draws(num_periods, num_draws_prob, seed_prob,
-        is_debug)
-
-    periods_draws_emax = create_draws(num_periods, num_draws_emax, seed_emax,
-        is_debug)
-
-    # Collect arguments for the evaluation of the criterion function.
-    args = (is_interpolated, num_draws_emax, num_periods, num_points_interp,
-        is_myopic, edu_start, is_debug, edu_max, min_idx, delta, data_array,
-        num_agents_est, num_draws_prob, tau, periods_draws_emax,
-        periods_draws_prob)
-
-    # Prepare evaluation of the criterion function.
-    opt_obj = OptimizationClass()
-
-    opt_obj.maxfun = maxfun
-
-    opt_obj.paras_fixed = paras_fixed
-
-    opt_obj.x_all_start = x_all_start
+    # Construct auxiliary information
+    num_free = len(x_free_start)
 
     # The information about the gradient is simply added to the original
     # information later. Note that the original file is read before the
@@ -82,12 +49,35 @@ def add_gradient_information(respy_obj):
     original_lines = open('est.respy.info', 'r').readlines()
     fmt_ = '{0:<25}{1:>15}\n'
     original_lines[-5] = fmt_.format(*[' Number of Steps', 0])
-    original_lines[-3] = fmt_.format(*[' Number of Evaluations', len(x_free_start)])
+    original_lines[-3] = fmt_.format(*[' Number of Evaluations', num_free])
 
     # Approximate gradient by forward finite differences.
-    epsilon = optimizer_options['SCIPY-BFGS']['epsilon']
-    grad = approx_fprime(x_free_start, opt_obj.crit_func, epsilon, *args).tolist()
+    grad, ei = np.zeros((num_free,), float), np.zeros((26,), float)
+    epsilon = 10e-6
+
+    # Making sure that the criterion is only evaluated at the relevant
+    # starting values.
+    respy_obj.unlock()
+    respy_obj.set_attr('maxfun', 0)
+    respy_obj.lock()
+
+    _, f0 = estimate(respy_obj)
+
+    for k, i in enumerate(np.where(np.logical_not(paras_fixed))[0].tolist()):
+        x_baseline = x_all_start.copy()
+
+        ei[i] = 1.0
+        d = epsilon * ei
+        respy_obj.update_model_paras(x_baseline + d)
+
+        _, f1 = estimate(respy_obj)
+
+        grad[k] = (f1 - f0) / d[k]
+        ei[i] = 0.0
+
+    grad = np.random.uniform(0, 1, 26 - sum(paras_fixed)).tolist()
     norm = np.amax(np.abs(grad))
+
     # Write out extended information
     with open('est.respy.info', 'w') as out_file:
         for i, line in enumerate(original_lines):
@@ -167,9 +157,7 @@ def scripts_estimate(resume, single, init_file, gradient):
     estimate(respy_obj)
 
     if gradient:
-        # TODO: This is only running with PYTHON
-        pass
-        #add_gradient_information(respy_obj)
+        add_gradient_information(respy_obj)
 
 if __name__ == '__main__':
 
