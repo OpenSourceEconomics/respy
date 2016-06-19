@@ -282,7 +282,7 @@ PROGRAM resfort_parallel_slave
             ! Evaluate criterion function    
             CALL fort_evaluate(partial_crit, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_slave, periods_draws_prob, delta, tau, edu_start, edu_max)
            
-	    CALL MPI_REDUCE(partial_crit, crit_val, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
+	        CALL MPI_REDUCE(partial_crit, crit_val, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
 
             ! The leading slave updates the master 
             IF (rank == 0) THEN
