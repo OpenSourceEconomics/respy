@@ -61,25 +61,19 @@ PROGRAM resfort_parallel_slave
     REAL(our_dble)                  :: bfgs_stpmx
     REAL(our_dble)                  :: bfgs_gtol 
 
-    REAL(our_dble), ALLOCATABLE     :: periods_draws_sims(:, :, :)
-    REAL(our_dble), ALLOCATABLE     :: data_sim(:, :)
-
+    INTEGER(our_int)                :: seed_inflated(15)
     INTEGER(our_int)                :: newuoa_maxfun
     INTEGER(our_int)                :: bfgs_maxiter
     INTEGER(our_int)                :: newuoa_npt
+    INTEGER(our_int)                :: seed_size
     INTEGER(our_int)                :: num_procs
     INTEGER(our_int)                :: seed_prob
     INTEGER(our_int)                :: seed_emax
     INTEGER(our_int)                :: seed_sim
- 
-    LOGICAL                         :: success
 
     CHARACTER(225)                  :: optimizer_used
     CHARACTER(225)                  :: exec_dir
-    CHARACTER(150)                  :: message
     CHARACTER(10)                   :: request
-
-    INTEGER(our_int)                    :: seed_inflated(15), seed_size
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -91,15 +85,19 @@ PROGRAM resfort_parallel_slave
     CALL MPI_COMM_SIZE(MPI_COMM_WORLD, num_slaves, ierr)
     CALL MPI_COMM_GET_PARENT(PARENTCOMM, ierr)
 
+    ! Determine the role of head slave, which has additional responsibilites
+    is_head = .False.
+    IF(rank == zero_int) is_head = .True.
+
     ! Read in model specification.
     CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, is_debug, is_interpolated, is_myopic, request, exec_dir, maxfun, paras_fixed, optimizer_used, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend, bfgs_epsilon, bfgs_gtol, bfgs_stpmx, bfgs_maxiter)
 
     ! Allocate arrays
-    IF(rank == 0) CALL logging_solution(1)
+    IF(is_head) CALL logging_solution(1)
 
     CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, periods_emax, periods_payoffs_systematic, edu_start, edu_max)
 
-    IF(rank == 0) CALL logging_solution(-1)
+    IF(is_head) CALL logging_solution(-1)
 
     ! Determine workload and allocate communication information.
     ALLOCATE(num_emax_slaves(num_periods, num_slaves), num_obs_slaves(num_slaves), draws_emax(num_draws_emax, 4))
@@ -110,17 +108,14 @@ PROGRAM resfort_parallel_slave
     END DO
 
     ! Calculate the systematic payoffs
-    IF(rank == 0) CALL logging_solution(2)
+    IF(is_head) CALL logging_solution(2)
 
     CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start)
 
-    IF(rank == 0) CALL logging_solution(-1)
+    IF(is_head) CALL logging_solution(-1)
 
     ! This part creates (or reads from disk) the draws for the Monte Carlo integration of the EMAX. For is_debugging purposes, these might  also be read in from disk or set to zero/one.   
     CALL create_draws(periods_draws_emax, num_draws_emax, seed_emax, is_debug)
-
-    is_head = .False.
-    IF(rank == zero_int) is_head = .True.
     
     DO WHILE (STAY_AVAILABLE)  
         
@@ -144,8 +139,7 @@ PROGRAM resfort_parallel_slave
         ! Evaluate EMAX.
         ELSEIF(task == 2) THEN
 
-            ! Set random seed. We need to set the seed here as well as this part of the code might be called using F2PY without any previous seed set. This ensures that the interpolation grid is identical across draws.
-            ! TODO: ?????????????????????????
+            ! Set random seed for interpolation grid.
             seed_inflated(:) = 123
 
             CALL RANDOM_SEED(size=seed_size)
@@ -160,7 +154,7 @@ PROGRAM resfort_parallel_slave
             shifts(1) = clip_value(EXP(shocks_cov(1, 1)/two_dble), zero_dble, HUGE_FLOAT)
             shifts(2) = clip_value(EXP(shocks_cov(2, 2)/two_dble), zero_dble, HUGE_FLOAT)
 
-            IF(rank == 0) CALL logging_solution(3)
+            IF(is_head) CALL logging_solution(3)
 
             DO period = (num_periods - 1), 0, -1
 
@@ -169,7 +163,7 @@ PROGRAM resfort_parallel_slave
                 num_states = states_number_period(period + 1)
                 ALLOCATE(periods_emax_slaves(num_states), endogenous_slaves(num_states))
 
-                IF (rank == 0) CALL logging_solution(4, period, num_states)        
+                IF (is_head) CALL logging_solution(4, period, num_states)        
 
                 ! Distinguish case with and without interpolation
                 any_interpolated = (num_points_interp .LE. num_states) .AND. is_interpolated
@@ -225,7 +219,7 @@ PROGRAM resfort_parallel_slave
                     periods_emax(period + 1, :num_states) = predictions
 
                     ! The leading slave updates the master period by period.
-                    IF (rank == 0) CALL MPI_SEND(periods_emax(period + 1, :num_states), num_states, MPI_DOUBLE, 0, period, PARENTCOMM, ierr)    
+                    IF (is_head) CALL MPI_SEND(periods_emax(period + 1, :num_states), num_states, MPI_DOUBLE, 0, period, PARENTCOMM, ierr)    
 
                     ! Deallocate containers
                     DEALLOCATE(is_simulated, exogenous, maxe, endogenous, predictions)
@@ -250,7 +244,7 @@ PROGRAM resfort_parallel_slave
                     CALL distribute_information(num_emax_slaves, period, periods_emax_slaves, periods_emax(period + 1, :))
                     
                     ! The leading slave updates the master period by period.
-                    IF (rank == 0) CALL MPI_SEND(periods_emax(period + 1, :num_states), num_states, MPI_DOUBLE, 0, period, PARENTCOMM, ierr)            
+                    IF (is_head) CALL MPI_SEND(periods_emax(period + 1, :num_states), num_states, MPI_DOUBLE, 0, period, PARENTCOMM, ierr)            
           
                 END IF
 
@@ -282,14 +276,10 @@ PROGRAM resfort_parallel_slave
             ! Evaluate criterion function    
             CALL fort_evaluate(partial_crit, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_slave, periods_draws_prob, delta, tau, edu_start, edu_max)
            
-	        CALL MPI_REDUCE(partial_crit, crit_val, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
+            CALL MPI_REDUCE(partial_crit, crit_val, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
 
             ! The leading slave updates the master 
-            IF (rank == 0) THEN
-             CALL MPI_SEND(crit_val, 1, MPI_DOUBLE, 0, 75, PARENTCOMM, ierr)            
-         
-            END IF
-
+            IF (is_head) CALL MPI_SEND(crit_val, 1, MPI_DOUBLE, 0, 75, PARENTCOMM, ierr)            
 
         END IF    
 

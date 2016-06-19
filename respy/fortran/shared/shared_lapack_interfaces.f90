@@ -2,7 +2,6 @@
 !******************************************************************************
 MODULE shared_lapack_interfaces
 
-
     INTERFACE
 
         SUBROUTINE DGESDD(JOBZ, M, N, A, LDA, S, U, LDU, VT, LDVT, WORK, LWORK, IWORK, INFO)
@@ -95,4 +94,6 @@ MODULE shared_lapack_interfaces
 
     END INTERFACE
 
+!******************************************************************************
+!******************************************************************************
 END MODULE

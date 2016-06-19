@@ -431,7 +431,7 @@ FUNCTION determinant(A)
 END FUNCTION
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_payoffs_systematic, states_number_period, periods_emax, dataset)
+SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_payoffs_systematic, states_number_period, periods_emax, data_sim)
 
     !/* external objects        */
 
@@ -442,7 +442,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_payoffs
 
     REAL(our_dble), INTENT(IN)      :: periods_payoffs_systematic(num_periods, max_states_period, 4)
     REAL(our_dble), INTENT(IN)      :: periods_emax(num_periods, max_states_period)
-    REAL(our_dble), INTENT(IN)      :: dataset(num_periods * num_agents_sim, 8)
+    REAL(our_dble), ALLOCATABLE, INTENT(IN)      :: data_sim(:, :)
 
     CHARACTER(10), INTENT(IN)       :: request
 
@@ -539,7 +539,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_payoffs
         OPEN(UNIT=1, FILE='.simulated.resfort.dat')
         
         DO period = 1, num_periods * num_agents_sim
-            WRITE(1, 2400) dataset(period, :)
+            WRITE(1, 2400) data_sim(period, :)
         END DO
 
         CLOSE(1)

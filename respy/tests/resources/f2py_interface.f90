@@ -223,7 +223,7 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, 
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE f2py_simulate(dataset, periods_payoffs_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, shocks_cholesky, num_periods_int, edu_start_int, edu_max_int, delta_int, num_agents_sim_int, periods_draws_sims)
+SUBROUTINE f2py_simulate(data_sim_int, periods_payoffs_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, shocks_cholesky, num_periods_int, edu_start_int, edu_max_int, delta_int, num_agents_sim_int, periods_draws_sims)
 
     !/* external libraries      */
 
@@ -235,7 +235,7 @@ SUBROUTINE f2py_simulate(dataset, periods_payoffs_systematic_int, mapping_state_
 
     !/* external objects        */
 
-    DOUBLE PRECISION, INTENT(OUT)   :: dataset(num_agents_sim_int * num_periods_int, 8)
+    DOUBLE PRECISION, INTENT(OUT)   :: data_sim_int(num_agents_sim_int * num_periods_int, 8)
 
     DOUBLE PRECISION, INTENT(IN)    :: periods_payoffs_systematic_int(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_sims(:, :, :)
@@ -251,6 +251,7 @@ SUBROUTINE f2py_simulate(dataset, periods_payoffs_systematic_int, mapping_state_
     INTEGER, INTENT(IN)             :: states_all_int(:, :, :)
     INTEGER, INTENT(IN)             :: num_agents_sim_int
 
+    DOUBLE PRECISION, ALLOCATABLE   :: data_sim(:, :)
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
@@ -267,7 +268,10 @@ SUBROUTINE f2py_simulate(dataset, periods_payoffs_systematic_int, mapping_state_
     delta = delta_int
 
     ! Call function of interest
-    CALL fort_simulate(dataset, periods_payoffs_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, num_agents_sim, periods_draws_sims, shocks_cholesky, delta, edu_start, edu_max)
+    CALL fort_simulate(data_sim, periods_payoffs_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, num_agents_sim, periods_draws_sims, shocks_cholesky, delta, edu_start, edu_max)
+
+    ! Assign to initial objects for return to PYTHON
+    data_sim_int = data_sim
 
 END SUBROUTINE
 !******************************************************************************

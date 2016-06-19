@@ -38,7 +38,7 @@ MODULE shared_containers
     LOGICAL                         :: is_debug
     
     ! Parameters for the optimization
-    INTEGER(our_int)            :: maxfun
+    INTEGER(our_int)                :: maxfun
 
 !******************************************************************************
 !******************************************************************************

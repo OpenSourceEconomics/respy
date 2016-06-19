@@ -51,16 +51,9 @@ PROGRAM resfort_parallel
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    CALL MPI_INIT(ierr)
-
-
     CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, is_debug, is_interpolated, is_myopic, request, exec_dir, maxfun, paras_fixed, optimizer_used, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend, bfgs_epsilon, bfgs_gtol, bfgs_stpmx, bfgs_maxiter)
 
-    CALL create_draws(periods_draws_emax, num_draws_emax, seed_emax, is_debug)
-
-    ALLOCATE(data_sim(num_periods * num_agents_sim, 8))
-
-    
+    CALL MPI_INIT(ierr)  
     CALL MPI_COMM_SPAWN(TRIM(exec_dir) // '/resfort_parallel_slave', MPI_ARGV_NULL, (num_procs - 1), MPI_INFO_NULL, 0, MPI_COMM_WORLD, SLAVECOMM, MPI_ERRCODES_IGNORE, ierr)
 
     IF (request == 'solve') THEN
@@ -69,29 +62,22 @@ PROGRAM resfort_parallel
 
     ELSE IF (request == 'estimate') THEN 
 
-        CALL create_draws(periods_draws_prob, num_draws_prob, seed_prob, is_debug)
-
-        CALL read_dataset(data_est, num_agents_est)
-
         CALL fort_estimate_parallel(crit_val, success, message, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed, optimizer_used, maxfun, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, newuoa_maxfun, bfgs_gtol, bfgs_maxiter, bfgs_stpmx)
-
 
     ELSE IF (request == 'simulate') THEN
 
-        CALL create_draws(periods_draws_sims, num_agents_sim, seed_sim, is_debug)
-
         CALL fort_solve_parallel(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start, edu_max)
+
+        CALL create_draws(periods_draws_sims, num_agents_sim, seed_sim, is_debug)
 
         CALL fort_simulate(data_sim, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, num_agents_sim, periods_draws_sims, shocks_cholesky, delta, edu_start, edu_max)
 
     END IF
 
-
     CALL store_results(request, mapping_state_idx, states_all, periods_payoffs_systematic, states_number_period, periods_emax, data_sim)
 
     CALL MPI_Bcast(1, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
-    CALL MPI_FINALIZE (ierr)
-    
+    CALL MPI_FINALIZE (ierr)   
 
 END PROGRAM
 !******************************************************************************

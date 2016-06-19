@@ -115,28 +115,30 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, coeffs_a, coeffs_b
     !/* external objects    */
 
     REAL(our_dble), INTENT(OUT)     :: crit_val
+        
+    CHARACTER(150), INTENT(OUT)     :: message
+
+    LOGICAL, INTENT(OUT)            :: success
+
+    INTEGER(our_int), INTENT(IN)    :: newuoa_maxfun
+    INTEGER(our_int), INTENT(IN)    :: newuoa_npt
+    INTEGER(our_int), INTENT(IN)    :: maxfun
+    INTEGER(our_int), INTENT(IN)    :: bfgs_maxiter
 
     REAL(our_dble), INTENT(IN)      :: shocks_cholesky(4, 4)
     REAL(our_dble), INTENT(IN)      :: coeffs_home(1)
+    REAL(our_dble), INTENT(IN)      :: newuoa_rhobeg
+    REAL(our_dble), INTENT(IN)      :: newuoa_rhoend
     REAL(our_dble), INTENT(IN)      :: coeffs_edu(3)
     REAL(our_dble), INTENT(IN)      :: coeffs_a(6)
     REAL(our_dble), INTENT(IN)      :: coeffs_b(6)
-
-    INTEGER(our_int), INTENT(IN)    :: maxfun
-    INTEGER(our_int), INTENT(IN)    :: newuoa_maxfun
-    INTEGER(our_int), INTENT(IN)    :: newuoa_npt
-    
-
-    INTEGER(our_int)                :: bfgs_maxiter
-    REAL(our_dble)                  :: bfgs_stpmx
-    REAL(our_dble)                  :: bfgs_gtol
-
-    REAL(our_dble), INTENT(IN)      :: newuoa_rhobeg
-    REAL(our_dble), INTENT(IN)      :: newuoa_rhoend
+    REAL(our_dble), INTENT(IN)      :: bfgs_stpmx
+    REAL(our_dble), INTENT(IN)      :: bfgs_gtol
 
     CHARACTER(225), INTENT(IN)      :: optimizer_used
 
     LOGICAL, INTENT(IN)             :: paras_fixed(26) 
+
     !/* internal objects    */
 
     REAL(our_dble)                  :: x_free_start(COUNT(.not. paras_fixed))
@@ -144,10 +146,9 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, coeffs_a, coeffs_b
     
     INTEGER(our_int)                :: iter
     INTEGER(our_int)                :: maxfun_int
-    LOGICAL, INTENT(OUT)                         :: success
-    CHARACTER(150), INTENT(OUT)                  :: message
+    
+    LOGICAL, PARAMETER              :: all_free(26) = .False.
 
-    LOGICAL, PARAMETER :: all_free(26) = .False.
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
@@ -191,23 +192,18 @@ FUNCTION fort_criterion_parallel(x)
     REAL(our_dble)                  :: fort_criterion_parallel
 
     !/* internal objects    */
-    
-    REAL(our_dble)                  :: shocks_cholesky(4, 4)
-    REAL(our_dble)                  :: coeffs_home(1)
-    REAL(our_dble)                  :: coeffs_edu(3)
-    REAL(our_dble)                  :: coeffs_a(6)
-    REAL(our_dble)                  :: coeffs_b(6)
-
-    INTEGER(our_int), SAVE          :: num_step = - one_int
 
     REAL(our_dble), SAVE            :: value_step = HUGE_FLOAT
+    
+    INTEGER(our_int), SAVE          :: num_step = - one_int
+
+    INTEGER(our_int)                :: num_states
+    INTEGER(our_int)                :: period
+    INTEGER(our_int)                :: i
+    INTEGER(our_int)                :: j
 
     LOGICAL                         :: is_start
     LOGICAL                         :: is_step
-
-    INTEGER(our_int)                :: i
-    INTEGER(our_int)                :: j, num_states, period
-        LOGICAL, PARAMETER :: all_free(26) = .False.
 
 !------------------------------------------------------------------------------
 ! Algorithm
