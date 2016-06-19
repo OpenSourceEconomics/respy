@@ -68,5 +68,5 @@ class TestClass(object):
 
             # Check for identical logging
             if base_log is None:
-                base_log = open('logging.respy.sol.log', 'r').read()
-            assert open('logging.respy.sol.log', 'r').read() == base_log
+                base_log = open('sol.respy.log', 'r').read()
+            assert open('sol.respy.log', 'r').read() == base_log

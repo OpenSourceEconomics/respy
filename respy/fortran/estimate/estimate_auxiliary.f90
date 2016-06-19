@@ -46,7 +46,7 @@ SUBROUTINE logging_estimation_final(success, message, crit_val)
     CALL ITIME(now)
 
     ! Write to file
-    OPEN(UNIT=99, FILE='optimization.respy.log', ACCESS='APPEND')
+    OPEN(UNIT=99, FILE='est.respy.log', ACCESS='APPEND')
         WRITE(99, *) 
         WRITE(99, 5510) 'FINAL REPORT'
         WRITE(99, *) 
@@ -96,7 +96,7 @@ SUBROUTINE logging_estimation_step(num_step, crit_val)
     CALL ITIME(now)
 
     ! Write to file
-    OPEN(UNIT=99, FILE='optimization.respy.log', ACCESS='APPEND')
+    OPEN(UNIT=99, FILE='est.respy.log', ACCESS='APPEND')
         WRITE(99, 5505) 'Step', num_step
         WRITE(99, 5506) 'Criterion', crit_val
         WRITE(99, 5504) 'Time', now
@@ -129,7 +129,7 @@ SUBROUTINE write_out_information(counter, fval, x, which)
     20 FORMAT(5(1x,i10))
     30 FORMAT(1x,f45.15)
 
-    OPEN(UNIT=1, FILE='opt_info_' // TRIM(which) // '.respy.log')
+    OPEN(UNIT=1, FILE='est.respy.' // TRIM(which))
 
         WRITE(1, 20) counter
         WRITE(1, 30) fval

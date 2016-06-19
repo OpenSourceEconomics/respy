@@ -61,12 +61,12 @@ class OptimizationClass(object):
             self.attr['num_eval'] += 1
 
             info_current = np.concatenate(([self.attr['num_eval'], fval], x_all_current))
-            fname = 'opt_info_current.respy.log'
+            fname = 'est.respy.current'
             np.savetxt(open(fname, 'wb'), info_current, fmt='%45.15f')
 
         if is_start:
             info_start = np.concatenate(([0, fval], x_all_current))
-            fname = 'opt_info_start.respy.log'
+            fname = 'est.respy.start'
             np.savetxt(open(fname, 'wb'), info_start, fmt='%45.15f')
 
         if is_step:
@@ -75,10 +75,10 @@ class OptimizationClass(object):
             self.attr['value_step'] = fval
 
             info_step = np.concatenate(([self.attr['num_step'], fval], x_all_current))
-            fname = 'opt_info_step.respy.log'
+            fname = 'est.respy.step'
             np.savetxt(open(fname, 'wb'), info_step, fmt='%45.15f')
 
-            with open('optimization.respy.log', 'a') as out_file:
+            with open('est.respy.log', 'a') as out_file:
                 fmt_ = ' {0:>4}' + ' ' * 25 + '{1:>6}\n'
                 out_file.write(fmt_.format(*['Step', self.attr['num_step']]))
                 fmt_ = ' {0:>9} ' + '{1:25.15f}\n'

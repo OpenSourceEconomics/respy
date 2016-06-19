@@ -199,7 +199,7 @@ def logging_simulation(which):
 
         formatter = logging.Formatter('  %(message)s \n')
         logger = logging.getLogger('RESPY_SIMULATE')
-        handler = logging.FileHandler('logging.respy.sim.log', mode='w',
+        handler = logging.FileHandler('sim.respy.log', mode='w',
                                       delay=False)
         handler.setFormatter(formatter)
         logger.setLevel(logging.INFO)

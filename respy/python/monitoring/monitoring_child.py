@@ -14,9 +14,9 @@ sys.path.insert(0, ROOT_DIR)
 # project library
 from respy.python.estimate.estimate_auxiliary import dist_optim_paras
 
-file_current = 'opt_info_current.respy.log'
-file_start = 'opt_info_start.respy.log'
-file_step = 'opt_info_step.respy.log'
+file_current = 'est.respy.current'
+file_start = 'est.respy.start'
+file_step = 'est.respy.step'
 
 
 
@@ -24,7 +24,7 @@ def update_information(num_start, value_start, paras_start, num_steps,
         value_step, paras_step, num_evals, value_current, paras_current):
 
     # Write information to file.
-    with open('optimization.respy.info', 'w') as out_file:
+    with open('est.respy.info', 'w') as out_file:
         # Write out information about criterion function
         out_file.write('\n Criterion Function\n\n')
         fmt_ = '{0:>15}    {1:>15}    {2:>15}    {3:>15}\n\n'
@@ -77,7 +77,7 @@ def all_files_present():
 
 def get_information(which):
 
-    fname = 'opt_info_' + which + '.respy.log'
+    fname = 'est.respy.' + which
     info = np.genfromtxt(fname)
 
     return int(info[0]), info[1], info[2:]

@@ -24,14 +24,14 @@ class MonitorCls(object):
         """ This method starts the daemon process after some initial cleanup.
         """
 
-        if os.path.exists('optimization.respy.log'):
-            os.unlink('optimization.respy.log')
+        if os.path.exists('est.respy.log'):
+            os.unlink('est.respy.log')
 
-        if os.path.exists('optimization.respy.info'):
-            os.unlink('optimization.respy.info')
+        if os.path.exists('est.respy.info'):
+            os.unlink('est.respy.info')
 
         for which in ['start', 'step', 'current']:
-            fname = 'opt_info_' + which + '.respy.log'
+            fname = 'est.respy.' + which
             if os.path.exists(fname):
                 os.unlink(fname)
 
@@ -55,7 +55,7 @@ class MonitorCls(object):
             args += get_information(which)
         update_information(*args)
 
-        with open('optimization.respy.info', 'a') as out_file:
+        with open('est.respy.info', 'a') as out_file:
             out_file.write('\n TERMINATED')
 
         # Return the final values

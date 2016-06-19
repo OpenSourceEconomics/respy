@@ -289,8 +289,8 @@ class TestClass(object):
 
             # Check for identical logging
             if base_log is None:
-                base_log = open('logging.respy.sol.log', 'r').read()
-            assert open('logging.respy.sol.log', 'r').read() == base_log
+                base_log = open('sol.respy.log', 'r').read()
+            assert open('sol.respy.log', 'r').read() == base_log
 
     def test_6(self):
         """ Test the evaluation of the criterion function for random
@@ -334,7 +334,7 @@ class TestClass(object):
 
         # Potentially evaluate at different points.
         generate_init(constr)
-        shutil.move('data.respy.paras', 'opt_info_step.respy.log')
+        shutil.move('data.respy.paras', 'est.respy.step')
 
         init_file = 'test.respy.ini'
         file_sim = 'sim.respy'

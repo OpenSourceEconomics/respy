@@ -3,7 +3,7 @@
 """
 
 import os
-if True:
+if False:
     cwd = os.getcwd()
     os.chdir('../../respy')
     assert os.system('./waf distclean; ./waf configure build --debug ') == 0
@@ -46,7 +46,8 @@ num_periods = 2
 max_draws = 1000
 write_draws(num_periods, max_draws)
 
-#respy_obj = RespyCls('model.respy.ini')
+respy_obj = RespyCls('model.respy.ini')
+simulate(respy_obj)
 #x, crit_val = estimate(respy_obj)
 print('working PYTHON')
 respy_obj = RespyCls('model.respy.ini')

@@ -400,7 +400,7 @@ def logging_solution(which):
 
         formatter = logging.Formatter('  %(message)s \n')
         logger = logging.getLogger('RESPY_SOLVE')
-        handler = logging.FileHandler('logging.respy.sol.log', mode='w',
+        handler = logging.FileHandler('sol.respy.log', mode='w',
                                       delay=False)
         handler.setFormatter(formatter)
         logger.setLevel(logging.INFO)

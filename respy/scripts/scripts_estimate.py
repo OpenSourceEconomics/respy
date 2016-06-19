@@ -79,7 +79,7 @@ def add_gradient_information(respy_obj):
     # gradient evaluation. This is required as the information otherwise
     # accounts for the multiple function evaluation during the gradient
     # approximation scheme.
-    original_lines = open('optimization.respy.info', 'r').readlines()
+    original_lines = open('est.respy.info', 'r').readlines()
     fmt_ = '{0:<25}{1:>15}\n'
     original_lines[-5] = fmt_.format(*[' Number of Steps', 0])
     original_lines[-3] = fmt_.format(*[' Number of Evaluations', len(x_free_start)])
@@ -89,7 +89,7 @@ def add_gradient_information(respy_obj):
     grad = approx_fprime(x_free_start, opt_obj.crit_func, epsilon, *args).tolist()
     norm = np.amax(np.abs(grad))
     # Write out extended information
-    with open('optimization.respy.info', 'w') as out_file:
+    with open('est.respy.info', 'w') as out_file:
         for i, line in enumerate(original_lines):
             out_file.write(line)
             # Insert information about gradient
@@ -138,7 +138,7 @@ def dist_input_arguments(parser):
         assert single
 
     if resume:
-        assert (os.path.exists('opt_info_step.respy.log'))
+        assert (os.path.exists('est.respy.step'))
 
     # Finishing
     return resume, single, init_file, gradient
@@ -153,7 +153,7 @@ def scripts_estimate(resume, single, init_file, gradient):
     # Update parametrization of the model if resuming from a previous
     # estimation run.
     if resume:
-        x0 = np.genfromtxt('opt_info_step.respy.log')[2:]
+        x0 = np.genfromtxt('est.respy.step')[2:]
         respy_obj.update_model_paras(x0)
 
     # Set maximum iteration count when only an evaluation of the criterion
