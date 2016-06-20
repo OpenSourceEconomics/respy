@@ -92,7 +92,7 @@ class TestClass(object):
             # Updates to initialization dictionary that trigger a use of the
             # interpolation code.
             init_dict['BASICS']['periods'] = num_periods
-            init_dict['INTERPOLATION']['apply'] = True
+            init_dict['INTERPOLATION']['flag'] = True
             init_dict['INTERPOLATION']['points'] = \
                 np.random.randint(10, max_states_period)
 
@@ -249,7 +249,7 @@ class TestClass(object):
         constr = dict()
         constr['parallelism'] = False
         constr['maxfun'] = 0
-        constr['apply'] = False
+        constr['flag_int'] = False
         constr['max_draws'] = max_draws
 
         # Generate random initialization file

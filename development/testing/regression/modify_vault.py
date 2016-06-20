@@ -35,7 +35,7 @@ else:
 cwd = os.getcwd()
 os.chdir(PACKAGE_DIR + '/respy')
 subprocess.check_call(python_exec + ' waf distclean', shell=True)
-subprocess.check_call(python_exec + ' waf configure build --debug --without_mpi',
+subprocess.check_call(python_exec + ' waf configure build --debug',
                 shell=True)
 os.chdir(cwd)
 
@@ -54,11 +54,8 @@ for idx, _ in enumerate(tests_old):
     print('\n Modfiying Test ', idx, 'with version ', PYTHON_VERSION)
     init_dict, crit_val = tests_old[idx]
 
-    #
-    version = init_dict["PROGRAM"]['version']
-
-    if version == "FORTRAN":
-        init_dict["PROGRAM"]['parallelism'] = np.random.choice([True, False])
+    init_dict["INTERPOLATION"]['flag'] = init_dict['INTERPOLATION']['apply']
+    del init_dict['INTERPOLATION']['apply']
 
     tests_new += [(init_dict, crit_val)]
 

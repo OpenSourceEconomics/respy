@@ -256,7 +256,7 @@ class RespyCls(object):
 
         # Extract information from initialization dictionary and construct
         # auxiliary objects.
-        self.attr['is_interpolated'] = init_dict['INTERPOLATION']['apply']
+        self.attr['is_interpolated'] = init_dict['INTERPOLATION']['flag']
 
         self.attr['optimizer_used'] = init_dict['ESTIMATION']['optimizer']
 

@@ -23,7 +23,7 @@ STRUCTURE['ESTIMATION'] = ['draws', 'optimizer', 'maxfun', 'seed']
 STRUCTURE['ESTIMATION'] += ['tau', 'file', 'agents']
 
 STRUCTURE['PROGRAM'] = ['debug', 'version', 'parallelism', 'procs']
-STRUCTURE['INTERPOLATION'] = ['apply', 'points']
+STRUCTURE['INTERPOLATION'] = ['flag', 'points']
 STRUCTURE['SCIPY-BFGS'] = ['gtol', 'epsilon', 'maxiter']
 STRUCTURE['SCIPY-POWELL'] = ['maxfun', 'xtol', 'ftol', 'maxiter']
 STRUCTURE['FORT-NEWUOA'] = ['maxfun', 'npt', 'rhobeg', 'rhoend']
@@ -101,7 +101,7 @@ def check_line(group, flag, value):
                 assert isinstance(value, str)
 
         if group == 'INTERPOLATION':
-            if flag in ['apply']:
+            if flag in ['flag']:
                 assert (value in [True, False])
             if flag in ['points']:
                 assert isinstance(value, int)

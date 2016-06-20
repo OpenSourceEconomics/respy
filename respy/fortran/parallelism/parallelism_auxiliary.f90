@@ -211,9 +211,6 @@ FUNCTION fort_criterion_parallel(x)
     
     INTEGER(our_int), SAVE          :: num_step = - one_int
 
-    INTEGER(our_int)                :: i
-    INTEGER(our_int)                :: j
-
     LOGICAL                         :: is_start
     LOGICAL                         :: is_step
 

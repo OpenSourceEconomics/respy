@@ -23,7 +23,7 @@ class TestClass(object):
         """
         # Set initial constraints
         constraints = dict()
-        constraints['apply'] = False
+        constraints['flag_int'] = False
         constraints['periods'] = np.random.randint(3, 6)
         constraints['is_deterministic'] = True
 
@@ -55,7 +55,7 @@ class TestClass(object):
             # Updates for second iteration. This ensures that there is at least
             # one interpolation taking place.
             init_dict['INTERPOLATION']['points'] = max(states_number_period) - 1
-            init_dict['INTERPOLATION']['apply'] = True
+            init_dict['INTERPOLATION']['flag'] = True
 
     def test_2(self):
         """ This test compares the results from a solution using the
@@ -66,7 +66,7 @@ class TestClass(object):
         """
         # Set initial constraints
         constraints = dict()
-        constraints['apply'] = False
+        constraints['flag_int'] = False
         constraints['periods'] = np.random.randint(3, 6)
 
         # Initialize request
@@ -96,5 +96,5 @@ class TestClass(object):
 
             # Updates for second iteration
             init_dict['INTERPOLATION']['points'] = max(states_number_period)
-            init_dict['INTERPOLATION']['apply'] = True
+            init_dict['INTERPOLATION']['flag'] = True
 

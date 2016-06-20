@@ -141,7 +141,7 @@ def generate_random_dict(constraints=None):
 
     # INTERPOLATION
     dict_['INTERPOLATION'] = {}
-    dict_['INTERPOLATION']['apply'] = np.random.choice([True, False])
+    dict_['INTERPOLATION']['flag'] = np.random.choice([True, False])
     dict_['INTERPOLATION']['points'] = np.random.randint(10, 100)
 
     # SCIPY-BFGS
@@ -193,11 +193,11 @@ def generate_random_dict(constraints=None):
             assert constraints['version'] == 'FORTRAN'
 
     # Replace interpolation
-    if 'apply' in constraints.keys():
+    if 'flag_int' in constraints.keys():
         # Checks
-        assert (constraints['apply'] in [True, False])
+        assert (constraints['flag_int'] in [True, False])
         # Replace in initialization files
-        dict_['INTERPOLATION']['apply'] = constraints['apply']
+        dict_['INTERPOLATION']['flag'] = constraints['flag_int']
 
     # Replace number of periods
     if 'points' in constraints.keys():
