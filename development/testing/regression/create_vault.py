@@ -16,8 +16,6 @@ if version == '2':
 else:
     from respy.tests.codes.random_init import generate_init
 
-from respy.python.shared.shared_auxiliary import print_init_dict
-
 
 from respy import RespyCls
 from respy import simulate

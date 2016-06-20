@@ -66,7 +66,7 @@ def transform_respy_to_restud(model_paras, edu_start, edu_max, num_agents_sim,
         # standard deviations in the education and home equation required.
         # This is undone again in the original FORTRAN code. All this is
         # working only under the imposed absence of any randomness.
-        rho, shocks_cov = np.zeros((4, 4)), np.zeros((4, 4))
+        rho = np.zeros((4, 4))
         for j in range(4):
             line = ' {0:10.5f} {1:10.5f} {2:10.5f} ' \
                    ' {3:10.5f}\n'.format(*rho[j, :])

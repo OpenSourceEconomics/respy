@@ -29,9 +29,9 @@ def simulate(respy_obj):
 
     # Select appropriate interface
     if version in ['PYTHON']:
-        solution, data_array = respy_interface(respy_obj, 'simulate')
+        _, data_array = respy_interface(respy_obj, 'simulate')
     elif version in ['FORTRAN']:
-        solution, data_array = resfort_interface(respy_obj, 'simulate')
+        _, data_array = resfort_interface(respy_obj, 'simulate')
     else:
         raise NotImplementedError
 

@@ -31,13 +31,11 @@ if True:
     subprocess.check_call('./waf configure build --debug', shell=True)
     os.chdir(cwd)
 
-''' Request
-'''
+''' Request '''
 seed = 21860 # 6216748723
 
 
-''' Error Reproduction
-'''
+''' Error Reproduction '''
 cleanup_testing_infrastructure(True)
 
 np.random.seed(seed)

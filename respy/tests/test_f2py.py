@@ -179,7 +179,6 @@ class TestClass(object):
             # Draw random requests for testing purposes.
             num_draws_emax = np.random.randint(2, 1000)
             dim = np.random.randint(1, 6)
-            mean = np.random.uniform(-0.5, 0.5, dim)
 
             matrix = (np.random.multivariate_normal(np.zeros(dim),
                 np.identity(dim), dim))
@@ -324,11 +323,11 @@ class TestClass(object):
         max_states_period = write_interpolation_grid('test.respy.ini')
 
         # Extract class attributes
-        num_periods, edu_start, edu_max, min_idx, model_paras, num_draws_emax, seed_emax, is_debug, delta, is_interpolated, num_points_interp, is_myopic, num_agents_sim, num_draws_prob, seed_prob, tau, paras_fixed, is_parallel, num_procs = dist_class_attributes(
+        num_periods, edu_start, edu_max, min_idx, model_paras, num_draws_emax, seed_emax, is_debug, delta, is_interpolated, num_points_interp, is_myopic, num_agents_sim, num_draws_prob, tau, paras_fixed, is_parallel, num_procs = dist_class_attributes(
             respy_obj, 'num_periods', 'edu_start', 'edu_max', 'min_idx',
             'model_paras', 'num_draws_emax', 'seed_emax', 'is_debug', 'delta',
             'is_interpolated', 'num_points_interp', 'is_myopic', 'num_agents_sim',
-            'num_draws_prob', 'seed_prob', 'tau', 'paras_fixed', 'is_parallel',
+            'num_draws_prob', 'tau', 'paras_fixed', 'is_parallel',
             'num_procs')
 
         # Write out random components and interpolation grid to align the

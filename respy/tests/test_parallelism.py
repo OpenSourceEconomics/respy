@@ -38,7 +38,7 @@ class TestClass(object):
 
             respy_obj = RespyCls('test.respy.ini')
             respy_obj = simulate(respy_obj)
-            x, crit_val = estimate(respy_obj)
+            _, crit_val = estimate(respy_obj)
 
             if base is None:
                 base = crit_val

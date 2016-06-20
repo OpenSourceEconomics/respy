@@ -29,8 +29,7 @@ PYTHON_EXEC = sys.executable
 # package imports
 from respy.python.shared.shared_constants import IS_PARALLEL
 
-''' Auxiliary functions
-'''
+''' Auxiliary functions '''
 
 
 def get_testdir(length):

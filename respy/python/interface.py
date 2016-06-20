@@ -34,14 +34,14 @@ def respy_interface(respy_obj, request, data_array=None):
     # Distribute class attributes
     model_paras, num_periods, num_agents_est, edu_start, is_debug, edu_max, \
         delta, num_draws_prob, seed_prob, num_draws_emax, seed_emax, \
-        min_idx, is_myopic, is_interpolated, num_points_interp, version, maxfun, optimizer_used, tau, paras_fixed, optimizer_options, \
-        is_parallel, num_procs, seed_sim, num_agents_sim = \
+        min_idx, is_myopic, is_interpolated, num_points_interp, maxfun, optimizer_used, tau, paras_fixed, optimizer_options, \
+        num_procs, seed_sim, num_agents_sim = \
             dist_class_attributes( respy_obj, 'model_paras', 'num_periods',
                 'num_agents_est', 'edu_start', 'is_debug', 'edu_max', 'delta',
                 'num_draws_prob', 'seed_prob', 'num_draws_emax', 'seed_emax',
                 'min_idx', 'is_myopic', 'is_interpolated',
-                'num_points_interp', 'version', 'maxfun', 'optimizer_used',
-                'tau', 'paras_fixed', 'optimizer_options', 'is_parallel',
+                'num_points_interp', 'maxfun', 'optimizer_used',
+                'tau', 'paras_fixed', 'optimizer_options',
                 'num_procs', 'seed_sim', 'num_agents_sim')
 
     # Auxiliary objects
