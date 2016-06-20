@@ -221,29 +221,13 @@ FUNCTION fort_criterion_parallel(x)
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    ! Ensuring that the criterion function is not evaluated more than specified. However, there is the special request of MAXFUN equal to zero which needs to be allowed.
     IF ((num_eval == maxfun) .AND. (maxfun .GT. zero_int)) THEN
         fort_criterion_parallel = -HUGE_FLOAT
         RETURN
     END IF
 
-    ! Construct the full set of current parameters
-    j = 1
 
-    DO i = 1, 26
-
-        IF(paras_fixed(i)) THEN
-
-            x_all_current(i) = x_all_start(i)
-
-        ELSE
-            
-            x_all_current(i) = x(j)
-            j = j + 1
-
-        END IF
-
-    END DO
+    CALL construct_all_current_values(x_all_current, x, paras_fixed)
 
 
     CALL MPI_Bcast(3, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
@@ -423,6 +407,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, num_emax_slaves, shocks_c
     INTEGER(our_int), INTENT(IN)    :: num_emax_slaves(num_periods, num_slaves)
 
     !/* internal objects        */
+
     INTEGER(our_int)                :: seed_inflated(15)
     INTEGER(our_int)                :: lower_bound
     INTEGER(our_int)                :: upper_bound
@@ -432,22 +417,24 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, num_emax_slaves, shocks_c
     INTEGER(our_int)                :: count
     INTEGER(our_int)                :: k
 
+    REAL(our_dble)                  :: payoffs_systematic(4)
     REAL(our_dble)                  :: shocks_cov(4, 4)
+    REAL(our_dble)                  :: emax_simulated
     REAL(our_dble)                  :: shifts(4)
 
     REAL(our_dble)                  :: draws_emax(num_draws_emax, 4)
 
     LOGICAL, ALLOCATABLE            :: is_simulated(:)
-    
+
     LOGICAL                         :: any_interpolated
     LOGICAL                         :: is_head
 
-    REAL(our_dble), ALLOCATABLE     :: periods_emax_slaves(:), endogenous_slaves(:)
+    REAL(our_dble), ALLOCATABLE     :: periods_emax_slaves(:)
+    REAL(our_dble), ALLOCATABLE     :: endogenous_slaves(:)
     REAL(our_dble), ALLOCATABLE     :: exogenous(:, :)
     REAL(our_dble), ALLOCATABLE     :: predictions(:)
-    REAL(our_dble), ALLOCATABLE     :: endogenous(:), maxe(:)
-    REAL(our_dble)                  :: emax_simulated
-    REAL(our_dble)                  :: payoffs_systematic(4)
+    REAL(our_dble), ALLOCATABLE     :: endogenous(:)
+    REAL(our_dble), ALLOCATABLE     :: maxe(:)
 
 !------------------------------------------------------------------------------
 ! Algorithm

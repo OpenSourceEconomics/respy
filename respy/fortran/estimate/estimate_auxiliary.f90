@@ -37,7 +37,6 @@ SUBROUTINE logging_estimation_final(success, message, crit_val)
     ! Formatting
     5503 FORMAT(1x, A4,21X,i2,'/',i2,'/',i4)
     5504 FORMAT(1x, A4,23X,i2,':',i2,':',i2)
-    5505 FORMAT(1x, A4, 25X, i6)
     5506 FORMAT(1x, A9 ,1X, f25.15)
     5510 FORMAT(1x, A12)
  

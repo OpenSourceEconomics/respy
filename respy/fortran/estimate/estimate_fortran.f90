@@ -4,18 +4,19 @@ MODULE estimate_fortran
 
     !/* external modules    */
 
+    USE estimate_auxiliary
+
+    USE shared_containers
+
+    USE evaluate_fortran
+
+    USE shared_constants
+
     USE dfpmin_module
 
     USE newuoa_module
 
-
-    USE estimate_auxiliary
-
     USE solve_fortran
-    USE evaluate_fortran
-    USE shared_constants
-
-    USE shared_containers
 
     !/* setup   */
 
@@ -126,8 +127,6 @@ FUNCTION fort_criterion(x)
     LOGICAL                         :: is_step
 
     INTEGER(our_int)                :: period
-    INTEGER(our_int)                :: i
-    INTEGER(our_int)                :: j
     
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -139,32 +138,14 @@ FUNCTION fort_criterion(x)
         RETURN
     END IF
 
-    ! Construct the full set of current parameters
-    j = 1
-
-    DO i = 1, 26
-
-        IF(paras_fixed(i)) THEN
-
-            x_all_current(i) = x_all_start(i)
-
-        ELSE
-            
-            x_all_current(i) = x(j)
-            j = j + 1
-
-        END IF
-
-    END DO
+    CALL construct_all_current_values(x_all_current, x, paras_fixed)
 
 
-    ! Update model parameters and solutions before recalculating the value of the criterion function
     CALL dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x_all_current)
 
     CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start)
 
     IF (is_myopic) THEN
-
         DO period = 1,  num_periods
             periods_emax(period, :states_number_period(period)) = zero_dble
         END DO
@@ -253,6 +234,46 @@ FUNCTION fort_dcriterion(x)
     END DO
 
 END FUNCTION
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE construct_all_current_values(x_all_current, x, paras_fixed)
+
+    !/* external objects        */
+
+    REAL(our_dble), INTENT(OUT)     :: x_all_current(26)
+
+    LOGICAL, INTENT(IN)             :: paras_fixed(26)
+
+    REAL(our_dble), INTENT(IN)      :: x(COUNT(.not. paras_fixed))
+
+
+    !/* internal objects        */
+
+    INTEGER(our_int)                :: i
+    INTEGER(our_int)                :: j
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------    
+
+    j = 1
+
+    DO i = 1, 26
+
+        IF(paras_fixed(i)) THEN
+
+            x_all_current(i) = x_all_start(i)
+
+        ELSE
+            
+            x_all_current(i) = x(j)
+            j = j + 1
+
+        END IF
+
+    END DO
+    
+END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
 END MODULE
