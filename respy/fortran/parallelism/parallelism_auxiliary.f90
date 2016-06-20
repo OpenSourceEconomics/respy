@@ -91,25 +91,6 @@ SUBROUTINE determine_workload(jobs_slaves, jobs_total)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_evaluate_parallel(crit_val)
-
-    !   This routine instructs the slaves to evaluate the criterion function and waits for the lead slave to send the result.
-
-    !/* external objects        */
-
-    REAL(our_dble), INTENT(OUT)         :: crit_val
-
-!------------------------------------------------------------------------------
-! Algorithm
-!------------------------------------------------------------------------------
-
-    CALL MPI_Bcast(3, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
-
-    CALL MPI_RECV(crit_val, 1, MPI_DOUBLE, MPI_ANY_SOURCE, MPI_ANY_TAG, SLAVECOMM, status, ierr)
-
-END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
 SUBROUTINE fort_estimate_parallel(crit_val, success, message, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed, optimizer_used, maxfun, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, newuoa_maxfun, bfgs_gtol, bfgs_maxiter, bfgs_stpmx)
 
     !/* external objects    */
@@ -244,26 +225,15 @@ FUNCTION fort_criterion_parallel(x)
     CALL MPI_Bcast(x_all_current, 26, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
 
 
-    ! Solve the model    
-    CALL MPI_Bcast(2, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
-    
 
     ! TODO: Is this required in the end.
     IF (.NOT. ALLOCATED(periods_emax)) THEN
         ALLOCATE(periods_emax(num_periods, max_states_period))
     END IF
     
-    DO period = (num_periods - 1), 0, -1
+    CALL MPI_Bcast(3, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
 
-        num_states = states_number_period(period + 1)
-        
-        CALL MPI_RECV(periods_emax(period + 1, :num_states) , num_states, MPI_DOUBLE, MPI_ANY_SOURCE, MPI_ANY_TAG, SLAVECOMM, status, ierr)
-        
-    END DO
-
-
-    CALL fort_evaluate_parallel(fort_criterion_parallel)
-
+    CALL MPI_RECV(fort_criterion_parallel, 1, MPI_DOUBLE, MPI_ANY_SOURCE, MPI_ANY_TAG, SLAVECOMM, status, ierr)
 
 
     num_eval = num_eval + 1
@@ -392,11 +362,8 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
 
 
     CALL logging_solution(3)
-
-    ! TODO: Is this CHECK required in the end, the allocation and initialization sure is.
-    IF (.NOT. ALLOCATED(periods_emax)) THEN
-        ALLOCATE(periods_emax(num_periods, max_states_period))
-    END IF
+    
+    ALLOCATE(periods_emax(num_periods, max_states_period))
     periods_emax = MISSING_FLOAT
 
     DO period = (num_periods - 1), 0, -1
@@ -414,11 +381,11 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_backward_induction_slave(num_emax_slaves, shocks_cholesky, update_master)
+SUBROUTINE fort_backward_induction_slave(periods_emax, num_emax_slaves, shocks_cholesky, update_master)
 
     !/* external objects        */
 
-
+    REAL(our_dble), ALLOCATABLE, INTENT(OUT)     :: periods_emax(:, :)
 
     REAL(our_dble), INTENT(IN)      :: shocks_cholesky(4, 4)
     
@@ -450,6 +417,12 @@ SUBROUTINE fort_backward_induction_slave(num_emax_slaves, shocks_cholesky, updat
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
+
+    IF (.NOT. ALLOCATED(periods_emax)) THEN
+        ALLOCATE(periods_emax(num_periods, max_states_period))
+    END IF
+
+    periods_emax = MISSING_FLOAT
 
     is_head = .False.
     IF(rank == zero_int) is_head = .True.
@@ -531,7 +504,7 @@ SUBROUTINE fort_backward_induction_slave(num_emax_slaves, shocks_cholesky, updat
             periods_emax(period + 1, :num_states) = predictions
 
             ! The leading slave updates the master period by period.
-            IF (is_head) CALL MPI_SEND(periods_emax(period + 1, :num_states), num_states, MPI_DOUBLE, 0, period, PARENTCOMM, ierr)    
+            IF (is_head .AND. update_master) CALL MPI_SEND(periods_emax(period + 1, :num_states), num_states, MPI_DOUBLE, 0, period, PARENTCOMM, ierr)    
 
             ! Deallocate containers
             DEALLOCATE(is_simulated, exogenous, maxe, endogenous, predictions)
