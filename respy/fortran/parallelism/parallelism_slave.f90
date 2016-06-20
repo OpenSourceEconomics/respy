@@ -114,6 +114,10 @@ PROGRAM resfort_parallel_slave
 
     IF(is_head) CALL logging_solution(-1)
 
+    ! TODO: IS THIS THE RIGHT PLACE TO DO IT?
+    ALLOCATE(periods_emax(num_periods, max_states_period))
+    periods_emax = MISSING_FLOAT
+
     ! This part creates (or reads from disk) the draws for the Monte Carlo integration of the EMAX. For is_debugging purposes, these might  also be read in from disk or set to zero/one.   
     CALL create_draws(periods_draws_emax, num_draws_emax, seed_emax, is_debug)
     

@@ -247,6 +247,11 @@ FUNCTION fort_criterion_parallel(x)
     ! THis block is only temporary until the slave is extracted ....
     CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, periods_emax, periods_payoffs_systematic, edu_start, edu_max)
 
+    ! TODO: Is this required in the end.
+    IF (.NOT. ALLOCATED(periods_emax)) THEN
+        ALLOCATE(periods_emax(num_periods, max_states_period))
+    END IF
+    
     DO period = (num_periods - 1), 0, -1
 
         num_states = states_number_period(period + 1)
@@ -373,6 +378,12 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
     CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, periods_emax, periods_payoffs_systematic, edu_start, edu_max)
 
     CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start)
+
+    ! TODO: Is this required in the end.
+    IF (.NOT. ALLOCATED(periods_emax)) THEN
+        ALLOCATE(periods_emax(num_periods, max_states_period))
+    END IF
+    periods_emax = MISSING_FLOAT
 
     DO period = (num_periods - 1), 0, -1
 

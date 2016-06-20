@@ -441,7 +441,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_payoffs
     INTEGER(our_int), INTENT(IN)    :: states_number_period(num_periods)
 
     REAL(our_dble), ALLOCATABLE, INTENT(IN)      :: periods_payoffs_systematic(: ,:, :)
-    REAL(our_dble), INTENT(IN)      :: periods_emax(num_periods, max_states_period)
+    REAL(our_dble), ALLOCATABLE, INTENT(IN)      :: periods_emax(: ,:)
     REAL(our_dble), ALLOCATABLE, INTENT(IN)      :: data_sim(:, :)
 
     CHARACTER(10), INTENT(IN)       :: request
