@@ -90,8 +90,6 @@ PROGRAM resfort_parallel_slave
     ! Read in model specification.
     CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, is_debug, is_interpolated, is_myopic, request, exec_dir, maxfun, paras_fixed, optimizer_used, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend, bfgs_epsilon, bfgs_gtol, bfgs_stpmx, bfgs_maxiter)
 
-    ! Allocate arrays
-
     CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, edu_start, edu_max)
 
     
@@ -120,29 +118,35 @@ PROGRAM resfort_parallel_slave
         ! Waiting for request from master to perform an action.
         CALL MPI_Bcast(task, 1, MPI_INT, 0, PARENTCOMM, ierr)
 
-        ! Updating parameterization
-        IF(task == 0) THEN
-
-            CALL MPI_Bcast(x_all_current, 26, MPI_DOUBLE, 0, PARENTCOMM, ierr)
-
-            CALL dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x_all_current)
-            
-            CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start)
-
-        ELSEIF(task == 1) THEN
-
+        IF(task == 1) THEN
             CALL MPI_FINALIZE(ierr)
             STAY_AVAILABLE = .FALSE.
+        END IF
+
+
+        CALL MPI_Bcast(x_all_current, 26, MPI_DOUBLE, 0, PARENTCOMM, ierr)
+
+        CALL dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x_all_current)
+            
+        CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start)
+
+        
+
+
+
+
+
 
         ! Evaluate EMAX.
-        ELSEIF(task == 2) THEN
+        IF(task == 2) THEN
 
             CALL fort_backward_induction_slave(num_emax_slaves, shocks_cholesky, .True.)
 
         ! Evaluate criterion function
         ELSEIF (task == 3) THEN
 
-            
+
+            CALL fort_backward_induction_slave(num_emax_slaves, shocks_cholesky, .False.)
 
             ! If the evaluation is requested for the first time. The data container is not allocated, so all preparations for the evaluation are taken.
             IF (.NOT. ALLOCATED(data_est)) THEN
