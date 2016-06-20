@@ -17,7 +17,8 @@ from respy.python.shared.shared_constants import EXEC_DIR
 
 
 def resfort_interface(respy_obj, request, data_array=None):
-
+    """ This function provides the interface to the FORTRAN functionality.
+    """
     # Add mock specification for FORTRAN optimizers if not defined by user.
     # This is required so the initialization file for FORTRAN is complete.
     respy_obj = add_optimizers(respy_obj)

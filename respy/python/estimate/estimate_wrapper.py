@@ -97,5 +97,7 @@ class OptimizationClass(object):
 
 
 class MaxfunError(Exception):
-
+    """ This custom-error class allows to enforce the MAXFUN restriction
+    independent of the optimzer used.
+    """
     pass

@@ -6,6 +6,7 @@ from setuptools import setup
 
 import os
 
+
 class CustomDevelopCommand(develop):
     """ Customized setuptools install command - prints a friendly greeting.
     """

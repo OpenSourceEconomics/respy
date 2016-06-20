@@ -15,7 +15,9 @@ from respy.python.shared.shared_constants import ROOT_DIR
 
 
 class MonitorCls(object):
-
+    """ This class monitors the progress of the estimation and feeds it into
+    the main program.
+    """
     def __init__(self):
 
         self.proc = None

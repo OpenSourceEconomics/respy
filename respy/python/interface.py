@@ -29,7 +29,8 @@ logger = logging.getLogger('RESPY_SIMULATE')
 
 
 def respy_interface(respy_obj, request, data_array=None):
-
+    """ This function provides the interface to the PYTHOn functionality.
+    """
     # Distribute class attributes
     model_paras, num_periods, num_agents_est, edu_start, is_debug, edu_max, \
         delta, num_draws_prob, seed_prob, num_draws_emax, seed_emax, \
