@@ -57,6 +57,35 @@ SUBROUTINE distribute_information(num_emax_slaves, period, send_slave, recieve_s
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
+SUBROUTINE distribute_workload(num_emax_slaves, num_obs_slaves)
+
+    !/* external objects        */
+
+    INTEGER(our_int), ALLOCATABLE, INTENT(OUT)   :: num_emax_slaves(:, :)
+    INTEGER(our_int), ALLOCATABLE, INTENT(OUT)   :: num_obs_slaves(:)
+    
+    !/* internal objects        */
+
+    INTEGER(our_int)                    :: period
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    ALLOCATE(num_emax_slaves(num_periods, num_slaves), num_obs_slaves(num_slaves))
+
+    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, edu_start, edu_max)  
+
+    CALL determine_workload(num_obs_slaves, (num_agents_est * num_periods))
+
+    DO period = 1, num_periods
+        CALL determine_workload(num_emax_slaves(period, :), states_number_period(period))   
+    END DO
+
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE determine_workload(jobs_slaves, jobs_total)
 
     !/* external objects        */
@@ -182,8 +211,6 @@ FUNCTION fort_criterion_parallel(x)
     
     INTEGER(our_int), SAVE          :: num_step = - one_int
 
-    INTEGER(our_int)                :: num_states
-    INTEGER(our_int)                :: period
     INTEGER(our_int)                :: i
     INTEGER(our_int)                :: j
 
@@ -219,7 +246,6 @@ FUNCTION fort_criterion_parallel(x)
     END DO
 
 
-    !  Update parameter that each slave is working with.     
     CALL MPI_Bcast(3, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
 
     CALL MPI_Bcast(x_all_current, 26, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
@@ -329,12 +355,12 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
 
     !/* internal objects        */
 
+    REAL(our_dble)                                  :: x_all_current(26)
+
     INTEGER(our_int)                                :: num_states
     INTEGER(our_int)                                :: period
 
-    LOGICAL, PARAMETER              :: all_free(26) = .False.
-
-    REAL(our_dble)      :: x_all_current(26)
+    LOGICAL, PARAMETER                              :: all_free(26) = .False.
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -398,19 +424,25 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, num_emax_slaves, shocks_c
 
     !/* internal objects        */
     INTEGER(our_int)                :: seed_inflated(15)
-
-    INTEGER(our_int)                :: seed_size, period, k
+    INTEGER(our_int)                :: lower_bound
+    INTEGER(our_int)                :: upper_bound
+    INTEGER(our_int)                :: num_states
+    INTEGER(our_int)                :: seed_size
+    INTEGER(our_int)                :: period
+    INTEGER(our_int)                :: count
+    INTEGER(our_int)                :: k
 
     REAL(our_dble)                  :: shocks_cov(4, 4)
     REAL(our_dble)                  :: shifts(4)
 
     REAL(our_dble)                  :: draws_emax(num_draws_emax, 4)
-    INTEGER(our_int)                :: num_states, count, lower_bound, upper_bound
 
-    LOGICAL                         :: any_interpolated, is_head
-
-    REAL(our_dble), ALLOCATABLE      :: periods_emax_slaves(:), endogenous_slaves(:)
     LOGICAL, ALLOCATABLE            :: is_simulated(:)
+    
+    LOGICAL                         :: any_interpolated
+    LOGICAL                         :: is_head
+
+    REAL(our_dble), ALLOCATABLE     :: periods_emax_slaves(:), endogenous_slaves(:)
     REAL(our_dble), ALLOCATABLE     :: exogenous(:, :)
     REAL(our_dble), ALLOCATABLE     :: predictions(:)
     REAL(our_dble), ALLOCATABLE     :: endogenous(:), maxe(:)
