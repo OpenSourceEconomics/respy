@@ -429,24 +429,30 @@ SUBROUTINE fort_backward_induction_slave(num_emax_slaves, shocks_cholesky, updat
     !/* internal objects        */
     INTEGER(our_int)                :: seed_inflated(15)
 
-    INTEGER(our_int)                :: seed_size, period
+    INTEGER(our_int)                :: seed_size, period, k
 
     REAL(our_dble)                  :: shocks_cov(4, 4)
     REAL(our_dble)                  :: shifts(4)
 
-    REAL(our_dble)                  :: draws_emax(num_draws_emax, 4), lower_bound, upper_bound
-    INTEGER(our_int)                :: num_states, count
+    REAL(our_dble)                  :: draws_emax(num_draws_emax, 4)
+    INTEGER(our_int)                :: num_states, count, lower_bound, upper_bound
 
-    LOGICAL                         :: any_interpolated
+    LOGICAL                         :: any_interpolated, is_head
 
-    REAL(our_int), ALLOCATABLE      :: periods_emax_slaves(:), endogenous_slaves(:)
+    REAL(our_dble), ALLOCATABLE      :: periods_emax_slaves(:), endogenous_slaves(:)
     LOGICAL, ALLOCATABLE            :: is_simulated(:)
     REAL(our_dble), ALLOCATABLE     :: exogenous(:, :)
     REAL(our_dble), ALLOCATABLE     :: predictions(:)
     REAL(our_dble), ALLOCATABLE     :: endogenous(:), maxe(:)
+    REAL(our_dble)                  :: emax_simulated
+    REAL(our_dble)                  :: payoffs_systematic(4)
+
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
+
+    is_head = .False.
+    IF(rank == zero_int) is_head = .True.
 
     ! Set random seed for interpolation grid.
     seed_inflated(:) = 123
@@ -515,42 +521,42 @@ SUBROUTINE fort_backward_induction_slave(num_emax_slaves, shocks_cholesky, updat
 
             END DO
                     
-            !         ! Distribute exogenous information
-            !         CALL distribute_information(num_emax_slaves, period, endogenous_slaves, endogenous)
-                    
-            !         ! Create prediction model based on the random subset of points where the EMAX is actually simulated and thus endogenous and exogenous variables are available. For the interpolation  points, the actual values are used.
-            !         CALL get_predictions(predictions, endogenous, exogenous, maxe, is_simulated, num_states, is_head)
+            ! Distribute exogenous information
+            CALL distribute_information(num_emax_slaves, period, endogenous_slaves, endogenous)
+                   
+            ! Create prediction model based on the random subset of points where the EMAX is actually simulated and thus endogenous and exogenous variables are available. For the interpolation  points, the actual values are used.
+            CALL get_predictions(predictions, endogenous, exogenous, maxe, is_simulated, num_states, is_head .AND. update_master)
 
-            !         ! Store results
-            !         periods_emax(period + 1, :num_states) = predictions
+            ! Store results
+            periods_emax(period + 1, :num_states) = predictions
 
-            !         ! The leading slave updates the master period by period.
-            !         IF (is_head) CALL MPI_SEND(periods_emax(period + 1, :num_states), num_states, MPI_DOUBLE, 0, period, PARENTCOMM, ierr)    
+            ! The leading slave updates the master period by period.
+            IF (is_head) CALL MPI_SEND(periods_emax(period + 1, :num_states), num_states, MPI_DOUBLE, 0, period, PARENTCOMM, ierr)    
 
             ! Deallocate containers
             DEALLOCATE(is_simulated, exogenous, maxe, endogenous, predictions)
 
         ELSE
 
-            !         count =  1
-            !         DO k = lower_bound, upper_bound - 1
+            count =  1
+            DO k = lower_bound, upper_bound - 1
 
-            !             ! Extract payoffs
-            !             payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
+                ! Extract payoffs
+                payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
-            !             CALL get_future_value(emax_simulated, draws_emax, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, shocks_cholesky, delta, edu_start, edu_max)
+                CALL get_future_value(emax_simulated, draws_emax, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, shocks_cholesky, delta, edu_start, edu_max)
 
-            !             ! Collect information
-            !             periods_emax_slaves(count) = emax_simulated
+                ! Collect information
+                periods_emax_slaves(count) = emax_simulated
 
-            !             count = count + 1
+                count = count + 1
 
-            !         END DO
+            END DO
                     
-            !         CALL distribute_information(num_emax_slaves, period, periods_emax_slaves, periods_emax(period + 1, :))
+            CALL distribute_information(num_emax_slaves, period, periods_emax_slaves, periods_emax(period + 1, :))
                     
-            !         ! The leading slave updates the master period by period.
-            !         IF (is_head) CALL MPI_SEND(periods_emax(period + 1, :num_states), num_states, MPI_DOUBLE, 0, period, PARENTCOMM, ierr)            
+            ! The leading slave updates the master period by period.
+            IF (is_head .AND. update_master) CALL MPI_SEND(periods_emax(period + 1, :num_states), num_states, MPI_DOUBLE, 0, period, PARENTCOMM, ierr)            
           
         END IF
 

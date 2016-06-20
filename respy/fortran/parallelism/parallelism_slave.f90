@@ -137,116 +137,12 @@ PROGRAM resfort_parallel_slave
         ! Evaluate EMAX.
         ELSEIF(task == 2) THEN
 
-
             CALL fort_backward_induction_slave(num_emax_slaves, shocks_cholesky, .True.)
-
-            ! Construct auxiliary objects
-            shocks_cov = MATMUL(shocks_cholesky, TRANSPOSE(shocks_cholesky))
-
-            ! Shifts
-            shifts = zero_dble
-            shifts(1) = clip_value(EXP(shocks_cov(1, 1)/two_dble), zero_dble, HUGE_FLOAT)
-            shifts(2) = clip_value(EXP(shocks_cov(2, 2)/two_dble), zero_dble, HUGE_FLOAT)
-
-
-            DO period = (num_periods - 1), 0, -1
-
-                ! Extract draws and construct auxiliary objects
-                draws_emax = periods_draws_emax(period + 1, :, :)
-                num_states = states_number_period(period + 1)
-                ALLOCATE(periods_emax_slaves(num_states), endogenous_slaves(num_states))
-
-
-                ! Distinguish case with and without interpolation
-                any_interpolated = (num_points_interp .LE. num_states) .AND. is_interpolated
-
-                ! Upper and lower bound of tasks
-                lower_bound = SUM(num_emax_slaves(period + 1, :rank))
-                upper_bound = SUM(num_emax_slaves(period + 1, :rank + 1))
-                
-                 IF (any_interpolated) THEN
-
-                    ! Allocate period-specific containers
-                    ALLOCATE(is_simulated(num_states), endogenous(num_states), maxe(num_states), exogenous(num_states, 9), predictions(num_states))
-
-                    ! Constructing indicator for simulation points
-                    is_simulated = get_simulated_indicator(num_points_interp, num_states, period, is_debug)
-       
-                    ! Constructing the dependent variable for all states, including the ones where simulation will take place. All information will be used in either the construction of the prediction model or the prediction step.
-                    CALL get_exogenous_variables(exogenous, maxe, period, num_states, periods_payoffs_systematic, shifts, mapping_state_idx, periods_emax, states_all, delta, edu_start, edu_max)
-
-                    ! Initialize missing values
-                    endogenous = MISSING_FLOAT
-                    endogenous_slaves = MISSING_FLOAT
-
-                    ! Construct dependent variables for the subset of interpolation points.
-                    count = 1
-                    DO k = lower_bound, upper_bound - 1
-
-                        ! Skip over points that will be predicted
-                        IF (.NOT. is_simulated(k + 1)) THEN
-                            count = count + 1 
-                            CYCLE
-                        END IF
-
-                        ! Extract payoffs
-                        payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
-
-                        ! Get payoffs
-                        CALL get_future_value(emax_simulated, draws_emax, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, shocks_cholesky, delta, edu_start, edu_max)
-
-                        ! Construct dependent variable
-                        endogenous_slaves(count) = emax_simulated - maxe(k + 1)
-                        count = count + 1 
-
-                    END DO
-                    
-                    ! Distribute exogenous information
-                    CALL distribute_information(num_emax_slaves, period, endogenous_slaves, endogenous)
-                    
-                    ! Create prediction model based on the random subset of points where the EMAX is actually simulated and thus endogenous and exogenous variables are available. For the interpolation  points, the actual values are used.
-                    CALL get_predictions(predictions, endogenous, exogenous, maxe, is_simulated, num_states, is_head)
-
-                    ! Store results
-                    periods_emax(period + 1, :num_states) = predictions
-
-                    ! The leading slave updates the master period by period.
-                    IF (is_head) CALL MPI_SEND(periods_emax(period + 1, :num_states), num_states, MPI_DOUBLE, 0, period, PARENTCOMM, ierr)    
-
-                    ! Deallocate containers
-                    DEALLOCATE(is_simulated, exogenous, maxe, endogenous, predictions)
-
-                 ELSE
-
-                    count =  1
-                    DO k = lower_bound, upper_bound - 1
-
-                        ! Extract payoffs
-                        payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
-
-                        CALL get_future_value(emax_simulated, draws_emax, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, shocks_cholesky, delta, edu_start, edu_max)
-
-                        ! Collect information
-                        periods_emax_slaves(count) = emax_simulated
-
-                        count = count + 1
-
-                    END DO
-                    
-                    CALL distribute_information(num_emax_slaves, period, periods_emax_slaves, periods_emax(period + 1, :))
-                    
-                    ! The leading slave updates the master period by period.
-                    IF (is_head) CALL MPI_SEND(periods_emax(period + 1, :num_states), num_states, MPI_DOUBLE, 0, period, PARENTCOMM, ierr)            
-          
-                END IF
-
-                DEALLOCATE(periods_emax_slaves, endogenous_slaves)
-
-            END DO
-    
 
         ! Evaluate criterion function
         ELSEIF (task == 3) THEN
+
+            
 
             ! If the evaluation is requested for the first time. The data container is not allocated, so all preparations for the evaluation are taken.
             IF (.NOT. ALLOCATED(data_est)) THEN
