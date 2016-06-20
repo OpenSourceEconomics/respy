@@ -42,9 +42,6 @@ sys.path.insert(0, '/home/peisenha/Dropbox/business/office/workspace/software/re
 from codes.auxiliary import write_draws
 
 
-num_periods = 2
-max_draws = 1000
-write_draws(num_periods, max_draws)
 
 respy_obj = RespyCls('model.respy.ini')
 simulate(respy_obj)
@@ -53,4 +50,9 @@ print('working PYTHON')
 respy_obj = RespyCls('model.respy.ini')
 #respy_obj.attr['version'] = 'PYTHON'
 #respy_obj.attr['optimizer_used'] = 'SCIPY-POWELL'
+import time
+start = time.time()
+
 x, crit_val = estimate(respy_obj)
+end = time.time()
+print(end - start)
