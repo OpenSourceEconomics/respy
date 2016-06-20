@@ -101,7 +101,6 @@ PROGRAM resfort_parallel_slave
         CALL determine_workload(num_emax_slaves(period, :), states_number_period(period))   
     END DO
 
-    ! This part creates (or reads from disk) the draws for the Monte Carlo integration of the EMAX. For is_debugging purposes, these might  also be read in from disk or set to zero/one.   
     CALL create_draws(periods_draws_emax, num_draws_emax, seed_emax, is_debug)
     
     DO WHILE (STAY_AVAILABLE)  
@@ -109,25 +108,26 @@ PROGRAM resfort_parallel_slave
         ! Waiting for request from master to perform an action.
         CALL MPI_Bcast(task, 1, MPI_INT, 0, PARENTCOMM, ierr)
 
-        ! Updating parameterization
-        IF(task == 0) THEN
 
-            CALL MPI_Bcast(x_all_current, 26, MPI_DOUBLE, 0, PARENTCOMM, ierr)
-
-            CALL dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x_all_current)
-            
-        ELSEIF(task == 1) THEN
-
+        IF (task == 1) THEN
             CALL MPI_FINALIZE(ierr)
-            STAY_AVAILABLE = .FALSE.
+            STAY_AVAILABLE = .FALSE.    
+            CYCLE
+        END IF
 
-        ELSEIF(task == 2) THEN
+
+        CALL MPI_Bcast(x_all_current, 26, MPI_DOUBLE, 0, PARENTCOMM, ierr)
+
+        CALL dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x_all_current)
+
+
+    
+        IF(task == 2) THEN
 
             CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start)
 
             CALL fort_backward_induction_slave(periods_emax, num_emax_slaves, shocks_cholesky, .True.)
 
-        ! Evaluate criterion function
         ELSEIF (task == 3) THEN
             
             IF (.NOT. ALLOCATED(data_est)) THEN

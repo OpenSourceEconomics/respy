@@ -219,13 +219,11 @@ FUNCTION fort_criterion_parallel(x)
     END DO
 
 
-    !  Update parameter that each slave is working with.
-    CALL MPI_Bcast(0, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
-     
-    CALL MPI_Bcast(x_all_current, 26, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
-    
+    !  Update parameter that each slave is working with.     
     CALL MPI_Bcast(3, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
 
+    CALL MPI_Bcast(x_all_current, 26, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
+    
     CALL MPI_RECV(fort_criterion_parallel, 1, MPI_DOUBLE, MPI_ANY_SOURCE, MPI_ANY_TAG, SLAVECOMM, status, ierr)
 
 
@@ -309,7 +307,7 @@ FUNCTION fort_dcriterion_parallel(x)
 END FUNCTION
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start, edu_max)
+SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max)
 
     !/* external objects        */
 
@@ -320,6 +318,7 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_payoffs_systematic(:, :, :)
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_emax(:, :)
 
+    REAL(our_dble), INTENT(IN)                      :: shocks_cholesky(4, 4)
     REAL(our_dble), INTENT(IN)                      :: coeffs_home(1)
     REAL(our_dble), INTENT(IN)                      :: coeffs_edu(3)
     REAL(our_dble), INTENT(IN)                      :: coeffs_a(6)
@@ -333,11 +332,22 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
     INTEGER(our_int)                                :: num_states
     INTEGER(our_int)                                :: period
 
+    LOGICAL, PARAMETER              :: all_free(26) = .False.
+
+    REAL(our_dble)      :: x_all_current(26)
+
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
-      
+
     CALL MPI_Bcast(2, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
+
+
+    CALL get_free_optim_paras(x_all_current, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, all_free)
+
+    CALL MPI_Bcast(x_all_current, 26, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
+
+      
 
     CALL logging_solution(1)
 
