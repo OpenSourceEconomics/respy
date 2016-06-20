@@ -32,7 +32,7 @@ if False:
     os.chdir(cwd)
 
 ''' Request '''
-seed = 21860 # 6216748723
+seed = 42314 # 6216748723
 
 
 ''' Error Reproduction '''
@@ -44,14 +44,17 @@ np.random.seed(seed)
 test_dict = get_test_dict(PACKAGE_DIR + '/respy/tests')
 module, method = get_random_request(test_dict)
 
-module, method = 'test_f2py', 'test_1'
-print(module, method)
-mod = importlib.import_module(module)
-test = getattr(mod.TestClass(), method)
-
+#module, method = 'test_f2py', 'test_1'
 count = 0
 for i in range(10000):
-    test()
-    count = count +1
-    print('completed ', count)
+
+	method = 'test_' + str(np.random.choice([1, 2, 3, 4, 5, 6, 7]))
+
+	print(module, method)
+	mod = importlib.import_module(module)
+	test = getattr(mod.TestClass(), method)
+
+	test()
+	count = count +1
+	print('completed ', count)
 

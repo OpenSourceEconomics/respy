@@ -347,6 +347,9 @@ SUBROUTINE f2py_backward_induction(periods_emax_int, num_periods_int, max_states
     edu_max = edu_max_int
     delta = delta_int
 
+    ! Ensure that there is no problem with the repeated allocation of the containers.
+    IF(ALLOCATED(periods_emax)) DEALLOCATE(periods_emax)
+
     ! Call actual function of interest
     CALL fort_backward_induction(periods_emax, periods_draws_emax_int, states_number_period_int, periods_payoffs_systematic_int, mapping_state_idx_int, states_all_int, shocks_cholesky, delta, is_debug, is_interpolated, edu_start, edu_max)
     
@@ -443,6 +446,9 @@ SUBROUTINE f2py_calculate_payoffs_systematic(periods_payoffs_systematic_int, num
     max_states_period = max_states_period_int
     num_periods = num_periods_int
     edu_start = edu_start_int
+
+    ! Ensure that there is no problem with the repeated allocation of the containers.
+    IF(ALLOCATED(periods_payoffs_systematic)) DEALLOCATE(periods_payoffs_systematic)
 
     ! Call function of interest
     CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_number_period_int, states_all_int, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start)
