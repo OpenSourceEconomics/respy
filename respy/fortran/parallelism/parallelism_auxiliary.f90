@@ -245,7 +245,7 @@ FUNCTION fort_criterion_parallel(x)
     CALL MPI_Bcast(2, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
     
     ! THis block is only temporary until the slave is extracted ....
-    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, periods_emax, periods_payoffs_systematic, edu_start, edu_max)
+    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, edu_start, edu_max)
 
     ! TODO: Is this required in the end.
     IF (.NOT. ALLOCATED(periods_emax)) THEN
@@ -375,7 +375,7 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
       
     CALL MPI_Bcast(2, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
     
-    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, periods_emax, periods_payoffs_systematic, edu_start, edu_max)
+    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, edu_start, edu_max)
 
     CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start)
 

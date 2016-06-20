@@ -394,13 +394,11 @@ SUBROUTINE f2py_create_state_space(states_all_int, states_number_period_int, map
 
     ! Ensure that there is no problem with the repeated allocation of the containers.    
     IF (ALLOCATED(mapping_state_idx)) DEALLOCATE(mapping_state_idx)
-    IF (ALLOCATED(periods_payoffs_systematic)) DEALLOCATE(periods_payoffs_systematic)
     IF (ALLOCATED(states_all)) DEALLOCATE(states_all)
-    IF (ALLOCATED(periods_emax)) DEALLOCATE(periods_emax)
     IF (ALLOCATED(states_number_period)) DEALLOCATE(states_number_period)
     IF (ALLOCATED(states_all)) DEALLOCATE(states_all)
 
-    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, periods_emax, periods_payoffs_systematic, edu_start, edu_max)
+    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, edu_start, edu_max)
 
     states_all_int(:, :max_states_period, :) = states_all
     states_number_period_int = states_number_period

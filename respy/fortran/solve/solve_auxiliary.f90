@@ -19,16 +19,13 @@ MODULE solve_auxiliary
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_state_idx, periods_emax, periods_payoffs_systematic, edu_start, edu_max)
+SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_state_idx, edu_start, edu_max)
 
     !/* external objects        */
 
     INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)     :: mapping_state_idx(:, :, :, :, :)
     INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)     :: states_number_period(:)
     INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)     :: states_all(:, :, :)
-
-    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_payoffs_systematic(:, :, :)
-    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_emax(:, :)
 
     INTEGER(our_int), INTENT(IN)                    :: edu_start
     INTEGER(our_int), INTENT(IN)                    :: edu_max

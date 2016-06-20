@@ -53,7 +53,7 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, mapping_
 
     CALL logging_solution(1)
 
-    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, periods_emax, periods_payoffs_systematic, edu_start, edu_max)
+    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, edu_start, edu_max)
 
     CALL logging_solution(-1)
 

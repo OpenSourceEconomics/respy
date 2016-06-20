@@ -95,7 +95,7 @@ PROGRAM resfort_parallel_slave
     ! Allocate arrays
     IF(is_head) CALL logging_solution(1)
 
-    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, periods_emax, periods_payoffs_systematic, edu_start, edu_max)
+    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, edu_start, edu_max)
 
     IF(is_head) CALL logging_solution(-1)
 
