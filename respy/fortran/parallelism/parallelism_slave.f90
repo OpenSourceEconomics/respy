@@ -61,11 +61,9 @@ PROGRAM resfort_parallel_slave
     REAL(our_dble)                  :: bfgs_stpmx
     REAL(our_dble)                  :: bfgs_gtol 
 
-    INTEGER(our_int)                :: seed_inflated(15)
     INTEGER(our_int)                :: newuoa_maxfun
     INTEGER(our_int)                :: bfgs_maxiter
     INTEGER(our_int)                :: newuoa_npt
-    INTEGER(our_int)                :: seed_size
     INTEGER(our_int)                :: num_procs
     INTEGER(our_int)                :: seed_prob
     INTEGER(our_int)                :: seed_emax
@@ -139,12 +137,8 @@ PROGRAM resfort_parallel_slave
         ! Evaluate EMAX.
         ELSEIF(task == 2) THEN
 
-            ! Set random seed for interpolation grid.
-            seed_inflated(:) = 123
 
-            CALL RANDOM_SEED(size=seed_size)
-
-            CALL RANDOM_SEED(put=seed_inflated)
+            CALL fort_backward_induction_slave(num_emax_slaves, shocks_cholesky, .True.)
 
             ! Construct auxiliary objects
             shocks_cov = MATMUL(shocks_cholesky, TRANSPOSE(shocks_cholesky))
@@ -247,9 +241,10 @@ PROGRAM resfort_parallel_slave
                 END IF
 
                 DEALLOCATE(periods_emax_slaves, endogenous_slaves)
-    
+
             END DO
-        
+    
+
         ! Evaluate criterion function
         ELSEIF (task == 3) THEN
 
