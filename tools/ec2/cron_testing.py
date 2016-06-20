@@ -16,11 +16,13 @@ import json
 import sys
 import os
 
-# Get some basic information about the system and only start the work if server not in other use.
-LOADAVG = os.getloadavg()[2]
-is_available = LOADAVG < 0.5
-if not is_available:
-    sys.exit()
+# Get some basic information about the system and only start the work if
+# server not in other use.
+if socket.gethostname() != 'pontos':
+    LOADAVG = os.getloadavg()[2]
+    is_available = LOADAVG < 0.5
+    if not is_available:
+        sys.exit()
 
 # Specify request
 HOURS, NOTIFICATION = 6, True
