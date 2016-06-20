@@ -156,6 +156,9 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, coeffs_a, coeffs_b
     ! Some ingredients for the evaluation of the criterion function need to be created once and shared globally.
     CALL get_free_optim_paras(x_all_start, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, all_free)
 
+    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, edu_start, edu_max)
+
+
     CALL get_free_optim_paras(x_free_start, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed)
 
     x_free_final = x_free_start
@@ -245,8 +248,7 @@ FUNCTION fort_criterion_parallel(x)
     CALL MPI_Bcast(2, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
     
     ! THis block is only temporary until the slave is extracted ....
-    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, edu_start, edu_max)
-
+    
     ! TODO: Is this required in the end.
     IF (.NOT. ALLOCATED(periods_emax)) THEN
         ALLOCATE(periods_emax(num_periods, max_states_period))

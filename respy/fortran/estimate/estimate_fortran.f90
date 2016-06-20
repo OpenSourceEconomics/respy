@@ -71,6 +71,9 @@ SUBROUTINE fort_estimate(crit_val, success, message, coeffs_a, coeffs_b, coeffs_
     ! Some ingredients for the evaluation of the criterion function need to be created once and shared globally.
     CALL get_free_optim_paras(x_all_start, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, all_free)
 
+    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, edu_start, edu_max)
+
+
     CALL get_free_optim_paras(x_free_start, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed)
 
     x_free_final = x_free_start
@@ -122,6 +125,7 @@ FUNCTION fort_criterion(x)
     LOGICAL                         :: is_start
     LOGICAL                         :: is_step
 
+    INTEGER(our_int)                :: period
     INTEGER(our_int)                :: i
     INTEGER(our_int)                :: j
     
@@ -154,11 +158,22 @@ FUNCTION fort_criterion(x)
     END DO
 
 
+    ! Update model parameters and solutions before recalculating the value of the criterion function
     CALL dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x_all_current)
 
-    CALL fort_solve(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max)
+    CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start)
+
+    IF (is_myopic) THEN
+
+        DO period = 1,  num_periods
+            periods_emax(period, :states_number_period(period)) = zero_dble
+        END DO
+    ELSE
+        CALL fort_backward_induction(periods_emax, periods_draws_emax, states_number_period, periods_payoffs_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, edu_start, edu_max)
+    END IF
 
     CALL fort_evaluate(fort_criterion, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_est, periods_draws_prob, delta, tau, edu_start, edu_max)
+
 
 
     num_eval = num_eval + 1

@@ -287,6 +287,8 @@ class TestClass(object):
                 base_val = val
             np.testing.assert_allclose(base_val, val)
 
+            solve(respy_obj)
+
             # Check for identical logging
             if base_log is None:
                 base_log = open('sol.respy.log', 'r').read()
