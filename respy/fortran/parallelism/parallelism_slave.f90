@@ -101,9 +101,6 @@ PROGRAM resfort_parallel_slave
         CALL determine_workload(num_emax_slaves(period, :), states_number_period(period))   
     END DO
 
-    ! TODO: IS THIS THE RIGHT PLACE TO DO IT?
-
-
     ! This part creates (or reads from disk) the draws for the Monte Carlo integration of the EMAX. For is_debugging purposes, these might  also be read in from disk or set to zero/one.   
     CALL create_draws(periods_draws_emax, num_draws_emax, seed_emax, is_debug)
     
@@ -124,7 +121,6 @@ PROGRAM resfort_parallel_slave
             CALL MPI_FINALIZE(ierr)
             STAY_AVAILABLE = .FALSE.
 
-        ! Evaluate EMAX.
         ELSEIF(task == 2) THEN
 
             CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start)
@@ -134,18 +130,15 @@ PROGRAM resfort_parallel_slave
         ! Evaluate criterion function
         ELSEIF (task == 3) THEN
             
-            ! If the evaluation is requested for the first time. The data container is not allocated, so all preparations for the evaluation are taken.
             IF (.NOT. ALLOCATED(data_est)) THEN
 
                 CALL read_dataset(data_est, num_agents_est)
 
                 CALL create_draws(periods_draws_prob, num_draws_prob, seed_prob, is_debug)
 
-                ! Upper and lower bound of tasks
                 lower_bound = SUM(num_obs_slaves(:rank)) + 1
                 upper_bound = SUM(num_obs_slaves(:rank + 1))
     
-                ! Allocate dataset
                 ALLOCATE(data_slave(num_obs_slaves(rank + 1), 8))
 
                 data_slave = data_est(lower_bound:upper_bound, :)

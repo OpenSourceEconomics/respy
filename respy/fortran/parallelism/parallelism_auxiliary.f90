@@ -223,13 +223,6 @@ FUNCTION fort_criterion_parallel(x)
     CALL MPI_Bcast(0, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
      
     CALL MPI_Bcast(x_all_current, 26, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
-
-
-
-    ! TODO: Is this required in the end.
-    IF (.NOT. ALLOCATED(periods_emax)) THEN
-        ALLOCATE(periods_emax(num_periods, max_states_period))
-    END IF
     
     CALL MPI_Bcast(3, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
 
@@ -476,21 +469,21 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, num_emax_slaves, shocks_c
             count = 1
             DO k = lower_bound, upper_bound - 1
 
-            ! Skip over points that will be predicted
-            IF (.NOT. is_simulated(k + 1)) THEN
+                ! Skip over points that will be predicted
+                IF (.NOT. is_simulated(k + 1)) THEN
+                    count = count + 1 
+                    CYCLE
+                END IF
+
+                ! Extract payoffs
+                payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
+
+                ! Get payoffs
+                CALL get_future_value(emax_simulated, draws_emax, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, shocks_cholesky, delta, edu_start, edu_max)
+
+                ! Construct dependent variable
+                endogenous_slaves(count) = emax_simulated - maxe(k + 1)
                 count = count + 1 
-                CYCLE
-            END IF
-
-            ! Extract payoffs
-            payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
-
-            ! Get payoffs
-            CALL get_future_value(emax_simulated, draws_emax, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, shocks_cholesky, delta, edu_start, edu_max)
-
-            ! Construct dependent variable
-            endogenous_slaves(count) = emax_simulated - maxe(k + 1)
-            count = count + 1 
 
             END DO
                     
