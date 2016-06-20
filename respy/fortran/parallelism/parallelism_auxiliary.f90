@@ -385,10 +385,40 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_backward_induction_slave(num_emax_slaves, shocks_cholesky, update_master)
+SUBROUTINE fort_evaluate_slave()
+
+
+            ! If the evaluation is requested for the first time. The data container is not allocated, so all preparations for the evaluation are taken.
+            !IF (.NOT. ALLOCATED(data_est)) THEN
+
+            !    CALL read_dataset(data_est, num_agents_est)
+
+            !    CALL create_draws(periods_draws_prob, num_draws_prob, seed_prob, is_debug)
+
+            !    ! Upper and lower bound of tasks
+            !    lower_bound = SUM(num_obs_slaves(:rank)) + 1
+            !    upper_bound = SUM(num_obs_slaves(:rank + 1))
+    
+                ! Allocate dataset
+            !    ALLOCATE(data_slave(num_obs_slaves(rank + 1), 8))
+
+            !    data_slave = data_est(lower_bound:upper_bound, :)
+
+            !END IF
+
+            ! Evaluate criterion function    
+            !CALL fort_evaluate(partial_crit, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_slave, periods_draws_prob, delta, tau, edu_start, edu_max)
+          ! 
+           ! CALL MPI_REDUCE(partial_crit, crit_val, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
+
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE fort_backward_induction_slave(periods_emax, num_emax_slaves, shocks_cholesky, update_master)
 
     !/* external objects        */
-
+    REAL(our_dble), ALLOCATABLE, INTENT(OUT)       :: periods_emax(:, :)
 
 
     REAL(our_dble), INTENT(IN)      :: shocks_cholesky(4, 4)
@@ -421,6 +451,13 @@ SUBROUTINE fort_backward_induction_slave(num_emax_slaves, shocks_cholesky, updat
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
+
+    ! ALlocate container (if required) and initilaize missing values.
+    IF (.NOT. ALLOCATED(periods_emax)) THEN
+        ALLOCATE(periods_emax(num_periods, max_states_period))
+    END IF
+    periods_emax = MISSING_FLOAT
+
 
     is_head = .False.
     IF(rank == zero_int) is_head = .True.

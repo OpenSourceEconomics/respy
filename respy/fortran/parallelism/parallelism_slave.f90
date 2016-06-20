@@ -23,38 +23,22 @@ PROGRAM resfort_parallel_slave
 
     INTEGER(our_int)                :: lower_bound
     INTEGER(our_int)                :: upper_bound
-    INTEGER(our_int)                :: num_states
     INTEGER(our_int)                :: period
-    INTEGER(our_int)                :: count
     INTEGER(our_int)                :: task
-    INTEGER(our_int)                :: k
 
-    REAL(our_dble), ALLOCATABLE     :: periods_emax_slaves(:)
-    REAL(our_dble), ALLOCATABLE     :: endogenous_slaves(:)
-    REAL(our_dble), ALLOCATABLE     :: draws_emax(:, :)
     REAL(our_dble), ALLOCATABLE     :: data_slave(:, :)
-    REAL(our_dble), ALLOCATABLE     :: exogenous(:, :)
-    REAL(our_dble), ALLOCATABLE     :: predictions(:)
-    REAL(our_dble), ALLOCATABLE     :: endogenous(:)
-    REAL(our_dble), ALLOCATABLE     :: maxe(:)
 
     REAL(our_dble)                  :: shocks_cholesky(4, 4)
-    REAL(our_dble)                  :: payoffs_systematic(4)
-    REAL(our_dble)                  :: shocks_cov(4, 4)
-    REAL(our_dble)                  :: emax_simulated
     REAL(our_dble)                  :: coeffs_home(1)
     REAL(our_dble)                  :: coeffs_edu(3)
     REAL(our_dble)                  :: partial_crit
     REAL(our_dble)                  :: coeffs_a(6)
     REAL(our_dble)                  :: coeffs_b(6)
-    REAL(our_dble)                  :: shifts(4)
     REAL(our_dble)                  :: crit_val
 
     LOGICAL, ALLOCATABLE            :: is_simulated(:)
     
     LOGICAL                         :: STAY_AVAILABLE = .TRUE.
-    LOGICAL                         :: any_interpolated
-    LOGICAL                         :: is_head
 
     REAL(our_dble)                  :: newuoa_rhobeg
     REAL(our_dble)                  :: newuoa_rhoend    
@@ -83,32 +67,19 @@ PROGRAM resfort_parallel_slave
     CALL MPI_COMM_SIZE(MPI_COMM_WORLD, num_slaves, ierr)
     CALL MPI_COMM_GET_PARENT(PARENTCOMM, ierr)
 
-    ! Determine the role of head slave, which has additional responsibilites
-    is_head = .False.
-    IF(rank == zero_int) is_head = .True.
-
     ! Read in model specification.
     CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, is_debug, is_interpolated, is_myopic, request, exec_dir, maxfun, paras_fixed, optimizer_used, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend, bfgs_epsilon, bfgs_gtol, bfgs_stpmx, bfgs_maxiter)
 
-    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, edu_start, edu_max)
-
-    
-
     ! Determine workload and allocate communication information.
-    ALLOCATE(num_emax_slaves(num_periods, num_slaves), num_obs_slaves(num_slaves), draws_emax(num_draws_emax, 4))
-
+    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, edu_start, edu_max)
+    
+    ALLOCATE(num_emax_slaves(num_periods, num_slaves), num_obs_slaves(num_slaves))
+    
     CALL determine_workload(num_obs_slaves, (num_agents_est * num_periods))
     DO period = 1, num_periods
         CALL determine_workload(num_emax_slaves(period, :), states_number_period(period))   
     END DO
 
-    ! Calculate the systematic payoffs
-
-    CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start)
-
-    ! TODO: IS THIS THE RIGHT PLACE TO DO IT?
-    ALLOCATE(periods_emax(num_periods, max_states_period))
-    periods_emax = MISSING_FLOAT
 
     ! This part creates (or reads from disk) the draws for the Monte Carlo integration of the EMAX. For is_debugging purposes, these might  also be read in from disk or set to zero/one.   
     CALL create_draws(periods_draws_emax, num_draws_emax, seed_emax, is_debug)
@@ -132,21 +103,21 @@ PROGRAM resfort_parallel_slave
 
         
 
-
-
+        ! TODO: ALIGN INTERFACE BETWEEN fort_backward and fort_backward-slave, treatment of globals differs.
 
 
 
         ! Evaluate EMAX.
         IF(task == 2) THEN
 
-            CALL fort_backward_induction_slave(num_emax_slaves, shocks_cholesky, .True.)
+            CALL fort_backward_induction_slave(periods_emax, num_emax_slaves, shocks_cholesky, .True.)
 
         ! Evaluate criterion function
         ELSEIF (task == 3) THEN
 
+            CALL fort_backward_induction_slave(periods_emax, num_emax_slaves, shocks_cholesky, .False.)
 
-            CALL fort_backward_induction_slave(num_emax_slaves, shocks_cholesky, .False.)
+            CALL fort_evaluate_slave()
 
             ! If the evaluation is requested for the first time. The data container is not allocated, so all preparations for the evaluation are taken.
             IF (.NOT. ALLOCATED(data_est)) THEN
@@ -172,7 +143,7 @@ PROGRAM resfort_parallel_slave
             CALL MPI_REDUCE(partial_crit, crit_val, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
 
             ! The leading slave updates the master 
-            IF (is_head) CALL MPI_SEND(crit_val, 1, MPI_DOUBLE, 0, 75, PARENTCOMM, ierr)            
+            IF (rank == zero_int) CALL MPI_SEND(crit_val, 1, MPI_DOUBLE, 0, 75, PARENTCOMM, ierr)            
 
         END IF    
 
