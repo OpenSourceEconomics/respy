@@ -71,7 +71,15 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
     edu_max = edu_max_int
     delta = delta_int
     tau = tau_int
-    
+	
+    ! Ensure that there is no problem with the repeated allocation of the containers.
+    IF (ALLOCATED(mapping_state_idx)) DEALLOCATE(mapping_state_idx)
+    IF (ALLOCATED(periods_payoffs_systematic)) DEALLOCATE(periods_payoffs_systematic)
+    IF (ALLOCATED(states_all)) DEALLOCATE(states_all)
+    IF (ALLOCATED(periods_emax)) DEALLOCATE(periods_emax)
+    IF (ALLOCATED(states_number_period)) DEALLOCATE(states_number_period)
+    IF (ALLOCATED(states_all)) DEALLOCATE(states_all)
+
     !# Distribute model parameters
     CALL dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x)
 
@@ -141,6 +149,14 @@ SUBROUTINE f2py_solve(periods_payoffs_systematic_int, states_number_period_int, 
     min_idx = min_idx_int
     edu_max = edu_max_int
     delta = delta_int
+
+    ! Ensure that there is no problem with the repeated allocation of the containers.
+    IF (ALLOCATED(mapping_state_idx)) DEALLOCATE(mapping_state_idx)
+    IF (ALLOCATED(periods_payoffs_systematic)) DEALLOCATE(periods_payoffs_systematic)
+    IF (ALLOCATED(states_all)) DEALLOCATE(states_all)
+    IF (ALLOCATED(periods_emax)) DEALLOCATE(periods_emax)
+    IF (ALLOCATED(states_number_period)) DEALLOCATE(states_number_period)
+    IF (ALLOCATED(states_all)) DEALLOCATE(states_all)
 
     ! Call FORTRAN solution
     CALL fort_solve(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax_int, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max)
@@ -214,6 +230,14 @@ SUBROUTINE f2py_evaluate(crit_val, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, 
     delta = delta_int
     tau = tau_int
 
+    ! Ensure that there is no problem with the repeated allocation of the containers.
+    IF (ALLOCATED(mapping_state_idx)) DEALLOCATE(mapping_state_idx)
+    IF (ALLOCATED(periods_payoffs_systematic)) DEALLOCATE(periods_payoffs_systematic)
+    IF (ALLOCATED(states_all)) DEALLOCATE(states_all)
+    IF (ALLOCATED(periods_emax)) DEALLOCATE(periods_emax)
+    IF (ALLOCATED(states_number_period)) DEALLOCATE(states_number_period)
+    IF (ALLOCATED(states_all)) DEALLOCATE(states_all)
+    
     ! Solve requested model
     CALL fort_solve(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax_int, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max)
 
@@ -367,7 +391,15 @@ SUBROUTINE f2py_create_state_space(states_all_int, states_number_period_int, map
     edu_max = edu_max_int
     
     states_all_int = MISSING_INT
-    
+
+    ! Ensure that there is no problem with the repeated allocation of the containers.    
+    IF (ALLOCATED(mapping_state_idx)) DEALLOCATE(mapping_state_idx)
+    IF (ALLOCATED(periods_payoffs_systematic)) DEALLOCATE(periods_payoffs_systematic)
+    IF (ALLOCATED(states_all)) DEALLOCATE(states_all)
+    IF (ALLOCATED(periods_emax)) DEALLOCATE(periods_emax)
+    IF (ALLOCATED(states_number_period)) DEALLOCATE(states_number_period)
+    IF (ALLOCATED(states_all)) DEALLOCATE(states_all)
+
     CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, periods_emax, periods_payoffs_systematic, edu_start, edu_max)
 
     states_all_int(:, :max_states_period, :) = states_all

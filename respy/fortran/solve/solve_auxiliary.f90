@@ -48,7 +48,7 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
 ! Algorithm
 !------------------------------------------------------------------------------
     
-    ! TODO: This is only required due to the F2PY interface and needs to be revisited once depreciated.
+    ! TODO: This can go afte I cleaned up the repeated creation of the state space during evaluations.
     IF (ALLOCATED(mapping_state_idx)) DEALLOCATE(mapping_state_idx)
     IF (ALLOCATED(periods_payoffs_systematic)) DEALLOCATE(periods_payoffs_systematic)
     IF (ALLOCATED(states_all)) DEALLOCATE(states_all)
