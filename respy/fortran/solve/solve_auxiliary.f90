@@ -50,7 +50,6 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
     
     ! TODO: This can go afte I cleaned up the repeated creation of the state space during evaluations.
     IF (ALLOCATED(mapping_state_idx)) DEALLOCATE(mapping_state_idx)
-    IF (ALLOCATED(periods_payoffs_systematic)) DEALLOCATE(periods_payoffs_systematic)
     IF (ALLOCATED(states_all)) DEALLOCATE(states_all)
     IF (ALLOCATED(periods_emax)) DEALLOCATE(periods_emax)
     IF (ALLOCATED(states_number_period)) DEALLOCATE(states_number_period)
@@ -154,7 +153,6 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
     ALLOCATE(periods_emax(num_periods, max_states_period))
     periods_emax = MISSING_FLOAT
 
-
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
@@ -162,7 +160,7 @@ SUBROUTINE fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_
 
     !/* external objects        */
 
-    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)       :: periods_payoffs_systematic(:, :, :)
+    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)       :: periods_payoffs_systematic(: ,:, :)
 
     REAL(our_dble), INTENT(IN)          :: coeffs_home(1)
     REAL(our_dble), INTENT(IN)          :: coeffs_edu(3)
@@ -189,12 +187,11 @@ SUBROUTINE fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_
 ! Algorithm
 !------------------------------------------------------------------------------
     
-    ! Allocate container and initilaize missing values when the container is not allocated.
-    IF (.NOT. ALLOCATED(periods_payoffs_systematic))  THEN
+    ! ALlocate container (if required) and initilaize missing values.
+    IF (.NOT. ALLOCATED(periods_payoffs_systematic)) THEN
         ALLOCATE(periods_payoffs_systematic(num_periods, max_states_period, 4))
         periods_payoffs_systematic = MISSING_FLOAT
     END IF
-
 
     ! Calculate systematic instantaneous payoffs
     DO period = num_periods, 1, -1
