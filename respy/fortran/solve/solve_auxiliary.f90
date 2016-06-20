@@ -282,9 +282,8 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
 !------------------------------------------------------------------------------
 
     ! ALlocate container (if required) and initilaize missing values.
-    IF (.NOT. ALLOCATED(periods_emax)) THEN
-        ALLOCATE(periods_emax(num_periods, max_states_period))
-    END IF
+    IF (.NOT. ALLOCATED(periods_emax)) ALLOCATE(periods_emax(num_periods, max_states_period))
+
     periods_emax = MISSING_FLOAT
 
     

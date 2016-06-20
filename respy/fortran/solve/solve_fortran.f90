@@ -69,6 +69,9 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, mapping_
 
     IF (is_myopic) THEN
 
+        ALLOCATE(periods_emax(num_periods, max_states_period))
+        periods_emax = MISSING_FLOAT
+
         DO period = 1,  num_periods
             periods_emax(period, :states_number_period(period)) = zero_dble
         END DO
