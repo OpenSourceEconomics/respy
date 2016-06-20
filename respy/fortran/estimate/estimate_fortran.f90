@@ -68,12 +68,12 @@ SUBROUTINE fort_estimate(crit_val, success, message, coeffs_a, coeffs_b, coeffs_
 ! Algorithm
 !------------------------------------------------------------------------------
     
-    CALL get_free_optim_paras(x_free_start, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed)
-
+    ! Some ingredients for the evaluation of the criterion function need to be created once and shared globally.
     CALL get_free_optim_paras(x_all_start, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, all_free)
 
-    x_free_final = x_free_start
+    CALL get_free_optim_paras(x_free_start, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed)
 
+    x_free_final = x_free_start
 
     IF (maxfun == zero_int) THEN
 

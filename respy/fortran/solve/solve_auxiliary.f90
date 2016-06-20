@@ -154,8 +154,6 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
     ALLOCATE(periods_emax(num_periods, max_states_period))
     periods_emax = MISSING_FLOAT
 
-    ALLOCATE(periods_payoffs_systematic(num_periods, max_states_period, 4))
-    periods_payoffs_systematic = MISSING_FLOAT
 
 END SUBROUTINE
 !******************************************************************************
@@ -164,7 +162,7 @@ SUBROUTINE fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(INOUT)       :: periods_payoffs_systematic(num_periods, max_states_period, 4)
+    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)       :: periods_payoffs_systematic(:, :, :)
 
     REAL(our_dble), INTENT(IN)          :: coeffs_home(1)
     REAL(our_dble), INTENT(IN)          :: coeffs_edu(3)
@@ -190,6 +188,13 @@ SUBROUTINE fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
+    
+    ! Allocate container and initilaize missing values when the container is not allocated.
+    IF (.NOT. ALLOCATED(periods_payoffs_systematic))  THEN
+        ALLOCATE(periods_payoffs_systematic(num_periods, max_states_period, 4))
+        periods_payoffs_systematic = MISSING_FLOAT
+    END IF
+
 
     ! Calculate systematic instantaneous payoffs
     DO period = num_periods, 1, -1
