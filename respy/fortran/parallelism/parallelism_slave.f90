@@ -93,11 +93,10 @@ PROGRAM resfort_parallel_slave
     CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, is_debug, is_interpolated, is_myopic, request, exec_dir, maxfun, paras_fixed, optimizer_used, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend, bfgs_epsilon, bfgs_gtol, bfgs_stpmx, bfgs_maxiter)
 
     ! Allocate arrays
-    IF(is_head) CALL logging_solution(1)
 
     CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, edu_start, edu_max)
 
-    IF(is_head) CALL logging_solution(-1)
+    
 
     ! Determine workload and allocate communication information.
     ALLOCATE(num_emax_slaves(num_periods, num_slaves), num_obs_slaves(num_slaves), draws_emax(num_draws_emax, 4))
@@ -108,11 +107,8 @@ PROGRAM resfort_parallel_slave
     END DO
 
     ! Calculate the systematic payoffs
-    IF(is_head) CALL logging_solution(2)
 
     CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start)
-
-    IF(is_head) CALL logging_solution(-1)
 
     ! TODO: IS THIS THE RIGHT PLACE TO DO IT?
     ALLOCATE(periods_emax(num_periods, max_states_period))
@@ -158,7 +154,6 @@ PROGRAM resfort_parallel_slave
             shifts(1) = clip_value(EXP(shocks_cov(1, 1)/two_dble), zero_dble, HUGE_FLOAT)
             shifts(2) = clip_value(EXP(shocks_cov(2, 2)/two_dble), zero_dble, HUGE_FLOAT)
 
-            IF(is_head) CALL logging_solution(3)
 
             DO period = (num_periods - 1), 0, -1
 
@@ -167,7 +162,6 @@ PROGRAM resfort_parallel_slave
                 num_states = states_number_period(period + 1)
                 ALLOCATE(periods_emax_slaves(num_states), endogenous_slaves(num_states))
 
-                IF (is_head) CALL logging_solution(4, period, num_states)        
 
                 ! Distinguish case with and without interpolation
                 any_interpolated = (num_points_interp .LE. num_states) .AND. is_interpolated

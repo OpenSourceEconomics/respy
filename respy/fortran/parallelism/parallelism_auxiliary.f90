@@ -247,8 +247,7 @@ FUNCTION fort_criterion_parallel(x)
     ! Solve the model    
     CALL MPI_Bcast(2, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
     
-    ! THis block is only temporary until the slave is extracted ....
-    
+
     ! TODO: Is this required in the end.
     IF (.NOT. ALLOCATED(periods_emax)) THEN
         ALLOCATE(periods_emax(num_periods, max_states_period))
@@ -376,21 +375,36 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
 !------------------------------------------------------------------------------
       
     CALL MPI_Bcast(2, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
-    
+
+    CALL logging_solution(1)
+
     CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, edu_start, edu_max)
+
+    CALL logging_solution(-1)
+
+
+    CALL logging_solution(2)
 
     CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start)
 
-    ! TODO: Is this required in the end.
+    CALL logging_solution(-1)
+
+
+
+    CALL logging_solution(3)
+
+    ! TODO: Is this CHECK required in the end, the allocation and initialization sure is.
     IF (.NOT. ALLOCATED(periods_emax)) THEN
         ALLOCATE(periods_emax(num_periods, max_states_period))
     END IF
     periods_emax = MISSING_FLOAT
 
     DO period = (num_periods - 1), 0, -1
-
+        
         num_states = states_number_period(period + 1)
         
+        CALL logging_solution(4, period, num_states) 
+
         CALL MPI_RECV(periods_emax(period + 1, :num_states) , num_states, MPI_DOUBLE, MPI_ANY_SOURCE, MPI_ANY_TAG, SLAVECOMM, status, ierr)
         
     END DO

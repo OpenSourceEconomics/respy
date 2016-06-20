@@ -58,7 +58,7 @@ class TestClass(object):
         init_dict = generate_random_dict(constr)
 
         base_log = None
-        for is_parallel in [True, False]:
+        for is_parallel in [False, True]:
 
             init_dict['PROGRAM']['parallelism'] = is_parallel
             print_init_dict(init_dict)
