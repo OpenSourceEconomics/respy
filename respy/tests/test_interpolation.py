@@ -23,7 +23,7 @@ class TestClass(object):
         """
         # Set initial constraints
         constraints = dict()
-        constraints['flag_int'] = False
+        constraints['flag_interpolation'] = False
         constraints['periods'] = np.random.randint(3, 6)
         constraints['is_deterministic'] = True
 
@@ -66,7 +66,7 @@ class TestClass(object):
         """
         # Set initial constraints
         constraints = dict()
-        constraints['flag_int'] = False
+        constraints['flag_interpolation'] = False
         constraints['periods'] = np.random.randint(3, 6)
 
         # Initialize request

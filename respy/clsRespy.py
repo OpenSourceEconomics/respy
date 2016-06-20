@@ -266,11 +266,13 @@ class RespyCls(object):
 
         self.attr['num_draws_prob'] = init_dict['ESTIMATION']['draws']
 
-        self.attr['is_parallel'] = init_dict['PROGRAM']['parallelism']
+        self.attr['is_parallel'] = init_dict['PARALLELISM']['flag']
 
         self.attr['num_points_interp'] = init_dict['INTERPOLATION']['points']
 
         self.attr['num_draws_emax'] = init_dict['SOLUTION']['draws']
+
+        self.attr['num_procs'] = init_dict['PARALLELISM']['procs']
 
         self.attr['num_periods'] = init_dict['BASICS']['periods']
 
@@ -287,8 +289,6 @@ class RespyCls(object):
         self.attr['file_est'] = init_dict['ESTIMATION']['file']
 
         self.attr['seed_emax'] = init_dict['SOLUTION']['seed']
-
-        self.attr['num_procs'] = init_dict['PROGRAM']['procs']
 
         self.attr['version'] = init_dict['PROGRAM']['version']
 

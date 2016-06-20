@@ -345,8 +345,9 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
     # identical.
     labels = ['BASICS', 'AMBIGUITY', 'OCCUPATION A', 'OCCUPATION B']
     labels += ['EDUCATION', 'HOME', 'SHOCKS', 'SOLUTION']
-    labels += ['SIMULATION', 'ESTIMATION', 'PROGRAM', 'INTERPOLATION']
-    labels += ['SCIPY-BFGS', 'SCIPY-POWELL', 'FORT-NEWUOA', 'FORT-BFGS']
+    labels += ['SIMULATION', 'ESTIMATION', 'PROGRAM',  'PARALLELISM']
+    labels += ['INTERPOLATION', 'SCIPY-BFGS', 'SCIPY-POWELL', 'FORT-NEWUOA']
+    labels += ['FORT-BFGS']
 
     # Create initialization.
     with open(file_name, 'w') as file_:
@@ -375,7 +376,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                 file_.write('\n')
 
             if flag in ['SOLUTION', 'SIMULATION', 'PROGRAM', 'INTERPOLATION',
-                        'ESTIMATION']:
+                        'ESTIMATION', 'PARALLELISM']:
 
                 file_.write(flag.upper() + '\n\n')
 

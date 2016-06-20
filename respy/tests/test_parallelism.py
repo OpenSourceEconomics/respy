@@ -33,7 +33,7 @@ class TestClass(object):
         base = None
         for is_parallel in [True, False]:
 
-            init_dict['PROGRAM']['parallelism'] = is_parallel
+            init_dict['PARALLELISM']['flag'] = is_parallel
             print_init_dict(init_dict)
 
             respy_obj = RespyCls('test.respy.ini')
@@ -60,7 +60,7 @@ class TestClass(object):
         base_log = None
         for is_parallel in [False, True]:
 
-            init_dict['PROGRAM']['parallelism'] = is_parallel
+            init_dict['PARALLELISM']['flag'] = is_parallel
             print_init_dict(init_dict)
 
             respy_obj = RespyCls('test.respy.ini')

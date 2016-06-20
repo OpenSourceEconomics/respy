@@ -22,7 +22,9 @@ STRUCTURE['SIMULATION'] = ['agents', 'seed', 'file']
 STRUCTURE['ESTIMATION'] = ['draws', 'optimizer', 'maxfun', 'seed']
 STRUCTURE['ESTIMATION'] += ['tau', 'file', 'agents']
 
-STRUCTURE['PROGRAM'] = ['debug', 'version', 'parallelism', 'procs']
+STRUCTURE['PROGRAM'] = ['debug', 'version']
+STRUCTURE['PARALLELISM'] = ['flag', 'procs']
+
 STRUCTURE['INTERPOLATION'] = ['flag', 'points']
 STRUCTURE['SCIPY-BFGS'] = ['gtol', 'epsilon', 'maxiter']
 STRUCTURE['SCIPY-POWELL'] = ['maxfun', 'xtol', 'ftol', 'maxiter']
@@ -78,7 +80,7 @@ def check_line(group, flag, value):
                 assert (value in [True, False])
 
         if group == 'PROGRAM':
-            if flag in ['debug', 'parallelism']:
+            if flag in ['debug']:
                 assert (value in [True, False])
             if flag in ['version']:
                 assert (value in ['FORTRAN', 'PYTHON'])
@@ -89,9 +91,13 @@ def check_line(group, flag, value):
                 assert isinstance(value, int)
                 assert value > 0
 
-            if flag in ['parallelism'] and value:
+        if group == 'PARALLELISM':
+            if flag in ['flag'] and value:
                 fname = EXEC_DIR + '/resfort_parallel_master'
                 assert os.path.exists(fname)
+            if flag in ['procs']:
+                assert isinstance(value, int)
+                assert value > 0
 
         if group == 'SIMULATION':
             if flag in ['agents', 'seed']:

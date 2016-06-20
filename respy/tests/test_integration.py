@@ -63,9 +63,9 @@ class TestClass(object):
         # Generate random initialization file
         constr = dict()
         constr['is_deterministic'] = is_deterministic
+        constr['flag_parallelism'] = False
         constr['is_myopic'] = is_myopic
         constr['max_draws'] = max_draws
-        constr['parallelism'] = False
         constr['maxfun'] = 0
 
         init_dict = generate_random_dict(constr)
@@ -247,10 +247,10 @@ class TestClass(object):
 
         # Generate random initialization file
         constr = dict()
-        constr['parallelism'] = False
-        constr['maxfun'] = 0
-        constr['flag_int'] = False
+        constr['flag_parallelism'] = False
         constr['max_draws'] = max_draws
+        constr['flag_interpolation'] = False
+        constr['maxfun'] = 0
 
         # Generate random initialization file
         init_dict = generate_init(constr)

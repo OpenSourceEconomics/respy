@@ -56,7 +56,7 @@ def generate_random_dict(constraints=None):
     num_agents_sim = np.random.randint(3, MAX_AGENTS)
 
     # Basics
-    dict_['BASICS'] = {}
+    dict_['BASICS'] = dict()
     dict_['BASICS']['periods'] = np.random.randint(1, MAX_PERIODS)
     dict_['BASICS']['delta'] = np.random.random()
 
@@ -85,13 +85,13 @@ def generate_random_dict(constraints=None):
         dict_['EDUCATION']['start'] + 1, 20)
 
     # SOLUTION
-    dict_['SOLUTION'] = {}
+    dict_['SOLUTION'] = dict()
     dict_['SOLUTION']['draws'] = np.random.randint(1, MAX_DRAWS)
     dict_['SOLUTION']['seed'] = np.random.randint(1, 10000)
     dict_['SOLUTION']['store'] = np.random.choice(['True', 'False'])
 
     # ESTIMATION
-    dict_['ESTIMATION'] = {}
+    dict_['ESTIMATION'] = dict()
     dict_['ESTIMATION']['agents'] = np.random.randint(1, num_agents_sim)
     dict_['ESTIMATION']['draws'] = np.random.randint(1, MAX_DRAWS)
     dict_['ESTIMATION']['seed'] = np.random.randint(1, 10000)
@@ -100,19 +100,22 @@ def generate_random_dict(constraints=None):
     dict_['ESTIMATION']['maxfun'] = np.random.randint(1, 10000)
     dict_['ESTIMATION']['tau'] = np.random.uniform(100, 500)
 
-    # PROGRAM
-    dict_['PROGRAM'] = {}
-    dict_['PROGRAM']['debug'] = 'True'
-    dict_['PROGRAM']['procs'] = np.random.randint(2, 5)
+    # PARALLELISM
+    dict_['PARALLELISM'] = dict()
+    dict_['PARALLELISM']['procs'] = np.random.randint(2, 5)
 
     # Parallelism is only supported in FORTRAN implementation.
     if IS_PARALLEL:
-        dict_['PROGRAM']['parallelism'] = np.random.choice([True, False])
+        dict_['PARALLELISM']['flag'] = np.random.choice([True, False])
     else:
-        dict_['PROGRAM']['parallelism'] = False
+        dict_['PARALLELISM']['flag'] = False
+
+    # PROGRAM
+    dict_['PROGRAM'] = dict()
+    dict_['PROGRAM']['debug'] = 'True'
 
     versions = ['FORTRAN', 'PYTHON']
-    if dict_['PROGRAM']['parallelism']:
+    if dict_['PARALLELISM']['flag']:
         versions = ['FORTRAN']
     dict_['PROGRAM']['version'] = np.random.choice(versions)
 
@@ -126,7 +129,7 @@ def generate_random_dict(constraints=None):
             'SCIPY-POWELL'])
 
     # SIMULATION
-    dict_['SIMULATION'] = {}
+    dict_['SIMULATION'] = dict()
     dict_['SIMULATION']['seed'] = np.random.randint(1, 10000)
     dict_['SIMULATION']['agents'] = num_agents_sim
     dict_['SIMULATION']['file'] = 'data.respy'
@@ -140,18 +143,18 @@ def generate_random_dict(constraints=None):
     dict_['SHOCKS']['fixed'] = np.array(paras_fixed[16:])
 
     # INTERPOLATION
-    dict_['INTERPOLATION'] = {}
+    dict_['INTERPOLATION'] = dict()
     dict_['INTERPOLATION']['flag'] = np.random.choice([True, False])
     dict_['INTERPOLATION']['points'] = np.random.randint(10, 100)
 
     # SCIPY-BFGS
-    dict_['SCIPY-BFGS'] = {}
+    dict_['SCIPY-BFGS'] = dict()
     dict_['SCIPY-BFGS']['epsilon'] = np.random.uniform(0.0000001, 0.1)
     dict_['SCIPY-BFGS']['gtol'] = np.random.uniform(0.0000001, 0.1)
     dict_['SCIPY-BFGS']['maxiter'] = np.random.randint(1, 10)
 
     # SCIPY-BFGS
-    dict_['SCIPY-POWELL'] = {}
+    dict_['SCIPY-POWELL'] = dict()
     dict_['SCIPY-POWELL']['xtol'] = np.random.uniform(0.0000001, 0.1)
     dict_['SCIPY-POWELL']['ftol'] = np.random.uniform(0.0000001, 0.1)
     dict_['SCIPY-POWELL']['maxfun'] = np.random.randint(1, 100)
@@ -160,7 +163,7 @@ def generate_random_dict(constraints=None):
     # FORT-NEWUOA
     rhobeg = np.random.uniform(0.0000001, 0.1)
 
-    dict_['FORT-NEWUOA'] = {}
+    dict_['FORT-NEWUOA'] = dict()
     dict_['FORT-NEWUOA']['maxfun'] = np.random.randint(1, 100)
     dict_['FORT-NEWUOA']['rhobeg'] = rhobeg
     dict_['FORT-NEWUOA']['rhoend'] = np.random.uniform(0.01, 0.99) * rhobeg
@@ -169,7 +172,7 @@ def generate_random_dict(constraints=None):
     dict_['FORT-NEWUOA']['npt'] = np.random.randint(lower, upper)
 
     # FORT-BFGS
-    dict_['FORT-BFGS'] = {}
+    dict_['FORT-BFGS'] = dict()
     dict_['FORT-BFGS']['epsilon'] = np.random.uniform(0.0001, 0.1)
     dict_['FORT-BFGS']['maxiter'] = np.random.randint(1, 100)
     dict_['FORT-BFGS']['stpmx'] = np.random.uniform(75, 125)
@@ -189,15 +192,16 @@ def generate_random_dict(constraints=None):
     if 'agents' in keys:
         assert 'max_draws' not in keys
 
-    if ('parallelism' in keys) and ('version' in keys) and constraints['parallelism']:
+    if ('flag_parallelism' in keys) and ('version' in keys) and constraints[
+        'flag_parallelism']:
             assert constraints['version'] == 'FORTRAN'
 
     # Replace interpolation
-    if 'flag_int' in constraints.keys():
+    if 'flag_interpolation' in constraints.keys():
         # Checks
-        assert (constraints['flag_int'] in [True, False])
+        assert (constraints['flag_interpolation'] in [True, False])
         # Replace in initialization files
-        dict_['INTERPOLATION']['flag'] = constraints['flag_int']
+        dict_['INTERPOLATION']['flag'] = constraints['flag_interpolation']
 
     # Replace number of periods
     if 'points' in constraints.keys():
@@ -242,7 +246,7 @@ def generate_random_dict(constraints=None):
         dict_['PROGRAM']['version'] = version
         # Ensure that the constraints are met
         if version != 'FORTRAN':
-            dict_['PROGRAM']['parallelism'] = False
+            dict_['PARALLELISM']['flag'] = False
         if version == 'FORTRAN':
             dict_['ESTIMATION']['optimizer'] = np.random.choice(['FORT-NEWUOA', 'FORT-BFGS'])
         else:
@@ -264,15 +268,15 @@ def generate_random_dict(constraints=None):
         dict_['SOLUTION']['draws'] = np.random.randint(1, max_draws)
 
     # Replace parallelism ...
-    if 'parallelism' in constraints.keys():
+    if 'flag_parallelism' in constraints.keys():
         # Extract objects
-        parallelism = constraints['parallelism']
+        flag_parallelism = constraints['flag_parallelism']
         # Checks
-        assert (parallelism in [True, False])
+        assert (flag_parallelism in [True, False])
         # Replace in initialization file
-        dict_['PROGRAM']['parallelism'] = parallelism
+        dict_['PARALLELISM']['flag'] = flag_parallelism
         # Ensure that the constraints are met
-        if dict_['PROGRAM']['parallelism']:
+        if dict_['PARALLELISM']['flag']:
             dict_['PROGRAM']['version'] = 'FORTRAN'
 
     # Replace store attribute

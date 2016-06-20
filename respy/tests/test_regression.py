@@ -227,9 +227,10 @@ class TestClass(object):
         idx = np.random.randint(0, len(tests))
         init_dict, crit_val = tests[idx]
 
-        # In the case where no parallelism is available, we need to ensure that the request remains valid.
+        # In the case where no parallelism is available, we need to ensure
+        # that the request remains valid.
         if not IS_PARALLEL:
-            init_dict['PROGRAM']['parallelism'] = False
+            init_dict['PARALLELISM']['flag'] = False
 
         print_init_dict(init_dict)
 

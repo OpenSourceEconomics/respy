@@ -54,8 +54,12 @@ for idx, _ in enumerate(tests_old):
     print('\n Modfiying Test ', idx, 'with version ', PYTHON_VERSION)
     init_dict, crit_val = tests_old[idx]
 
-    init_dict["INTERPOLATION"]['flag'] = init_dict['INTERPOLATION']['apply']
-    del init_dict['INTERPOLATION']['apply']
+    init_dict['PARALLELISM'] = dict()
+    init_dict['PARALLELISM']['flag'] = init_dict['PROGRAM']['parallelism']
+    init_dict['PARALLELISM']['procs'] = init_dict['PROGRAM']['procs']
+
+    del init_dict['PROGRAM']['parallelism']
+    del init_dict['PROGRAM']['procs']
 
     tests_new += [(init_dict, crit_val)]
 
