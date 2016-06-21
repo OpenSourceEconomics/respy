@@ -185,6 +185,9 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
         draws_emax = periods_draws_emax[period, :, :]
         num_states = states_number_period[period]
 
+        draws_emax_transformed = transform_disturbances(draws_emax,
+            shocks_cholesky)
+
         # Logging.
         string = '''{0[0]:>18}{0[1]:>3}{0[2]:>5}{0[3]:>6} {0[4]:>6}'''
         logger.info(string.format(['... solving period', period, 'with',
@@ -216,7 +219,7 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
             endogenous = get_endogenous_variable(period, num_periods,
                 num_states, delta, periods_payoffs_systematic, edu_max,
                 edu_start, mapping_state_idx, periods_emax, states_all,
-                is_simulated, num_draws_emax,maxe, draws_emax, shocks_cholesky)
+                is_simulated, num_draws_emax,maxe, draws_emax)
 
             # Create prediction model based on the random subset of points where
             # the EMAX is actually simulated and thus dependent and
@@ -238,9 +241,9 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
 
                 # Simulate the expected future value.
                 emax = get_future_value(num_periods, num_draws_emax, period, k,
-                    draws_emax, payoffs_systematic, edu_max, edu_start,
-                    periods_emax, states_all, mapping_state_idx, delta,
-                    shocks_cholesky)
+                    draws_emax_transformed, payoffs_systematic, edu_max,
+                    edu_start, periods_emax, states_all, mapping_state_idx,
+                    delta)
 
                 # Store results
                 periods_emax[period, k] = emax
@@ -317,8 +320,8 @@ def get_exogenous_variables(period, num_periods, num_states, delta,
 
 def get_endogenous_variable(period, num_periods, num_states, delta,
         periods_payoffs_systematic, edu_max, edu_start, mapping_state_idx,
-        periods_emax, states_all, is_simulated, num_draws_emax,maxe, draws_emax,
-        shocks_cholesky):
+        periods_emax, states_all, is_simulated, num_draws_emax, maxe,
+        draws_emax_transformed):
     """ Construct endogenous variable for the subset of interpolation points.
     """
     # Construct auxiliary objects
@@ -335,8 +338,8 @@ def get_endogenous_variable(period, num_periods, num_states, delta,
 
         # Simulate the expected future value.
         emax_simulated = get_future_value(num_periods, num_draws_emax, period, k,
-            draws_emax, payoffs_systematic, edu_max, edu_start, periods_emax,
-            states_all, mapping_state_idx, delta, shocks_cholesky)
+            draws_emax_transformed, payoffs_systematic, edu_max, edu_start,
+            periods_emax, states_all, mapping_state_idx, delta)
 
         # Construct dependent variable
         endogenous_variable[k] = emax_simulated - maxe[k]
@@ -474,14 +477,11 @@ def check_input(respy_obj):
     return True
 
 
-def get_future_value(num_periods, num_draws_emax, period, k, draws_emax,
-        payoffs_systematic, edu_max, edu_start, periods_emax, states_all,
-        mapping_state_idx, delta, shocks_cholesky):
+def get_future_value(num_periods, num_draws_emax, period, k,
+        draws_emax_transformed, payoffs_systematic, edu_max, edu_start,
+        periods_emax, states_all, mapping_state_idx, delta):
     """ Simulate expected future value.
     """
-    # Get the transformed set of disturbances
-    draws_emax_transformed = transform_disturbances(draws_emax, shocks_cholesky)
-
     # Calculate maximum value
     emax_simulated = 0.0
     for i in range(num_draws_emax):

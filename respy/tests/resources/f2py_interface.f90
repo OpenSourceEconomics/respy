@@ -544,7 +544,7 @@ SUBROUTINE wrapper_svd(U, S, VT, A, m)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE wrapper_get_future_value(emax_simulated, num_periods_int, num_draws_emax_int, period, k, draws_emax, payoffs_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta_int, shocks_cholesky)
+SUBROUTINE wrapper_get_future_value(emax_simulated, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, payoffs_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta_int)
 
     !/* external libraries      */
 
@@ -558,10 +558,9 @@ SUBROUTINE wrapper_get_future_value(emax_simulated, num_periods_int, num_draws_e
 
     DOUBLE PRECISION, INTENT(OUT)   :: emax_simulated
 
+    DOUBLE PRECISION, INTENT(IN)    :: draws_emax_transformed(:,:)
     DOUBLE PRECISION, INTENT(IN)    :: payoffs_systematic(:)
-    DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(4, 4)
     DOUBLE PRECISION, INTENT(IN)    :: periods_emax_int(:,:)
-    DOUBLE PRECISION, INTENT(IN)    :: draws_emax(:,:)
     DOUBLE PRECISION, INTENT(IN)    :: delta_int
 
     INTEGER, INTENT(IN)             :: mapping_state_idx_int(:,:,:,:,:)
@@ -589,7 +588,7 @@ SUBROUTINE wrapper_get_future_value(emax_simulated, num_periods_int, num_draws_e
     delta = delta_int
 
     ! Call function of interest
-    CALL get_future_value(emax_simulated, draws_emax, period, k, payoffs_systematic, mapping_state_idx_int, states_all_int, periods_emax_int, shocks_cholesky, delta, edu_start, edu_max)
+    CALL get_future_value(emax_simulated, draws_emax_transformed, period, k, payoffs_systematic, mapping_state_idx_int, states_all_int, periods_emax_int, delta, edu_start, edu_max)
 
 END SUBROUTINE
 !******************************************************************************
@@ -887,7 +886,7 @@ SUBROUTINE wrapper_get_coefficients(coeffs, Y, X, num_covars, num_states)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_periods_int, num_states, delta_int, periods_payoffs_systematic_int, edu_max_int, edu_start_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_simulated, num_draws_emax_int, maxe, draws_emax, shocks_cholesky)
+SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_periods_int, num_states, delta_int, periods_payoffs_systematic_int, edu_max_int, edu_start_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_simulated, num_draws_emax_int, maxe, draws_emax_transformed)
 
     !/* external libraries      */
 
@@ -902,9 +901,8 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_perio
     DOUBLE PRECISION, INTENT(OUT)       :: exogenous_variable(num_states)
 
     DOUBLE PRECISION, INTENT(IN)        :: periods_payoffs_systematic_int(:, :, :)
-    DOUBLE PRECISION, INTENT(IN)        :: shocks_cholesky(4, 4)
+    DOUBLE PRECISION, INTENT(IN)        :: draws_emax_transformed(:, :)
     DOUBLE PRECISION, INTENT(IN)        :: periods_emax_int(:, :)
-    DOUBLE PRECISION, INTENT(IN)        :: draws_emax(:, :)
     DOUBLE PRECISION, INTENT(IN)        :: maxe(:)
     DOUBLE PRECISION, INTENT(IN)        :: delta_int
 
@@ -932,7 +930,7 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_perio
     delta = delta_int
 
     ! Call function of interest
-    CALL get_endogenous_variable(exogenous_variable, period, num_states, periods_payoffs_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_simulated, maxe, draws_emax, shocks_cholesky, delta, edu_start, edu_max)
+    CALL get_endogenous_variable(exogenous_variable, period, num_states, periods_payoffs_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_simulated, maxe, draws_emax_transformed, delta, edu_start, edu_max)
 
 END SUBROUTINE
 !******************************************************************************

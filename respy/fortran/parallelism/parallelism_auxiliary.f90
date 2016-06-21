@@ -504,7 +504,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, state
                 payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
                 ! Get payoffs
-                CALL get_future_value(emax_simulated, draws_emax_transformed, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, shocks_cholesky, delta, edu_start, edu_max)
+                CALL get_future_value(emax_simulated, draws_emax_transformed, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max)
 
                 ! Construct dependent variable
                 endogenous_slaves(count) = emax_simulated - maxe(k + 1)
@@ -535,7 +535,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, state
                 ! Extract payoffs
                 payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
-                CALL get_future_value(emax_simulated, draws_emax_transformed, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, shocks_cholesky, delta, edu_start, edu_max)
+                CALL get_future_value(emax_simulated, draws_emax_transformed, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max)
 
                 ! Collect information
                 periods_emax_slaves(count) = emax_simulated

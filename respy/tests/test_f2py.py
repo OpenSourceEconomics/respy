@@ -104,7 +104,7 @@ class TestClass(object):
         # Evaluation of simulated expected future values
         args = (num_periods, num_draws_emax, period, k, draws_standard,
             payoffs_systematic, edu_max, edu_start, periods_emax, states_all,
-            mapping_state_idx, delta, shocks_cholesky)
+            mapping_state_idx, delta)
 
         py = get_future_value(*args)
         f90 = fort_debug.wrapper_get_future_value(*args)
@@ -455,10 +455,10 @@ class TestClass(object):
 
         # Construct endogenous variable so that the prediction model can be
         # fitted.
-        args = (
-        period, num_periods, num_states, delta, periods_payoffs_systematic, edu_max,
-        edu_start, mapping_state_idx, periods_emax, states_all, is_simulated,
-        num_draws_emax, maxe, draws_emax, shocks_cholesky)
+        args = (period, num_periods, num_states, delta,
+            periods_payoffs_systematic, edu_max, edu_start,
+            mapping_state_idx, periods_emax, states_all, is_simulated,
+            num_draws_emax, maxe, draws_emax)
 
         py = get_endogenous_variable(*args)
         f90 = fort_debug.wrapper_get_endogenous_variable(*args)
@@ -473,9 +473,8 @@ class TestClass(object):
         # prediction model.
         logging_solution('start')
 
-        args = (
-        endogenous, exogenous, maxe, is_simulated, num_points_interp, num_states,
-        is_debug)
+        args = (endogenous, exogenous, maxe, is_simulated, num_points_interp,
+            num_states, is_debug)
 
         py = get_predictions(*args)
         f90 = fort_debug.wrapper_get_predictions(*args[:-1])
