@@ -373,18 +373,27 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_backward_induction_slave(periods_emax, num_emax_slaves, shocks_cholesky, update_master)
-!SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_number_period, periods_payoffs_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, edu_start, edu_max)
+SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, states_number_period, periods_payoffs_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, edu_start, edu_max, num_emax_slaves, update_master)
 
     !/* external objects        */
 
-    REAL(our_dble), ALLOCATABLE, INTENT(OUT)     :: periods_emax(:, :)
+    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)       :: periods_emax(:, :)
 
-    REAL(our_dble), INTENT(IN)      :: shocks_cholesky(4, 4)
-    
-    LOGICAL, INTENT(IN)             :: update_master
+    REAL(our_dble), INTENT(IN)          :: periods_payoffs_systematic(num_periods, max_states_period, 4)
+    REAL(our_dble), INTENT(IN)          :: periods_draws_emax(num_periods, num_draws_emax, 4)
+    REAL(our_dble), INTENT(IN)          :: shocks_cholesky(4, 4)
+    REAL(our_dble), INTENT(IN)          :: delta
 
-    INTEGER(our_int), INTENT(IN)    :: num_emax_slaves(num_periods, num_slaves)
+    INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
+    INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 4)
+    INTEGER(our_int), INTENT(IN)        :: num_emax_slaves(num_periods, num_slaves)
+    INTEGER(our_int), INTENT(IN)        :: states_number_period(num_periods)
+    INTEGER(our_int), INTENT(IN)        :: edu_start
+    INTEGER(our_int), INTENT(IN)        :: edu_max
+
+    LOGICAL, INTENT(IN)                 :: is_interpolated
+    LOGICAL, INTENT(IN)                 :: is_debug
+    LOGICAL, INTENT(IN)                 :: update_master
 
     !/* internal objects        */
 
