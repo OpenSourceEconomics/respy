@@ -44,12 +44,6 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
-    
-    ! TODO: This can go afte I cleaned up the repeated creation of the state space during evaluations.
-    IF (ALLOCATED(mapping_state_idx)) DEALLOCATE(mapping_state_idx)
-    IF (ALLOCATED(states_all)) DEALLOCATE(states_all)
-    IF (ALLOCATED(states_number_period)) DEALLOCATE(states_number_period)
-    IF (ALLOCATED(states_all)) DEALLOCATE(states_all)
 
     ! Allocate containers that contain information about the model structure
     ALLOCATE(mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2))

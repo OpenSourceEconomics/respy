@@ -45,9 +45,11 @@ from respy.python.solve.solve_auxiliary import get_exogenous_variables
 from respy import solve
 from respy import RespyCls
 
+# Edit of PYTHONPATH required for PYTHON 2 as no __init__.py in tests
+# subdirectory. If __init__.py is added, the path resolution for PYTEST
+# breaks down.
 sys.path.insert(0, TEST_RESOURCES_DIR)
 import f2py_interface as fort_debug
-
 
 @pytest.mark.usefixtures('fresh_directory', 'set_seed')
 class TestClass(object):
