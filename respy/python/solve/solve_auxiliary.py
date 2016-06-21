@@ -219,7 +219,7 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
             endogenous = get_endogenous_variable(period, num_periods,
                 num_states, delta, periods_payoffs_systematic, edu_max,
                 edu_start, mapping_state_idx, periods_emax, states_all,
-                is_simulated, num_draws_emax,maxe, draws_emax)
+                is_simulated, num_draws_emax,maxe, draws_emax_transformed)
 
             # Create prediction model based on the random subset of points where
             # the EMAX is actually simulated and thus dependent and
