@@ -44,7 +44,7 @@ def setup_package():
         name='respy',
         packages=find_packages(),
         package_data={'respy': ['fortran/bin/*', 'fortran/*.so',
-            'fortran/lib/*.*', 'fortran/include/*.*']},
+            'fortran/lib/*.*', 'fortran/include/*.*', 'tests/resources/*']},
         version="0.0.15",
         description='respy is a Python package for the solution, simulation, and estimation of the prototypical dynamic discrete choice model.',
         author='Philipp Eisenhauer',

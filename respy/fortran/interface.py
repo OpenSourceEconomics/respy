@@ -25,15 +25,15 @@ def resfort_interface(respy_obj, request, data_array=None):
 
     # Distribute class attributes
     model_paras, num_periods, edu_start, is_debug, edu_max, delta, \
-        version, num_draws_emax, seed_emax, is_interpolated, num_points_interp, \
-        is_myopic, min_idx, store, tau, is_parallel, num_procs, \
+        num_draws_emax, seed_emax, is_interpolated, num_points_interp, \
+        is_myopic, min_idx, tau, is_parallel, num_procs, \
         num_agents_sim, num_draws_prob, num_agents_est, seed_prob, seed_sim, \
         paras_fixed, optimizer_options, optimizer_used, maxfun, paras_fixed = \
             dist_class_attributes(respy_obj,
                 'model_paras', 'num_periods', 'edu_start', 'is_debug',
-                'edu_max', 'delta', 'version', 'num_draws_emax', 'seed_emax',
+                'edu_max', 'delta', 'num_draws_emax', 'seed_emax',
                 'is_interpolated', 'num_points_interp', 'is_myopic', 'min_idx',
-                'store', 'tau', 'is_parallel', 'num_procs', 'num_agents_sim',
+                'tau', 'is_parallel', 'num_procs', 'num_agents_sim',
                 'num_draws_prob', 'num_agents_est', 'seed_prob', 'seed_sim',
                 'paras_fixed', 'optimizer_options', 'optimizer_used', 'maxfun', 'paras_fixed')
 
@@ -84,7 +84,9 @@ def resfort_interface(respy_obj, request, data_array=None):
 
 
 def add_optimizers(respy_obj):
-
+    """ This function fills up missing information about optimizers to ensure a
+    common interface.
+    """
     optimizer_options = respy_obj.get_attr('optimizer_options')
 
 
