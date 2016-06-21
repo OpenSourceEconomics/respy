@@ -110,16 +110,16 @@ def generate_random_dict(constraints=None):
     else:
         dict_['PARALLELISM']['flag'] = False
 
+    versions = ['FORTRAN', 'PYTHON']
+    if dict_['PARALLELISM']['flag']:
+        versions = ['FORTRAN']
+
     # PROGRAM
     dict_['PROGRAM'] = dict()
     dict_['PROGRAM']['debug'] = 'True'
 
-    versions = ['FORTRAN', 'PYTHON']
-    if dict_['PARALLELISM']['flag']:
-        versions = ['FORTRAN']
     dict_['PROGRAM']['version'] = np.random.choice(versions)
 
-    # TODO: This should be aggregated and clearly marked.
     # The optimizer has to align with the Program version.
     if dict_['PROGRAM']['version'] == 'FORTRAN':
         dict_['ESTIMATION']['optimizer'] = np.random.choice(['FORT-NEWUOA',
