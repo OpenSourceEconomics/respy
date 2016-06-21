@@ -74,8 +74,6 @@ SUBROUTINE distribute_workload(num_emax_slaves, num_obs_slaves)
 
     ALLOCATE(num_emax_slaves(num_periods, num_slaves), num_obs_slaves(num_slaves))
 
-    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, edu_start, edu_max)  
-
     CALL determine_workload(num_obs_slaves, (num_agents_est * num_periods))
 
     DO period = 1, num_periods
@@ -353,25 +351,12 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
     CALL get_free_optim_paras(x_all_current, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, all_free)
 
     CALL MPI_Bcast(x_all_current, 26, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
-
-      
-
-    CALL logging_solution(1)
+    
 
     CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, edu_start, edu_max)
 
-    CALL logging_solution(-1)
-
-
-    CALL logging_solution(2)
-
     CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start)
 
-    CALL logging_solution(-1)
-
-
-
-    CALL logging_solution(3)
     
     ALLOCATE(periods_emax(num_periods, max_states_period))
     periods_emax = MISSING_FLOAT
@@ -380,13 +365,10 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
         
         num_states = states_number_period(period + 1)
         
-        CALL logging_solution(4, period, num_states) 
-
         CALL MPI_RECV(periods_emax(period + 1, :num_states) , num_states, MPI_DOUBLE, MPI_ANY_SOURCE, MPI_ANY_TAG, SLAVECOMM, status, ierr)
         
     END DO
 
-    CALL logging_solution(-1)
 
 END SUBROUTINE
 !******************************************************************************
@@ -468,6 +450,8 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, num_emax_slaves, shocks_c
         draws_emax = periods_draws_emax(period + 1, :, :)
         num_states = states_number_period(period + 1)
         ALLOCATE(periods_emax_slaves(num_states), endogenous_slaves(num_states))
+
+        IF(is_head .AND. update_master) CALL logging_solution(4, period, num_states) 
 
         ! Distinguish case with and without interpolation
         any_interpolated = (num_points_interp .LE. num_states) .AND. is_interpolated

@@ -32,7 +32,7 @@ if True:
     os.chdir(cwd)
 
 ''' Request '''
-seed = 98071 # 6216748723
+seed = 31097 # 6216748723
 
 
 ''' Error Reproduction '''

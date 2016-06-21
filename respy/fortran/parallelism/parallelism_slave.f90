@@ -69,6 +69,15 @@ PROGRAM resfort_parallel_slave
 
     CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, is_debug, is_interpolated, is_myopic, request, exec_dir, maxfun, paras_fixed, optimizer_used, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend, bfgs_epsilon, bfgs_gtol, bfgs_stpmx, bfgs_maxiter)
 
+
+    IF (rank == zero_int) CALL logging_solution(1)
+
+    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, edu_start, edu_max)  
+    
+    IF (rank == zero_int) CALL logging_solution(-1)
+
+
+
     CALL distribute_workload(num_emax_slaves, num_obs_slaves)
 
     CALL create_draws(periods_draws_emax, num_draws_emax, seed_emax, is_debug)
@@ -90,13 +99,21 @@ PROGRAM resfort_parallel_slave
 
         CALL dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x_all_current)
 
-
+        
     
         IF(task == 2) THEN
 
+            IF (rank == zero_int) CALL logging_solution(2)
+
             CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start)
 
+            IF (rank == zero_int) CALL logging_solution(-1)
+
+            IF (rank == zero_int) CALL logging_solution(3)
+
             CALL fort_backward_induction_slave(periods_emax, num_emax_slaves, shocks_cholesky, .True.)
+
+            IF (rank == zero_int) CALL logging_solution(-1)
 
         ELSEIF (task == 3) THEN
             
@@ -114,7 +131,6 @@ PROGRAM resfort_parallel_slave
                 data_slave = data_est(lower_bound:upper_bound, :)
 
             END IF
-
 
             CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start)
 
