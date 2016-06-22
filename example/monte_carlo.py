@@ -33,9 +33,9 @@ respy_obj = respy.RespyCls('../kw_data_one.ini')
 respy_obj.unlock()
 respy_obj.set_attr('file_est', '../correct/data.respy')
 respy_obj.set_attr('delta', 0.00)
-# TODO SET
 respy_obj.set_attr('maxfun', 100000000)
 respy_obj.set_attr('optimizer_used', 'FORT-NEWUOA')
+respy_obj.set_attr('num_procs', 4)
 respy_obj.lock()
 
 x, crit_val = respy.estimate(respy_obj)
