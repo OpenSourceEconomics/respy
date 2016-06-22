@@ -24,7 +24,7 @@ sys.path.insert(0, PACKAGE_DIR)
 sys.path.insert(0, PACKAGE_DIR + 'respy/tests')
 
 # Recompiling during debugging
-if True:
+if False:
     cwd = os.getcwd()
     os.chdir(PACKAGE_DIR + '/respy')
     subprocess.check_call('./waf distclean', shell=True)
@@ -32,7 +32,7 @@ if True:
     os.chdir(cwd)
 
 ''' Request '''
-seed = 24029 # 6216748723
+seed = 1223 # 6216748723
 
 
 ''' Error Reproduction '''
@@ -44,9 +44,9 @@ np.random.seed(seed)
 test_dict = get_test_dict(PACKAGE_DIR + '/respy/tests')
 module, method = get_random_request(test_dict)
 
-module, method = 'test_regression', 'test_7'
+module, method = 'test_integration', 'test_7'
 count = 0
-for i in range(10000):
+for i in range(1):
 
 	#method = 'test_' + str(np.random.choice([1, 2, 3, 4, 5, 6, 7]))
 

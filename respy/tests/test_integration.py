@@ -353,7 +353,7 @@ class TestClass(object):
         # sampling of the diagonal terms of the covariance matrix. Otherwise,
         # we sometimes run into the problem of very ill conditioned matrices
         # resulting in a failed Cholesky decomposition.
-        set_ = list(range(16)) + [16, 20, 23, 25]
+        set_ = list(range(16)) + [16, 18, 21, 25]
 
         identifiers = np.random.choice(set_, num_draws, replace=False)
         values = np.random.uniform(size=num_draws)
