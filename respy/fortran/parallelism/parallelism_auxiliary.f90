@@ -442,12 +442,11 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, state
     IF(rank == zero_int) is_head = .True.
 
     IF (is_myopic) THEN
-        DO period = 1, num_periods
-            periods_emax(period, :states_number_period(period)) = zero_dble
+        DO period = (num_periods - 1), 0, -1
+            num_states = states_number_period(period + 1)
+            periods_emax(period + 1, :num_states) = zero_dble
             IF (is_head .AND. update_master) CALL MPI_SEND(periods_emax(period + 1, :num_states), num_states, MPI_DOUBLE, 0, period, PARENTCOMM, ierr)            
         END DO
-        IF (is_head) CALL logging_solution(-2)
-
         RETURN
     END IF
 

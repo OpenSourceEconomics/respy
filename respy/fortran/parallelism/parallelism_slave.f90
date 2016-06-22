@@ -113,7 +113,11 @@ PROGRAM resfort_parallel_slave
 
             CALL fort_backward_induction_slave(periods_emax, periods_draws_emax, states_number_period, periods_payoffs_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max, num_emax_slaves, .True.)
 
-            IF (rank == zero_int .AND. .NOT. is_myopic) CALL logging_solution(-1)
+            IF (rank == zero_int .AND. .NOT. is_myopic) THEN
+                CALL logging_solution(-1)
+            ELSEIF (rank == zero_int) THEN
+                CALL logging_solution(-2)
+            END IF
 
         ELSEIF (task == 3) THEN
             

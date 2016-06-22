@@ -282,15 +282,13 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
 
     periods_emax = MISSING_FLOAT
 
-
     IF (is_myopic) THEN
-        DO period = 1,  num_periods
-            periods_emax(period, :states_number_period(period)) = zero_dble
+        DO period = (num_periods - 1), 0, -1
+            num_states = states_number_period(period + 1)
+            periods_emax(period + 1, :num_states) = zero_dble
         END DO
-        CALL logging_solution(-2)
         RETURN
     END IF    
-
     
     seed_inflated(:) = 123
 
