@@ -125,14 +125,6 @@ SUBROUTINE write_out_information(counter, fval, x, which)
 ! Algorithm
 !------------------------------------------------------------------------------
     
-    !IF (TRIM(which) == 'current') THEN
-    !    PRINT *, TRIM(which)
-    !    PRINT *, fval
-    !    DO i = 1, 26
-!
- !           PRINT *, x(i)
-  !      END DO
-   ! END IF
     20 FORMAT(5(1x,i10))
     30 FORMAT(1x,f45.15)
 
@@ -177,17 +169,18 @@ SUBROUTINE dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_
     coeffs_home = x(16:16)
 
     ! Note that the Cholesky decomposition is initially the upper triangular in this case. This is required to align the order of optimization parameters with the outline of the original authors. 
+
     shocks_cholesky = 0.0
 
-    shocks_cholesky(1, 1:) = x(17:20)
+    shocks_cholesky(1, :1) = x(17:17)
 
-    shocks_cholesky(2, 2:) = x(21:23)
+    shocks_cholesky(2, :2) = x(18:19)
 
-    shocks_cholesky(3, 3:) = x(24:25)
+    shocks_cholesky(3, :3) = x(20:22)
 
-    shocks_cholesky(4, 4:) = x(26:26)
+    shocks_cholesky(4, :4) = x(23:26)
 
-    shocks_cholesky = TRANSPOSE(shocks_cholesky)
+!    shocks_cholesky = TRANSPOSE(shocks_cholesky)
 
 END SUBROUTINE
 !******************************************************************************
@@ -225,13 +218,13 @@ SUBROUTINE get_free_optim_paras(x, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, 
         
     x_internal(16:16) = coeffs_home(:)
 
-    x_internal(17:20) = shocks_cholesky(1, :)
+    x_internal(17:17) = shocks_cholesky(1, :1)
         
-    x_internal(21:23) = shocks_cholesky(2, 2:)
+    x_internal(18:19) = shocks_cholesky(2, :2)
         
-    x_internal(24:25) = shocks_cholesky(3, 3:)
+    x_internal(20:22) = shocks_cholesky(3, :3)
         
-    x_internal(26:26) = shocks_cholesky(4, 4:)
+    x_internal(23:26) = shocks_cholesky(4, :4)
 
 
     j = 1

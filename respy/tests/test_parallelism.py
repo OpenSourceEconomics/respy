@@ -30,24 +30,14 @@ class TestClass(object):
         constr['maxfun'] = np.random.randint(0, 10)
         init_dict = generate_random_dict(constr)
 
-        init_dict['PARALLELISM']['procs'] = 2
-        init_dict['ESTIMATION']['maxfun'] = 3
-
-        print_init_dict(init_dict)
-
-        respy_obj = RespyCls('test.respy.ini')
-
-
-        respy_obj = simulate(respy_obj)
-
         base = None
-        for is_parallel in [False, True]:
-            print('Parallelism ', is_parallel)
+        for is_parallel in [True, False]:
+
             init_dict['PARALLELISM']['flag'] = is_parallel
             print_init_dict(init_dict)
 
             respy_obj = RespyCls('test.respy.ini')
-
+            respy_obj = simulate(respy_obj)
             _, crit_val = estimate(respy_obj)
 
             if base is None:
