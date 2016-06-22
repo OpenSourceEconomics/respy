@@ -125,6 +125,14 @@ SUBROUTINE write_out_information(counter, fval, x, which)
 ! Algorithm
 !------------------------------------------------------------------------------
     
+    !IF (TRIM(which) == 'current') THEN
+    !    PRINT *, TRIM(which)
+    !    PRINT *, fval
+    !    DO i = 1, 26
+!
+ !           PRINT *, x(i)
+  !      END DO
+   ! END IF
     20 FORMAT(5(1x,i10))
     30 FORMAT(1x,f45.15)
 

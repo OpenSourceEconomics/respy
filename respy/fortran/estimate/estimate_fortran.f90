@@ -163,6 +163,8 @@ FUNCTION fort_criterion(x)
     CALL fort_evaluate(fort_criterion, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_est, periods_draws_prob, delta, tau, edu_start, edu_max)
 
 
+    PRINT *, 'criterion s', fort_criterion
+
 
     num_eval = num_eval + 1
 

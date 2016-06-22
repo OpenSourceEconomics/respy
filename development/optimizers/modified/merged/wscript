@@ -1,0 +1,81 @@
+#!/usr/bin/env python
+
+# standard library
+import shutil
+import glob
+import os
+
+top = '.'
+out = '.bld'
+from waflib.Task import Task
+
+# Set of compiler options.
+DEBUG_OPTIONS = ['-O2', '-Wall', '-Wline-truncation', '-Wcharacter-truncation']
+DEBUG_OPTIONS += ['-Wsurprising', '-Waliasing', '-Wimplicit-interface']
+DEBUG_OPTIONS += ['-Wunused-parameter', '-fwhole-file', '-fcheck=all']
+DEBUG_OPTIONS += ['-fbacktrace', '-g', '-fmax-errors=1', '-ffpe-trap=invalid']
+DEBUG_OPTIONS += ['-ffree-line-length-0']
+
+PRODUCTION_OPTIONS = ['-O3', '-ffree-line-length-0']
+
+
+class CreateF2pyInterfaces(Task):
+
+    def run(self):
+
+        from numpy import f2py
+        extra_args = ' -I.bld -L.bld -loptimizers '
+
+        with open('f2py_optimizers.f90', 'rb') as sourcefile:
+            sourcecode = sourcefile.read()
+        f2py.compile(sourcecode, 'f2py_library', extra_args, extension='.f90')
+
+
+def options(ctx):
+
+    ctx.load('compiler_c')
+
+    ctx.load('compiler_fc')
+
+    ctx.add_option('--debug', action='store_true', dest='is_debug',
+                   default=False, help='use debug compiler options')
+
+
+def configure(ctx):
+
+    ctx.load('compiler_fc')
+    ctx.check_fortran()
+
+
+def build(ctx):
+    is_debug = ctx.options.is_debug
+
+    # The build is currently only tested for gfortran.
+    if is_debug:
+        ctx.env.append_unique('FCFLAGS', DEBUG_OPTIONS)
+    else:
+        ctx.env.append_unique('FCFLAGS', PRODUCTION_OPTIONS)
+
+    # Enable static libraries
+    ctx.env.append_unique('STLIBPATH', ['../.bld'])
+    ctx.env.append_unique('STLIB', ['optimizers'])
+
+
+
+    src = ['../../../../respy/fortran/shared/shared_constants.f90',
+        'criterion.f90', 'newuoa.f90', 'dfpmin.f90']
+
+    flags = ctx.env.FCFLAGS + ['-fPIC']
+
+    for fname in src:
+        ctx(features=['fc'], source=fname, fcflags=flags)
+        ctx.add_group()
+
+
+    ctx(features=['fc', 'fcstlib'], source=src,  target='optimizers',
+         fcflags=flags)
+    ctx.add_group()
+
+    # Build F2PY interface
+
+    ctx.add_to_group(CreateF2pyInterfaces(env=ctx.env))
