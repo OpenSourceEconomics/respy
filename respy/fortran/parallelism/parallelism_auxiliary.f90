@@ -231,7 +231,6 @@ FUNCTION fort_criterion_parallel(x)
     
     CALL MPI_RECV(fort_criterion_parallel, 1, MPI_DOUBLE, MPI_ANY_SOURCE, MPI_ANY_TAG, SLAVECOMM, status, ierr)
 
-    PRINT *, 'criterion ', fort_criterion_parallel
 
     num_eval = num_eval + 1
 

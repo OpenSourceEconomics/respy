@@ -168,7 +168,6 @@ SUBROUTINE dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_
 
     coeffs_home = x(16:16)
 
-    ! Note that the Cholesky decomposition is initially the upper triangular in this case. This is required to align the order of optimization parameters with the outline of the original authors. 
 
     shocks_cholesky = 0.0
 
@@ -179,8 +178,6 @@ SUBROUTINE dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_
     shocks_cholesky(3, :3) = x(20:22)
 
     shocks_cholesky(4, :4) = x(23:26)
-
-!    shocks_cholesky = TRANSPOSE(shocks_cholesky)
 
 END SUBROUTINE
 !******************************************************************************
