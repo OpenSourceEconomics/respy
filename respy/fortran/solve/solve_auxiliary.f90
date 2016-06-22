@@ -227,7 +227,7 @@ SUBROUTINE fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_number_period, periods_payoffs_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, edu_start, edu_max)
+SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_number_period, periods_payoffs_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max)
 
     !/* external objects        */
 
@@ -245,6 +245,7 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
     INTEGER(our_int), INTENT(IN)        :: edu_max
 
     LOGICAL, INTENT(IN)                 :: is_interpolated
+    LOGICAL, INTENT(IN)                 :: is_myopic
     LOGICAL, INTENT(IN)                 :: is_debug
 
     !/* internals objects       */
@@ -280,6 +281,15 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
     IF (.NOT. ALLOCATED(periods_emax)) ALLOCATE(periods_emax(num_periods, max_states_period))
 
     periods_emax = MISSING_FLOAT
+
+
+    IF (is_myopic) THEN
+        DO period = 1,  num_periods
+            periods_emax(period, :states_number_period(period)) = zero_dble
+        END DO
+        CALL logging_solution(-2)
+        RETURN
+    END IF    
 
     
     seed_inflated(:) = 123

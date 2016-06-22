@@ -373,7 +373,7 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, states_number_period, periods_payoffs_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, edu_start, edu_max, num_emax_slaves, update_master)
+SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, states_number_period, periods_payoffs_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max, num_emax_slaves, update_master)
 
     !/* external objects        */
 
@@ -392,8 +392,9 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, state
     INTEGER(our_int), INTENT(IN)        :: edu_max
 
     LOGICAL, INTENT(IN)                 :: is_interpolated
-    LOGICAL, INTENT(IN)                 :: is_debug
     LOGICAL, INTENT(IN)                 :: update_master
+    LOGICAL, INTENT(IN)                 :: is_myopic
+    LOGICAL, INTENT(IN)                 :: is_debug
 
     !/* internal objects        */
 
@@ -436,8 +437,19 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, state
 
     periods_emax = MISSING_FLOAT
 
+
     is_head = .False.
     IF(rank == zero_int) is_head = .True.
+
+    IF (is_myopic) THEN
+        DO period = 1, num_periods
+            periods_emax(period, :states_number_period(period)) = zero_dble
+            IF (is_head .AND. update_master) CALL MPI_SEND(periods_emax(period + 1, :num_states), num_states, MPI_DOUBLE, 0, period, PARENTCOMM, ierr)            
+        END DO
+        IF (is_head) CALL logging_solution(-2)
+
+        RETURN
+    END IF
 
     ! Set random seed for interpolation grid.
     seed_inflated(:) = 123

@@ -43,10 +43,6 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, mapping_
     LOGICAL, INTENT(IN)                             :: is_myopic
     LOGICAL, INTENT(IN)                             :: is_debug
 
-    !/* internal objects        */
-
-    INTEGER(our_int)                                :: period
-
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
@@ -66,26 +62,11 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, mapping_
 
 
     CALL logging_solution(3)
-
-    IF (is_myopic) THEN
-
-        ALLOCATE(periods_emax(num_periods, max_states_period))
-        periods_emax = MISSING_FLOAT
-
-        DO period = 1,  num_periods
-            periods_emax(period, :states_number_period(period)) = zero_dble
-        END DO
-
-        CALL logging_solution(-2)
     
-    ELSE
+    CALL fort_backward_induction(periods_emax, periods_draws_emax, states_number_period, periods_payoffs_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max)
 
-        CALL fort_backward_induction(periods_emax, periods_draws_emax, states_number_period, periods_payoffs_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, edu_start, edu_max)
-
-        CALL logging_solution(-1)
-        
-    END IF
-
+    IF (.NOT. is_myopic) CALL logging_solution(-1)
+    
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
