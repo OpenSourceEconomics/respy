@@ -207,7 +207,7 @@ class TestClass(object):
         elif 'two' in fname:
             rslt = 1.126138097174159
         elif 'three' in fname:
-            rslt = 1.904800495149656
+            rslt = 1.895699121131644
 
         # Evaluate criterion function at true values.
         respy_obj = RespyCls(TEST_RESOURCES_DIR + '/' + fname)

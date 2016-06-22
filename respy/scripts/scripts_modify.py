@@ -111,7 +111,7 @@ def change_status(identifiers, init_file, is_fixed):
             init_dict['HOME']['fixed'][j] = is_fixed
         elif identifier in list(range(16, 26)):
             j = identifier - 16
-            shocks_coeffs = shocks_cholesky[np.triu_indices(4)].tolist()
+            shocks_coeffs = shocks_cholesky.T[np.triu_indices(4)].tolist()
             init_dict['SHOCKS']['coeffs'] = shocks_coeffs
             init_dict['SHOCKS']['fixed'][j] = is_fixed
         else:

@@ -43,8 +43,8 @@ def scripts_update(init_file):
     # Get and construct ingredients
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky \
         = dist_optim_paras(paras_steps, True)
-    shocks_coeffs = shocks_cholesky[np.triu_indices(4)].tolist()
-
+    shocks_coeffs = shocks_cholesky.T[np.triu_indices(4)].tolist()
+    
     # Update initialization dictionary
     init_dict['OCCUPATION A']['coeffs'] = coeffs_a
     init_dict['OCCUPATION B']['coeffs'] = coeffs_b
