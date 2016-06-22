@@ -81,6 +81,7 @@ class OptimizationClass(object):
             with open('est.respy.log', 'a') as out_file:
                 fmt_ = ' {0:>4}' + ' ' * 25 + '{1:>6}\n'
                 out_file.write(fmt_.format(*['Step', self.attr['num_step']]))
+                out_file.write(fmt_.format(*['Eval', self.attr['num_eval']]))
                 fmt_ = ' {0:>9} ' + '{1:25.15f}\n'
                 out_file.write(fmt_.format(*['Criterion', fval]))
                 fmt_ = ' {0:<9} {1:>25}\n'

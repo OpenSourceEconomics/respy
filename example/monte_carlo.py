@@ -11,7 +11,7 @@ import os
 # project library
 import respy
 
-# Let us first simulate a baseline sample and store the results for future reference.
+# # Let us first simulate a baseline sample and store the results for future reference.
 os.mkdir('correct'), os.chdir('correct')
 respy_obj = respy.RespyCls('../kw_data_one.ini')
 respy.simulate(respy_obj)
@@ -25,7 +25,6 @@ respy.estimate(respy_obj)
 
 os.chdir('../')
 
-# # TODO: PRINT INIT DICT
 # # Now we will estimate a misspecified model on this dataset assuming that agents are myopic.
 os.mkdir('static'), os.chdir('static')
 respy_obj = respy.RespyCls('../kw_data_one.ini')
@@ -35,7 +34,6 @@ respy_obj.set_attr('file_est', '../correct/data.respy')
 respy_obj.set_attr('delta', 0.00)
 respy_obj.set_attr('maxfun', 100000000)
 respy_obj.set_attr('optimizer_used', 'FORT-NEWUOA')
-respy_obj.set_attr('num_procs', 4)
 respy_obj.lock()
 
 x, crit_val = respy.estimate(respy_obj)

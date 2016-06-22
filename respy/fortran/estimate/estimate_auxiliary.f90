@@ -67,11 +67,12 @@ SUBROUTINE logging_estimation_final(success, message, crit_val)
 END SUBROUTINE    
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE logging_estimation_step(num_step, crit_val)
+SUBROUTINE logging_estimation_step(num_step, num_eval, crit_val)
 
     !/* external objects        */
 
     INTEGER(our_int), INTENT(IN)    :: num_step
+    INTEGER(our_int), INTENT(IN)    :: num_eval
 
     REAL(our_dble), INTENT(IN)      :: crit_val
 
@@ -97,6 +98,7 @@ SUBROUTINE logging_estimation_step(num_step, crit_val)
     ! Write to file
     OPEN(UNIT=99, FILE='est.respy.log', ACCESS='APPEND')
         WRITE(99, 5505) 'Step', num_step
+        WRITE(99, 5505) 'Eval', num_eval
         WRITE(99, 5506) 'Criterion', crit_val
         WRITE(99, 5504) 'Time', now
         WRITE(99, 5503) 'Date', today(2), today(1), today(3) 
