@@ -22,12 +22,60 @@ CONTAINS
 !******************************************************************************
 SUBROUTINE NEWUOA (FUNC, X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUCCESS, MESSAGE, NF)
 
-    IMPLICIT REAL*8 (A-H,O-Z)
-!    DIMENSION X(*) 
+    !/* external objects    */
+
+    REAL(our_dble), INTENT(INOUT)   :: X(:)
+
+    INTEGER(our_int), INTENT(IN)    :: NPT
+    INTEGER(our_int), INTENT(IN)    :: IPRINT
+    INTEGER(our_int), INTENT(IN)    :: MAXFUN
     
-    REAL(our_dble)                  :: X(:)
+    REAL(our_dble), INTENT(IN)      :: RHOBEG
+    REAL(our_dble), INTENT(IN)      :: RHOEND
+
     LOGICAL, INTENT(OUT)            :: SUCCESS
 
+    CHARACTER(150), INTENT(OUT)     :: MESSAGE
+
+    INTERFACE
+
+        FUNCTION FUNC(X)
+    
+            USE shared_constants
+
+            IMPLICIT NONE
+    
+            REAL(our_dble), INTENT(IN)  :: X(:)
+            REAL(our_dble)              :: FUNC
+    
+        END FUNCTION  
+
+    END INTERFACE
+
+    !/* internal objects    */
+
+    REAL(our_dble)                  :: W(20000)
+
+    INTEGER(our_int)                :: N
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    N = SIZE(X)
+
+    CALL NEWUOA_ORIGINAL (FUNC, X, N, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUCCESS, MESSAGE, NF, W)
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE NEWUOA_ORIGINAL (FUNC, X, N, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUCCESS, MESSAGE, NF, W)
+
+    IMPLICIT REAL*8 (A-H,O-Z)
+    DIMENSION W(*) 
+    
+    REAL(our_dble)                  :: X(:)
+    LOGICAL                         :: SUCCESS
     CHARACTER(150)                  :: MESSAGE
 
     INTERFACE
@@ -48,8 +96,6 @@ SUBROUTINE NEWUOA (FUNC, X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUCCESS, MESSAG
     !/*  internal objects       */
 
     INTEGER                         :: N
-
-    REAL(our_dble), ALLOCATABLE     :: W(:)
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -92,7 +138,6 @@ SUBROUTINE NEWUOA (FUNC, X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUCCESS, MESSAG
     MESSAGE = 'Successful return from NEWUOA.'
     SUCCESS = .True.
 
-    N = SIZE(X)
     NP=N+1
     NPTM=NPT-NP
     IF (NPT .LT. N+2 .OR. NPT .GT. ((N+2)*NP)/2) THEN
@@ -114,10 +159,6 @@ SUBROUTINE NEWUOA (FUNC, X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUCCESS, MESSAG
     ID=IZMAT+NPT*NPTM
     IVL=ID+N
     IW=IVL+NDIM
-
-    ! The dimension of the working space W is directly linked to the other 
-    ! input parameters (see interface below).
-    ALLOCATE(W(20000))
 
 !C
 !C     The above settings provide a partition of W for subroutine NEWUOB.

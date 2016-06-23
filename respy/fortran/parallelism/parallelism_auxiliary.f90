@@ -156,7 +156,7 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, coeffs_a, coeffs_b
     INTEGER(our_int)                :: maxfun_int
     
     LOGICAL, PARAMETER              :: all_free(26) = .False.
-
+ 
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------

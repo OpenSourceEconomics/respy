@@ -65,6 +65,7 @@ SUBROUTINE fort_estimate(crit_val, success, message, coeffs_a, coeffs_b, coeffs_
     CHARACTER(150), INTENT(OUT)                  :: message
 
     LOGICAL, PARAMETER :: all_free(26) = .False.
+
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
