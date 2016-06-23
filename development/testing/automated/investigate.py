@@ -24,15 +24,19 @@ sys.path.insert(0, PACKAGE_DIR)
 sys.path.insert(0, PACKAGE_DIR + 'respy/tests')
 
 # Recompiling during debugging
-if False:
+if True:
     cwd = os.getcwd()
     os.chdir(PACKAGE_DIR + '/respy')
     subprocess.check_call('./waf distclean', shell=True)
     subprocess.check_call('./waf configure build --debug', shell=True)
     os.chdir(cwd)
+else:
+	print('not recompiling')
 
 ''' Request '''
-seed =3147 # 6216748723
+#MODULE test_parallelism METHOD test_1 SEED: 24029
+
+seed =24029 # 6216748723
 
 
 ''' Error Reproduction '''

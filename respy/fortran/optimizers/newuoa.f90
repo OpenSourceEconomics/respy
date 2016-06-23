@@ -22,19 +22,10 @@ CONTAINS
 !******************************************************************************
 SUBROUTINE NEWUOA (FUNC, X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUCCESS, MESSAGE, NF)
 
-    !/* external objects        */
-
-    INTEGER(our_int), INTENT(OUT)   :: NF
-
-    INTEGER(our_int), INTENT(IN)    :: IPRINT
-    INTEGER(our_int), INTENT(IN)    :: MAXFUN
-    INTEGER(our_int), INTENT(IN)    :: NPT
+    IMPLICIT REAL*8 (A-H,O-Z)
+!    DIMENSION X(*) 
     
-    REAL(our_dble), INTENT(IN)      :: RHOBEG
-    REAL(our_dble), INTENT(IN)      :: RHOEND
-
-    REAL(our_dble), INTENT(INOUT)   :: X(:)
-
+    REAL(our_dble)                  :: X(:)
     LOGICAL, INTENT(OUT)            :: SUCCESS
 
     CHARACTER(150)                  :: MESSAGE
@@ -56,7 +47,7 @@ SUBROUTINE NEWUOA (FUNC, X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUCCESS, MESSAG
 
     !/*  internal objects       */
 
-    INTEGER(our_int)                :: N
+    INTEGER                         :: N
 
     REAL(our_dble), ALLOCATABLE     :: W(:)
 
@@ -142,7 +133,7 @@ SUBROUTINE NEWUOA (FUNC, X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUCCESS, MESSAG
       IMPLICIT REAL*8 (A-H,O-Z)
       DIMENSION XBASE(*),XOPT(*),XNEW(*),XPT(NPT,*),FVAL(*),GQ(*),HQ(*),PQ(*),BMAT(NDIM,*),ZMAT(NPT,*),D(*),VLAG(*),W(*)
 
-      REAL(our_dble), INTENT(INOUT):: X(N)
+      REAL*8, INTENT(INOUT):: X(N)
 
       CHARACTER(150)    :: MESSAGE
       LOGICAL           :: SUCCESS
