@@ -8,12 +8,6 @@ import pytest
 import sys
 import os
 
-# PYTHONPATH
-ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
-ROOT_DIR = ROOT_DIR.replace('respy/tests', '')
-sys.path.insert(0, ROOT_DIR)
-
-
 @pytest.fixture(scope='function')
 def set_seed():
     """ Each test is executed with the same random seed.
