@@ -235,7 +235,8 @@ class RespyCls(object):
         self.attr['is_solved'] = False
 
     def check_equal_solution(self, other):
-        """ This method allows to compare two class instances with respect to the equality of their solution attributes.
+        """ This method allows to compare two class instances with respect to
+        the equality of their solution attributes.
         """
         assert (isinstance(other, RespyCls))
 
