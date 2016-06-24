@@ -24,7 +24,7 @@ sys.path.insert(0, PACKAGE_DIR)
 sys.path.insert(0, PACKAGE_DIR + 'respy/tests')
 
 # Recompiling during debugging
-if True:
+if False:
     cwd = os.getcwd()
     os.chdir(PACKAGE_DIR + '/respy')
     subprocess.check_call('./waf distclean', shell=True)
@@ -48,9 +48,9 @@ np.random.seed(seed)
 test_dict = get_test_dict(PACKAGE_DIR + '/respy/tests')
 module, method = get_random_request(test_dict)
 
-module, method = 'test_parallelism', 'test_1'
+module, method = 'test_unit', 'test_3'
 count = 0
-for i in range(1000000000000):
+for i in range(10000):
 
 
 	mod = importlib.import_module(module)

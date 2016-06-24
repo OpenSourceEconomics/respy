@@ -94,3 +94,20 @@ class TestClass(object):
 
             # Checks
             np.testing.assert_allclose(base, x)
+
+    def test_3(self):
+        """ Testing whether the back and forth transformation works.
+        """
+        for _ in range(100):
+
+            # Generate random request
+            generate_init()
+
+            # Process request and write out again.
+            respy_obj = RespyCls('test.respy.ini')
+            respy_obj.write_out('alt.respy.ini')
+
+            # Read both initialization files and compare
+            base_ini = open('test.respy.ini', 'r').read()
+            alt_ini = open('alt.respy.ini', 'r').read()
+            assert base_ini == alt_ini

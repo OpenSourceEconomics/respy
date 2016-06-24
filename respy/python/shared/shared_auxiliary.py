@@ -102,6 +102,20 @@ def create_draws(num_periods, num_draws, seed, is_debug):
     return draws
 
 
+def cholesky_to_coeffs(shocks_cholesky):
+    """ This function maps the Cholesky factor into the coefficients as
+    specified in the initialization file.
+    """
+
+    shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
+    for i in range(4):
+        shocks_cov[i, i] = np.sqrt(shocks_cov[i, i])
+
+    shocks_coeffs = shocks_cov[np.triu_indices(4)].tolist()
+
+    return shocks_coeffs
+
+
 def add_solution(respy_obj, store, periods_payoffs_systematic,
         states_number_period, mapping_state_idx, periods_emax, states_all):
     """ Add solution to class instance.
@@ -379,15 +393,16 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                         'ESTIMATION', 'PARALLELISM']:
 
                 file_.write(flag.upper() + '\n\n')
+                keys = list(dict_[flag].keys())
+                keys.sort()
+                for key_ in keys:
 
-                for keys_ in dict_[flag]:
-
-                    if keys_ in ['tau']:
+                    if key_ in ['tau']:
                         str_ = '{0:<10} {1:20.0f} \n'
-                        file_.write(str_.format(keys_, dict_[flag][keys_]))
+                        file_.write(str_.format(key_, dict_[flag][key_]))
                     else:
                         str_ = '{0:<10} {1:>20} \n'
-                        file_.write(str_.format(keys_, str(dict_[flag][keys_])))
+                        file_.write(str_.format(key_, str(dict_[flag][key_])))
 
                 file_.write('\n')
 
@@ -453,15 +468,16 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                     continue
 
                 file_.write(flag.upper() + '\n\n')
+                keys = list(dict_[flag].keys())
+                keys.sort()
+                for key_ in keys:
 
-                for keys_ in dict_[flag]:
-
-                    if keys_ in ['maxfun', 'npt', 'maxiter']:
+                    if key_ in ['maxfun', 'npt', 'maxiter']:
                         str_ = '{0:<10} {1:>20} \n'
-                        file_.write(str_.format(keys_, dict_[flag][keys_]))
+                        file_.write(str_.format(key_, dict_[flag][key_]))
                     else:
                         str_ = '{0:<10} {1:20.15f} \n'
-                        file_.write(str_.format(keys_, dict_[flag][keys_]))
+                        file_.write(str_.format(key_, dict_[flag][key_]))
 
                 file_.write('\n')
 

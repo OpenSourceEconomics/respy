@@ -14,6 +14,7 @@ import argparse
 import os
 
 # project library
+from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
 from respy.python.shared.shared_auxiliary import dist_model_paras
 from respy.python.shared.shared_auxiliary import print_init_dict
 from respy.python.read.read_python import read
@@ -111,7 +112,7 @@ def change_status(identifiers, init_file, is_fixed):
             init_dict['HOME']['fixed'][j] = is_fixed
         elif identifier in list(range(16, 26)):
             j = identifier - 16
-            shocks_coeffs = shocks_cholesky.T[np.triu_indices(4)].tolist()
+            shocks_coeffs = cholesky_to_coeffs(shocks_cholesky)
             init_dict['SHOCKS']['coeffs'] = shocks_coeffs
             init_dict['SHOCKS']['fixed'][j] = is_fixed
         else:

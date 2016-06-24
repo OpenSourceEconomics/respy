@@ -11,6 +11,8 @@ import numpy as np
 from respy.python.shared.shared_auxiliary import replace_missing_values
 from respy.python.shared.shared_auxiliary import check_model_parameters
 from respy.python.estimate.estimate_auxiliary import dist_optim_paras
+from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
+from respy.python.shared.shared_auxiliary import print_init_dict
 from respy.python.read.read_python import read
 
 # Special care with derived attributes is required to maintain integrity of
@@ -21,6 +23,9 @@ DERIVED_ATTR = ['min_idx', 'is_myopic']
 # if the class instance was solved.
 SOLUTION_ATTR = ['periods_payoffs_systematic', 'states_number_period']
 SOLUTION_ATTR += ['mapping_state_idx', 'periods_emax', 'states_all']
+
+# Full list of admissible optimizers
+OPTIMIZERS = ['SCIPY-BFGS', 'SCIPY-POWELL', 'FORT-NEWUOA', 'FORT-BFGS']
 
 
 class RespyCls(object):
@@ -226,6 +231,99 @@ class RespyCls(object):
         # Store.
         pkl.dump(self, open(file_name, 'wb'))
 
+    def write_out(self, fname='test.respy.ini'):
+        """ Write out the currently implied initialization file of the class
+        instance.
+        """
+        # We reconstruct the initialization dictionary as otherwise we need
+        # to constantly update the original one.
+        init_dict = dict()
+
+        # TODO: paras fixed missing
+
+        # Basics
+        init_dict['BASICS'] = dict()
+        init_dict['BASICS']['periods'] = self.attr['num_periods']
+        init_dict['BASICS']['delta'] = self.attr['delta']
+
+        # Occupation A
+        init_dict['OCCUPATION A'] = dict()
+        init_dict['OCCUPATION A']['coeffs'] = \
+            self.attr['model_paras']['coeffs_a']
+
+        init_dict['OCCUPATION A']['fixed'] = self.attr['paras_fixed'][0:6]
+
+        # Occupation A
+        init_dict['OCCUPATION B'] = dict()
+        init_dict['OCCUPATION B']['coeffs'] = \
+            self.attr['model_paras']['coeffs_b']
+        init_dict['OCCUPATION B']['fixed'] = self.attr['paras_fixed'][6:12]
+
+        # Education
+        init_dict['EDUCATION'] = dict()
+        init_dict['EDUCATION']['coeffs'] = \
+            self.attr['model_paras']['coeffs_edu']
+        init_dict['EDUCATION']['fixed'] = self.attr['paras_fixed'][12:15]
+
+        init_dict['EDUCATION']['start'] = self.attr['edu_start']
+        init_dict['EDUCATION']['max'] = self.attr['edu_max']
+
+        # Home
+        init_dict['HOME'] = dict()
+        init_dict['HOME']['coeffs'] = \
+            self.attr['model_paras']['coeffs_home']
+        init_dict['HOME']['fixed'] = self.attr['paras_fixed'][15:16]
+
+        # Shocks
+        init_dict['SHOCKS'] = dict()
+        shocks_cholesky = self.attr['model_paras']['shocks_cholesky']
+        shocks_coeffs = cholesky_to_coeffs(shocks_cholesky)
+        init_dict['SHOCKS']['coeffs'] = shocks_coeffs
+        init_dict['SHOCKS']['fixed'] = np.array(self.attr['paras_fixed'][16:])
+
+        # Solution
+        init_dict['SOLUTION'] = dict()
+        init_dict['SOLUTION']['draws'] = self.attr['num_draws_emax']
+        init_dict['SOLUTION']['seed'] = self.attr['seed_emax']
+        init_dict['SOLUTION']['store'] = self.attr['store']
+
+        # Simulation
+        init_dict['SIMULATION'] = dict()
+        init_dict['SIMULATION']['agents'] = self.attr['num_agents_sim']
+        init_dict['SIMULATION']['file'] = self.attr['file_sim']
+        init_dict['SIMULATION']['seed'] = self.attr['seed_sim']
+
+        # Estimation
+        init_dict['ESTIMATION'] = dict()
+        init_dict['ESTIMATION']['optimizer'] = self.attr['optimizer_used']
+        init_dict['ESTIMATION']['agents'] = self.attr['num_agents_est']
+        init_dict['ESTIMATION']['draws'] = self.attr['num_draws_prob']
+        init_dict['ESTIMATION']['seed'] = self.attr['seed_prob']
+        init_dict['ESTIMATION']['file'] = self.attr['file_est']
+        init_dict['ESTIMATION']['maxfun'] = self.attr['maxfun']
+        init_dict['ESTIMATION']['tau'] = self.attr['tau']
+
+        # Program
+        init_dict['PROGRAM'] = dict()
+        init_dict['PROGRAM']['version'] = self.attr['version']
+        init_dict['PROGRAM']['debug'] = self.attr['is_debug']
+
+        # Parallelism
+        init_dict['PARALLELISM'] = dict()
+        init_dict['PARALLELISM']['flag'] = self.attr['is_parallel']
+        init_dict['PARALLELISM']['procs'] = self.attr['num_procs']
+
+        # Interpolation
+        init_dict['INTERPOLATION'] = dict()
+        init_dict['INTERPOLATION']['points'] = self.attr['num_points_interp']
+        init_dict['INTERPOLATION']['flag'] = self.attr['is_interpolated']
+
+        # Optimizers
+        for optimizer in self.attr['optimizer_options'].keys():
+            init_dict[optimizer] = self.attr['optimizer_options'][optimizer]
+
+        print_init_dict(init_dict, fname)
+
     def reset(self):
         """ Remove solution attributes from class instance.
         """
@@ -353,9 +451,8 @@ class RespyCls(object):
 
         # Aggregate all the information provided about optimizer options in
         # one class attribute for easier access later.
-        optimizers = ['SCIPY-BFGS', 'SCIPY-POWELL', 'FORT-NEWUOA', 'FORT-BFGS']
         self.attr['optimizer_options'] = dict()
-        for optimizer in optimizers:
+        for optimizer in OPTIMIZERS:
             is_defined = (optimizer in init_dict.keys())
             if is_defined:
                 self.attr['optimizer_options'][optimizer] = \
