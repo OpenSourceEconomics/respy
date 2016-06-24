@@ -12,14 +12,26 @@ import respy
 ###############################################################################
 # SPECIFICATION FOR MONTE-CARLO EXERCISE
 ###############################################################################
-MAXFUN = 1000000000
-NUM_DRAWS_EMAX = 5000
-NUM_DRAWS_PROB = 1000
+MAXFUN = 10
+NUM_DRAWS_EMAX = 50
+NUM_DRAWS_PROB = 10
 
-NUM_AGENTS = 10000
+NUM_AGENTS = 100
+NUM_PROCS = 3
+
 
 OPTIMIZER = 'FORT-NEWUOA'
-NUM_PROCS = 3
+NPT = 28
+RHOBEG = 2000
+RHOEND = RHOBEG * 1e-6
+
+OPTIMIZER_OPTIONS = dict()
+OPTIMIZER_OPTIONS['FORT-NEWUOA'] = dict()
+OPTIMIZER_OPTIONS['FORT-NEWUOA']['maxfun'] = MAXFUN
+OPTIMIZER_OPTIONS['FORT-NEWUOA']['npt'] = NPT
+OPTIMIZER_OPTIONS['FORT-NEWUOA']['rhobeg'] = float(RHOBEG)
+OPTIMIZER_OPTIONS['FORT-NEWUOA']['rhoend'] = float(RHOEND)
+
 ###############################################################################
 ###############################################################################
 
@@ -30,11 +42,12 @@ os.system('git clean -d -f')
 respy_obj = respy.RespyCls('kw_data_one.ini')
 
 respy_obj.unlock()
-respy_obj.set_attr('optimizer_used', OPTIMIZER)
+respy_obj.set_attr('optimizer_options', OPTIMIZER_OPTIONS)
 respy_obj.set_attr('num_draws_emax', NUM_DRAWS_EMAX)
 respy_obj.set_attr('num_draws_prob', NUM_DRAWS_PROB)
 respy_obj.set_attr('num_agents_est', NUM_AGENTS)
 respy_obj.set_attr('num_agents_sim', NUM_AGENTS)
+respy_obj.set_attr('optimizer_used', OPTIMIZER)
 
 respy_obj.set_attr('num_procs', NUM_PROCS)
 if NUM_PROCS > 1:
@@ -51,6 +64,7 @@ respy.simulate(respy_obj)
 respy_obj.unlock()
 respy_obj.set_attr('maxfun', 0)
 respy_obj.lock()
+respy_obj.write_out()
 respy.estimate(respy_obj)
 os.chdir('../')
 
@@ -63,6 +77,7 @@ respy_obj.set_attr('delta', 0.00)
 respy_obj.set_attr('maxfun', MAXFUN)
 respy_obj.lock()
 
+respy_obj.write_out()
 x, _ = respy.estimate(respy_obj)
 respy_obj.update_model_paras(x)
 respy.simulate(respy_obj)
@@ -76,6 +91,7 @@ respy_obj.unlock()
 respy_obj.set_attr('delta', 0.95)
 respy_obj.lock()
 
+respy_obj.write_out()
 x, _ = respy.estimate(respy_obj)
 
 respy_obj.update_model_paras(x)

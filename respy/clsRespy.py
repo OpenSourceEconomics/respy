@@ -231,15 +231,13 @@ class RespyCls(object):
         # Store.
         pkl.dump(self, open(file_name, 'wb'))
 
-    def write_out(self, fname='test.respy.ini'):
+    def write_out(self, fname='model.respy.ini'):
         """ Write out the currently implied initialization file of the class
         instance.
         """
         # We reconstruct the initialization dictionary as otherwise we need
         # to constantly update the original one.
         init_dict = dict()
-
-        # TODO: paras fixed missing
 
         # Basics
         init_dict['BASICS'] = dict()
