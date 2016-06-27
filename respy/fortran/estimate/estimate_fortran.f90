@@ -39,32 +39,31 @@ SUBROUTINE fort_estimate(crit_val, success, message, coeffs_a, coeffs_b, coeffs_
     REAL(our_dble), INTENT(IN)      :: coeffs_a(6)
     REAL(our_dble), INTENT(IN)      :: coeffs_b(6)
 
-    INTEGER(our_int), INTENT(IN)    :: maxfun
     INTEGER(our_int), INTENT(IN)    :: newuoa_maxfun
+    INTEGER(our_int), INTENT(IN)    :: bfgs_maxiter
     INTEGER(our_int), INTENT(IN)    :: newuoa_npt
-    
-
-    INTEGER(our_int)                :: bfgs_maxiter
-    REAL(our_dble)                  :: bfgs_stpmx
-    REAL(our_dble)                  :: bfgs_gtol
+    INTEGER(our_int), INTENT(IN)    :: maxfun
 
     REAL(our_dble), INTENT(IN)      :: newuoa_rhobeg
     REAL(our_dble), INTENT(IN)      :: newuoa_rhoend
+    REAL(our_dble), INTENT(IN)      :: bfgs_stpmx
+    REAL(our_dble), INTENT(IN)      :: bfgs_gtol
 
     CHARACTER(225), INTENT(IN)      :: optimizer_used
+    CHARACTER(150), INTENT(OUT)     :: message
 
     LOGICAL, INTENT(IN)             :: paras_fixed(26) 
+    LOGICAL, INTENT(OUT)            :: success
+
+    LOGICAL, PARAMETER              :: all_free(26) = .False.
+
     !/* internal objects    */
 
-    REAL(our_dble)                  :: x_free_start(COUNT(.not. paras_fixed))
-    REAL(our_dble)                  :: x_free_final(COUNT(.not. paras_fixed))
+    REAL(our_dble)                  :: x_free_scaled(num_free)
+    REAL(our_dble)                  :: x_free_start(num_free)
+    REAL(our_dble)                  :: x_free_final(num_free)
     
     INTEGER(our_int)                :: iter
-    INTEGER(our_int)                :: maxfun_int
-    LOGICAL, INTENT(OUT)                         :: success
-    CHARACTER(150), INTENT(OUT)                  :: message
-
-    LOGICAL, PARAMETER :: all_free(26) = .False.
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -75,32 +74,115 @@ SUBROUTINE fort_estimate(crit_val, success, message, coeffs_a, coeffs_b, coeffs_
 
     CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, edu_start, edu_max)
 
-
     CALL get_free_optim_paras(x_free_start, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed)
 
-    x_free_final = x_free_start
 
     IF (maxfun == zero_int) THEN
 
         success = .True.
         message = 'Single evaluation of criterion function at starting values.'
 
+        x_free_final = x_free_start
+
     ELSEIF (optimizer_used == 'FORT-NEWUOA') THEN
 
-        ! This is required to keep the original design of the algorithm intact
-        maxfun_int = MIN(maxfun, newuoa_maxfun) - 1 
+        CALL get_scales(auto_scales, x_free_start)
 
-        CALL newuoa(fort_criterion, x_free_final, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, zero_int, maxfun_int, success, message, iter)
+        x_free_scaled = apply_scaling(x_free_start, auto_scales, 'do')
+
+        crit_scaled = .True.
+
+        CALL newuoa(fort_criterion, x_free_scaled, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, zero_int, MIN(maxfun, newuoa_maxfun) - 1, success, message, iter)
+
+        crit_scaled = .False.
+
+        x_free_final = apply_scaling(x_free_scaled, auto_scales, 'undo')
         
     ELSEIF (optimizer_used == 'FORT-BFGS') THEN
 
-        CALL dfpmin(fort_criterion, fort_dcriterion, x_free_final, bfgs_gtol, bfgs_maxiter, bfgs_stpmx, maxfun, success, message, iter)
+        CALL dfpmin(fort_criterion, fort_dcriterion, x_free_start, bfgs_gtol, bfgs_maxiter, bfgs_stpmx, maxfun, success, message, iter)
 
-    END IF
-    
+        x_free_final = x_free_start
+
+    END IF   
+
     crit_val = fort_criterion(x_free_final)
 
     CALL logging_estimation_final(success, message, crit_val)
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+FUNCTION apply_scaling(x_in, auto_scales, request)
+
+    !/* external objects    */
+
+    REAL(our_dble)                  :: apply_scaling(num_free)
+
+    REAL(our_dble), INTENT(IN)      :: auto_scales(num_free, num_free)
+    REAL(our_dble), INTENT(IN)      :: x_in(num_free)
+
+    CHARACTER(*), INTENT(IN)        :: request
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    IF (request == 'do') THEN
+
+        apply_scaling = MATMUL(auto_scales, x_in)
+
+    ELSE
+
+        apply_scaling = MATMUL(pinv(auto_scales, num_free), x_in)
+
+    END IF
+
+END FUNCTION
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE get_scales(auto_scales, x_free_start)
+
+    !/* external objects    */
+
+    REAL(our_dble), ALLOCATABLE, INTENT(OUT)     :: auto_scales(:, :)
+
+    REAL(our_dble), INTENT(IN)                   :: x_free_start(:)
+
+    !/* internal objects    */
+
+    REAL(our_dble)                  :: grad(num_free)
+    REAL(our_dble)                  :: val
+
+    INTEGER(our_int)                :: i
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    crit_logging = .False.
+
+    crit_counter = .False.
+
+    ALLOCATE(auto_scales(num_free, num_free))
+
+    grad = fort_dcriterion(x_free_start)
+
+    auto_scales = zero_dble
+
+    DO i = 1, num_free
+
+        val = grad(i)
+
+        IF (ABS(val) .LT. SMALL_FLOAT) val = SMALL_FLOAT
+
+        auto_scales(i, i) = val
+
+    END DO
+
+    crit_logging = .True.
+
+    crit_counter = .True.
 
 END SUBROUTINE
 !******************************************************************************
@@ -127,6 +209,10 @@ FUNCTION fort_criterion(x)
     LOGICAL                         :: is_start
     LOGICAL                         :: is_step
     
+    REAL(our_dble)                  :: x_input(num_free)
+
+    INTEGER(our_int)                :: i
+
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
@@ -137,8 +223,16 @@ FUNCTION fort_criterion(x)
         RETURN
     END IF
 
-    CALL construct_all_current_values(x_all_current, x, paras_fixed)
+    ! Undo the scaling (if required)
+    IF (crit_scaled) THEN    
+        x_input = apply_scaling(x, auto_scales, 'undo')
+    ELSE
+        x_input = x
+    END IF
 
+
+
+    CALL construct_all_current_values(x_all_current, x_input, paras_fixed)
 
     CALL dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x_all_current)
 
@@ -148,40 +242,45 @@ FUNCTION fort_criterion(x)
 
     CALL fort_evaluate(fort_criterion, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_est, periods_draws_prob, delta, tau, edu_start, edu_max)
 
-
-
-    num_eval = num_eval + 1
-
-    is_start = (num_eval == 1)
-
-
-    is_step = (value_step .GT. fort_criterion) 
- 
-    IF (is_step) THEN
-
-        num_step = num_step + 1
-
-        value_step = fort_criterion
-
-    END IF
-
+    ! The counting is turned of during the determination of the auto scaling.
+    IF (crit_counter) THEN
     
-    CALL write_out_information(num_eval, fort_criterion, x_all_current, 'current')
+        num_eval = num_eval + 1
 
-    IF (is_start) THEN
+        is_start = (num_eval == 1)
 
-        CALL write_out_information(zero_int, fort_criterion, x_all_current, 'start')
+        is_step = (value_step .GT. fort_criterion) 
+     
+        IF (is_step) THEN
+
+            num_step = num_step + 1
+
+            value_step = fort_criterion
+
+        END IF
 
     END IF
 
-    IF (is_step) THEN
+    ! The logging can be turned during the determination of the auto scaling.
+    IF (crit_logging) THEN
+    
+        CALL write_out_information(num_eval, fort_criterion, x_all_current, 'current')
 
-        CALL write_out_information(num_step, fort_criterion, x_all_current, 'step')
+        IF (is_start) THEN
 
-        CALL logging_estimation_step(num_step, num_eval, fort_criterion)
-        
+            CALL write_out_information(zero_int, fort_criterion, x_all_current, 'start')
+
+        END IF
+
+        IF (is_step) THEN
+
+            CALL write_out_information(num_step, fort_criterion, x_all_current, 'step')
+
+            CALL logging_estimation_step(num_step, num_eval, fort_criterion)
+            
+        END IF
+
     END IF
-
     
 END FUNCTION
 !******************************************************************************
@@ -195,8 +294,8 @@ FUNCTION fort_dcriterion(x)
 
     !/* internals objects       */
 
-    REAL(our_dble)                  :: ei(COUNT(.NOT. paras_fixed))
-    REAL(our_dble)                  :: d(COUNT(.NOT. paras_fixed))
+    REAL(our_dble)                  :: ei(num_free)
+    REAL(our_dble)                  :: d(num_free)
     REAL(our_dble)                  :: f0
     REAL(our_dble)                  :: f1
 
@@ -212,7 +311,7 @@ FUNCTION fort_dcriterion(x)
     ! Evaluate baseline
     f0 = fort_criterion(x)
 
-    DO j = 1, COUNT(.NOT. paras_fixed)
+    DO j = 1, num_free
 
         ei(j) = one_dble
 

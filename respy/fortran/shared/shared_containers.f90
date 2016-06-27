@@ -22,6 +22,8 @@ MODULE shared_containers
     REAL(our_dble), ALLOCATABLE     :: periods_emax(:, :)
     REAL(our_dble), ALLOCATABLE     :: data_est(:, :)
 
+    REAL(our_dble), ALLOCATABLE     :: auto_scales(:, :)
+
     REAL(our_dble)                  :: x_all_start(26)
     REAL(our_dble)                  :: x_all_current(26)
 
@@ -36,7 +38,11 @@ MODULE shared_containers
     LOGICAL                         :: paras_fixed(26)
     LOGICAL                         :: is_myopic
     LOGICAL                         :: is_debug
-    
+
+    LOGICAL                         :: crit_logging = .True.
+    LOGICAL                         :: crit_scaled = .False.
+    LOGICAL                         :: crit_counter = .True.
+
     ! Parameters for the optimization
     INTEGER(our_int)                :: maxfun
 

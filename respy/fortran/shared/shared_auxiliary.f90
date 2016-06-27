@@ -553,7 +553,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_payoffs
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, is_debug, is_interpolated, is_myopic, request, exec_dir, maxfun, paras_fixed, optimizer_used, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend, bfgs_epsilon, bfgs_gtol, bfgs_stpmx, bfgs_maxiter)
+SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, is_debug, is_interpolated, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, optimizer_used, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend, bfgs_epsilon, bfgs_gtol, bfgs_stpmx, bfgs_maxiter)
 
     !
     !   This function serves as the replacement for the RespyCls and reads in
@@ -579,12 +579,14 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
     INTEGER(our_int), INTENT(OUT)   :: seed_emax    
     INTEGER(our_int), INTENT(OUT)   :: edu_start
     INTEGER(our_int), INTENT(OUT)   :: seed_sim
+    INTEGER(our_int), INTENT(OUT)   :: num_free
     INTEGER(our_int), INTENT(OUT)   :: edu_max
     INTEGER(our_int), INTENT(OUT)   :: maxfun
-
+ 
     INTEGER(our_int), INTENT(OUT)   :: newuoa_maxfun    
     INTEGER(our_int), INTENT(OUT)   :: newuoa_npt
     INTEGER(our_int), INTENT(OUT)   :: bfgs_maxiter
+ 
     REAL(our_dble), INTENT(OUT)     :: bfgs_stpmx
     REAL(our_dble), INTENT(OUT)     :: bfgs_gtol    
     REAL(our_dble), INTENT(OUT)     :: bfgs_epsilon
@@ -688,6 +690,11 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
         READ(1, 1505) bfgs_maxiter
 
     CLOSE(1)
+
+
+    ! Constructed attributes
+    num_free =  COUNT(.NOT. paras_fixed)
+
 
 END SUBROUTINE
 !******************************************************************************
