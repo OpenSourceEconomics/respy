@@ -47,7 +47,7 @@ SUBROUTINE logging_estimation_final(success, message, crit_val)
     ! Write to file
     OPEN(UNIT=99, FILE='est.respy.log', ACCESS='APPEND')
         WRITE(99, *) 
-        WRITE(99, 5510) 'FINAL REPORT'
+        WRITE(99, 5510) 'ESTIMATION REPORT'
         WRITE(99, *) 
 
         IF (success) THEN
@@ -81,6 +81,8 @@ SUBROUTINE logging_estimation_step(num_step, num_eval, crit_val)
     INTEGER(our_int)                :: today(3)
     INTEGER(our_int)                :: now(3)
 
+    LOGICAL, SAVE                   :: is_first = .True.
+
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
@@ -94,6 +96,14 @@ SUBROUTINE logging_estimation_step(num_step, num_eval, crit_val)
     ! Obtain information about system time
     CALL IDATE(today)
     CALL ITIME(now)
+
+    ! Write out header
+    IF (is_first) THEN 
+        OPEN(UNIT=99, FILE='est.respy.log', ACCESS='APPEND')
+            WRITE(99, *) 'ESTIMATION PROGRESS' 
+            WRITE(99, *) 
+        CLOSE(99)
+    END IF
 
     ! Write to file
     OPEN(UNIT=99, FILE='est.respy.log', ACCESS='APPEND')

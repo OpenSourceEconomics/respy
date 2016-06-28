@@ -233,7 +233,7 @@ FUNCTION fort_criterion(x)
 !------------------------------------------------------------------------------
 
     ! Ensuring that the criterion function is not evaluated more than specified. However, there is the special request of MAXFUN equal to zero which needs to be allowed.
-    IF ((num_eval == maxfun) .AND. (maxfun .GT. zero_int)) THEN
+    IF ((num_eval == maxfun) .AND. (maxfun .GT. one_int)) THEN
         fort_criterion = -HUGE_FLOAT
         RETURN
     END IF
