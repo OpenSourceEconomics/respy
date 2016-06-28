@@ -47,7 +47,7 @@ SUBROUTINE logging_estimation_final(success, message, crit_val)
     ! Write to file
     OPEN(UNIT=99, FILE='est.respy.log', ACCESS='APPEND')
         WRITE(99, *) 
-        WRITE(99, 5510) 'ESTIMATION REPORT'
+        WRITE(99, *) 'ESTIMATION REPORT'
         WRITE(99, *) 
 
         IF (success) THEN

@@ -553,7 +553,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_payoffs
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, is_debug, is_interpolated, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, optimizer_used, dfunc_eps, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend, bfgs_gtol, bfgs_stpmx, bfgs_maxiter)
+SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, is_debug, is_interpolated, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, is_scaled, scaled_minimum, optimizer_used, dfunc_eps, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend, bfgs_gtol, bfgs_stpmx, bfgs_maxiter)
 
     !
     !   This function serves as the replacement for the RespyCls and reads in
@@ -586,21 +586,21 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
     INTEGER(our_int), INTENT(OUT)   :: newuoa_maxfun    
     INTEGER(our_int), INTENT(OUT)   :: newuoa_npt
     INTEGER(our_int), INTENT(OUT)   :: bfgs_maxiter
- 
+
+    REAL(our_dble), INTENT(OUT)     :: scaled_minimum 
     REAL(our_dble), INTENT(OUT)     :: bfgs_stpmx
     REAL(our_dble), INTENT(OUT)     :: bfgs_gtol    
     REAL(our_dble), INTENT(OUT)     :: dfunc_eps
-
     CHARACTER(225), INTENT(OUT)     :: optimizer_used
     CHARACTER(225), INTENT(OUT)     :: exec_dir
 
     CHARACTER(10), INTENT(OUT)      :: request
 
-
     LOGICAL, INTENT(OUT)            :: is_interpolated
+    LOGICAL, INTENT(OUT)            :: paras_fixed(26)
+    LOGICAL, INTENT(OUT)            :: is_scaled
     LOGICAL, INTENT(OUT)            :: is_myopic 
     LOGICAL, INTENT(OUT)            :: is_debug
-    LOGICAL, INTENT(OUT)            :: paras_fixed(26)
 
     !/* internal objects        */
 
@@ -664,6 +664,9 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
         ! DERIVATIVES
         READ(1, 1500) dfunc_eps
 
+        ! SCALING
+        READ(1, *) is_scaled
+        READ(1, *) scaled_minimum
 
         ! SIMULATION
         READ(1, 1505) num_agents_sim

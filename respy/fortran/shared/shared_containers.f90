@@ -39,9 +39,8 @@ MODULE shared_containers
     LOGICAL                         :: is_myopic
     LOGICAL                         :: is_debug
 
-    LOGICAL                         :: crit_logging = .True.
+    LOGICAL                         :: crit_estimation = .False.
     LOGICAL                         :: crit_scaled = .False.
-    LOGICAL                         :: crit_counter = .True.
 
     ! Parameters for the optimization
     INTEGER(our_int)                :: maxfun

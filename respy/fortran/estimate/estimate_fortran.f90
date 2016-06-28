@@ -27,13 +27,14 @@ MODULE estimate_fortran
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_estimate(crit_val, success, message, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed, optimizer_used, maxfun, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, newuoa_maxfun, bfgs_gtol, bfgs_maxiter, bfgs_stpmx)
+SUBROUTINE fort_estimate(crit_val, success, message, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed, optimizer_used, maxfun, is_scaled, scaled_minimum, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, newuoa_maxfun, bfgs_gtol, bfgs_maxiter, bfgs_stpmx)
 
     !/* external objects    */
 
     REAL(our_dble), INTENT(OUT)     :: crit_val
 
     REAL(our_dble), INTENT(IN)      :: shocks_cholesky(4, 4)
+    REAL(our_dble), INTENT(IN)      :: scaled_minimum
     REAL(our_dble), INTENT(IN)      :: coeffs_home(1)
     REAL(our_dble), INTENT(IN)      :: coeffs_edu(3)
     REAL(our_dble), INTENT(IN)      :: coeffs_a(6)
@@ -53,7 +54,9 @@ SUBROUTINE fort_estimate(crit_val, success, message, coeffs_a, coeffs_b, coeffs_
     CHARACTER(150), INTENT(OUT)     :: message
 
     LOGICAL, INTENT(IN)             :: paras_fixed(26) 
+    LOGICAL, INTENT(OUT)            :: is_scaled
     LOGICAL, INTENT(OUT)            :: success
+
 
     LOGICAL, PARAMETER              :: all_free(26) = .False.
 
@@ -77,6 +80,20 @@ SUBROUTINE fort_estimate(crit_val, success, message, coeffs_a, coeffs_b, coeffs_
     CALL get_free_optim_paras(x_free_start, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed)
 
 
+    ! If a scaling of the criterion function is requested, then we determine the scaled and transform the starting values. Also, the boolean indicates that inside the criterion function the scaling is undone.
+    IF (is_scaled .AND. (.NOT. maxfun == zero_int)) THEN
+
+        CALL get_scales(auto_scales, x_free_start, scaled_minimum)
+        
+        x_free_start = apply_scaling(x_free_start, auto_scales, 'do')
+
+        crit_scaled = .True.
+
+    END IF
+
+
+    crit_estimation = .True.
+
     IF (maxfun == zero_int) THEN
 
         success = .True.
@@ -86,29 +103,45 @@ SUBROUTINE fort_estimate(crit_val, success, message, coeffs_a, coeffs_b, coeffs_
 
     ELSEIF (optimizer_used == 'FORT-NEWUOA') THEN
 
-        !CALL get_scales(auto_scales, x_free_start)
-
-        x_free_scaled = x_free_start !apply_scaling(x_free_start, auto_scales, 'do')
-
-        !crit_scaled = .True.
-
-        CALL newuoa(fort_criterion, x_free_scaled, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, zero_int, MIN(maxfun, newuoa_maxfun) - 1, success, message, iter)
-
-        !crit_scaled = .False.
-
-        !x_free_final = apply_scaling(x_free_scaled, auto_scales, 'undo')
-
-        x_free_final = x_free_scaled
+        CALL newuoa(fort_criterion, x_free_start, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, zero_int, MIN(maxfun, newuoa_maxfun) - 1, success, message, iter)
         
     ELSEIF (optimizer_used == 'FORT-BFGS') THEN
 
         CALL dfpmin(fort_criterion, fort_dcriterion, x_free_start, bfgs_gtol, bfgs_maxiter, bfgs_stpmx, maxfun, success, message, iter)
 
-        x_free_final = x_free_start
-
     END IF   
 
-    crit_val = fort_criterion(x_free_final)
+    crit_estimation = .False.
+
+
+    ! If scaling is requested, then we transform the resulting parameter vector and indicate that the critterion function is to be used with the actual parameters again. 
+    IF (is_scaled .AND. (.NOT. maxfun == zero_int)) THEN
+        
+        crit_scaled = .False.
+
+        x_free_final = apply_scaling(x_free_start, auto_scales, 'undo')
+
+    ELSE
+        
+        x_free_final = x_free_start
+
+    END IF
+
+
+
+
+    IF (maxfun == zero_int) THEN       
+        crit_estimation = .True.    
+        crit_val = fort_criterion(x_free_final)
+        crit_estimation = .False. 
+
+    ELSE
+        
+        crit_val = fort_criterion(x_free_final)
+
+    END IF
+
+
 
     CALL logging_estimation_final(success, message, crit_val)
 
@@ -143,16 +176,18 @@ FUNCTION apply_scaling(x_in, auto_scales, request)
 END FUNCTION
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_scales(auto_scales, x_free_start)
+SUBROUTINE get_scales(auto_scales, x_free_start, scaled_minimum)
 
     !/* external objects    */
 
     REAL(our_dble), ALLOCATABLE, INTENT(OUT)     :: auto_scales(:, :)
 
     REAL(our_dble), INTENT(IN)                   :: x_free_start(:)
+    REAL(our_dble), INTENT(IN)                   :: scaled_minimum
 
     !/* internal objects    */
 
+    REAL(our_dble)                  :: x_free_scaled(num_free)
     REAL(our_dble)                  :: grad(num_free)
     REAL(our_dble)                  :: val
 
@@ -162,9 +197,7 @@ SUBROUTINE get_scales(auto_scales, x_free_start)
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    crit_logging = .False.
-
-    crit_counter = .False.
+    crit_estimation = .False.
 
     ALLOCATE(auto_scales(num_free, num_free))
 
@@ -176,25 +209,26 @@ SUBROUTINE get_scales(auto_scales, x_free_start)
 
         val = grad(i)
 
-        IF (ABS(val) .LT. SMALL_FLOAT) val = SMALL_FLOAT
+        IF (ABS(val) .LT. scaled_minimum) val = scaled_minimum
 
         auto_scales(i, i) = val
 
     END DO
 
-    crit_logging = .True.
-
-    crit_counter = .True.
-
     ! Formatting
-    12 FORMAT(1x, f25.15)
+    12 FORMAT(1x, f25.15, 5x, f25.15)
+    13 FORMAT(1x, A25, 5x, A25)
+
+    x_free_scaled = apply_scaling(x_free_start, auto_scales, 'do')
 
     ! Write to file
     OPEN(UNIT=99, FILE='est.respy.log', ACCESS='APPEND')
-        WRITE(99, *) ' SCALING PARAMETERS'
+        WRITE(99, *) ' SCALING'
+        WRITE(99, *) 
+        WRITE(99, 13) 'Scale', 'Tranformed Value' 
         WRITE(99, *) 
         DO i = 1, num_free
-            WRITE(99, 12) auto_scales(i, i)
+            WRITE(99, 12) auto_scales(i, i), x_free_scaled(i)
         END DO
         WRITE(99, *) 
     CLOSE(99)
@@ -233,7 +267,7 @@ FUNCTION fort_criterion(x)
 !------------------------------------------------------------------------------
 
     ! Ensuring that the criterion function is not evaluated more than specified. However, there is the special request of MAXFUN equal to zero which needs to be allowed.
-    IF ((num_eval == maxfun) .AND. (maxfun .GT. one_int)) THEN
+    IF ((num_eval == maxfun) .AND. crit_estimation .AND. (.NOT. maxfun == zero_int)) THEN
         fort_criterion = -HUGE_FLOAT
         RETURN
     END IF
@@ -258,7 +292,7 @@ FUNCTION fort_criterion(x)
     CALL fort_evaluate(fort_criterion, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_est, periods_draws_prob, delta, tau, edu_start, edu_max)
 
     ! The counting is turned of during the determination of the auto scaling.
-    IF (crit_counter) THEN
+    IF (crit_estimation) THEN
     
         num_eval = num_eval + 1
 
@@ -277,7 +311,7 @@ FUNCTION fort_criterion(x)
     END IF
 
     ! The logging can be turned during the determination of the auto scaling.
-    IF (crit_logging) THEN
+    IF (crit_estimation) THEN
     
         CALL write_out_information(num_eval, fort_criterion, x_all_current, 'current')
 

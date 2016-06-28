@@ -12,7 +12,7 @@ import respy
 ###############################################################################
 # SPECIFICATION FOR MONTE-CARLO EXERCISE
 ###############################################################################
-MAXFUN = 1
+MAXFUN = 100000000
 NUM_DRAWS_EMAX = 500
 NUM_DRAWS_PROB = 200
 
@@ -32,8 +32,11 @@ OPTIMIZER_OPTIONS['FORT-NEWUOA']['npt'] = NPT
 OPTIMIZER_OPTIONS['FORT-NEWUOA']['rhobeg'] = float(RHOBEG)
 OPTIMIZER_OPTIONS['FORT-NEWUOA']['rhoend'] = float(RHOEND)
 
+SCALING = [True, 0.00001]
+
 ###############################################################################
 ###############################################################################
+
 
 os.system('git clean -d -f')
 
@@ -48,6 +51,7 @@ respy_obj.set_attr('num_draws_prob', NUM_DRAWS_PROB)
 respy_obj.set_attr('num_agents_est', NUM_AGENTS)
 respy_obj.set_attr('num_agents_sim', NUM_AGENTS)
 respy_obj.set_attr('optimizer_used', OPTIMIZER)
+respy_obj.set_attr('scaling', SCALING)
 
 respy_obj.set_attr('num_procs', NUM_PROCS)
 if NUM_PROCS > 1:

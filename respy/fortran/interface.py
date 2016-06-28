@@ -29,7 +29,7 @@ def resfort_interface(respy_obj, request, data_array=None):
         is_myopic, min_idx, tau, is_parallel, num_procs, \
         num_agents_sim, num_draws_prob, num_agents_est, seed_prob, seed_sim, \
         paras_fixed, optimizer_options, optimizer_used, maxfun, paras_fixed, \
-        derivatives = dist_class_attributes(respy_obj,
+        derivatives, scaling = dist_class_attributes(respy_obj,
                 'model_paras', 'num_periods', 'edu_start', 'is_debug',
                 'edu_max', 'delta', 'num_draws_emax', 'seed_emax',
                 'is_interpolated', 'num_points_interp', 'is_myopic', 'min_idx',
@@ -37,9 +37,10 @@ def resfort_interface(respy_obj, request, data_array=None):
                 'num_draws_prob', 'num_agents_est', 'seed_prob', 'seed_sim',
                 'paras_fixed', 'optimizer_options', 'optimizer_used',
                                             'maxfun', 'paras_fixed',
-                                            'derivatives')
+                                            'derivatives', 'scaling')
 
     dfunc_eps = derivatives[1]
+    is_scaled, scale_minimum = scaling
 
     if request == 'estimate':
         # Check that selected optimizer is in line with version of program.
@@ -62,7 +63,7 @@ def resfort_interface(respy_obj, request, data_array=None):
 
     args = args + (num_draws_prob, num_agents_est, num_agents_sim, seed_prob,
     seed_emax, tau, num_procs, request, seed_sim, optimizer_options,
-    optimizer_used, maxfun, paras_fixed, dfunc_eps)
+    optimizer_used, maxfun, paras_fixed, dfunc_eps, is_scaled, scale_minimum)
 
     write_resfort_initialization(*args)
 
@@ -189,7 +190,7 @@ def write_resfort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         num_points_interp, is_myopic, edu_start, is_debug, edu_max, min_idx, delta,
         num_draws_prob, num_agents_est, num_agents_sim, seed_prob, seed_emax,
         tau, num_procs, request, seed_sim, optimizer_options, optimizer_used,
-                                 maxfun, paras_fixed, dfunc_eps):
+                                 maxfun, paras_fixed, dfunc_eps, is_scaled, scale_minimum):
     """ Write out model request to hidden file .model.resfort.ini.
     """
 
@@ -266,6 +267,13 @@ def write_resfort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
 
         # DERIVATIVES
         line = '{0:15.10f}\n'.format(dfunc_eps)
+        file_.write(line)
+
+        # SCALING
+        line = '{0}\n'.format(is_scaled)
+        file_.write(line)
+
+        line = '{0:15.10f}\n'.format(scale_minimum)
         file_.write(line)
 
         # SIMULATION
