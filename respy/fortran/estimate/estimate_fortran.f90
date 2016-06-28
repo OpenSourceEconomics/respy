@@ -82,7 +82,7 @@ SUBROUTINE fort_estimate(crit_val, success, message, coeffs_a, coeffs_b, coeffs_
     ! If a scaling of the criterion function is requested, then we determine the scaled and transform the starting values. Also, the boolean indicates that inside the criterion function the scaling is undone.
     IF (is_scaled .AND. (.NOT. maxfun == zero_int)) THEN
 
-        CALL get_scales(auto_scales, x_free_start, scaled_minimum)
+        CALL get_scales_scalar(auto_scales, x_free_start, scaled_minimum)
         
         x_free_start = apply_scaling(x_free_start, auto_scales, 'do')
 
@@ -333,18 +333,17 @@ FUNCTION apply_scaling(x_in, auto_scales, request)
 END FUNCTION
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_scales(auto_scales, x_free_start, scaled_minimum)
+SUBROUTINE get_scales_scalar(auto_scales, x_free_start, scaled_minimum)
 
     !/* external objects    */
 
     REAL(our_dble), ALLOCATABLE, INTENT(OUT)     :: auto_scales(:, :)
 
-    REAL(our_dble), INTENT(IN)                   :: x_free_start(:)
+    REAL(our_dble), INTENT(IN)                   :: x_free_start(num_free)
     REAL(our_dble), INTENT(IN)                   :: scaled_minimum
 
     !/* internal objects    */
 
-    REAL(our_dble)                  :: x_free_scaled(num_free)
     REAL(our_dble)                  :: grad(num_free)
     REAL(our_dble)                  :: val
 
@@ -371,6 +370,28 @@ SUBROUTINE get_scales(auto_scales, x_free_start, scaled_minimum)
         auto_scales(i, i) = val
 
     END DO
+
+    CALL logging_scaling(auto_scales, x_free_start)
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE logging_scaling(auto_scales, x_free_start)
+
+    !/* external objects    */
+
+    REAL(our_dble), INTENT(IN)      :: auto_scales(num_free, num_free)
+    REAL(our_dble), INTENT(IN)      :: x_free_start(num_free)
+
+    !/* internal objects    */
+
+    REAL(our_dble)                  :: x_free_scaled(num_free)
+
+    INTEGER(our_int)                :: i
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
 
     ! Formatting
     12 FORMAT(1x, f25.15, 5x, f25.15, 5x, f25.15)
