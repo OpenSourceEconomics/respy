@@ -32,12 +32,12 @@ else:
 # We need to be explicit about the PYTHON version as otherwise the F2PY
 # libraries are not compiled in accordance with the PYTHON version used by
 # for the execution of the script.
-cwd = os.getcwd()
-os.chdir(PACKAGE_DIR + '/respy')
-subprocess.check_call(python_exec + ' waf distclean', shell=True)
-subprocess.check_call(python_exec + ' waf configure build --debug',
-                shell=True)
-os.chdir(cwd)
+# cwd = os.getcwd()
+# os.chdir(PACKAGE_DIR + '/respy')
+# subprocess.check_call(python_exec + ' waf distclean', shell=True)
+# subprocess.check_call(python_exec + ' waf configure build --debug',
+#                 shell=True)
+# os.chdir(cwd)
 
 # Import package. The late import is required as the compilation needs to
 # take place first.
@@ -60,7 +60,14 @@ for idx, _ in enumerate(tests_old):
 
     init_dict['DERIVATIVES'] = dict()
     init_dict['DERIVATIVES']['version'] = 'FORWARD-DIFFERENCES'
-    init_dict['DERIVATIVES']['eps'] = 0.05
+
+
+    optimizer = init_dict['ESTIMATION']['optimizer']
+
+    if optimizer == 'SCIPY-BFGS':
+        init_dict['DERIVATIVES']['eps'] = init_dict['SCIPY-BFGS']['epsilon']
+    else:
+        init_dict['DERIVATIVES']['eps'] = init_dict['FORT-BFGS']['epsilon']
 
     del init_dict['SCIPY-BFGS']['epsilon']
     del init_dict['FORT-BFGS']['epsilon']
