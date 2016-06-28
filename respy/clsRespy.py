@@ -66,6 +66,8 @@ class RespyCls(object):
 
         self.attr['is_parallel'] = None
 
+        self.attr['derivatives'] = None
+
         self.attr['num_procs'] = None
 
         self.attr['seed_prob'] = None
@@ -89,6 +91,8 @@ class RespyCls(object):
         self.attr['edu_max'] = None
 
         self.attr['version'] = None
+
+        self.attr['scaling'] = None
 
         self.attr['maxfun'] = None
 
@@ -301,6 +305,16 @@ class RespyCls(object):
         init_dict['ESTIMATION']['maxfun'] = self.attr['maxfun']
         init_dict['ESTIMATION']['tau'] = self.attr['tau']
 
+        # Derivatives
+        init_dict['DERIVATIVES'] = dict()
+        init_dict['DERIVATIVES']['version'] = self.attr['derivatives'][0]
+        init_dict['DERIVATIVES']['eps'] = self.attr['derivatives'][1]
+
+        # Scaling
+        init_dict['SCALING'] = dict()
+        init_dict['SCALING']['flag'] = self.attr['scaling'][0]
+        init_dict['SCALING']['minimum'] = self.attr['scaling'][1]
+
         # Program
         init_dict['PROGRAM'] = dict()
         init_dict['PROGRAM']['version'] = self.attr['version']
@@ -399,6 +413,14 @@ class RespyCls(object):
 
         self.attr['tau'] = init_dict['ESTIMATION']['tau']
 
+        self.attr['derivatives'] = [None, None]
+        self.attr['derivatives'][0] = init_dict['DERIVATIVES']['version']
+        self.attr['derivatives'][1] = init_dict['DERIVATIVES']['eps']
+
+        self.attr['scaling'] = [None, None]
+        self.attr['scaling'][0] = init_dict['SCALING']['flag']
+        self.attr['scaling'][1] = init_dict['SCALING']['minimum']
+
         # Initialize model parameters
         self.attr['model_paras'] = dict()
 
@@ -494,6 +516,8 @@ class RespyCls(object):
 
         num_agents_est = self.attr['num_agents_est']
 
+        derivatives = self.attr['derivatives']
+
         is_parallel = self.attr['is_parallel']
 
         paras_fixed = self.attr['paras_fixed']
@@ -521,6 +545,8 @@ class RespyCls(object):
         edu_max = self.attr['edu_max']
 
         version = self.attr['version']
+
+        scaling = self.attr['scaling']
 
         maxfun = self.attr['maxfun']
 
@@ -617,6 +643,16 @@ class RespyCls(object):
         # Optimizers
         assert (optimizer_used in ['SCIPY-BFGS', 'SCIPY-POWELL',
             'FORT-NEWUOA', 'FORT-BFGS'])
+
+        # Scaling
+        assert (scaling[0] in [True, False])
+        assert (isinstance(scaling[1], float))
+        assert (scaling[1] > 0.0)
+
+        # Derivatives
+        assert (derivatives[0] in ['FORWARD-DIFFERENCES'])
+        assert (isinstance(derivatives[1], float))
+        assert (derivatives[1] > 0.0)
 
     def _check_integrity_results(self):
         """ This methods check the integrity of the results.

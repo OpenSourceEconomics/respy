@@ -27,7 +27,7 @@ MODULE shared_containers
     REAL(our_dble)                  :: x_all_start(26)
     REAL(our_dble)                  :: x_all_current(26)
 
-    REAL(our_dble)                  :: bfgs_epsilon
+    REAL(our_dble)                  :: dfunc_eps
     REAL(our_dble)                  :: delta
     REAL(our_dble)                  :: tau
 

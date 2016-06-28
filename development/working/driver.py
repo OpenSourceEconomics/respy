@@ -56,4 +56,4 @@ start = time.time()
 x, crit_val = estimate(respy_obj)
 print(crit_val)
 
-np.testing.assert_almost_equal(crit_val, 0.747493025531)
+np.testing.assert_almost_equal(crit_val, 0.74754897765552997)

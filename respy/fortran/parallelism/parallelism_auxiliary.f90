@@ -299,7 +299,7 @@ FUNCTION fort_dcriterion_parallel(x)
 
         ei(j) = one_dble
 
-        d = bfgs_epsilon * ei
+        d = dfunc_eps * ei
 
         f1 = fort_criterion_parallel(x + d)
 

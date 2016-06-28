@@ -553,7 +553,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_payoffs
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, is_debug, is_interpolated, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, optimizer_used, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend, bfgs_epsilon, bfgs_gtol, bfgs_stpmx, bfgs_maxiter)
+SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, is_debug, is_interpolated, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, optimizer_used, dfunc_eps, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend, bfgs_gtol, bfgs_stpmx, bfgs_maxiter)
 
     !
     !   This function serves as the replacement for the RespyCls and reads in
@@ -589,7 +589,7 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
  
     REAL(our_dble), INTENT(OUT)     :: bfgs_stpmx
     REAL(our_dble), INTENT(OUT)     :: bfgs_gtol    
-    REAL(our_dble), INTENT(OUT)     :: bfgs_epsilon
+    REAL(our_dble), INTENT(OUT)     :: dfunc_eps
 
     CHARACTER(225), INTENT(OUT)     :: optimizer_used
     CHARACTER(225), INTENT(OUT)     :: exec_dir
@@ -661,6 +661,10 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
         READ(1, 1505) seed_prob
         READ(1, 1510) tau
 
+        ! DERIVATIVES
+        READ(1, 1500) dfunc_eps
+
+
         ! SIMULATION
         READ(1, 1505) num_agents_sim
         READ(1, 1505) seed_sim
@@ -684,7 +688,6 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
         READ(1, 1500) newuoa_rhobeg
         READ(1, 1500) newuoa_rhoend
 
-        READ(1, 1500) bfgs_epsilon
         READ(1, 1500) bfgs_gtol
         READ(1, 1500) bfgs_stpmx
         READ(1, 1505) bfgs_maxiter
@@ -694,7 +697,6 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
 
     ! Constructed attributes
     num_free =  COUNT(.NOT. paras_fixed)
-
 
 END SUBROUTINE
 !******************************************************************************

@@ -23,9 +23,9 @@ def add_gradient_information(respy_obj):
     overhead, which appears justified at this point.
     """
 
-    model_paras, is_debug, paras_fixed = \
+    model_paras, is_debug, paras_fixed, derivatives = \
         dist_class_attributes(respy_obj, 'model_paras', 'is_debug',
-            'paras_fixed')
+            'paras_fixed', 'derivatives')
 
     # Auxiliary objects
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
@@ -53,7 +53,7 @@ def add_gradient_information(respy_obj):
 
     # Approximate gradient by forward finite differences.
     grad, ei = np.zeros((num_free,), float), np.zeros((26,), float)
-    epsilon = 10e-6
+    dfunc_eps = derivatives[1]
 
     # Making sure that the criterion is only evaluated at the relevant
     # starting values.
@@ -67,7 +67,7 @@ def add_gradient_information(respy_obj):
         x_baseline = x_all_start.copy()
 
         ei[i] = 1.0
-        d = epsilon * ei
+        d = dfunc_eps * ei
         respy_obj.update_model_paras(x_baseline + d)
 
         _, f1 = estimate(respy_obj)

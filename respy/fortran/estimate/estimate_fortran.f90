@@ -86,17 +86,19 @@ SUBROUTINE fort_estimate(crit_val, success, message, coeffs_a, coeffs_b, coeffs_
 
     ELSEIF (optimizer_used == 'FORT-NEWUOA') THEN
 
-        CALL get_scales(auto_scales, x_free_start)
+        !CALL get_scales(auto_scales, x_free_start)
 
-        x_free_scaled = apply_scaling(x_free_start, auto_scales, 'do')
+        x_free_scaled = x_free_start !apply_scaling(x_free_start, auto_scales, 'do')
 
-        crit_scaled = .True.
+        !crit_scaled = .True.
 
         CALL newuoa(fort_criterion, x_free_scaled, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, zero_int, MIN(maxfun, newuoa_maxfun) - 1, success, message, iter)
 
-        crit_scaled = .False.
+        !crit_scaled = .False.
 
-        x_free_final = apply_scaling(x_free_scaled, auto_scales, 'undo')
+        !x_free_final = apply_scaling(x_free_scaled, auto_scales, 'undo')
+
+        x_free_final = x_free_scaled
         
     ELSEIF (optimizer_used == 'FORT-BFGS') THEN
 
@@ -183,6 +185,19 @@ SUBROUTINE get_scales(auto_scales, x_free_start)
     crit_logging = .True.
 
     crit_counter = .True.
+
+    ! Formatting
+    12 FORMAT(1x, f25.15)
+
+    ! Write to file
+    OPEN(UNIT=99, FILE='est.respy.log', ACCESS='APPEND')
+        WRITE(99, *) ' SCALING PARAMETERS'
+        WRITE(99, *) 
+        DO i = 1, num_free
+            WRITE(99, 12) auto_scales(i, i)
+        END DO
+        WRITE(99, *) 
+    CLOSE(99)
 
 END SUBROUTINE
 !******************************************************************************
@@ -315,7 +330,7 @@ FUNCTION fort_dcriterion(x)
 
         ei(j) = one_dble
 
-        d = bfgs_epsilon * ei
+        d = dfunc_eps * ei
 
         f1 = fort_criterion(x + d)
 
