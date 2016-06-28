@@ -31,7 +31,7 @@ else:
 # We need to be explicit about the PYTHON version as otherwise the F2PY
 # libraries are not compiled in accordance with the PYTHON version used by
 # for the execution of the script.
-if True:
+if False:
     cwd = os.getcwd()
     os.chdir(PACKAGE_DIR + '/respy')
     subprocess.check_call(python_exec + ' waf distclean', shell=True)
@@ -50,7 +50,7 @@ from respy import estimate
 ################################################################################
 # RUN
 ################################################################################
-idx = 292
+idx = 314
 
 fname = 'test_vault_' + str(PYTHON_VERSION) + '.respy.pkl'
 tests = pkl.load(open(TEST_RESOURCES_DIR + '/' + fname, 'rb'))

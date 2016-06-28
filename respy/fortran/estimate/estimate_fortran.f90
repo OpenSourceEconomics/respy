@@ -57,9 +57,6 @@ SUBROUTINE fort_estimate(crit_val, success, message, coeffs_a, coeffs_b, coeffs_
     LOGICAL, INTENT(OUT)            :: is_scaled
     LOGICAL, INTENT(OUT)            :: success
 
-
-    LOGICAL, PARAMETER              :: all_free(26) = .False.
-
     !/* internal objects    */
 
     REAL(our_dble)                  :: x_free_start(num_free)
@@ -67,6 +64,7 @@ SUBROUTINE fort_estimate(crit_val, success, message, coeffs_a, coeffs_b, coeffs_
     
     INTEGER(our_int)                :: iter
 
+    LOGICAL, PARAMETER              :: all_free(26) = .False.
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------

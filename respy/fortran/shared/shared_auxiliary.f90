@@ -697,7 +697,6 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
 
     CLOSE(1)
 
-
     ! Constructed attributes
     num_free =  COUNT(.NOT. paras_fixed)
 

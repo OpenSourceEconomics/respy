@@ -177,7 +177,8 @@ def generate_random_dict(constraints=None):
     dict_['FORT-NEWUOA']['rhobeg'] = rhobeg
     dict_['FORT-NEWUOA']['rhoend'] = np.random.uniform(0.01, 0.99) * rhobeg
 
-    lower, upper = 26 + 2, (2 * 26 + 1)  # Above the upper bound is not recommended. Requires too large W.
+    lower = (26 - sum(paras_fixed)) + 2
+    upper = (2 * (26 - sum(paras_fixed)) + 1)
     dict_['FORT-NEWUOA']['npt'] = np.random.randint(lower, upper)
 
     # FORT-BFGS
