@@ -142,7 +142,6 @@ SUBROUTINE write_out_information(counter, fval, x, which)
     CLOSE(1)
 
 END SUBROUTINE
-
 !******************************************************************************
 !******************************************************************************
 SUBROUTINE dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x)
