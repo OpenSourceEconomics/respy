@@ -62,7 +62,6 @@ SUBROUTINE fort_estimate(crit_val, success, message, coeffs_a, coeffs_b, coeffs_
 
     !/* internal objects    */
 
-    REAL(our_dble)                  :: x_free_scaled(num_free)
     REAL(our_dble)                  :: x_free_start(num_free)
     REAL(our_dble)                  :: x_free_final(num_free)
     
@@ -128,110 +127,10 @@ SUBROUTINE fort_estimate(crit_val, success, message, coeffs_a, coeffs_b, coeffs_
     END IF
 
 
-
-
-    IF (maxfun == zero_int) THEN       
-        crit_estimation = .True.    
-        crit_val = fort_criterion(x_free_final)
-        crit_estimation = .False. 
-
-    ELSE
-        
-        crit_val = fort_criterion(x_free_final)
-
-    END IF
-
+    crit_val = fort_criterion(x_free_final)
 
 
     CALL logging_estimation_final(success, message, crit_val)
-
-END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
-FUNCTION apply_scaling(x_in, auto_scales, request)
-
-    !/* external objects    */
-
-    REAL(our_dble)                  :: apply_scaling(num_free)
-
-    REAL(our_dble), INTENT(IN)      :: auto_scales(num_free, num_free)
-    REAL(our_dble), INTENT(IN)      :: x_in(num_free)
-
-    CHARACTER(*), INTENT(IN)        :: request
-
-!------------------------------------------------------------------------------
-! Algorithm
-!------------------------------------------------------------------------------
-
-    IF (request == 'do') THEN
-
-        apply_scaling = MATMUL(auto_scales, x_in)
-
-    ELSE
-
-        apply_scaling = MATMUL(pinv(auto_scales, num_free), x_in)
-
-    END IF
-
-END FUNCTION
-!******************************************************************************
-!******************************************************************************
-SUBROUTINE get_scales(auto_scales, x_free_start, scaled_minimum)
-
-    !/* external objects    */
-
-    REAL(our_dble), ALLOCATABLE, INTENT(OUT)     :: auto_scales(:, :)
-
-    REAL(our_dble), INTENT(IN)                   :: x_free_start(:)
-    REAL(our_dble), INTENT(IN)                   :: scaled_minimum
-
-    !/* internal objects    */
-
-    REAL(our_dble)                  :: x_free_scaled(num_free)
-    REAL(our_dble)                  :: grad(num_free)
-    REAL(our_dble)                  :: val
-
-    INTEGER(our_int)                :: i
-
-!------------------------------------------------------------------------------
-! Algorithm
-!------------------------------------------------------------------------------
-
-    crit_estimation = .False.
-
-    ALLOCATE(auto_scales(num_free, num_free))
-
-    grad = fort_dcriterion(x_free_start)
-
-    auto_scales = zero_dble
-
-    DO i = 1, num_free
-
-        val = grad(i)
-
-        IF (ABS(val) .LT. scaled_minimum) val = scaled_minimum
-
-        auto_scales(i, i) = val
-
-    END DO
-
-    ! Formatting
-    12 FORMAT(1x, f25.15, 5x, f25.15)
-    13 FORMAT(1x, A25, 5x, A25)
-
-    x_free_scaled = apply_scaling(x_free_start, auto_scales, 'do')
-
-    ! Write to file
-    OPEN(UNIT=99, FILE='est.respy.log', ACCESS='APPEND')
-        WRITE(99, *) ' SCALING'
-        WRITE(99, *) 
-        WRITE(99, 13) 'Scale', 'Tranformed Value' 
-        WRITE(99, *) 
-        DO i = 1, num_free
-            WRITE(99, 12) auto_scales(i, i), x_free_scaled(i)
-        END DO
-        WRITE(99, *) 
-    CLOSE(99)
 
 END SUBROUTINE
 !******************************************************************************
@@ -260,8 +159,6 @@ FUNCTION fort_criterion(x)
     
     REAL(our_dble)                  :: x_input(num_free)
 
-    INTEGER(our_int)                :: i
-
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
@@ -280,7 +177,6 @@ FUNCTION fort_criterion(x)
     END IF
 
 
-
     CALL construct_all_current_values(x_all_current, x_input, paras_fixed)
 
     CALL dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x_all_current)
@@ -292,7 +188,7 @@ FUNCTION fort_criterion(x)
     CALL fort_evaluate(fort_criterion, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_est, periods_draws_prob, delta, tau, edu_start, edu_max)
 
     ! The counting is turned of during the determination of the auto scaling.
-    IF (crit_estimation) THEN
+    IF (crit_estimation .OR. (maxfun == zero_int)) THEN
     
         num_eval = num_eval + 1
 
@@ -311,7 +207,7 @@ FUNCTION fort_criterion(x)
     END IF
 
     ! The logging can be turned during the determination of the auto scaling.
-    IF (crit_estimation) THEN
+    IF (crit_estimation .OR. (maxfun == zero_int)) THEN
     
         CALL write_out_information(num_eval, fort_criterion, x_all_current, 'current')
 
@@ -402,18 +298,98 @@ SUBROUTINE construct_all_current_values(x_all_current, x, paras_fixed)
     DO i = 1, 26
 
         IF(paras_fixed(i)) THEN
-
             x_all_current(i) = x_all_start(i)
-
         ELSE
-            
             x_all_current(i) = x(j)
             j = j + 1
-
         END IF
 
     END DO
     
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+FUNCTION apply_scaling(x_in, auto_scales, request)
+
+    !/* external objects    */
+
+    REAL(our_dble)                  :: apply_scaling(num_free)
+
+    REAL(our_dble), INTENT(IN)      :: auto_scales(num_free, num_free)
+    REAL(our_dble), INTENT(IN)      :: x_in(num_free)
+
+    CHARACTER(*), INTENT(IN)        :: request
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    IF (request == 'do') THEN
+        apply_scaling = MATMUL(auto_scales, x_in)
+    ELSE
+        apply_scaling = MATMUL(pinv(auto_scales, num_free), x_in)
+    END IF
+
+END FUNCTION
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE get_scales(auto_scales, x_free_start, scaled_minimum)
+
+    !/* external objects    */
+
+    REAL(our_dble), ALLOCATABLE, INTENT(OUT)     :: auto_scales(:, :)
+
+    REAL(our_dble), INTENT(IN)                   :: x_free_start(:)
+    REAL(our_dble), INTENT(IN)                   :: scaled_minimum
+
+    !/* internal objects    */
+
+    REAL(our_dble)                  :: x_free_scaled(num_free)
+    REAL(our_dble)                  :: grad(num_free)
+    REAL(our_dble)                  :: val
+
+    INTEGER(our_int)                :: i
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    crit_estimation = .False.
+
+    ALLOCATE(auto_scales(num_free, num_free))
+
+    grad = fort_dcriterion(x_free_start)
+
+    auto_scales = zero_dble
+
+    DO i = 1, num_free
+
+        val = grad(i)
+
+        IF (ABS(val) .LT. scaled_minimum) val = scaled_minimum
+
+        auto_scales(i, i) = val
+
+    END DO
+
+    ! Formatting
+    12 FORMAT(1x, f25.15, 5x, f25.15, 5x, f25.15)
+    13 FORMAT(1x, A25, 5x, A25, 5x, A25)
+
+    x_free_scaled = apply_scaling(x_free_start, auto_scales, 'do')
+
+    ! Write to file
+    OPEN(UNIT=99, FILE='est.respy.log', ACCESS='APPEND')
+        WRITE(99, *) ' SCALING'
+        WRITE(99, *) 
+        WRITE(99, 13) 'Original', 'Scale', 'Tranformed Value' 
+        WRITE(99, *) 
+        DO i = 1, num_free
+            WRITE(99, 12) x_free_start(i), auto_scales(i, i), x_free_scaled(i)
+        END DO
+        WRITE(99, *) 
+    CLOSE(99)
+
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************

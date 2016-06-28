@@ -4,7 +4,7 @@ MODULE estimate_auxiliary
 
 	!/*	external modules	*/
 
-    USE shared_constants
+    USE shared_containers 
 
 	!/*	setup	*/
 
@@ -38,7 +38,6 @@ SUBROUTINE logging_estimation_final(success, message, crit_val)
     5503 FORMAT(1x, A4,21X,i2,'/',i2,'/',i4)
     5504 FORMAT(1x, A4,23X,i2,':',i2,':',i2)
     5506 FORMAT(1x, A9 ,1X, f25.15)
-    5510 FORMAT(1x, A12)
  
     ! Obtain information about system time
     CALL IDATE(today)
@@ -103,6 +102,7 @@ SUBROUTINE logging_estimation_step(num_step, num_eval, crit_val)
             WRITE(99, *) 'ESTIMATION PROGRESS' 
             WRITE(99, *) 
         CLOSE(99)
+        is_first = .False.
     END IF
 
     ! Write to file
