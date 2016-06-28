@@ -100,6 +100,16 @@ def generate_random_dict(constraints=None):
     dict_['ESTIMATION']['maxfun'] = np.random.randint(1, 10000)
     dict_['ESTIMATION']['tau'] = np.random.uniform(100, 500)
 
+    # DERIVATIVES
+    dict_['DERIVATIVES'] = dict()
+    dict_['DERIVATIVES']['version'] = 'FORWARD-DIFFERENCES'
+    dict_['DERIVATIVES']['eps'] = np.random.uniform(0.0000001, 0.1)
+
+    # SCALING
+    dict_['SCALING'] = dict()
+    dict_['SCALING']['minimum'] = np.random.uniform(0.0000001, 0.1)
+    dict_['SCALING']['flag'] = np.random.choice([True, False])
+
     # PARALLELISM
     dict_['PARALLELISM'] = dict()
     dict_['PARALLELISM']['procs'] = np.random.randint(2, 5)
@@ -149,7 +159,6 @@ def generate_random_dict(constraints=None):
 
     # SCIPY-BFGS
     dict_['SCIPY-BFGS'] = dict()
-    dict_['SCIPY-BFGS']['epsilon'] = np.random.uniform(0.0000001, 0.1)
     dict_['SCIPY-BFGS']['gtol'] = np.random.uniform(0.0000001, 0.1)
     dict_['SCIPY-BFGS']['maxiter'] = np.random.randint(1, 10)
 
@@ -168,12 +177,12 @@ def generate_random_dict(constraints=None):
     dict_['FORT-NEWUOA']['rhobeg'] = rhobeg
     dict_['FORT-NEWUOA']['rhoend'] = np.random.uniform(0.01, 0.99) * rhobeg
 
-    lower, upper = 26 + 2, (2 * 26 + 1)  # Above the upper bound is not recommended. Requires too large W.
+    lower = (26 - sum(paras_fixed)) + 2
+    upper = (2 * (26 - sum(paras_fixed)) + 1)
     dict_['FORT-NEWUOA']['npt'] = np.random.randint(lower, upper)
 
     # FORT-BFGS
     dict_['FORT-BFGS'] = dict()
-    dict_['FORT-BFGS']['epsilon'] = np.random.uniform(0.0001, 0.1)
     dict_['FORT-BFGS']['maxiter'] = np.random.randint(1, 100)
     dict_['FORT-BFGS']['stpmx'] = np.random.uniform(75, 125)
     dict_['FORT-BFGS']['gtol'] = np.random.uniform(0.0001, 0.1)
@@ -278,6 +287,15 @@ def generate_random_dict(constraints=None):
         # Ensure that the constraints are met
         if dict_['PARALLELISM']['flag']:
             dict_['PROGRAM']['version'] = 'FORTRAN'
+
+    # Replace parallelism ...
+    if 'flag_scaling' in constraints.keys():
+        # Extract objects
+        flag_scaling = constraints['flag_scaling']
+        # Checks
+        assert (flag_scaling in [True, False])
+        # Replace in initialization file
+        dict_['SCALING']['flag'] = flag_scaling
 
     # Replace store attribute
     if 'store' in constraints.keys():

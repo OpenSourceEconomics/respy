@@ -82,21 +82,19 @@ def _check_input(respy_obj, data_frame):
     if 'FORT-BFGS' in optimizer_options.keys():
 
         maxiter = optimizer_options['FORT-BFGS']['maxiter']
-        epsilon = optimizer_options['FORT-BFGS']['epsilon']
         stpmx = optimizer_options['FORT-BFGS']['stpmx']
         gtol = optimizer_options['FORT-BFGS']['gtol']
 
         assert isinstance(maxiter, int)
         assert (maxiter > 0)
 
-        for var in [stpmx, epsilon, gtol]:
+        for var in [stpmx, gtol]:
             assert isinstance(var, float)
             assert (var > 0)
 
     if 'SCIPY-BFGS' in optimizer_options.keys():
 
         maxiter = optimizer_options['SCIPY-BFGS']['maxiter']
-        epsilon = optimizer_options['SCIPY-BFGS']['epsilon']
         gtol = optimizer_options['SCIPY-BFGS']['gtol']
 
         assert isinstance(maxiter, int)
@@ -104,9 +102,6 @@ def _check_input(respy_obj, data_frame):
 
         assert isinstance(gtol, float)
         assert (gtol > 0)
-
-        assert isinstance(epsilon, float)
-        assert (epsilon > 0)
 
     if 'SCIPY-POWELL' in optimizer_options.keys():
 

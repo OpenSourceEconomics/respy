@@ -9,7 +9,7 @@ top = '.'
 out = '.bld'
 
 # Set of compiler options.
-DEBUG_OPTIONS = ['-O2', '-Wall', '-Wline-truncation', '-Wcharacter-truncation']
+DEBUG_OPTIONS = ['-O', '-Wall', '-Wline-truncation', '-Wcharacter-truncation']
 DEBUG_OPTIONS += ['-Wsurprising', '-Waliasing', '-Wimplicit-interface']
 DEBUG_OPTIONS += ['-Wunused-parameter', '-fwhole-file', '-fcheck=all']
 DEBUG_OPTIONS += ['-fbacktrace', '-g', '-fmax-errors=1', '-ffpe-trap=invalid']

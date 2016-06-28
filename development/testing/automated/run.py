@@ -67,7 +67,6 @@ def run(hours, compile_):
         # Set seed.
         seed = random.randrange(1, 100000)
         np.random.seed(seed)
-        print(seed)
 
         # Construct test case.
         module, method = get_random_request(test_dict)

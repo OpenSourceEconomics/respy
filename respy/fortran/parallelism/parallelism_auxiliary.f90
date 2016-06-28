@@ -19,6 +19,50 @@ MODULE parallelism_auxiliary
 CONTAINS
 !******************************************************************************
 !******************************************************************************
+SUBROUTINE get_scales_parallel(auto_scales, x_free_start, scaled_minimum)
+
+    !/* external objects    */
+
+    REAL(our_dble), ALLOCATABLE, INTENT(OUT)     :: auto_scales(:, :)
+
+    REAL(our_dble), INTENT(IN)                   :: x_free_start(:)
+    REAL(our_dble), INTENT(IN)                   :: scaled_minimum
+
+    !/* internal objects    */
+
+    REAL(our_dble)                  :: x_free_scaled(num_free)
+    REAL(our_dble)                  :: grad(num_free)
+    REAL(our_dble)                  :: val
+
+    INTEGER(our_int)                :: i
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    crit_estimation = .False.
+
+    ALLOCATE(auto_scales(num_free, num_free))
+
+    grad = fort_dcriterion_parallel(x_free_start)
+
+    auto_scales = zero_dble
+
+    DO i = 1, num_free
+
+        val = grad(i)
+
+        IF (ABS(val) .LT. scaled_minimum) val = scaled_minimum
+
+        auto_scales(i, i) = val
+
+    END DO
+
+    CALL logging_scaling(auto_scales, x_free_start)
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE distribute_information(num_emax_slaves, period, send_slave, recieve_slaves)
     
     ! DEVELOPMENT NOTES
@@ -118,7 +162,7 @@ SUBROUTINE determine_workload(jobs_slaves, jobs_total)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_estimate_parallel(crit_val, success, message, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed, optimizer_used, maxfun, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, newuoa_maxfun, bfgs_gtol, bfgs_maxiter, bfgs_stpmx)
+SUBROUTINE fort_estimate_parallel(crit_val, success, message, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed, optimizer_used, maxfun, is_scaled, scaled_minimum, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, newuoa_maxfun, bfgs_gtol, bfgs_maxiter, bfgs_stpmx)
 
     !/* external objects    */
 
@@ -134,6 +178,7 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, coeffs_a, coeffs_b
     INTEGER(our_int), INTENT(IN)    :: bfgs_maxiter
 
     REAL(our_dble), INTENT(IN)      :: shocks_cholesky(4, 4)
+    REAL(our_dble), INTENT(IN)      :: scaled_minimum
     REAL(our_dble), INTENT(IN)      :: coeffs_home(1)
     REAL(our_dble), INTENT(IN)      :: newuoa_rhobeg
     REAL(our_dble), INTENT(IN)      :: newuoa_rhoend
@@ -146,6 +191,7 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, coeffs_a, coeffs_b
     CHARACTER(225), INTENT(IN)      :: optimizer_used
 
     LOGICAL, INTENT(IN)             :: paras_fixed(26) 
+    LOGICAL, INTENT(IN)             :: is_scaled
 
     !/* internal objects    */
 
@@ -153,7 +199,6 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, coeffs_a, coeffs_b
     REAL(our_dble)                  :: x_free_final(COUNT(.not. paras_fixed))
     
     INTEGER(our_int)                :: iter
-    INTEGER(our_int)                :: maxfun_int
     
     LOGICAL, PARAMETER              :: all_free(26) = .False.
  
@@ -166,29 +211,55 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, coeffs_a, coeffs_b
 
     CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, edu_start, edu_max)
 
-
     CALL get_free_optim_paras(x_free_start, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed)
 
-    x_free_final = x_free_start
+    ! If a scaling of the criterion function is requested, then we determine the scaled and transform the starting values. Also, the boolean indicates that inside the criterion function the scaling is undone.
+    IF (is_scaled .AND. (.NOT. maxfun == zero_int)) THEN
+
+        CALL get_scales_parallel(auto_scales, x_free_start, scaled_minimum)
+        
+        x_free_start = apply_scaling(x_free_start, auto_scales, 'do')
+
+        crit_scaled = .True.
+
+    END IF
+
+
+    crit_estimation = .True.
 
     IF (maxfun == zero_int) THEN
 
         success = .True.
         message = 'Single evaluation of criterion function at starting values.'
 
+        x_free_final = x_free_start
+
     ELSEIF (optimizer_used == 'FORT-NEWUOA') THEN
 
-        ! This is required to keep the original design of the algorithm intact
-        maxfun_int = MIN(maxfun, newuoa_maxfun) - 1 
-
-        CALL newuoa(fort_criterion_parallel, x_free_final, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, zero_int, maxfun_int, success, message, iter)
+        CALL newuoa(fort_criterion_parallel, x_free_start, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, zero_int, MIN(maxfun, newuoa_maxfun) - 1 , success, message, iter)
         
     ELSEIF (optimizer_used == 'FORT-BFGS') THEN
 
-        CALL dfpmin(fort_criterion_parallel, fort_dcriterion_parallel, x_free_final, bfgs_gtol, bfgs_maxiter, bfgs_stpmx, maxfun, success, message, iter)
+        CALL dfpmin(fort_criterion_parallel, fort_dcriterion_parallel, x_free_start, bfgs_gtol, bfgs_maxiter, bfgs_stpmx, maxfun, success, message, iter)
 
     END IF
     
+    crit_estimation = .False.
+    
+    ! If scaling is requested, then we transform the resulting parameter vector and indicate that the critterion function is to be used with the actual parameters again. 
+    IF (is_scaled .AND. (.NOT. maxfun == zero_int)) THEN
+        
+        crit_scaled = .False.
+
+        x_free_final = apply_scaling(x_free_start, auto_scales, 'undo')
+
+    ELSE
+        
+        x_free_final = x_free_start
+
+    END IF
+
+
     crit_val = fort_criterion_parallel(x_free_final)
 
     CALL logging_estimation_final(success, message, crit_val)
@@ -212,18 +283,27 @@ FUNCTION fort_criterion_parallel(x)
     LOGICAL                         :: is_start
     LOGICAL                         :: is_step
 
+    REAL(our_dble)                  :: x_input(num_free)
+
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    IF ((num_eval == maxfun) .AND. (maxfun .GT. zero_int)) THEN
+    ! Ensuring that the criterion function is not evaluated more than specified. However, there is the special request of MAXFUN equal to zero which needs to be allowed.
+    IF ((num_eval == maxfun) .AND. crit_estimation .AND. (.NOT. maxfun == zero_int)) THEN
         fort_criterion_parallel = -HUGE_FLOAT
         RETURN
     END IF
 
+    ! Undo the scaling (if required)
+    IF (crit_scaled) THEN    
+        x_input = apply_scaling(x, auto_scales, 'undo')
+    ELSE
+        x_input = x
+    END IF
 
-    CALL construct_all_current_values(x_all_current, x, paras_fixed)
 
+    CALL construct_all_current_values(x_all_current, x_input, paras_fixed)
 
     CALL MPI_Bcast(3, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
 
@@ -231,40 +311,45 @@ FUNCTION fort_criterion_parallel(x)
     
     CALL MPI_RECV(fort_criterion_parallel, 1, MPI_DOUBLE, MPI_ANY_SOURCE, MPI_ANY_TAG, SLAVECOMM, status, ierr)
 
-
-    num_eval = num_eval + 1
-
-    is_start = (num_eval == 1)
-
-
-
-    is_step = (value_step .GT. fort_criterion_parallel) 
- 
-    IF (is_step) THEN
-
-        num_step = num_step + 1
-
-        value_step = fort_criterion_parallel
-
-    END IF
-
+    ! The counting is turned of during the determination of the auto scaling.
+    IF (crit_estimation .OR. (maxfun == zero_int)) THEN
     
-    CALL write_out_information(num_eval, fort_criterion_parallel, x_all_current, 'current')
+        num_eval = num_eval + 1
 
-    IF (is_start) THEN
+        is_start = (num_eval == 1)
 
-        CALL write_out_information(zero_int, fort_criterion_parallel, x_all_current, 'start')
+        is_step = (value_step .GT. fort_criterion_parallel) 
+     
+        IF (is_step) THEN
+
+            num_step = num_step + 1
+
+            value_step = fort_criterion_parallel
+
+        END IF
 
     END IF
 
-    IF (is_step) THEN
+    ! The logging can be turned during the determination of the auto scaling.
+    IF (crit_estimation .OR. (maxfun == zero_int)) THEN
+    
+        CALL write_out_information(num_eval, fort_criterion_parallel, x_all_current, 'current')
 
-        CALL write_out_information(num_step, fort_criterion_parallel, x_all_current, 'step')
+        IF (is_start) THEN
 
-        CALL logging_estimation_step(num_step, num_eval, fort_criterion_parallel)
+            CALL write_out_information(zero_int, fort_criterion_parallel, x_all_current, 'start')
+
+        END IF
+
+        IF (is_step) THEN
+
+            CALL write_out_information(num_step, fort_criterion_parallel, x_all_current, 'step')
+
+            CALL logging_estimation_step(num_step, num_eval, fort_criterion_parallel)
+            
+        END IF
 
     END IF
-
     
 END FUNCTION
 !******************************************************************************
@@ -299,7 +384,7 @@ FUNCTION fort_dcriterion_parallel(x)
 
         ei(j) = one_dble
 
-        d = bfgs_epsilon * ei
+        d = dfunc_eps * ei
 
         f1 = fort_criterion_parallel(x + d)
 

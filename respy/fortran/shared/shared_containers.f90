@@ -22,10 +22,12 @@ MODULE shared_containers
     REAL(our_dble), ALLOCATABLE     :: periods_emax(:, :)
     REAL(our_dble), ALLOCATABLE     :: data_est(:, :)
 
+    REAL(our_dble), ALLOCATABLE     :: auto_scales(:, :)
+
     REAL(our_dble)                  :: x_all_start(26)
     REAL(our_dble)                  :: x_all_current(26)
 
-    REAL(our_dble)                  :: bfgs_epsilon
+    REAL(our_dble)                  :: dfunc_eps
     REAL(our_dble)                  :: delta
     REAL(our_dble)                  :: tau
 
@@ -36,7 +38,10 @@ MODULE shared_containers
     LOGICAL                         :: paras_fixed(26)
     LOGICAL                         :: is_myopic
     LOGICAL                         :: is_debug
-    
+
+    LOGICAL                         :: crit_estimation = .False.
+    LOGICAL                         :: crit_scaled = .False.
+
     ! Parameters for the optimization
     INTEGER(our_int)                :: maxfun
 

@@ -4,7 +4,7 @@ MODULE estimate_auxiliary
 
 	!/*	external modules	*/
 
-    USE shared_constants
+    USE shared_containers 
 
 	!/*	setup	*/
 
@@ -38,7 +38,6 @@ SUBROUTINE logging_estimation_final(success, message, crit_val)
     5503 FORMAT(1x, A4,21X,i2,'/',i2,'/',i4)
     5504 FORMAT(1x, A4,23X,i2,':',i2,':',i2)
     5506 FORMAT(1x, A9 ,1X, f25.15)
-    5510 FORMAT(1x, A12)
  
     ! Obtain information about system time
     CALL IDATE(today)
@@ -47,7 +46,7 @@ SUBROUTINE logging_estimation_final(success, message, crit_val)
     ! Write to file
     OPEN(UNIT=99, FILE='est.respy.log', ACCESS='APPEND')
         WRITE(99, *) 
-        WRITE(99, 5510) 'FINAL REPORT'
+        WRITE(99, *) 'ESTIMATION REPORT'
         WRITE(99, *) 
 
         IF (success) THEN
@@ -81,6 +80,8 @@ SUBROUTINE logging_estimation_step(num_step, num_eval, crit_val)
     INTEGER(our_int)                :: today(3)
     INTEGER(our_int)                :: now(3)
 
+    LOGICAL, SAVE                   :: is_first = .True.
+
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
@@ -94,6 +95,15 @@ SUBROUTINE logging_estimation_step(num_step, num_eval, crit_val)
     ! Obtain information about system time
     CALL IDATE(today)
     CALL ITIME(now)
+
+    ! Write out header
+    IF (is_first) THEN 
+        OPEN(UNIT=99, FILE='est.respy.log', ACCESS='APPEND')
+            WRITE(99, *) 'ESTIMATION PROGRESS' 
+            WRITE(99, *) 
+        CLOSE(99)
+        is_first = .False.
+    END IF
 
     ! Write to file
     OPEN(UNIT=99, FILE='est.respy.log', ACCESS='APPEND')
@@ -142,7 +152,6 @@ SUBROUTINE write_out_information(counter, fval, x, which)
     CLOSE(1)
 
 END SUBROUTINE
-
 !******************************************************************************
 !******************************************************************************
 SUBROUTINE dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x)

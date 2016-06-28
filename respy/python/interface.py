@@ -35,16 +35,18 @@ def respy_interface(respy_obj, request, data_array=None):
     model_paras, num_periods, num_agents_est, edu_start, is_debug, edu_max, \
         delta, num_draws_prob, seed_prob, num_draws_emax, seed_emax, \
         min_idx, is_myopic, is_interpolated, num_points_interp, maxfun, optimizer_used, tau, paras_fixed, optimizer_options, \
-        seed_sim, num_agents_sim = \
+        seed_sim, num_agents_sim, derivatives = \
             dist_class_attributes( respy_obj, 'model_paras', 'num_periods',
                 'num_agents_est', 'edu_start', 'is_debug', 'edu_max', 'delta',
                 'num_draws_prob', 'seed_prob', 'num_draws_emax', 'seed_emax',
                 'min_idx', 'is_myopic', 'is_interpolated',
                 'num_points_interp', 'maxfun', 'optimizer_used',
                 'tau', 'paras_fixed', 'optimizer_options',
-                 'seed_sim', 'num_agents_sim')
+                 'seed_sim', 'num_agents_sim', 'derivatives')
 
     # Auxiliary objects
+    dfunc_eps = derivatives[1]
+
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = dist_model_paras(
         model_paras, is_debug)
 
@@ -93,13 +95,13 @@ def respy_interface(respy_obj, request, data_array=None):
         elif optimizer_used == 'SCIPY-BFGS':
 
             bfgs_maxiter = optimizer_options['SCIPY-BFGS']['maxiter']
-            bfgs_epsilon = optimizer_options['SCIPY-BFGS']['epsilon']
             bfgs_gtol = optimizer_options['SCIPY-BFGS']['gtol']
 
             try:
                 rslt = fmin_bfgs(opt_obj.crit_func, x_free_start, args=args,
                            gtol=bfgs_gtol,
-                    epsilon=bfgs_epsilon, maxiter=bfgs_maxiter, full_output=True,
+                    epsilon=dfunc_eps, maxiter=bfgs_maxiter,
+                                 full_output=True,
                     disp=False)
 
                 success = (rslt[6] not in [1, 2])

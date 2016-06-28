@@ -3,7 +3,7 @@
 """
 
 import os
-if False:
+if True:
     cwd = os.getcwd()
     os.chdir('../../respy')
     assert os.system('./waf distclean; ./waf configure build --debug ') == 0
@@ -54,5 +54,6 @@ import time
 start = time.time()
 
 x, crit_val = estimate(respy_obj)
-end = time.time()
-print(end - start)
+print(crit_val)
+
+np.testing.assert_almost_equal(crit_val, 0.74754897765552997)

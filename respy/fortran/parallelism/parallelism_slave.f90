@@ -28,6 +28,7 @@ PROGRAM resfort_parallel_slave
     REAL(our_dble), ALLOCATABLE     :: data_slave(:, :)
 
     REAL(our_dble)                  :: shocks_cholesky(4, 4)
+    REAL(our_dble)                  :: scaled_minimum
     REAL(our_dble)                  :: coeffs_home(1)
     REAL(our_dble)                  :: coeffs_edu(3)
     REAL(our_dble)                  :: partial_crit
@@ -36,6 +37,7 @@ PROGRAM resfort_parallel_slave
     REAL(our_dble)                  :: crit_val
     
     LOGICAL                         :: STAY_AVAILABLE = .TRUE.
+    LOGICAL                         :: is_scaled 
 
     REAL(our_dble)                  :: newuoa_rhobeg
     REAL(our_dble)                  :: newuoa_rhoend    
@@ -67,7 +69,7 @@ PROGRAM resfort_parallel_slave
     CALL MPI_COMM_GET_PARENT(PARENTCOMM, ierr)
 
 
-    CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, is_debug, is_interpolated, is_myopic, request, exec_dir, maxfun, paras_fixed, optimizer_used, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend, bfgs_epsilon, bfgs_gtol, bfgs_stpmx, bfgs_maxiter)
+    CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, is_debug, is_interpolated, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, is_scaled, scaled_minimum, optimizer_used, dfunc_eps, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend, bfgs_gtol, bfgs_stpmx, bfgs_maxiter)
 
 
     IF (rank == zero_int) CALL logging_solution(1)

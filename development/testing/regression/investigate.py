@@ -31,7 +31,7 @@ else:
 # We need to be explicit about the PYTHON version as otherwise the F2PY
 # libraries are not compiled in accordance with the PYTHON version used by
 # for the execution of the script.
-if True:
+if False:
     cwd = os.getcwd()
     os.chdir(PACKAGE_DIR + '/respy')
     subprocess.check_call(python_exec + ' waf distclean', shell=True)
