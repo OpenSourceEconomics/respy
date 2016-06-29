@@ -18,7 +18,7 @@ from modules.auxiliary import get_test_dict
 PACKAGE_DIR = os.path.dirname(os.path.realpath(__file__))
 PACKAGE_DIR = PACKAGE_DIR.replace('development/testing/automated', '')
 
-# ROBPUPY testing codes. The import of the PYTEST configuration file ensures
+# ROBUPY testing codes. The import of the PYTEST configuration file ensures
 # that the PYTHONPATH is modified to allow for the use of the tests..
 sys.path.insert(0, PACKAGE_DIR)
 sys.path.insert(0, PACKAGE_DIR + 'respy/tests')
@@ -36,7 +36,7 @@ else:
 ''' Request '''
 #MODULE test_parallelism METHOD test_1 SEED: 24029
 
-seed =456 # 6216748723
+seed =81161 # 6216748723
 
 
 ''' Error Reproduction '''
@@ -48,10 +48,10 @@ np.random.seed(seed)
 test_dict = get_test_dict(PACKAGE_DIR + '/respy/tests')
 module, method = get_random_request(test_dict)
 
-module, method = 'test_parallelism', 'test_1'
+module, method = 'test_restud', 'test_1'
 count = 0
 for i in range(10000):
-
+	print(module, method)
 	mod = importlib.import_module(module)
 	test = getattr(mod.TestClass(), method)
 

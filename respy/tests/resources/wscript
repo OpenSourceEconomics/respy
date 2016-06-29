@@ -37,5 +37,8 @@ def build(ctx):
     src = ['kw_imsl_replacements.f90', 'kw_test_additions.f90',
         'kw_dp3asim.f90']
 
-    # Build the executable
-    ctx(features=['fc', 'fcprogram'], source=src, target='kw_dp3asim')
+    # Build the executable. We do not pass any flags in as otherwise errors
+    # might be thrown because of DEBUG options that are unrelated to the
+    # parts of the codes we are interested in.
+    ctx(features=['fc', 'fcprogram'], source=src, target='kw_dp3asim',
+        fcflags='')
