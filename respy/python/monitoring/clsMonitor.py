@@ -32,10 +32,8 @@ class MonitorCls(object):
         if os.path.exists('est.respy.info'):
             os.unlink('est.respy.info')
 
-        for which in ['start', 'step', 'current']:
-            fname = 'est.respy.' + which
-            if os.path.exists(fname):
-                os.unlink(fname)
+        if os.path.exists('est.respy.paras'):
+            os.unlink('est.respy.paras')
 
         # Start a subprocess and make sure that it is terminated even in the
         # event of an unexpected shutdown of the main process. This makes
@@ -52,16 +50,14 @@ class MonitorCls(object):
         self._terminate()
 
         # We make sure that the final information is up to date.
-        args = []
-        for which in ['start', 'step', 'current']:
-            args += get_information(which)
+        args = get_information()
         update_information(*args)
 
         with open('est.respy.info', 'a') as out_file:
             out_file.write('\n TERMINATED')
 
         # Return the final values
-        fval, x = get_information('step')[1:]
+        fval, x = args[4], args[5]
 
         return x, fval
 

@@ -30,7 +30,6 @@ SUBROUTINE get_scales_parallel(auto_scales, x_free_start, scaled_minimum)
 
     !/* internal objects    */
 
-    REAL(our_dble)                  :: x_free_scaled(num_free)
     REAL(our_dble)                  :: grad(num_free)
     REAL(our_dble)                  :: val
 
@@ -276,13 +275,6 @@ FUNCTION fort_criterion_parallel(x)
 
     !/* internal objects    */
 
-    REAL(our_dble), SAVE            :: value_step = HUGE_FLOAT
-    
-    INTEGER(our_int), SAVE          :: num_step = - one_int
-
-    LOGICAL                         :: is_start
-    LOGICAL                         :: is_step
-
     REAL(our_dble)                  :: x_input(num_free)
 
 !------------------------------------------------------------------------------
@@ -311,45 +303,15 @@ FUNCTION fort_criterion_parallel(x)
     
     CALL MPI_RECV(fort_criterion_parallel, 1, MPI_DOUBLE, MPI_ANY_SOURCE, MPI_ANY_TAG, SLAVECOMM, status, ierr)
 
-    ! The counting is turned of during the determination of the auto scaling.
+
     IF (crit_estimation .OR. (maxfun == zero_int)) THEN
-    
+
         num_eval = num_eval + 1
 
-        is_start = (num_eval == 1)
-
-        is_step = (value_step .GT. fort_criterion_parallel) 
-     
-        IF (is_step) THEN
-
-            num_step = num_step + 1
-
-            value_step = fort_criterion_parallel
-
-        END IF
-
-    END IF
-
-    ! The logging can be turned during the determination of the auto scaling.
-    IF (crit_estimation .OR. (maxfun == zero_int)) THEN
+        CALL write_out_information(x_all_current, fort_criterion_parallel, num_eval)
     
-        CALL write_out_information(num_eval, fort_criterion_parallel, x_all_current, 'current')
-
-        IF (is_start) THEN
-
-            CALL write_out_information(zero_int, fort_criterion_parallel, x_all_current, 'start')
-
-        END IF
-
-        IF (is_step) THEN
-
-            CALL write_out_information(num_step, fort_criterion_parallel, x_all_current, 'step')
-
-            CALL logging_estimation_step(num_step, num_eval, fort_criterion_parallel)
-            
-        END IF
-
     END IF
+
     
 END FUNCTION
 !******************************************************************************

@@ -192,6 +192,15 @@ def pre(ctx):
 def _get_mpif90_details(ctx):
 
     output, _ = Popen(['mpif90', '-v'], stdout=PIPE, stderr=PIPE).communicate()
+
+    # In PYTHON 2, output is already a string, but in PYTHON 3 we need to
+    # decode it first.
+    try:
+        output = output.decode()
+    except AttributeError:
+        pass
+
+    # Now we can process the information independent of PYTHON 2 or PYTHON 3.
     try:
         implementation, version = np.array(shlex.split(output))[[2, 4]]
     except:

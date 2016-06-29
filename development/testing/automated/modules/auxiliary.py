@@ -276,7 +276,7 @@ def cleanup_testing_infrastructure(keep_results):
 
     # Remove all files, unless explicitly to be saved.
     if keep_results:
-        for fname in ['./report.testing.log', './tracebacks.testing.tmp']:
+        for fname in ['./report.testing.log']:
             if fname in matches:
                 matches.remove(fname)
 

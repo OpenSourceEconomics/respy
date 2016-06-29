@@ -63,7 +63,7 @@ def dist_input_arguments(parser):
         assert (values is None)
         assert os.path.exists(init_file)
     elif action in ['change']:
-        assert os.path.exists('est.respy.step')
+        assert os.path.exists('est.respy.paras')
 
     # Finishing
     return identifiers_list, values, action, init_file
@@ -123,23 +123,21 @@ def change_status(identifiers, init_file, is_fixed):
 
 
 def change_value(identifiers, values):
-    """ Provide some additional information during estimation run. Note that
-    the modification refers to the Cholesky factors and not the covariance
-    matrix directly.
+    """
     """
 
     # Read in some baseline information
-    step_info = np.genfromtxt('est.respy.step')
-    step_paras = step_info[2:]
+    step_info = np.genfromtxt('est.respy.paras')
+    step_paras = step_info[2:, 1]
 
     # Apply modifications
     for i, identifier in enumerate(identifiers):
         step_paras[identifier] = values[i]
 
-    step_info = np.concatenate((step_info[2:], step_paras))
+    step_info[2:, 1] = step_paras
 
     # Save parametrization to file
-    np.savetxt(open('est.respy.step', 'wb'), step_info, fmt='%15.8f')
+    np.savetxt(open('est.respy.paras', 'wb'), step_info, fmt='%15.8f')
 
 
 if __name__ == '__main__':

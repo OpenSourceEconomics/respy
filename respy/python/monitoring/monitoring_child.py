@@ -14,12 +14,6 @@ sys.path.insert(0, ROOT_DIR)
 # project library
 from respy.python.estimate.estimate_auxiliary import dist_optim_paras
 
-file_current = 'est.respy.current'
-file_start = 'est.respy.start'
-file_step = 'est.respy.step'
-
-
-
 def update_information(num_start, value_start, paras_start, num_steps,
         value_step, paras_step, num_evals, value_current, paras_current):
 
@@ -68,19 +62,27 @@ def update_information(num_start, value_start, paras_start, num_steps,
 
 
 
-def all_files_present():
-    for fname in [file_start, file_step, file_current]:
-        if not os.path.exists(fname):
-            return False
+def information_present():
+    if not os.path.exists('est.respy.paras'):
+        return False
+    else:
+        return True
 
-    return True
+def get_information():
 
-def get_information(which):
+    while True:
 
-    fname = 'est.respy.' + which
-    info = np.genfromtxt(fname)
+        try:
+            info = np.genfromtxt('est.respy.paras')
 
-    return int(info[0]), info[1], info[2:]
+            args = []
+            args += [int(info[0, 0]), info[1, 0], info[2:, 0]]
+            args += [int(info[0, 1]), info[1, 1], info[2:, 1]]
+            args += [int(info[0, 2]), info[1, 2], info[2:, 2]]
+            return args
+
+        except (ValueError, IndexError) as _:
+            pass
 
 
 def run():
@@ -89,13 +91,12 @@ def run():
 
         # Check if all required information is available. This might not be
         # the case if the optimization is still set up.
-        if not all_files_present():
+        if not information_present():
             continue
 
         # Collect all arguments and write out the information.
-        args = []
-        for which in ['start', 'step', 'current']:
-            args += get_information(which)
+        args = get_information()
+
         update_information(*args)
 
         time.sleep(1)

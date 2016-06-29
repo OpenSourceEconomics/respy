@@ -128,7 +128,7 @@ def dist_input_arguments(parser):
         assert single
 
     if resume:
-        assert (os.path.exists('est.respy.step'))
+        assert (os.path.exists('est.respy.paras'))
 
     # Finishing
     return resume, single, init_file, gradient
@@ -143,7 +143,7 @@ def scripts_estimate(resume, single, init_file, gradient):
     # Update parametrization of the model if resuming from a previous
     # estimation run.
     if resume:
-        x0 = np.genfromtxt('est.respy.step')[2:]
+        x0 = np.genfromtxt('est.respy.paras')[2:, 1]
         respy_obj.update_model_paras(x0)
 
     # Set maximum iteration count when only an evaluation of the criterion

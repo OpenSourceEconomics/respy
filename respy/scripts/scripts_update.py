@@ -27,7 +27,7 @@ def dist_input_arguments(parser):
 
     # Checks
     assert os.path.exists(init_file)
-    assert os.path.exists('est.respy.step')
+    assert os.path.exists('est.respy.paras')
 
     # Finishing
     return init_file
@@ -39,7 +39,7 @@ def scripts_update(init_file):
     # Collect baseline update
     init_dict = read(init_file)
 
-    paras_steps = np.genfromtxt('est.respy.step')[2:]
+    paras_steps = np.genfromtxt('est.respy.paras')[2:, 1]
 
     # Get and construct ingredients
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky \

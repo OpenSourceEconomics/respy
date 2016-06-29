@@ -139,7 +139,7 @@ def respy_interface(respy_obj, request, data_array=None):
                 message = 'Maximum number of iterations exceeded.'
 
         # Finalize estimation log
-        fval = np.genfromtxt('est.respy.step')[1]
+        fval = np.genfromtxt('est.respy.paras')[1, 1]
 
         with open('est.respy.log', 'a') as out_file:
             fmt_ = '{0:>4}' + ' ' * 25 + '{1:>6}\n'

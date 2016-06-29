@@ -147,13 +147,6 @@ FUNCTION fort_criterion(x)
     REAL(our_dble)                  :: coeffs_edu(3)
     REAL(our_dble)                  :: coeffs_a(6)
     REAL(our_dble)                  :: coeffs_b(6)
-
-    INTEGER(our_int), SAVE          :: num_step = - one_int
-
-    REAL(our_dble), SAVE            :: value_step = HUGE_FLOAT
-
-    LOGICAL                         :: is_start
-    LOGICAL                         :: is_step
     
     REAL(our_dble)                  :: x_input(num_free)
 
@@ -185,45 +178,15 @@ FUNCTION fort_criterion(x)
 
     CALL fort_evaluate(fort_criterion, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_est, periods_draws_prob, delta, tau, edu_start, edu_max)
 
-    ! The counting is turned of during the determination of the auto scaling.
+  
     IF (crit_estimation .OR. (maxfun == zero_int)) THEN
-    
+
         num_eval = num_eval + 1
 
-        is_start = (num_eval == 1)
-
-        is_step = (value_step .GT. fort_criterion) 
-     
-        IF (is_step) THEN
-
-            num_step = num_step + 1
-
-            value_step = fort_criterion
-
-        END IF
-
-    END IF
-
-    ! The logging can be turned during the determination of the auto scaling.
-    IF (crit_estimation .OR. (maxfun == zero_int)) THEN
+        CALL write_out_information(x_all_current, fort_criterion, num_eval)
     
-        CALL write_out_information(num_eval, fort_criterion, x_all_current, 'current')
-
-        IF (is_start) THEN
-
-            CALL write_out_information(zero_int, fort_criterion, x_all_current, 'start')
-
-        END IF
-
-        IF (is_step) THEN
-
-            CALL write_out_information(num_step, fort_criterion, x_all_current, 'step')
-
-            CALL logging_estimation_step(num_step, num_eval, fort_criterion)
-            
-        END IF
-
     END IF
+
     
 END FUNCTION
 !******************************************************************************

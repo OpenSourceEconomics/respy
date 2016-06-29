@@ -6,6 +6,8 @@ MODULE estimate_auxiliary
 
     USE shared_containers 
 
+    USE shared_constants
+
 	!/*	setup	*/
 
     IMPLICIT NONE
@@ -118,35 +120,70 @@ SUBROUTINE logging_estimation_step(num_step, num_eval, crit_val)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE write_out_information(counter, fval, x, which)
+SUBROUTINE write_out_information(x_all_current, val_current, num_eval)
 
     !/* external objects        */
 
-    INTEGER(our_int), INTENT(IN)    :: counter
+    REAL(our_dble), INTENT(IN)      :: x_all_current(26)
+    REAL(our_dble), INTENT(IN)      :: val_current
 
-    REAL(our_dble), INTENT(IN)      :: x(26)
-    REAL(our_dble), INTENT(IN)      :: fval 
+    INTEGER(our_int), INTENT(IN)    :: num_eval
 
-    CHARACTER(*), INTENT(IN)        :: which
 
     !/* internal objects        */
+    LOGICAL            :: is_step
+    LOGICAL             :: is_start
 
-    INTEGER(our_int)                :: i
 
+    REAL(our_dble), SAVE            :: x_container(26, 3)
+
+
+    INTEGER(our_int), SAVE          :: num_step = - one_int
+
+    REAL(our_dble), SAVE            :: val_step = HUGE_FLOAT
+
+    REAL(our_dble), SAVE            :: val_start = HUGE_FLOAT
+    
+    INTEGER(our_int)                 :: i
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
     
-    20 FORMAT(5(1x,i10))
-    30 FORMAT(1x,f45.15)
+    ! Determine events
+    is_start = (num_eval == 1)
 
-    OPEN(UNIT=1, FILE='est.respy.' // TRIM(which))
+    is_step = (val_step .GT. val_current) 
+     
+    ! Update counters
+    IF (is_step) THEN
 
-        WRITE(1, 20) counter
-        WRITE(1, 30) fval
+        num_step = num_step + 1
+
+        val_step = val_current
+
+    END IF
+
+    IF (is_start) val_start = val_current
+
+    ! Update conter
+    IF (is_start) x_container(:, 1) = x_all_current
+
+    IF (is_step) x_container(:, 2) = x_all_current
+
+    x_container(:, 3) = x_all_current
+
+
+    ! Write out to file
+    20 FORMAT(3(1x,i45))
+    30 FORMAT(1x,f45.15,1x,f45.25,1x,f45.15)
+
+    OPEN(UNIT=1, FILE='est.respy.paras')
+
+        WRITE(1, 20) zero_int, num_step, num_eval
+        WRITE(1, 30) val_start, val_step, val_current
 
         DO i = 1, 26
-            WRITE(1, 30) x(i)
+            WRITE(1, 30) x_container(i, :)
         END DO
 
     CLOSE(1)

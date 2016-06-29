@@ -29,7 +29,7 @@ def dist_input_arguments(parser):
     assert (os.path.exists(init_file))
 
     if update:
-        assert (os.path.exists('est.respy.step'))
+        assert (os.path.exists('est.respy.paras'))
 
     if solved is not None:
         assert (os.path.exists(solved))
@@ -51,7 +51,7 @@ def scripts_simulate(update, init_file, file_sim, solved):
     # Update parametrization of the model if resuming from a previous
     # estimation run.
     if update:
-        x0 = np.genfromtxt('est.respy.step')
+        x0 = np.genfromtxt('est.respy.paras')[2:, 1]
         respy_obj.update_model_paras(x0)
 
     # Update file for output.

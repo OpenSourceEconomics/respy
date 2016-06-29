@@ -26,6 +26,7 @@ class OptimizationClass(object):
 
         self.attr['value_step'] = np.inf
         self.maxfun = np.inf
+        self.x_container = np.tile(np.nan, (28, 3))
 
         self.x_all_start = None
         self.paras_fixed = None
@@ -59,15 +60,12 @@ class OptimizationClass(object):
 
         if True:
             self.attr['num_eval'] += 1
-
             info_current = np.concatenate(([self.attr['num_eval'], fval], x_all_current))
-            fname = 'est.respy.current'
-            np.savetxt(open(fname, 'wb'), info_current, fmt='%45.15f')
+            self.x_container[:, 2] = info_current
 
         if is_start:
             info_start = np.concatenate(([0, fval], x_all_current))
-            fname = 'est.respy.start'
-            np.savetxt(open(fname, 'wb'), info_start, fmt='%45.15f')
+            self.x_container[:, 0] = info_start
 
         if is_step:
 
@@ -75,8 +73,8 @@ class OptimizationClass(object):
             self.attr['value_step'] = fval
 
             info_step = np.concatenate(([self.attr['num_step'], fval], x_all_current))
-            fname = 'est.respy.step'
-            np.savetxt(open(fname, 'wb'), info_step, fmt='%45.15f')
+            self.x_container[:, 1] = info_step
+
 
             with open('est.respy.log', 'a') as out_file:
                 fmt_ = ' {0:>4}' + ' ' * 25 + '{1:>6}\n'
@@ -88,6 +86,9 @@ class OptimizationClass(object):
                 out_file.write(fmt_.format(*['Time', time.strftime("%H:%M:%S")]))
                 fmt_ = ' {0:<9} {1:>25}\n\n'
                 out_file.write(fmt_.format(*['Date', time.strftime("%d/%m/%Y")]))
+
+        np.savetxt(open('est.respy.paras', 'wb'), self.x_container,
+                   fmt='%45.15f')
 
         # Enforce a maximum number of function evaluations
         if self.maxfun == self.attr['num_eval']:
