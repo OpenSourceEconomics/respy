@@ -28,6 +28,7 @@ PYTHON_EXEC = sys.executable
 
 # package imports
 from respy.python.shared.shared_constants import IS_PARALLEL
+from respy.python.shared.shared_constants import IS_FORTRAN
 
 ''' Auxiliary functions '''
 
@@ -177,9 +178,15 @@ def get_test_dict(test_dir):
             if 'test_' in candidate_method:
                 test_dict[test_module].append(candidate_method)
 
-    # If the parallel version is not available, we remove the parallel tests.
+    # If the PARALLELISM or FORTRAN is not available, we remove the
+    # parallel tests.
     if not IS_PARALLEL:
         del test_dict['test_parallelism']
+
+    if not IS_FORTRAN:
+        del test_dict['test_versions']
+        del test_dict['test_restud']
+        del test_dict['test_f2py']
 
     # Finishing
     return test_dict

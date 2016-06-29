@@ -1,8 +1,14 @@
 #!/usr/bin/env python
 
 # standard library
+import numpy as np
+
+from types import MethodType
+from subprocess import Popen
+from subprocess import PIPE
+
 import shutil
-import glob
+import shlex
 import os
 
 top = '.'
@@ -30,60 +36,127 @@ def options(ctx):
     ctx.add_option('--without_mpi', action='store_true', dest='without_mpi',
         default=False, help='without parallelism')
 
+    ctx.add_option('--without_fortran', action='store_true',
+        dest='without_fortran', default=False, help='without FORTRAN')
+
+
+def support_fortran(ctx):
+    """ This function determines whether FORTRAN is supported or not.
+    Some tests are duplicated.
+    """
+
+    ctx.start_msg('Support FORTRAN ')
+
+    try:
+
+        # Load compiler
+        ctx.load('compiler_fc')
+
+        try:
+            assert ctx.env.FC_NAME == 'GFORTRAN'
+        except AssertionError:
+            raise ctx.errors.ConfigurationError
+
+        # Compile a small FORTRAN program
+        ctx.check_fortran()
+
+        # Check for LAPACK library
+        ctx.check_fc(lib='lapack')
+
+    except ctx.errors.ConfigurationError:
+        idx = 1
+    else:
+        idx = 0
+
+    ctx.end_msg(['yes', 'no'][idx])
+
+    return idx
+
+
+def support_parallelism(ctx):
+    """ This function determines whether parallelism is supported or not.
+    Some tests are duplicated.
+    """
+
+    ctx.start_msg('Support PARALLELISM ')
+
+    try:
+        # Check for the existence of the compiler
+        ctx.find_program('mpif90')
+
+        # Check for the MPI library
+        ctx.check_fc(lib='mpi')
+
+        # Check for MPICH implementation and version
+        implementation, version = _get_mpif90_details(ctx)
+        if implementation not in ['MPICH']:
+            raise ctx.errors.ConfigurationError
+
+        if int(version.split('.')[0]) < 3:
+            raise ctx.errors.ConfigurationError
+
+    except ctx.errors.ConfigurationError:
+        idx = 1
+    else:
+        idx = 0
+
+    ctx.end_msg(['yes', 'no'][idx])
+
+    return idx
+
 
 def configure(ctx):
 
-    ctx.load('compiler_fc')
-    ctx.check_fortran()
+    # Check for FORTRAN support
+    ctx.support_fortran = MethodType(support_fortran, ctx)
+    if ctx.options.without_fortran:
+        ctx.env['FORTRAN'] = False
+    else:
+        ctx.env['FORTRAN'] = (ctx.support_fortran() == 0)
 
-    ctx.check_fc(msg='Checking for LAPACK library (required)', lib='lapack',
-        mandatory=True)
-
-    # Check for MPI compiler. If present, we will simply replace the compiler
-    #  abd build the parallel implementation as well.
-    ctx.env['PARALLELISM'] = True
-    try:
-        ctx.find_program('mpif90')
-        ctx.env['FC'] = 'mpif90'
-        ctx.env['COMPILER_FORTRAN'] = 'mpif90'
-    except ctx.errors.ConfigurationError:
+    # Checking for parallelism
+    ctx.support_parallelism = MethodType(support_parallelism, ctx)
+    if ctx.options.without_mpi or (not ctx.env['FORTRAN']):
         ctx.env['PARALLELISM'] = False
+    else:
+        ctx.env['PARALLELISM'] = (ctx.support_parallelism() == 0)
+        if ctx.env['PARALLELISM']:
+            ctx.env['FC'] = 'mpif90'
+            ctx.env['COMPILER_FORTRAN'] = 'mpif90'
 
-    # User explicitly requested omitting the parallel implementation.
-    if ctx.options.without_mpi:
-        ctx.env['PARALLELISM'] = False
+    if not ctx.env['FORTRAN']:
+        return
+
+    # Set up compilation (if required)
+    is_debug = ctx.options.is_debug
+
+    # The build is currently only tested for GFORTRAN.
+    if is_debug:
+        ctx.env.append_unique('FCFLAGS', DEBUG_OPTIONS)
+    else:
+        ctx.env.append_unique('FCFLAGS', PRODUCTION_OPTIONS)
+
+    # Enable static libraries
+    ctx.env.append_unique('STLIBPATH', ['../.bld/fortran'])
+    ctx.env.append_unique('STLIB', ['resfort'])
+
+    # Enable shared libraries
+    ctx.env.append_unique('LIB', ['lapack'])
 
 def build(ctx):
 
     ctx.add_pre_fun(pre)
 
-    is_debug = ctx.options.is_debug
 
-    # The build is currently only tested for gfortran.
-    if ctx.env.FC_NAME == 'GFORTRAN':
-        if is_debug:
-            ctx.env.append_unique('FCFLAGS', DEBUG_OPTIONS)
-        else:
-            ctx.env.append_unique('FCFLAGS', PRODUCTION_OPTIONS)
+    if ctx.env['FORTRAN']:
 
-        # Enable static libraries
-        ctx.env.append_unique('STLIBPATH', ['../.bld/fortran'])
-        ctx.env.append_unique('STLIB', ['resfort'])
+        ctx.recurse('fortran')
 
-        # Enable shared libraries
-        ctx.env.append_unique('LIB', ['lapack'])
+        ctx.add_group()
 
-    else:
-        raise AssertionError('The build is only tested for GFORTRAN at this '
-                             'point.')
+        ctx.recurse('tests/resources')
 
-    ctx.recurse('fortran')
-
-    ctx.add_group()
-
-    ctx.recurse('tests/resources')
-
-    ctx.add_post_fun(post)
+        ctx.add_post_fun(post)
 
 
 def post(ctx):
@@ -114,3 +187,14 @@ def pre(ctx):
 
     if os.path.exists('tests/resources/kw_dp3asim'):
         os.unlink('tests/resources/kw_dp3asim')
+
+
+def _get_mpif90_details(ctx):
+
+    output, _ = Popen(['mpif90', '-v'], stdout=PIPE, stderr=PIPE).communicate()
+    try:
+        implementation, version = np.array(shlex.split(output))[[2, 4]]
+    except:
+        raise ctx.errors.ConfigurationError
+
+    return implementation, version

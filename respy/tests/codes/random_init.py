@@ -7,14 +7,15 @@ import numpy as np
 # project library
 from respy.python.shared.shared_auxiliary import print_init_dict
 from respy.python.shared.shared_constants import IS_PARALLEL
+from respy.python.shared.shared_constants import IS_FORTRAN
 
 # module-wide variables
 MAX_AGENTS = 1000
 MAX_DRAWS = 100
 MAX_PERIODS = 5
 
-
 OPTIMIZERS = ['SCIPY-BFGS', 'SCIPY-POWELL', 'FORT-NEWUOA', 'FORT-BFGS']
+
 
 def generate_init(constraints=None):
     """ Get a random initialization file.
@@ -123,6 +124,9 @@ def generate_random_dict(constraints=None):
     versions = ['FORTRAN', 'PYTHON']
     if dict_['PARALLELISM']['flag']:
         versions = ['FORTRAN']
+
+    if not IS_FORTRAN:
+        versions = ['PYTHON']
 
     # PROGRAM
     dict_['PROGRAM'] = dict()

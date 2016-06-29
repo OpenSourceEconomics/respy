@@ -9,6 +9,7 @@ import sys
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.python.shared.shared_auxiliary import print_init_dict
 from respy.python.shared.shared_constants import IS_PARALLEL
+from respy.python.shared.shared_constants import IS_FORTRAN
 
 from respy import solve
 
@@ -137,85 +138,6 @@ class TestClass(object):
         np.testing.assert_allclose(val, 2.802285449312437)
 
     def test_5(self):
-        """ Test the solution of deterministic model without ambiguity,
-        but with interpolation. As a deterministic model is requested,
-        all versions should yield the same result without any additional effort.
-        """
-        # Solve specified economy
-        for version in ['FORTRAN', 'PYTHON']:
-
-            respy_obj = RespyCls(TEST_RESOURCES_DIR + '/test_fifth.respy.ini')
-
-            respy_obj.unlock()
-
-            respy_obj.set_attr('version', version)
-
-            respy_obj.lock()
-
-            respy_obj = solve(respy_obj)
-            simulate(respy_obj)
-
-            # Assess expected future value
-            val = respy_obj.get_attr('periods_emax')[0, :1]
-            np.testing.assert_allclose(val, 88750)
-
-            # Assess evaluation
-            _, val = estimate(respy_obj)
-            np.testing.assert_allclose(val, 1.0)
-
-    def test_6(self):
-        """ Test the solution of deterministic model with ambiguity and
-        interpolation. This test has the same result as in the absence of
-        random variation in payoffs, it does not matter whether the
-        environment is ambiguous or not.
-        """
-        # Solve specified economy
-        for version in ['FORTRAN', 'PYTHON']:
-
-            respy_obj = RespyCls(TEST_RESOURCES_DIR + '/test_fifth.respy.ini')
-
-            respy_obj.unlock()
-
-            respy_obj.set_attr('version', version)
-
-            respy_obj.lock()
-
-            respy_obj = solve(respy_obj)
-            simulate(respy_obj)
-
-            # Assess expected future value
-            val = respy_obj.get_attr('periods_emax')[0, :1]
-            np.testing.assert_allclose(val, 88750)
-
-            # Assess evaluation
-            _, val = estimate(respy_obj)
-            np.testing.assert_allclose(val, 1.0)
-
-    @pytest.mark.slow
-    def test_7(self):
-        """ This test just locks in the evaluation of the criterion function
-        for the original Keane & Wolpin data.
-        """
-        # Sample one task
-        resources = ['kw_data_one.ini', 'kw_data_two.ini', 'kw_data_three.ini']
-        fname = np.random.choice(resources)
-
-        # Select expected result
-        rslt = None
-        if 'one' in fname:
-            rslt = 0.261487735867433
-        elif 'two' in fname:
-            rslt = 1.126138097174159
-        elif 'three' in fname:
-            rslt = 1.895699121131644
-
-        # Evaluate criterion function at true values.
-        respy_obj = RespyCls(TEST_RESOURCES_DIR + '/' + fname)
-        simulate(respy_obj)
-        _, val = estimate(respy_obj)
-        np.testing.assert_allclose(val, rslt)
-
-    def test_8(self):
         """ This test reproduces the results from evaluations of the
         criterion function for previously analyzed scenarios.
         """
@@ -224,13 +146,26 @@ class TestClass(object):
         fname = 'test_vault_' + version + '.respy.pkl'
 
         tests = pkl.load(open(TEST_RESOURCES_DIR + '/' + fname, 'rb'))
-        idx = np.random.randint(0, len(tests))
-        init_dict, crit_val = tests[idx]
+
+        # We want this test to run even when not FORTRAN version is available.
+        while True:
+            idx = np.random.randint(0, len(tests))
+            init_dict, crit_val = tests[idx]
+
+            version = init_dict['PROGRAM']['version']
+
+            if not IS_FORTRAN and version == 'FORTRAN':
+                pass
+            else:
+                break
 
         # In the case where no parallelism is available, we need to ensure
-        # that the request remains valid.
+        # that the request remains valid. This is fine as the disturbances
+        # are aligned across parallel and scalar implementation.
         if not IS_PARALLEL:
             init_dict['PARALLELISM']['flag'] = False
+        if not IS_FORTRAN:
+            init_dict['PROGRAM']['version'] = 'PYTHON'
 
         print_init_dict(init_dict)
 

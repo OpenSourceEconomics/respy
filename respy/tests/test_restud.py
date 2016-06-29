@@ -17,6 +17,7 @@ from codes.random_init import generate_random_dict
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import print_init_dict
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
+from respy.python.shared.shared_constants import IS_FORTRAN
 
 from respy import solve
 from respy import RespyCls
@@ -73,7 +74,7 @@ def transform_respy_to_restud(model_paras, edu_start, edu_max, num_agents_sim,
             file_.write(line)
         file_.write(line)
 
-
+@pytest.mark.skipif(not IS_FORTRAN, reason='No FORTRAN available')
 @pytest.mark.usefixtures('fresh_directory', 'set_seed')
 class TestClass(object):
     """ This class groups together some tests.

@@ -22,6 +22,7 @@ from respy.python.solve.solve_auxiliary import logging_solution
 from respy.python.solve.solve_auxiliary import get_future_value
 from respy.python.solve.solve_auxiliary import get_endogenous_variable
 from respy.python.shared.shared_auxiliary import replace_missing_values
+from respy.python.shared.shared_constants import IS_FORTRAN
 
 from respy.fortran.interface import resfort_interface
 from respy.python.solve.solve_python import pyth_solve
@@ -48,9 +49,12 @@ from respy import RespyCls
 # Edit of PYTHONPATH required for PYTHON 2 as no __init__.py in tests
 # subdirectory. If __init__.py is added, the path resolution for PYTEST
 # breaks down.
-sys.path.insert(0, TEST_RESOURCES_DIR)
-import f2py_interface as fort_debug
+if IS_FORTRAN:
+    sys.path.insert(0, TEST_RESOURCES_DIR)
+    import f2py_interface as fort_debug
 
+
+@pytest.mark.skipif(not IS_FORTRAN, reason='No FORTRAN available')
 @pytest.mark.usefixtures('fresh_directory', 'set_seed')
 class TestClass(object):
     """ This class groups together some tests.
