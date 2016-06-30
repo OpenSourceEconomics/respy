@@ -183,11 +183,16 @@ class TestClass(object):
         respy_obj = RespyCls('test.respy.ini')
         simulate(respy_obj)
 
+        # Create output to process a baseline.
+        respy_obj.unlock()
+        respy_obj.set_attr('maxfun', 0)
+        respy_obj.lock()
+
+        estimate(respy_obj)
+
         # Potentially evaluate at different points.
         generate_init(constr)
 
-        step_info = np.random.uniform(size=28 * 3).reshape(28, 3)
-        np.savetxt(open('est.respy.paras', 'wb'), step_info, fmt='%45.15f')
         init_file = 'test.respy.ini'
         file_sim = 'sim.respy'
 
