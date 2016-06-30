@@ -22,12 +22,12 @@ Optimization
 
 The model is estimated using simulated maximum likelihood estimation (Albright (1977)). The available optimizers depend on the version of the program. If you use the *Python* implementation, then the Powell and BFGS algorithms are available through their **SciPy** implementations. See the `SciPy  Documentation <http://docs.scipy.org>`_ for details. For the *FORTRAN*  implementation, we provide the `BFGS <https://en.wikipedia.org/wiki/Broyden%E2%80%93Fletcher%E2%80%93Goldfarb%E2%80%93Shanno_algorithm>`_ and `NEWUOA <https://en.wikipedia.org/wiki/NEWUOA>`_ (Powell(2004)) algorithms.
 
-Approximation
-"""""""""""""
+Function Approximation
+""""""""""""""""""""""
 
 The details for the **EMAX interpolation** are discussed in :ref:`Eisenhauer (2016) <bibSection>`.
 
 Miscellaneous
 """""""""""""
 
-We are using the *LAPACK* library for all numerical linear algebra. The pseudorandom numbers are generated using the *Mersenne Twister*.
+We are using the *LAPACK* library for all numerical linear algebra. The pseudo-random numbers are generated using the *Mersenne Twister*.
