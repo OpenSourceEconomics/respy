@@ -187,7 +187,7 @@ class TestClass(object):
         generate_init(constr)
 
         step_info = np.random.uniform(size=28 * 3).reshape(28, 3)
-            np.savetxt(open('est.respy.paras', 'wb'), step_info, fmt='%45.15f')
+        np.savetxt(open('est.respy.paras', 'wb'), step_info, fmt='%45.15f')
         init_file = 'test.respy.ini'
         file_sim = 'sim.respy'
 
