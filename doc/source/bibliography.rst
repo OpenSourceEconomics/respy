@@ -7,6 +7,9 @@ Michael P. Keane, Kenneth I. Wolpin (1994). `The Solution and Estimation of Disc
 
 Philipp Eisenhauer (2016). The Approximate Solution of Finite-Horizon Discrete Choice Dynamic Programming Models: Revisiting Keane & Wolpin (1994). *Unpublished Manuscript*.
 
+Albright, R. S., Lerman, S., and Manski, C. (1977). Report on the Development of an Estimation Program for the Multinomial Probit Model. *Cambridge Systematics*.
+
+Powell, M. J. D. (2004). The NEWUOA software for unconstrained optimization without derivatives. Department of Applied Mathematics and Theoretical Physics, Cambridge University. 
 
 Citation
 --------

@@ -52,6 +52,7 @@ Welcome to respy's documentation!
    development
    contributions
    contact
+   acknowledgments
    details
    bibliography
    changelog
