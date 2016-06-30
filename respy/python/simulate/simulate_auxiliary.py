@@ -110,11 +110,15 @@ def write_info(respy_obj, data_frame):
                 (num_periods - 1)].ix[:, 5].mean()
         file_.write(string.format(['Average Experience B', stat]))
 
-    # Write out the parametrization of the simulated economy.
-    model_paras = respy_obj.get_attr('model_paras')
-    vector = get_estimation_vector(model_paras, True)
-    vector = np.concatenate(([-1, -99.0], vector))
-    np.savetxt(open(file_sim + '.paras', 'wb'), vector, fmt='%15.8f')
+        file_.write('\n\n   Parameterization\n\n')
+        fmt_ = '{0:>15}    {1:>15}\n\n'
+        file_.write(fmt_.format(*['Identifier', 'Value']))
+        # Write out the parametrization of the simulated economy.
+        model_paras = respy_obj.get_attr('model_paras')
+        vector = get_estimation_vector(model_paras, True)
+        fmt_ = '{0:>15}    {1:>15.4f}\n'
+        for i, stat in enumerate(vector):
+            file_.write(fmt_.format(*[i, stat]))
 
 
 def write_out(respy_obj, data_frame):
