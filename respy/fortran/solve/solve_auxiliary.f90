@@ -310,7 +310,6 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
         ! Transform disturbances
         CALL transform_disturbances(draws_emax_transformed, draws_emax, shocks_cholesky, num_draws_emax)
 
-
         CALL logging_solution(4, period, num_states)
 
         any_interpolated = (num_points_interp .LE. num_states) .AND. is_interpolated

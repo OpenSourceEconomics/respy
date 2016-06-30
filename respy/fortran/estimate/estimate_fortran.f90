@@ -316,6 +316,8 @@ SUBROUTINE get_scales_scalar(auto_scales, x_free_start, scaled_minimum)
 
     crit_estimation = .False.
 
+    is_logging = .False.
+
     ALLOCATE(auto_scales(num_free, num_free))
 
     grad = fort_dcriterion(x_free_start)
@@ -333,6 +335,8 @@ SUBROUTINE get_scales_scalar(auto_scales, x_free_start, scaled_minimum)
     END DO
 
     CALL logging_scaling(auto_scales, x_free_start)
+
+    is_logging = .True.
 
 END SUBROUTINE
 !******************************************************************************
