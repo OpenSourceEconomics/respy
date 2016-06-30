@@ -12,7 +12,7 @@ import respy
 ###############################################################################
 # SPECIFICATION FOR MONTE-CARLO EXERCISE
 ###############################################################################
-MAXFUN = 100000000
+MAXFUN = 2
 NUM_DRAWS_EMAX = 500
 NUM_DRAWS_PROB = 200
 
@@ -45,6 +45,7 @@ os.system('git clean -d -f')
 respy_obj = respy.RespyCls('kw_data_one.ini')
 
 respy_obj.unlock()
+respy_obj.set_attr('file_est', '../correct/start/data.respy')
 respy_obj.set_attr('optimizer_options', OPTIMIZER_OPTIONS)
 respy_obj.set_attr('num_draws_emax', NUM_DRAWS_EMAX)
 respy_obj.set_attr('num_draws_prob', NUM_DRAWS_PROB)
@@ -52,6 +53,7 @@ respy_obj.set_attr('num_agents_est', NUM_AGENTS)
 respy_obj.set_attr('num_agents_sim', NUM_AGENTS)
 respy_obj.set_attr('optimizer_used', OPTIMIZER)
 respy_obj.set_attr('scaling', SCALING)
+respy_obj.set_attr('maxfun', MAXFUN)
 
 respy_obj.set_attr('num_procs', NUM_PROCS)
 if NUM_PROCS > 1:
@@ -61,25 +63,9 @@ else:
 
 respy_obj.lock()
 
-# # Let us first simulate a baseline sample and store the results for future
-# # reference.
+# Let us first simulate a baseline sample, store the results for future
+# reference, and start an estimation from the true values.
 os.mkdir('correct'), os.chdir('correct')
-respy.simulate(respy_obj)
-respy_obj.unlock()
-respy_obj.set_attr('maxfun', 0)
-respy_obj.lock()
-respy_obj.write_out()
-respy.estimate(respy_obj)
-os.chdir('../')
-
-# Now we will estimate a misspecified model on this dataset assuming that
-# agents are myopic.
-os.mkdir('static'), os.chdir('static')
-respy_obj.unlock()
-respy_obj.set_attr('file_est', '../correct/data.respy')
-respy_obj.set_attr('delta', 0.00)
-respy_obj.set_attr('maxfun', MAXFUN)
-respy_obj.lock()
 respy_obj.write_out()
 
 os.mkdir('start'), os.chdir('start')
@@ -92,23 +78,43 @@ os.mkdir('stop'), os.chdir('stop')
 respy_obj.update_model_paras(x)
 respy.simulate(respy_obj)
 os.chdir('../../')
+#
+# # Now we will estimate a misspecified model on this dataset assuming that
+# # agents are myopic.
+# respy_obj.unlock()
+# respy_obj.set_attr('delta', 0.00)
+# respy_obj.lock()
 
-# # Using the results from the misspecified model as starting values, we see
-# # whether we can obtain the initial values.
-os.mkdir('dynamic'), os.chdir('dynamic')
+# os.mkdir('static'), os.chdir('static')
+# respy_obj.write_out()
 
-respy_obj.unlock()
-respy_obj.set_attr('delta', 0.95)
-respy_obj.lock()
-respy_obj.write_out()
-
-os.mkdir('start'), os.chdir('start')
-respy.simulate(respy_obj)
-os.chdir('../')
-
-x, _ = respy.estimate(respy_obj)
-
-os.mkdir('stop'), os.chdir('stop')
-respy_obj.update_model_paras(x)
-respy.simulate(respy_obj)
-os.chdir('../../')
+# os.mkdir('start'), os.chdir('start')
+# respy.simulate(respy_obj)
+# os.chdir('../')
+#
+# x, _ = respy.estimate(respy_obj)
+#
+# os.mkdir('stop'), os.chdir('stop')
+# respy_obj.update_model_paras(x)
+# respy.simulate(respy_obj)
+# os.chdir('../../')
+#
+# # # Using the results from the misspecified model as starting values, we see
+# # # whether we can obtain the initial values.
+# os.mkdir('dynamic'), os.chdir('dynamic')
+#
+# respy_obj.unlock()
+# respy_obj.set_attr('delta', 0.95)
+# respy_obj.lock()
+# respy_obj.write_out()
+#
+# os.mkdir('start'), os.chdir('start')
+# respy.simulate(respy_obj)
+# os.chdir('../')
+#
+# x, _ = respy.estimate(respy_obj)
+#
+# os.mkdir('stop'), os.chdir('stop')
+# respy_obj.update_model_paras(x)
+# respy.simulate(respy_obj)
+# os.chdir('../../')
