@@ -174,7 +174,7 @@ FUNCTION fort_criterion(x)
 
     CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start)
 
-    CALL fort_backward_induction(periods_emax, periods_draws_emax, states_number_period, periods_payoffs_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max)
+    CALL fort_backward_induction(periods_emax, periods_draws_emax, states_number_period, periods_payoffs_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max, .False.)
 
     CALL fort_evaluate(fort_criterion, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_est, periods_draws_prob, delta, tau, edu_start, edu_max)
 
@@ -316,8 +316,6 @@ SUBROUTINE get_scales_scalar(auto_scales, x_free_start, scaled_minimum)
 
     crit_estimation = .False.
 
-    is_logging = .False.
-
     ALLOCATE(auto_scales(num_free, num_free))
 
     grad = fort_dcriterion(x_free_start)
@@ -335,8 +333,6 @@ SUBROUTINE get_scales_scalar(auto_scales, x_free_start, scaled_minimum)
     END DO
 
     CALL logging_scaling(auto_scales, x_free_start)
-
-    is_logging = .True.
 
 END SUBROUTINE
 !******************************************************************************

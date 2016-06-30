@@ -69,6 +69,7 @@ os.mkdir('correct'), os.chdir('correct')
 respy_obj.write_out()
 
 os.mkdir('start'), os.chdir('start')
+respy_obj.write_out()
 respy.simulate(respy_obj)
 os.chdir('../')
 
@@ -76,9 +77,10 @@ x, _ = respy.estimate(respy_obj)
 
 os.mkdir('stop'), os.chdir('stop')
 respy_obj.update_model_paras(x)
+respy_obj.write_out()
 respy.simulate(respy_obj)
 os.chdir('../../')
-#
+
 # # Now we will estimate a misspecified model on this dataset assuming that
 # # agents are myopic.
 # respy_obj.unlock()
@@ -89,6 +91,7 @@ os.chdir('../../')
 # respy_obj.write_out()
 
 # os.mkdir('start'), os.chdir('start')
+# respy_obj.write_out()
 # respy.simulate(respy_obj)
 # os.chdir('../')
 #
@@ -96,19 +99,21 @@ os.chdir('../../')
 #
 # os.mkdir('stop'), os.chdir('stop')
 # respy_obj.update_model_paras(x)
+# respy_obj.write_out()
 # respy.simulate(respy_obj)
 # os.chdir('../../')
 #
 # # # Using the results from the misspecified model as starting values, we see
 # # # whether we can obtain the initial values.
-# os.mkdir('dynamic'), os.chdir('dynamic')
-#
 # respy_obj.unlock()
 # respy_obj.set_attr('delta', 0.95)
 # respy_obj.lock()
+
+# os.mkdir('dynamic'), os.chdir('dynamic')
 # respy_obj.write_out()
 #
 # os.mkdir('start'), os.chdir('start')
+# respy_obj.write_out()
 # respy.simulate(respy_obj)
 # os.chdir('../')
 #
@@ -116,5 +121,6 @@ os.chdir('../../')
 #
 # os.mkdir('stop'), os.chdir('stop')
 # respy_obj.update_model_paras(x)
+# respy_obj.write_out()
 # respy.simulate(respy_obj)
 # os.chdir('../../')

@@ -63,7 +63,7 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, mapping_
 
     CALL logging_solution(3)
     
-    CALL fort_backward_induction(periods_emax, periods_draws_emax, states_number_period, periods_payoffs_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max)
+    CALL fort_backward_induction(periods_emax, periods_draws_emax, states_number_period, periods_payoffs_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max, .True.)
 
     IF (.NOT. is_myopic) THEN
         CALL logging_solution(-1)

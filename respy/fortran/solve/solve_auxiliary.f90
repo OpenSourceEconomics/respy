@@ -227,7 +227,7 @@ SUBROUTINE fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_number_period, periods_payoffs_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max)
+SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_number_period, periods_payoffs_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max, is_write)
 
     !/* external objects        */
 
@@ -248,6 +248,8 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
     LOGICAL, INTENT(IN)                 :: is_myopic
     LOGICAL, INTENT(IN)                 :: is_debug
 
+    LOGICAL, INTENT(IN)                 :: is_write
+
     !/* internals objects       */
 
     INTEGER(our_int)                    :: num_states
@@ -267,7 +269,6 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
     REAL(our_dble), ALLOCATABLE         :: maxe(:)
 
     LOGICAL                             :: any_interpolated
-    LOGICAL                             :: is_write = .True.
     
     LOGICAL, ALLOCATABLE                :: is_simulated(:)
     INTEGER(our_int)                    :: seed_inflated(15)
@@ -310,8 +311,9 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
         ! Transform disturbances
         CALL transform_disturbances(draws_emax_transformed, draws_emax, shocks_cholesky, num_draws_emax)
 
-        CALL logging_solution(4, period, num_states)
 
+        IF (is_write) CALL logging_solution(4, period, num_states)
+        
         any_interpolated = (num_points_interp .LE. num_states) .AND. is_interpolated
 
         IF (any_interpolated) THEN
