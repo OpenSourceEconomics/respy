@@ -100,7 +100,7 @@ SUBROUTINE fort_estimate(crit_val, success, message, coeffs_a, coeffs_b, coeffs_
 
     ELSEIF (optimizer_used == 'FORT-NEWUOA') THEN
 
-        CALL newuoa(fort_criterion, x_free_start, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, zero_int, MIN(maxfun, newuoa_maxfun) - 1, success, message, iter)
+        CALL newuoa(fort_criterion, x_free_start, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, zero_int, MIN(maxfun, newuoa_maxfun), success, message, iter)
         
     ELSEIF (optimizer_used == 'FORT-BFGS') THEN
 
@@ -153,7 +153,7 @@ FUNCTION fort_criterion(x)
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
-
+    
     ! Ensuring that the criterion function is not evaluated more than specified. However, there is the special request of MAXFUN equal to zero which needs to be allowed.
     IF ((num_eval == maxfun) .AND. crit_estimation .AND. (.NOT. maxfun == zero_int)) THEN
         fort_criterion = -HUGE_FLOAT
@@ -364,7 +364,7 @@ SUBROUTINE logging_scaling(auto_scales, x_free_start)
     OPEN(UNIT=99, FILE='est.respy.log', ACCESS='APPEND')
         WRITE(99, *) ' SCALING'
         WRITE(99, *) 
-        WRITE(99, 13) 'Original', 'Scale', 'Tranformed Value' 
+        WRITE(99, 13) 'Original', 'Scale', 'Transformed Value' 
         WRITE(99, *) 
         DO i = 1, num_free
             WRITE(99, 12) x_free_start(i), auto_scales(i, i), x_free_scaled(i)

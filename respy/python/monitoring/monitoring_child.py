@@ -70,8 +70,9 @@ def information_present():
 
 def get_information():
 
+    counter = 0
     while True:
-
+        counter += 1
         try:
             info = np.genfromtxt('est.respy.paras')
 
@@ -84,6 +85,8 @@ def get_information():
         except (ValueError, IndexError) as _:
             pass
 
+        if counter > 10:
+            raise AssertionError
 
 def run():
 

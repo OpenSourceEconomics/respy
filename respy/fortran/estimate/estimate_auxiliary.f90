@@ -165,7 +165,7 @@ SUBROUTINE write_out_information(x_all_current, val_current, num_eval)
 
     IF (is_start) val_start = val_current
 
-    ! Update conter
+    ! Update counter
     IF (is_start) x_container(:, 1) = x_all_current
 
     IF (is_step) x_container(:, 2) = x_all_current
@@ -174,12 +174,11 @@ SUBROUTINE write_out_information(x_all_current, val_current, num_eval)
 
 
     ! Write out to file
-    20 FORMAT(3(1x,i45))
-    30 FORMAT(1x,f45.15,1x,f45.25,1x,f45.15)
+    30 FORMAT(1x,f45.15,1x,f45.15,1x,f45.15)
 
     OPEN(UNIT=1, FILE='est.respy.paras')
 
-        WRITE(1, 20) zero_int, num_step, num_eval
+        WRITE(1, 30) DBLE(zero_int), DBLE(num_step), DBLE(num_eval)
         WRITE(1, 30) val_start, val_step, val_current
 
         DO i = 1, 26
