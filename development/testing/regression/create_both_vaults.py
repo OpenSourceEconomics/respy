@@ -6,7 +6,7 @@ from config import python2_exec
 from config import python3_exec
 
 # path to the script that must run under the virtualenv
-script_file = 'check_vault.py'
+script_file = 'create_vault.py'
 
 
 def dist_input_arguments(parser):
@@ -28,11 +28,11 @@ def run(num_tests):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Check vaults',
+    parser = argparse.ArgumentParser(description='Create vaults',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('--tests', action='store', dest='num_tests',
-        default=None, help='number of tests to run', type=int)
+        default=None, help='number of tests to create', type=int)
 
     num_tests = dist_input_arguments(parser)
 
