@@ -6,6 +6,8 @@ MODULE estimate_fortran
 
     USE estimate_auxiliary
 
+    USE logging_estimation
+
     USE shared_containers
 
     USE evaluate_fortran
@@ -61,6 +63,8 @@ SUBROUTINE fort_estimate(crit_val, success, message, coeffs_a, coeffs_b, coeffs_
 
     REAL(our_dble)                  :: x_free_start(num_free)
     REAL(our_dble)                  :: x_free_final(num_free)
+    
+    REAL(our_dble)                  :: x_all_final(26)
     
     INTEGER(our_int)                :: iter
 
@@ -127,8 +131,9 @@ SUBROUTINE fort_estimate(crit_val, success, message, coeffs_a, coeffs_b, coeffs_
 
     crit_val = fort_criterion(x_free_final)
 
+    CALL construct_all_current_values(x_all_final, x_free_final, paras_fixed)
 
-    CALL logging_estimation_final(success, message, crit_val)
+    CALL log_estimation(success, message, crit_val, x_all_final)
 
 END SUBROUTINE
 !******************************************************************************
@@ -183,7 +188,7 @@ FUNCTION fort_criterion(x)
 
         num_eval = num_eval + 1
 
-        CALL write_out_information(x_all_current, fort_criterion, num_eval)
+        CALL log_estimation(x_all_current, fort_criterion, num_eval)
     
     END IF
 
@@ -270,30 +275,6 @@ SUBROUTINE construct_all_current_values(x_all_current, x, paras_fixed)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-FUNCTION apply_scaling(x_in, auto_scales, request)
-
-    !/* external objects    */
-
-    REAL(our_dble)                  :: apply_scaling(num_free)
-
-    REAL(our_dble), INTENT(IN)      :: auto_scales(num_free, num_free)
-    REAL(our_dble), INTENT(IN)      :: x_in(num_free)
-
-    CHARACTER(*), INTENT(IN)        :: request
-
-!------------------------------------------------------------------------------
-! Algorithm
-!------------------------------------------------------------------------------
-
-    IF (request == 'do') THEN
-        apply_scaling = MATMUL(auto_scales, x_in)
-    ELSE
-        apply_scaling = MATMUL(pinv(auto_scales, num_free), x_in)
-    END IF
-
-END FUNCTION
-!******************************************************************************
-!******************************************************************************
 SUBROUTINE get_scales_scalar(auto_scales, x_free_start, scaled_minimum)
 
     !/* external objects    */
@@ -332,45 +313,7 @@ SUBROUTINE get_scales_scalar(auto_scales, x_free_start, scaled_minimum)
 
     END DO
 
-    CALL logging_scaling(auto_scales, x_free_start)
-
-END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
-SUBROUTINE logging_scaling(auto_scales, x_free_start)
-
-    !/* external objects    */
-
-    REAL(our_dble), INTENT(IN)      :: auto_scales(num_free, num_free)
-    REAL(our_dble), INTENT(IN)      :: x_free_start(num_free)
-
-    !/* internal objects    */
-
-    REAL(our_dble)                  :: x_free_scaled(num_free)
-
-    INTEGER(our_int)                :: i
-
-!------------------------------------------------------------------------------
-! Algorithm
-!------------------------------------------------------------------------------
-
-    ! Formatting
-    12 FORMAT(1x, f25.15, 5x, f25.15, 5x, f25.15)
-    13 FORMAT(1x, A25, 5x, A25, 5x, A25)
-
-    x_free_scaled = apply_scaling(x_free_start, auto_scales, 'do')
-
-    ! Write to file
-    OPEN(UNIT=99, FILE='est.respy.log', ACCESS='APPEND')
-        WRITE(99, *) ' SCALING'
-        WRITE(99, *) 
-        WRITE(99, 13) 'Original', 'Scale', 'Transformed Value' 
-        WRITE(99, *) 
-        DO i = 1, num_free
-            WRITE(99, 12) x_free_start(i), auto_scales(i, i), x_free_scaled(i)
-        END DO
-        WRITE(99, *) 
-    CLOSE(99)
+    CALL log_estimation(auto_scales, x_free_start)
 
 END SUBROUTINE
 !******************************************************************************

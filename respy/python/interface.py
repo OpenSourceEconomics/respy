@@ -18,6 +18,7 @@ from respy.python.simulate.simulate_python import pyth_simulate
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import dist_model_paras
+from respy.python.shared.shared_auxiliary import process_est_log
 from respy.python.shared.shared_auxiliary import create_draws
 
 from respy.python.solve.solve_python import pyth_solve
@@ -139,19 +140,19 @@ def respy_interface(respy_obj, request, data_array=None):
                 message = 'Maximum number of iterations exceeded.'
 
         # Finalize estimation log
-        fval = np.genfromtxt('est.respy.paras')[1, 1]
-
+        fval = opt_obj.x_container[1, 1]
         with open('est.respy.log', 'a') as out_file:
-            fmt_ = '{0:>4}' + ' ' * 25 + '{1:>6}\n'
-            out_file.write('\n FINAL REPORT\n\n')
-            out_file.write(' Success ' + str(success) + '\n')
-            out_file.write(' Message ' + message + '\n\n')
-            fmt_ = ' {0:>9} ' + '{1:25.15f}\n'
+            out_file.write('\n ESTIMATION REPORT\n\n')
+            out_file.write('   Success ' + str(success) + '\n')
+            out_file.write('   Message ' + message + '\n\n')
+            fmt_ = '   {0:>9}' + '     {1:25.15f}\n'
             out_file.write(fmt_.format(*['Criterion', fval]))
-            fmt_ = ' {0:<9} {1:>25}\n'
-            out_file.write(fmt_.format(*['Time', time.strftime("%H:%M:%S")]))
-            fmt_ = ' {0:<9} {1:>25}\n\n'
-            out_file.write(fmt_.format(*['Date', time.strftime("%d/%m/%Y")]))
+            fmt_ = '\n\n   {0:>10}' + '    {1:>25}\n\n'
+            out_file.write(fmt_.format(*['Identifier', 'Final']))
+            fmt_ = '   {:>10}' + '    {:25.15f}\n'
+            for i in range(26):
+                out_file.write(
+                    fmt_.format(*[i, opt_obj.x_container[i + 2, 1]]))
 
     elif request == 'simulate':
 

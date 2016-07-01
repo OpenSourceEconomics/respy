@@ -10,9 +10,10 @@ import argparse
 import os
 
 # project library
-from respy.python.estimate.estimate_auxiliary import dist_optim_paras
 from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
+from respy.python.shared.shared_auxiliary import dist_optim_paras
 from respy.python.shared.shared_auxiliary import print_init_dict
+from respy.python.shared.shared_auxiliary import get_est_info
 from respy.python.read.read_python import read
 
 
@@ -27,7 +28,7 @@ def dist_input_arguments(parser):
 
     # Checks
     assert os.path.exists(init_file)
-    assert os.path.exists('est.respy.paras')
+    assert os.path.exists('est.respy.info')
 
     # Finishing
     return init_file
@@ -39,7 +40,7 @@ def scripts_update(init_file):
     # Collect baseline update
     init_dict = read(init_file)
 
-    paras_steps = np.genfromtxt('est.respy.paras')[2:, 1]
+    paras_steps = get_est_info()['paras_step']
 
     # Get and construct ingredients
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky \

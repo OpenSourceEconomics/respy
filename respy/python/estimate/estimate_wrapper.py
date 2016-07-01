@@ -8,7 +8,7 @@ import time
 
 # project library
 from respy.python.estimate.estimate_python import pyth_criterion
-
+from respy.python.shared.shared_auxiliary import write_est_info
 
 class OptimizationClass(object):
     """ This class manages all about the optimization of the criterion
@@ -76,19 +76,42 @@ class OptimizationClass(object):
             self.x_container[:, 1] = info_step
 
 
-            with open('est.respy.log', 'a') as out_file:
-                fmt_ = ' {0:>4}' + ' ' * 25 + '{1:>6}\n'
-                out_file.write(fmt_.format(*['Step', self.attr['num_step']]))
-                out_file.write(fmt_.format(*['Eval', self.attr['num_eval']]))
-                fmt_ = ' {0:>9} ' + '{1:25.15f}\n'
-                out_file.write(fmt_.format(*['Criterion', fval]))
-                fmt_ = ' {0:<9} {1:>25}\n'
-                out_file.write(fmt_.format(*['Time', time.strftime("%H:%M:%S")]))
-                fmt_ = ' {0:<9} {1:>25}\n\n'
-                out_file.write(fmt_.format(*['Date', time.strftime("%d/%m/%Y")]))
+        with open('est.respy.log', 'a') as out_file:
+            fmt_ = ' {0:>4}{1:>13}' + ' ' * 10 + '{2:>4}{3:>10}\n\n'
+            line = ['EVAL', self.attr['num_eval'], 'STEP', self.attr['num_step']]
+            out_file.write(fmt_.format(*line))
+            fmt_ = '   {0:<9}     {1:>25}\n'
+            out_file.write(fmt_.format(*['Date', time.strftime("%d/%m/%Y")]))
+            fmt_ = '   {0:<9}     {1:>25}\n'
+            out_file.write(fmt_.format(*['Time', time.strftime("%H:%M:%S")]))
+            fmt_ = '   {0:>9}     {1:25.15f}\n\n'
+            out_file.write(fmt_.format(*['Criterion', fval]))
 
-        np.savetxt(open('est.respy.paras', 'wb'), self.x_container,
-                   fmt='%45.15f')
+            fmt_ = '   {:>10}' + '    {:>25}' * 3 + '\n\n'
+            out_file.write(fmt_.format(*['Identifier', 'Start', 'Step', 'Current']))
+
+            fmt_ = '   {:>10}' + '    {:25.15f}' * 3 + '\n'
+            for i in range(26):
+                out_file.write(
+                    fmt_.format(*[i, self.x_container[i + 2, 0],
+                                  self.x_container[i + 2, 1],
+                                  self.x_container[i + 2, 2]]))
+
+
+
+                #out_file.write(fmt_.format(*['Eval', self.attr['num_eval']]))
+            #fmt_ = ' {0:>9} ' + '{1:25.15f}\n'
+            ##out_file.write(fmt_.format(*['Criterion', fval]))
+            #f#mt_ = ' {0:<9} {1:>25}\n'
+            #o#ut_file.write(fmt_.format(*['Time', time.strftime("%H:%M:%S")]))
+            #f#mt_ = ' {0:<9} {1:>25}\n\n'
+            #out_file.write(fmt_.format(*['Date', time.strftime("%d/%m/%Y")]))
+        info_start = self.x_container[:, 0]
+        info_step = self.x_container[:, 1]
+        info_current = self.x_container[:, 2]
+        write_est_info(int(info_start[0]), info_start[1], info_start[2:],
+            int(info_step[0]), info_step[1], info_step[2:],
+            int(info_current[0]), info_current[1], info_current[2:])
 
         # Enforce a maximum number of function evaluations
         if self.maxfun == self.attr['num_eval']:

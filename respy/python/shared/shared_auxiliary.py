@@ -1,11 +1,63 @@
 # standard library
 import numpy as np
+
+import shlex
 import os
 
 # project library
 from respy.python.shared.shared_constants import INADMISSIBILITY_PENALTY
 from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.shared.shared_constants import HUGE_FLOAT
+
+
+
+def check_optimization_parameters(x):
+    """ Check optimization parameters.
+    """
+    # Perform checks
+    assert (isinstance(x, np.ndarray))
+    assert (x.dtype == np.float)
+    assert (np.all(np.isfinite(x)))
+
+    # Finishing
+    return True
+
+def dist_optim_paras(x_all_curre, is_debug):
+    """ Update parameter values. The np.array type is maintained.
+    """
+    # Checks
+    if is_debug:
+        check_optimization_parameters(x_all_curre)
+
+    # Occupation A
+    coeffs_a = x_all_curre[0:6]
+
+    # Occupation B
+    coeffs_b = x_all_curre[6:12]
+
+    # Education
+    coeffs_edu = x_all_curre[12:15]
+
+    # Home
+    coeffs_home = x_all_curre[15:16]
+
+    # Cholesky
+    shocks_cholesky = np.tile(0.0, (4, 4))
+    shocks_cholesky[0, :1] = x_all_curre[16:17]
+    shocks_cholesky[1, :2] = x_all_curre[17:19]
+    shocks_cholesky[2, :3] = x_all_curre[19:22]
+    shocks_cholesky[3, :4] = x_all_curre[22:26]
+
+    # Checks
+    if is_debug:
+        args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky)
+        assert check_model_parameters(*args)
+
+    # Collect arguments
+    args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky)
+
+    # Finishing
+    return args
 
 
 def get_total_value(period, num_periods, delta, payoffs_systematic, draws,
@@ -494,3 +546,134 @@ def format_opt_parameters(val, identifier, paras_fixed):
 
     # Finishing
     return line
+
+def process_est_log():
+    """ Process information in the est.respy.log for further inspection.
+    """
+    rslt = dict()
+
+    rslt['value_final'] = None
+    rslt['paras_final'] = []
+
+    is_report = False
+    is_final = False
+    with open('est.respy.log') as in_file:
+        for i, line in enumerate(in_file.readlines()):
+            list_ = shlex.split(line)
+
+            if not list_:
+                continue
+
+            if list_[0] == 'ESTIMATION':
+                is_report = True
+            try:
+                if list_[1] == 'Final':
+                    is_final = True
+            except IndexError:
+                pass
+
+            # Collect the final value of criterion function
+            if is_report and (list_[0] == 'Criterion'):
+                rslt['value_final'] = float(list_[1])
+
+            if is_final:
+                try:
+                    rslt['paras_final'] += [float(list_[1])]
+                except ValueError:
+                    pass
+
+    # Type transformations
+    rslt['paras_final'] = np.array(rslt['paras_final'])
+
+    return rslt
+
+def get_est_info():
+    """ This function reads in the parameters from the last step of a
+    previous estimation run.
+    """
+
+    rslt = dict()
+
+    paras_start, paras_step, paras_current = [], [], []
+    with open('est.respy.info') as in_file:
+        for i, line in enumerate(in_file.readlines()):
+
+            list_ = shlex.split(line)
+
+            if i in range(12, 38):
+                paras_start += [float(list_[1])]
+                paras_step += [float(list_[2])]
+                paras_current += [float(list_[3])]
+
+            if i == 5:
+                value_start = float(list_[0])
+                value_step = float(list_[1])
+                value_current = float(list_[2])
+
+            if i == 64:
+                num_step = int(float(list_[3]))
+
+            if i == 66:
+                num_eval = int(float(list_[3]))
+
+    rslt['paras_current'] = np.array(paras_current)
+    rslt['paras_start'] = np.array(paras_start)
+    rslt['paras_step'] = np.array(paras_step)
+
+    rslt['value_current'] = value_current
+    rslt['value_start'] = value_start
+    rslt['value_step'] = value_step
+
+    rslt['num_eval'] = num_eval
+    rslt['num_step'] = num_step
+
+    # Finishing
+    return rslt
+
+
+def write_est_info(num_start, value_start, paras_start, num_step,
+                   value_step, paras_step, num_eval, value_current, paras_current):
+
+    # Write information to file.
+    with open('est.respy.info', 'w') as out_file:
+        # Write out information about criterion function
+        out_file.write('\n Criterion Function\n\n')
+        fmt_ = '{0:>15}    {1:>15}    {2:>15}    {3:>15}\n\n'
+        out_file.write(fmt_.format(*['', 'Start', 'Step', 'Current']))
+        fmt_ = '{0:>15}    {1:15.4f}    {2:15.4f}    {3:15.4f}\n\n'
+        paras = ['', value_start, value_step, value_current]
+
+        out_file.write(fmt_.format(*paras))
+
+        # Write out information about the optimization parameters directly.
+        out_file.write('\n Optimization Parameters\n\n')
+        fmt_ = '{0:>15}    {1:>15}    {2:>15}    {3:>15}\n\n'
+        out_file.write(fmt_.format(*['Identifier', 'Start', 'Step', 'Current']))
+        fmt_ = '{0:>15}    {1:15.4f}    {2:15.4f}    {3:15.4f}\n'
+        for i, _ in enumerate(paras_current):
+            paras = [i, paras_start[i], paras_step[i], paras_current[i]]
+            out_file.write(fmt_.format(*paras))
+
+        # Write out the current covariance matrix of the reward shocks.
+        out_file.write('\n\n Covariance Matrix\n\n')
+
+        for which in ['Start', 'Step', 'Current']:
+            if which == 'Start':
+                paras = paras_start
+            elif which == 'Step':
+                paras = paras_step
+            else:
+                paras = paras_current
+            fmt_ = '{0:>15}\n\n'
+            out_file.write(fmt_.format(*[which]))
+            shocks_cholesky = dist_optim_paras(paras, True)[-1]
+            shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
+            fmt_ = '{0:15.4f}    {1:15.4f}    {2:15.4f}    {3:15.4f}\n'
+            for i in range(4):
+                out_file.write(fmt_.format(*shocks_cov[i, :]))
+            out_file.write('\n')
+
+        fmt_ = '\n{0:<25}{1:>15}\n'
+        out_file.write(fmt_.format(*[' Number of Steps', num_step]))
+        out_file.write(fmt_.format(*[' Number of Evaluations', num_eval]))
+

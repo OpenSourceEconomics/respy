@@ -1,9 +1,9 @@
 # standard library
-import shutil
-
 import numpy as np
 import pandas as pd
 import pytest
+import shlex
+
 from pandas.util.testing import assert_frame_equal
 
 # testing library
@@ -148,7 +148,7 @@ class TestClass(object):
         simulate(respy_obj)
 
         # Iterate over alternative implementations
-        base_x, base_val, base_log = None, None, None
+        base_x, base_val = None, None
 
         num_periods = init_dict['BASICS']['periods']
         write_draws(num_periods, max_draws)
@@ -174,11 +174,6 @@ class TestClass(object):
             np.testing.assert_allclose(base_val, val)
 
             solve(respy_obj)
-
-            # Check for identical logging
-            if base_log is None:
-                base_log = open('sol.respy.log', 'r').read()
-            assert open('sol.respy.log', 'r').read() == base_log
 
     @pytest.mark.slow
     def test_3(self):
@@ -256,3 +251,82 @@ class TestClass(object):
             # Assess evaluation
             _, val = estimate(respy_obj)
             np.testing.assert_allclose(val, 1.0)
+
+    def test_5(self):
+        """ This test ensures that the logging looks exactly the same for the
+        different versions.
+        """
+
+        max_draws = np.random.randint(10, 100)
+
+        # Generate random initialization file
+        constr = dict()
+        constr['flag_parallelism'] = False
+        constr['max_draws'] = max_draws
+        constr['flag_interpolation'] = False
+        constr['maxfun'] = 0
+
+        # Generate random initialization file
+        init_dict = generate_init(constr)
+
+        # Perform toolbox actions
+        respy_obj = RespyCls('test.respy.ini')
+
+        # Simulate a dataset
+        simulate(respy_obj)
+
+        # Iterate over alternative implementations
+        base_sol_log, base_est_info_log, base_est_log = None, None, None
+
+        num_periods = init_dict['BASICS']['periods']
+        write_draws(num_periods, max_draws)
+
+        for version in ['FORTRAN', 'PYTHON']:
+
+            respy_obj.unlock()
+
+            respy_obj.set_attr('version', version)
+
+            respy_obj.lock()
+
+            estimate(respy_obj)
+
+            solve(respy_obj)
+
+            # Check for identical logging
+            if base_sol_log is None:
+                base_sol_log = open('sol.respy.log', 'r').read()
+            assert open('sol.respy.log', 'r').read() == base_sol_log
+
+            if base_est_info_log is None:
+                base_est_info_log = open('est.respy.info', 'r').read()
+            assert open('est.respy.info', 'r').read() == base_est_info_log
+
+            if base_est_log is None:
+                base_est_log = open('est.respy.log', 'r').readlines()
+            compare_est_log(base_est_log)
+
+
+def compare_est_log(base_est_log):
+    """ This function is required as the log files can be slightly different
+    for good reasons.
+    """
+    with open('est.respy.log') as in_file:
+        alt_est_log = in_file.readlines()
+
+    for i, _ in enumerate(alt_est_log):
+        alt_line, base_line = alt_est_log[i], base_est_log[i]
+        list_ = shlex.split(alt_line)
+
+        if not list_:
+            continue
+
+        if list_[0] in ['Criterion']:
+            alt_val = float(shlex.split(alt_line)[1])
+            base_val = float(shlex.split(base_line)[1])
+            np.testing.assert_almost_equal(alt_val, base_val)
+        elif list_[0] in ['Time']:
+            pass
+        else:
+            assert alt_line == base_line
+

@@ -1,6 +1,9 @@
+# standard library
+import os
+
 # project library
 from respy.python.shared.shared_auxiliary import check_dataset
-from respy.python.monitoring.clsMonitor import MonitorCls
+from respy.python.shared.shared_auxiliary import process_est_log
 from respy.python.process.process_python import process
 from respy.fortran.interface import resfort_interface
 from respy.python.interface import respy_interface
@@ -9,17 +12,15 @@ from respy.python.interface import respy_interface
 def estimate(respy_obj):
     """ Estimate the model
     """
-
-    # Initialize monitoring subprocess, which provides the information about
-    # the progress of the estimation independent of program version and
-    # optimizer.
-    monitor_obj = MonitorCls()
-    monitor_obj.start()
-
     # Read in estimation dataset. It only reads in the number of agents
     # requested for the estimation.
     data_frame = process(respy_obj)
     data_array = data_frame.as_matrix()
+
+    # Cleanup
+    for fname in ['est.respy.log', 'est.respy.info']:
+        if os.path.exists(fname):
+            os.unlink(fname)
 
     # Antibugging.
     assert _check_input(respy_obj, data_frame)
@@ -35,7 +36,11 @@ def estimate(respy_obj):
     else:
         raise NotImplementedError
 
-    x, val = monitor_obj.stop()
+    rslt = process_est_log()
+    x, val = rslt['paras_final'], rslt['value_final']
+
+    with open('est.respy.info', 'a') as out_file:
+        out_file.write('\n TERMINATED')
 
     # Finishing
     return x, val

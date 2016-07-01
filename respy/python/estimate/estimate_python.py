@@ -2,7 +2,7 @@
 """
 
 # standard library
-from respy.python.estimate.estimate_auxiliary import dist_optim_paras
+from respy.python.shared.shared_auxiliary import dist_optim_paras
 from respy.python.evaluate.evaluate_python import pyth_evaluate
 
 

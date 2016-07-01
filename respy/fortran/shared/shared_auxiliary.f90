@@ -8,6 +8,8 @@ MODULE shared_auxiliary
     
     USE shared_constants
 
+    USE shared_utilities
+
 	!/*	setup	*/
 
     IMPLICIT NONE
@@ -22,8 +24,56 @@ MODULE shared_auxiliary
 
     END INTERFACE
 
-
 CONTAINS
+!******************************************************************************
+!******************************************************************************
+FUNCTION apply_scaling(x_in, auto_scales, request)
+
+    !/* external objects    */
+
+    REAL(our_dble)                  :: apply_scaling(num_free)
+
+    REAL(our_dble), INTENT(IN)      :: auto_scales(num_free, num_free)
+    REAL(our_dble), INTENT(IN)      :: x_in(num_free)
+
+    CHARACTER(*), INTENT(IN)        :: request
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    IF (request == 'do') THEN
+        apply_scaling = MATMUL(auto_scales, x_in)
+    ELSE
+        apply_scaling = MATMUL(pinv(auto_scales, num_free), x_in)
+    END IF
+
+END FUNCTION
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE get_cholesky(shocks_cholesky, x)
+
+    !/* external objects        */
+
+    REAL(our_dble), INTENT(OUT)     :: shocks_cholesky(4, 4)
+
+    REAL(our_dble), INTENT(IN)      :: x(26)
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    shocks_cholesky = zero_dble
+
+    shocks_cholesky(1, :1) = x(17:17)
+
+    shocks_cholesky(2, :2) = x(18:19)
+
+    shocks_cholesky(3, :3) = x(20:22)
+
+    shocks_cholesky(4, :4) = x(23:26)
+
+END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
 SUBROUTINE transform_disturbances(draws_transformed, draws, shocks_cholesky, num_draws)

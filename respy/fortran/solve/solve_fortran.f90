@@ -6,6 +6,8 @@ MODULE solve_fortran
 
     USE shared_constants
 
+    USE logging_solution
+
     USE solve_auxiliary
 
 	!/*	setup	*/
@@ -47,28 +49,28 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, mapping_
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    CALL logging_solution(1)
+    CALL log_solution(1)
 
     CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, edu_start, edu_max)
 
-    CALL logging_solution(-1)
+    CALL log_solution(-1)
 
 
-    CALL logging_solution(2)
+    CALL log_solution(2)
 
     CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start)
 
-    CALL logging_solution(-1)
+    CALL log_solution(-1)
 
 
-    CALL logging_solution(3)
+    CALL log_solution(3)
     
     CALL fort_backward_induction(periods_emax, periods_draws_emax, states_number_period, periods_payoffs_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max, .True.)
 
     IF (.NOT. is_myopic) THEN
-        CALL logging_solution(-1)
+        CALL log_solution(-1)
     ELSE
-        CALL logging_solution(-2)
+        CALL log_solution(-2)
     END IF
 
 END SUBROUTINE

@@ -17,6 +17,8 @@ import os
 from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
 from respy.python.shared.shared_auxiliary import dist_model_paras
 from respy.python.shared.shared_auxiliary import print_init_dict
+from respy.python.shared.shared_auxiliary import write_est_info
+from respy.python.shared.shared_auxiliary import get_est_info
 from respy.python.read.read_python import read
 
 from respy import RespyCls
@@ -63,7 +65,7 @@ def dist_input_arguments(parser):
         assert (values is None)
         assert os.path.exists(init_file)
     elif action in ['change']:
-        assert os.path.exists('est.respy.paras')
+        assert os.path.exists('est.respy.info')
 
     # Finishing
     return identifiers_list, values, action, init_file
@@ -127,18 +129,16 @@ def change_value(identifiers, values):
     """
 
     # Read in some baseline information
-    step_info = np.genfromtxt('est.respy.paras')
-    step_paras = step_info[2:, 1]
-
+    est_info = get_est_info()
     # Apply modifications
-    for i, identifier in enumerate(identifiers):
-        step_paras[identifier] = values[i]
 
-    step_info[2:, 1] = step_paras
+    for i, identifier in enumerate(identifiers):
+        est_info['paras_step'][identifier] = values[i]
 
     # Save parametrization to file
-    np.savetxt(open('est.respy.paras', 'wb'), step_info, fmt='%15.8f')
-
+    write_est_info(0, est_info['value_start'], est_info['paras_start'],
+        est_info['num_step'], est_info['value_step'], est_info['paras_step'],
+        est_info['num_eval'], est_info['value_current'], est_info['paras_current'])
 
 if __name__ == '__main__':
 

@@ -11,6 +11,7 @@ from respy.python.estimate.estimate_auxiliary import get_optim_paras
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import dist_model_paras
+from respy.python.shared.shared_auxiliary import get_est_info
 
 from respy import estimate
 from respy import RespyCls
@@ -79,30 +80,27 @@ def add_gradient_information(respy_obj):
     norm = np.amax(np.abs(grad))
 
     # Write out extended information
-    with open('est.respy.info', 'w') as out_file:
-        for i, line in enumerate(original_lines):
-            out_file.write(line)
-            # Insert information about gradient
-            if i == 6:
-                out_file.write('\n Gradient\n\n')
-                fmt_ = '{0:>15}    {1:>15}\n\n'
-                out_file.write(fmt_.format(*['Identifier', 'Start']))
-                fmt_ = '{0:>15}    {1:15.4f}\n'
+    with open('est.respy.info', 'a') as out_file:
+        # Insert information about gradient
+        out_file.write('\n\n\n\n Gradient\n\n')
+        fmt_ = '{0:>15}    {1:>15}\n\n'
+        out_file.write(fmt_.format(*['Identifier', 'Start']))
+        fmt_ = '{0:>15}    {1:15.4f}\n'
 
-                # Iterate over all candidate values, but only write the free
-                # ones to file. This ensure that the identifiers line up.
-                for j in range(26):
-                    is_fixed = paras_fixed[j]
-                    if not is_fixed:
-                        values = [j, grad.pop(0)]
-                        out_file.write(fmt_.format(*values))
-
-                out_file.write('\n')
-
-                # Add value of infinity norm
-                values = ['Norm', norm]
+        # Iterate over all candidate values, but only write the free
+        # ones to file. This ensure that the identifiers line up.
+        for j in range(26):
+            is_fixed = paras_fixed[j]
+            if not is_fixed:
+                values = [j, grad.pop(0)]
                 out_file.write(fmt_.format(*values))
-                out_file.write('\n\n')
+
+        out_file.write('\n')
+
+        # Add value of infinity norm
+        values = ['Norm', norm]
+        out_file.write(fmt_.format(*values))
+        out_file.write('\n\n')
 
 
 def dist_input_arguments(parser):
@@ -128,7 +126,7 @@ def dist_input_arguments(parser):
         assert single
 
     if resume:
-        assert (os.path.exists('est.respy.paras'))
+        assert (os.path.exists('est.respy.info'))
 
     # Finishing
     return resume, single, init_file, gradient
@@ -143,8 +141,7 @@ def scripts_estimate(resume, single, init_file, gradient):
     # Update parametrization of the model if resuming from a previous
     # estimation run.
     if resume:
-        x0 = np.genfromtxt('est.respy.paras')[2:, 1]
-        respy_obj.update_model_paras(x0)
+        respy_obj.update_model_paras(get_est_info()['paras_step'])
 
     # Set maximum iteration count when only an evaluation of the criterion
     # function is requested.

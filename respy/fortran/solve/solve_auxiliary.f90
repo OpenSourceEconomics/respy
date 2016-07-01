@@ -4,6 +4,8 @@ MODULE solve_auxiliary
 
 	!/*	external modules	*/
 
+    USE logging_solution 
+
     USE shared_auxiliary
 
     USE shared_constants
@@ -312,7 +314,7 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
         CALL transform_disturbances(draws_emax_transformed, draws_emax, shocks_cholesky, num_draws_emax)
 
 
-        IF (is_write) CALL logging_solution(4, period, num_states)
+        IF (is_write) CALL log_solution(4, period, num_states)
         
         any_interpolated = (num_points_interp .LE. num_states) .AND. is_interpolated
 
@@ -646,113 +648,9 @@ SUBROUTINE get_predictions(predictions, endogenous, exogenous, maxe, is_simulate
     ! Perform some basic logging to spot problems early.
     IF(PRESENT(is_write)) THEN
         IF(is_write) THEN
-            CALL logging_prediction_model(coeffs, r_squared, bse)
+            CALL log_solution(coeffs, r_squared, bse)
         END IF
     END IF
-
-END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
-SUBROUTINE logging_prediction_model(coeffs, r_squared, bse)
-
-    !/* external objects        */
-
-    REAL(our_dble), INTENT(IN)      :: coeffs(9)
-    REAL(our_dble), INTENT(IN)      :: r_squared
-    REAL(our_dble), INTENT(IN)      :: bse(9)
-
-!------------------------------------------------------------------------------
-! Algorithm
-!------------------------------------------------------------------------------
-
-    ! Define format for coefficients and R-squared
-    1900 FORMAT(8x,A12,7x,9(f15.4))
-    1950 FORMAT(8x,A15,4x,9(f15.4))
-
-    2900 FORMAT(8x,A9,10x,f15.4)
-
-    ! Write to file
-    OPEN(UNIT=99, FILE='sol.respy.log', ACCESS='APPEND')
-
-        WRITE(99, *) '     Information about Prediction Model '
-        WRITE(99, *) 
-
-        WRITE(99, 1900) 'Coefficients', coeffs
-        WRITE(99, *) 
-
-        WRITE(99, 1950) 'Standard Errors', bse
-        WRITE(99, *) 
-
-        WRITE(99, 2900) 'R-squared', r_squared
-        WRITE(99, *) ''
-        WRITE(99, *) 
-
-    CLOSE(99)
-
-END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
-SUBROUTINE logging_solution(indicator, period, num_states)
-
-    !/* external objects        */
-
-    INTEGER(our_int), INTENT(IN)            :: indicator
-
-    INTEGER(our_int), INTENT(IN), OPTIONAL  :: num_states
-    INTEGER(our_int), INTENT(IN), OPTIONAL  :: period
-
-!------------------------------------------------------------------------------
-! Algorithm
-!------------------------------------------------------------------------------
-
-    OPEN(UNIT=99, FILE='sol.respy.log', ACCESS='APPEND')
-
-    ! State space creation
-    IF (indicator == 1) THEN
-
-        ! Delete  any previous versions
-        CLOSE(99, STATUS ='DELETE')
-        OPEN(UNIT=99, FILE='sol.respy.log', ACCESS='APPEND')
-
-        WRITE(99, *) ' Starting state space creation '
-        WRITE(99, *)
-
-    ! Ex Ante Payoffs
-    ELSEIF (indicator == 2) THEN
-
-        WRITE(99, *) ' Starting calculation of systematic payoffs '
-        WRITE(99, *)
-
-    ! Backward induction procedure
-    ELSEIF (indicator == 3) THEN
-
-        WRITE(99, *) ' Starting backward induction procedure '
-        WRITE(99, *)
-
-    ELSEIF (indicator == 4) THEN
-
-        1900 FORMAT(2x,A18,1x,i2,1x,A4,1x,i5,1x,A7)
-
-        WRITE(99, 1900) '... solving period', period, 'with', num_states, 'states '
-        WRITE(99, *)
-
-    ! Finishing
-    ELSEIF (indicator == -1) THEN
-
-        WRITE(99, *) ' ... finished '
-        WRITE(99, *) ''
-        WRITE(99, *)
-
-    ! Finishing
-    ELSEIF (indicator == -2) THEN
-
-        WRITE(99, *) ' ... not required due to myopic agents '
-        WRITE(99, *) ''
-        WRITE(99, *)
-
-    END IF
-
-  CLOSE(99)
 
 END SUBROUTINE
 !******************************************************************************

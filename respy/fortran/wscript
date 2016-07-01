@@ -12,7 +12,9 @@ def build(ctx):
         'solve/solve_auxiliary.f90', 'solve/solve_fortran.f90',
         'evaluate/evaluate_auxiliary.f90', 'evaluate/evaluate_fortran.f90',
         'estimate/estimate_auxiliary.f90', 'estimate/estimate_fortran.f90',
-        'simulate/simulate_fortran.f90', 'optimizers/newuoa.f90', 'optimizers/dfpmin.f90', 'resfort_library.f90']
+        'logging/logging_estimation.f90', 'logging/logging_solution.f90',
+          'simulate/simulate_fortran.f90',
+        'optimizers/newuoa.f90', 'optimizers/dfpmin.f90', 'resfort_library.f90']
 
     flags = ctx.env.FCFLAGS + ['-fPIC']
     ctx(features=['fc', 'fcstlib'], source=src, target='resfort', fcflags=flags)

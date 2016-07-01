@@ -2,6 +2,8 @@
 !******************************************************************************
 MODULE resfort_library
 
+	USE logging_estimation
+	
     USE shared_constants
 
     USE shared_containers

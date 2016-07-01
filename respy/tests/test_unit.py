@@ -6,8 +6,8 @@ import pytest
 from codes.random_init import generate_init
 
 # package library
-from respy.python.estimate.estimate_auxiliary import dist_optim_paras
 from respy.python.estimate.estimate_auxiliary import get_optim_paras
+from respy.python.shared.shared_auxiliary import dist_optim_paras
 
 
 from respy import solve
