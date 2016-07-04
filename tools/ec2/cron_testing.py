@@ -35,10 +35,10 @@ from config import python2_exec
 from config import python3_exec
 
 ###############################################################################
-# Run the PYTHON 2 test vault.
+# Run the PYTHON 2 test vault.s
 ###############################################################################
 os.chdir(PACKAGE_DIR + '/development/testing/regression')
-test_vault_2_ret = subprocess.call([python2_exec, 'check_vault.py'])
+test_vault_2_ret = subprocess.call([python2_exec, 'driver.py', '--version', '2', '--request', 'check'])
 
 test_vault_2_msg = '1) The PYTHON 2 testing vault was run '
 if test_vault_2_ret == 0:
@@ -51,7 +51,7 @@ os.chdir(CURRENT_DIR)
 # Run the PYTHON 3 test vault.
 ###############################################################################
 os.chdir(PACKAGE_DIR + '/development/testing/regression')
-test_vault_3_ret = subprocess.call([python3_exec, 'check_vault.py'])
+test_vault_3_ret = subprocess.call([python2_exec, 'driver.py', '--version', '3', '--request', 'check'])
 
 test_vault_3_msg = '2) The PYTHON 3 testing vault was run '
 if test_vault_3_ret == 0:
