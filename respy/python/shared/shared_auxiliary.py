@@ -656,7 +656,7 @@ def write_est_info(num_start, value_start, paras_start, num_step,
             if is_large[i]:
                 line += '    {:>15}'.format('---')
             else:
-                line += '    {:15.4}'.format(crit_vals[i])
+                line += '    {:15.4f}'.format(crit_vals[i])
 
         out_file.write(line + '\n\n')
 
