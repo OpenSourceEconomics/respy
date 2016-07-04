@@ -299,6 +299,8 @@ SUBROUTINE get_scales_scalar(auto_scales, x_free_start, scaled_minimum)
 
     ALLOCATE(auto_scales(num_free, num_free))
 
+    CALL log_estimation(auto_scales, x_free_start, .True.)
+
     grad = fort_dcriterion(x_free_start)
 
     auto_scales = zero_dble
@@ -313,7 +315,7 @@ SUBROUTINE get_scales_scalar(auto_scales, x_free_start, scaled_minimum)
 
     END DO
 
-    CALL log_estimation(auto_scales, x_free_start)
+    CALL log_estimation(auto_scales, x_free_start, .False.)
 
 END SUBROUTINE
 !******************************************************************************

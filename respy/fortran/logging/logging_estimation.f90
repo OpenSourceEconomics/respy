@@ -250,12 +250,14 @@ SUBROUTINE log_estimation_final(success, message, crit_val, x_all_final)
 END SUBROUTINE    
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE log_scaling(auto_scales, x_free_start)
+SUBROUTINE log_scaling(auto_scales, x_free_start, is_setup)
 
     !/* external objects    */
 
     REAL(our_dble), INTENT(IN)      :: auto_scales(num_free, num_free)
     REAL(our_dble), INTENT(IN)      :: x_free_start(num_free)
+
+    LOGICAL, INTENT(IN)             :: is_setup
 
     !/* internal objects    */
 
@@ -275,16 +277,26 @@ SUBROUTINE log_scaling(auto_scales, x_free_start)
 
     OPEN(UNIT=99, FILE='est.respy.log', ACCESS='APPEND')
 
-        WRITE(99, *) 'SCALING'
-        WRITE(99, *) 
-        WRITE(99, 120) 'Identifier', 'Original', 'Scale', 'Transformed Value' 
-        WRITE(99, *) 
+        ! The initial setup serves to remind users that scaling is going on
+        ! in the background. Otherwise, they remain puzzled as there is no
+        ! output for quite some time if the gradient evaluations are 
+        ! time consuming.
+        IF (is_setup) THEN
+        
+            WRITE(99, *) 'SCALING'
+            WRITE(99, *) 
+            WRITE(99, 120) 'Identifier', 'Original', 'Scale', 'Transformed Value' 
+            WRITE(99, *) 
 
-        DO i = 1, num_free
-            WRITE(99, 130) i, x_free_start(i), auto_scales(i, i), x_free_scaled(i)
-        END DO
+        ELSE
+            
+            DO i = 1, num_free
+                WRITE(99, 130) i, x_free_start(i), auto_scales(i, i), x_free_scaled(i)
+            END DO
 
-        WRITE(99, *) 
+            WRITE(99, *) 
+
+        END IF
 
     CLOSE(99)
 
