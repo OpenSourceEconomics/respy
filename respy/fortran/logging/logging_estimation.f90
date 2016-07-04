@@ -12,6 +12,8 @@ MODULE logging_estimation
 
     USE shared_utilities
 
+    USE logging_warning
+
 	!/*	setup	*/
 
     IMPLICIT NONE
@@ -198,7 +200,9 @@ SUBROUTINE log_estimation_final(success, message, crit_val, x_all_final)
     !/* internal objects        */
 
     REAL(our_dble)                  :: x_all_current(26)
+    REAL(our_dble)                  :: crit_val_int
 
+    INTEGER(our_int)                :: info
     INTEGER(our_int)                :: i
 
     CHARACTER(55)                   :: today_char(3) 
@@ -208,11 +212,25 @@ SUBROUTINE log_estimation_final(success, message, crit_val, x_all_final)
 ! Algorithm
 !------------------------------------------------------------------------------
     
+    ! In a small number of cases writing out the value of the criterion 
+    ! function fails due to to a too large value. This makes the testing
+    ! routines less robust.
+    info = 0
+    IF (crit_val .GT. LARGE_FLOAT) THEN
+        info = 1
+        crit_val_int = LARGE_FLOAT
+    ELSE 
+        crit_val_int = crit_val
+    END IF
+
+
+
     100 FORMAT(3x,A9,5X,f25.15)
     110 FORMAT(3x,A10,4x,A25)
     120 FORMAT(3x,i10,4x,f25.15)
 
     OPEN(UNIT=99, FILE='est.respy.log', ACCESS='APPEND')
+
         WRITE(99, *) 'ESTIMATION REPORT'
         WRITE(99, *) 
 
@@ -224,7 +242,7 @@ SUBROUTINE log_estimation_final(success, message, crit_val, x_all_final)
 
         WRITE(99, *) '  Message ', TRIM(message)
         WRITE(99, *) 
-        WRITE(99, 100) 'Criterion', crit_val
+        WRITE(99, 100) 'Criterion', crit_val_int
 
         WRITE(99, *) 
         WRITE(99, *) 
@@ -236,7 +254,11 @@ SUBROUTINE log_estimation_final(success, message, crit_val, x_all_final)
             WRITE(99, 120) (i - 1), x_all_final(i)
         END DO
 
+        WRITE(99, *) 
+
     CLOSE(99)
+
+    IF (info == 1) CALL log_warning_crit_val()
 
 END SUBROUTINE    
 !******************************************************************************
