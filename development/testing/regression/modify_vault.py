@@ -6,11 +6,12 @@ from __future__ import print_function
 
 
 import pickle as pkl
-import numpy as np
 
-import subprocess
 import sys
 import os
+
+# Required for PYTHON2/3 portability
+sys.path.insert(0, 'modules')
 
 from config import python2_exec
 from config import python3_exec
@@ -61,16 +62,6 @@ for idx, _ in enumerate(tests_old):
     init_dict['DERIVATIVES'] = dict()
     init_dict['DERIVATIVES']['version'] = 'FORWARD-DIFFERENCES'
 
-
-    optimizer = init_dict['ESTIMATION']['optimizer']
-
-    if optimizer == 'SCIPY-BFGS':
-        init_dict['DERIVATIVES']['eps'] = init_dict['SCIPY-BFGS']['epsilon']
-    else:
-        init_dict['DERIVATIVES']['eps'] = init_dict['FORT-BFGS']['epsilon']
-
-    del init_dict['SCIPY-BFGS']['epsilon']
-    del init_dict['FORT-BFGS']['epsilon']
 
     tests_new += [(init_dict, crit_val)]
 

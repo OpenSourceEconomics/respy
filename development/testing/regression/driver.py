@@ -1,13 +1,17 @@
 #!/usr/bin/env python
 import subprocess
 import argparse
+import sys
 import os
 
+# Required for PYTHON2/3 portability
+sys.path.insert(0, 'modules')
+
 # testing library
-from modules.auxiliary import dist_input_arguments
-from modules.auxiliary import write_request
-from modules.config import python2_exec
-from modules.config import python3_exec
+from auxiliary import dist_input_arguments
+from auxiliary import write_request
+from config import python2_exec
+from config import python3_exec
 
 
 def run(request, num_tests, version):
