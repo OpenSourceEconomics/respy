@@ -46,7 +46,7 @@ MODULE shared_constants
     REAL(our_dble), PARAMETER   :: SMALL_FLOAT                  = 1.0e-5_our_dble
     REAL(our_dble), PARAMETER   :: TINY_FLOAT                   = 1.0e-8_our_dble
     REAL(our_dble), PARAMETER   :: HUGE_FLOAT                   = 1.0e20_our_dble
-    REAL(our_dble), PARAMETER   :: LARGE_FLOAT                  = 99999999_our_dble
+    REAL(our_dble), PARAMETER   :: LARGE_FLOAT                  = 1.0e8_our_dble
 
 !******************************************************************************
 !******************************************************************************

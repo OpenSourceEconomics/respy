@@ -7,9 +7,10 @@ import os
 # project library
 from respy.python.shared.shared_constants import INADMISSIBILITY_PENALTY
 from respy.python.shared.shared_constants import MISSING_FLOAT
+from respy.python.shared.shared_constants import LARGE_FLOAT
 from respy.python.shared.shared_constants import HUGE_FLOAT
 
-
+from respy.python.logging.logging_warning import log_warning_crit_val
 
 def check_optimization_parameters(x):
     """ Check optimization parameters.
@@ -641,9 +642,23 @@ def write_est_info(num_start, value_start, paras_start, num_step,
         fmt_ = '{0:>15}    {1:>15}    {2:>15}    {3:>15}\n\n'
         out_file.write(fmt_.format(*['', 'Start', 'Step', 'Current']))
         fmt_ = '{0:>15}    {1:15.4f}    {2:15.4f}    {3:15.4f}\n\n'
-        paras = ['', value_start, value_step, value_current]
 
-        out_file.write(fmt_.format(*paras))
+        line = '{:>15}'.format('')
+
+        is_large = [False, False, False]
+        is_large[0] = abs(value_start) > LARGE_FLOAT
+        is_large[1] = abs(value_step) > LARGE_FLOAT
+        is_large[2] = abs(value_current) > LARGE_FLOAT
+
+        crit_vals = [value_start, value_step, value_current]
+
+        for i in range(3):
+            if is_large[i]:
+                line += '    {:>15}'.format('---')
+            else:
+                line += '    {:15.4}'.format(crit_vals[i])
+
+        out_file.write(line + '\n\n')
 
         # Write out information about the optimization parameters directly.
         out_file.write('\n Optimization Parameters\n\n')
@@ -677,3 +692,6 @@ def write_est_info(num_start, value_start, paras_start, num_step,
         out_file.write(fmt_.format(*[' Number of Steps', num_step]))
         out_file.write(fmt_.format(*[' Number of Evaluations', num_eval]))
 
+        for i in range(3):
+            if is_large[i]:
+                log_warning_crit_val(i)

@@ -173,6 +173,7 @@ SUBROUTINE log_estimation_eval(x_all_current, val_current, num_eval)
         WRITE(1, *)  
         WRITE(1, 210)  '', val_char
         WRITE(1, *) 
+        WRITE(1, *) 
         WRITE(1, *) 'Optimization Parameters'
         WRITE(1, *) 
         WRITE(1, 220) 'Identifier', 'Start', 'Step', 'Current'

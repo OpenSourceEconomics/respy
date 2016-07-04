@@ -17,6 +17,7 @@ from respy.python.estimate.estimate_wrapper import OptimizationClass
 from respy.python.simulate.simulate_python import pyth_simulate
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
+from respy.python.logging.logging_estimate import log_estimation_final
 from respy.python.shared.shared_auxiliary import dist_model_paras
 from respy.python.shared.shared_auxiliary import process_est_log
 from respy.python.shared.shared_auxiliary import create_draws
@@ -139,20 +140,7 @@ def respy_interface(respy_obj, request, data_array=None):
                 success = False
                 message = 'Maximum number of iterations exceeded.'
 
-        # Finalize estimation log
-        fval = opt_obj.x_container[1, 1]
-        with open('est.respy.log', 'a') as out_file:
-            out_file.write('\n ESTIMATION REPORT\n\n')
-            out_file.write('   Success ' + str(success) + '\n')
-            out_file.write('   Message ' + message + '\n\n')
-            fmt_ = '   {0:>9}' + '     {1:25.15f}\n'
-            out_file.write(fmt_.format(*['Criterion', fval]))
-            fmt_ = '\n\n   {0:>10}' + '    {1:>25}\n\n'
-            out_file.write(fmt_.format(*['Identifier', 'Final']))
-            fmt_ = '   {:>10}' + '    {:25.15f}\n'
-            for i in range(26):
-                out_file.write(
-                    fmt_.format(*[i, opt_obj.x_container[i + 2, 1]]))
+        log_estimation_final(opt_obj, success, message)
 
     elif request == 'simulate':
 
