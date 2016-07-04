@@ -46,9 +46,10 @@ SUBROUTINE log_estimation_eval(x_all_current, val_current, num_eval)
 
     INTEGER(our_int), SAVE          :: num_step = - one_int
 
-    REAL(our_dble), SAVE            :: val_step = HUGE_FLOAT
-    REAL(our_dble), SAVE            :: val_start = HUGE_FLOAT
     REAL(our_dble), SAVE            :: x_container(26, 3)
+
+
+    REAL(our_dble), SAVE            :: crit_vals(3)
 
     REAL(our_dble)                  :: shocks_cholesky(4, 4)
     REAL(our_dble)                  :: shocks_cov(4, 4)
@@ -56,33 +57,46 @@ SUBROUTINE log_estimation_eval(x_all_current, val_current, num_eval)
     INTEGER(our_int)                :: i
     INTEGER(our_int)                :: j
 
-    LOGICAL                         :: is_step
+    LOGICAL                         :: is_large(3) = .False.
     LOGICAL                         :: is_start
+    LOGICAL                         :: is_step
 
     CHARACTER(55)                   :: today_char
     CHARACTER(55)                   :: now_char
+    CHARACTER(155)                  :: val_char
+    CHARACTER(50)                   :: tmp_char
 
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
+    
+    crit_vals(3) = val_current
 
     ! Determine events
     is_start = (num_eval == 1)
 
-    is_step = (val_step .GT. val_current) 
+    IF (is_start) THEN
+        crit_vals(1) = val_current
+        crit_vals(2) = HUGE_FLOAT
+    END IF
+
+    is_step = (crit_vals(2) .GT. val_current) 
      
     ! Update counters
     IF (is_step) THEN
 
         num_step = num_step + 1
 
-        val_step = val_current
+        crit_vals(2) = val_current
 
     END IF
 
-    IF (is_start) val_start = val_current
-
-
+    ! Sometimes on the path of the optimizer, the value of the criterion 
+    ! function is just too large for pretty printing.
+    DO i = 1, 3
+        is_large(i) = (ABS(crit_vals(i)) > LARGE_FLOAT)
+    END DO
+    
     ! Update container
     IF (is_start) x_container(:, 1) = x_all_current
 
@@ -98,6 +112,7 @@ SUBROUTINE log_estimation_eval(x_all_current, val_current, num_eval)
     110 FORMAT(3x,A4,25X,A10)
     120 FORMAT(3x,A4,27X,A8)
     130 FORMAT(3x,A9,5X,f25.15)
+    135 FORMAT(3x,A9,5X,A25)
     140 FORMAT(3x,A10,3(4x,A25))
     150 FORMAT(3x,i10,3(4x,f25.15))
 
@@ -108,7 +123,14 @@ SUBROUTINE log_estimation_eval(x_all_current, val_current, num_eval)
         WRITE(99, 110) 'Date', today_char
         WRITE(99, 120) 'Time', now_char
 
-        WRITE(99, 130) 'Criterion', val_current
+        IF (.NOT. is_large(3)) THEN
+            WRITE(99, 130) 'Criterion', crit_vals(3)
+        ELSE
+            WRITE(99, 135) 'Criterion', '---'
+
+        END IF
+
+
         WRITE(99, *) 
         WRITE(99, 140) 'Identifier', 'Start', 'Step', 'Current'
         WRITE(99, *) 
@@ -123,13 +145,24 @@ SUBROUTINE log_estimation_eval(x_all_current, val_current, num_eval)
 
 
     200 FORMAT(A15,3(4x,A15))
-    210 FORMAT(A15,3(4x,f15.4))
     220 FORMAT(A15,3(4x,A15))
+    210 FORMAT(A15,A57)
     230 FORMAT(i15,3(4x,f15.4))
     240 FORMAT(A15)
     250 FORMAT(f15.4,3(4x,f15.4))
     260 FORMAT(1x,A15,9x,i15)
     270 FORMAT(1x,A21,3x,i15)
+
+    val_char = ''
+    DO i = 1, 3
+        IF (is_large(i)) THEN
+            WRITE(tmp_char, '(4x,A15)') '---'
+        ELSE
+            WRITE(tmp_char, '(4x,f15.4)') crit_vals(i)
+        END IF
+
+        val_char = TRIM(val_char) // TRIM(tmp_char)
+    END DO
 
     OPEN(UNIT=1, FILE='est.respy.info')
 
@@ -138,8 +171,7 @@ SUBROUTINE log_estimation_eval(x_all_current, val_current, num_eval)
         WRITE(1, *)  
         WRITE(1, 200) '', 'Start', 'Step', 'Current'
         WRITE(1, *)  
-        WRITE(1, 210) '', val_start, val_step, val_current
-        WRITE(1, *)  
+        WRITE(1, 210)  '', val_char
         WRITE(1, *) 
         WRITE(1, *) 'Optimization Parameters'
         WRITE(1, *) 
@@ -181,6 +213,10 @@ SUBROUTINE log_estimation_eval(x_all_current, val_current, num_eval)
 
     CLOSE(1)
 
+    DO i = 1, 3
+        IF (is_large(3)) CALL log_warning_crit_val(3)
+    END do
+
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
@@ -197,22 +233,13 @@ SUBROUTINE log_estimation_final(success, message, crit_val, x_all_final)
     
     !/* internal objects        */
 
-    REAL(our_dble)                  :: crit_val_int
-
-    INTEGER(our_int)                :: info
     INTEGER(our_int)                :: i
 
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
-    
-    ! In a small number of cases writing out the value of the criterion 
-    ! function fails due to to a too large value. This makes the testing
-    ! routines less robust.
-    CALL clip_value(crit_val_int, crit_val, -LARGE_FLOAT, LARGE_FLOAT, info)
 
-
-    100 FORMAT(3x,A9,5X,f25.15)
+    100 FORMAT(3x,A9,5X,f45.15)
     110 FORMAT(3x,A10,4x,A25)
     120 FORMAT(3x,i10,4x,f25.15)
 
@@ -229,7 +256,7 @@ SUBROUTINE log_estimation_final(success, message, crit_val, x_all_final)
 
         WRITE(99, *) '  Message ', TRIM(message)
         WRITE(99, *) 
-        WRITE(99, 100) 'Criterion', crit_val_int
+        WRITE(99, 100) 'Criterion', crit_val
 
         WRITE(99, *) 
         WRITE(99, *) 
@@ -245,7 +272,6 @@ SUBROUTINE log_estimation_final(success, message, crit_val, x_all_final)
 
     CLOSE(99)
 
-    IF (info .NE. 0) CALL log_warning_crit_val()
 
 END SUBROUTINE    
 !******************************************************************************

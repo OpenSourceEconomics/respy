@@ -21,7 +21,11 @@ MODULE logging_warning
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE log_warning_crit_val()
+SUBROUTINE log_warning_crit_val(count)
+
+    !/* external objects        */
+
+    INTEGER(our_int), INTENT(IN)    :: count
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -29,7 +33,13 @@ SUBROUTINE log_warning_crit_val()
     
     OPEN(UNIT=99, FILE='est.respy.log', ACCESS='APPEND')
 
-        WRITE(99, *) '  Warning: Value of criterion function too large to write to file, internals unaffected.'
+        IF (count == 1) WRITE(99, *) '  Warning: Starting value of criterion function too large to write to file, internals unaffected.'
+
+        IF (count == 2) WRITE(99, *) '  Warning: Step value of criterion function too large to write to file, internals unaffected.'
+
+        IF (count == 3) WRITE(99, *) '  Warning: Current value of criterion function too large to write to file, internals unaffected.'
+
+        WRITE(99, *)
 
     CLOSE(1)
 
