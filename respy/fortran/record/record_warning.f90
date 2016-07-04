@@ -1,6 +1,6 @@
 !******************************************************************************
 !******************************************************************************
-MODULE logging_warning
+MODULE recording_warning
 
 	!/*	external modules	*/
 
@@ -21,7 +21,7 @@ MODULE logging_warning
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE log_warning_crit_val(count)
+SUBROUTINE record_warning_crit_val(count)
 
     !/* external objects        */
 

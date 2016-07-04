@@ -6,7 +6,7 @@ MODULE estimate_fortran
 
     USE estimate_auxiliary
 
-    USE logging_estimation
+    USE recording_estimation
 
     USE shared_containers
 
@@ -133,7 +133,7 @@ SUBROUTINE fort_estimate(crit_val, success, message, coeffs_a, coeffs_b, coeffs_
 
     CALL construct_all_current_values(x_all_final, x_free_final, paras_fixed)
 
-    CALL log_estimation(success, message, crit_val, x_all_final)
+    CALL record_estimation(success, message, crit_val, x_all_final)
 
 END SUBROUTINE
 !******************************************************************************
@@ -188,7 +188,7 @@ FUNCTION fort_criterion(x)
 
         num_eval = num_eval + 1
 
-        CALL log_estimation(x_all_current, fort_criterion, num_eval)
+        CALL record_estimation(x_all_current, fort_criterion, num_eval)
     
     END IF
 
@@ -299,7 +299,7 @@ SUBROUTINE get_scales_scalar(auto_scales, x_free_start, scaled_minimum)
 
     ALLOCATE(auto_scales(num_free, num_free))
 
-    CALL log_estimation(auto_scales, x_free_start, .True.)
+    CALL record_estimation(auto_scales, x_free_start, .True.)
 
     grad = fort_dcriterion(x_free_start)
 
@@ -315,7 +315,7 @@ SUBROUTINE get_scales_scalar(auto_scales, x_free_start, scaled_minimum)
 
     END DO
 
-    CALL log_estimation(auto_scales, x_free_start, .False.)
+    CALL record_estimation(auto_scales, x_free_start, .False.)
 
 END SUBROUTINE
 !******************************************************************************

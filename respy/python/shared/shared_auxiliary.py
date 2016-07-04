@@ -10,7 +10,8 @@ from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.shared.shared_constants import LARGE_FLOAT
 from respy.python.shared.shared_constants import HUGE_FLOAT
 
-from respy.python.logging.logging_warning import log_warning_crit_val
+from respy.python.record.record_warning import record_warning_crit_val
+
 
 def check_optimization_parameters(x):
     """ Check optimization parameters.
@@ -694,4 +695,4 @@ def write_est_info(num_start, value_start, paras_start, num_step,
 
         for i in range(3):
             if is_large[i]:
-                log_warning_crit_val(i)
+                record_warning_crit_val(i)

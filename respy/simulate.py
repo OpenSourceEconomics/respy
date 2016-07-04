@@ -25,7 +25,7 @@ def simulate(respy_obj):
             dist_class_attributes(respy_obj, 'is_debug', 'version',
                 'num_agents_sim', 'seed_sim')
 
-    # Fire up the logging for the simulation. The logging of the solution
+    # Fire up the record for the simulation. The record of the solution
     # step is handled within the solution routines.
     logging_simulation('start')
 

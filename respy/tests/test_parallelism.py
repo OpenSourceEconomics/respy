@@ -45,7 +45,7 @@ class TestClass(object):
             np.testing.assert_almost_equal(base, crit_val)
 
     def test_2(self):
-        """ This test ensures that the logging files are identical.
+        """ This test ensures that the record files are identical.
         """
         # Generate random initialization file. The number of periods is
         # higher than usual as only FORTRAN implementations are used to
@@ -66,7 +66,7 @@ class TestClass(object):
             respy_obj = RespyCls('test.respy.ini')
             simulate(respy_obj)
 
-            # Check for identical logging
+            # Check for identical record
             if base_log is None:
                 base_log = open('sol.respy.log', 'r').read()
             assert open('sol.respy.log', 'r').read() == base_log

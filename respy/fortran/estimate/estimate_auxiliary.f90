@@ -4,7 +4,7 @@ MODULE estimate_auxiliary
 
 	!/*	external modules	*/
 
-    USE logging_estimation
+    USE recording_estimation
 
     USE shared_containers 
 

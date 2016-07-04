@@ -7,7 +7,7 @@ import numpy as np
 import time
 
 # project library
-from respy.python.logging.logging_estimate import log_estimation_eval
+from respy.python.record.record_estimation import record_estimation_eval
 from respy.python.estimate.estimate_python import pyth_criterion
 
 
@@ -76,7 +76,7 @@ class OptimizationClass(object):
             info_step = np.concatenate(([self.attr['num_step'], fval], x_all_current))
             self.x_container[:, 1] = info_step
 
-        log_estimation_eval(self, fval)
+        record_estimation_eval(self, fval)
 
         # Enforce a maximum number of function evaluations
         if self.maxfun == self.attr['num_eval']:

@@ -17,7 +17,7 @@ from respy.python.estimate.estimate_wrapper import OptimizationClass
 from respy.python.simulate.simulate_python import pyth_simulate
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
-from respy.python.logging.logging_estimate import log_estimation_final
+from respy.python.record.record_estimation import record_estimation_final
 from respy.python.shared.shared_auxiliary import dist_model_paras
 from respy.python.shared.shared_auxiliary import process_est_log
 from respy.python.shared.shared_auxiliary import create_draws
@@ -140,7 +140,7 @@ def respy_interface(respy_obj, request, data_array=None):
                 success = False
                 message = 'Maximum number of iterations exceeded.'
 
-        log_estimation_final(opt_obj, success, message)
+        record_estimation_final(opt_obj, success, message)
 
     elif request == 'simulate':
 

@@ -6,7 +6,7 @@ from respy.python.shared.shared_auxiliary import write_est_info
 from respy.python.shared.shared_constants import LARGE_FLOAT
 
 
-def log_estimation_eval(opt_obj, fval):
+def record_estimation_eval(opt_obj, fval):
     """ Logging the progress of an estimation.
     """
     with open('est.respy.log', 'a') as out_file:
@@ -49,7 +49,7 @@ def log_estimation_eval(opt_obj, fval):
                    int(info_current[0]), info_current[1], info_current[2:])
 
 
-def log_estimation_final(opt_obj, success, message):
+def record_estimation_final(opt_obj, success, message):
     """ We summarize the results of the estimation.
     """
     fval = opt_obj.x_container[1, 1]

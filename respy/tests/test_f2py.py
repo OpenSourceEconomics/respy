@@ -465,7 +465,7 @@ class TestClass(object):
         endogenous = py
 
         # Get predictions for expected future values. We need to start the
-        # logging to set up the handler for logging the output from the
+        # record to set up the handler for record the output from the
         # prediction model.
         logging_solution('start')
 

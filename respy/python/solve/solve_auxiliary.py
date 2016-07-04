@@ -393,12 +393,12 @@ def logging_prediction_model(results):
 
 
 def logging_solution(which):
-    """ Ensure proper handling of logging.
+    """ Ensure proper handling of record.
     """
     # Antibugging
     assert (which in ['start', 'stop'])
 
-    # Start logging
+    # Start record
     if which == 'start':
 
         formatter = logging.Formatter('  %(message)s \n')

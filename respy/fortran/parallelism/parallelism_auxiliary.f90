@@ -43,7 +43,7 @@ SUBROUTINE get_scales_parallel(auto_scales, x_free_start, scaled_minimum)
 
     ALLOCATE(auto_scales(num_free, num_free))
 
-    CALL log_estimation(auto_scales, x_free_start, .True.)
+    CALL record_estimation(auto_scales, x_free_start, .True.)
 
     grad = fort_dcriterion_parallel(x_free_start)
 
@@ -59,7 +59,7 @@ SUBROUTINE get_scales_parallel(auto_scales, x_free_start, scaled_minimum)
 
     END DO
 
-    CALL log_estimation(auto_scales, x_free_start, .False.)
+    CALL record_estimation(auto_scales, x_free_start, .False.)
 
 END SUBROUTINE
 !******************************************************************************
@@ -266,7 +266,7 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, coeffs_a, coeffs_b
 
     CALL construct_all_current_values(x_all_final, x_free_final, paras_fixed)
 
-    CALL log_estimation(success, message, crit_val, x_all_final)
+    CALL record_estimation(success, message, crit_val, x_all_final)
 
 END SUBROUTINE
 !******************************************************************************
@@ -313,7 +313,7 @@ FUNCTION fort_criterion_parallel(x)
 
         num_eval = num_eval + 1
 
-        CALL log_estimation(x_all_current, fort_criterion_parallel, num_eval)
+        CALL record_estimation(x_all_current, fort_criterion_parallel, num_eval)
     
     END IF
 
@@ -530,7 +530,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, state
 
         ALLOCATE(periods_emax_slaves(num_states), endogenous_slaves(num_states))
 
-        IF(is_head .AND. update_master) CALL log_solution(4, period, num_states) 
+        IF(is_head .AND. update_master) CALL record_solution(4, period, num_states) 
 
         ! Distinguish case with and without interpolation
         any_interpolated = (num_points_interp .LE. num_states) .AND. is_interpolated

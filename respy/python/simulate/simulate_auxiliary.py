@@ -193,12 +193,12 @@ def get_estimation_vector(model_paras, is_debug):
 
 
 def logging_simulation(which):
-    """ Ensure proper handling of logging.
+    """ Ensure proper handling of record.
     """
     # Antibugging
     assert (which in ['start', 'stop'])
 
-    # Start logging
+    # Start record
     if which == 'start':
 
         formatter = logging.Formatter('  %(message)s \n')

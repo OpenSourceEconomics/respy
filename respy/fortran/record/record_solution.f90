@@ -1,6 +1,6 @@
 !******************************************************************************
 !******************************************************************************
-MODULE logging_solution
+MODULE recording_solution
 
 	!/*	external modules	*/
 
@@ -18,20 +18,20 @@ MODULE logging_solution
 
     PRIVATE
 
-    PUBLIC :: log_solution
+    PUBLIC :: record_solution
 
     !/* explicit interface   */
 
-    INTERFACE log_solution
+    INTERFACE record_solution
 
-        MODULE PROCEDURE log_solution_progress, log_prediction_model
+        MODULE PROCEDURE record_solution_progress, record_prediction_model
 
     END INTERFACE
 
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE log_solution_progress(indicator, period, num_states)
+SUBROUTINE record_solution_progress(indicator, period, num_states)
 
     !/* external objects        */
 
@@ -90,7 +90,7 @@ SUBROUTINE log_solution_progress(indicator, period, num_states)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE log_prediction_model(coeffs, r_squared, bse)
+SUBROUTINE record_prediction_model(coeffs, r_squared, bse)
 
     !/* external objects        */
 

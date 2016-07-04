@@ -22,7 +22,7 @@ def pyth_solve(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
         edu_start, is_debug, edu_max, min_idx, delta, periods_draws_emax):
     """ Solving the model using pure PYTHON code.
     """
-    # Initialize logging infrastructure
+    # Initialize record infrastructure
     logging_solution('start')
 
     # Creating the state space of the model and collect the results in the
@@ -79,7 +79,7 @@ def pyth_solve(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
 
         logger.info('... finished \n')
 
-    # Gentle shutdown of logging infrastructure
+    # Gentle shutdown of record infrastructure
     logging_solution('stop')
 
     # Collect return arguments in tuple

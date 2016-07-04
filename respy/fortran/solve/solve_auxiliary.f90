@@ -4,7 +4,7 @@ MODULE solve_auxiliary
 
 	!/*	external modules	*/
 
-    USE logging_solution 
+    USE recording_solution 
 
     USE shared_auxiliary
 
@@ -316,7 +316,7 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
         CALL transform_disturbances(draws_emax_transformed, draws_emax, shocks_cholesky, num_draws_emax)
 
 
-        IF (is_write) CALL log_solution(4, period, num_states)
+        IF (is_write) CALL record_solution(4, period, num_states)
         
         any_interpolated = (num_points_interp .LE. num_states) .AND. is_interpolated
 
@@ -652,7 +652,7 @@ SUBROUTINE get_predictions(predictions, endogenous, exogenous, maxe, is_simulate
     ! Perform some basic logging to spot problems early.
     IF(PRESENT(is_write)) THEN
         IF(is_write) THEN
-            CALL log_solution(coeffs, r_squared, bse)
+            CALL record_solution(coeffs, r_squared, bse)
         END IF
     END IF
 

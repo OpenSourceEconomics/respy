@@ -1,8 +1,10 @@
 !******************************************************************************
 !******************************************************************************
-MODULE logging_estimation
+MODULE recording_estimation
 
 	!/*	external modules	*/
+
+    USE recording_warning
 
     USE shared_containers 
 
@@ -12,28 +14,26 @@ MODULE logging_estimation
 
     USE shared_utilities
 
-    USE logging_warning
-
 	!/*	setup	*/
 
     IMPLICIT NONE
 
     PRIVATE
 
-    PUBLIC :: log_estimation 
+    PUBLIC :: record_estimation 
 
     !/* explicit interface   */
 
-    INTERFACE log_estimation
+    INTERFACE record_estimation
 
-        MODULE PROCEDURE log_estimation_eval, log_estimation_final, log_scaling
+        MODULE PROCEDURE record_estimation_eval, record_estimation_final, record_scaling
 
     END INTERFACE
 
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE log_estimation_eval(x_all_current, val_current, num_eval)
+SUBROUTINE record_estimation_eval(x_all_current, val_current, num_eval)
 
     !/* external objects        */
     
@@ -215,13 +215,13 @@ SUBROUTINE log_estimation_eval(x_all_current, val_current, num_eval)
     CLOSE(1)
 
     DO i = 1, 3
-        IF (is_large(3)) CALL log_warning_crit_val(3)
+        IF (is_large(3)) CALL record_warning_crit_val(3)
     END do
 
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE log_estimation_final(success, message, crit_val, x_all_final)
+SUBROUTINE record_estimation_final(success, message, crit_val, x_all_final)
 
     !/* external objects        */
 
@@ -277,7 +277,7 @@ SUBROUTINE log_estimation_final(success, message, crit_val, x_all_final)
 END SUBROUTINE    
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE log_scaling(auto_scales, x_free_start, is_setup)
+SUBROUTINE record_scaling(auto_scales, x_free_start, is_setup)
 
     !/* external objects    */
 
