@@ -167,6 +167,7 @@ SUBROUTINE fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_
     INTEGER(our_int)                    :: period
     INTEGER(our_int)                    :: exp_a
     INTEGER(our_int)                    :: exp_b
+    INTEGER(our_int)                    :: info
     INTEGER(our_int)                    :: edu
     INTEGER(our_int)                    :: k
 
@@ -203,10 +204,10 @@ SUBROUTINE fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_
             covars(6) = exp_b ** 2
 
             ! Calculate systematic part of payoff in occupation A
-            periods_payoffs_systematic(period, k, 1) =  clip_value(EXP(DOT_PRODUCT(covars, coeffs_a)), zero_dble, HUGE_FLOAT)
+            CALL clip_value(periods_payoffs_systematic(period, k, 1), EXP(DOT_PRODUCT(covars, coeffs_a)), zero_dble, HUGE_FLOAT, info)
                 
             ! Calculate systematic part of payoff in occupation B
-            periods_payoffs_systematic(period, k, 2) = clip_value(EXP(DOT_PRODUCT(covars, coeffs_b)), zero_dble, HUGE_FLOAT)
+            CALL clip_value(periods_payoffs_systematic(period, k, 2), EXP(DOT_PRODUCT(covars, coeffs_b)), zero_dble, HUGE_FLOAT, info)
 
             ! Calculate systematic part of schooling utility
             payoff = coeffs_edu(1)
@@ -256,6 +257,7 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
 
     INTEGER(our_int)                    :: num_states
     INTEGER(our_int)                    :: period
+    INTEGER(our_int)                    :: info
     INTEGER(our_int)                    :: k
 
     REAL(our_dble)                      :: draws_emax_transformed(num_draws_emax, 4)
@@ -280,7 +282,7 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    ! ALlocate container (if required) and initilaize missing values.
+    ! ALlocate container (if required) and initialize missing values.
     IF (.NOT. ALLOCATED(periods_emax)) ALLOCATE(periods_emax(num_periods, max_states_period))
 
     periods_emax = MISSING_FLOAT
@@ -302,8 +304,8 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
     shocks_cov = MATMUL(shocks_cholesky, TRANSPOSE(shocks_cholesky))
 
     shifts = zero_dble
-    shifts(1) = clip_value(EXP(shocks_cov(1, 1)/two_dble), zero_dble, HUGE_FLOAT)
-    shifts(2) = clip_value(EXP(shocks_cov(2, 2)/two_dble), zero_dble, HUGE_FLOAT)
+    CALL clip_value(shifts(1), EXP(shocks_cov(1, 1)/two_dble), zero_dble, HUGE_FLOAT, info)
+    CALL clip_value(shifts(2), EXP(shocks_cov(2, 2)/two_dble), zero_dble, HUGE_FLOAT, info)
 
     DO period = (num_periods - 1), 0, -1
 
@@ -576,6 +578,8 @@ SUBROUTINE get_predictions(predictions, endogenous, exogenous, maxe, is_simulate
 
     !/* internal objects        */
 
+    INTEGER(our_int), ALLOCATABLE     :: infos(:)
+
     REAL(our_dble)                    :: endogenous_predicted_available(num_points_interp)
     REAL(our_dble)                    :: exogenous_is_available(num_points_interp, 9)
     REAL(our_dble)                    :: endogenous_is_available(num_points_interp)
@@ -630,7 +634,7 @@ SUBROUTINE get_predictions(predictions, endogenous, exogenous, maxe, is_simulate
 
     CALL get_pred_info(r_squared, bse, endogenous_is_available, endogenous_predicted_available, exogenous_is_available, num_points_interp, 9)
 
-    endogenous_predicted = clip_value(endogenous_predicted, zero_dble, HUGE_FLOAT)
+    CALL clip_value(endogenous_predicted, endogenous_predicted, zero_dble, HUGE_FLOAT, infos)
 
     ! Construct predicted EMAX for all states and the replace interpolation points with simulated values.
     predictions = endogenous_predicted + maxe
@@ -776,6 +780,7 @@ SUBROUTINE get_pred_info(r_squared, bse, observed, predicted, exogenous, num_sta
     REAL(our_dble)                  :: ss_total
     REAL(our_dble)                  :: sigma
 
+    INTEGER(our_int)                :: info
     INTEGER(our_int)                :: i
 
 !------------------------------------------------------------------------------
@@ -794,7 +799,8 @@ SUBROUTINE get_pred_info(r_squared, bse, observed, predicted, exogenous, num_sta
     sigma = (one_dble / (num_states - num_covars)) * DOT_PRODUCT(residuals, residuals)
     cova = sigma * pinv(MATMUL(TRANSPOSE(exogenous), exogenous), num_covars)
     DO i = 1, num_covars
-        bse(i) = SQRT(clip_value(cova(i, i), TINY_FLOAT, HUGE_FLOAT))
+        CALL clip_value(bse(i), cova(i, i), TINY_FLOAT, HUGE_FLOAT, info)
+        bse(i) = SQRT(bse(i))
     END DO
 
     ! Sum of squared residuals

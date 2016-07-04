@@ -89,6 +89,7 @@ SUBROUTINE transform_disturbances(draws_transformed, draws, shocks_cholesky, num
 
     !/* internal objects        */
 
+    INTEGER(our_int), ALLOCATABLE   :: infos(:)
     INTEGER(our_int)                :: i
 
 !------------------------------------------------------------------------------
@@ -100,7 +101,7 @@ SUBROUTINE transform_disturbances(draws_transformed, draws, shocks_cholesky, num
     END DO
 
     DO i = 1, 2
-        draws_transformed(:, i) = clip_value(EXP(draws_transformed(:, i)), zero_dble, HUGE_FLOAT)
+        CALL clip_value_2(draws_transformed(:, i), EXP(draws_transformed(:, i)), zero_dble, HUGE_FLOAT, infos)
     END DO
 
 
@@ -785,82 +786,96 @@ SUBROUTINE read_dataset(data_est, num_agents)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-FUNCTION clip_value_1(value, lower_bound, upper_bound)
+SUBROUTINE clip_value_1(clip_value, value, lower_bound, upper_bound, info)
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(IN)  :: lower_bound
-    REAL(our_dble), INTENT(IN)  :: upper_bound
-    REAL(our_dble), INTENT(IN)  :: value
+    INTEGER(our_int), INTENT(OUT)   :: info
 
-    !/*  internal objects       */
+    REAL(our_dble), INTENT(OUT)     :: clip_value
 
-    REAL(our_dble)              :: clip_value_1
+    REAL(our_dble), INTENT(IN)      :: lower_bound
+    REAL(our_dble), INTENT(IN)      :: upper_bound
+    REAL(our_dble), INTENT(IN)      :: value
 
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    IF(value < lower_bound) THEN
+    info = 0
 
-        clip_value_1 = lower_bound
+    IF(value < lower_bound) THEN
+        
+        clip_value = lower_bound
+        info = 1
 
     ELSEIF(value > upper_bound) THEN
-
-        clip_value_1 = upper_bound
+        
+        clip_value = upper_bound
+        info = 2
 
     ELSE
 
-        clip_value_1 = value
+        clip_value = value
 
     END IF
 
-END FUNCTION
+END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-FUNCTION clip_value_2(value, lower_bound, upper_bound)
+SUBROUTINE clip_value_2(clip_value, value, lower_bound, upper_bound, infos)
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(IN)  :: lower_bound
-    REAL(our_dble), INTENT(IN)  :: upper_bound
-    REAL(our_dble), INTENT(IN)  :: value(:)
+    INTEGER(our_int), ALLOCATABLE, INTENT(OUT)   :: infos(:)
+
+    REAL(our_dble), INTENT(OUT)     :: clip_value(:)
+
+    REAL(our_dble), INTENT(IN)      :: lower_bound
+    REAL(our_dble), INTENT(IN)      :: upper_bound
+    REAL(our_dble), INTENT(IN)      :: value(:)
 
     !/*  internal objects       */
-
-    REAL(our_dble), ALLOCATABLE :: clip_value_2(:)
-    
-    INTEGER(our_int)            :: num_values
-    INTEGER(our_int)            :: i
+      
+    INTEGER(our_int)                :: num_values
+    INTEGER(our_int)                :: i
 
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
 
+    num_values = SIZE(value)
 
-    num_values = SIZE(value, 1)
-    
-    ALLOCATE(clip_value_2(num_values))
+    ! In this setup the same container can be used for multiple calls with 
+    ! different input arguments. Usually INFOS is immediately processed anyway
+    ! and does not need to be available for multiple calls.
+    IF (ALLOCATED(infos)) DEALLOCATE(infos)
+
+    ALLOCATE(infos(num_values))
+
+
+    infos = 0
 
     DO i = 1, num_values
 
         IF(value(i) < lower_bound) THEN
 
-            clip_value_2(i) = lower_bound
+            clip_value(i) = lower_bound
+            infos(i) = 1
 
         ELSEIF(value(i) > upper_bound) THEN
-
-            clip_value_2(i) = upper_bound
+            clip_value(i) = upper_bound
+            infos(i) = 2
 
         ELSE
 
-            clip_value_2(i) = value(i)
+            clip_value(i) = value(i)
 
         END IF
     
     END DO
 
-END FUNCTION
+END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
 END MODULE

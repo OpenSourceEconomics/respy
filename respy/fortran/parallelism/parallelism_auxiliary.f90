@@ -455,6 +455,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, state
     INTEGER(our_int)                :: seed_size
     INTEGER(our_int)                :: period
     INTEGER(our_int)                :: count
+    INTEGER(our_int)                :: info
     INTEGER(our_int)                :: k
 
     REAL(our_dble)                  :: payoffs_systematic(4)
@@ -512,8 +513,8 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, state
 
     ! Shifts
     shifts = zero_dble
-    shifts(1) = clip_value(EXP(shocks_cov(1, 1)/two_dble), zero_dble, HUGE_FLOAT)
-    shifts(2) = clip_value(EXP(shocks_cov(2, 2)/two_dble), zero_dble, HUGE_FLOAT)
+    CALL clip_value(shifts(1), EXP(shocks_cov(1, 1)/two_dble), zero_dble, HUGE_FLOAT, info)
+    CALL clip_value(shifts(2), EXP(shocks_cov(2, 2)/two_dble), zero_dble, HUGE_FLOAT, info)
 
 
     DO period = (num_periods - 1), 0, -1

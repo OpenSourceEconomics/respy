@@ -46,6 +46,8 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, pe
 
     REAL(our_dble), ALLOCATABLE     :: crit_val(:)
 
+    INTEGER(our_int), ALLOCATABLE   :: infos(:)
+
     REAL(our_dble)                  :: draws_prob_raw(num_draws_prob, 4)
     REAL(our_dble)                  :: payoffs_systematic(4)
     REAL(our_dble)                  :: crit_val_contrib
@@ -57,6 +59,8 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, pe
     REAL(our_dble)                  :: prob_wage
     REAL(our_dble)                  :: prob_obs
     REAL(our_dble)                  :: draws(4)
+    REAL(our_dble)                  :: dist_1
+    REAL(our_dble)                  :: dist_2
     REAL(our_dble)                  :: dist
 
     INTEGER(our_int)                :: edu_lagged
@@ -66,6 +70,7 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, pe
     INTEGER(our_int)                :: num_obs
     INTEGER(our_int)                :: exp_a
     INTEGER(our_int)                :: exp_b
+    INTEGER(our_int)                :: info
     INTEGER(our_int)                :: idx
     INTEGER(our_int)                :: edu
     INTEGER(our_int)                :: s
@@ -124,7 +129,9 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, pe
             IF (is_working) THEN
 
                 ! Calculate the disturbance, which follows a normal distribution.
-                dist = clip_value(LOG(data_evaluate(j, 4)), -HUGE_FLOAT, HUGE_FLOAT) - clip_value(LOG(payoffs_systematic(idx)), -HUGE_FLOAT, HUGE_FLOAT) 
+                CALL clip_value(dist_1, LOG(data_evaluate(j, 4)), -HUGE_FLOAT, HUGE_FLOAT, info)
+                CALL clip_value(dist_2, LOG(payoffs_systematic(idx)), -HUGE_FLOAT, HUGE_FLOAT, info) 
+                dist = dist_1 - dist_2 
 
                 ! If there is no random variation in payoffs, then the observed wages need to be identical their systematic components. The discrepancy between the observed wages and their systematic components might be small due to the reading in of the dataset.
                 IF (is_deterministic) THEN
@@ -174,8 +181,8 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, pe
 
                 ! Extract deviates from (un-)conditional normal distributions and transform labor market shocks.
                 draws = draws_cond
-                draws(1) = clip_value(EXP(draws(1)), zero_dble, HUGE_FLOAT)
-                draws(2) = clip_value(EXP(draws(2)), zero_dble, HUGE_FLOAT)
+                CALL clip_value(draws(1), EXP(draws(1)), zero_dble, HUGE_FLOAT, info)
+                CALL clip_value(draws(2), EXP(draws(2)), zero_dble, HUGE_FLOAT, info)
 
                 ! Calculate total payoff.
                 CALL get_total_value(total_payoffs, period, payoffs_systematic, draws, mapping_state_idx, periods_emax, k, states_all, delta, edu_start, edu_max)
@@ -206,7 +213,7 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, pe
         END DO
 
     ! Scaling
-    crit_val = clip_value(LOG(crit_val), -HUGE_FLOAT, HUGE_FLOAT)
+    CALL clip_value(crit_val, LOG(crit_val), -HUGE_FLOAT, HUGE_FLOAT, infos)
     rslt = -SUM(crit_val)  / (DBLE(num_periods) * DBLE(num_agents_est))
 
     ! If there is no random variation in payoffs and no agent violated the implications of observed wages and choices, then the evaluation return a value of one.

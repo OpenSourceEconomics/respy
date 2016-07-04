@@ -59,10 +59,8 @@ SUBROUTINE log_estimation_eval(x_all_current, val_current, num_eval)
     LOGICAL                         :: is_step
     LOGICAL                         :: is_start
 
-    INTEGER(our_int)                :: today(3)
-    INTEGER(our_int)                :: now(3)
-
-    CHARACTER(55)                   :: today_char, now_char
+    CHARACTER(55)                   :: today_char
+    CHARACTER(55)                   :: now_char
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -199,14 +197,10 @@ SUBROUTINE log_estimation_final(success, message, crit_val, x_all_final)
     
     !/* internal objects        */
 
-    REAL(our_dble)                  :: x_all_current(26)
     REAL(our_dble)                  :: crit_val_int
 
     INTEGER(our_int)                :: info
     INTEGER(our_int)                :: i
-
-    CHARACTER(55)                   :: today_char(3) 
-    CHARACTER(55)                   :: now_char(3) 
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -215,14 +209,7 @@ SUBROUTINE log_estimation_final(success, message, crit_val, x_all_final)
     ! In a small number of cases writing out the value of the criterion 
     ! function fails due to to a too large value. This makes the testing
     ! routines less robust.
-    info = 0
-    IF (crit_val .GT. LARGE_FLOAT) THEN
-        info = 1
-        crit_val_int = LARGE_FLOAT
-    ELSE 
-        crit_val_int = crit_val
-    END IF
-
+    CALL clip_value(crit_val_int, crit_val, -LARGE_FLOAT, LARGE_FLOAT, info)
 
 
     100 FORMAT(3x,A9,5X,f25.15)
@@ -258,7 +245,7 @@ SUBROUTINE log_estimation_final(success, message, crit_val, x_all_final)
 
     CLOSE(99)
 
-    IF (info == 1) CALL log_warning_crit_val()
+    IF (info .NE. 0) CALL log_warning_crit_val()
 
 END SUBROUTINE    
 !******************************************************************************

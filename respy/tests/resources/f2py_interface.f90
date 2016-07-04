@@ -719,12 +719,16 @@ SUBROUTINE wrapper_clip_value(clipped_value, value, lower_bound, upper_bound, nu
 
     INTEGER, INTENT(IN)                 :: num_values
 
+    !/* internal objects        */
+
+    INTEGER, ALLOCATABLE                :: infos(:)
+
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
 
     ! Call function of interest
-    clipped_value = clip_value(value, lower_bound, upper_bound)
+    CALL clip_value(clipped_value, value, lower_bound, upper_bound, infos)
 
 
 END SUBROUTINE
