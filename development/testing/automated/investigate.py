@@ -36,7 +36,7 @@ else:
 ''' Request '''
 #MODULE test_parallelism METHOD test_1 SEED: 24029
 
-seed =25744 # 6216748723
+seed =789 # 6216748723
 
 
 ''' Error Reproduction '''
@@ -48,9 +48,9 @@ np.random.seed(seed)
 test_dict = get_test_dict(PACKAGE_DIR + '/respy/tests')
 module, method = get_random_request(test_dict)
 
-#module, method = 'test_versions', 'test_5'
+module, method = 'test_parallelism', 'test_2'
 count = 0
-for i in range(100):
+for i in range(10000):
 	print(module, method)
 	mod = importlib.import_module(module)
 	test = getattr(mod.TestClass(), method)

@@ -5,11 +5,13 @@ import pytest
 
 # testing library
 from codes.random_init import generate_random_dict
+from codes.auxiliary import compare_est_log
 
 # project library
 from respy.python.shared.shared_auxiliary import print_init_dict
 from respy.python.shared.shared_constants import IS_PARALLEL
 
+from respy.solve import solve
 from respy import estimate
 from respy import simulate
 from respy import RespyCls
@@ -54,19 +56,33 @@ class TestClass(object):
         constr = dict()
         constr['version'] = 'FORTRAN'
         constr['periods'] = np.random.randint(3, 10)
+        constr['maxfun'] = 0
 
         init_dict = generate_random_dict(constr)
 
-        base_log = None
+        base_sol_log, base_est_info_log, base_est_log = None, None, None
         for is_parallel in [False, True]:
 
             init_dict['PARALLELISM']['flag'] = is_parallel
             print_init_dict(init_dict)
 
             respy_obj = RespyCls('test.respy.ini')
+
             simulate(respy_obj)
 
+            estimate(respy_obj)
+
+            solve(respy_obj)
+
             # Check for identical record
-            if base_log is None:
-                base_log = open('sol.respy.log', 'r').read()
-            assert open('sol.respy.log', 'r').read() == base_log
+            if base_sol_log is None:
+                base_sol_log = open('sol.respy.log', 'r').read()
+            assert open('sol.respy.log', 'r').read() == base_sol_log
+
+            if base_est_info_log is None:
+                base_est_info_log = open('est.respy.info', 'r').read()
+            assert open('est.respy.info', 'r').read() == base_est_info_log
+
+            if base_est_log is None:
+                base_est_log = open('est.respy.log', 'r').readlines()
+            compare_est_log(base_est_log)

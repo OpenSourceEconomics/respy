@@ -3,12 +3,37 @@
 
 # standard library
 import numpy as np
+import shlex
 
 # project library
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 
 from respy import RespyCls
+
+
+def compare_est_log(base_est_log):
+    """ This function is required as the log files can be slightly different
+    for good reasons.
+    """
+    with open('est.respy.log') as in_file:
+        alt_est_log = in_file.readlines()
+
+    for i, _ in enumerate(alt_est_log):
+        alt_line, base_line = alt_est_log[i], base_est_log[i]
+        list_ = shlex.split(alt_line)
+
+        if not list_:
+            continue
+
+        if list_[0] in ['Criterion']:
+            alt_val = float(shlex.split(alt_line)[1])
+            base_val = float(shlex.split(base_line)[1])
+            np.testing.assert_almost_equal(alt_val, base_val)
+        elif list_[0] in ['Time']:
+            pass
+        else:
+            assert alt_line == base_line
 
 
 def write_interpolation_grid(file_name):

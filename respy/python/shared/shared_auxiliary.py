@@ -549,6 +549,7 @@ def format_opt_parameters(val, identifier, paras_fixed):
     # Finishing
     return line
 
+
 def process_est_log():
     """ Process information in the est.respy.log for further inspection.
     """
@@ -588,6 +589,7 @@ def process_est_log():
     rslt['paras_final'] = np.array(rslt['paras_final'])
 
     return rslt
+
 
 def get_est_info():
     """ This function reads in the parameters from the last step of a

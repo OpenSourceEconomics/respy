@@ -9,6 +9,7 @@ from pandas.util.testing import assert_frame_equal
 # testing library
 from codes.auxiliary import write_interpolation_grid
 from codes.random_init import generate_random_dict
+from codes.auxiliary import compare_est_log
 from codes.random_init import generate_init
 from codes.auxiliary import write_draws
 
@@ -305,28 +306,4 @@ class TestClass(object):
             if base_est_log is None:
                 base_est_log = open('est.respy.log', 'r').readlines()
             compare_est_log(base_est_log)
-
-
-def compare_est_log(base_est_log):
-    """ This function is required as the log files can be slightly different
-    for good reasons.
-    """
-    with open('est.respy.log') as in_file:
-        alt_est_log = in_file.readlines()
-
-    for i, _ in enumerate(alt_est_log):
-        alt_line, base_line = alt_est_log[i], base_est_log[i]
-        list_ = shlex.split(alt_line)
-
-        if not list_:
-            continue
-
-        if list_[0] in ['Criterion']:
-            alt_val = float(shlex.split(alt_line)[1])
-            base_val = float(shlex.split(base_line)[1])
-            np.testing.assert_almost_equal(alt_val, base_val)
-        elif list_[0] in ['Time']:
-            pass
-        else:
-            assert alt_line == base_line
 
