@@ -48,6 +48,7 @@ Welcome to respy's documentation!
    installation
    economics
    tutorial
+   reliability
    numerics 
    development
    contributions

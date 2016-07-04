@@ -30,4 +30,4 @@ The details for the **EMAX interpolation** are discussed in :ref:`Eisenhauer (20
 Miscellaneous
 """""""""""""
 
-We are using the *LAPACK* library for all numerical linear algebra. The pseudo-random numbers are generated using the *Mersenne Twister*.
+We are using the `LAPACK <http://www.netlib.org/lapack>`_  for all numerical linear algebra. The pseudo-random numbers are generated using the *Mersenne Twister*.

@@ -24,33 +24,8 @@ Output Files
     ======      ========================
 
 .. _data.respy.paras:
-* **data.respy.paras**
+* **data.respy.info**
 
-    This file contains the coefficients used for the simulation of the agent
-    population.
-
-    =======     ========================      
-    Lines       Coefficients
-    =======     ========================       
-    1 -  6      occupation A      
-    7 - 12      occupation B     
-    12 - 15     education     
-    16          home     
-    16 - 26     cholesky factors     
-    =======     ========================
-
-    Note, that the last ten coefficients do refer to the Cholesky factors of the
-    covariance matrix of the shocks and not the covariance matrix itself. 
-
-
-.. _paras.respy.log:
-* **Parameters**
-
-    * **paras_curre.respy.log**, current candidate parameters
-
-    * **paras_start.respy.log**, parameters at the start of the optimization
-
-    * **paras_steps.respy.log**, parameters at the last step of the optimization
 
 API Reference
 -------------

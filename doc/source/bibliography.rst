@@ -11,11 +11,4 @@ Albright, R. S., Lerman, S., and Manski, C. (1977). Report on the Development of
 
 Powell, M. J. D. (2004). The NEWUOA software for unconstrained optimization without derivatives. Department of Applied Mathematics and Theoretical Physics, Cambridge University. 
 
-Citation
---------
-
-The respy Team (2016).  `respy 1.0 <http://respy.readthedocs.io/>`_. *Online Documentation*.
-
-
-
 .. _bibSection:
