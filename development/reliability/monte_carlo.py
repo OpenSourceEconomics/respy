@@ -54,9 +54,6 @@ respy_obj.set_attr('optimizer_used', OPTIMIZER)
 respy_obj.set_attr('scaling', SCALING)
 respy_obj.set_attr('maxfun', MAXFUN)
 
-# TODO: Remove, debugging only
-respy_obj.set_attr('num_periods', 2)
-
 respy_obj.set_attr('num_procs', NUM_PROCS)
 if NUM_PROCS > 1:
     respy_obj.set_attr('is_parallel', True)
