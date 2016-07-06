@@ -192,32 +192,6 @@ def get_estimation_vector(model_paras, is_debug):
     return vector
 
 
-def logging_simulation(which):
-    """ Ensure proper handling of record.
-    """
-    # Antibugging
-    assert (which in ['start', 'stop'])
-
-    # Start record
-    if which == 'start':
-
-        formatter = logging.Formatter('  %(message)s \n')
-        logger = logging.getLogger('RESPY_SIMULATE')
-        handler = logging.FileHandler('sim.respy.log', mode='w',
-                                      delay=False)
-        handler.setFormatter(formatter)
-        logger.setLevel(logging.INFO)
-        logger.addHandler(handler)
-
-    elif which == 'stop':
-        # Shut down logger and close connection.
-        logger = logging.getLogger('RESPY_SIMULATE')
-        handlers = logger.handlers[:]
-        for handler in handlers:
-            handler.close()
-            logger.removeHandler(handler)
-
-
 def check_input(respy_obj, is_solved):
     """ Check input arguments.
     """

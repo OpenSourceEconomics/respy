@@ -16,7 +16,6 @@ from codes.random_init import generate_init
 from respy.python.shared.shared_auxiliary import read_draws
 from codes.auxiliary import write_draws
 from respy.python.estimate.estimate_auxiliary import get_optim_paras
-from respy.python.simulate.simulate_auxiliary import logging_simulation
 
 from respy.python.solve.solve_auxiliary import logging_solution
 from respy.python.solve.solve_auxiliary import get_future_value
@@ -358,9 +357,7 @@ class TestClass(object):
             periods_emax, states_all, shocks_cholesky, num_periods, edu_start,
             edu_max, delta, num_agents_sim, periods_draws_sims)
 
-        logging_simulation('start')
         pyth = pyth_simulate(*args)
-        logging_simulation('stop')
 
         f2py = fort_debug.f2py_simulate(*args)
         np.testing.assert_allclose(pyth, f2py)

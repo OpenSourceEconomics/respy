@@ -4,7 +4,6 @@ import logging
 
 # project library
 from respy.python.shared.shared_auxiliary import replace_missing_values
-from respy.python.simulate.simulate_auxiliary import logging_simulation
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.simulate.simulate_auxiliary import write_info
 from respy.python.simulate.simulate_auxiliary import write_out
@@ -12,9 +11,6 @@ from respy.python.shared.shared_auxiliary import check_dataset
 
 from respy.fortran.interface import resfort_interface
 from respy.python.interface import respy_interface
-
-logger = logging.getLogger('RESPY_SIMULATE')
-
 
 def simulate(respy_obj):
     """ Simulate dataset of synthetic agent following the model specified in
@@ -25,12 +21,9 @@ def simulate(respy_obj):
             dist_class_attributes(respy_obj, 'is_debug', 'version',
                 'num_agents_sim', 'seed_sim')
 
-    # Fire up the record for the simulation. The record of the solution
-    # step is handled within the solution routines.
-    logging_simulation('start')
-
-    logger.info('Starting simulation of model for ' + str(num_agents_sim) +
-        ' agents with seed ' + str(seed_sim))
+    with open('sim.respy.log', 'w') as outfile:
+        outfile.write('  Starting simulation of model for ' + str(num_agents_sim) +
+        ' agents with seed ' + str(seed_sim) + '\n\n')
 
     # Select appropriate interface
     if version in ['PYTHON']:
@@ -52,9 +45,8 @@ def simulate(respy_obj):
 
     write_info(respy_obj, data_frame)
 
-    logger.info('... finished \n')
-
-    logging_simulation('stop')
+    with open('sim.respy.log', 'a') as outfile:
+        outfile.write('  ... finished \n')
 
     # Finishing
     return respy_obj

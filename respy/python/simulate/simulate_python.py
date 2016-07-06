@@ -6,8 +6,7 @@ import logging
 from respy.python.shared.shared_auxiliary import transform_disturbances
 from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.shared.shared_auxiliary import get_total_value
-
-logger = logging.getLogger('RESPY_SIMULATE')
+from respy.python.record.record_simulation import record_simulation_progress
 
 ''' Main function
 '''
@@ -39,9 +38,7 @@ def pyth_simulate(periods_payoffs_systematic, mapping_state_idx, \
 
         dataset[count, 0] = i
 
-        # Logging
-        if (i != 0) and (i % 100 == 0):
-            logger.info('... simulated ' + str(i) + ' agents')
+        record_simulation_progress(i)
 
         # Iterate over each period for the agent
         for period in range(num_periods):

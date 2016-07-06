@@ -4,6 +4,8 @@ MODULE simulate_fortran
 
 	!/*	external modules	*/
 
+    USE recording_simulation
+
     USE shared_constants
 
     USE shared_auxiliary
@@ -79,6 +81,8 @@ SUBROUTINE fort_simulate(data_sim, periods_payoffs_systematic, mapping_state_idx
 
         ! Baseline state
         current_state = states_all(1, 1, :)
+
+        CALL record_simulation(i)
 
         DO period = 0, (num_periods - 1)
 

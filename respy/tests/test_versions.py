@@ -258,7 +258,7 @@ class TestClass(object):
         different versions.
         """
 
-        max_draws = np.random.randint(10, 100)
+        max_draws = np.random.randint(10, 300)
 
         # Generate random initialization file
         constr = dict()
@@ -273,11 +273,9 @@ class TestClass(object):
         # Perform toolbox actions
         respy_obj = RespyCls('test.respy.ini')
 
-        # Simulate a dataset
-        simulate(respy_obj)
-
         # Iterate over alternative implementations
         base_sol_log, base_est_info_log, base_est_log = None, None, None
+        base_sim_log = None
 
         num_periods = init_dict['BASICS']['periods']
         write_draws(num_periods, max_draws)
@@ -290,6 +288,8 @@ class TestClass(object):
 
             respy_obj.lock()
 
+            simulate(respy_obj)
+
             estimate(respy_obj)
 
             solve(respy_obj)
@@ -298,6 +298,11 @@ class TestClass(object):
             if base_sol_log is None:
                 base_sol_log = open('sol.respy.log', 'r').read()
             assert open('sol.respy.log', 'r').read() == base_sol_log
+
+            # Check for identical logging
+            if base_sim_log is None:
+                base_sim_log = open('sim.respy.log', 'r').read()
+            assert open('sim.respy.log', 'r').read() == base_sim_log
 
             if base_est_info_log is None:
                 base_est_info_log = open('est.respy.info', 'r').read()

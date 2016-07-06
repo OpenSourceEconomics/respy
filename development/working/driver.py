@@ -43,15 +43,15 @@ from codes.auxiliary import write_draws
 
 respy_obj = RespyCls('model.respy.ini')
 simulate(respy_obj)
-#x, crit_val = estimate(respy_obj)
-print('working PYTHON')
-respy_obj = RespyCls('model.respy.ini')
-#respy_obj.attr['version'] = 'PYTHON'
-#respy_obj.attr['optimizer_used'] = 'SCIPY-POWELL'
-import time
-start = time.time()
-
-x, crit_val = estimate(respy_obj)
-print(crit_val, 'ONLY WORKING WIT MAXFUN 0')
-
-np.testing.assert_almost_equal(crit_val, 0.66798246030058295)
+# #x, crit_val = estimate(respy_obj)
+# print('working PYTHON')
+# respy_obj = RespyCls('model.respy.ini')
+# #respy_obj.attr['version'] = 'PYTHON'
+# #respy_obj.attr['optimizer_used'] = 'SCIPY-POWELL'
+# import time
+# start = time.time()
+#
+# x, crit_val = estimate(respy_obj)
+# print(crit_val, 'ONLY WORKING WIT MAXFUN 0')
+#
+# np.testing.assert_almost_equal(crit_val, 0.66798246030058295)

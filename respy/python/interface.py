@@ -151,12 +151,6 @@ def respy_interface(respy_obj, request, data_array=None):
         periods_draws_emax = create_draws(num_periods, num_draws_emax,
             seed_emax, is_debug)
 
-        # Simulate a dataset with the results from the solution and write out
-        # the dataset to a text file. In addition a file summarizing the
-        # dataset is produced.
-        logger.info('Starting simulation of model for ' + str(
-            num_agents_sim) + ' agents with seed ' + str(seed_sim))
-
         # Collect arguments to pass in different implementations of the
         # simulation.
         periods_payoffs_systematic, states_number_period, mapping_state_idx, \
