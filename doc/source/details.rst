@@ -5,10 +5,15 @@ Additional Details
 Output Files
 ------------
 
+Depending on the user's request, the **respy** package creates several output files.
+
+Simulation
+""""""""""
+
 .. _data.respy.dat:
 * **data.respy.dat**
     
-    This file contains the agent choices and state experiences. The simulated dataset has the following structure.
+This file contains the agent choices and state experiences. The simulated dataset has the following structure.
     
     ======      ========================      
     Column      Information
@@ -25,6 +30,21 @@ Output Files
 
 .. _data.respy.paras:
 * **data.respy.info**
+
+This file provides descriptive statistics about the simulated dataset and the underlying parameterization.
+    
+
+
+Estimation
+""""""""""
+
+* **est.respy.info**
+
+This file allows to monitor the estimation as it progresses. It provides information about starting values, step values, and current values as well as the corresponding value of the criterion function.
+
+* **est.respy.log**
+
+This file documents details about the each of the evaluations of the criterion function. Most importantly, once estimation is completed, it provides the message from the optimizer.
 
 
 API Reference
