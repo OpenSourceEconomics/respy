@@ -4,114 +4,50 @@ a simple Monte Carlo exercise to ensure the reliability of the implementation.
 """
 
 # standard library
-from auxiliary import simulate_specification
-from auxiliary import record_results
-from auxiliary import get_rmse
+from multiprocessing import Pool
+from functools import partial
 
-import respy
+import glob
 import os
 
-###############################################################################
-# SPECIFICATION FOR MONTE-CARLO EXERCISE
-###############################################################################
-MAXFUN = 2
-NUM_DRAWS_EMAX = 500
-NUM_DRAWS_PROB = 200
+# project library
+from auxiliary import send_notification
+from auxiliary import run
 
-NUM_AGENTS = 1000
-NUM_PROCS = 1
-
-OPTIMIZER = 'FORT-NEWUOA'
-NPT = 53
-RHOBEG = 1
-RHOEND = RHOBEG * 1e-6
-
-OPTIMIZER_OPTIONS = dict()
-OPTIMIZER_OPTIONS['FORT-NEWUOA'] = dict()
-OPTIMIZER_OPTIONS['FORT-NEWUOA']['maxfun'] = MAXFUN
-OPTIMIZER_OPTIONS['FORT-NEWUOA']['npt'] = NPT
-OPTIMIZER_OPTIONS['FORT-NEWUOA']['rhobeg'] = float(RHOBEG)
-OPTIMIZER_OPTIONS['FORT-NEWUOA']['rhoend'] = float(RHOEND)
-
-SCALING = [True, 0.00001]
-
-###############################################################################
-###############################################################################
 os.system('git clean -d -f')
 
-# We first read in the first specification from the initial paper for our
-# baseline.
-respy_obj = respy.RespyCls('kw_data_one.ini')
+''' Details of the Monte Carlo exercise can be specified in the code block
+below. Note that only deviations from the benchmark initialization files need to
+be addressed.
+'''
+spec_dict = dict()
+spec_dict['maxfun'] = 2000
+spec_dict['num_periods'] = 40
+spec_dict['num_draws_emax'] = 500
+spec_dict['num_draws_prob'] = 200
+spec_dict['num_agents'] = 1000
+spec_dict['scaling'] = [True, 0.00001]
 
-respy_obj.unlock()
-respy_obj.set_attr('file_est', '../correct/start/data.respy')
-respy_obj.set_attr('optimizer_options', OPTIMIZER_OPTIONS)
-respy_obj.set_attr('num_draws_emax', NUM_DRAWS_EMAX)
-respy_obj.set_attr('num_draws_prob', NUM_DRAWS_PROB)
-respy_obj.set_attr('num_agents_est', NUM_AGENTS)
-respy_obj.set_attr('num_agents_sim', NUM_AGENTS)
-respy_obj.set_attr('optimizer_used', OPTIMIZER)
-respy_obj.set_attr('scaling', SCALING)
-respy_obj.set_attr('maxfun', MAXFUN)
+spec_dict['optimizer_used'] = 'FORT-NEWUOA'
 
-respy_obj.set_attr('num_procs', NUM_PROCS)
-if NUM_PROCS > 1:
-    respy_obj.set_attr('is_parallel', True)
-else:
-    respy_obj.set_attr('is_parallel', False)
+spec_dict['optimizer_options'] = dict()
+spec_dict['optimizer_options']['FORT-NEWUOA'] = dict()
+spec_dict['optimizer_options']['FORT-NEWUOA']['maxfun'] = spec_dict['maxfun']
+spec_dict['optimizer_options']['FORT-NEWUOA']['npt'] = 53
+spec_dict['optimizer_options']['FORT-NEWUOA']['rhobeg'] = 1.0
+spec_dict['optimizer_options']['FORT-NEWUOA']['rhoend'] = spec_dict['optimizer_options']['FORT-NEWUOA']['rhobeg'] * 1e-6
 
-respy_obj.lock()
+# Set flag to TRUE for debugging purposes
+if True:
+    spec_dict['maxfun'] = 2
+    spec_dict['num_draws_emax'] = 5
+    spec_dict['num_draws_prob'] = 3
+    spec_dict['num_agents'] = 100
+    spec_dict['scaling'] = [False, 0.00001]
+    spec_dict['num_periods'] = 3
 
-# Let us first simulate a baseline sample, store the results for future
-# reference, and start an estimation from the true values.
-os.mkdir('correct'), os.chdir('correct')
-respy_obj.write_out()
-
-simulate_specification(respy_obj, 'start', False)
-x, _ = respy.estimate(respy_obj)
-simulate_specification(respy_obj, 'stop', True, x)
-
-rmse_start, rmse_stop = get_rmse()
-
-os.chdir('../')
-
-record_results('Correct', rmse_start, rmse_stop)
-
-# Now we will estimate a misspecified model on this dataset assuming that
-# agents are myopic. This will serve as a form of well behaved starting
-# values for the real estimation to follow.
-respy_obj.unlock()
-respy_obj.set_attr('delta', 0.00)
-respy_obj.lock()
-
-os.mkdir('static'), os.chdir('static')
-respy_obj.write_out()
-
-simulate_specification(respy_obj, 'start', False)
-x, _ = respy.estimate(respy_obj)
-simulate_specification(respy_obj, 'stop', True, x)
-
-rmse_start, rmse_stop = get_rmse()
-
-os.chdir('../')
-
-record_results('Static', rmse_start, rmse_stop)
-
-# # Using the results from the misspecified model as starting values, we see
-# # whether we can obtain the initial values.
-respy_obj.unlock()
-respy_obj.set_attr('delta', 0.95)
-respy_obj.lock()
-
-os.mkdir('dynamic'), os.chdir('dynamic')
-respy_obj.write_out()
-
-simulate_specification(respy_obj, 'start', False)
-x, _ = respy.estimate(respy_obj)
-simulate_specification(respy_obj, 'stop', True, x)
-
-rmse_start, rmse_stop = get_rmse()
-
-os.chdir('../')
-
-record_results('Dynamic', rmse_start, rmse_stop)
+''' Run the Monte Carlo exercise using multiple processors.
+'''
+process_tasks = partial(run, spec_dict)
+ret = Pool(3).map(process_tasks, glob.glob('*.ini'))
+send_notification()

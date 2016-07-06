@@ -2,10 +2,125 @@ from statsmodels.tools.eval_measures import rmse
 
 import numpy as np
 
+import socket
 import shlex
+import sys
 import os
 
 import respy
+
+sys.path.insert(0, '../modules')
+from clsMail import MailCls
+
+
+def run(spec_dict, fname):
+    """ Run a version of the Monte Carlo exercise.
+    """
+    dirname = fname.replace('.ini', '')
+    os.mkdir(dirname), os.chdir(dirname)
+
+    # Distribute details about specification
+    optimizer_options = spec_dict['optimizer_options']
+    optimizer_used = spec_dict['optimizer_used']
+    num_draws_emax = spec_dict['num_draws_emax']
+    num_draws_prob = spec_dict['num_draws_prob']
+    num_agents = spec_dict['num_agents']
+    scaling = spec_dict['scaling']
+    maxfun = spec_dict['maxfun']
+
+    # We first read in the first specification from the initial paper for our
+    # baseline.
+    respy_obj = respy.RespyCls('../' + fname)
+
+    respy_obj.unlock()
+    respy_obj.set_attr('file_est', '../correct/start/data.respy')
+    respy_obj.set_attr('optimizer_options', optimizer_options)
+    respy_obj.set_attr('optimizer_used', optimizer_used)
+    respy_obj.set_attr('num_draws_emax', num_draws_emax)
+    respy_obj.set_attr('num_draws_prob', num_draws_prob)
+    respy_obj.set_attr('num_agents_est', num_agents)
+    respy_obj.set_attr('num_agents_sim', num_agents)
+    respy_obj.set_attr('scaling', scaling)
+    respy_obj.set_attr('maxfun', maxfun)
+    respy_obj.lock()
+
+    # For debugging purposes
+    if 'num_periods' in spec_dict.keys():
+        respy_obj.unlock()
+        respy_obj.set_attr('num_periods', spec_dict['num_periods'])
+        respy_obj.lock()
+
+    # Let us first simulate a baseline sample, store the results for future
+    # reference, and start an estimation from the true values.
+    os.mkdir('correct'), os.chdir('correct')
+    respy_obj.write_out()
+
+    simulate_specification(respy_obj, 'start', False)
+    x, _ = respy.estimate(respy_obj)
+    simulate_specification(respy_obj, 'stop', True, x)
+
+    rmse_start, rmse_stop = get_rmse()
+
+    os.chdir('../')
+
+    record_results('Correct', rmse_start, rmse_stop)
+
+    # Now we will estimate a misspecified model on this dataset assuming that
+    # agents are myopic. This will serve as a form of well behaved starting
+    # values for the real estimation to follow.
+    respy_obj.unlock()
+    respy_obj.set_attr('delta', 0.00)
+    respy_obj.lock()
+
+    os.mkdir('static'), os.chdir('static')
+    respy_obj.write_out()
+
+    simulate_specification(respy_obj, 'start', False)
+    x, _ = respy.estimate(respy_obj)
+    simulate_specification(respy_obj, 'stop', True, x)
+
+    rmse_start, rmse_stop = get_rmse()
+
+    os.chdir('../')
+
+    record_results('Static', rmse_start, rmse_stop)
+
+    # # Using the results from the misspecified model as starting values, we see
+    # # whether we can obtain the initial values.
+    respy_obj.unlock()
+    respy_obj.set_attr('delta', 0.95)
+    respy_obj.lock()
+
+    os.mkdir('dynamic'), os.chdir('dynamic')
+    respy_obj.write_out()
+
+    simulate_specification(respy_obj, 'start', False)
+    x, _ = respy.estimate(respy_obj)
+    simulate_specification(respy_obj, 'stop', True, x)
+
+    rmse_start, rmse_stop = get_rmse()
+
+    os.chdir('../')
+
+    record_results('Dynamic', rmse_start, rmse_stop)
+
+    os.chdir('../')
+
+
+def send_notification():
+    """ Finishing up a run of the testing battery.
+    """
+    # Auxiliary objects.
+    hostname = socket.gethostname()
+    subject = ' RESPY: Monte Carlo Exercise '
+    message = ' The Monte Carlo exercise is completed on @' + hostname + '.'
+
+    mail_obj = MailCls()
+    mail_obj.set_attr('subject', subject)
+    mail_obj.set_attr('message', message)
+    mail_obj.lock()
+
+    mail_obj.send()
 
 
 def get_choice_probabilities(fname, is_flatten=True):
