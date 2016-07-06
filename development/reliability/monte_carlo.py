@@ -22,7 +22,6 @@ be addressed.
 '''
 spec_dict = dict()
 spec_dict['maxfun'] = 2000
-spec_dict['num_periods'] = 40
 spec_dict['num_draws_emax'] = 500
 spec_dict['num_draws_prob'] = 200
 spec_dict['num_agents'] = 1000
@@ -38,7 +37,7 @@ spec_dict['optimizer_options']['FORT-NEWUOA']['rhobeg'] = 1.0
 spec_dict['optimizer_options']['FORT-NEWUOA']['rhoend'] = spec_dict['optimizer_options']['FORT-NEWUOA']['rhobeg'] * 1e-6
 
 # Set flag to TRUE for debugging purposes
-if True:
+if False:
     spec_dict['maxfun'] = 2
     spec_dict['num_draws_emax'] = 5
     spec_dict['num_draws_prob'] = 3
