@@ -27,10 +27,10 @@ def process(respy_obj):
 
     # Check integrity of processing request
     if is_debug:
-        assert check_process(file_est + '.dat', respy_obj)
+        assert check_process(file_est, respy_obj)
 
     # Process dataset from files.
-    data_frame = pd.read_csv(file_est + '.dat', delim_whitespace=True,
+    data_frame = pd.read_csv(file_est, delim_whitespace=True,
         header=-1, na_values='.', dtype={0: np.int, 1: np.int, 2: np.int,
         3: np.float, 4: np.int, 5: np.int, 6: np.int, 7: np.int},
         nrows=num_rows)

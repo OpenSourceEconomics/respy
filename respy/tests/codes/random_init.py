@@ -96,7 +96,7 @@ def generate_random_dict(constraints=None):
     dict_['ESTIMATION']['agents'] = np.random.randint(1, num_agents_sim)
     dict_['ESTIMATION']['draws'] = np.random.randint(1, MAX_DRAWS)
     dict_['ESTIMATION']['seed'] = np.random.randint(1, 10000)
-    dict_['ESTIMATION']['file'] = 'data.respy'
+    dict_['ESTIMATION']['file'] = 'data.respy.dat'
     dict_['ESTIMATION']['optimizer'] = np.random.choice(OPTIMIZERS)
     dict_['ESTIMATION']['maxfun'] = np.random.randint(1, 10000)
     dict_['ESTIMATION']['tau'] = np.random.uniform(100, 500)
@@ -146,7 +146,7 @@ def generate_random_dict(constraints=None):
     dict_['SIMULATION'] = dict()
     dict_['SIMULATION']['seed'] = np.random.randint(1, 10000)
     dict_['SIMULATION']['agents'] = num_agents_sim
-    dict_['SIMULATION']['file'] = 'data.respy'
+    dict_['SIMULATION']['file'] = 'data.respy.dat'
 
     # SHOCKS
     dict_['SHOCKS'] = dict()
