@@ -4,13 +4,7 @@ MODULE recording_warning
 
 	!/*	external modules	*/
 
-    USE shared_containers 
-
     USE shared_constants
-
-    USE shared_auxiliary 
-
-    USE shared_utilities
 
 	!/*	setup	*/
 
@@ -21,7 +15,7 @@ MODULE recording_warning
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE record_warning_crit_val(count)
+SUBROUTINE record_warning(count)
 
     !/* external objects        */
 
@@ -39,10 +33,11 @@ SUBROUTINE record_warning_crit_val(count)
 
         IF (count == 3) WRITE(99, *) '  Warning: Current value of criterion function too large to write to file, internals unaffected.'
 
+        IF (count == 4) WRITE(99, *) '  Warning: Stabilization of otherwise zero variance.'
+
         WRITE(99, *)
 
     CLOSE(99)
-
 
 END SUBROUTINE
 !******************************************************************************

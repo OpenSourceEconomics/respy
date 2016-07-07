@@ -34,7 +34,7 @@ def run(spec_dict, fname):
     respy_obj = respy.RespyCls('../' + fname)
 
     respy_obj.unlock()
-    respy_obj.set_attr('file_est', '../correct/start/data.respy')
+    respy_obj.set_attr('file_est', '../correct/start/data.respy.dat')
     respy_obj.set_attr('optimizer_options', optimizer_options)
     respy_obj.set_attr('optimizer_used', optimizer_used)
     respy_obj.set_attr('num_draws_emax', num_draws_emax)

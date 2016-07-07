@@ -23,7 +23,7 @@ MODULE estimate_auxiliary
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x)
+SUBROUTINE dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x, info)
 
     !/* external objects        */
 
@@ -34,6 +34,8 @@ SUBROUTINE dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_
     REAL(our_dble), INTENT(OUT)     :: coeffs_b(6)
 
     REAL(our_dble), INTENT(IN)      :: x(26)
+
+    INTEGER(our_int), OPTIONAL, INTENT(OUT)   :: info
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -48,7 +50,12 @@ SUBROUTINE dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_
 
     coeffs_home = x(16:16)
 
-    CALL get_cholesky(shocks_cholesky, x)
+    ! The information pertains to the stabilization of an otherwise zero variance.
+    IF (PRESENT(info)) THEN
+        CALL get_cholesky(shocks_cholesky, x, info)
+    ELSE
+        CALL get_cholesky(shocks_cholesky, x)
+    END IF
 
 END SUBROUTINE
 !******************************************************************************

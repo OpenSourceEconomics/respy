@@ -7,12 +7,12 @@ def build(ctx):
     # executable to allow for the use of an F2PY interface to the core
     # functions as well.
     src = ['shared/shared_constants.f90', 'shared/shared_containers.f90',
-        'shared/shared_lapack_interfaces.f90', 'shared/shared_auxiliary.f90',
+        'shared/shared_lapack_interfaces.f90', 'record/record_warning.f90',
+        'shared/shared_auxiliary.f90',
         'shared/shared_utilities.f90',
         'solve/solve_auxiliary.f90', 'solve/solve_fortran.f90',
         'evaluate/evaluate_auxiliary.f90', 'evaluate/evaluate_fortran.f90',
         'estimate/estimate_auxiliary.f90', 'estimate/estimate_fortran.f90',
-        'record/record_warning.f90',
         'record/record_estimation.f90', 'record/record_solution.f90', 'record/record_simulation.f90',
         'simulate/simulate_fortran.f90',
         'optimizers/newuoa.f90', 'optimizers/dfpmin.f90', 'resfort_library.f90']

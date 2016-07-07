@@ -2,15 +2,17 @@
 !******************************************************************************
 MODULE shared_auxiliary
 
-	!/*	external modules	*/
+    !/* external modules    */
 
     USE shared_lapack_interfaces
-    
+
+    USE recording_warning
+
     USE shared_constants
 
     USE shared_utilities
 
-	!/*	setup	*/
+    !/* setup   */
 
     IMPLICIT NONE
 
@@ -51,13 +53,21 @@ FUNCTION apply_scaling(x_in, auto_scales, request)
 END FUNCTION
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_cholesky(shocks_cholesky, x)
+SUBROUTINE get_cholesky(shocks_cholesky, x, info)
 
     !/* external objects        */
 
     REAL(our_dble), INTENT(OUT)     :: shocks_cholesky(4, 4)
 
     REAL(our_dble), INTENT(IN)      :: x(26)
+
+    INTEGER(our_int), OPTIONAL, INTENT(OUT)    :: info
+
+    !/* internal objects        */
+
+    INTEGER(our_int)                :: i 
+
+    REAL(our_dble)                  :: val
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -73,6 +83,19 @@ SUBROUTINE get_cholesky(shocks_cholesky, x)
 
     shocks_cholesky(4, :4) = x(23:26)
 
+    ! We need to ensure that the diagonal elements are larger than zero during an estimation. However, we want to allow for the special case of total absence of randomness for testing purposes of simulated datasets. 
+    IF (.NOT. ALL(shocks_cholesky .EQ. zero_dble)) THEN
+        IF (PRESENT(info)) info = 0
+        DO i = 1, 4
+            val = shocks_cholesky(i, i)
+            IF(val .LT. TINY_FLOAT) THEN 
+                val = TINY_FLOAT
+                IF (PRESENT(info)) info = 1
+            END IF
+            shocks_cholesky(i, i) = val
+        END DO
+
+    END IF
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
@@ -203,17 +226,17 @@ SUBROUTINE get_future_payoffs(payoffs_future, is_inadmissible, mapping_state_idx
     edu = states_all(period + 1, k + 1, 3)
     edu_lagged = states_all(period + 1, k + 1, 4)
 
-	! Working in occupation A
+    ! Working in occupation A
     future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1 + 1, exp_b + 1, edu + 1, 1)
     payoffs_future(1) = periods_emax(period + 1 + 1, future_idx + 1)
 
-	!Working in occupation B
+    !Working in occupation B
     future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1, exp_b + 1 + 1, edu + 1, 1)
     payoffs_future(2) = periods_emax(period + 1 + 1, future_idx + 1)
 
-	! Increasing schooling. Note that adding an additional year
-	! of schooling is only possible for those that have strictly
-	! less than the maximum level of additional education allowed.
+    ! Increasing schooling. Note that adding an additional year
+    ! of schooling is only possible for those that have strictly
+    ! less than the maximum level of additional education allowed.
     is_inadmissible = (edu .GE. edu_max - edu_start)
     IF(is_inadmissible) THEN
         payoffs_future(3) = zero_dble
@@ -222,7 +245,7 @@ SUBROUTINE get_future_payoffs(payoffs_future, is_inadmissible, mapping_state_idx
         payoffs_future(3) = periods_emax(period + 1 + 1, future_idx + 1)
     END IF
 
-	! Staying at home
+    ! Staying at home
     future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1, exp_b + 1, edu + 1, 1)
     payoffs_future(4) = periods_emax(period + 1 + 1, future_idx + 1)
 

@@ -155,6 +155,8 @@ FUNCTION fort_criterion(x)
     
     REAL(our_dble)                  :: x_input(num_free)
 
+    INTEGER(our_int)                :: dist_optim_paras_info
+
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
@@ -175,7 +177,7 @@ FUNCTION fort_criterion(x)
 
     CALL construct_all_current_values(x_all_current, x_input, paras_fixed)
 
-    CALL dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x_all_current)
+    CALL dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x_all_current, dist_optim_paras_info)
 
     CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start)
 
@@ -189,7 +191,9 @@ FUNCTION fort_criterion(x)
         num_eval = num_eval + 1
 
         CALL record_estimation(x_all_current, fort_criterion, num_eval)
-    
+
+        IF (dist_optim_paras_info .NE. zero_int) CALL record_warning(4)
+
     END IF
 
     

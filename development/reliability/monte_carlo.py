@@ -37,8 +37,8 @@ spec_dict['optimizer_options']['FORT-NEWUOA']['rhobeg'] = 1.0
 spec_dict['optimizer_options']['FORT-NEWUOA']['rhoend'] = spec_dict['optimizer_options']['FORT-NEWUOA']['rhobeg'] * 1e-6
 
 # Set flag to TRUE for debugging purposes
-if False:
-    spec_dict['maxfun'] = 40
+if True:
+    spec_dict['maxfun'] = 60
     spec_dict['num_draws_emax'] = 5
     spec_dict['num_draws_prob'] = 3
     spec_dict['num_agents'] = 100

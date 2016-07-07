@@ -280,7 +280,14 @@ FUNCTION fort_criterion_parallel(x)
 
     !/* internal objects    */
 
+    REAL(our_dble)                  :: shocks_cholesky(4, 4)
     REAL(our_dble)                  :: x_input(num_free)
+    REAL(our_dble)                  :: coeffs_home(1)
+    REAL(our_dble)                  :: coeffs_edu(3)
+    REAL(our_dble)                  :: coeffs_a(6)
+    REAL(our_dble)                  :: coeffs_b(6)
+    
+    INTEGER(our_int)                :: dist_optim_paras_info
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -305,8 +312,12 @@ FUNCTION fort_criterion_parallel(x)
     CALL MPI_Bcast(3, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
 
     CALL MPI_Bcast(x_all_current, 26, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
-    
+
+    ! This extra work is only required to align the logging across the scalar and parallel implementation. In the case of an otherwise zero variance, we stabilize the algorithm. However, we want this indicated as a warning in the log file.
+    CALL dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x_all_current, dist_optim_paras_info)
+
     CALL MPI_RECV(fort_criterion_parallel, 1, MPI_DOUBLE, MPI_ANY_SOURCE, MPI_ANY_TAG, SLAVECOMM, status, ierr)
+
 
 
     IF (crit_estimation .OR. (maxfun == zero_int)) THEN
@@ -315,6 +326,8 @@ FUNCTION fort_criterion_parallel(x)
 
         CALL record_estimation(x_all_current, fort_criterion_parallel, num_eval)
     
+        IF (dist_optim_paras_info .NE. zero_int) CALL record_warning(4)
+
     END IF
 
     
