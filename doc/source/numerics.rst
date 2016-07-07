@@ -1,6 +1,6 @@
 .. _implementation:
 
-Numerical Details
+Numerical Methods
 -----------------
 
 Differentiation

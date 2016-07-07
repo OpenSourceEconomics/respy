@@ -1,5 +1,5 @@
-Background
-===========
+Software Engineering
+====================
 
 In this section, we provide some background about the package internals and the development setup.
 
