@@ -164,55 +164,55 @@ SUBROUTINE record_estimation_eval(x_all_current, val_current, num_eval)
         val_char = TRIM(val_char) // TRIM(tmp_char)
     END DO
 
-    OPEN(UNIT=1, FILE='est.respy.info')
+    OPEN(UNIT=99, FILE='est.respy.info')
 
-        WRITE(1, *) 
-        WRITE(1, *) 'Criterion Function'
-        WRITE(1, *)  
-        WRITE(1, 200) '', 'Start', 'Step', 'Current'
-        WRITE(1, *)  
-        WRITE(1, 210)  '', val_char
-        WRITE(1, *) 
-        WRITE(1, *) 
-        WRITE(1, *) 'Optimization Parameters'
-        WRITE(1, *) 
-        WRITE(1, 220) 'Identifier', 'Start', 'Step', 'Current'
-        WRITE(1, *) 
+        WRITE(99, *) 
+        WRITE(99, *) 'Criterion Function'
+        WRITE(99, *)  
+        WRITE(99, 200) '', 'Start', 'Step', 'Current'
+        WRITE(99, *)  
+        WRITE(99, 210)  '', val_char
+        WRITE(99, *) 
+        WRITE(99, *) 
+        WRITE(99,*) 'Optimization Parameters'
+        WRITE(99, *) 
+        WRITE(99, 220) 'Identifier', 'Start', 'Step', 'Current'
+        WRITE(99, *) 
 
         DO i = 1, 26
-            WRITE(1, 230) (i - 1), x_container(i, :)
+            WRITE(99, 230) (i - 1), x_container(i, :)
         END DO
 
-        WRITE(1, *) 
-        WRITE(1, *)  
-        WRITE(1, *) 'Covariance Matrix'
-        WRITE(1, *)  
+        WRITE(99, *) 
+        WRITE(99, *)  
+        WRITE(99, *) 'Covariance Matrix'
+        WRITE(99, *)  
 
         DO i = 1, 3
 
-            IF (i == 1) WRITE(1, 240) 'Start'
-            IF (i == 2) WRITE(1, 240) 'Step'
-            IF (i == 3) WRITE(1, 240) 'Current'
+            IF (i == 1) WRITE(99, 240) 'Start'
+            IF (i == 2) WRITE(99, 240) 'Step'
+            IF (i == 3) WRITE(99, 240) 'Current'
 
             CALL get_cholesky(shocks_cholesky, x_container(:, 1))
             shocks_cov = MATMUL(shocks_cholesky, TRANSPOSE(shocks_cholesky))
             
-            WRITE(1, *)  
+            WRITE(99, *)  
 
             DO j = 1, 4
-                WRITE(1, 250) shocks_cov(j, :)
+                WRITE(99, 250) shocks_cov(j, :)
             END DO        
 
-            WRITE(1, *)  
+            WRITE(99, *)  
      
         END DO
 
-        WRITE(1, *)  
-        WRITE(1, 260) 'Number of Steps', num_step
-        WRITE(1, *)  
-        WRITE(1, 270) 'Number of Evaluations', num_eval
+        WRITE(99, *)  
+        WRITE(99, 260) 'Number of Steps', num_step
+        WRITE(99, *)  
+        WRITE(99, 270) 'Number of Evaluations', num_eval
 
-    CLOSE(1)
+    CLOSE(99)
 
     DO i = 1, 3
         IF (is_large(3)) CALL record_warning_crit_val(3)

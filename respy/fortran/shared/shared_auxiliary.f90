@@ -273,20 +273,20 @@ SUBROUTINE create_draws(draws, num_draws, seed, is_debug)
 
     IF ((READ_IN .EQV. .True.)  .AND. (is_debug .EQV. .True.)) THEN
 
-        OPEN(12, file='draws.txt')
+        OPEN(UNIT=99, file='draws.txt')
 
         DO period = 1, num_periods
 
             DO j = 1, num_draws
 
                 2000 FORMAT(4(1x,f15.10))
-                READ(12,2000) draws(period, j, :)
+                READ(99,2000) draws(period, j, :)
 
             END DO
 
         END DO
 
-        CLOSE(12)
+        CLOSE(99)
 
     ELSE
 
@@ -513,93 +513,93 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_payoffs
         ! Write out results for the store results.
         1800 FORMAT(5(1x,i5))
 
-        OPEN(UNIT=1, FILE='.mapping_state_idx.resfort.dat')
+        OPEN(UNIT=99, FILE='.mapping_state_idx.resfort.dat')
 
         DO period = 1, num_periods
             DO i = 1, num_periods
                 DO j = 1, num_periods
                     DO k = 1, min_idx
-                        WRITE(1, 1800) mapping_state_idx(period, i, j, k, :)
+                        WRITE(99, 1800) mapping_state_idx(period, i, j, k, :)
                     END DO
                 END DO
             END DO
         END DO
 
-        CLOSE(1)
+        CLOSE(99)
 
 
         2000 FORMAT(4(1x,i5))
 
-        OPEN(UNIT=1, FILE='.states_all.resfort.dat')
+        OPEN(UNIT=99, FILE='.states_all.resfort.dat')
 
         DO period = 1, num_periods
             DO i = 1, max_states_period
-                WRITE(1, 2000) states_all(period, i, :)
+                WRITE(99, 2000) states_all(period, i, :)
             END DO
         END DO
 
-        CLOSE(1)
+        CLOSE(9)
 
 
         1900 FORMAT(4(1x,f45.15))
 
-        OPEN(UNIT=1, FILE='.periods_payoffs_systematic.resfort.dat')
+        OPEN(UNIT=99, FILE='.periods_payoffs_systematic.resfort.dat')
 
         DO period = 1, num_periods
             DO i = 1, max_states_period
-                WRITE(1, 1900) periods_payoffs_systematic(period, i, :)
+                WRITE(99, 1900) periods_payoffs_systematic(period, i, :)
             END DO
         END DO
 
-        CLOSE(1)
+        CLOSE(99)
 
         2100 FORMAT(i5)
 
-        OPEN(UNIT=1, FILE='.states_number_period.resfort.dat')
+        OPEN(UNIT=99, FILE='.states_number_period.resfort.dat')
 
         DO period = 1, num_periods
-            WRITE(1, 2100) states_number_period(period)
+            WRITE(99, 2100) states_number_period(period)
         END DO
 
-        CLOSE(1)
+        CLOSE(99)
 
 
         2200 FORMAT(i5)
 
-        OPEN(UNIT=1, FILE='.max_states_period.resfort.dat')
+        OPEN(UNIT=99, FILE='.max_states_period.resfort.dat')
 
-        WRITE(1, 2200) max_states_period
+        WRITE(99, 2200) max_states_period
 
-        CLOSE(1)
+        CLOSE(99)
 
 
         2400 FORMAT(100000(1x,f45.15))
 
-        OPEN(UNIT=1, FILE='.periods_emax.resfort.dat')
+        OPEN(UNIT=99, FILE='.periods_emax.resfort.dat')
 
         DO period = 1, num_periods
-            WRITE(1, 2400) periods_emax(period, :)
+            WRITE(99, 2400) periods_emax(period, :)
         END DO
 
-        CLOSE(1)
+        CLOSE(99)
 
     END IF
 
     IF (request == 'simulate') THEN
     
-        OPEN(UNIT=1, FILE='.simulated.resfort.dat')
+        OPEN(UNIT=99, FILE='.simulated.resfort.dat')
         
         DO period = 1, num_periods * num_agents_sim
-            WRITE(1, 2400) data_sim(period, :)
+            WRITE(99, 2400) data_sim(period, :)
         END DO
 
-        CLOSE(1)
+        CLOSE(99)
     
     END IF
 
     ! Remove temporary files
-    OPEN(UNIT=1, FILE='.model.resfort.ini'); CLOSE(1, STATUS='delete')
-    OPEN(UNIT=1, FILE='.data.resfort.dat'); CLOSE(1, STATUS='delete')
+    OPEN(UNIT=99, FILE='.model.resfort.ini'); CLOSE(99, STATUS='delete')
+    OPEN(UNIT=99, FILE='.data.resfort.dat'); CLOSE(99, STATUS='delete')
 
 END SUBROUTINE
 !******************************************************************************
@@ -671,82 +671,82 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
     1515 FORMAT(i10,1x,i10)
 
     ! Read model specification
-    OPEN(UNIT=1, FILE='.model.resfort.ini')
+    OPEN(UNIT=99, FILE='.model.resfort.ini')
 
         ! BASICS
-        READ(1, 1505) num_periods
-        READ(1, 1510) delta
+        READ(99, 1505) num_periods
+        READ(99, 1510) delta
 
         ! WORK
-        READ(1, 1500) coeffs_a
-        READ(1, 1500) coeffs_b
+        READ(99, 1500) coeffs_a
+        READ(99, 1500) coeffs_b
 
         ! EDUCATION
-        READ(1, 1500) coeffs_edu
-        READ(1, 1515) edu_start, edu_max
+        READ(99, 1500) coeffs_edu
+        READ(99, 1515) edu_start, edu_max
 
         ! HOME
-        READ(1, 1500) coeffs_home
+        READ(99, 1500) coeffs_home
 
         ! SHOCKS
         DO j = 1, 4
-            READ(1, 1520) (shocks_cholesky(j, k), k=1, 4)
+            READ(99, 1520) (shocks_cholesky(j, k), k=1, 4)
         END DO
 
         ! SOLUTION
-        READ(1, 1505) num_draws_emax
-        READ(1, 1505) seed_emax
+        READ(99, 1505) num_draws_emax
+        READ(99, 1505) seed_emax
 
         ! PROGRAM
-        READ(1, *) is_debug
-        READ(1, 1505) num_procs
+        READ(99, *) is_debug
+        READ(99, 1505) num_procs
 
         ! INTERPOLATION
-        READ(1, *) is_interpolated
-        READ(1, 1505) num_points_interp
+        READ(99, *) is_interpolated
+        READ(99, 1505) num_points_interp
 
         ! ESTIMATION
-        READ(1, 1505) maxfun        
-        READ(1, 1505) num_agents_est
-        READ(1, 1505) num_draws_prob
-        READ(1, 1505) seed_prob
-        READ(1, 1510) tau
+        READ(99, 1505) maxfun        
+        READ(99, 1505) num_agents_est
+        READ(99, 1505) num_draws_prob
+        READ(99, 1505) seed_prob
+        READ(99, 1510) tau
 
         ! DERIVATIVES
-        READ(1, 1500) dfunc_eps
+        READ(99, 1500) dfunc_eps
 
         ! SCALING
-        READ(1, *) is_scaled
-        READ(1, *) scaled_minimum
+        READ(99, *) is_scaled
+        READ(99, *) scaled_minimum
 
         ! SIMULATION
-        READ(1, 1505) num_agents_sim
-        READ(1, 1505) seed_sim
+        READ(99, 1505) num_agents_sim
+        READ(99, 1505) seed_sim
 
         ! AUXILIARY
-        READ(1, 1505) min_idx
-        READ(1, *) is_myopic
-        READ(1, *) paras_fixed
+        READ(99, 1505) min_idx
+        READ(99, *) is_myopic
+        READ(99, *) paras_fixed
 
         ! REQUUEST
-        READ(1, *) request
+        READ(99, *) request
 
         ! EXECUTABLES
-        READ(1, *) exec_dir
+        READ(99, *) exec_dir
 
         ! OPTIMIZERS
-        READ(1, *) optimizer_used
+        READ(99, *) optimizer_used
 
-        READ(1, 1505) newuoa_npt
-        READ(1, 1505) newuoa_maxfun
-        READ(1, 1500) newuoa_rhobeg
-        READ(1, 1500) newuoa_rhoend
+        READ(99, 1505) newuoa_npt
+        READ(99, 1505) newuoa_maxfun
+        READ(99, 1500) newuoa_rhobeg
+        READ(99, 1500) newuoa_rhoend
 
-        READ(1, 1500) bfgs_gtol
-        READ(1, 1500) bfgs_stpmx
-        READ(1, 1505) bfgs_maxiter
+        READ(99, 1500) bfgs_gtol
+        READ(99, 1500) bfgs_stpmx
+        READ(99, 1505) bfgs_maxiter
 
-    CLOSE(1)
+    CLOSE(99)
 
     ! Constructed attributes
     num_free =  COUNT(.NOT. paras_fixed)
@@ -775,13 +775,13 @@ SUBROUTINE read_dataset(data_est, num_agents)
     ALLOCATE(data_est(num_periods * num_agents, 8))
 
     ! Read observed data to double precision array
-    OPEN(UNIT=1, FILE='.data.resfort.dat')
+    OPEN(UNIT=99, FILE='.data.resfort.dat')
 
         DO j = 1, num_periods * num_agents
-            READ(1, *) (data_est(j, k), k = 1, 8)
+            READ(99, *) (data_est(j, k), k = 1, 8)
         END DO
 
-    CLOSE(1)
+    CLOSE(99)
 
 END SUBROUTINE
 !******************************************************************************

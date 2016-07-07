@@ -41,7 +41,7 @@ SUBROUTINE record_warning_crit_val(count)
 
         WRITE(99, *)
 
-    CLOSE(1)
+    CLOSE(99)
 
 
 END SUBROUTINE

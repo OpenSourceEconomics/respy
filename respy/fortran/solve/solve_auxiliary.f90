@@ -390,15 +390,15 @@ FUNCTION get_simulated_indicator(num_points, num_states, period, is_debug)
 
         IF (READ_IN) THEN
 
-            OPEN(12, file='interpolation.txt')
+            OPEN(99, file='interpolation.txt')
 
                DO i = 1, num_states
 
-                    READ(12, *)  is_simulated_container(i, :)
+                    READ(99, *)  is_simulated_container(i, :)
 
                 END DO
 
-            CLOSE(12)
+            CLOSE(99)
 
             get_simulated_indicator = is_simulated_container(:, period + 1)
 

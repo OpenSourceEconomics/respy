@@ -1,6 +1,7 @@
 Tutorial 
 ========
 
+We now illustrate the basic capabilities of the **respy** package. First, we present how to specify a model in detail before turning to the estimation and simulation. We we illustrate how all works together for the recomputation of Keane & Wolpin (1994).
 
 Model Specification
 -------------------
@@ -113,7 +114,7 @@ Key             Value       Interpretation
 file            str         file to read observed sample, *.dat* added automatically
 tau             float       smoothing window
 agents          int         number of agents to read from sample
-maxiter         int         maximum number of iterations for optimizer
+maxfun          int         maximum number of function evaluations
 seed            int         random seed for choice probability approximation
 optimizer       str         optimizer to use
 ==========      ======      ==========================
@@ -136,7 +137,28 @@ points      int         number of interpolation points
 apply       bool        flag to use interpolation
 =======     ======      ==========================
 
-Two alternative optimization algorithms are available for the estimation. In both cases, we use the **SciPy** package. The implementation details are available `here <http://docs.scipy.org/doc/scipy-0.17.0/reference/generated/scipy.optimize.minimize.html>`_
+
+**DERIVATIVES**
+
+=======     ======      ==========================
+Key         Value       Interpretation      
+=======     ======      ==========================
+version     str         approximation scheme
+eps         float       step size
+=======     ======      ==========================
+
+
+**SCALING**
+
+=======     ======      ==========================
+Key         Value       Interpretation      
+=======     ======      ==========================
+flag        bool        apply scaling to criterion function
+minimum     float       minimum value for gradient approximation
+=======     ======      ==========================
+
+
+The implemented optimization algorithms vary with the program's version. If you request the *PYTOHN* version of the program, you can choose from the **SciPy** implementations of the BFGS and POWELL algorithm. Their implementation details are available `here <http://docs.scipy.org/doc/scipy-0.17.0/reference/generated/scipy.optimize.minimize.html>`_. For *FORTRAN*, we implemented the BFGS algorithm as well and the NEWUOA. For details about the algorithms, please see the section on implementation. Note that only the optimizer used for an estimation needs to be fully specified.
 
 **SCIPY-BFGS**
 
@@ -144,7 +166,7 @@ Two alternative optimization algorithms are available for the estimation. In bot
 Key         Value       Interpretation      
 =======     ======      ==========================
 gtol        float       gradient norm must be less than gtol before successful termination 
-epsilon     float       step size for numerical approximation of first derivatives 
+maxiter     int         maximum number of iterations
 =======     ======      ==========================
 
 **SCIPY-POWELL**
@@ -156,6 +178,28 @@ maxfun      int         maximum number of function evaluations to make
 ftol        float       relative error in func(xopt) acceptable for convergence      
 xtol        float       line-search error tolerance         
 =======     ======      ==========================
+
+**FORT-BFGS**
+
+=======     ======      ==========================
+Key         Value       Interpretation      
+=======     ======      ==========================
+gtol        float       gradient norm must be less than gtol before successful termination 
+maxiter     int         maximum number of iterations
+=======     ======      ==========================
+
+**FORT-NEWUOA**
+
+=======     ======      ==========================
+Key         Value       Interpretation      
+=======     ======      ==========================
+maxfun      float       maximum number of function evaluations 
+npt         int         number of points for approximation model
+rhobeg      float       starting value for size of trust region
+rhoend      float       minimum value of size for trust region
+=======     ======      ==========================
+
+The maximum number of function evaluations is determined by the minimum of the two flags specified in this section and the *ESTIMATION* block.
 
 
 Simulation and Estimation
@@ -174,34 +218,18 @@ Now we can simulate a sample from the model::
 
     simulate(respy_obj)
 
-The sample is simulated with the parameters specified in the initialization file. During the simulation, several files will appear in the current working
-directory.
+The sample is simulated with the parameters specified in the initialization file. During the simulation, several files will appear in the current working directory. **sol.respy.log** allows to monitor the progress of the solution algorithm, while the actual simulation can be followed in  **sim.respy.log**.
 
-* **logging.respy.sol.log**, logging information from the solution algorithm
-* **logging.respy.sim.log**, logging information from the simulation algorithm
+The names of the following files depend on the specified filename in the SIMULATION section of the model initialization file, where we specified *data.respy*. The extensions are automatically added. The simulated dataset with the agent choices and state experiences is stored in **data.respy.dat** and **data.respy.info** provides some basic descriptives of the simulated dataset. 
 
-The names of the following files depend on the specified filename in the SIMULATION section of the model initialization file, where we specified *data.respy*. The extensions are automatically added.
-
-* **data.respy.dat**, simulated dataset with the agent choices and state experiences (:ref:`details <data.respy.dat>`)
-
-* **data.respy.info**, basic descriptives of simulated dataset
-
-* **data.respy.paras**, parameterization of model for simulated dataset (:ref:`details <data.respy.paras>`)
-
-Now that we have some observed data, we can start an estimation. Here we are using the simulated data for the estimation. However, you can of course also use other data sources. Just make sure they follow the layout of the simulated sample and remember that the *.dat* extension will be added automatically to the filename specified in the ESTIMATION section. The coefficient values in the initialization file serve as the starting values::
+Now that we have some observed data, we can start an estimation. Here we are using the simulated data for the estimation. However, you can of course also use other data sources. Just make sure they follow the layout of the simulated sample and remember that the *.dat* extension will be added automatically to the filename specified in the *ESTIMATION* section. The coefficient values in the initialization file serve as the starting values::
 
     from respy import estimate
 
     x, crit_val = estimate(respy_obj)
 
 This directly returns the value of the coefficients at the final step of the optimizer as well as
-the value of the criterion function. However, some additional files appear in the meantime.
-
-* **optimization.respy.log**, logging information from optimizer
-
-* **optimization.respy.info**, logging information for monitoring of estimation run  
-
-The last file is continuously updated and provides information about the current parameterization, the starting values, and the value at each step. Finally, the information about the model parameterization during optimization is continuously updated and written to disk (:ref:`details <paras.respy.log>`).
+the value of the criterion function. However, some additional files appear in the meantime. Monitoring the estimation is best done using **est.respy.info** and more details are in **est.respy.info**.
 
 We can now simulate a sample using the estimated parameters, but updating the instance of the *RespyCls* with the parameters returned from the estimation routine.
 ::

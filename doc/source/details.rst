@@ -5,7 +5,7 @@ Additional Details
 Output Files
 ------------
 
-Depending on the user's request, the **respy** package creates several output files.
+Depending on the user's request, the **respy** package creates several output files. Note that there is a difference between the estimation parameters in the files below and the model specification. The difference is in the parameters for the covariance matrix. During the estimation we iterate on a flattened version of the upper-triangular Cholesky decomposition. This ensures that the requirements for a valid covariance matrix, e.g. positive semidefiniteness and strictly positive variances, are always met as the optimizer tests the whole real line. 
 
 Simulation
 """"""""""
@@ -33,6 +33,14 @@ This file contains the agent choices and state experiences. The simulated datase
 
 This file provides descriptive statistics about the simulated dataset and the underlying parameterization.
     
+
+* **sim.respy.log**
+
+This file allows to monitor the progress of the simulation.
+
+* **sol.respy.log**
+
+Depending on the user's request, it can be quite time consuming until the algorithm is finished with the solution of the model. This file allow to monitor the progress of the backward induction procedure.
 
 
 Estimation
