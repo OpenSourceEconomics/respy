@@ -38,7 +38,7 @@ spec_dict['optimizer_options']['FORT-NEWUOA']['rhoend'] = spec_dict['optimizer_o
 
 # Set flag to TRUE for debugging purposes
 if False:
-    spec_dict['maxfun'] = 2
+    spec_dict['maxfun'] = 40
     spec_dict['num_draws_emax'] = 5
     spec_dict['num_draws_prob'] = 3
     spec_dict['num_agents'] = 100

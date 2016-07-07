@@ -215,7 +215,7 @@ SUBROUTINE record_estimation_eval(x_all_current, val_current, num_eval)
     CLOSE(99)
 
     DO i = 1, 3
-        IF (is_large(3)) CALL record_warning_crit_val(3)
+        IF (is_large(i)) CALL record_warning_crit_val(i)
     END do
 
 END SUBROUTINE

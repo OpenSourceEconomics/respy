@@ -1,4 +1,5 @@
 from statsmodels.tools.eval_measures import rmse
+from copy import deepcopy
 
 import numpy as np
 
@@ -87,6 +88,8 @@ def run(spec_dict, fname):
 
     # # Using the results from the misspecified model as starting values, we see
     # # whether we can obtain the initial values.
+    respy_obj.update_model_paras(x)
+
     respy_obj.unlock()
     respy_obj.set_attr('delta', 0.95)
     respy_obj.lock()
@@ -193,14 +196,16 @@ def get_rmse():
 
 
 def simulate_specification(respy_obj, subdir, update, paras=None):
-    """ Simulate results to assess the estimation performance.
+    """ Simulate results to assess the estimation performance. Note that we do 
+    not update the object that is passed in.
     """
     os.mkdir(subdir), os.chdir(subdir)
 
+    respy_copy = deepcopy(respy_obj)
     if update:
         assert (paras is not None)
-        respy_obj.update_model_paras(paras)
+        respy_copy.update_model_paras(paras)
 
-    respy_obj.write_out()
-    respy.simulate(respy_obj)
+    respy_copy.write_out()
+    respy.simulate(respy_copy)
     os.chdir('../')
