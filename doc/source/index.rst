@@ -50,9 +50,10 @@ This documentation is best understood with a sound knowledge of their paper as w
    installation
    economics
    tutorial
+   numerical_methods 
+   software_engineering
    reliability
-   numerics 
-   development
+   scalability
    contributions
    contact
    acknowledgments

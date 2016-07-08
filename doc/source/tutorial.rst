@@ -147,6 +147,7 @@ version     str         approximation scheme
 eps         float       step size
 =======     ======      ==========================
 
+Whenever numerical derivatives are required, then the details are specified here. Currently, only forward finite-differences are specified.
 
 **SCALING**
 
