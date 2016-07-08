@@ -15,10 +15,6 @@ def record_estimation_eval(opt_obj, fval):
     """
 
     # Now we turn to est.respy.info
-    info_start = opt_obj.x_container[:, 0]
-    info_step = opt_obj.x_container[:, 1]
-    info_current = opt_obj.x_container[:, 2]
-
     with open('est.respy.log', 'a') as out_file:
         fmt_ = ' {0:>4}{1:>13}' + ' ' * 10 + '{2:>4}{3:>10}\n\n'
         line = ['EVAL', opt_obj.num_eval, 'STEP', opt_obj.num_step]
@@ -51,9 +47,9 @@ def record_estimation_eval(opt_obj, fval):
 
         for i in range(26):
             out_file.write(
-                fmt_.format(*[i, opt_obj.x_container[i + 2, 0],
-                              opt_obj.x_container[i + 2, 1],
-                              opt_obj.x_container[i + 2, 2]]))
+                fmt_.format(*[i, opt_obj.x_container[i, 0],
+                    opt_obj.x_container[i, 1],
+                              opt_obj.x_container[i, 2]]))
 
         out_file.write('\n')
 
@@ -61,16 +57,15 @@ def record_estimation_eval(opt_obj, fval):
             if is_large[i]:
                 record_warning(i + 1)
 
-
-    write_est_info(int(info_start[0]), opt_obj.crit_vals[0], info_start[2:],
-                   int(info_step[0]), opt_obj.crit_vals[1], info_step[2:],
-                   int(info_current[0]), opt_obj.crit_vals[2], info_current[2:])
+    write_est_info(0, opt_obj.crit_vals[0], opt_obj.x_container[:, 0],
+        opt_obj.num_step, opt_obj.crit_vals[1], opt_obj.x_container[:, 1],
+        opt_obj.num_eval, opt_obj.crit_vals[2], opt_obj.x_container[:, 2])
 
 
 def record_estimation_final(opt_obj, success, message):
     """ We summarize the results of the estimation.
     """
-    fval = opt_obj.x_container[1, 1]
+    fval = opt_obj.crit_vals[1]
     with open('est.respy.log', 'a') as out_file:
         out_file.write(' ESTIMATION REPORT\n\n')
         out_file.write('   Success ' + str(success) + '\n')
@@ -83,7 +78,7 @@ def record_estimation_final(opt_obj, success, message):
         fmt_ = '   {:>10}' + '    {:25.15f}\n'
         for i in range(26):
             out_file.write(
-                fmt_.format(*[i, opt_obj.x_container[i + 2, 1]]))
+                fmt_.format(*[i, opt_obj.x_container[i, 1]]))
         out_file.write('\n')
 
 

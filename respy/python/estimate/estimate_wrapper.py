@@ -28,7 +28,7 @@ class OptimizationClass(object):
         self.value_step = np.inf
         self.maxfun = np.inf
 
-        self.x_container = np.tile(np.nan, (28, 3))
+        self.x_container = np.tile(np.nan, (26, 3))
         self.crit_vals = np.tile(np.nan, 3)
 
         self.x_all_start = None
@@ -64,22 +64,20 @@ class OptimizationClass(object):
         if True:
             self.num_eval += 1
             self.crit_vals[2] = fval
-            info_current = np.concatenate(([self.num_eval, fval], x_all_current))
-            self.x_container[:, 2] = info_current
+            self.x_container[:, 2] = x_all_current
 
         if is_start:
             self.crit_vals[0] = fval
-            info_start = np.concatenate(([0, fval], x_all_current))
-            self.x_container[:, 0] = info_start
+            self.x_container[:, 0] = x_all_current
 
         if is_step:
 
             self.num_step += 1
+            # TODO: Remove this step
             self.value_step = fval
             self.crit_vals[1] = fval
 
-            info_step = np.concatenate(([self.num_step, fval], x_all_current))
-            self.x_container[:, 1] = info_step
+            self.x_container[:, 1] = x_all_current
 
         record_estimation_eval(self, fval)
 
