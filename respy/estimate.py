@@ -1,7 +1,5 @@
-# standard library
 import os
 
-# project library
 from respy.python.shared.shared_auxiliary import check_dataset
 from respy.python.shared.shared_auxiliary import process_est_log
 from respy.python.process.process_python import process

@@ -1,15 +1,11 @@
-# standard library
-import os
-import shlex
-
 import numpy as np
+import shlex
+import os
 
-# project library
 from respy.python.shared.shared_constants import INADMISSIBILITY_PENALTY
 from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.shared.shared_constants import TINY_FLOAT
-
 
 
 def check_optimization_parameters(x):

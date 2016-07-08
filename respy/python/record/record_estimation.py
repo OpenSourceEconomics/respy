@@ -37,12 +37,11 @@ def record_estimation_eval(opt_obj, fval):
         fmt_ = '   {:>10}' + '    {:25.15f}' * 3 + '\n'
 
         value_start = opt_obj.crit_vals[0]
-        value_step = opt_obj.crit_vals[1]
         value_current = opt_obj.crit_vals[2]
 
         is_large = [False, False, False]
         is_large[0] = abs(value_start) > LARGE_FLOAT
-        is_large[1] = abs(value_step) > LARGE_FLOAT
+        is_large[1] = abs(opt_obj.crit_vals[1]) > LARGE_FLOAT
         is_large[2] = abs(value_current) > LARGE_FLOAT
 
         for i in range(26):

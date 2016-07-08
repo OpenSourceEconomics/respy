@@ -1,6 +1,3 @@
-""" This module contains the python implementation of the criterion function.
-"""
-
 # standard library
 from respy.python.shared.shared_auxiliary import dist_optim_paras
 from respy.python.evaluate.evaluate_python import pyth_evaluate
