@@ -11,10 +11,13 @@ import glob
 import os
 
 # project library
+from auxiliary import aggregate_information
 from auxiliary import send_notification
 from auxiliary import run
 
 os.system('git clean -d -f')
+if os.path.exists('monte_carlo.respy.info'):
+    os.unlink('monte_carlo.respy.info')
 
 ''' Details of the Monte Carlo exercise can be specified in the code block
 below. Note that only deviations from the benchmark initialization files need to
@@ -50,3 +53,4 @@ if True:
 process_tasks = partial(run, spec_dict)
 ret = Pool(3).map(process_tasks, glob.glob('*.ini'))
 send_notification()
+aggregate_information()

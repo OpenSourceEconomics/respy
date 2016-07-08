@@ -1,0 +1,34 @@
+
+ kw_data_one
+
+ RMSE
+
+          Setup           Start            Stop           Evals           Steps
+
+        Correct    0.0000000000    0.0000000000              60               2
+         Static    0.0208166600    0.0208166600              60               4
+        Dynamic    0.0000000000    0.0000000000              60               2
+
+
+ kw_data_three
+
+ RMSE
+
+          Setup           Start            Stop           Evals           Steps
+
+        Correct    0.0000000000    0.0575905085              60               3
+         Static    0.0115470054    0.0091287093              60               4
+        Dynamic    0.0329140294    0.0187082869              60               4
+
+
+ kw_data_two
+
+ RMSE
+
+          Setup           Start            Stop           Evals           Steps
+
+        Correct    0.0000000000    0.0559761854              60               4
+         Static    0.0173205081    0.0173205081              60               2
+        Dynamic    0.0000000000    0.0559761854              60               4
+
+

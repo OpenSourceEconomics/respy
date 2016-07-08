@@ -5,6 +5,7 @@ import numpy as np
 
 import socket
 import shlex
+import glob
 import sys
 import os
 
@@ -12,6 +13,30 @@ import respy
 
 sys.path.insert(0, '../modules')
 from clsMail import MailCls
+
+
+def get_est_log_info():
+    """ Get the choice probabilities.
+    """
+    with open('est.respy.info') as in_file:
+
+        for line in in_file.readlines():
+
+            # Split line
+            list_ = shlex.split(line)
+
+            # Skip empty lines
+            if len(list_) < 4:
+                continue
+
+            if list_[2] == 'Steps':
+                num_steps = int(list_[3])
+
+            if list_[2] == 'Evaluations':
+                num_evals = int(list_[3])
+
+    # Finishing
+    return num_evals, num_steps
 
 
 def run(spec_dict, fname):
@@ -61,10 +86,11 @@ def run(spec_dict, fname):
     simulate_specification(respy_obj, 'stop', True, x)
 
     rmse_start, rmse_stop = get_rmse()
+    num_evals, num_steps = get_est_log_info()
 
     os.chdir('../')
 
-    record_results('Correct', rmse_start, rmse_stop)
+    record_results('Correct', rmse_start, rmse_stop, num_evals, num_steps)
 
     # Now we will estimate a misspecified model on this dataset assuming that
     # agents are myopic. This will serve as a form of well behaved starting
@@ -81,10 +107,11 @@ def run(spec_dict, fname):
     simulate_specification(respy_obj, 'stop', True, x)
 
     rmse_start, rmse_stop = get_rmse()
+    num_evals, num_steps = get_est_log_info()
 
     os.chdir('../')
 
-    record_results('Static', rmse_start, rmse_stop)
+    record_results('Static', rmse_start, rmse_stop, num_evals, num_steps)
 
     # # Using the results from the misspecified model as starting values, we see
     # # whether we can obtain the initial values.
@@ -102,12 +129,28 @@ def run(spec_dict, fname):
     simulate_specification(respy_obj, 'stop', True, x)
 
     rmse_start, rmse_stop = get_rmse()
+    num_evals, num_steps = get_est_log_info()
 
     os.chdir('../')
 
-    record_results('Dynamic', rmse_start, rmse_stop)
+    record_results('Dynamic', rmse_start, rmse_stop, num_evals, num_steps)
 
     os.chdir('../')
+
+
+def aggregate_information():
+    dirnames = []
+    for fname in glob.glob('*.ini'):
+        dirnames += [fname.replace('.ini', '')]
+    with open('monte_carlo.respy.info', 'w') as outfile:
+        outfile.write('\n')
+        for dirname in dirnames:
+            outfile.write(' ' + dirname + '\n')
+            os.chdir(dirname)
+            with open('monte_carlo.respy.info', 'r') as infile:
+                outfile.write(infile.read())
+            os.chdir('../')
+            outfile.write('\n\n')
 
 
 def send_notification():
@@ -166,16 +209,15 @@ def get_choice_probabilities(fname, is_flatten=True):
     return stats
 
 
-def record_results(label, rmse_start, rmse_stop):
-
+def record_results(label, rmse_start, rmse_stop, num_evals, num_steps):
     with open('monte_carlo.respy.info', 'a') as out_file:
         # Setting up
         if label == 'Correct':
             out_file.write('\n RMSE\n\n')
-            fmt = '{:>15} {:>15} {:>15}\n\n'
-            out_file.write(fmt.format(*['Setup', 'Start', 'Stop']))
-        fmt = '{:>15} {:15.10f} {:15.10f}\n'
-        out_file.write(fmt.format(*[label, rmse_start, rmse_stop]))
+            fmt = '{:>15} {:>15} {:>15} {:>15} {:>15}\n\n'
+            out_file.write(fmt.format(*['Setup', 'Start', 'Stop', 'Evals', 'Steps']))
+        fmt = '{:>15} {:15.10f} {:15.10f} {:15} {:15}\n'
+        out_file.write(fmt.format(*[label, rmse_start, rmse_stop, num_evals, num_steps]))
 
 
 def get_rmse():
