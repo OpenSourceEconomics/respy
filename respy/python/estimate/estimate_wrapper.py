@@ -4,11 +4,11 @@
 # standard library
 import numpy as np
 
-import time
-
 # project library
 from respy.python.record.record_estimation import record_estimation_eval
 from respy.python.estimate.estimate_python import pyth_criterion
+from respy.python.shared.shared_auxiliary import get_cholesky
+from respy.python.record.record_warning import record_warning
 
 
 class OptimizationClass(object):
@@ -77,6 +77,12 @@ class OptimizationClass(object):
             self.x_container[:, 1] = info_step
 
         record_estimation_eval(self, fval)
+
+        # This is only used to determine whether a stabilization of the
+        # Cholesky matrix is required.
+        _, info = get_cholesky(x_all_current, 0)
+        if info != 0:
+            record_warning(4)
 
         # Enforce a maximum number of function evaluations
         if self.maxfun == self.attr['num_eval']:

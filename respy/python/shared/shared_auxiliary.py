@@ -9,8 +9,9 @@ from respy.python.shared.shared_constants import INADMISSIBILITY_PENALTY
 from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.shared.shared_constants import LARGE_FLOAT
 from respy.python.shared.shared_constants import HUGE_FLOAT
+from respy.python.shared.shared_constants import TINY_FLOAT
 
-from respy.python.record.record_warning import record_warning_crit_val
+from respy.python.record.record_warning import record_warning
 
 
 def check_optimization_parameters(x):
@@ -24,7 +25,8 @@ def check_optimization_parameters(x):
     # Finishing
     return True
 
-def dist_optim_paras(x_all_curre, is_debug):
+
+def dist_optim_paras(x_all_curre, is_debug, info=None):
     """ Update parameter values. The np.array type is maintained.
     """
     # Checks
@@ -44,11 +46,7 @@ def dist_optim_paras(x_all_curre, is_debug):
     coeffs_home = x_all_curre[15:16]
 
     # Cholesky
-    shocks_cholesky = np.tile(0.0, (4, 4))
-    shocks_cholesky[0, :1] = x_all_curre[16:17]
-    shocks_cholesky[1, :2] = x_all_curre[17:19]
-    shocks_cholesky[2, :3] = x_all_curre[19:22]
-    shocks_cholesky[3, :4] = x_all_curre[22:26]
+    shocks_cholesky, info = get_cholesky(x_all_curre, info)
 
     # Checks
     if is_debug:
@@ -60,6 +58,34 @@ def dist_optim_paras(x_all_curre, is_debug):
 
     # Finishing
     return args
+
+
+def get_cholesky(x, info=None):
+    """ Construct the Cholesky matrix.
+    """
+    shocks_cholesky = np.tile(0.0, (4, 4))
+    shocks_cholesky[0, :1] = x[16:17]
+    shocks_cholesky[1, :2] = x[17:19]
+    shocks_cholesky[2, :3] = x[19:22]
+    shocks_cholesky[3, :4] = x[22:26]
+
+    # Stabilization
+    if info is not None:
+        info = 0
+
+    if not (np.count_nonzero(shocks_cholesky) == 0):
+        for i in range(4):
+            val = shocks_cholesky[i, i]
+            if val < TINY_FLOAT:
+                val = TINY_FLOAT
+                if info is not None:
+                    info = 1
+            shocks_cholesky[i, i] = val
+
+    if info is not None:
+        return shocks_cholesky, info
+    else:
+        return shocks_cholesky, None
 
 
 def get_total_value(period, num_periods, delta, payoffs_systematic, draws,
@@ -697,4 +723,4 @@ def write_est_info(num_start, value_start, paras_start, num_step,
 
         for i in range(3):
             if is_large[i]:
-                record_warning_crit_val(i)
+                record_warning(i + 1)

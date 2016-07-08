@@ -38,6 +38,8 @@ def record_estimation_eval(opt_obj, fval):
                               opt_obj.x_container[i + 2, 1],
                               opt_obj.x_container[i + 2, 2]]))
 
+        out_file.write('\n')
+
     info_start = opt_obj.x_container[:, 0]
     info_step = opt_obj.x_container[:, 1]
     info_current = opt_obj.x_container[:, 2]
@@ -54,11 +56,11 @@ def record_estimation_final(opt_obj, success, message):
     """
     fval = opt_obj.x_container[1, 1]
     with open('est.respy.log', 'a') as out_file:
-        out_file.write('\n ESTIMATION REPORT\n\n')
+        out_file.write(' ESTIMATION REPORT\n\n')
         out_file.write('   Success ' + str(success) + '\n')
         out_file.write('   Message ' + message + '\n\n')
 
-        fmt_ = '   {0:>9}' + '     {1:25.15f}\n'
+        fmt_ = '   {0:>9}' + '     {1:45.15f}\n'
         out_file.write(fmt_.format(*['Criterion', fval]))
         fmt_ = '\n\n   {0:>10}' + '    {1:>25}\n\n'
         out_file.write(fmt_.format(*['Identifier', 'Final']))
@@ -66,5 +68,5 @@ def record_estimation_final(opt_obj, success, message):
         for i in range(26):
             out_file.write(
                 fmt_.format(*[i, opt_obj.x_container[i + 2, 1]]))
-
+        out_file.write('\n')
 

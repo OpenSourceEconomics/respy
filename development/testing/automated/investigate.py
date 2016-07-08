@@ -36,7 +36,7 @@ else:
 ''' Request '''
 #MODULE test_parallelism METHOD test_1 SEED: 24029
 
-seed =234 # 6216748723
+seed =1223 # 6216748723
 
 
 ''' Error Reproduction '''
@@ -51,7 +51,7 @@ module, method = get_random_request(test_dict)
 module, method = 'test_versions', 'test_5'
 count = 0
 os.system('git clean -d -f')
-for i in range(1000):
+for i in range(100):
 	print(module, method)
 	mod = importlib.import_module(module)
 	test = getattr(mod.TestClass(), method)
