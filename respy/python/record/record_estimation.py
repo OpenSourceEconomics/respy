@@ -40,9 +40,9 @@ def record_estimation_eval(opt_obj, fval):
 
         fmt_ = '   {:>10}' + '    {:25.15f}' * 3 + '\n'
 
-        value_start = info_start[0]
-        value_step = info_step[1]
-        value_current = info_current[2]
+        value_start = opt_obj.crit_vals[0]
+        value_step = opt_obj.crit_vals[1]
+        value_current = opt_obj.crit_vals[2]
 
         is_large = [False, False, False]
         is_large[0] = abs(value_start) > LARGE_FLOAT
@@ -62,9 +62,9 @@ def record_estimation_eval(opt_obj, fval):
                 record_warning(i + 1)
 
 
-    write_est_info(int(info_start[0]), info_start[1], info_start[2:],
-                   int(info_step[0]), info_step[1], info_step[2:],
-                   int(info_current[0]), info_current[1], info_current[2:])
+    write_est_info(int(info_start[0]), opt_obj.crit_vals[0], info_start[2:],
+                   int(info_step[0]), opt_obj.crit_vals[1], info_step[2:],
+                   int(info_current[0]), opt_obj.crit_vals[2], info_current[2:])
 
 
 def record_estimation_final(opt_obj, success, message):

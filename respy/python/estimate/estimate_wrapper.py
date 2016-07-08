@@ -63,10 +63,12 @@ class OptimizationClass(object):
 
         if True:
             self.num_eval += 1
+            self.crit_vals[2] = fval
             info_current = np.concatenate(([self.num_eval, fval], x_all_current))
             self.x_container[:, 2] = info_current
 
         if is_start:
+            self.crit_vals[0] = fval
             info_start = np.concatenate(([0, fval], x_all_current))
             self.x_container[:, 0] = info_start
 
@@ -74,6 +76,7 @@ class OptimizationClass(object):
 
             self.num_step += 1
             self.value_step = fval
+            self.crit_vals[1] = fval
 
             info_step = np.concatenate(([self.num_step, fval], x_all_current))
             self.x_container[:, 1] = info_step
