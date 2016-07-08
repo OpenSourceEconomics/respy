@@ -28,4 +28,5 @@ def pyth_criterion(x, is_interpolated, num_draws_emax, num_periods,
         shocks_cholesky, *args)
 
     # Finishing
+    
     return crit_val
