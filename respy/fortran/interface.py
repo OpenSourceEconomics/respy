@@ -1,14 +1,11 @@
 """ This module serves as the interface between the PYTHON code and the
 FORTRAN implementations.
 """
-# standard library
-import numpy as np
 import pandas as pd
-
+import numpy as np
 import subprocess
 import os
 
-# project library
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import dist_model_paras
 from respy.python.shared.shared_constants import OPTIMIZERS_FORT

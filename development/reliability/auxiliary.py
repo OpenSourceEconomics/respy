@@ -1,8 +1,6 @@
 from statsmodels.tools.eval_measures import rmse
 from copy import deepcopy
-
 import numpy as np
-
 import socket
 import shlex
 import glob

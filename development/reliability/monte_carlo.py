@@ -2,15 +2,11 @@
 """ Using the first specification from Keane & Wolpin (1994), we perform
 a simple Monte Carlo exercise to ensure the reliability of the implementation.
 """
-
-# standard library
 from multiprocessing import Pool
 from functools import partial
-
 import glob
 import os
 
-# project library
 from auxiliary import aggregate_information
 from auxiliary import send_notification
 from auxiliary import run

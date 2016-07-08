@@ -2,12 +2,10 @@
 """ This module recomputes some of the key results of Keane & Wolpin (1994).
 """
 
-# standard library
 import shutil
 import glob
 import os
 
-# project library
 import respy
 
 # We can simply iterate over the different model specifications outlined in
@@ -29,4 +27,4 @@ for spec in ['kw_data_one.ini', 'kw_data_two.ini', 'kw_data_three.ini']:
     dirname = spec.replace('.ini', '') 
     os.mkdir(dirname)
     for fname in glob.glob('*.respy.*'):
-    	shutil.move(fname, dirname)
+        shutil.move(fname, dirname)

@@ -1,15 +1,11 @@
-# standard library
 import statsmodels.api as sm
 import numpy as np
-
 import logging
 import shlex
 import os
 
-# project library
 from respy.python.shared.shared_auxiliary import transform_disturbances
 from respy.python.shared.shared_auxiliary import get_total_value
-
 from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.shared.shared_constants import MISSING_INT
 from respy.python.shared.shared_constants import HUGE_FLOAT

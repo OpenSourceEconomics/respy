@@ -2,10 +2,8 @@
 """ Script that executes the testings for the Travis CI integration server.
 """
 
-# standard library
 import subprocess as sp
 import numpy as np
-
 import sys
 import os
 

@@ -1,12 +1,9 @@
 #!/usr/bin/env python
 
-# standard library
-import numpy as np
-
 from types import MethodType
 from subprocess import Popen
 from subprocess import PIPE
-
+import numpy as np
 import shutil
 import shlex
 import os

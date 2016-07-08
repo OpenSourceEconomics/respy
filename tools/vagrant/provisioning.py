@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 """ This script provisions the virtual machine for the project.
 """
-
-# standard library
 import subprocess
 
 # Required packages

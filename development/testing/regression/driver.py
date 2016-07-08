@@ -7,7 +7,6 @@ import os
 # Required for PYTHON2/3 portability
 sys.path.insert(0, 'modules')
 
-# testing library
 from auxiliary import dist_input_arguments
 from auxiliary import write_request
 from config import python2_exec

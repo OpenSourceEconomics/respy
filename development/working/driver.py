@@ -12,16 +12,12 @@ if True:
 
 
 
-# ROOT DIRECTORY
-# standard library
 import os
 import sys
 import shutil
 
 import time
-# ROOT DIRECTORY
 
-# project library
 from respy.python.evaluate.evaluate_python import pyth_evaluate
 
 

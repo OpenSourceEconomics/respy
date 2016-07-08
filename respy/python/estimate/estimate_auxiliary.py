@@ -1,9 +1,5 @@
-""" This module contains auxiliary functions for the estimation.
-"""
-# standard library
 import numpy as np
 
-# project library
 from respy.python.shared.shared_auxiliary import check_optimization_parameters
 from respy.python.shared.shared_auxiliary import check_model_parameters
 

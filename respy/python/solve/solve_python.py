@@ -1,10 +1,7 @@
-# standard library
 import numpy as np
 import logging
 
-# project library
 from respy.python.shared.shared_constants import MISSING_FLOAT
-
 from respy.python.solve.solve_auxiliary import pyth_calculate_payoffs_systematic
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
 from respy.python.solve.solve_auxiliary import pyth_backward_induction

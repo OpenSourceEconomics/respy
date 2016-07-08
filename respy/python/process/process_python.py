@@ -1,8 +1,6 @@
-# standard library
 import pandas as pd
 import numpy as np
 
-# project library
 from respy.python.process.process_auxiliary import check_process
 from respy.python.shared.shared_auxiliary import check_dataset
 

@@ -1,4 +1,3 @@
-# standard library
 import os
 
 

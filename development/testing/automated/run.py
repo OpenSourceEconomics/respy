@@ -1,13 +1,8 @@
 #!/usr/bin/env python
 """ Script to start development test battery for the RESPY package.
 """
-
-# standard library
 from datetime import timedelta
 from datetime import datetime
-
-import numpy as np
-
 import traceback
 import importlib
 import argparse
@@ -24,17 +19,15 @@ PACKAGE_DIR = PACKAGE_DIR.replace('development/testing/automated', '')
 sys.path.insert(0, PACKAGE_DIR + 'respy/tests')
 sys.path.insert(0, PACKAGE_DIR)
 
-# Testing infrastructure
 from modules.auxiliary import cleanup_testing_infrastructure
 from modules.auxiliary import initialize_record_canvas
-from modules.auxiliary import get_random_request
-from modules.auxiliary import distribute_input
-from modules.auxiliary import get_test_dict
-
 from modules.auxiliary import finalize_testing_record
 from modules.auxiliary import update_testing_record
+from modules.auxiliary import get_random_request
 from modules.auxiliary import send_notification
+from modules.auxiliary import distribute_input
 from modules.auxiliary import compile_package
+from modules.auxiliary import get_test_dict
 from modules.auxiliary import get_testdir
 
 

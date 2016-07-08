@@ -3,7 +3,6 @@
 The idea is to have this running as a routine test battery.
 """
 
-# standard library
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 

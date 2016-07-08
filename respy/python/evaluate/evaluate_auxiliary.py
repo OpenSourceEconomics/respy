@@ -1,11 +1,8 @@
 """ This module contains some auxiliary functions for the evaluation of the
 criterion function.
 """
-
-# standard library
 import numpy as np
 
-# project library
 from respy.python.shared.shared_auxiliary import check_dataset
 from respy.python.shared.shared_constants import HUGE_FLOAT
 

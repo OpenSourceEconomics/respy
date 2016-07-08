@@ -1,5 +1,3 @@
-
-
 def record_warning(count):
     """ Sometimes the value of the criterion function is too extreme for
     pretty printing in the output files. This warning indicates that this is

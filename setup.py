@@ -1,9 +1,7 @@
-# standard library
 from setuptools.command.build_py import build_py
 from setuptools.command.develop import develop
 from setuptools import find_packages
 from setuptools import setup
-
 import os
 
 

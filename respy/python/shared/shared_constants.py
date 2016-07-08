@@ -2,7 +2,6 @@
 aligned with the constants from the FORTRAN implementation.
 """
 
-# standard library
 import os
 
 # Obtain the root directory of the package

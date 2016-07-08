@@ -1,11 +1,8 @@
-# standard library
 import numpy as np
-
 import shlex
 import sys
 import os
 
-# project library
 from respy.python.read.read_auxiliary import check_line
 
 

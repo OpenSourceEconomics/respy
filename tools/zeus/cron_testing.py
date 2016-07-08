@@ -3,8 +3,6 @@
 The idea is to have the test battery executed automatically if the CPU load
 allows.
 """
-
-# standard library
 import socket
 import os
 

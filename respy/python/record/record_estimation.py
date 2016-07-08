@@ -1,11 +1,8 @@
-# standard library
+import numpy as np
 import time
 
-# project library
-import numpy as np
-
-from respy.python.record.record_warning import record_warning
 from respy.python.shared.shared_auxiliary import dist_optim_paras
+from respy.python.record.record_warning import record_warning
 from respy.python.shared.shared_constants import LARGE_FLOAT
 
 

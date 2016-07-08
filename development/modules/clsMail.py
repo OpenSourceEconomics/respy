@@ -17,13 +17,9 @@
         mailObj.send()
 
 """
-
-# standard library
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-
 import pickle as pkl
-
 import smtplib
 import socket
 import copy

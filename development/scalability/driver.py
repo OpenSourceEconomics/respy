@@ -1,13 +1,10 @@
 #!/usr/bin/env python
 """ I will now try to run some estimations.
 """
-
-# standard library
 import time
 import sys
 import os
 
-# project library
 sys.path.insert(0, '../../')
 from respy import simulate, RespyCls, estimate
 

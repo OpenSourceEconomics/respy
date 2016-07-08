@@ -1,7 +1,5 @@
-# standard library
 import sys
 import os
-
 
 # Edit PYTHONPATH
 PACKAGE_DIR = os.path.dirname(os.path.realpath(__file__))

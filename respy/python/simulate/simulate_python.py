@@ -1,12 +1,9 @@
-# standard library
 import numpy as np
-import logging
 
-# project library
+from respy.python.record.record_simulation import record_simulation_progress
 from respy.python.shared.shared_auxiliary import transform_disturbances
 from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.shared.shared_auxiliary import get_total_value
-from respy.python.record.record_simulation import record_simulation_progress
 
 ''' Main function
 '''

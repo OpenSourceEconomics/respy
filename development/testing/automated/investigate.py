@@ -1,15 +1,12 @@
 #!/usr/bin/env python
 """ Script to quickly investigate failed estimation runs.
 """
-# standard library
 import numpy as np
-
 import subprocess
 import importlib
 import sys
 import os
 
-# Testing infrastructure
 from modules.auxiliary import cleanup_testing_infrastructure
 from modules.auxiliary import get_random_request
 from modules.auxiliary import get_test_dict

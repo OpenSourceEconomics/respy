@@ -1,10 +1,7 @@
-# standard library
 import numpy as np
-
 import sys
 import os
 
-# project library
 from respy.python.shared.shared_constants import EXEC_DIR
 
 # Hard coded structure of admissible groups and flags in the

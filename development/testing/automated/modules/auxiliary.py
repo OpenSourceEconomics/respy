@@ -1,9 +1,5 @@
-
-# standard library
 from datetime import datetime
-
 import numpy as np
-
 import fileinput
 import importlib
 import fnmatch
@@ -16,7 +12,6 @@ import glob
 import sys
 import os
 
-# testing library
 from modules.clsMail import MailCls
 
 # RESPY directory. This allows to compile_ the debug version of the FORTRAN
@@ -26,7 +21,6 @@ RESPY_DIR = RESPY_DIR.replace('development/testing/automated/modules','') + 'res
 
 PYTHON_EXEC = sys.executable
 
-# package imports
 from respy.python.shared.shared_constants import IS_PARALLEL
 from respy.python.shared.shared_constants import IS_FORTRAN
 

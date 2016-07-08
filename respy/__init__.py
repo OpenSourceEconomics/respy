@@ -1,4 +1,3 @@
-# standard library
 import os
 
 try:
@@ -6,12 +5,11 @@ try:
 except ImportError:
     pass
 
-# project library
 from respy.estimate import estimate
 from respy.simulate import simulate
+from respy.clsRespy import RespyCls
 from respy.solve import solve
 
-from respy.clsRespy import RespyCls
 
 __version__ = '2.0.0'
 __name__ = 'respy'

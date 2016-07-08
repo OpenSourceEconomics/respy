@@ -11,7 +11,6 @@ if True:
 else:
     print('not compiling')
 
-# standard library
 import sys
 import time
 from respy import simulate, RespyCls, estimate

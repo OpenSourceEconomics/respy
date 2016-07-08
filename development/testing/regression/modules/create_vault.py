@@ -1,17 +1,13 @@
 #!/usr/bin/env python
 """ Script to run the whole vault of regression tests.
 """
-# standard library
 from __future__ import print_function
-
 import pickle as pkl
 import numpy as np
-
 import subprocess
 import sys
 import os
 
-# testing library
 from auxiliary import read_request
 from config import python2_exec
 from config import python3_exec
