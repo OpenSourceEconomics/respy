@@ -1,16 +1,11 @@
-# standard library
 import numpy as np
-
 import pytest
 
-# testing library
 from codes.random_init import generate_random_dict
 from codes.auxiliary import compare_est_log
 
-# project library
 from respy.python.shared.shared_auxiliary import print_init_dict
 from respy.python.shared.shared_constants import IS_PARALLEL
-
 from respy.solve import solve
 from respy import estimate
 from respy import simulate

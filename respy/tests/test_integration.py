@@ -1,34 +1,20 @@
-# standard library
-import shutil
+from pandas.util.testing import assert_frame_equal
 
 import numpy as np
 import pandas as pd
 import pytest
-from pandas.util.testing import assert_frame_equal
 
-# testing library
-from codes.auxiliary import write_interpolation_grid
-from codes.random_init import generate_random_dict
-from codes.random_init import generate_init
-from codes.auxiliary import write_draws
-
-# project library
 from respy.scripts.scripts_estimate import scripts_estimate
 from respy.scripts.scripts_simulate import scripts_simulate
 from respy.scripts.scripts_update import scripts_update
 from respy.scripts.scripts_modify import scripts_modify
-
-from respy.python.shared.shared_auxiliary import print_init_dict
-
-from respy.python.solve.solve_auxiliary import pyth_create_state_space
-
-
 from respy.python.process.process_python import process
-
 from respy.solve import solve
 from respy import estimate
 from respy import simulate
 from respy import RespyCls
+
+from codes.random_init import generate_init
 
 
 @pytest.mark.usefixtures('fresh_directory', 'set_seed')

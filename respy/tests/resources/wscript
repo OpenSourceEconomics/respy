@@ -1,9 +1,5 @@
-#!/usr/bin/env python
-
-# standard library
 import os
 
-# WAF system
 from waflib.Task import Task
 
 

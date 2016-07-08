@@ -1,4 +1,3 @@
-# standard library
 import statsmodels.api as sm
 from scipy.stats import norm
 
@@ -8,7 +7,6 @@ import scipy
 import sys
 import os
 
-# testing library
 from respy.python.solve.solve_auxiliary import get_predictions
 
 from codes.auxiliary import write_interpolation_grid

@@ -2,12 +2,10 @@
     RESPY package
 """
 
-# standard library
 import pickle as pkl
 import pandas as pd
 import numpy as np
 
-# project library
 from respy.python.shared.shared_auxiliary import replace_missing_values
 from respy.python.shared.shared_auxiliary import check_model_parameters
 from respy.python.shared.shared_auxiliary import cholesky_to_coeffs

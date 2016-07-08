@@ -1,18 +1,13 @@
 #!/usr/bin/env python
 
-# standard library
 import numpy as np
-
 import argparse
 import os
 
-# project library
-from respy.python.estimate.estimate_auxiliary import get_optim_paras
-
 from respy.python.shared.shared_auxiliary import dist_class_attributes
+from respy.python.estimate.estimate_auxiliary import get_optim_paras
 from respy.python.shared.shared_auxiliary import dist_model_paras
 from respy.python.shared.shared_auxiliary import get_est_info
-
 from respy import estimate
 from respy import RespyCls
 

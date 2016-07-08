@@ -2,14 +2,9 @@
 """ This script allows upgrades the initialization file with the parameter
 values from the last step.
 """
-
-# standard library
-import numpy as np
-
 import argparse
 import os
 
-# project library
 from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
 from respy.python.shared.shared_auxiliary import dist_optim_paras
 from respy.python.shared.shared_auxiliary import print_init_dict

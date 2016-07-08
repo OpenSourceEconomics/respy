@@ -1,15 +1,10 @@
 #!/usr/bin/env python
 
-# standard library
 import pickle as pkl
-import numpy as np
-
 import argparse
 import os
 
-# project library
 from respy.python.shared.shared_auxiliary import get_est_info
-
 from respy import simulate
 from respy import RespyCls
 

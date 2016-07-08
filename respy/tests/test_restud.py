@@ -2,23 +2,19 @@
 RESTUD code for the special cases where they overlap.
 """
 
-# standard library
 from pandas.util.testing import assert_frame_equal
 
 import pandas as pd
 import numpy as np
-
 import subprocess
 import pytest
 
-# project library
 from codes.random_init import generate_random_dict
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import print_init_dict
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.python.shared.shared_constants import IS_FORTRAN
-
 from respy import solve
 from respy import RespyCls
 from respy import simulate

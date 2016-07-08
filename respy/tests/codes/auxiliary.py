@@ -1,14 +1,11 @@
 """ This module contains auxiliary functions for the PYTEST suite.
 """
 
-# standard library
 import numpy as np
 import shlex
 
-# project library
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
 from respy.python.shared.shared_auxiliary import dist_class_attributes
-
 from respy import RespyCls
 
 

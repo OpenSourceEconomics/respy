@@ -1,17 +1,12 @@
-# standard library
 import numpy as np
-
 import pytest
 
-# testing library
 from codes.random_init import generate_random_dict
 
-# project library
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import print_init_dict
-
-from respy import solve
 from respy import RespyCls
+from respy import solve
 
 
 @pytest.mark.usefixtures('fresh_directory', 'set_seed')

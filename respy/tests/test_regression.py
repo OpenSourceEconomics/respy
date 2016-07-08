@@ -1,21 +1,16 @@
-# standard library
 import pickle as pkl
 import numpy as np
-
 import pytest
 import sys
 
-# project library
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.python.shared.shared_auxiliary import print_init_dict
 from respy.python.shared.shared_constants import IS_PARALLEL
 from respy.python.shared.shared_constants import IS_FORTRAN
-
-from respy import solve
-
 from respy import RespyCls
 from respy import simulate
 from respy import estimate
+from respy import solve
 
 
 @pytest.mark.usefixtures('fresh_directory', 'set_seed')

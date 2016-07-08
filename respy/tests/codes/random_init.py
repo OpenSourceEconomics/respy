@@ -1,10 +1,7 @@
 """ This module contains the functions for the generation of random requests.
 """
-
-# standard library
 import numpy as np
 
-# project library
 from respy.python.shared.shared_auxiliary import print_init_dict
 from respy.python.shared.shared_constants import IS_PARALLEL
 from respy.python.shared.shared_constants import IS_FORTRAN

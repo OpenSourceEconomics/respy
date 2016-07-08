@@ -1,4 +1,3 @@
-# project library
 from respy.python.shared.shared_auxiliary import add_solution
 from respy.python.solve.solve_auxiliary import check_input
 from respy.fortran.interface import resfort_interface
