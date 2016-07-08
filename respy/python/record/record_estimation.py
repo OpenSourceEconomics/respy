@@ -21,7 +21,7 @@ def record_estimation_eval(opt_obj, fval):
 
     with open('est.respy.log', 'a') as out_file:
         fmt_ = ' {0:>4}{1:>13}' + ' ' * 10 + '{2:>4}{3:>10}\n\n'
-        line = ['EVAL', opt_obj.attr['num_eval'], 'STEP', opt_obj.attr['num_step']]
+        line = ['EVAL', opt_obj.num_eval, 'STEP', opt_obj.num_step]
         out_file.write(fmt_.format(*line))
         fmt_ = '   {0:<9}     {1:>25}\n'
         out_file.write(fmt_.format(*['Date', time.strftime("%d/%m/%Y")]))

@@ -22,12 +22,14 @@ class OptimizationClass(object):
         self.attr = dict()
 
         # constitutive arguments
-        self.attr['num_step'] = -1
-        self.attr['num_eval'] = 0
+        self.num_step = -1
+        self.num_eval = 0
 
-        self.attr['value_step'] = np.inf
+        self.value_step = np.inf
         self.maxfun = np.inf
+
         self.x_container = np.tile(np.nan, (28, 3))
+        self.crit_vals = np.tile(np.nan, 3)
 
         self.x_all_start = None
         self.paras_fixed = None
@@ -37,7 +39,7 @@ class OptimizationClass(object):
         implementations of the criterion function.
         """
 
-        if self.attr['num_eval'] == 0:
+        if self.num_eval == 0:
             is_start = True
         else:
             is_start = False
@@ -57,11 +59,11 @@ class OptimizationClass(object):
 
         fval = pyth_criterion(x_all_current, *args)
 
-        is_step = (self.attr['value_step'] > fval)
+        is_step = (self.value_step > fval)
 
         if True:
-            self.attr['num_eval'] += 1
-            info_current = np.concatenate(([self.attr['num_eval'], fval], x_all_current))
+            self.num_eval += 1
+            info_current = np.concatenate(([self.num_eval, fval], x_all_current))
             self.x_container[:, 2] = info_current
 
         if is_start:
@@ -70,10 +72,10 @@ class OptimizationClass(object):
 
         if is_step:
 
-            self.attr['num_step'] += 1
-            self.attr['value_step'] = fval
+            self.num_step += 1
+            self.value_step = fval
 
-            info_step = np.concatenate(([self.attr['num_step'], fval], x_all_current))
+            info_step = np.concatenate(([self.num_step, fval], x_all_current))
             self.x_container[:, 1] = info_step
 
         record_estimation_eval(self, fval)
@@ -85,7 +87,7 @@ class OptimizationClass(object):
             record_warning(4)
 
         # Enforce a maximum number of function evaluations
-        if self.maxfun == self.attr['num_eval']:
+        if self.maxfun == self.num_eval:
             raise MaxfunError
 
         # Finishing
