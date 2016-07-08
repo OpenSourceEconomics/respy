@@ -17,7 +17,7 @@ import os
 from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
 from respy.python.shared.shared_auxiliary import dist_model_paras
 from respy.python.shared.shared_auxiliary import print_init_dict
-from respy.python.shared.shared_auxiliary import write_est_info
+from respy.python.record.record_estimation import write_est_info
 from respy.python.shared.shared_auxiliary import get_est_info
 from respy.python.read.read_python import read
 

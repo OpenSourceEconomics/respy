@@ -1,17 +1,15 @@
 # standard library
-import numpy as np
-
-import shlex
 import os
+import shlex
+
+import numpy as np
 
 # project library
 from respy.python.shared.shared_constants import INADMISSIBILITY_PENALTY
 from respy.python.shared.shared_constants import MISSING_FLOAT
-from respy.python.shared.shared_constants import LARGE_FLOAT
 from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.shared.shared_constants import TINY_FLOAT
 
-from respy.python.record.record_warning import record_warning
 
 
 def check_optimization_parameters(x):
@@ -621,6 +619,13 @@ def get_est_info():
     """ This function reads in the parameters from the last step of a
     previous estimation run.
     """
+    def _process_value(input_):
+        try:
+            value = float(input_)
+        except ValueError:
+            value = '---'
+
+        return value
 
     rslt = dict()
 
@@ -636,9 +641,9 @@ def get_est_info():
                 paras_current += [float(list_[3])]
 
             if i == 5:
-                value_start = float(list_[0])
-                value_step = float(list_[1])
-                value_current = float(list_[2])
+                value_start = _process_value(list_[0])
+                value_step = _process_value(list_[1])
+                value_current = _process_value(list_[2])
 
             if i == 64:
                 num_step = int(float(list_[3]))
@@ -661,66 +666,3 @@ def get_est_info():
     return rslt
 
 
-def write_est_info(num_start, value_start, paras_start, num_step,
-                   value_step, paras_step, num_eval, value_current, paras_current):
-
-    # Write information to file.
-    with open('est.respy.info', 'w') as out_file:
-        # Write out information about criterion function
-        out_file.write('\n Criterion Function\n\n')
-        fmt_ = '{0:>15}    {1:>15}    {2:>15}    {3:>15}\n\n'
-        out_file.write(fmt_.format(*['', 'Start', 'Step', 'Current']))
-        fmt_ = '{0:>15}    {1:15.4f}    {2:15.4f}    {3:15.4f}\n\n'
-
-        line = '{:>15}'.format('')
-
-        is_large = [False, False, False]
-        is_large[0] = abs(value_start) > LARGE_FLOAT
-        is_large[1] = abs(value_step) > LARGE_FLOAT
-        is_large[2] = abs(value_current) > LARGE_FLOAT
-
-        crit_vals = [value_start, value_step, value_current]
-
-        for i in range(3):
-            if is_large[i]:
-                line += '    {:>15}'.format('---')
-            else:
-                line += '    {:15.4f}'.format(crit_vals[i])
-
-        out_file.write(line + '\n\n')
-
-        # Write out information about the optimization parameters directly.
-        out_file.write('\n Optimization Parameters\n\n')
-        fmt_ = '{0:>15}    {1:>15}    {2:>15}    {3:>15}\n\n'
-        out_file.write(fmt_.format(*['Identifier', 'Start', 'Step', 'Current']))
-        fmt_ = '{0:>15}    {1:15.4f}    {2:15.4f}    {3:15.4f}\n'
-        for i, _ in enumerate(paras_current):
-            paras = [i, paras_start[i], paras_step[i], paras_current[i]]
-            out_file.write(fmt_.format(*paras))
-
-        # Write out the current covariance matrix of the reward shocks.
-        out_file.write('\n\n Covariance Matrix\n\n')
-
-        for which in ['Start', 'Step', 'Current']:
-            if which == 'Start':
-                paras = paras_start
-            elif which == 'Step':
-                paras = paras_step
-            else:
-                paras = paras_current
-            fmt_ = '{0:>15}\n\n'
-            out_file.write(fmt_.format(*[which]))
-            shocks_cholesky = dist_optim_paras(paras, True)[-1]
-            shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
-            fmt_ = '{0:15.4f}    {1:15.4f}    {2:15.4f}    {3:15.4f}\n'
-            for i in range(4):
-                out_file.write(fmt_.format(*shocks_cov[i, :]))
-            out_file.write('\n')
-
-        fmt_ = '\n{0:<25}{1:>15}\n'
-        out_file.write(fmt_.format(*[' Number of Steps', num_step]))
-        out_file.write(fmt_.format(*[' Number of Evaluations', num_eval]))
-
-        for i in range(3):
-            if is_large[i]:
-                record_warning(i + 1)
