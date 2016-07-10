@@ -1,26 +1,25 @@
 #!/usr/bin/env python
-""" We perform a simple Monte Carlo exercise to ensure the reliability of the
+""" We perform a simple scalability exercise to ensure the reliability of the
 RESPY package.
 """
-from multiprocessing import Pool
-from functools import partial
+
 import glob
 import os
 
 from auxiliary import aggregate_information
 from auxiliary import send_notification
-from auxiliary import run
+from auxiliary import process_tasks
 
 os.system('git clean -d -f')
-if os.path.exists('monte_carlo.respy.info'):
-    os.unlink('monte_carlo.respy.info')
+if os.path.exists('scalability.respy.info'):
+    os.unlink('scalability.respy.info')
 
 ''' Details of the Monte Carlo exercise can be specified in the code block
 below. Note that only deviations from the benchmark initialization files need to
 be addressed.
 '''
 spec_dict = dict()
-spec_dict['maxfun'] = 2000
+spec_dict['maxfun'] = 1000
 spec_dict['num_draws_emax'] = 500
 spec_dict['num_draws_prob'] = 200
 spec_dict['num_agents'] = 1000
@@ -36,17 +35,16 @@ spec_dict['optimizer_options']['FORT-NEWUOA']['rhobeg'] = 1.0
 spec_dict['optimizer_options']['FORT-NEWUOA']['rhoend'] = spec_dict['optimizer_options']['FORT-NEWUOA']['rhobeg'] * 1e-6
 
 # Set flag to TRUE for debugging purposes
-if True:
-    spec_dict['maxfun'] = 60
+if False:
+    spec_dict['maxfun'] = 20
     spec_dict['num_draws_emax'] = 5
     spec_dict['num_draws_prob'] = 3
     spec_dict['num_agents'] = 100
     spec_dict['scaling'] = [False, 0.00001]
     spec_dict['num_periods'] = 3
 
-''' Run the Monte Carlo exercise using multiple processors.
-'''
-process_tasks = partial(run, spec_dict)
-ret = Pool(3).map(process_tasks, glob.glob('*.ini'))
-send_notification()
+grid_slaves = [0, 2, 5. 7, 10]
+for fname in glob.glob('*.ini'):
+    process_tasks(spec_dict, fname, grid_slaves)
 aggregate_information()
+send_notification()
