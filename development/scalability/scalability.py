@@ -21,10 +21,13 @@ if os.path.exists('scalability.respy.info'):
 # We need to compile the package as part of this script as otherwise the
 # parallel implementation is not available. MPI is not defined on the head
 # node on acropolis.
+HOME = os.environ['HOME']
+python_exec = HOME + '/.envs/restudToolbox2/bin/python'
+
 cwd = os.getcwd()
 os.chdir(PACKAGE_DIR + '/respy')
-subprocess.check_call('./waf distclean', shell=True)
-subprocess.check_call('./waf configure build', shell=True)
+subprocess.check_call(python_exec + ' waf distclean', shell=True)
+subprocess.check_call(python_exec + ' waf configure build', shell=True)
 os.chdir(cwd)
 
 ''' Details of the Monte Carlo exercise can be specified in the code block
@@ -48,7 +51,7 @@ spec_dict['optimizer_options']['FORT-NEWUOA']['rhobeg'] = 1.0
 spec_dict['optimizer_options']['FORT-NEWUOA']['rhoend'] = spec_dict['optimizer_options']['FORT-NEWUOA']['rhobeg'] * 1e-6
 
 # Set flag to TRUE for debugging purposes
-if False:
+if True:
     spec_dict['maxfun'] = 20
     spec_dict['num_draws_emax'] = 5
     spec_dict['num_draws_prob'] = 3
