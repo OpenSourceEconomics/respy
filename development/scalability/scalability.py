@@ -21,6 +21,12 @@ if os.path.exists('scalability.respy.info'):
 # We need to compile the package as part of this script as otherwise the
 # parallel implementation is not available. MPI is not defined on the head
 # node on acropolis.
+# TODO: MOre robust, move config.py to ../modules and use here as well.
+
+# TODO: No notification send
+
+# TODO: Acropolis does not recognize parallel in wscript
+
 HOME = os.environ['HOME']
 python_exec = HOME + '/.envs/restudToolbox2/bin/python'
 
