@@ -8,13 +8,14 @@ from respy.python.shared.shared_auxiliary import check_dataset
 from respy.fortran.interface import resfort_interface
 from respy.python.interface import respy_interface
 
+
 def simulate(respy_obj):
     """ Simulate dataset of synthetic agent following the model specified in
     the initialization file.
     """
     # Distribute class attributes
     is_debug, version, num_agents_sim, seed_sim = \
-            dist_class_attributes(respy_obj, 'is_debug', 'version',
+        dist_class_attributes(respy_obj, 'is_debug', 'version',
                 'num_agents_sim', 'seed_sim')
 
     with open('sim.respy.log', 'w') as outfile:

@@ -15,7 +15,6 @@ from respy.python.shared.shared_auxiliary import read_draws
 from codes.auxiliary import write_draws
 from respy.python.estimate.estimate_auxiliary import get_optim_paras
 
-from respy.python.solve.solve_auxiliary import logging_solution
 from respy.python.solve.solve_auxiliary import get_future_value
 from respy.python.solve.solve_auxiliary import get_endogenous_variable
 from respy.python.shared.shared_auxiliary import replace_missing_values
@@ -294,9 +293,7 @@ class TestClass(object):
             edu_max, edu_start, mapping_state_idx, states_all, delta,
             is_debug, is_interpolated, num_points_interp, shocks_cholesky)
 
-        logging_solution('start')
         pyth = pyth_backward_induction(*args)
-        logging_solution('stop')
 
         f2py = fort_debug.f2py_backward_induction(*args)
         np.testing.assert_allclose(pyth, f2py)
@@ -459,11 +456,6 @@ class TestClass(object):
         # Distribute validated results for further functions.
         endogenous = py
 
-        # Get predictions for expected future values. We need to start the
-        # record to set up the handler for record the output from the
-        # prediction model.
-        logging_solution('start')
-
         args = (endogenous, exogenous, maxe, is_simulated, num_points_interp,
             num_states, is_debug)
 
@@ -471,8 +463,6 @@ class TestClass(object):
         f90 = fort_debug.wrapper_get_predictions(*args[:-1])
 
         np.testing.assert_array_almost_equal(py, f90)
-
-        logging_solution('stop')
 
     def test_7(self):
         """ This is a special test for auxiliary functions related to the

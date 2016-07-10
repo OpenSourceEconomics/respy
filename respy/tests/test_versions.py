@@ -248,7 +248,7 @@ class TestClass(object):
             _, val = estimate(respy_obj)
             np.testing.assert_allclose(val, 1.0)
 
-    def test_5(self):
+    def test_6(self):
         """ This test ensures that the logging looks exactly the same for the
         different versions.
         """

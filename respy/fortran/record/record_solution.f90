@@ -51,36 +51,36 @@ SUBROUTINE record_solution_progress(indicator, period, num_states)
         CLOSE(99, STATUS ='DELETE')
         OPEN(UNIT=99, FILE='sol.respy.log', ACCESS='APPEND')
 
-        WRITE(99, *) ' Starting state space creation '
+        WRITE(99, *) ' Starting state space creation'
         WRITE(99, *)
 
     ELSEIF (indicator == 2) THEN
 
-        WRITE(99, *) ' Starting calculation of systematic payoffs '
+        WRITE(99, *) ' Starting calculation of systematic payoffs'
         WRITE(99, *)
 
     ELSEIF (indicator == 3) THEN
 
-        WRITE(99, *) ' Starting backward induction procedure '
+        WRITE(99, *) ' Starting backward induction procedure'
         WRITE(99, *)
 
     ELSEIF (indicator == 4) THEN
 
         1900 FORMAT(2x,A18,1x,i2,1x,A4,1x,i5,1x,A7)
 
-        WRITE(99, 1900) '... solving period', period, 'with', num_states, 'states '
+        WRITE(99, 1900) '... solving period', period, 'with', num_states, 'states'
         WRITE(99, *)
 
     ELSEIF (indicator == -1) THEN
 
-        WRITE(99, *) ' ... finished '
-        WRITE(99, *) ''
+        WRITE(99, *) ' ... finished'
+        WRITE(99, *) 
         WRITE(99, *)
 
     ELSEIF (indicator == -2) THEN
 
-        WRITE(99, *) ' ... not required due to myopic agents '
-        WRITE(99, *) ''
+        WRITE(99, *) ' ... not required due to myopic agents'
+        WRITE(99, *) 
         WRITE(99, *)
 
     END IF

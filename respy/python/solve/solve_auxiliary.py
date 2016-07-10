@@ -1,16 +1,15 @@
 import statsmodels.api as sm
 import numpy as np
-import logging
 import shlex
 import os
 
+from respy.python.record.record_solution import record_prediction_model
+from respy.python.record.record_solution import record_solution_progress
 from respy.python.shared.shared_auxiliary import transform_disturbances
 from respy.python.shared.shared_auxiliary import get_total_value
 from respy.python.shared.shared_constants import MISSING_FLOAT
-from respy.python.shared.shared_constants import MISSING_INT
 from respy.python.shared.shared_constants import HUGE_FLOAT
-
-logger = logging.getLogger('RESPY_SOLVE')
+from respy.python.shared.shared_constants import MISSING_INT
 
 
 def pyth_create_state_space(num_periods, edu_start, edu_max, min_idx):
@@ -184,10 +183,7 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
         draws_emax_transformed = transform_disturbances(draws_emax,
             shocks_cholesky)
 
-        # Logging.
-        string = '''{0[0]:>18}{0[1]:>3}{0[2]:>5}{0[3]:>6} {0[4]:>6}'''
-        logger.info(string.format(['... solving period', period, 'with',
-            num_states, 'states']))
+        record_solution_progress(4, period, num_states)
 
         # The number of interpolation points is the same for all periods.
         # Thus, for some periods the number of interpolation points is
@@ -369,52 +365,10 @@ def get_predictions(endogenous, exogenous, maxe, is_simulated, num_points_interp
         num_states, is_debug)
 
     # Write out some basic information to spot problems easily.
-    logging_prediction_model(results)
+    record_prediction_model(results)
 
     # Finishing
     return predictions
-
-
-def logging_prediction_model(results):
-    """ Write out some basic information to the solutions log file.
-    """
-    logger.info('    Information about Prediction Model')
-
-    string = '      {:<19}' + '{:15.4f}' * 9
-    logger.info(string.format('Coefficients', *results.params))
-    logger.info(string.format('Standard Errors', *results.bse))
-
-    string = '      {0:<19}{1:15.4f}\n'
-    logger.info(string.format('R-squared', results.rsquared))
-
-
-def logging_solution(which):
-    """ Ensure proper handling of record.
-    """
-    # Antibugging
-    assert (which in ['start', 'stop'])
-
-    # Start record
-    if which == 'start':
-
-        formatter = logging.Formatter('  %(message)s \n')
-        logger = logging.getLogger('RESPY_SOLVE')
-        handler = logging.FileHandler('sol.respy.log', mode='w',
-                                      delay=False)
-        handler.setFormatter(formatter)
-        logger.setLevel(logging.INFO)
-        logger.addHandler(handler)
-
-    elif which == 'stop':
-        # Shut down logger and close connection.
-        logger = logging.getLogger('RESPY_SOLVE')
-        handlers = logger.handlers[:]
-        for handler in handlers:
-            handler.close()
-            logger.removeHandler(handler)
-
-    else:
-        raise NotImplementedError
 
 
 def check_prediction_model(predictions_diff, model, num_points_interp, num_states,

@@ -33,7 +33,7 @@ else:
 ''' Request '''
 #MODULE test_parallelism METHOD test_1 SEED: 24029
 
-seed = 81646 # 6216748723
+seed = 1223 # 6216748723
 
 
 ''' Error Reproduction '''
@@ -45,7 +45,7 @@ np.random.seed(seed)
 test_dict = get_test_dict(PACKAGE_DIR + '/respy/tests')
 module, method = get_random_request(test_dict)
 
-module, method = 'test_regression', 'test_1'
+module, method = 'test_versions', 'test_6'
 count = 0
 os.system('git clean -d -f')
 for i in range(100):
