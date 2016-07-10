@@ -18,10 +18,6 @@ def simulate(respy_obj):
         dist_class_attributes(respy_obj, 'is_debug', 'version',
                 'num_agents_sim', 'seed_sim')
 
-    with open('sim.respy.log', 'w') as outfile:
-        outfile.write('  Starting simulation of model for ' + str(num_agents_sim) +
-        ' agents with seed ' + str(seed_sim) + '\n\n')
-
     # Select appropriate interface
     if version in ['PYTHON']:
         _, data_array = respy_interface(respy_obj, 'simulate')
@@ -41,9 +37,6 @@ def simulate(respy_obj):
     write_out(respy_obj, data_frame)
 
     write_info(respy_obj, data_frame)
-
-    with open('sim.respy.log', 'a') as outfile:
-        outfile.write('  ... finished \n')
 
     # Finishing
     return respy_obj

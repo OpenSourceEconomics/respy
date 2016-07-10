@@ -1,6 +1,8 @@
 import numpy as np
 
 from respy.python.record.record_simulation import record_simulation_progress
+from respy.python.record.record_simulation import record_simulation_stop
+from respy.python.record.record_simulation import record_simulation_start
 from respy.python.shared.shared_auxiliary import transform_disturbances
 from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.shared.shared_auxiliary import get_total_value
@@ -9,11 +11,14 @@ from respy.python.shared.shared_auxiliary import get_total_value
 '''
 
 
-def pyth_simulate(periods_payoffs_systematic, mapping_state_idx, \
+def pyth_simulate(periods_payoffs_systematic, mapping_state_idx,
         periods_emax, states_all, shocks_cholesky, num_periods, edu_start, edu_max, delta,
-        num_agents_sim, periods_draws_sims):
+        num_agents_sim, periods_draws_sims, seed_sim):
     """ Wrapper for PYTHON and F2PY implementation of sample simulation.
     """
+
+    record_simulation_start(num_agents_sim, seed_sim)
+
     # Standard deviates transformed to the distributions relevant for
     # the agents actual decision making as traversing the tree.
     periods_draws_sims_transformed = np.tile(np.nan,
@@ -90,6 +95,8 @@ def pyth_simulate(periods_payoffs_systematic, mapping_state_idx, \
 
             # Update row indicator
             count += 1
+
+    record_simulation_stop()
 
     # Finishing
     return dataset

@@ -19,7 +19,7 @@ MODULE simulate_fortran
  CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_simulate(data_sim, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, num_agents_sim, periods_draws_sims, shocks_cholesky, delta, edu_start, edu_max)
+SUBROUTINE fort_simulate(data_sim, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, num_agents_sim, periods_draws_sims, shocks_cholesky, delta, edu_start, edu_max, seed_sim)
 
     !/* external objects        */
 
@@ -35,6 +35,7 @@ SUBROUTINE fort_simulate(data_sim, periods_payoffs_systematic, mapping_state_idx
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
     INTEGER(our_int), INTENT(IN)    :: num_agents_sim
     INTEGER(our_int), INTENT(IN)    :: edu_start
+    INTEGER(our_int), INTENT(IN)    :: seed_sim
     INTEGER(our_int), INTENT(IN)    :: edu_max
 
     !/* internal objects        */
@@ -61,6 +62,9 @@ SUBROUTINE fort_simulate(data_sim, periods_payoffs_systematic, mapping_state_idx
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
+
+    CALL record_simulation(num_agents_sim, seed_sim)
+
 
     ALLOCATE(data_sim(num_periods * num_agents_sim, 8))
 
@@ -151,6 +155,8 @@ SUBROUTINE fort_simulate(data_sim, periods_payoffs_systematic, mapping_state_idx
         END DO
 
     END DO
+
+    CALL record_simulation()
 
 END SUBROUTINE
 !*******************************************************************************

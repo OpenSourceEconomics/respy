@@ -146,7 +146,7 @@ def respy_interface(respy_obj, request, data_array=None):
         data_array = pyth_simulate(periods_payoffs_systematic,
             mapping_state_idx, periods_emax, states_all, shocks_cholesky,
             num_periods, edu_start, edu_max, delta, num_agents_sim,
-            periods_draws_sims)
+            periods_draws_sims, seed_sim)
 
         args = (solution, data_array)
 

@@ -314,11 +314,14 @@ class TestClass(object):
         max_states_period = write_interpolation_grid('test.respy.ini')
 
         # Extract class attributes
-        num_periods, edu_start, edu_max, min_idx, model_paras, num_draws_emax, seed_emax, is_debug, delta, is_interpolated, num_points_interp, is_myopic, num_agents_sim, num_draws_prob, tau, paras_fixed, num_procs = dist_class_attributes(
+        num_periods, edu_start, edu_max, min_idx, model_paras, num_draws_emax, seed_emax, \
+        is_debug, delta, is_interpolated, num_points_interp, is_myopic, num_agents_sim, \
+        num_draws_prob, tau, paras_fixed, num_procs, seed_sim = \
+            dist_class_attributes(
             respy_obj, 'num_periods', 'edu_start', 'edu_max', 'min_idx',
             'model_paras', 'num_draws_emax', 'seed_emax', 'is_debug', 'delta',
             'is_interpolated', 'num_points_interp', 'is_myopic', 'num_agents_sim',
-            'num_draws_prob', 'tau', 'paras_fixed', 'num_procs')
+            'num_draws_prob', 'tau', 'paras_fixed', 'num_procs', 'seed_sim')
 
         # Write out random components and interpolation grid to align the
         # three implementations.
@@ -350,7 +353,7 @@ class TestClass(object):
 
         args = (periods_payoffs_systematic, mapping_state_idx, \
             periods_emax, states_all, shocks_cholesky, num_periods, edu_start,
-            edu_max, delta, num_agents_sim, periods_draws_sims)
+            edu_max, delta, num_agents_sim, periods_draws_sims, seed_sim)
 
         pyth = pyth_simulate(*args)
 

@@ -69,7 +69,7 @@ PROGRAM resfort_scalar
 
         CALL create_draws(periods_draws_sims, num_agents_sim, seed_sim, is_debug)
 
-        CALL fort_simulate(data_sim, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, num_agents_sim, periods_draws_sims, shocks_cholesky, delta, edu_start, edu_max)
+        CALL fort_simulate(data_sim, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, num_agents_sim, periods_draws_sims, shocks_cholesky, delta, edu_start, edu_max, seed_sim)
 
     END IF
 
