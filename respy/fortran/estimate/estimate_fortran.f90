@@ -135,6 +135,8 @@ SUBROUTINE fort_estimate(crit_val, success, message, coeffs_a, coeffs_b, coeffs_
 
     CALL record_estimation(success, message, crit_val, x_all_final)
 
+    CALL record_estimation()
+
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************

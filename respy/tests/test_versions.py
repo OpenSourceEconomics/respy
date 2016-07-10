@@ -297,8 +297,6 @@ class TestClass(object):
             # Check for identical logging
             if base_sim_log is None:
                 base_sim_log = open('sim.respy.log', 'r').read()
-                import shutil
-                shutil.copy('sim.respy.log', 'sim.respy.fort')
             assert open('sim.respy.log', 'r').read() == base_sim_log
 
             if base_est_info_log is None:

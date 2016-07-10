@@ -1,6 +1,7 @@
 from scipy.optimize import fmin_powell
 from scipy.optimize import fmin_bfgs
 
+from respy.python.record.record_estimation import record_estimation_stop
 from respy.python.record.record_estimation import record_estimation_final
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.estimate.estimate_auxiliary import get_optim_paras
@@ -122,6 +123,7 @@ def respy_interface(respy_obj, request, data_array=None):
                 message = 'Maximum number of iterations exceeded.'
 
         record_estimation_final(opt_obj, success, message)
+        record_estimation_stop()
 
     elif request == 'simulate':
 

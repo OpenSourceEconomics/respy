@@ -268,6 +268,8 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, coeffs_a, coeffs_b
 
     CALL record_estimation(success, message, crit_val, x_all_final)
 
+    CALL record_estimation()
+    
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************

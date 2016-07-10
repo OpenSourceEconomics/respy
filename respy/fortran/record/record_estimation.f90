@@ -26,11 +26,27 @@ MODULE recording_estimation
 
     INTERFACE record_estimation
 
-        MODULE PROCEDURE record_estimation_eval, record_estimation_final, record_scaling
+        MODULE PROCEDURE record_estimation_eval, record_estimation_final, record_scaling, record_estimation_stop
 
     END INTERFACE
 
 CONTAINS
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE record_estimation_stop()
+    
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    OPEN(UNIT=99, FILE='est.respy.info', ACCESS='APPEND')
+
+        WRITE(99, *)
+        WRITE(99, *) 'TERMINATED'
+
+    CLOSE(99)
+
+END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
 SUBROUTINE record_estimation_eval(x_all_current, val_current, num_eval)

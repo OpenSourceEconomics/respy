@@ -37,9 +37,6 @@ def estimate(respy_obj):
     rslt = process_est_log()
     x, val = rslt['paras_final'], rslt['value_final']
 
-    with open('est.respy.info', 'a') as out_file:
-        out_file.write('\n TERMINATED')
-
     # Finishing
     return x, val
 

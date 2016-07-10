@@ -6,6 +6,11 @@ from respy.python.record.record_warning import record_warning
 from respy.python.shared.shared_constants import LARGE_FLOAT
 
 
+def record_estimation_stop():
+    with open('est.respy.info', 'a') as out_file:
+        out_file.write('\n TERMINATED\n')
+
+
 def record_estimation_eval(opt_obj, fval):
     """ Logging the progress of an estimation. This function contains two
     parts as two files provide information about the progress.
