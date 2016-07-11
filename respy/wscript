@@ -81,9 +81,6 @@ def support_parallelism(ctx):
         # Check for the existence of the compiler
         ctx.find_program('mpif90')
 
-        # Check for the MPI library
-        ctx.check_fc(lib='mpi')
-
         # Check for MPICH implementation and version
         implementation, version = _get_mpif90_details(ctx)
         if implementation not in ['MPICH']:
