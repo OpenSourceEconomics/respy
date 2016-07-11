@@ -213,8 +213,7 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, pe
         END DO
 
     ! Scaling
-    CALL clip_value(crit_val, LOG(crit_val), -HUGE_FLOAT, HUGE_FLOAT, infos)
-    rslt = -SUM(crit_val)  / (DBLE(num_periods) * DBLE(num_agents_est))
+    rslt = -SUM(LOG(crit_val)) / (DBLE(num_periods) * DBLE(num_agents_est))
 
     ! If there is no random variation in payoffs and no agent violated the implications of observed wages and choices, then the evaluation return a value of one.
     IF (is_deterministic) THEN
