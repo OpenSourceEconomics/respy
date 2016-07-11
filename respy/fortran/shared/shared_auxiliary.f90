@@ -705,7 +705,7 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
         READ(99, 1500) coeffs_b
 
         ! EDUCATION
-        READ(99, 1500) coeffs_edu
+        READ(99, 1520) coeffs_edu
         READ(99, 1515) edu_start, edu_max
 
         ! HOME
