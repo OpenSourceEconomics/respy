@@ -7,9 +7,9 @@ import sys
 
 sys.path.insert(0, '../_modules')
 from auxiliary_shared import aggregate_information
-from auxiliary_scalability import process_tasks
 from auxiliary_shared import send_notification
 from auxiliary_shared import compile_package
+from auxiliary_scalability import run
 from auxiliary_shared import cleanup
 
 cleanup()
@@ -47,7 +47,7 @@ if True:
 
 grid_slaves = [0, 2]
 for fname in glob.glob('*.ini'):
-    process_tasks(spec_dict, fname, grid_slaves)
+    run(spec_dict, fname, grid_slaves)
 
 aggregate_information('scalability')
 send_notification('scalability')
