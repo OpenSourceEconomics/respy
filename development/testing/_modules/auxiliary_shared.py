@@ -26,7 +26,7 @@ def get_executable():
 def strfdelta(tdelta, fmt):
     f, d = Formatter(), {}
     l = {'D': 86400, 'H': 3600, 'M': 60, 'S': 1}
-    k = map(lambda x: x[1], list(f.parse(fmt)))
+    k = list(map(lambda x: x[1], list(f.parse(fmt))))
     rem = int(tdelta.total_seconds())
     for i in ('D', 'H', 'M', 'S'):
         if i in k and i in l.keys():
@@ -65,10 +65,8 @@ def send_notification(which, hours=None):
     elif which == 'reliability':
         subject = ' RESPY: Reliability Testing'
         message = ' Reliability testing is completed on @' + hostname + '.'
-
     elif which == 'automated':
-        subject = ' RESPY: Completed Testing Battery '
-
+        subject = ' RESPY: Automated Testing'
         message = ' A ' + str(hours) + ' hour run of the testing battery on @' + \
                   hostname + ' is completed.'
 

@@ -4,6 +4,7 @@ RESPY package.
 """
 from multiprocessing import Pool
 from functools import partial
+import argparse
 import glob
 import sys
 
@@ -14,41 +15,51 @@ from auxiliary_shared import send_notification
 from auxiliary_shared import compile_package
 from auxiliary_shared import cleanup
 
-cleanup()
 
-compile_package()
+def check_reliability(args):
 
-''' Details of the Monte Carlo exercise can be specified in the code block
-below. Note that only deviations from the benchmark initialization files need to
-be addressed.
-'''
-spec_dict = dict()
-spec_dict['maxfun'] = 2000
-spec_dict['num_draws_emax'] = 500
-spec_dict['num_draws_prob'] = 200
-spec_dict['num_agents'] = 1000
-spec_dict['scaling'] = [True, 0.00001]
+    cleanup()
 
-spec_dict['optimizer_used'] = 'FORT-NEWUOA'
+    compile_package()
 
-spec_dict['optimizer_options'] = dict()
-spec_dict['optimizer_options']['FORT-NEWUOA'] = dict()
-spec_dict['optimizer_options']['FORT-NEWUOA']['maxfun'] = spec_dict['maxfun']
-spec_dict['optimizer_options']['FORT-NEWUOA']['npt'] = 53
-spec_dict['optimizer_options']['FORT-NEWUOA']['rhobeg'] = 1.0
-spec_dict['optimizer_options']['FORT-NEWUOA']['rhoend'] = spec_dict['optimizer_options']['FORT-NEWUOA']['rhobeg'] * 1e-6
+    ''' Details of the Monte Carlo exercise can be specified in the code block
+    below. Note that only deviations from the benchmark initialization files
+    need to be addressed.
+    '''
+    spec_dict = dict()
+    spec_dict['maxfun'] = 2000
+    spec_dict['num_draws_emax'] = 500
+    spec_dict['num_draws_prob'] = 200
+    spec_dict['num_agents'] = 1000
+    spec_dict['scaling'] = [True, 0.00001]
 
-# Set flag to TRUE for debugging purposes
-if True:
-    spec_dict['maxfun'] = 60
-    spec_dict['num_draws_emax'] = 5
-    spec_dict['num_draws_prob'] = 3
-    spec_dict['num_agents'] = 100
-    spec_dict['scaling'] = [False, 0.00001]
-    spec_dict['num_periods'] = 3
+    spec_dict['optimizer_used'] = 'FORT-NEWUOA'
 
-process_tasks = partial(run, spec_dict)
-ret = Pool(3).map(process_tasks, glob.glob('*.ini'))
+    spec_dict['optimizer_options'] = dict()
+    spec_dict['optimizer_options']['FORT-NEWUOA'] = dict()
+    spec_dict['optimizer_options']['FORT-NEWUOA']['maxfun'] = spec_dict['maxfun']
+    spec_dict['optimizer_options']['FORT-NEWUOA']['npt'] = 53
+    spec_dict['optimizer_options']['FORT-NEWUOA']['rhobeg'] = 1.0
+    spec_dict['optimizer_options']['FORT-NEWUOA']['rhoend'] = spec_dict['optimizer_options']['FORT-NEWUOA']['rhobeg'] * 1e-6
 
-send_notification('reliability')
-aggregate_information('reliability')
+    if args.is_debug:
+        spec_dict['maxfun'] = 60
+        spec_dict['num_draws_emax'] = 5
+        spec_dict['num_draws_prob'] = 3
+        spec_dict['num_agents'] = 100
+        spec_dict['scaling'] = [False, 0.00001]
+        spec_dict['num_periods'] = 3
+
+    process_tasks = partial(run, spec_dict)
+    Pool(3).map(process_tasks, glob.glob('*.ini'))
+    send_notification('reliability')
+    aggregate_information('reliability')
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Check reliability',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    parser.add_argument('--debug', action='store_true', dest='is_debug',
+        default=False, help='debug specification')
+
+    check_reliability(parser.parse_args())
