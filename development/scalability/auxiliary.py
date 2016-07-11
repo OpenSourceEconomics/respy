@@ -1,15 +1,49 @@
 from datetime import datetime
 from string import Formatter
+import subprocess
 import socket
 import glob
 import sys
 import os
 
+# Reconstruct directory structure and edits to PYTHONPATH
+PACKAGE_DIR = os.path.dirname(os.path.realpath(__file__))
+PACKAGE_DIR = PACKAGE_DIR.replace('development/scalability', '')
 import respy
 
+
 sys.path.insert(0, '../modules')
+
 from clsMail import MailCls
 
+
+sys.path.insert(0, '../modules')
+from config import python3_exec
+from config import python2_exec
+
+def cleanup():
+    os.system('git clean -d -f')
+    if os.path.exists('scalability.respy.info'):
+        os.unlink('scalability.respy.info')
+
+def compile_package():
+    python_exec = get_executable()
+    cwd = os.getcwd()
+    os.chdir(PACKAGE_DIR + '/respy')
+    subprocess.check_call(python_exec + ' waf distclean', shell=True)
+    subprocess.check_call(python_exec + ' waf configure build', shell=True)
+    os.chdir(cwd)
+
+
+def get_executable():
+    PYTHON_VERSION = sys.version_info[0]
+
+    if PYTHON_VERSION == 2:
+        python_exec = python2_exec
+    else:
+        python_exec = python3_exec
+
+    return python_exec
 
 def strfdelta(tdelta, fmt):
     f, d = Formatter(), {}
@@ -108,7 +142,7 @@ def send_notification():
     """ Finishing up a run of the testing battery.
     """
     hostname = socket.gethostname()
-    subject = ' RESPY: Monte Carlo Exercise '
+    subject = ' RESPY: Scalability Exercise '
     message = ' The scalability exercise is completed on @' + hostname + '.'
 
     mail_obj = MailCls()

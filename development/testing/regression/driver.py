@@ -9,6 +9,8 @@ sys.path.insert(0, 'modules')
 
 from auxiliary import dist_input_arguments
 from auxiliary import write_request
+
+sys.path.insert(0, '../../modules')
 from config import python2_exec
 from config import python3_exec
 

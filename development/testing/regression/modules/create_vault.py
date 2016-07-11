@@ -9,6 +9,8 @@ import sys
 import os
 
 from auxiliary import read_request
+
+sys.path.insert(0, '../../modules')
 from config import python2_exec
 from config import python3_exec
 

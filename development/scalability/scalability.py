@@ -2,41 +2,26 @@
 """ We perform a simple scalability exercise to ensure the reliability of the
 RESPY package.
 """
-import subprocess
 import glob
-import os
 
 from auxiliary import aggregate_information
 from auxiliary import send_notification
+from auxiliary import compile_package
 from auxiliary import process_tasks
-
-# Reconstruct directory structure and edits to PYTHONPATH
-PACKAGE_DIR = os.path.dirname(os.path.realpath(__file__))
-PACKAGE_DIR = PACKAGE_DIR.replace('development/scalability', '')
-
-os.system('git clean -d -f')
-if os.path.exists('scalability.respy.info'):
-    os.unlink('scalability.respy.info')
+from auxiliary import cleanup
 
 # We need to compile the package as part of this script as otherwise the
-# parallel implementation is not available. MPI is not defined on the head
+# parallel implementation is not available.
+# TODO: Is this stil true.
+# MPI is not defined on the head
 # node on acropolis.
-# TODO: MOre robust, move config.py to ../modules and use here as well.
-
-# TODO: No notification send
-
+# TODO: Merge a lot of files and capabilities
 # TODO: Acropolis does not recognize parallel in wscript
+cleanup()
 
-HOME = os.environ['HOME']
-python_exec = HOME + '/.envs/restudToolbox2/bin/python'
+compile_package()
 
-cwd = os.getcwd()
-os.chdir(PACKAGE_DIR + '/respy')
-subprocess.check_call(python_exec + ' waf distclean', shell=True)
-subprocess.check_call(python_exec + ' waf configure build', shell=True)
-os.chdir(cwd)
-
-''' Details of the Monte Carlo exercise can be specified in the code block
+''' Details of the scalability exercise can be specified in the code block
 below. Note that only deviations from the benchmark initialization files need to
 be addressed.
 '''
@@ -65,7 +50,7 @@ if True:
     spec_dict['scaling'] = [False, 0.00001]
     spec_dict['num_periods'] = 3
 
-grid_slaves = [0, 2, 5, 7, 10]
+grid_slaves = [0, 2]
 for fname in glob.glob('*.ini'):
     process_tasks(spec_dict, fname, grid_slaves)
 aggregate_information()
