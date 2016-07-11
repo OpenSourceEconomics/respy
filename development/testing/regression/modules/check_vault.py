@@ -8,15 +8,14 @@ import subprocess
 import sys
 import os
 
-from auxiliary import read_request
+sys.path.insert(0, '../_modules')
+from auxiliary_regression import read_request
 
-sys.path.insert(0, '../../_modules')
 from config import python2_exec
 from config import python3_exec
+from config import PACKAGE_DIR
 
 # Reconstruct directory structure and edits to PYTHONPATH
-PACKAGE_DIR = os.path.dirname(os.path.realpath(__file__))
-PACKAGE_DIR = PACKAGE_DIR.replace('development/testing/regression/_modules', '')
 
 PYTHON_VERSION = sys.version_info[0]
 
