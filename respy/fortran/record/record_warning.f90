@@ -35,6 +35,8 @@ SUBROUTINE record_warning(count)
 
         IF (count == 4) WRITE(99, *) '  Warning: Stabilization of otherwise zero variance.'
 
+        IF (count == 5) WRITE(99, *) '  Warning: Some agents only have a numerically zero probability, stabilization of logarithm required.'
+
         WRITE(99, *)
 
     CLOSE(99)

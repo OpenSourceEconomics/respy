@@ -5,7 +5,9 @@ MODULE evaluate_fortran
 	!/*	external modules	*/
 
     USE evaluate_auxiliary
-
+    
+    USE recording_warning
+    
     USE shared_auxiliary
 
     USE shared_constants
@@ -213,7 +215,10 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, pe
         END DO
 
     ! Scaling
-    rslt = -SUM(LOG(crit_val)) / (DBLE(num_periods) * DBLE(num_agents_est))
+    CALL clip_value(crit_val, LOG(crit_val), -HUGE_FLOAT, HUGE_FLOAT, infos)
+    rslt = -SUM(crit_val) / (DBLE(num_periods) * DBLE(num_agents_est))
+
+    IF (SUM(infos) > zero_int) CALL record_warning(5)
 
     ! If there is no random variation in payoffs and no agent violated the implications of observed wages and choices, then the evaluation return a value of one.
     IF (is_deterministic) THEN
