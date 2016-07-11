@@ -95,12 +95,15 @@ def write_est_info(num_start, value_start, paras_start, num_step,
 
         line = '{:>15}'.format('')
 
-        is_large = [False, False, False]
-        is_large[0] = abs(value_start) > LARGE_FLOAT
-        is_large[1] = abs(value_step) > LARGE_FLOAT
-        is_large[2] = abs(value_current) > LARGE_FLOAT
-
         crit_vals = [value_start, value_step, value_current]
+
+        is_large = [False, False, False]
+
+        for i in range(3):
+            try:
+                is_large[i] = abs(crit_vals[i]) > LARGE_FLOAT
+            except TypeError:
+                is_large[i] = True
 
         for i in range(3):
             if is_large[i]:
