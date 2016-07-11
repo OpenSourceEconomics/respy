@@ -29,7 +29,7 @@ HOURS, NOTIFICATION = 6, True
 CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 PACKAGE_DIR = CURRENT_DIR.replace('/tools/ec2', '')
 
-sys.path.insert(0, PACKAGE_DIR + '/development/testing/regression/modules')
+sys.path.insert(0, PACKAGE_DIR + '/development/testing/regression/_modules')
 from config import python2_exec
 from config import python3_exec
 

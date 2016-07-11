@@ -1,26 +1,27 @@
 #!/usr/bin/env python
-""" We perform a simple Monte Carlo exercise to ensure the reliability of the
+""" We perform a simple scalability exercise to ensure the reliability of the
 RESPY package.
 """
-from multiprocessing import Pool
-from functools import partial
 import glob
-import os
+import sys
 
-from auxiliary import aggregate_information
-from auxiliary import send_notification
-from auxiliary import run
+sys.path.insert(0, '../_modules')
+from auxiliary_shared import aggregate_information
+from auxiliary_scalability import process_tasks
+from auxiliary_shared import send_notification
+from auxiliary_shared import compile_package
+from auxiliary_shared import cleanup
 
-os.system('git clean -d -f')
-if os.path.exists('monte_carlo.respy.info'):
-    os.unlink('monte_carlo.respy.info')
+cleanup()
 
-''' Details of the Monte Carlo exercise can be specified in the code block
+compile_package()
+
+''' Details of the scalability exercise can be specified in the code block
 below. Note that only deviations from the benchmark initialization files need to
 be addressed.
 '''
 spec_dict = dict()
-spec_dict['maxfun'] = 2000
+spec_dict['maxfun'] = 1000
 spec_dict['num_draws_emax'] = 500
 spec_dict['num_draws_prob'] = 200
 spec_dict['num_agents'] = 1000
@@ -37,16 +38,16 @@ spec_dict['optimizer_options']['FORT-NEWUOA']['rhoend'] = spec_dict['optimizer_o
 
 # Set flag to TRUE for debugging purposes
 if True:
-    spec_dict['maxfun'] = 60
+    spec_dict['maxfun'] = 20
     spec_dict['num_draws_emax'] = 5
     spec_dict['num_draws_prob'] = 3
     spec_dict['num_agents'] = 100
     spec_dict['scaling'] = [False, 0.00001]
     spec_dict['num_periods'] = 3
 
-''' Run the Monte Carlo exercise using multiple processors.
-'''
-process_tasks = partial(run, spec_dict)
-ret = Pool(3).map(process_tasks, glob.glob('*.ini'))
-send_notification()
-aggregate_information()
+grid_slaves = [0, 2]
+for fname in glob.glob('*.ini'):
+    process_tasks(spec_dict, fname, grid_slaves)
+
+aggregate_information('scalability')
+send_notification('scalability')

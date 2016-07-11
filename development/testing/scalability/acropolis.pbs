@@ -2,10 +2,10 @@
 #PBS -N mpi 
 #PBS -j oe
 #PBS -l walltime=99:00:00
-#PBS -l nodes=1:ppn=3
+#PBS -l nodes=1:ppn=12
 #PBS -V          
 #PBS -m ae
 #PBS -M eisenhauer@policy-lab.org
 
 cd $PBS_O_WORKDIR
-~/.envs/restudToolbox2/bin/python monte_carlo.py
+~/.envs/restudToolbox2/bin/python run.py

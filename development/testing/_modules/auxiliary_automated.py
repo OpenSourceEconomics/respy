@@ -12,12 +12,10 @@ import glob
 import sys
 import os
 
-from modules.clsMail import MailCls
-
 # RESPY directory. This allows to compile_ the debug version of the FORTRAN
 # program.
 RESPY_DIR = os.path.dirname(os.path.realpath(__file__))
-RESPY_DIR = RESPY_DIR.replace('development/testing/automated/modules','') + 'respy'
+RESPY_DIR = RESPY_DIR.replace('development/testing/automated/_modules','') + 'respy'
 
 PYTHON_EXEC = sys.executable
 
@@ -83,7 +81,7 @@ def initialize_record_canvas(full_test_record, start, timeout):
         log_file.write(str_.format(['PYTHON'] + list(sys.version_info[:3])))
 
         log_file.write('\n\n')
-        # Iterate over all modules. There is a potential conflict in the
+        # Iterate over all _modules. There is a potential conflict in the
         # namespace.
         for module_ in full_test_record.keys():
             str_ = '\t{0[0]:<29}{0[1]:<20}{0[2]:<20} \n\n'
@@ -150,10 +148,10 @@ def update_testing_record(module, method, seed_test, is_success, msg,
 
 def get_test_dict(test_dir):
     """ This function constructs a dictionary with the recognized test
-    modules as the keys. The corresponding value is a list with all test
+    _modules as the keys. The corresponding value is a list with all test
     methods inside that module.
     """
-    # Process all candidate modules.
+    # Process all candidate _modules.
     current_directory = os.getcwd()
     os.chdir(test_dir)
     test_modules = []
@@ -162,7 +160,7 @@ def get_test_dict(test_dir):
         test_modules.append(test_module)
     os.chdir(current_directory)
 
-    # Given the modules, get all tests methods.
+    # Given the _modules, get all tests methods.
     test_dict = dict()
     for test_module in test_modules:
         test_dict[test_module] = []
@@ -211,13 +209,11 @@ def distribute_input(parser):
 
     # Distribute arguments.
     notification = args.notification
-    compile_ = args.compile
     hours = args.hours
 
     # Assertions.
     assert (notification in [True, False])
     assert (isinstance(hours, float))
-    assert (compile_ in [True, False])
     assert (hours > 0.0)
 
     # Validity checks
@@ -227,31 +223,9 @@ def distribute_input(parser):
         assert (os.path.exists(os.environ['HOME'] + '/.credentials'))
 
     # Finishing.
-    return hours, notification, compile_
+    return hours, notification
 
 
-def send_notification(hours):
-    """ Finishing up a run of the testing battery.
-    """
-    # Auxiliary objects.
-    hostname = socket.gethostname()
-
-    subject = ' RESPY: Completed Testing Battery '
-
-    message = ' A ' + str(hours) + ' hour run of the testing battery on @' + \
-              hostname + ' is completed.'
-
-    mail_obj = MailCls()
-
-    mail_obj.set_attr('subject', subject)
-
-    mail_obj.set_attr('message', message)
-
-    mail_obj.set_attr('attachment', 'report.testing.log')
-
-    mail_obj.lock()
-
-    mail_obj.send()
 
 
 def cleanup_testing_infrastructure(keep_results):
@@ -279,7 +253,7 @@ def cleanup_testing_infrastructure(keep_results):
         if '.py' in match:
             continue
 
-        if match == './modules':
+        if match == './_modules':
             continue
         if match == './tools':
             continue

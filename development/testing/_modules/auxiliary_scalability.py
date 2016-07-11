@@ -1,62 +1,16 @@
-from datetime import datetime
-from string import Formatter
-import subprocess
-import socket
-import glob
-import sys
 import os
+import sys
+from datetime import datetime
 
 # Reconstruct directory structure and edits to PYTHONPATH
-PACKAGE_DIR = os.path.dirname(os.path.realpath(__file__))
-PACKAGE_DIR = PACKAGE_DIR.replace('development/scalability', '')
+from auxiliary_shared import strfdelta
+
 import respy
 
 
-sys.path.insert(0, '../modules')
-
-from clsMail import MailCls
 
 
-sys.path.insert(0, '../modules')
-from config import python3_exec
-from config import python2_exec
-
-def cleanup():
-    os.system('git clean -d -f')
-    if os.path.exists('scalability.respy.info'):
-        os.unlink('scalability.respy.info')
-
-def compile_package():
-    python_exec = get_executable()
-    cwd = os.getcwd()
-    os.chdir(PACKAGE_DIR + '/respy')
-    subprocess.check_call(python_exec + ' waf distclean', shell=True)
-    subprocess.check_call(python_exec + ' waf configure build', shell=True)
-    os.chdir(cwd)
-
-
-def get_executable():
-    PYTHON_VERSION = sys.version_info[0]
-
-    if PYTHON_VERSION == 2:
-        python_exec = python2_exec
-    else:
-        python_exec = python3_exec
-
-    return python_exec
-
-def strfdelta(tdelta, fmt):
-    f, d = Formatter(), {}
-    l = {'D': 86400, 'H': 3600, 'M': 60, 'S': 1}
-    k = map(lambda x: x[1], list(f.parse(fmt)))
-    rem = int(tdelta.total_seconds())
-    for i in ('D', 'H', 'M', 'S'):
-        if i in k and i in l.keys():
-            d[i], rem = divmod(rem, l[i])
-    return f.format(fmt, **d)
-
-
-def process_tasks(spec_dict, fname, grid_slaves):
+def run(spec_dict, fname, grid_slaves):
     dirname = fname.replace('.ini', '')
     os.mkdir(dirname), os.chdir(dirname)
 
@@ -138,31 +92,3 @@ def record_information(start_time, finish_time, num_slaves):
         out_file.write(fmt.format(*line))
 
 
-def send_notification():
-    """ Finishing up a run of the testing battery.
-    """
-    hostname = socket.gethostname()
-    subject = ' RESPY: Scalability Exercise '
-    message = ' The scalability exercise is completed on @' + hostname + '.'
-
-    mail_obj = MailCls()
-    mail_obj.set_attr('subject', subject)
-    mail_obj.set_attr('message', message)
-    mail_obj.lock()
-
-    mail_obj.send()
-
-
-def aggregate_information():
-    dirnames = []
-    for fname in glob.glob('*.ini'):
-        dirnames += [fname.replace('.ini', '')]
-    with open('scalability.respy.info', 'w') as outfile:
-        outfile.write('\n')
-        for dirname in dirnames:
-            outfile.write(' ' + dirname + '\n')
-            os.chdir(dirname)
-            with open('scalability.respy.info', 'r') as infile:
-                outfile.write(infile.read())
-            os.chdir('../')
-            outfile.write('\n\n')

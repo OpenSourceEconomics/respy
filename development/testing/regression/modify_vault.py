@@ -7,7 +7,7 @@ import sys
 import os
 
 # Required for PYTHON2/3 portability
-sys.path.insert(0, 'modules')
+sys.path.insert(0, '_modules')
 
 from config import python2_exec
 from config import python3_exec

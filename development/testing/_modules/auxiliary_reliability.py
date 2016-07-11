@@ -1,16 +1,10 @@
 from statsmodels.tools.eval_measures import rmse
 from copy import deepcopy
 import numpy as np
-import socket
 import shlex
-import glob
-import sys
 import os
 
 import respy
-
-sys.path.insert(0, '../modules')
-from clsMail import MailCls
 
 
 def get_est_log_info():
@@ -136,37 +130,6 @@ def run(spec_dict, fname):
     os.chdir('../')
 
 
-def aggregate_information():
-    dirnames = []
-    for fname in glob.glob('*.ini'):
-        dirnames += [fname.replace('.ini', '')]
-    with open('monte_carlo.respy.info', 'w') as outfile:
-        outfile.write('\n')
-        for dirname in dirnames:
-            outfile.write(' ' + dirname + '\n')
-            os.chdir(dirname)
-            with open('monte_carlo.respy.info', 'r') as infile:
-                outfile.write(infile.read())
-            os.chdir('../')
-            outfile.write('\n\n')
-
-
-def send_notification():
-    """ Finishing up a run of the testing battery.
-    """
-    # Auxiliary objects.
-    hostname = socket.gethostname()
-    subject = ' RESPY: Monte Carlo Exercise '
-    message = ' The Monte Carlo exercise is completed on @' + hostname + '.'
-
-    mail_obj = MailCls()
-    mail_obj.set_attr('subject', subject)
-    mail_obj.set_attr('message', message)
-    mail_obj.lock()
-
-    mail_obj.send()
-
-
 def get_choice_probabilities(fname, is_flatten=True):
     """ Get the choice probabilities.
     """
@@ -208,7 +171,7 @@ def get_choice_probabilities(fname, is_flatten=True):
 
 
 def record_results(label, rmse_start, rmse_stop, num_evals, num_steps):
-    with open('monte_carlo.respy.info', 'a') as out_file:
+    with open('reliability.respy.info', 'a') as out_file:
         # Setting up
         if label == 'Correct':
             out_file.write('\n RMSE\n\n')
@@ -236,7 +199,7 @@ def get_rmse():
 
 
 def simulate_specification(respy_obj, subdir, update, paras=None):
-    """ Simulate results to assess the estimation performance. Note that we do 
+    """ Simulate results to assess the estimation performance. Note that we do
     not update the object that is passed in.
     """
     os.mkdir(subdir), os.chdir(subdir)

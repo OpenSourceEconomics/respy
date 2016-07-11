@@ -19,26 +19,28 @@ PACKAGE_DIR = PACKAGE_DIR.replace('development/testing/automated', '')
 # PYTEST ensures the path is set up correctly.
 sys.path.insert(0, PACKAGE_DIR + 'respy/tests')
 sys.path.insert(0, PACKAGE_DIR)
+sys.path.insert(0, '../_modules')
 
-from modules.auxiliary import cleanup_testing_infrastructure
-from modules.auxiliary import initialize_record_canvas
-from modules.auxiliary import finalize_testing_record
-from modules.auxiliary import update_testing_record
-from modules.auxiliary import get_random_request
-from modules.auxiliary import send_notification
-from modules.auxiliary import distribute_input
-from modules.auxiliary import compile_package
-from modules.auxiliary import get_test_dict
-from modules.auxiliary import get_testdir
+from auxiliary_automated import cleanup_testing_infrastructure
+from auxiliary_automated import initialize_record_canvas
+from auxiliary_automated import finalize_testing_record
+from auxiliary_automated import update_testing_record
+from auxiliary_automated import get_random_request
+from auxiliary_automated import distribute_input
+from auxiliary_automated import get_test_dict
+from auxiliary_automated import get_testdir
+from auxiliary_shared import send_notification
+from auxiliary_shared import compile_package
+from auxiliary_shared import cleanup
+
+cleanup()
+
+compile_package(True)
 
 
-def run(hours, compile_):
+def run(hours):
     """ Run test battery.
     """
-    # Compile the debug version of the RESPY program.
-    if compile_:
-        compile_package()
-
     # Get a dictionary with all candidate test cases.
     test_dict = get_test_dict(PACKAGE_DIR + 'respy/tests')
 
@@ -112,16 +114,12 @@ if __name__ == '__main__':
                         dest='notification', default=False,
                         help='send notification')
 
-    parser.add_argument('--compile', action='store_true',
-                        dest='compile', default=False,
-                        help='compile toolbox with debug flag')
-
     # Start from a clean slate and extract a user's request.
     cleanup_testing_infrastructure(False)
-    hours, notification, compile_ = distribute_input(parser)
+    hours, notification = distribute_input(parser)
 
     # Run testing infrastructure and send a notification (if requested).
-    run(hours, compile_)
+    run(hours)
 
     if notification:
-        send_notification(hours)
+        send_notification('automated', hours)

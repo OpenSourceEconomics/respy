@@ -146,7 +146,7 @@ def use_setuptools(
     to_dir = os.path.abspath(to_dir)
 
     # prior to importing, capture the module state for
-    # representative modules.
+    # representative _modules.
     rep_modules = 'pkg_resources', 'setuptools'
     imported = set(sys.modules).intersection(rep_modules)
 

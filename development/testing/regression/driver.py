@@ -5,12 +5,12 @@ import sys
 import os
 
 # Required for PYTHON2/3 portability
-sys.path.insert(0, 'modules')
+sys.path.insert(0, '_modules')
 
 from auxiliary import dist_input_arguments
 from auxiliary import write_request
 
-sys.path.insert(0, '../../modules')
+sys.path.insert(0, '../../_modules')
 from config import python2_exec
 from config import python3_exec
 
@@ -20,9 +20,9 @@ def run(request, num_tests, version):
     write_request(num_tests)
 
     if request == 'check':
-        script_files = ['modules/check_vault.py']
+        script_files = ['_modules/check_vault.py']
     elif request == 'create':
-        script_files = ['modules/create_vault.py']
+        script_files = ['_modules/create_vault.py']
     else:
         raise AssertionError
 

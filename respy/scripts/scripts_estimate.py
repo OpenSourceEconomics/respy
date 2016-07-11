@@ -14,7 +14,7 @@ from respy import RespyCls
 
 def add_gradient_information(respy_obj):
     """ This function adds information about the gradient to the information
-    files. It is not part of the estimation modules as it breaks the design
+    files. It is not part of the estimation _modules as it breaks the design
     and requires to carry additional attributes. This results in considerable
     overhead, which appears justified at this point.
     """
