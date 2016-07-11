@@ -180,7 +180,7 @@ class TestClass(object):
         generate_init(constr)
 
         init_file = 'test.respy.ini'
-        file_sim = 'sim.respy'
+        file_sim = 'sim.respy.dat'
 
         gradient = np.random.choice([True, False])
         single = np.random.choice([True, False])

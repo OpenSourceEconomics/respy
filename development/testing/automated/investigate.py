@@ -7,9 +7,10 @@ import importlib
 import sys
 import os
 
-from modules.auxiliary import cleanup_testing_infrastructure
-from modules.auxiliary import get_random_request
-from modules.auxiliary import get_test_dict
+sys.path.insert(0, '../_modules')
+from auxiliary_automated import cleanup_testing_infrastructure
+from auxiliary_automated import get_random_request
+from auxiliary_automated import get_test_dict
 
 # Reconstruct directory structure and edits to PYTHONPATH
 PACKAGE_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -21,7 +22,7 @@ sys.path.insert(0, PACKAGE_DIR)
 sys.path.insert(0, PACKAGE_DIR + 'respy/tests')
 
 # Recompiling during debugging
-if True:
+if False:
     cwd = os.getcwd()
     os.chdir(PACKAGE_DIR + '/respy')
     subprocess.check_call('./waf distclean', shell=True)
@@ -33,7 +34,7 @@ else:
 ''' Request '''
 #MODULE test_parallelism METHOD test_1 SEED: 24029
 
-seed = 1223 # 6216748723
+seed = 81646 # 6216748723
 
 
 ''' Error Reproduction '''
@@ -45,7 +46,7 @@ np.random.seed(seed)
 test_dict = get_test_dict(PACKAGE_DIR + '/respy/tests')
 module, method = get_random_request(test_dict)
 
-module, method = 'test_versions', 'test_6'
+module, method = 'test_integration', 'test_5'
 count = 0
 os.system('git clean -d -f')
 for i in range(100):
