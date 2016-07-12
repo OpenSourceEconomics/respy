@@ -49,7 +49,7 @@ SUBROUTINE record_solution_progress(indicator, period, num_states)
     IF (indicator == 1) THEN
 
         CLOSE(99, STATUS ='DELETE')
-        OPEN(UNIT=99, FILE='sol.respy.log', ACCESS='APPEND')
+        OPEN(UNIT=99, FILE='sol.respy.log')
 
         WRITE(99, *) ' Starting state space creation'
         WRITE(99, *)

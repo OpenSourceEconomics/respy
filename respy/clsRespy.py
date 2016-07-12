@@ -131,6 +131,9 @@ class RespyCls(object):
     def update_model_paras(self, x):
         """ Update model parameters.
         """
+
+        self.reset()
+
         # Determine use of interface
         coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
                     dist_optim_paras(x, True)
