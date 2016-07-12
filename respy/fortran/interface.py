@@ -117,6 +117,7 @@ def add_optimizers(respy_obj):
 
     return respy_obj
 
+
 def get_results(num_periods, min_idx, num_agents_sim, which):
     """ Add results to container.
     """

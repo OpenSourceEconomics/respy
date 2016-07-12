@@ -16,7 +16,7 @@ def simulate(respy_obj):
     # Distribute class attributes
     is_debug, version, num_agents_sim, seed_sim, store = \
         dist_class_attributes(respy_obj, 'is_debug', 'version',
-                'num_agents_sim', 'seed_sim', 'store')
+                'num_agents_sim', 'seed_sim', 'is_store')
 
     # Select appropriate interface
     if version in ['PYTHON']:

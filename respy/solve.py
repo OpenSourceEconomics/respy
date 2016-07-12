@@ -11,7 +11,7 @@ def solve(respy_obj):
     assert check_input(respy_obj)
 
     # Distribute class attributes
-    store = respy_obj.get_attr('store')
+    is_store = respy_obj.get_attr('is_store')
     version = respy_obj.get_attr('version')
 
     # Select appropriate interface.
@@ -30,7 +30,7 @@ def solve(respy_obj):
     respy_obj.lock()
 
     # Store object to file
-    if store:
+    if is_store:
         respy_obj.store('solution.respy.pkl')
 
     # Finishing

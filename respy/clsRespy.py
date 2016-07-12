@@ -86,6 +86,8 @@ class RespyCls(object):
 
         self.attr['file_est'] = None
 
+        self.attr['is_store'] = None
+
         self.attr['edu_max'] = None
 
         self.attr['version'] = None
@@ -95,8 +97,6 @@ class RespyCls(object):
         self.attr['maxfun'] = None
 
         self.attr['delta'] = None
-
-        self.attr['store'] = None
 
         self.attr['tau'] = None
 
@@ -285,7 +285,7 @@ class RespyCls(object):
         init_dict['SOLUTION'] = dict()
         init_dict['SOLUTION']['draws'] = self.attr['num_draws_emax']
         init_dict['SOLUTION']['seed'] = self.attr['seed_emax']
-        init_dict['SOLUTION']['store'] = self.attr['store']
+        init_dict['SOLUTION']['store'] = self.attr['is_store']
 
         # Simulation
         init_dict['SIMULATION'] = dict()
@@ -397,6 +397,8 @@ class RespyCls(object):
 
         self.attr['file_est'] = init_dict['ESTIMATION']['file']
 
+        self.attr['is_store'] = init_dict['SOLUTION']['store']
+
         self.attr['seed_emax'] = init_dict['SOLUTION']['seed']
 
         self.attr['version'] = init_dict['PROGRAM']['version']
@@ -404,8 +406,6 @@ class RespyCls(object):
         self.attr['is_debug'] = init_dict['PROGRAM']['debug']
 
         self.attr['edu_max'] = init_dict['EDUCATION']['max']
-
-        self.attr['store'] = init_dict['SOLUTION']['store']
 
         self.attr['delta'] = init_dict['BASICS']['delta']
 

@@ -299,13 +299,13 @@ def generate_random_dict(constraints=None):
         dict_['SCALING']['flag'] = flag_scaling
 
     # Replace store attribute
-    if 'store' in constraints.keys():
+    if 'is_store' in constraints.keys():
         # Extract objects
-        store = constraints['store']
+        is_store = constraints['is_store']
         # Checks
-        assert (store in [True, False])
+        assert (is_store in [True, False])
         # Replace in initialization file
-        dict_['SOLUTION']['store'] = store
+        dict_['SOLUTION']['store'] = is_store
 
     # Replace number of periods
     if 'periods' in constraints.keys():
