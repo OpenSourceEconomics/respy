@@ -531,7 +531,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_payoffs
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    IF ((request == 'solve') .OR. (request == 'simulate')) THEN
+    IF (request == 'simulate') THEN
 
         ! Write out results for the store results.
         1800 FORMAT(5(1x,i5))

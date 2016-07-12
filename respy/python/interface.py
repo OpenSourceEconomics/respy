@@ -151,21 +151,8 @@ def respy_interface(respy_obj, request, data_array=None):
             periods_draws_sims, seed_sim)
 
         args = (solution, data_array)
-
-    elif request == 'solve':
-
-        # Draw standard normal deviates for the solution and evaluation step.
-        periods_draws_emax = create_draws(num_periods, num_draws_emax,
-            seed_emax, is_debug)
-
-        # Collect baseline arguments. These are latter amended to account for
-        # each interface.
-        args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
-            is_interpolated, num_draws_emax, num_periods, num_points_interp,
-            is_myopic, edu_start, is_debug, edu_max, min_idx, delta,
-            periods_draws_emax)
-
-        args = pyth_solve(*args)
+    else:
+        raise AssertionError
 
     return args
 

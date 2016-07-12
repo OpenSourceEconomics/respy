@@ -51,11 +51,7 @@ PROGRAM resfort_scalar
 
     CALL create_draws(periods_draws_emax, num_draws_emax, seed_emax, is_debug)
 
-    IF (request == 'solve') THEN
-
-        CALL fort_solve(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max)
-
-    ELSE IF (request == 'estimate') THEN
+    IF (request == 'estimate') THEN
 
         CALL create_draws(periods_draws_prob, num_draws_prob, seed_prob, is_debug)
 

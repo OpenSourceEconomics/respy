@@ -73,14 +73,13 @@ def resfort_interface(respy_obj, request, data_array=None):
         subprocess.check_call(cmd)
 
     # Return arguments depends on the request.
-    if request == 'solve':
-        results = get_results(num_periods, min_idx, num_agents_sim, 'solve')
-        args = results[:-1]
-    elif request == 'simulate':
+    if request == 'simulate':
         results = get_results(num_periods, min_idx, num_agents_sim, 'simulate')
         args = (results[:-1], results[-1])
     elif request == 'estimate':
         args = None
+    else:
+        raise AssertionError
 
     return args
 
@@ -145,9 +144,7 @@ def get_results(num_periods, min_idx, num_agents_sim, which):
     periods_emax = read_data('periods_emax', shape)
 
     # In case of  a simulation, we can also process the simulated dataset.
-    if which == 'solve':
-        data_array = None
-    elif which == 'simulate':
+    if which == 'simulate':
         shape = (num_periods * num_agents_sim, 8)
         data_array = read_data('simulated', shape)
     else:
