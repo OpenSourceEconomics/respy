@@ -190,7 +190,7 @@ def cholesky_to_coeffs(shocks_cholesky):
     return shocks_coeffs
 
 
-def add_solution(respy_obj, store, periods_payoffs_systematic,
+def add_solution(respy_obj, periods_payoffs_systematic,
         states_number_period, mapping_state_idx, periods_emax, states_all):
     """ Add solution to class instance.
     """
@@ -209,10 +209,6 @@ def add_solution(respy_obj, store, periods_payoffs_systematic,
     respy_obj.set_attr('is_solved', True)
 
     respy_obj.lock()
-
-    # Store object to file
-    if store:
-        respy_obj.store('solution.respy.pkl')
 
     # Finishing
     return respy_obj

@@ -23,7 +23,15 @@ def solve(respy_obj):
         raise NotImplementedError
 
     # Attach solution to class instance
-    respy_obj = add_solution(respy_obj, store, *solution)
+    respy_obj = add_solution(respy_obj, *solution)
+
+    respy_obj.unlock()
+    respy_obj.set_attr('is_solved', True)
+    respy_obj.lock()
+
+    # Store object to file
+    if store:
+        respy_obj.store('solution.respy.pkl')
 
     # Finishing
     return respy_obj
