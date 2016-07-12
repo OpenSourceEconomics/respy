@@ -28,7 +28,6 @@ from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import create_draws
 
 from respy import simulate, RespyCls, estimate
-from respy.solve import solve
 import numpy as np
 
 import pickle as pkl

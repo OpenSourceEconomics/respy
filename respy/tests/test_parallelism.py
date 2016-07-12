@@ -6,7 +6,6 @@ from codes.auxiliary import compare_est_log
 
 from respy.python.shared.shared_auxiliary import print_init_dict
 from respy.python.shared.shared_constants import IS_PARALLEL
-from respy.solve import solve
 from respy import estimate
 from respy import simulate
 from respy import RespyCls
@@ -67,9 +66,7 @@ class TestClass(object):
 
             estimate(respy_obj)
 
-            solve(respy_obj)
-
-            # Check for identical record
+            # Check for identical records
             if base_sol_log is None:
                 base_sol_log = open('sol.respy.log', 'r').read()
             assert open('sol.respy.log', 'r').read() == base_sol_log

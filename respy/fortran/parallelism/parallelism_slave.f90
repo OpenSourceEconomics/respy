@@ -73,13 +73,8 @@ PROGRAM resfort_parallel_slave
 
     CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, is_debug, is_interpolated, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, is_scaled, scaled_minimum, optimizer_used, dfunc_eps, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend, bfgs_gtol, bfgs_stpmx, bfgs_maxiter)
 
-
-    IF (rank == zero_int) CALL record_solution(1)
-
     CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, edu_start, edu_max)  
     
-    IF (rank == zero_int) CALL record_solution(-1)
-
 
 
     CALL distribute_workload(num_emax_slaves, num_obs_slaves)
@@ -106,6 +101,13 @@ PROGRAM resfort_parallel_slave
         
     
         IF(task == 2) THEN
+
+
+            ! This is required to keep the logging aligned between the scalar and the parallel implementations. We cannot have the master write the log for the state space creation as this interferes with other write requests for the slaves leading to an unreadable file.
+            IF (rank == zero_int) THEN 
+                CALL record_solution(1)
+                CALL record_solution(-1)
+            END IF
 
             IF (rank == zero_int) CALL record_solution(2)
 

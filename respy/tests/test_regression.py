@@ -10,7 +10,6 @@ from respy.python.shared.shared_constants import IS_FORTRAN
 from respy import RespyCls
 from respy import simulate
 from respy import estimate
-from respy import solve
 
 
 @pytest.mark.usefixtures('fresh_directory', 'set_seed')
@@ -23,8 +22,7 @@ class TestClass(object):
 
         # Solve specified economy
         respy_obj = RespyCls(TEST_RESOURCES_DIR + '/test_first.respy.ini')
-        respy_obj = solve(respy_obj)
-        simulate(respy_obj)
+        respy_obj = simulate(respy_obj)
 
         # Assess expected future value
         val = respy_obj.get_attr('periods_emax')[0, :1]
@@ -39,8 +37,7 @@ class TestClass(object):
         """
         # Solve specified economy
         respy_obj = RespyCls(TEST_RESOURCES_DIR + '/test_second.respy.ini')
-        respy_obj = solve(respy_obj)
-        simulate(respy_obj)
+        respy_obj = simulate(respy_obj)
 
         # Distribute class attributes
         systematic = respy_obj.get_attr('periods_payoffs_systematic')
@@ -105,8 +102,7 @@ class TestClass(object):
         """
         # Solve specified economy
         respy_obj = RespyCls(TEST_RESOURCES_DIR + '/test_third.respy.ini')
-        respy_obj = solve(respy_obj)
-        simulate(respy_obj)
+        respy_obj = simulate(respy_obj)
 
         # Assess expected future value
         val = respy_obj.get_attr('periods_emax')[0, :1]
@@ -121,8 +117,7 @@ class TestClass(object):
         """
         # Solve specified economy
         respy_obj = RespyCls(TEST_RESOURCES_DIR + '/test_fourth.respy.ini')
-        respy_obj = solve(respy_obj)
-        simulate(respy_obj)
+        respy_obj = simulate(respy_obj)
 
         # Assess expected future value
         val = respy_obj.get_attr('periods_emax')[0, :1]

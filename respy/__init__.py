@@ -8,7 +8,6 @@ except ImportError:
 from respy.estimate import estimate
 from respy.simulate import simulate
 from respy.clsRespy import RespyCls
-from respy.solve import solve
 
 
 __version__ = '2.0.0'

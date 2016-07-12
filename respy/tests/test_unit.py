@@ -5,7 +5,6 @@ from codes.random_init import generate_init
 
 from respy.python.estimate.estimate_auxiliary import get_optim_paras
 from respy.python.shared.shared_auxiliary import dist_optim_paras
-from respy import solve
 from respy import RespyCls
 from respy import simulate
 
@@ -29,9 +28,7 @@ class TestClass(object):
         # Perform toolbox actions
         respy_obj = RespyCls('test.respy.ini')
 
-        respy_obj = solve(respy_obj)
-
-        simulate(respy_obj)
+        respy_obj = simulate(respy_obj)
 
         # Distribute class attributes
         states_number_period = respy_obj.get_attr('states_number_period')

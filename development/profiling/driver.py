@@ -14,7 +14,6 @@ else:
 import sys
 import time
 from respy import simulate, RespyCls, estimate
-from respy.solve import solve
 import numpy as np
 
 import pickle as pkl

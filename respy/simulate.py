@@ -2,6 +2,7 @@ import pandas as pd
 
 from respy.python.shared.shared_auxiliary import replace_missing_values
 from respy.python.shared.shared_auxiliary import dist_class_attributes
+from respy.python.shared.shared_auxiliary import add_solution
 from respy.python.simulate.simulate_auxiliary import write_info
 from respy.python.simulate.simulate_auxiliary import write_out
 from respy.python.shared.shared_auxiliary import check_dataset
@@ -14,17 +15,28 @@ def simulate(respy_obj):
     the initialization file.
     """
     # Distribute class attributes
-    is_debug, version, num_agents_sim, seed_sim, store = \
+    is_debug, version, num_agents_sim, seed_sim, is_store = \
         dist_class_attributes(respy_obj, 'is_debug', 'version',
                 'num_agents_sim', 'seed_sim', 'is_store')
 
     # Select appropriate interface
     if version in ['PYTHON']:
-        _, data_array = respy_interface(respy_obj, 'simulate')
+        solution, data_array = respy_interface(respy_obj, 'simulate')
     elif version in ['FORTRAN']:
-        _, data_array = resfort_interface(respy_obj, 'simulate')
+        solution, data_array = resfort_interface(respy_obj, 'simulate')
     else:
         raise NotImplementedError
+
+    # Attach solution to class instance
+    respy_obj = add_solution(respy_obj, *solution)
+
+    respy_obj.unlock()
+    respy_obj.set_attr('is_solved', True)
+    respy_obj.lock()
+
+    # Store object to file
+    if is_store:
+        respy_obj.store('solution.respy.pkl')
 
     # Create pandas data frame with missing values.
     data_frame = pd.DataFrame(replace_missing_values(data_array))

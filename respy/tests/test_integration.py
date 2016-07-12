@@ -9,7 +9,6 @@ from respy.scripts.scripts_simulate import scripts_simulate
 from respy.scripts.scripts_update import scripts_update
 from respy.scripts.scripts_modify import scripts_modify
 from respy.python.process.process_python import process
-from respy.solve import solve
 from respy import estimate
 from respy import simulate
 from respy import RespyCls
@@ -22,15 +21,13 @@ class TestClass(object):
     """ This class groups together some tests.
     """
     def test_1(self):
-        """ Testing whether random model specifications can be solved, simulated
+        """ Testing whether random model specifications can be simulated
         and processed.
         """
         # Generate random initialization file
         generate_init()
 
         respy_obj = RespyCls('test.respy.ini')
-
-        solve(respy_obj)
 
         simulate(respy_obj)
 
@@ -65,7 +62,7 @@ class TestClass(object):
 
             respy_obj.lock()
 
-            respy_obj = solve(respy_obj)
+            respy_obj = simulate(respy_obj)
 
             # Distribute class attributes
             periods_emax = respy_obj.get_attr('periods_emax')
@@ -105,8 +102,6 @@ class TestClass(object):
 
             respy_obj.lock()
 
-            solve(respy_obj)
-
             simulate(respy_obj)
 
             # This parts checks the equality of simulated dataset for the
@@ -120,8 +115,6 @@ class TestClass(object):
 
             # This part checks the equality of an evaluation of the
             # criterion function.
-            simulate(respy_obj)
-
             _, crit_val = estimate(respy_obj)
 
             if base_val is None:

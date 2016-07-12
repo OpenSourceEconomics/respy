@@ -14,7 +14,6 @@ from respy.python.solve.solve_auxiliary import pyth_create_state_space
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.python.shared.shared_auxiliary import print_init_dict
 from respy.python.shared.shared_constants import IS_FORTRAN
-from respy.solve import solve
 from respy import estimate
 from respy import simulate
 from respy import RespyCls
@@ -92,8 +91,7 @@ class TestClass(object):
             respy_obj.lock()
 
             # Solve the model
-            respy_obj = solve(respy_obj)
-            simulate(respy_obj)
+            respy_obj = simulate(respy_obj)
 
             # This parts checks the equality of simulated dataset for the
             # different versions of the code.
@@ -106,8 +104,6 @@ class TestClass(object):
 
             # This part checks the equality of an evaluation of the
             # criterion function.
-            simulate(respy_obj)
-
             _, crit_val = estimate(respy_obj)
 
             if base_val is None:
@@ -169,8 +165,6 @@ class TestClass(object):
                 base_val = val
             np.testing.assert_allclose(base_val, val)
 
-            solve(respy_obj)
-
     @pytest.mark.slow
     def test_3(self):
         """ This test just locks in the evaluation of the criterion function
@@ -211,8 +205,7 @@ class TestClass(object):
 
             respy_obj.lock()
 
-            respy_obj = solve(respy_obj)
-            simulate(respy_obj)
+            respy_obj = simulate(respy_obj)
 
             # Assess expected future value
             val = respy_obj.get_attr('periods_emax')[0, :1]
@@ -237,8 +230,7 @@ class TestClass(object):
 
             respy_obj.lock()
 
-            respy_obj = solve(respy_obj)
-            simulate(respy_obj)
+            respy_obj = simulate(respy_obj)
 
             # Assess expected future value
             val = respy_obj.get_attr('periods_emax')[0, :1]
@@ -286,8 +278,6 @@ class TestClass(object):
             simulate(respy_obj)
 
             estimate(respy_obj)
-
-            solve(respy_obj)
 
             # Check for identical logging
             if base_sol_log is None:

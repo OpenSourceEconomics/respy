@@ -39,8 +39,8 @@ from respy.python.solve.solve_auxiliary import pyth_backward_induction
 from respy.python.solve.solve_auxiliary import get_simulated_indicator
 from respy.python.solve.solve_auxiliary import get_exogenous_variables
 
-from respy import solve
 from respy import RespyCls
+from respy import simulate
 
 # Edit of PYTHONPATH required for PYTHON 2 as no __init__.py in tests
 # subdirectory. If __init__.py is added, the path resolution for PYTEST
@@ -71,7 +71,7 @@ class TestClass(object):
         # Perform toolbox actions
         respy_obj = RespyCls('test.respy.ini')
 
-        respy_obj = solve(respy_obj)
+        respy_obj = simulate(respy_obj)
 
         # Extract class attributes
         periods_payoffs_systematic, states_number_period, mapping_state_idx, \
@@ -340,7 +340,7 @@ class TestClass(object):
         is_interpolated, num_draws_emax, num_periods, num_points_interp, is_myopic,
         edu_start, is_debug, edu_max, min_idx, delta)
 
-        fort = resfort_interface(respy_obj, 'solve')
+        fort, _ = resfort_interface(respy_obj, 'simulate')
         pyth = pyth_solve(*base_args + (periods_draws_emax,))
         f2py = fort_debug.f2py_solve(*base_args + (periods_draws_emax, max_states_period))
 
@@ -396,7 +396,7 @@ class TestClass(object):
 
         # Perform toolbox actions
         respy_obj = RespyCls('test.respy.ini')
-        respy_obj = solve(respy_obj)
+        respy_obj = simulate(respy_obj)
 
         # Extract class attributes
         periods_payoffs_systematic, states_number_period, mapping_state_idx, seed_prob, periods_emax, model_paras, num_periods, states_all, num_points_interp, edu_start, num_draws_emax, is_debug, edu_max, delta = dist_class_attributes(
