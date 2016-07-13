@@ -33,7 +33,7 @@ SUBROUTINE record_warning(count)
 
         IF (count == 3) WRITE(99, *) '  Warning: Current value of criterion function too large to write to file, internals unaffected.'
 
-        IF (count == 4) WRITE(99, *) '  Warning: Stabilization of otherwise zero variance.'
+        IF (count == 4) WRITE(99, *) '  Warning: Stabilization of otherwise zero element on diagonal of Cholesky decomposition.'
 
         IF (count == 5) WRITE(99, *) '  Warning: Some agents only have a numerically zero probability, stabilization of logarithm required.'
 
