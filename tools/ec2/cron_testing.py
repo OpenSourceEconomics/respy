@@ -67,7 +67,7 @@ os.chdir(PACKAGE_DIR + '/development/testing/automated')
 
 # Execute script on the development server.
 cmd = np.random.choice([python3_exec, python2_exec])
-cmd += ' run.py --compile --hours ' + str(HOURS)
+cmd += ' run.py --hours ' + str(HOURS)
 subprocess.call(cmd, shell=True)
 
 ###############################################################################
