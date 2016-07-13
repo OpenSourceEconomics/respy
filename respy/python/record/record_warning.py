@@ -17,7 +17,9 @@ def record_warning(count):
             msg = 'Current value of criterion function too large to write ' \
                   'to file, internals unaffected.'
         elif count == 4:
-            msg = 'Stabilization of otherwise zero variance.'
+            msg = 'Stabilization of otherwise zero element on diagonal of Cholesky decomposition.'
+        elif count == 5:
+            msg = 'Some agents have a numerically zero probability, stabilization of logarithm required.'
         else:
             raise AssertionError
 

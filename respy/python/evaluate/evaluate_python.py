@@ -3,6 +3,7 @@ import numpy as np
 
 from respy.python.evaluate.evaluate_auxiliary import get_smoothed_probability
 from respy.python.shared.shared_auxiliary import get_total_value
+from respy.python.record.record_warning import record_warning
 from respy.python.shared.shared_constants import SMALL_FLOAT
 from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.solve.solve_python import pyth_solve
@@ -141,7 +142,12 @@ def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
             j += 1
 
     # Scaling
+    infos = np.abs(crit_val) > HUGE_FLOAT
     crit_val = -np.mean(np.clip(np.log(crit_val), -HUGE_FLOAT, HUGE_FLOAT))
+
+    # We want to make sure to note if the we truncated zero-probability agents.
+    if sum(infos) > 0:
+        record_warning(5)
 
     # If there is no random variation in payoffs and no agent violated the
     # implications of observed wages and choices, then the evaluation return
