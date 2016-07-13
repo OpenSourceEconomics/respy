@@ -50,7 +50,7 @@ PROGRAM resfort_parallel
     CHARACTER(10)                   :: request
 
     ! Temporary bug fix
-    CHARACTER(9)                    :: HOSTNAME
+    CHARACTER(255)                  :: HOSTNAME
 
 !------------------------------------------------------------------------------
 ! Algorithm
