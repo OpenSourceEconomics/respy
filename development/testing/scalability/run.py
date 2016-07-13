@@ -40,8 +40,12 @@ def check_scalability(args):
     spec_dict['optimizer_options']['FORT-NEWUOA']['rhobeg'] = 1.0
     spec_dict['optimizer_options']['FORT-NEWUOA']['rhoend'] = spec_dict['optimizer_options']['FORT-NEWUOA']['rhobeg'] * 1e-6
 
+    grid_slaves = [0, 2, 5, 7, 10]
+
     # Set flag to TRUE for debugging purposes
     if args.is_debug:
+        grid_slaves = [0, 2]
+
         spec_dict['maxfun'] = 20
         spec_dict['num_draws_emax'] = 5
         spec_dict['num_draws_prob'] = 3
@@ -49,7 +53,6 @@ def check_scalability(args):
         spec_dict['scaling'] = [False, 0.00001]
         spec_dict['num_periods'] = 3
 
-    grid_slaves = [0, 2]
     for fname in glob.glob('*.ini'):
         run(spec_dict, fname, grid_slaves)
 
