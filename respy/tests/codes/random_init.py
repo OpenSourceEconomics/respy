@@ -198,6 +198,7 @@ def generate_random_dict(constraints=None):
 
     if 'is_estimation' in keys:
         assert 'maxfun' not in keys
+        assert 'flag_scaling' not in keys
 
     if 'agents' in keys:
         assert 'max_draws' not in keys
@@ -372,6 +373,7 @@ def generate_random_dict(constraints=None):
         # Replace in initialization files
         if constraints['is_estimation']:
             dict_['ESTIMATION']['maxfun'] = np.random.randint(1, 10)
+            dict_['SCALING']['flag'] = np.random.choice([True, False], p=[0.1, 0.9])
 
     # Finishing
     return dict_

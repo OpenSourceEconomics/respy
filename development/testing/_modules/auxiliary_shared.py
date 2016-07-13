@@ -54,7 +54,8 @@ def compile_package(is_debug=False):
     os.chdir(cwd)
 
 
-def send_notification(which, hours=None):
+def send_notification(which, hours=None, is_failed=False, seed=None,
+                      num_tests=None):
     """ Finishing up a run of the testing battery.
     """
     hostname = socket.gethostname()
@@ -70,6 +71,14 @@ def send_notification(which, hours=None):
         message = ' A ' + str(hours) + ' hour run of the testing battery on @' + \
                   hostname + ' is completed.'
 
+    elif which == 'release':
+        subject = ' RESPY: Release Testing'
+        if is_failed:
+            message = ' Failure during release testing with seeed ' + str(seed)
+        else:
+            message = ' Release testing completed successfully after ' + str(
+                hours) + ' hours. We ran a total of ' + str(num_tests) + \
+                      ' tests.'
     else:
         raise AssertionError
 
