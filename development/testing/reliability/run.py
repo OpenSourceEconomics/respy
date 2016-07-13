@@ -7,6 +7,7 @@ from functools import partial
 import argparse
 import glob
 import sys
+import os
 
 sys.path.insert(0, '../_modules')
 from auxiliary_reliability import run
@@ -19,6 +20,9 @@ from auxiliary_shared import cleanup
 def check_reliability(args):
 
     cleanup()
+
+    if os.path.exists('reliability.respy.info'):
+        os.unlink('reliability.respy.info')
 
     compile_package()
 
