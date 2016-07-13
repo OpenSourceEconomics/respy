@@ -88,6 +88,8 @@ def send_notification(which, hours=None, is_failed=False, seed=None,
 
     if which == 'automated':
         mail_obj.set_attr('attachment', 'report.testing.log')
+    elif which == 'scalability':
+        mail_obj.set_attr('attachment', 'scalability.respy.info')
 
     mail_obj.lock()
 
