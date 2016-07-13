@@ -75,7 +75,7 @@ PROGRAM resfort_parallel
     CALL store_results(request, mapping_state_idx, states_all, periods_payoffs_systematic, states_number_period, periods_emax, data_sim)
 
     CALL MPI_Bcast(1, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
-    CALL MPI_FINALIZE (ierr)   
+    !CALL MPI_FINALIZE(ierr)   
 
 END PROGRAM
 !******************************************************************************
