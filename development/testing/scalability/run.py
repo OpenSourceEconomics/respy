@@ -18,7 +18,7 @@ def check_scalability(args):
 
     cleanup()
 
-    #compile_package()
+    compile_package()
 
     ''' Details of the scalability exercise can be specified in the code block
     below. Note that only deviations from the benchmark initialization files need to
