@@ -81,7 +81,7 @@ PROGRAM resfort_parallel
 
     ! This is a temporary bug fix for using the scheduler on the acropolis cluster.
     CALL HOSTNM(HOSTNAME)
-    IF (.NOT. HOSTNAME == 'acropolis') CALL MPI_FINALIZE(ierr)   
+    IF (INDEX(HOSTNAME, 'acropolis') .EQ. zero_int) CALL MPI_FINALIZE(ierr)   
 
 END PROGRAM
 !******************************************************************************
