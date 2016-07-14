@@ -50,7 +50,7 @@ if __name__ == '__main__':
 
     # The grid of slaves for the analysis. Note that this needs to be
     # reflected in teh PBS submission script.
-    GRID_SLAVES = [0, 2, 5, 7, 10]
+    GRID_SLAVES = range(0, 32, 2)
 
     parser = argparse.ArgumentParser(description='Check scalability of RESPY '
         'package.', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
