@@ -15,16 +15,10 @@ from config import SPECS
 
 
 def check_reliability(args):
-
-    cleanup()
-
-    if args.is_compile:
-        compile_package()
-
-    ''' Details of the Monte Carlo exercise can be specified in the code block
+    """ Details of the Monte Carlo exercise can be specified in the code block
     below. Note that only deviations from the benchmark initialization files
     need to be addressed.
-    '''
+    """
     spec_dict = dict()
     spec_dict['num_procs'] = 5
 
@@ -37,6 +31,11 @@ def check_reliability(args):
         spec_dict['scaling'] = [False, 0.00001]
         spec_dict['num_periods'] = 3
         spec_dict['num_procs'] = 1
+
+    cleanup()
+
+    if args.is_compile:
+        compile_package()
 
     tasks = []
     for spec in SPECS:
