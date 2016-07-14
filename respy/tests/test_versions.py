@@ -185,6 +185,11 @@ class TestClass(object):
 
         # Evaluate criterion function at true values.
         respy_obj = RespyCls(TEST_RESOURCES_DIR + '/' + fname)
+
+        respy_obj.unlock()
+        respy_obj.set_attr('maxfun', 0)
+        respy_obj.lock()
+
         simulate(respy_obj)
         _, val = estimate(respy_obj)
         np.testing.assert_allclose(val, rslt)

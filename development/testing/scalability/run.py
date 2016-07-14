@@ -1,9 +1,7 @@
 #!/usr/bin/env python
-""" We perform a simple scalability exercise to ensure the reliability of the
-RESPY package.
-"""
+
 import argparse
-import glob
+import shlex
 import sys
 
 sys.path.insert(0, '../_modules')
@@ -14,7 +12,6 @@ from auxiliary_scalability import run
 from auxiliary_shared import cleanup
 from config import SPECS
 
-import shlex
 
 
 def get_durations():
@@ -124,13 +121,10 @@ def check_scalability(args):
     need to be addressed.
     '''
     spec_dict = dict()
-    spec_dict['maxfun'] = 2000
-    spec_dict['optimizer_used'] = 'FORT-NEWUOA'
-
-    grid_slaves = [0, 2, 5, 7, 10]
 
     if args.is_debug:
-        grid_slaves = [0, 2]
+
+        GRID_SLAVES = [0, 2]
 
         spec_dict['maxfun'] = 200
         spec_dict['num_draws_emax'] = 5
@@ -142,23 +136,27 @@ def check_scalability(args):
         spec_dict['num_periods'] = 3
 
     for spec in SPECS:
-        run(spec_dict, spec + '.ini', grid_slaves)
+        run(spec_dict, spec + '.ini', GRID_SLAVES)
 
     aggregate_information('scalability')
     send_notification('scalability')
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Check reliability',
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    # The grid of slaves for the analysis. Note that this needs to be
+    # reflected in teh PBS submission script.
+    GRID_SLAVES = [0, 2, 5, 7, 10]
+
+    parser = argparse.ArgumentParser(description='Check scalability of RESPY '
+        'package.', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('--debug', action='store_true', dest='is_debug',
-        default=False, help='debug specification')
+        default=False, help='use debug specification')
 
     parser.add_argument('--compile', action='store_true', dest='is_compile',
-        default=False, help='compile RESPY package')
+        default=False, help='compile package')
 
     parser.add_argument('--finalize', action='store_true', dest='is_finalize',
         default=False, help='just create graph')
-
 
     check_scalability(parser.parse_args())

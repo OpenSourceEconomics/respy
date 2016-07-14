@@ -1,11 +1,8 @@
 #!/usr/bin/env python
-""" We perform a simple Monte Carlo exercise to ensure the reliability of the
-RESPY package.
-"""
+
 from multiprocessing import Pool
 from functools import partial
 import argparse
-import glob
 import sys
 
 sys.path.insert(0, '../_modules')
@@ -29,9 +26,7 @@ def check_reliability(args):
     need to be addressed.
     '''
     spec_dict = dict()
-    spec_dict['maxfun'] = 2000
     spec_dict['num_procs'] = 5
-    spec_dict['optimizer_used'] = 'FORT-NEWUOA'
 
     if args.is_debug:
         spec_dict['maxfun'] = 60
@@ -54,13 +49,14 @@ def check_reliability(args):
     send_notification('reliability')
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Check reliability',
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    parser = argparse.ArgumentParser(description='Check reliability of RESPY '
+        'package.', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('--debug', action='store_true', dest='is_debug',
-        default=False, help='debug specification')
+        default=False, help='use debug specification')
 
     parser.add_argument('--compile', action='store_true', dest='is_compile',
-        default=False, help='compile RESPY package')
+        default=False, help='compile package')
 
     check_reliability(parser.parse_args())
