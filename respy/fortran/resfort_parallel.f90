@@ -49,9 +49,6 @@ PROGRAM resfort_parallel
     CHARACTER(150)                  :: message
     CHARACTER(10)                   :: request
 
-    ! Temporary bug fix
-    CHARACTER(255)                  :: HOSTNAME
-
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
@@ -78,10 +75,7 @@ PROGRAM resfort_parallel
     CALL store_results(request, mapping_state_idx, states_all, periods_payoffs_systematic, states_number_period, periods_emax, data_sim)
 
     CALL MPI_Bcast(1, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
-
-    ! This is a temporary bug fix for using the scheduler on the acropolis cluster.
-    CALL HOSTNM(HOSTNAME)
-    IF (INDEX(HOSTNAME, 'acropolis') .EQ. zero_int) CALL MPI_FINALIZE(ierr)   
+    CALL MPI_FINALIZE(ierr)   
 
 END PROGRAM
 !******************************************************************************
