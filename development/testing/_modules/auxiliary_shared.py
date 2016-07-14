@@ -104,7 +104,7 @@ def aggregate_information(which):
 
 
     dirnames = []
-    for fname in glob.glob('*.ini'):
+    for fname in next(os.walk('.'))[1]:
         dirnames += [fname.replace('.ini', '')]
     with open(fname_info, 'w') as outfile:
         outfile.write('\n')

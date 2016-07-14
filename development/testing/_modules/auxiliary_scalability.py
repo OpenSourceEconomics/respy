@@ -1,16 +1,15 @@
 import os
 import sys
 from datetime import datetime
-
+from config import SPEC_DIR
 # Reconstruct directory structure and edits to PYTHONPATH
 from auxiliary_shared import strfdelta
 
 import respy
 
 
-
-
 def run(spec_dict, fname, grid_slaves):
+
     dirname = fname.replace('.ini', '')
     os.mkdir(dirname), os.chdir(dirname)
 
@@ -23,7 +22,7 @@ def run(spec_dict, fname, grid_slaves):
     scaling = spec_dict['scaling']
     maxfun = spec_dict['maxfun']
 
-    respy_obj = respy.RespyCls('../' + fname)
+    respy_obj = respy.RespyCls(SPEC_DIR + fname)
 
     respy_obj.unlock()
     respy_obj.set_attr('file_est', '../data.respy.dat')

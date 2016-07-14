@@ -3,7 +3,7 @@ from copy import deepcopy
 import numpy as np
 import shlex
 import os
-
+from config import SPEC_DIR
 import respy
 
 
@@ -48,7 +48,7 @@ def run(spec_dict, fname):
 
     # We first read in the first specification from the initial paper for our
     # baseline.
-    respy_obj = respy.RespyCls('../' + fname)
+    respy_obj = respy.RespyCls(SPEC_DIR + fname)
 
     respy_obj.unlock()
     respy_obj.set_attr('file_est', '../correct/start/data.respy.dat')

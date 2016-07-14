@@ -12,7 +12,7 @@ from auxiliary_shared import send_notification
 from auxiliary_shared import compile_package
 from auxiliary_scalability import run
 from auxiliary_shared import cleanup
-
+from config import SPEC_DIR
 
 def check_scalability(args):
 
@@ -54,7 +54,8 @@ def check_scalability(args):
         spec_dict['scaling'] = [False, 0.00001]
         spec_dict['num_periods'] = 3
 
-    for fname in glob.glob('*.ini'):
+    for fname in glob.glob(SPEC_DIR + 'kw_data_*.ini'):
+        fname = fname.replace(SPEC_DIR, '')
         run(spec_dict, fname, grid_slaves)
 
     aggregate_information('scalability')

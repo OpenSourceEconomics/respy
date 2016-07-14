@@ -15,7 +15,7 @@ from auxiliary_shared import aggregate_information
 from auxiliary_shared import send_notification
 from auxiliary_shared import compile_package
 from auxiliary_shared import cleanup
-
+from config import SPEC_DIR
 
 def check_reliability(args):
 
@@ -53,7 +53,12 @@ def check_reliability(args):
         spec_dict['num_periods'] = 3
 
     process_tasks = partial(run, spec_dict)
-    Pool(3).map(process_tasks, glob.glob('*.ini'))
+
+    tasks = []
+    for fname in glob.glob(SPEC_DIR + 'kw_data_*.ini'):
+        tasks += [fname.replace(SPEC_DIR, '')]#
+
+    Pool(3).map(process_tasks, tasks)
     send_notification('reliability')
     aggregate_information('reliability')
 

@@ -10,3 +10,6 @@ sys.path.insert(0, PACKAGE_DIR)
 HOME = os.environ['HOME']
 python3_exec = HOME + '/.envs/restudToolbox3/bin/python'
 python2_exec = HOME + '/.envs/restudToolbox2/bin/python'
+
+# Directory for specification of baselines
+SPEC_DIR = PACKAGE_DIR + '/respy/tests/resources/'
