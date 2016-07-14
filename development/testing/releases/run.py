@@ -28,21 +28,21 @@ def run(args):
     old_exec = env_dir + '/' + OLD_RELEASE + '/bin/python'
     new_exec = env_dir + '/' + NEW_RELEASE + '/bin/python'
 
-    # Create fresh virtual environments.
-    for release in [OLD_RELEASE, NEW_RELEASE]:
-        cmd = ['pyvenv', env_dir + '/' + release, '--clear']
-        subprocess.check_call(cmd)
-
-    # Set up the virtual environments with the two releases under investigation.
-    for which in ['old', 'new']:
-        if which == 'old':
-            release, python_exec = OLD_RELEASE, old_exec
-        elif which == 'new':
-            release, python_exec = NEW_RELEASE, new_exec
-        else:
-            raise AssertionError
-        cmd = [python_exec, '../_modules/auxiliary_release.py', release]
-        subprocess.check_call(cmd)
+    # # Create fresh virtual environments.
+    # for release in [OLD_RELEASE, NEW_RELEASE]:
+    #     cmd = ['pyvenv', env_dir + '/' + release, '--clear']
+    #     subprocess.check_call(cmd)
+    #
+    # # Set up the virtual environments with the two releases under investigation.
+    # for which in ['old', 'new']:
+    #     if which == 'old':
+    #         release, python_exec = OLD_RELEASE, old_exec
+    #     elif which == 'new':
+    #         release, python_exec = NEW_RELEASE, new_exec
+    #     else:
+    #         raise AssertionError
+    #     cmd = [python_exec, '../_modules/auxiliary_release.py', release]
+    #     subprocess.check_call(cmd)
 
     # Run tests
     # TODO: How about log files.
@@ -94,7 +94,8 @@ def run(args):
         if timeout < datetime.now() - start:
             break
 
-    send_notification('release', args.hours, is_failed, seed, num_tests)
+    send_notification('release', hours=args.hours, is_failed=is_failed,
+            seed=seed, num_tests=num_tests)
 
 
 if __name__ == '__main__':

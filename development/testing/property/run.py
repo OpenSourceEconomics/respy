@@ -40,9 +40,6 @@ def run(args):
     if args.is_compile:
         compile_package(True)
 
-
-    """ Run test battery.
-    """
     # Get a dictionary with all candidate test cases.
     test_dict = get_test_dict(PACKAGE_DIR + 'respy/tests')
 
@@ -102,9 +99,7 @@ def run(args):
             break
 
     finalize_testing_record(full_test_record)
-
-    if args.notification:
-        send_notification('property', args.hours)
+    send_notification('property', hours=args.hours)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run development test '
@@ -113,10 +108,6 @@ if __name__ == '__main__':
 
     parser.add_argument('--hours', action='store', dest='hours',
                         type=float, default=1.0, help='run time in hours')
-
-    parser.add_argument('--notification', action='store_true',
-                        dest='notification', default=False,
-                        help='send notification')
 
     parser.add_argument('--compile', action='store_true', dest='is_compile',
         default=False, help='compile RESPY package')

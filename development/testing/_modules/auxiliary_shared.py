@@ -52,15 +52,33 @@ def compile_package(is_debug=False):
     os.chdir(cwd)
 
 
-def send_notification(which, hours=None, is_failed=False, seed=None,
-                      num_tests=None):
+def send_notification(which, **kwargs):
     """ Finishing up a run of the testing battery.
     """
+
+    hours, is_failed, num_tests, seed = None, None, None, None
+
+    # Distribute keyword arguments
+    if 'is_failed' in kwargs.keys():
+        is_failed = kwargs['is_failed']
+
+    if 'hours' in kwargs.keys():
+        hours = kwargs['hours']
+
+    if 'num_tests' in kwargs.keys():
+        num_tests = kwargs['num_tests']
+
+    if 'seed' in kwargs.keys():
+        seed = kwargs['seed']
+
     hostname = socket.gethostname()
 
     if which == 'scalability':
         subject = ' RESPY: Scalability Testing'
         message = ' Scalability testing is completed on @' + hostname + '.'
+    elif which == 'regression':
+        subject = ' RESPY: Regression Testing'
+        message = ' Regression testing is completed on @' + hostname + '.'
     elif which == 'reliability':
         subject = ' RESPY: Reliability Testing'
         message = ' Reliability testing is completed on @' + hostname + '.'

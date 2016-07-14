@@ -23,12 +23,12 @@ def check_scalability(args):
     if args.is_debug:
         GRID_SLAVES = [0, 2]
         spec_dict['maxfun'] = 200
+        spec_dict['num_periods'] = 3
         spec_dict['num_draws_emax'] = 5
         spec_dict['num_draws_prob'] = 3
         spec_dict['num_agents_est'] = 100
-        spec_dict['num_agents_sim'] = spec_dict['num_agents_est']
         spec_dict['scaling'] = [False, 0.00001]
-        spec_dict['num_periods'] = 3
+        spec_dict['num_agents_sim'] = spec_dict['num_agents_est']
 
     if args.is_finalize:
         plot_scalability()
