@@ -13,3 +13,4 @@ python2_exec = HOME + '/.envs/restudToolbox2/bin/python'
 
 # Directory for specification of baselines
 SPEC_DIR = PACKAGE_DIR + '/respy/tests/resources/'
+SPECS = ['kw_data_one', 'kw_data_two', 'kw_data_three']

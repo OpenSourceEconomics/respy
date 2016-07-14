@@ -11,6 +11,7 @@ from config import python3_exec
 
 from clsMail import MailCls
 
+from config import SPECS
 
 def get_executable():
     PYTHON_VERSION = sys.version_info[0]
@@ -103,9 +104,9 @@ def aggregate_information(which):
         raise AssertionError
 
 
-    dirnames = []
-    for fname in next(os.walk('.'))[1]:
-        dirnames += [fname.replace('.ini', '')]
+    dirnames =SPECS
+
+
     with open(fname_info, 'w') as outfile:
         outfile.write('\n')
         for dirname in dirnames:

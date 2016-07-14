@@ -14,7 +14,7 @@ from auxiliary_shared import send_notification
 from auxiliary_shared import compile_package
 from auxiliary_reliability import run
 from auxiliary_shared import cleanup
-from config import SPEC_DIR
+from config import SPECS
 
 
 def check_reliability(args):
@@ -30,7 +30,6 @@ def check_reliability(args):
     '''
     spec_dict = dict()
     spec_dict['maxfun'] = 2000
-    spec_dict['scaling'] = [True, 0.00001]
     spec_dict['num_procs'] = 5
     spec_dict['optimizer_used'] = 'FORT-NEWUOA'
 
@@ -44,15 +43,15 @@ def check_reliability(args):
         spec_dict['num_periods'] = 3
         spec_dict['num_procs'] = 1
 
-    process_tasks = partial(run, spec_dict)
-
     tasks = []
-    for fname in glob.glob(SPEC_DIR + 'kw_data_*.ini'):
-        tasks += [fname.replace(SPEC_DIR, '')]
+    for spec in SPECS:
+        tasks += [spec + '.ini']
 
+    process_tasks = partial(run, spec_dict)
     Pool(3).map(process_tasks, tasks)
-    send_notification('reliability')
+
     aggregate_information('reliability')
+    send_notification('reliability')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Check reliability',
