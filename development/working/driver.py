@@ -31,8 +31,6 @@ from respy import simulate, RespyCls, estimate
 import numpy as np
 
 import pickle as pkl
-sys.path.insert(0, '/home/peisenha/Dropbox/business/office/workspace/software/repositories/organizations/restudToolbox/package/respy/tests')
-from codes.auxiliary import write_draws
 
 
 
