@@ -47,6 +47,7 @@ This documentation is best understood with a sound knowledge of their paper as w
 .. toctree::
    :maxdepth: 1
 
+   background
    installation
    economics
    tutorial

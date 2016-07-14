@@ -14,7 +14,114 @@ from auxiliary_scalability import run
 from auxiliary_shared import cleanup
 from config import SPEC_DIR
 
+import shlex
+import time
+
+def get_durations():
+
+    rslt = dict()
+    labels = []
+    grid_slaves = []
+
+    with open('scalability.respy.info', 'r') as infile:
+
+        for line in infile.readlines():
+
+            # Split line
+            list_ = shlex.split(line)
+
+            if not list_:
+                continue
+
+            if list_[0] == 'Slaves':
+                continue
+
+            # Create key for each of the data specifications.
+            if 'kw_data' in list_[0]:
+                label = list_[0]
+                rslt[label] = dict()
+
+                labels += [label]
+
+            # Process the interesting lines.
+            if len(list_) == 6:
+
+
+                from time import mktime
+                from datetime import datetime
+                from datetime import datetime, timedelta
+
+                num_slaves = int(list_[0])
+                grid_slaves += [num_slaves]
+
+                t = datetime.strptime(list_[5],"%H:%M:%S")
+                duration = timedelta(hours=t.hour, minutes=t.minute, seconds=t.second)
+
+
+                rslt[label][num_slaves] = duration
+
+    # Remove all duplicates from the grid of slaves.
+    grid_slaves = sorted(list(set(grid_slaves)))
+
+    return rslt, labels, grid_slaves
+
+import matplotlib.pyplot as plt
+import numpy as np
+import matplotlib
+import datetime
+
+def timeTicks(x, pos):
+
+    d = datetime.timedelta(seconds=x)
+    return str(d)
+
 def check_scalability(args):
+
+
+    if args.is_finalize:
+
+        rslt, labels, grid_slaves = get_durations()
+
+        print(rslt, labels, grid_slaves)
+
+        ax = plt.figure(figsize=(12, 8)).add_subplot(111)
+        # #ax.set_xscale('log')
+        # #formatter = EngFormatter(unit='Hz', places=1)
+        # #ax.xaxis.set_major_formatter(formatter)
+        # print('test')
+        ys = []
+        for num_slaves in grid_slaves:
+            ys += [rslt[labels[0]][num_slaves].total_seconds()]
+
+        print(ys)
+        # #xs = np.logspace(1, 9, 100)
+        xs = grid_slaves#(0.8 + 0.4*np.random.uniform(size=100))*np.log10(xs)**2
+        # print('\n\n\n')
+        # print(xs)
+        # print(ys)
+        formatter = matplotlib.ticker.FuncFormatter(timeTicks)
+
+        ax.plot(xs, ys)
+        ax.yaxis.set_major_formatter(formatter)
+        # Both axes
+        ax.tick_params(labelsize=18, direction='out', axis='both', top='off',
+            right='off')
+
+        # y axis
+        ax.set_ylim([0.0, 5500])
+        ax.yaxis.get_major_ticks()[0].set_visible(False)
+        ax.set_ylabel('Hours', fontsize=16)
+
+        # x axis
+#        ax.set_xlim([levels[0], levels[-1]])
+        ax.set_xlabel('Number of Slaves', fontsize=16)
+        ax.set_xticks(grid_slaves)
+
+        # # Write out to
+        plt.savefig('scalability.respy.png', bbox_inches='tight',
+                     format='png')
+
+        return
 
     cleanup()
 
@@ -43,11 +150,10 @@ def check_scalability(args):
 
     grid_slaves = [0, 2, 5, 7, 10]
 
-    # Set flag to TRUE for debugging purposes
     if args.is_debug:
         grid_slaves = [0, 2]
 
-        spec_dict['maxfun'] = 20
+        spec_dict['maxfun'] = 200
         spec_dict['num_draws_emax'] = 5
         spec_dict['num_draws_prob'] = 3
         spec_dict['num_agents'] = 100
@@ -70,5 +176,10 @@ if __name__ == '__main__':
 
     parser.add_argument('--compile', action='store_true', dest='is_compile',
         default=False, help='compile RESPY package')
+
+
+    parser.add_argument('--finalize', action='store_true', dest='is_finalize',
+        default=False, help='just create graph')
+
 
     check_scalability(parser.parse_args())

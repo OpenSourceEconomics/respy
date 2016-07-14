@@ -43,6 +43,7 @@ def run(spec_dict, fname):
     num_draws_emax = spec_dict['num_draws_emax']
     num_draws_prob = spec_dict['num_draws_prob']
     num_agents = spec_dict['num_agents']
+    num_procs = spec_dict['num_procs']
     scaling = spec_dict['scaling']
     maxfun = spec_dict['maxfun']
 
@@ -60,6 +61,13 @@ def run(spec_dict, fname):
     respy_obj.set_attr('num_agents_sim', num_agents)
     respy_obj.set_attr('scaling', scaling)
     respy_obj.set_attr('maxfun', maxfun)
+
+    respy_obj.set_attr('num_procs', num_procs)
+    if num_procs > 1:
+        respy_obj.set_attr('is_parallel', True)
+    else:
+        respy_obj.set_attr('is_parallel', False)
+
     respy_obj.lock()
 
     # For debugging purposes

@@ -34,6 +34,7 @@ def check_reliability(args):
     spec_dict['num_draws_prob'] = 200
     spec_dict['num_agents'] = 1000
     spec_dict['scaling'] = [True, 0.00001]
+    spec_dict['num_procs'] = 5
 
     spec_dict['optimizer_used'] = 'FORT-NEWUOA'
 
@@ -51,12 +52,13 @@ def check_reliability(args):
         spec_dict['num_agents'] = 100
         spec_dict['scaling'] = [False, 0.00001]
         spec_dict['num_periods'] = 3
+        spec_dict['num_procs'] = 1
 
     process_tasks = partial(run, spec_dict)
 
     tasks = []
     for fname in glob.glob(SPEC_DIR + 'kw_data_*.ini'):
-        tasks += [fname.replace(SPEC_DIR, '')]#
+        tasks += [fname.replace(SPEC_DIR, '')]
 
     Pool(3).map(process_tasks, tasks)
     send_notification('reliability')
