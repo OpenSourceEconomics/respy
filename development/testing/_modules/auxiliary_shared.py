@@ -63,8 +63,8 @@ def send_notification(which, hours=None, is_failed=False, seed=None,
     elif which == 'reliability':
         subject = ' RESPY: Reliability Testing'
         message = ' Reliability testing is completed on @' + hostname + '.'
-    elif which == 'automated':
-        subject = ' RESPY: Automated Testing'
+    elif which == 'property':
+        subject = ' RESPY: Property Testing'
         message = ' A ' + str(hours) + ' hour run of the testing battery on @' + \
                   hostname + ' is completed.'
 
@@ -83,8 +83,8 @@ def send_notification(which, hours=None, is_failed=False, seed=None,
     mail_obj.set_attr('subject', subject)
     mail_obj.set_attr('message', message)
 
-    if which == 'automated':
-        mail_obj.set_attr('attachment', 'automated.respy.info')
+    if which == 'property':
+        mail_obj.set_attr('attachment', 'property.respy.info')
     elif which == 'scalability':
         mail_obj.set_attr('attachment', 'scalability.respy.info')
 

@@ -14,20 +14,20 @@ import os
 # RESPY testing codes. The import of the PYTEST configuration file ensures
 # that the PYTHONPATH is modified to allow for the use of the tests..
 PACKAGE_DIR = os.path.dirname(os.path.realpath(__file__))
-PACKAGE_DIR = PACKAGE_DIR.replace('development/testing/automated', '')
+PACKAGE_DIR = PACKAGE_DIR.replace('development/testing/property', '')
 
 # PYTEST ensures the path is set up correctly.
 sys.path.insert(0, PACKAGE_DIR + 'respy/tests')
 sys.path.insert(0, PACKAGE_DIR)
 sys.path.insert(0, '../_modules')
 
-from auxiliary_automated import cleanup_testing_infrastructure
-from auxiliary_automated import initialize_record_canvas
-from auxiliary_automated import finalize_testing_record
-from auxiliary_automated import update_testing_record
-from auxiliary_automated import get_random_request
-from auxiliary_automated import get_test_dict
-from auxiliary_automated import get_testdir
+from auxiliary_property import cleanup_testing_infrastructure
+from auxiliary_property import initialize_record_canvas
+from auxiliary_property import finalize_testing_record
+from auxiliary_property import update_testing_record
+from auxiliary_property import get_random_request
+from auxiliary_property import get_test_dict
+from auxiliary_property import get_testdir
 from auxiliary_shared import send_notification
 from auxiliary_shared import compile_package
 from auxiliary_shared import cleanup
@@ -104,7 +104,7 @@ def run(args):
     finalize_testing_record(full_test_record)
 
     if args.notification:
-        send_notification('automated', args.hours)
+        send_notification('property', args.hours)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run development test '

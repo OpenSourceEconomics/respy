@@ -15,7 +15,8 @@ import os
 # RESPY directory. This allows to compile_ the debug version of the FORTRAN
 # program.
 RESPY_DIR = os.path.dirname(os.path.realpath(__file__))
-RESPY_DIR = RESPY_DIR.replace('development/testing/automated/_modules','') + 'respy'
+RESPY_DIR = RESPY_DIR.replace('development/testing/property/_modules',
+                              '') + 'respy'
 
 PYTHON_EXEC = sys.executable
 
@@ -54,7 +55,7 @@ def finalize_testing_record(full_test_record):
             failed_tests += full_test_record[module][method][1]
 
     # Indicate that test run is finished
-    with open('automated.respy.info', 'a') as log_file:
+    with open('property.respy.info', 'a') as log_file:
         log_file.write('\n\tRUN COMPLETED\n\n')
         fmt_ = '\t\t{0[0]:<15}{0[1]:>9}\n\n'
         log_file.write(fmt_.format(['TOTAL TESTS', total_tests]))
@@ -68,7 +69,7 @@ def initialize_record_canvas(full_test_record, start, timeout):
     end_time = (start + timeout).strftime("%Y-%m-%d %H:%M:%S")
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    with open('automated.respy.info', 'w') as log_file:
+    with open('property.respy.info', 'w') as log_file:
         # Write out some header information.
         log_file.write('\n\n')
         str_ = '\t{0[0]:<15}{0[1]:<20}\n\n'
@@ -110,7 +111,7 @@ def update_testing_record(module, method, seed_test, is_success, msg,
     update_line = '\t{0[0]:<15}{0[1]:<20}\n\n'.format(['UPDATE', current_time])
     is_module, is_method, is_update = False, False, False
 
-    for line in fileinput.input('automated.respy.info', inplace=True):
+    for line in fileinput.input('property.respy.info', inplace=True):
 
         list_ = shlex.split(line)
         # Skip empty lines
@@ -138,7 +139,7 @@ def update_testing_record(module, method, seed_test, is_success, msg,
     # Append Error message
     if not is_success:
         # Write out the traceback message to file for future inspection.
-        with open('automated.respy.info', 'a') as log_file:
+        with open('property.respy.info', 'a') as log_file:
             str_ = '\nMODULE {0[0]:<25} METHOD {0[1]:<25} SEED: {0[' \
                      '2]:<10} \n\n'
             log_file.write(str_.format([module, method, seed_test]))
@@ -220,7 +221,7 @@ def cleanup_testing_infrastructure(keep_results):
 
     # Remove all files, unless explicitly to be saved.
     if keep_results:
-        for fname in ['./automated.respy.info']:
+        for fname in ['./property.respy.info']:
             if fname in matches:
                 matches.remove(fname)
 

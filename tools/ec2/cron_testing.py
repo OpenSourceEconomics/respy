@@ -63,7 +63,7 @@ os.chdir(CURRENT_DIR)
 # Run the regular test battery
 ###############################################################################
 # Move into the testing directory
-os.chdir(PACKAGE_DIR + '/development/testing/automated')
+os.chdir(PACKAGE_DIR + '/development/testing/property')
 
 # Execute script on the development server.
 cmd = np.random.choice([python3_exec, python2_exec])
@@ -102,7 +102,7 @@ if NOTIFICATION:
     hostname = socket.gethostname()
 
     # Attachment
-    os.chdir(PACKAGE_DIR + '/development/testing/automated')
+    os.chdir(PACKAGE_DIR + '/development/testing/property')
 
     f = open('report.testing.log', 'r')
 
