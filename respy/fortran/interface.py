@@ -69,7 +69,7 @@ def resfort_interface(respy_obj, request, data_array=None):
         cmd = [EXEC_DIR + '/resfort_scalar']
         subprocess.check_call(cmd)
     else:
-        cmd = ['mpiexec', EXEC_DIR + '/resfort_parallel_master']
+        cmd = ['mpiexec', '-n', '1', EXEC_DIR + '/resfort_parallel_master']
         subprocess.check_call(cmd)
 
     # Return arguments depends on the request.
