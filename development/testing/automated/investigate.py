@@ -34,7 +34,7 @@ else:
 ''' Request '''
 #MODULE test_parallelism METHOD test_1 SEED: 24029
 
-seed = 42572 # 6216748723
+seed = 19773 # 6216748723
 
 
 ''' Error Reproduction '''

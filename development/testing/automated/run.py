@@ -26,19 +26,21 @@ from auxiliary_automated import initialize_record_canvas
 from auxiliary_automated import finalize_testing_record
 from auxiliary_automated import update_testing_record
 from auxiliary_automated import get_random_request
-from auxiliary_automated import distribute_input
 from auxiliary_automated import get_test_dict
 from auxiliary_automated import get_testdir
 from auxiliary_shared import send_notification
 from auxiliary_shared import compile_package
 from auxiliary_shared import cleanup
 
-cleanup()
 
-compile_package(True)
+def run(args):
+
+    cleanup()
+
+    if args.is_compile:
+        compile_package(True)
 
 
-def run(hours):
     """ Run test battery.
     """
     # Get a dictionary with all candidate test cases.
@@ -53,7 +55,7 @@ def run(hours):
             full_test_record[key_][value] = [0, 0]
 
     # Start with a clean slate.
-    start, timeout = datetime.now(), timedelta(hours=hours)
+    start, timeout = datetime.now(), timedelta(hours=args.hours)
     cleanup_testing_infrastructure(False)
     initialize_record_canvas(full_test_record, start, timeout)
 
@@ -101,6 +103,8 @@ def run(hours):
 
     finalize_testing_record(full_test_record)
 
+    if args.notification:
+        send_notification('automated', args.hours)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run development test '
@@ -114,12 +118,8 @@ if __name__ == '__main__':
                         dest='notification', default=False,
                         help='send notification')
 
-    # Start from a clean slate and extract a user's request.
-    cleanup_testing_infrastructure(False)
-    hours, notification = distribute_input(parser)
+    parser.add_argument('--compile', action='store_true', dest='is_compile',
+        default=False, help='compile RESPY package')
 
-    # Run testing infrastructure and send a notification (if requested).
-    run(hours)
+    run(parser.parse_args())
 
-    if notification:
-        send_notification('automated', hours)

@@ -36,9 +36,6 @@ def strfdelta(tdelta, fmt):
 
 def cleanup():
     os.system('git clean -d -f')
-    if os.path.exists('scalability.respy.info'):
-        os.unlink('scalability.respy.info')
-
 
 def compile_package(is_debug=False):
     python_exec = get_executable()
@@ -74,7 +71,7 @@ def send_notification(which, hours=None, is_failed=False, seed=None,
     elif which == 'release':
         subject = ' RESPY: Release Testing'
         if is_failed:
-            message = ' Failure during release testing with seeed ' + str(seed)
+            message = ' Failure during release testing with seeed ' + str(seed) + '.'
         else:
             message = ' Release testing completed successfully after ' + str(
                 hours) + ' hours. We ran a total of ' + str(num_tests) + \
@@ -87,7 +84,7 @@ def send_notification(which, hours=None, is_failed=False, seed=None,
     mail_obj.set_attr('message', message)
 
     if which == 'automated':
-        mail_obj.set_attr('attachment', 'report.testing.log')
+        mail_obj.set_attr('attachment', 'automated.respy.info')
     elif which == 'scalability':
         mail_obj.set_attr('attachment', 'scalability.respy.info')
 

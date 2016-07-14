@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """ This script allows to test alternative releases against each other that
 are supposed to lead to the same results for selected requests.
 """
@@ -20,7 +21,7 @@ from auxiliary_shared import send_notification
 from auxiliary_shared import cleanup
 
 
-def run(hours):
+def run(args):
 
     # Set up auxiliary information to construct commands.
     env_dir = os.environ['HOME'] + '/.envs'
@@ -48,7 +49,7 @@ def run(hours):
     cleanup()
     is_failed = False
     # Evaluation loop.
-    start, timeout = datetime.now(), timedelta(hours=hours)
+    start, timeout = datetime.now(), timedelta(hours=args.hours)
     num_tests = 0
 
     is_running = True
@@ -93,7 +94,7 @@ def run(hours):
         if timeout < datetime.now() - start:
             break
 
-    send_notification('release', hours, is_failed, seed, num_tests)
+    send_notification('release', args.hours, is_failed, seed, num_tests)
 
 
 if __name__ == '__main__':
@@ -108,10 +109,4 @@ if __name__ == '__main__':
     parser.add_argument('--hours', action='store', dest='hours',
         type=float, default=1.0, help='run time in hours')
 
-    # Parse arguments.
-    args = parser.parse_args()
-
-    # Distribute arguments.
-    hours = args.hours
-
-    run(hours)
+    run(parser.parse_args())

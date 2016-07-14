@@ -7,29 +7,28 @@ import os
 # Required for PYTHON2/3 portability
 sys.path.insert(0, '../_modules')
 
-from auxiliary_regression import dist_input_arguments
 from auxiliary_regression import write_request
 
 from config import python2_exec
 from config import python3_exec
 
 
-def run(request, num_tests, version):
+def run(args):
 
-    write_request(num_tests)
+    write_request(args.num_tests)
 
-    if request == 'check':
+    if args.request == 'check':
         script_files = ['modules/check_vault.py']
-    elif request == 'create':
+    elif args.request == 'create':
         script_files = ['modules/create_vault.py']
     else:
         raise AssertionError
 
-    if version is None:
+    if args.version is None:
         python_bins = [python2_exec, python3_exec]
-    elif version == 2:
+    elif args.version == 2:
         python_bins = [python2_exec]
-    elif version == 3:
+    elif args.version == 3:
         python_bins = [python3_exec]
     else:
         raise AssertionError
@@ -53,8 +52,7 @@ if __name__ == '__main__':
         choices=['create', 'check'])
 
     parser.add_argument('--version', action='store', dest='version',
-        help='Python version', type=int, required=False, default=None)
+        help='Python version', type=int, required=False, default=None,
+        choices=[2, 3])
 
-    request, num_tests, version = dist_input_arguments(parser)
-
-    run(request, num_tests, version)
+    run(parser.parse_args())

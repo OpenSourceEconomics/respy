@@ -17,19 +17,3 @@ def read_request():
 
     return rslt
 
-
-def dist_input_arguments(parser):
-    """ Check input for script.
-    """
-
-    request = parser.parse_args().request
-    num_tests = parser.parse_args().num_tests
-    version = parser.parse_args().version
-
-    assert isinstance(num_tests, int)
-    assert (0 < num_tests)
-
-    if version is not None:
-        assert version in [2, 3]
-
-    return request, num_tests, version

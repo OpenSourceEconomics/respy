@@ -75,7 +75,7 @@ subprocess.call(cmd, shell=True)
 ###############################################################################
 if NOTIFICATION:
 
-    subject = ' RESPY: Completed Testing Battery '
+    subject = ' RESPY: Testing Server '
 
     message = ' A routine test battery just completed on the dedicated RESPY server. Here are the results:\n\n' \
               + test_vault_2_msg + '\n\n' + test_vault_3_msg + '\n\n' \

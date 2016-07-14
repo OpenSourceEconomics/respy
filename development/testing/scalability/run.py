@@ -18,7 +18,8 @@ def check_scalability(args):
 
     cleanup()
 
-    compile_package()
+    if args.is_compile:
+        compile_package()
 
     ''' Details of the scalability exercise can be specified in the code block
     below. Note that only deviations from the benchmark initialization files need to
@@ -65,5 +66,8 @@ if __name__ == '__main__':
 
     parser.add_argument('--debug', action='store_true', dest='is_debug',
         default=False, help='debug specification')
+
+    parser.add_argument('--compile', action='store_true', dest='is_compile',
+        default=False, help='compile RESPY package')
 
     check_scalability(parser.parse_args())
