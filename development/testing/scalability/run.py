@@ -13,7 +13,7 @@ from auxiliary_shared import cleanup
 from config import SPECS
 
 
-def check_scalability(args):
+def check_scalability(args, GRID_SLAVES):
     """ Details of the scalability exercise can be specified in the code block
     below. Note that only deviations from the benchmark initialization files
     need to be addressed.
@@ -64,4 +64,4 @@ if __name__ == '__main__':
     parser.add_argument('--finalize', action='store_true', dest='is_finalize',
         default=False, help='just create graph')
 
-    check_scalability(parser.parse_args())
+    check_scalability(parser.parse_args(), GRID_SLAVES)
