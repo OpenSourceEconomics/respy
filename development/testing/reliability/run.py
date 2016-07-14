@@ -7,15 +7,15 @@ from functools import partial
 import argparse
 import glob
 import sys
-import os
 
 sys.path.insert(0, '../_modules')
-from auxiliary_reliability import run
 from auxiliary_shared import aggregate_information
 from auxiliary_shared import send_notification
 from auxiliary_shared import compile_package
+from auxiliary_reliability import run
 from auxiliary_shared import cleanup
 from config import SPEC_DIR
+
 
 def check_reliability(args):
 
@@ -30,26 +30,16 @@ def check_reliability(args):
     '''
     spec_dict = dict()
     spec_dict['maxfun'] = 2000
-    spec_dict['num_draws_emax'] = 500
-    spec_dict['num_draws_prob'] = 200
-    spec_dict['num_agents'] = 1000
     spec_dict['scaling'] = [True, 0.00001]
     spec_dict['num_procs'] = 5
-
     spec_dict['optimizer_used'] = 'FORT-NEWUOA'
-
-    spec_dict['optimizer_options'] = dict()
-    spec_dict['optimizer_options']['FORT-NEWUOA'] = dict()
-    spec_dict['optimizer_options']['FORT-NEWUOA']['maxfun'] = spec_dict['maxfun']
-    spec_dict['optimizer_options']['FORT-NEWUOA']['npt'] = 53
-    spec_dict['optimizer_options']['FORT-NEWUOA']['rhobeg'] = 1.0
-    spec_dict['optimizer_options']['FORT-NEWUOA']['rhoend'] = spec_dict['optimizer_options']['FORT-NEWUOA']['rhobeg'] * 1e-6
 
     if args.is_debug:
         spec_dict['maxfun'] = 60
         spec_dict['num_draws_emax'] = 5
         spec_dict['num_draws_prob'] = 3
-        spec_dict['num_agents'] = 100
+        spec_dict['num_agents_est'] = 100
+        spec_dict['num_agents_sim'] = spec_dict['num_agents_est']
         spec_dict['scaling'] = [False, 0.00001]
         spec_dict['num_periods'] = 3
         spec_dict['num_procs'] = 1
