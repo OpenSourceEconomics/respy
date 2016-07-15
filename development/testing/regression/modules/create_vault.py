@@ -57,6 +57,8 @@ for idx in range(num_tests):
     constr = dict()
     constr['maxfun'] = int(np.random.choice([0, 1, 2, 3, 5, 6], p=[0.5, 0.1, 0.1, 0.1, 0.1, 0.1]))
     constr['flag_scaling'] = np.random.choice([True, False], p=[0.1, 0.9])
+    constr['flag_scaling'] = np.random.choice([True, False], p=[0.1, 0.9])
+    constr['is_store'] = False
 
     init_dict = generate_init(constr)
 

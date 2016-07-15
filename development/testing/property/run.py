@@ -99,7 +99,11 @@ def run(args):
             break
 
     finalize_testing_record(full_test_record)
-    send_notification('property', hours=args.hours)
+
+    # This allows to call this test from another script, that runs other
+    # tests as well.
+    if not args.is_background:
+        send_notification('property', hours=args.hours)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run development test '
@@ -111,6 +115,9 @@ if __name__ == '__main__':
 
     parser.add_argument('--compile', action='store_true', dest='is_compile',
         default=False, help='compile RESPY package')
+
+    parser.add_argument('--background', action='store_true',
+        dest='is_background', default=False, help='background process')
 
     run(parser.parse_args())
 

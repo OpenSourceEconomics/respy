@@ -38,7 +38,10 @@ def run(args):
 
     os.unlink('request.txt')
 
-    send_notification('regression')
+    # This allows to call this test from another script, that runs other
+    # tests as well.
+    if not args.is_background:
+        send_notification('regression')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Create or check both vaults',
@@ -54,5 +57,8 @@ if __name__ == '__main__':
     parser.add_argument('--version', action='store', dest='version',
         help='Python version', type=int, required=False, default=None,
         choices=[2, 3])
+
+    parser.add_argument('--background', action='store_true',
+        dest='is_background', default=False, help='background process')
 
     run(parser.parse_args())

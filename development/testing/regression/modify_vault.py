@@ -6,9 +6,9 @@ import pickle as pkl
 import sys
 import os
 
-# Required for PYTHON2/3 portability
-sys.path.insert(0, '_modules')
-
+sys.path.insert(0, '../_modules')
+from auxiliary_regression import write_request
+from auxiliary_shared import send_notification
 from config import python2_exec
 from config import python3_exec
 
@@ -51,13 +51,7 @@ for idx, _ in enumerate(tests_old):
     print('\n Modfiying Test ', idx, 'with version ', PYTHON_VERSION)
     init_dict, crit_val = tests_old[idx]
 
-    init_dict['SCALING'] = dict()
-    init_dict['SCALING']['flag'] = False
-    init_dict['SCALING']['minimum'] = 0.05
-
-    init_dict['DERIVATIVES'] = dict()
-    init_dict['DERIVATIVES']['version'] = 'FORWARD-DIFFERENCES'
-
+    init_dict['SOLUTION']['store'] = False
 
     tests_new += [(init_dict, crit_val)]
 
