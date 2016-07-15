@@ -189,6 +189,8 @@ FUNCTION fort_criterion(x)
 
     CALL fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_est, periods_draws_prob, delta, tau, edu_start, edu_max)
 
+
+    ! TODO: This needs to be aligned with FORTRAN
     fort_criterion = -SUM(rslt) / (DBLE(num_periods) * DBLE(num_agents_est))
 
   

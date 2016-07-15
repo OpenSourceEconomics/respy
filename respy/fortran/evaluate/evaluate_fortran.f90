@@ -219,8 +219,11 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, pe
     CALL clip_value(crit_val, LOG(crit_val), -HUGE_FLOAT, HUGE_FLOAT, infos)
 
     rslt = crit_val
-!    rslt = -SUM(crit_val) / (DBLE(num_periods) * DBLE(num_agents_est))
+!    rslt = -SUM(crit_va) / (DBLE(num_periods) * DBLE(num_agents_est))
 
+    ! TODO: Moving this to the master, does solve the problem of multiple printings. 
+
+    ! TODO: I want to note somewhere the idea, that I can send by period to save communication times. 
 !    IF (SUM(infos) > zero_int) CALL record_warning(5)
 
     ! If there is no random variation in payoffs and no agent violated the implications of observed wages and choices, then the evaluation return a value of one.
