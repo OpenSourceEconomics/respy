@@ -65,15 +65,15 @@ END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
 SUBROUTINE distribute_information(num_emax_slaves, period, send_slave, recieve_slaves)
-    
+
     ! DEVELOPMENT NOTES
     !
     ! The assumed-shape input arguments allow to use this subroutine repeatedly.
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(INOUT)       :: recieve_slaves(:)    
-     
+    REAL(our_dble), INTENT(INOUT)       :: recieve_slaves(:)
+
     REAL(our_dble), INTENT(IN)          :: send_slave(:)
 
     INTEGER(our_int), INTENT(IN)        :: num_emax_slaves(num_periods, num_slaves)
@@ -94,9 +94,9 @@ SUBROUTINE distribute_information(num_emax_slaves, period, send_slave, recieve_s
     scounts = num_emax_slaves(period + 1, :)
     rcounts = scounts
     DO i = 1, num_slaves
-        disps(i) = SUM(scounts(:i - 1)) 
+        disps(i) = SUM(scounts(:i - 1))
     END DO
-    
+
     CALL MPI_ALLGATHERV(send_slave, scounts(rank + 1), MPI_DOUBLE, recieve_slaves, rcounts, disps, MPI_DOUBLE, MPI_COMM_WORLD, ierr)
 
 END SUBROUTINE
@@ -108,7 +108,7 @@ SUBROUTINE distribute_workload(num_emax_slaves, num_obs_slaves)
 
     INTEGER(our_int), ALLOCATABLE, INTENT(OUT)   :: num_emax_slaves(:, :)
     INTEGER(our_int), ALLOCATABLE, INTENT(OUT)   :: num_obs_slaves(:)
-    
+
     !/* internal objects        */
 
     INTEGER(our_int)                    :: period
@@ -122,7 +122,7 @@ SUBROUTINE distribute_workload(num_emax_slaves, num_obs_slaves)
     CALL determine_workload(num_obs_slaves, (num_agents_est * num_periods))
 
     DO period = 1, num_periods
-        CALL determine_workload(num_emax_slaves(period, :), states_number_period(period))   
+        CALL determine_workload(num_emax_slaves(period, :), states_number_period(period))
     END DO
 
 
@@ -134,8 +134,8 @@ SUBROUTINE determine_workload(jobs_slaves, jobs_total)
     !/* external objects        */
 
     INTEGER(our_int), INTENT(INOUT)     :: jobs_slaves(num_slaves)
-    
-    INTEGER(our_int), INTENT(IN)        :: jobs_total 
+
+    INTEGER(our_int), INTENT(IN)        :: jobs_total
 
     !/* internal objects        */
 
@@ -145,13 +145,13 @@ SUBROUTINE determine_workload(jobs_slaves, jobs_total)
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
-    
+
     jobs_slaves = zero_int
 
     j = 1
 
     DO i = 1, jobs_total
-            
+
         IF (j .GT. num_slaves) j = 1
 
         jobs_slaves(j) = jobs_slaves(j) + 1
@@ -168,7 +168,7 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, coeffs_a, coeffs_b
     !/* external objects    */
 
     REAL(our_dble), INTENT(OUT)     :: crit_val
-        
+
     CHARACTER(150), INTENT(OUT)     :: message
 
     LOGICAL, INTENT(OUT)            :: success
@@ -191,19 +191,19 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, coeffs_a, coeffs_b
 
     CHARACTER(225), INTENT(IN)      :: optimizer_used
 
-    LOGICAL, INTENT(IN)             :: paras_fixed(26) 
+    LOGICAL, INTENT(IN)             :: paras_fixed(26)
     LOGICAL, INTENT(IN)             :: is_scaled
 
     !/* internal objects    */
 
     REAL(our_dble)                  :: x_free_start(COUNT(.not. paras_fixed))
     REAL(our_dble)                  :: x_free_final(COUNT(.not. paras_fixed))
-    
+
     REAL(our_dble)                  :: x_all_final(26)
     INTEGER(our_int)                :: iter
-    
+
     LOGICAL, PARAMETER              :: all_free(26) = .False.
- 
+
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
@@ -219,7 +219,7 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, coeffs_a, coeffs_b
     IF (is_scaled .AND. (.NOT. maxfun == zero_int)) THEN
 
         CALL get_scales_parallel(auto_scales, x_free_start, scaled_minimum)
-        
+
         x_free_start = apply_scaling(x_free_start, auto_scales, 'do')
 
         crit_scaled = .True.
@@ -239,24 +239,24 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, coeffs_a, coeffs_b
     ELSEIF (optimizer_used == 'FORT-NEWUOA') THEN
 
         CALL newuoa(fort_criterion_parallel, x_free_start, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, zero_int, MIN(maxfun, newuoa_maxfun), success, message, iter)
-        
+
     ELSEIF (optimizer_used == 'FORT-BFGS') THEN
 
         CALL dfpmin(fort_criterion_parallel, fort_dcriterion_parallel, x_free_start, bfgs_gtol, bfgs_maxiter, bfgs_stpmx, maxfun, success, message, iter)
 
     END IF
-    
+
     crit_estimation = .False.
-    
-    ! If scaling is requested, then we transform the resulting parameter vector and indicate that the critterion function is to be used with the actual parameters again. 
+
+    ! If scaling is requested, then we transform the resulting parameter vector and indicate that the critterion function is to be used with the actual parameters again.
     IF (is_scaled .AND. (.NOT. maxfun == zero_int)) THEN
-        
+
         crit_scaled = .False.
 
         x_free_final = apply_scaling(x_free_start, auto_scales, 'undo')
 
     ELSE
-        
+
         x_free_final = x_free_start
 
     END IF
@@ -269,7 +269,7 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, coeffs_a, coeffs_b
     CALL record_estimation(success, message, crit_val, x_all_final)
 
     CALL record_estimation()
-    
+
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
@@ -288,8 +288,14 @@ FUNCTION fort_criterion_parallel(x)
     REAL(our_dble)                  :: coeffs_edu(3)
     REAL(our_dble)                  :: coeffs_a(6)
     REAL(our_dble)                  :: coeffs_b(6)
-    
-    INTEGER(our_int)                :: dist_optim_paras_info
+
+    INTEGER(our_int)                :: dist_optim_paras_info, rank, lower_bound, upper_bound
+
+    INTEGER(our_int), ALLOCATABLE   :: num_emax_slaves(:, :)
+    INTEGER(our_int), ALLOCATABLE   :: num_obs_slaves(:)
+
+    REAL(our_dble), ALLOCATABLE     :: contrib(:)
+
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -302,7 +308,7 @@ FUNCTION fort_criterion_parallel(x)
     END IF
 
     ! Undo the scaling (if required)
-    IF (crit_scaled) THEN    
+    IF (crit_scaled) THEN
         x_input = apply_scaling(x, auto_scales, 'undo')
     ELSE
         x_input = x
@@ -313,26 +319,51 @@ FUNCTION fort_criterion_parallel(x)
 
     CALL MPI_Bcast(3, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
 
+
+    !CALL distribute_workload(num_emax_slaves, num_obs_slaves)
+!PRINT *, 'I a ready to receive', num_obs_slaves
+
     CALL MPI_Bcast(x_all_current, 26, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
+
+
+
+
 
     ! This extra work is only required to align the logging across the scalar and parallel implementation. In the case of an otherwise zero variance, we stabilize the algorithm. However, we want this indicated as a warning in the log file.
     CALL dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x_all_current, dist_optim_paras_info)
 
-    CALL MPI_RECV(fort_criterion_parallel, 1, MPI_DOUBLE, MPI_ANY_SOURCE, MPI_ANY_TAG, SLAVECOMM, status, ierr)
 
+    ! I now need to know exactly how much each slave is contributing to the evaluation of the likl. Of course, later I should only do this once.
+    CALL distribute_workload(num_emax_slaves, num_obs_slaves)
+    ALLOCATE(contrib(num_agents_est * num_periods))
+    contrib = -HUGE_FLOAT
 
+    PRINT *, 'checkin in', num_obs_slaves
+!  PRINT *, (num_procs - 1)
+    DO rank = 0, num_slaves - 1
+
+        lower_bound = SUM(num_obs_slaves(:rank)) + 1
+        upper_bound = SUM(num_obs_slaves(:rank + 1))
+
+!        PRINT *, 'rank ', rank, lower_bound, upper_bound
+
+!        CALL MPI_RECV(contrib(lower_bound:upper_bound),  num_obs_slaves(rank + 1), MPI_DOUBLE, rank, rank, SLAVECOMM, status, ierr)
+        CALL MPI_RECV(contrib(lower_bound:upper_bound), num_obs_slaves(rank + 1), MPI_DOUBLE, rank, rank, SLAVECOMM, status, ierr)
+    END DO
+
+    fort_criterion_parallel = -SUM(contrib) / (DBLE(num_periods) * DBLE(num_agents_est))
 
     IF (crit_estimation .OR. (maxfun == zero_int)) THEN
 
         num_eval = num_eval + 1
 
         CALL record_estimation(x_all_current, fort_criterion_parallel, num_eval)
-    
+
         IF (dist_optim_paras_info .NE. zero_int) CALL record_warning(4)
 
     END IF
 
-    
+
 END FUNCTION
 !******************************************************************************
 !******************************************************************************
@@ -418,22 +449,22 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
     CALL get_free_optim_paras(x_all_current, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, all_free)
 
     CALL MPI_Bcast(x_all_current, 26, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
-    
+
 
     CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, edu_start, edu_max)
 
     CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start)
 
-    
+
     ALLOCATE(periods_emax(num_periods, max_states_period))
     periods_emax = MISSING_FLOAT
 
     DO period = (num_periods - 1), 0, -1
-        
+
         num_states = states_number_period(period + 1)
-        
+
         CALL MPI_RECV(periods_emax(period + 1, :num_states) , num_states, MPI_DOUBLE, MPI_ANY_SOURCE, MPI_ANY_TAG, SLAVECOMM, status, ierr)
-        
+
     END DO
 
 
@@ -513,14 +544,14 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, state
         DO period = (num_periods - 1), 0, -1
             num_states = states_number_period(period + 1)
             periods_emax(period + 1, :num_states) = zero_dble
-            IF (is_head .AND. update_master) CALL MPI_SEND(periods_emax(period + 1, :num_states), num_states, MPI_DOUBLE, 0, period, PARENTCOMM, ierr)            
+            IF (is_head .AND. update_master) CALL MPI_SEND(periods_emax(period + 1, :num_states), num_states, MPI_DOUBLE, 0, period, PARENTCOMM, ierr)
         END DO
         RETURN
     END IF
 
     ! Set random seed for interpolation grid.
     seed_inflated(:) = 123
-    
+
     CALL RANDOM_SEED(size=seed_size)
 
     CALL RANDOM_SEED(put=seed_inflated)
@@ -545,7 +576,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, state
 
         ALLOCATE(periods_emax_slaves(num_states), endogenous_slaves(num_states))
 
-        IF(is_head .AND. update_master) CALL record_solution(4, period, num_states) 
+        IF(is_head .AND. update_master) CALL record_solution(4, period, num_states)
 
         ! Distinguish case with and without interpolation
         any_interpolated = (num_points_interp .LE. num_states) .AND. is_interpolated
@@ -553,7 +584,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, state
         ! Upper and lower bound of tasks
         lower_bound = SUM(num_emax_slaves(period + 1, :rank))
         upper_bound = SUM(num_emax_slaves(period + 1, :rank + 1))
-                
+
         IF (any_interpolated) THEN
 
             ! Allocate period-specific containers
@@ -561,7 +592,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, state
 
             ! Constructing indicator for simulation points
             is_simulated = get_simulated_indicator(num_points_interp, num_states, period, is_debug)
-       
+
             ! Constructing the dependent variable for all states, including the ones where simulation will take place. All information will be used in either the construction of the prediction model or the prediction step.
             CALL get_exogenous_variables(exogenous, maxe, period, num_states, periods_payoffs_systematic, shifts, mapping_state_idx, periods_emax, states_all, delta, edu_start, edu_max)
 
@@ -575,7 +606,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, state
 
                 ! Skip over points that will be predicted
                 IF (.NOT. is_simulated(k + 1)) THEN
-                    count = count + 1 
+                    count = count + 1
                     CYCLE
                 END IF
 
@@ -587,13 +618,13 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, state
 
                 ! Construct dependent variable
                 endogenous_slaves(count) = emax_simulated - maxe(k + 1)
-                count = count + 1 
+                count = count + 1
 
             END DO
-                    
+
             ! Distribute exogenous information
             CALL distribute_information(num_emax_slaves, period, endogenous_slaves, endogenous)
-                   
+
             ! Create prediction model based on the random subset of points where the EMAX is actually simulated and thus endogenous and exogenous variables are available. For the interpolation  points, the actual values are used.
             CALL get_predictions(predictions, endogenous, exogenous, maxe, is_simulated, num_states, is_head .AND. update_master)
 
@@ -601,7 +632,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, state
             periods_emax(period + 1, :num_states) = predictions
 
             ! The leading slave updates the master period by period.
-            IF (is_head .AND. update_master) CALL MPI_SEND(periods_emax(period + 1, :num_states), num_states, MPI_DOUBLE, 0, period, PARENTCOMM, ierr)    
+            IF (is_head .AND. update_master) CALL MPI_SEND(periods_emax(period + 1, :num_states), num_states, MPI_DOUBLE, 0, period, PARENTCOMM, ierr)
 
             ! Deallocate containers
             DEALLOCATE(is_simulated, exogenous, maxe, endogenous, predictions)
@@ -622,12 +653,12 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, state
                 count = count + 1
 
             END DO
-                    
+
             CALL distribute_information(num_emax_slaves, period, periods_emax_slaves, periods_emax(period + 1, :))
-                    
+
             ! The leading slave updates the master period by period.
-            IF (is_head .AND. update_master) CALL MPI_SEND(periods_emax(period + 1, :num_states), num_states, MPI_DOUBLE, 0, period, PARENTCOMM, ierr)            
-          
+            IF (is_head .AND. update_master) CALL MPI_SEND(periods_emax(period + 1, :num_states), num_states, MPI_DOUBLE, 0, period, PARENTCOMM, ierr)
+
         END IF
 
         DEALLOCATE(periods_emax_slaves, endogenous_slaves)

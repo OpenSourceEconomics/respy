@@ -6,24 +6,24 @@ PROGRAM resfort_parallel
 
     USE parallelism_constants
 
-    USE parallelism_auxiliary    
+    USE parallelism_auxiliary
 
-    USE resfort_library 
-    
+    USE resfort_library
+
     USE mpi
-    
+
     !/* setup                   */
 
     IMPLICIT NONE
 
     !/* objects                 */
-    
+
     REAL(our_dble)                  :: shocks_cholesky(4, 4)
     REAL(our_dble)                  :: scaled_minimum
     REAL(our_dble)                  :: coeffs_home(1)
     REAL(our_dble)                  :: coeffs_edu(3)
     REAL(our_dble)                  :: newuoa_rhobeg
-    REAL(our_dble)                  :: newuoa_rhoend    
+    REAL(our_dble)                  :: newuoa_rhoend
     REAL(our_dble)                  :: coeffs_a(6)
     REAL(our_dble)                  :: coeffs_b(6)
     REAL(our_dble)                  :: bfgs_stpmx
@@ -41,7 +41,7 @@ PROGRAM resfort_parallel
     INTEGER(our_int)                :: seed_emax
     INTEGER(our_int)                :: seed_sim
 
-    LOGICAL                         :: is_scaled 
+    LOGICAL                         :: is_scaled
     LOGICAL                         :: success
 
     CHARACTER(225)                  :: optimizer_used
@@ -55,10 +55,11 @@ PROGRAM resfort_parallel
 
     CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, is_debug, is_interpolated, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, is_scaled, scaled_minimum, optimizer_used, dfunc_eps, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend, bfgs_gtol, bfgs_stpmx, bfgs_maxiter)
 
-    CALL MPI_INIT(ierr)  
+    CALL MPI_INIT(ierr)
     CALL MPI_COMM_SPAWN(TRIM(exec_dir) // '/resfort_parallel_slave', MPI_ARGV_NULL, (num_procs - 1), MPI_INFO_NULL, 0, MPI_COMM_WORLD, SLAVECOMM, MPI_ERRCODES_IGNORE, ierr)
 
-    IF (request == 'estimate') THEN 
+    num_slaves = num_procs - 1
+    IF (request == 'estimate') THEN
 
         CALL fort_estimate_parallel(crit_val, success, message, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed, optimizer_used, maxfun, is_scaled, scaled_minimum, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, newuoa_maxfun, bfgs_gtol, bfgs_maxiter, bfgs_stpmx)
 
@@ -75,7 +76,7 @@ PROGRAM resfort_parallel
     CALL store_results(request, mapping_state_idx, states_all, periods_payoffs_systematic, states_number_period, periods_emax, data_sim)
 
     CALL MPI_Bcast(1, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
-    CALL MPI_FINALIZE(ierr)   
+    CALL MPI_FINALIZE(ierr)
 
 END PROGRAM
 !******************************************************************************
