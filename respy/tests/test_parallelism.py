@@ -23,7 +23,7 @@ class TestClass(object):
         # Generate random initialization file
         constr = dict()
         constr['version'] = 'FORTRAN'
-        constr['maxfun'] = np.random.randint(0, 10)
+        constr['maxfun'] = np.random.randint(0, 50)
         init_dict = generate_random_dict(constr)
 
         base = None
@@ -38,7 +38,7 @@ class TestClass(object):
 
             if base is None:
                 base = crit_val
-            np.testing.assert_almost_equal(base, crit_val)
+            np.testing.assert_equal(base, crit_val)
 
     def test_2(self):
         """ This test ensures that the record files are identical.

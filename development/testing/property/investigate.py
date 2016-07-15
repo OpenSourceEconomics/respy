@@ -22,7 +22,7 @@ sys.path.insert(0, PACKAGE_DIR)
 sys.path.insert(0, PACKAGE_DIR + 'respy/tests')
 
 # Recompiling during debugging
-if True:
+if False:
     cwd = os.getcwd()
     os.chdir(PACKAGE_DIR + '/respy')
     subprocess.check_call('./waf distclean', shell=True)
@@ -43,10 +43,10 @@ cleanup_testing_infrastructure(True)
 np.random.seed(seed)
 
 # Construct test
-test_dict = get_test_dict(PACKAGE_DIR + '/respy/tests')
-module, method = get_random_request(test_dict)
+#test_dict = get_test_dict(PACKAGE_DIR + '/respy/tests')
+#module, method = get_random_request(test_dict)
 
-module, method = 'test_parallelism', 'test_2'
+module, method = 'test_parallelism', 'test_1'
 count = 0
 os.system('git clean -d -f')
 for i in range(1000):
