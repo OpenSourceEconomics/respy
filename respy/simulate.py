@@ -1,4 +1,5 @@
 import pandas as pd
+import os
 
 from respy.python.shared.shared_auxiliary import replace_missing_values
 from respy.python.shared.shared_auxiliary import dist_class_attributes
@@ -14,6 +15,11 @@ def simulate(respy_obj):
     """ Simulate dataset of synthetic agent following the model specified in
     the initialization file.
     """
+    # Cleanup
+    for fname in ['sim.respy.log', 'sol.respy.log']:
+        if os.path.exists(fname):
+            os.unlink(fname)
+
     # Distribute class attributes
     is_debug, version, num_agents_sim, seed_sim, is_store = \
         dist_class_attributes(respy_obj, 'is_debug', 'version',

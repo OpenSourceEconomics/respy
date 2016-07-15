@@ -94,9 +94,6 @@ SUBROUTINE record_estimation_eval(x_all_current, val_current, num_eval)
     IF (is_start) THEN
         crit_vals(1) = val_current
         crit_vals(2) = HUGE_FLOAT
-
-        OPEN(UNIT=99, FILE='est.respy.log'); CLOSE(99, STATUS='delete')
-
     END IF
 
     is_step = (crit_vals(2) .GT. val_current) 
