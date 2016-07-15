@@ -58,6 +58,8 @@ PROGRAM resfort_parallel_slave
     CHARACTER(225)                  :: exec_dir
     CHARACTER(10)                   :: request
 
+    REAL(our_dble), ALLOCATABLE     :: crit_vals(:)
+
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
@@ -133,6 +135,8 @@ PROGRAM resfort_parallel_slave
 
                 CALL create_draws(periods_draws_prob, num_draws_prob, seed_prob, is_debug)
 
+                ALLOCATE(crit_vals(num_agents_est * num_periods))
+
                 lower_bound = SUM(num_obs_slaves(:rank)) + 1
                 upper_bound = SUM(num_obs_slaves(:rank + 1))
     
@@ -146,9 +150,14 @@ PROGRAM resfort_parallel_slave
 
             CALL fort_backward_induction_slave(periods_emax, periods_draws_emax, states_number_period, periods_payoffs_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max, num_emax_slaves, .False.)
 
-            CALL fort_evaluate(partial_crit, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_slave, periods_draws_prob, delta, tau, edu_start, edu_max)
+            CALL fort_evaluate(crit_vals, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_slave, periods_draws_prob, delta, tau, edu_start, edu_max)
            
+            partial_crit = -SUM(crit_vals) / (DBLE(num_periods) * DBLE(num_agents_est))
+
+
             CALL MPI_REDUCE(partial_crit, crit_val, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
+
+
 
             IF (rank == zero_int) CALL MPI_SEND(crit_val, 1, MPI_DOUBLE, 0, 75, PARENTCOMM, ierr)            
 

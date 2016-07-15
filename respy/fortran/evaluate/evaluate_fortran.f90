@@ -29,13 +29,14 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, pe
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(OUT)     :: rslt
+    REAL(our_dble), INTENT(IN)      :: data_evaluate(:, :)
+
+    REAL(our_dble), INTENT(OUT)     :: rslt(SIZE(data_evaluate, 1))
 
     REAL(our_dble), INTENT(IN)      :: periods_payoffs_systematic(num_periods, max_states_period, 4)
     REAL(our_dble), INTENT(IN)      :: periods_draws_prob(num_periods, num_draws_prob, 4)
     REAL(our_dble), INTENT(IN)      :: periods_emax(num_periods, max_states_period)
     REAL(our_dble), INTENT(IN)      :: shocks_cholesky(4, 4)
-    REAL(our_dble), INTENT(IN)      :: data_evaluate(:, :)
     REAL(our_dble), INTENT(IN)      :: delta
     REAL(our_dble), INTENT(IN)      :: tau
         
@@ -216,14 +217,16 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, pe
 
     ! Scaling
     CALL clip_value(crit_val, LOG(crit_val), -HUGE_FLOAT, HUGE_FLOAT, infos)
-    rslt = -SUM(crit_val) / (DBLE(num_periods) * DBLE(num_agents_est))
 
-    IF (SUM(infos) > zero_int) CALL record_warning(5)
+    rslt = crit_val
+!    rslt = -SUM(crit_val) / (DBLE(num_periods) * DBLE(num_agents_est))
+
+!    IF (SUM(infos) > zero_int) CALL record_warning(5)
 
     ! If there is no random variation in payoffs and no agent violated the implications of observed wages and choices, then the evaluation return a value of one.
-    IF (is_deterministic) THEN
-        rslt = 1.0
-    END IF
+!    IF (is_deterministic) THEN
+!        rslt = 1.0
+!    END IF
     
 END SUBROUTINE
 !******************************************************************************

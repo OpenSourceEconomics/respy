@@ -159,6 +159,8 @@ FUNCTION fort_criterion(x)
 
     INTEGER(our_int)                :: dist_optim_paras_info
 
+    REAL(our_dble)                  :: rslt(num_agents_est * num_periods)
+
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
@@ -185,7 +187,9 @@ FUNCTION fort_criterion(x)
 
     CALL fort_backward_induction(periods_emax, periods_draws_emax, states_number_period, periods_payoffs_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max, .False.)
 
-    CALL fort_evaluate(fort_criterion, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_est, periods_draws_prob, delta, tau, edu_start, edu_max)
+    CALL fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_est, periods_draws_prob, delta, tau, edu_start, edu_max)
+
+    fort_criterion = -SUM(rslt) / (DBLE(num_periods) * DBLE(num_agents_est))
 
   
     IF (crit_estimation .OR. (maxfun == zero_int)) THEN

@@ -3,10 +3,12 @@
 """
 
 import os
-if True:
+import sys
+
+if len(sys.argv) > 1:
     cwd = os.getcwd()
     os.chdir('../../respy')
-    assert os.system('./waf distclean; ./waf configure build --debug') == 0
+    assert os.system('./waf distclean; ./waf configure build ') == 0
     os.chdir(cwd)
 
 
@@ -36,7 +38,18 @@ import pickle as pkl
 
 respy_obj = RespyCls('model.respy.ini')
 simulate(respy_obj)
-x, crit_val = estimate(respy_obj)
+
+
+for num_procs in [1, 5]:
+
+	respy_obj.unlock()
+	respy_obj.set_attr('num_procs', num_procs)
+	respy_obj.set_attr('is_parallel', (num_procs > 1))
+	respy_obj.lock()
+
+	x, crit_val = estimate(respy_obj)
+
+	print(num_procs, crit_val)
 # print('working PYTHON')
 # respy_obj = RespyCls('model.respy.ini')
 # #respy_obj.attr['version'] = 'PYTHON'
