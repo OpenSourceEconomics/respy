@@ -88,7 +88,7 @@ SUBROUTINE get_cholesky(shocks_cholesky, x, info)
         IF (PRESENT(info)) info = 0
         DO i = 1, 4
             val = shocks_cholesky(i, i)
-            IF(ABS(val) .LT. TINY_FLOAT) THEN 
+            IF(val .LT. TINY_FLOAT) THEN 
                 val = TINY_FLOAT
                 IF (PRESENT(info)) info = 1
             END IF
