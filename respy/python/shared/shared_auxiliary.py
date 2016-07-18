@@ -80,14 +80,16 @@ def get_cholesky(x, info=None):
     if info is not None:
         info = 0
 
+    # We need to ensure that the diagonal elements are larger than zero
+    # during an estimation. However, we want to allow for the special case of
+    # total absence of randomness for testing purposes of simulated datasets.
     if not (np.count_nonzero(shocks_cholesky) == 0):
+        shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
         for i in range(4):
-            val = shocks_cholesky[i, i]
-            if val < TINY_FLOAT:
-                val = TINY_FLOAT
+            if np.abs(shocks_cov[i, i]) < TINY_FLOAT:
+                shocks_cholesky[i, i] = np.sqrt(TINY_FLOAT)
                 if info is not None:
                     info = 1
-            shocks_cholesky[i, i] = val
 
     if info is not None:
         return shocks_cholesky, info

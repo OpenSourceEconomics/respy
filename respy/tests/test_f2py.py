@@ -15,9 +15,10 @@ from respy.python.shared.shared_auxiliary import read_draws
 from codes.auxiliary import write_draws
 from respy.python.estimate.estimate_auxiliary import get_optim_paras
 
-from respy.python.solve.solve_auxiliary import get_future_value
-from respy.python.solve.solve_auxiliary import get_endogenous_variable
 from respy.python.shared.shared_auxiliary import replace_missing_values
+from respy.python.solve.solve_auxiliary import get_endogenous_variable
+from respy.python.solve.solve_auxiliary import get_future_value
+from respy.python.shared.shared_auxiliary import get_cholesky
 from respy.python.shared.shared_constants import IS_FORTRAN
 
 from respy.fortran.interface import resfort_interface
@@ -525,3 +526,17 @@ class TestClass(object):
         args = (num_states, num_states, period, True, num_periods)
         f90 = fort_debug.wrapper_get_simulated_indicator(*args)
         np.testing.assert_equal(sum(f90), num_states)
+
+    def test_8(self):
+        """ We test the construction of the Cholesky decomposition against
+        each other.
+        """
+        # Draw a random vector of parameters
+        x = np.random.uniform(size=26)
+
+        # Construct the Cholesky decompositions
+        py = get_cholesky(x, info=0)
+        fort = fort_debug.wrapper_get_cholesky(x)
+
+        # Compare the results based on the two methods
+        np.testing.assert_equal(fort, py)

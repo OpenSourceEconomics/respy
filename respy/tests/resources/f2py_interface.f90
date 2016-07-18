@@ -1029,3 +1029,30 @@ SUBROUTINE wrapper_get_simulated_indicator(is_simulated, num_points, num_states,
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
+SUBROUTINE wrapper_get_cholesky(shocks_cholesky, info, x)
+
+    !/* external libraries      */
+
+    USE resfort_library
+
+    !/* setup                   */
+
+    IMPLICIT NONE
+
+    !/* external objects        */
+
+    DOUBLE PRECISION, INTENT(OUT)   :: shocks_cholesky(4, 4)
+
+    DOUBLE PRECISION, INTENT(IN)    :: x(26)
+
+    INTEGER, INTENT(OUT)            :: info
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    CALL get_cholesky(shocks_cholesky, x, info)
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************

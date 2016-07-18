@@ -22,7 +22,7 @@ sys.path.insert(0, PACKAGE_DIR)
 sys.path.insert(0, PACKAGE_DIR + 'respy/tests')
 
 # Recompiling during debugging
-if False:
+if len(sys.argv) > 1:
     cwd = os.getcwd()
     os.chdir(PACKAGE_DIR + '/respy')
     subprocess.check_call('./waf distclean', shell=True)
@@ -34,7 +34,7 @@ else:
 ''' Request '''
 #MODULE test_parallelism METHOD test_1 SEED: 24029
 
-seed = 123 # 6216748723
+seed = 1233 # 6216748723
 
 
 ''' Error Reproduction '''
@@ -46,10 +46,10 @@ np.random.seed(seed)
 #test_dict = get_test_dict(PACKAGE_DIR + '/respy/tests')
 #module, method = get_random_request(test_dict)
 
-module, method = 'test_regression', 'test_2'
+module, method = 'test_f2py', 'test_8'
 count = 0
 os.system('git clean -d -f')
-for i in range(1):
+for i in range(10000):
 	print(module, method)
 	mod = importlib.import_module(module)
 	test = getattr(mod.TestClass(), method)

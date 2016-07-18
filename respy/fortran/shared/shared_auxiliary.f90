@@ -96,6 +96,7 @@ SUBROUTINE get_cholesky(shocks_cholesky, x, info)
 
     INTEGER(our_int)                :: i
 
+    REAL(our_dble)                  :: shocks_cov(4, 4)
     REAL(our_dble)                  :: val
 
 !------------------------------------------------------------------------------
@@ -115,13 +116,12 @@ SUBROUTINE get_cholesky(shocks_cholesky, x, info)
     ! We need to ensure that the diagonal elements are larger than zero during an estimation. However, we want to allow for the special case of total absence of randomness for testing purposes of simulated datasets.
     IF (.NOT. ALL(shocks_cholesky .EQ. zero_dble)) THEN
         IF (PRESENT(info)) info = 0
+        shocks_cov = MATMUL(shocks_cholesky, TRANSPOSE(shocks_cholesky))
         DO i = 1, 4
-            val = shocks_cholesky(i, i)
-            IF(ABS(val) .LT. TINY_FLOAT) THEN
-                val = TINY_FLOAT
+            IF (ABS(shocks_cov(i, i)) .LT. TINY_FLOAT) THEN
+                shocks_cholesky(i, i) = SQRT(TINY_FLOAT)
                 IF (PRESENT(info)) info = 1
             END IF
-            shocks_cholesky(i, i) = val
         END DO
 
     END IF
