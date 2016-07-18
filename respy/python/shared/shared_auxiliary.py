@@ -4,8 +4,21 @@ import os
 
 from respy.python.shared.shared_constants import INADMISSIBILITY_PENALTY
 from respy.python.shared.shared_constants import MISSING_FLOAT
+from respy.python.record.record_warning import record_warning
 from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.shared.shared_constants import TINY_FLOAT
+
+
+def get_log_likl(contribs):
+    """ Aggregate contributions to the likelihood value.
+    """
+    # We want to make sure to note if the we truncated zero-probability agents.
+    if sum(np.abs(contribs) > HUGE_FLOAT) > 0:
+        record_warning(5)
+
+    crit_val = -np.mean(np.clip(np.log(contribs), -HUGE_FLOAT, HUGE_FLOAT))
+
+    return crit_val
 
 
 def check_optimization_parameters(x):

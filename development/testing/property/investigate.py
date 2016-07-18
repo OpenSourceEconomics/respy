@@ -46,10 +46,10 @@ np.random.seed(seed)
 #test_dict = get_test_dict(PACKAGE_DIR + '/respy/tests')
 #module, method = get_random_request(test_dict)
 
-module, method = 'test_parallelism', 'test_1'
+module, method = 'test_regression', 'test_2'
 count = 0
 os.system('git clean -d -f')
-for i in range(1000):
+for i in range(1):
 	print(module, method)
 	mod = importlib.import_module(module)
 	test = getattr(mod.TestClass(), method)

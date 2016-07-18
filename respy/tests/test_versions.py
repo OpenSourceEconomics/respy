@@ -218,7 +218,7 @@ class TestClass(object):
 
             # Assess evaluation
             _, val = estimate(respy_obj)
-            np.testing.assert_allclose(val, 1.0)
+            np.testing.assert_allclose(val, -1.0)
 
     def test_5(self):
         """ Test the solution of deterministic model without ambiguity,
@@ -243,7 +243,7 @@ class TestClass(object):
 
             # Assess evaluation
             _, val = estimate(respy_obj)
-            np.testing.assert_allclose(val, 1.0)
+            np.testing.assert_allclose(val, -1.0)
 
     def test_6(self):
         """ This test ensures that the logging looks exactly the same for the

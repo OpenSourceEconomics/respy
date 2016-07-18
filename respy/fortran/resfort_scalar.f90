@@ -1,5 +1,5 @@
 !*****************************************************************************
-!***************************************************************************** 
+!*****************************************************************************
 PROGRAM resfort_scalar
 
     !/* external modules        */
@@ -17,7 +17,7 @@ PROGRAM resfort_scalar
     REAL(our_dble)                  :: coeffs_home(1)
     REAL(our_dble)                  :: coeffs_edu(3)
     REAL(our_dble)                  :: newuoa_rhobeg
-    REAL(our_dble)                  :: newuoa_rhoend    
+    REAL(our_dble)                  :: newuoa_rhoend
     REAL(our_dble)                  :: coeffs_a(6)
     REAL(our_dble)                  :: coeffs_b(6)
     REAL(our_dble)                  :: bfgs_stpmx
@@ -30,12 +30,13 @@ PROGRAM resfort_scalar
     INTEGER(our_int)                :: newuoa_maxfun
     INTEGER(our_int)                :: bfgs_maxiter
     INTEGER(our_int)                :: newuoa_npt
+    INTEGER(our_int)                :: num_slaves
     INTEGER(our_int)                :: num_procs
     INTEGER(our_int)                :: seed_prob
     INTEGER(our_int)                :: seed_emax
     INTEGER(our_int)                :: seed_sim
 
-    LOGICAL                         :: is_scaled 
+    LOGICAL                         :: is_scaled
     LOGICAL                         :: success
 
     CHARACTER(225)                  :: optimizer_used
@@ -47,7 +48,7 @@ PROGRAM resfort_scalar
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, is_debug, is_interpolated, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, is_scaled, scaled_minimum, optimizer_used, dfunc_eps, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend, bfgs_gtol, bfgs_stpmx, bfgs_maxiter)
+    CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, is_scaled, scaled_minimum, optimizer_used, dfunc_eps, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend, bfgs_gtol, bfgs_stpmx, bfgs_maxiter)
 
     CALL create_draws(periods_draws_emax, num_draws_emax, seed_emax, is_debug)
 

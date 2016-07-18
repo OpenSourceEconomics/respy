@@ -55,7 +55,7 @@ SUBROUTINE fort_estimate(crit_val, success, message, coeffs_a, coeffs_b, coeffs_
     CHARACTER(225), INTENT(IN)      :: optimizer_used
     CHARACTER(150), INTENT(OUT)     :: message
 
-    LOGICAL, INTENT(IN)             :: paras_fixed(26) 
+    LOGICAL, INTENT(IN)             :: paras_fixed(26)
     LOGICAL, INTENT(OUT)            :: is_scaled
     LOGICAL, INTENT(OUT)            :: success
 
@@ -63,16 +63,16 @@ SUBROUTINE fort_estimate(crit_val, success, message, coeffs_a, coeffs_b, coeffs_
 
     REAL(our_dble)                  :: x_free_start(num_free)
     REAL(our_dble)                  :: x_free_final(num_free)
-    
+
     REAL(our_dble)                  :: x_all_final(26)
-    
+
     INTEGER(our_int)                :: iter
 
     LOGICAL, PARAMETER              :: all_free(26) = .False.
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
-    
+
     ! Some ingredients for the evaluation of the criterion function need to be created once and shared globally.
     CALL get_free_optim_paras(x_all_start, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, all_free)
 
@@ -85,7 +85,7 @@ SUBROUTINE fort_estimate(crit_val, success, message, coeffs_a, coeffs_b, coeffs_
     IF (is_scaled .AND. (.NOT. maxfun == zero_int)) THEN
 
         CALL get_scales_scalar(auto_scales, x_free_start, scaled_minimum)
-        
+
         x_free_start = apply_scaling(x_free_start, auto_scales, 'do')
 
         crit_scaled = .True.
@@ -105,25 +105,25 @@ SUBROUTINE fort_estimate(crit_val, success, message, coeffs_a, coeffs_b, coeffs_
     ELSEIF (optimizer_used == 'FORT-NEWUOA') THEN
 
         CALL newuoa(fort_criterion, x_free_start, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, zero_int, MIN(maxfun, newuoa_maxfun), success, message, iter)
-        
+
     ELSEIF (optimizer_used == 'FORT-BFGS') THEN
 
         CALL dfpmin(fort_criterion, fort_dcriterion, x_free_start, bfgs_gtol, bfgs_maxiter, bfgs_stpmx, maxfun, success, message, iter)
 
-    END IF   
+    END IF
 
     crit_estimation = .False.
 
 
-    ! If scaling is requested, then we transform the resulting parameter vector and indicate that the critterion function is to be used with the actual parameters again. 
+    ! If scaling is requested, then we transform the resulting parameter vector and indicate that the critterion function is to be used with the actual parameters again.
     IF (is_scaled .AND. (.NOT. maxfun == zero_int)) THEN
-        
+
         crit_scaled = .False.
 
         x_free_final = apply_scaling(x_free_start, auto_scales, 'undo')
 
     ELSE
-        
+
         x_free_final = x_free_start
 
     END IF
@@ -148,23 +148,21 @@ FUNCTION fort_criterion(x)
     REAL(our_dble)                  :: fort_criterion
 
     !/* internal objects    */
-    
+
+    REAL(our_dble)                  :: contribs(num_agents_est * num_periods)
     REAL(our_dble)                  :: shocks_cholesky(4, 4)
+    REAL(our_dble)                  :: x_input(num_free)
     REAL(our_dble)                  :: coeffs_home(1)
     REAL(our_dble)                  :: coeffs_edu(3)
     REAL(our_dble)                  :: coeffs_a(6)
     REAL(our_dble)                  :: coeffs_b(6)
-    
-    REAL(our_dble)                  :: x_input(num_free)
 
     INTEGER(our_int)                :: dist_optim_paras_info
-
-    REAL(our_dble)                  :: rslt(num_agents_est * num_periods)
 
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
-    
+
     ! Ensuring that the criterion function is not evaluated more than specified. However, there is the special request of MAXFUN equal to zero which needs to be allowed.
     IF ((num_eval == maxfun) .AND. crit_estimation .AND. (.NOT. maxfun == zero_int)) THEN
         fort_criterion = -HUGE_FLOAT
@@ -172,7 +170,7 @@ FUNCTION fort_criterion(x)
     END IF
 
     ! Undo the scaling (if required)
-    IF (crit_scaled) THEN    
+    IF (crit_scaled) THEN
         x_input = apply_scaling(x, auto_scales, 'undo')
     ELSE
         x_input = x
@@ -187,13 +185,11 @@ FUNCTION fort_criterion(x)
 
     CALL fort_backward_induction(periods_emax, periods_draws_emax, states_number_period, periods_payoffs_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max, .False.)
 
-    CALL fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_est, periods_draws_prob, delta, tau, edu_start, edu_max)
+    CALL fort_contributions(contribs, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_est, periods_draws_prob, delta, tau, edu_start, edu_max)
 
 
-    ! TODO: This needs to be aligned with FORTRAN
-    fort_criterion = -SUM(rslt) / (DBLE(num_periods) * DBLE(num_agents_est))
+    fort_criterion = get_log_likl(contribs, num_agents_est, num_periods)
 
-  
     IF (crit_estimation .OR. (maxfun == zero_int)) THEN
 
         num_eval = num_eval + 1
@@ -204,7 +200,6 @@ FUNCTION fort_criterion(x)
 
     END IF
 
-    
 END FUNCTION
 !******************************************************************************
 !******************************************************************************
@@ -269,7 +264,7 @@ SUBROUTINE construct_all_current_values(x_all_current, x, paras_fixed)
 
 !------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------    
+!------------------------------------------------------------------------------
 
     j = 1
 
@@ -283,7 +278,7 @@ SUBROUTINE construct_all_current_values(x_all_current, x, paras_fixed)
         END IF
 
     END DO
-    
+
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************

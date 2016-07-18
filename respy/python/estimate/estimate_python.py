@@ -1,5 +1,6 @@
 from respy.python.shared.shared_auxiliary import dist_optim_paras
 from respy.python.evaluate.evaluate_python import pyth_evaluate
+from respy.python.shared.shared_auxiliary import get_log_likl
 
 
 def pyth_criterion(x, is_interpolated, num_draws_emax, num_periods,
@@ -16,7 +17,9 @@ def pyth_criterion(x, is_interpolated, num_draws_emax, num_periods,
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky \
         = dist_optim_paras(x, is_debug)
 
-    crit_val = pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+    contribs = pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         shocks_cholesky, *args)
+
+    crit_val = get_log_likl(contribs)
 
     return crit_val

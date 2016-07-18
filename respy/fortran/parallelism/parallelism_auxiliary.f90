@@ -198,8 +198,8 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, coeffs_a, coeffs_b
 
     REAL(our_dble)                  :: x_free_start(COUNT(.not. paras_fixed))
     REAL(our_dble)                  :: x_free_final(COUNT(.not. paras_fixed))
-
     REAL(our_dble)                  :: x_all_final(26)
+
     INTEGER(our_int)                :: iter
 
     LOGICAL, PARAMETER              :: all_free(26) = .False.
@@ -289,13 +289,15 @@ FUNCTION fort_criterion_parallel(x)
     REAL(our_dble)                  :: coeffs_a(6)
     REAL(our_dble)                  :: coeffs_b(6)
 
-    INTEGER(our_int)                :: dist_optim_paras_info, rank, lower_bound, upper_bound
+    INTEGER(our_int)                :: dist_optim_paras_info
+    INTEGER(our_int)                :: lower_bound
+    INTEGER(our_int)                :: upper_bound
+    INTEGER(our_int)                :: rank
 
     INTEGER(our_int), ALLOCATABLE   :: num_emax_slaves(:, :)
     INTEGER(our_int), ALLOCATABLE   :: num_obs_slaves(:)
 
-    REAL(our_dble), ALLOCATABLE     :: contrib(:)
-
+    REAL(our_dble)                  :: contribs(num_agents_est * num_periods)
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -319,39 +321,26 @@ FUNCTION fort_criterion_parallel(x)
 
     CALL MPI_Bcast(3, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
 
-
-    !CALL distribute_workload(num_emax_slaves, num_obs_slaves)
-!PRINT *, 'I a ready to receive', num_obs_slaves
-
     CALL MPI_Bcast(x_all_current, 26, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
-
-
-
-
 
     ! This extra work is only required to align the logging across the scalar and parallel implementation. In the case of an otherwise zero variance, we stabilize the algorithm. However, we want this indicated as a warning in the log file.
     CALL dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x_all_current, dist_optim_paras_info)
 
+    ! We need to know how the workload is distributed across the slaves.
+    IF (.NOT. ALLOCATED(num_emax_slaves)) CALL distribute_workload(num_emax_slaves, num_obs_slaves)
 
-    ! I now need to know exactly how much each slave is contributing to the evaluation of the likl. Of course, later I should only do this once.
-    CALL distribute_workload(num_emax_slaves, num_obs_slaves)
-    ALLOCATE(contrib(num_agents_est * num_periods))
-    contrib = -HUGE_FLOAT
-
-    PRINT *, 'checkin in', num_obs_slaves
-!  PRINT *, (num_procs - 1)
+    contribs = -HUGE_FLOAT
     DO rank = 0, num_slaves - 1
 
         lower_bound = SUM(num_obs_slaves(:rank)) + 1
         upper_bound = SUM(num_obs_slaves(:rank + 1))
 
-!        PRINT *, 'rank ', rank, lower_bound, upper_bound
+        CALL MPI_RECV(contribs(lower_bound:upper_bound), num_obs_slaves(rank + 1), MPI_DOUBLE, rank, rank, SLAVECOMM, status, ierr)
 
-!        CALL MPI_RECV(contrib(lower_bound:upper_bound),  num_obs_slaves(rank + 1), MPI_DOUBLE, rank, rank, SLAVECOMM, status, ierr)
-        CALL MPI_RECV(contrib(lower_bound:upper_bound), num_obs_slaves(rank + 1), MPI_DOUBLE, rank, rank, SLAVECOMM, status, ierr)
     END DO
 
-    fort_criterion_parallel = -SUM(contrib) / (DBLE(num_periods) * DBLE(num_agents_est))
+
+    fort_criterion_parallel = get_log_likl(contribs, num_agents_est, num_periods)
 
     IF (crit_estimation .OR. (maxfun == zero_int)) THEN
 
@@ -362,7 +351,6 @@ FUNCTION fort_criterion_parallel(x)
         IF (dist_optim_paras_info .NE. zero_int) CALL record_warning(4)
 
     END IF
-
 
 END FUNCTION
 !******************************************************************************

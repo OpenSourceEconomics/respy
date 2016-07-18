@@ -28,12 +28,12 @@ PROGRAM resfort_parallel_slave
     INTEGER(our_int)                :: task
 
     REAL(our_dble), ALLOCATABLE     :: data_slave(:, :)
+    REAL(our_dble), ALLOCATABLE     :: contribs(:)
 
     REAL(our_dble)                  :: shocks_cholesky(4, 4)
     REAL(our_dble)                  :: scaled_minimum
     REAL(our_dble)                  :: coeffs_home(1)
     REAL(our_dble)                  :: coeffs_edu(3)
-    REAL(our_dble)                  :: partial_crit
     REAL(our_dble)                  :: coeffs_a(6)
     REAL(our_dble)                  :: coeffs_b(6)
 
@@ -57,8 +57,6 @@ PROGRAM resfort_parallel_slave
     CHARACTER(225)                  :: exec_dir
     CHARACTER(10)                   :: request
 
-    REAL(our_dble), ALLOCATABLE     :: crit_vals(:)
-
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
@@ -67,12 +65,10 @@ PROGRAM resfort_parallel_slave
 
     CALL MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierr)
 
-    CALL MPI_COMM_SIZE(MPI_COMM_WORLD, num_slaves, ierr)
-
     CALL MPI_COMM_GET_PARENT(PARENTCOMM, ierr)
 
 
-    CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, is_debug, is_interpolated, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, is_scaled, scaled_minimum, optimizer_used, dfunc_eps, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend, bfgs_gtol, bfgs_stpmx, bfgs_maxiter)
+    CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, is_scaled, scaled_minimum, optimizer_used, dfunc_eps, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend, bfgs_gtol, bfgs_stpmx, bfgs_maxiter)
 
     CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, edu_start, edu_max)
 
@@ -133,7 +129,7 @@ PROGRAM resfort_parallel_slave
 
                 CALL create_draws(periods_draws_prob, num_draws_prob, seed_prob, is_debug)
 
-                ALLOCATE(crit_vals(num_obs_slaves(rank + 1)))
+                ALLOCATE(contribs(num_obs_slaves(rank + 1)))
 
                 ALLOCATE(data_slave(num_obs_slaves(rank + 1), 8))
 
@@ -148,9 +144,9 @@ PROGRAM resfort_parallel_slave
 
             CALL fort_backward_induction_slave(periods_emax, periods_draws_emax, states_number_period, periods_payoffs_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max, num_emax_slaves, .False.)
 
-            CALL fort_evaluate(crit_vals, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_slave, periods_draws_prob, delta, tau, edu_start, edu_max)
+            CALL fort_contributions(contribs, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_slave, periods_draws_prob, delta, tau, edu_start, edu_max)
 
-            CALL MPI_SEND(crit_vals, num_obs_slaves(rank + 1), MPI_DOUBLE, 0, rank, PARENTCOMM, ierr)
+            CALL MPI_SEND(contribs, num_obs_slaves(rank + 1), MPI_DOUBLE, 0, rank, PARENTCOMM, ierr)
 
         END IF
 

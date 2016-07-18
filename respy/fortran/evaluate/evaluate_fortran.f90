@@ -2,17 +2,17 @@
 !******************************************************************************
 MODULE evaluate_fortran
 
-	!/*	external modules	*/
+    !/*	external modules	*/
 
     USE evaluate_auxiliary
-    
+
     USE recording_warning
-    
+
     USE shared_auxiliary
 
     USE shared_constants
 
-	!/*	setup	*/
+    !/*	setup	*/
 
     IMPLICIT NONE
 
@@ -21,17 +21,20 @@ MODULE evaluate_fortran
  CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_evaluate, periods_draws_prob, delta, tau, edu_start, edu_max)
+SUBROUTINE fort_contributions(contribs, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_evaluate, periods_draws_prob, delta, tau, edu_start, edu_max)
 
     !   DEVELOPMENT NOTES
     !
     !   This routine accepts assumed shape arrays to allow its use during parallel execution as well. This is also the reasoning behind relaxing the alignment with the PYTHON counterpart.
+    !
+    ! 	There is the special case of deterministic shocks, which is maintained for debugging purposes. So, the sample likelihood (using get_log_likl) is zero if any agents violates the implication of the model and minus one otherwise.
+    !
 
     !/* external objects        */
 
     REAL(our_dble), INTENT(IN)      :: data_evaluate(:, :)
 
-    REAL(our_dble), INTENT(OUT)     :: rslt(SIZE(data_evaluate, 1))
+    REAL(our_dble), INTENT(OUT)     :: contribs(SIZE(data_evaluate, 1))
 
     REAL(our_dble), INTENT(IN)      :: periods_payoffs_systematic(num_periods, max_states_period, 4)
     REAL(our_dble), INTENT(IN)      :: periods_draws_prob(num_periods, num_draws_prob, 4)
@@ -39,7 +42,7 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, pe
     REAL(our_dble), INTENT(IN)      :: shocks_cholesky(4, 4)
     REAL(our_dble), INTENT(IN)      :: delta
     REAL(our_dble), INTENT(IN)      :: tau
-        
+
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
     INTEGER(our_int), INTENT(IN)    :: edu_start
@@ -47,13 +50,8 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, pe
 
     !/* internal objects        */
 
-    REAL(our_dble), ALLOCATABLE     :: crit_val(:)
-
-    INTEGER(our_int), ALLOCATABLE   :: infos(:)
-
     REAL(our_dble)                  :: draws_prob_raw(num_draws_prob, 4)
     REAL(our_dble)                  :: payoffs_systematic(4)
-    REAL(our_dble)                  :: crit_val_contrib
     REAL(our_dble)                  :: shocks_cov(4, 4)
     REAL(our_dble)                  :: total_payoffs(4)
     REAL(our_dble)                  :: draws_cond(4)
@@ -68,9 +66,9 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, pe
 
     INTEGER(our_int)                :: edu_lagged
     INTEGER(our_int)                :: counts(4)
+    INTEGER(our_int)                :: num_obs
     INTEGER(our_int)                :: choice
     INTEGER(our_int)                :: period
-    INTEGER(our_int)                :: num_obs
     INTEGER(our_int)                :: exp_a
     INTEGER(our_int)                :: exp_b
     INTEGER(our_int)                :: info
@@ -94,13 +92,11 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, pe
     is_deterministic = ALL(shocks_cov .EQ. zero_dble)
 
     ! Initialize container for likelihood contributions
-    ALLOCATE(crit_val(num_obs))
-    crit_val = zero_dble
+    contribs = -HUGE_FLOAT
 
-    
     DO j = 1, num_obs
 
-            period = INT(data_evaluate(j, 2)) 
+            period = INT(data_evaluate(j, 2))
 
             ! Extract observable components of state space as well as agent decision.
             exp_a = INT(data_evaluate(j, 5))
@@ -124,22 +120,19 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, pe
             ! Extract relevant deviates from standard normal distribution.
             draws_prob_raw = periods_draws_prob(period + 1, :, :)
 
-            ! Prepare to calculate product of likelihood contributions.
-            crit_val_contrib = 1.0
-
             ! If an agent is observed working, then the the labor market shocks are observed and the conditional distribution is used to determine the choice probabilities.
             dist = zero_dble
             IF (is_working) THEN
 
                 ! Calculate the disturbance, which follows a normal distribution.
                 CALL clip_value(dist_1, LOG(data_evaluate(j, 4)), -HUGE_FLOAT, HUGE_FLOAT, info)
-                CALL clip_value(dist_2, LOG(payoffs_systematic(idx)), -HUGE_FLOAT, HUGE_FLOAT, info) 
-                dist = dist_1 - dist_2 
+                CALL clip_value(dist_2, LOG(payoffs_systematic(idx)), -HUGE_FLOAT, HUGE_FLOAT, info)
+                dist = dist_1 - dist_2
 
                 ! If there is no random variation in payoffs, then the observed wages need to be identical their systematic components. The discrepancy between the observed wages and their systematic components might be small due to the reading in of the dataset.
                 IF (is_deterministic) THEN
                     IF (dist .GT. SMALL_FLOAT) THEN
-                        rslt = zero_dble
+                        contribs = one_dble
                         RETURN
                     END IF
                 END IF
@@ -152,13 +145,13 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, pe
             prob_obs = zero_dble
 
             DO s = 1, num_draws_prob
-                
+
                 ! Extract deviates from (un-)conditional normal distributions.
                 draws_stan = draws_prob_raw(s, :)
 
-                ! Construct independent normal draws implied by the agents state experience. This is need to maintain the correlation structure of the disturbances. Special care is needed in case of a deterministic model, as otherwise a zero division error occurs. 
-                IF (is_working) THEN 
-                    
+                ! Construct independent normal draws implied by the agents state experience. This is need to maintain the correlation structure of the disturbances. Special care is needed in case of a deterministic model, as otherwise a zero division error occurs.
+                IF (is_working) THEN
+
                     IF (is_deterministic) THEN
 
                         prob_wage = HUGE_FLOAT
@@ -172,10 +165,10 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, pe
                         END IF
 
                         prob_wage = normal_pdf(draws_stan(idx), zero_dble, one_dble) / SQRT(shocks_cov(idx, idx))
-                    
+
                     END IF
 
-                ELSE 
+                ELSE
                     prob_wage = one_dble
                 END IF
 
@@ -205,32 +198,21 @@ SUBROUTINE fort_evaluate(rslt, periods_payoffs_systematic, mapping_state_idx, pe
             ! If there is no random variation in payoffs, then this implies a unique optimal choice.
             IF (is_deterministic) THEN
                 IF  ((counts(idx) .EQ. num_draws_prob) .EQV. .FALSE.) THEN
-                    rslt = zero_dble
+                    contribs = one_dble
                     RETURN
                 END IF
             END IF
 
             ! Adjust  and record likelihood contribution
-            crit_val(j) = prob_obs
+            contribs(j) = prob_obs
 
         END DO
 
-    ! Scaling
-    CALL clip_value(crit_val, LOG(crit_val), -HUGE_FLOAT, HUGE_FLOAT, infos)
-
-    rslt = crit_val
-!    rslt = -SUM(crit_va) / (DBLE(num_periods) * DBLE(num_agents_est))
-
-    ! TODO: Moving this to the master, does solve the problem of multiple printings. 
-
-    ! TODO: I want to note somewhere the idea, that I can send by period to save communication times. 
-!    IF (SUM(infos) > zero_int) CALL record_warning(5)
-
     ! If there is no random variation in payoffs and no agent violated the implications of observed wages and choices, then the evaluation return a value of one.
-!    IF (is_deterministic) THEN
-!        rslt = 1.0
-!    END IF
-    
+    IF (is_deterministic) THEN
+        contribs = EXP(one_dble)
+    END IF
+
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************

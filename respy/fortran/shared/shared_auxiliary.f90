@@ -29,6 +29,35 @@ MODULE shared_auxiliary
 CONTAINS
 !******************************************************************************
 !******************************************************************************
+FUNCTION get_log_likl(contribs, num_agents_est, num_periods)
+
+      !/* external objects    */
+
+      REAL(our_dble)                  :: get_log_likl
+
+      REAL(our_dble), INTENT(IN)      :: contribs(num_agents_est * num_periods)
+
+      INTEGER(our_int), INTENT(IN)    :: num_agents_est
+      INTEGER(our_int), INTENT(IN)    :: num_periods
+
+      !/* internal objects        */
+
+      INTEGER(our_int), ALLOCATABLE   :: infos(:)
+
+      REAL(our_dble)                  :: contribs_clipped(num_agents_est * num_periods)
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    CALL clip_value_2(contribs_clipped, LOG(contribs), -HUGE_FLOAT, HUGE_FLOAT, infos)
+    IF (SUM(infos) > zero_int) CALL record_warning(5)
+
+    get_log_likl = -SUM(contribs_clipped) / (DBLE(num_periods) * DBLE(num_agents_est))
+
+END FUNCTION
+!******************************************************************************
+!******************************************************************************
 FUNCTION apply_scaling(x_in, auto_scales, request)
 
     !/* external objects    */
@@ -65,7 +94,7 @@ SUBROUTINE get_cholesky(shocks_cholesky, x, info)
 
     !/* internal objects        */
 
-    INTEGER(our_int)                :: i 
+    INTEGER(our_int)                :: i
 
     REAL(our_dble)                  :: val
 
@@ -83,12 +112,12 @@ SUBROUTINE get_cholesky(shocks_cholesky, x, info)
 
     shocks_cholesky(4, :4) = x(23:26)
 
-    ! We need to ensure that the diagonal elements are larger than zero during an estimation. However, we want to allow for the special case of total absence of randomness for testing purposes of simulated datasets. 
+    ! We need to ensure that the diagonal elements are larger than zero during an estimation. However, we want to allow for the special case of total absence of randomness for testing purposes of simulated datasets.
     IF (.NOT. ALL(shocks_cholesky .EQ. zero_dble)) THEN
         IF (PRESENT(info)) info = 0
         DO i = 1, 4
             val = shocks_cholesky(i, i)
-            IF(ABS(val) .LT. TINY_FLOAT) THEN 
+            IF(ABS(val) .LT. TINY_FLOAT) THEN
                 val = TINY_FLOAT
                 IF (PRESENT(info)) info = 1
             END IF
@@ -148,7 +177,7 @@ SUBROUTINE get_total_value(total_payoffs, period, payoffs_systematic, draws, map
     REAL(our_dble), INTENT(IN)      :: periods_emax(num_periods, max_states_period)
     REAL(our_dble), INTENT(IN)      :: draws(4)
     REAL(our_dble), INTENT(IN)      :: delta
-    
+
     !/* internal objects        */
 
     REAL(our_dble)                  :: payoffs_future(4)
@@ -181,8 +210,8 @@ SUBROUTINE get_total_value(total_payoffs, period, payoffs_systematic, draws, map
     total_payoffs = payoffs_ex_post + delta * payoffs_future
 
     ! This is required to ensure that the agent does not choose any
-    ! inadmissible states. If the state is inadmissible payoffs_future takes 
-    ! value zero. This aligns the treatment of inadmissible values with the 
+    ! inadmissible states. If the state is inadmissible payoffs_future takes
+    ! value zero. This aligns the treatment of inadmissible values with the
     ! original paper.
     IF (is_inadmissible) THEN
         total_payoffs(3) = total_payoffs(3) + INADMISSIBILITY_PENALTY
@@ -258,7 +287,7 @@ SUBROUTINE create_draws(draws, num_draws, seed, is_debug)
 
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)  :: draws(:, :, :)
 
-    INTEGER(our_int), INTENT(IN)                :: num_draws 
+    INTEGER(our_int), INTENT(IN)                :: num_draws
     INTEGER(our_int), INTENT(IN)                :: seed
 
     LOGICAL, INTENT(IN)                         :: is_debug
@@ -326,7 +355,7 @@ SUBROUTINE create_draws(draws, num_draws, seed, is_debug)
         END DO
 
     END IF
-   
+
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
@@ -423,11 +452,11 @@ FUNCTION inverse(A, n)
 
     REAL(our_dble)                  :: inverse(n, n)
     REAL(our_dble)                  :: work(n)
-    
+
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
-    
+
     ! Initialize matrix for replacement
     inverse = A
 
@@ -471,10 +500,10 @@ FUNCTION determinant(A)
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
-    
+
     ! Auxiliary objects
     N = SIZE(A, 1)
-    
+
     ! Allocate auxiliary containers
     ALLOCATE(B(N, N))
     ALLOCATE(IPIV(N))
@@ -490,7 +519,7 @@ FUNCTION determinant(A)
         STOP 'LU factorization failed'
     END IF
 
-    ! Compute the product of the diagonal elements, accounting for 
+    ! Compute the product of the diagonal elements, accounting for
     ! interchanges of rows.
     determinant = one_dble
     DO  i = 1, N
@@ -609,15 +638,15 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_payoffs
     END IF
 
     IF (request == 'simulate') THEN
-    
+
         OPEN(UNIT=99, FILE='.simulated.resfort.dat')
-        
+
         DO period = 1, num_periods * num_agents_sim
             WRITE(99, 2400) data_sim(period, :)
         END DO
 
         CLOSE(99)
-    
+
     END IF
 
     ! Remove temporary files
@@ -627,7 +656,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_payoffs
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, is_debug, is_interpolated, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, is_scaled, scaled_minimum, optimizer_used, dfunc_eps, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend, bfgs_gtol, bfgs_stpmx, bfgs_maxiter)
+SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, is_scaled, scaled_minimum, optimizer_used, dfunc_eps, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend, bfgs_gtol, bfgs_stpmx, bfgs_maxiter)
 
     !
     !   This function serves as the replacement for the RespyCls and reads in
@@ -648,22 +677,23 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
     REAL(our_dble), INTENT(OUT)     :: newuoa_rhobeg
     REAL(our_dble), INTENT(OUT)     :: newuoa_rhoend
 
+    INTEGER(our_int), INTENT(OUT)   :: num_slaves
     INTEGER(our_int), INTENT(OUT)   :: num_procs
     INTEGER(our_int), INTENT(OUT)   :: seed_prob
-    INTEGER(our_int), INTENT(OUT)   :: seed_emax    
+    INTEGER(our_int), INTENT(OUT)   :: seed_emax
     INTEGER(our_int), INTENT(OUT)   :: edu_start
     INTEGER(our_int), INTENT(OUT)   :: seed_sim
     INTEGER(our_int), INTENT(OUT)   :: num_free
     INTEGER(our_int), INTENT(OUT)   :: edu_max
     INTEGER(our_int), INTENT(OUT)   :: maxfun
- 
-    INTEGER(our_int), INTENT(OUT)   :: newuoa_maxfun    
+
+    INTEGER(our_int), INTENT(OUT)   :: newuoa_maxfun
     INTEGER(our_int), INTENT(OUT)   :: newuoa_npt
     INTEGER(our_int), INTENT(OUT)   :: bfgs_maxiter
 
-    REAL(our_dble), INTENT(OUT)     :: scaled_minimum 
+    REAL(our_dble), INTENT(OUT)     :: scaled_minimum
     REAL(our_dble), INTENT(OUT)     :: bfgs_stpmx
-    REAL(our_dble), INTENT(OUT)     :: bfgs_gtol    
+    REAL(our_dble), INTENT(OUT)     :: bfgs_gtol
     REAL(our_dble), INTENT(OUT)     :: dfunc_eps
     CHARACTER(225), INTENT(OUT)     :: optimizer_used
     CHARACTER(225), INTENT(OUT)     :: exec_dir
@@ -673,7 +703,7 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
     LOGICAL, INTENT(OUT)            :: is_interpolated
     LOGICAL, INTENT(OUT)            :: paras_fixed(26)
     LOGICAL, INTENT(OUT)            :: is_scaled
-    LOGICAL, INTENT(OUT)            :: is_myopic 
+    LOGICAL, INTENT(OUT)            :: is_myopic
     LOGICAL, INTENT(OUT)            :: is_debug
 
     !/* internal objects        */
@@ -729,7 +759,7 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
         READ(99, 1505) num_points_interp
 
         ! ESTIMATION
-        READ(99, 1505) maxfun        
+        READ(99, 1505) maxfun
         READ(99, 1505) num_agents_est
         READ(99, 1505) num_draws_prob
         READ(99, 1505) seed_prob
@@ -773,6 +803,7 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
 
     ! Constructed attributes
     num_free =  COUNT(.NOT. paras_fixed)
+    num_slaves = num_procs - 1
 
 END SUBROUTINE
 !******************************************************************************
@@ -828,12 +859,12 @@ SUBROUTINE clip_value_1(clip_value, value, lower_bound, upper_bound, info)
     info = 0
 
     IF(value < lower_bound) THEN
-        
+
         clip_value = lower_bound
         info = 1
 
     ELSEIF(value > upper_bound) THEN
-        
+
         clip_value = upper_bound
         info = 2
 
@@ -859,7 +890,7 @@ SUBROUTINE clip_value_2(clip_value, value, lower_bound, upper_bound, infos)
     REAL(our_dble), INTENT(IN)      :: value(:)
 
     !/*  internal objects       */
-      
+
     INTEGER(our_int)                :: num_values
     INTEGER(our_int)                :: i
 
@@ -869,7 +900,7 @@ SUBROUTINE clip_value_2(clip_value, value, lower_bound, upper_bound, infos)
 
     num_values = SIZE(value)
 
-    ! In this setup the same container can be used for multiple calls with 
+    ! In this setup the same container can be used for multiple calls with
     ! different input arguments. Usually INFOS is immediately processed anyway
     ! and does not need to be available for multiple calls.
     IF (ALLOCATED(infos)) DEALLOCATE(infos)
@@ -895,7 +926,7 @@ SUBROUTINE clip_value_2(clip_value, value, lower_bound, upper_bound, infos)
             clip_value(i) = value(i)
 
         END IF
-    
+
     END DO
 
 END SUBROUTINE
