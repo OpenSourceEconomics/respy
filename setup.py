@@ -1,10 +1,9 @@
-# standard library
 from setuptools.command.build_py import build_py
 from setuptools.command.develop import develop
 from setuptools import find_packages
 from setuptools import setup
-
 import os
+
 
 class CustomDevelopCommand(develop):
     """ Customized setuptools install command - prints a friendly greeting.
@@ -43,18 +42,18 @@ def setup_package():
         name='respy',
         packages=find_packages(),
         package_data={'respy': ['fortran/bin/*', 'fortran/*.so',
-            'fortran/lib/*.*', 'fortran/include/*.*']},
-        version="0.2.1",
+            'fortran/lib/*.*', 'fortran/include/*.*', 'tests/resources/*']},
+        version="0.1.00",
         description='respy is a Python package for the solution, simulation, and estimation of the prototypical dynamic discrete choice model.',
         author='Philipp Eisenhauer',
         author_email='eisenhauer@policy-lab.org',
         url='http://respy.readthedocs.io',
         keywords=['Economics', ' Dynamic Discrete Choice Model'],
         classifiers=[],
-        setup_requires=['pytest-runner', 'pip>=8.0.0'],
-        tests_require=['pytest'],
-        install_requires=['numpy', 'scipy', 'pandas', 'scipy',
-            'statsmodels', 'pytest'],
+        setup_requires=['pytest-runner>=2.7'],
+        tests_require=['pytest>=2.9'],
+        install_requires=['numpy>=1.11', 'scipy>=0.17', 'pandas>=0.18',
+            'statsmodels>=0.6', 'pip>=8.0'],
         cmdclass={'build_py': CustomBuildCommand, 'develop':
             CustomDevelopCommand},
         include_package_data=True

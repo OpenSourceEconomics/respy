@@ -1,13 +1,7 @@
-# standard library
 import pandas as pd
 import numpy as np
 
-import logging
-
-# project library
 from respy.python.shared.shared_auxiliary import dist_model_paras
-
-logger = logging.getLogger('RESPY_SIMULATE')
 
 
 def write_info(respy_obj, data_frame):
@@ -23,8 +17,15 @@ def write_info(respy_obj, data_frame):
 
     num_periods = data_frame[0].value_counts().iloc[0]
 
+    # Determine name of output file
+    fname_split = file_sim.split('.')
+    if len(fname_split) > 1:
+        fname = '.'.join(fname_split[:-1]) + '.info'
+    else:
+        fname = '%s' % file_sim + '.info'
+
     # Write information to file
-    with open(file_sim + '.info', 'w') as file_:
+    with open(fname, 'w') as file_:
 
         file_.write('\n Simulated Economy\n\n')
 
@@ -40,16 +41,16 @@ def write_info(respy_obj, data_frame):
         for t in range(num_periods):
 
             work_a = np.sum((data_frame[2] == 1) &
-                            (data_frame[1] == t))/num_agents_sim
+                            (data_frame[1] == t))/float(num_agents_sim)
 
             work_b = np.sum((data_frame[2] == 2) & (data_frame[1] ==
-                                                    t))/num_agents_sim
+                                                    t))/float(num_agents_sim)
 
             schooling = np.sum((data_frame[2] == 3) &
-                               (data_frame[1] == t))/num_agents_sim
+                               (data_frame[1] == t))/float(num_agents_sim)
 
             home = np.sum((data_frame[2] == 4) & (data_frame[1] ==
-                                                  t))/num_agents_sim
+                                                  t))/float(num_agents_sim)
 
             fmt_ = '{:>10}' + '{:14.4f}' * 4 + '\n'
             args = [(t + 1), work_a, work_b, schooling, home]
@@ -110,10 +111,15 @@ def write_info(respy_obj, data_frame):
                 (num_periods - 1)].ix[:, 5].mean()
         file_.write(string.format(['Average Experience B', stat]))
 
-    # Write out the parametrization of the simulated economy.
-    model_paras = respy_obj.get_attr('model_paras')
-    vector = get_estimation_vector(model_paras, True)
-    np.savetxt(open(file_sim + '.paras', 'wb'), vector, fmt='%15.8f')
+        file_.write('\n\n   Parameterization\n\n')
+        fmt_ = '{0:>15}    {1:>15}\n\n'
+        file_.write(fmt_.format(*['Identifier', 'Value']))
+        # Write out the parametrization of the simulated economy.
+        model_paras = respy_obj.get_attr('model_paras')
+        vector = get_estimation_vector(model_paras, True)
+        fmt_ = '{0:>15}    {1:>15.4f}\n'
+        for i, stat in enumerate(vector):
+            file_.write(fmt_.format(*[i, stat]))
 
 
 def write_out(respy_obj, data_frame):
@@ -130,7 +136,7 @@ def write_out(respy_obj, data_frame):
 
     formats += [_format_integer, _format_integer]
 
-    with open(file_sim + '.dat', 'w') as file_:
+    with open(file_sim, 'w') as file_:
 
         data_frame.to_string(file_, index=False, header=None, na_rep='.',
                             formatters=formats)
@@ -172,61 +178,16 @@ def get_estimation_vector(model_paras, is_debug):
 
     vector += model_paras['coeffs_home'].tolist()
 
-    vector += shocks_cholesky.T[0, 0:].tolist()
+    vector += shocks_cholesky[0, :1].tolist()
 
-    vector += shocks_cholesky.T[1, 1:].tolist()
+    vector += shocks_cholesky[1, :2].tolist()
 
-    vector += shocks_cholesky.T[2, 2:].tolist()
+    vector += shocks_cholesky[2, :3].tolist()
 
-    vector += shocks_cholesky.T[3, 3:].tolist()
+    vector += shocks_cholesky[3, :4].tolist()
 
     # Type conversion
     vector = np.array(vector)
 
     # Finishing
     return vector
-
-
-def logging_simulation(which):
-    """ Ensure proper handling of logging.
-    """
-    # Antibugging
-    assert (which in ['start', 'stop'])
-
-    # Start logging
-    if which == 'start':
-
-        formatter = logging.Formatter('  %(message)s \n')
-        logger = logging.getLogger('RESPY_SIMULATE')
-        handler = logging.FileHandler('logging.respy.sim.log', mode='w',
-                                      delay=False)
-        handler.setFormatter(formatter)
-        logger.setLevel(logging.INFO)
-        logger.addHandler(handler)
-
-    elif which == 'stop':
-        # Shut down logger and close connection.
-        logger = logging.getLogger('RESPY_SIMULATE')
-        handlers = logger.handlers[:]
-        for handler in handlers:
-            handler.close()
-            logger.removeHandler(handler)
-
-
-def check_input(respy_obj, is_solved):
-    """ Check input arguments.
-    """
-    # Check valid request.
-    assert is_solved in [True, False]
-
-    # Check that class instance is locked.
-    assert respy_obj.get_attr('is_locked')
-
-    # Check that input is solved if not done as part of the simulation step.
-    if is_solved:
-        assert respy_obj.get_attr('is_solved')
-    else:
-        respy_obj.reset()
-
-    # Finishing
-    return True

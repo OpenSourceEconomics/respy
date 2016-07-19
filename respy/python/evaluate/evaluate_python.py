@@ -1,20 +1,16 @@
-# standard library
 from scipy.stats import norm
 import numpy as np
 
-# project library
 from respy.python.evaluate.evaluate_auxiliary import get_smoothed_probability
-
 from respy.python.shared.shared_auxiliary import get_total_value
 from respy.python.shared.shared_constants import SMALL_FLOAT
 from respy.python.shared.shared_constants import HUGE_FLOAT
-
 from respy.python.solve.solve_python import pyth_solve
 
 
 def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
-        is_interpolated, num_draws_emax, num_periods, num_points, is_myopic,
-        edu_start, is_debug,  edu_max, min_idx, delta, data_array,
+        is_interpolated, num_draws_emax, num_periods, num_points_interp,
+        is_myopic, edu_start, is_debug,  edu_max, min_idx, delta, data_array,
         num_agents_est, num_draws_prob, tau, periods_draws_emax,
         periods_draws_prob):
     """ Evaluate criterion function. This code allows for a deterministic
@@ -28,14 +24,15 @@ def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
 
     # Solve requested model.
     base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
-        is_interpolated, num_draws_emax, num_periods, num_points, is_myopic,
-        edu_start, is_debug, edu_max, min_idx, delta)
+        is_interpolated, num_draws_emax, num_periods, num_points_interp,
+        is_myopic, edu_start, is_debug, edu_max, min_idx, delta)
 
     periods_payoffs_systematic, _, mapping_state_idx, periods_emax, \
         states_all = pyth_solve(*base_args + (periods_draws_emax, ))
 
     # Initialize auxiliary objects
-    crit_val, j = [], 0
+    contribs = np.tile(-HUGE_FLOAT, (num_agents_est * num_periods))
+    j = 0
 
     # Calculate the probability over agents and time.
     for _ in range(num_agents_est):
@@ -76,7 +73,8 @@ def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
                 # their systematic components might be small due to the
                 # reading in of the dataset (FORTRAN only).
                 if is_deterministic and (dist > SMALL_FLOAT):
-                    return 0.0
+                    contribs[:] = 1
+                    return contribs
 
             # Simulate the conditional distribution of alternative-specific
             # value functions and determine the choice probabilities.
@@ -137,22 +135,20 @@ def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
             # If there is no random variation in payoffs, then this implies
             # that the observed choice in the dataset is the only choice.
             if is_deterministic and (not (counts[idx] == num_draws_prob)):
-                return 0.0
+                contribs[:] = 1
+                return contribs
 
             # Adjust  and record likelihood contribution
-            crit_val += [prob_obs]
+            contribs[j] = prob_obs
 
             j += 1
-
-    # Scaling
-    crit_val = -np.mean(np.clip(np.log(crit_val), -HUGE_FLOAT, HUGE_FLOAT))
 
     # If there is no random variation in payoffs and no agent violated the
     # implications of observed wages and choices, then the evaluation return
     # a value of one.
     if is_deterministic:
-        crit_val = 1.0
+        contribs[:] = np.exp(1.0)
 
     # Finishing
-    return crit_val
+    return contribs
 

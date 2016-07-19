@@ -1,14 +1,10 @@
-# project library
-from respy.python.estimate.estimate_auxiliary import get_optim_paras
-from respy.python.estimate.estimate_auxiliary import check_input
+import os
 
-from respy.python.shared.shared_auxiliary import dist_class_attributes
-from respy.python.shared.shared_auxiliary import dist_model_paras
-from respy.python.shared.shared_auxiliary import create_draws
-
-from respy.python.estimate.estimate_wrapper import OptimizationClass
-
-from respy.process import process
+from respy.python.shared.shared_auxiliary import check_dataset
+from respy.python.shared.shared_auxiliary import process_est_log
+from respy.python.process.process_python import process
+from respy.fortran.interface import resfort_interface
+from respy.python.interface import respy_interface
 
 
 def estimate(respy_obj):
@@ -17,76 +13,114 @@ def estimate(respy_obj):
     # Read in estimation dataset. It only reads in the number of agents
     # requested for the estimation.
     data_frame = process(respy_obj)
-
-    # Antibugging
-    assert check_input(respy_obj, data_frame)
-
-    # Distribute class attributes
-    model_paras, num_periods, num_agents_est, edu_start, is_debug, edu_max, \
-        delta, num_draws_prob, seed_prob, num_draws_emax, seed_emax, min_idx,\
-        is_myopic, is_interpolated, num_points, version, maxiter, \
-        optimizer_used, tau, paras_fixed, optimizer_options = \
-            dist_class_attributes(respy_obj,
-                'model_paras', 'num_periods', 'num_agents_est', 'edu_start',
-                'is_debug', 'edu_max', 'delta', 'num_draws_prob', 'seed_prob',
-                'num_draws_emax', 'seed_emax', 'min_idx', 'is_myopic',
-                'is_interpolated', 'num_points', 'version', 'maxiter',
-                'optimizer_used', 'tau', 'paras_fixed', 'optimizer_options')
-
-    # Auxiliary objects
-    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
-        dist_model_paras(model_paras, is_debug)
-
-    # Draw standard normal deviates for the solution and evaluation step.
-    periods_draws_prob = create_draws(num_periods, num_draws_prob, seed_prob,
-        is_debug)
-
-    periods_draws_emax = create_draws(num_periods, num_draws_emax, seed_emax,
-        is_debug)
-
-    # Construct starting values
-    x_free_start = get_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-        shocks_cholesky, 'free', paras_fixed, is_debug)
-
-    x_all_start = get_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-        shocks_cholesky, 'all', paras_fixed, is_debug)
-
     data_array = data_frame.as_matrix()
 
-    # Collect arguments that are required for the criterion function. These
-    # must be in the correct order already.
-    args = (is_interpolated, num_draws_emax, num_periods, num_points,
-        is_myopic, edu_start, is_debug, edu_max, min_idx, delta, data_array,
-        num_agents_est, num_draws_prob, tau, periods_draws_emax,
-        periods_draws_prob)
+    # Cleanup
+    for fname in ['est.respy.log', 'est.respy.info']:
+        if os.path.exists(fname):
+            os.unlink(fname)
 
-    # Setup optimization class, which handles all the details depending on the
-    # request.
-    opt_obj = OptimizationClass()
+    # Antibugging.
+    assert _check_input(respy_obj, data_frame)
 
-    opt_obj.set_attr('args', args)
+    # Distribute class attributes
+    version = respy_obj.get_attr('version')
 
-    opt_obj.set_attr('optimizer_options', optimizer_options)
+    # Select appropriate interface
+    if version in ['PYTHON']:
+        respy_interface(respy_obj, 'estimate', data_array)
+    elif version in ['FORTRAN']:
+        resfort_interface(respy_obj, 'estimate', data_array)
+    else:
+        raise NotImplementedError
 
-    opt_obj.set_attr('x_info', (x_all_start, paras_fixed))
-
-    opt_obj.set_attr('optimizer_used', optimizer_used)
-
-    opt_obj.set_attr('version', version)
-
-    opt_obj.set_attr('maxiter', maxiter)
-
-    opt_obj.lock()
-
-    # Perform optimization.
-    x, val = opt_obj.optimize(x_free_start)
+    rslt = process_est_log()
+    x, val = rslt['paras_final'], rslt['value_final']
 
     # Finishing
     return x, val
 
 
+def _check_input(respy_obj, data_frame):
+    """ Check input arguments.
+    """
+    # Check that class instance is locked.
+    assert respy_obj.get_attr('is_locked')
 
+    if respy_obj.get_attr('is_solved'):
+        respy_obj.reset()
 
+    # Check that dataset aligns with model specification.
+    check_dataset(data_frame, respy_obj, 'est')
 
+    # Special treatment required for the FORT optimizers. Since they are
+    # written to the FORTRAN initialization file, we need a valid request for
+    # all optimizers internally.
+    optimizer_options = respy_obj.get_attr('optimizer_options')
+    optimizer_used = respy_obj.get_attr('optimizer_used')
 
+    assert (optimizer_used in optimizer_options.keys())
 
+    # Now we check the integrity for all the optimizers that we find.
+    if 'FORT-NEWUOA' in optimizer_options.keys():
+
+        maxfun = optimizer_options['FORT-NEWUOA']['maxfun']
+        rhobeg = optimizer_options['FORT-NEWUOA']['rhobeg']
+        rhoend = optimizer_options['FORT-NEWUOA']['rhoend']
+        npt = optimizer_options['FORT-NEWUOA']['npt']
+
+        for var in [maxfun, npt]:
+            assert isinstance(var, int)
+            assert (var > 0)
+
+        for var in [rhobeg, rhoend]:
+            assert isinstance(var, float)
+            assert (var > 0)
+
+        assert (rhobeg > rhoend)
+
+    if 'FORT-BFGS' in optimizer_options.keys():
+
+        maxiter = optimizer_options['FORT-BFGS']['maxiter']
+        stpmx = optimizer_options['FORT-BFGS']['stpmx']
+        gtol = optimizer_options['FORT-BFGS']['gtol']
+
+        assert isinstance(maxiter, int)
+        assert (maxiter > 0)
+
+        for var in [stpmx, gtol]:
+            assert isinstance(var, float)
+            assert (var > 0)
+
+    if 'SCIPY-BFGS' in optimizer_options.keys():
+
+        maxiter = optimizer_options['SCIPY-BFGS']['maxiter']
+        gtol = optimizer_options['SCIPY-BFGS']['gtol']
+
+        assert isinstance(maxiter, int)
+        assert (maxiter > 0)
+
+        assert isinstance(gtol, float)
+        assert (gtol > 0)
+
+    if 'SCIPY-POWELL' in optimizer_options.keys():
+
+        maxiter = optimizer_options['SCIPY-POWELL']['maxiter']
+        maxfun = optimizer_options['SCIPY-POWELL']['maxfun']
+        xtol = optimizer_options['SCIPY-POWELL']['xtol']
+        ftol = optimizer_options['SCIPY-POWELL']['ftol']
+
+        assert isinstance(maxiter, int)
+        assert (maxiter > 0)
+
+        assert isinstance(maxfun, int)
+        assert (maxfun > 0)
+
+        assert isinstance(xtol, float)
+        assert (xtol > 0)
+
+        assert isinstance(ftol, float)
+        assert (ftol > 0)
+
+    # Finishing
+    return respy_obj

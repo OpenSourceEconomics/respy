@@ -2,16 +2,13 @@
 """ This script allows upgrades the initialization file with the parameter
 values from the last step.
 """
-
-# standard library
-import numpy as np
-
 import argparse
 import os
 
-# project library
-from respy.python.estimate.estimate_auxiliary import dist_optim_paras
+from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
+from respy.python.shared.shared_auxiliary import dist_optim_paras
 from respy.python.shared.shared_auxiliary import print_init_dict
+from respy.python.shared.shared_auxiliary import get_est_info
 from respy.python.read.read_python import read
 
 
@@ -26,7 +23,7 @@ def dist_input_arguments(parser):
 
     # Checks
     assert os.path.exists(init_file)
-    assert os.path.exists('paras_steps.respy.log')
+    assert os.path.exists('est.respy.info')
 
     # Finishing
     return init_file
@@ -38,18 +35,13 @@ def scripts_update(init_file):
     # Collect baseline update
     init_dict = read(init_file)
 
-    paras_steps = np.genfromtxt('paras_steps.respy.log')
+    paras_steps = get_est_info()['paras_step']
 
     # Get and construct ingredients
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky \
         = dist_optim_paras(paras_steps, True)
-
-    shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
-
-    shocks_coeffs = shocks_cov[np.triu_indices_from(shocks_cov)].tolist()
-    for i in [0, 4, 7, 9]:
-        shocks_coeffs[i] = np.sqrt(shocks_coeffs[i])
-
+    shocks_coeffs = cholesky_to_coeffs(shocks_cholesky)
+    
     # Update initialization dictionary
     init_dict['OCCUPATION A']['coeffs'] = coeffs_a
     init_dict['OCCUPATION B']['coeffs'] = coeffs_b

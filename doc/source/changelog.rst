@@ -6,4 +6,4 @@ This is a record of all past **respy** releases and what went into them, in reve
 1.0.0 - 2016-06-01
 ------------------
 
-This will be the initial release for the **structRecomputation** project.
+This is the initial release for the **respy** package.

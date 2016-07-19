@@ -5,10 +5,15 @@ Additional Details
 Output Files
 ------------
 
+Depending on the user's request, the **respy** package creates several output files. Note that there is a difference between the estimation parameters in the files below and the model specification. The difference is in the parameters for the covariance matrix. During the estimation we iterate on a flattened version of the upper-triangular Cholesky decomposition. This ensures that the requirements for a valid covariance matrix, e.g. positive semidefiniteness and strictly positive variances, are always met as the optimizer tests the whole real line. 
+
+Simulation
+""""""""""
+
 .. _data.respy.dat:
 * **data.respy.dat**
     
-    This file contains the agent choices and state experiences. The simulated dataset has the following structure.
+This file contains the agent choices and state experiences. The simulated dataset has the following structure.
     
     ======      ========================      
     Column      Information
@@ -24,33 +29,31 @@ Output Files
     ======      ========================
 
 .. _data.respy.paras:
-* **data.respy.paras**
+* **data.respy.info**
 
-    This file contains the coefficients used for the simulation of the agent
-    population.
+This file provides descriptive statistics about the simulated dataset and the underlying parameterization.
+    
 
-    =======     ========================      
-    Lines       Coefficients
-    =======     ========================       
-    1 -  6      occupation A      
-    7 - 12      occupation B     
-    12 - 15     education     
-    16          home     
-    16 - 26     cholesky factors     
-    =======     ========================
+* **sim.respy.log**
 
-    Note, that the last ten coefficients do refer to the Cholesky factors of the
-    covariance matrix of the shocks and not the covariance matrix itself. 
+This file allows to monitor the progress of the simulation.
+
+* **sol.respy.log**
+
+Depending on the user's request, it can be quite time consuming until the algorithm is finished with the solution of the model. This file allow to monitor the progress of the backward induction procedure.
 
 
-.. _paras.respy.log:
-* **Parameters**
+Estimation
+""""""""""
 
-    * **paras_curre.respy.log**, current candidate parameters
+* **est.respy.info**
 
-    * **paras_start.respy.log**, parameters at the start of the optimization
+This file allows to monitor the estimation as it progresses. It provides information about starting values, step values, and current values as well as the corresponding value of the criterion function.
 
-    * **paras_steps.respy.log**, parameters at the last step of the optimization
+* **est.respy.log**
+
+This file documents details about the each of the evaluations of the criterion function. Most importantly, once estimation is completed, it provides the message from the optimizer.
+
 
 API Reference
 -------------

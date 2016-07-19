@@ -2,7 +2,6 @@
 aligned with the constants from the FORTRAN implementation.
 """
 
-# standard library
 import os
 
 # Obtain the root directory of the package
@@ -14,10 +13,12 @@ TEST_DIR = ROOT_DIR + '/tests'
 TEST_RESOURCES_DIR = ROOT_DIR + '/tests/resources'
 
 # Directory with the FORTRAN resources
-FORTRAN_DIR = ROOT_DIR + '/fortran'
+EXEC_DIR = ROOT_DIR + '/fortran/bin'
 
+LARGE_FLOAT = 1.0e8
 HUGE_FLOAT = 1.0e20
 SMALL_FLOAT = 1e-5
+TINY_FLOAT = 1.0e-8
 
 # Interpolation
 INADMISSIBILITY_PENALTY = -40000.00
@@ -26,3 +27,13 @@ INADMISSIBILITY_PENALTY = -40000.00
 # implementations. There is no NAN available in FORTRAN.
 MISSING_INT = -99
 MISSING_FLOAT = -99.00
+
+# Flag that indicate whether the FORTRAN executables are available.
+IS_PARALLEL = os.path.exists(EXEC_DIR + '/resfort_parallel_master')
+IS_FORTRAN = os.path.exists(EXEC_DIR + '/resfort_scalar')
+if not IS_FORTRAN:
+    assert (not IS_PARALLEL)
+
+# Each implementation has its own set of optimizers available.
+OPTIMIZERS_PYTH = ['SCIPY-BFGS', 'SCIPY-POWELL']
+OPTIMIZERS_FORT = ['FORT-NEWUOA', 'FORT-BFGS']

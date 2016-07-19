@@ -2,15 +2,15 @@
     RESPY package
 """
 
-# standard library
 import pickle as pkl
 import pandas as pd
 import numpy as np
 
-# project library
 from respy.python.shared.shared_auxiliary import replace_missing_values
 from respy.python.shared.shared_auxiliary import check_model_parameters
-from respy.python.estimate.estimate_auxiliary import dist_optim_paras
+from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
+from respy.python.shared.shared_auxiliary import print_init_dict
+from respy.python.shared.shared_auxiliary import dist_optim_paras
 from respy.python.read.read_python import read
 
 # Special care with derived attributes is required to maintain integrity of
@@ -21,6 +21,9 @@ DERIVED_ATTR = ['min_idx', 'is_myopic']
 # if the class instance was solved.
 SOLUTION_ATTR = ['periods_payoffs_systematic', 'states_number_period']
 SOLUTION_ATTR += ['mapping_state_idx', 'periods_emax', 'states_all']
+
+# Full list of admissible optimizers
+OPTIMIZERS = ['SCIPY-BFGS', 'SCIPY-POWELL', 'FORT-NEWUOA', 'FORT-BFGS']
 
 
 class RespyCls(object):
@@ -37,6 +40,8 @@ class RespyCls(object):
         self.attr['init_dict'] = read(fname)
 
         # Constitutive attributes
+        self.attr['num_points_interp'] = None
+
         self.attr['optimizer_options'] = None
 
         self.attr['is_interpolated'] = None
@@ -57,9 +62,11 @@ class RespyCls(object):
 
         self.attr['model_paras'] = None
 
-        self.attr['num_points'] = None
+        self.attr['is_parallel'] = None
 
-        self.attr['seed_sim'] = None
+        self.attr['derivatives'] = None
+
+        self.attr['num_procs'] = None
 
         self.attr['seed_prob'] = None
 
@@ -71,21 +78,25 @@ class RespyCls(object):
 
         self.attr['edu_start'] = None
 
+        self.attr['seed_sim'] = None
+
         self.attr['is_debug'] = None
 
         self.attr['file_sim'] = None
 
         self.attr['file_est'] = None
 
+        self.attr['is_store'] = None
+
         self.attr['edu_max'] = None
 
         self.attr['version'] = None
 
-        self.attr['maxiter'] = None
+        self.attr['scaling'] = None
+
+        self.attr['maxfun'] = None
 
         self.attr['delta'] = None
-
-        self.attr['store'] = None
 
         self.attr['tau'] = None
 
@@ -120,6 +131,9 @@ class RespyCls(object):
     def update_model_paras(self, x):
         """ Update model parameters.
         """
+
+        self.reset()
+
         # Determine use of interface
         coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
                     dist_optim_paras(x, True)
@@ -222,6 +236,107 @@ class RespyCls(object):
         # Store.
         pkl.dump(self, open(file_name, 'wb'))
 
+    def write_out(self, fname='model.respy.ini'):
+        """ Write out the currently implied initialization file of the class
+        instance.
+        """
+        # We reconstruct the initialization dictionary as otherwise we need
+        # to constantly update the original one.
+        init_dict = dict()
+
+        # Basics
+        init_dict['BASICS'] = dict()
+        init_dict['BASICS']['periods'] = self.attr['num_periods']
+        init_dict['BASICS']['delta'] = self.attr['delta']
+
+        # Occupation A
+        init_dict['OCCUPATION A'] = dict()
+        init_dict['OCCUPATION A']['coeffs'] = \
+            self.attr['model_paras']['coeffs_a']
+
+        init_dict['OCCUPATION A']['fixed'] = self.attr['paras_fixed'][0:6]
+
+        # Occupation A
+        init_dict['OCCUPATION B'] = dict()
+        init_dict['OCCUPATION B']['coeffs'] = \
+            self.attr['model_paras']['coeffs_b']
+        init_dict['OCCUPATION B']['fixed'] = self.attr['paras_fixed'][6:12]
+
+        # Education
+        init_dict['EDUCATION'] = dict()
+        init_dict['EDUCATION']['coeffs'] = \
+            self.attr['model_paras']['coeffs_edu']
+        init_dict['EDUCATION']['fixed'] = self.attr['paras_fixed'][12:15]
+
+        init_dict['EDUCATION']['start'] = self.attr['edu_start']
+        init_dict['EDUCATION']['max'] = self.attr['edu_max']
+
+        # Home
+        init_dict['HOME'] = dict()
+        init_dict['HOME']['coeffs'] = \
+            self.attr['model_paras']['coeffs_home']
+        init_dict['HOME']['fixed'] = self.attr['paras_fixed'][15:16]
+
+        # Shocks
+        init_dict['SHOCKS'] = dict()
+        shocks_cholesky = self.attr['model_paras']['shocks_cholesky']
+        shocks_coeffs = cholesky_to_coeffs(shocks_cholesky)
+        init_dict['SHOCKS']['coeffs'] = shocks_coeffs
+        init_dict['SHOCKS']['fixed'] = np.array(self.attr['paras_fixed'][16:])
+
+        # Solution
+        init_dict['SOLUTION'] = dict()
+        init_dict['SOLUTION']['draws'] = self.attr['num_draws_emax']
+        init_dict['SOLUTION']['seed'] = self.attr['seed_emax']
+        init_dict['SOLUTION']['store'] = self.attr['is_store']
+
+        # Simulation
+        init_dict['SIMULATION'] = dict()
+        init_dict['SIMULATION']['agents'] = self.attr['num_agents_sim']
+        init_dict['SIMULATION']['file'] = self.attr['file_sim']
+        init_dict['SIMULATION']['seed'] = self.attr['seed_sim']
+
+        # Estimation
+        init_dict['ESTIMATION'] = dict()
+        init_dict['ESTIMATION']['optimizer'] = self.attr['optimizer_used']
+        init_dict['ESTIMATION']['agents'] = self.attr['num_agents_est']
+        init_dict['ESTIMATION']['draws'] = self.attr['num_draws_prob']
+        init_dict['ESTIMATION']['seed'] = self.attr['seed_prob']
+        init_dict['ESTIMATION']['file'] = self.attr['file_est']
+        init_dict['ESTIMATION']['maxfun'] = self.attr['maxfun']
+        init_dict['ESTIMATION']['tau'] = self.attr['tau']
+
+        # Derivatives
+        init_dict['DERIVATIVES'] = dict()
+        init_dict['DERIVATIVES']['version'] = self.attr['derivatives'][0]
+        init_dict['DERIVATIVES']['eps'] = self.attr['derivatives'][1]
+
+        # Scaling
+        init_dict['SCALING'] = dict()
+        init_dict['SCALING']['flag'] = self.attr['scaling'][0]
+        init_dict['SCALING']['minimum'] = self.attr['scaling'][1]
+
+        # Program
+        init_dict['PROGRAM'] = dict()
+        init_dict['PROGRAM']['version'] = self.attr['version']
+        init_dict['PROGRAM']['debug'] = self.attr['is_debug']
+
+        # Parallelism
+        init_dict['PARALLELISM'] = dict()
+        init_dict['PARALLELISM']['flag'] = self.attr['is_parallel']
+        init_dict['PARALLELISM']['procs'] = self.attr['num_procs']
+
+        # Interpolation
+        init_dict['INTERPOLATION'] = dict()
+        init_dict['INTERPOLATION']['points'] = self.attr['num_points_interp']
+        init_dict['INTERPOLATION']['flag'] = self.attr['is_interpolated']
+
+        # Optimizers
+        for optimizer in self.attr['optimizer_options'].keys():
+            init_dict[optimizer] = self.attr['optimizer_options'][optimizer]
+
+        print_init_dict(init_dict, fname)
+
     def reset(self):
         """ Remove solution attributes from class instance.
         """
@@ -229,6 +344,20 @@ class RespyCls(object):
             self.attr[label] = None
 
         self.attr['is_solved'] = False
+
+    def check_equal_solution(self, other):
+        """ This method allows to compare two class instances with respect to
+        the equality of their solution attributes.
+        """
+        assert (isinstance(other, RespyCls))
+
+        for key_ in SOLUTION_ATTR:
+            try:
+                np.testing.assert_almost_equal(self.attr[key_], other.attr[key_])
+            except AssertionError:
+                return False
+
+        return True
 
     def _update_core_attributes(self):
         """ Calculate derived attributes. This is only called when the class
@@ -239,7 +368,7 @@ class RespyCls(object):
 
         # Extract information from initialization dictionary and construct
         # auxiliary objects.
-        self.attr['is_interpolated'] = init_dict['INTERPOLATION']['apply']
+        self.attr['is_interpolated'] = init_dict['INTERPOLATION']['flag']
 
         self.attr['optimizer_used'] = init_dict['ESTIMATION']['optimizer']
 
@@ -249,13 +378,17 @@ class RespyCls(object):
 
         self.attr['num_draws_prob'] = init_dict['ESTIMATION']['draws']
 
-        self.attr['num_points'] = init_dict['INTERPOLATION']['points']
+        self.attr['is_parallel'] = init_dict['PARALLELISM']['flag']
+
+        self.attr['num_points_interp'] = init_dict['INTERPOLATION']['points']
 
         self.attr['num_draws_emax'] = init_dict['SOLUTION']['draws']
 
+        self.attr['num_procs'] = init_dict['PARALLELISM']['procs']
+
         self.attr['num_periods'] = init_dict['BASICS']['periods']
 
-        self.attr['maxiter'] = init_dict['ESTIMATION']['maxiter']
+        self.attr['maxfun'] = init_dict['ESTIMATION']['maxfun']
 
         self.attr['edu_start'] = init_dict['EDUCATION']['start']
 
@@ -267,6 +400,8 @@ class RespyCls(object):
 
         self.attr['file_est'] = init_dict['ESTIMATION']['file']
 
+        self.attr['is_store'] = init_dict['SOLUTION']['store']
+
         self.attr['seed_emax'] = init_dict['SOLUTION']['seed']
 
         self.attr['version'] = init_dict['PROGRAM']['version']
@@ -275,11 +410,17 @@ class RespyCls(object):
 
         self.attr['edu_max'] = init_dict['EDUCATION']['max']
 
-        self.attr['store'] = init_dict['SOLUTION']['store']
-
         self.attr['delta'] = init_dict['BASICS']['delta']
 
         self.attr['tau'] = init_dict['ESTIMATION']['tau']
+
+        self.attr['derivatives'] = [None, None]
+        self.attr['derivatives'][0] = init_dict['DERIVATIVES']['version']
+        self.attr['derivatives'][1] = init_dict['DERIVATIVES']['eps']
+
+        self.attr['scaling'] = [None, None]
+        self.attr['scaling'][0] = init_dict['SCALING']['flag']
+        self.attr['scaling'][1] = init_dict['SCALING']['minimum']
 
         # Initialize model parameters
         self.attr['model_paras'] = dict()
@@ -304,7 +445,6 @@ class RespyCls(object):
         else:
             shocks_cholesky = np.linalg.cholesky(shocks_cov)
             self.attr['model_paras']['shocks_cholesky'] = shocks_cholesky
-
 
         self.attr['model_paras']['coeffs_a'] = \
             init_dict['OCCUPATION A']['coeffs']
@@ -332,9 +472,8 @@ class RespyCls(object):
 
         # Aggregate all the information provided about optimizer options in
         # one class attribute for easier access later.
-        optimizers = ['SCIPY-BFGS', 'SCIPY-POWELL']
         self.attr['optimizer_options'] = dict()
-        for optimizer in optimizers:
+        for optimizer in OPTIMIZERS:
             is_defined = (optimizer in init_dict.keys())
             if is_defined:
                 self.attr['optimizer_options'][optimizer] = \
@@ -350,8 +489,6 @@ class RespyCls(object):
         """ Update derived attributes.
         """
         # Distribute model parameters
-        model_paras = self.attr['model_paras']
-
         num_periods = self.attr['num_periods']
 
         edu_start = self.attr['edu_start']
@@ -380,13 +517,17 @@ class RespyCls(object):
 
         num_agents_est = self.attr['num_agents_est']
 
+        derivatives = self.attr['derivatives']
+
+        is_parallel = self.attr['is_parallel']
+
         paras_fixed = self.attr['paras_fixed']
 
         num_periods = self.attr['num_periods']
 
         model_paras = self.attr['model_paras']
 
-        num_points = self.attr['num_points']
+        num_points_interp = self.attr['num_points_interp']
 
         edu_start = self.attr['edu_start']
 
@@ -398,13 +539,17 @@ class RespyCls(object):
 
         seed_emax = self.attr['seed_emax']
 
+        num_procs = self.attr['num_procs']
+
         is_debug = self.attr['is_debug']
 
         edu_max = self.attr['edu_max']
 
         version = self.attr['version']
 
-        maxiter = self.attr['maxiter']
+        scaling = self.attr['scaling']
+
+        maxfun = self.attr['maxfun']
 
         delta = self.attr['delta']
 
@@ -412,6 +557,12 @@ class RespyCls(object):
 
         # Auxiliary objects
         shocks_cholesky = model_paras['shocks_cholesky']
+
+        # Parallelism
+        assert (is_parallel in [True, False])
+        assert (num_procs > 0)
+        if is_parallel:
+            assert (version == 'FORTRAN')
 
         # Status of optimization parameters
         assert isinstance(paras_fixed, list)
@@ -470,7 +621,7 @@ class RespyCls(object):
         assert (delta >= 0.00)
 
         # Version version of package
-        assert (version in ['FORTRAN', 'F2PY', 'PYTHON'])
+        assert (version in ['FORTRAN', 'PYTHON'])
 
         # Shock distribution
         assert (isinstance(shocks_cholesky, np.ndarray))
@@ -479,19 +630,30 @@ class RespyCls(object):
 
         # Interpolation
         assert (is_interpolated in [True, False])
-        assert (isinstance(num_points, int))
-        assert (num_points > 0)
+        assert (isinstance(num_points_interp, int))
+        assert (num_points_interp > 0)
 
         # Simulation of S-ML
         assert (isinstance(num_draws_prob, int))
         assert (num_draws_prob > 0)
 
         # Maximum number of iterations
-        assert (isinstance(maxiter, int))
-        assert (maxiter >= 0)
+        assert (isinstance(maxfun, int))
+        assert (maxfun >= 0)
 
         # Optimizers
-        assert (optimizer_used in ['SCIPY-BFGS', 'SCIPY-POWELL'])
+        assert (optimizer_used in ['SCIPY-BFGS', 'SCIPY-POWELL',
+            'FORT-NEWUOA', 'FORT-BFGS'])
+
+        # Scaling
+        assert (scaling[0] in [True, False])
+        assert (isinstance(scaling[1], float))
+        assert (scaling[1] > 0.0)
+
+        # Derivatives
+        assert (derivatives[0] in ['FORWARD-DIFFERENCES'])
+        assert (isinstance(derivatives[1], float))
+        assert (derivatives[1] > 0.0)
 
     def _check_integrity_results(self):
         """ This methods check the integrity of the results.
@@ -673,3 +835,4 @@ class RespyCls(object):
 
         # Finishing.
         return True
+

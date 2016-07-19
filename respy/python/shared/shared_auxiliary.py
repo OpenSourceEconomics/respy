@@ -1,11 +1,100 @@
-# standard library
 import numpy as np
+import shlex
 import os
 
-# project library
 from respy.python.shared.shared_constants import INADMISSIBILITY_PENALTY
 from respy.python.shared.shared_constants import MISSING_FLOAT
+from respy.python.record.record_warning import record_warning
 from respy.python.shared.shared_constants import HUGE_FLOAT
+from respy.python.shared.shared_constants import TINY_FLOAT
+
+
+def get_log_likl(contribs):
+    """ Aggregate contributions to the likelihood value.
+    """
+    # We want to make sure to note if the we truncated zero-probability agents.
+    if sum(np.abs(contribs) > HUGE_FLOAT) > 0:
+        record_warning(5)
+
+    crit_val = -np.mean(np.clip(np.log(contribs), -HUGE_FLOAT, HUGE_FLOAT))
+
+    return crit_val
+
+
+def check_optimization_parameters(x):
+    """ Check optimization parameters.
+    """
+    # Perform checks
+    assert (isinstance(x, np.ndarray))
+    assert (x.dtype == np.float)
+    assert (np.all(np.isfinite(x)))
+
+    # Finishing
+    return True
+
+
+def dist_optim_paras(x_all_curre, is_debug, info=None):
+    """ Update parameter values. The np.array type is maintained.
+    """
+    # Checks
+    if is_debug:
+        check_optimization_parameters(x_all_curre)
+
+    # Occupation A
+    coeffs_a = x_all_curre[0:6]
+
+    # Occupation B
+    coeffs_b = x_all_curre[6:12]
+
+    # Education
+    coeffs_edu = x_all_curre[12:15]
+
+    # Home
+    coeffs_home = x_all_curre[15:16]
+
+    # Cholesky
+    shocks_cholesky, info = get_cholesky(x_all_curre, info)
+
+    # Checks
+    if is_debug:
+        args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky)
+        assert check_model_parameters(*args)
+
+    # Collect arguments
+    args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky)
+
+    # Finishing
+    return args
+
+
+def get_cholesky(x, info=None):
+    """ Construct the Cholesky matrix.
+    """
+    shocks_cholesky = np.tile(0.0, (4, 4))
+    shocks_cholesky[0, :1] = x[16:17]
+    shocks_cholesky[1, :2] = x[17:19]
+    shocks_cholesky[2, :3] = x[19:22]
+    shocks_cholesky[3, :4] = x[22:26]
+
+    # Stabilization
+    if info is not None:
+        info = 0
+
+    # We need to ensure that the diagonal elements are larger than zero
+    # during an estimation. However, we want to allow for the special case of
+    # total absence of randomness for testing purposes of simulated datasets.
+    if not (np.count_nonzero(shocks_cholesky) == 0):
+        shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
+        for i in range(4):
+            if np.abs(shocks_cov[i, i]) < TINY_FLOAT:
+                shocks_cholesky[i, i] = np.sqrt(TINY_FLOAT)
+                if info is not None:
+                    info = 1
+
+    if info is not None:
+        return shocks_cholesky, info
+    else:
+        return shocks_cholesky, None
 
 
 def get_total_value(period, num_periods, delta, payoffs_systematic, draws,
@@ -102,7 +191,21 @@ def create_draws(num_periods, num_draws, seed, is_debug):
     return draws
 
 
-def add_solution(respy_obj, store, periods_payoffs_systematic,
+def cholesky_to_coeffs(shocks_cholesky):
+    """ This function maps the Cholesky factor into the coefficients as
+    specified in the initialization file.
+    """
+
+    shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
+    for i in range(4):
+        shocks_cov[i, i] = np.sqrt(shocks_cov[i, i])
+
+    shocks_coeffs = shocks_cov[np.triu_indices(4)].tolist()
+
+    return shocks_coeffs
+
+
+def add_solution(respy_obj, periods_payoffs_systematic,
         states_number_period, mapping_state_idx, periods_emax, states_all):
     """ Add solution to class instance.
     """
@@ -121,10 +224,6 @@ def add_solution(respy_obj, store, periods_payoffs_systematic,
     respy_obj.set_attr('is_solved', True)
 
     respy_obj.lock()
-
-    # Store object to file
-    if store:
-        respy_obj.store('solution.respy.pkl')
 
     # Finishing
     return respy_obj
@@ -345,8 +444,10 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
     # identical.
     labels = ['BASICS', 'AMBIGUITY', 'OCCUPATION A', 'OCCUPATION B']
     labels += ['EDUCATION', 'HOME', 'SHOCKS', 'SOLUTION']
-    labels += ['SIMULATION', 'ESTIMATION', 'PROGRAM', 'INTERPOLATION']
-    labels += ['SCIPY-BFGS', 'SCIPY-POWELL']
+    labels += ['SIMULATION', 'ESTIMATION', 'DERIVATIVES', 'SCALING']
+    labels += ['PROGRAM', 'PARALLELISM']
+    labels += ['INTERPOLATION', 'SCIPY-BFGS', 'SCIPY-POWELL', 'FORT-NEWUOA']
+    labels += ['FORT-BFGS']
 
     # Create initialization.
     with open(file_name, 'w') as file_:
@@ -375,18 +476,19 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                 file_.write('\n')
 
             if flag in ['SOLUTION', 'SIMULATION', 'PROGRAM', 'INTERPOLATION',
-                        'ESTIMATION']:
+                        'ESTIMATION', 'PARALLELISM', 'SCALING', 'DERIVATIVES']:
 
                 file_.write(flag.upper() + '\n\n')
+                keys = list(dict_[flag].keys())
+                keys.sort()
+                for key_ in keys:
 
-                for keys_ in dict_[flag]:
-
-                    if keys_ in ['tau']:
+                    if key_ in ['tau']:
                         str_ = '{0:<10} {1:20.0f} \n'
-                        file_.write(str_.format(keys_, dict_[flag][keys_]))
+                        file_.write(str_.format(key_, dict_[flag][key_]))
                     else:
                         str_ = '{0:<10} {1:>20} \n'
-                        file_.write(str_.format(keys_, str(dict_[flag][keys_])))
+                        file_.write(str_.format(key_, str(dict_[flag][key_])))
 
                 file_.write('\n')
 
@@ -443,7 +545,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
 
                 file_.write('\n')
 
-            if flag in ['SCIPY-POWELL', 'SCIPY-BFGS']:
+            if flag in ['SCIPY-POWELL', 'SCIPY-BFGS', 'FORT-NEWUOA', 'FORT-BFGS']:
 
                 # This function can also be used to print out initialization
                 # files without any optimization options. This is enough for
@@ -452,15 +554,16 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                     continue
 
                 file_.write(flag.upper() + '\n\n')
+                keys = list(dict_[flag].keys())
+                keys.sort()
+                for key_ in keys:
 
-                for keys_ in dict_[flag]:
-
-                    if keys_ in ['maxfun']:
+                    if key_ in ['maxfun', 'npt', 'maxiter']:
                         str_ = '{0:<10} {1:>20} \n'
-                        file_.write(str_.format(keys_, dict_[flag][keys_]))
+                        file_.write(str_.format(key_, dict_[flag][key_]))
                     else:
                         str_ = '{0:<10} {1:20.15f} \n'
-                        file_.write(str_.format(keys_, dict_[flag][keys_]))
+                        file_.write(str_.format(key_, dict_[flag][key_]))
 
                 file_.write('\n')
 
@@ -476,3 +579,97 @@ def format_opt_parameters(val, identifier, paras_fixed):
 
     # Finishing
     return line
+
+
+def process_est_log():
+    """ Process information in the est.respy.log for further inspection.
+    """
+    rslt = dict()
+
+    rslt['value_final'] = None
+    rslt['paras_final'] = []
+
+    is_report = False
+    is_final = False
+    with open('est.respy.log') as in_file:
+        for i, line in enumerate(in_file.readlines()):
+            list_ = shlex.split(line)
+
+            if not list_:
+                continue
+
+            if list_[0] == 'ESTIMATION':
+                is_report = True
+            try:
+                if list_[1] == 'Final':
+                    is_final = True
+            except IndexError:
+                pass
+
+            # Collect the final value of criterion function
+            if is_report and (list_[0] == 'Criterion'):
+                rslt['value_final'] = float(list_[1])
+
+            if is_final:
+                try:
+                    rslt['paras_final'] += [float(list_[1])]
+                except ValueError:
+                    pass
+
+    # Type transformations
+    rslt['paras_final'] = np.array(rslt['paras_final'])
+
+    return rslt
+
+
+def get_est_info():
+    """ This function reads in the parameters from the last step of a
+    previous estimation run.
+    """
+    def _process_value(input_):
+        try:
+            value = float(input_)
+        except ValueError:
+            value = '---'
+
+        return value
+
+    rslt = dict()
+
+    paras_start, paras_step, paras_current = [], [], []
+    with open('est.respy.info') as in_file:
+        for i, line in enumerate(in_file.readlines()):
+
+            list_ = shlex.split(line)
+
+            if i in range(12, 38):
+                paras_start += [float(list_[1])]
+                paras_step += [float(list_[2])]
+                paras_current += [float(list_[3])]
+
+            if i == 5:
+                value_start = _process_value(list_[0])
+                value_step = _process_value(list_[1])
+                value_current = _process_value(list_[2])
+
+            if i == 64:
+                num_step = int(float(list_[3]))
+
+            if i == 66:
+                num_eval = int(float(list_[3]))
+
+    rslt['paras_current'] = np.array(paras_current)
+    rslt['paras_start'] = np.array(paras_start)
+    rslt['paras_step'] = np.array(paras_step)
+
+    rslt['value_current'] = value_current
+    rslt['value_start'] = value_start
+    rslt['value_step'] = value_step
+
+    rslt['num_eval'] = num_eval
+    rslt['num_step'] = num_step
+
+    # Finishing
+    return rslt
+
+

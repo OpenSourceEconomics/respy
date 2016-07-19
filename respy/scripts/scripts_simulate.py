@@ -1,13 +1,10 @@
 #!/usr/bin/env python
 
-# standard library
 import pickle as pkl
-import numpy as np
-
 import argparse
 import os
 
-# project library
+from respy.python.shared.shared_auxiliary import get_est_info
 from respy import simulate
 from respy import RespyCls
 
@@ -29,7 +26,7 @@ def dist_input_arguments(parser):
     assert (os.path.exists(init_file))
 
     if update:
-        assert (os.path.exists('paras_steps.respy.log'))
+        assert (os.path.exists('est.respy.info'))
 
     if solved is not None:
         assert (os.path.exists(solved))
@@ -51,8 +48,7 @@ def scripts_simulate(update, init_file, file_sim, solved):
     # Update parametrization of the model if resuming from a previous
     # estimation run.
     if update:
-        x0 = np.genfromtxt('paras_steps.respy.log')
-        respy_obj.update_model_paras(x0)
+        respy_obj.update_model_paras(get_est_info()['paras_step'])
 
     # Update file for output.
     if file_sim is not None:

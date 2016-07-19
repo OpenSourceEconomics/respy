@@ -1,12 +1,8 @@
-# standard library
 import numpy as np
-
-import glob
 import sys
 import os
 
-# project library
-from respy.python.shared.shared_constants import ROOT_DIR
+from respy.python.shared.shared_constants import EXEC_DIR
 
 # Hard coded structure of admissible groups and flags in the
 # initialization file.
@@ -20,13 +16,20 @@ STRUCTURE['SHOCKS'] = ['coeff']
 STRUCTURE['SOLUTION'] = ['draws', 'store', 'seed']
 STRUCTURE['SIMULATION'] = ['agents', 'seed', 'file']
 
-STRUCTURE['ESTIMATION'] = ['draws', 'optimizer', 'maxiter', 'seed']
+STRUCTURE['ESTIMATION'] = ['draws', 'optimizer', 'maxfun', 'seed']
 STRUCTURE['ESTIMATION'] += ['tau', 'file', 'agents']
 
+STRUCTURE['DERIVATIVES'] = ['version', 'eps']
+STRUCTURE['SCALING'] = ['flag', 'minimum']
+
 STRUCTURE['PROGRAM'] = ['debug', 'version']
-STRUCTURE['INTERPOLATION'] = ['apply', 'points']
-STRUCTURE['SCIPY-BFGS'] = ['gtol', 'epsilon']
-STRUCTURE['SCIPY-POWELL'] = ['maxfun', 'xtol', 'ftol']
+STRUCTURE['PARALLELISM'] = ['flag', 'procs']
+
+STRUCTURE['INTERPOLATION'] = ['flag', 'points']
+STRUCTURE['SCIPY-BFGS'] = ['gtol', 'maxiter']
+STRUCTURE['SCIPY-POWELL'] = ['maxfun', 'xtol', 'ftol', 'maxiter']
+STRUCTURE['FORT-NEWUOA'] = ['maxfun', 'npt', 'rhobeg', 'rhoend']
+STRUCTURE['FORT-BFGS'] = ['maxiter', 'stpmx', 'gtol']
 
 
 def check_line(group, flag, value):
@@ -80,13 +83,21 @@ def check_line(group, flag, value):
             if flag in ['debug']:
                 assert (value in [True, False])
             if flag in ['version']:
-                assert (value in ['FORTRAN', 'F2PY', 'PYTHON'])
-                if value == 'F2PY':
-                    fname = glob.glob(ROOT_DIR + '/fortran/f2py_library*.so')[0]
-                    assert os.path.exists(fname)
+                assert (value in ['FORTRAN', 'PYTHON'])
                 if value == 'FORTRAN':
-                    fname = ROOT_DIR + '/fortran/bin/resfort'
+                    fname = EXEC_DIR + '/resfort_scalar'
                     assert os.path.exists(fname)
+            if flag in ['procs']:
+                assert isinstance(value, int)
+                assert value > 0
+
+        if group == 'PARALLELISM':
+            if flag in ['flag'] and value:
+                fname = EXEC_DIR + '/resfort_parallel_master'
+                assert os.path.exists(fname)
+            if flag in ['procs']:
+                assert isinstance(value, int)
+                assert value > 0
 
         if group == 'SIMULATION':
             if flag in ['agents', 'seed']:
@@ -95,12 +106,25 @@ def check_line(group, flag, value):
             if flag in ['file']:
                 assert isinstance(value, str)
 
+        if group == 'DERIVATIVE':
+            if flag in ['version']:
+                assert (value in ['forward-differences'])
+            if flag in ['eps']:
+                assert isinstance(value, float)
+                assert (value > 0)
+
+        if group == 'SCALING':
+            if flag in ['flag']:
+                assert (value in [True, False])
+            if flag in ['minimum']:
+                assert isinstance(value, float)
+                assert (value > 0)
+
         if group == 'INTERPOLATION':
-            if flag in ['apply']:
+            if flag in ['flag']:
                 assert (value in [True, False])
             if flag in ['points']:
                 assert isinstance(value, int)
-            if flag in ['points']:
                 assert (value > 0)
 
     except AssertionError:

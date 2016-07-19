@@ -1,11 +1,8 @@
-# standard library
 import numpy as np
-
 import shlex
 import sys
 import os
 
-# project library
 from respy.python.read.read_auxiliary import check_line
 
 
@@ -83,11 +80,11 @@ def _type_conversions(flag, value):
     """
     # Type conversion
     if flag in ['agents', 'periods', 'start', 'max', 'draws',
-        'seed', 'points', 'maxiter', 'maxfun']:
+        'seed', 'points', 'maxiter', 'maxfun', 'procs', 'npt', 'maxiter']:
         value = int(value)
     elif flag in ['file', 'options']:
         value = str(value)
-    elif flag in ['debug', 'store', 'apply']:
+    elif flag in ['debug', 'store', 'flag']:
         assert (value.upper() in ['TRUE', 'FALSE'])
         value = (value.upper() == 'TRUE')
     elif flag in ['version', 'optimizer']:
@@ -147,7 +144,7 @@ def _process_cases(list_):
 
 def _check_integrity_complete(dict_):
     """ Perform some additional checks that are only possible after the full
-    file is processed..
+    file is processed.
     """
     # Antibugging
     assert (isinstance(dict_, dict))
@@ -172,16 +169,30 @@ def _check_integrity_complete(dict_):
         sys.exit(msg)
 
     try:
-       assert (len(dict_['HOME']['coeffs']) == 1)
+        assert (len(dict_['HOME']['coeffs']) == 1)
     except AssertionError:
         msg = '\n Too many coefficients in group HOME.\n'
+        sys.exit(msg)
+
+    try:
+        if dict_['PARALLELISM']['flag']:
+            assert (dict_['PROGRAM']['version'] == 'FORTRAN')
+    except AssertionError:
+        msg = '\n Parallelism only available with FORTRAN implementation.\n'
+        sys.exit(msg)
+
+    try:
+        if dict_['PARALLELISM']['flag']:
+            assert (dict_['PARALLELISM']['procs'] > 1)
+    except AssertionError:
+        msg = '\n Parallelism requires at least two processors.\n'
         sys.exit(msg)
 
     # Check all required keys are defined. Note that additional keys might
     # exists due to the specification of optimizer options.
     keys_ = ['BASICS', 'EDUCATION', 'OCCUPATION A', 'OCCUPATION B']
     keys_ += ['HOME', 'INTERPOLATION', 'SHOCKS', 'SOLUTION']
-    keys_ += ['SIMULATION', 'PROGRAM', 'ESTIMATION']
+    keys_ += ['SIMULATION', 'PROGRAM', 'ESTIMATION', 'PARALLELISM']
     try:
         assert (set(keys_) <= set(dict_.keys()))
     except AssertionError:

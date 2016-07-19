@@ -1,23 +1,24 @@
-# standard library
 import numpy as np
-import logging
 
-# project library
+from respy.python.record.record_simulation import record_simulation_progress
+from respy.python.record.record_simulation import record_simulation_stop
+from respy.python.record.record_simulation import record_simulation_start
 from respy.python.shared.shared_auxiliary import transform_disturbances
 from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.shared.shared_auxiliary import get_total_value
-
-logger = logging.getLogger('RESPY_SIMULATE')
 
 ''' Main function
 '''
 
 
 def pyth_simulate(periods_payoffs_systematic, mapping_state_idx,
-        periods_emax, num_periods, states_all, num_agents_sim, edu_start,
-        edu_max, delta, periods_draws_sims, shocks_cholesky):
+        periods_emax, states_all, shocks_cholesky, num_periods, edu_start, edu_max, delta,
+        num_agents_sim, periods_draws_sims, seed_sim):
     """ Wrapper for PYTHON and F2PY implementation of sample simulation.
     """
+
+    record_simulation_start(num_agents_sim, seed_sim)
+
     # Standard deviates transformed to the distributions relevant for
     # the agents actual decision making as traversing the tree.
     periods_draws_sims_transformed = np.tile(np.nan,
@@ -39,9 +40,7 @@ def pyth_simulate(periods_payoffs_systematic, mapping_state_idx,
 
         dataset[count, 0] = i
 
-        # Logging
-        if (i != 0) and (i % 100 == 0):
-            logger.info('... simulated ' + str(i) + ' agents')
+        record_simulation_progress(i)
 
         # Iterate over each period for the agent
         for period in range(num_periods):
@@ -96,6 +95,8 @@ def pyth_simulate(periods_payoffs_systematic, mapping_state_idx,
 
             # Update row indicator
             count += 1
+
+    record_simulation_stop()
 
     # Finishing
     return dataset

@@ -1,63 +1,45 @@
 #!/usr/bin/env python
-
-# standard library
-import os
-
-# WAF system
-from waflib.Task import Task
-
-
-class CreateF2pyInterfaces(Task):
-
-    def run(self):
-
-        os.chdir('fortran')
-
-        from numpy import f2py
-        extra_args = '-I../.bld -L../.bld/fortran -lresfort -llapack'
-
-        with open('f2py_interface_library.f90', 'rb') as sourcefile:
-            sourcecode = sourcefile.read()
-        f2py.compile(sourcecode, 'f2py_library', extra_args, extension='.f90')
-
-        with open('f2py_interface_debug.f90', 'rb') as sourcefile:
-            sourcecode = sourcefile.read()
-        f2py.compile(sourcecode, 'f2py_debug', extra_args, extension='.f90')
-
-        os.chdir('../')
-
-
 def build(ctx):
 
     # Create the RESFORT library. This is build in addition to the RESFORT
     # executable to allow for the use of an F2PY interface to the core
     # functions as well.
-    src = ['shared/shared_constants.f90', 'shared/shared_auxiliary.f90',
-         'resfort_slsqp.f', 'solve/solve_auxiliary.f90',
-         'solve/solve_fortran.f90', 'evaluate/evaluate_auxiliary.f90',
-         'evaluate/evaluate_fortran.f90', 'estimate/estimate_auxiliary.f90',
-         'simulate/simulate_fortran.f90']
+    src = ['shared/shared_constants.f90', 'shared/shared_containers.f90',
+        'shared/shared_lapack_interfaces.f90', 'record/record_warning.f90',
+        'shared/shared_auxiliary.f90',
+        'shared/shared_utilities.f90',
+        'solve/solve_auxiliary.f90', 'solve/solve_fortran.f90',
+        'evaluate/evaluate_auxiliary.f90', 'evaluate/evaluate_fortran.f90',
+        'estimate/estimate_auxiliary.f90', 'estimate/estimate_fortran.f90',
+        'record/record_estimation.f90', 'record/record_solution.f90', 'record/record_simulation.f90',
+        'simulate/simulate_fortran.f90',
+        'optimizers/newuoa.f90', 'optimizers/dfpmin.f90', 'resfort_library.f90']
 
     flags = ctx.env.FCFLAGS + ['-fPIC']
     ctx(features=['fc', 'fcstlib'], source=src, target='resfort', fcflags=flags)
 
     ctx.add_group()
 
-    # Build F2PY interface
-    ctx.add_to_group(CreateF2pyInterfaces(env=ctx.env))
+    # Compile scalar RESFORT executable.
+    ctx(features=['fc', 'fcprogram'], source='resfort_scalar.f90',
+        target='resfort_scalar')
 
-    # Compile RESFORT executable. We will not use the RESFORT library which
-    # is used for the F2PY interface to allow for speed optimizations by
-    # preprocessing.
-    src = ['shared/shared_constants.f90', 'shared/shared_auxiliary.f90',
-         'resfort_slsqp.f', 'solve/solve_auxiliary.f90',
-         'solve/solve_fortran.f90', 'evaluate/evaluate_auxiliary.f90',
-         'evaluate/evaluate_fortran.f90', 'estimate/estimate_auxiliary.f90',
-         'simulate/simulate_fortran.f90', 'resfort.f90']
+    # Compile the parallel RESFORT executables. We follow the master/slave
+    # design pattern.
+    if ctx.env['PARALLELISM']:
 
-    ctx(features=['fc', 'fcprogram'], source=src, target='resfort',
-          lib='lapack')
+        master = ['parallelism/parallelism_constants.f90',
+            'parallelism/parallelism_auxiliary.f90',
+            'resfort_parallel.f90']
 
-    # Build the upgraded Keane and Wolpin (1994) program
-    ctx.recurse('miscellaneous/kw_recomputation')
+        ctx(features=['fc', 'fcprogram'], source=master,
+            target='resfort_parallel_master')
 
+        ctx.add_group()
+
+        slave = ['parallelism/parallelism_constants.f90',
+            'parallelism/parallelism_auxiliary.f90',
+            'parallelism/parallelism_slave.f90']
+
+        ctx(features=['fc', 'fcprogram'], source=slave,
+             target='resfort_parallel_slave')

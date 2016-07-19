@@ -3,7 +3,6 @@
 RESPY package.
 """
 
-# standard library
 import shutil
 import os
 

@@ -1,36 +1,32 @@
 language: python
 python:
-- 2.7
-- 3.3
-- 3.4
-- 3.5
+  - 2.7
+  - 3.3
+  - 3.4
+  - 3.5
+
 addons:
   apt:
-    packages:
-    - gfortran
-    - libatlas-dev
-    - libatlas-base-dev
-bundler_args: "--retry 3"
+    packages: &common_packages
+      - gfortran
+      - libatlas-dev
+      - libatlas-base-dev
+
+bundler_args: --retry 3
+
 install:
-- travis_retry travis_wait pip install -r requirements.txt
-- pip install codecov
-- pip install tox
+  - travis_retry travis_wait pip install -r requirements.txt
+  - pip install codecov
+  - pip install tox
 script:
-- travis_wait tox -e py27 -v
-- travis_wait tox -e py34 -v
-- travis_wait tox -e py35 -v
-- python tools/travis_run.py
+  - travis_wait tox -e py27 -v
+  - travis_wait tox -e py34 -v
+  - travis_wait tox -e py35 -v
+  - python tools/travis/run.py
+
 after_success:
   - codecov
 
-deploy:
-  provider: pypi
-  user: peisenha
-  password:
-    secure: BGqFERRexO106h1cghvrGUYu/0VVptXg6aW0CJHd5C+Al8FJzpfWV/db24vt60qV+5sLWh5YmEv2sOuWSiXk4x2I+meXyy931/S4Nvxrxi+tWJNMKinva922sEHW9LcHWj67/buYbvnHoH1CCMpsdNcEcBX/5YKJ2mQifFn2iJYgQvUtZjuwD8YKmfGqNjXBgEgDaTr7Y1/0SannrmEZ7wxvOCL8CAkLvVMcR/Lo3hlSHo8EZ5vo3G4byt3JVWD3NOnaaWhmtUQa3ZDjnqctiEj34IvZ+HgYAwiDBbSSWmVv2oeuRVq3ax06Jx5iyUqoa98CscLSrAeDlzSzc/4T0VXRDixbHJyOmfkqvfYkHmWaqYEkp9y/xB4DxD5tw086CPmIFCgnsr4fxnOIs6796wUeOAGqq260uhgvJLJOOrecOZPg6jglXCzTFWRodmG/uxSztS6CRcmwcxXA94E07RSQ0NspPKOWgBaLULZL9wQcSViZRLUssRAA2HUa6SgVRKxnX6TfRayDsYIFeBk1oYQQuKijT8lubTXhETZewX2c6REypFnIsAoJFONG5SxqKEmH/hcOCXj8MA5ejq7eoFI7DhYaxU74jU3WfdYhl/W86atQKup1HrjIWqXpQ50R7lTr1ij6EyWoOQN8FWMI/AZhlTwujsu7A+GVq78VxyM=
-  on:
-    tags: true
-    repo: restudToolbox/package
-
 notifications:
   slack: policy-lab:LkWqVb15dNvdLjMQOyacTXy6
+  email: false

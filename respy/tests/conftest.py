@@ -1,12 +1,10 @@
 """ This module provides the fixtures for the PYTEST runs.
 """
-# standard library
 import numpy as np
 
 import tempfile
 import pytest
 import os
-
 
 @pytest.fixture(scope='function')
 def set_seed():
