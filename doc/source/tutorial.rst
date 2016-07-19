@@ -213,15 +213,19 @@ rhoend      float       minimum value of size for trust region
 The maximum number of function evaluations is determined by the minimum of the two flags specified in this section and the *ESTIMATION* block.
 
 
-Simulation and Estimation
--------------------------
+Examples
+--------
 
-Let us explore the basic capabilities of the **respy** package in this tutorial (`script <https://github.com/restudToolbox/package/blob/master/example/example.py>`_).  We usually either want to simulate a synthetic sample from the  model or start an estimation run. Whatever the case, we always initialize an instance of the *RespyCls* first by passing in the path to the initialization file.
+Let us explore the basic capabilities of the **respy** package with a couple of examples. All the required material is available `online <https://github.com/restudToolbox/package/tree/master/example>`_.
+
+**Simulation and Estimation**
+
+We usually either want to simulate a synthetic sample from the  model or start an estimation run. Whatever the case, we always initialize an instance of the *RespyCls* first by passing in the path to the initialization file.
 ::
 
     from respy import RespyCls
 
-    respy_obj = RespyCls('data_one.ini')
+    respy_obj = RespyCls('example.ini')
 
 Now we can simulate a sample from the model::
 
@@ -249,8 +253,7 @@ We can now simulate a sample using the estimated parameters, but updating the in
     respy.simulate(respy_obj)
 
 
-Recomputing Keane & Wolpin (1994)
----------------------------------
+**Recomputing Keane & Wolpin (1994)**
 
 Just using the capabilities outlined so far, it is straightforward to compute some of the key results in the original paper with a simple script::
 
