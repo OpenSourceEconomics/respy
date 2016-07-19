@@ -69,7 +69,9 @@ PROGRAM resfort_parallel
 
         PRINT *, 'I am here'
         CALL get_time(today_char, now_char)
-        OPEN(UNIT=12, FILE='core.respy.log', ACTION='WRITE', ACCESS='APPEND')
+        OPEN(UNIT=12, FILE='core.respy.log'); CLOSE(12, STATUS='delete')
+
+        OPEN(UNIT=12, FILE='core.respy.log', STATUS='NEW', ACCESS='APPEND')
 
             WRITE(12, 120) 'Star', now_char
             CALL fort_estimate_parallel(crit_val, success, message, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed, optimizer_used, maxfun, is_scaled, scaled_minimum, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, newuoa_maxfun, bfgs_gtol, bfgs_maxiter, bfgs_stpmx)
