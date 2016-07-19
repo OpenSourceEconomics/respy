@@ -262,7 +262,7 @@ Just using the capabilities outlined so far, it is straightforward to compute so
 
     # We can simply iterate over the different model specifications outlined in
     # Table 1 of their paper.
-    for spec in ['data_one.ini', 'data_two.ini', 'data_three.ini']:
+    for spec in ['kw_data_one.ini', 'kw_data_two.ini', 'kw_data_three.ini']:
 
         # Process relevant model initialization file
         respy_obj = respy.RespyCls(spec)
