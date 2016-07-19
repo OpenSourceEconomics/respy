@@ -104,7 +104,7 @@ if NOTIFICATION:
     # Attachment
     os.chdir(PACKAGE_DIR + '/development/testing/property')
 
-    f = open('report.testing.log', 'r')
+    f = open('property.respy.log', 'r')
 
     os.chdir(CURRENT_DIR)
 
@@ -124,5 +124,3 @@ if NOTIFICATION:
 
     # Disconnect
     server.quit()
-
-

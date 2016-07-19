@@ -2,9 +2,9 @@
 !******************************************************************************
 MODULE solve_auxiliary
 
-	!/*	external modules	*/
+  !/*	external modules	*/
 
-    USE recording_solution 
+    USE recording_solution
 
     USE shared_auxiliary
 
@@ -12,7 +12,7 @@ MODULE solve_auxiliary
 
     USE shared_utilities
 
-	!/*	setup	*/
+  !/*	setup	*/
 
     IMPLICIT NONE
 
@@ -133,11 +133,11 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
         ! Record maximum number of state space realizations by time period
         states_number_period(period + 1) = k
 
-    END DO      
+    END DO
 
     ! Auxiliary object
     max_states_period = MAXVAL(states_number_period)
-    
+
     ! Initialize a host of containers, whose dimensions are not clear.
     ALLOCATE(states_all(num_periods, max_states_period, 4))
     states_all = states_all_tmp(:, :max_states_period, :)
@@ -176,7 +176,7 @@ SUBROUTINE fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
-    
+
     ! ALlocate container (if required) and initilaize missing values.
     IF (.NOT. ALLOCATED(periods_payoffs_systematic)) THEN
         ALLOCATE(periods_payoffs_systematic(num_periods, max_states_period, 4))
@@ -205,7 +205,7 @@ SUBROUTINE fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_
 
             ! Calculate systematic part of payoff in occupation A
             CALL clip_value(periods_payoffs_systematic(period, k, 1), EXP(DOT_PRODUCT(covars, coeffs_a)), zero_dble, HUGE_FLOAT, info)
-                
+
             ! Calculate systematic part of payoff in occupation B
             CALL clip_value(periods_payoffs_systematic(period, k, 2), EXP(DOT_PRODUCT(covars, coeffs_b)), zero_dble, HUGE_FLOAT, info)
 
@@ -273,7 +273,7 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
     REAL(our_dble), ALLOCATABLE         :: maxe(:)
 
     LOGICAL                             :: any_interpolated
-    
+
     LOGICAL, ALLOCATABLE                :: is_simulated(:)
     INTEGER(our_int)                    :: seed_inflated(15)
     INTEGER(our_int)                    :: seed_size
@@ -293,8 +293,8 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
             periods_emax(period + 1, :num_states) = zero_dble
         END DO
         RETURN
-    END IF    
-    
+    END IF
+
     seed_inflated(:) = 123
 
     CALL RANDOM_SEED(size=seed_size)
@@ -317,7 +317,7 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
 
 
         IF (is_write) CALL record_solution(4, period, num_states)
-        
+
         any_interpolated = (num_points_interp .LE. num_states) .AND. is_interpolated
 
         IF (any_interpolated) THEN
@@ -363,7 +363,7 @@ FUNCTION get_simulated_indicator(num_points, num_states, period, is_debug)
     INTEGER(our_int), INTENT(IN)      :: num_points
     INTEGER(our_int), INTENT(IN)      :: period
 
-    LOGICAL, INTENT(IN)               :: is_debug 
+    LOGICAL, INTENT(IN)               :: is_debug
 
     !/* internal objects        */
 
@@ -558,7 +558,7 @@ SUBROUTINE get_predictions(predictions, endogenous, exogenous, maxe, is_simulate
 
     ! DEVELOPMENT NOTE
     !
-    !   The exogenous array remains assumed shape for now due to the 
+    !   The exogenous array remains assumed shape for now due to the
     !   modification for the STRUCT_RECOMPUTATION project.
     !
 
@@ -584,6 +584,7 @@ SUBROUTINE get_predictions(predictions, endogenous, exogenous, maxe, is_simulate
     REAL(our_dble)                    :: exogenous_is_available(num_points_interp, 9)
     REAL(our_dble)                    :: endogenous_is_available(num_points_interp)
     REAL(our_dble)                    :: endogenous_predicted(num_states)
+    REAL(our_dble)                    :: endogenous_predicted_clipped(num_states)
     REAL(our_dble)                    :: coeffs(9)
     REAL(our_dble)                    :: r_squared
     REAL(our_dble)                    :: bse(9)
@@ -634,10 +635,10 @@ SUBROUTINE get_predictions(predictions, endogenous, exogenous, maxe, is_simulate
 
     CALL get_pred_info(r_squared, bse, endogenous_is_available, endogenous_predicted_available, exogenous_is_available, num_points_interp, 9)
 
-    CALL clip_value(endogenous_predicted, endogenous_predicted, zero_dble, HUGE_FLOAT, infos)
+    CALL clip_value(endogenous_predicted_clipped, endogenous_predicted, zero_dble, HUGE_FLOAT, infos)
 
     ! Construct predicted EMAX for all states and the replace interpolation points with simulated values.
-    predictions = endogenous_predicted + maxe
+    predictions = endogenous_predicted_clipped + maxe
 
     DO k = 0, (num_states - 1)
 
@@ -682,7 +683,7 @@ SUBROUTINE get_coefficients(coeffs, Y, X, num_covars, num_states)
     REAL(our_dble)                  :: A_sub(8, 8)
     REAL(our_dble)                  :: C_sub(8, 8)
     REAL(our_dble)                  :: D_sub(8, num_states)
-    
+
     REAL(our_dble)                  :: X_sub(num_states, 8)
     REAL(our_dble)                  :: coeffs_sub(8)
 
@@ -693,7 +694,7 @@ SUBROUTINE get_coefficients(coeffs, Y, X, num_covars, num_states)
 !------------------------------------------------------------------------------
 
 
-    ! This temporary modification allows to run the more restricted interpolation model for the structRecomputation project. 
+    ! This temporary modification allows to run the more restricted interpolation model for the structRecomputation project.
     INQUIRE(FILE='.structRecomputation.tmp', EXIST=IS_TEMPORARY)
 
     IF(IS_TEMPORARY) THEN
@@ -813,13 +814,13 @@ SUBROUTINE get_pred_info(r_squared, bse, observed, predicted, exogenous, num_sta
         ss_total = ss_total + (observed(i) - mean_observed)**2
     END DO
 
-    ! Turning off all randomness during testing requires special case to avoid an error due to the division by zero. 
+    ! Turning off all randomness during testing requires special case to avoid an error due to the division by zero.
     IF (ss_residuals .EQ. zero_dble) THEN
         r_squared = one_dble
     ELSE
         r_squared = one_dble - ss_residuals / ss_total
     END IF
-    
+
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
@@ -862,7 +863,7 @@ SUBROUTINE get_future_value(emax_simulated, draws_emax_transformed, period, k, p
 
         ! Calculate total value
         CALL get_total_value(total_payoffs, period, payoffs_systematic, draws, mapping_state_idx, periods_emax, k, states_all, delta, edu_start, edu_max)
-   
+
         ! Determine optimal choice
         maximum = MAXVAL(total_payoffs)
 

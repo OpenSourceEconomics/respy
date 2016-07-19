@@ -34,7 +34,7 @@ else:
 ''' Request '''
 #MODULE test_parallelism METHOD test_1 SEED: 24029
 
-seed = 1233 # 6216748723
+seed = 73100 # 6216748723
 
 
 ''' Error Reproduction '''
@@ -43,12 +43,12 @@ cleanup_testing_infrastructure(True)
 np.random.seed(seed)
 
 # Construct test
-#test_dict = get_test_dict(PACKAGE_DIR + '/respy/tests')
-#module, method = get_random_request(test_dict)
+test_dict = get_test_dict(PACKAGE_DIR + '/respy/tests')
+module, method = get_random_request(test_dict)
 
-module, method = 'test_f2py', 'test_8'
+#module, method = 'test_f2py', 'test_8'
 count = 0
-os.system('git clean -d -f')
+#os.system('git clean -d -f')
 for i in range(10000):
 	print(module, method)
 	mod = importlib.import_module(module)

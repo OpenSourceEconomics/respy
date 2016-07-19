@@ -97,7 +97,6 @@ SUBROUTINE get_cholesky(shocks_cholesky, x, info)
     INTEGER(our_int)                :: i
 
     REAL(our_dble)                  :: shocks_cov(4, 4)
-    REAL(our_dble)                  :: val
 
 !------------------------------------------------------------------------------
 ! Algorithm

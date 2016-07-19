@@ -114,7 +114,7 @@ class TestClass(object):
 
             # We know even more for the deterministic case.
             if constr['is_deterministic']:
-                assert (crit_val in [0.0, 1.0])
+                assert (crit_val in [-1.0, 0.0])
 
     def test_2(self):
         """ This test ensures that the evaluation of the criterion function
@@ -301,4 +301,3 @@ class TestClass(object):
             if base_est_log is None:
                 base_est_log = open('est.respy.log', 'r').readlines()
             compare_est_log(base_est_log)
-
