@@ -6,7 +6,7 @@ We now illustrate the basic capabilities of the **respy** package. First, we pre
 Model Specification
 -------------------
 
-The model is specified in an initialization file. For an example, check out the first specification analyzed in the original paper (Table 1) `online <https://github.com/restudToolbox/package/blob/master/example/data_one.ini>`_.
+The model is specified in an initialization file. For an example, check out the first specification analyzed in the original paper (Table 1) `online <https://github.com/restudToolbox/package/blob/master/respy/tests/resources/kw_data_one.ini>`_.
 
 We turn to each of the ingredients in more details.
 
@@ -100,7 +100,7 @@ seed        int         random seed for the EMAX approximation
 
 =======     ======      ==========================
 Key         Value       Interpretation
-=======     ======      ==========================
+=======     ======      ========================https://github.com/restudToolbox/package/blob/master/example/data_one.ini==
 file        str         file to print simulated sample
 agents      int         number of simulated agents
 seed        int         random seed for agent experience
@@ -244,7 +244,7 @@ Now that we have some observed data, we can start an estimation. Here we are usi
     x, crit_val = estimate(respy_obj)
 
 This directly returns the value of the coefficients at the final step of the optimizer as well as
-the value of the criterion function. However, some additional files appear in the meantime. Monitoring the estimation is best done using **est.respy.info** and more details are in **est.respy.info**.
+the value of the criterion function. However, some additional files appear in the meantime. Monitoring the estimation is best done using **est.respy.info** and more details are in **est.respy.log**.
 
 We can now simulate a sample using the estimated parameters, but updating the instance of the *RespyCls* with the parameters returned from the estimation routine.
 ::
