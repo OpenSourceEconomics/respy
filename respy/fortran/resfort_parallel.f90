@@ -10,7 +10,6 @@ PROGRAM resfort_parallel
 
     USE resfort_library
 
-    USE recording_estimation
     USE mpi
 
     !/* setup                   */
@@ -50,10 +49,6 @@ PROGRAM resfort_parallel
     CHARACTER(150)                  :: message
     CHARACTER(10)                   :: request
 
-    CHARACTER(55)                   :: today_char
-    CHARACTER(55)                   :: now_char
-    CHARACTER(155)                  :: val_char
-    CHARACTER(50)                   :: tmp_char
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
@@ -65,25 +60,8 @@ PROGRAM resfort_parallel
     CALL MPI_COMM_SPAWN(TRIM(exec_dir) // '/resfort_parallel_slave', MPI_ARGV_NULL, num_slaves, MPI_INFO_NULL, 0, MPI_COMM_WORLD, SLAVECOMM, MPI_ERRCODES_IGNORE, ierr)
 
     IF (request == 'estimate') THEN
-      120 FORMAT(3x,A4,27X,A8)
 
-        PRINT *, 'I am here'
-        CALL get_time(today_char, now_char)
-        OPEN(UNIT=12, FILE='core.respy.log'); CLOSE(12, STATUS='delete')
-
-        OPEN(UNIT=12, FILE='core.respy.log', STATUS='NEW', ACCESS='APPEND')
-
-            WRITE(12, 120) 'Star', now_char
-          CLOSE(12)
-
-            CALL fort_estimate_parallel(crit_val, success, message, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed, optimizer_used, maxfun, is_scaled, scaled_minimum, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, newuoa_maxfun, bfgs_gtol, bfgs_maxiter, bfgs_stpmx)
-            CALL get_time(today_char, now_char)
-
-            OPEN(UNIT=12, FILE='core.respy.log', ACCESS='APPEND')
-
-            WRITE(12, 120) 'ENDR', now_char
-
-          CLOSE(12)
+        CALL fort_estimate_parallel(crit_val, success, message, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed, optimizer_used, maxfun, is_scaled, scaled_minimum, newuoa_npt, newuoa_rhobeg, newuoa_rhoend, newuoa_maxfun, bfgs_gtol, bfgs_maxiter, bfgs_stpmx)
 
     ELSE IF (request == 'simulate') THEN
 

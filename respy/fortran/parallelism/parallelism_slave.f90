@@ -56,11 +56,7 @@ PROGRAM resfort_parallel_slave
     CHARACTER(225)                  :: optimizer_used
     CHARACTER(225)                  :: exec_dir
     CHARACTER(10)                   :: request
-    character(len=1024) :: filename
-    CHARACTER(55)                   :: today_char
-    CHARACTER(55)                   :: now_char
-    CHARACTER(155)                  :: val_char
-    CHARACTER(50)                   :: tmp_char
+
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
@@ -71,50 +67,19 @@ PROGRAM resfort_parallel_slave
 
     CALL MPI_COMM_GET_PARENT(PARENTCOMM, ierr)
 
-    CALL get_time(today_char, now_char)
-
-    write (filename, "(A5,I2,A10)") 'core-', rank, '.respy.log'
-    120 FORMAT(3x,A25,27X,A8)
-
-    OPEN(UNIT=99, FILE=TRIM(filename)); CLOSE(99, STATUS='delete')
-
-    OPEN(UNIT=12, FILE=TRIM(filename), ACCESS='APPEND')
-
-        WRITE(12, 120) 'Ready to go', now_char
-    CLOSE(12)
-
 
     CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, is_scaled, scaled_minimum, optimizer_used, dfunc_eps, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend, bfgs_gtol, bfgs_stpmx, bfgs_maxiter)
-
-    OPEN(UNIT=12, FILE=TRIM(filename), ACCESS='APPEND')
-        CALL get_time(today_char, now_char)
-        WRITE(12, 120) 'Stat space', now_char
-    CLOSE(12)
 
     CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, edu_start, edu_max)
 
 
-
     CALL distribute_workload(num_emax_slaves, num_obs_slaves)
-
-    OPEN(UNIT=12, FILE=TRIM(filename), ACCESS='APPEND')
-        CALL get_time(today_char, now_char)
-        WRITE(12, 120) 'draws', now_char
-    CLOSE(12)
 
     CALL create_draws(periods_draws_emax, num_draws_emax, seed_emax, is_debug)
 
-    OPEN(UNIT=12, FILE=TRIM(filename), ACCESS='APPEND')
-        CALL get_time(today_char, now_char)
-        WRITE(12, 120) 'entering loop', now_char
-    CLOSE(12)
-
 
     DO WHILE (STAY_AVAILABLE)
-      OPEN(UNIT=12, FILE=TRIM(filename), ACCESS='APPEND')
-          CALL get_time(today_char, now_char)
-          WRITE(12, 120) 'beginning lopp', now_char
-      CLOSE(12)
+
 
         CALL MPI_Bcast(task, 1, MPI_INT, 0, PARENTCOMM, ierr)
 
@@ -129,10 +94,6 @@ PROGRAM resfort_parallel_slave
 
         CALL dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x_all_current)
 
-        OPEN(UNIT=12, FILE=TRIM(filename), ACCESS='APPEND')
-            CALL get_time(today_char, now_char)
-            WRITE(12, 120) 'go for task', now_char
-        CLOSE(12)
 
 
         IF(task == 2) THEN
@@ -162,18 +123,7 @@ PROGRAM resfort_parallel_slave
 
         ELSEIF (task == 3) THEN
 
-                  OPEN(UNIT=12, FILE=TRIM(filename), ACCESS='APPEND')
-                  CALL get_time(today_char, now_char)
-                      WRITE(12, 120) 'go for task 3', now_char
-                  CLOSE(12)
-
             IF (.NOT. ALLOCATED(data_est)) THEN
-
-              OPEN(UNIT=12, FILE=TRIM(filename), ACCESS='APPEND')
-              CALL get_time(today_char, now_char)
-
-                  WRITE(12, 120) 'Setup data', now_char
-              CLOSE(12)
 
                 CALL read_dataset(data_est, num_agents_est)
 
@@ -190,46 +140,15 @@ PROGRAM resfort_parallel_slave
 
             END IF
 
-
-            OPEN(UNIT=12, FILE=TRIM(filename), ACCESS='APPEND')
-              CALL get_time(today_char, now_char)
-              WRITE(12, 120) 'Start calc', now_char
-            CLOSE(12)
-
-            CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start)
-
             CALL fort_calculate_payoffs_systematic_slave(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start, num_emax_slaves)
-
-            OPEN(UNIT=12, FILE=TRIM(filename), ACCESS='APPEND')
-              CALL get_time(today_char, now_char)
-              WRITE(12, 120) 'Start backw', now_char
-            CLOSE(12)
 
             CALL fort_backward_induction_slave(periods_emax, periods_draws_emax, states_number_period, periods_payoffs_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max, num_emax_slaves, .False.)
 
-            OPEN(UNIT=12, FILE=TRIM(filename), ACCESS='APPEND')
-              CALL get_time(today_char, now_char)
-              WRITE(12, 120) 'Start contrib', now_char
-            CLOSE(12)
-
             CALL fort_contributions(contribs, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_slave, periods_draws_prob, delta, tau, edu_start, edu_max)
-            OPEN(UNIT=12, FILE=TRIM(filename), ACCESS='APPEND')
-              CALL get_time(today_char, now_char)
-              WRITE(12, 120) 'done contrib', now_char
-            CLOSE(12)
-
 
             CALL MPI_SEND(contribs, num_obs_slaves(rank + 1), MPI_DOUBLE, 0, rank, PARENTCOMM, ierr)
 
         END IF
-
-        OPEN(UNIT=12, FILE=TRIM(filename), ACCESS='APPEND')
-
-          WRITE(12, *)
-          WRITE(12, *)
-          WRITE(12, *)
-
-        CLOSE(12)
 
     END DO
 

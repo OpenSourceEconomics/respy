@@ -20,7 +20,7 @@ MODULE recording_estimation
 
     PRIVATE
 
-    PUBLIC :: record_estimation, get_time
+    PUBLIC :: record_estimation
 
     !/* explicit interface   */
 
