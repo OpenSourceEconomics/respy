@@ -40,7 +40,7 @@ respy_obj = RespyCls('model.respy.ini')
 simulate(respy_obj)
 
 
-for num_procs in [1]:
+for num_procs in [2]:
 
 	respy_obj.unlock()
 	respy_obj.set_attr('num_procs', num_procs)
