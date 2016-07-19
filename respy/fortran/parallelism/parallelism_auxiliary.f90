@@ -459,7 +459,7 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_calculate_payoffs_systematic_slave(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start, num_emax_slaves)
+SUBROUTINE fort_calculate_payoffs_systematic_slave(periods_payoffs_systematic, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start, num_emax_slaves)
 
     !/* external objects        */
 
@@ -471,26 +471,27 @@ SUBROUTINE fort_calculate_payoffs_systematic_slave(periods_payoffs_systematic, s
     REAL(our_dble), INTENT(IN)          :: coeffs_b(6)
 
     INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 4)
-    INTEGER(our_int), INTENT(IN)        :: states_number_period(num_periods)
     INTEGER(our_int), INTENT(IN)        :: edu_start
     INTEGER(our_int), INTENT(IN)        :: num_emax_slaves(num_periods, num_slaves)
 
     !/* internals objects       */
 
     INTEGER(our_int)                    :: edu_lagged
+    INTEGER(our_int)                    :: lower_bound
+    INTEGER(our_int)                    :: upper_bound
     INTEGER(our_int)                    :: covars(6)
     INTEGER(our_int)                    :: period
+    INTEGER(our_int)                    :: count
     INTEGER(our_int)                    :: exp_a
     INTEGER(our_int)                    :: exp_b
     INTEGER(our_int)                    :: info
     INTEGER(our_int)                    :: edu
-    INTEGER(our_int)                    :: k, i
+    INTEGER(our_int)                    :: k
+    INTEGER(our_int)                    :: i
 
+    REAL(our_dble)                      :: periods_payoffs_systematic_slave(num_periods, max_states_period, 4)
     REAL(our_dble)                      :: payoff
-    INTEGER(our_int)                :: lower_bound
-    INTEGER(our_int)                :: upper_bound
-    INTEGER(our_int)                :: count
-    REAL(our_dble)     :: periods_payoffs_systematic_slave(num_periods, max_states_period, 4)
+
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
@@ -499,8 +500,9 @@ SUBROUTINE fort_calculate_payoffs_systematic_slave(periods_payoffs_systematic, s
     IF (.NOT. ALLOCATED(periods_payoffs_systematic)) THEN
         ALLOCATE(periods_payoffs_systematic(num_periods, max_states_period, 4))
     END IF
+
+    periods_payoffs_systematic_slave = MISSING_FLOAT
     periods_payoffs_systematic = MISSING_FLOAT
-periods_payoffs_systematic_slave = MISSING_FLOAT
 
     ! Calculate systematic instantaneous payoffs
     DO period = num_periods - 1, 0, -1
@@ -551,7 +553,6 @@ periods_payoffs_systematic_slave = MISSING_FLOAT
         END DO
 
         DO i = 1, 4
-
             CALL distribute_information(num_emax_slaves, period, periods_payoffs_systematic_slave(period + 1, :, i), periods_payoffs_systematic(period + 1, :, i))
         END DO
 
