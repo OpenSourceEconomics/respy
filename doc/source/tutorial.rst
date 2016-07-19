@@ -273,8 +273,9 @@ Just using the capabilities outlined so far, it is straightforward to compute so
         # To start estimations for the Monte Carlo exercises. For now, we just
         # evaluate the model at the starting values, i.e. maxfun set to zero in
         # the initialization file.
-        respy
-
+        respy_obj.unlock()
+        respy_obj.set_attr('maxfun', 0)
+        respy_obj.lock()
 
         respy.estimate(respy_obj)
 
