@@ -2,11 +2,11 @@
 !******************************************************************************
 MODULE recording_warning
 
-	!/*	external modules	*/
+  !/*	external modules	*/
 
     USE shared_constants
 
-	!/*	setup	*/
+  !/*	setup	*/
 
     IMPLICIT NONE
 
@@ -24,8 +24,8 @@ SUBROUTINE record_warning(count)
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
-    
-    OPEN(UNIT=99, FILE='est.respy.log', ACCESS='APPEND')
+
+    OPEN(UNIT=99, FILE='est.respy.log', ACCESS='APPEND', ACTION='WRITE')
 
         IF (count == 1) WRITE(99, *) '  Warning: Starting value of criterion function too large to write to file, internals unaffected.'
 

@@ -2,17 +2,17 @@
 !******************************************************************************
 MODULE recording_solution
 
-	!/*	external modules	*/
+  !/*	external modules	*/
 
-    USE shared_containers 
+    USE shared_containers
 
     USE shared_constants
 
-    USE shared_auxiliary 
+    USE shared_auxiliary
 
     USE shared_utilities
 
-	!/*	setup	*/
+  !/*	setup	*/
 
     IMPLICIT NONE
 
@@ -44,12 +44,12 @@ SUBROUTINE record_solution_progress(indicator, period, num_states)
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    OPEN(UNIT=99, FILE='sol.respy.log', ACCESS='APPEND')
+    OPEN(UNIT=99, FILE='sol.respy.log', ACCESS='APPEND', ACTION='WRITE')
 
     IF (indicator == 1) THEN
 
         CLOSE(99, STATUS ='DELETE')
-        OPEN(UNIT=99, FILE='sol.respy.log')
+        OPEN(UNIT=99, FILE='sol.respy.log', ACTION='WRITE')
 
         WRITE(99, *) ' Starting state space creation'
         WRITE(99, *)
@@ -74,13 +74,13 @@ SUBROUTINE record_solution_progress(indicator, period, num_states)
     ELSEIF (indicator == -1) THEN
 
         WRITE(99, *) ' ... finished'
-        WRITE(99, *) 
+        WRITE(99, *)
         WRITE(99, *)
 
     ELSEIF (indicator == -2) THEN
 
         WRITE(99, *) ' ... not required due to myopic agents'
-        WRITE(99, *) 
+        WRITE(99, *)
         WRITE(99, *)
 
     END IF
@@ -106,20 +106,20 @@ SUBROUTINE record_prediction_model(coeffs, r_squared, bse)
     110 FORMAT(8x,A15,4x,9(f15.4))
     120 FORMAT(8x,A9,10x,f15.4)
 
-    OPEN(UNIT=99, FILE='sol.respy.log', ACCESS='APPEND')
+    OPEN(UNIT=99, FILE='sol.respy.log', ACCESS='APPEND', ACTION='WRITE')
 
         WRITE(99, *) '     Information about Prediction Model '
-        WRITE(99, *) 
+        WRITE(99, *)
 
         WRITE(99, 100) 'Coefficients', coeffs
-        WRITE(99, *) 
+        WRITE(99, *)
 
         WRITE(99, 110) 'Standard Errors', bse
-        WRITE(99, *) 
+        WRITE(99, *)
 
         WRITE(99, 120) 'R-squared', r_squared
         WRITE(99, *) ''
-        WRITE(99, *) 
+        WRITE(99, *)
 
     CLOSE(99)
 

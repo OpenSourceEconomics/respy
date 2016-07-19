@@ -324,7 +324,7 @@ SUBROUTINE create_draws(draws, num_draws, seed, is_debug)
 
     IF ((READ_IN .EQV. .True.)  .AND. (is_debug .EQV. .True.)) THEN
 
-        OPEN(UNIT=99, file='draws.txt')
+        OPEN(UNIT=99, FILE='draws.txt', ACTION='READ')
 
         DO period = 1, num_periods
 
@@ -564,7 +564,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_payoffs
         ! Write out results for the store results.
         1800 FORMAT(5(1x,i5))
 
-        OPEN(UNIT=99, FILE='.mapping_state_idx.resfort.dat')
+        OPEN(UNIT=99, FILE='.mapping_state_idx.resfort.dat', ACTION='WRITE')
 
         DO period = 1, num_periods
             DO i = 1, num_periods
@@ -581,7 +581,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_payoffs
 
         2000 FORMAT(4(1x,i5))
 
-        OPEN(UNIT=99, FILE='.states_all.resfort.dat')
+        OPEN(UNIT=99, FILE='.states_all.resfort.dat', ACTION='WRITE')
 
         DO period = 1, num_periods
             DO i = 1, max_states_period
@@ -594,7 +594,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_payoffs
 
         1900 FORMAT(4(1x,f45.15))
 
-        OPEN(UNIT=99, FILE='.periods_payoffs_systematic.resfort.dat')
+        OPEN(UNIT=99, FILE='.periods_payoffs_systematic.resfort.dat', ACTION='WRITE')
 
         DO period = 1, num_periods
             DO i = 1, max_states_period
@@ -606,7 +606,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_payoffs
 
         2100 FORMAT(i5)
 
-        OPEN(UNIT=99, FILE='.states_number_period.resfort.dat')
+        OPEN(UNIT=99, FILE='.states_number_period.resfort.dat', ACTION='WRITE')
 
         DO period = 1, num_periods
             WRITE(99, 2100) states_number_period(period)
@@ -617,7 +617,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_payoffs
 
         2200 FORMAT(i5)
 
-        OPEN(UNIT=99, FILE='.max_states_period.resfort.dat')
+        OPEN(UNIT=99, FILE='.max_states_period.resfort.dat', ACTION='WRITE')
 
         WRITE(99, 2200) max_states_period
 
@@ -626,7 +626,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_payoffs
 
         2400 FORMAT(100000(1x,f45.15))
 
-        OPEN(UNIT=99, FILE='.periods_emax.resfort.dat')
+        OPEN(UNIT=99, FILE='.periods_emax.resfort.dat', ACTION='WRITE')
 
         DO period = 1, num_periods
             WRITE(99, 2400) periods_emax(period, :)
@@ -638,7 +638,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_payoffs
 
     IF (request == 'simulate') THEN
 
-        OPEN(UNIT=99, FILE='.simulated.resfort.dat')
+        OPEN(UNIT=99, FILE='.simulated.resfort.dat', ACTION='WRITE')
 
         DO period = 1, num_periods * num_agents_sim
             WRITE(99, 2400) data_sim(period, :)
@@ -723,7 +723,7 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
     1515 FORMAT(i10,1x,i10)
 
     ! Read model specification
-    OPEN(UNIT=99, FILE='.model.resfort.ini')
+    OPEN(UNIT=99, FILE='.model.resfort.ini', ACTION='READ')
 
         ! BASICS
         READ(99, 1505) num_periods
@@ -828,7 +828,7 @@ SUBROUTINE read_dataset(data_est, num_agents)
     ALLOCATE(data_est(num_periods * num_agents, 8))
 
     ! Read observed data to double precision array
-    OPEN(UNIT=99, FILE='.data.resfort.dat')
+    OPEN(UNIT=99, FILE='.data.resfort.dat', ACTION='READ')
 
         DO j = 1, num_periods * num_agents
             READ(99, *) (data_est(j, k), k = 1, 8)

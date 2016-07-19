@@ -390,7 +390,7 @@ FUNCTION get_simulated_indicator(num_points, num_states, period, is_debug)
 
         IF (READ_IN) THEN
 
-            OPEN(99, file='interpolation.txt')
+            OPEN(UNIT=99, FILE='interpolation.txt', ACTION='READ')
 
                DO i = 1, num_states
 

@@ -2,25 +2,25 @@
 !******************************************************************************
 MODULE recording_estimation
 
-	!/*	external modules	*/
+  !/*	external modules	*/
 
     USE recording_warning
 
-    USE shared_containers 
+    USE shared_containers
 
     USE shared_constants
 
-    USE shared_auxiliary 
+    USE shared_auxiliary
 
     USE shared_utilities
 
-	!/*	setup	*/
+  !/*	setup	*/
 
     IMPLICIT NONE
 
     PRIVATE
 
-    PUBLIC :: record_estimation 
+    PUBLIC :: record_estimation
 
     !/* explicit interface   */
 
@@ -34,12 +34,12 @@ CONTAINS
 !******************************************************************************
 !******************************************************************************
 SUBROUTINE record_estimation_stop()
-    
+
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    OPEN(UNIT=99, FILE='est.respy.info', ACCESS='APPEND')
+    OPEN(UNIT=99, FILE='est.respy.info', ACCESS='APPEND', ACTION='WRITE')
 
         WRITE(99, *)
         WRITE(99, *) 'TERMINATED'
@@ -52,7 +52,7 @@ END SUBROUTINE
 SUBROUTINE record_estimation_eval(x_all_current, val_current, num_eval)
 
     !/* external objects        */
-    
+
     REAL(our_dble), INTENT(IN)      :: x_all_current(26)
     REAL(our_dble), INTENT(IN)      :: val_current
 
@@ -85,7 +85,7 @@ SUBROUTINE record_estimation_eval(x_all_current, val_current, num_eval)
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
-    
+
     crit_vals(3) = val_current
 
     ! Determine events
@@ -96,8 +96,8 @@ SUBROUTINE record_estimation_eval(x_all_current, val_current, num_eval)
         crit_vals(2) = HUGE_FLOAT
     END IF
 
-    is_step = (crit_vals(2) .GT. val_current) 
-     
+    is_step = (crit_vals(2) .GT. val_current)
+
     ! Update counters
     IF (is_step) THEN
 
@@ -107,12 +107,12 @@ SUBROUTINE record_estimation_eval(x_all_current, val_current, num_eval)
 
     END IF
 
-    ! Sometimes on the path of the optimizer, the value of the criterion 
+    ! Sometimes on the path of the optimizer, the value of the criterion
     ! function is just too large for pretty printing.
     DO i = 1, 3
         is_large(i) = (ABS(crit_vals(i)) > LARGE_FLOAT)
     END DO
-    
+
     ! Update container
     IF (is_start) x_container(:, 1) = x_all_current
 
@@ -132,10 +132,10 @@ SUBROUTINE record_estimation_eval(x_all_current, val_current, num_eval)
     140 FORMAT(3x,A10,3(4x,A25))
     150 FORMAT(3x,i10,3(4x,f25.15))
 
-    OPEN(UNIT=99, FILE='est.respy.log', ACCESS='APPEND')
+    OPEN(UNIT=99, FILE='est.respy.log', ACCESS='APPEND', ACTION='WRITE')
 
         WRITE(99, 100) 'EVAL', num_eval, 'STEP', num_step
-        WRITE(99, *) 
+        WRITE(99, *)
         WRITE(99, 110) 'Date', today_char
         WRITE(99, 120) 'Time', now_char
 
@@ -147,15 +147,15 @@ SUBROUTINE record_estimation_eval(x_all_current, val_current, num_eval)
         END IF
 
 
-        WRITE(99, *) 
+        WRITE(99, *)
         WRITE(99, 140) 'Identifier', 'Start', 'Step', 'Current'
-        WRITE(99, *) 
+        WRITE(99, *)
 
         DO i = 1, 26
             WRITE(99, 150) (i - 1), x_container(i, :)
         END DO
 
-        WRITE(99, *) 
+        WRITE(99, *)
 
     CLOSE(99)
 
@@ -180,29 +180,29 @@ SUBROUTINE record_estimation_eval(x_all_current, val_current, num_eval)
         val_char = TRIM(val_char) // TRIM(tmp_char)
     END DO
 
-    OPEN(UNIT=99, FILE='est.respy.info')
+    OPEN(UNIT=99, FILE='est.respy.info', ACTION='WRITE')
 
-        WRITE(99, *) 
+        WRITE(99, *)
         WRITE(99, *) 'Criterion Function'
-        WRITE(99, *)  
+        WRITE(99, *)
         WRITE(99, 200) '', 'Start', 'Step', 'Current'
-        WRITE(99, *)  
+        WRITE(99, *)
         WRITE(99, 210)  '', val_char
-        WRITE(99, *) 
-        WRITE(99, *) 
+        WRITE(99, *)
+        WRITE(99, *)
         WRITE(99,*) 'Optimization Parameters'
-        WRITE(99, *) 
+        WRITE(99, *)
         WRITE(99, 220) 'Identifier', 'Start', 'Step', 'Current'
-        WRITE(99, *) 
+        WRITE(99, *)
 
         DO i = 1, 26
             WRITE(99, 230) (i - 1), x_container(i, :)
         END DO
 
-        WRITE(99, *) 
-        WRITE(99, *)  
+        WRITE(99, *)
+        WRITE(99, *)
         WRITE(99, *) 'Covariance Matrix'
-        WRITE(99, *)  
+        WRITE(99, *)
 
         DO i = 1, 3
 
@@ -212,20 +212,20 @@ SUBROUTINE record_estimation_eval(x_all_current, val_current, num_eval)
 
             CALL get_cholesky(shocks_cholesky, x_container(:, 1))
             shocks_cov = MATMUL(shocks_cholesky, TRANSPOSE(shocks_cholesky))
-            
-            WRITE(99, *)  
+
+            WRITE(99, *)
 
             DO j = 1, 4
                 WRITE(99, 250) shocks_cov(j, :)
-            END DO        
+            END DO
 
-            WRITE(99, *)  
-     
+            WRITE(99, *)
+
         END DO
 
-        WRITE(99, *)  
+        WRITE(99, *)
         WRITE(99, 260) 'Number of Steps', num_step
-        WRITE(99, *)  
+        WRITE(99, *)
         WRITE(99, 270) 'Number of Evaluations', num_eval
 
     CLOSE(99)
@@ -245,9 +245,9 @@ SUBROUTINE record_estimation_final(success, message, crit_val, x_all_final)
 
     REAL(our_dble), INTENT(IN)      :: x_all_final(26)
     REAL(our_dble), INTENT(IN)      :: crit_val
-    
+
     CHARACTER(*), INTENT(IN)        :: message
-    
+
     !/* internal objects        */
 
     INTEGER(our_int)                :: i
@@ -260,10 +260,10 @@ SUBROUTINE record_estimation_final(success, message, crit_val, x_all_final)
     110 FORMAT(3x,A10,4x,A25)
     120 FORMAT(3x,i10,4x,f25.15)
 
-    OPEN(UNIT=99, FILE='est.respy.log', ACCESS='APPEND')
+    OPEN(UNIT=99, FILE='est.respy.log', ACCESS='APPEND', ACTION='WRITE')
 
         WRITE(99, *) 'ESTIMATION REPORT'
-        WRITE(99, *) 
+        WRITE(99, *)
 
         IF (success) THEN
             WRITE(99, *) '  Success True'
@@ -272,25 +272,25 @@ SUBROUTINE record_estimation_final(success, message, crit_val, x_all_final)
         END IF
 
         WRITE(99, *) '  Message ', TRIM(message)
-        WRITE(99, *) 
+        WRITE(99, *)
         WRITE(99, 100) 'Criterion', crit_val
 
-        WRITE(99, *) 
-        WRITE(99, *) 
-        WRITE(99, 110), 'Identifier', 'Final' 
+        WRITE(99, *)
+        WRITE(99, *)
+        WRITE(99, 110), 'Identifier', 'Final'
 
-        WRITE(99, *) 
+        WRITE(99, *)
 
         DO i = 1, 26
             WRITE(99, 120) (i - 1), x_all_final(i)
         END DO
 
-        WRITE(99, *) 
+        WRITE(99, *)
 
     CLOSE(99)
 
 
-END SUBROUTINE    
+END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
 SUBROUTINE record_scaling(auto_scales, x_free_start, is_setup)
@@ -318,26 +318,26 @@ SUBROUTINE record_scaling(auto_scales, x_free_start, is_setup)
     120 FORMAT(3x,A10,3(4x,A25))
     130 FORMAT(3x,i10,3(4x,f25.15))
 
-    OPEN(UNIT=99, FILE='est.respy.log', ACCESS='APPEND')
+    OPEN(UNIT=99, FILE='est.respy.log', ACCESS='APPEND', ACTION='WRITE')
 
         ! The initial setup serves to remind users that scaling is going on
         ! in the background. Otherwise, they remain puzzled as there is no
-        ! output for quite some time if the gradient evaluations are 
+        ! output for quite some time if the gradient evaluations are
         ! time consuming.
         IF (is_setup) THEN
-        
+
             WRITE(99, *) 'SCALING'
-            WRITE(99, *) 
-            WRITE(99, 120) 'Identifier', 'Original', 'Scale', 'Transformed Value' 
-            WRITE(99, *) 
+            WRITE(99, *)
+            WRITE(99, 120) 'Identifier', 'Original', 'Scale', 'Transformed Value'
+            WRITE(99, *)
 
         ELSE
-            
+
             DO i = 1, num_free
                 WRITE(99, 130) i, x_free_start(i), auto_scales(i, i), x_free_scaled(i)
             END DO
 
-            WRITE(99, *) 
+            WRITE(99, *)
 
         END IF
 
@@ -347,7 +347,7 @@ END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
 SUBROUTINE get_time(today_char, now_char)
-    
+
     !/* external objects        */
 
     CHARACTER(*), INTENT(OUT)       :: today_char
