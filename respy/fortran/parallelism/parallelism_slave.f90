@@ -198,6 +198,8 @@ PROGRAM resfort_parallel_slave
 
             CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start)
 
+            CALL fort_calculate_payoffs_systematic_slave(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start, num_emax_slaves)
+
             OPEN(UNIT=12, FILE=TRIM(filename), ACCESS='APPEND')
               CALL get_time(today_char, now_char)
               WRITE(12, 120) 'Start backw', now_char

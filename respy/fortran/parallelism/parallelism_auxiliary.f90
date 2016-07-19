@@ -102,6 +102,44 @@ SUBROUTINE distribute_information(num_emax_slaves, period, send_slave, recieve_s
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
+SUBROUTINE distribute_information_payoffs(num_emax_slaves, period, send_slave, recieve_slaves)
+
+    ! DEVELOPMENT NOTES
+    !
+    ! The assumed-shape input arguments allow to use this subroutine repeatedly.
+
+    !/* external objects        */
+
+    REAL(our_dble), INTENT(INOUT)       :: recieve_slaves(:, :)
+
+    REAL(our_dble), INTENT(IN)          :: send_slave(:, :)
+
+    INTEGER(our_int), INTENT(IN)        :: num_emax_slaves(num_periods, num_slaves)
+    INTEGER(our_int), INTENT(IN)        :: period
+
+    !/* internal objects        */
+
+    INTEGER(our_int)                    :: rcounts(num_slaves)
+    INTEGER(our_int)                    :: scounts(num_slaves)
+    INTEGER(our_int)                    :: disps(num_slaves)
+    INTEGER(our_int)                    :: i
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    ! Parameterize the communication.
+    scounts = num_emax_slaves(period + 1, :) * 4
+    rcounts = scounts
+    DO i = 1, num_slaves
+        disps(i) = SUM(scounts(:i - 1))
+    END DO
+
+    CALL MPI_ALLGATHERV(send_slave, scounts(rank + 1), MPI_DOUBLE, recieve_slaves, rcounts, disps, MPI_DOUBLE, MPI_COMM_WORLD, ierr)
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE distribute_workload(num_emax_slaves, num_obs_slaves)
 
     !/* external objects        */
@@ -455,6 +493,108 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
 
     END DO
 
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE fort_calculate_payoffs_systematic_slave(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start, num_emax_slaves)
+
+    !/* external objects        */
+
+    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)       :: periods_payoffs_systematic(: ,:, :)
+
+    REAL(our_dble), INTENT(IN)          :: coeffs_home(1)
+    REAL(our_dble), INTENT(IN)          :: coeffs_edu(3)
+    REAL(our_dble), INTENT(IN)          :: coeffs_a(6)
+    REAL(our_dble), INTENT(IN)          :: coeffs_b(6)
+
+    INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 4)
+    INTEGER(our_int), INTENT(IN)        :: states_number_period(num_periods)
+    INTEGER(our_int), INTENT(IN)        :: edu_start
+    INTEGER(our_int), INTENT(IN)        :: num_emax_slaves(num_periods, num_slaves)
+
+    !/* internals objects       */
+
+    INTEGER(our_int)                    :: edu_lagged
+    INTEGER(our_int)                    :: covars(6)
+    INTEGER(our_int)                    :: period
+    INTEGER(our_int)                    :: exp_a
+    INTEGER(our_int)                    :: exp_b
+    INTEGER(our_int)                    :: info
+    INTEGER(our_int)                    :: edu
+    INTEGER(our_int)                    :: k
+
+    REAL(our_dble)                      :: payoff
+    INTEGER(our_int)                :: lower_bound
+    INTEGER(our_int)                :: upper_bound
+    INTEGER(our_int)                :: count
+    REAL(our_dble)     :: periods_payoffs_systematic_slave(num_periods, max_states_period, 4)
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    ! ALlocate container (if required) and initilaize missing values.
+    IF (.NOT. ALLOCATED(periods_payoffs_systematic)) THEN
+        ALLOCATE(periods_payoffs_systematic(num_periods, max_states_period, 4))
+    END IF
+    periods_payoffs_systematic = MISSING_FLOAT
+periods_payoffs_systematic_slave = MISSING_FLOAT
+
+    ! Upper and lower bound of tasks
+    lower_bound = SUM(num_emax_slaves(period + 1, :rank))
+    upper_bound = SUM(num_emax_slaves(period + 1, :rank + 1))
+
+    ! Calculate systematic instantaneous payoffs
+    DO period = num_periods - 1, 0, -1
+
+      lower_bound = SUM(num_emax_slaves(period + 1, :rank))
+      upper_bound = SUM(num_emax_slaves(period + 1, :rank + 1))
+
+        ! Loop over all possible states
+        count =  1
+        DO k = lower_bound, upper_bound - 1
+
+            ! Distribute state space
+            exp_a = states_all(period + 1,   k + 1, 1)
+            exp_b = states_all(period + 1, k + 1, 2)
+            edu = states_all(period + 1, k + 1, 3)
+            edu_lagged = states_all(period + 1, k + 1, 4)
+
+            ! Auxiliary objects
+            covars(1) = one_int
+            covars(2) = edu + edu_start
+            covars(3) = exp_a
+            covars(4) = exp_a ** 2
+            covars(5) = exp_b
+            covars(6) = exp_b ** 2
+
+            ! Calculate systematic part of payoff in occupation A
+            CALL clip_value(periods_payoffs_systematic(period + 1, k + 1, 1), EXP(DOT_PRODUCT(covars, coeffs_a)), zero_dble, HUGE_FLOAT, info)
+
+            ! Calculate systematic part of payoff in occupation B
+            CALL clip_value(periods_payoffs_systematic(period + 1, k + 1, 2), EXP(DOT_PRODUCT(covars, coeffs_b)), zero_dble, HUGE_FLOAT, info)
+
+            ! Calculate systematic part of schooling utility
+            payoff = coeffs_edu(1)
+
+            ! Tuition cost for higher education if agents move beyond high school.
+            IF(edu + edu_start >= 12) payoff = payoff + coeffs_edu(2)
+
+            ! Psychic cost of going back to school
+            IF(edu_lagged == 0) payoff = payoff + coeffs_edu(3)
+
+            periods_payoffs_systematic(period + 1, k + 1, 3) = payoff
+
+            ! Calculate systematic part of payoff in home production
+            periods_payoffs_systematic(period + 1, count, 4) = coeffs_home(1)
+
+            count = count + 1
+
+        END DO
+
+    !CALL distribute_information_payoffs(num_emax_slaves, period, !periods_payoffs_systematic_slave(period, :, :), periods_payoffs_systematic(period, :, :))
+
+    END DO
 
 END SUBROUTINE
 !******************************************************************************

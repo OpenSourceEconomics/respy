@@ -40,16 +40,20 @@ respy_obj = RespyCls('model.respy.ini')
 simulate(respy_obj)
 
 
-for num_procs in [2]:
+base = None
+for num_procs in [1, 2]:
 
-	respy_obj.unlock()
-	respy_obj.set_attr('num_procs', num_procs)
-	respy_obj.set_attr('is_parallel', (num_procs > 1))
-	respy_obj.lock()
+    respy_obj.unlock()
+    respy_obj.set_attr('num_procs', num_procs)
+    respy_obj.set_attr('is_parallel', (num_procs > 1))
+    respy_obj.lock()
 
-	x, crit_val = estimate(respy_obj)
+    x, crit_val = estimate(respy_obj)
+    if base is None:
+        base = crit_val
 
-	print(num_procs, crit_val)
+    np.testing.assert_equal(crit_val, base)
+    print(num_procs, crit_val)
 # print('working PYTHON')
 # respy_obj = RespyCls('model.respy.ini')
 # #respy_obj.attr['version'] = 'PYTHON'
