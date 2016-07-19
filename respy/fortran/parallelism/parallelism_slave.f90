@@ -20,7 +20,7 @@ PROGRAM resfort_parallel_slave
 
     !/* objects                 */
 
-    INTEGER(our_int), ALLOCATABLE   :: num_emax_slaves(:, :)
+    INTEGER(our_int), ALLOCATABLE   :: num_states_slaves(:, :)
     INTEGER(our_int), ALLOCATABLE   :: num_obs_slaves(:)
 
     INTEGER(our_int)                :: lower_bound
@@ -73,7 +73,7 @@ PROGRAM resfort_parallel_slave
     CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, edu_start, edu_max)
 
 
-    CALL distribute_workload(num_emax_slaves, num_obs_slaves)
+    CALL distribute_workload(num_states_slaves, num_obs_slaves)
 
     CALL create_draws(periods_draws_emax, num_draws_emax, seed_emax, is_debug)
 
@@ -107,13 +107,13 @@ PROGRAM resfort_parallel_slave
 
             IF (rank == zero_int) CALL record_solution(2)
 
-            CALL fort_calculate_payoffs_systematic_slave(periods_payoffs_systematic, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start, num_emax_slaves)
+            CALL fort_calculate_payoffs_systematic_slave(periods_payoffs_systematic, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start, num_states_slaves)
 
             IF (rank == zero_int) CALL record_solution(-1)
 
             IF (rank == zero_int) CALL record_solution(3)
 
-            CALL fort_backward_induction_slave(periods_emax, periods_draws_emax, states_number_period, periods_payoffs_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max, num_emax_slaves, .True.)
+            CALL fort_backward_induction_slave(periods_emax, periods_draws_emax, states_number_period, periods_payoffs_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max, num_states_slaves, .True.)
 
             IF (rank == zero_int .AND. .NOT. is_myopic) THEN
                 CALL record_solution(-1)
@@ -140,9 +140,9 @@ PROGRAM resfort_parallel_slave
 
             END IF
 
-            CALL fort_calculate_payoffs_systematic_slave(periods_payoffs_systematic, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start, num_emax_slaves)
+            CALL fort_calculate_payoffs_systematic_slave(periods_payoffs_systematic, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start, num_states_slaves)
 
-            CALL fort_backward_induction_slave(periods_emax, periods_draws_emax, states_number_period, periods_payoffs_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max, num_emax_slaves, .False.)
+            CALL fort_backward_induction_slave(periods_emax, periods_draws_emax, states_number_period, periods_payoffs_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max, num_states_slaves, .False.)
 
             CALL fort_contributions(contribs, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_slave, periods_draws_prob, delta, tau, edu_start, edu_max)
 

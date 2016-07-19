@@ -64,7 +64,7 @@ SUBROUTINE get_scales_parallel(auto_scales, x_free_start, scaled_minimum)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE distribute_information(num_emax_slaves, period, send_slave, recieve_slaves)
+SUBROUTINE distribute_information(num_states_slaves, period, send_slave, recieve_slaves)
 
     ! DEVELOPMENT NOTES
     !
@@ -76,7 +76,7 @@ SUBROUTINE distribute_information(num_emax_slaves, period, send_slave, recieve_s
 
     REAL(our_dble), INTENT(IN)          :: send_slave(:)
 
-    INTEGER(our_int), INTENT(IN)        :: num_emax_slaves(num_periods, num_slaves)
+    INTEGER(our_int), INTENT(IN)        :: num_states_slaves(num_periods, num_slaves)
     INTEGER(our_int), INTENT(IN)        :: period
 
     !/* internal objects        */
@@ -91,7 +91,7 @@ SUBROUTINE distribute_information(num_emax_slaves, period, send_slave, recieve_s
 !------------------------------------------------------------------------------
 
     ! Parameterize the communication.
-    scounts = num_emax_slaves(period + 1, :)
+    scounts = num_states_slaves(period + 1, :)
     rcounts = scounts
     DO i = 1, num_slaves
         disps(i) = SUM(scounts(:i - 1))
@@ -102,11 +102,11 @@ SUBROUTINE distribute_information(num_emax_slaves, period, send_slave, recieve_s
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE distribute_workload(num_emax_slaves, num_obs_slaves)
+SUBROUTINE distribute_workload(num_states_slaves, num_obs_slaves)
 
     !/* external objects        */
 
-    INTEGER(our_int), ALLOCATABLE, INTENT(OUT)   :: num_emax_slaves(:, :)
+    INTEGER(our_int), ALLOCATABLE, INTENT(OUT)   :: num_states_slaves(:, :)
     INTEGER(our_int), ALLOCATABLE, INTENT(OUT)   :: num_obs_slaves(:)
 
     !/* internal objects        */
@@ -117,12 +117,12 @@ SUBROUTINE distribute_workload(num_emax_slaves, num_obs_slaves)
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    ALLOCATE(num_emax_slaves(num_periods, num_slaves), num_obs_slaves(num_slaves))
+    ALLOCATE(num_states_slaves(num_periods, num_slaves), num_obs_slaves(num_slaves))
 
     CALL determine_workload(num_obs_slaves, (num_agents_est * num_periods))
 
     DO period = 1, num_periods
-        CALL determine_workload(num_emax_slaves(period, :), states_number_period(period))
+        CALL determine_workload(num_states_slaves(period, :), states_number_period(period))
     END DO
 
 
@@ -294,7 +294,7 @@ FUNCTION fort_criterion_parallel(x)
     INTEGER(our_int)                :: upper_bound
     INTEGER(our_int)                :: rank
 
-    INTEGER(our_int), ALLOCATABLE   :: num_emax_slaves(:, :)
+    INTEGER(our_int), ALLOCATABLE   :: num_states_slaves(:, :)
     INTEGER(our_int), ALLOCATABLE   :: num_obs_slaves(:)
 
     REAL(our_dble)                  :: contribs(num_agents_est * num_periods)
@@ -327,7 +327,7 @@ FUNCTION fort_criterion_parallel(x)
     CALL dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x_all_current, dist_optim_paras_info)
 
     ! We need to know how the workload is distributed across the slaves.
-    IF (.NOT. ALLOCATED(num_emax_slaves)) CALL distribute_workload(num_emax_slaves, num_obs_slaves)
+    IF (.NOT. ALLOCATED(num_states_slaves)) CALL distribute_workload(num_states_slaves, num_obs_slaves)
 
     contribs = -HUGE_FLOAT
     DO rank = 0, num_slaves - 1
@@ -459,7 +459,7 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_calculate_payoffs_systematic_slave(periods_payoffs_systematic, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start, num_emax_slaves)
+SUBROUTINE fort_calculate_payoffs_systematic_slave(periods_payoffs_systematic, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start, num_states_slaves)
 
     !/* external objects        */
 
@@ -472,7 +472,7 @@ SUBROUTINE fort_calculate_payoffs_systematic_slave(periods_payoffs_systematic, s
 
     INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 4)
     INTEGER(our_int), INTENT(IN)        :: edu_start
-    INTEGER(our_int), INTENT(IN)        :: num_emax_slaves(num_periods, num_slaves)
+    INTEGER(our_int), INTENT(IN)        :: num_states_slaves(num_periods, num_slaves)
 
     !/* internals objects       */
 
@@ -507,8 +507,8 @@ SUBROUTINE fort_calculate_payoffs_systematic_slave(periods_payoffs_systematic, s
     ! Calculate systematic instantaneous payoffs
     DO period = num_periods - 1, 0, -1
 
-      lower_bound = SUM(num_emax_slaves(period + 1, :rank))
-      upper_bound = SUM(num_emax_slaves(period + 1, :rank + 1))
+      lower_bound = SUM(num_states_slaves(period + 1, :rank))
+      upper_bound = SUM(num_states_slaves(period + 1, :rank + 1))
 
         ! Loop over all possible states
         count =  1
@@ -553,7 +553,7 @@ SUBROUTINE fort_calculate_payoffs_systematic_slave(periods_payoffs_systematic, s
         END DO
 
         DO i = 1, 4
-            CALL distribute_information(num_emax_slaves, period, periods_payoffs_systematic_slave(period + 1, :, i), periods_payoffs_systematic(period + 1, :, i))
+            CALL distribute_information(num_states_slaves, period, periods_payoffs_systematic_slave(period + 1, :, i), periods_payoffs_systematic(period + 1, :, i))
         END DO
 
     END DO
@@ -561,7 +561,7 @@ SUBROUTINE fort_calculate_payoffs_systematic_slave(periods_payoffs_systematic, s
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, states_number_period, periods_payoffs_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max, num_emax_slaves, update_master)
+SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, states_number_period, periods_payoffs_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max, num_states_slaves, update_master)
 
     !/* external objects        */
 
@@ -574,7 +574,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, state
 
     INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 4)
-    INTEGER(our_int), INTENT(IN)        :: num_emax_slaves(num_periods, num_slaves)
+    INTEGER(our_int), INTENT(IN)        :: num_states_slaves(num_periods, num_slaves)
     INTEGER(our_int), INTENT(IN)        :: states_number_period(num_periods)
     INTEGER(our_int), INTENT(IN)        :: edu_start
     INTEGER(our_int), INTENT(IN)        :: edu_max
@@ -672,8 +672,8 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, state
         any_interpolated = (num_points_interp .LE. num_states) .AND. is_interpolated
 
         ! Upper and lower bound of tasks
-        lower_bound = SUM(num_emax_slaves(period + 1, :rank))
-        upper_bound = SUM(num_emax_slaves(period + 1, :rank + 1))
+        lower_bound = SUM(num_states_slaves(period + 1, :rank))
+        upper_bound = SUM(num_states_slaves(period + 1, :rank + 1))
 
         IF (any_interpolated) THEN
 
@@ -713,7 +713,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, state
             END DO
 
             ! Distribute exogenous information
-            CALL distribute_information(num_emax_slaves, period, endogenous_slaves, endogenous)
+            CALL distribute_information(num_states_slaves, period, endogenous_slaves, endogenous)
 
             ! Create prediction model based on the random subset of points where the EMAX is actually simulated and thus endogenous and exogenous variables are available. For the interpolation  points, the actual values are used.
             CALL get_predictions(predictions, endogenous, exogenous, maxe, is_simulated, num_states, is_head .AND. update_master)
@@ -744,7 +744,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, state
 
             END DO
 
-            CALL distribute_information(num_emax_slaves, period, periods_emax_slaves, periods_emax(period + 1, :))
+            CALL distribute_information(num_states_slaves, period, periods_emax_slaves, periods_emax(period + 1, :))
 
             ! The leading slave updates the master period by period.
             IF (is_head .AND. update_master) CALL MPI_SEND(periods_emax(period + 1, :num_states), num_states, MPI_DOUBLE, 0, period, PARENTCOMM, ierr)
