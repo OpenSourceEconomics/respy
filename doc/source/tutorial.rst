@@ -271,8 +271,11 @@ Just using the capabilities outlined so far, it is straightforward to compute so
         respy.simulate(respy_obj)
 
         # To start estimations for the Monte Carlo exercises. For now, we just
-        # evaluate the model at the starting values, i.e. maxiter set to zero in
+        # evaluate the model at the starting values, i.e. maxfun set to zero in
         # the initialization file.
+        respy
+
+
         respy.estimate(respy_obj)
 
-You can download the three initialization files `here <https://github.com/restudToolbox/package/tree/master/forensics/inits>`_. In an earlier working paper version of their paper (`online <https://www.minneapolisfed.org/research/staff-reports/the-solution-and-estimation-of-discrete-choice-dynamic-programming-models-by-simulation-and-interpolation-monte-carlo-evidence>`_), the original authors provide a full account of the choice distributions for all three specifications. The results from the recomputation line up well with their reports.
+You can download the all the required material initialization files `here <https://github.com/restudToolbox/package/tree/master/respy/tests/resources>`_. In an earlier working paper version of their paper (`online <https://www.minneapolisfed.org/research/staff-reports/the-solution-and-estimation-of-discrete-choice-dynamic-programming-models-by-simulation-and-interpolation-monte-carlo-evidence>`_), the original authors provide a full account of the choice distributions for all three specifications. The results from the recomputation line up well with their reports.
