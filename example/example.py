@@ -2,6 +2,10 @@
 """ This module runs the tutorial from the online documentation.
 """
 
+import shutil
+import glob
+import os
+
 import respy
 
 # Initialize an instance of the RespyCls to manage all things related to the
@@ -19,3 +23,8 @@ x, crit_val = respy.estimate(respy_obj)
 # Update the respy class instance, with the new parameters.
 respy_obj.update_model_paras(x)
 respy.simulate(respy_obj)
+
+# Store results in directory for later inspection.
+os.mkdir('example')
+for fname in glob.glob('*.respy.*'):
+    shutil.move(fname, 'example')
