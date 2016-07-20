@@ -1,14 +1,12 @@
 Tutorial
 ========
 
-We now illustrate the basic capabilities of the **respy** package. First, we present how to specify a model in detail before turning to the estimation and simulation. We will illustrate how all works together for the recomputation of Keane & Wolpin (1994).
+Let us now illustrate the basic capabilities of the **respy** package. We start by setting up a model specification and then turn to some examples.
 
 Model Specification
 -------------------
 
-The model is specified in an initialization file. For an example, check out the first specification analyzed in the original paper (Table 1) `online <https://github.com/restudToolbox/package/blob/master/respy/tests/resources/kw_data_one.ini>`_.
-
-We turn to each of the ingredients in more details.
+The model is specified in an initialization file that is processed by the package. For an example, check out the first parameterization analyzed by Keane & Wolpin (1994) `online <https://github.com/restudToolbox/package/blob/master/respy/tests/resources/kw_data_one.ini>`_. Let us discuss each of the elements in more detail.
 
 **BASICS**
 
@@ -19,20 +17,20 @@ periods      int        number of periods
 delta        float      discount factor
 =======     ======      ==================
 
-We now turn to the specification of the two alternative occupations. There are two small differences between the setup in the original paper and the parameterization of the occupations. First, all coefficients enter the return function with a positive sign, while the squared terms enter with a minus in the original paper. Second, the order of covariates is fixed across the two occupations. In the original paper, own experience always comes before other experience. These comments are valid for occupation A and occupation B.
+We now turn to the specification of the reward functions for the two alternative occupations. There are two small differences compared to the original paper. First, all coefficients enter the return function with a positive sign, while the squared terms enter with a minus in the original paper. Second, the order of covariates is fixed across the two occupations. In the original paper, own experience always comes before other experience.
 
 **OCCUPATION A**
 
-=======     ======    ==================
-Key         Value       Interpretation
-=======     ======    ==================
-coeff       float       intercept
-coeff       float       return to schooling
-coeff       float       experience occupation A, linear
-coeff       float       experience occupation A, squared
-coeff       float       experience occupation B, linear
-coeff       float       experience occupation B, squared
-=======     ======    ==================
+=======     ======    ==============
+Key         Value     Interpretation
+=======     ======    ==============
+coeff       float     intercept
+coeff       float     return to schooling
+coeff       float     experience occupation A, linear
+coeff       float     experience occupation A, squared
+coeff       float     experience occupation B, linear
+coeff       float     experience occupation B, squared
+=======     ======    ==============
 
 **OCCUPATION B**
 
@@ -96,11 +94,13 @@ store       bool        store results
 seed        int         random seed for the EMAX approximation
 =======     ======      ==========================
 
+If requested, the results from the solution are available in the file **solution.respy.pkl** for further inspection.
+
 **SIMULATION**
 
 =======     ======      ==========================
 Key         Value       Interpretation
-=======     ======      ========================https://github.com/restudToolbox/package/blob/master/example/data_one.ini==
+=======     ======      ==========================
 file        str         file to print simulated sample
 agents      int         number of simulated agents
 seed        int         random seed for agent experience
@@ -112,7 +112,7 @@ seed        int         random seed for agent experience
 Key             Value       Interpretation
 ==========      ======      ==========================
 file            str         file to read observed sample
-tau             float       smoothing window
+tau             float       smoothing window for simulated probabilities
 agents          int         number of agents to read from sample
 draws           int         number of draws for approximation of choice probabilities
 maxfun          int         maximum number of function evaluations
@@ -128,6 +128,8 @@ Key         Value       Interpretation
 debug       bool        flag to use debug mode
 version     str         program version
 =======     ======      ==========================
+
+In general, two versions of the program are available. Either your can request the baseline *Python* implementation or *Fortran* for better performance.
 
 **PARALLELISM**
 
@@ -146,7 +148,6 @@ Key         Value       Interpretation
 points      int         number of interpolation points
 flag        bool        flag to use interpolation
 =======     ======      ==========================
-
 
 **DERIVATIVES**
 
@@ -210,8 +211,7 @@ rhobeg      float       starting value for size of trust region
 rhoend      float       minimum value of size for trust region
 =======     ======      ==========================
 
-The maximum number of function evaluations is determined by the minimum of the two flags specified in this section and the *ESTIMATION* block.
-
+If you perform an estimation using the *NEWUOA* algorithm, the maximum number of function evaluations is determined by the minimum of the two flags specified in this section and the *ESTIMATION* block.
 
 Examples
 --------
@@ -220,38 +220,34 @@ Let us explore the basic capabilities of the **respy** package with a couple of 
 
 **Simulation and Estimation**
 
-We usually either want to simulate a synthetic sample from the  model or start an estimation run. Whatever the case, we always initialize an instance of the *RespyCls* first by passing in the path to the initialization file.
+We usually either want to simulate a synthetic sample from the model or start an estimation run. Whatever the case, we always initialize an instance of the *RespyCls* first by passing in the path to the initialization file.
 ::
 
     from respy import RespyCls
 
     respy_obj = RespyCls('example.ini')
 
-Now we can simulate a sample from the model::
+Now we can simulate a sample from the specified model::
 
     from respy import simulate
 
     simulate(respy_obj)
 
-The sample is simulated with the parameters specified in the initialization file. During the simulation, several files will appear in the current working directory. **sol.respy.log** allows to monitor the progress of the solution algorithm, while the actual simulation can be followed in  **sim.respy.log**.
+During the simulation, several files will appear in the current working directory. **sol.respy.log** allows to monitor the progress of the solution algorithm, while the actual simulation can be followed in  **sim.respy.log**. The names of the following files depend on the specified filename in the SIMULATION section of the model initialization file, where we specified *data.respy.dat*. The simulated dataset with the agent choices and state experiences is stored in **data.respy.dat** and **data.respy.info** provides some basic descriptives of the simulated dataset.
 
-The names of the following files depend on the specified filename in the SIMULATION section of the model initialization file, where we specified *data.respy*. The extensions are automatically added. The simulated dataset with the agent choices and state experiences is stored in **data.respy.dat** and **data.respy.info** provides some basic descriptives of the simulated dataset.
-
-Now that we have some observed data, we can start an estimation. Here we are using the simulated data for the estimation. However, you can of course also use other data sources. Just make sure they follow the layout of the simulated sample and remember that the *.dat* extension will be added automatically to the filename specified in the *ESTIMATION* section. The coefficient values in the initialization file serve as the starting values::
+Now that we have some observed data, we can start an estimation. Here we are using the simulated data for the estimation. However, you can of course also use other data sources. Just make sure they follow the layout of the simulated sample. The coefficient values in the initialization file serve as the starting values::
 
     from respy import estimate
 
     x, crit_val = estimate(respy_obj)
 
-This directly returns the value of the coefficients at the final step of the optimizer as well as
-the value of the criterion function. However, some additional files appear in the meantime. Monitoring the estimation is best done using **est.respy.info** and more details are in **est.respy.log**.
+This directly returns the value of the coefficients at the final step of the optimizer as well as the value of the criterion function. However, some additional files appear in the meantime. Monitoring the estimation is best done using **est.respy.info** and more details are in **est.respy.log**.
 
 We can now simulate a sample using the estimated parameters, but updating the instance of the *RespyCls* with the parameters returned from the estimation routine.
 ::
     respy_obj.update_model_paras(x)
 
     respy.simulate(respy_obj)
-
 
 **Recomputing Keane & Wolpin (1994)**
 
@@ -282,4 +278,4 @@ Just using the capabilities outlined so far, it is straightforward to compute so
 
         respy.estimate(respy_obj)
 
-You can download the all the required material initialization files `here <https://github.com/restudToolbox/package/tree/master/respy/tests/resources>`_. In an earlier working paper version of their paper (`online <https://www.minneapolisfed.org/research/staff-reports/the-solution-and-estimation-of-discrete-choice-dynamic-programming-models-by-simulation-and-interpolation-monte-carlo-evidence>`_), the original authors provide a full account of the choice distributions for all three specifications. The results from the recomputation line up well with their reports.
+You can download the all the material for the recomputation `here <https://github.com/restudToolbox/package/tree/master/respy/tests/resources>`_. In an earlier working paper version of their paper (`online <https://www.minneapolisfed.org/research/staff-reports/the-solution-and-estimation-of-discrete-choice-dynamic-programming-models-by-simulation-and-interpolation-monte-carlo-evidence>`_), the original authors provide a full account of the choice distributions for all three specifications. The results from the recomputation line up well with their reports.

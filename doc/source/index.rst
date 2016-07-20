@@ -8,7 +8,7 @@ Welcome to respy's documentation!
 
 `PyPI <https://pypi.python.org/pypi/respy>`_ | `GitHub <https://github.com/restudToolbox/package>`_  | `Issues <https://gitlab.com/restudToolbox/package/issues>`_
 
-**respy** is a *Python* package for the solution, simulation, and estimation of the prototypical discrete choice dynamic programming model presented in:
+**respy** is a *Python* package for the simulation and estimation of the prototypical discrete choice dynamic programming model presented in:
 
     Michael P. Keane, Kenneth I. Wolpin (1994). `The Solution and Estimation of Discrete Choice Dynamic Programming Models by Simulation and Interpolation: Monte Carlo Evidence <http://www.jstor.org/stable/2109768>`_. *The Review of Economics and Statistics*, 76(4): 648-672.
 
@@ -24,24 +24,24 @@ This documentation is best understood with a sound knowledge of their paper as w
    :target: https://www.quantifiedcode.com/app/project/b00436d2ca614437b843c7042dba0c26
    :alt: Code issues
 
-.. image:: https://api.codacy.com/project/badge/Grade/3dd368fb739c49d78d910676c9264a81    
+.. image:: https://api.codacy.com/project/badge/Grade/3dd368fb739c49d78d910676c9264a81
    :target: https://www.codacy.com/app/eisenhauer/respy?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=restudToolbox/package&amp;utm_campaign=Badge_Grade
 
-.. image:: https://landscape.io/github/restudToolbox/package/develop/landscape.svg?style=flat
-   :target: https://landscape.io/github/restudToolbox/package/develop
+.. image:: https://landscape.io/github/restudToolbox/package/master/landscape.svg?style=flat
+   :target: https://landscape.io/github/restudToolbox/package/master
    :alt: Code Health
 
 .. image:: https://readthedocs.org/projects/respy/badge/?version=latest
    :target: http://respy.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
 
-.. image:: https://requires.io/github/restudToolbox/package/requirements.svg?branch=develop
-   :target: https://requires.io/github/restudToolbox/package/requirements/?branch=develop
+.. image:: https://requires.io/github/restudToolbox/package/requirements.svg?branch=master
+   :target: https://requires.io/github/restudToolbox/package/requirements/?branch=master
    :alt: Requirements Status
 
 .. image:: https://badge.fury.io/py/respy.svg
     :target: https://badge.fury.io/py/respy
-    
+
 **Contents:**
 
 .. toctree::
@@ -51,10 +51,10 @@ This documentation is best understood with a sound knowledge of their paper as w
    installation
    economics
    tutorial
-   numerical_methods 
-   software_engineering
+   numerical_methods
    reliability
    scalability
+   software_engineering
    contributions
    contact
    acknowledgments

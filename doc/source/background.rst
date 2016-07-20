@@ -1,14 +1,16 @@
 Background
 ==========
 
-The **respy** package is a research tool. It provides the computational starting point for several research papers.
+The **respy** package is a research tool. It provides the computational starting point for several research papers that analyze the economics driving agents' educational and occupational choices over their life-cycle within the framework of a finite-horizon discrete choice dynamic programming model.
+
+Here are some examples:
 
     Philipp Eisenhauer (2016). *The Approximate Solution of Finite-Horizon Discrete Choice Dynamic Programming Models: Revisiting Keane & Wolpin (1994)*. Unpublished Manuscript
 
-    Philipp Eisenhauer, Stefan Wild (2016). *Numerical Upgrade to Finite-Horizon Discrete Choice Programming Models*. Unpublished Manuscript
+    Philipp Eisenhauer, Stefan M. Wild (2016). *Numerical Upgrade to Finite-Horizon Discrete Choice Programming Models*. Unpublished Manuscript
 
-    Philipp Eisenhauer (2016). *Ambiguity in Dynamic Models of Educational Choice*. Unpublished Manuscript
+    Philipp Eisenhauer (2016). *Risk and Ambiguity in Dynamic Models of Educational Choice*. Unpublished Manuscript
 
-However, it is also intended to showcase how combining economic expertise with software engineering and knowledge of numerical methods, allows economists to conduct computation intensive research in a transparent and reliable way.
+We provide the package and its documentation in order to ensure the transparency, reliability, recomputability, and extensibility of this research. However, we also hope to showcase how software engineering practices can help in achieving these objectives.
 
-So, for the rest of this documentation, we will first discuss the economics of the underlying model. Then outline the capabilities of the **respy** package. Then we outline the details about the numerical methods and provide some background information on how software engineering tools helps develop, maintain, and extend the capabilities of the package over time. Then we document the overall reliability and scalability of the parallel implementations.
+The rest of this documentation is structured as follows. First, we provide the installation instructions. Then we turn to a discussion of the underlying economic model, before we  illustrate the basic capabilities of the package in a tutorial. Next, we provide more details regarding the numerical methods used for the computations. Then we showcase the reliability and scalability. We conclude with a presentation of the software engineering practices adopted for the ongoing development of the package.

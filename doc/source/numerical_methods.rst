@@ -3,7 +3,7 @@
 Numerical Methods
 -----------------
 
-The solution, simulation, and estimation of the prototypical discrete choice dynamic programming model requires the specification of several numerical components. We discuss each in turn.
+The simulation and estimation of the prototypical discrete choice dynamic programming model requires the use of several numerical components. We discuss each in turn.
 
 Differentiation
 """""""""""""""
@@ -13,7 +13,7 @@ The scaling procedure and the derivative-based optimization algorithms require t
 Integration
 """""""""""
 
-Integrals arise in the solution of the model and during the evaluation of the likelihood function. All are solved by Monte Carlo integration. The same random draws are used for each integral.
+Integrals arise in the solution of the model and during the evaluation of the likelihood function. All are approximated by Monte Carlo integration. The same random draws are used for each integral.
 
 * For each agent in each time period, the evaluation of the **choice probabilities** requires the approximation of a four-dimensional integral. The integral is evaluated using the number of draws specified in the *SIMULATION* section of the initialization file.
 
