@@ -3,6 +3,8 @@
 Numerical Methods
 -----------------
 
+The solution, simulation, and estimation of the prototypical discrete choice dynamic programming model requires the specification of several numerical components. We discuss each in turn.
+
 Differentiation
 """""""""""""""
 

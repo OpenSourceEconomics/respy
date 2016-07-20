@@ -2,11 +2,15 @@
 """ This module runs the tutorial from the online documentation.
 """
 
+import shutil
+import glob
+import os
+
 import respy
 
 # Initialize an instance of the RespyCls to manage all things related to the
 # model specification.
-respy_obj = respy.RespyCls('data_one.ini')
+respy_obj = respy.RespyCls('example.ini')
 
 # Simulate the model according to the initial specification.
 respy.simulate(respy_obj)
@@ -20,4 +24,7 @@ x, crit_val = respy.estimate(respy_obj)
 respy_obj.update_model_paras(x)
 respy.simulate(respy_obj)
 
-
+# Store results in directory for later inspection.
+os.mkdir('example')
+for fname in glob.glob('*.respy.*'):
+    shutil.move(fname, 'example')

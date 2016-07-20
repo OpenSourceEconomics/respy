@@ -6,7 +6,7 @@ We now illustrate the basic capabilities of the **respy** package. First, we pre
 Model Specification
 -------------------
 
-The model is specified in an initialization file. For an example, check out the first specification analyzed in the original paper (Table 1) `online <https://github.com/restudToolbox/package/blob/master/example/data_one.ini>`_.
+The model is specified in an initialization file. For an example, check out the first specification analyzed in the original paper (Table 1) `online <https://github.com/restudToolbox/package/blob/master/respy/tests/resources/kw_data_one.ini>`_.
 
 We turn to each of the ingredients in more details.
 
@@ -100,7 +100,7 @@ seed        int         random seed for the EMAX approximation
 
 =======     ======      ==========================
 Key         Value       Interpretation
-=======     ======      ==========================
+=======     ======      ========================https://github.com/restudToolbox/package/blob/master/example/data_one.ini==
 file        str         file to print simulated sample
 agents      int         number of simulated agents
 seed        int         random seed for agent experience
@@ -213,15 +213,19 @@ rhoend      float       minimum value of size for trust region
 The maximum number of function evaluations is determined by the minimum of the two flags specified in this section and the *ESTIMATION* block.
 
 
-Simulation and Estimation
--------------------------
+Examples
+--------
 
-Let us explore the basic capabilities of the **respy** package in this tutorial (`script <https://github.com/restudToolbox/package/blob/master/example/example.py>`_).  We usually either want to simulate a synthetic sample from the  model or start an estimation run. Whatever the case, we always initialize an instance of the *RespyCls* first by passing in the path to the initialization file.
+Let us explore the basic capabilities of the **respy** package with a couple of examples. All the required material is available `online <https://github.com/restudToolbox/package/tree/master/example>`_.
+
+**Simulation and Estimation**
+
+We usually either want to simulate a synthetic sample from the  model or start an estimation run. Whatever the case, we always initialize an instance of the *RespyCls* first by passing in the path to the initialization file.
 ::
 
     from respy import RespyCls
 
-    respy_obj = RespyCls('data_one.ini')
+    respy_obj = RespyCls('example.ini')
 
 Now we can simulate a sample from the model::
 
@@ -240,7 +244,7 @@ Now that we have some observed data, we can start an estimation. Here we are usi
     x, crit_val = estimate(respy_obj)
 
 This directly returns the value of the coefficients at the final step of the optimizer as well as
-the value of the criterion function. However, some additional files appear in the meantime. Monitoring the estimation is best done using **est.respy.info** and more details are in **est.respy.info**.
+the value of the criterion function. However, some additional files appear in the meantime. Monitoring the estimation is best done using **est.respy.info** and more details are in **est.respy.log**.
 
 We can now simulate a sample using the estimated parameters, but updating the instance of the *RespyCls* with the parameters returned from the estimation routine.
 ::
@@ -249,8 +253,7 @@ We can now simulate a sample using the estimated parameters, but updating the in
     respy.simulate(respy_obj)
 
 
-Recomputing Keane & Wolpin (1994)
----------------------------------
+**Recomputing Keane & Wolpin (1994)**
 
 Just using the capabilities outlined so far, it is straightforward to compute some of the key results in the original paper with a simple script::
 
@@ -262,7 +265,7 @@ Just using the capabilities outlined so far, it is straightforward to compute so
 
     # We can simply iterate over the different model specifications outlined in
     # Table 1 of their paper.
-    for spec in ['data_one.ini', 'data_two.ini', 'data_three.ini']:
+    for spec in ['kw_data_one.ini', 'kw_data_two.ini', 'kw_data_three.ini']:
 
         # Process relevant model initialization file
         respy_obj = respy.RespyCls(spec)
@@ -271,8 +274,12 @@ Just using the capabilities outlined so far, it is straightforward to compute so
         respy.simulate(respy_obj)
 
         # To start estimations for the Monte Carlo exercises. For now, we just
-        # evaluate the model at the starting values, i.e. maxiter set to zero in
+        # evaluate the model at the starting values, i.e. maxfun set to zero in
         # the initialization file.
+        respy_obj.unlock()
+        respy_obj.set_attr('maxfun', 0)
+        respy_obj.lock()
+
         respy.estimate(respy_obj)
 
-You can download the three initialization files `here <https://github.com/restudToolbox/package/tree/master/forensics/inits>`_. In an earlier working paper version of their paper (`online <https://www.minneapolisfed.org/research/staff-reports/the-solution-and-estimation-of-discrete-choice-dynamic-programming-models-by-simulation-and-interpolation-monte-carlo-evidence>`_), the original authors provide a full account of the choice distributions for all three specifications. The results from the recomputation line up well with their reports.
+You can download the all the required material initialization files `here <https://github.com/restudToolbox/package/tree/master/respy/tests/resources>`_. In an earlier working paper version of their paper (`online <https://www.minneapolisfed.org/research/staff-reports/the-solution-and-estimation-of-discrete-choice-dynamic-programming-models-by-simulation-and-interpolation-monte-carlo-evidence>`_), the original authors provide a full account of the choice distributions for all three specifications. The results from the recomputation line up well with their reports.
