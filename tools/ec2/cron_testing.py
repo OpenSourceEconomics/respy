@@ -104,7 +104,7 @@ if NOTIFICATION:
     # Attachment
     os.chdir(PACKAGE_DIR + '/development/testing/property')
 
-    f = open('property.respy.log', 'r')
+    f = open('property.respy.info', 'r')
 
     os.chdir(CURRENT_DIR)
 
