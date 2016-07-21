@@ -8,6 +8,11 @@ Program Design
 
 We learned a lot about the program design from the codes provided by the original authors (`original codes <https://github.com/restudToolbox/package/tree/master/forensics>`_). Our own source code is available on `GitHub <https://github.com/restudToolbox/package>`_ as well. We maintain a pure *Python* implementation with a focus on readability and a pure *Fortran* implementation to adress any performance constraints. The user can specify the implementation in the *PROGRAM* section of the initialization file. Also, we support the use of multiple cores with the **FORTRAN** implementation.
 
+Documentation
+-------------
+
+The documentation is build with `Sphinx <http://www.sphinx-doc.org/>`_. Hosted on readthedocs.io
+
 Code Review
 -----------
 
@@ -16,14 +21,36 @@ We use several automatic code review tools to ensure the readability and maintai
 Test Battery
 ------------
 
-We build a testing infrastructure, that allows to test the functionality of the **respy** package for numerous alternative parameterizations (`link <https://github.com/restudToolbox/package/tree/master/development/testing>`_). This idea of property-based testing turned out to be very powerful, as during the estimation the optimizer may visit quite extreme parameterizations of the model. Since our first release, we have added numerous regression tests that ensure that simple refactoring does not entail any unintended consequences. We also upgraded the original *Fortran* codes developed by the authors and compare simulated samples between our package and their implementation. We automate our test execution using **pytest**. We have set up a testing server on the `Amazon Elastic Compute Cloud (EC2) <https://aws.amazon.com/ec2/>`_ for daily runs of our whole test battery. We maintain interfaces to selected **Fortran** functions using **f2py** which allows us to directly test for the equality of **Python** and **Fortran** functions. You can have a look at our tests `online <https://github.com/restudToolbox/package/tree/master/respy/tests>`_.
+We build a customized testing infrastructure for the **respy** package. Among others, We rely on tools such as the the continuous integration services provided by `Travis CI <https://travis-ci.org/restudToolbox/package>`_, py.test for the management of the automated testing, and tox to ensure the property working of the package for alternative Python workings. Most of the actual testing is run on our dedicated testing server on the `Amazon Elastic Compute Cloud (EC2) <https://aws.amazon.com/ec2/>`_.
+
+We broadly group our testing efforts in four categories:
+
+* **property testing**
+
+    We hit the program with random requests and test valid return.
+
+* **regression testing**
+
+    We have a set of 1,000 fixed model parameterizations and the corresponding estimation results. Any changes to the code are tested against these results.
+
+* **scalability testing**
+
+    The computational burden of estimating meaningful models quite large due to the curse of dimensionality. That motivates the parallelized version of the program. We regularly test the scalability of our code against the linear benchmark.
+
+* **reliability testing**
+
+    We conduct several Monte Carlo exercises to ensure that we can recover the true underlying parameterization. This also allows us to get a feeling for the what parameters are easily recovered and which are not. We document one of these Monte Carlo exercises in the earlier section.
+
+* **release testing**
+
+    Often new releases only consist of refactoring or cleanup of the code base. So, the results should actually be unaffected by the changes. So, as part of finalizing a new release, we test the new release against the results from the new release for random requests. The same is true, if subset of user requests should be unaffected by the changes.
 
 Continuous Integration Workflow
 -------------------------------
 
-We set up a continuous integration workflow using `Travis CI <https://travis-ci.org/restudToolbox/package>`_. We use `tox <https://tox.readthedocs.io>`_ to ensure the correct installation of the package with different *Python* environments and automate our builds using `Waf <https://waf.io/>`_. We rely on `GitHub <https://github.com/restudToolbox/package>`_ as our online version control system and follow the `Gitflow Workflow <https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow>`_.
+We set up a continuous integration workflow using `Travis CI <https://travis-ci.org/restudToolbox/package>`_. We use `tox <https://tox.readthedocs.io>`_ to ensure the correct installation of the package with different *Python* environments and automate our builds using `Waf <https://waf.io/>`_. We rely on `GitHub <https://github.com/restudToolbox/package>`_ as our online version control system and follow the `Gitflow Workflow <https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow>`_. We use Gitlab for issue tracking.
 
 Release Management
 ------------------
 
-We distribute our software through `PyPI <https://pypi.python.org/pypi/respy>`_ which automatically updated from `Travis CI <https://travis-ci.org/restudToolbox/package>`_. Each new release of the **respy** package is extensively tested. Given the stability of the package by now, each new release usually contains only new features which allow to regression tests against the previous release for requests contained in both. We do so by first pushing the new release to `TestPyPI <https://testpypi.python.org/pypi>`_. The documentation is build with `Sphinx <http://www.sphinx-doc.org/>`_.
+We distribute our software through `PyPI <https://pypi.python.org/pypi/respy>`_ which automatically updated from Travis-CI. We do so by first pushing the new release to `TestPyPI <https://testpypi.python.org/pypi>`_ and running the test battery for a couple of days.
