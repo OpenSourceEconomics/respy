@@ -21,7 +21,7 @@ We use several automatic code review tools to ensure the readability and maintai
 Test Battery
 ------------
 
-We build a customized testing infrastructure for the **respy** package. Among others, We rely on tools such as the the continuous integration services provided by `Travis CI <https://travis-ci.org/restudToolbox/package>`_, py.test for the management of the automated testing, and tox to ensure the property working of the package for alternative Python workings. Most of the actual testing is run on our dedicated testing server on the `Amazon Elastic Compute Cloud (EC2) <https://aws.amazon.com/ec2/>`_.
+We build a customized testing infrastructure for the **respy** package. Among others, We rely on tools such as the the continuous integration services provided by `Travis CI <https://travis-ci.org/restudToolbox/package>`_, py.test for the management of the automated testing, and tox to ensure the property working of the package for alternative Python workings.
 
 We broadly group our testing efforts in four categories:
 
@@ -44,6 +44,11 @@ We broadly group our testing efforts in four categories:
 * **release testing**
 
     Often new releases only consist of refactoring or cleanup of the code base. So, the results should actually be unaffected by the changes. So, as part of finalizing a new release, we test the new release against the results from the new release for random requests. The same is true, if subset of user requests should be unaffected by the changes.
+
+Testing Infrastructure
+""""""""""""""""""""""
+
+We maintain a dedicated testing server on the `Amazon Elastic Compute Cloud (EC2) <https://aws.amazon.com/ec2/>`_.
 
 Continuous Integration Workflow
 -------------------------------
