@@ -106,6 +106,8 @@ def send_notification(which, **kwargs):
         mail_obj.set_attr('attachment', 'property.respy.info')
     elif which == 'scalability':
         mail_obj.set_attr('attachment', 'scalability.respy.info')
+    elif which == 'reliability':
+        mail_obj.set_attr('attachment', 'reliability.respy.info')
 
     mail_obj.lock()
 

@@ -45,7 +45,7 @@ def run(spec_dict, fname):
 
     respy_obj.unlock()
 
-    respy_obj.set_attr('file_est', '../correct/start/data.respy.dat')
+    respy_obj.set_attr('file_est', '../truth/start/data.respy.dat')
 
     for key_ in spec_dict.keys():
         respy_obj.set_attr(key_, spec_dict[key_])
@@ -59,7 +59,7 @@ def run(spec_dict, fname):
 
     # Let us first simulate a baseline sample, store the results for future
     # reference, and start an estimation from the true values.
-    os.mkdir('correct'), os.chdir('correct')
+    os.mkdir('truth'), os.chdir('truth')
     respy_obj.write_out()
 
     simulate_specification(respy_obj, 'start', False)
@@ -71,7 +71,7 @@ def run(spec_dict, fname):
 
     os.chdir('../')
 
-    record_results('Correct', rmse_start, rmse_stop, num_evals, num_steps)
+    record_results('Truth', rmse_start, rmse_stop, num_evals, num_steps)
 
     # Now we will estimate a misspecified model on this dataset assuming that
     # agents are myopic. This will serve as a form of well behaved starting
@@ -162,7 +162,7 @@ def get_choice_probabilities(fname, is_flatten=True):
 def record_results(label, rmse_start, rmse_stop, num_evals, num_steps):
     with open('reliability.respy.info', 'a') as out_file:
         # Setting up
-        if label == 'Correct':
+        if label == 'Truth':
             out_file.write('\n RMSE\n\n')
             fmt = '{:>15} {:>15} {:>15} {:>15} {:>15}\n\n'
             out_file.write(fmt.format(*['Setup', 'Start', 'Stop', 'Evals', 'Steps']))
@@ -172,7 +172,7 @@ def record_results(label, rmse_start, rmse_stop, num_evals, num_steps):
 
 def get_rmse():
 
-    fname = '../correct/start/data.respy.info'
+    fname = '../truth/start/data.respy.info'
     probs_true = get_choice_probabilities(fname, is_flatten=True)
 
     fname = 'start/data.respy.info'
