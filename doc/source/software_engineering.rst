@@ -3,20 +3,15 @@ Software Engineering
 
 We now briefly discuss our software engineering practices that help to ensure the transparency, reliability, and extensibility of the **respy** package.
 
+Development Infrastructure
+--------------------------
+
+We maintain a dedicated development and testing servers on the `Amazon Elastic Compute Cloud (EC2) <https://aws.amazon.com/ec2/>`_. We treat our infrastructure as code which is thus versionable, testable, and repeatable. We create the machine images using `Packer <https://www.packer.io/>`_ and manage the compute resources with `Terraform <https://www.terraform.io/>`_. Our definition files are available `online <https://github.com/restudToolbox/package/tree/master/tools>`_.
+
 Program Design
 --------------
 
 We learned a lot about the program design from the codes provided by the original authors (`original codes <https://github.com/restudToolbox/package/tree/master/forensics>`_). Our own source code is available on `GitHub <https://github.com/restudToolbox/package>`_ as well. We maintain a pure *Python* implementation with a focus on readability and a pure *Fortran* implementation to adress any performance constraints. The user can specify the implementation in the *PROGRAM* section of the initialization file. Also, we support the use of multiple cores with the **FORTRAN** implementation.
-
-Documentation
--------------
-
-The documentation is build with `Sphinx <http://www.sphinx-doc.org/>`_. Hosted on readthedocs.io
-
-Code Review
------------
-
-We use several automatic code review tools to ensure the readability and maintainability of our code base. For example, we rely on `Quantified Code <https://www.quantifiedcode.com/app/project/b00436d2ca614437b843c7042dba0c26>`_ and `Codacy <https://www.codacy.com/app/eisenhauer/respy/dashboard>`_.
 
 Test Battery
 ------------
@@ -45,10 +40,15 @@ We broadly group our testing efforts in four categories:
 
     Often new releases only consist of refactoring or cleanup of the code base. So, the results should actually be unaffected by the changes. So, as part of finalizing a new release, we test the new release against the results from the new release for random requests. The same is true, if subset of user requests should be unaffected by the changes.
 
-Testing Infrastructure
-""""""""""""""""""""""
+Documentation
+-------------
 
-We maintain a dedicated testing server on the `Amazon Elastic Compute Cloud (EC2) <https://aws.amazon.com/ec2/>`_.
+The documentation is build with `Sphinx <http://www.sphinx-doc.org/>`_. Hosted on readthedocs.io
+
+Code Review
+-----------
+
+We use several automatic code review tools to ensure the readability and maintainability of our code base. For example, we rely on `Quantified Code <https://www.quantifiedcode.com/app/project/b00436d2ca614437b843c7042dba0c26>`_ and `Codacy <https://www.codacy.com/app/eisenhauer/respy/dashboard>`_.
 
 Continuous Integration Workflow
 -------------------------------

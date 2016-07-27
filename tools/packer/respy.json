@@ -20,14 +20,10 @@
 
   "provisioners": [
       {
-          "type": "file",
-          "source": "provison.py",
-          "destination": "/tmp/provison.py"
-      },
-
-      {
-          "type": "shell",
-          "script": "provison.sh"
+          "type": "chef-solo",
+          "cookbook_paths": ["/home/peisenha/restudToolbox/chef-respy/site-cookbooks", "/home/peisenha/restudToolbox/chef-respy/cookbooks"],
+          "run_list": ["recipe[respy]"]
       }
+
   ]
 }
