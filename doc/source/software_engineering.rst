@@ -6,7 +6,7 @@ We now briefly discuss our software engineering practices that help to ensure th
 Development Infrastructure
 --------------------------
 
-We maintain a dedicated development and testing servers on the `Amazon Elastic Compute Cloud (EC2) <https://aws.amazon.com/ec2/>`_. We treat our infrastructure as code which is thus versionable, testable, and repeatable. We create the machine images using `Packer <https://www.packer.io/>`_ and manage the compute resources with `Terraform <https://www.terraform.io/>`_. Our definition files are available `online <https://github.com/restudToolbox/package/tree/master/tools>`_.
+We maintain a dedicated development and testing servers on the `Amazon Elastic Compute Cloud (EC2) <https://aws.amazon.com/ec2/>`_. We treat our infrastructure as code which is thus versionable, testable, and repeatable. We create the machine images using `Packer <https://www.packer.io/>`_ and `Chef <https://www.chef.io/>`. The compute resources are managed with `Terraform <https://www.terraform.io/>`_. Our definition files are available `online <https://github.com/restudToolbox/package/tree/master/tools>`_.
 
 Program Design
 --------------
