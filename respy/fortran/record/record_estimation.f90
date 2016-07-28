@@ -210,7 +210,7 @@ SUBROUTINE record_estimation_eval(x_all_current, val_current, num_eval)
             IF (i == 2) WRITE(99, 240) 'Step'
             IF (i == 3) WRITE(99, 240) 'Current'
 
-            CALL get_cholesky(shocks_cholesky, x_container(:, 1))
+            CALL get_cholesky(shocks_cholesky, x_container(:, i))
             shocks_cov = MATMUL(shocks_cholesky, TRANSPOSE(shocks_cholesky))
 
             WRITE(99, *)
