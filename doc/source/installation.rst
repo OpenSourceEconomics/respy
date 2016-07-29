@@ -26,7 +26,7 @@ Please make sure that the *gfortran* compiler is available on your path and it k
 
    $ pip install --no-binary respy respy
 
-The *--no-binary* flag is required for now to ensure a compilation of the *Fortran* source code during the build.
+The *--no-binary* flag is required for now to avoid the use of wheels and ensure a compilation of the *Fortran* source code during the build.
 
 ... adding Parallelism
 ----------------------
