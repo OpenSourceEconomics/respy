@@ -1,9 +1,9 @@
 #!/bin/bash
-#PBS -N mpi 
+#PBS -N mpi
 #PBS -j oe
 #PBS -l walltime=99:00:00
-#PBS -l nodes=1:ppn=32
-#PBS -V          
+#PBS -l nodes=1:ppn=15
+#PBS -V
 #PBS -m ae
 #PBS -M eisenhauer@policy-lab.org
 
