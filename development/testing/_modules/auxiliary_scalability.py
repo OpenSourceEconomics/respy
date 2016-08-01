@@ -106,10 +106,14 @@ def run(spec_dict, fname, grid_slaves):
     respy_obj = respy.RespyCls(SPEC_DIR + fname)
 
     respy_obj.unlock()
+    respy_obj.set_attr('is_debug', False)
+
     respy_obj.set_attr('file_est', '../data.respy.dat')
     for key_ in spec_dict.keys():
         respy_obj.set_attr(key_, spec_dict[key_])
     respy_obj.lock()
+
+    maxfun = respy_obj.get_attr('maxfun')
 
     # Simulate the baseline dataset, which is used regardless of the number
     # of slaves.
@@ -136,16 +140,17 @@ def run(spec_dict, fname, grid_slaves):
 
         os.chdir('../')
 
-        record_information(start_time, finish_time, num_slaves)
+        record_information(start_time, finish_time, num_slaves, maxfun)
 
     os.chdir('../')
 
 
-def record_information(start_time, finish_time, num_slaves):
+def record_information(start_time, finish_time, num_slaves, maxfun):
     fmt = '{:>15} {:>25} {:>25} {:>15}\n'
     if not os.path.exists('scalability.respy.info'):
         with open('scalability.respy.info', 'a') as out_file:
-            out_file.write('\n Time\n\n')
+            out_file.write('\n    Benchmarking ' + str(maxfun) +
+            ' evaluations\n\n')
             out_file.write(
                 fmt.format(*['Slaves', 'Start', 'Stop', 'Duration']))
             out_file.write('\n')
