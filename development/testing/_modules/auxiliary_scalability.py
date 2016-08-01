@@ -1,7 +1,10 @@
+import matplotlib
+
+matplotlib.use('Agg')
+
 import matplotlib.pyplot as plt
 from datetime import timedelta
 from datetime import datetime
-import matplotlib
 import shlex
 import os
 
