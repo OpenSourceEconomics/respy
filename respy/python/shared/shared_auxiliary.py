@@ -438,7 +438,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
     paras_fixed += dict_['HOME']['fixed'][:]
     paras_fixed += dict_['SHOCKS']['fixed'].tolist()[:]
 
-    str_optim = '{0:<10} {1:20.4f} {2:>5} \n'
+    str_optim = '{0:<10} {1:20.4f} {2:>5}\n'
 
     # Construct labels. This ensures that the initialization files always look
     # identical.
@@ -455,12 +455,12 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
         for flag in labels:
             if flag in ['BASICS']:
 
-                file_.write('BASICS \n\n')
+                file_.write('BASICS\n\n')
 
-                str_ = '{0:<10} {1:>20} \n'
+                str_ = '{0:<10} {1:>20}\n'
                 file_.write(str_.format('periods', dict_[flag]['periods']))
 
-                str_ = '{0:<10} {1:20.4f} \n'
+                str_ = '{0:<10} {1:20.4f}\n'
                 file_.write(str_.format('delta', dict_[flag]['delta']))
 
                 file_.write('\n')
@@ -484,10 +484,10 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                 for key_ in keys:
 
                     if key_ in ['tau']:
-                        str_ = '{0:<10} {1:20.0f} \n'
+                        str_ = '{0:<10} {1:20.0f}\n'
                         file_.write(str_.format(key_, dict_[flag][key_]))
                     else:
-                        str_ = '{0:<10} {1:>20} \n'
+                        str_ = '{0:<10} {1:>20}\n'
                         file_.write(str_.format(key_, str(dict_[flag][key_])))
 
                 file_.write('\n')
@@ -520,7 +520,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                 file_.write(str_optim.format(*line))
 
                 file_.write('\n')
-                str_ = '{0:<10} {1:>15} \n'
+                str_ = '{0:<10} {1:>20}\n'
                 file_.write(str_.format('start', dict_[flag]['start']))
                 file_.write(str_.format('max', dict_[flag]['max']))
 
@@ -559,10 +559,10 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                 for key_ in keys:
 
                     if key_ in ['maxfun', 'npt', 'maxiter']:
-                        str_ = '{0:<10} {1:>20} \n'
+                        str_ = '{0:<10} {1:>20}\n'
                         file_.write(str_.format(key_, dict_[flag][key_]))
                     else:
-                        str_ = '{0:<10} {1:20.15f} \n'
+                        str_ = '{0:<10} {1:20.15f}\n'
                         file_.write(str_.format(key_, dict_[flag][key_]))
 
                 file_.write('\n')
