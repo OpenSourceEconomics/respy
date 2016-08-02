@@ -73,7 +73,7 @@ subprocess.call(cmd, shell=True)
 ###############################################################################
 # Send report
 ###############################################################################
-if NOTIFICATION:
+if NOTIFICATION and os.path.exists(os.environ['HOME'] + '/.credentials'):
 
     subject = ' RESPY: Testing Server '
 

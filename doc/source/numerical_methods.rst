@@ -22,17 +22,17 @@ All integrals are approximated by Monte Carlo integration. The solution and esti
 Optimization
 """"""""""""
 
-The model is estimated using simulated maximum likelihood estimation (Albright, 1977). The available optimizers depend on the version of the program. If you use the *Python* implementation, then the Powell and BFGS algorithms are available through their **SciPy** implementations. See the `SciPy  Documentation <http://docs.scipy.org>`_ for details. For the *FORTRAN*  implementation, we provide the `BFGS <https://en.wikipedia.org/wiki/Broyden%E2%80%93Fletcher%E2%80%93Goldfarb%E2%80%93Shanno_algorithm>`_ and `NEWUOA <https://en.wikipedia.org/wiki/NEWUOA>`_ (Powell, 2004) algorithms.
+The model is estimated using simulated maximum likelihood estimation (Albright, 1977). The available optimizers depend on the version of the program. If you use the *Python* implementation, then the Powell (Powell, 1964) and BFGS (Norcedal, 2006) algorithms are available through their **SciPy** implementations. For the *FORTRAN*  implementation, we provide the BFGS and NEWUOA (Powell, 2004) algorithms. The algorihtm can be selected in the *ESTIMATION* section of the initialization file.
 
 Function Approximation
 """"""""""""""""""""""
 
-The details for the **EMAX interpolation** are discussed in :ref:`Eisenhauer (2016) <bibSection>`.
+The details for the **EMAX interpolation** are discussed in Eisenhauer (2016).
 
 Function Smoothing
 """"""""""""""""""
 
-With only a finite number of draws there is the risk that there are cells with zero probability, so I use kernel smoothed frequency simulation. The function that was used was the kernel smoothing function described in McFadden (1989) with a window parameter of 500. The window parameter is set in the *ESTIMATION* section of the initialization file.
+With only a finite number of draws there is the risk that there are cells with zero probability, so I use kernel smoothed frequency simulation. The function that was used was the kernel smoothing function described in McFadden (1989). The window parameter is set in the *ESTIMATION* section of the initialization file.
 
 Miscellaneous
 """""""""""""

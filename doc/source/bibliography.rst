@@ -16,3 +16,7 @@ Marsaglia, G. (1968). `Random numbers fall mainly in the planes <http://www.ncbi
 Makoto Matsumoto, Takuji Nishimura (1998). `Mersenne Twister: A 623-dimensionally equidistributed uniform pseudo-random number generator <http://dl.acm.org/citation.cfm?doid=272991.272995>`_. *ACM Transactions on Modeling and Computer Simulation*, 8(1): 3-30.
 
 McFadden, D. (1989). `A Method of Simulated Moments for Estimation of Discrete Response Models Without Numerical Integration <https://www.jstor.org/stable/1913621>`_. *Econometrica*, 57:995–1026.
+
+Jorge Nocedal and Stephen J. Wright (2006). Numerical Optimization. *Springer*.
+
+Powell, M J D. (1964). `An efficient method for finding the minimum of a function of several variables without calculating derivatives <http://comjnl.oxfordjournals.org/content/7/2/155.abstract>`_. The Computer Journal 7(2): 155-162.

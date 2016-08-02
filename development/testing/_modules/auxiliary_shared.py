@@ -56,6 +56,10 @@ def send_notification(which, **kwargs):
     """ Finishing up a run of the testing battery.
     """
 
+    # This allows to run the scripts even when no notification can be send.
+    if not os.path.exists(os.environ['HOME'] + '/.credentials'):
+        return
+
     hours, is_failed, num_tests, seed = None, None, None, None
 
     # Distribute keyword arguments

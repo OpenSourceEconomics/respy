@@ -223,23 +223,19 @@ Let us explore the basic capabilities of the **respy** package with a couple of 
 We usually either want to simulate a synthetic sample from the model or start an estimation run. Whatever the case, we always initialize an instance of the *RespyCls* first by passing in the path to the initialization file.
 ::
 
-    from respy import RespyCls
+    import respy
 
-    respy_obj = RespyCls('example.ini')
+    respy_obj = respy.RespyCls('example.ini')
 
 Now we can simulate a sample from the specified model::
 
-    from respy import simulate
-
-    simulate(respy_obj)
+    respy.simulate(respy_obj)
 
 During the simulation, several files will appear in the current working directory. **sol.respy.log** allows to monitor the progress of the solution algorithm, while the actual simulation can be followed in  **sim.respy.log**. The names of the following files depend on the specified filename in the SIMULATION section of the model initialization file, where we specified *data.respy.dat*. The simulated dataset with the agent choices and state experiences is stored in **data.respy.dat** and **data.respy.info** provides some basic descriptives of the simulated dataset.
 
 Now that we have some observed data, we can start an estimation. Here we are using the simulated data for the estimation. However, you can of course also use other data sources. Just make sure they follow the layout of the simulated sample. The coefficient values in the initialization file serve as the starting values::
 
-    from respy import estimate
-
-    x, crit_val = estimate(respy_obj)
+    x, crit_val = respy.estimate(respy_obj)
 
 This directly returns the value of the coefficients at the final step of the optimizer as well as the value of the criterion function. However, some additional files appear in the meantime. Monitoring the estimation is best done using **est.respy.info** and more details are in **est.respy.log**.
 

@@ -26,9 +26,9 @@ Please make sure that the *gfortran* compiler is available on your path and it k
 
    $ pip install --no-binary respy respy
 
-The *--no-binary* flag is required for now to avoid the use of wheels and ensure a compilation of the *Fortran* source code during the build.
+The *--no-binary* flag is required for now to avoid the use of *Python Wheels* and ensure a compilation of the *Fortran* source code during the build.
 
 ... adding Parallelism
 ----------------------
 
-We also support parallel computing using the `Message Passing Interface (MPI) <http://www.mpi-forum.org/>`_ library. This requires that you have a recent version of its `MPICH <https://www.mpich.org/>`_ implementation available on your compiler's search path which was build with shared/dynamic libraries.
+We also support parallel computing using the `Message Passing Interface (MPI) <http://www.mpi-forum.org/>`_ library. This requires a recent version of its `MPICH <https://www.mpich.org/>`_ implementation ava ilable on your compiler's search path which was build with shared/dynamic libraries.

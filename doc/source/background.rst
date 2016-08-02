@@ -11,6 +11,6 @@ Here are some recent examples:
 
     Philipp Eisenhauer (2016). *Risk and Ambiguity in Dynamic Models of Educational Choice*. Unpublished Manuscript
 
-We provide the package and its documentation to ensure the transparency, reliability, recomputability, and extensibility of this research. However, we also hope to showcase how software engineering practices can help in achieving these objectives.
+We provide the package and its documentation to ensure the transparency, reliability, recomputability, and extensibility of this research. We hope to showcase how software engineering practices can help in achieving these objectives.
 
 The rest of this documentation is structured as follows. First, we provide the installation instructions. Then we turn to a discussion of the underlying economic model, before we illustrate the basic capabilities of the package in a tutorial. Next, we provide more details regarding the numerical methods used for the computations. Then we showcase the package's reliability and scalability. We conclude with a presentation of the software engineering practices adopted for the ongoing development of the package.
