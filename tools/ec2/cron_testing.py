@@ -110,7 +110,7 @@ if NOTIFICATION and os.path.exists(os.environ['HOME'] + '/.credentials'):
 
     attached = MIMEText(f.read())
 
-    attached.add_header('Content-Disposition', 'attachment', filename='report.testing.log')
+    attached.add_header('Content-Disposition', 'attachment', filename='property.respy.info')
 
     msg.attach(attached)
 
