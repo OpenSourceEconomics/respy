@@ -1,5 +1,5 @@
 Contact and Credits
-=================== 
+===================
 
 If you have any questions or comments, please do not hesitate to contact us directly.
 
@@ -16,7 +16,4 @@ Development Lead
 Contributors
 ^^^^^^^^^^^^
 
-None yet, want to be the first? 
-
-
-
+None yet, want to be the first?

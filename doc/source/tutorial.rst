@@ -170,7 +170,7 @@ minimum     float       minimum value for gradient approximation
 =======     ======      ==========================
 
 
-The implemented optimization algorithms vary with the program's version. If you request the PYTHON version of the program, you can choose from the ``SciPy`` implementations of the BFGS and POWELL algorithm. Their implementation details are available `here <http://docs.scipy.org/doc/scipy-0.17.0/reference/generated/scipy.optimize.minimize.html>`_. For FORTRAN, we implemented the BFGS algorithm as well and the NEWUOA. For details about the algorithms, please see the section on implementation. Note that only the optimizer used for an estimation needs to be fully specified.
+The implemented optimization algorithms vary with the program's version. If you request the Python version of the program, you can choose from the ``SciPy`` implementations of the BFGS and POWELL algorithm. Their implementation details are available `here <http://docs.scipy.org/doc/scipy-0.17.0/reference/generated/scipy.optimize.minimize.html>`_. For Fortran, we implemented the BFGS algorithm as well and the NEWUOA. For details about the algorithms, please see the section on implementation. Note that only the optimizer used for an estimation needs to be fully specified.
 
 **SCIPY-BFGS**
 

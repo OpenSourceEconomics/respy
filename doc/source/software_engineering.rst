@@ -11,7 +11,7 @@ We maintain a dedicated development and testing server on the `Amazon Elastic Co
 Program Design
 --------------
 
-We build on the design of the original authors (`codes <https://github.com/restudToolbox/package/tree/master/forensics>`_). We maintain a pure PYTHON implementation with a focus on readability and a scalar and parallel FORTRAN implementation to address any performance constraints. We keep the structure of the Python and Fortran implementation aligned as much as possible.
+We build on the design of the original authors (`codes <https://github.com/restudToolbox/package/tree/master/forensics>`_). We maintain a pure Python implementation with a focus on readability and a scalar and parallel Fortran implementation to address any performance constraints. We keep the structure of the Python and Fortran implementation aligned as much as possible.
 
 Test Battery
 ------------
@@ -21,7 +21,7 @@ We use `pytest <http://docs.pytest.org>`_ for our automated testing efforts. We 
 * **property testing**
 
     We hit the program with random requests and test valid return. For example, we estimate the same model specification using the parallel and scalar implementations. The results need to be identical. By maintaining an ``f2py`` interface we test core functionality between our Python and Fortran implementations. We upgraded the codes by the original authors and can compare the results of the ``respy`` package with their for a restricted set of estimation requests.
-    
+
 * **regression testing**
 
     We maintain a set of 1,000 fixed model parameterizations and store their estimation results. This allows to ensure that a simple refactoring of the code or the addition of features do not have any unintended consequences on the existing capabilities of the package.
@@ -40,17 +40,45 @@ We use `pytest <http://docs.pytest.org>`_ for our automated testing efforts. We 
 
 Our `tests <https://github.com/restudToolbox/package/tree/master/respy/tests>`_ and the `testing infrastructure <https://github.com/restudToolbox/package/tree/master/development/testing>`_ are available online.
 
+.. image:: https://codecov.io/gh/restudToolbox/package/branch/master/graph/badge.svg
+   :target: https://codecov.io/gh/restudToolbox/package
+
 Documentation
 -------------
 
 The documentation is hosted on `Read the Docs <https://readthedocs.org/>`_ and created using `Sphinx <http://www.sphinx-doc.org/>`_.
 
+.. image:: https://readthedocs.org/projects/respy/badge/?version=latest
+   :target: http://respy.readthedocs.io/en/latest/?badge=latest
+   :alt: Documentation Status
+
 Code Review
 -----------
 
-We use several automatic code review tools to ensure the readability and maintainability of our code base. For example, we rely on `Quantified Code <https://www.quantifiedcode.com/app/project/b00436d2ca614437b843c7042dba0c26>`_ and `Codacy <https://www.codacy.com/app/eisenhauer/respy/dashboard>`_.
+We use several automatic code review tools to ensure the readability and maintainability of our code base. For example, we rely on `Quantified Code <https://www.quantifiedcode.com/app/project/b00436d2ca614437b843c7042dba0c26>`_, `Codacy <https://www.codacy.com/app/eisenhauer/respy/dashboard>`_, and `Landscape <https://landscape.io/github/restudToolbox/package>`_
+
+.. image:: https://www.quantifiedcode.com/api/v1/project/b00436d2ca614437b843c7042dba0c26/badge.svg
+   :target: https://www.quantifiedcode.com/app/project/b00436d2ca614437b843c7042dba0c26
+   :alt: Code issues
+
+.. image:: https://api.codacy.com/project/badge/Grade/3dd368fb739c49d78d910676c9264a81
+   :target: https://www.codacy.com/app/eisenhauer/respy?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=restudToolbox/package&amp;utm_campaign=Badge_Grade
+
+.. image:: https://landscape.io/github/restudToolbox/package/master/landscape.svg?style=flat
+    :target: https://landscape.io/github/restudToolbox/package/master
+    :alt: Code Health
 
 Continuous Integration Workflow
 -------------------------------
 
 We set up a continuous integration workflow around our `GitHub Organization <https://github.com/restudToolbox>`_. We use continuous integration services provided by `Travis CI <https://travis-ci.org/restudToolbox/package>`_ and `tox <https://tox.readthedocs.io>`_ to ensure the proper workings of the package for alternative Python implementations. Our build process is managed by `Waf <https://waf.io/>`_. We rely on `Git <https://git-scm.com/>`_ as our version control system and follow the `Gitflow Workflow <https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow>`_. We use `GitLab <https://gitlab.com/restudToolbox/package>`_ for our issue tracking. The package is distributed through `PyPI <https://pypi.python.org/pypi/respy>`_ which automatically updated from our development server.
+
+.. image:: https://travis-ci.org/restudToolbox/package.svg?branch=master
+   :target: https://travis-ci.org/restudToolbox/package
+
+.. image:: https://requires.io/github/restudToolbox/package/requirements.svg?branch=master
+    :target: https://requires.io/github/restudToolbox/package/requirements/?branch=master
+    :alt: Requirements Status
+
+.. image:: https://badge.fury.io/py/respy.svg
+    :target: https://badge.fury.io/py/respy
