@@ -258,7 +258,7 @@ SUBROUTINE record_estimation_final(success, message, crit_val, x_all_final)
 
     100 FORMAT(3x,A9,5X,f45.15)
     110 FORMAT(3x,A10,4x,A25)
-    120 FORMAT(3x,i10,4x,f25.15)
+    120 FORMAT(3x,i10,4x,f25.5)
 
     OPEN(UNIT=99, FILE='est.respy.log', ACCESS='APPEND', ACTION='WRITE')
 

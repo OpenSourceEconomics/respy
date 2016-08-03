@@ -76,7 +76,7 @@ def record_estimation_final(opt_obj, success, message):
         out_file.write(fmt_.format(*['Criterion', fval]))
         fmt_ = '\n\n   {0:>10}' + '    {1:>25}\n\n'
         out_file.write(fmt_.format(*['Identifier', 'Final']))
-        fmt_ = '   {:>10}' + '    {:25.15f}\n'
+        fmt_ = '   {:>10}' + '    {:25.5f}\n'
         for i in range(26):
             out_file.write(
                 fmt_.format(*[i, opt_obj.x_container[i, 1]]))
