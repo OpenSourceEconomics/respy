@@ -66,13 +66,14 @@ for spec in ['one', 'two', 'three']:
 for spec in ['one', 'two', 'three']:
     for which in ['a', 'b']:
         x, y = np.meshgrid(range(20), range(20))
-        z = np.tile(np.nan, (20,20))
+        z = dict()
+        z[which] = np.tile(np.nan, (20,20))
         for i in range(20):
             for j in range(20):
-                z[i, j] = return_to_experience(i, j, coeffs[spec], which)
+                z[which][i, j] = return_to_experience(i, j, coeffs[spec], which)
 
         # Create and save plot
-        plot_return_experience(x, y, z, which, spec)
+#    plot_return_experience(x, y, z, which, spec)
 #
 # # Determine wages for varying years of education in each occupation
 # for spec in ['one', 'two', 'three']:
