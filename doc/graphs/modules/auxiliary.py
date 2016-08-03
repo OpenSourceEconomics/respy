@@ -5,13 +5,14 @@ RESTUD economy.
 # standard library
 import matplotlib.pylab as plt
 import numpy as np
+import shlex
 
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.ticker import FuncFormatter
 from matplotlib import cm
 
 # Evaluation points
-EDU, EXP_A, EXP_B = 10.00, 22.8490, 11.3760
+EDU, EXP_A, EXP_B = 10.00, 5, 5
 
 """ Auxiliary function
 """
@@ -23,18 +24,18 @@ def wage_function(edu, exp_A, exp_B, coeffs):
     """
 
     # Intercept
-    wage = coeffs['int']
+    wage = coeffs[0]
 
     # Schooling
-    wage += coeffs['coeff'][0] * edu
+    wage += coeffs[1] * edu
 
     # Experience A
-    wage += coeffs['coeff'][1] * exp_A
-    wage += coeffs['coeff'][2] * exp_A ** 2
+    wage += coeffs[2] * exp_A
+    wage += coeffs[3] * exp_A ** 2
 
     # Experience B
-    wage += coeffs['coeff'][3] * exp_B
-    wage += coeffs['coeff'][4] * exp_B ** 2
+    wage += coeffs[4] * exp_B
+    wage += coeffs[5] * exp_B ** 2
 
     # Transformation
     wage = np.exp(wage)
@@ -95,6 +96,40 @@ def plot_dimension_state_space(num_states):
     plt.savefig('rslts/state_space.png', bbox_inches='tight',
                 format='png')
 
+def get_choice_probabilities(fname):
+    """ Get the choice probabilities.
+    """
+    # Initialize container.
+    stats = np.tile(np.nan, (0, 4))
+
+    with open(fname) as in_file:
+
+        for line in in_file.readlines():
+
+            # Split line
+            list_ = shlex.split(line)
+
+            # Skip empty lines
+            if not list_:
+                continue
+
+            # If OUTCOMES is reached, then we are done for good.
+            if list_[0] == 'Outcomes':
+                break
+
+            # Any lines that do not have an integer as their first element
+            # are not of interest.
+            try:
+                int(list_[0])
+            except ValueError:
+                continue
+
+            # All lines that make it down here are relevant.
+            stats = np.vstack((stats, [float(x) for x in list_[1:]]))
+
+    # Finishing
+    return stats
+
 
 def plot_return_experience(x, y, z, which, spec):
     """ Function to produce plot for the return to experience.
@@ -149,14 +184,14 @@ def plot_return_education(xvals, yvals, spec):
     ax = plt.figure(figsize=(12, 8)).add_subplot(111)
 
     # Scaling
-    for occu in ['A', 'B']:
+    for occu in ['a', 'b']:
         for i, _ in enumerate(xvals):
             yvals[occu][i] = yvals[occu][i] / 1000
 
     # Draw lines
-    ax.plot(xvals, yvals['A'], '-k', label='Occupation A', linewidth=5,
+    ax.plot(xvals, yvals['a'], '-k', label='Occupation A', linewidth=5,
             color='red', alpha=0.8)
-    ax.plot(xvals, yvals['B'], '-k', label='Occupation B', linewidth=5,
+    ax.plot(xvals, yvals['b'], '-k', label='Occupation B', linewidth=5,
             color='orange', alpha=0.8)
 
     # Both axes
@@ -183,35 +218,30 @@ def plot_return_education(xvals, yvals, spec):
                 bbox_inches='tight', format='png')
 
 
-def plot_choice_patterns(choice_probabilities, spec):
+def plot_choice_patterns(choice_probabilities, task):
     """ Function to produce plot for choice patterns.
     """
-    labels = ['Home', 'School', 'Occupation A', 'Occupation B']
-
-    rows, cols = 4, 40
 
     deciles = range(40)
-
     colors = ['blue', 'yellow', 'orange', 'red']
-
     width = 0.9
 
     # Plotting
-    bottom = [0]*40
+    bottom = [0] * 40
 
     # Initialize plot
     ax = plt.figure(figsize=(12, 8)).add_subplot(111)
-
-    for i, row in enumerate(labels):
-
-        heights = choice_probabilities[row][:]
-        plt.bar(deciles, heights, width, bottom=bottom, color=colors[i],
+    labels = ['Home', 'School', 'Occupation A', 'Occupation B']
+    for j, i in enumerate([3, 2, 0, 1]):
+        heights = choice_probabilities[:, i]
+        plt.bar(deciles, heights, width, bottom=bottom, color=colors[j],
                 alpha=0.70)
         bottom = [heights[i] + bottom[i] for i in range(40)]
 
     # Both Axes
-    ax.tick_params(labelsize=16, direction='out', axis='both', top='off',
-        right='off')
+    ax.tick_params(labelsize=16, direction='out', axis='both',
+                   top='off',
+                   right='off')
 
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
@@ -219,7 +249,7 @@ def plot_choice_patterns(choice_probabilities, spec):
     ax.spines['left'].set_visible(False)
 
     # X axis
-    ax.set_xlabel('Periods', fontsize=16)
+    ax.set_xlabel('Period', fontsize=16)
     ax.set_xlim([0, 40])
 
     # Y axis
@@ -228,9 +258,9 @@ def plot_choice_patterns(choice_probabilities, spec):
 
     # Legend
     plt.legend(labels, loc='upper center', bbox_to_anchor=(0.5, -0.10),
-        fancybox=False, frameon=False, shadow=False, ncol=4, fontsize=20)
+               fancybox=False, frameon=False, shadow=False, ncol=4,
+               fontsize=20)
 
     # Write out to
-    plt.savefig('rslts/data_' + spec.lower() + '/choice_patterns.png',
-                bbox_inches='tight', format='png')
-
+    plt.savefig('choices_' + task + '.png', bbox_inches='tight',
+                format='png')
