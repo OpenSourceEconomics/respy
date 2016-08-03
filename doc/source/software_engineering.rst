@@ -1,7 +1,7 @@
 Software Engineering
 ====================
 
-We now briefly discuss our software engineering practices that help to ensure the transparency, reliability, and extensibility of the **respy** package.
+We now briefly discuss our software engineering practices that help to ensure the transparency, reliability, and extensibility of the ``respy`` package.
 
 Development Infrastructure
 --------------------------
@@ -11,22 +11,20 @@ We maintain a dedicated development and testing server on the `Amazon Elastic Co
 Program Design
 --------------
 
-We build on the design of the original authors (`original codes <https://github.com/restudToolbox/package/tree/master/forensics>`_). We maintain a pure *Python* implementation with a focus on readability and a scalar and parallel *Fortran* implementation to address any performance constraints.
+We build on the design of the original authors (`codes <https://github.com/restudToolbox/package/tree/master/forensics>`_). We maintain a pure PYTHON implementation with a focus on readability and a scalar and parallel FORTRAN implementation to address any performance constraints. We keep the structure of the Python and Fortran implementation aligned as much as possible.
 
 Test Battery
 ------------
 
-For our testing efforts, we rely on tools such as the the continuous integration services provided by `Travis CI <https://travis-ci.org/restudToolbox/package>`_, `pytest <http://docs.pytest.org>`_ for the management of the automated testing, and `tox <https://tox.readthedocs.io>`_ to ensure the proper workings of the package for alternative Python implementations.
-
-We broadly group our testing efforts in four categories:
+We use `pytest <http://docs.pytest.org>`_ for our automated testing efforts. We broadly group our testing efforts in four categories:
 
 * **property testing**
 
-    We hit the program with random requests and test valid return.
-
+    We hit the program with random requests and test valid return. For example, we estimate the same model specification using the parallel and scalar implementations. The results need to be identical. By maintaining an ``f2py`` interface we test core functionality between our Python and Fortran implementations. We upgraded the codes by the original authors and can compare the results of the ``respy`` package with their for a restricted set of estimation requests.
+    
 * **regression testing**
 
-    We have a set of 1,000 fixed model parameterizations and the corresponding estimation results. Any changes to the code are tested against these results.
+    We maintain a set of 1,000 fixed model parameterizations and store their estimation results. This allows to ensure that a simple refactoring of the code or the addition of features do not have any unintended consequences on the existing capabilities of the package.
 
 * **scalability testing**
 
@@ -34,11 +32,13 @@ We broadly group our testing efforts in four categories:
 
 * **reliability testing**
 
-    We conduct several Monte Carlo exercises to ensure that we can recover the true underlying parameterization. This also allows us to get a feeling for the what parameters are easily recovered and which are not. We document one of these Monte Carlo exercises in the earlier section.
+    We conduct numerous Monte Carlo exercises to ensure that we can recover the true underlying parameterization with an estimation. This allows to develop a better understanding for what parameters are easily recovered and which are not. Also by varying the tuning parameters of the estimation (e.g. smoothing parameters) and the optimizers we learn about their effect on estimation performance.
 
 * **release testing**
 
-    Often new releases only consist of refactoring or cleanup of the code base. So, the results should actually be unaffected by the changes. So, as part of finalizing a new release, we test the new release against the results from the new release for random requests. The same is true, if subset of user requests should be unaffected by the changes.
+    New release candidates are thoroughly tested against the previous release. In most cases, the results for at least as subset of model specifications should be identical.
+
+Our `tests <https://github.com/restudToolbox/package/tree/master/respy/tests>`_ and the `testing infrastructure <https://github.com/restudToolbox/package/tree/master/development/testing>`_ are available online.
 
 Documentation
 -------------
@@ -53,4 +53,4 @@ We use several automatic code review tools to ensure the readability and maintai
 Continuous Integration Workflow
 -------------------------------
 
-We set up a continuous integration workflow around our `GitHub Organization <https://github.com/restudToolbox>`_. Our build process is managed by `Waf <https://waf.io/>`_. We rely on `Git <https://git-scm.com/>`_ as our version control system and follow the `Gitflow Workflow <https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow>`_. We use `GitLab <https://gitlab.com/restudToolbox/package>`_ for our issue tracking. The package is distributed through `PyPI <https://pypi.python.org/pypi/respy>`_ which automatically updated from our development server.
+We set up a continuous integration workflow around our `GitHub Organization <https://github.com/restudToolbox>`_. We use continuous integration services provided by `Travis CI <https://travis-ci.org/restudToolbox/package>`_ and `tox <https://tox.readthedocs.io>`_ to ensure the proper workings of the package for alternative Python implementations. Our build process is managed by `Waf <https://waf.io/>`_. We rely on `Git <https://git-scm.com/>`_ as our version control system and follow the `Gitflow Workflow <https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow>`_. We use `GitLab <https://gitlab.com/restudToolbox/package>`_ for our issue tracking. The package is distributed through `PyPI <https://pypi.python.org/pypi/respy>`_ which automatically updated from our development server.

@@ -1,7 +1,7 @@
 Tutorial
 ========
 
-Let us now illustrate the basic capabilities of the **respy** package. We start by setting up a model specification and then turn to some examples.
+Let us now illustrate the basic capabilities of the ``respy`` package. We start by setting up a model specification and then turn to some examples.
 
 Model Specification
 -------------------
@@ -94,7 +94,7 @@ store       bool        store results
 seed        int         random seed for the EMAX approximation
 =======     ======      ==========================
 
-If requested, the results from the solution are available in the file **solution.respy.pkl** for further inspection.
+If requested, the results from the solution are available in the file ``solution.respy.pkl`` for further inspection.
 
 **SIMULATION**
 
@@ -129,7 +129,7 @@ debug       bool        flag to use debug mode
 version     str         program version
 =======     ======      ==========================
 
-In general, two versions of the program are available. Either your can request the baseline *Python* implementation or *Fortran* for better performance.
+In general, two versions of the program are available. Either your can request the baseline Python implementation or Fortran for better performance.
 
 **PARALLELISM**
 
@@ -170,7 +170,7 @@ minimum     float       minimum value for gradient approximation
 =======     ======      ==========================
 
 
-The implemented optimization algorithms vary with the program's version. If you request the *PYTOHN* version of the program, you can choose from the **SciPy** implementations of the BFGS and POWELL algorithm. Their implementation details are available `here <http://docs.scipy.org/doc/scipy-0.17.0/reference/generated/scipy.optimize.minimize.html>`_. For *FORTRAN*, we implemented the BFGS algorithm as well and the NEWUOA. For details about the algorithms, please see the section on implementation. Note that only the optimizer used for an estimation needs to be fully specified.
+The implemented optimization algorithms vary with the program's version. If you request the PYTHON version of the program, you can choose from the ``SciPy`` implementations of the BFGS and POWELL algorithm. Their implementation details are available `here <http://docs.scipy.org/doc/scipy-0.17.0/reference/generated/scipy.optimize.minimize.html>`_. For FORTRAN, we implemented the BFGS algorithm as well and the NEWUOA. For details about the algorithms, please see the section on implementation. Note that only the optimizer used for an estimation needs to be fully specified.
 
 **SCIPY-BFGS**
 
@@ -211,16 +211,16 @@ rhobeg      float       starting value for size of trust region
 rhoend      float       minimum value of size for trust region
 =======     ======      ==========================
 
-If you perform an estimation using the *NEWUOA* algorithm, the maximum number of function evaluations is determined by the minimum of the two flags specified in this section and the *ESTIMATION* block.
+If you perform an estimation using the NEWUOA algorithm, the maximum number of function evaluations is determined by the minimum of the two flags specified in this section and the ESTIMATION block.
 
 Examples
 --------
 
-Let us explore the basic capabilities of the **respy** package with a couple of examples. All the required material is available `online <https://github.com/restudToolbox/package/tree/master/example>`_.
+Let us explore the basic capabilities of the ``respy`` package with a couple of examples. All the required material is available `online <https://github.com/restudToolbox/package/tree/master/example>`_.
 
 **Simulation and Estimation**
 
-We usually either want to simulate a synthetic sample from the model or start an estimation run. Whatever the case, we always initialize an instance of the *RespyCls* first by passing in the path to the initialization file.
+We usually either want to simulate a synthetic sample from the model or start an estimation run. Whatever the case, we always initialize an instance of the ``RespyCls`` first by passing in the path to the initialization file.
 ::
 
     import respy
@@ -231,15 +231,15 @@ Now we can simulate a sample from the specified model::
 
     respy.simulate(respy_obj)
 
-During the simulation, several files will appear in the current working directory. **sol.respy.log** allows to monitor the progress of the solution algorithm, while the actual simulation can be followed in  **sim.respy.log**. The names of the following files depend on the specified filename in the SIMULATION section of the model initialization file, where we specified *data.respy.dat*. The simulated dataset with the agent choices and state experiences is stored in **data.respy.dat** and **data.respy.info** provides some basic descriptives of the simulated dataset.
+During the simulation, several files will appear in the current working directory. ``sol.respy.log`` allows to monitor the progress of the solution algorithm, while the actual simulation can be followed in  ``sim.respy.log``. The names of the following files depend on the specified filename in the SIMULATION section of the model initialization file, where we specified ``data.respy.dat``. The simulated dataset with the agent choices and state experiences is stored in ``data.respy.dat`` and ``data.respy.info`` provides some basic descriptives of the simulated dataset.
 
 Now that we have some observed data, we can start an estimation. Here we are using the simulated data for the estimation. However, you can of course also use other data sources. Just make sure they follow the layout of the simulated sample. The coefficient values in the initialization file serve as the starting values::
 
     x, crit_val = respy.estimate(respy_obj)
 
-This directly returns the value of the coefficients at the final step of the optimizer as well as the value of the criterion function. However, some additional files appear in the meantime. Monitoring the estimation is best done using **est.respy.info** and more details are in **est.respy.log**.
+This directly returns the value of the coefficients at the final step of the optimizer as well as the value of the criterion function. However, some additional files appear in the meantime. Monitoring the estimation is best done using ``est.respy.info`` and more details are in ``est.respy.log``.
 
-We can now simulate a sample using the estimated parameters, but updating the instance of the *RespyCls* with the parameters returned from the estimation routine.
+We can now simulate a sample using the estimated parameters, but updating the instance of the ``RespyCls`` with the parameters returned from the estimation routine.
 ::
     respy_obj.update_model_paras(x)
 
@@ -274,4 +274,4 @@ Just using the capabilities outlined so far, it is straightforward to compute so
 
         respy.estimate(respy_obj)
 
-You can download the all the material for the recomputation `here <https://github.com/restudToolbox/package/tree/master/respy/tests/resources>`_. In an earlier working paper version of their paper (`online <https://www.minneapolisfed.org/research/staff-reports/the-solution-and-estimation-of-discrete-choice-dynamic-programming-models-by-simulation-and-interpolation-monte-carlo-evidence>`_), the original authors provide a full account of the choice distributions for all three specifications. The results from the recomputation line up well with their reports.
+In an earlier working paper version of their paper, the original authors provide a full account of the choice distributions for all three specifications (`online <https://www.minneapolisfed.org/research/staff-reports/the-solution-and-estimation-of-discrete-choice-dynamic-programming-models-by-simulation-and-interpolation-monte-carlo-evidence>`_). The results from the recomputation line up well with their reports. You can download the all the material for the recomputation `here <https://github.com/restudToolbox/package/tree/master/respy/tests/resources>`_.
