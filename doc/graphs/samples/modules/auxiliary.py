@@ -131,47 +131,57 @@ def get_choice_probabilities(fname):
     return stats
 
 
-def plot_return_experience(x, y, z, which, spec):
+def plot_return_experience(x, y, z, spec):
     """ Function to produce plot for the return to experience.
     """
+    def _beautify_subplot(subplot, zlim):
+        subplot.view_init(azim=180 + 40)
+
+        subplot.set_ylabel('Experience A')
+        subplot.set_xlabel('Experience B')
+        subplot.set_zlabel('Wages')
+
+        subplot.zaxis.set_rotate_label(False)
+        subplot.set_zlabel(r'Wages (in \$1,000)', rotation=90)
+
+        subplot.zaxis.get_major_ticks()[0].set_visible(False)
+
+        # Background Color (higher numbers are lighter)
+        subplot.w_xaxis.set_pane_color((0.8, 0.8, 0.8, 1.0))
+        subplot.w_yaxis.set_pane_color((0.6, 0.6, 0.6, 1.0))
+        subplot.w_zaxis.set_pane_color((0.68, 0.68, 0.68, 1.0))
+
+        ax.set_zlim(zlim)
 
     # Scaling
-    z = z / 1000
+    z['a'] = z['a'] / 1000
+    z['b'] = z['b'] / 1000
+    print(spec)
+    if spec == 'one':
+        zlim = [10, 35]
+    elif spec == 'two':
+        zlim = [0, 55]
+    elif spec == 'three':
+        zlim = [0, 55]
 
-    fig = plt.figure()
+    fig = plt.figure(figsize=(16, 8))
 
-    ax = fig.gca(projection='3d')
-    ax.view_init(azim=180+40)
-    ax.plot_surface(x, y, z, rstride=1, cstride=1, cmap=cm.jet,
-        linewidth=0, antialiased=False, alpha=0.8)
 
-    # Axis labels.
-    ax.set_ylabel('Experience A')
-    ax.set_xlabel('Experience B')
-    ax.set_zlabel('Wages')
+    ax = fig.add_subplot(121, projection='3d')
+    ax.plot_surface(x, y, z['a'], rstride=1, cstride=1, cmap=cm.jet,
+                    linewidth=0, antialiased=False, alpha=0.8)
+    _beautify_subplot(ax, zlim)
 
-    ax.zaxis.set_rotate_label(False)
-    ax.set_zlabel(r'Wages (in \$1,000)', rotation=90)
 
-    # Z axis ticks
-    ax.set_zlim([ax.get_zlim()[0], ax.get_zlim()[1]])
-    if spec == 'One':
-        ax.set_zlim([15, 55])
-    elif spec == 'Two':
-        ax.set_zlim([5, 30])
-    elif spec == 'Three':
-        ax.set_zlim([10, 700])
 
-    ax.zaxis.get_major_ticks()[0].set_visible(False)
+    ax = fig.add_subplot(122, projection='3d')
+    ax.plot_surface(x, y, z['b'], rstride=1, cstride=1, cmap=cm.jet,
+                    linewidth=0, antialiased=False, alpha=0.8)
+    _beautify_subplot(ax, zlim)
 
-    # Background Color (higher numbers are lighter)
-    ax.w_xaxis.set_pane_color((0.8, 0.8, 0.8, 1.0))
-    ax.w_yaxis.set_pane_color((0.6, 0.6, 0.6, 1.0))
-    ax.w_zaxis.set_pane_color((0.68, 0.68, 0.68, 1.0))
 
     # Write out to
-    plt.savefig('rslts/data_' + spec.lower() + '/returns_experience_' +
-                which.lower() + '.png', bbox_inches='tight', format='png')
+    plt.savefig('rslts/data_' + spec.lower() + '/returns_experience.png', bbox_inches='tight', format='png')
 
 
 def plot_return_education(xvals, yvals, spec):

@@ -90,6 +90,10 @@ where :math:`f_{\epsilon}` is the joint density of the uncertain component of th
 
 Simulated Sample
 ----------------
+The returns to exeperience
+
+.. image:: images/returns_experience.png
+
 The returns to education.
 
 .. image:: images/returns_schooling.png

@@ -46,7 +46,7 @@ for spec in ['one', 'two', 'three']:
 
     coeffs[spec] = dict()
 
-    respy_obj = respy.RespyCls('../../example/kw_data_' + spec + '.ini')
+    respy_obj = respy.RespyCls('../../../example/kw_data_' + spec + '.ini')
 
     os.chdir('rslts/data_' + spec)
     #respy.simulate(respy_obj)
@@ -64,16 +64,15 @@ for spec in ['one', 'two', 'three']:
 
 # Determine wages for varying level of experience in each occupation
 for spec in ['one', 'two', 'three']:
+    z = dict()
     for which in ['a', 'b']:
         x, y = np.meshgrid(range(20), range(20))
-        z = dict()
         z[which] = np.tile(np.nan, (20,20))
         for i in range(20):
             for j in range(20):
                 z[which][i, j] = return_to_experience(i, j, coeffs[spec], which)
-
-        # Create and save plot
-#    plot_return_experience(x, y, z, which, spec)
+    # Create and save plot
+    plot_return_experience(x, y, z, spec)
 #
 # # Determine wages for varying years of education in each occupation
 # for spec in ['one', 'two', 'three']:
