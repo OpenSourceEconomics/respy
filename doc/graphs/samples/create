@@ -36,7 +36,7 @@ if __name__ == '__main__':
     for spec in SPECS:
         respy_obj = respy.RespyCls(SPEC_DIR + 'kw_data_' + spec + '.ini')
 
-        os.chdir('rslts/data_' + spec)
+        os.chdir('data_' + spec)
         respy.simulate(respy_obj)
 
         choice_probabilities = get_choice_probabilities('data.respy.info')
@@ -74,5 +74,3 @@ if __name__ == '__main__':
             for edu in xvals:
                 yvals[which] += [return_to_education(edu, coeffs[spec], which)]
         plot_return_education(xvals, yvals, spec)
-
-

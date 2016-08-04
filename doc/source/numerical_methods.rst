@@ -5,10 +5,14 @@ Numerical Methods
 
 The ``respy`` package contains several numerical components, we discuss each in turn.
 
+|
+
 Differentiation
 """""""""""""""
 
 We use a forward finite difference approximation for all derivatives. The step-size can be controlled in the DERIVATIVES section of the initialization file. This is relevant for the scaling procedure and used by the derivative-based optimization algorithms.
+
+|
 
 Integration
 """""""""""
@@ -19,19 +23,27 @@ All integrals are approximated by Monte Carlo integration. The solution and esti
 
 * For each agent in each time period, the evaluation of the choice probabilities requires the approximation of a four-dimensional integral. The integral is evaluated using the number of draws specified in the SIMULATION section of the initialization file. The same random draws are used for each of these integrals.
 
+|
+
 Optimization
 """"""""""""
 
 The estimation involved the optimization of sample likelihood function. The available optimizers depend on the version of the program. If you use the Python implementation, then the Powell (Powell, 1964) and BFGS (Norcedal, 2006) algorithms are available through their ``SciPy`` implementations. For the Fortran  implementation, we provide the BFGS and NEWUOA (Powell, 2004) algorithms. The algorithm can be selected in the ESTIMATION section of the initialization file.
 
+|
+
 Function Approximation
 """"""""""""""""""""""
 Keane and Wolpin (1994) propose to calculate the EMAX only at a subset of states each period and interpolate its value for the rest. The number of interpolation points is selected in the INTERPOLATION section of the initialization file. For more details on interpolation function and its performance see the analysis in Eisenhauer (2016).
+
+|
 
 Function Smoothing
 """"""""""""""""""
 
 With only a finite number of draws there is the risk that there are cells with zero probability, so I use kernel smoothed frequency simulation. The function that was used was the kernel smoothing function described in McFadden (1989). The window parameter is set in the *ESTIMATION* section of the initialization file.
+
+|
 
 Miscellaneous
 """""""""""""

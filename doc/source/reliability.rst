@@ -3,6 +3,8 @@ Reliability
 
 We document th results of two basic Monte Carlo exercises to illustrate the reliability of the ``respy`` package. Again, we use the first parameterization from Keane & Wolpin (1994) as our `baseline model specification <https://github.com/restudToolbox/package/blob/master/respy/tests/resources/kw_data_one.ini>`_ and simulate a sample of 1,000 agents.  Then we run two estimations with alternative starting values and evaluate the root-mean squared error (RMSE) of the choice probabilities. Throughout, we allow for 3,000 evaluations of the criterion function.
 
+|
+
 ... starting at true values
 ---------------------------
 
@@ -13,6 +15,8 @@ We start at the true parameters. While taking a total of 1,491 steps, the actual
     =====   ====    =====   ===========
     0.00    0.00    1,491   3,000
     =====   ====    =====   ===========
+
+|
 
 ... starting with myopic agents
 -------------------------------

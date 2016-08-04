@@ -1,16 +1,15 @@
 Scalability
 ===========
 
+The solution and estimation of the dynamic programming model by a backward induction procedure is straightforward on a conceptual level. However, the evaluation of the integrals for the :math:`E\max` and the choice probabilities at each decision node creates a considerable computational burden. Both types of these four-dimensional integrals are approximated by Monte Carlo integration.
 
-The evaluation of :math:`E\max` at each possible state creates a considerable computational burden. For example, even in this simplified model, it requires the repeated evaluation of the integral for the :math:`E\max` at a total of 163,410 states. During an estimation, the model has to be solved repeatedly for numerous alternative parameterizations.
+Let us consider again the `baseline model specification <https://github.com/restudToolbox/package/blob/master/respy/tests/resources/kw_data_one.ini>`_ from Keane and Wolpin (1994). Even in this kind of simplified model the estimation requires the repeated evaluation of the integral for the :math:`E\max` and choice probabilities at a total of 163,410 nodes. The figure below illustrates the well known curse of dimensionality (Bellman, 1957) as the number of nodes to consider increases exponentially with each period.
 
 .. image:: images/state_space.png
 
-This figure imposes the restriction that agents can only obtain 10 additional years of schooling.
+This is why we provide scalar and parallel Fortran implementations. For the parallel implementation of the model, we distribute the total computational work across the multiple processors using the master-slave paradigm. More precisely, we distribute the approximation of the expected future values and the sample likelihood across multiple processors. For the latter, each period, we split up the total number of states across the available slaves. For the former, we simple assign the a subset of agents to each slave
 
-For the parallel implementation of the model, we distribute the total computational work across the multiple processors using the master-slave paradigm. More precisely, we distribute the approximation of the expected future values and the sample likelihood across multiple processors. For the latter, each period, we split up the total number of states across the available slaves. For the former, we simple assign the a subset of agents to each slave
-
-Using the `baseline model specification <https://github.com/restudToolbox/package/blob/master/respy/tests/resources/kw_data_one.ini>`_, the figure below shows the total computation time required for 2,000 evaluations of the criterion function as the number of slave processors increases. Judging against the linear benchmark, the code scales well over the range of processors.
+The figure below shows the total computation time required for 1,000 evaluations of the criterion function as the number of slave processors increases. Judging against the linear benchmark, the code scales well over the range of processors.
 
 .. image:: images/scalability.respy.png
 

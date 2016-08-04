@@ -3,6 +3,8 @@
 Model
 =====
 
+We now start with the economics motivating the model and then turn to the solution and estimation approach. We conclude this section with a discussion of a simulated sample.
+
 Economics
 ---------
 
@@ -93,19 +95,24 @@ where :math:`f_{\epsilon}` is the joint density of the uncertain component of th
 
 Estimation
 ----------
-The model is estimated using simulated maximum likelihood estimation (Albright, 1977).
+
+The model is estimated using simulated maximum likelihood estimation (Albright, 1977). We observe a sample of agents
+over time whose behavior and state experiences are described by the model. While all random components are eventually observed by the agent, they remain unobserved by the econometrician. Due to the serial independence, we can compute the likelihood contribution in each period separately. The sample likelihood is then just the product over all
+agents and time periods.
 
 Simulated Example
 -----------------
 
-The returns to exeperience
+Keane and Wolpin (1994) analyze three different parameterizations of the baseline model. We study their first specification in more detail here.
 
 .. image:: images/returns_experience.png
 
-The returns to education.
+We start with the returns to experience. Occupation B is more skill intensive in the sense that own experience has higher return than is the case for Occupation A. There is some general skill learned in Occupation A which is transferable to Occupation B. However, the opposite is not true.
 
 .. image:: images/returns_schooling.png
 
-Note that all agents start out identically, different choices over the life cycle are the cumulative effects of different shocks. Here is a look at the distribution of choices across the
+Regarding the returns to schooling, while the initial wage in Occupation B is lower than in Occupation A it does increase faster with schooling.
 
 .. image:: images/choice_patterns.png
+
+We can study how these features interact in determining the agents life-cycle decisions by simulating a sample of 1,000 agents. All agents start out identically, different choices over the life cycle are the cumulative effects of different shocks. Initially, 50% increase their schooling but the share of agents in school in each period declines sharply. The share working in Occupation A starts to increase from 39% and peaks out at about 43% around period 4. Then declines back to 21%. Occupation B increases continuously, initially only 11% work in Occupation B but this share increases to about 77%. Around 1.5% stay at home each period.

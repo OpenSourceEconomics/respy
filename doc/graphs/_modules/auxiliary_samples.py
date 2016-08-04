@@ -20,17 +20,15 @@ EDU, EXP_A, EXP_B = 10.00, 5, 5
 """
 
 def prepare_directories(SPECS):
-    try:
-        shutil.rmtree('rslts')
-    except OSError:
-        pass
 
-    os.mkdir('rslts')
-
-    os.chdir('rslts')
     for spec in SPECS:
-        os.mkdir('data_' + spec)
-    os.chdir('../')
+        dirname = 'data_' + spec
+        try:
+            shutil.rmtree(dirname)
+        except OSError:
+            pass
+
+        os.mkdir(dirname)
 
 
 def wage_function(edu, exp_A, exp_B, coeffs):
@@ -166,7 +164,7 @@ def plot_return_experience(x, y, z, spec):
     _beautify_subplot(ax, zlim)
 
     # Write out to
-    plt.savefig('rslts/data_' + spec.lower() + '/returns_experience.png', bbox_inches='tight', format='png')
+    plt.savefig('data_' + spec.lower() + '/returns_experience.png', bbox_inches='tight', format='png')
 
 
 def plot_return_education(xvals, yvals, spec):
@@ -209,7 +207,7 @@ def plot_return_education(xvals, yvals, spec):
         fancybox=False, frameon=False, shadow=False, ncol=2, fontsize=20)
 
     # Write out to
-    plt.savefig('rslts/data_' + spec.lower() + '/returns_schooling.png',
+    plt.savefig('data_' + spec.lower() + '/returns_schooling.png',
                 bbox_inches='tight', format='png')
 
 

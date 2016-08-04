@@ -14,9 +14,6 @@ Welcome to respy's documentation!
 
 This documentation is best understood with a sound knowledge of their paper as we will repeatedly reference it.
 
-.. image:: https://zenodo.org/badge/doi/10.5281/zenodo.59297.svg
-    :target: http://dx.doi.org/10.5281/zenodo.59297
-
 **Contents:**
 
 .. toctree::
