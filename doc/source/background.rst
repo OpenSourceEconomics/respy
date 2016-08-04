@@ -1,7 +1,7 @@
 Background
 ==========
 
-The **respy** package is a research tool. It provides the computational starting point for several research papers that analyze the economics driving agents' educational and occupational choices over their life-cycle within the framework of a finite-horizon discrete choice dynamic programming model.
+The ``respy`` package is a research tool. It provides the computational starting point for several research papers that analyze the economics driving agents' educational and occupational choices over their life-cycle within the framework of a finite-horizon discrete choice dynamic programming model.
 
 Here are some recent examples:
 

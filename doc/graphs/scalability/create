@@ -1,0 +1,23 @@
+#!/usr/bin/env python
+""" This module creates a graph with the results from the scalability results.
+"""
+
+import sys
+
+sys.path.insert(0, '../_modules')
+from auxiliary_scalability import plot_scalability
+from auxiliary_scalability import get_durations
+from auxiliary_scalability import linear_gains
+
+if __name__ == '__main__':
+
+    # Get the information about the durations from the result files.
+    rslt, labels, grid_slaves = get_durations()
+
+    # Prepare the the values for the plot
+    ys, func_lin = [], []
+    for num_slaves in grid_slaves:
+        ys += [rslt[labels[0]][num_slaves].total_seconds()]
+        func_lin += [linear_gains(num_slaves, ys)]
+
+    plot_scalability(ys, func_lin, grid_slaves)

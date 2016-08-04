@@ -1,6 +1,9 @@
 Installation
 ============
 
+Python Package Index
+--------------------
+
 You can install the stable version of the ``respy`` package using the `Python Package Index <https://pypi.python.org/pypi>`_ (PyPI).
 
 .. code-block:: bash
@@ -18,7 +21,7 @@ Please make sure to test your installation. If you have  ``pytest`` installed, j
 We provide a pure Python implementation as our baseline. However, to address performance constraints, we also provide scalar and parallel Fortran implementations. If additional requirements are met, both are installed automatically.
 
 ... adding Fortran
-------------------
+^^^^^^^^^^^^^^^^^^
 
 Please make sure that the ``gfortran`` compiler is available on your path and it knows where to find the `Linear Algebra PACKage (LAPACK) <http://www.netlib.org/lapack/>`_. If so, just call a slightly modified version of the installation command.
 
@@ -29,12 +32,12 @@ Please make sure that the ``gfortran`` compiler is available on your path and it
 The *--no-binary* flag is required for now to avoid the use of Python Wheels and ensure a compilation of the Fortran source code during the build.
 
 ... adding Parallelism
-----------------------
+^^^^^^^^^^^^^^^^^^^^^^
 
 We also support parallel computing using the `Message Passing Interface (MPI) <http://www.mpi-forum.org/>`_ library. This requires a recent version of its `MPICH <https://www.mpich.org/>`_ implementation available on your compiler's search path which was build with shared/dynamic libraries.
 
-Installing from Sources
-^^^^^^^^^^^^^^^^^^^^^^^
+Sources
+-----------------------
 
 The sources for ``respy`` can be downloaded from the `GitHub repository <https://github.com/restudToolbox/package>`_. You can clone the repository.
 

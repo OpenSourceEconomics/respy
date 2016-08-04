@@ -1,11 +1,13 @@
-""" This module contains auxiliary functions to plot some information on the 
+""" This module contains auxiliary functions to plot some information on the
 RESTUD economy.
 """
 
 # standard library
 import matplotlib.pylab as plt
 import numpy as np
+import shutil
 import shlex
+import os
 
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.ticker import FuncFormatter
@@ -16,6 +18,19 @@ EDU, EXP_A, EXP_B = 10.00, 5, 5
 
 """ Auxiliary function
 """
+
+def prepare_directories(SPECS):
+    try:
+        shutil.rmtree('rslts')
+    except OSError:
+        pass
+
+    os.mkdir('rslts')
+
+    os.chdir('rslts')
+    for spec in SPECS:
+        os.mkdir('data_' + spec)
+    os.chdir('../')
 
 
 def wage_function(edu, exp_A, exp_B, coeffs):
@@ -67,34 +82,6 @@ def return_to_education(edu, coeffs, which):
 """ Plotting functions
 """
 
-
-def plot_dimension_state_space(num_states):
-    """ Plot the dimension of the state space
-    """
-
-    # Initialize plot
-    ax = plt.figure(figsize=(12, 8)).add_subplot(111)
-
-    ax.plot(range(1, 41), num_states, '-k', color='red',
-                        linewidth=5, alpha=0.8)
-
-    # Both axes
-    ax.tick_params(axis='both', right='off', top='off')
-
-    # x-axis
-    ax.set_xticklabels(ax.get_xticks().astype(int), fontsize=18)
-    ax.set_xlabel('Period', fontsize=16)
-    ax.set_xlim([1, 41])
-
-    # y-axis
-    yticks = ['{:,.0f}'.format(y) for y in ax.get_yticks().astype(int)]
-    ax.set_yticklabels(yticks, fontsize=16)
-    ax.set_ylabel('Number of Nodes', fontsize=16)
-    ax.yaxis.get_major_ticks()[0].set_visible(False)
-
-    # Write out to
-    plt.savefig('rslts/state_space.png', bbox_inches='tight',
-                format='png')
 
 def get_choice_probabilities(fname):
     """ Get the choice probabilities.
@@ -156,7 +143,6 @@ def plot_return_experience(x, y, z, spec):
     # Scaling
     z['a'] = z['a'] / 1000
     z['b'] = z['b'] / 1000
-    print(spec)
     if spec == 'one':
         zlim = [10, 35]
     elif spec == 'two':
@@ -178,7 +164,6 @@ def plot_return_experience(x, y, z, spec):
     ax.plot_surface(x, y, z['b'], rstride=1, cstride=1, cmap=cm.jet,
                     linewidth=0, antialiased=False, alpha=0.8)
     _beautify_subplot(ax, zlim)
-
 
     # Write out to
     plt.savefig('rslts/data_' + spec.lower() + '/returns_experience.png', bbox_inches='tight', format='png')
