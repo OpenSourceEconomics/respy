@@ -101,12 +101,3 @@ The returns to education.
 Note that all agents start out identically, different choices over the life cycle are the cumulative effects of different shocks. Here is a look at the distribution of choices across the
 
 .. image:: images/choice_patterns.png
-
-Computational Challenges
-------------------------
-
-The evaluation of :math:`E\max` at each possible state creates a considerable computational burden. For example, even in this simplified model, it requires the repeated evaluation of the integral for the :math:`E\max` at a total of 163,410 states. During an estimation, the model has to be solved repeatedly for numerous alternative parameterizations.
-
-.. image:: images/state_space.png
-
-This figure imposes the restriction that agents can only obtain 10 additional years of schooling.

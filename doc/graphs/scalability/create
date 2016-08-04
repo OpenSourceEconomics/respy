@@ -2,9 +2,14 @@
 """ This module creates a graph with the results from the scalability results.
 """
 
+import numpy as np
 import sys
 
+np.random.seed(123)
+import respy
+
 sys.path.insert(0, '../_modules')
+from auxiliary_scalability import plot_dimension_state_space
 from auxiliary_scalability import plot_scalability
 from auxiliary_scalability import get_durations
 from auxiliary_scalability import linear_gains
@@ -21,3 +26,24 @@ if __name__ == '__main__':
         func_lin += [linear_gains(num_slaves, ys)]
 
     plot_scalability(ys, func_lin, grid_slaves)
+
+    # To give a feel for the computational challenge, we also plot the number
+    # of diferent decision nodes each period.
+
+    # Read a baseline specification from the original paper.
+    respy_obj = respy.RespyCls('../../../example/kw_data_one.ini')
+
+    # Some modifications to the baseline initialization file to speed up the
+    # solution and simulation step.
+    respy_obj.unlock()
+    respy_obj.set_attr('is_interpolated', True)
+    respy_obj.set_attr('num_draws_emax', 10)
+    respy_obj.set_attr('num_agents_sim', 1)
+    respy_obj.lock()
+    respy_obj.write_out()
+
+    # We simulate the model to get access to the solution objects which includes
+    # the number of states per period. Then all there is left to do is to plot
+    # the results in pretty way.
+    num_states = respy.simulate(respy_obj).get_attr('states_number_period')
+    plot_dimension_state_space(num_states)
