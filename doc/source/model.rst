@@ -1,7 +1,10 @@
 .. _specification:
 
-Economic Model
-===================
+Model
+=====
+
+Economics
+---------
 
 Keane and Wolpin (1994) develop a model in which an agent decides among :math:`K` possible alternatives in each of :math:`T` (finite) discrete periods of time.  Alternatives are defined to be mutually exclusive and :math:`d_k(t) = 1` indicates that alternative :math:`k` is chosen at time :math:`t` and :math:`d_k(t)  = 0` indicates otherwise. Associated with each choice is an immediate reward :math:`R_k(S(t))` that is known to the agent at time :math:`t` but partly unknown from the perspective of periods prior to :math:`t`. All the information known to the agent at time :math:`t` that affects immediate and future rewards is contained in the state space :math:`S(t)`.
 
@@ -50,8 +53,8 @@ It is convenient to denote the predetermined elements of the state space, :math:
 
 where the last equation reflects the fact that the :math:`\epsilon_{kt}`'s are serially independent. I set the initial conditions as :math:`x_{1t} = x_{2t} = 0`.
 
-Solution Approach
------------------
+Solution
+--------
 
 From a mathematical perspective, this type of model boils down to a finite-horizon DP problem under uncertainty that can be solved by backward induction. For the discussion, it is useful to do define the value function :math:`V(S(t),t)` as a shorthand for the agents objective function. :math:`V(S(t),t)` depends on the state space at :math:`t` and on :math:`t` itself (due to the finiteness of the time horizon or the direct effect of age on rewards) and can be written as
 
@@ -88,8 +91,12 @@ Future rewards are partly uncertain due to the existence of state variables at t
 
 where :math:`f_{\epsilon}` is the joint density of the uncertain component of the rewards in :math:`t` not known at :math:`t - 1`.
 
-Simulated Sample
-----------------
+Estimation
+----------
+
+Simulated Example
+-----------------
+
 The returns to exeperience
 
 .. image:: images/returns_experience.png

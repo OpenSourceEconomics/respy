@@ -24,7 +24,7 @@ This documentation is best understood with a sound knowledge of their paper as w
 
    background
    installation
-   economics
+   model
    tutorial
    numerical_methods
    reliability
