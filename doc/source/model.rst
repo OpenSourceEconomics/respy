@@ -93,6 +93,7 @@ where :math:`f_{\epsilon}` is the joint density of the uncertain component of th
 
 Estimation
 ----------
+The model is estimated using simulated maximum likelihood estimation (Albright, 1977).
 
 Simulated Example
 -----------------

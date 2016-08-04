@@ -22,7 +22,7 @@ All integrals are approximated by Monte Carlo integration. The solution and esti
 Optimization
 """"""""""""
 
-The model is estimated using simulated maximum likelihood estimation (Albright, 1977). The available optimizers depend on the version of the program. If you use the Python implementation, then the Powell (Powell, 1964) and BFGS (Norcedal, 2006) algorithms are available through their ``SciPy`` implementations. For the Fortran  implementation, we provide the BFGS and NEWUOA (Powell, 2004) algorithms. The algorithm can be selected in the ESTIMATION section of the initialization file.
+The estimation involved the optimization of sample likelihood function. The available optimizers depend on the version of the program. If you use the Python implementation, then the Powell (Powell, 1964) and BFGS (Norcedal, 2006) algorithms are available through their ``SciPy`` implementations. For the Fortran  implementation, we provide the BFGS and NEWUOA (Powell, 2004) algorithms. The algorithm can be selected in the ESTIMATION section of the initialization file.
 
 Function Approximation
 """"""""""""""""""""""
