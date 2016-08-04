@@ -57,6 +57,8 @@ def run(spec_dict, fname):
 
     respy_obj.lock()
 
+    maxfun = respy_obj.get_attr('maxfun')
+
     # Let us first simulate a baseline sample, store the results for future
     # reference, and start an estimation from the true values.
     os.mkdir('truth'), os.chdir('truth')
@@ -71,7 +73,7 @@ def run(spec_dict, fname):
 
     os.chdir('../')
 
-    record_results('Truth', rmse_start, rmse_stop, num_evals, num_steps)
+    record_results('Truth', rmse_start, rmse_stop, num_evals, num_steps, maxfun)
 
     # Now we will estimate a misspecified model on this dataset assuming that
     # agents are myopic. This will serve as a form of well behaved starting
@@ -92,7 +94,7 @@ def run(spec_dict, fname):
 
     os.chdir('../')
 
-    record_results('Static', rmse_start, rmse_stop, num_evals, num_steps)
+    record_results('Static', rmse_start, rmse_stop, num_evals, num_steps, maxfun)
 
     # # Using the results from the misspecified model as starting values, we see
     # # whether we can obtain the initial values.
@@ -114,7 +116,8 @@ def run(spec_dict, fname):
 
     os.chdir('../')
 
-    record_results('Dynamic', rmse_start, rmse_stop, num_evals, num_steps)
+    record_results('Dynamic', rmse_start, rmse_stop, num_evals, num_steps,
+                   maxfun)
 
     os.chdir('../')
 
@@ -159,7 +162,7 @@ def get_choice_probabilities(fname, is_flatten=True):
     return stats
 
 
-def record_results(label, rmse_start, rmse_stop, num_evals, num_steps):
+def record_results(label, rmse_start, rmse_stop, num_evals, num_steps, maxfun):
     with open('reliability.respy.info', 'a') as out_file:
         # Setting up
         if label == 'Truth':
@@ -168,6 +171,11 @@ def record_results(label, rmse_start, rmse_stop, num_evals, num_steps):
             out_file.write(fmt.format(*['Setup', 'Start', 'Stop', 'Evals', 'Steps']))
         fmt = '{:>15} {:15.10f} {:15.10f} {:15} {:15}\n'
         out_file.write(fmt.format(*[label, rmse_start, rmse_stop, num_evals, num_steps]))
+
+        # Add information on maximum allowed evaluations
+        if label == 'Dynamic':
+            fmt = '\n{:>15} {:<15} {:15}\n'
+            out_file.write(fmt.format(*['Maximum', 'Evaluations', maxfun]))
 
 
 def get_rmse():

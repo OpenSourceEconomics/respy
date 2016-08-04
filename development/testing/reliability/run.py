@@ -14,15 +14,16 @@ from auxiliary_shared import cleanup
 from config import SPECS
 
 
-def check_reliability(args):
+def check_reliability(maxfun, is_compile, is_debug):
     """ Details of the Monte Carlo exercise can be specified in the code block
     below. Note that only deviations from the benchmark initialization files
     need to be addressed.
     """
     spec_dict = dict()
     spec_dict['num_procs'] = 5
+    spec_dict['maxfun'] = maxfun
 
-    if args.is_debug:
+    if is_debug:
         spec_dict['maxfun'] = 60
         spec_dict['num_draws_emax'] = 5
         spec_dict['num_draws_prob'] = 3
@@ -34,7 +35,7 @@ def check_reliability(args):
 
     cleanup()
 
-    if args.is_compile:
+    if is_compile:
         compile_package()
 
     tasks = []
@@ -58,4 +59,11 @@ if __name__ == '__main__':
     parser.add_argument('--compile', action='store_true', dest='is_compile',
         default=False, help='compile package')
 
-    check_reliability(parser.parse_args())
+    # Setting the maximum number of evaluations.
+    maxfun = 3000
+
+    args = parser.parse_args()
+
+    is_compile, is_debug = args.is_compile, args.is_debug
+
+    check_reliability(maxfun, is_compile, is_debug)
