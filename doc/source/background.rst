@@ -3,7 +3,7 @@ Background
 
 The ``respy`` package is a research tool. It provides the computational support for several research papers that analyze the economics driving agents' educational and occupational choices over their life-cycle within the framework of a finite-horizon discrete choice dynamic programming model.
 
-Here are some recent examples:
+Here is some of the recent work:
 
 * Eisenhauer, P. (2016). `The Approximate Solution of Finite-Horizon Discrete Choice Dynamic Programming Models: Revisiting Keane & Wolpin (1994) <https://github.com/structRecomputation/manuscript/blob/master/eisenhauer.2016.pdf>`_. Unpublished Manuscript
 

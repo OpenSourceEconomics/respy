@@ -1,7 +1,7 @@
 Software Engineering
 ====================
 
-We now briefly discuss our software engineering practices that help to ensure the transparency, reliability, and extensibility of the ``respy`` package.
+We now briefly discuss our software engineering practices that help us to ensure the transparency, reliability, and extensibility of the ``respy`` package.
 
 |
 
@@ -29,7 +29,7 @@ We use `pytest <http://docs.pytest.org>`_ for our automated testing efforts. We 
 
 * **property testing**
 
-    We hit the program with random requests and test valid return. For example, we estimate the same model specification using the parallel and scalar implementations. The results need to be identical. By maintaining an ``f2py`` interface we test core functionality between our Python and Fortran implementations. We upgraded the codes by the original authors and can compare the results of the ``respy`` package with their for a restricted set of estimation requests.
+    We hit the program with model parameterizations and estimation requests to test for valid returns. Among many other tests, we estimate the same model specification using the parallel and scalar implementations as both results need to be identical. Also, we maintain a an ``f2py`` interface to ensure that core functions of our Python and Fortran implementation return the same results. Finally, we even upgraded the codes by the original authors and can compare the results of the ``respy`` package with their implementation for a restricted set of estimation requests that are valid for both programs.
 
 * **regression testing**
 
@@ -37,15 +37,15 @@ We use `pytest <http://docs.pytest.org>`_ for our automated testing efforts. We 
 
 * **scalability testing**
 
-    The computational burden of estimating meaningful models quite large due to the curse of dimensionality. That motivates the parallelized version of the program. We regularly test the scalability of our code against the linear benchmark.
+    We maintain a scalar and parallel Fortran version of the package. We regularly test the scalability of our code against the linear benchmark.
 
 * **reliability testing**
 
-    We conduct numerous Monte Carlo exercises to ensure that we can recover the true underlying parameterization with an estimation. This allows to develop a better understanding for what parameters are easily recovered and which are not. Also by varying the tuning parameters of the estimation (e.g. smoothing parameters) and the optimizers we learn about their effect on estimation performance.
+    We conduct numerous Monte Carlo exercises to ensure that we can recover the true underlying parameterization with an estimation. This allows to develop a better understanding for what parameters are easily recovered and which are not. Also by varying the tuning parameters of the estimation (e.g. Monte Carlo draws) and the optimizers, we learn about their effect on estimation performance.
 
 * **release testing**
 
-    New release candidates are thoroughly tested against the previous release. In most cases, the results for at least as subset of model specifications should be identical.
+    New release candidates are thoroughly tested against the previous release. In most cases, the results for at least as subset of model specifications and estimation requests should be identical.
 
 Our `tests <https://github.com/restudToolbox/package/tree/master/respy/tests>`_ and the `testing infrastructure <https://github.com/restudToolbox/package/tree/master/development/testing>`_ are available online.
 
@@ -76,7 +76,7 @@ Code Review
     :target: https://landscape.io/github/restudToolbox/package/master
     :alt: Code Health
 
-We use several automatic code review tools to ensure the readability and maintainability of our code base. For example, we rely on `Quantified Code <https://www.quantifiedcode.com/app/project/b00436d2ca614437b843c7042dba0c26>`_, `Codacy <https://www.codacy.com/app/eisenhauer/respy/dashboard>`_, and `Landscape <https://landscape.io/github/restudToolbox/package>`_
+We use several automatic code review tools to help us improve the readability and maintainability of our code base. For example, we rely on `Quantified Code <https://www.quantifiedcode.com/app/project/b00436d2ca614437b843c7042dba0c26>`_, `Codacy <https://www.codacy.com/app/eisenhauer/respy/dashboard>`_, and `Landscape <https://landscape.io/github/restudToolbox/package>`_
 
 |
 

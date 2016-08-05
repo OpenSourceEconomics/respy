@@ -1,24 +1,20 @@
 Installation
 ============
 
+The ``respy`` package can be installed conveniently from the `Python Package Index <https://pypi.python.org/pypi>`_ (PyPI) or directly from the source files. We draw on the standard *SciPy Stack*. In particular, we use the ``NumPy``, ``SciPy`` and ``pandas`` library. In addition, we use ``statsmodels``. The ``respy`` package is supported and tested for Python 2.7 and Python 3.3+ on Linux systems.
+
+|
+
 Python Package Index
 --------------------
 
-You can install the stable version of the ``respy`` package using the `Python Package Index <https://pypi.python.org/pypi>`_ (PyPI).
+You can install the stable version of the ``respy`` package the usual way.
 
 .. code-block:: bash
 
    $ pip install respy
 
-Please make sure you have a recent version of ``pip`` installed as well to ensure the proper install order of the dependencies. We draw on the standard *SciPy Stack*. In particular, we use the ``NumPy``, ``SciPy`` and ``pandas`` library. In addition, we use ``statsmodels``. The ``respy`` package is supported and tested for Python 2.7 and Python 3.3+ on Linux systems.
-
-Please make sure to test your installation. If you have  ``pytest`` installed, just go ahead and run the test suite:
-
-.. code-block:: bash
-
-   $ python -c "import respy; respy.test()"
-
-We provide a pure Python implementation as our baseline. However, to address performance constraints, we also provide scalar and parallel Fortran implementations. If additional requirements are met, both are installed automatically.
+Please make sure you have a recent version of ``pip`` installed as well to ensure the proper install order of the dependencies. We provide a pure Python implementation as our baseline. However, to address performance constraints, we also provide scalar and parallel Fortran implementations. If additional requirements are met, both are installed automatically.
 
 ... adding Fortran
 ^^^^^^^^^^^^^^^^^^
@@ -36,8 +32,10 @@ The *--no-binary* flag is required for now to avoid the use of Python Wheels and
 
 We also support parallel computing using the `Message Passing Interface (MPI) <http://www.mpi-forum.org/>`_ library. This requires a recent version of its `MPICH <https://www.mpich.org/>`_ implementation available on your compiler's search path which was build with shared/dynamic libraries.
 
+|
+
 Sources
------------------------
+-------
 
 The sources for ``respy`` can be downloaded from the `GitHub repository <https://github.com/restudToolbox/package>`_. You can clone the repository.
 
@@ -50,3 +48,14 @@ Once you have a copy of the sources, you can install them in editable mode.
 .. code-block:: bash
 
    $ pip install -e .
+
+|
+
+Test Suite
+----------
+
+Regardless how you end up installing ``respy``, always make sure that all worked properly by running our test suite using ``pytest``.
+
+.. code-block:: bash
+
+  $ python -c "import respy; respy.test()"

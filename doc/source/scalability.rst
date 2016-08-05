@@ -1,16 +1,22 @@
 Scalability
 ===========
 
-The solution and estimation of the dynamic programming model by a backward induction procedure is straightforward on a conceptual level. However, the evaluation of the integrals for the :math:`E\max` and the choice probabilities at each decision node creates a considerable computational burden. Both types of these four-dimensional integrals are approximated by Monte Carlo integration.
+The solution and estimation a the dynamic programming model by a backward induction procedure appears straightforward. However, the algorithm imposes a considerable computational burden.
 
-Let us consider again the `baseline model specification <https://github.com/restudToolbox/package/blob/master/respy/tests/resources/kw_data_one.ini>`_ from Keane and Wolpin (1994). Even in this kind of simplified model the estimation requires the repeated evaluation of the integral for the :math:`E\max` and choice probabilities at a total of 163,410 nodes. The figure below illustrates the well known curse of dimensionality (Bellman, 1957) as the number of nodes to consider increases exponentially with each period.
+Consider the evaluation of the four-dimensional integral for the :math:`E\max` as an example. Thousands of different candidate parameterizations of the model are assessed with respect to the sample likelihood during an estimation. Each time, even in the simplified models considered in Keane (1994), we need to evaluate the :math:`E\max` at a total of 163,410 decision nodes. The figure below illustrates the well known curse of dimensionality (Bellman, 1957) as the number of decision nodes increases exponentially with each period.
 
 .. image:: images/state_space.png
+    :width: 500px
+    :align: center
+    :height: 500px
 
-This is why we provide scalar and parallel Fortran implementations. For the parallel implementation of the model, we distribute the total computational work across the multiple processors using the master-slave paradigm. More precisely, we distribute the approximation of the expected future values and the sample likelihood across multiple processors. For the latter, each period, we split up the total number of states across the available slaves. For the former, we simple assign the a subset of agents to each slave
+In addition, we also need evaluate the four-dimensional integral of the choice probabilities for each agent in each period to construct the sample likelihood.
 
-The figure below shows the total computation time required for 1,000 evaluations of the criterion function as the number of slave processors increases. Judging against the linear benchmark, the code scales well over the range of processors.
+To address the performance constraints of our Python implementation, we also maintain a scalar and parallel Fortran implementation. We distribute the total computational work across the multiple processors using the master-slave paradigm. More precisely, we assign each slave a subset of the decision nodes to evaluate the :math:`E\max` and a divide the agents to evaluate their choice probabilities. The figure below shows the total computation time required for 1,000 evaluations of the criterion function as the number of slave processors increases. Judging against the linear benchmark, the code scales well over the range of processors.
 
 .. image:: images/scalability.respy.png
+    :width: 500px
+    :align: center
+    :height: 500px
 
-For more details, see the script `online <https://github.com/restudToolbox/package/blob/master/development/testing/scalability/run.py>`_. The results for all the parameterizations analyzed in Keane & Wolpin (1994) are available `here <https://github.com/restudToolbox/package/blob/master/development/testing/scalability/scalability.respy.base>`_.
+For more details, see the script `online <https://github.com/restudToolbox/package/blob/master/development/testing/scalability/run.py>`_. The results for all the parameterizations analyzed in Keane (1994) are available `here <https://github.com/restudToolbox/package/blob/master/doc/results/scalability.respy.info>`_.

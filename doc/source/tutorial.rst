@@ -3,10 +3,12 @@ Tutorial
 
 Let us now illustrate the basic capabilities of the ``respy`` package. We start by setting up a model specification and then turn to some examples.
 
+|
+
 Model Specification
 -------------------
 
-The model is specified in an initialization file that is processed by the package. For an example, check out the first parameterization analyzed by Keane & Wolpin (1994) `online <https://github.com/restudToolbox/package/blob/master/respy/tests/resources/kw_data_one.ini>`_. Let us discuss each of the elements in more detail.
+The model is specified in an initialization file that is processed by the package. For an example, check out the first parameterization analyzed by Keane (1994) `online <https://github.com/restudToolbox/package/blob/master/respy/tests/resources/kw_data_one.ini>`_. Let us discuss each of the elements in more detail.
 
 **BASICS**
 
@@ -213,6 +215,8 @@ rhoend      float       minimum value of size for trust region
 
 If you perform an estimation using the NEWUOA algorithm, the maximum number of function evaluations is determined by the minimum of the two flags specified in this section and the ESTIMATION block.
 
+|
+
 Examples
 --------
 
@@ -245,12 +249,12 @@ We can now simulate a sample using the estimated parameters, but updating the in
 
     respy.simulate(respy_obj)
 
-**Recomputing Keane & Wolpin (1994)**
+**Recomputing Keane (1994)**
 
 Just using the capabilities outlined so far, it is straightforward to compute some of the key results in the original paper with a simple script::
 
     #!/usr/bin/env python
-    """ This module recomputes some of the key results of Keane & Wolpin (1994).
+    """ This module recomputes some of the key results of Keane (1994).
     """
 
     import respy
@@ -274,4 +278,4 @@ Just using the capabilities outlined so far, it is straightforward to compute so
 
         respy.estimate(respy_obj)
 
-In an earlier working paper version of their paper, the original authors provide a full account of the choice distributions for all three specifications (`online <https://www.minneapolisfed.org/research/staff-reports/the-solution-and-estimation-of-discrete-choice-dynamic-programming-models-by-simulation-and-interpolation-monte-carlo-evidence>`_). The results from the recomputation line up well with their reports. You can download the all the material for the recomputation `here <https://github.com/restudToolbox/package/tree/master/respy/tests/resources>`_.
+In an earlier `working paper  <https://www.minneapolisfed.org/research/staff-reports/the-solution-and-estimation-of-discrete-choice-dynamic-programming-models-by-simulation-and-interpolation-monte-carlo-evidence>`_, Keane (1994b) provide a full account of the choice distributions for all three specifications. The results from the recomputation line up well with their reports.
