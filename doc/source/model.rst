@@ -100,6 +100,17 @@ The model is estimated using simulated maximum likelihood estimation (Albright, 
 over time whose behavior and state experiences are described by the model. While all random components are eventually observed by the agent, they remain unobserved by the econometrician. Due to the serial independence, we can compute the likelihood contribution in each period separately. The sample likelihood is then just the product over all
 agents and time periods.
 
+A key ingredient in this calculation are the choice probabilities. Decomposing the joint probability of the joint observation into the unconditional and conditional distribution, the unconditional choice probability can be written as:
+
+.. math::
+    \begin{align}
+    Prob(d_j(t) = 1 \mid \bar{S}(t)) =\hspace{11cm}\\
+     \int_{\epsilon_1(t)} ... \int_{\epsilon_K(t)}I\left[V_j(S(t),t) =  \max_{k \in K}\{V_k(S(t),t)\}\right] f_{\epsilon}(\epsilon_1(t), ... ,\epsilon_K(t))d\epsilon_1(t) ... d\epsilon_K(t)
+    \end{align}
+
+In addition, at least for those agents working in the labor market, we also observe their respective wage. For this agents the we need to calculate the joint probablity of their observed wage and choice combination.
+
+
 Simulated Example
 -----------------
 

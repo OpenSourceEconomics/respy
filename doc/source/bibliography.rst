@@ -11,7 +11,7 @@ Eisenhauer, P. (2016). The Approximate Solution of Finite-Horizon Discrete Choic
 
 Albright, R. S., Lerman, S., and Manski, C. (1977). Report on the Development of an Estimation Program for the Multinomial Probit Model. *Cambridge Systematics*.
 
-Powell, M. J. D. (2004). `The NEWUOA Software for Unconstrained Optimization Without Derivatives <http://link.springer.com/chapter/10.1007%2F0-387-30065-1_16>`_. Department of Applied Mathematics and Theoretical Physics, Cambridge University.
+Powell, M. J. D. (2006). The NEWUOA Software for Unconstrained Optimization Without Derivatives. In Pillo, Gianni, R. M., editor, Large-Scale Nonlinear Optimization, number 83 in Nonconvex Optimization and Its Applications, pages 255–297. Springer.
 
 Marsaglia, G. (1968). `Random Numbers fall Mainly in the Planes <http://www.ncbi.nlm.nih.gov/pmc/articles/PMC285899/pdf/pnas00123-0038.pdf>`_. *Proceedings of the National Academy of Sciences*, 61(1): 25-28.
 

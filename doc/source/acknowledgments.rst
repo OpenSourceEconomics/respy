@@ -12,3 +12,10 @@ Suggested Citation
    :target: http://dx.doi.org/10.5281/zenodo.59297
 
 We appreciate citations for ``respy`` because it lets us find out how people have been using the library and it motivates further work. Please use our Digital Object Identifier (DOI) and see `here <https://zenodo.org/record/59297>`_ for other citation styles.
+
+|
+
+Open Source Community
+---------------------
+
+We are indebted to the open source community as we build on top of numerous open source tools. Among them `SciPy <https://www.scipy.org>`_, `statsmodels <http://statsmodels.sourceforge.net/>`_, and `waf <https://waf.io/>`_.
