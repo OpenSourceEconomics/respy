@@ -52,6 +52,8 @@ Function Smoothing
 
 With only a finite number of draws there is the risk that there are cells with zero probability, so I use kernel smoothed frequency simulation. The function that was used was the kernel smoothing function described in McFadden (1989). The window parameter is set in the *ESTIMATION* section of the initialization file.
 
+Consider adding the explicit formula from McFadden, also the structRecomputatoin paper.
+
 |
 
 Miscellaneous
