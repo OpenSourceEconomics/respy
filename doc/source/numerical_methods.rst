@@ -50,9 +50,7 @@ We follow Keane (1994) and allow to alleviate the computational burden by calcul
 Function Smoothing
 """"""""""""""""""
 
-With only a finite number of draws there is the risk that there are cells with zero probability, so I use kernel smoothed frequency simulation. The function that was used was the kernel smoothing function described in McFadden (1989). The window parameter is set in the *ESTIMATION* section of the initialization file.
-
-Consider adding the explicit formula from McFadden, also the structRecomputatoin paper.
+With only a finite number of draws there is the risk that there are cells with simulated zero probability, so we use kernel smoothed frequency simulation. We implement the logit-smoothed accept-reject simulator as suggested by McFadden (1989). The scale parameter is set in the *ESTIMATION* section of the initialization file.
 
 |
 

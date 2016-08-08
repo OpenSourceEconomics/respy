@@ -114,7 +114,7 @@ seed        int         random seed for agent experience
 Key             Value       Interpretation
 ==========      ======      ==========================
 file            str         file to read observed sample
-tau             float       smoothing window for simulated probabilities
+tau             float       scale parameter for smoothed probabilities
 agents          int         number of agents to read from sample
 draws           int         number of draws for approximation of choice probabilities
 maxfun          int         maximum number of function evaluations
