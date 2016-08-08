@@ -107,7 +107,7 @@ PROGRAM resfort_parallel_slave
 
             IF (rank == zero_int) CALL record_solution(2)
 
-            CALL fort_calculate_payoffs_systematic_slave(periods_payoffs_systematic, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start, num_states_slaves)
+            CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start)
 
             IF (rank == zero_int) CALL record_solution(-1)
 
