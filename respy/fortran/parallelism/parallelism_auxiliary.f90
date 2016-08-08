@@ -64,7 +64,7 @@ SUBROUTINE get_scales_parallel(auto_scales, x_free_start, scaled_minimum)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE distribute_information(num_states_slaves, period, send_slave, recieve_slaves)
+SUBROUTINE distribute_information_slaves(num_states_slaves, period, send_slave, recieve_slaves)
 
     ! DEVELOPMENT NOTES
     !
@@ -290,14 +290,15 @@ FUNCTION fort_criterion_parallel(x)
     REAL(our_dble)                  :: coeffs_b(6)
 
     INTEGER(our_int)                :: dist_optim_paras_info
-    INTEGER(our_int)                :: lower_bound
+    INTEGER(our_int)                :: lower_bound, i
     INTEGER(our_int)                :: upper_bound
-    INTEGER(our_int)                :: rank
+    INTEGER(our_int)                :: rank, scount, rcounts(num_slaves), displs(num_slaves)
 
     INTEGER(our_int), ALLOCATABLE   :: num_states_slaves(:, :)
     INTEGER(our_int), ALLOCATABLE   :: num_obs_slaves(:)
 
     REAL(our_dble)                  :: contribs(num_agents_est * num_periods)
+    REAL(our_dble)                  :: tmp(num_agents_est * num_periods)
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -330,15 +331,14 @@ FUNCTION fort_criterion_parallel(x)
     IF (.NOT. ALLOCATED(num_states_slaves)) CALL distribute_workload(num_states_slaves, num_obs_slaves)
 
     contribs = -HUGE_FLOAT
-    DO rank = 0, num_slaves - 1
 
-        lower_bound = SUM(num_obs_slaves(:rank)) + 1
-        upper_bound = SUM(num_obs_slaves(:rank + 1))
-
-        CALL MPI_RECV(contribs(lower_bound:upper_bound), num_obs_slaves(rank + 1), MPI_DOUBLE, rank, rank, SLAVECOMM, status, ierr)
-
+    scount = 0
+    rcounts = num_obs_slaves
+    DO i = 1, num_slaves
+        displs(i) = SUM(num_obs_slaves(:i - 1))
     END DO
 
+    CALL MPI_GATHERV(contribs, scount, MPI_DOUBLE, contribs, rcounts, displs, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
 
     fort_criterion_parallel = get_log_likl(contribs, num_agents_est, num_periods)
 
@@ -611,7 +611,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, state
             END DO
 
             ! Distribute exogenous information
-            CALL distribute_information(num_states_slaves, period, endogenous_slaves, endogenous)
+            CALL distribute_information_slaves(num_states_slaves, period, endogenous_slaves, endogenous)
 
             ! Create prediction model based on the random subset of points where the EMAX is actually simulated and thus endogenous and exogenous variables are available. For the interpolation  points, the actual values are used.
             CALL get_predictions(predictions, endogenous, exogenous, maxe, is_simulated, num_states, is_head .AND. update_master)
@@ -642,7 +642,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, state
 
             END DO
 
-            CALL distribute_information(num_states_slaves, period, periods_emax_slaves, periods_emax(period + 1, :))
+            CALL distribute_information_slaves(num_states_slaves, period, periods_emax_slaves, periods_emax(period + 1, :))
 
             ! The leading slave updates the master period by period.
             IF (is_head .AND. update_master) CALL MPI_SEND(periods_emax(period + 1, :num_states), num_states, MPI_DOUBLE, 0, period, PARENTCOMM, ierr)

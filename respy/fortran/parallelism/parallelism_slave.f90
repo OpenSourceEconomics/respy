@@ -51,11 +51,14 @@ PROGRAM resfort_parallel_slave
     INTEGER(our_int)                :: num_procs
     INTEGER(our_int)                :: seed_prob
     INTEGER(our_int)                :: seed_emax
-    INTEGER(our_int)                :: seed_sim
+    INTEGER(our_int)                :: seed_sim, i
 
     CHARACTER(225)                  :: optimizer_used
     CHARACTER(225)                  :: exec_dir
     CHARACTER(10)                   :: request
+
+    INTEGER(our_int), ALLOCATABLE               :: rcounts(:), displs(:)
+    INTEGER(our_int) :: scount
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -69,6 +72,9 @@ PROGRAM resfort_parallel_slave
 
 
     CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, is_scaled, scaled_minimum, optimizer_used, dfunc_eps, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend, bfgs_gtol, bfgs_stpmx, bfgs_maxiter)
+
+
+    ALLOCATE(rcounts(num_slaves), displs(num_slaves))
 
     CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, edu_start, edu_max)
 
@@ -129,7 +135,7 @@ PROGRAM resfort_parallel_slave
 
                 CALL create_draws(periods_draws_prob, num_draws_prob, seed_prob, is_debug)
 
-                ALLOCATE(contribs(num_obs_slaves(rank + 1)))
+                ALLOCATE(contribs(num_agents_est * num_periods))
 
                 ALLOCATE(data_slave(num_obs_slaves(rank + 1), 8))
 
@@ -144,9 +150,15 @@ PROGRAM resfort_parallel_slave
 
             CALL fort_backward_induction_slave(periods_emax, periods_draws_emax, states_number_period, periods_payoffs_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max, num_states_slaves, .False.)
 
-            CALL fort_contributions(contribs, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_slave, periods_draws_prob, delta, tau, edu_start, edu_max)
+            CALL fort_contributions(contribs(lower_bound:upper_bound), periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_slave, periods_draws_prob, delta, tau, edu_start, edu_max)
 
-            CALL MPI_SEND(contribs, num_obs_slaves(rank + 1), MPI_DOUBLE, 0, rank, PARENTCOMM, ierr)
+            scount = num_obs_slaves(rank + 1)
+            rcounts = 0
+            DO i = 1, num_slaves
+                displs(i) = SUM(num_obs_slaves(:i - 1))
+            END DO
+
+                CALL MPI_GATHERV(contribs(lower_bound:upper_bound), scount, MPI_DOUBLE, contribs, rcounts, displs, MPI_DOUBLE, 0, PARENTCOMM, ierr)
 
         END IF
 
