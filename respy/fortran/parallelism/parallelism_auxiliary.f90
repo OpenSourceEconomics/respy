@@ -83,7 +83,7 @@ SUBROUTINE distribute_information_slaves(num_states_slaves, period, send_slave, 
 
     INTEGER(our_int)                    :: rcounts(num_slaves)
     INTEGER(our_int)                    :: scounts(num_slaves)
-    INTEGER(our_int)                    :: disps(num_slaves)
+    INTEGER(our_int)                    :: displs(num_slaves)
     INTEGER(our_int)                    :: i
 
 !------------------------------------------------------------------------------
@@ -94,10 +94,10 @@ SUBROUTINE distribute_information_slaves(num_states_slaves, period, send_slave, 
     scounts = num_states_slaves(period + 1, :)
     rcounts = scounts
     DO i = 1, num_slaves
-        disps(i) = SUM(scounts(:i - 1))
+        displs(i) = SUM(scounts(:i - 1))
     END DO
 
-    CALL MPI_ALLGATHERV(send_slave, scounts(rank + 1), MPI_DOUBLE, recieve_slaves, rcounts, disps, MPI_DOUBLE, MPI_COMM_WORLD, ierr)
+    CALL MPI_ALLGATHERV(send_slave, scounts(rank + 1), MPI_DOUBLE, recieve_slaves, rcounts, displs, MPI_DOUBLE, MPI_COMM_WORLD, ierr)
 
 END SUBROUTINE
 !******************************************************************************
@@ -282,6 +282,7 @@ FUNCTION fort_criterion_parallel(x)
 
     !/* internal objects    */
 
+    REAL(our_dble)                  :: contribs(num_agents_est * num_periods)
     REAL(our_dble)                  :: shocks_cholesky(4, 4)
     REAL(our_dble)                  :: x_input(num_free)
     REAL(our_dble)                  :: coeffs_home(1)
@@ -289,16 +290,12 @@ FUNCTION fort_criterion_parallel(x)
     REAL(our_dble)                  :: coeffs_a(6)
     REAL(our_dble)                  :: coeffs_b(6)
 
-    INTEGER(our_int)                :: dist_optim_paras_info
-    INTEGER(our_int)                :: lower_bound, i
-    INTEGER(our_int)                :: upper_bound
-    INTEGER(our_int)                :: rank, scount, rcounts(num_slaves), displs(num_slaves)
-
     INTEGER(our_int), ALLOCATABLE   :: num_states_slaves(:, :)
     INTEGER(our_int), ALLOCATABLE   :: num_obs_slaves(:)
 
-    REAL(our_dble)                  :: contribs(num_agents_est * num_periods)
-    REAL(our_dble)                  :: tmp(num_agents_est * num_periods)
+    INTEGER(our_int)                :: dist_optim_paras_info
+    INTEGER(our_int)                :: displs(num_slaves)
+    INTEGER(our_int)                :: i
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -328,17 +325,18 @@ FUNCTION fort_criterion_parallel(x)
     CALL dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x_all_current, dist_optim_paras_info)
 
     ! We need to know how the workload is distributed across the slaves.
-    IF (.NOT. ALLOCATED(num_states_slaves)) CALL distribute_workload(num_states_slaves, num_obs_slaves)
+    IF (.NOT. ALLOCATED(num_states_slaves)) THEN
+        CALL distribute_workload(num_states_slaves, num_obs_slaves)
+
+        DO i = 1, num_slaves
+            displs(i) = SUM(num_obs_slaves(:i - 1))
+        END DO
+
+    END IF
 
     contribs = -HUGE_FLOAT
 
-    scount = 0
-    rcounts = num_obs_slaves
-    DO i = 1, num_slaves
-        displs(i) = SUM(num_obs_slaves(:i - 1))
-    END DO
-
-    CALL MPI_GATHERV(contribs, scount, MPI_DOUBLE, contribs, rcounts, displs, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
+    CALL MPI_GATHERV(contribs, 0, MPI_DOUBLE, contribs, num_obs_slaves, displs, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
 
     fort_criterion_parallel = get_log_likl(contribs, num_agents_est, num_periods)
 
