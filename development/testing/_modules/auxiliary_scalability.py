@@ -1,4 +1,5 @@
 from datetime import datetime
+import datetime as dt
 import shlex
 import os
 
@@ -41,6 +42,7 @@ def run(spec_dict, fname, grid_slaves):
     respy_obj.lock()
 
     maxfun = respy_obj.get_attr('maxfun')
+    min_slave = min(grid_slaves)
 
     # Simulate the baseline dataset, which is used regardless of the number
     # of slaves.
@@ -65,20 +67,20 @@ def run(spec_dict, fname, grid_slaves):
         respy.estimate(respy_obj)
         finish_time = datetime.now()
 
-        if num_slaves == 0:
+        if num_slaves == min_slave:
             duration_baseline = finish_time - start_time
             num_evals = get_actual_evaluations()
 
         os.chdir('../')
 
         record_information(start_time, finish_time, num_slaves, maxfun,
-                           duration_baseline, num_evals)
+                           duration_baseline, num_evals, min_slave)
 
     os.chdir('../')
 
 
 def record_information(start_time, finish_time, num_slaves, maxfun,
-                       duration_baseline, num_evals):
+                       duration_baseline, num_evals, min_slave):
     fmt = '{:>15} {:>25} {:>25} {:>15} {:>15} {:>15}\n'
     if not os.path.exists('scalability.respy.info'):
         with open('scalability.respy.info', 'a') as out_file:
@@ -96,12 +98,13 @@ def record_information(start_time, finish_time, num_slaves, maxfun,
     duration_actual_str = strfdelta(duration_time, "{H:02}:{M:02}:{S:02}")
 
     duration_linear_str = '---'
-    if not num_slaves == 0:
-        duration_linear = duration_baseline / num_slaves
+    if not num_slaves == min_slave:
+        duration_linear_secs = duration_baseline.total_seconds() / (
+            num_slaves / max(min_slave, 1))
+        duration_linear = dt.timedelta(seconds=duration_linear_secs)
         duration_linear_str = strfdelta(duration_linear, "{H:02}:{M:02}:{S:02}")
 
     with open('scalability.respy.info', 'a') as out_file:
-
         line = [num_slaves, start_str, finish_str, duration_actual_str,
                 duration_linear_str, num_evals]
         out_file.write(fmt.format(*line))
