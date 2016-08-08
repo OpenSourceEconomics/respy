@@ -47,7 +47,7 @@ We use `pytest <http://docs.pytest.org>`_ for our automated testing efforts. We 
 
     New release candidates are thoroughly tested against the previous release. In most cases, the results for at least as subset of model specifications and estimation requests should be identical.
 
-Our `tests <https://github.com/restudToolbox/package/tree/master/respy/tests>`_ and the `testing infrastructure <https://github.com/restudToolbox/package/tree/master/development/testing>`_ are available online.
+Our `tests <https://github.com/restudToolbox/package/tree/master/respy/tests>`_ and the `testing infrastructure <https://github.com/restudToolbox/package/tree/master/development/testing>`_ are available online. We run a test battery nightly on our development server. See `here <https://github.com/restudToolbox/package/blob/master/example/ec2-respy.testing.log>`_  for an example output.
 
 |
 
