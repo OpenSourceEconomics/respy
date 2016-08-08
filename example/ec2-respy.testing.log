@@ -1,0 +1,121 @@
+
+A routine test battery just completed on the dedicated RESPY server. Here are the results:
+
+1) The PYTHON 2 testing vault was run successfully.
+
+2) The PYTHON 3 testing vault was run successfully.
+
+3) We also ran a 6 hour run of the testing battery. The results are attached.
+
+Happy Testing, The respy Team
+
+
+	START          2016-08-06 01:18:46
+
+	FINISH         2016-08-06 07:18:46
+
+	UPDATE         2016-08-06 07:22:05
+
+	PYTHON         2.7.12
+
+
+
+	test_unit                    Success             Failure
+
+		test_1                   19                  0
+		test_2                   22                  0
+		test_3                   23                  0
+
+
+	test_integration             Success             Failure
+
+		test_1                   18                  0
+		test_2                   19                  0
+		test_3                   23                  0
+		test_4                   20                  0
+		test_5                   30                  0
+		test_6                   10                  0
+
+
+	test_interpolation           Success             Failure
+
+		test_1                   21                  0
+		test_2                   34                  0
+
+
+	test_restud                  Success             Failure
+
+		test_1                   24                  0
+
+
+	test_regression              Success             Failure
+
+		test_1                   22                  0
+		test_2                   23                  0
+		test_3                   23                  0
+		test_4                   17                  0
+		test_5                   20                  0
+
+
+	test_versions                Success             Failure
+
+		test_1                   15                  0
+		test_2                   25                  0
+		test_3                   33                  0
+		test_4                   34                  0
+		test_5                   31                  0
+		test_6                   31                  0
+
+
+	test_parallelism             Success             Failure
+
+		test_1                   26                  0
+		test_2                   22                  0
+
+
+	test_f2py                    Success             Failure
+
+		test_1                   18                  0
+		test_2                   19                  0
+		test_3                   17                  0
+		test_4                   17                  0
+		test_5                   21                  0
+		test_6                   24                  1
+		test_7                   12                  0
+		test_8                   20                  0
+
+
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+
+MODULE test_f2py                 METHOD test_6                    SEED: 41850
+
+Traceback (most recent call last):
+  File "run.py", line 81, in run
+    test()
+  File "/home/ubuntu/restudToolbox/package/respy/tests/test_f2py.py", line 469, in test_6
+    np.testing.assert_array_almost_equal(py, f90)
+  File "/home/ubuntu/.envs/restudToolbox2/local/lib/python2.7/site-packages/numpy/testing/utils.py", line 916, in assert_array_almost_equal
+    precision=decimal)
+  File "/home/ubuntu/.envs/restudToolbox2/local/lib/python2.7/site-packages/numpy/testing/utils.py", line 737, in assert_array_compare
+    raise AssertionError(msg)
+AssertionError:
+Arrays are not almost equal to 6 decimals
+
+(mismatch 23.0769230769%)
+ x: array([ 1.712837,  1.727199,  1.720211,  1.742975,  1.698719,  1.714424,
+        1.714197,  1.80478 ,  1.656343,  1.668198,  1.667951,  1.642577,
+        1.538753])
+ y: array([ 1.712837,  1.727199,  1.720213,  1.742975,  1.698719,  1.714424,
+        1.714197,  1.804781,  1.656343,  1.668198,  1.667951,  1.642579,
+        1.538753])
+
+-------------------------------------------------------------------------------
+
+
+	RUN COMPLETED
+
+		TOTAL TESTS          734
+
+		FAILED TESTS           1
+
