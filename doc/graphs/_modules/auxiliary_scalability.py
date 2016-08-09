@@ -41,7 +41,7 @@ def plot_scalability(ys, func_lin, grid_slaves):
     formatter = matplotlib.ticker.FuncFormatter(ylabel_formatting)
 
     ax = plt.figure(figsize=(12, 8)).add_subplot(111)
-    ax.plot(grid_slaves, ys, linewidth=5, label='RESPY Package',
+    ax.plot(grid_slaves, ys, linewidth=5, label='Respy Package',
             color='red', alpha=0.8)
 
     ax.plot(grid_slaves, func_lin, linewidth=1, linestyle='--',
@@ -76,7 +76,7 @@ def get_durations():
             list_ = shlex.split(line)
             if not list_:
                 continue
-            if list_[0] == 'Slaves':
+            if list_[0] in ['Slaves', 'Benchmarking']:
                 continue
 
             # Create key for each of the data specifications.
@@ -86,7 +86,7 @@ def get_durations():
                 labels += [label]
 
             # Process the interesting lines.
-            if len(list_) == 6:
+            if len(list_) == 8:
                 num_slaves = int(list_[0])
                 grid_slaves += [num_slaves]
                 t = datetime.strptime(list_[5], "%H:%M:%S")

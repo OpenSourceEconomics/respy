@@ -28,9 +28,8 @@ if __name__ == '__main__':
     plot_scalability(ys, func_lin, grid_slaves)
 
     # To give a feel for the computational challenge, we also plot the number
-    # of diferent decision nodes each period.
-
-    # Read a baseline specification from the original paper.
+    # of different decision nodes each period. Read a baseline specification
+    # from the original paper.
     respy_obj = respy.RespyCls('../../../example/kw_data_one.ini')
 
     # Some modifications to the baseline initialization file to speed up the
