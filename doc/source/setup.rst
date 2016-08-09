@@ -1,11 +1,7 @@
-.. _specification:
-
-Model
+Setup
 =====
 
 We now start with the economics motivating the model and then turn to the solution and estimation approach. We conclude this section with a discussion of a simulated sample.
-
-|
 
 Economics
 ---------
@@ -57,8 +53,6 @@ It is convenient to denote the predetermined elements of the state space, :math:
 
 where the last equation reflects the fact that the :math:`\epsilon_{kt}`'s are serially independent. We set :math:`x_{1t} = x_{2t} = 0` as the initial conditions.
 
-|
-
 Solution
 --------
 
@@ -97,25 +91,10 @@ Future rewards are partly uncertain due to the existence of state variables at t
 
 where :math:`f_{\epsilon}` is the joint density of the uncertain component of the rewards in :math:`t` not known at :math:`t - 1`.
 
-|
-
 Estimation
 ----------
 
-We estimate the parameters of the reward functions :math:`\theta` by simulated maximum likelihood estimation (Albright, 1977). We observe a sample of agents over time whose behavior and state experiences are described by the model. While all random components are eventually observed by the agent, they remain unobserved by the econometrician. Due to the serial independence, we can compute the likelihood contribution in each period separately. The sample likelihood is then just the product over all
-agents and time periods.
-
-A key ingredient in this calculation are the choice probabilities. Decomposing the joint probability of the joint observation into the unconditional and conditional distribution, the unconditional choice probability can be written as:
-
-.. math::
-    \begin{align}
-    Prob(d_j(t) = 1 \mid \bar{S}(t)) =\hspace{11cm}\\
-     \int_{\epsilon_1(t)} ... \int_{\epsilon_K(t)}I\left[V_j(S(t),t) =  \max_{k \in K}\{V_k(S(t),t)\}\right] f_{\epsilon}(\epsilon_1(t), ... ,\epsilon_K(t))d\epsilon_1(t) ... d\epsilon_K(t)
-    \end{align}
-
-In addition, at least for those agents working in the labor market, we also observe their respective wage. For this agents the we need to calculate the joint probablity of their observed wage and choice combination.
-
-|
+We observe a sample of agents over their life-cycle whose behavior and state experiences are described by the model and our goal is to estimate the parameters of the reward functions :math:`\theta`. While even the random components of the immediate rewards are eventually known to the agent, they remain unobserved by the econometrician. So each parameterization induces a different probability distribution over the sequence of observed agent decisions and their state experience. We implement maximum likelihood estimation and appraise each candidate parameterization of the model using the likelihood function of the observed sample (Fisher, 1922). Given the serial independence of the unobservable, we can compute the likelihood contribution of each agent in each period separately. The sample likelihood is then just the product of the likelihood contributions over all agents and time periods. As we need to simulate the agent's choice probabilities each period, we end up with a simulated maximum likelihood estimator (Manski, 1977) and minimize the simulated negative log-likelihood of the observed sample.
 
 Simulated Example
 -----------------
@@ -131,11 +110,11 @@ We start with the returns to experience. Occupation B is more skill intensive in
     :align: center
     :height: 500px
 
-Regarding the returns to schooling, while the initial wage in Occupation B is lower than in Occupation A it does increase faster with schooling.
+The returns to schooling are smaller in Occupation A. While the initial wage is higher, it does decrease slower with schooling compared to Occupation B.
 
 .. image:: images/choice_patterns.png
     :width: 500px
     :align: center
     :height: 500px
 
-We can study how these features interact in determining the agents life-cycle decisions by simulating a sample of 1,000 agents. All agents start out identically, different choices over the life cycle are the cumulative effects of different shocks. Initially, 50% increase their schooling but the share of agents in school in each period declines sharply. The share working in Occupation A starts to increase from 39% and peaks out at about 43% around period 4. Then declines back to 21%. Occupation B increases continuously, initially only 11% work in Occupation B but this share increases to about 77%. Around 1.5% stay at home each period.
+Simulating a sample of 1,000 agents from the model allows us to study how these features interact in determining agent decisions. Note that all agents start out identically, different choices over the life cycle are the cumulative effects of different shocks. Initially, 50% increase their schooling but the share of agents in school in each period declines sharply. The share working in Occupation A starts to increase from 39% and peaks out at about 43% around period 4. Then declines back to 21%. Occupation B increases continuously, initially only 11% work in Occupation B but this share increases to about 77%. Around 1.5% stay at home each period. Initially, among those agents working, the large majority is working in Occupation A. Eventually, however, the large majority of agents ends up working in Occupation B. As the returns to education are higher in Occupation B and previous work experience is transferable, Occupation B gets more and more attractive as we follow agents over their life-cycle.

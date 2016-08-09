@@ -3,8 +3,6 @@ Installation
 
 The ``respy`` package can be installed conveniently from the `Python Package Index <https://pypi.python.org/pypi>`_ (PyPI) or directly from the source files. We draw on the standard *SciPy Stack*. In particular, we use the ``NumPy``, ``SciPy`` and ``pandas`` library. In addition, we use ``statsmodels``. The ``respy`` package is supported and tested for Python 2.7 and Python 3.3+ on Linux systems.
 
-|
-
 Python Package Index
 --------------------
 
@@ -32,8 +30,6 @@ The *--no-binary* flag is required for now to avoid the use of Python Wheels and
 
 We also support parallel computing using the `Message Passing Interface (MPI) <http://www.mpi-forum.org/>`_ library. This requires a recent version of its `MPICH <https://www.mpich.org/>`_ implementation available on your compiler's search path which was build with shared/dynamic libraries.
 
-|
-
 Sources
 -------
 
@@ -49,12 +45,10 @@ Once you have a copy of the sources, you can install them in editable mode.
 
    $ pip install -e .
 
-|
-
 Test Suite
 ----------
 
-Regardless how you end up installing ``respy``, always make sure that all worked properly by running our test suite using ``pytest``.
+Regardless how you end up installing ``respy``, please make sure that all is working properly by running our test suite using ``pytest``.
 
 .. code-block:: bash
 

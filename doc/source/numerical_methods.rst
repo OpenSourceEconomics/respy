@@ -5,14 +5,10 @@ Numerical Methods
 
 The ``respy`` package contains several numerical components, we discuss each in turn.
 
-|
-
 Differentiation
 """""""""""""""
 
 We use a forward finite difference approximation for all derivatives. The step-size can be controlled in the *DERIVATIVES* section of the initialization file. This is relevant for the scaling procedure and used by the derivative-based optimization algorithms.
-
-|
 
 Integration
 """""""""""
@@ -23,14 +19,10 @@ All integrals are approximated by Monte Carlo integration. The solution and esti
 
 * For each agent in each time period, the evaluation of the choice probabilities requires the approximation of a four-dimensional integral. The integral is evaluated using the number of draws specified in the *SIMULATION* section of the initialization file. The same random draws are used for each of these integrals.
 
-|
-
 Optimization
 """"""""""""
 
 The estimation involved the optimization of sample likelihood function. The available optimizers depend on the version of the program. If you use the Python implementation, then the Powell (Powell, 1964) and BFGS (Norcedal, 2006) algorithms are available through their ``scipy`` implementations. For the Fortran  implementation, we provide the BFGS and NEWUOA (Powell, 2004) algorithms. The algorithm can be selected in the *ESTIMATION* section of the initialization file.
-
-|
 
 Function Approximation
 """"""""""""""""""""""
@@ -43,16 +35,12 @@ We follow Keane (1994) and allow to alleviate the computational burden by calcul
     \sum^4_{j = 1} \pi_{2j} \left(\max E - \bar{V}_j\right)^{\tfrac{1}{2}}
     \end{align}
 
-:math:`\bar{V}_j` is shorthand for the expected value of the alternative-specific value function and :math:`\max E = \max_k\{\bar{V}_j\}` is its maximum among the choices available to the agent. The :math:`\pi`s are time-varying as they are estimated by ordinary least squares period by period. The subset of state points used to fit the interpolating function is chosen at random for each period. The number of interpolation points is selected in the *INTERPOLATION* section of the initialization file. For more details on the approximation scheme and its effect on estimation performance see the analysis in Eisenhauer (2016).
-
-|
+:math:`\bar{V}_j` is shorthand for the expected value of the alternative-specific value function and :math:`\max E = \max_k\{\bar{V}_j\}` is its maximum among the choices available to the agent. The :math:`\pi`'s are time-varying as they are estimated by ordinary least squares period by period. The subset of state points used to fit the interpolating function is chosen at random for each period. The number of interpolation points is selected in the *INTERPOLATION* section of the initialization file. For more details on the approximation scheme and its effect on estimation performance see the analysis in Eisenhauer (2016).
 
 Function Smoothing
 """"""""""""""""""
 
-With only a finite number of draws there is the risk that there are cells with simulated zero probability, so we use kernel smoothed frequency simulation. We implement the logit-smoothed accept-reject simulator as suggested by McFadden (1989). The scale parameter :math:`\lambda` is set in the *ESTIMATION* section of the initialization file.
-
-|
+We simulate the agents' choice probabilities to evaluate the negative log-likelihood of the sample. With only a finite number of draws, there is always the risk of simulating zero probabilities for agents' decisions. So we implement the logit-smoothed accept-reject simulator as suggested by McFadden (1989). The scale parameter :math:`\lambda` is set in the *ESTIMATION* section of the initialization file.
 
 Miscellaneous
 """""""""""""

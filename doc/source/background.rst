@@ -7,11 +7,12 @@ Here is some of the recent work:
 
 * Eisenhauer, P. (2016). `The Approximate Solution of Finite-Horizon Discrete Choice Dynamic Programming Models: Revisiting Keane & Wolpin (1994) <https://github.com/structRecomputation/manuscript/blob/master/eisenhauer.2016.pdf>`_. Unpublished Manuscript
 
-    The capabilities of the ``respy`` package nests the original model used in Keane and Wolpin (1994) to analyze their proposed approximation scheme. I describe their approach in detail, recompute their original quality diagnostics, and conduct some additional analysis.
+    The estimation of finite-horizon discrete choice dynamic programming (DCDP) models pose computational challenges. This limits the realism of the models and impedes verification and validation efforts. Keane and Wolpin (1994) pro-
+    pose an approximation method that ameliorates the computational burden but introduces error. I describe their approach in detail, successfully recompute their original quality diagnostics, and conduct some additional analysis.
 
 * Eisenhauer, P. and Wild, S. M. (2016). *Numerical Upgrade to Finite-Horizon Discrete Choice Programming Models*. Unpublished Manuscript
 
-    We revisit the key computational components involved in estimating finite-horizon discrete choice dynamic programming models and show how improved numerical ingredients can improve the reliability and robustness of research results.
+    We revisit the key numerical components required for the estimation of finite-horizon discrete choice dynamic programming models. We show how state of the art components can improve the reliability and robustness of research results.
 
 * Eisenhauer, P. (2016). *Risk and Ambiguity in Dynamic Models of Educational Choice*. Unpublished Manuscript
 

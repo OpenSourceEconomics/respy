@@ -14,8 +14,6 @@ Initially we start with the true parameters. While taking a total of 1,491 steps
     0.00    0.00    1,491   3,000
     =====   ====    =====   ===========
 
-|
-
 ... starting with myopic agents
 -------------------------------
 

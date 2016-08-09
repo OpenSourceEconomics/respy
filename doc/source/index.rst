@@ -21,7 +21,7 @@ This documentation is best understood with a sound knowledge of their paper as w
 
    background
    installation
-   model
+   setup
    tutorial
    numerical_methods
    reliability

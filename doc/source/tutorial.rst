@@ -3,8 +3,6 @@ Tutorial
 
 Let us now illustrate the basic capabilities of the ``respy`` package. We start by setting up a model specification and then turn to some examples.
 
-|
-
 Model Specification
 -------------------
 
@@ -214,8 +212,6 @@ rhoend      float       minimum value of size for trust region
 =======     ======      ==========================
 
 If you perform an estimation using the NEWUOA algorithm, the maximum number of function evaluations is determined by the minimum of the two flags specified in this section and the ESTIMATION block.
-
-|
 
 Examples
 --------

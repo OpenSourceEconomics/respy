@@ -3,21 +3,15 @@ Software Engineering
 
 We now briefly discuss our software engineering practices that help us to ensure the transparency, reliability, and extensibility of the ``respy`` package.
 
-|
-
 Development Infrastructure
 --------------------------
 
 We maintain a dedicated development and testing server on the `Amazon Elastic Compute Cloud (EC2) <https://aws.amazon.com/ec2/>`_. We treat our infrastructure as code thus making it versionable, testable, and repeatable. We create our machine images using `Packer <https://www.packer.io/>`_ and `Chef <https://www.chef.io/>`_ and manage our compute resources with `Terraform <https://www.terraform.io/>`_. Our definition files are available `online <https://github.com/restudToolbox/package/tree/master/tools>`_.
 
-|
-
 Program Design
 --------------
 
 We build on the design of the original authors (`codes <https://github.com/restudToolbox/package/tree/master/forensics>`_). We maintain a pure Python implementation with a focus on readability and a scalar and parallel Fortran implementation to address any performance constraints. We keep the structure of the Python and Fortran implementation aligned as much as possible.
-
-|
 
 Test Battery
 ------------
@@ -49,8 +43,6 @@ We use `pytest <http://docs.pytest.org>`_ for our automated testing efforts. We 
 
 Our `tests <https://github.com/restudToolbox/package/tree/master/respy/tests>`_ and the `testing infrastructure <https://github.com/restudToolbox/package/tree/master/development/testing>`_ are available online. We run a test battery nightly on our development server. See `here <https://github.com/restudToolbox/package/blob/master/example/ec2-respy.testing.log>`_  for an example output.
 
-|
-
 Documentation
 -------------
 
@@ -59,8 +51,6 @@ Documentation
    :alt: Documentation Status
 
 The documentation is hosted on `Read the Docs <https://readthedocs.org/>`_ and created using `Sphinx <http://www.sphinx-doc.org/>`_.
-
-|
 
 Code Review
 -----------
@@ -77,8 +67,6 @@ Code Review
     :alt: Code Health
 
 We use several automatic code review tools to help us improve the readability and maintainability of our code base. For example, we rely on `Quantified Code <https://www.quantifiedcode.com/app/project/b00436d2ca614437b843c7042dba0c26>`_, `Codacy <https://www.codacy.com/app/eisenhauer/respy/dashboard>`_, and `Landscape <https://landscape.io/github/restudToolbox/package>`_
-
-|
 
 Continuous Integration Workflow
 -------------------------------
