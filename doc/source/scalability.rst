@@ -21,6 +21,6 @@ The figure below shows the total computation time required for 1,000 evaluations
     :align: center
     :height: 500px
 
-Adding even more processors does not lead to any further improvements, it even increases the computational time. The main trade-off arises in the required synchronization of the :math:`E\max` results each period. Even though each processor is only working on a subset of states each period, they need access to the all the earlier results during the backward induction procedure. 
+Adding even more processors does not lead to any further improvements, it even increases the computational time. Adding additional slaves has the cost of increasing communication time due to the required synchronization of the :math:`E\max` results each period. Even though each processor is only working on a subset of states each period at a given time, they need access all previous results during the backward induction procedure.
 
 For more details, see the script `online <https://github.com/restudToolbox/package/blob/master/development/testing/scalability/run.py>`_ and the `logfile <https://github.com/restudToolbox/package/blob/master/doc/results/scalability.respy.info>`_.

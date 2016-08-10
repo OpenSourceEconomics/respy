@@ -40,6 +40,10 @@ This file allows to monitor the progress of the simulation. It provides informat
 
 This file allow to monitor the progress of the backward induction procedure. If the interpolation method is used during the backward induction procedure, the coefficient estimates and goodness of fit statistics are provided.
 
+* **solution.respy.pkl**
+
+This file is only created if persistent storage of results is requested in the *SOLUTION* section of the initialization file. It is an instance of the ``RespyCls`` and contains detailed information about the solution of model such as the :math:`E\max` of each state for example. For details, please consult the `source code <https://github.com/restudToolbox/package/blob/master/respy/clsRespy.py>`_ directly.
+
 Estimation
 """"""""""
 
