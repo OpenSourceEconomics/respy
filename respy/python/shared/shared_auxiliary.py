@@ -592,7 +592,7 @@ def process_est_log():
     is_report = False
     is_final = False
     with open('est.respy.log') as in_file:
-        for i, line in enumerate(in_file.readlines()):
+        for _, line in enumerate(in_file.readlines()):
             list_ = shlex.split(line)
 
             if not list_:

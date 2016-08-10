@@ -7,8 +7,6 @@ import sys
 import os
 
 sys.path.insert(0, '../_modules')
-from auxiliary_regression import write_request
-from auxiliary_shared import send_notification
 from config import python2_exec
 from config import python3_exec
 

@@ -29,7 +29,9 @@ def get_actual_evaluations():
 
 def run(spec_dict, fname, grid_slaves):
     dirname = fname.replace('.ini', '')
-    os.mkdir(dirname), os.chdir(dirname)
+
+    os.mkdir(dirname)
+    os.chdir(dirname)
 
     respy_obj = respy.RespyCls(SPEC_DIR + fname)
 

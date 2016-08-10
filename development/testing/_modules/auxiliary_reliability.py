@@ -37,7 +37,8 @@ def run(spec_dict, fname):
     """ Run a version of the Monte Carlo exercise.
     """
     dirname = fname.replace('.ini', '')
-    os.mkdir(dirname), os.chdir(dirname)
+    os.mkdir(dirname)
+    os.chdir(dirname)
 
     # We first read in the first specification from the initial paper for our
     # baseline and process the deviations.
@@ -61,7 +62,8 @@ def run(spec_dict, fname):
 
     # Let us first simulate a baseline sample, store the results for future
     # reference, and start an estimation from the true values.
-    os.mkdir('truth'), os.chdir('truth')
+    os.mkdir('truth')
+    os.chdir('truth')
     respy_obj.write_out()
 
     simulate_specification(respy_obj, 'start', False)
@@ -82,7 +84,9 @@ def run(spec_dict, fname):
     respy_obj.set_attr('delta', 0.00)
     respy_obj.lock()
 
-    os.mkdir('static'), os.chdir('static')
+    os.mkdir('static')
+    os.chdir('static')
+
     respy_obj.write_out()
 
     simulate_specification(respy_obj, 'start', False)
@@ -199,7 +203,8 @@ def simulate_specification(respy_obj, subdir, update, paras=None):
     """ Simulate results to assess the estimation performance. Note that we do
     not update the object that is passed in.
     """
-    os.mkdir(subdir), os.chdir(subdir)
+    os.mkdir(subdir)
+    os.chdir(subdir)
 
     respy_copy = deepcopy(respy_obj)
     if update:

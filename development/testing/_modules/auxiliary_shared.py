@@ -1,4 +1,3 @@
-import glob
 import os
 import socket
 import subprocess
@@ -137,7 +136,7 @@ def aggregate_information(which):
 
             if not os.path.exists(dirname):
                 continue
-                
+
             outfile.write(' ' + dirname + '\n')
             os.chdir(dirname)
             with open(fname_info, 'r') as infile:

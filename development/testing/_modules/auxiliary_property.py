@@ -4,7 +4,6 @@ import fileinput
 import importlib
 import fnmatch
 import string
-import socket
 import random
 import shutil
 import shlex
@@ -23,7 +22,8 @@ PYTHON_EXEC = sys.executable
 from respy.python.shared.shared_constants import IS_PARALLEL
 from respy.python.shared.shared_constants import IS_FORTRAN
 
-''' Auxiliary functions '''
+''' Auxiliary functions
+'''
 
 
 def get_testdir(length):

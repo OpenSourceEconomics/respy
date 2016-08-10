@@ -77,12 +77,12 @@ class TestClass(object):
         # Extract class attributes
         periods_payoffs_systematic, states_number_period, mapping_state_idx, \
         periods_emax, num_periods, states_all, num_draws_emax, edu_start, \
-        edu_max, delta, model_paras, is_debug = \
+        edu_max, delta, is_debug = \
             dist_class_attributes(respy_obj,
                 'periods_payoffs_systematic', 'states_number_period',
                 'mapping_state_idx', 'periods_emax', 'num_periods',
                 'states_all', 'num_draws_emax', 'edu_start', 'edu_max',
-                'delta', 'model_paras', 'is_debug')
+                'delta', 'is_debug')
 
         # Sample draws
         draws_standard = np.random.multivariate_normal(np.zeros(4),
@@ -315,14 +315,14 @@ class TestClass(object):
         max_states_period = write_interpolation_grid('test.respy.ini')
 
         # Extract class attributes
-        num_periods, edu_start, edu_max, min_idx, model_paras, num_draws_emax, seed_emax, \
+        num_periods, edu_start, edu_max, min_idx, model_paras, num_draws_emax, \
         is_debug, delta, is_interpolated, num_points_interp, is_myopic, num_agents_sim, \
-        num_draws_prob, tau, paras_fixed, num_procs, seed_sim = \
+        num_draws_prob, tau, paras_fixed, seed_sim = \
             dist_class_attributes(
             respy_obj, 'num_periods', 'edu_start', 'edu_max', 'min_idx',
-            'model_paras', 'num_draws_emax', 'seed_emax', 'is_debug', 'delta',
+            'model_paras', 'num_draws_emax', 'is_debug', 'delta',
             'is_interpolated', 'num_points_interp', 'is_myopic', 'num_agents_sim',
-            'num_draws_prob', 'tau', 'paras_fixed', 'num_procs', 'seed_sim')
+            'num_draws_prob', 'tau', 'paras_fixed', 'seed_sim')
 
         # Write out random components and interpolation grid to align the
         # three implementations.
@@ -405,9 +405,6 @@ class TestClass(object):
             'mapping_state_idx', 'seed_prob', 'periods_emax', 'model_paras',
             'num_periods', 'states_all', 'num_points_interp', 'edu_start',
             'num_draws_emax', 'is_debug', 'edu_max', 'delta')
-
-        # Auxiliary objects
-        shocks_cholesky = dist_model_paras(model_paras, is_debug)[-1]
 
         # Add some additional objects required for the interfaces to the
         # functions.
