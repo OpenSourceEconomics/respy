@@ -27,4 +27,4 @@ if version in [(3, 4), (3, 5)]:
 # current implementation is working properly.
 sp.check_call('pip install -e .', shell=True)
 sp.check_call('pip install pytest-cov==2.2.1', shell=True)
-sp.check_call('py.test --cov=respy -v -s -m"(not slow)" -x', shell=True)
+sp.check_call('py.test --cov=respy -v -s -x', shell=True)
