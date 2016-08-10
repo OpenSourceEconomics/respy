@@ -7,8 +7,7 @@ Here is some of the recent work:
 
 * Eisenhauer, P. (2016). `The Approximate Solution of Finite-Horizon Discrete Choice Dynamic Programming Models: Revisiting Keane & Wolpin (1994) <https://github.com/structRecomputation/manuscript/blob/master/eisenhauer.2016.pdf>`_. Unpublished Manuscript
 
-    The estimation of finite-horizon discrete choice dynamic programming (DCDP) models pose computational challenges. This limits the realism of the models and impedes verification and validation efforts. Keane and Wolpin (1994) pro-
-    pose an interpolation method that ameliorates the computational burden but introduces approximation error. I describe their approach in detail, successfully recompute their original quality analysis, and conduct some additional diagnostics.
+    The estimation of finite-horizon discrete choice dynamic programming (DCDP) models poses computational challenges. This limits the realism of the models and impedes verification and validation efforts. Keane and Wolpin (1994) pro   pose an interpolation method that ameliorates the computational burden but introduces approximation error. I describe their approach in detail, successfully recompute their original quality analysis, and conduct some additional diagnostics.
 
 * Eisenhauer, P. and Wild, S. M. (2016). *Numerical Upgrade to Finite-Horizon Discrete Choice Programming Models*. Unpublished Manuscript
 
