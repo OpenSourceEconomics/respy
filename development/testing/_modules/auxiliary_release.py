@@ -11,6 +11,8 @@ def install(version):
 
 
 def run_estimation():
+    """ Run an estimation with the respective release.
+    """
     import numpy as np
 
     from respy import estimate

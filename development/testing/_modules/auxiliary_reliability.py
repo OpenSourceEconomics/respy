@@ -108,7 +108,8 @@ def run(spec_dict, fname):
     respy_obj.set_attr('delta', 0.95)
     respy_obj.lock()
 
-    os.mkdir('dynamic'), os.chdir('dynamic')
+    os.mkdir('dynamic')
+    os.chdir('dynamic')
     respy_obj.write_out()
 
     simulate_specification(respy_obj, 'start', False)
@@ -183,7 +184,8 @@ def record_results(label, rmse_start, rmse_stop, num_evals, num_steps, maxfun):
 
 
 def get_rmse():
-
+    """ Compute the RMSE based on the relevant parameterization.
+    """
     fname = '../truth/start/data.respy.info'
     probs_true = get_choice_probabilities(fname, is_flatten=True)
 

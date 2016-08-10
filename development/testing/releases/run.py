@@ -22,7 +22,8 @@ from auxiliary_shared import cleanup
 
 
 def run(args):
-
+    """ Test the different releases against each other.
+    """
     # Set up auxiliary information to construct commands.
     env_dir = os.environ['HOME'] + '/.envs'
     old_exec = env_dir + '/' + OLD_RELEASE + '/bin/python'

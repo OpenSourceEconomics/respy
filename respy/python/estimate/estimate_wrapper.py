@@ -36,11 +36,7 @@ class OptimizationClass(object):
         fval = pyth_criterion(x_all_current, *args)
 
         # Identify events
-        if self.num_eval == 0:
-            is_start = True
-        else:
-            is_start = False
-
+        is_start = (self.num_eval == 0)
         is_step = (self.crit_vals[1] > fval)
 
         # Update class attributes
@@ -75,7 +71,8 @@ class OptimizationClass(object):
         return fval
 
     def _construct_all_current_values(self, x):
-
+        """ Construct the full set of current values.
+        """
         x_all_start = self.x_all_start
         paras_fixed = self.paras_fixed
 

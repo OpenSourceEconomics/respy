@@ -12,7 +12,8 @@ from config import python3_exec
 
 
 def run(args):
-
+    """ Run the regression tests.
+    """
     write_request(args.num_tests)
 
     if args.request == 'check':

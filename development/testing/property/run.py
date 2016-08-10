@@ -34,7 +34,8 @@ from auxiliary_shared import cleanup
 
 
 def run(args):
-
+    """ Run the property test battery.
+    """
     cleanup()
 
     if args.is_compile:

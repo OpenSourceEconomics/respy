@@ -24,6 +24,8 @@ def get_executable():
 
 
 def strfdelta(tdelta, fmt):
+    """ Get a string from a timedelta.
+    """
     f, d = Formatter(), {}
     l = {'D': 86400, 'H': 3600, 'M': 60, 'S': 1}
     k = list(map(lambda x: x[1], list(f.parse(fmt))))
@@ -37,7 +39,10 @@ def strfdelta(tdelta, fmt):
 def cleanup():
     os.system('git clean -d -f')
 
+
 def compile_package(is_debug=False):
+    """ Compile the package for use.
+    """
     python_exec = get_executable()
     cwd = os.getcwd()
     os.chdir(PACKAGE_DIR + '/respy')

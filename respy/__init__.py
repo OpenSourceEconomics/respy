@@ -11,7 +11,6 @@ from respy.clsRespy import RespyCls
 
 
 __version__ = '1.0.0'
-__name__ = 'respy'
 
 
 def test(opt=None):

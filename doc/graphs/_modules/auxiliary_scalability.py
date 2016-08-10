@@ -37,7 +37,8 @@ def plot_dimension_state_space(num_states):
 
 
 def plot_scalability(ys, func_lin, grid_slaves):
-
+    """ This function plots the results from the scalability exercise.
+    """
     formatter = matplotlib.ticker.FuncFormatter(ylabel_formatting)
 
     ax = plt.figure(figsize=(12, 8)).add_subplot(111)
@@ -68,7 +69,8 @@ def plot_scalability(ys, func_lin, grid_slaves):
 
 
 def get_durations():
-
+    """ Get the durations from the logile.
+    """
     rslt, labels, grid_slaves = dict(), [], []
 
     with open('../../results/scalability.respy.info', 'r') as infile:

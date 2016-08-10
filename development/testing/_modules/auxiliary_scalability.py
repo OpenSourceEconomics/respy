@@ -28,6 +28,9 @@ def get_actual_evaluations():
 
 
 def run(spec_dict, fname, grid_slaves):
+    """ Run an estimation task that allows to get a sense of the scalability
+    of the code.
+    """
     dirname = fname.replace('.ini', '')
 
     os.mkdir(dirname)
@@ -54,7 +57,9 @@ def run(spec_dict, fname, grid_slaves):
     # Iterate over the grid of requested slaves.
     for num_slaves in grid_slaves:
         dirname = '{:}'.format(num_slaves)
-        os.mkdir(dirname), os.chdir(dirname)
+
+        os.mkdir(dirname)
+        os.chdir(dirname)
 
         respy_obj.unlock()
         respy_obj.set_attr('num_procs', num_slaves + 1)
@@ -83,6 +88,9 @@ def run(spec_dict, fname, grid_slaves):
 
 def record_information(start_time, finish_time, num_slaves, maxfun,
                        duration_baseline, num_evals, min_slave):
+    """ Record the information on execution time, which involves a lot of
+    formatting of different data types.
+    """
     fmt = '{:>15} {:>25} {:>25} {:>15} {:>15} {:>15}\n'
     if not os.path.exists('scalability.respy.info'):
         with open('scalability.respy.info', 'a') as out_file:
