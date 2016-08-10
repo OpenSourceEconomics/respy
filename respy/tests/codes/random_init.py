@@ -188,9 +188,9 @@ def generate_random_dict(constraints=None):
     dict_['FORT-BFGS']['stpmx'] = np.random.uniform(75, 125)
     dict_['FORT-BFGS']['gtol'] = np.random.uniform(0.0001, 0.1)
 
-    '''We now impose selected constraints on the final model specification.
+    """ We now impose selected constraints on the final model specification.
     These constraints can be very useful in the generation of test cases.
-    '''
+    """
 
     # Address incompatibility issues
     keys = constraints.keys()

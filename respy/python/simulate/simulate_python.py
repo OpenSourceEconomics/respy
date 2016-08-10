@@ -7,9 +7,6 @@ from respy.python.shared.shared_auxiliary import transform_disturbances
 from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.shared.shared_auxiliary import get_total_value
 
-''' Main function
-'''
-
 
 def pyth_simulate(periods_payoffs_systematic, mapping_state_idx,
         periods_emax, states_all, shocks_cholesky, num_periods, edu_start, edu_max, delta,

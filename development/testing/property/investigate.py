@@ -31,8 +31,6 @@ if len(sys.argv) > 1:
 else:
 	print('not recompiling')
 
-''' Request
-'''
 #MODULE test_parallelism METHOD test_1 SEED: 24029
 
 seed = 73100 # 6216748723

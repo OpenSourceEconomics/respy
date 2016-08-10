@@ -14,8 +14,6 @@ if len(sys.argv) > 1:
 
 
 
-import os
-import sys
 import shutil
 
 import time

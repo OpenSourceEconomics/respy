@@ -77,12 +77,12 @@ class TestClass(object):
         # Extract class attributes
         periods_payoffs_systematic, states_number_period, mapping_state_idx, \
         periods_emax, num_periods, states_all, num_draws_emax, edu_start, \
-        edu_max, delta, is_debug = \
+        edu_max, delta = \
             dist_class_attributes(respy_obj,
                 'periods_payoffs_systematic', 'states_number_period',
                 'mapping_state_idx', 'periods_emax', 'num_periods',
                 'states_all', 'num_draws_emax', 'edu_start', 'edu_max',
-                'delta', 'is_debug')
+                'delta')
 
         # Sample draws
         draws_standard = np.random.multivariate_normal(np.zeros(4),
@@ -400,9 +400,9 @@ class TestClass(object):
         respy_obj = simulate(respy_obj)
 
         # Extract class attributes
-        periods_payoffs_systematic, states_number_period, mapping_state_idx, seed_prob, periods_emax, model_paras, num_periods, states_all, num_points_interp, edu_start, num_draws_emax, is_debug, edu_max, delta = dist_class_attributes(
+        periods_payoffs_systematic, states_number_period, mapping_state_idx, seed_prob, periods_emax, num_periods, states_all, num_points_interp, edu_start, num_draws_emax, is_debug, edu_max, delta = dist_class_attributes(
             respy_obj, 'periods_payoffs_systematic', 'states_number_period',
-            'mapping_state_idx', 'seed_prob', 'periods_emax', 'model_paras',
+            'mapping_state_idx', 'seed_prob', 'periods_emax',
             'num_periods', 'states_all', 'num_points_interp', 'edu_start',
             'num_draws_emax', 'is_debug', 'edu_max', 'delta')
 

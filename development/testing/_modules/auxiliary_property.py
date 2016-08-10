@@ -22,9 +22,6 @@ PYTHON_EXEC = sys.executable
 from respy.python.shared.shared_constants import IS_PARALLEL
 from respy.python.shared.shared_constants import IS_FORTRAN
 
-''' Auxiliary functions
-'''
-
 
 def get_testdir(length):
     """ This function creates a random string that is used as the testing
@@ -200,9 +197,6 @@ def get_random_request(test_dict):
 
     # Finishing
     return module, method
-
-
-
 
 
 def cleanup_testing_infrastructure(keep_results):

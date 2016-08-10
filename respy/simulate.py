@@ -21,9 +21,9 @@ def simulate(respy_obj):
             os.unlink(fname)
 
     # Distribute class attributes
-    is_debug, version, num_agents_sim, seed_sim, is_store = \
+    is_debug, version, num_agents_sim, is_store = \
         dist_class_attributes(respy_obj, 'is_debug', 'version',
-                'num_agents_sim', 'seed_sim', 'is_store')
+                'num_agents_sim', 'is_store')
 
     # Select appropriate interface
     if version in ['PYTHON']:
