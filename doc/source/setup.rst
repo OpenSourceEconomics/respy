@@ -32,9 +32,9 @@ Within this more general framework, Keane (1994) consider the case where agents 
 
     R_4(t) &= \gamma_0 + \epsilon_{4t},
 
-where :math:`s_t` is the number of periods of schooling obtained by the beginning of period :math:`t`, :math:`x_{1t}` is the number of periods that the agent worked in occupation one (experience) by the beginning of period :math:`t`, :math:`x_{2t}` is the analogously defined level of experience in occupation two, :math:`\alpha_1` and :math:`\alpha_2` are parameter vectors associated with the wage functions, :math:`\beta_0` is the consumption value of schooling, :math:`\beta_1` is the post-secondary tuition cost of schooling, with :math:`I` an indicator function equal to one if :math:`s\geq 12` (the agent has completed high school) and zero otherwise, :math:`\beta_2` is an adjustment cost associated with returning to school (if :math:`d_3(t - 1) = 0`), :math:`\gamma_0` is the (mean) value of the non-market alternative. The :math:`\epsilon_{kt}`'s are alternative-specific shocks, to occupational productivity, to the consumption value of schooling, and to the value of non-market time. The productivity and taste shocks follow a four-dimensional multivariate normal distribution with mean zero and covariance matrix :math:`\Sigma`. The realizations are independent across time. I collect the parametrization of the reward functions in :math:`\theta = \{\alpha_1, \alpha_2, \beta, \gamma, \Sigma\}`.
+where :math:`s_t` is the number of periods of schooling obtained by the beginning of period :math:`t`, :math:`x_{1t}` is the number of periods that the agent worked in occupation one (experience) by the beginning of period :math:`t`, :math:`x_{2t}` is the analogously defined level of experience in occupation two, :math:`\alpha_1` and :math:`\alpha_2` are parameter vectors associated with the wage functions, :math:`\beta_0` is the consumption value of schooling, :math:`\beta_1` is the post-secondary tuition cost of schooling, with :math:`I` an indicator function equal to one if :math:`s\geq 12` (the agent has completed high school) and zero otherwise, :math:`\beta_2` is an adjustment cost associated with returning to school (if :math:`d_3(t - 1) = 0`), :math:`\gamma_0` is the (mean) value of the non-market alternative. The :math:`\epsilon_{kt}`'s are alternative-specific shocks, to occupational productivity, to the consumption value of schooling, and to the value of non-market time. The productivity and taste shocks follow a four-dimensional multivariate normal distribution with mean zero and covariance matrix :math:`\Sigma`. The realizations are independent across time. We collect the parametrization of the reward functions in :math:`\theta = \{\alpha_1, \alpha_2, \beta, \gamma, \Sigma\}`.
 
-Given the structure of the immediate rewards, the state space at time :math:`t` is
+Given the structure of the reward functions and the agents objective, the state space at time :math:`t` is
 
 .. math::
 
@@ -57,7 +57,7 @@ where the last equation reflects the fact that the :math:`\epsilon_{kt}`'s are s
 Solution
 --------
 
-From a mathematical perspective, this type of model boils down to a finite-horizon DP problem under uncertainty that can be solved by backward induction. For the discussion, it is useful to do define the value function :math:`V(S(t),t)` as a shorthand for the agents objective function. :math:`V(S(t),t)` depends on the state space at :math:`t` and on :math:`t` itself (due to the finiteness of the time horizon or the direct effect of age on rewards) and can be written as
+From a mathematical perspective, this type of model boils down to a finite-horizon DP problem under uncertainty that can be solved by backward induction. For the discussion, it is useful to do define the value function :math:`V(S(t),t)` as a shorthand for the agents objective function. :math:`V(S(t),t)` depends on the state space at :math:`t` and on :math:`t` itself due to the finiteness of the time horizon and can be written as
 
 .. math::
 
@@ -88,17 +88,17 @@ Future rewards are partly uncertain due to the existence of state variables at t
 
     \int_{\epsilon_1(t)} ... \int_{\epsilon_K(t)}\max\{R_1(t), ..., R_K(t)\}f_{\epsilon}(\epsilon_1(t), ... ,\epsilon_K(t))d\epsilon_1(t) ... d\epsilon_K(t),
 
-where :math:`f_{\epsilon}` is the joint density of the uncertain component of the rewards in :math:`t` not known at :math:`t - 1`.
+where :math:`f_{\epsilon}` is the joint density of the uncertain component of the rewards in :math:`t` not known at :math:`t - 1`. With all ingredients at hand, the solution of the model by backward induction is straightforward.
 
 Estimation
 ----------
 
-We observe a sample of agents over their life-cycle whose behavior and state experiences are described by the model and our goal is to estimate the parameters of the reward functions :math:`\theta`. While even the random components of the immediate rewards are eventually known to the agent, they remain unobserved by the econometrician. So each parameterization induces a different probability distribution over the sequence of observed agent decisions and their state experience. We implement maximum likelihood estimation and appraise each candidate parameterization of the model using the likelihood function of the observed sample (Fisher, 1922). Given the serial independence of the unobservables, we can compute the likelihood contribution of each agent in each period separately. The sample likelihood is then just the product of the likelihood contributions over all agents and time periods. As we need to simulate the agent's choice probabilities each period, we end up with a simulated maximum likelihood estimator (Manski, 1977) and minimize the simulated negative log-likelihood of the observed sample.
+Our goal is to estimate the parameters of the reward functions :math:`\theta` while observing a sample of agents over their life-cycle whose behavior and state experiences are described by the model. Although the the random components of the  rewards are eventually known to the agent, they remain unobserved by the econometrician. So each parameterization induces a different probability distribution over the sequence of observed agent decisions and their state experience. We implement maximum likelihood estimation and appraise each candidate parameterization of the model using the likelihood function of the observed sample (Fisher, 1922). Given the serial independence of the unobservables, we can compute the likelihood contribution of each agent in each period separately. The sample likelihood is then just the product of the likelihood contributions over all agents and time periods. As we need to simulate the agent's choice probabilities each period, we end up with a simulated maximum likelihood estimator (Manski, 1977) and minimize the simulated negative log-likelihood of the sample.
 
 Simulated Example
 -----------------
 
-Keane (1994) analyze three different parameterizations of the baseline model. We study their first specification in more detail here.
+Keane (1994) analyze three different parameterizations of the baseline model. We study their first specification in more detail here. They label the two occupations Occupation A and Occupation B.
 
 .. image:: images/returns_experience.png
 
@@ -109,11 +109,11 @@ We start with the returns to experience. Occupation B is more skill intensive in
     :align: center
     :height: 500px
 
-The returns to schooling are smaller in Occupation A. While the initial wage is higher, it does decrease slower with schooling compared to Occupation B.
+The returns to schooling are larger in Occupation B. While its initial wage is lower, it does decrease faster with schooling compared to Occupation A.
 
 .. image:: images/choice_patterns.png
     :width: 500px
     :align: center
     :height: 500px
 
-Simulating a sample of 1,000 agents from the model allows us to study how these features interact in determining agent decisions. Note that all agents start out identically, different choices over the life cycle are the cumulative effects of different shocks. Initially, 50% increase their schooling but the share of agents in school in each period declines sharply. The share working in Occupation A starts to increase from 39% and peaks out at about 43% around period 4. Then declines back to 21%. Occupation B increases continuously, initially only 11% work in Occupation B but this share increases to about 77%. Around 1.5% stay at home each period. Initially, among those agents working, the large majority is working in Occupation A. Eventually, however, the large majority of agents ends up working in Occupation B. As the returns to education are higher in Occupation B and previous work experience is transferable, Occupation B gets more and more attractive as we follow agents over their life-cycle.
+Simulating a sample of 1,000 agents from the model allows us to study how these features interact in determining agent decisions over their life-cycle. Note that all agents start out identically, different choices are simply the cumulative effects of different shocks. Initially, 50% increase their schooling but the share of agents in school in each period declines sharply. The share working in Occupation A starts to increase from 39%, peaks out at about 43%, and then declines back to 21%. Occupation B continuously gains in popularity, initially only 11% work in Occupation B but its share increases to about 77%. Around 1.5% stay at home each period. Initially, among those agents working, the large majority is working in Occupation A. Eventually, however, the most agents ends up working in Occupation B. As the returns to education are higher in Occupation B and previous work experience is transferable, Occupation B gets more and more attractive as we follow agents over their life-cycle.

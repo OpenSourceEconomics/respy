@@ -1,5 +1,3 @@
-.. _implementation:
-
 Numerical Methods
 -----------------
 
@@ -8,26 +6,26 @@ The ``respy`` package contains several numerical components, we discuss each in 
 Differentiation
 """""""""""""""
 
-We use a forward finite difference approximation for all derivatives. The step-size can be controlled in the *DERIVATIVES* section of the initialization file. This is relevant for the scaling procedure and used by the derivative-based optimization algorithms.
+Derivatives are approximated by forward finite differences and used by derivative-based optimization algorithms and the scaling procedure. The step-size can be controlled in the *DERIVATIVES* section of the initialization file.
 
 Integration
 """""""""""
 
-All integrals are approximated by Monte Carlo integration. The solution and estimation of the model give rise to two types of integrals.
+Integrals are approximated by Monte Carlo integration and occur in two places.
 
-* The calculation of the :math:`E\max` at each state requires the evaluation of a four dimensional integral. The integral is evaluated using the number of draws specified in the *ESTIMATION* section of the initialization file. The same random draws are used for each of these integrals.
+* The solution of the model requires the evaluation of the :math:`E\max`. This integral is approximated using the number of random draws specified in the *SOLUTION* section of the initialization file. The same random draws are used for each of these integrals.
 
-* For each agent in each time period, the evaluation of the choice probabilities requires the approximation of a four-dimensional integral. The integral is evaluated using the number of draws specified in the *SIMULATION* section of the initialization file. The same random draws are used for each of these integrals.
+* The estimation of the model requires the simulation of the choice probabilities to construct the sample likelihood. This integral is approximated using the number of random draws specified in the *ESTIMATION* section of the initialization file. The same random draws are used for each of these integrals. same random draws are used for each of these integrals.
 
 Optimization
 """"""""""""
 
-The estimation involved the optimization of sample likelihood function. The available optimizers depend on the version of the program. If you use the Python implementation, then the Powell (Powell, 1964) and BFGS (Norcedal, 2006) algorithms are available through their ``scipy`` implementations. For the Fortran  implementation, we provide the BFGS and NEWUOA (Powell, 2004) algorithms. The algorithm can be selected in the *ESTIMATION* section of the initialization file.
+The estimation of the model involves the minimization of the simulated negative log-likelihood of the sample. The available optimizers depend on the version of the program. If you use the Python implementation, then the Powell (Powell, 1964) and BFGS (Norcedal, 2006) algorithms are available through their ``scipy`` implementations. For the Fortran  implementation, we provide the BFGS and NEWUOA (Powell, 2004) algorithms. The algorithm can be selected in the *ESTIMATION* section of the initialization file.
 
 Function Approximation
 """"""""""""""""""""""
 
-We follow Keane (1994) and allow to alleviate the computational burden by calculating the :math:`E\max` only at a subset of states each period and interpolate its value for the rest.  We implement their proposed interpolation function.
+We follow Keane (1994) and allow to alleviate the computational burden by calculating the :math:`E\max` only at a subset of states each period and interpolating its value for the rest.  We implement their proposed interpolation function.
 
 .. math::
     \begin{align}
@@ -35,12 +33,12 @@ We follow Keane (1994) and allow to alleviate the computational burden by calcul
     \sum^4_{j = 1} \pi_{2j} \left(\max E - \bar{V}_j\right)^{\tfrac{1}{2}}
     \end{align}
 
-:math:`\bar{V}_j` is shorthand for the expected value of the alternative-specific value function and :math:`\max E = \max_k\{\bar{V}_j\}` is its maximum among the choices available to the agent. The :math:`\pi`'s are time-varying as they are estimated by ordinary least squares period by period. The subset of state points used to fit the interpolating function is chosen at random for each period. The number of interpolation points is selected in the *INTERPOLATION* section of the initialization file. For more details on the approximation scheme and its effect on estimation performance see the analysis in Eisenhauer (2016).
+:math:`\bar{V}_j` is shorthand for the expected value of the alternative-specific value function and :math:`\max E = \max_k\{\bar{V}_j\}` is its maximum among the choices available to the agent. The :math:`\pi`'s are time-varying as they are estimated by ordinary least squares each period. The subset of state points used to fit the interpolating function is chosen at random for each period. The number of interpolation points is selected in the *INTERPOLATION* section of the initialization file. For more details on this interpolation scheme and its effect on estimation performance see the analysis in Eisenhauer (2016).
 
 Function Smoothing
 """"""""""""""""""
 
-We simulate the agents' choice probabilities to evaluate the negative log-likelihood of the sample. With only a finite number of draws, there is always the risk of simulating zero probabilities for agents' decisions. So we implement the logit-smoothed accept-reject simulator as suggested by McFadden (1989). The scale parameter :math:`\lambda` is set in the *ESTIMATION* section of the initialization file.
+We simulate the agents' choice probabilities to evaluate the negative log-likelihood of the sample. With only a finite number of draws, there is always the risk of simulating zero probability for an agent's observed decision. So we implement the logit-smoothed accept-reject simulator as suggested by McFadden (1989). The scale parameter :math:`\lambda` is set in the *ESTIMATION* section of the initialization file.
 
 Miscellaneous
 """""""""""""

@@ -1,16 +1,16 @@
+.. _additional-details:
+
 Additional Details
 ==================
-
 
 Output Files
 ------------
 
-Depending on the user's request, the ``respy`` package creates several output files. Note that there is a difference between the estimation parameters in the files below and the model specification. The difference is in the parameters for the covariance matrix. During the estimation we iterate on a flattened version of the upper-triangular Cholesky decomposition. This ensures that the requirements for a valid covariance matrix, e.g. positive semidefiniteness and strictly positive variances, are always met as the optimizer tests the whole real line.
+Depending on the user's request, the ``respy`` package creates several output files. Note that there is a difference between the estimation parameters in the files below and the model specification. The difference is in the parameters for the covariance matrix. During the estimation we iterate on a flattened version of the upper-triangular Cholesky decomposition. This ensures that the requirements for a valid covariance matrix, e.g. positive semidefiniteness and strictly positive variances, are always during an optimization.
 
 Simulation
 """"""""""
 
-.. _data.respy.dat:
 * **data.respy.dat**
 
 This file contains the agent choices and state experiences. The simulated dataset has the following structure.
