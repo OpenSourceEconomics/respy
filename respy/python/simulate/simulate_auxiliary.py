@@ -22,7 +22,7 @@ def write_info(respy_obj, data_frame):
     if len(fname_split) > 1:
         fname = '.'.join(fname_split[:-1]) + '.info'
     else:
-        fname = '%s' % file_sim + '.info'
+        fname = '{}.info'.format(file_sim)
 
     # Write information to file
     with open(fname, 'w') as file_:

@@ -41,7 +41,7 @@ def scripts_update(init_file):
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky \
         = dist_optim_paras(paras_steps, True)
     shocks_coeffs = cholesky_to_coeffs(shocks_cholesky)
-    
+
     # Update initialization dictionary
     init_dict['OCCUPATION A']['coeffs'] = coeffs_a
     init_dict['OCCUPATION B']['coeffs'] = coeffs_b
