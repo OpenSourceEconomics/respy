@@ -1,26 +1,26 @@
 Setup
 =====
 
-We now start with the economics motivating the model and then turn to the solution and estimation approach. We conclude this section with a discussion of a simulated sample.
+We now start with the economics motivating the model and then turn to the solution and estimation approach. We conclude with a discussion of a simulated sample.
 
 Economics
 ---------
 
 Keane (1994) develop a model in which an agent decides among :math:`K` possible alternatives in each of :math:`T` (finite) discrete periods of time.  Alternatives are defined to be mutually exclusive and :math:`d_k(t) = 1` indicates that alternative :math:`k` is chosen at time :math:`t` and :math:`d_k(t)  = 0` indicates otherwise. Associated with each choice is an immediate reward :math:`R_k(S(t))` that is known to the agent at time :math:`t` but partly unknown from the perspective of periods prior to :math:`t`. All the information known to the agent at time :math:`t` that affects immediate and future rewards is contained in the state space :math:`S(t)`.
 
-We depict the timing of events below. At the beginning of period :math:`t` the agent fully learns about the all immediate rewards, choose one of the alternatives and receives the corresponding benefits. The state space is then updated according to the agent's state experience and the process is repeated in :math:`t + 1`.
+We depict the timing of events below. At the beginning of period :math:`t` the agent fully learns about all immediate rewards, chooses one of the alternatives and receives the corresponding benefits. The state space is then updated according to the agent's state experience and the process is repeated in :math:`t + 1`.
 
 .. image:: images/timing.png
 
-Agents are forward looking. Thus, the do not simply choose the alternative with the highest immediate rewards. Instead their objective at any time :math:`\tau = 0, ...,T` is to maximize the expected rewards over their whole remaining time horizon:
+Agents are forward looking. Thus, the do not simply choose the alternative with the highest immediate rewards. Instead, their objective at any time :math:`\tau = 0, ...,T` is to maximize the expected rewards over their whole remaining time horizon:
 
 .. math::
     \max_{\{d_k(t)\}_{k \in K}} E\left[ \sum_{\tau = t}^T \delta^{\tau - t} \sum_{k\in K}R_k(\tau)d_k(\tau)\Bigg| S(t)\right]
 
 The discount factor :math:`0 > \delta > 1` captures the agent's preference for immediate over future rewards. Agents maximize the equation above by choosing the optimal sequence of alternatives
-:math:`\{d_k(t)\}_{k \in K}` or :math:`t = \tau, .., T`.
+:math:`\{d_k(t)\}_{k \in K}` for :math:`t = \tau, .., T`.
 
-Within this more general framework, Keane (1994) considers the case where agents risk neutral and each period choose to work in either of two occupations (:math:`k =  1,2`), to attend school (:math:`k = 3`), or to remain at home (:math:`k = 4`). The immediate reward functions are given by:
+Within this more general framework, Keane (1994) consider the case where agents risk neutral and each period choose to work in either of two occupations (:math:`k =  1,2`), to attend school (:math:`k = 3`), or to remain at home (:math:`k = 4`). The immediate reward functions are given by:
 
 .. math::
 

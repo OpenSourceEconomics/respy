@@ -8,16 +8,16 @@ Here is some of the recent work:
 * Eisenhauer, P. (2016). `The Approximate Solution of Finite-Horizon Discrete Choice Dynamic Programming Models: Revisiting Keane & Wolpin (1994) <https://github.com/structRecomputation/manuscript/blob/master/eisenhauer.2016.pdf>`_. Unpublished Manuscript
 
     The estimation of finite-horizon discrete choice dynamic programming (DCDP) models pose computational challenges. This limits the realism of the models and impedes verification and validation efforts. Keane and Wolpin (1994) pro-
-    pose an approximation method that ameliorates the computational burden but introduces error. I describe their approach in detail, successfully recompute their original quality diagnostics, and conduct some additional analysis.
+    pose an interpolation method that ameliorates the computational burden but introduces approximation error. I describe their approach in detail, successfully recompute their original quality analysis, and conduct some additional diagnostics.
 
 * Eisenhauer, P. and Wild, S. M. (2016). *Numerical Upgrade to Finite-Horizon Discrete Choice Programming Models*. Unpublished Manuscript
 
-    We revisit the key numerical components required for the estimation of finite-horizon discrete choice dynamic programming models. We show how state of the art components can improve the reliability and robustness of research results.
+    We revisit the key numerical components required for the estimation of finite-horizon discrete choice dynamic programming models. We show how using state of the art techniques and tools can accelerate the speed of scientific discovery. It thus facilitates verification and validation efforts leading to more robust and reliable results.
 
 * Eisenhauer, P. (2016). *Risk and Ambiguity in Dynamic Models of Educational Choice*. Unpublished Manuscript
 
-    We instill a fear of model misspecification into the agents of a dynamic discrete choice model. Agents are ambiguity averse and seek robust decisions for a variety of alternative models. We study the implications for agents’ decisions and the design and impact of alternative policies.
+    I instill a fear of model misspecification into the agents of a dynamic discrete choice model. Agents are ambiguity averse and seek robust decisions for a variety of alternative models. I study the implications for agents’ decisions and the design and impact of alternative policies.
 
-We provide the package and its documentation to ensure the transparency, reliability, recomputability, and extensibility of this research. We hope to showcase how software engineering practices can help in achieving these objectives.
+We provide the package and its documentation to ensure the transparency, reliability, recomputability, and extensibility of this research. We also hope to showcase how software engineering practices can help in achieving these objectives.
 
-The rest of this documentation is structured as follows. First, we provide the installation instructions. Then we turn to a discussion of the underlying economic model, before we illustrate the basic capabilities of the package in a tutorial. Next, we provide more details regarding the numerical methods used for the computations. Then we showcase the package's reliability and scalability. We conclude with a presentation of the software engineering practices adopted for the ongoing development of the package.
+The rest of this documentation is structured as follows. First, we provide the installation instructions. Then we turn to a discussion of the basic setup. We present the underlying economic model and discuss its solution and estimation. Next, we illustrate the basic capabilities of the package in a tutorial. We continue by providing more details regarding the numerical components of the package and showcase the package's reliability and scalability. We conclude with a presentation of the software engineering practices adopted for the ongoing development of the package.
