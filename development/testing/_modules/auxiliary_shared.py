@@ -134,6 +134,10 @@ def aggregate_information(which):
     with open(fname_info, 'w') as outfile:
         outfile.write('\n')
         for dirname in dirnames:
+
+            if not os.path.exists(dirname):
+                continue
+                
             outfile.write(' ' + dirname + '\n')
             os.chdir(dirname)
             with open(fname_info, 'r') as infile:

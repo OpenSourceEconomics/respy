@@ -22,6 +22,11 @@ Optimization
 
 The estimation of the model involves the minimization of the simulated negative log-likelihood of the sample. The available optimizers depend on the version of the program. If you use the Python implementation, then the Powell (Powell, 1964) and BFGS (Norcedal, 2006) algorithms are available through their ``scipy`` implementations. For the Fortran  implementation, we provide the BFGS and NEWUOA (Powell, 2004) algorithms. The algorithm can be selected in the *ESTIMATION* section of the initialization file.
 
+Preconditioning
+"""""""""""""""
+
+Some optimization algorithms require a similar scale of the variables as judged by their impact on the criterion function. We implemented a simple diagonal scale-based preconditioner based on the gradient. To stabilize the routine, the user needs to specify a minimum value for the derivative approximation. The details are governed by the *SCALING* section of the initialization file.
+
 Function Approximation
 """"""""""""""""""""""
 

@@ -163,11 +163,9 @@ Whenever numerical derivatives are required, then the details are specified here
 =======     ======      ==========================
 Key         Value       Interpretation
 =======     ======      ==========================
-flag        bool        apply scaling to criterion function
+flag        bool        apply scaling to parameters
 minimum     float       minimum value for gradient approximation
 =======     ======      ==========================
-
-Some optimization algorithms require a similar scale of the variables as judged by their impact on the criterion function. So, we allow to automatically scale the parameters by the inverse of the gradient. To stabilize the routine in the case of a very small effect of a change in the parameter, you need to provide a minimum value for the gradient.
 
 The implemented optimization algorithms vary with the program's version. If you request the Python version of the program, you can choose from the ``scipy`` implementations of the BFGS and POWELL algorithm. Their implementation details are available `here <http://docs.scipy.org/doc/scipy-0.17.0/reference/generated/scipy.optimize.minimize.html>`_. For Fortran, we implemented the BFGS algorithm as well and the NEWUOA. For details about the algorithms, please see the section on implementation. Note that only the optimizer used for an estimation needs to be fully specified.
 
@@ -210,7 +208,7 @@ rhobeg      float       starting value for size of trust region
 rhoend      float       minimum value of size for trust region
 =======     ======      ==========================
 
-If you perform an estimation using the NEWUOA algorithm, the maximum number of function evaluations is determined by the minimum of the two flags specified in this section and the ESTIMATION block.
+If you perform an estimation using the NEWUOA algorithm, the maximum number of function evaluations is determined by the minimum of the two flags specified in this section and the *ESTIMATION* block.
 
 Examples
 --------

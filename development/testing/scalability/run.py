@@ -9,7 +9,6 @@ from auxiliary_shared import send_notification
 from auxiliary_shared import compile_package
 from auxiliary_scalability import run
 from auxiliary_shared import cleanup
-from config import SPECS
 
 
 def check_scalability(args, GRID_SLAVES, maxfun):
@@ -35,8 +34,7 @@ def check_scalability(args, GRID_SLAVES, maxfun):
     if args.is_compile:
         compile_package()
 
-    for spec in SPECS:
-        run(spec_dict, spec + '.ini', GRID_SLAVES)
+    run(spec_dict, 'kw_data_one.ini', GRID_SLAVES)
 
     aggregate_information('scalability')
     send_notification('scalability')
