@@ -1,7 +1,7 @@
 Reliability
 ===========
 
-We document the results of two straightforward Monte Carlo exercises to illustrate the reliability of the ``respy`` package. We use the first parameterization from Keane (1994) and simulate a sample of 1,000 agents. Then we run two estimations with alternative starting values. We use the root-mean squared error (RMSE) of the simulated choice probabilities to assess the overall reliability of our estimation results. We use the NEWUOA algorithm with its default tuning parameters and allow for a maximum of 3,000 evaluations of the criterion function.
+We document the results of two straightforward Monte Carlo exercises to illustrate the reliability of the ``respy`` package. We use the first parameterization from Keane (1994) and simulate a sample of 1,000 agents. Then we run two estimations with alternative starting values. We use the root-mean squared error (RMSE) of the simulated choice probabilities to assess the estimator's overall reliability. We use the NEWUOA algorithm with its default tuning parameters and allow for a maximum of 3,000 evaluations of the criterion function.
 
 ... starting at true values
 ---------------------------

@@ -19,7 +19,7 @@ delta        float      discount factor
 
 .. Warning::
 
-    There are two small differences compared to the original paper. First, all coefficients enter the return function with a positive sign, while the squared terms enter with a minus in the original paper. Second, the order of covariates is fixed across the two occupations. In the original paper, own experience always comes before other experience.
+    There are two small differences compared to the Keane (1994). First, all coefficients enter the return function with a positive sign, while the squared terms enter with a minus in the original paper. Second, the order of covariates is fixed across the two occupations. In the original paper, own experience always comes before other experience.
 
 **OCCUPATION A**
 
@@ -61,7 +61,7 @@ start    int        initial level of schooling
 
 .. Warning::
 
-    Again, there is a small difference between the setup in the original paper. There is no automatic change in sign for the tuition and adjustment costs. Thus, a \$1,000 tuition cost must be specified as -1000.
+    Again, there is a small difference between this setup and Keane (1994). There is no automatic change in sign for the tuition and adjustment costs. Thus, a \$1,000 tuition cost must be specified as -1000.
 
 **HOME**
 

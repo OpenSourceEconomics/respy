@@ -45,4 +45,9 @@ if __name__ == '__main__':
     # the number of states per period. Then all there is left to do is to plot
     # the results in pretty way.
     num_states = respy.simulate(respy_obj).get_attr('states_number_period')
-    plot_dimension_state_space(num_states)
+
+    num_states_total = np.tile(np.nan, 40)
+    for i in range(len(num_states)):
+        num_states_total[i] = sum(num_states[:(i + 1)])
+
+    plot_dimension_state_space(num_states_total)

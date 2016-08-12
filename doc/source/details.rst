@@ -6,7 +6,11 @@ Additional Details
 Output Files
 ------------
 
-Depending on the user's request, the ``respy`` package creates several output files. Note that there is a difference between the estimation parameters in the files below and the model specification. The difference is in the parameters for the covariance matrix. During the estimation we iterate on a flattened version of the upper-triangular Cholesky decomposition. This ensures that the requirements for a valid covariance matrix, e.g. positive semidefiniteness and strictly positive variances, are always during an optimization.
+Depending on the user's request, the ``respy`` package creates several output files.
+
+.. Warning::
+
+    There is a slight difference between the estimation parameters in the files below and the model specification. The difference is in the parameters for the covariance matrix. During the estimation we iterate on a flattened version of the upper-triangular Cholesky decomposition. This ensures that the requirements for a valid covariance matrix, e.g. positive semidefiniteness and strictly positive variances, are always met as the optimizer appraises alternative model parameterizations.
 
 Simulation
 """"""""""
