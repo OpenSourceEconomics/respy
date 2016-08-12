@@ -1,7 +1,7 @@
 Software Engineering
 ====================
 
-We now briefly discuss our software engineering practices that help us to ensure the transparency, reliability, and extensibility of the ``respy`` package.
+We now briefly discuss our software engineering practices that help us to ensure the transparency, reliability, scalability, and extensibility of the ``respy`` package.
 
 Development Infrastructure
 --------------------------
@@ -27,11 +27,11 @@ We use `pytest <http://docs.pytest.org>`_ as our test runner. We broadly group o
 
 * **regression testing**
 
-    We maintain a set of 1,000 fixed model parameterizations and store their estimation results. This allows to ensure that a simple refactoring of the code or the addition of new features does not have any unintended consequences on the existing capabilities of the package.
+    We retain a set of 1,000 fixed model parameterizations and store their estimation results. This allows to ensure that a simple refactoring of the code or the addition of new features does not have any unintended consequences on the existing capabilities of the package.
 
 * **scalability testing**
 
-    As we maintain a scalar and parallel Fortran version of the package, we regularly test the scalability of our code against the linear benchmark.
+    We maintain a scalar and parallel Fortran implementation of the package, we regularly test the scalability of our code against the linear benchmark.
 
 * **reliability testing**
 
@@ -39,7 +39,7 @@ We use `pytest <http://docs.pytest.org>`_ as our test runner. We broadly group o
 
 * **release testing**
 
-    New release candidates are thoroughly tested against the previous release. In most cases, the results for at least as subset of model specifications and estimation requests should be identical.
+    We thoroughly test new release candidates against previous releases. In most cases, the results for at least as subset of model specifications and estimation requests should be identical.
 
 Our `tests <https://github.com/restudToolbox/package/tree/master/respy/tests>`_ and the `testing infrastructure <https://github.com/restudToolbox/package/tree/master/development/testing>`_ are available online. We run a test battery nightly on our development server, see `here <https://github.com/restudToolbox/package/blob/master/example/ec2-respy.testing.log>`_  for an example output.
 

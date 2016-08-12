@@ -167,7 +167,7 @@ flag        bool        apply scaling to parameters
 minimum     float       minimum value for gradient approximation
 =======     ======      ==========================
 
-The implemented optimization algorithms vary with the program's version. If you request the Python version of the program, you can choose from the ``scipy`` implementations of the BFGS  (Norcedal, 2006) and POWELL (Powell, 1964) algorithm. Their implementation details are available `here <http://docs.scipy.org/doc/scipy-0.17.0/reference/generated/scipy.optimize.minimize.html>`_. For Fortran, we implemented the BFGS algorithm as well and the NEWUOA (Powell, 2004).
+The implemented optimization algorithms vary with the program's version. If you request the Python version of the program, you can choose from the ``scipy`` implementations of the BFGS  (Norcedal, 2006) and POWELL (Powell, 1964) algorithm. Their implementation details are available `here <http://docs.scipy.org/doc/scipy-0.17.0/reference/generated/scipy.optimize.minimize.html>`_. For Fortran, we implemented the BFGS and NEWUOA (Powell, 2004) algorithms.
 
 **SCIPY-BFGS**
 
