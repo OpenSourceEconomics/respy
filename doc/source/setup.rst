@@ -69,11 +69,11 @@ with :math:`V_k(S(t),t)` as the alternative-specific value function. :math:`V_k(
 
 .. math::
 
-    V_k(S(t),t) = \begin{cases} R_k(S(t)) + \delta E\left[V(S(t + 1), t + 1) \mid S(t), d_k(t) = 1\right] &\qquad\mbox{if } t < T
-
+    \begin{align}
+    V_k(S(t),t) = \begin{cases} R_k(S(t)) + \delta E\left[V(S(t + 1), t + 1) \mid S(t), d_k(t) = 1\right] &\qquad\mbox{if } t < T \\
     R_k(S(t)) &\qquad\mbox{if } t = T.
-
     \end{cases}
+    \end{align}
 
 Assuming continued optimal behavior, the expected future value of state :math:`S(t + 1)` for all :math:`K` alternatives given today's state :math:`S(t)` and choice :math:`d_k(t) = 1`, :math:`E\max(S(t + 1))` for short, can be calculated.
 
