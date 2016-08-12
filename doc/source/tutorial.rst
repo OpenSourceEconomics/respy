@@ -1,12 +1,12 @@
 Tutorial
 ========
 
-Let us now illustrate the basic capabilities of the ``respy`` package. We start with the model specification and then turn to some example use cases.
+We now illustrate the basic capabilities of the ``respy`` package. We start with the model specification and then turn to some example use cases.
 
 Model Specification
 -------------------
 
-The model is specified in an initialization file. For an example, check out the first parameterization analyzed by Keane (1994) `online <https://github.com/restudToolbox/package/blob/master/respy/tests/resources/kw_data_one.ini>`_. Let us discuss each of its elements in more detail.
+The model is specified in an initialization file. For an example, check out the first parameterization analyzed by Keane (1994) `here <https://github.com/restudToolbox/package/blob/master/respy/tests/resources/kw_data_one.ini>`_. Let us discuss each of its elements in more detail.
 
 **BASICS**
 
@@ -17,7 +17,9 @@ periods      int        number of periods
 delta        float      discount factor
 =======     ======      ==================
 
-We now turn to the specification of the reward functions for the two alternative occupations. There are two small differences compared to the original paper. First, all coefficients enter the return function with a positive sign, while the squared terms enter with a minus in the original paper. Second, the order of covariates is fixed across the two occupations. In the original paper, own experience always comes before other experience.
+.. Warning::
+
+    There are two small differences compared to the original paper. First, all coefficients enter the return function with a positive sign, while the squared terms enter with a minus in the original paper. Second, the order of covariates is fixed across the two occupations. In the original paper, own experience always comes before other experience.
 
 **OCCUPATION A**
 
@@ -57,7 +59,9 @@ max      int        maximum level of schooling
 start    int        initial level of schooling
 ======= ======    ==========================
 
-Again, there is a small difference between the setup in the original paper. There is no automatic change in sign for the tuition and adjustment costs. Thus, a \$1,000 tuition cost must be specified as -1000.
+.. Warning::
+
+    Again, there is a small difference between the setup in the original paper. There is no automatic change in sign for the tuition and adjustment costs. Thus, a \$1,000 tuition cost must be specified as -1000.
 
 **HOME**
 
@@ -89,9 +93,9 @@ coeff    float      :math:`\sigma_{4}`
 =======     ======      ==========================
 Key         Value       Interpretation
 =======     ======      ==========================
-draws       int         number of draws for :math:`E\max` approximation
+draws       int         number of draws for :math:`E\max`
 store       bool        persistent storage of results
-seed        int         random seed for the :math:`E\max` approximation
+seed        int         random seed for :math:`E\max`
 =======     ======      ==========================
 
 **SIMULATION**
@@ -110,11 +114,11 @@ seed        int         random seed for agent experience
 Key             Value       Interpretation
 ==========      ======      ==========================
 file            str         file to read observed sample
-tau             float       scale parameter for smoothed probabilities
+tau             float       scale parameter for function smoothing
 agents          int         number of agents to read from sample
-draws           int         number of draws for approximation of choice probabilities
+draws           int         number of draws for choice probabilities
 maxfun          int         maximum number of function evaluations
-seed            int         random seed for choice probability approximation
+seed            int         random seed for choice probability
 optimizer       str         optimizer to use
 ==========      ======      ==========================
 
@@ -123,18 +127,16 @@ optimizer       str         optimizer to use
 =======     ======      ==========================
 Key         Value       Interpretation
 =======     ======      ==========================
-debug       bool        flag to use debug mode
+debug       bool        debug mode
 version     str         program version
 =======     ======      ==========================
-
-In general, two versions of the program are available. Either your can request the baseline Python implementation or Fortran for better performance.
 
 **PARALLELISM**
 
 =======     ======      ==========================
 Key         Value       Interpretation
 =======     ======      ==========================
-flag        bool        flag to use parallelism
+flag        bool        parallel executable
 procs       int         number of processors
 =======     ======      ==========================
 
@@ -156,8 +158,6 @@ version     str         approximation scheme
 eps         float       step size
 =======     ======      ==========================
 
-Whenever numerical derivatives are required, then the details are specified here. Currently, only forward finite-differences are available.
-
 **SCALING**
 
 =======     ======      ==========================
@@ -167,7 +167,7 @@ flag        bool        apply scaling to parameters
 minimum     float       minimum value for gradient approximation
 =======     ======      ==========================
 
-The implemented optimization algorithms vary with the program's version. If you request the Python version of the program, you can choose from the ``scipy`` implementations of the BFGS and POWELL algorithm. Their implementation details are available `here <http://docs.scipy.org/doc/scipy-0.17.0/reference/generated/scipy.optimize.minimize.html>`_. For Fortran, we implemented the BFGS algorithm as well and the NEWUOA. For details about the algorithms, please see the section on implementation. Note that only the optimizer used for an estimation needs to be fully specified.
+The implemented optimization algorithms vary with the program's version. If you request the Python version of the program, you can choose from the ``scipy`` implementations of the BFGS  (Norcedal, 2006) and POWELL (Powell, 1964) algorithm. Their implementation details are available `here <http://docs.scipy.org/doc/scipy-0.17.0/reference/generated/scipy.optimize.minimize.html>`_. For Fortran, we implemented the BFGS algorithm as well and the NEWUOA (Powell, 2004).
 
 **SCIPY-BFGS**
 
@@ -208,35 +208,34 @@ rhobeg      float       starting value for size of trust region
 rhoend      float       minimum value of size for trust region
 =======     ======      ==========================
 
-If you perform an estimation using the NEWUOA algorithm, the maximum number of function evaluations is determined by the minimum of the two flags specified in this section and the *ESTIMATION* block.
-
 Examples
 --------
 
-Let us explore the basic capabilities of the ``respy`` package with a couple of examples. The material is also available `online <https://github.com/restudToolbox/package/tree/master/example>`_.
+Let us explore the basic capabilities of the ``respy`` package with a couple of examples. All the material is available `online <https://github.com/restudToolbox/package/tree/master/example>`_.
 
 **Simulation and Estimation**
 
-We always initialize an instance of the ``RespyCls`` by passing in the path to the initialization file first.
+We always first initialize an instance of the ``RespyCls`` by passing in the path to the initialization file.
 ::
 
     import respy
 
     respy_obj = respy.RespyCls('example.ini')
 
-Now we can simulate a sample from the specified model::
+Now we can simulate a sample from the specified model
+::
 
     respy.simulate(respy_obj)
 
-During the simulation, several files will appear in the current working directory. ``sol.respy.log`` allows to monitor the progress of the solution algorithm, while the actual simulation can be followed in  ``sim.respy.log``. The names of the following files depend on the specified filename in the *SIMULATION* section of the model initialization file, where we specified ``data.respy.dat``. The simulated dataset with the agent choices and state experiences is stored in ``data.respy.dat`` and ``data.respy.info`` provides some basic descriptives of the simulated dataset. The our section on :ref:`Additional Details <additional-details>` for more information regarding the output files.
+During the simulation, several files will appear in the current working directory. ``sol.respy.log`` allows to monitor the progress of the solution algorithm, while ``sim.respy.log`` records the progress of the simulation. The simulated dataset with the agents' choices and state experiences is stored in ``data.respy.dat``, ``data.respy.info`` provides some basic descriptives about the simulated dataset. See our section on :ref:`Additional Details <additional-details>` for more information regarding the output files.
 
-Now that we have some observed data, we can start an estimation. Here we are using the simulated data for the estimation. However, you can of course also use other data sources. Just make sure they follow the layout of the simulated sample. The coefficient values in the initialization file serve as the starting values::
+Now that we simulated some data, we can start an estimation. Here we are using the simulated data for the estimation. However, you can of course also use other data sources. Just make sure they follow the layout of the simulated sample. The coefficient values in the initialization file serve as the starting values::
 
     x, crit_val = respy.estimate(respy_obj)
 
-This directly returns the value of the coefficients at the final step of the optimizer as well as the value of the criterion function. However, some additional files appear in the meantime. Monitoring the estimation is best done using ``est.respy.info`` and more details are available in ``est.respy.log``.
+This directly returns the value of the coefficients at the final step of the optimizer as well as the value of the criterion function. However, some additional files appear in the meantime. Monitoring the estimation is best done using ``est.respy.info`` and more details about each evaluation of the criterion function are available in ``est.respy.log``.
 
-We can now simulate a sample using the estimated parameters by updating the instance of the ``RespyCls`` with the parameters returned from the estimation routine.
+We can now simulate a sample using the estimated parameters by updating the instance of the ``RespyCls``.
 ::
     respy_obj.update_model_paras(x)
 
@@ -244,7 +243,7 @@ We can now simulate a sample using the estimated parameters by updating the inst
 
 **Recomputing Keane (1994)**
 
-Just using the capabilities outlined so far, it is straightforward to compute some of the key results in the original paper with a simple script::
+Just using the capabilities outlined so far, it is straightforward to recompute some of the key results in the original paper with a simple script::
 
     #!/usr/bin/env python
     """ This module recomputes some of the key results of Keane (1994).

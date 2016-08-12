@@ -1,7 +1,7 @@
 Numerical Methods
 -----------------
 
-The ``respy`` package contains several numerical components, we discuss each in turn.
+The ``respy`` package contains several numerical components. We discuss each in turn.
 
 Differentiation
 """""""""""""""
@@ -11,21 +11,20 @@ Derivatives are approximated by forward finite differences and used by derivativ
 Integration
 """""""""""
 
-Integrals are approximated by Monte Carlo integration and occur in two places.
+Integrals are approximated by Monte Carlo integration and occur in two different places.
 
-* The solution of the model requires the evaluation of the :math:`E\max`. This integral is approximated using the number of random draws specified in the *SOLUTION* section of the initialization file. The same random draws are used for each of these integrals.
+* The solution of the model requires the evaluation of :math:`E\max`. This integral is approximated using the number of random draws specified in the *SOLUTION* section of the initialization file. The same random draws are used for each of these integrals.
 
-* The estimation of the model requires the simulation of the choice probabilities to construct the sample likelihood. This integral is approximated using the number of random draws specified in the *ESTIMATION* section of the initialization file. The same random draws are used for each of these integrals. same random draws are used for each of these integrals.
+* The estimation of the model requires the simulation of the choice probabilities to evaluate the sample likelihood. This integral is approximated using the number of random draws specified in the *ESTIMATION* section of the initialization file. The same random draws are used for each of these integrals.
 
 Optimization
 """"""""""""
 
 The estimation of the model involves the minimization of the simulated negative log-likelihood of the sample. The available optimizers depend on the version of the program. If you use the Python implementation, then the Powell (Powell, 1964) and BFGS (Norcedal, 2006) algorithms are available through their ``scipy`` implementations. For the Fortran  implementation, we provide the BFGS and NEWUOA (Powell, 2004) algorithms. The algorithm can be selected in the *ESTIMATION* section of the initialization file.
 
-Preconditioning
-"""""""""""""""
+* **Preconditioning**
 
-Some optimization algorithms require a similar scale of the variables as judged by their impact on the criterion function. We implemented a simple diagonal scale-based preconditioner based on the gradient. To stabilize the routine, the user needs to specify a minimum value for the derivative approximation. The details are governed by the *SCALING* section of the initialization file.
+    We implemented a diagonal scale-based preconditioner based on the gradient. To stabilize the routine, the user needs to specify a minimum value for the derivative approximation. The details are governed by the *SCALING* section of the initialization file.
 
 Function Approximation
 """"""""""""""""""""""
@@ -38,14 +37,14 @@ We follow Keane (1994) and allow to alleviate the computational burden by calcul
     \sum^4_{j = 1} \pi_{2j} \left(\max E - \bar{V}_j\right)^{\tfrac{1}{2}}
     \end{align}
 
-:math:`\bar{V}_j` is shorthand for the expected value of the alternative-specific value function and :math:`\max E = \max_k\{\bar{V}_j\}` is its maximum among the choices available to the agent. The :math:`\pi`'s are time-varying as they are estimated by ordinary least squares each period. The subset of state points used to fit the interpolating function is chosen at random for each period. The number of interpolation points is selected in the *INTERPOLATION* section of the initialization file. For more details on this interpolation scheme and its effect on estimation performance see the analysis in Eisenhauer (2016).
+:math:`\bar{V}_j` is shorthand for the expected value of the alternative-specific value function and :math:`\max E = \max_k\{\bar{V}_j\}` is its maximum among the choices available to the agent. The :math:`\pi`'s are time-varying as they are estimated by ordinary least squares each period. The subset of interpolation points for the interpolating function is chosen at random for each period. The number of interpolation points remains constant across all periods. The number of interpolation points is selected in the *INTERPOLATION* section of the initialization file.
 
 Function Smoothing
 """"""""""""""""""
 
-We simulate the agents' choice probabilities to evaluate the negative log-likelihood of the sample. With only a finite number of draws, there is always the risk of simulating zero probability for an agent's observed decision. So we implement the logit-smoothed accept-reject simulator as suggested by McFadden (1989). The scale parameter :math:`\lambda` is set in the *ESTIMATION* section of the initialization file.
+We simulate the agents' choice probabilities to evaluate the negative log-likelihood of the sample. With only a finite number of draws, there is always the risk of simulating a zero probability for an agent's observed decision. So we implement the logit-smoothed accept-reject simulator as suggested by McFadden (1989). The scale parameter :math:`\lambda` is set in the *ESTIMATION* section of the initialization file.
 
 Miscellaneous
 """""""""""""
 
-All numerical linear algebra is done with the `LAPACK <http://www.netlib.org/lapack>`_ library. The pseudorandom number generation differs between the Python and Fortran implementations. While they are generated by the Mersenne Twister (Matsumoto, 1998) in Python, we rely on the George Marsaglia's KISS generator (Marsaglia, 1968) in Fortran.
+We use the `LAPACK <http://www.netlib.org/lapack>`_ library for all numerical algebra. The generation of pseudorandom numbers differs between the Python and Fortran implementations. While they are generated by the Mersenne Twister (Matsumoto, 1998) in Python, we rely on the George Marsaglia's KISS generator (Marsaglia, 1968) in Fortran.

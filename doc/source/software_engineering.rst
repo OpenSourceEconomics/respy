@@ -6,12 +6,12 @@ We now briefly discuss our software engineering practices that help us to ensure
 Development Infrastructure
 --------------------------
 
-We maintain a dedicated development and testing server on the `Amazon Elastic Compute Cloud (EC2) <https://aws.amazon.com/ec2/>`_. We treat our infrastructure as code thus making it versionable, testable, and repeatable. We create our machine images using `Packer <https://www.packer.io/>`_ and `Chef <https://www.chef.io/>`_ and manage our compute resources with `Terraform <https://www.terraform.io/>`_. Our definition files are available `online <https://github.com/restudToolbox/package/tree/master/tools>`_.
+We maintain a dedicated development and testing server on the `Amazon Elastic Compute Cloud <https://aws.amazon.com/ec2/>`_. We treat our infrastructure as code thus making it versionable, testable, and repeatable. We create our machine images using `Packer <https://www.packer.io/>`_ and `Chef <https://www.chef.io/>`_ and manage our compute resources with `Terraform <https://www.terraform.io/>`_. Our definition files are available `here <https://github.com/restudToolbox/package/tree/master/tools>`_.
 
 Program Design
 --------------
 
-We build on the design of the original authors (`codes <https://github.com/restudToolbox/package/tree/master/forensics>`_). We maintain a pure Python implementation with a focus on readability and a scalar and parallel Fortran implementation to address any performance constraints. We keep the structure of the Python and Fortran implementation aligned as much as possible. This includes the naming and interface design of the subroutines and functions for example.
+We build on the design of the original authors (`codes <https://github.com/restudToolbox/package/tree/master/forensics>`_). We maintain a pure Python implementation with a focus on readability and a scalar and parallel Fortran implementation to address any performance constraints. We keep the structure of the Python and Fortran implementation aligned as much as possible. For example, we standardize the naming and interface design of the routines across versions.
 
 Test Battery
 ------------
@@ -21,9 +21,9 @@ Test Battery
 
 We use `pytest <http://docs.pytest.org>`_ as our test runner. We broadly group our tests in four categories:
 
-* **property testing**
+* **property-based testing**
 
-    We create random model parameterizations and estimation requests and test for a valid return of the program. Among many other tests, we estimate the same model specification using the parallel and scalar implementations as both results need to be identical. Also, we maintain a an ``f2py`` interface to ensure that core functions of our Python and Fortran implementation return the same results. Finally, we even upgraded the codes by the original authors and can compare the results of the ``respy`` package with their implementation for a restricted set of estimation requests that are valid for both programs.
+    We create random model parameterizations and estimation requests and test for a valid return of the program. For example, we estimate the same model specification using the parallel and scalar implementations as both results need to be identical. Also, we maintain a an ``f2py`` interface to ensure that core functions of our Python and Fortran implementation return the same results. Finally, we even upgraded the codes by the original authors and can compare the results of the ``respy`` package with their implementation for a restricted set of estimation requests that are valid for both programs.
 
 * **regression testing**
 
@@ -50,7 +50,7 @@ Documentation
    :target: http://respy.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
 
-The documentation is hosted on `Read the Docs <https://readthedocs.org/>`_ and created using `Sphinx <http://www.sphinx-doc.org/>`_.
+The documentation is created using `Sphinx <http://www.sphinx-doc.org/>`_ and hosted on `Read the Docs <https://readthedocs.org/>`_.
 
 Code Review
 -----------
@@ -66,7 +66,7 @@ Code Review
     :target: https://landscape.io/github/restudToolbox/package/master
     :alt: Code Health
 
-We use several automatic code review tools to help us improve the readability and maintainability of our code base. For example, we rely on `Quantified Code <https://www.quantifiedcode.com/app/project/b00436d2ca614437b843c7042dba0c26>`_, `Codacy <https://www.codacy.com/app/eisenhauer/respy/dashboard>`_, and `Landscape <https://landscape.io/github/restudToolbox/package>`_
+We use several automatic code review tools to help us improve the readability and maintainability of our code base. For example, we utilize on `Quantified Code <https://www.quantifiedcode.com/app/project/b00436d2ca614437b843c7042dba0c26>`_, `Codacy <https://www.codacy.com/app/eisenhauer/respy/dashboard>`_, and `Landscape <https://landscape.io/github/restudToolbox/package>`_
 
 Continuous Integration Workflow
 -------------------------------

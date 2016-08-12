@@ -79,7 +79,8 @@ if NOTIFICATION and os.path.exists(os.environ['HOME'] + '/.credentials'):
 
     message = ' A routine test battery just completed on the dedicated RESPY server. Here are the results:\n\n' \
               + test_vault_2_msg + '\n\n' + test_vault_3_msg + '\n\n' \
-              '3) We also ran a ' + str(HOURS) + ' hour run of the testing battery. The results are attached.\n\n' \
+              '3) We also started a ' + str(HOURS) + ' hour run of the testing ' \
+              'battery. The results are attached.\n\n' \
               'Happy Testing, The respy Team'
 
     # Process credentials

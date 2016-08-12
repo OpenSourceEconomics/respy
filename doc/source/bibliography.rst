@@ -1,13 +1,13 @@
 Bibliography
 ============
 
-Bellman, R. (1957). Dynamic Programming. *Princeton University Press*
+Bellman, R. (1957). Dynamic Programming. *Princeton University Press*, Princeton, NJ.
 
-Eisenhauer, P. and Wild, S. M. (2016). Numerical Upgrade to Finite-Horizon Discrete Choice Programming Models. *Unpublished Manuscript*
+Eisenhauer, P. and Wild, S. M. (2016). Numerical Upgrade to Finite-Horizon Discrete Choice Programming Models. *Unpublished Manuscript*.
 
-Eisenhauer, P. (2016). `The Approximate Solution of Finite-Horizon Discrete Choice Dynamic Programming Models: Revisiting Keane & Wolpin (1994) <https://github.com/structRecomputation/manuscript/blob/master/eisenhauer.2016.pdff>`_. *Unpublished Manuscript*
+Eisenhauer, P. (2016). `The Approximate Solution of Finite-Horizon Discrete Choice Dynamic Programming Models: Revisiting Keane & Wolpin (1994) <https://github.com/structRecomputation/manuscript/blob/master/eisenhauer.2016.pdff>`_. *Unpublished Manuscript*.
 
-Eisenhauer, P. (2016). Risk and Ambiguity in Dynamic Models of Educational Choice. *Unpublished Manuscript*
+Eisenhauer, P. (2016). Risk and Ambiguity in Dynamic Models of Educational Choice. *Unpublished Manuscript*.
 
 Fisher, R. A. (1922). `On the Mathematical Foundations of Theoretical Statistics <http://rsta.royalsocietypublishing.org/content/roypta/222/594-604/309.full.pdf>`_. *Philosophical Transactions of the Royal Society of London A: Mathematical, Physical and Engineering Sciences*, 222(594-604): 309-368.
 
@@ -23,8 +23,8 @@ Matsumoto, M. and Nishimura, T. (1998). `Mersenne Twister: A 623-dimensionally E
 
 McFadden, D. (1989). `A Method of Simulated Moments for Estimation of Discrete Response Models Without Numerical Integration <https://www.jstor.org/stable/1913621>`_. *Econometrica*, 57(5):995–1026.
 
-Nocedal, J. and Wright, S. J. (2006). Numerical Optimization. *Springer*.
+Nocedal, J. and Wright, S. J. (2006). Numerical Optimization. *Springer*, New York, NY.
 
 Powell, M. J. D. (1964). `An Efficient Method for Finding the Minimum of a Function of Several Variables without Calculating Derivatives <http://comjnl.oxfordjournals.org/content/7/2/155.abstract>`_. *The Computer Journal*, 7(2): 155-162.
 
-Powell, M. J. D. (2006). The NEWUOA Software for Unconstrained Optimization Without Derivatives. In Pillo, Gianni, R. M., editor, Large-Scale Nonlinear Optimization, number 83 in Nonconvex Optimization and Its Applications, pages 255–297. Springer.
+Powell, M. J. D. (2006). The NEWUOA Software for Unconstrained Optimization Without Derivatives. In Pillo, Gianni, R. M., editor, Large-Scale Nonlinear Optimization, number 83 in Nonconvex Optimization and Its Applications, pages 255–297. Springer, New York, NY.
