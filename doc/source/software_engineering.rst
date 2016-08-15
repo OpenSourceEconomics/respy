@@ -39,9 +39,9 @@ We use `pytest <http://docs.pytest.org>`_ as our test runner. We broadly group o
 
 * **release testing**
 
-    We thoroughly test new release candidates against previous releases. In most cases, the results for at least as subset of model specifications and estimation requests should be identical.
+    We thoroughly test new release candidates against previous releases. For minor and micro releases, user requests should yield identical results. For major releases, our goal to ensure that the same is true for at least a subset of requests. If required, we will build supporting code infrastructure.
 
-Our `tests <https://github.com/restudToolbox/package/tree/master/respy/tests>`_ and the `testing infrastructure <https://github.com/restudToolbox/package/tree/master/development/testing>`_ are available online. We run a test battery nightly on our development server, see `here <https://github.com/restudToolbox/package/blob/master/example/ec2-respy.testing.log>`_  for an example output.
+Our `tests <https://github.com/restudToolbox/package/tree/master/respy/tests>`_ and the `testing infrastructure <https://github.com/restudToolbox/package/tree/master/development/testing>`_ are available online. As new features are added and the code matures, we constantly expand our testing harness. We run a test battery nightly on our development server, see `here <https://github.com/restudToolbox/package/blob/master/example/ec2-respy.testing.log>`_  for an example output.
 
 Documentation
 -------------
