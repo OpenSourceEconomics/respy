@@ -27,8 +27,9 @@ Welcome to respy's documentation!
    reliability
    scalability
    software_engineering
+   contributing
    details
-   contact
+   credits
    changes
    bibliography
 
