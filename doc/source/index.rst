@@ -29,7 +29,7 @@ Welcome to respy's documentation!
    software_engineering
    details
    contact
-   changelog
+   changes
    bibliography
 
 .. todo::

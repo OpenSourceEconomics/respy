@@ -6,4 +6,4 @@
 
 Please visit our [online documentation](http://respy.readthedocs.io/) for details.
 
-.. image:: https://img.shields.io/github/license/mashape/apistatus.svg?maxAge=2592000   :target:
+[![license](https://img.shields.io/github/license/mashape/apistatus.svg?maxAge=2592000)]()
