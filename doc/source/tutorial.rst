@@ -19,7 +19,7 @@ delta        float      discount factor
 
 .. Warning::
 
-    There are two small differences compared to the Keane (1994). First, all coefficients enter the return function with a positive sign, while the squared terms enter with a minus in the original paper. Second, the order of covariates is fixed across the two occupations. In the original paper, own experience always comes before other experience.
+    There are two small differences compared to Keane (1994). First, all coefficients enter the return function with a positive sign, while the squared terms enter with a minus in the original paper. Second, the order of covariates is fixed across the two occupations. In the original paper, own experience always comes before other experience.
 
 **OCCUPATION A**
 

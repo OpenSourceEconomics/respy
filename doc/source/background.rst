@@ -7,7 +7,7 @@ Here is some of the recent work:
 
 * Eisenhauer, P. (2016). `The Approximate Solution of Finite-Horizon Discrete Choice Dynamic Programming Models: Revisiting Keane & Wolpin (1994) <https://github.com/structRecomputation/manuscript/blob/master/eisenhauer.2016.pdf>`_. *Unpublished Manuscript*.
 
-    The estimation of finite-horizon discrete choice dynamic programming (DCDP) models is computationally expensive. This limits their realism and impedes verification and validation efforts. Keane & Wolpin (1994) propose an interpolation method that ameliorates the computational burden but introduces approximation error. I describe their approach in detail, successfully recompute their original quality diagnostics, and provide some additional insights that underscore the trade-off between computation time and the accuracy of estimation results.
+    The estimation of finite-horizon discrete choice dynamic programming models is computationally expensive. This limits their realism and impedes verification and validation efforts. Keane & Wolpin (1994) propose an interpolation method that ameliorates the computational burden but introduces approximation error. I describe their approach in detail, successfully recompute their original quality diagnostics, and provide some additional insights that underscore the trade-off between computation time and the accuracy of estimation results.
 
 * Eisenhauer, P. and Wild, S. M. (2016). Numerical Upgrade to Finite-Horizon Discrete Choice Programming Models. *Unpublished Manuscript*.
 
@@ -15,7 +15,7 @@ Here is some of the recent work:
 
 * Eisenhauer, P. (2016). Risk and Ambiguity in Dynamic Models of Educational Choice. *Unpublished Manuscript*.
 
-    I instill a fear of model misspecification into the agents of a dynamic discrete choice model. Agents are ambiguity averse and seek robust decisions for a variety of alternative models. I study the implications for agents’ decisions and the design and impact of alternative policies.
+    I instill a fear of model misspecification into the agents of a finite-horizon discrete choice dynamic programming model. Agents are ambiguity averse and seek robust decisions for a variety of alternative models. I study the implications for agents’ decisions and the design and impact of alternative policies.
 
 We provide the package and its documentation to ensure the recomputability, transparency, and extensibility of this research. We also hope to showcase how software engineering practices can help in achieving these goals.
 

@@ -12,7 +12,7 @@ We depict the timing of events below. At the beginning of period :math:`t` the a
 
 .. image:: images/timing.png
 
-Agents are forward looking. Thus, the do not simply choose the alternative with the highest immediate rewards each period. Instead, their objective at any time :math:`\tau` is to maximize the expected rewards over the remaining time horizon:
+Agents are forward looking. Thus, they do not simply choose the alternative with the highest immediate rewards each period. Instead, their objective at any time :math:`\tau` is to maximize the expected rewards over the remaining time horizon:
 
 .. math::
     \max_{\{d_k(t)\}_{k \in K}} E\left[ \sum_{\tau = t}^T \delta^{\tau - t} \sum_{k\in K}R_k(\tau)d_k(\tau)\Bigg| S(t)\right]
@@ -20,7 +20,7 @@ Agents are forward looking. Thus, the do not simply choose the alternative with 
 The discount factor :math:`0 > \delta > 1` captures the agent's preference for immediate over future rewards. Agents maximize the equation above by choosing the optimal sequence of alternatives
 :math:`\{d_k(t)\}_{k \in K}` for :math:`t = \tau, .., T`.
 
-Within this more general framework, Keane (1994) consider the case where agents risk neutral and each period choose to work in either of two occupations (:math:`k =  1,2`), to attend school (:math:`k = 3`), or to remain at home (:math:`k = 4`). The immediate reward functions are given by:
+Within this more general framework, Keane (1994) consider the case where agents are risk neutral and each period choose to work in either of two occupations (:math:`k =  1,2`), to attend school (:math:`k = 3`), or to remain at home (:math:`k = 4`). The immediate reward functions are given by:
 
 .. math::
 
@@ -32,9 +32,9 @@ Within this more general framework, Keane (1994) consider the case where agents 
 
     R_4(t) &= \gamma_0 + \epsilon_{4t},
 
-where :math:`s_t` is the number of periods of schooling obtained by the beginning of period :math:`t`, :math:`x_{1t}` is the number of periods that the agent worked in occupation one by the beginning of period :math:`t`, :math:`x_{2t}` is the analogously defined level of experience in occupation two, :math:`\alpha_1` and :math:`\alpha_2` are parameter vectors associated with the wage functions, :math:`\beta_0` is the consumption value of schooling, :math:`\beta_1` is the post-secondary tuition cost of schooling, with :math:`I` an indicator function equal to one if the agent has completed high school and zero otherwise, :math:`\beta_2` is an adjustment cost associated with returning to school, :math:`\gamma_0` is the (mean) value of the non-market alternative. The :math:`\epsilon_{kt}`'s are alternative-specific shocks, to occupational productivity, to the consumption value of schooling, and to the value of non-market time. The productivity and taste shocks follow a four-dimensional multivariate normal distribution with mean zero and covariance matrix :math:`\Sigma`. The realizations are independent across time. We collect the parametrization of the reward functions in :math:`\theta = \{\alpha_1, \alpha_2, \beta, \gamma, \Sigma\}`.
+where :math:`s_t` is the number of periods of schooling obtained by the beginning of period :math:`t`, :math:`x_{1t}` is the number of periods that the agent worked in occupation one by the beginning of period :math:`t`, :math:`x_{2t}` is the analogously defined level of experience in occupation two, :math:`\alpha_1` and :math:`\alpha_2` are parameter vectors associated with the wage functions, :math:`\beta_0` is the consumption value of schooling, :math:`\beta_1` is the post-secondary tuition cost of schooling, with :math:`I` an indicator function equal to one if the agent has completed high school and zero otherwise, :math:`\beta_2` is an adjustment cost associated with returning to school, :math:`\gamma_0` is the (mean) value of the non-market alternative. The :math:`\epsilon_{kt}`'s are alternative-specific shocks to occupational productivity, to the consumption value of schooling, and to the value of non-market time. The productivity and taste shocks follow a four-dimensional multivariate normal distribution with mean zero and covariance matrix :math:`\Sigma`. The realizations are independent across time. We collect the parametrization of the reward functions in :math:`\theta = \{\alpha_1, \alpha_2, \beta, \gamma, \Sigma\}`.
 
-Given the structure of the reward functions and the agents objective, the state space at time :math:`t` is
+Given the structure of the reward functions and the agents objective, the state space at time :math:`t` is:
 
 .. math::
 
@@ -57,7 +57,7 @@ where the last equation reflects the fact that the :math:`\epsilon_{kt}`'s are s
 Solution
 --------
 
-From a mathematical perspective, this type of model boils down to a finite-horizon DP problem under uncertainty that can be solved by backward induction. For the discussion, it is useful to do define the value function :math:`V(S(t),t)` as a shorthand for the agents objective function. :math:`V(S(t),t)` depends on the state space at :math:`t` and on :math:`t` itself due to the finiteness of the time horizon and can be written as
+From a mathematical perspective, this type of model boils down to a finite-horizon DP problem under uncertainty that can be solved by backward induction. For the discussion, it is useful to define the value function :math:`V(S(t),t)` as a shorthand for the agents objective function. :math:`V(S(t),t)` depends on the state space at :math:`t` and on :math:`t` itself due to the finiteness of the time horizon and can be written as:
 
 .. math::
 
@@ -75,12 +75,12 @@ with :math:`V_k(S(t),t)` as the alternative-specific value function. :math:`V_k(
     \end{cases}
     \end{align}
 
-Assuming continued optimal behavior, the expected future value of state :math:`S(t + 1)` for all :math:`K` alternatives given today's state :math:`S(t)` and choice :math:`d_k(t) = 1`, :math:`E\max(S(t + 1))` for short, can be calculated.
+Assuming continued optimal behavior, the expected future value of state :math:`S(t + 1)` for all :math:`K` alternatives given today's state :math:`S(t)` and choice :math:`d_k(t) = 1`, :math:`E\max(S(t + 1))` for short, can be calculated:
 
 .. math::
     E\max(S(t + 1)) = E\left[V(S(t + 1), t + 1) \mid S(t), d_k(t) = 1\right].
 
-This requires the evaluation of a :math:`K` - dimensional integral as future rewards are partly uncertain due unknown realization of the shocks:
+This requires the evaluation of a :math:`K` - dimensional integral as future rewards are partly uncertain due to the unknown realization of the shocks:
 
 .. math::
 
@@ -110,7 +110,7 @@ The next figure shows that the returns to schooling are larger in Occupation B. 
     :align: center
     :height: 500px
 
-Simulating a sample of 1,000 agents from the model allows us to study how these features interact in determining agent decisions over their life cycle. Note that all agents start out identically, different choices are simply the cumulative effects of different shocks. Initially, 50% of agents increase their level of schooling but the share of agents in enrolled in school declines sharply over time. The share working in Occupation A hovers around 40% at first, but then declines to 21%. Occupation B continuously gains in popularity, initially only 11% work in Occupation B but its share increases to about 77%. Around 1.5% stay at home each period. We visualize this choice pattern in detail below.
+Simulating a sample of 1,000 agents from the model allows us to study how these features interact in determining agent decisions over their life cycle. Note that all agents start out identically, different choices are simply the cumulative effects of different shocks. Initially, 50% of agents increase their level of schooling but the share of agents enrolled in school declines sharply over time. The share working in Occupation A hovers around 40% at first, but then declines to 21%. Occupation B continuously gains in popularity, initially only 11% work in Occupation B but its share increases to about 77%. Around 1.5% stay at home each period. We visualize this choice pattern in detail below.
 
 .. image:: images/choice_patterns.png
     :width: 500px
