@@ -31,4 +31,5 @@ Nocedal, J. and Wright, S. J. (2006). Numerical Optimization. *Springer*, New Yo
 
 Powell, M. J. D. (1964). `An Efficient Method for Finding the Minimum of a Function of Several Variables without Calculating Derivatives <http://comjnl.oxfordjournals.org/content/7/2/155.abstract>`_. *The Computer Journal*, 7(2): 155-162.
 
+
 Powell, M. J. D. (2006). The NEWUOA Software for Unconstrained Optimization Without Derivatives. In Pillo, Gianni, R. M., editor, Large-Scale Nonlinear Optimization, number 83 in Nonconvex Optimization and Its Applications, pages 255–297. Springer, New York, NY.
