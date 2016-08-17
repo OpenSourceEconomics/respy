@@ -24,10 +24,10 @@ This file contains the agent choices and state experiences. The simulated datase
     ======      ========================
     1           agent identifier
     2           time period
-    3           choice (1 = occupation A, 2 = occupation B, 3 = education, 4 = home)
+    3           choice (1 = Occupation A, 2 = Occupation B, 3 = education, 4 = home)
     4           earnings (missing value if not working)
-    5           work experience in occupation A
-    6           work experience in occupation B
+    5           work experience in Occupation A
+    6           work experience in Occupation B
     7           years of schooling
     8           lagged schooling
     ======      ========================
@@ -42,11 +42,11 @@ This file allows to monitor the progress of the simulation. It provides informat
 
 * **sol.respy.log**
 
-This file allow to monitor the progress of the backward induction procedure. If the interpolation method is used during the backward induction procedure, the coefficient estimates and goodness of fit statistics are provided.
+This file records the progress of the backward induction procedure. If the interpolation method is used during the backward induction procedure, the coefficient estimates and goodness of fit statistics are provided.
 
 * **solution.respy.pkl**
 
-This file is only created if persistent storage of results is requested in the *SOLUTION* section of the initialization file. It is an instance of the ``RespyCls`` and contains detailed information about the solution of model such as the :math:`E\max` of each state for example. For details, please consult the `source code <https://github.com/restudToolbox/package/blob/master/respy/clsRespy.py>`_ directly.
+This file is an instance of the ``RespyCls`` and contains detailed information about the solution of model such as the :math:`E\max` of each state for example. For details, please consult the `source code <https://github.com/restudToolbox/package/blob/master/respy/clsRespy.py>`_ directly. It is created if persistent storage of results is requested in the *SOLUTION* section of the initialization file.
 
 Estimation
 """"""""""
@@ -57,7 +57,7 @@ This file allows to monitor the estimation as it progresses. It provides informa
 
 * **est.respy.log**
 
-This file documents details about the each of the evaluations of the criterion function. Most importantly, once estimation is completed, it provides the return message from the optimizer.
+This file documents details about each of the evaluations of the criterion function. Most importantly, once an estimation is completed, it provides the return message from the optimizer.
 
 API Reference
 -------------

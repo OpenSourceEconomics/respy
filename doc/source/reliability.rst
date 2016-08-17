@@ -17,8 +17,7 @@ Initially we start at the true parameter values. While taking a total of 1,491 s
 ... starting with myopic agents
 -------------------------------
 
-Again we start from the true parameters of the reward functions, but now estimate a static (:math:`\delta = 0`) model first. We then use the estimation
-results as starting values for the subsequent estimation of a correctly specified dynamic model (:math:`\delta = 0.95`). For the static estimation, we start with a RMSE of about 0.44 which, after 950 steps, is cut to 0.25. Most of this discrepancy is driven by the relatively low school enrollments as there is no investment motive for the myopic agents.
+Again we start from the true parameters of the reward functions, but now estimate a static (:math:`\delta = 0`) model first. We then use the estimation results as starting values for the subsequent estimation of a correctly specified dynamic model (:math:`\delta = 0.95`). For the static estimation, we start with a RMSE of about 0.44 which, after 950 steps, is cut to 0.25. Most of this discrepancy is driven by the relatively low school enrollments as there is no investment motive for the myopic agents.
 
     =====   ====    =====   ===========
     Start   Stop    Steps   Evaluations

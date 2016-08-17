@@ -144,11 +144,11 @@ def _get_future_payoffs(edu_max, edu_start, mapping_state_idx, period,
     # Future utilities
     payoffs_future = np.tile(np.nan, 4)
 
-    # Working in occupation A
+    # Working in Occupation A
     future_idx = mapping_state_idx[period + 1, exp_a + 1, exp_b, edu, 0]
     payoffs_future[0] = periods_emax[period + 1, future_idx]
 
-    # Working in occupation B
+    # Working in Occupation B
     future_idx = mapping_state_idx[period + 1, exp_a, exp_b + 1, edu, 0]
     payoffs_future[1] = periods_emax[period + 1, future_idx]
 
@@ -671,5 +671,3 @@ def get_est_info():
 
     # Finishing
     return rslt
-
-

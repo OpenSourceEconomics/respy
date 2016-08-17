@@ -23,7 +23,7 @@ We use `pytest <http://docs.pytest.org>`_ as our test runner. We broadly group o
 
 * **property-based testing**
 
-    We create random model parameterizations and estimation requests and test for a valid return of the program. For example, we estimate the same model specification using the parallel and scalar implementations as both results need to be identical. Also, we maintain a an ``f2py`` interface to ensure that core functions of our Python and Fortran implementation return the same results. Finally, we even upgraded the codes by the original authors and can compare the results of the ``respy`` package with their implementation for a restricted set of estimation requests that are valid for both programs.
+    We create random model parameterizations and estimation requests and test for a valid return of the program. For example, we estimate the same model specification using the parallel and scalar implementations as both results need to be identical. Also, we maintain a an ``f2py`` interface to ensure that core functions of our Python and Fortran implementation return the same results. Finally, we also upgraded the codes by the original authors and can compare the results of the ``respy`` package with their implementation for a restricted set of estimation requests that are valid for both programs.
 
 * **regression testing**
 
@@ -39,7 +39,7 @@ We use `pytest <http://docs.pytest.org>`_ as our test runner. We broadly group o
 
 * **release testing**
 
-    We thoroughly test new release candidates against previous releases. For minor and micro releases, user requests should yield identical results. For major releases, our goal to ensure that the same is true for at least a subset of requests. If required, we will build supporting code infrastructure.
+    We thoroughly test new release candidates against previous releases. For minor and micro releases, user requests should yield identical results. For major releases, our goal is to ensure that the same is true for at least a subset of requests. If required, we will build supporting code infrastructure.
 
 Our `tests <https://github.com/restudToolbox/package/tree/master/respy/tests>`_ and the `testing infrastructure <https://github.com/restudToolbox/package/tree/master/development/testing>`_ are available online. As new features are added and the code matures, we constantly expand our testing harness. We run a test battery nightly on our development server, see `here <https://github.com/restudToolbox/package/blob/master/example/ec2-respy.testing.log>`_  for an example output.
 
@@ -66,7 +66,7 @@ Code Review
     :target: https://landscape.io/github/restudToolbox/package/master
     :alt: Code Health
 
-We use several automatic code review tools to help us improve the readability and maintainability of our code base. For example, we utilize on `Quantified Code <https://www.quantifiedcode.com/app/project/b00436d2ca614437b843c7042dba0c26>`_, `Codacy <https://www.codacy.com/app/eisenhauer/respy/dashboard>`_, and `Landscape <https://landscape.io/github/restudToolbox/package>`_
+We use several automatic code review tools to help us improve the readability and maintainability of our code base. For example, we work with `Quantified Code <https://www.quantifiedcode.com/app/project/b00436d2ca614437b843c7042dba0c26>`_, `Codacy <https://www.codacy.com/app/eisenhauer/respy/dashboard>`_, and `Landscape <https://landscape.io/github/restudToolbox/package>`_
 
 Continuous Integration Workflow
 -------------------------------

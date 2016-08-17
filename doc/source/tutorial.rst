@@ -28,10 +28,10 @@ Key         Value     Interpretation
 =======     ======    ==============
 coeff       float     intercept
 coeff       float     return to schooling
-coeff       float     experience occupation A, linear
-coeff       float     experience occupation A, squared
-coeff       float     experience occupation B, linear
-coeff       float     experience occupation B, squared
+coeff       float     experience Occupation A, linear
+coeff       float     experience Occupation A, squared
+coeff       float     experience Occupation B, linear
+coeff       float     experience Occupation B, squared
 =======     ======    ==============
 
 **OCCUPATION B**
@@ -41,10 +41,10 @@ Key         Value     Interpretation
 =======     ======    ================
 coeff       float     intercept
 coeff       float     return to schooling
-coeff       float     experience occupation A, linear
-coeff       float     experience occupation A, squared
-coeff       float     experience occupation B, linear
-coeff       float     experience occupation B, squared
+coeff       float     experience Occupation A, linear
+coeff       float     experience Occupation A, squared
+coeff       float     experience Occupation B, linear
+coeff       float     experience Occupation B, squared
 =======     ======    ================
 
 **EDUCATION**
@@ -222,14 +222,15 @@ We always first initialize an instance of the ``RespyCls`` by passing in the pat
 
     respy_obj = respy.RespyCls('example.ini')
 
-Now we can simulate a sample from the specified model
+Now we can simulate a sample from the specified model.
 ::
 
     respy.simulate(respy_obj)
 
 During the simulation, several files will appear in the current working directory. ``sol.respy.log`` allows to monitor the progress of the solution algorithm, while ``sim.respy.log`` records the progress of the simulation. The simulated dataset with the agents' choices and state experiences is stored in ``data.respy.dat``, ``data.respy.info`` provides some basic descriptives about the simulated dataset. See our section on :ref:`Additional Details <additional-details>` for more information regarding the output files.
 
-Now that we simulated some data, we can start an estimation. Here we are using the simulated data for the estimation. However, you can of course also use other data sources. Just make sure they follow the layout of the simulated sample. The coefficient values in the initialization file serve as the starting values::
+Now that we simulated some data, we can start an estimation. Here we are using the simulated data for the estimation. However, you can of course also use other data sources. Just make sure they follow the layout of the simulated sample. The coefficient values in the initialization file serve as the starting values.
+::
 
     x, crit_val = respy.estimate(respy_obj)
 
@@ -243,7 +244,8 @@ We can now simulate a sample using the estimated parameters by updating the inst
 
 **Recomputing Keane (1994)**
 
-Just using the capabilities outlined so far, it is straightforward to recompute some of the key results in the original paper with a simple script::
+Just using the capabilities outlined so far, it is straightforward to recompute some of the key results in the original paper with a simple script.
+::
 
     #!/usr/bin/env python
     """ This module recomputes some of the key results of Keane (1994).

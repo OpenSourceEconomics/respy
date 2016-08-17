@@ -254,11 +254,11 @@ SUBROUTINE get_future_payoffs(payoffs_future, is_inadmissible, mapping_state_idx
     edu = states_all(period + 1, k + 1, 3)
     edu_lagged = states_all(period + 1, k + 1, 4)
 
-    ! Working in occupation A
+    ! Working in Occupation A
     future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1 + 1, exp_b + 1, edu + 1, 1)
     payoffs_future(1) = periods_emax(period + 1 + 1, future_idx + 1)
 
-    !Working in occupation B
+    !Working in Occupation B
     future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1, exp_b + 1 + 1, edu + 1, 1)
     payoffs_future(2) = periods_emax(period + 1 + 1, future_idx + 1)
 

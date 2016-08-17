@@ -62,10 +62,10 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
         ! Count admissible realizations of state space by period
         k = 0
 
-        ! Loop over all admissible work experiences for occupation A
+        ! Loop over all admissible work experiences for Occupation A
         DO exp_a = 0, num_periods
 
-            ! Loop over all admissible work experience for occupation B
+            ! Loop over all admissible work experience for Occupation B
             DO exp_b = 0, num_periods
 
                 ! Loop over all admissible additional education levels
@@ -203,10 +203,10 @@ SUBROUTINE fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_
             covars(5) = exp_b
             covars(6) = exp_b ** 2
 
-            ! Calculate systematic part of payoff in occupation A
+            ! Calculate systematic part of payoff in Occupation A
             CALL clip_value(periods_payoffs_systematic(period, k, 1), EXP(DOT_PRODUCT(covars, coeffs_a)), zero_dble, HUGE_FLOAT, info)
 
-            ! Calculate systematic part of payoff in occupation B
+            ! Calculate systematic part of payoff in Occupation B
             CALL clip_value(periods_payoffs_systematic(period, k, 2), EXP(DOT_PRODUCT(covars, coeffs_b)), zero_dble, HUGE_FLOAT, info)
 
             ! Calculate systematic part of schooling utility

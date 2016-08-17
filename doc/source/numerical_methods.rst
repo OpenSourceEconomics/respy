@@ -20,7 +20,7 @@ Integrals are approximated by Monte Carlo integration and occur in two different
 Optimization
 """"""""""""
 
-The estimation of the model involves the minimization of the simulated negative log-likelihood of the sample. The available optimizers depend on the version of the program. If you use the Python implementation, then the Powell (Powell, 1964) and BFGS (Norcedal, 2006) algorithms are available through their ``scipy`` implementations. For the Fortran  implementation, we provide the BFGS and NEWUOA (Powell, 2004) algorithms. The algorithm can be selected in the *ESTIMATION* section of the initialization file.
+The estimation of the model involves the minimization of the simulated negative log-likelihood of the sample. The available optimizers depend on the version of the program. If you use the Python implementation, then the Powell (Powell, 1964) and BFGS (Norcedal, 2006) algorithms are available through their ``scipy`` implementations. For the Fortran  implementation, we provide the BFGS and NEWUOA (Powell, 2004) algorithms. The algorithm to be used is specified in the *ESTIMATION* section of the initialization file.
 
 * **Preconditioning**
 

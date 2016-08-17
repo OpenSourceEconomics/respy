@@ -32,10 +32,10 @@ def pyth_create_state_space(num_periods, edu_start, edu_max, min_idx):
         # Count admissible realizations of state space by period
         k = 0
 
-        # Loop over all admissible work experiences for occupation A
+        # Loop over all admissible work experiences for Occupation A
         for exp_a in range(num_periods + 1):
 
-            # Loop over all admissible work experience for occupation B
+            # Loop over all admissible work experience for Occupation B
             for exp_b in range(num_periods + 1):
 
                 # Loop over all admissible additional education levels

@@ -1,7 +1,7 @@
 Scalability
 ===========
 
-The solution and estimation of finite-horizon discrete choice dynamic programming model appears straightforward. However, it entails a considerable computational burden due to the well known curse of dimensionality (Bellman, 1957). The figure below illustrates the  as the total number of states increases exponentially with each period.
+The solution and estimation of finite-horizon discrete choice dynamic programming model appears straightforward. However, it entails a considerable computational burden due to the well known curse of dimensionality (Bellman, 1957). The figure below illustrates how the total number of states increases exponentially with each period.
 
 .. image:: images/state_space.png
     :width: 500px

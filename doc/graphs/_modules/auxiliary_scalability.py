@@ -42,7 +42,7 @@ def plot_scalability(ys, func_lin, grid_slaves):
     formatter = matplotlib.ticker.FuncFormatter(ylabel_formatting)
 
     ax = plt.figure(figsize=(12, 8)).add_subplot(111)
-    ax.plot(grid_slaves, ys, linewidth=5, label='Respy Package',
+    ax.plot(grid_slaves, ys, linewidth=5, label='respy',
             color='red', alpha=0.8)
 
     ax.plot(grid_slaves, func_lin, linewidth=1, linestyle='--',
