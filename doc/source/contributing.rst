@@ -13,7 +13,7 @@ We aim for improvements to ``respy`` in three domains: Economics, Software Engin
 Economics
 ^^^^^^^^^
 
-* add unobserved heterogeneity to the model as in Keane (1996)
+* add unobserved heterogeneity to the model as in Keane and Wolpin (1996)
 * integrate codes from Eisenhauer (2016b) for decision making under ambiguity
 
 Software Engineering
@@ -26,4 +26,4 @@ Numerical Methods
 ^^^^^^^^^^^^^^^^^
 
 * link the package to optimization toolkits such as *TAO* or *HOPSPACK*
-* implement additional integration strategies following Judd (2011)
+* implement additional integration strategies following Skrainka and Judd (2011)

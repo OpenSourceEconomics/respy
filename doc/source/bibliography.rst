@@ -11,7 +11,7 @@ Eisenhauer, P. (2016b). Risk and Ambiguity in Dynamic Models of Educational Choi
 
 Fisher, R. A. (1922). `On the Mathematical Foundations of Theoretical Statistics <http://rsta.royalsocietypublishing.org/content/roypta/222/594-604/309.full.pdf>`_. *Philosophical Transactions of the Royal Society of London A: Mathematical, Physical and Engineering Sciences*, 222(594-604): 309-368.
 
-Benjamin, S. S. and Judd, K. L. (2011). High Performance Quadrature Rules: How Numerical Integration Affects a Popular Model of Product Differentiation. *SSRN Working Paper*.
+Skrainka, B. S. and Judd, K. L. (2011). High Performance Quadrature Rules: How Numerical Integration Affects a Popular Model of Product Differentiation. *SSRN Working Paper*.
 
 Keane, M. P. and  Wolpin, K. I. (1994). `The Solution and Estimation of Discrete Choice Dynamic Programming Models by Simulation and Interpolation: Monte Carlo Evidence <http://www.jstor.org/stable/2109768>`_. *The Review of Economics and Statistics*, 76(4): 648-672.
 

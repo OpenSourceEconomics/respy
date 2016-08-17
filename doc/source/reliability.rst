@@ -1,7 +1,7 @@
 Reliability
 ===========
 
-We document the results of two straightforward Monte Carlo exercises to illustrate the reliability of the ``respy`` package. We use the first parameterization from Keane (1994) and simulate a sample of 1,000 agents. Then we run two estimations with alternative starting values. We use the root-mean squared error (RMSE) of the simulated choice probabilities to assess the estimator's overall reliability. We use the NEWUOA algorithm with its default tuning parameters and allow for a maximum of 3,000 evaluations of the criterion function.
+We document the results of two straightforward Monte Carlo exercises to illustrate the reliability of the ``respy`` package. We use the first parameterization from Keane and Wolpin (1994) and simulate a sample of 1,000 agents. Then we run two estimations with alternative starting values. We use the root-mean squared error (RMSE) of the simulated choice probabilities to assess the estimator's overall reliability. We use the NEWUOA algorithm with its default tuning parameters and allow for a maximum of 3,000 evaluations of the criterion function.
 
 ... starting at true values
 ---------------------------
@@ -35,4 +35,4 @@ We then set up the estimation of the dynamic model. Initially, the RMSE is about
 
 Overall the results are encouraging. However, doubts about the correctness of our implementation always remain. So, if you are struggling with a particularly poor performance in your application, please do not hesitate to let us know so we can help with the investigation.
 
-For more details, see the script `online <https://github.com/restudToolbox/package/blob/master/development/testing/reliability/run.py>`_. The results for all the parameterizations analyzed in Keane (1994) are available `here <https://github.com/restudToolbox/package/blob/master/doc/results/reliability.respy.info>`_.
+For more details, see the script `online <https://github.com/restudToolbox/package/blob/master/development/testing/reliability/run.py>`_. The results for all the parameterizations analyzed in Keane and Wolpin (1994) are available `here <https://github.com/restudToolbox/package/blob/master/doc/results/reliability.respy.info>`_.

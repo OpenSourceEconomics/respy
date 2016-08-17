@@ -23,7 +23,7 @@ We use `pytest <http://docs.pytest.org>`_ as our test runner. We broadly group o
 
 * **property-based testing**
 
-    We create random model parameterizations and estimation requests and test for a valid return of the program. For example, we estimate the same model specification using the parallel and scalar implementations as both results need to be identical. Also, we maintain a an ``f2py`` interface to ensure that core functions of our Python and Fortran implementation return the same results. Finally, we also upgraded the codes by the original authors and can compare the results of the ``respy`` package with their implementation for a restricted set of estimation requests that are valid for both programs.
+    We create random model parameterizations and estimation requests and test for a valid return of the program. For example, we estimate the same model specification using the parallel and scalar implementations as both results need to be identical. Also, we maintain a an ``f2py`` interface to ensure that core functions of our Python and Fortran implementation return the same results. Finally, we also upgraded the codes by Keane and Wolpin (1994) and can compare the results of the ``respy`` package with their implementation for a restricted set of estimation requests that are valid for both programs.
 
 * **regression testing**
 

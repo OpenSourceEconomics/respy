@@ -6,7 +6,7 @@ We now start with the economics motivating the model and then turn to the soluti
 Economics
 ---------
 
-Keane (1994) develop a model in which an agent decides among :math:`K` possible alternatives in each of :math:`T` (finite) discrete periods of time.  Alternatives are defined to be mutually exclusive and :math:`d_k(t) = 1` indicates that alternative :math:`k` is chosen at time :math:`t` and :math:`d_k(t)  = 0` indicates otherwise. Associated with each choice is an immediate reward :math:`R_k(S(t))` that is known to the agent at time :math:`t` but partly unknown from the perspective of periods prior to :math:`t`. All the information known to the agent at time :math:`t` that affects immediate and future rewards is contained in the state space :math:`S(t)`.
+Keane and Wolpin (1994) develop a model in which an agent decides among :math:`K` possible alternatives in each of :math:`T` (finite) discrete periods of time.  Alternatives are defined to be mutually exclusive and :math:`d_k(t) = 1` indicates that alternative :math:`k` is chosen at time :math:`t` and :math:`d_k(t)  = 0` indicates otherwise. Associated with each choice is an immediate reward :math:`R_k(S(t))` that is known to the agent at time :math:`t` but partly unknown from the perspective of periods prior to :math:`t`. All the information known to the agent at time :math:`t` that affects immediate and future rewards is contained in the state space :math:`S(t)`.
 
 We depict the timing of events below. At the beginning of period :math:`t` the agent fully learns about all immediate rewards, chooses one of the alternatives and receives the corresponding benefits. The state space is then updated according to the agent's state experience and the process is repeated in :math:`t + 1`.
 
@@ -20,7 +20,7 @@ Agents are forward looking. Thus, they do not simply choose the alternative with
 The discount factor :math:`0 > \delta > 1` captures the agent's preference for immediate over future rewards. Agents maximize the equation above by choosing the optimal sequence of alternatives
 :math:`\{d_k(t)\}_{k \in K}` for :math:`t = \tau, .., T`.
 
-Within this more general framework, Keane (1994) consider the case where agents are risk neutral and each period choose to work in either of two occupations (:math:`k =  1,2`), to attend school (:math:`k = 3`), or to remain at home (:math:`k = 4`). The immediate reward functions are given by:
+Within this more general framework, Keane and Wolpin (1994) consider the case where agents are risk neutral and each period choose to work in either of two occupations (:math:`k =  1,2`), to attend school (:math:`k = 3`), or to remain at home (:math:`k = 4`). The immediate reward functions are given by:
 
 .. math::
 
@@ -93,12 +93,12 @@ where :math:`f_{\epsilon}` is the joint density of the uncertain component of th
 Estimation
 ----------
 
-We estimate the parameters of the reward functions :math:`\theta` based on a sample of agents whose behavior and state experiences are described by the model. Although all shocks to the rewards are eventually known to the agent, they remain unobserved by the econometrician. So each parameterization induces a different probability distribution over the sequence of observed agent choices and their state experience. We implement maximum likelihood estimation and appraise each candidate parameterization of the model using the likelihood function of the observed sample (Fisher, 1922). Given the serial independence of the shocks, We can compute the likelihood contribution by agent and period. The sample likelihood is then just the product of the likelihood contributions over all agents and time periods. As we need to simulate the agent's choice probabilities, we end up with a simulated maximum likelihood estimator (Manski, 1977) and minimize the simulated negative log-likelihood of the observed sample.
+We estimate the parameters of the reward functions :math:`\theta` based on a sample of agents whose behavior and state experiences are described by the model. Although all shocks to the rewards are eventually known to the agent, they remain unobserved by the econometrician. So each parameterization induces a different probability distribution over the sequence of observed agent choices and their state experience. We implement maximum likelihood estimation and appraise each candidate parameterization of the model using the likelihood function of the observed sample (Fisher, 1922). Given the serial independence of the shocks, We can compute the likelihood contribution by agent and period. The sample likelihood is then just the product of the likelihood contributions over all agents and time periods. As we need to simulate the agent's choice probabilities, we end up with a simulated maximum likelihood estimator (Manski and Lerman, 1977) and minimize the simulated negative log-likelihood of the observed sample.
 
 Simulated Example
 -----------------
 
-Keane (1994) generate three different Monte Carlo samples. We study their first parameterization in more detail now. We label the two occupations as Occupation A and Occupation B. We first plot the returns to experience. Occupation B is more skill intensive in the sense that own experience has higher return than is the case for Occupation A. There is some general skill learned in Occupation A which is transferable to Occupation B. However, work experience in is occupation-specific in Occupation B.
+Keane and Wolpin (1994) generate three different Monte Carlo samples. We study their first parameterization in more detail now. We label the two occupations as Occupation A and Occupation B. We first plot the returns to experience. Occupation B is more skill intensive in the sense that own experience has higher return than is the case for Occupation A. There is some general skill learned in Occupation A which is transferable to Occupation B. However, work experience in is occupation-specific in Occupation B.
 
 
 .. image:: images/returns_experience.png
