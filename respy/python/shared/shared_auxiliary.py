@@ -113,9 +113,9 @@ def get_total_value(period, num_periods, delta, payoffs_systematic, draws,
 
     # Get future values
     if period != (num_periods - 1):
-        payoffs_future, is_inadmissible = _get_future_payoffs(edu_max,
-            edu_start, mapping_state_idx, period, periods_emax, k,
-            states_all)
+        payoffs_future, is_inadmissible = get_emaxs(edu_max,
+                                                   edu_start, mapping_state_idx, period, periods_emax, k,
+                                                   states_all)
     else:
         is_inadmissible = False
         payoffs_future = np.tile(0.0, 4)
@@ -134,8 +134,8 @@ def get_total_value(period, num_periods, delta, payoffs_systematic, draws,
     return total_payoffs
 
 
-def _get_future_payoffs(edu_max, edu_start, mapping_state_idx, period,
-        periods_emax, k, states_all):
+def get_emaxs(edu_max, edu_start, mapping_state_idx, period,
+             periods_emax, k, states_all):
     """ Get future payoffs for additional choices.
     """
     # Distribute state space

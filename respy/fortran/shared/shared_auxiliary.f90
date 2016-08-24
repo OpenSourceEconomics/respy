@@ -179,7 +179,7 @@ SUBROUTINE get_total_value(total_payoffs, period, payoffs_systematic, draws, map
 
     !/* internal objects        */
 
-    REAL(our_dble)                  :: payoffs_future(4)
+    REAL(our_dble)                  :: emaxs(4)
     REAL(our_dble)                  :: payoffs_ex_post(4)
 
     LOGICAL                         :: is_inadmissible
@@ -199,17 +199,17 @@ SUBROUTINE get_total_value(total_payoffs, period, payoffs_systematic, draws, map
 
     ! Get future values
     IF (period .NE. (num_periods - one_int)) THEN
-        CALL get_future_payoffs(payoffs_future, is_inadmissible, mapping_state_idx, period, periods_emax, k, states_all, edu_start, edu_max)
+        CALL get_emaxs(emaxs, is_inadmissible, mapping_state_idx, period, periods_emax, k, states_all, edu_start, edu_max)
     ELSE
         is_inadmissible = .False.
-        payoffs_future = zero_dble
+        emaxs = zero_dble
     END IF
 
     ! Calculate total utilities
-    total_payoffs = payoffs_ex_post + delta * payoffs_future
+    total_payoffs = payoffs_ex_post + delta * emaxs
 
     ! This is required to ensure that the agent does not choose any
-    ! inadmissible states. If the state is inadmissible payoffs_future takes
+    ! inadmissible states. If the state is inadmissible emaxs takes
     ! value zero. This aligns the treatment of inadmissible values with the
     ! original paper.
     IF (is_inadmissible) THEN
@@ -219,20 +219,20 @@ SUBROUTINE get_total_value(total_payoffs, period, payoffs_systematic, draws, map
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_future_payoffs(payoffs_future, is_inadmissible, mapping_state_idx, period, periods_emax, k, states_all, edu_start, edu_max)
+SUBROUTINE get_emaxs(emaxs, is_inadmissible, mapping_state_idx, period, periods_emax, k, states_all, edu_start, edu_max)
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(OUT)     :: payoffs_future(4)
+    REAL(our_dble), INTENT(OUT)     :: emaxs(4)
 
     LOGICAL, INTENT(OUT)            :: is_inadmissible
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
-    INTEGER(our_int), INTENT(IN)    :: period
-    INTEGER(our_int), INTENT(IN)    :: k
     INTEGER(our_int), INTENT(IN)    :: edu_start
     INTEGER(our_int), INTENT(IN)    :: edu_max
+    INTEGER(our_int), INTENT(IN)    :: period
+    INTEGER(our_int), INTENT(IN)    :: k
 
     REAL(our_dble), INTENT(IN)      :: periods_emax(num_periods, max_states_period)
 
@@ -256,26 +256,26 @@ SUBROUTINE get_future_payoffs(payoffs_future, is_inadmissible, mapping_state_idx
 
     ! Working in Occupation A
     future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1 + 1, exp_b + 1, edu + 1, 1)
-    payoffs_future(1) = periods_emax(period + 1 + 1, future_idx + 1)
+    emaxs(1) = periods_emax(period + 1 + 1, future_idx + 1)
 
     !Working in Occupation B
     future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1, exp_b + 1 + 1, edu + 1, 1)
-    payoffs_future(2) = periods_emax(period + 1 + 1, future_idx + 1)
+    emaxs(2) = periods_emax(period + 1 + 1, future_idx + 1)
 
     ! Increasing schooling. Note that adding an additional year
     ! of schooling is only possible for those that have strictly
     ! less than the maximum level of additional education allowed.
     is_inadmissible = (edu .GE. edu_max - edu_start)
     IF(is_inadmissible) THEN
-        payoffs_future(3) = zero_dble
+        emaxs(3) = zero_dble
     ELSE
         future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1, exp_b + 1, edu + 1 + 1, 2)
-        payoffs_future(3) = periods_emax(period + 1 + 1, future_idx + 1)
+        emaxs(3) = periods_emax(period + 1 + 1, future_idx + 1)
     END IF
 
     ! Staying at home
     future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1, exp_b + 1, edu + 1, 1)
-    payoffs_future(4) = periods_emax(period + 1 + 1, future_idx + 1)
+    emaxs(4) = periods_emax(period + 1 + 1, future_idx + 1)
 
 END SUBROUTINE
 !******************************************************************************
