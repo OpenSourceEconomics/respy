@@ -1,6 +1,10 @@
 import statsmodels.api as sm
 from scipy.stats import norm
 
+from scipy.optimize.slsqp import _minimize_slsqp
+from scipy.optimize import rosen_der
+from scipy.optimize import rosen
+
 import numpy as np
 import pytest
 import scipy
@@ -561,3 +565,49 @@ class TestClass(object):
             fort = fort_debug.wrapper_kl_divergence(*args)
 
             np.testing.assert_almost_equal(fort, py)
+
+    def test_10(self):
+        """ Check the SLSQP implementations.
+        """
+        # Test the FORTRAN codes against the PYTHON implementation. This is
+        # expected to fail sometimes due to differences in precision between the
+        # two implementations. In particular, as updating steps of the optimizer
+        # are very sensitive to just small differences in the derivative
+        # information. The same functions are available as a FORTRAN
+        # implementations.
+        def debug_constraint_derivative(x):
+            return np.ones(len(x))
+
+        def debug_constraint_function(x):
+            return np.sum(x) - 10.0
+
+        # Sample basic test case
+        ftol = np.random.uniform(0.000000, 1e-5)
+        maxiter = np.random.randint(1, 100)
+        num_dim = np.random.randint(2, 4)
+
+        x0 = np.random.normal(size=num_dim)
+
+        # Evaluation of Rosenbrock function. We are using the FORTRAN version
+        # in the development of the optimization routines.
+        f90 = fort_debug.debug_criterion_function(x0, num_dim)
+        py = rosen(x0)
+        np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
+
+        py = rosen_der(x0)
+        f90 = fort_debug.debug_criterion_derivative(x0, len(x0))
+        np.testing.assert_allclose(py, f90[:-1], rtol=1e-05, atol=1e-06)
+
+        # Setting up PYTHON SLSQP interface for constraints
+        constraint = dict()
+        constraint['type'] = 'eq'
+        constraint['args'] = ()
+        constraint['fun'] = debug_constraint_function
+        constraint['jac'] = debug_constraint_derivative
+
+        # Evaluate both implementations
+        fort = fort_debug.wrapper_slsqp_debug(x0, maxiter, ftol, num_dim)
+        py = _minimize_slsqp(rosen, x0, jac=rosen_der, maxiter=maxiter,
+                ftol=ftol, constraints=constraint)['x']
+
+        np.testing.assert_allclose(py, fort, rtol=1e-05, atol=1e-06)
