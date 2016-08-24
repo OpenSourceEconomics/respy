@@ -97,19 +97,19 @@ def get_cholesky(x, info=None):
         return shocks_cholesky, None
 
 
-def get_total_values(period, num_periods, delta, payoffs_systematic, draws,
+def get_total_values(period, num_periods, delta, rewards_systematic, draws,
         edu_max, edu_start, mapping_state_idx, periods_emax, k, states_all):
     """ Get total value of all possible states.
     """
     # Initialize containers
-    payoffs_ex_post = np.tile(np.nan, 4)
+    rewards_ex_post = np.tile(np.nan, 4)
 
-    # Calculate ex post payoffs
+    # Calculate ex post rewards
     for j in [0, 1]:
-        payoffs_ex_post[j] = payoffs_systematic[j] * draws[j]
+        rewards_ex_post[j] = rewards_systematic[j] * draws[j]
 
     for j in [2, 3]:
-        payoffs_ex_post[j] = payoffs_systematic[j] + draws[j]
+        rewards_ex_post[j] = rewards_systematic[j] + draws[j]
 
     # Get future values
     if period != (num_periods - 1):
@@ -120,7 +120,7 @@ def get_total_values(period, num_periods, delta, payoffs_systematic, draws,
         emaxs = np.tile(0.0, 4)
 
     # Calculate total utilities
-    total_values = payoffs_ex_post + delta * emaxs
+    total_values = rewards_ex_post + delta * emaxs
 
     # This is required to ensure that the agent does not choose any
     # inadmissible states. If the state is inadmissible emaxs takes
@@ -135,7 +135,7 @@ def get_total_values(period, num_periods, delta, payoffs_systematic, draws,
 
 def get_emaxs(edu_max, edu_start, mapping_state_idx, period,
              periods_emax, k, states_all):
-    """ Get future payoffs for additional choices.
+    """ Get emaxs for additional choices.
     """
     # Distribute state space
     exp_a, exp_b, edu, _ = states_all[period, k, :]
@@ -204,13 +204,13 @@ def cholesky_to_coeffs(shocks_cholesky):
     return shocks_coeffs
 
 
-def add_solution(respy_obj, periods_payoffs_systematic,
+def add_solution(respy_obj, periods_rewards_systematic,
         states_number_period, mapping_state_idx, periods_emax, states_all):
     """ Add solution to class instance.
     """
     respy_obj.unlock()
 
-    respy_obj.set_attr('periods_payoffs_systematic', periods_payoffs_systematic)
+    respy_obj.set_attr('periods_rewards_systematic', periods_rewards_systematic)
 
     respy_obj.set_attr('states_number_period', states_number_period)
 

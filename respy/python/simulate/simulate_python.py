@@ -8,7 +8,7 @@ from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.shared.shared_auxiliary import get_total_values
 
 
-def pyth_simulate(periods_payoffs_systematic, mapping_state_idx,
+def pyth_simulate(periods_rewards_systematic, mapping_state_idx,
         periods_emax, states_all, shocks_cholesky, num_periods, edu_start, edu_max, delta,
         num_agents_sim, periods_draws_sims, seed_sim):
     """ Wrapper for PYTHON and F2PY implementation of sample simulation.
@@ -51,12 +51,12 @@ def pyth_simulate(periods_payoffs_systematic, mapping_state_idx,
             dataset[count, :2] = i, period
 
             # Select relevant subset
-            payoffs_systematic = periods_payoffs_systematic[period, k, :]
+            rewards_systematic = periods_rewards_systematic[period, k, :]
             draws = periods_draws_sims_transformed[period, i, :]
 
             # Get total value of admissible states
             total_values = get_total_values(period,
-                num_periods, delta, payoffs_systematic, draws, edu_max,
+                num_periods, delta, rewards_systematic, draws, edu_max,
                 edu_start, mapping_state_idx, periods_emax, k, states_all)
 
             # Determine optimal choice
@@ -68,7 +68,7 @@ def pyth_simulate(periods_payoffs_systematic, mapping_state_idx,
             # Record earnings
             dataset[count, 3] = MISSING_FLOAT
             if max_idx in [0, 1]:
-                dataset[count, 3] = payoffs_systematic[max_idx] * draws[max_idx]
+                dataset[count, 3] = rewards_systematic[max_idx] * draws[max_idx]
 
             # Write relevant state space for period to data frame
             dataset[count, 4:8] = current_state

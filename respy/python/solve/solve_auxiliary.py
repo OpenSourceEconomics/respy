@@ -101,17 +101,17 @@ def pyth_create_state_space(num_periods, edu_start, edu_max, min_idx):
     return args
 
 
-def pyth_calculate_payoffs_systematic(num_periods, states_number_period,
+def pyth_calculate_rewards_systematic(num_periods, states_number_period,
         states_all, edu_start, coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         max_states_period):
-    """ Calculate ex systematic payoffs.
+    """ Calculate ex systematic rewards.
     """
 
     # Initialize
     shape = (num_periods, max_states_period, 4)
-    periods_payoffs_systematic = np.tile(MISSING_FLOAT, shape)
+    periods_rewards_systematic = np.tile(MISSING_FLOAT, shape)
 
-    # Calculate systematic instantaneous payoffs
+    # Calculate systematic instantaneous rewards
     for period in range(num_periods - 1, -1, -1):
 
         # Loop over all possible states
@@ -125,36 +125,36 @@ def pyth_calculate_payoffs_systematic(num_periods, states_number_period,
                       exp_b ** 2]
 
             # Calculate systematic part of wages in occupation A
-            periods_payoffs_systematic[period, k, 0] = \
+            periods_rewards_systematic[period, k, 0] = \
                 np.clip(np.exp(np.dot(coeffs_a, covars)), 0.0, HUGE_FLOAT)
 
             # Calculate systematic part pf wages in occupation B
-            periods_payoffs_systematic[period, k, 1] = \
+            periods_rewards_systematic[period, k, 1] = \
                 np.clip(np.exp(np.dot(coeffs_b, covars)), 0.0, HUGE_FLOAT)
 
             # Calculate systematic part of schooling utility
-            payoff = coeffs_edu[0]
+            reward = coeffs_edu[0]
 
             # Tuition cost for higher education if agents move
             # beyond high school.
             if edu + edu_start >= 12:
-                payoff += coeffs_edu[1]
+                reward += coeffs_edu[1]
 
             # Psychic cost of going back to school
             if edu_lagged == 0:
-                payoff += coeffs_edu[2]
+                reward += coeffs_edu[2]
 
-            periods_payoffs_systematic[period, k, 2] = payoff
+            periods_rewards_systematic[period, k, 2] = reward
 
             # Calculate systematic part of HOME
-            periods_payoffs_systematic[period, k, 3] = coeffs_home[0]
+            periods_rewards_systematic[period, k, 3] = coeffs_home[0]
 
     # Finishing
-    return periods_payoffs_systematic
+    return periods_rewards_systematic
 
 
 def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
-        num_draws_emax, states_number_period, periods_payoffs_systematic,
+        num_draws_emax, states_number_period, periods_rewards_systematic,
         edu_max, edu_start, mapping_state_idx, states_all, delta, is_debug,
         is_interpolated, num_points_interp, shocks_cholesky):
     """ Backward induction procedure. There are two main threads to this
@@ -203,13 +203,13 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
             # used in either the construction of the prediction model or the
             # prediction step.
             exogenous, maxe = get_exogenous_variables(period, num_periods,
-                num_states, delta, periods_payoffs_systematic, shifts,
+                num_states, delta, periods_rewards_systematic, shifts,
                 edu_max, edu_start, mapping_state_idx, periods_emax, states_all)
 
             # Constructing the dependent variables for at the random subset of
             # points where the EMAX is actually calculated.
             endogenous = get_endogenous_variable(period, num_periods,
-                num_states, delta, periods_payoffs_systematic, edu_max,
+                num_states, delta, periods_rewards_systematic, edu_max,
                 edu_start, mapping_state_idx, periods_emax, states_all,
                 is_simulated, num_draws_emax,maxe, draws_emax_transformed)
 
@@ -228,12 +228,12 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
             # Loop over all possible states
             for k in range(states_number_period[period]):
 
-                # Extract payoffs
-                payoffs_systematic = periods_payoffs_systematic[period, k, :]
+                # Extract rewards
+                rewards_systematic = periods_rewards_systematic[period, k, :]
 
                 # Simulate the expected future value.
-                emax = get_future_value(num_periods, num_draws_emax, period, k,
-                    draws_emax_transformed, payoffs_systematic, edu_max,
+                emax = construct_emax(num_periods, num_draws_emax, period, k,
+                    draws_emax_transformed, rewards_systematic, edu_max,
                     edu_start, periods_emax, states_all, mapping_state_idx,
                     delta)
 
@@ -274,7 +274,7 @@ def get_simulated_indicator(num_points_interp, num_candidates, period, is_debug)
 
 
 def get_exogenous_variables(period, num_periods, num_states, delta,
-        periods_payoffs_systematic, shifts, edu_max, edu_start,
+        periods_rewards_systematic, shifts, edu_max, edu_start,
         mapping_state_idx, periods_emax, states_all):
     """ Get exogenous variables for interpolation scheme. The unused argument
     is present to align the interface between the PYTHON and FORTRAN
@@ -287,12 +287,12 @@ def get_exogenous_variables(period, num_periods, num_states, delta,
     # Iterate over all states.
     for k in range(num_states):
 
-        # Extract systematic payoff
-        payoffs_systematic = periods_payoffs_systematic[period, k, :]
+        # Extract systematic rewards
+        rewards_systematic = periods_rewards_systematic[period, k, :]
 
         # Get total value
         total_values = get_total_values(period, num_periods, delta,
-            payoffs_systematic, shifts, edu_max, edu_start,
+            rewards_systematic, shifts, edu_max, edu_start,
             mapping_state_idx, periods_emax, k, states_all)
 
         # Implement level shifts
@@ -311,7 +311,7 @@ def get_exogenous_variables(period, num_periods, num_states, delta,
 
 
 def get_endogenous_variable(period, num_periods, num_states, delta,
-        periods_payoffs_systematic, edu_max, edu_start, mapping_state_idx,
+        periods_rewards_systematic, edu_max, edu_start, mapping_state_idx,
         periods_emax, states_all, is_simulated, num_draws_emax, maxe,
         draws_emax_transformed):
     """ Construct endogenous variable for the subset of interpolation points.
@@ -325,12 +325,12 @@ def get_endogenous_variable(period, num_periods, num_states, delta,
         if not is_simulated[k]:
             continue
 
-        # Extract payoffs
-        payoffs_systematic = periods_payoffs_systematic[period, k, :]
+        # Extract rewards
+        rewards_systematic = periods_rewards_systematic[period, k, :]
 
         # Simulate the expected future value.
-        emax = get_future_value(num_periods, num_draws_emax, period, k,
-            draws_emax_transformed, payoffs_systematic, edu_max, edu_start,
+        emax = construct_emax(num_periods, num_draws_emax, period, k,
+            draws_emax_transformed, rewards_systematic, edu_max, edu_start,
             periods_emax, states_all, mapping_state_idx, delta)
 
         # Construct dependent variable
@@ -427,8 +427,8 @@ def check_input(respy_obj):
     return True
 
 
-def get_future_value(num_periods, num_draws_emax, period, k,
-        draws_emax_transformed, payoffs_systematic, edu_max, edu_start,
+def construct_emax(num_periods, num_draws_emax, period, k,
+        draws_emax_transformed, rewards_systematic, edu_max, edu_start,
         periods_emax, states_all, mapping_state_idx, delta):
     """ Simulate expected future value.
     """
@@ -441,7 +441,7 @@ def get_future_value(num_periods, num_draws_emax, period, k,
 
         # Get total value of admissible states
         total_values = get_total_values(period, num_periods, delta,
-            payoffs_systematic, draws, edu_max, edu_start, mapping_state_idx,
+            rewards_systematic, draws, edu_max, edu_start, mapping_state_idx,
             periods_emax, k, states_all)
 
         # Determine optimal choice

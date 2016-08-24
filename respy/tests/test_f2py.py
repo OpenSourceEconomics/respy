@@ -17,7 +17,7 @@ from respy.python.estimate.estimate_auxiliary import get_optim_paras
 
 from respy.python.shared.shared_auxiliary import replace_missing_values
 from respy.python.solve.solve_auxiliary import get_endogenous_variable
-from respy.python.solve.solve_auxiliary import get_future_value
+from respy.python.solve.solve_auxiliary import construct_emax
 from respy.python.shared.shared_auxiliary import get_cholesky
 from respy.python.shared.shared_constants import IS_FORTRAN
 
@@ -34,7 +34,7 @@ from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
 
-from respy.python.solve.solve_auxiliary import pyth_calculate_payoffs_systematic
+from respy.python.solve.solve_auxiliary import pyth_calculate_rewards_systematic
 
 from respy.python.solve.solve_auxiliary import pyth_backward_induction
 from respy.python.solve.solve_auxiliary import get_simulated_indicator
@@ -75,11 +75,11 @@ class TestClass(object):
         respy_obj = simulate(respy_obj)
 
         # Extract class attributes
-        periods_payoffs_systematic, states_number_period, mapping_state_idx, \
+        periods_rewards_systematic, states_number_period, mapping_state_idx, \
         periods_emax, num_periods, states_all, num_draws_emax, edu_start, \
         edu_max, delta = \
             dist_class_attributes(respy_obj,
-                'periods_payoffs_systematic', 'states_number_period',
+                'periods_rewards_systematic', 'states_number_period',
                 'mapping_state_idx', 'periods_emax', 'num_periods',
                 'states_all', 'num_draws_emax', 'edu_start', 'edu_max',
                 'delta')
@@ -92,16 +92,16 @@ class TestClass(object):
         period = np.random.choice(range(num_periods))
         k = np.random.choice(range(states_number_period[period]))
 
-        # Select systematic payoffs
-        payoffs_systematic = periods_payoffs_systematic[period, k, :]
+        # Select systematic rewards
+        rewards_systematic = periods_rewards_systematic[period, k, :]
 
         # Evaluation of simulated expected future values
         args = (num_periods, num_draws_emax, period, k, draws_standard,
-            payoffs_systematic, edu_max, edu_start, periods_emax, states_all,
+            rewards_systematic, edu_max, edu_start, periods_emax, states_all,
             mapping_state_idx, delta)
 
-        py = get_future_value(*args)
-        f90 = fort_debug.wrapper_get_future_value(*args)
+        py = construct_emax(*args)
+        f90 = fort_debug.wrapper_construct_emax(*args)
 
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
@@ -274,23 +274,23 @@ class TestClass(object):
         # Cutting to size
         states_all = states_all[:, :max(states_number_period), :]
 
-        # Check calculation of systematic components of payoffs.
+        # Check calculation of systematic components of rewards.
         args = (num_periods, states_number_period, states_all, edu_start,
             coeffs_a, coeffs_b, coeffs_edu, coeffs_home, max_states_period)
-        pyth = pyth_calculate_payoffs_systematic(*args)
-        f2py = fort_debug.f2py_calculate_payoffs_systematic(*args)
+        pyth = pyth_calculate_rewards_systematic(*args)
+        f2py = fort_debug.f2py_calculate_rewards_systematic(*args)
         np.testing.assert_allclose(pyth, f2py)
 
-        # Carry some results from the systematic payoff calculation for
+        # Carry some results from the systematic rewards calculation for
         # future use and create the required set of disturbances.
         periods_draws_emax = create_draws(num_periods, num_draws_emax,
             seed_emax, is_debug)
 
-        periods_payoffs_systematic = pyth
+        periods_rewards_systematic = pyth
 
         # Check backward induction procedure.
         args = (num_periods, max_states_period, periods_draws_emax,
-            num_draws_emax, states_number_period, periods_payoffs_systematic,
+            num_draws_emax, states_number_period, periods_rewards_systematic,
             edu_max, edu_start, mapping_state_idx, states_all, delta,
             is_debug, is_interpolated, num_points_interp, shocks_cholesky)
 
@@ -350,9 +350,9 @@ class TestClass(object):
                 np.testing.assert_allclose(pyth[i], alt[i])
 
         # Distribute solution arguments for further use in simulation test.
-        periods_payoffs_systematic, _, mapping_state_idx, periods_emax, states_all = pyth
+        periods_rewards_systematic, _, mapping_state_idx, periods_emax, states_all = pyth
 
-        args = (periods_payoffs_systematic, mapping_state_idx, \
+        args = (periods_rewards_systematic, mapping_state_idx, \
             periods_emax, states_all, shocks_cholesky, num_periods, edu_start,
             edu_max, delta, num_agents_sim, periods_draws_sims, seed_sim)
 
@@ -400,8 +400,8 @@ class TestClass(object):
         respy_obj = simulate(respy_obj)
 
         # Extract class attributes
-        periods_payoffs_systematic, states_number_period, mapping_state_idx, seed_prob, periods_emax, num_periods, states_all, num_points_interp, edu_start, num_draws_emax, is_debug, edu_max, delta = dist_class_attributes(
-            respy_obj, 'periods_payoffs_systematic', 'states_number_period',
+        periods_rewards_systematic, states_number_period, mapping_state_idx, seed_prob, periods_emax, num_periods, states_all, num_points_interp, edu_start, num_draws_emax, is_debug, edu_max, delta = dist_class_attributes(
+            respy_obj, 'periods_rewards_systematic', 'states_number_period',
             'mapping_state_idx', 'seed_prob', 'periods_emax',
             'num_periods', 'states_all', 'num_points_interp', 'edu_start',
             'num_draws_emax', 'is_debug', 'edu_max', 'delta')
@@ -431,7 +431,7 @@ class TestClass(object):
         # Construct the exogenous variables for all points of the state
         # space.
         args = (
-        period, num_periods, num_states, delta, periods_payoffs_systematic, shifts,
+        period, num_periods, num_states, delta, periods_rewards_systematic, shifts,
         edu_max, edu_start, mapping_state_idx, periods_emax, states_all)
 
         py = get_exogenous_variables(*args)
@@ -445,7 +445,7 @@ class TestClass(object):
         # Construct endogenous variable so that the prediction model can be
         # fitted.
         args = (period, num_periods, num_states, delta,
-            periods_payoffs_systematic, edu_max, edu_start,
+            periods_rewards_systematic, edu_max, edu_start,
             mapping_state_idx, periods_emax, states_all, is_simulated,
             num_draws_emax, maxe, draws_emax)
 

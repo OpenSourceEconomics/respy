@@ -344,7 +344,7 @@ def generate_random_dict(constraints=None):
         # Replace in initialization file
         dict_['BASICS']['delta'] = delta
 
-    # No random component to payoffs
+    # No random component to rewards
     if 'is_deterministic' in constraints.keys():
         # Checks
         assert (constraints['is_deterministic'] in [True, False])

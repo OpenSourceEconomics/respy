@@ -396,7 +396,7 @@ FUNCTION fort_dcriterion_parallel(x)
 END FUNCTION
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max)
+SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max)
 
     !/* external objects        */
 
@@ -404,7 +404,7 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
     INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: states_number_period(:)
     INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: states_all(:, :, :)
 
-    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_payoffs_systematic(:, :, :)
+    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_rewards_systematic(:, :, :)
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_emax(:, :)
 
     REAL(our_dble), INTENT(IN)                      :: shocks_cholesky(4, 4)
@@ -439,7 +439,7 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
 
     CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, edu_start, edu_max)
 
-    CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start)
+    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start)
 
 
     ALLOCATE(periods_emax(num_periods, max_states_period))
@@ -457,13 +457,13 @@ SUBROUTINE fort_solve_parallel(periods_payoffs_systematic, states_number_period,
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, states_number_period, periods_payoffs_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max, num_states_slaves, update_master)
+SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max, num_states_slaves, update_master)
 
     !/* external objects        */
 
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)       :: periods_emax(:, :)
 
-    REAL(our_dble), INTENT(IN)          :: periods_payoffs_systematic(num_periods, max_states_period, 4)
+    REAL(our_dble), INTENT(IN)          :: periods_rewards_systematic(num_periods, max_states_period, 4)
     REAL(our_dble), INTENT(IN)          :: periods_draws_emax(num_periods, num_draws_emax, 4)
     REAL(our_dble), INTENT(IN)          :: shocks_cholesky(4, 4)
     REAL(our_dble), INTENT(IN)          :: delta
@@ -492,7 +492,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, state
     INTEGER(our_int)                :: info
     INTEGER(our_int)                :: k
 
-    REAL(our_dble)                  :: payoffs_systematic(4)
+    REAL(our_dble)                  :: rewards_systematic(4)
     REAL(our_dble)                  :: shocks_cov(4, 4)
     REAL(our_dble)                  :: shifts(4)
     REAL(our_dble)                  :: emax
@@ -580,7 +580,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, state
             is_simulated = get_simulated_indicator(num_points_interp, num_states, period, is_debug)
 
             ! Constructing the dependent variable for all states, including the ones where simulation will take place. All information will be used in either the construction of the prediction model or the prediction step.
-            CALL get_exogenous_variables(exogenous, maxe, period, num_states, periods_payoffs_systematic, shifts, mapping_state_idx, periods_emax, states_all, delta, edu_start, edu_max)
+            CALL get_exogenous_variables(exogenous, maxe, period, num_states, periods_rewards_systematic, shifts, mapping_state_idx, periods_emax, states_all, delta, edu_start, edu_max)
 
             ! Initialize missing values
             endogenous = MISSING_FLOAT
@@ -596,11 +596,11 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, state
                     CYCLE
                 END IF
 
-                ! Extract payoffs
-                payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
+                ! Extract rewards
+                rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
 
-                ! Get payoffs
-                CALL get_future_value(emax, draws_emax_transformed, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max)
+                ! Get rewards
+                CALL construct_emax(emax, draws_emax_transformed, period, k, rewards_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max)
 
                 ! Construct dependent variable
                 endogenous_slaves(count) = emax - maxe(k + 1)
@@ -628,10 +628,10 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, state
             count =  1
             DO k = lower_bound, upper_bound - 1
 
-                ! Extract payoffs
-                payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
+                ! Extract rewards
+                rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
 
-                CALL get_future_value(emax, draws_emax_transformed, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max)
+                CALL construct_emax(emax, draws_emax_transformed, period, k, rewards_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max)
 
                 ! Collect information
                 periods_emax_slaves(count) = emax

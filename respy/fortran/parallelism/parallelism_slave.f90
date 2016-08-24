@@ -109,13 +109,13 @@ PROGRAM resfort_parallel_slave
 
             IF (rank == zero_int) CALL record_solution(2)
 
-            CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start)
+            CALL fort_calculate_rewards_systematic(periods_rewards_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start)
 
             IF (rank == zero_int) CALL record_solution(-1)
 
             IF (rank == zero_int) CALL record_solution(3)
 
-            CALL fort_backward_induction_slave(periods_emax, periods_draws_emax, states_number_period, periods_payoffs_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max, num_states_slaves, .True.)
+            CALL fort_backward_induction_slave(periods_emax, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max, num_states_slaves, .True.)
 
             IF (rank == zero_int .AND. .NOT. is_myopic) THEN
                 CALL record_solution(-1)
@@ -148,11 +148,11 @@ PROGRAM resfort_parallel_slave
 
             END IF
 
-            CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start)
+            CALL fort_calculate_rewards_systematic(periods_rewards_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start)
 
-            CALL fort_backward_induction_slave(periods_emax, periods_draws_emax, states_number_period, periods_payoffs_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max, num_states_slaves, .False.)
+            CALL fort_backward_induction_slave(periods_emax, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max, num_states_slaves, .False.)
 
-            CALL fort_contributions(contribs(lower_bound:upper_bound), periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_slave, periods_draws_prob, delta, tau, edu_start, edu_max)
+            CALL fort_contributions(contribs(lower_bound:upper_bound), periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_slave, periods_draws_prob, delta, tau, edu_start, edu_max)
 
             CALL MPI_GATHERV(contribs(lower_bound:upper_bound), num_obs_slaves(rank + 1), MPI_DOUBLE, contribs, 0, displs, MPI_DOUBLE, 0, PARENTCOMM, ierr)
 

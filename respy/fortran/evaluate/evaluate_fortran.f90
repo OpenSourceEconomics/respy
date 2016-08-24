@@ -21,7 +21,7 @@ MODULE evaluate_fortran
  CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_contributions(contribs, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_evaluate, periods_draws_prob, delta, tau, edu_start, edu_max)
+SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_evaluate, periods_draws_prob, delta, tau, edu_start, edu_max)
 
     !   DEVELOPMENT NOTES
     !
@@ -36,7 +36,7 @@ SUBROUTINE fort_contributions(contribs, periods_payoffs_systematic, mapping_stat
 
     REAL(our_dble), INTENT(OUT)     :: contribs(SIZE(data_evaluate, 1))
 
-    REAL(our_dble), INTENT(IN)      :: periods_payoffs_systematic(num_periods, max_states_period, 4)
+    REAL(our_dble), INTENT(IN)      :: periods_rewards_systematic(num_periods, max_states_period, 4)
     REAL(our_dble), INTENT(IN)      :: periods_draws_prob(num_periods, num_draws_prob, 4)
     REAL(our_dble), INTENT(IN)      :: periods_emax(num_periods, max_states_period)
     REAL(our_dble), INTENT(IN)      :: shocks_cholesky(4, 4)
@@ -51,7 +51,7 @@ SUBROUTINE fort_contributions(contribs, periods_payoffs_systematic, mapping_stat
     !/* internal objects        */
 
     REAL(our_dble)                  :: draws_prob_raw(num_draws_prob, 4)
-    REAL(our_dble)                  :: payoffs_systematic(4)
+    REAL(our_dble)                  :: rewards_systematic(4)
     REAL(our_dble)                  :: shocks_cov(4, 4)
     REAL(our_dble)                  :: total_values(4)
     REAL(our_dble)                  :: draws_cond(4)
@@ -113,9 +113,9 @@ SUBROUTINE fort_contributions(contribs, periods_payoffs_systematic, mapping_stat
             ! This is only done for alignment
             idx = choice
 
-            ! Get state indicator to obtain the systematic component of the agents payoffs. These feed into the simulation of choice probabilities.
+            ! Get state indicator to obtain the systematic component of the agents rewards. These feed into the simulation of choice probabilities.
             k = mapping_state_idx(period + 1, exp_a + 1, exp_b + 1, edu + 1, edu_lagged + 1)
-            payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
+            rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
 
             ! Extract relevant deviates from standard normal distribution.
             draws_prob_raw = periods_draws_prob(period + 1, :, :)
@@ -126,10 +126,10 @@ SUBROUTINE fort_contributions(contribs, periods_payoffs_systematic, mapping_stat
 
                 ! Calculate the disturbance, which follows a normal distribution.
                 CALL clip_value(dist_1, LOG(data_evaluate(j, 4)), -HUGE_FLOAT, HUGE_FLOAT, info)
-                CALL clip_value(dist_2, LOG(payoffs_systematic(idx)), -HUGE_FLOAT, HUGE_FLOAT, info)
+                CALL clip_value(dist_2, LOG(rewards_systematic(idx)), -HUGE_FLOAT, HUGE_FLOAT, info)
                 dist = dist_1 - dist_2
 
-                ! If there is no random variation in payoffs, then the observed wages need to be identical their systematic components. The discrepancy between the observed wages and their systematic components might be small due to the reading in of the dataset.
+                ! If there is no random variation in rewards, then the observed wages need to be identical their systematic components. The discrepancy between the observed wages and their systematic components might be small due to the reading in of the dataset.
                 IF (is_deterministic) THEN
                     IF (dist .GT. SMALL_FLOAT) THEN
                         contribs = one_dble
@@ -180,8 +180,8 @@ SUBROUTINE fort_contributions(contribs, periods_payoffs_systematic, mapping_stat
                 CALL clip_value(draws(1), EXP(draws(1)), zero_dble, HUGE_FLOAT, info)
                 CALL clip_value(draws(2), EXP(draws(2)), zero_dble, HUGE_FLOAT, info)
 
-                ! Calculate total payoff.
-                CALL get_total_values(total_values, period, payoffs_systematic, draws, mapping_state_idx, periods_emax, k, states_all, delta, edu_start, edu_max)
+                ! Calculate total values.
+                CALL get_total_values(total_values, period, rewards_systematic, draws, mapping_state_idx, periods_emax, k, states_all, delta, edu_start, edu_max)
 
                 ! Record optimal choices
                 counts(MAXLOC(total_values)) = counts(MAXLOC(total_values)) + 1
@@ -195,7 +195,7 @@ SUBROUTINE fort_contributions(contribs, periods_payoffs_systematic, mapping_stat
             ! Determine relative shares
             prob_obs = prob_obs / num_draws_prob
 
-            ! If there is no random variation in payoffs, then this implies a unique optimal choice.
+            ! If there is no random variation in rewards, then this implies a unique optimal choice.
             IF (is_deterministic) THEN
                 IF  ((counts(idx) .EQ. num_draws_prob) .EQV. .FALSE.) THEN
                     contribs = one_dble
@@ -208,7 +208,7 @@ SUBROUTINE fort_contributions(contribs, periods_payoffs_systematic, mapping_stat
 
         END DO
 
-    ! If there is no random variation in payoffs and no agent violated the implications of observed wages and choices, then the evaluation return a value of one.
+    ! If there is no random variation in rewards and no agent violated the implications of observed wages and choices, then the evaluation return a value of one.
     IF (is_deterministic) THEN
         contribs = EXP(one_dble)
     END IF

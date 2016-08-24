@@ -9,7 +9,7 @@ def record_solution_progress(indicator, period=None, num_states=None):
 
         line = 'Starting state space creation'
     elif indicator == 2:
-        line = 'Starting calculation of systematic payoffs'
+        line = 'Starting calculation of systematic rewards'
     elif indicator == 3:
         line = 'Starting backward induction procedure'
     elif indicator == 4:

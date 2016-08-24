@@ -40,10 +40,10 @@ class TestClass(object):
         respy_obj = simulate(respy_obj)
 
         # Distribute class attributes
-        systematic = respy_obj.get_attr('periods_payoffs_systematic')
+        systematic = respy_obj.get_attr('periods_rewards_systematic')
         emax = respy_obj.get_attr('periods_emax')
 
-        # PERIOD 3: Check the systematic payoffs against hand calculations.
+        # PERIOD 3: Check the systematic rewards against hand calculations.
         vals = [[2.7456010000000000, 07.5383250000000000, -3999.60, 1.140]]
         vals += [[3.0343583944356758, 09.2073308658822519, -3999.60, 1.140]]
         vals += [[3.0343583944356758, 09.2073308658822519, 0000.90, 1.140]]
@@ -70,7 +70,7 @@ class TestClass(object):
         for i, val in enumerate(vals):
             (np.testing.assert_allclose(emax[2, i], [val]))
 
-        # PERIOD 2: Check the systematic payoffs against hand calculations.
+        # PERIOD 2: Check the systematic rewards against hand calculations.
         vals = [[2.7456010150169163, 07.5383249336619222, -3999.60, 1.140]]
         vals += [[3.0343583944356758, 09.2073308658822519, 0000.90, 1.140]]
         vals += [[3.5966397255692826, 12.0612761204447200, -3999.60, 1.140]]
@@ -83,7 +83,7 @@ class TestClass(object):
         for i, val in enumerate(vals):
             (np.testing.assert_allclose(emax[1, i], [val]))
 
-        # PERIOD 1: Check the systematic payoffs against hand calculations.
+        # PERIOD 1: Check the systematic rewards against hand calculations.
         vals = [[2.7456010150169163, 7.5383249336619222, 0.90, 1.140]]
         for i, val in enumerate(vals):
             (np.testing.assert_allclose(systematic[0, i, :], val))

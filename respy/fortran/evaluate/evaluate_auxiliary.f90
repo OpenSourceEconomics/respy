@@ -31,18 +31,18 @@ FUNCTION get_smoothed_probability(total_values, idx, tau)
     INTEGER(our_int), ALLOCATABLE   :: infos(:)
     
     REAL(our_dble)                  :: get_smoothed_probability
-    REAL(our_dble)                  :: smoot_payoff(4)
-    REAL(our_dble)                  :: maxim_payoff(4)
+    REAL(our_dble)                  :: smoot_values(4)
+    REAL(our_dble)                  :: maxim_values(4)
 
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    maxim_payoff = MAXVAL(total_values)
+    maxim_values = MAXVAL(total_values)
 
-    CALL clip_value(smoot_payoff, EXP((total_values - maxim_payoff)/tau), zero_dble, HUGE_FLOAT, infos)
+    CALL clip_value(smoot_values, EXP((total_values - maxim_values)/tau), zero_dble, HUGE_FLOAT, infos)
 
-    get_smoothed_probability = smoot_payoff(idx) / SUM(smoot_payoff)
+    get_smoothed_probability = smoot_values(idx) / SUM(smoot_values)
 
 END FUNCTION
 !******************************************************************************

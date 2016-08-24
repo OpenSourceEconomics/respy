@@ -27,7 +27,7 @@ def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
         is_interpolated, num_draws_emax, num_periods, num_points_interp,
         is_myopic, edu_start, is_debug, edu_max, min_idx, delta)
 
-    periods_payoffs_systematic, _, mapping_state_idx, periods_emax, \
+    periods_rewards_systematic, _, mapping_state_idx, periods_emax, \
         states_all = pyth_solve(*base_args + (periods_draws_emax, ))
 
     # Initialize auxiliary objects
@@ -48,10 +48,10 @@ def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
             edu, idx = edu - edu_start, choice - 1
 
             # Get state indicator to obtain the systematic component of the
-            # agents payoffs. These feed into the simulation of choice
+            # agents rewards. These feed into the simulation of choice
             # probabilities.
             k = mapping_state_idx[period, exp_a, exp_b, edu, edu_lagged]
-            payoffs_systematic = periods_payoffs_systematic[period, k, :]
+            rewards_systematic = periods_rewards_systematic[period, k, :]
 
             # Extract relevant deviates from standard normal distribution.
             # The same set of baseline draws are used for each agent and period.
@@ -64,10 +64,10 @@ def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
                 # Calculate the disturbance which are implied by the model
                 # and the observed wages.
                 dist = np.clip(np.log(data_array[j, 3]), -HUGE_FLOAT, HUGE_FLOAT) - \
-                       np.clip(np.log(payoffs_systematic[idx]), -HUGE_FLOAT,
+                       np.clip(np.log(rewards_systematic[idx]), -HUGE_FLOAT,
                            HUGE_FLOAT)
 
-                # If there is no random variation in payoffs, then the
+                # If there is no random variation in rewards, then the
                 # observed wages need to be identical their systematic
                 # components. The discrepancy between the observed wages and
                 # their systematic components might be small due to the
@@ -117,9 +117,9 @@ def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
                 draws = draws_cond[:]
                 draws[:2] = np.clip(np.exp(draws[:2]), 0.0, HUGE_FLOAT)
 
-                # Calculate total payoff.
+                # Calculate total values.
                 total_values = get_total_values(period, num_periods,
-                    delta, payoffs_systematic, draws, edu_max, edu_start,
+                    delta, rewards_systematic, draws, edu_max, edu_start,
                     mapping_state_idx, periods_emax, k, states_all)
 
                 # Record optimal choices
@@ -132,7 +132,7 @@ def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
             # Determine relative shares
             prob_obs = prob_obs / num_draws_prob
 
-            # If there is no random variation in payoffs, then this implies
+            # If there is no random variation in rewards, then this implies
             # that the observed choice in the dataset is the only choice.
             if is_deterministic and (not (counts[idx] == num_draws_prob)):
                 contribs[:] = 1
@@ -143,7 +143,7 @@ def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
 
             j += 1
 
-    # If there is no random variation in payoffs and no agent violated the
+    # If there is no random variation in rewards and no agent violated the
     # implications of observed wages and choices, then the evaluation return
     # a value of one.
     if is_deterministic:
@@ -151,4 +151,3 @@ def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
 
     # Finishing
     return contribs
-

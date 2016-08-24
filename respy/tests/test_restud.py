@@ -42,7 +42,7 @@ def transform_respy_to_restud(model_paras, edu_start, edu_max, num_agents_sim,
                     ' {5:10.6f}\n'.format(*coeffs)
             file_.write(line)
 
-        # Write out coefficients for education and home payoffs as well as
+        # Write out coefficients for education and home rewards as well as
         # the discount factor. The intercept is scaled. This is later undone
         # again in the original FORTRAN code.
         coeffs_edu = model_paras['coeffs_edu']

@@ -56,7 +56,7 @@ SUBROUTINE record_solution_progress(indicator, period, num_states)
 
     ELSEIF (indicator == 2) THEN
 
-        WRITE(99, *) ' Starting calculation of systematic payoffs'
+        WRITE(99, *) ' Starting calculation of systematic rewards'
         WRITE(99, *)
 
     ELSEIF (indicator == 3) THEN

@@ -138,7 +138,7 @@ def get_results(num_periods, min_idx, num_agents_sim, which):
     states_all = read_data('states_all', shape).astype('int')
 
     shape = (num_periods, max_states_period, 4)
-    periods_payoffs_systematic = read_data('periods_payoffs_systematic', shape)
+    periods_rewards_systematic = read_data('periods_rewards_systematic', shape)
 
     shape = (num_periods, max_states_period)
     periods_emax = read_data('periods_emax', shape)
@@ -151,7 +151,7 @@ def get_results(num_periods, min_idx, num_agents_sim, which):
         raise AssertionError
 
     # Update class attributes with solution
-    args = (periods_payoffs_systematic, states_number_period,
+    args = (periods_rewards_systematic, states_number_period,
         mapping_state_idx, periods_emax, states_all, data_array)
 
     # Finishing

@@ -1,7 +1,7 @@
 import numpy as np
 
 from respy.python.shared.shared_constants import MISSING_FLOAT
-from respy.python.solve.solve_auxiliary import pyth_calculate_payoffs_systematic
+from respy.python.solve.solve_auxiliary import pyth_calculate_rewards_systematic
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
 from respy.python.solve.solve_auxiliary import pyth_backward_induction
 from respy.python.record.record_solution import record_solution_progress
@@ -25,13 +25,13 @@ def pyth_solve(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
 
     record_solution_progress(-1)
 
-    # Calculate systematic payoffs which are later used in the backward
+    # Calculate systematic rewards which are later used in the backward
     # induction procedure. These are calculated without any reference
     # to the alternative shock distributions.
     record_solution_progress(2)
 
-    # Calculate all systematic payoffs
-    periods_payoffs_systematic = pyth_calculate_payoffs_systematic(num_periods,
+    # Calculate all systematic rewards
+    periods_rewards_systematic = pyth_calculate_rewards_systematic(num_periods,
         states_number_period, states_all, edu_start, coeffs_a, coeffs_b,
         coeffs_edu, coeffs_home, max_states_period)
 
@@ -59,14 +59,14 @@ def pyth_solve(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
     else:
         periods_emax = pyth_backward_induction(num_periods, max_states_period,
             periods_draws_emax, num_draws_emax, states_number_period,
-            periods_payoffs_systematic, edu_max, edu_start,
+            periods_rewards_systematic, edu_max, edu_start,
             mapping_state_idx, states_all, delta, is_debug, is_interpolated,
             num_points_interp, shocks_cholesky)
 
         record_solution_progress(-1)
 
     # Collect return arguments in tuple
-    args = (periods_payoffs_systematic, states_number_period,
+    args = (periods_rewards_systematic, states_number_period,
         mapping_state_idx, periods_emax, states_all)
 
     # Finishing

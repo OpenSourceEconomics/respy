@@ -34,7 +34,7 @@ class TestClass(object):
         process(respy_obj)
 
     def test_2(self):
-        """ If there is no random variation in payoffs then the number of
+        """ If there is no random variation in rewards then the number of
         draws to simulate the expected future value should have no effect.
         """
         # Generate constraints

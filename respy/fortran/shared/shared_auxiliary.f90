@@ -159,7 +159,7 @@ SUBROUTINE transform_disturbances(draws_transformed, draws, shocks_cholesky, num
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_total_values(total_values, period, payoffs_systematic, draws, mapping_state_idx, periods_emax, k, states_all, delta, edu_start, edu_max)
+SUBROUTINE get_total_values(total_values, period, rewards_systematic, draws, mapping_state_idx, periods_emax, k, states_all, delta, edu_start, edu_max)
 
     !/* external objects        */
 
@@ -172,14 +172,14 @@ SUBROUTINE get_total_values(total_values, period, payoffs_systematic, draws, map
     INTEGER(our_int), INTENT(IN)    :: period
     INTEGER(our_int), INTENT(IN)    :: k
 
-    REAL(our_dble), INTENT(IN)      :: payoffs_systematic(4)
+    REAL(our_dble), INTENT(IN)      :: rewards_systematic(4)
     REAL(our_dble), INTENT(IN)      :: periods_emax(num_periods, max_states_period)
     REAL(our_dble), INTENT(IN)      :: draws(4)
     REAL(our_dble), INTENT(IN)      :: delta
 
     !/* internal objects        */
 
-    REAL(our_dble)                  :: payoffs_ex_post(4)
+    REAL(our_dble)                  :: rewards_ex_post(4)
     REAL(our_dble)                  :: emaxs(4)
 
     LOGICAL                         :: is_inadmissible
@@ -189,13 +189,13 @@ SUBROUTINE get_total_values(total_values, period, payoffs_systematic, draws, map
 !------------------------------------------------------------------------------
 
     ! Initialize containers
-    payoffs_ex_post = zero_dble
+    rewards_ex_post = zero_dble
 
-    ! Calculate ex post payoffs
-    payoffs_ex_post(1) = payoffs_systematic(1) * draws(1)
-    payoffs_ex_post(2) = payoffs_systematic(2) * draws(2)
-    payoffs_ex_post(3) = payoffs_systematic(3) + draws(3)
-    payoffs_ex_post(4) = payoffs_systematic(4) + draws(4)
+    ! Calculate ex post rewards
+    rewards_ex_post(1) = rewards_systematic(1) * draws(1)
+    rewards_ex_post(2) = rewards_systematic(2) * draws(2)
+    rewards_ex_post(3) = rewards_systematic(3) + draws(3)
+    rewards_ex_post(4) = rewards_systematic(4) + draws(4)
 
     ! Get future values
     IF (period .NE. (num_periods - one_int)) THEN
@@ -206,7 +206,7 @@ SUBROUTINE get_total_values(total_values, period, payoffs_systematic, draws, map
     END IF
 
     ! Calculate total utilities
-    total_values = payoffs_ex_post + delta * emaxs
+    total_values = rewards_ex_post + delta * emaxs
 
     ! This is required to ensure that the agent does not choose any
     ! inadmissible states. If the state is inadmissible emaxs takes
@@ -533,7 +533,7 @@ FUNCTION determinant(A)
 END FUNCTION
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_payoffs_systematic, states_number_period, periods_emax, data_sim)
+SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_rewards_systematic, states_number_period, periods_emax, data_sim)
 
     !/* external objects        */
 
@@ -542,7 +542,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_payoffs
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
     INTEGER(our_int), INTENT(IN)    :: states_number_period(num_periods)
 
-    REAL(our_dble), ALLOCATABLE, INTENT(IN)      :: periods_payoffs_systematic(: ,:, :)
+    REAL(our_dble), ALLOCATABLE, INTENT(IN)      :: periods_rewards_systematic(: ,:, :)
     REAL(our_dble), ALLOCATABLE, INTENT(IN)      :: periods_emax(: ,:)
     REAL(our_dble), ALLOCATABLE, INTENT(IN)      :: data_sim(:, :)
 
@@ -594,11 +594,11 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_payoffs
 
         1900 FORMAT(4(1x,f45.15))
 
-        OPEN(UNIT=99, FILE='.periods_payoffs_systematic.resfort.dat', ACTION='WRITE')
+        OPEN(UNIT=99, FILE='.periods_rewards_systematic.resfort.dat', ACTION='WRITE')
 
         DO period = 1, num_periods
             DO i = 1, max_states_period
-                WRITE(99, 1900) periods_payoffs_systematic(period, i, :)
+                WRITE(99, 1900) periods_rewards_systematic(period, i, :)
             END DO
         END DO
 

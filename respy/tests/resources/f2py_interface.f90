@@ -77,7 +77,7 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
 
     ! Ensure that there is no problem with the repeated allocation of the containers.
     IF (ALLOCATED(mapping_state_idx)) DEALLOCATE(mapping_state_idx)
-    IF (ALLOCATED(periods_payoffs_systematic)) DEALLOCATE(periods_payoffs_systematic)
+    IF (ALLOCATED(periods_rewards_systematic)) DEALLOCATE(periods_rewards_systematic)
     IF (ALLOCATED(states_all)) DEALLOCATE(states_all)
     IF (ALLOCATED(periods_emax)) DEALLOCATE(periods_emax)
     IF (ALLOCATED(states_number_period)) DEALLOCATE(states_number_period)
@@ -87,17 +87,17 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
     CALL dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x, dist_optim_paras_info)
 
     ! Solve requested model
-    CALL fort_solve(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax_int, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max)
+    CALL fort_solve(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax_int, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max)
 
     ! Evaluate criterion function for observed data
-    CALL fort_contributions(contribs, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_est, periods_draws_prob_int, delta, tau, edu_start, edu_max)
+    CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_est, periods_draws_prob_int, delta, tau, edu_start, edu_max)
 
     crit_val = get_log_likl(contribs, num_agents_est, num_periods)
 
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE f2py_solve(periods_payoffs_systematic_int, states_number_period_int, mapping_state_idx_int, periods_emax_int, states_all_int, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, is_interpolated_int, num_draws_emax_int, num_periods_int, num_points_interp_int, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, min_idx_int, delta_int, periods_draws_emax_int, max_states_period_int)
+SUBROUTINE f2py_solve(periods_rewards_systematic_int, states_number_period_int, mapping_state_idx_int, periods_emax_int, states_all_int, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, is_interpolated_int, num_draws_emax_int, num_periods_int, num_points_interp_int, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, min_idx_int, delta_int, periods_draws_emax_int, max_states_period_int)
 
     ! The presence of max_states_period breaks the equality of interfaces. However, this is required so that the size of the return arguments is known from the beginning.
 
@@ -115,7 +115,7 @@ SUBROUTINE f2py_solve(periods_payoffs_systematic_int, states_number_period_int, 
     INTEGER, INTENT(OUT)            :: states_all_int(num_periods_int, max_states_period_int, 4)
     INTEGER, INTENT(OUT)            :: states_number_period_int(num_periods_int)
 
-    DOUBLE PRECISION, INTENT(OUT)   :: periods_payoffs_systematic_int(num_periods_int, max_states_period_int, 4)
+    DOUBLE PRECISION, INTENT(OUT)   :: periods_rewards_systematic_int(num_periods_int, max_states_period_int, 4)
     DOUBLE PRECISION, INTENT(OUT)   :: periods_emax_int(num_periods_int, max_states_period_int)
     DOUBLE PRECISION, INTENT(IN)    :: delta_int
 
@@ -157,17 +157,17 @@ SUBROUTINE f2py_solve(periods_payoffs_systematic_int, states_number_period_int, 
 
     ! Ensure that there is no problem with the repeated allocation of the containers.
     IF (ALLOCATED(mapping_state_idx)) DEALLOCATE(mapping_state_idx)
-    IF (ALLOCATED(periods_payoffs_systematic)) DEALLOCATE(periods_payoffs_systematic)
+    IF (ALLOCATED(periods_rewards_systematic)) DEALLOCATE(periods_rewards_systematic)
     IF (ALLOCATED(states_all)) DEALLOCATE(states_all)
     IF (ALLOCATED(periods_emax)) DEALLOCATE(periods_emax)
     IF (ALLOCATED(states_number_period)) DEALLOCATE(states_number_period)
     IF (ALLOCATED(states_all)) DEALLOCATE(states_all)
 
     ! Call FORTRAN solution
-    CALL fort_solve(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax_int, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max)
+    CALL fort_solve(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax_int, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max)
 
     ! Assign to initial objects for return to PYTHON
-    periods_payoffs_systematic_int = periods_payoffs_systematic
+    periods_rewards_systematic_int = periods_rewards_systematic
     states_number_period_int = states_number_period
     mapping_state_idx_int = mapping_state_idx
     periods_emax_int = periods_emax
@@ -237,22 +237,22 @@ SUBROUTINE f2py_evaluate(contribs, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, 
 
     ! Ensure that there is no problem with the repeated allocation of the containers.
     IF (ALLOCATED(mapping_state_idx)) DEALLOCATE(mapping_state_idx)
-    IF (ALLOCATED(periods_payoffs_systematic)) DEALLOCATE(periods_payoffs_systematic)
+    IF (ALLOCATED(periods_rewards_systematic)) DEALLOCATE(periods_rewards_systematic)
     IF (ALLOCATED(states_all)) DEALLOCATE(states_all)
     IF (ALLOCATED(periods_emax)) DEALLOCATE(periods_emax)
     IF (ALLOCATED(states_number_period)) DEALLOCATE(states_number_period)
     IF (ALLOCATED(states_all)) DEALLOCATE(states_all)
 
     ! Solve requested model
-    CALL fort_solve(periods_payoffs_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax_int, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max)
+    CALL fort_solve(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax_int, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max)
 
     ! Evaluate criterion function for observed data
-    CALL fort_contributions(contribs, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_est, periods_draws_prob_int, delta, tau, edu_start, edu_max)
+    CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_est, periods_draws_prob_int, delta, tau, edu_start, edu_max)
 
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE f2py_simulate(data_sim_int, periods_payoffs_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, shocks_cholesky, num_periods_int, edu_start_int, edu_max_int, delta_int, num_agents_sim_int, periods_draws_sims, seed_sim)
+SUBROUTINE f2py_simulate(data_sim_int, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, shocks_cholesky, num_periods_int, edu_start_int, edu_max_int, delta_int, num_agents_sim_int, periods_draws_sims, seed_sim)
 
     !/* external libraries      */
 
@@ -266,7 +266,7 @@ SUBROUTINE f2py_simulate(data_sim_int, periods_payoffs_systematic_int, mapping_s
 
     DOUBLE PRECISION, INTENT(OUT)   :: data_sim_int(num_agents_sim_int * num_periods_int, 8)
 
-    DOUBLE PRECISION, INTENT(IN)    :: periods_payoffs_systematic_int(:, :, :)
+    DOUBLE PRECISION, INTENT(IN)    :: periods_rewards_systematic_int(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_sims(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(4, 4)
     DOUBLE PRECISION, INTENT(IN)    :: periods_emax_int(:, :)
@@ -298,7 +298,7 @@ SUBROUTINE f2py_simulate(data_sim_int, periods_payoffs_systematic_int, mapping_s
     delta = delta_int
 
     ! Call function of interest
-    CALL fort_simulate(data_sim, periods_payoffs_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, num_agents_sim, periods_draws_sims, shocks_cholesky, delta, edu_start, edu_max, seed_sim)
+    CALL fort_simulate(data_sim, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, num_agents_sim, periods_draws_sims, shocks_cholesky, delta, edu_start, edu_max, seed_sim)
 
     ! Assign to initial objects for return to PYTHON
     data_sim_int = data_sim
@@ -306,7 +306,7 @@ SUBROUTINE f2py_simulate(data_sim_int, periods_payoffs_systematic_int, mapping_s
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE f2py_backward_induction(periods_emax_int, num_periods_int, max_states_period_int, periods_draws_emax_int, num_draws_emax_int, states_number_period_int, periods_payoffs_systematic_int, edu_max_int, edu_start_int, mapping_state_idx_int, states_all_int, delta_int, is_debug_int, is_interpolated_int, num_points_interp_int, shocks_cholesky)
+SUBROUTINE f2py_backward_induction(periods_emax_int, num_periods_int, max_states_period_int, periods_draws_emax_int, num_draws_emax_int, states_number_period_int, periods_rewards_systematic_int, edu_max_int, edu_start_int, mapping_state_idx_int, states_all_int, delta_int, is_debug_int, is_interpolated_int, num_points_interp_int, shocks_cholesky)
 
     !/* external libraries      */
 
@@ -320,7 +320,7 @@ SUBROUTINE f2py_backward_induction(periods_emax_int, num_periods_int, max_states
 
     DOUBLE PRECISION, INTENT(OUT)   :: periods_emax_int(num_periods_int, max_states_period_int)
 
-    DOUBLE PRECISION, INTENT(IN)    :: periods_payoffs_systematic_int(:, :, :   )
+    DOUBLE PRECISION, INTENT(IN)    :: periods_rewards_systematic_int(:, :, :   )
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_emax_int(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(4, 4)
     DOUBLE PRECISION, INTENT(IN)    :: delta_int
@@ -357,7 +357,7 @@ SUBROUTINE f2py_backward_induction(periods_emax_int, num_periods_int, max_states
     IF(ALLOCATED(periods_emax)) DEALLOCATE(periods_emax)
 
     ! Call actual function of interest
-    CALL fort_backward_induction(periods_emax, periods_draws_emax_int, states_number_period_int, periods_payoffs_systematic_int, mapping_state_idx_int, states_all_int, shocks_cholesky, delta, is_debug, is_interpolated, .False., edu_start, edu_max, .False.)
+    CALL fort_backward_induction(periods_emax, periods_draws_emax_int, states_number_period_int, periods_rewards_systematic_int, mapping_state_idx_int, states_all_int, shocks_cholesky, delta, is_debug, is_interpolated, .False., edu_start, edu_max, .False.)
 
     ! Allocate to intermidiaries
     periods_emax_int = periods_emax
@@ -419,7 +419,7 @@ SUBROUTINE f2py_create_state_space(states_all_int, states_number_period_int, map
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE f2py_calculate_payoffs_systematic(periods_payoffs_systematic_int, num_periods_int, states_number_period_int, states_all_int, edu_start_int, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, max_states_period_int)
+SUBROUTINE f2py_calculate_rewards_systematic(periods_rewards_systematic_int, num_periods_int, states_number_period_int, states_all_int, edu_start_int, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, max_states_period_int)
 
     !/* external libraries      */
 
@@ -431,7 +431,7 @@ SUBROUTINE f2py_calculate_payoffs_systematic(periods_payoffs_systematic_int, num
 
     !/* external objects        */
 
-    DOUBLE PRECISION, INTENT(OUT)   :: periods_payoffs_systematic_int(num_periods_int, max_states_period_int, 4)
+    DOUBLE PRECISION, INTENT(OUT)   :: periods_rewards_systematic_int(num_periods_int, max_states_period_int, 4)
 
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_home(1)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_edu(3)
@@ -454,12 +454,12 @@ SUBROUTINE f2py_calculate_payoffs_systematic(periods_payoffs_systematic_int, num
     edu_start = edu_start_int
 
     ! Ensure that there is no problem with the repeated allocation of the containers.
-    IF(ALLOCATED(periods_payoffs_systematic)) DEALLOCATE(periods_payoffs_systematic)
+    IF(ALLOCATED(periods_rewards_systematic)) DEALLOCATE(periods_rewards_systematic)
 
     ! Call function of interest
-    CALL fort_calculate_payoffs_systematic(periods_payoffs_systematic, states_number_period_int, states_all_int, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start)
+    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, states_number_period_int, states_all_int, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start)
 
-    periods_payoffs_systematic_int = periods_payoffs_systematic
+    periods_rewards_systematic_int = periods_rewards_systematic
 
 END SUBROUTINE
 !******************************************************************************
@@ -550,7 +550,7 @@ SUBROUTINE wrapper_svd(U, S, VT, A, m)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE wrapper_get_future_value(emax, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, payoffs_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta_int)
+SUBROUTINE wrapper_construct_emax(emax, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta_int)
 
     !/* external libraries      */
 
@@ -565,7 +565,7 @@ SUBROUTINE wrapper_get_future_value(emax, num_periods_int, num_draws_emax_int, p
     DOUBLE PRECISION, INTENT(OUT)   :: emax
 
     DOUBLE PRECISION, INTENT(IN)    :: draws_emax_transformed(:,:)
-    DOUBLE PRECISION, INTENT(IN)    :: payoffs_systematic(:)
+    DOUBLE PRECISION, INTENT(IN)    :: rewards_systematic(:)
     DOUBLE PRECISION, INTENT(IN)    :: periods_emax_int(:,:)
     DOUBLE PRECISION, INTENT(IN)    :: delta_int
 
@@ -594,7 +594,7 @@ SUBROUTINE wrapper_get_future_value(emax, num_periods_int, num_draws_emax_int, p
     delta = delta_int
 
     ! Call function of interest
-    CALL get_future_value(emax, draws_emax_transformed, period, k, payoffs_systematic, mapping_state_idx_int, states_all_int, periods_emax_int, delta, edu_start, edu_max)
+    CALL construct_emax(emax, draws_emax_transformed, period, k, rewards_systematic, mapping_state_idx_int, states_all_int, periods_emax_int, delta, edu_start, edu_max)
 
 END SUBROUTINE
 !******************************************************************************
@@ -896,7 +896,7 @@ SUBROUTINE wrapper_get_coefficients(coeffs, Y, X, num_covars, num_states)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_periods_int, num_states, delta_int, periods_payoffs_systematic_int, edu_max_int, edu_start_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_simulated, num_draws_emax_int, maxe, draws_emax_transformed)
+SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_periods_int, num_states, delta_int, periods_rewards_systematic_int, edu_max_int, edu_start_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_simulated, num_draws_emax_int, maxe, draws_emax_transformed)
 
     !/* external libraries      */
 
@@ -910,7 +910,7 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_perio
 
     DOUBLE PRECISION, INTENT(OUT)       :: exogenous_variable(num_states)
 
-    DOUBLE PRECISION, INTENT(IN)        :: periods_payoffs_systematic_int(:, :, :)
+    DOUBLE PRECISION, INTENT(IN)        :: periods_rewards_systematic_int(:, :, :)
     DOUBLE PRECISION, INTENT(IN)        :: draws_emax_transformed(:, :)
     DOUBLE PRECISION, INTENT(IN)        :: periods_emax_int(:, :)
     DOUBLE PRECISION, INTENT(IN)        :: maxe(:)
@@ -940,12 +940,12 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_perio
     delta = delta_int
 
     ! Call function of interest
-    CALL get_endogenous_variable(exogenous_variable, period, num_states, periods_payoffs_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_simulated, maxe, draws_emax_transformed, delta, edu_start, edu_max)
+    CALL get_endogenous_variable(exogenous_variable, period, num_states, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_simulated, maxe, draws_emax_transformed, delta, edu_start, edu_max)
 
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE wrapper_get_exogenous_variables(independent_variables, maxe, period, num_periods_int, num_states, delta_int, periods_payoffs_systematic_int, shifts, edu_max_int, edu_start_int, mapping_state_idx_int, periods_emax_int, states_all_int)
+SUBROUTINE wrapper_get_exogenous_variables(independent_variables, maxe, period, num_periods_int, num_states, delta_int, periods_rewards_systematic_int, shifts, edu_max_int, edu_start_int, mapping_state_idx_int, periods_emax_int, states_all_int)
 
     !/* external libraries      */
 
@@ -961,7 +961,7 @@ SUBROUTINE wrapper_get_exogenous_variables(independent_variables, maxe, period, 
     DOUBLE PRECISION, INTENT(OUT)        :: maxe(num_states)
 
 
-    DOUBLE PRECISION, INTENT(IN)        :: periods_payoffs_systematic_int(:, :, :)
+    DOUBLE PRECISION, INTENT(IN)        :: periods_rewards_systematic_int(:, :, :)
     DOUBLE PRECISION, INTENT(IN)        :: periods_emax_int(:, :)
     DOUBLE PRECISION, INTENT(IN)        :: shifts(:)
     DOUBLE PRECISION, INTENT(IN)        :: delta_int
@@ -989,7 +989,7 @@ SUBROUTINE wrapper_get_exogenous_variables(independent_variables, maxe, period, 
     delta = delta_int
 
     ! Call function of interest
-    CALL get_exogenous_variables(independent_variables, maxe, period, num_states, periods_payoffs_systematic_int, shifts, mapping_state_idx_int, periods_emax_int, states_all_int, delta, edu_start, edu_max)
+    CALL get_exogenous_variables(independent_variables, maxe, period, num_states, periods_rewards_systematic_int, shifts, mapping_state_idx_int, periods_emax_int, states_all_int, delta, edu_start, edu_max)
 
 END SUBROUTINE
 !******************************************************************************

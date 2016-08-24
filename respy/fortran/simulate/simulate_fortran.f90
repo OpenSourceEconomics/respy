@@ -19,13 +19,13 @@ MODULE simulate_fortran
  CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_simulate(data_sim, periods_payoffs_systematic, mapping_state_idx, periods_emax, states_all, num_agents_sim, periods_draws_sims, shocks_cholesky, delta, edu_start, edu_max, seed_sim)
+SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, num_agents_sim, periods_draws_sims, shocks_cholesky, delta, edu_start, edu_max, seed_sim)
 
     !/* external objects        */
 
     REAL(our_dble), ALLOCATABLE, INTENT(OUT)     :: data_sim(:, :)
 
-    REAL(our_dble), INTENT(IN)      :: periods_payoffs_systematic(num_periods, max_states_period, 4)
+    REAL(our_dble), INTENT(IN)      :: periods_rewards_systematic(num_periods, max_states_period, 4)
     REAL(our_dble), INTENT(IN)      :: periods_draws_sims(num_periods, num_agents_sim, 4)
     REAL(our_dble), INTENT(IN)      :: shocks_cholesky(4, 4)
     REAL(our_dble), INTENT(IN)      :: periods_emax(num_periods, max_states_period)
@@ -55,7 +55,7 @@ SUBROUTINE fort_simulate(data_sim, periods_payoffs_systematic, mapping_state_idx
     INTEGER(our_int)                :: i
     INTEGER(our_int)                :: k
 
-    REAL(our_dble)                  :: payoffs_systematic(4)
+    REAL(our_dble)                  :: rewards_systematic(4)
     REAL(our_dble)                  :: total_values(4)
     REAL(our_dble)                  :: draws(4)
 
@@ -103,12 +103,12 @@ SUBROUTINE fort_simulate(data_sim, periods_payoffs_systematic, mapping_state_idx
             data_sim(count + 1, 1) = DBLE(i)
             data_sim(count + 1, 2) = DBLE(period)
 
-            ! Calculate ex post payoffs
-            payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
+            ! Calculate ex post rewards
+            rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
             draws = periods_draws_sims_transformed(period + 1, i + 1, :)
 
             ! Calculate total utilities
-            CALL get_total_values(total_values, period, payoffs_systematic, draws, mapping_state_idx, periods_emax, k, states_all, delta, edu_start, edu_max)
+            CALL get_total_values(total_values, period, rewards_systematic, draws, mapping_state_idx, periods_emax, k, states_all, delta, edu_start, edu_max)
 
             ! Write relevant state space for period to data frame
             data_sim(count + 1, 5:8) = current_state
@@ -142,11 +142,11 @@ SUBROUTINE fort_simulate(data_sim, periods_payoffs_systematic, mapping_state_idx
 
             ! Record earnings
             IF (choice(1) .EQ. one_int) THEN
-                data_sim(count + 1, 4) = payoffs_systematic(1) * draws(1)
+                data_sim(count + 1, 4) = rewards_systematic(1) * draws(1)
             END IF
 
             IF (choice(1) .EQ. two_int) THEN
-                data_sim(count + 1, 4) = payoffs_systematic(2) * draws(2)
+                data_sim(count + 1, 4) = rewards_systematic(2) * draws(2)
             END IF
 
             ! Update row indicator

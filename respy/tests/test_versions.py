@@ -197,7 +197,7 @@ class TestClass(object):
     def test_4(self):
         """ Test the solution of deterministic model with ambiguity and
         interpolation. This test has the same result as in the absence of
-        random variation in payoffs, it does not matter whether the
+        random variation in rewards, it does not matter whether the
         environment is ambiguous or not.
         """
         # Solve specified economy

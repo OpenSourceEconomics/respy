@@ -136,16 +136,16 @@ def respy_interface(respy_obj, request, data_array=None):
 
         # Collect arguments to pass in different implementations of the
         # simulation.
-        periods_payoffs_systematic, states_number_period, mapping_state_idx, \
+        periods_rewards_systematic, states_number_period, mapping_state_idx, \
             periods_emax, states_all = pyth_solve(coeffs_a, coeffs_b,
             coeffs_edu, coeffs_home, shocks_cholesky, is_interpolated,
             num_draws_emax, num_periods, num_points_interp, is_myopic,
             edu_start, is_debug, edu_max, min_idx, delta, periods_draws_emax)
 
-        solution = (periods_payoffs_systematic, states_number_period,
+        solution = (periods_rewards_systematic, states_number_period,
             mapping_state_idx, periods_emax, states_all)
 
-        data_array = pyth_simulate(periods_payoffs_systematic,
+        data_array = pyth_simulate(periods_rewards_systematic,
             mapping_state_idx, periods_emax, states_all, shocks_cholesky,
             num_periods, edu_start, edu_max, delta, num_agents_sim,
             periods_draws_sims, seed_sim)

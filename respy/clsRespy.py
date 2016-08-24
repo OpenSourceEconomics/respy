@@ -19,7 +19,7 @@ DERIVED_ATTR = ['min_idx', 'is_myopic']
 
 # Special care with solution attributes is required. These are only returned
 # if the class instance was solved.
-SOLUTION_ATTR = ['periods_payoffs_systematic', 'states_number_period']
+SOLUTION_ATTR = ['periods_rewards_systematic', 'states_number_period']
 SOLUTION_ATTR += ['mapping_state_idx', 'periods_emax', 'states_all']
 
 # Full list of admissible optimizers
@@ -106,7 +106,7 @@ class RespyCls(object):
         self.attr['min_idx'] = None
 
         # Solution attributes
-        self.attr['periods_payoffs_systematic'] = None
+        self.attr['periods_rewards_systematic'] = None
 
         self.attr['states_number_period'] = None
 
@@ -482,7 +482,7 @@ class RespyCls(object):
         # Delete the duplicated information from the initialization
         # dictionary. Special treatment of EDUCATION is required as it
         # contains other information about education than just the
-        # payoff parametrization.
+        # rewards parametrization.
         del self.attr['init_dict']
 
     def _update_derived_attributes(self):
@@ -673,7 +673,7 @@ class RespyCls(object):
         edu_max = self.attr['edu_max']
 
         # Distribute results
-        periods_payoffs_systematic = self.attr['periods_payoffs_systematic']
+        periods_rewards_systematic = self.attr['periods_rewards_systematic']
 
         states_number_period = self.attr['states_number_period']
 
@@ -689,8 +689,8 @@ class RespyCls(object):
             mapping_state_idx = replace_missing_values(mapping_state_idx)
         if states_all is not None:
             states_all = replace_missing_values(states_all)
-        if periods_payoffs_systematic is not None:
-            periods_payoffs_systematic = replace_missing_values(periods_payoffs_systematic)
+        if periods_rewards_systematic is not None:
+            periods_rewards_systematic = replace_missing_values(periods_rewards_systematic)
         if periods_emax is not None:
             periods_emax = replace_missing_values(periods_emax)
 
@@ -779,37 +779,37 @@ class RespyCls(object):
             assert (np.all(np.isfinite(
                 mapping_state_idx[is_infinite == False])) == False)
 
-        # Check the calculated systematic payoffs
+        # Check the calculated systematic rewards
         is_applicable = (states_all is not None)
         is_applicable = is_applicable and (states_number_period is not None)
-        is_applicable = is_applicable and (periods_payoffs_systematic is not None)
+        is_applicable = is_applicable and (periods_rewards_systematic is not None)
 
         if is_applicable:
-            # Check that the payoffs are finite for all admissible values and
+            # Check that the rewards are finite for all admissible values and
             # infinite for all others.
-            is_infinite = np.tile(False, reps=periods_payoffs_systematic.shape)
+            is_infinite = np.tile(False, reps=periods_rewards_systematic.shape)
             for period in range(num_periods):
                 # Loop over all possible states
                 for k in range(states_number_period[period]):
                     # Check that wages are all positive
-                    assert (np.all(periods_payoffs_systematic[period, k, :2] >= 0.0))
+                    assert (np.all(periods_rewards_systematic[period, k, :2] >= 0.0))
                     # Check for finite value at admissible state
-                    assert (np.all(np.isfinite(periods_payoffs_systematic[
+                    assert (np.all(np.isfinite(periods_rewards_systematic[
                     period, k, :])))
                     # Record finite value
                     is_infinite[period, k, :] = True
                 # Check that all admissible states are finite
-                assert (np.all(np.isfinite(periods_payoffs_systematic[
+                assert (np.all(np.isfinite(periods_rewards_systematic[
                     is_infinite == True])))
                 # Check that all inadmissible states are infinite
                 if num_periods > 1:
-                    assert (np.all(np.isfinite(periods_payoffs_systematic[is_infinite == False])) == False)
+                    assert (np.all(np.isfinite(periods_rewards_systematic[is_infinite == False])) == False)
 
         # Check the expected future value
         is_applicable = (periods_emax is not None)
 
         if is_applicable:
-            # Check that the payoffs are finite for all admissible values and
+            # Check that the emaxs are finite for all admissible values and
             # infinite for all others.
             is_infinite = np.tile(False, reps=periods_emax.shape)
             for period in range(num_periods):
@@ -835,4 +835,3 @@ class RespyCls(object):
 
         # Finishing.
         return True
-
