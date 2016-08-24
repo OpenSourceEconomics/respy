@@ -97,7 +97,7 @@ def get_cholesky(x, info=None):
         return shocks_cholesky, None
 
 
-def get_total_value(period, num_periods, delta, payoffs_systematic, draws,
+def get_total_values(period, num_periods, delta, payoffs_systematic, draws,
         edu_max, edu_start, mapping_state_idx, periods_emax, k, states_all):
     """ Get total value of all possible states.
     """
@@ -120,17 +120,17 @@ def get_total_value(period, num_periods, delta, payoffs_systematic, draws,
         emaxs = np.tile(0.0, 4)
 
     # Calculate total utilities
-    total_payoffs = payoffs_ex_post + delta * emaxs
+    total_values = payoffs_ex_post + delta * emaxs
 
     # This is required to ensure that the agent does not choose any
     # inadmissible states. If the state is inadmissible emaxs takes
     # value zero. This aligns the treatment of inadmissible values with the
     # original paper.
     if is_inadmissible:
-        total_payoffs[2] += INADMISSIBILITY_PENALTY
+        total_values[2] += INADMISSIBILITY_PENALTY
 
     # Finishing
-    return total_payoffs
+    return total_values
 
 
 def get_emaxs(edu_max, edu_start, mapping_state_idx, period,

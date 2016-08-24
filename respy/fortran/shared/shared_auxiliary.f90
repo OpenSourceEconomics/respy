@@ -159,11 +159,11 @@ SUBROUTINE transform_disturbances(draws_transformed, draws, shocks_cholesky, num
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_total_value(total_payoffs, period, payoffs_systematic, draws, mapping_state_idx, periods_emax, k, states_all, delta, edu_start, edu_max)
+SUBROUTINE get_total_values(total_values, period, payoffs_systematic, draws, mapping_state_idx, periods_emax, k, states_all, delta, edu_start, edu_max)
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(OUT)     :: total_payoffs(4)
+    REAL(our_dble), INTENT(OUT)     :: total_values(4)
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
@@ -206,14 +206,14 @@ SUBROUTINE get_total_value(total_payoffs, period, payoffs_systematic, draws, map
     END IF
 
     ! Calculate total utilities
-    total_payoffs = payoffs_ex_post + delta * emaxs
+    total_values = payoffs_ex_post + delta * emaxs
 
     ! This is required to ensure that the agent does not choose any
     ! inadmissible states. If the state is inadmissible emaxs takes
     ! value zero. This aligns the treatment of inadmissible values with the
     ! original paper.
     IF (is_inadmissible) THEN
-        total_payoffs(3) = total_payoffs(3) + INADMISSIBILITY_PENALTY
+        total_values(3) = total_values(3) + INADMISSIBILITY_PENALTY
     END IF
 
 END SUBROUTINE

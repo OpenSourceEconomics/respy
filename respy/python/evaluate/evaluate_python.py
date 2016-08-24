@@ -2,7 +2,7 @@ from scipy.stats import norm
 import numpy as np
 
 from respy.python.evaluate.evaluate_auxiliary import get_smoothed_probability
-from respy.python.shared.shared_auxiliary import get_total_value
+from respy.python.shared.shared_auxiliary import get_total_values
 from respy.python.shared.shared_constants import SMALL_FLOAT
 from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.solve.solve_python import pyth_solve
@@ -118,15 +118,15 @@ def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
                 draws[:2] = np.clip(np.exp(draws[:2]), 0.0, HUGE_FLOAT)
 
                 # Calculate total payoff.
-                total_payoffs = get_total_value(period, num_periods,
+                total_values = get_total_values(period, num_periods,
                     delta, payoffs_systematic, draws, edu_max, edu_start,
                     mapping_state_idx, periods_emax, k, states_all)
 
                 # Record optimal choices
-                counts[np.argmax(total_payoffs)] += 1
+                counts[np.argmax(total_values)] += 1
 
                 # Get the smoothed choice probability.
-                prob_choice = get_smoothed_probability(total_payoffs, idx, tau)
+                prob_choice = get_smoothed_probability(total_values, idx, tau)
                 prob_obs += prob_choice * prob_wage
 
             # Determine relative shares

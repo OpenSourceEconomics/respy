@@ -463,7 +463,7 @@ SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, num_stat
     !/* internal objects        */
 
     REAL(our_dble)                      :: payoffs_systematic(4)
-    REAL(our_dble)                      :: total_payoffs(4)
+    REAL(our_dble)                      :: total_values(4)
     REAL(our_dble)                      :: diff(4)
 
     INTEGER(our_int)                    :: k
@@ -477,12 +477,12 @@ SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, num_stat
 
         payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
-        CALL get_total_value(total_payoffs, period, payoffs_systematic, shifts, mapping_state_idx, periods_emax, k, states_all, delta, edu_start, edu_max)
+        CALL get_total_values(total_values, period, payoffs_systematic, shifts, mapping_state_idx, periods_emax, k, states_all, delta, edu_start, edu_max)
 
         ! Implement level shifts
-        maxe(k + 1) = MAXVAL(total_payoffs)
+        maxe(k + 1) = MAXVAL(total_values)
 
-        diff = maxe(k + 1) - total_payoffs
+        diff = maxe(k + 1) - total_values
 
         ! Construct regressors
         independent_variables(k + 1, 1:4) = diff
@@ -846,7 +846,7 @@ SUBROUTINE get_future_value(emax, draws_emax_transformed, period, k, payoffs_sys
 
     INTEGER(our_int)                :: i
 
-    REAL(our_dble)                  :: total_payoffs(4)
+    REAL(our_dble)                  :: total_values(4)
     REAL(our_dble)                  :: draws(4)
     REAL(our_dble)                  :: maximum
 
@@ -862,10 +862,10 @@ SUBROUTINE get_future_value(emax, draws_emax_transformed, period, k, payoffs_sys
         draws = draws_emax_transformed(i, :)
 
         ! Calculate total value
-        CALL get_total_value(total_payoffs, period, payoffs_systematic, draws, mapping_state_idx, periods_emax, k, states_all, delta, edu_start, edu_max)
+        CALL get_total_values(total_values, period, payoffs_systematic, draws, mapping_state_idx, periods_emax, k, states_all, delta, edu_start, edu_max)
 
         ! Determine optimal choice
-        maximum = MAXVAL(total_payoffs)
+        maximum = MAXVAL(total_values)
 
         ! Recording expected future value
         emax = emax + maximum

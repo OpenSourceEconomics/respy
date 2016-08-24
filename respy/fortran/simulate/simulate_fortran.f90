@@ -56,7 +56,7 @@ SUBROUTINE fort_simulate(data_sim, periods_payoffs_systematic, mapping_state_idx
     INTEGER(our_int)                :: k
 
     REAL(our_dble)                  :: payoffs_systematic(4)
-    REAL(our_dble)                  :: total_payoffs(4)
+    REAL(our_dble)                  :: total_values(4)
     REAL(our_dble)                  :: draws(4)
 
 !------------------------------------------------------------------------------
@@ -108,7 +108,7 @@ SUBROUTINE fort_simulate(data_sim, periods_payoffs_systematic, mapping_state_idx
             draws = periods_draws_sims_transformed(period + 1, i + 1, :)
 
             ! Calculate total utilities
-            CALL get_total_value(total_payoffs, period, payoffs_systematic, draws, mapping_state_idx, periods_emax, k, states_all, delta, edu_start, edu_max)
+            CALL get_total_values(total_values, period, payoffs_systematic, draws, mapping_state_idx, periods_emax, k, states_all, delta, edu_start, edu_max)
 
             ! Write relevant state space for period to data frame
             data_sim(count + 1, 5:8) = current_state
@@ -117,7 +117,7 @@ SUBROUTINE fort_simulate(data_sim, periods_payoffs_systematic, mapping_state_idx
             data_sim(count + 1, 7) = data_sim(count + 1, 7) + edu_start
 
             ! Determine and record optimal choice
-            choice = MAXLOC(total_payoffs)
+            choice = MAXLOC(total_values)
 
             data_sim(count + 1, 3) = DBLE(choice(1))
 

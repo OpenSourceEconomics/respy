@@ -6,7 +6,7 @@ import os
 from respy.python.record.record_solution import record_prediction_model
 from respy.python.record.record_solution import record_solution_progress
 from respy.python.shared.shared_auxiliary import transform_disturbances
-from respy.python.shared.shared_auxiliary import get_total_value
+from respy.python.shared.shared_auxiliary import get_total_values
 from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.shared.shared_constants import MISSING_INT
@@ -291,14 +291,14 @@ def get_exogenous_variables(period, num_periods, num_states, delta,
         payoffs_systematic = periods_payoffs_systematic[period, k, :]
 
         # Get total value
-        total_payoffs = get_total_value(period, num_periods, delta,
+        total_values = get_total_values(period, num_periods, delta,
             payoffs_systematic, shifts, edu_max, edu_start,
             mapping_state_idx, periods_emax, k, states_all)
 
         # Implement level shifts
-        maxe[k] = max(total_payoffs)
+        maxe[k] = max(total_values)
 
-        diff = maxe[k] - total_payoffs
+        diff = maxe[k] - total_values
 
         exogenous[k, :8] = np.hstack((diff, np.sqrt(diff)))
 
@@ -402,7 +402,7 @@ def checks(str_, *args):
         # case where delta is equal to zero, (-np.inf * 0.00) evaluates to
         # NAN. This is returned as the maximum value when calling np.argmax.
         # This was preciously handled by an auxiliary function
-        # "_stabilize_myopic" inside "get_total_value".
+        # "_stabilize_myopic" inside "get_total_values".
         assert (delta > 0)
 
     else:
@@ -440,12 +440,12 @@ def get_future_value(num_periods, num_draws_emax, period, k,
         draws = draws_emax_transformed[i, :]
 
         # Get total value of admissible states
-        total_payoffs = get_total_value(period, num_periods, delta,
+        total_values = get_total_values(period, num_periods, delta,
             payoffs_systematic, draws, edu_max, edu_start, mapping_state_idx,
             periods_emax, k, states_all)
 
         # Determine optimal choice
-        maximum = max(total_payoffs)
+        maximum = max(total_values)
 
         # Recording expected future value
         emax += maximum

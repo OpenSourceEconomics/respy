@@ -5,7 +5,7 @@ from respy.python.record.record_simulation import record_simulation_stop
 from respy.python.record.record_simulation import record_simulation_start
 from respy.python.shared.shared_auxiliary import transform_disturbances
 from respy.python.shared.shared_constants import MISSING_FLOAT
-from respy.python.shared.shared_auxiliary import get_total_value
+from respy.python.shared.shared_auxiliary import get_total_values
 
 
 def pyth_simulate(periods_payoffs_systematic, mapping_state_idx,
@@ -55,12 +55,12 @@ def pyth_simulate(periods_payoffs_systematic, mapping_state_idx,
             draws = periods_draws_sims_transformed[period, i, :]
 
             # Get total value of admissible states
-            total_payoffs = get_total_value(period,
+            total_values = get_total_values(period,
                 num_periods, delta, payoffs_systematic, draws, edu_max,
                 edu_start, mapping_state_idx, periods_emax, k, states_all)
 
             # Determine optimal choice
-            max_idx = np.argmax(total_payoffs)
+            max_idx = np.argmax(total_values)
 
             # Record agent decision
             dataset[count, 2] = max_idx + 1

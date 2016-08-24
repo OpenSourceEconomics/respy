@@ -17,13 +17,13 @@ MODULE evaluate_auxiliary
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-FUNCTION get_smoothed_probability(total_payoffs, idx, tau)
+FUNCTION get_smoothed_probability(total_values, idx, tau)
 
     !/* external objects        */
 
     INTEGER(our_int), INTENT(IN)    :: idx
 
-    REAL(our_dble), INTENT(IN)      :: total_payoffs(4)
+    REAL(our_dble), INTENT(IN)      :: total_values(4)
     REAL(our_dble), INTENT(IN)      :: tau
 
     !/*  internal objects       */
@@ -38,9 +38,9 @@ FUNCTION get_smoothed_probability(total_payoffs, idx, tau)
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    maxim_payoff = MAXVAL(total_payoffs)
+    maxim_payoff = MAXVAL(total_values)
 
-    CALL clip_value(smoot_payoff, EXP((total_payoffs - maxim_payoff)/tau), zero_dble, HUGE_FLOAT, infos)
+    CALL clip_value(smoot_payoff, EXP((total_values - maxim_payoff)/tau), zero_dble, HUGE_FLOAT, infos)
 
     get_smoothed_probability = smoot_payoff(idx) / SUM(smoot_payoff)
 

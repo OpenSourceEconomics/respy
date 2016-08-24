@@ -53,7 +53,7 @@ SUBROUTINE fort_contributions(contribs, periods_payoffs_systematic, mapping_stat
     REAL(our_dble)                  :: draws_prob_raw(num_draws_prob, 4)
     REAL(our_dble)                  :: payoffs_systematic(4)
     REAL(our_dble)                  :: shocks_cov(4, 4)
-    REAL(our_dble)                  :: total_payoffs(4)
+    REAL(our_dble)                  :: total_values(4)
     REAL(our_dble)                  :: draws_cond(4)
     REAL(our_dble)                  :: draws_stan(4)
     REAL(our_dble)                  :: prob_choice
@@ -181,13 +181,13 @@ SUBROUTINE fort_contributions(contribs, periods_payoffs_systematic, mapping_stat
                 CALL clip_value(draws(2), EXP(draws(2)), zero_dble, HUGE_FLOAT, info)
 
                 ! Calculate total payoff.
-                CALL get_total_value(total_payoffs, period, payoffs_systematic, draws, mapping_state_idx, periods_emax, k, states_all, delta, edu_start, edu_max)
+                CALL get_total_values(total_values, period, payoffs_systematic, draws, mapping_state_idx, periods_emax, k, states_all, delta, edu_start, edu_max)
 
                 ! Record optimal choices
-                counts(MAXLOC(total_payoffs)) = counts(MAXLOC(total_payoffs)) + 1
+                counts(MAXLOC(total_values)) = counts(MAXLOC(total_values)) + 1
 
                 ! Get the smoothed choice probability
-                prob_choice = get_smoothed_probability(total_payoffs, idx, tau)
+                prob_choice = get_smoothed_probability(total_values, idx, tau)
                 prob_obs = prob_obs + prob_choice * prob_wage
 
             END DO
