@@ -700,7 +700,7 @@ SUBROUTINE wrapper_trace(rslt, A)
 !------------------------------------------------------------------------------
 
     ! Call function of interest
-    rslt = trace_fun(A)
+    rslt = trace(A)
 
 END SUBROUTINE
 !******************************************************************************
@@ -1052,6 +1052,34 @@ SUBROUTINE wrapper_get_cholesky(shocks_cholesky, info, x)
 !------------------------------------------------------------------------------
 
     CALL get_cholesky(shocks_cholesky, x, info)
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE wrapper_kl_divergence(rslt, mean_old, cov_old, mean_new, cov_new)
+
+    !/* external libraries      */
+
+    USE resfort_library
+
+    !/* setup                   */
+
+    IMPLICIT NONE
+
+    !/* external objects        */
+
+    DOUBLE PRECISION, INTENT(OUT)   :: rslt
+
+    DOUBLE PRECISION, INTENT(IN)    :: cov_old(:, :)
+    DOUBLE PRECISION, INTENT(IN)    :: cov_new(:, :)
+    DOUBLE PRECISION, INTENT(IN)    :: mean_old(:)
+    DOUBLE PRECISION, INTENT(IN)    :: mean_new(:)
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    rslt = kl_divergence(mean_old, cov_old, mean_new, cov_new)
 
 END SUBROUTINE
 !******************************************************************************

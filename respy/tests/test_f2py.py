@@ -33,12 +33,11 @@ from respy.python.shared.shared_auxiliary import create_draws
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
-
 from respy.python.solve.solve_auxiliary import pyth_calculate_rewards_systematic
-
 from respy.python.solve.solve_auxiliary import pyth_backward_induction
 from respy.python.solve.solve_auxiliary import get_simulated_indicator
 from respy.python.solve.solve_auxiliary import get_exogenous_variables
+from respy.python.solve.solve_ambiguity import kl_divergence
 
 from respy import RespyCls
 from respy import simulate
@@ -537,3 +536,28 @@ class TestClass(object):
 
         # Compare the results based on the two methods
         np.testing.assert_equal(fort, py)
+
+    def test_9(self):
+        """ Check the calculation of the KL divergence across implementations.
+        """
+        for i in range(1000):
+
+            num_dims = np.random.randint(1, 5)
+            old_mean = np.random.uniform(size=num_dims)
+            new_mean = np.random.uniform(size=num_dims)
+
+            cov = np.random.random((num_dims, num_dims))
+            old_cov = np.matmul(cov.T, cov)
+
+            cov = np.random.random((num_dims, num_dims))
+            new_cov = np.matmul(cov.T, cov)
+
+            np.fill_diagonal(new_cov, new_cov.diagonal() * 5)
+            np.fill_diagonal(old_cov, old_cov.diagonal() * 5)
+
+            args = (old_mean, old_cov, new_mean, new_cov)
+
+            py = kl_divergence(*args)
+            fort = fort_debug.wrapper_kl_divergence(*args)
+
+            np.testing.assert_almost_equal(fort, py)

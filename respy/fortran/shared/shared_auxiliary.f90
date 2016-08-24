@@ -403,11 +403,11 @@ SUBROUTINE standard_normal(draw)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-PURE FUNCTION trace_fun(A)
+PURE FUNCTION trace(A)
 
     !/* external objects        */
 
-    REAL(our_dble)              :: trace_fun
+    REAL(our_dble)              :: trace
 
     REAL(our_dble), INTENT(IN)  :: A(:,:)
 
@@ -424,12 +424,12 @@ PURE FUNCTION trace_fun(A)
     n = SIZE(A, DIM = 1)
 
     ! Initialize results
-    trace_fun = zero_dble
+    trace = zero_dble
 
     ! Calculate trace
     DO i = 1, n
 
-        trace_fun = trace_fun + A(i, i)
+        trace = trace + A(i, i)
 
     END DO
 

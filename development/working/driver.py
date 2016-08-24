@@ -8,7 +8,7 @@ import sys
 if len(sys.argv) > 1:
     cwd = os.getcwd()
     os.chdir('../../respy')
-    assert os.system('./waf distclean; ./waf configure build ') == 0
+    assert os.system('git clean -d -f; ./waf configure build --debug ') == 0
     os.chdir(cwd)
 
 
@@ -33,33 +33,33 @@ import numpy as np
 import pickle as pkl
 
 
-
-respy_obj = RespyCls('model.respy.ini')
-simulate(respy_obj)
+sys.path.insert(0, '/home/peisenha/restudToolbox/package/respy/tests/resources')
 
 
-base = None
-for num_procs in [1, 2]:
 
-    respy_obj.unlock()
-    respy_obj.set_attr('num_procs', num_procs)
-    respy_obj.set_attr('is_parallel', (num_procs > 1))
-    respy_obj.lock()
+from f2py_interface import wrapper_kl_divergence
+from respy.python.solve.solve_ambiguity import kl_divergence
 
-    x, crit_val = estimate(respy_obj)
-    if base is None:
-        base = crit_val
+for i in range(10000):
+    print(i)
+    num_dims = np.random.randint(1, 5)
 
-    np.testing.assert_equal(crit_val, base)
-    print(num_procs, crit_val)
-# print('working PYTHON')
-# respy_obj = RespyCls('model.respy.ini')
-# #respy_obj.attr['version'] = 'PYTHON'
-# #respy_obj.attr['optimizer_used'] = 'SCIPY-POWELL'
-# import time
-# start = time.time()
-#
-# x, crit_val = estimate(respy_obj)
-# print(crit_val, 'ONLY WORKING WIT MAXFUN 0')
-#
-# np.testing.assert_almost_equal(crit_val, 0.66798246030058295)
+    old_mean = np.random.uniform(size=num_dims)
+    new_mean = np.random.uniform(size=num_dims)
+
+    cov = np.random.random((num_dims, num_dims))
+    old_cov = np.matmul(cov.T, cov)
+
+    cov = np.random.random((num_dims, num_dims))
+    new_cov = np.matmul(cov.T, cov)
+
+    # Stabilization for inverse.
+    np.fill_diagonal(new_cov, new_cov.diagonal() * 5)
+    np.fill_diagonal(old_cov, old_cov.diagonal() * 5)
+
+
+    fort = wrapper_kl_divergence(old_mean, old_cov, new_mean, new_cov)
+    pyth = kl_divergence(old_mean, old_cov, new_mean, new_cov)
+
+
+    np.testing.assert_almost_equal(fort, pyth)
