@@ -179,8 +179,8 @@ SUBROUTINE get_total_value(total_payoffs, period, payoffs_systematic, draws, map
 
     !/* internal objects        */
 
-    REAL(our_dble)                  :: emaxs(4)
     REAL(our_dble)                  :: payoffs_ex_post(4)
+    REAL(our_dble)                  :: emaxs(4)
 
     LOGICAL                         :: is_inadmissible
 

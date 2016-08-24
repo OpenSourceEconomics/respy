@@ -264,8 +264,8 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
     REAL(our_dble)                      :: draws_emax(num_draws_emax, 4)
     REAL(our_dble)                      :: payoffs_systematic(4)
     REAL(our_dble)                      :: shocks_cov(4, 4)
-    REAL(our_dble)                      :: emax_simulated
     REAL(our_dble)                      :: shifts(4)
+    REAL(our_dble)                      :: emax
 
     REAL(our_dble), ALLOCATABLE         :: exogenous(:, :)
     REAL(our_dble), ALLOCATABLE         :: predictions(:)
@@ -342,9 +342,9 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
 
                 payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
-                CALL get_future_value(emax_simulated, draws_emax_transformed, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max)
+                CALL get_future_value(emax, draws_emax_transformed, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max)
 
-                periods_emax(period + 1, k + 1) = emax_simulated
+                periods_emax(period + 1, k + 1) = emax
 
             END DO
 
@@ -520,7 +520,7 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_states, periods_payof
     !/* internal objects        */
 
     REAL(our_dble)                      :: payoffs_systematic(4)
-    REAL(our_dble)                      :: emax_simulated
+    REAL(our_dble)                      :: emax
 
     INTEGER(our_int)                    :: k
 
@@ -544,10 +544,10 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_states, periods_payof
         payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
         ! Get payoffs
-        CALL get_future_value(emax_simulated, draws_emax_transformed, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max)
+        CALL get_future_value(emax, draws_emax_transformed, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max)
 
         ! Construct dependent variable
-        endogenous(k + 1) = emax_simulated - maxe(k + 1)
+        endogenous(k + 1) = emax - maxe(k + 1)
 
     END DO
 
@@ -824,11 +824,11 @@ SUBROUTINE get_pred_info(r_squared, bse, observed, predicted, exogenous, num_sta
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_future_value(emax_simulated, draws_emax_transformed, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max)
+SUBROUTINE get_future_value(emax, draws_emax_transformed, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max)
 
     !/* external objects    */
 
-    REAL(our_dble), INTENT(OUT)     :: emax_simulated
+    REAL(our_dble), INTENT(OUT)     :: emax
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
@@ -855,7 +855,7 @@ SUBROUTINE get_future_value(emax_simulated, draws_emax_transformed, period, k, p
 !------------------------------------------------------------------------------
 
     ! Iterate over Monte Carlo draws
-    emax_simulated = zero_dble
+    emax = zero_dble
     DO i = 1, num_draws_emax
 
         ! Select draws for this draw
@@ -868,12 +868,12 @@ SUBROUTINE get_future_value(emax_simulated, draws_emax_transformed, period, k, p
         maximum = MAXVAL(total_payoffs)
 
         ! Recording expected future value
-        emax_simulated = emax_simulated + maximum
+        emax = emax + maximum
 
     END DO
 
     ! Scaling
-    emax_simulated = emax_simulated / num_draws_emax
+    emax = emax / num_draws_emax
 
 END SUBROUTINE
 !******************************************************************************

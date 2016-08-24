@@ -550,7 +550,7 @@ SUBROUTINE wrapper_svd(U, S, VT, A, m)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE wrapper_get_future_value(emax_simulated, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, payoffs_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta_int)
+SUBROUTINE wrapper_get_future_value(emax, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, payoffs_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta_int)
 
     !/* external libraries      */
 
@@ -562,7 +562,7 @@ SUBROUTINE wrapper_get_future_value(emax_simulated, num_periods_int, num_draws_e
 
     !/* external objects        */
 
-    DOUBLE PRECISION, INTENT(OUT)   :: emax_simulated
+    DOUBLE PRECISION, INTENT(OUT)   :: emax
 
     DOUBLE PRECISION, INTENT(IN)    :: draws_emax_transformed(:,:)
     DOUBLE PRECISION, INTENT(IN)    :: payoffs_systematic(:)
@@ -594,7 +594,7 @@ SUBROUTINE wrapper_get_future_value(emax_simulated, num_periods_int, num_draws_e
     delta = delta_int
 
     ! Call function of interest
-    CALL get_future_value(emax_simulated, draws_emax_transformed, period, k, payoffs_systematic, mapping_state_idx_int, states_all_int, periods_emax_int, delta, edu_start, edu_max)
+    CALL get_future_value(emax, draws_emax_transformed, period, k, payoffs_systematic, mapping_state_idx_int, states_all_int, periods_emax_int, delta, edu_start, edu_max)
 
 END SUBROUTINE
 !******************************************************************************

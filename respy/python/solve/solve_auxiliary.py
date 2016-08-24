@@ -329,12 +329,12 @@ def get_endogenous_variable(period, num_periods, num_states, delta,
         payoffs_systematic = periods_payoffs_systematic[period, k, :]
 
         # Simulate the expected future value.
-        emax_simulated = get_future_value(num_periods, num_draws_emax, period, k,
+        emax = get_future_value(num_periods, num_draws_emax, period, k,
             draws_emax_transformed, payoffs_systematic, edu_max, edu_start,
             periods_emax, states_all, mapping_state_idx, delta)
 
         # Construct dependent variable
-        endogenous_variable[k] = emax_simulated - maxe[k]
+        endogenous_variable[k] = emax - maxe[k]
 
     # Finishing
     return endogenous_variable
@@ -433,7 +433,7 @@ def get_future_value(num_periods, num_draws_emax, period, k,
     """ Simulate expected future value.
     """
     # Calculate maximum value
-    emax_simulated = 0.0
+    emax = 0.0
     for i in range(num_draws_emax):
 
         # Select draws for this draw
@@ -448,10 +448,10 @@ def get_future_value(num_periods, num_draws_emax, period, k,
         maximum = max(total_payoffs)
 
         # Recording expected future value
-        emax_simulated += maximum
+        emax += maximum
 
     # Scaling
-    emax_simulated = emax_simulated / num_draws_emax
+    emax = emax / num_draws_emax
 
     # Finishing
-    return emax_simulated
+    return emax

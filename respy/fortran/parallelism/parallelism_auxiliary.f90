@@ -494,8 +494,8 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, state
 
     REAL(our_dble)                  :: payoffs_systematic(4)
     REAL(our_dble)                  :: shocks_cov(4, 4)
-    REAL(our_dble)                  :: emax_simulated
     REAL(our_dble)                  :: shifts(4)
+    REAL(our_dble)                  :: emax
 
     REAL(our_dble)                  :: draws_emax_transformed(num_draws_emax, 4)
     REAL(our_dble)                  :: draws_emax(num_draws_emax, 4)
@@ -600,10 +600,10 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, state
                 payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
                 ! Get payoffs
-                CALL get_future_value(emax_simulated, draws_emax_transformed, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max)
+                CALL get_future_value(emax, draws_emax_transformed, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max)
 
                 ! Construct dependent variable
-                endogenous_slaves(count) = emax_simulated - maxe(k + 1)
+                endogenous_slaves(count) = emax - maxe(k + 1)
                 count = count + 1
 
             END DO
@@ -631,10 +631,10 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, state
                 ! Extract payoffs
                 payoffs_systematic = periods_payoffs_systematic(period + 1, k + 1, :)
 
-                CALL get_future_value(emax_simulated, draws_emax_transformed, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max)
+                CALL get_future_value(emax, draws_emax_transformed, period, k, payoffs_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max)
 
                 ! Collect information
-                periods_emax_slaves(count) = emax_simulated
+                periods_emax_slaves(count) = emax
 
                 count = count + 1
 
