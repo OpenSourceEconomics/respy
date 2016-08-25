@@ -159,7 +159,7 @@ def pyth_calculate_rewards_systematic(num_periods, states_number_period,
 def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
         num_draws_emax, states_number_period, periods_rewards_systematic,
         edu_max, edu_start, mapping_state_idx, states_all, delta, is_debug,
-        is_interpolated, num_points_interp, shocks_cholesky):
+        is_interpolated, num_points_interp, shocks_cholesky, is_ambiguity, level):
     """ Backward induction procedure. There are two main threads to this
     function depending on whether interpolation is requested or not.
     """
@@ -175,9 +175,6 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
 
     # Initialize containers with missing values
     periods_emax = np.tile(MISSING_FLOAT, (num_periods, max_states_period))
-
-
-    IS_AMBIGUITY = True
 
     # Iterate backward through all periods
     for period in range(num_periods - 1, -1, -1):
@@ -238,7 +235,7 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
                 rewards_systematic = periods_rewards_systematic[period, k, :]
 
                 # Simulate the expected future value.
-                if not IS_AMBIGUITY:
+                if not is_ambiguity:
                     emax = construct_emax_risk(num_periods, num_draws_emax, period, k,
                                            draws_emax_transformed, rewards_systematic, edu_max,
                                            edu_start, periods_emax, states_all, mapping_state_idx,
@@ -250,7 +247,7 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
                                            rewards_systematic, edu_max,
                                            edu_start, periods_emax, states_all,
                                            mapping_state_idx,
-                                           delta)
+                                           delta, level)
                 # Store results
                 periods_emax[period, k] = emax
 

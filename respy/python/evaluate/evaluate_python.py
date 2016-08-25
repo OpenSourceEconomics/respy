@@ -12,7 +12,7 @@ def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
         is_interpolated, num_draws_emax, num_periods, num_points_interp,
         is_myopic, edu_start, is_debug,  edu_max, min_idx, delta, data_array,
         num_agents_est, num_draws_prob, tau, periods_draws_emax,
-        periods_draws_prob):
+        periods_draws_prob, is_ambiguity, level):
     """ Evaluate criterion function. This code allows for a deterministic
     model, where there is no random variation in the rewards. If that is the
     case and all agents have corresponding experiences, then one is returned.
@@ -28,7 +28,8 @@ def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
         is_myopic, edu_start, is_debug, edu_max, min_idx, delta)
 
     periods_rewards_systematic, _, mapping_state_idx, periods_emax, \
-        states_all = pyth_solve(*base_args + (periods_draws_emax, ))
+        states_all = pyth_solve(*base_args + (periods_draws_emax,
+                                              is_ambiguity, level))
 
     # Initialize auxiliary objects
     contribs = np.tile(-HUGE_FLOAT, (num_agents_est * num_periods))

@@ -56,6 +56,8 @@ class RespyCls(object):
 
         self.attr['num_agents_est'] = None
 
+        self.attr['is_ambiguity'] = None
+
         self.attr['paras_fixed'] = None
 
         self.attr['num_periods'] = None
@@ -97,6 +99,8 @@ class RespyCls(object):
         self.attr['maxfun'] = None
 
         self.attr['delta'] = None
+
+        self.attr['level'] = None
 
         self.attr['tau'] = None
 
@@ -290,6 +294,11 @@ class RespyCls(object):
         init_dict['SOLUTION']['seed'] = self.attr['seed_emax']
         init_dict['SOLUTION']['store'] = self.attr['is_store']
 
+        # Ambiguity
+        init_dict['AMBIGUITY'] = dict()
+        init_dict['AMBIGUITY']['flag'] = self.attr['is_ambiguity']
+        init_dict['AMBIGUITY']['level'] = self.attr['level']
+
         # Simulation
         init_dict['SIMULATION'] = dict()
         init_dict['SIMULATION']['agents'] = self.attr['num_agents_sim']
@@ -368,9 +377,11 @@ class RespyCls(object):
 
         # Extract information from initialization dictionary and construct
         # auxiliary objects.
-        self.attr['is_interpolated'] = init_dict['INTERPOLATION']['flag']
+        self.attr['num_points_interp'] = init_dict['INTERPOLATION']['points']
 
         self.attr['optimizer_used'] = init_dict['ESTIMATION']['optimizer']
+
+        self.attr['is_interpolated'] = init_dict['INTERPOLATION']['flag']
 
         self.attr['num_agents_sim'] = init_dict['SIMULATION']['agents']
 
@@ -378,23 +389,23 @@ class RespyCls(object):
 
         self.attr['num_draws_prob'] = init_dict['ESTIMATION']['draws']
 
+        self.attr['num_draws_emax'] = init_dict['SOLUTION']['draws']
+
         self.attr['is_parallel'] = init_dict['PARALLELISM']['flag']
 
-        self.attr['num_points_interp'] = init_dict['INTERPOLATION']['points']
-
-        self.attr['num_draws_emax'] = init_dict['SOLUTION']['draws']
+        self.attr['is_ambiguity'] = init_dict['AMBIGUITY']['flag']
 
         self.attr['num_procs'] = init_dict['PARALLELISM']['procs']
 
         self.attr['num_periods'] = init_dict['BASICS']['periods']
 
-        self.attr['maxfun'] = init_dict['ESTIMATION']['maxfun']
-
         self.attr['edu_start'] = init_dict['EDUCATION']['start']
 
-        self.attr['seed_sim'] = init_dict['SIMULATION']['seed']
-
         self.attr['seed_prob'] = init_dict['ESTIMATION']['seed']
+
+        self.attr['maxfun'] = init_dict['ESTIMATION']['maxfun']
+
+        self.attr['seed_sim'] = init_dict['SIMULATION']['seed']
 
         self.attr['file_sim'] = init_dict['SIMULATION']['file']
 
@@ -409,6 +420,8 @@ class RespyCls(object):
         self.attr['is_debug'] = init_dict['PROGRAM']['debug']
 
         self.attr['edu_max'] = init_dict['EDUCATION']['max']
+
+        self.attr['level'] = init_dict['AMBIGUITY']['level']
 
         self.attr['delta'] = init_dict['BASICS']['delta']
 
@@ -517,6 +530,8 @@ class RespyCls(object):
 
         num_agents_est = self.attr['num_agents_est']
 
+        is_ambiguity = self.attr['is_ambiguity']
+
         derivatives = self.attr['derivatives']
 
         is_parallel = self.attr['is_parallel']
@@ -552,6 +567,8 @@ class RespyCls(object):
         maxfun = self.attr['maxfun']
 
         delta = self.attr['delta']
+
+        level = self.attr['level']
 
         tau = self.attr['tau']
 
@@ -654,6 +671,10 @@ class RespyCls(object):
         assert (derivatives[0] in ['FORWARD-DIFFERENCES'])
         assert (isinstance(derivatives[1], float))
         assert (derivatives[1] > 0.0)
+
+        # Ambiguity
+        assert (is_ambiguity in [False, True])
+        assert (level >= 0.00)
 
     def _check_integrity_results(self):
         """ This methods check the integrity of the results.
