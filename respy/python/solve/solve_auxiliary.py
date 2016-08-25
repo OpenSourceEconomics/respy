@@ -1,15 +1,18 @@
-import statsmodels.api as sm
-import numpy as np
-import shlex
 import os
+import shlex
+
+import numpy as np
+import statsmodels.api as sm
 
 from respy.python.record.record_solution import record_prediction_model
 from respy.python.record.record_solution import record_solution_progress
-from respy.python.shared.shared_auxiliary import transform_disturbances
 from respy.python.shared.shared_auxiliary import get_total_values
-from respy.python.shared.shared_constants import MISSING_FLOAT
+from respy.python.shared.shared_auxiliary import transform_disturbances
 from respy.python.shared.shared_constants import HUGE_FLOAT
+from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.shared.shared_constants import MISSING_INT
+from respy.python.solve.solve_ambiguity import construct_emax_ambiguity
+from respy.python.solve.solve_risk import construct_emax_risk
 
 
 def pyth_create_state_space(num_periods, edu_start, edu_max, min_idx):
@@ -173,6 +176,9 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
     # Initialize containers with missing values
     periods_emax = np.tile(MISSING_FLOAT, (num_periods, max_states_period))
 
+
+    IS_AMBIGUITY = True
+
     # Iterate backward through all periods
     for period in range(num_periods - 1, -1, -1):
 
@@ -181,7 +187,7 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
         num_states = states_number_period[period]
 
         draws_emax_transformed = transform_disturbances(draws_emax,
-            shocks_cholesky)
+                                                        shocks_cholesky)
 
         record_solution_progress(4, period, num_states)
 
@@ -232,11 +238,19 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
                 rewards_systematic = periods_rewards_systematic[period, k, :]
 
                 # Simulate the expected future value.
-                emax = construct_emax_risk(num_periods, num_draws_emax, period, k,
-                    draws_emax_transformed, rewards_systematic, edu_max,
-                    edu_start, periods_emax, states_all, mapping_state_idx,
-                    delta)
-
+                if not IS_AMBIGUITY:
+                    emax = construct_emax_risk(num_periods, num_draws_emax, period, k,
+                                           draws_emax_transformed, rewards_systematic, edu_max,
+                                           edu_start, periods_emax, states_all, mapping_state_idx,
+                                           delta)
+                else:
+                    emax = construct_emax_ambiguity(num_periods, num_draws_emax, period,
+                                           k,
+                                           draws_emax_transformed,
+                                           rewards_systematic, edu_max,
+                                           edu_start, periods_emax, states_all,
+                                           mapping_state_idx,
+                                           delta)
                 # Store results
                 periods_emax[period, k] = emax
 
@@ -330,8 +344,8 @@ def get_endogenous_variable(period, num_periods, num_states, delta,
 
         # Simulate the expected future value.
         emax = construct_emax_risk(num_periods, num_draws_emax, period, k,
-            draws_emax_transformed, rewards_systematic, edu_max, edu_start,
-            periods_emax, states_all, mapping_state_idx, delta)
+                                   draws_emax_transformed, rewards_systematic, edu_max, edu_start,
+                                   periods_emax, states_all, mapping_state_idx, delta)
 
         # Construct dependent variable
         endogenous_variable[k] = emax - maxe[k]
@@ -427,31 +441,3 @@ def check_input(respy_obj):
     return True
 
 
-def construct_emax_risk(num_periods, num_draws_emax, period, k,
-        draws_emax_transformed, rewards_systematic, edu_max, edu_start,
-        periods_emax, states_all, mapping_state_idx, delta):
-    """ Simulate expected future value.
-    """
-    # Calculate maximum value
-    emax = 0.0
-    for i in range(num_draws_emax):
-
-        # Select draws for this draw
-        draws = draws_emax_transformed[i, :]
-
-        # Get total value of admissible states
-        total_values = get_total_values(period, num_periods, delta,
-            rewards_systematic, draws, edu_max, edu_start, mapping_state_idx,
-            periods_emax, k, states_all)
-
-        # Determine optimal choice
-        maximum = max(total_values)
-
-        # Recording expected future value
-        emax += maximum
-
-    # Scaling
-    emax = emax / num_draws_emax
-
-    # Finishing
-    return emax

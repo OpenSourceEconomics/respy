@@ -21,7 +21,7 @@ from respy.python.estimate.estimate_auxiliary import get_optim_paras
 
 from respy.python.shared.shared_auxiliary import replace_missing_values
 from respy.python.solve.solve_auxiliary import get_endogenous_variable
-from respy.python.solve.solve_auxiliary import construct_emax_risk
+from respy.python.solve.solve_risk import construct_emax_risk
 from respy.python.shared.shared_auxiliary import get_cholesky
 from respy.python.shared.shared_constants import IS_FORTRAN
 
