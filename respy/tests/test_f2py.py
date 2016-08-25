@@ -21,7 +21,7 @@ from respy.python.estimate.estimate_auxiliary import get_optim_paras
 
 from respy.python.shared.shared_auxiliary import replace_missing_values
 from respy.python.solve.solve_auxiliary import get_endogenous_variable
-from respy.python.solve.solve_auxiliary import construct_emax
+from respy.python.solve.solve_auxiliary import construct_emax_risk
 from respy.python.shared.shared_auxiliary import get_cholesky
 from respy.python.shared.shared_constants import IS_FORTRAN
 
@@ -103,8 +103,8 @@ class TestClass(object):
             rewards_systematic, edu_max, edu_start, periods_emax, states_all,
             mapping_state_idx, delta)
 
-        py = construct_emax(*args)
-        f90 = fort_debug.wrapper_construct_emax(*args)
+        py = construct_emax_risk(*args)
+        f90 = fort_debug.wrapper_construct_emax_risk(*args)
 
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 

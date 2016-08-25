@@ -550,7 +550,7 @@ SUBROUTINE wrapper_svd(U, S, VT, A, m)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE wrapper_construct_emax(emax, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta_int)
+SUBROUTINE wrapper_construct_emax_risk(emax, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta_int)
 
     !/* external libraries      */
 
@@ -594,7 +594,7 @@ SUBROUTINE wrapper_construct_emax(emax, num_periods_int, num_draws_emax_int, per
     delta = delta_int
 
     ! Call function of interest
-    CALL construct_emax(emax, draws_emax_transformed, period, k, rewards_systematic, mapping_state_idx_int, states_all_int, periods_emax_int, delta, edu_start, edu_max)
+    CALL construct_emax_risk(emax, draws_emax_transformed, period, k, rewards_systematic, mapping_state_idx_int, states_all_int, periods_emax_int, delta, edu_start, edu_max)
 
 END SUBROUTINE
 !******************************************************************************
