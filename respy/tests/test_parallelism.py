@@ -1,11 +1,10 @@
 import numpy as np
 import pytest
 
-from codes.random_init import generate_random_dict
-from codes.auxiliary import compare_est_log
-
 from respy.python.shared.shared_auxiliary import print_init_dict
 from respy.python.shared.shared_constants import IS_PARALLEL
+from codes.random_init import generate_random_dict
+from codes.auxiliary import compare_est_log
 from respy import estimate
 from respy import simulate
 from respy import RespyCls

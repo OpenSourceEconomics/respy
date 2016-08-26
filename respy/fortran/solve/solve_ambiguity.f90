@@ -81,14 +81,6 @@ SUBROUTINE construct_emax_ambiguity(emax, period, k, draws_emax_transformed, rew
     REAL(our_dble), INTENT(IN)      :: level
     REAL(our_dble), INTENT(IN)      :: delta
 
-    !/* internals objects    */
-
-    INTEGER(our_int)                :: i
-
-    REAL(our_dble)                  :: total_values(4)
-    REAL(our_dble)                  :: draws(4)
-    REAL(our_dble)                  :: maximum
-
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------

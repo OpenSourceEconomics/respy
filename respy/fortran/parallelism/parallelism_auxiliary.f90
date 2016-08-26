@@ -601,9 +601,12 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, state
                 ! Extract rewards
                 rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
 
-                ! Get rewards
-                CALL construct_emax_risk(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
-
+                IF (is_ambiguity) THEN
+                    CALL construct_emax_ambiguity(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, level)
+                ELSE
+                    CALL construct_emax_risk(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
+                END IF
+                
                 ! Construct dependent variable
                 endogenous_slaves(count) = emax - maxe(k + 1)
                 count = count + 1
@@ -633,7 +636,11 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, state
                 ! Extract rewards
                 rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
 
-                CALL construct_emax_risk(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
+                IF (is_ambiguity) THEN
+                    CALL construct_emax_ambiguity(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, level)
+                ELSE
+                    CALL construct_emax_risk(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
+                END IF
 
                 ! Collect information
                 periods_emax_slaves(count) = emax

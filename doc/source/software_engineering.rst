@@ -55,10 +55,6 @@ The documentation is created using `Sphinx <http://www.sphinx-doc.org/>`_ and ho
 Code Review
 -----------
 
-.. image:: https://www.quantifiedcode.com/api/v1/project/b00436d2ca614437b843c7042dba0c26/badge.svg
-   :target: https://www.quantifiedcode.com/app/project/b00436d2ca614437b843c7042dba0c26
-   :alt: Code issues
-
 .. image:: https://api.codacy.com/project/badge/Grade/3dd368fb739c49d78d910676c9264a81
    :target: https://www.codacy.com/app/eisenhauer/respy?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=restudToolbox/package&amp;utm_campaign=Badge_Grade
 
@@ -66,7 +62,7 @@ Code Review
     :target: https://landscape.io/github/restudToolbox/package/master
     :alt: Code Health
 
-We use several automatic code review tools to help us improve the readability and maintainability of our code base. For example, we work with `Quantified Code <https://www.quantifiedcode.com/app/project/b00436d2ca614437b843c7042dba0c26>`_, `Codacy <https://www.codacy.com/app/eisenhauer/respy/dashboard>`_, and `Landscape <https://landscape.io/github/restudToolbox/package>`_
+We use several automatic code review tools to help us improve the readability and maintainability of our code base. For example, we work with `Codacy <https://www.codacy.com/app/eisenhauer/respy/dashboard>`_ and `Landscape <https://landscape.io/github/restudToolbox/package>`_
 
 Continuous Integration Workflow
 -------------------------------

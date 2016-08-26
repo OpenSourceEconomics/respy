@@ -1,5 +1,4 @@
 from pandas.util.testing import assert_frame_equal
-
 import numpy as np
 import pandas as pd
 import pytest
@@ -9,11 +8,10 @@ from respy.scripts.scripts_simulate import scripts_simulate
 from respy.scripts.scripts_update import scripts_update
 from respy.scripts.scripts_modify import scripts_modify
 from respy.python.process.process_python import process
+from codes.random_init import generate_init
 from respy import estimate
 from respy import simulate
 from respy import RespyCls
-
-from codes.random_init import generate_init
 
 
 @pytest.mark.usefixtures('fresh_directory', 'set_seed')
@@ -185,9 +183,9 @@ class TestClass(object):
             num_draws = np.random.randint(1, 20)
 
             # The set of identifiers is a little complicated as we only allow
-            # sampling of the diagonal terms of the covariance matrix. Otherwise,
-            # we sometimes run into the problem of very ill conditioned matrices
-            # resulting in a failed Cholesky decomposition.
+            # sampling of the diagonal terms of the covariance matrix.
+            # Otherwise, we sometimes run into the problem of very ill
+            # conditioned matrices resulting in a failed Cholesky decomposition.
             set_ = list(range(16)) + [16, 18, 21, 25]
 
             identifiers = np.random.choice(set_, num_draws, replace=False)

@@ -1,47 +1,41 @@
-import statsmodels.api as sm
-from scipy.stats import norm
+import sys
+import os
 
 from scipy.optimize.slsqp import _minimize_slsqp
 from scipy.optimize import rosen_der
 from scipy.optimize import rosen
-
+from scipy.stats import norm
+import statsmodels.api as sm
 import numpy as np
 import pytest
 import scipy
-import sys
-import os
 
-from respy.python.solve.solve_auxiliary import get_predictions
-
-from codes.auxiliary import write_interpolation_grid
-from codes.random_init import generate_init
-from respy.python.shared.shared_auxiliary import read_draws
-from codes.auxiliary import write_draws
-from respy.python.estimate.estimate_auxiliary import get_optim_paras
-
-from respy.python.shared.shared_auxiliary import replace_missing_values
-from respy.python.solve.solve_auxiliary import get_endogenous_variable
-from respy.python.solve.solve_risk import construct_emax_risk
-from respy.python.shared.shared_auxiliary import get_cholesky
-from respy.python.shared.shared_constants import IS_FORTRAN
-
-from respy.fortran.interface import resfort_interface
-from respy.python.solve.solve_python import pyth_solve
-from respy.python.simulate.simulate_python import pyth_simulate
-from respy.python.evaluate.evaluate_python import pyth_evaluate
-from respy.python.estimate.estimate_python import pyth_criterion
-
-from respy.python.shared.shared_auxiliary import dist_class_attributes
-from respy.python.shared.shared_auxiliary import dist_model_paras
-from respy.python.shared.shared_auxiliary import create_draws
-from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
-
-from respy.python.solve.solve_auxiliary import pyth_create_state_space
 from respy.python.solve.solve_auxiliary import pyth_calculate_rewards_systematic
+from respy.python.shared.shared_auxiliary import replace_missing_values
+from respy.python.solve.solve_auxiliary import pyth_create_state_space
 from respy.python.solve.solve_auxiliary import pyth_backward_induction
 from respy.python.solve.solve_auxiliary import get_simulated_indicator
 from respy.python.solve.solve_auxiliary import get_exogenous_variables
+from respy.python.shared.shared_auxiliary import dist_class_attributes
+from respy.python.solve.solve_auxiliary import get_endogenous_variable
+from respy.python.estimate.estimate_auxiliary import get_optim_paras
+from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
+from respy.python.shared.shared_auxiliary import dist_model_paras
+from respy.python.estimate.estimate_python import pyth_criterion
+from respy.python.simulate.simulate_python import pyth_simulate
+from respy.python.evaluate.evaluate_python import pyth_evaluate
+from respy.python.solve.solve_auxiliary import get_predictions
+from respy.python.solve.solve_risk import construct_emax_risk
+from respy.python.shared.shared_auxiliary import get_cholesky
+from respy.python.shared.shared_auxiliary import create_draws
 from respy.python.solve.solve_ambiguity import kl_divergence
+from respy.python.shared.shared_constants import IS_FORTRAN
+from respy.python.shared.shared_auxiliary import read_draws
+from respy.python.solve.solve_python import pyth_solve
+from respy.fortran.interface import resfort_interface
+from codes.auxiliary import write_interpolation_grid
+from codes.random_init import generate_init
+from codes.auxiliary import write_draws
 
 from respy import RespyCls
 from respy import simulate
@@ -79,13 +73,11 @@ class TestClass(object):
 
         # Extract class attributes
         periods_rewards_systematic, states_number_period, mapping_state_idx, \
-        periods_emax, num_periods, states_all, num_draws_emax, edu_start, \
-        edu_max, delta = \
-            dist_class_attributes(respy_obj,
+            periods_emax, num_periods, states_all, num_draws_emax, edu_start, \
+            edu_max, delta = dist_class_attributes(respy_obj,
                 'periods_rewards_systematic', 'states_number_period',
                 'mapping_state_idx', 'periods_emax', 'num_periods',
-                'states_all', 'num_draws_emax', 'edu_start', 'edu_max',
-                'delta')
+                'states_all', 'num_draws_emax', 'edu_start', 'edu_max', 'delta')
 
         # Sample draws
         draws_standard = np.random.multivariate_normal(np.zeros(4),
@@ -321,14 +313,14 @@ class TestClass(object):
 
         # Extract class attributes
         num_periods, edu_start, edu_max, min_idx, model_paras, num_draws_emax, \
-        is_debug, delta, is_interpolated, num_points_interp, is_myopic, num_agents_sim, \
-        num_draws_prob, tau, paras_fixed, seed_sim, level, is_ambiguity = \
-            dist_class_attributes(
-            respy_obj, 'num_periods', 'edu_start', 'edu_max', 'min_idx',
-            'model_paras', 'num_draws_emax', 'is_debug', 'delta',
-            'is_interpolated', 'num_points_interp', 'is_myopic', 'num_agents_sim',
-            'num_draws_prob', 'tau', 'paras_fixed', 'seed_sim', 'level',
-            'is_ambiguity')
+            is_debug, delta, is_interpolated, num_points_interp, is_myopic, \
+            num_agents_sim, num_draws_prob, tau, paras_fixed, seed_sim, \
+            level, is_ambiguity = dist_class_attributes(respy_obj,
+                'num_periods', 'edu_start', 'edu_max', 'min_idx',
+                'model_paras', 'num_draws_emax', 'is_debug', 'delta',
+                'is_interpolated', 'num_points_interp', 'is_myopic',
+                'num_agents_sim', 'num_draws_prob', 'tau', 'paras_fixed',
+                'seed_sim', 'level', 'is_ambiguity')
 
         # Write out random components and interpolation grid to align the
         # three implementations.
@@ -343,56 +335,59 @@ class TestClass(object):
             dist_model_paras(model_paras, True)
 
         # Check the full solution procedure
-        base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
-        is_interpolated, num_draws_emax, num_periods, num_points_interp, is_myopic,
-        edu_start, is_debug, edu_max, min_idx, delta)
+        base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+            shocks_cholesky, is_interpolated, num_draws_emax, num_periods,
+            num_points_interp, is_myopic, edu_start, is_debug, edu_max,
+            min_idx, delta)
 
         fort, _ = resfort_interface(respy_obj, 'simulate')
-        pyth = pyth_solve(*base_args + (periods_draws_emax, level, is_ambiguity))
+        py = pyth_solve(*base_args + (periods_draws_emax, level, is_ambiguity))
         f2py = fort_debug.f2py_solve(*base_args + (periods_draws_emax,
                     max_states_period, level, is_ambiguity))
 
         for alt in [f2py, fort]:
             for i in range(5):
-                np.testing.assert_allclose(pyth[i], alt[i])
+                np.testing.assert_allclose(py[i], alt[i])
 
         # Distribute solution arguments for further use in simulation test.
-        periods_rewards_systematic, _, mapping_state_idx, periods_emax, states_all = pyth
+        periods_rewards_systematic, _, mapping_state_idx, periods_emax, \
+            states_all = py
 
-        args = (periods_rewards_systematic, mapping_state_idx, \
-            periods_emax, states_all, shocks_cholesky, num_periods, edu_start,
-            edu_max, delta, num_agents_sim, periods_draws_sims, seed_sim)
+        args = (periods_rewards_systematic, mapping_state_idx, periods_emax,
+            states_all, shocks_cholesky, num_periods, edu_start, edu_max,
+            delta, num_agents_sim, periods_draws_sims, seed_sim)
 
-        pyth = pyth_simulate(*args)
+        py = pyth_simulate(*args)
 
         f2py = fort_debug.f2py_simulate(*args)
-        np.testing.assert_allclose(pyth, f2py)
+        np.testing.assert_allclose(py, f2py)
 
-        data_array = pyth
+        data_array = py
 
-        base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
-         is_interpolated, num_draws_emax, num_periods, num_points_interp, is_myopic,
-         edu_start, is_debug, edu_max, min_idx, delta, data_array, num_agents_sim,
-         num_draws_prob, tau)
+        base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+            shocks_cholesky, is_interpolated, num_draws_emax, num_periods,
+            num_points_interp, is_myopic, edu_start, is_debug, edu_max,
+            min_idx, delta, data_array, num_agents_sim, num_draws_prob, tau)
 
-        args = base_args + (periods_draws_emax, periods_draws_prob, level, is_ambiguity)
-        pyth = pyth_evaluate(*args)
+        args = base_args + (periods_draws_emax, periods_draws_prob, level,
+            is_ambiguity)
+        py = pyth_evaluate(*args)
         f2py = fort_debug.f2py_evaluate(*args)
 
-        np.testing.assert_allclose(pyth, f2py)
+        np.testing.assert_allclose(py, f2py)
 
         # Evaluation of criterion function
         x0 = get_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
             shocks_cholesky, 'all', paras_fixed, is_debug)
 
-        args = (
-        is_interpolated, num_draws_emax, num_periods, num_points_interp, is_myopic,
-        edu_start, is_debug, edu_max, min_idx, delta, data_array, num_agents_sim,
-        num_draws_prob, tau, periods_draws_emax, periods_draws_prob, level, is_ambiguity)
+        args = (is_interpolated, num_draws_emax, num_periods,
+            num_points_interp, is_myopic, edu_start, is_debug, edu_max,
+            min_idx, delta, data_array, num_agents_sim, num_draws_prob, tau,
+            periods_draws_emax, periods_draws_prob, level, is_ambiguity)
 
-        pyth = pyth_criterion(x0, *args)
+        py = pyth_criterion(x0, *args)
         f2py = fort_debug.f2py_criterion(x0, *args)
-        np.testing.assert_allclose(pyth, f2py)
+        np.testing.assert_allclose(py, f2py)
 
     def test_6(self):
         """ Further tests for the interpolation routines.
@@ -405,11 +400,15 @@ class TestClass(object):
         respy_obj = simulate(respy_obj)
 
         # Extract class attributes
-        periods_rewards_systematic, states_number_period, mapping_state_idx, seed_prob, periods_emax, num_periods, states_all, num_points_interp, edu_start, num_draws_emax, is_debug, edu_max, delta, level, is_ambiguity = dist_class_attributes(
-            respy_obj, 'periods_rewards_systematic', 'states_number_period',
-            'mapping_state_idx', 'seed_prob', 'periods_emax',
-            'num_periods', 'states_all', 'num_points_interp', 'edu_start',
-            'num_draws_emax', 'is_debug', 'edu_max', 'delta', 'level', 'is_ambiguity')
+        periods_rewards_systematic, states_number_period, mapping_state_idx, \
+            seed_prob, periods_emax, num_periods, states_all, \
+            num_points_interp, edu_start, num_draws_emax, is_debug, edu_max, \
+            delta, level, is_ambiguity = dist_class_attributes(respy_obj,
+                'periods_rewards_systematic', 'states_number_period',
+                'mapping_state_idx', 'seed_prob', 'periods_emax',
+                'num_periods', 'states_all', 'num_points_interp', 'edu_start',
+                'num_draws_emax', 'is_debug', 'edu_max', 'delta', 'level',
+                'is_ambiguity')
 
         # Add some additional objects required for the interfaces to the
         # functions.
@@ -435,9 +434,9 @@ class TestClass(object):
 
         # Construct the exogenous variables for all points of the state
         # space.
-        args = (
-        period, num_periods, num_states, delta, periods_rewards_systematic, shifts,
-        edu_max, edu_start, mapping_state_idx, periods_emax, states_all)
+        args = (period, num_periods, num_states, delta,
+            periods_rewards_systematic, shifts, edu_max, edu_start,
+            mapping_state_idx, periods_emax, states_all)
 
         py = get_exogenous_variables(*args)
         f90 = fort_debug.wrapper_get_exogenous_variables(*args)

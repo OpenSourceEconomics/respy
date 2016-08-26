@@ -1,10 +1,9 @@
 import numpy as np
 import pytest
 
-from codes.random_init import generate_random_dict
-
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import print_init_dict
+from codes.random_init import generate_random_dict
 from respy import RespyCls
 from respy import simulate
 
