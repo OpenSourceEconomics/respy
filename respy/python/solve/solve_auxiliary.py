@@ -216,7 +216,7 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
                 num_states, delta, periods_rewards_systematic, edu_max,
                 edu_start, mapping_state_idx, periods_emax, states_all,
                 is_simulated, num_draws_emax, maxe, draws_emax_transformed,
-                level, is_ambiguity)
+                shocks_cov, level, is_ambiguity)
 
             # Create prediction model based on the random subset of points where
             # the EMAX is actually simulated and thus dependent and
@@ -241,7 +241,7 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
                     emax = construct_emax_ambiguity(num_periods, num_draws_emax,
                         period, k, draws_emax_transformed, rewards_systematic,
                         edu_max, edu_start, periods_emax, states_all,
-                        mapping_state_idx, delta, level)
+                        mapping_state_idx, delta, shocks_cov, level)
                 else:
                     emax = construct_emax_risk(num_periods, num_draws_emax,
                         period, k, draws_emax_transformed, rewards_systematic,
@@ -322,7 +322,7 @@ def get_exogenous_variables(period, num_periods, num_states, delta,
 def get_endogenous_variable(period, num_periods, num_states, delta,
         periods_rewards_systematic, edu_max, edu_start, mapping_state_idx,
         periods_emax, states_all, is_simulated, num_draws_emax, maxe,
-        draws_emax_transformed, level, is_ambiguity):
+        draws_emax_transformed, shocks_cov, level, is_ambiguity):
     """ Construct endogenous variable for the subset of interpolation points.
     """
     # Construct auxiliary objects
@@ -342,7 +342,7 @@ def get_endogenous_variable(period, num_periods, num_states, delta,
             emax = construct_emax_ambiguity(num_periods, num_draws_emax,
                 period, k, draws_emax_transformed, rewards_systematic,
                 edu_max, edu_start, periods_emax, states_all,
-                mapping_state_idx, delta, level)
+                mapping_state_idx, delta, shocks_cov, level)
         else:
             emax = construct_emax_risk(num_periods, num_draws_emax,
                 period, k, draws_emax_transformed, rewards_systematic,

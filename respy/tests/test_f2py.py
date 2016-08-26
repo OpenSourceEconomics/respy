@@ -403,12 +403,15 @@ class TestClass(object):
         periods_rewards_systematic, states_number_period, mapping_state_idx, \
             seed_prob, periods_emax, num_periods, states_all, \
             num_points_interp, edu_start, num_draws_emax, is_debug, edu_max, \
-            delta, level, is_ambiguity = dist_class_attributes(respy_obj,
+            delta, level, is_ambiguity, model_paras = dist_class_attributes(respy_obj,
                 'periods_rewards_systematic', 'states_number_period',
                 'mapping_state_idx', 'seed_prob', 'periods_emax',
                 'num_periods', 'states_all', 'num_points_interp', 'edu_start',
                 'num_draws_emax', 'is_debug', 'edu_max', 'delta', 'level',
-                'is_ambiguity')
+                'is_ambiguity', 'model_paras')
+
+        shocks_cholesky = model_paras['shocks_cholesky']
+        shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
 
         # Add some additional objects required for the interfaces to the
         # functions.
@@ -451,7 +454,7 @@ class TestClass(object):
         args = (period, num_periods, num_states, delta,
             periods_rewards_systematic, edu_max, edu_start,
             mapping_state_idx, periods_emax, states_all, is_simulated,
-            num_draws_emax, maxe, draws_emax, level, is_ambiguity)
+            num_draws_emax, maxe, draws_emax, shocks_cov, level, is_ambiguity)
 
         py = get_endogenous_variable(*args)
         f90 = fort_debug.wrapper_get_endogenous_variable(*args)

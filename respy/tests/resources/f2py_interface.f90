@@ -912,7 +912,7 @@ SUBROUTINE wrapper_get_coefficients(coeffs, Y, X, num_covars, num_states)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_periods_int, num_states, delta_int, periods_rewards_systematic_int, edu_max_int, edu_start_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_simulated, num_draws_emax_int, maxe, draws_emax_transformed, level_int, is_ambiguity_int)
+SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_periods_int, num_states, delta_int, periods_rewards_systematic_int, edu_max_int, edu_start_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_simulated, num_draws_emax_int, maxe, draws_emax_transformed, shocks_cov, level_int, is_ambiguity_int)
 
     !/* external libraries      */
 
@@ -929,9 +929,10 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_perio
     DOUBLE PRECISION, INTENT(IN)        :: periods_rewards_systematic_int(:, :, :)
     DOUBLE PRECISION, INTENT(IN)        :: draws_emax_transformed(:, :)
     DOUBLE PRECISION, INTENT(IN)        :: periods_emax_int(:, :)
-    DOUBLE PRECISION, INTENT(IN)        :: maxe(:)
+    DOUBLE PRECISION, INTENT(IN)        :: shocks_cov(4, 4)
     DOUBLE PRECISION, INTENT(IN)        :: delta_int
     DOUBLE PRECISION, INTENT(IN)        :: level_int
+    DOUBLE PRECISION, INTENT(IN)        :: maxe(:)
 
     INTEGER, INTENT(IN)                 :: mapping_state_idx_int(:, :, :, :, :)
     INTEGER, INTENT(IN)                 :: states_all_int(:, :, :)
@@ -959,7 +960,7 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_perio
     delta = delta_int
 
     ! Call function of interest
-    CALL get_endogenous_variable(exogenous_variable, period, num_states, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_simulated, maxe, draws_emax_transformed, delta, edu_start, edu_max, level, is_ambiguity)
+    CALL get_endogenous_variable(exogenous_variable, period, num_states, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_simulated, maxe, draws_emax_transformed, delta, edu_start, edu_max, shocks_cov, level, is_ambiguity)
 
 END SUBROUTINE
 !******************************************************************************

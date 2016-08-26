@@ -24,7 +24,7 @@ def kl_divergence(mean_old, cov_old, mean_new, cov_new):
 
 def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
         draws_emax_transformed, rewards_systematic, edu_max, edu_start,
-        periods_emax, states_all, mapping_state_idx, delta, level):
+        periods_emax, states_all, mapping_state_idx, delta, shocks_cov, level):
     """ Construct EMAX accounting for a worst case evaluation.
     """
 
