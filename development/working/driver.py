@@ -35,7 +35,7 @@ import pickle as pkl
 
 #sys.path.insert(0, '/home/peisenha/restudToolbox/package/respy/tests/resources')
 respy_obj = RespyCls('model.respy.ini')
-respy_obj = simulate(respy_obj)
-#estimate(respy_obj)
+#respy_obj = simulate(respy_obj)
+estimate(respy_obj)
 
-print(respy_obj.get_attr('periods_emax')[0, 0])
+#print(respy_obj.get_attr('periods_emax')[0, 0])
