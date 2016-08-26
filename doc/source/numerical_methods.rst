@@ -13,9 +13,9 @@ Integration
 
 Integrals are approximated by Monte Carlo integration and occur in two different places:
 
-* The solution of the model requires the evaluation of :math:`E\max`. This integral is approximated using the number of random draws specified in the *SOLUTION* section of the initialization file. The same random draws are used for each of these integrals.
+* The solution of the model requires the evaluation of :math:`E\max`. This integral is approximated using the number of random draws specified in the *SOLUTION* section of the initialization file. The same random draws are used for all integrals within the same period.
 
-* The estimation of the model requires the simulation of the choice probabilities to evaluate the sample likelihood. This integral is approximated using the number of random draws specified in the *ESTIMATION* section of the initialization file. The same random draws are used for each of these integrals.
+* The estimation of the model requires the simulation of the choice probabilities to evaluate the sample likelihood. This integral is approximated using the number of random draws specified in the *ESTIMATION* section of the initialization file. The same random draws are used for all integrals within the same period.
 
 Optimization
 """"""""""""
