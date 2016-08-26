@@ -28,18 +28,16 @@ def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
     """ Construct EMAX accounting for a worst case evaluation.
     """
 
-    theta = level
-
     emax = get_worst_case(num_periods, num_draws_emax, period, k,
         draws_emax_transformed, rewards_systematic, edu_max, edu_start,
-        periods_emax, states_all, mapping_state_idx, delta, theta)
+        periods_emax, states_all, mapping_state_idx, delta, level)
 
     return emax
 
 
 def get_worst_case(num_periods, num_draws_emax, period, k,
-        draws_emax_transformed, rewards_systematic, edu_max, edu_start,
-        periods_emax, states_all, mapping_state_idx, delta, theta):
+                   draws_emax_transformed, rewards_systematic, edu_max, edu_start,
+                   periods_emax, states_all, mapping_state_idx, delta, level):
     """ Run the optimization.
     """
 
@@ -47,7 +45,7 @@ def get_worst_case(num_periods, num_draws_emax, period, k,
             rewards_systematic, edu_max, edu_start, periods_emax,
             states_all, mapping_state_idx, delta)
 
-    x = [-theta, -theta]
+    x = [-level, -level]
     emax = criterion_ambiguity(x, *args)
 
     return emax

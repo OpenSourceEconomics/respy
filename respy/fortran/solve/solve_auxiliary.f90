@@ -234,7 +234,7 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, states_
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max, is_write)
+SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max, level, is_ambiguity, is_write)
 
     !/* external objects        */
 
@@ -244,6 +244,7 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
     REAL(our_dble), INTENT(IN)          :: periods_draws_emax(num_periods, num_draws_emax, 4)
     REAL(our_dble), INTENT(IN)          :: shocks_cholesky(4, 4)
     REAL(our_dble), INTENT(IN)          :: delta
+    REAL(our_dble), INTENT(IN)          :: level
 
     INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 4)
@@ -252,6 +253,7 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
     INTEGER(our_int), INTENT(IN)        :: edu_max
 
     LOGICAL, INTENT(IN)                 :: is_interpolated
+    LOGICAL, INTENT(IN)                 :: is_ambiguity
     LOGICAL, INTENT(IN)                 :: is_myopic
     LOGICAL, INTENT(IN)                 :: is_debug
 
@@ -332,7 +334,7 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
 
             CALL get_exogenous_variables(exogenous, maxe, period, num_states, periods_rewards_systematic, shifts, mapping_state_idx, periods_emax, states_all, delta, edu_start, edu_max)
 
-            CALL get_endogenous_variable(endogenous, period, num_states, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, is_simulated, maxe, draws_emax_transformed, delta, edu_start, edu_max)
+            CALL get_endogenous_variable(endogenous, period, num_states, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, is_simulated, maxe, draws_emax_transformed, delta, edu_start, edu_max, level, is_ambiguity)
 
             CALL get_predictions(predictions, endogenous, exogenous, maxe, is_simulated, num_states, is_write)
 
@@ -346,9 +348,11 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
 
                 rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
 
-                PRINT *, 'HGello'
-
-                CALL construct_emax_risk(emax, draws_emax_transformed, period, k, rewards_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max)
+                IF (is_ambiguity) THEN
+                    CALL construct_emax_ambiguity(emax, draws_emax_transformed, period, k, rewards_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max, level)
+                ELSE
+                    CALL construct_emax_risk(emax, draws_emax_transformed, period, k, rewards_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max)
+                END IF
 
                 periods_emax(period + 1, k + 1) = emax
 
@@ -502,7 +506,7 @@ SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, num_stat
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_endogenous_variable(endogenous, period, num_states, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, is_simulated, maxe, draws_emax_transformed, delta, edu_start, edu_max)
+SUBROUTINE get_endogenous_variable(endogenous, period, num_states, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, is_simulated, maxe, draws_emax_transformed, delta, edu_start, edu_max, level, is_ambiguity)
 
     !/* external objects        */
 
@@ -513,6 +517,7 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_states, periods_rewar
     REAL(our_dble), INTENT(IN)          :: draws_emax_transformed(num_periods, max_states_period)
     REAL(our_dble), INTENT(IN)          :: maxe(num_states)
     REAL(our_dble), INTENT(IN)          :: delta
+    REAL(our_dble), INTENT(IN)          :: level
 
     INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 4)
@@ -522,6 +527,7 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_states, periods_rewar
     INTEGER(our_int), INTENT(IN)        :: period
 
     LOGICAL, INTENT(IN)                 :: is_simulated(num_states)
+    LOGICAL, INTENT(IN)                 :: is_ambiguity
 
     !/* internal objects        */
 
@@ -546,11 +552,13 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_states, periods_rewar
             CYCLE
         END IF
 
-        ! Extract rewards
         rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
 
-        ! Get rewards
-        CALL construct_emax_risk(emax, draws_emax_transformed, period, k, rewards_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max)
+        IF (is_ambiguity) THEN
+            CALL construct_emax_ambiguity(emax, draws_emax_transformed, period, k, rewards_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max, level)
+        ELSE
+            CALL construct_emax_risk(emax, draws_emax_transformed, period, k, rewards_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max)
+        END IF
 
         ! Construct dependent variable
         endogenous(k + 1) = emax - maxe(k + 1)

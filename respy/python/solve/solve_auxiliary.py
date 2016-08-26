@@ -215,7 +215,8 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
             endogenous = get_endogenous_variable(period, num_periods,
                 num_states, delta, periods_rewards_systematic, edu_max,
                 edu_start, mapping_state_idx, periods_emax, states_all,
-                is_simulated, num_draws_emax,maxe, draws_emax_transformed)
+                is_simulated, num_draws_emax, maxe, draws_emax_transformed,
+                level, is_ambiguity)
 
             # Create prediction model based on the random subset of points where
             # the EMAX is actually simulated and thus dependent and
@@ -236,16 +237,16 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
                 rewards_systematic = periods_rewards_systematic[period, k, :]
 
                 # Simulate the expected future value.
-                if not is_ambiguity:
-                    emax = construct_emax_risk(num_periods, num_draws_emax,
-                        period, k, draws_emax_transformed, rewards_systematic,
-                        edu_max, edu_start, periods_emax, states_all,
-                        mapping_state_idx, delta)
-                else:
+                if is_ambiguity:
                     emax = construct_emax_ambiguity(num_periods, num_draws_emax,
                         period, k, draws_emax_transformed, rewards_systematic,
                         edu_max, edu_start, periods_emax, states_all,
                         mapping_state_idx, delta, level)
+                else:
+                    emax = construct_emax_risk(num_periods, num_draws_emax,
+                        period, k, draws_emax_transformed, rewards_systematic,
+                        edu_max, edu_start, periods_emax, states_all,
+                        mapping_state_idx, delta)
 
                 # Store results
                 periods_emax[period, k] = emax
@@ -321,7 +322,7 @@ def get_exogenous_variables(period, num_periods, num_states, delta,
 def get_endogenous_variable(period, num_periods, num_states, delta,
         periods_rewards_systematic, edu_max, edu_start, mapping_state_idx,
         periods_emax, states_all, is_simulated, num_draws_emax, maxe,
-        draws_emax_transformed):
+        draws_emax_transformed, level, is_ambiguity):
     """ Construct endogenous variable for the subset of interpolation points.
     """
     # Construct auxiliary objects
@@ -337,9 +338,16 @@ def get_endogenous_variable(period, num_periods, num_states, delta,
         rewards_systematic = periods_rewards_systematic[period, k, :]
 
         # Simulate the expected future value.
-        emax = construct_emax_risk(num_periods, num_draws_emax, period, k,
-            draws_emax_transformed, rewards_systematic, edu_max, edu_start,
-            periods_emax, states_all, mapping_state_idx, delta)
+        if is_ambiguity:
+            emax = construct_emax_ambiguity(num_periods, num_draws_emax,
+                period, k, draws_emax_transformed, rewards_systematic,
+                edu_max, edu_start, periods_emax, states_all,
+                mapping_state_idx, delta, level)
+        else:
+            emax = construct_emax_risk(num_periods, num_draws_emax,
+                period, k, draws_emax_transformed, rewards_systematic,
+                edu_max, edu_start, periods_emax, states_all,
+                mapping_state_idx, delta)
 
         # Construct dependent variable
         endogenous_variable[k] = emax - maxe[k]
@@ -348,8 +356,8 @@ def get_endogenous_variable(period, num_periods, num_states, delta,
     return endogenous_variable
 
 
-def get_predictions(endogenous, exogenous, maxe, is_simulated, num_points_interp,
-        num_states, is_debug):
+def get_predictions(endogenous, exogenous, maxe, is_simulated,
+        num_points_interp, num_states, is_debug):
     """ Fit an OLS regression of the exogenous variables on the endogenous
     variables and use the results to predict the endogenous variables for all
     points in the state space.

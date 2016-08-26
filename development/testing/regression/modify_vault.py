@@ -2,9 +2,11 @@
 """ Script to run the whole vault of regression tests.
 """
 from __future__ import print_function
-import pickle as pkl
 import sys
 import os
+
+import pickle as pkl
+import numpy as np
 
 sys.path.insert(0, '../_modules')
 from config import python2_exec
@@ -51,7 +53,7 @@ for idx, _ in enumerate(tests_old):
 
     init_dict['AMBIGUITY'] = dict()
     init_dict['AMBIGUITY']['level'] = 0.0
-    init_dict['AMBIGUITY']['flag'] = False
+    init_dict['AMBIGUITY']['flag'] = np.random.choice([True, False])
 
     tests_new += [(init_dict, crit_val)]
 

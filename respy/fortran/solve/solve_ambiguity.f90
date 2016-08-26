@@ -8,6 +8,8 @@ MODULE solve_ambiguity
 
     USE shared_auxiliary
 
+    USE solve_risk
+
     !/*	setup	*/
 
     IMPLICIT NONE
@@ -91,26 +93,77 @@ SUBROUTINE construct_emax_ambiguity(emax, draws_emax_transformed, period, k, rew
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    ! Iterate over Monte Carlo draws
-    emax = zero_dble
-    DO i = 1, num_draws_emax
+    CALL get_worst_case(emax, draws_emax_transformed, period, k, rewards_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max, level)
 
-        ! Select draws for this draw
-        draws = draws_emax_transformed(i, :)
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE get_worst_case(emax, draws_emax_transformed, period, k, rewards_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max, level)
 
-        ! Calculate total value
-        CALL get_total_values(total_values, period, rewards_systematic, draws, mapping_state_idx, periods_emax, k, states_all, delta, edu_start, edu_max)
+    !/* external objects    */
 
-        ! Determine optimal choice
-        maximum = MAXVAL(total_values)
+    REAL(our_dble), INTENT(OUT)     :: emax
 
-        ! Recording expected future value
-        emax = emax + maximum
+    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
+    INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
+    INTEGER(our_int), INTENT(IN)    :: edu_start
+    INTEGER(our_int), INTENT(IN)    :: edu_max
+    INTEGER(our_int), INTENT(IN)    :: period
+    INTEGER(our_int), INTENT(IN)    :: k
 
-    END DO
+    REAL(our_dble), INTENT(IN)      :: periods_emax(num_periods, max_states_period)
+    REAL(our_dble), INTENT(IN)      :: draws_emax_transformed(num_draws_emax, 4)
+    REAL(our_dble), INTENT(IN)      :: rewards_systematic(4)
+    REAL(our_dble), INTENT(IN)      :: level
+    REAL(our_dble), INTENT(IN)      :: delta
 
-    ! Scaling
-    emax = emax / num_draws_emax
+    !/* internals objects    */
+
+    REAL(our_dble)                  :: x(2)
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    x = (/-level, -level/)
+
+    CALL criterion_ambiguity(emax, x, draws_emax_transformed, period, k, rewards_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max)
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE criterion_ambiguity(emax, x, draws_emax_transformed, period, k, rewards_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max)
+
+    !/* external objects    */
+
+    REAL(our_dble), INTENT(OUT)     :: emax
+
+    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
+    INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
+    INTEGER(our_int), INTENT(IN)    :: edu_start
+    INTEGER(our_int), INTENT(IN)    :: edu_max
+    INTEGER(our_int), INTENT(IN)    :: period
+    INTEGER(our_int), INTENT(IN)    :: k
+
+    REAL(our_dble), INTENT(IN)      :: periods_emax(num_periods, max_states_period)
+    REAL(our_dble), INTENT(IN)      :: draws_emax_transformed(num_draws_emax, 4)
+    REAL(our_dble), INTENT(IN)      :: rewards_systematic(4)
+    REAL(our_dble), INTENT(IN)      :: delta
+    REAL(our_dble), INTENT(IN)      :: x(2)
+
+    !/* internals objects    */
+
+    REAL(our_dble)                  :: draws_relevant(num_draws_emax, 4)
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    draws_relevant = draws_emax_transformed
+    draws_relevant(:, 1) = draws_relevant(:, 1) + x(1)
+    draws_relevant(:, 2) = draws_relevant(:, 2) + x(2)
+
+    CALL construct_emax_risk(emax, draws_relevant, period, k, rewards_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max)
 
 END SUBROUTINE
 !******************************************************************************

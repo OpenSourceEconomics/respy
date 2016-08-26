@@ -3,7 +3,9 @@ import pytest
 
 from respy.python.shared.shared_auxiliary import print_init_dict
 from respy.python.shared.shared_constants import IS_FORTRAN
+from codes.auxiliary import write_interpolation_grid
 from codes.random_init import generate_init
+from codes.auxiliary import write_draws
 
 from respy import estimate
 from respy import simulate
@@ -16,15 +18,21 @@ class TestClass(object):
     """
     def test_1(self):
 
+        max_draws = np.random.randint(10, 100)
+
         constr = dict()
+        constr['flag_parallelism'] = False
+        constr['max_draws'] = max_draws
         constr['level'] = 0.00
         constr['maxfun'] = 0
 
         init_dict = generate_init(constr)
 
-        # TODO: This is probably not true without additional standardization
-        # efforts.
         # We also check explicitly across the different program implementations.
+        num_periods = init_dict['BASICS']['periods']
+        write_draws(num_periods, max_draws)
+        write_interpolation_grid('test.respy.ini')
+
         versions = ['PYTHON']
         if IS_FORTRAN:
             versions += ['FORTRAN']

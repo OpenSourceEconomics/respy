@@ -2,7 +2,7 @@
 !******************************************************************************
 MODULE solve_fortran
 
-	!/*	external modules	*/
+    !/*	external modules	*/
 
     USE recording_solution
 
@@ -10,7 +10,7 @@ MODULE solve_fortran
 
     USE solve_auxiliary
 
-	!/*	setup	*/
+    !/*	setup	*/
 
     IMPLICIT NONE
 
@@ -19,7 +19,7 @@ MODULE solve_fortran
  CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_solve(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max)
+SUBROUTINE fort_solve(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max, level, is_ambiguity)
 
     !/* external objects        */
 
@@ -40,8 +40,10 @@ SUBROUTINE fort_solve(periods_rewards_systematic, states_number_period, mapping_
     REAL(our_dble), INTENT(IN)                      :: coeffs_a(6)
     REAL(our_dble), INTENT(IN)                      :: coeffs_b(6)
     REAL(our_dble), INTENT(IN)                      :: delta
-
-    LOGICAL, INTENT(IN)                             :: is_interpolated    
+    REAL(our_dble), INTENT(IN)                      :: level
+    
+    LOGICAL, INTENT(IN)                             :: is_interpolated
+    LOGICAL, INTENT(IN)                             :: is_ambiguity
     LOGICAL, INTENT(IN)                             :: is_myopic
     LOGICAL, INTENT(IN)                             :: is_debug
 
@@ -64,8 +66,8 @@ SUBROUTINE fort_solve(periods_rewards_systematic, states_number_period, mapping_
 
 
     CALL record_solution(3)
-    
-    CALL fort_backward_induction(periods_emax, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max, .True.)
+
+    CALL fort_backward_induction(periods_emax, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max, level, is_ambiguity, .True.)
 
     IF (.NOT. is_myopic) THEN
         CALL record_solution(-1)
