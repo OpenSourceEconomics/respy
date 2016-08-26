@@ -17,7 +17,10 @@ class TestClass(object):
     """ This class groups together some tests.
     """
     def test_1(self):
-
+        """ This test ensures that using the ambiguity functionality with a
+        level of zero yields the same results as using the risk functionality
+        directly.
+        """
         max_draws = np.random.randint(10, 100)
 
         constr = dict()
