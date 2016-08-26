@@ -101,6 +101,13 @@ def check_line(group, flag, value):
                 assert isinstance(value, int)
                 assert value > 0
 
+        if group == 'AMBIGUITY':
+            if flag in ['level']:
+                assert isinstance(value, float)
+                assert (value >= 0)
+            if flag in ['flag']:
+                assert value in [True, False]
+
         if group == 'SIMULATION':
             if flag in ['agents', 'seed']:
                 assert isinstance(value, int)

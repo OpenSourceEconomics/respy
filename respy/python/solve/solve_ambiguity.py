@@ -1,7 +1,6 @@
-from scipy.optimize import minimize
 import numpy as np
 
-from solve_risk import construct_emax_risk
+from respy.python.solve.solve_risk import construct_emax_risk
 
 
 def kl_divergence(mean_old, cov_old, mean_new, cov_new):
@@ -44,18 +43,12 @@ def get_worst_case(num_periods, num_draws_emax, period, k,
     """ Run the optimization.
     """
 
-    x0 = np.tile(0, 2)
-
     args = (num_periods, num_draws_emax, period, k, draws_emax_transformed,
             rewards_systematic, edu_max, edu_start, periods_emax,
             states_all, mapping_state_idx, delta)
 
-    bounds = [(-theta, theta), (-theta, theta)]
-
-    rslt = minimize(criterion_ambiguity, x0, args, method='L-BFGS-B', bounds=bounds)
-
-    # Minimize criterion
-    emax = rslt['fun']
+    x = [-theta, -theta]
+    emax = criterion_ambiguity(x, *args)
 
     return emax
 
@@ -70,7 +63,7 @@ def criterion_ambiguity(x, num_periods, num_draws_emax, period, k,
         draws_relevant[:, i] = draws_relevant[:, i] + x[i]
 
     emax = construct_emax_risk(num_periods, num_draws_emax, period, k,
-        draws_relevant, rewards_systematic, edu_max, edu_start,
-        periods_emax, states_all, mapping_state_idx, delta)
+        draws_relevant, rewards_systematic, edu_max, edu_start, periods_emax,
+        states_all, mapping_state_idx, delta)
 
     return emax

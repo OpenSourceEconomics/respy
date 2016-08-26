@@ -88,6 +88,11 @@ def generate_random_dict(constraints=None):
     dict_['SOLUTION']['seed'] = np.random.randint(1, 10000)
     dict_['SOLUTION']['store'] = np.random.choice(['True', 'False'])
 
+    # AMBIGUITY
+    dict_['AMBIGUITY'] = dict()
+    dict_['AMBIGUITY']['flag'] = np.random.choice([True, False])
+    dict_['AMBIGUITY']['level'] = np.random.uniform()
+
     # ESTIMATION
     dict_['ESTIMATION'] = dict()
     dict_['ESTIMATION']['agents'] = np.random.randint(1, num_agents_sim)
@@ -247,6 +252,25 @@ def generate_random_dict(constraints=None):
         # Replace in initialization file
         dict_['EDUCATION']['start'] = start
         dict_['EDUCATION']['max'] = max_
+
+    # Replace presence of ambiguity
+    if 'is_ambiguity' in constraints.keys():
+        # Extract objects
+        is_ambiguity = constraints['is_ambiguity']
+        # Checks
+        assert (is_ambiguity in [True, False])
+        # Replace initialization file
+        dict_['AMBIGUITY']['flag'] = is_ambiguity
+
+    # Replace level of ambiguity
+    if 'level' in constraints.keys():
+        # Extract object
+        level = constraints['level']
+        # Checks
+        assert isinstance(level, float)
+        assert level >= 0.0
+        # Replace in initialization file
+        dict_['AMBIGUITY']['level'] = level
 
     # Replace version
     if 'version' in constraints.keys():

@@ -49,7 +49,9 @@ for idx, _ in enumerate(tests_old):
     print('\n Modfiying Test ', idx, 'with version ', PYTHON_VERSION)
     init_dict, crit_val = tests_old[idx]
 
-    init_dict['SOLUTION']['store'] = False
+    init_dict['AMBIGUITY'] = dict()
+    init_dict['AMBIGUITY']['level'] = 0.0
+    init_dict['AMBIGUITY']['flag'] = False
 
     tests_new += [(init_dict, crit_val)]
 

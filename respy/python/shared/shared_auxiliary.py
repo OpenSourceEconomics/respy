@@ -475,14 +475,15 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                 file_.write('\n')
 
             if flag in ['SOLUTION', 'SIMULATION', 'PROGRAM', 'INTERPOLATION',
-                        'ESTIMATION', 'PARALLELISM', 'SCALING', 'DERIVATIVES']:
+                        'ESTIMATION', 'PARALLELISM', 'SCALING',
+                        'DERIVATIVES', 'AMBIGUITY']:
 
                 file_.write(flag.upper() + '\n\n')
                 keys = list(dict_[flag].keys())
                 keys.sort()
                 for key_ in keys:
 
-                    if key_ in ['tau']:
+                    if key_ in ['tau', 'level']:
                         str_ = '{0:<10} {1:20.0f}\n'
                         file_.write(str_.format(key_, dict_[flag][key_]))
                     else:

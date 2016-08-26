@@ -1,18 +1,18 @@
 import os
 import shlex
 
-import numpy as np
 import statsmodels.api as sm
+import numpy as np
 
 from respy.python.record.record_solution import record_prediction_model
 from respy.python.record.record_solution import record_solution_progress
-from respy.python.shared.shared_auxiliary import get_total_values
 from respy.python.shared.shared_auxiliary import transform_disturbances
-from respy.python.shared.shared_constants import HUGE_FLOAT
-from respy.python.shared.shared_constants import MISSING_FLOAT
-from respy.python.shared.shared_constants import MISSING_INT
 from respy.python.solve.solve_ambiguity import construct_emax_ambiguity
+from respy.python.shared.shared_auxiliary import get_total_values
+from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.solve.solve_risk import construct_emax_risk
+from respy.python.shared.shared_constants import MISSING_INT
+from respy.python.shared.shared_constants import HUGE_FLOAT
 
 
 def pyth_create_state_space(num_periods, edu_start, edu_max, min_idx):
@@ -159,7 +159,8 @@ def pyth_calculate_rewards_systematic(num_periods, states_number_period,
 def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
         num_draws_emax, states_number_period, periods_rewards_systematic,
         edu_max, edu_start, mapping_state_idx, states_all, delta, is_debug,
-        is_interpolated, num_points_interp, shocks_cholesky, is_ambiguity, level):
+        is_interpolated, num_points_interp, shocks_cholesky, is_ambiguity,
+        level):
     """ Backward induction procedure. There are two main threads to this
     function depending on whether interpolation is requested or not.
     """
@@ -184,7 +185,7 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
         num_states = states_number_period[period]
 
         draws_emax_transformed = transform_disturbances(draws_emax,
-                                                        shocks_cholesky)
+                                    shocks_cholesky)
 
         record_solution_progress(4, period, num_states)
 
@@ -236,23 +237,19 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
 
                 # Simulate the expected future value.
                 if not is_ambiguity:
-                    emax = construct_emax_risk(num_periods, num_draws_emax, period, k,
-                                           draws_emax_transformed, rewards_systematic, edu_max,
-                                           edu_start, periods_emax, states_all, mapping_state_idx,
-                                           delta)
+                    emax = construct_emax_risk(num_periods, num_draws_emax,
+                        period, k, draws_emax_transformed, rewards_systematic,
+                        edu_max, edu_start, periods_emax, states_all,
+                        mapping_state_idx, delta)
                 else:
-                    emax = construct_emax_ambiguity(num_periods, num_draws_emax, period,
-                                           k,
-                                           draws_emax_transformed,
-                                           rewards_systematic, edu_max,
-                                           edu_start, periods_emax, states_all,
-                                           mapping_state_idx,
-                                           delta, level)
+                    emax = construct_emax_ambiguity(num_periods, num_draws_emax,
+                        period, k, draws_emax_transformed, rewards_systematic,
+                        edu_max, edu_start, periods_emax, states_all,
+                        mapping_state_idx, delta, level)
+
                 # Store results
                 periods_emax[period, k] = emax
 
-    # Finishing. Note that the last two return arguments are not available in
-    # for periods, where interpolation is required.
     return periods_emax
 
 
@@ -341,8 +338,8 @@ def get_endogenous_variable(period, num_periods, num_states, delta,
 
         # Simulate the expected future value.
         emax = construct_emax_risk(num_periods, num_draws_emax, period, k,
-                                   draws_emax_transformed, rewards_systematic, edu_max, edu_start,
-                                   periods_emax, states_all, mapping_state_idx, delta)
+            draws_emax_transformed, rewards_systematic, edu_max, edu_start,
+            periods_emax, states_all, mapping_state_idx, delta)
 
         # Construct dependent variable
         endogenous_variable[k] = emax - maxe[k]
