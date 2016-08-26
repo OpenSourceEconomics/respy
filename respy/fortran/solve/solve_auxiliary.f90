@@ -349,9 +349,9 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
                 rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
 
                 IF (is_ambiguity) THEN
-                    CALL construct_emax_ambiguity(emax, draws_emax_transformed, period, k, rewards_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max, level)
+                    CALL construct_emax_ambiguity(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, level)
                 ELSE
-                    CALL construct_emax_risk(emax, draws_emax_transformed, period, k, rewards_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max)
+                    CALL construct_emax_risk(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
                 END IF
 
                 periods_emax(period + 1, k + 1) = emax
@@ -555,9 +555,9 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_states, periods_rewar
         rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
 
         IF (is_ambiguity) THEN
-            CALL construct_emax_ambiguity(emax, draws_emax_transformed, period, k, rewards_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max, level)
+            CALL construct_emax_ambiguity(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, level)
         ELSE
-            CALL construct_emax_risk(emax, draws_emax_transformed, period, k, rewards_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max)
+            CALL construct_emax_risk(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
         END IF
 
         ! Construct dependent variable

@@ -17,9 +17,9 @@ def run(args):
     write_request(args.num_tests)
 
     if args.request == 'check':
-        script_files = ['modules/check_vault.py']
+        script_files = ['scripts/check_vault.py']
     elif args.request == 'create':
-        script_files = ['modules/create_vault.py']
+        script_files = ['scripts/create_vault.py']
     else:
         raise AssertionError
 

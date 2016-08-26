@@ -602,7 +602,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, state
                 rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
 
                 ! Get rewards
-                CALL construct_emax_risk(emax, draws_emax_transformed, period, k, rewards_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max)
+                CALL construct_emax_risk(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
 
                 ! Construct dependent variable
                 endogenous_slaves(count) = emax - maxe(k + 1)
@@ -633,7 +633,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, state
                 ! Extract rewards
                 rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
 
-                CALL construct_emax_risk(emax, draws_emax_transformed, period, k, rewards_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max)
+                CALL construct_emax_risk(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
 
                 ! Collect information
                 periods_emax_slaves(count) = emax

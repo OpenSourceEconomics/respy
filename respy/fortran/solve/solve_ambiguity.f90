@@ -62,7 +62,7 @@ FUNCTION kl_divergence(mean_old, cov_old, mean_new, cov_new)
 END FUNCTION
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE construct_emax_ambiguity(emax, draws_emax_transformed, period, k, rewards_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max, level)
+SUBROUTINE construct_emax_ambiguity(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, level)
 
     !/* external objects    */
 
@@ -163,7 +163,7 @@ SUBROUTINE criterion_ambiguity(emax, x, draws_emax_transformed, period, k, rewar
     draws_relevant(:, 1) = draws_relevant(:, 1) + x(1)
     draws_relevant(:, 2) = draws_relevant(:, 2) + x(2)
 
-    CALL construct_emax_risk(emax, draws_relevant, period, k, rewards_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max)
+    CALL construct_emax_risk(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
 
 END SUBROUTINE
 !******************************************************************************
