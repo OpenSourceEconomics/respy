@@ -1,23 +1,14 @@
-from pandas.util.testing import assert_frame_equal
-
 import numpy as np
-import pandas as pd
 import pytest
 
 from respy.python.shared.shared_auxiliary import print_init_dict
-
-from respy.scripts.scripts_estimate import scripts_estimate
-from respy.scripts.scripts_simulate import scripts_simulate
-from respy.scripts.scripts_update import scripts_update
-from respy.scripts.scripts_modify import scripts_modify
-from respy.python.process.process_python import process
 from respy.python.shared.shared_constants import IS_FORTRAN
+from codes.random_init import generate_init
 
 from respy import estimate
 from respy import simulate
 from respy import RespyCls
 
-from codes.random_init import generate_init
 
 @pytest.mark.usefixtures('fresh_directory', 'set_seed')
 class TestClass(object):
@@ -31,6 +22,8 @@ class TestClass(object):
 
         init_dict = generate_init(constr)
 
+        # TODO: This is probably not true without additional standardization
+        # efforts.
         # We also check explicitly across the different program implementations.
         versions = ['PYTHON']
         if IS_FORTRAN:

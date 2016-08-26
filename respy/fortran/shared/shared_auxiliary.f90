@@ -655,7 +655,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_rewards
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, is_scaled, scaled_minimum, optimizer_used, dfunc_eps, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend, bfgs_gtol, bfgs_stpmx, bfgs_maxiter)
+SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, is_scaled, scaled_minimum, level, is_ambiguity, optimizer_used, dfunc_eps, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend, bfgs_gtol, bfgs_stpmx, bfgs_maxiter)
 
     !
     !   This function serves as the replacement for the RespyCls and reads in
@@ -671,6 +671,7 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
     REAL(our_dble), INTENT(OUT)     :: coeffs_a(6)
     REAL(our_dble), INTENT(OUT)     :: coeffs_b(6)
     REAL(our_dble), INTENT(OUT)     :: delta
+    REAL(our_dble), INTENT(OUT)     :: level
     REAL(our_dble), INTENT(OUT)     :: tau
 
     REAL(our_dble), INTENT(OUT)     :: newuoa_rhobeg
@@ -694,6 +695,7 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
     REAL(our_dble), INTENT(OUT)     :: bfgs_stpmx
     REAL(our_dble), INTENT(OUT)     :: bfgs_gtol
     REAL(our_dble), INTENT(OUT)     :: dfunc_eps
+
     CHARACTER(225), INTENT(OUT)     :: optimizer_used
     CHARACTER(225), INTENT(OUT)     :: exec_dir
 
@@ -701,6 +703,7 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
 
     LOGICAL, INTENT(OUT)            :: is_interpolated
     LOGICAL, INTENT(OUT)            :: paras_fixed(26)
+    LOGICAL, INTENT(OUT)            :: is_ambiguity
     LOGICAL, INTENT(OUT)            :: is_scaled
     LOGICAL, INTENT(OUT)            :: is_myopic
     LOGICAL, INTENT(OUT)            :: is_debug
@@ -749,6 +752,10 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
         READ(99, 1505) num_draws_emax
         READ(99, 1505) seed_emax
 
+        ! AMBIGUITY
+        READ(99, *) is_ambiguity
+        READ(99, 1510) level
+        
         ! PROGRAM
         READ(99, *) is_debug
         READ(99, 1505) num_procs

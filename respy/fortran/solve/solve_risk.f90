@@ -1,12 +1,16 @@
 !******************************************************************************
 !******************************************************************************
-MODULE solve_ambiguity
+MODULE solve_risk
 
     !/*	external modules	*/
 
-    USE shared_constants
+    USE recording_solution
 
     USE shared_auxiliary
+
+    USE shared_constants
+
+    USE shared_utilities
 
     !/*	setup	*/
 
@@ -17,50 +21,7 @@ MODULE solve_ambiguity
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-FUNCTION kl_divergence(mean_old, cov_old, mean_new, cov_new)
-
-    !/* external objects        */
-
-    REAL(our_dble)                      :: kl_divergence
-
-    REAL(our_dble), INTENT(IN)          :: cov_old(:, :)
-    REAL(our_dble), INTENT(IN)          :: cov_new(:, :)
-    REAL(our_dble), INTENT(IN)          :: mean_old(:)
-    REAL(our_dble), INTENT(IN)          :: mean_new(:)
-
-    !/* internal objects        */
-
-    INTEGER(our_int)                    :: num_dims
-
-    REAL(our_dble), ALLOCATABLE         :: cov_old_inv(:, :)
-    REAL(our_dble), ALLOCATABLE         :: mean_diff(:, :)
-
-    REAL(our_dble)                      :: comp_b(1, 1)
-    REAL(our_dble)                      :: comp_a
-    REAL(our_dble)                      :: comp_c
-
-!------------------------------------------------------------------------------
-! Algorithm
-!------------------------------------------------------------------------------
-
-    num_dims = SIZE(mean_old)
-
-    ALLOCATE(cov_old_inv(num_dims, num_dims))
-    ALLOCATE(mean_diff(num_dims, 1))
-
-    mean_diff = RESHAPE(mean_old, (/num_dims, 1/)) - RESHAPE(mean_new, (/num_dims, 1/))
-    cov_old_inv = inverse(cov_old, num_dims)
-
-    comp_a = trace(MATMUL(cov_old_inv, cov_new))
-    comp_b = MATMUL(MATMUL(TRANSPOSE(mean_diff), cov_old_inv), mean_diff)
-    comp_c = LOG(determinant(cov_old) / determinant(cov_new))
-
-    kl_divergence = half_dble * (comp_a + comp_b(1, 1) - num_dims + comp_c)
-
-END FUNCTION
-!******************************************************************************
-!******************************************************************************
-SUBROUTINE construct_emax_ambiguity(emax, draws_emax_transformed, period, k, rewards_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max, level)
+SUBROUTINE construct_emax_risk(emax, draws_emax_transformed, period, k, rewards_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max)
 
     !/* external objects    */
 
@@ -76,7 +37,6 @@ SUBROUTINE construct_emax_ambiguity(emax, draws_emax_transformed, period, k, rew
     REAL(our_dble), INTENT(IN)      :: periods_emax(num_periods, max_states_period)
     REAL(our_dble), INTENT(IN)      :: draws_emax_transformed(num_draws_emax, 4)
     REAL(our_dble), INTENT(IN)      :: rewards_systematic(4)
-    REAL(our_dble), INTENT(IN)      :: level
     REAL(our_dble), INTENT(IN)      :: delta
 
     !/* internals objects    */

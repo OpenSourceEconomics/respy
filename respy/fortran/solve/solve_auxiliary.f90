@@ -2,7 +2,7 @@
 !******************************************************************************
 MODULE solve_auxiliary
 
-  !/*	external modules	*/
+    !/*	external modules	*/
 
     USE recording_solution
 
@@ -12,7 +12,11 @@ MODULE solve_auxiliary
 
     USE shared_utilities
 
-  !/*	setup	*/
+    USE solve_ambiguity
+
+    USE solve_risk
+
+    !/*	setup	*/
 
     IMPLICIT NONE
 
@@ -341,6 +345,8 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
             DO k = 0, (states_number_period(period + 1) - 1)
 
                 rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
+
+                PRINT *, 'HGello'
 
                 CALL construct_emax_risk(emax, draws_emax_transformed, period, k, rewards_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max)
 
@@ -820,60 +826,6 @@ SUBROUTINE get_pred_info(r_squared, bse, observed, predicted, exogenous, num_sta
     ELSE
         r_squared = one_dble - ss_residuals / ss_total
     END IF
-
-END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
-SUBROUTINE construct_emax_risk(emax, draws_emax_transformed, period, k, rewards_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max)
-
-    !/* external objects    */
-
-    REAL(our_dble), INTENT(OUT)     :: emax
-
-    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
-    INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
-    INTEGER(our_int), INTENT(IN)    :: edu_start
-    INTEGER(our_int), INTENT(IN)    :: edu_max
-    INTEGER(our_int), INTENT(IN)    :: period
-    INTEGER(our_int), INTENT(IN)    :: k
-
-    REAL(our_dble), INTENT(IN)      :: periods_emax(num_periods, max_states_period)
-    REAL(our_dble), INTENT(IN)      :: draws_emax_transformed(num_draws_emax, 4)
-    REAL(our_dble), INTENT(IN)      :: rewards_systematic(4)
-    REAL(our_dble), INTENT(IN)      :: delta
-
-    !/* internals objects    */
-
-    INTEGER(our_int)                :: i
-
-    REAL(our_dble)                  :: total_values(4)
-    REAL(our_dble)                  :: draws(4)
-    REAL(our_dble)                  :: maximum
-
-!------------------------------------------------------------------------------
-! Algorithm
-!------------------------------------------------------------------------------
-
-    ! Iterate over Monte Carlo draws
-    emax = zero_dble
-    DO i = 1, num_draws_emax
-
-        ! Select draws for this draw
-        draws = draws_emax_transformed(i, :)
-
-        ! Calculate total value
-        CALL get_total_values(total_values, period, rewards_systematic, draws, mapping_state_idx, periods_emax, k, states_all, delta, edu_start, edu_max)
-
-        ! Determine optimal choice
-        maximum = MAXVAL(total_values)
-
-        ! Recording expected future value
-        emax = emax + maximum
-
-    END DO
-
-    ! Scaling
-    emax = emax / num_draws_emax
 
 END SUBROUTINE
 !******************************************************************************

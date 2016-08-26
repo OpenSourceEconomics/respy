@@ -7,7 +7,7 @@ def build(ctx):
     src = ['shared/shared_constants.f90', 'shared/shared_containers.f90',
         'shared/shared_lapack_interfaces.f90', 'record/record_warning.f90',
         'shared/shared_auxiliary.f90',
-        'shared/shared_utilities.f90',
+        'shared/shared_utilities.f90', 'solve/solve_risk.f90',
         'solve/solve_auxiliary.f90', 'solve/solve_ambiguity.f90',
         'solve/solve_fortran.f90',
         'evaluate/evaluate_auxiliary.f90', 'evaluate/evaluate_fortran.f90',
