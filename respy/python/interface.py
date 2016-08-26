@@ -3,6 +3,7 @@ from scipy.optimize import fmin_bfgs
 
 from respy.python.record.record_estimation import record_estimation_stop
 from respy.python.record.record_estimation import record_estimation_final
+from respy.python.solve.solve_auxiliary import pyth_create_state_space
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.estimate.estimate_auxiliary import get_optim_paras
 from respy.python.estimate.estimate_wrapper import OptimizationClass
@@ -56,12 +57,21 @@ def respy_interface(respy_obj, request, data_array=None):
         x_all_start = get_optim_paras(coeffs_a, coeffs_b, coeffs_edu,
             coeffs_home, shocks_cholesky, 'all', paras_fixed, is_debug)
 
+        # Construct the state space
+        states_all, states_number_period, mapping_state_idx, \
+            max_states_period = pyth_create_state_space(num_periods,
+                edu_start, edu_max, min_idx)
+
+        # Cutting to size
+        states_all = states_all[:, :max(states_number_period), :]
+
         # Collect arguments that are required for the criterion function. These
         # must be in the correct order already.
-        args = (is_interpolated, num_draws_emax, num_periods, num_points_interp,
-            is_myopic, edu_start, is_debug, edu_max, min_idx, delta,
-            data_array, num_agents_est, num_draws_prob, tau,
-            periods_draws_emax, periods_draws_prob, is_ambiguity, level)
+        args = (is_interpolated, num_draws_emax, num_periods,
+            num_points_interp, is_myopic, edu_start, is_debug, edu_max, delta,
+            data_array, num_agents_est, num_draws_prob, tau, periods_draws_emax,
+            periods_draws_prob, states_all, states_number_period,
+            mapping_state_idx, max_states_period, level, is_ambiguity)
 
         # Special case where just an evaluation at the starting values is
         # requested is accounted for. Note, that the relevant value of the

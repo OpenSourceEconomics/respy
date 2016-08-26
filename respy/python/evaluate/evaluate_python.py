@@ -1,18 +1,21 @@
 from scipy.stats import norm
 import numpy as np
 
+from respy.python.solve.solve_auxiliary import pyth_calculate_rewards_systematic
 from respy.python.evaluate.evaluate_auxiliary import get_smoothed_probability
+from respy.python.solve.solve_auxiliary import pyth_backward_induction
 from respy.python.shared.shared_auxiliary import get_total_values
+from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.shared.shared_constants import SMALL_FLOAT
 from respy.python.shared.shared_constants import HUGE_FLOAT
-from respy.python.solve.solve_python import pyth_solve
 
 
-def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
-        is_interpolated, num_draws_emax, num_periods, num_points_interp,
-        is_myopic, edu_start, is_debug, edu_max, min_idx, delta, data_array,
-        num_agents_est, num_draws_prob, tau, periods_draws_emax,
-        periods_draws_prob, is_ambiguity, level):
+def pyth_contributions(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+        shocks_cholesky, is_interpolated, num_draws_emax, num_periods,
+        num_points_interp, is_myopic, edu_start, is_debug, edu_max, delta,
+        data_array, num_agents_est, num_draws_prob, tau, periods_draws_emax,
+        periods_draws_prob, states_all, states_number_period,
+        mapping_state_idx, max_states_period, level, is_ambiguity):
     """ Evaluate criterion function. This code allows for a deterministic
     model, where there is no random variation in the rewards. If that is the
     case and all agents have corresponding experiences, then one is returned.
@@ -22,14 +25,29 @@ def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
     shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
     is_deterministic = (np.count_nonzero(shocks_cholesky) == 0)
 
-    # Solve requested model.
-    base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
-        is_interpolated, num_draws_emax, num_periods, num_points_interp,
-        is_myopic, edu_start, is_debug, edu_max, min_idx, delta)
+    # Calculate all systematic rewards
+    periods_rewards_systematic = pyth_calculate_rewards_systematic(num_periods,
+        states_number_period, states_all, edu_start, coeffs_a, coeffs_b,
+        coeffs_edu, coeffs_home, max_states_period)
 
-    periods_rewards_systematic, _, mapping_state_idx, periods_emax, \
-        states_all = pyth_solve(*base_args + (periods_draws_emax,
-                                              is_ambiguity, level))
+    # Initialize containers, which contain a lot of missing values as we
+    # capture the tree structure in arrays of fixed dimension.
+    i, j = num_periods, max_states_period
+    periods_emax = np.tile(MISSING_FLOAT, (i, j))
+
+    if is_myopic:
+        # All other objects remain set to MISSING_FLOAT. This align the
+        # treatment for the two special cases: (1) is_myopic and (2)
+        # is_interpolated.
+        for period, num_states in enumerate(states_number_period):
+            periods_emax[period, :num_states] = 0.0
+
+    else:
+        periods_emax = pyth_backward_induction(num_periods, max_states_period,
+            periods_draws_emax, num_draws_emax, states_number_period,
+            periods_rewards_systematic, edu_max, edu_start,
+            mapping_state_idx, states_all, delta, is_debug, is_interpolated,
+            num_points_interp, shocks_cholesky, is_ambiguity, level)
 
     # Initialize auxiliary objects
     contribs = np.tile(-HUGE_FLOAT, (num_agents_est * num_periods))
