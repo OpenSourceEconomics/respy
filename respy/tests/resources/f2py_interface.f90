@@ -612,7 +612,7 @@ SUBROUTINE wrapper_construct_emax_risk(emax, num_periods_int, num_draws_emax_int
     delta = delta_int
 
     ! Call function of interest
-    CALL construct_emax_risk(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
+    CALL construct_emax_risk(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax_int, states_all_int, mapping_state_idx_int, delta)
 
 END SUBROUTINE
 !******************************************************************************
