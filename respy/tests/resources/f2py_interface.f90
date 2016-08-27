@@ -6,7 +6,7 @@
 !
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, num_periods_int, num_points_interp_int, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, min_idx_int, delta_int, data_est_int, num_agents_est_int, num_draws_prob_int, tau_int, periods_draws_emax_int, periods_draws_prob_int, level_int, is_ambiguity_int)
+SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, num_periods_int, num_points_interp_int, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, delta_int, data_est_int, num_agents_est_int, num_draws_prob_int, tau_int, periods_draws_emax_int, periods_draws_prob_int, states_all_int, states_number_period_int, mapping_state_idx_int, max_states_period_int, level_int, is_ambiguity_int)
 
     !/* external libraries      */
 
@@ -20,22 +20,26 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
 
     DOUBLE PRECISION, INTENT(OUT)   :: crit_val
 
-    DOUBLE PRECISION, INTENT(IN)    :: delta_int
     DOUBLE PRECISION, INTENT(IN)    :: x(26)
 
-    INTEGER, INTENT(IN)             :: num_points_interp_int
-    INTEGER, INTENT(IN)             :: num_agents_est_int
-    INTEGER, INTENT(IN)             :: num_draws_emax_int
     INTEGER, INTENT(IN)             :: num_draws_prob_int
-    INTEGER, INTENT(IN)             :: num_periods_int
-    INTEGER, INTENT(IN)             :: edu_start_int
-    INTEGER, INTENT(IN)             :: min_idx_int
+    INTEGER, INTENT(IN)             :: num_draws_emax_int
+    INTEGER, INTENT(IN)             :: num_agents_est_int
     INTEGER, INTENT(IN)             :: edu_max_int
+    INTEGER, INTENT(IN)             :: num_periods_int
+    INTEGER, INTENT(IN)             :: num_points_interp_int
+    INTEGER, INTENT(IN)             :: edu_start_int
+    INTEGER, INTENT(IN)             :: max_states_period_int
+    INTEGER, INTENT(IN)             :: mapping_state_idx_int(:, :, :, :, :)
+    INTEGER, INTENT(IN)             :: states_all_int(:, :, :)
+    INTEGER, INTENT(IN)             :: states_number_period_int(:)
 
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_emax_int(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_prob_int(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: data_est_int(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: level_int
+    DOUBLE PRECISION, INTENT(IN)    :: delta_int
+
     DOUBLE PRECISION, INTENT(IN)    :: tau_int
 
     LOGICAL, INTENT(IN)             :: is_interpolated_int
@@ -58,8 +62,13 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    ! Assign global RESFORT variables
-    max_states_period = SIZE(states_all, 2)
+    ! Assign global RESPFRT variables
+    min_idx = SIZE(mapping_state_idx_int, 4)
+    max_states_period = max_states_period_int
+
+    states_all = states_all_int
+    states_number_period = states_number_period_int
+    mapping_state_idx = mapping_state_idx_int
 
     ! Transfer global RESFORT variables
     num_points_interp = num_points_interp_int
@@ -73,30 +82,103 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
     is_myopic = is_myopic_int
     edu_start = edu_start_int
     is_debug = is_debug_int
-    min_idx = min_idx_int
     edu_max = edu_max_int
     delta = delta_int
     level = level_int
     tau = tau_int
 
-    ! Ensure that there is no problem with the repeated allocation of the containers.
-    IF (ALLOCATED(mapping_state_idx)) DEALLOCATE(mapping_state_idx)
-    IF (ALLOCATED(periods_rewards_systematic)) DEALLOCATE(periods_rewards_systematic)
-    IF (ALLOCATED(states_all)) DEALLOCATE(states_all)
-    IF (ALLOCATED(periods_emax)) DEALLOCATE(periods_emax)
-    IF (ALLOCATED(states_number_period)) DEALLOCATE(states_number_period)
-    IF (ALLOCATED(states_all)) DEALLOCATE(states_all)
-
     !# Distribute model parameters
     CALL dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x, dist_optim_paras_info)
 
-    ! Solve requested model
-    CALL fort_solve(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax_int, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max, level, is_ambiguity)
+    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, states_number_period_int, states_all_int, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start)
 
-    ! Evaluate criterion function for observed data
-    CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_est, periods_draws_prob_int, delta, tau, edu_start, edu_max)
+    CALL fort_backward_induction(periods_emax, periods_draws_emax_int, states_number_period_int, periods_rewards_systematic, mapping_state_idx_int, states_all_int, shocks_cholesky, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max, level, is_ambiguity, .False.)
+
+    CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all_int, shocks_cholesky, data_est, periods_draws_prob_int, delta, tau, edu_start, edu_max)
 
     crit_val = get_log_likl(contribs, num_agents_est, num_periods)
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE f2py_contributions(contribs, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, is_interpolated_int, num_draws_emax_int, num_periods_int, num_points_interp_int, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, delta_int, data_est_int, num_agents_est_int, num_draws_prob_int, tau_int, periods_draws_emax_int, periods_draws_prob_int, states_all_int, states_number_period_int, mapping_state_idx_int, max_states_period_int, level_int, is_ambiguity_int)
+
+    !/* external libraries      */
+
+    USE resfort_library
+
+    !/* setup                   */
+
+    IMPLICIT NONE
+
+    !/* external objects        */
+
+    DOUBLE PRECISION, INTENT(OUT)   :: contribs(num_agents_est_int * num_periods_int)
+
+    INTEGER, INTENT(IN)             :: num_draws_prob_int
+    INTEGER, INTENT(IN)             :: num_draws_emax_int
+    INTEGER, INTENT(IN)             :: num_agents_est_int
+    INTEGER, INTENT(IN)             :: edu_max_int
+    INTEGER, INTENT(IN)             :: num_periods_int
+    INTEGER, INTENT(IN)             :: num_points_interp_int
+    INTEGER, INTENT(IN)             :: edu_start_int
+    INTEGER, INTENT(IN)             :: max_states_period_int
+    INTEGER, INTENT(IN)             :: mapping_state_idx_int(:, :, :, :, :)
+    INTEGER, INTENT(IN)             :: states_all_int(:, :, :)
+    INTEGER, INTENT(IN)             :: states_number_period_int(:)
+
+    DOUBLE PRECISION, INTENT(IN)    :: periods_draws_emax_int(:, :, :)
+    DOUBLE PRECISION, INTENT(IN)    :: periods_draws_prob_int(:, :, :)
+    DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(4, 4)
+    DOUBLE PRECISION, INTENT(IN)    :: data_est_int(:, :)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_home(:)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_edu(:)
+    DOUBLE PRECISION, INTENT(IN)    :: level_int
+    DOUBLE PRECISION, INTENT(IN)    :: delta_int
+
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(:)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(:)
+    DOUBLE PRECISION, INTENT(IN)    :: tau_int
+
+    LOGICAL, INTENT(IN)             :: is_interpolated_int
+    LOGICAL, INTENT(IN)             :: is_ambiguity_int
+    LOGICAL, INTENT(IN)             :: is_myopic_int
+    LOGICAL, INTENT(IN)             :: is_debug_int
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    ! Assign global RESPFRT variables
+    min_idx = SIZE(mapping_state_idx_int, 4)
+    max_states_period = max_states_period_int
+
+    states_all = states_all_int
+    states_number_period = states_number_period_int
+    mapping_state_idx = mapping_state_idx_int
+    !
+     ! Transfer global RESFORT variables
+     num_points_interp = num_points_interp_int
+     is_interpolated = is_interpolated_int
+     num_agents_est = num_agents_est_int
+     num_draws_prob = num_draws_prob_int
+     num_draws_emax = num_draws_emax_int
+     is_ambiguity = is_ambiguity_int
+     num_periods = num_periods_int
+     edu_start = edu_start_int
+     is_myopic = is_myopic_int
+     data_est = data_est_int
+     is_debug = is_debug_int
+     edu_max = edu_max_int
+     delta = delta_int
+     level = level_int
+     tau = tau_int
+
+    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, states_number_period_int, states_all_int, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start)
+
+    CALL fort_backward_induction(periods_emax, periods_draws_emax_int, states_number_period_int, periods_rewards_systematic, mapping_state_idx_int, states_all_int, shocks_cholesky, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max, level, is_ambiguity, .False.)
+
+    CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all_int, shocks_cholesky, data_est, periods_draws_prob_int, delta, tau, edu_start, edu_max)
 
 END SUBROUTINE
 !******************************************************************************
@@ -180,100 +262,6 @@ SUBROUTINE f2py_solve(periods_rewards_systematic_int, states_number_period_int, 
     mapping_state_idx_int = mapping_state_idx
     periods_emax_int = periods_emax
     states_all_int = states_all
-
-END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
-SUBROUTINE f2py_contributions(contribs, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, is_interpolated_int, num_draws_emax_int, num_periods_int, num_points_interp_int, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, delta_int, data_est_int, num_agents_est_int, num_draws_prob_int, tau_int, periods_draws_emax_int, periods_draws_prob_int, states_all_int, states_number_period_int, mapping_state_idx_int, max_states_period_int, level_int, is_ambiguity_int)
-
-    !/* external libraries      */
-
-    USE resfort_library
-
-    !/* setup                   */
-
-    IMPLICIT NONE
-
-    !/* external objects        */
-
-    DOUBLE PRECISION, INTENT(OUT)   :: contribs(num_agents_est_int * num_periods_int)
-
-    INTEGER, INTENT(IN)             :: num_draws_prob_int
-    INTEGER, INTENT(IN)             :: num_draws_emax_int
-    INTEGER, INTENT(IN)             :: num_agents_est_int
-    INTEGER, INTENT(IN)             :: edu_max_int
-    INTEGER, INTENT(IN)             :: num_periods_int
-    INTEGER, INTENT(IN)             :: num_points_interp_int
-    INTEGER, INTENT(IN)             :: edu_start_int
-    INTEGER, INTENT(IN)             :: max_states_period_int
-    INTEGER, INTENT(IN)             :: mapping_state_idx_int(:, :, :, :, :)
-    INTEGER, INTENT(IN)             :: states_all_int(:, :, :)
-    INTEGER, INTENT(IN)             :: states_number_period_int(:)
-
-    DOUBLE PRECISION, INTENT(IN)    :: periods_draws_emax_int(:, :, :)
-    DOUBLE PRECISION, INTENT(IN)    :: periods_draws_prob_int(:, :, :)
-    DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(4, 4)
-    DOUBLE PRECISION, INTENT(IN)    :: data_est_int(:, :)
-    DOUBLE PRECISION, INTENT(IN)    :: coeffs_home(:)
-    DOUBLE PRECISION, INTENT(IN)    :: coeffs_edu(:)
-    DOUBLE PRECISION, INTENT(IN)    :: level_int
-    DOUBLE PRECISION, INTENT(IN)    :: delta_int
-
-    DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(:)
-    DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(:)
-    DOUBLE PRECISION, INTENT(IN)    :: tau_int
-
-    LOGICAL, INTENT(IN)             :: is_interpolated_int
-    LOGICAL, INTENT(IN)             :: is_ambiguity_int
-    LOGICAL, INTENT(IN)             :: is_myopic_int
-    LOGICAL, INTENT(IN)             :: is_debug_int
-
-!------------------------------------------------------------------------------
-! Algorithm
-!------------------------------------------------------------------------------
-
-    ! Assign global RESPFRT variables
-    min_idx = SIZE(mapping_state_idx_int, 4)
-    max_states_period = max_states_period_int
-
-    states_all = states_all_int
-    states_number_period = states_number_period_int
-    mapping_state_idx = mapping_state_idx_int
-    !
-     ! Transfer global RESFORT variables
-     num_points_interp = num_points_interp_int
-     is_interpolated = is_interpolated_int
-     num_agents_est = num_agents_est_int
-     num_draws_prob = num_draws_prob_int
-     num_draws_emax = num_draws_emax_int
-     is_ambiguity = is_ambiguity_int
-     num_periods = num_periods_int
-     edu_start = edu_start_int
-     is_myopic = is_myopic_int
-     data_est = data_est_int
-     is_debug = is_debug_int
-     edu_max = edu_max_int
-     delta = delta_int
-     level = level_int
-     tau = tau_int
-
-    ! PRINT *, 'Test'
-    ! PRINT *, max_states_period, num_periods, num_draws_prob, SIZE(data_est, 1), min_idx
-    ! PRINT *, ''
-
-    !IF(ALLOCATED(periods_rewards_systematic)) DEALLOCATE(periods_rewards_systematic)
-    !ALLOCATE(periods_rewards_systematic(num_periods, max_states_period, 4))
-    !periods_rewards_systematic = zero_dble
-
-    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, states_number_period_int, states_all_int, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start)
-
-    !IF(ALLOCATED(periods_emax)) DEALLOCATE(periods_emax)
-    !IF (.NOT. ALLOCATED(periods_emax)) ALLOCATE(periods_emax(num_periods, max_states_period))
-    !periods_emax = zero_dble
-
-    CALL fort_backward_induction(periods_emax, periods_draws_emax_int, states_number_period_int, periods_rewards_systematic, mapping_state_idx_int, states_all_int, shocks_cholesky, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max, level, is_ambiguity, .False.)
-
-    CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all_int, shocks_cholesky, data_est, periods_draws_prob_int, delta, tau, edu_start, edu_max)
 
 END SUBROUTINE
 !******************************************************************************

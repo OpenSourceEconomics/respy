@@ -29,11 +29,11 @@ if len(sys.argv) > 1:
     subprocess.check_call('./waf configure build --debug', shell=True)
     os.chdir(cwd)
 else:
-	print('not recompiling')
+    print('not recompiling')
 
 #MODULE test_parallelism METHOD test_1 SEED: 24029
 
-seed = 73100 # 6216748723
+seed = 88344 # 6216748723
 
 
 ''' Error Reproduction
@@ -46,16 +46,16 @@ np.random.seed(seed)
 test_dict = get_test_dict(PACKAGE_DIR + '/respy/tests')
 module, method = get_random_request(test_dict)
 
-module, method = 'test_f2py', 'test_10'
+module, method = 'test_f2py', 'test_4'
 count = 0
 #os.system('git clean -d -f')
-for i in range(10000):
-	print(module, method)
-	mod = importlib.import_module(module)
-	test = getattr(mod.TestClass(), method)
+for i in range(3):
+    print(module, method)
+    mod = importlib.import_module(module)
+    test = getattr(mod.TestClass(), method)
 
-	test()
-	#count = count +1
-	#print('completed ', count)
+    test()
+    #count = count +1
+    #print('completed ', count)
 
-	#os.system('git clean -d -f')
+    os.system('git clean -d -f')

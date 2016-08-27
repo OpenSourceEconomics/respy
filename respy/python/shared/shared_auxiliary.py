@@ -484,7 +484,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                 for key_ in keys:
 
                     if key_ in ['tau', 'level']:
-                        str_ = '{0:<10} {1:20.0f}\n'
+                        str_ = '{0:<10} {1:20.15f}\n'
                         file_.write(str_.format(key_, dict_[flag][key_]))
                     else:
                         str_ = '{0:<10} {1:>20}\n'

@@ -344,7 +344,7 @@ class TestClass(object):
             min_idx, delta)
 
         fort, _ = resfort_interface(respy_obj, 'simulate')
-        py = pyth_solve(*base_args + (periods_draws_emax, level, is_ambiguity))
+        py = pyth_solve(*base_args + (periods_draws_emax, is_ambiguity, level))
         f2py = fort_debug.f2py_solve(*base_args + (periods_draws_emax,
                     max_states_period, level, is_ambiguity))
 
@@ -381,27 +381,21 @@ class TestClass(object):
         f2py = fort_debug.f2py_contributions(*args)
 
         np.testing.assert_allclose(py, f2py)
-#
-#         # Evaluation of criterion function
-#         x0 = get_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-#             shocks_cholesky, 'all', paras_fixed, is_debug)
-#
-#         #args = (is_interpolated, num_draws_emax, num_periods,
-#         #    num_points_interp, is_myopic, edu_start, is_debug, edu_max,
-#         #    min_idx, delta, data_array, num_agents_sim, num_draws_prob, tau,
-#         #    periods_draws_emax, periods_draws_prob, level, is_ambiguity)
-#
-#         args = (is_interpolated, num_draws_emax, num_periods,
-#             num_points_interp, is_myopic, edu_start, is_debug, edu_max,
-#             delta, data_array, num_agents_est, num_draws_prob, tau,
-#             periods_draws_emax, periods_draws_prob, states_all,
-#             states_number_period, mapping_state_idx, max_states_period,
-#             level, is_ambiguity)
-#
-# #        py = pyth_criterion(x0, *args)
-# #        print(py)
-#         #f2py = fort_debug.f2py_criterion(x0, *args)
-#         #np.testing.assert_allclose(py, f2py)
+
+        # Evaluation of criterion function
+        x0 = get_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+            shocks_cholesky, 'all', paras_fixed, is_debug)
+
+        args = (is_interpolated, num_draws_emax, num_periods,
+            num_points_interp, is_myopic, edu_start, is_debug, edu_max,
+            delta, data_array, num_agents_est, num_draws_prob, tau,
+            periods_draws_emax, periods_draws_prob, states_all,
+            states_number_period, mapping_state_idx, max_states_period,
+            level, is_ambiguity)
+
+        py = pyth_criterion(x0, *args)
+        f2py = fort_debug.f2py_criterion(x0, *args)
+        np.testing.assert_allclose(py, f2py)
 
     def test_6(self):
         """ Further tests for the interpolation routines.
