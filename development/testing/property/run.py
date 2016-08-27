@@ -62,6 +62,7 @@ def run(args):
 
         # Set seed.
         seed = random.randrange(1, 100000)
+        print(seed)
         np.random.seed(seed)
 
         # Construct test case.

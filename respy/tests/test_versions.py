@@ -281,8 +281,6 @@ class TestClass(object):
 
             simulate(respy_obj)
 
-            estimate(respy_obj)
-
             # Check for identical logging
             if base_sol_log is None:
                 base_sol_log = open('sol.respy.log', 'r').read()
@@ -292,6 +290,8 @@ class TestClass(object):
             if base_sim_log is None:
                 base_sim_log = open('sim.respy.log', 'r').read()
             assert open('sim.respy.log', 'r').read() == base_sim_log
+
+            estimate(respy_obj)
 
             if base_est_info_log is None:
                 base_est_info_log = open('est.respy.info', 'r').read()

@@ -20,6 +20,7 @@ class TestClass(object):
         constraints['flag_interpolation'] = False
         constraints['periods'] = np.random.randint(3, 6)
         constraints['is_deterministic'] = True
+        constraints['level'] = 0.00
 
         # Initialize request
         init_dict = generate_random_dict(constraints)

@@ -33,7 +33,7 @@ else:
 
 #MODULE test_parallelism METHOD test_1 SEED: 24029
 
-seed = 88344 # 6216748723
+seed = 64943 # 6216748723
 
 
 ''' Error Reproduction
@@ -46,7 +46,7 @@ np.random.seed(seed)
 test_dict = get_test_dict(PACKAGE_DIR + '/respy/tests')
 module, method = get_random_request(test_dict)
 
-module, method = 'test_ambiguity', 'test_1'
+#module, method = 'test_interpolation', 'test_1'
 count = 0
 #os.system('git clean -d -f')
 for i in range(3):
