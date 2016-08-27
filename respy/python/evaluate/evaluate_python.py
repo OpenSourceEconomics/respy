@@ -15,7 +15,7 @@ def pyth_contributions(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         num_points_interp, is_myopic, edu_start, is_debug, edu_max, delta,
         data_array, num_agents_est, num_draws_prob, tau, periods_draws_emax,
         periods_draws_prob, states_all, states_number_period,
-        mapping_state_idx, max_states_period, level, is_ambiguity):
+        mapping_state_idx, max_states_period, is_ambiguity, level):
     """ Evaluate criterion function. This code allows for a deterministic
     model, where there is no random variation in the rewards. If that is the
     case and all agents have corresponding experiences, then one is returned.

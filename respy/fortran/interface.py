@@ -26,14 +26,14 @@ def resfort_interface(respy_obj, request, data_array=None):
         is_myopic, min_idx, tau, is_parallel, num_procs, num_agents_sim, \
         num_draws_prob, num_agents_est, seed_prob, seed_sim, paras_fixed, \
         optimizer_options, optimizer_used, maxfun, paras_fixed, derivatives, \
-        scaling, level, is_ambiguity = dist_class_attributes(respy_obj,
+        scaling, is_ambiguity, level = dist_class_attributes(respy_obj,
             'model_paras', 'num_periods', 'edu_start', 'is_debug', 'edu_max',
             'delta', 'num_draws_emax', 'seed_emax', 'is_interpolated',
             'num_points_interp', 'is_myopic', 'min_idx', 'tau', 'is_parallel',
             'num_procs', 'num_agents_sim', 'num_draws_prob',
             'num_agents_est', 'seed_prob', 'seed_sim', 'paras_fixed',
             'optimizer_options', 'optimizer_used', 'maxfun', 'paras_fixed',
-            'derivatives', 'scaling', 'level', 'is_ambiguity')
+            'derivatives', 'scaling', 'is_ambiguity', 'level')
 
     dfunc_eps = derivatives[1]
     is_scaled, scale_minimum = scaling
@@ -60,7 +60,7 @@ def resfort_interface(respy_obj, request, data_array=None):
     args = args + (num_draws_prob, num_agents_est, num_agents_sim, seed_prob,
         seed_emax, tau, num_procs, request, seed_sim, optimizer_options,
         optimizer_used, maxfun, paras_fixed, dfunc_eps, is_scaled,
-        scale_minimum, level, is_ambiguity)
+        scale_minimum, is_ambiguity, level)
 
     write_resfort_initialization(*args)
 
@@ -186,7 +186,7 @@ def write_resfort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         delta, num_draws_prob, num_agents_est, num_agents_sim, seed_prob,
         seed_emax, tau, num_procs, request, seed_sim, optimizer_options,
         optimizer_used, maxfun, paras_fixed, dfunc_eps, is_scaled,
-        scale_minimum, level, is_ambiguity):
+        scale_minimum, is_ambiguity, level):
     """ Write out model request to hidden file .model.resfort.ini.
     """
 

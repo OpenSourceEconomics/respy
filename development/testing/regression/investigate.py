@@ -9,7 +9,7 @@ import sys
 import os
 
 # Required for PYTHON2/3 portability
-sys.path.insert(0, '../../_modules')
+sys.path.insert(0, '../_modules')
 from config import python2_exec
 from config import python3_exec
 
@@ -49,12 +49,14 @@ from respy import estimate
 ################################################################################
 # RUN
 ################################################################################
-idx = 292
+idx = 0
 
 fname = 'test_vault_' + str(PYTHON_VERSION) + '.respy.pkl'
 tests = pkl.load(open(TEST_RESOURCES_DIR + '/' + fname, 'rb'))
 print('\n Test ', idx, 'with version ', PYTHON_VERSION)
 init_dict, crit_val = tests[idx]
+
+init_dict['AMBIGUITY']['flag'] = False
 print_init_dict(init_dict)
 respy_obj = RespyCls('test.respy.ini')
 simulate(respy_obj)

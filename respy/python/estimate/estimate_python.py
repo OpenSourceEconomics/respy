@@ -7,7 +7,7 @@ def pyth_criterion(x, is_interpolated, num_draws_emax, num_periods,
         num_points_interp, is_myopic, edu_start, is_debug, edu_max, delta,
         data_array, num_agents_est, num_draws_prob, tau, periods_draws_emax,
         periods_draws_prob, states_all, states_number_period,
-        mapping_state_idx, max_states_period, level, is_ambiguity):
+        mapping_state_idx, max_states_period, is_ambiguity, level):
     """ This function provides the wrapper for optimization routines.
     """
 
@@ -15,7 +15,7 @@ def pyth_criterion(x, is_interpolated, num_draws_emax, num_periods,
         is_myopic, edu_start, is_debug, edu_max, delta, data_array,
         num_agents_est, num_draws_prob, tau, periods_draws_emax,
         periods_draws_prob, states_all, states_number_period,
-        mapping_state_idx, max_states_period, level, is_ambiguity)
+        mapping_state_idx, max_states_period, is_ambiguity, level)
 
     coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky \
         = dist_optim_paras(x, is_debug)
