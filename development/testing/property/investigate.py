@@ -33,7 +33,7 @@ else:
 
 #MODULE test_parallelism METHOD test_1 SEED: 24029
 
-seed = 64943 # 6216748723
+seed = 95405 # 6216748723
 
 
 ''' Error Reproduction
@@ -49,7 +49,7 @@ module, method = get_random_request(test_dict)
 #module, method = 'test_interpolation', 'test_1'
 count = 0
 #os.system('git clean -d -f')
-for i in range(3):
+for i in range(300):
     print(module, method)
     mod = importlib.import_module(module)
     test = getattr(mod.TestClass(), method)

@@ -78,6 +78,7 @@ class TestClass(object):
         constraints = dict()
         constraints['edu'] = (10, 20)
         constraints['is_deterministic'] = True
+        constraints['level'] = 0.00
 
         # Generate random initialization file. The RESTUD code uses the same
         # random draws for the solution and simulation of the model. Thus,
