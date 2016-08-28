@@ -1,13 +1,14 @@
-from scipy.optimize import minimize
 import numpy as np
+from scipy.optimize import minimize
 
+from respy.python.record.record_ambiguity import record_ambiguity
 from respy.python.solve.solve_risk import construct_emax_risk
 
 
 def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
         draws_emax_transformed, rewards_systematic, edu_max, edu_start,
         periods_emax, states_all, mapping_state_idx, delta, shocks_cov,
-        measure, level):
+        measure, level, is_write):
     """ Construct EMAX accounting for a worst case evaluation.
     """
 
@@ -16,13 +17,18 @@ def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
         mapping_state_idx, delta)
 
     if measure == 'abs':
-        x_shift = [-level, -level]
+        x_shift, div = [-level, -level], level
+        success, message = True, 'Optimization terminated successfully.'
+
     else:
         raise NotImplementedError
         # x_shift = get_worst_case(num_periods, num_draws_emax, period, k,
         #     draws_emax_transformed, rewards_systematic, edu_max, edu_start,
         #     periods_emax, states_all, mapping_state_idx, delta, shocks_cov,
         #     level)
+
+    if is_write:
+        record_ambiguity(period, k, x_shift, div, success, message)
 
     emax = criterion_ambiguity(x_shift, *args)
 
@@ -54,8 +60,8 @@ def get_worst_case(num_periods, num_draws_emax, period, k,
         mapping_state_idx, delta)
 
     # Run optimization
- #   opt = minimize(criterion_ambiguity, x0, args, method='SLSQP',
- #       options=options, constraints=constraints)
+    opt = minimize(criterion_ambiguity, x0, args, method='SLSQP',
+        options=options, constraints=constraints)
 
     # Stabilization. If the optimization fails the starting values are
     # used otherwise it happens that the constraint is not satisfied by far
@@ -132,19 +138,3 @@ def kl_divergence(mean_old, cov_old, mean_new, cov_new):
     return rslt
 
 
-def write_result(period, k, opt, div):
-    """ Write result of optimization problem to loggging file.
-    """
-
-    with open('amb.respy.log', 'a') as file_:
-
-        string = ' PERIOD{0[0]:>7}  STATE{0[1]:>7}\n\n'
-        file_.write(string.format([period, k]))
-
-        string = '    {0[0]:<13} {0[1]:10.4f} {0[2]:10.4f}\n'
-        file_.write(string.format(['Result', opt['x'][0], opt['x'][1]]))
-        string = '    {0[0]:<13} {0[1]:10.4f}\n\n'
-        file_.write(string.format(['Divergence', div]))
-
-        file_.write('    Success ' + str(opt['success']) + '\n')
-        file_.write('    Message ' + opt['message'] + '\n\n')

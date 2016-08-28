@@ -62,7 +62,8 @@ def pyth_solve(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
             periods_draws_emax, num_draws_emax, states_number_period,
             periods_rewards_systematic, edu_max, edu_start,
             mapping_state_idx, states_all, delta, is_debug, is_interpolated,
-            num_points_interp, shocks_cholesky, is_ambiguity, measure, level)
+            num_points_interp, shocks_cholesky, is_ambiguity, measure, level,
+            True)
 
         record_solution_progress(-1)
 

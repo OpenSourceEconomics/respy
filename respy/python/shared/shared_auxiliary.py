@@ -1,11 +1,12 @@
-import numpy as np
-import shlex
 import os
+import shlex
 
-from respy.python.shared.shared_constants import INADMISSIBILITY_PENALTY
-from respy.python.shared.shared_constants import MISSING_FLOAT
+import numpy as np
+
 from respy.python.record.record_warning import record_warning
 from respy.python.shared.shared_constants import HUGE_FLOAT
+from respy.python.shared.shared_constants import INADMISSIBILITY_PENALTY
+from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.shared.shared_constants import TINY_FLOAT
 
 
@@ -671,3 +672,5 @@ def get_est_info():
 
     # Finishing
     return rslt
+
+

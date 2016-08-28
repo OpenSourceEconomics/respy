@@ -508,6 +508,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, state
 
     LOGICAL                             :: any_interpolated
     LOGICAL                             :: is_head
+    LOGICAL                             :: is_write
 
     REAL(our_dble), ALLOCATABLE         :: periods_emax_slaves(:)
     REAL(our_dble), ALLOCATABLE         :: endogenous_slaves(:)
@@ -530,11 +531,13 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, state
     is_head = .False.
     IF(rank == zero_int) is_head = .True.
 
+    is_write = (is_head .AND. update_master)
+
     IF (is_myopic) THEN
         DO period = (num_periods - 1), 0, -1
             num_states = states_number_period(period + 1)
             periods_emax(period + 1, :num_states) = zero_dble
-            IF (is_head .AND. update_master) CALL MPI_SEND(periods_emax(period + 1, :num_states), num_states, MPI_DOUBLE, 0, period, PARENTCOMM, ierr)
+            IF (is_write) CALL MPI_SEND(periods_emax(period + 1, :num_states), num_states, MPI_DOUBLE, 0, period, PARENTCOMM, ierr)
         END DO
         RETURN
     END IF
@@ -566,7 +569,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, state
 
         ALLOCATE(periods_emax_slaves(num_states), endogenous_slaves(num_states))
 
-        IF(is_head .AND. update_master) CALL record_solution(4, period, num_states)
+        IF(is_write) CALL record_solution(4, period, num_states)
 
         ! Distinguish case with and without interpolation
         any_interpolated = (num_points_interp .LE. num_states) .AND. is_interpolated
@@ -604,7 +607,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, state
                 rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
 
                 IF (is_ambiguity) THEN
-                    CALL construct_emax_ambiguity(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, measure, level)
+                    CALL construct_emax_ambiguity(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, measure, level, is_write)
                 ELSE
                     CALL construct_emax_risk(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
                 END IF
@@ -619,13 +622,13 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, state
             CALL distribute_information_slaves(num_states_slaves, period, endogenous_slaves, endogenous)
 
             ! Create prediction model based on the random subset of points where the EMAX is actually simulated and thus endogenous and exogenous variables are available. For the interpolation  points, the actual values are used.
-            CALL get_predictions(predictions, endogenous, exogenous, maxe, is_simulated, num_states, is_head .AND. update_master)
+            CALL get_predictions(predictions, endogenous, exogenous, maxe, is_simulated, num_states, is_write)
 
             ! Store results
             periods_emax(period + 1, :num_states) = predictions
 
             ! The leading slave updates the master period by period.
-            IF (is_head .AND. update_master) CALL MPI_SEND(periods_emax(period + 1, :num_states), num_states, MPI_DOUBLE, 0, period, PARENTCOMM, ierr)
+            IF (is_write) CALL MPI_SEND(periods_emax(period + 1, :num_states), num_states, MPI_DOUBLE, 0, period, PARENTCOMM, ierr)
 
             ! Deallocate containers
             DEALLOCATE(is_simulated, exogenous, maxe, endogenous, predictions)
@@ -639,7 +642,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, state
                 rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
 
                 IF (is_ambiguity) THEN
-                    CALL construct_emax_ambiguity(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, measure, level)
+                    CALL construct_emax_ambiguity(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, measure, level, is_write)
                 ELSE
                     CALL construct_emax_risk(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
                 END IF
@@ -654,7 +657,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, state
             CALL distribute_information_slaves(num_states_slaves, period, periods_emax_slaves, periods_emax(period + 1, :))
 
             ! The leading slave updates the master period by period.
-            IF (is_head .AND. update_master) CALL MPI_SEND(periods_emax(period + 1, :num_states), num_states, MPI_DOUBLE, 0, period, PARENTCOMM, ierr)
+            IF (is_write) CALL MPI_SEND(periods_emax(period + 1, :num_states), num_states, MPI_DOUBLE, 0, period, PARENTCOMM, ierr)
 
         END IF
 

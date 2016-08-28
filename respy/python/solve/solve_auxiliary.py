@@ -4,7 +4,7 @@ import shlex
 import statsmodels.api as sm
 import numpy as np
 
-from respy.python.record.record_solution import record_prediction_model
+from respy.python.record.record_solution import record_solution_prediction
 from respy.python.record.record_solution import record_solution_progress
 from respy.python.shared.shared_auxiliary import transform_disturbances
 from respy.python.solve.solve_ambiguity import construct_emax_ambiguity
@@ -160,7 +160,7 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
         num_draws_emax, states_number_period, periods_rewards_systematic,
         edu_max, edu_start, mapping_state_idx, states_all, delta, is_debug,
         is_interpolated, num_points_interp, shocks_cholesky, is_ambiguity,
-        measure, level):
+        measure, level, is_write):
     """ Backward induction procedure. There are two main threads to this
     function depending on whether interpolation is requested or not.
     """
@@ -187,7 +187,8 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
         draws_emax_transformed = transform_disturbances(draws_emax,
                                     shocks_cholesky)
 
-        record_solution_progress(4, period, num_states)
+        if is_write:
+            record_solution_progress(4, period, num_states)
 
         # The number of interpolation points is the same for all periods.
         # Thus, for some periods the number of interpolation points is
@@ -216,14 +217,14 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
                 num_states, delta, periods_rewards_systematic, edu_max,
                 edu_start, mapping_state_idx, periods_emax, states_all,
                 is_simulated, num_draws_emax, maxe, draws_emax_transformed,
-                shocks_cov, is_ambiguity, measure, level)
+                shocks_cov, is_ambiguity, measure, level, is_write)
 
             # Create prediction model based on the random subset of points where
             # the EMAX is actually simulated and thus dependent and
             # independent variables are available. For the interpolation
             # points, the actual values are used.
             predictions = get_predictions(endogenous, exogenous, maxe,
-                is_simulated, num_points_interp, num_states, is_debug)
+                is_simulated, is_write)
 
             # Store results
             periods_emax[period, :num_states] = predictions
@@ -241,7 +242,8 @@ def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
                     emax = construct_emax_ambiguity(num_periods, num_draws_emax,
                         period, k, draws_emax_transformed, rewards_systematic,
                         edu_max, edu_start, periods_emax, states_all,
-                        mapping_state_idx, delta, shocks_cov, measure, level)
+                        mapping_state_idx, delta, shocks_cov, measure, level,
+                        is_write)
                 else:
                     emax = construct_emax_risk(num_periods, num_draws_emax,
                         period, k, draws_emax_transformed, rewards_systematic,
@@ -322,7 +324,8 @@ def get_exogenous_variables(period, num_periods, num_states, delta,
 def get_endogenous_variable(period, num_periods, num_states, delta,
         periods_rewards_systematic, edu_max, edu_start, mapping_state_idx,
         periods_emax, states_all, is_simulated, num_draws_emax, maxe,
-        draws_emax_transformed, shocks_cov, is_ambiguity, measure, level):
+        draws_emax_transformed, shocks_cov, is_ambiguity, measure, level,
+        is_write):
     """ Construct endogenous variable for the subset of interpolation points.
     """
     # Construct auxiliary objects
@@ -342,7 +345,7 @@ def get_endogenous_variable(period, num_periods, num_states, delta,
             emax = construct_emax_ambiguity(num_periods, num_draws_emax,
                 period, k, draws_emax_transformed, rewards_systematic,
                 edu_max, edu_start, periods_emax, states_all,
-                mapping_state_idx, delta, shocks_cov, measure, level)
+                mapping_state_idx, delta, shocks_cov, measure, level, is_write)
         else:
             emax = construct_emax_risk(num_periods, num_draws_emax,
                 period, k, draws_emax_transformed, rewards_systematic,
@@ -356,8 +359,7 @@ def get_endogenous_variable(period, num_periods, num_states, delta,
     return endogenous_variable
 
 
-def get_predictions(endogenous, exogenous, maxe, is_simulated,
-        num_points_interp, num_states, is_debug):
+def get_predictions(endogenous, exogenous, maxe, is_simulated, is_write):
     """ Fit an OLS regression of the exogenous variables on the endogenous
     variables and use the results to predict the endogenous variables for all
     points in the state space.
@@ -377,18 +379,17 @@ def get_predictions(endogenous, exogenous, maxe, is_simulated,
     predictions[is_simulated] = endogenous[is_simulated] + maxe[is_simulated]
 
     # Checks
-    check_prediction_model(endogenous_predicted, model, num_points_interp,
-        num_states, is_debug)
+    check_prediction_model(endogenous_predicted, model)
 
     # Write out some basic information to spot problems easily.
-    record_prediction_model(results)
+    if is_write:
+        record_solution_prediction(results)
 
     # Finishing
     return predictions
 
 
-def check_prediction_model(predictions_diff, model, num_points_interp, num_states,
-        is_debug):
+def check_prediction_model(predictions_diff, model):
     """ Perform some basic consistency checks for the prediction model.
     """
     # Construct auxiliary object
@@ -397,12 +398,6 @@ def check_prediction_model(predictions_diff, model, num_points_interp, num_state
     assert (np.all(predictions_diff >= 0.00))
     assert (results.params.shape == (9,))
     assert (np.all(np.isfinite(results.params)))
-
-    # Check for standardization as the following constraint is not
-    # necessarily satisfied in that case. For ease of application, we do not
-    # ensure that the same number of interpolation points is available.
-    if not (is_debug and os.path.exists('interpolation.txt')):
-        assert (model.nobs == min(num_points_interp, num_states))
 
 
 def checks(str_, *args):
@@ -441,5 +436,3 @@ def check_input(respy_obj):
 
     # Finishing
     return True
-
-

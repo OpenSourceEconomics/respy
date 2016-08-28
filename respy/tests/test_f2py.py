@@ -289,7 +289,7 @@ class TestClass(object):
             num_draws_emax, states_number_period, periods_rewards_systematic,
             edu_max, edu_start, mapping_state_idx, states_all, delta,
             is_debug, is_interpolated, num_points_interp, shocks_cholesky,
-            is_ambiguity, measure, level)
+            is_ambiguity, measure, level, False)
 
         pyth = pyth_backward_induction(*args)
         f2py = fort_debug.f2py_backward_induction(*args)
@@ -463,7 +463,7 @@ class TestClass(object):
             periods_rewards_systematic, edu_max, edu_start,
             mapping_state_idx, periods_emax, states_all, is_simulated,
             num_draws_emax, maxe, draws_emax, shocks_cov, is_ambiguity,
-                measure, level)
+                measure, level, False)
 
         py = get_endogenous_variable(*args)
         f90 = fort_debug.wrapper_get_endogenous_variable(*args)
@@ -471,13 +471,12 @@ class TestClass(object):
         np.testing.assert_equal(py, replace_missing_values(f90))
 
         # Distribute validated results for further functions.
-        endogenous = py
 
-        args = (endogenous, exogenous, maxe, is_simulated, num_points_interp,
-            num_states, is_debug)
+        args = (py, exogenous, maxe, is_simulated)
 
-        py = get_predictions(*args)
-        f90 = fort_debug.wrapper_get_predictions(*args[:-1])
+        py = get_predictions(*args + (False,))
+        f90 = fort_debug.wrapper_get_predictions(*args + (num_points_interp,
+            num_states, False))
 
         np.testing.assert_array_almost_equal(py, f90)
 

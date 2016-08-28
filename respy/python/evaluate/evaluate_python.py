@@ -47,7 +47,8 @@ def pyth_contributions(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
             periods_draws_emax, num_draws_emax, states_number_period,
             periods_rewards_systematic, edu_max, edu_start,
             mapping_state_idx, states_all, delta, is_debug, is_interpolated,
-            num_points_interp, shocks_cholesky, is_ambiguity, measure, level)
+            num_points_interp, shocks_cholesky, is_ambiguity, measure, level,
+            False)
 
     # Initialize auxiliary objects
     contribs = np.tile(-HUGE_FLOAT, (num_agents_est * num_periods))

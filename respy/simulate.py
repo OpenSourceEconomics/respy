@@ -16,7 +16,7 @@ def simulate(respy_obj):
     the initialization file.
     """
     # Cleanup
-    for fname in ['sim.respy.log', 'sol.respy.log']:
+    for fname in ['sim.respy.log', 'sol.respy.log', 'amb.respy.log']:
         if os.path.exists(fname):
             os.unlink(fname)
 

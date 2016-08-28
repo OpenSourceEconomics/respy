@@ -26,7 +26,7 @@ def record_solution_progress(indicator, period=None, num_states=None):
         outfile.write('  ' + line + '\n\n')
 
 
-def record_prediction_model(results):
+def record_solution_prediction(results):
     """ Write out some basic information to the solutions log file.
     """
 
@@ -39,4 +39,3 @@ def record_prediction_model(results):
 
         string = '      {0:<19}{1:15.4f}\n'
         outfile.write(string.format('R-squared', results.rsquared))
-

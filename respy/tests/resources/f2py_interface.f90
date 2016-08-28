@@ -329,7 +329,7 @@ SUBROUTINE f2py_simulate(data_sim_int, periods_rewards_systematic_int, mapping_s
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE f2py_backward_induction(periods_emax_int, num_periods_int, max_states_period_int, periods_draws_emax_int, num_draws_emax_int, states_number_period_int, periods_rewards_systematic_int, edu_max_int, edu_start_int, mapping_state_idx_int, states_all_int, delta_int, is_debug_int, is_interpolated_int, num_points_interp_int, shocks_cholesky, is_ambiguity_int, measure_int, level_int)
+SUBROUTINE f2py_backward_induction(periods_emax_int, num_periods_int, max_states_period_int, periods_draws_emax_int, num_draws_emax_int, states_number_period_int, periods_rewards_systematic_int, edu_max_int, edu_start_int, mapping_state_idx_int, states_all_int, delta_int, is_debug_int, is_interpolated_int, num_points_interp_int, shocks_cholesky, is_ambiguity_int, measure_int, level_int, is_write)
 
     !/* external libraries      */
 
@@ -362,6 +362,7 @@ SUBROUTINE f2py_backward_induction(periods_emax_int, num_periods_int, max_states
     LOGICAL, INTENT(IN)             :: is_interpolated_int
     LOGICAL, INTENT(IN)             :: is_ambiguity_int
     LOGICAL, INTENT(IN)             :: is_debug_int
+    LOGICAL, INTENT(IN)             :: is_write
 
     CHARACTER(10), INTENT(IN)       :: measure_int
 
@@ -387,7 +388,7 @@ SUBROUTINE f2py_backward_induction(periods_emax_int, num_periods_int, max_states
     IF(ALLOCATED(periods_emax)) DEALLOCATE(periods_emax)
 
     ! Call actual function of interest
-    CALL fort_backward_induction(periods_emax, periods_draws_emax_int, states_number_period_int, periods_rewards_systematic_int, mapping_state_idx_int, states_all_int, shocks_cholesky, delta, is_debug, is_interpolated, .False., edu_start, edu_max, is_ambiguity, measure, level, .False.)
+    CALL fort_backward_induction(periods_emax, periods_draws_emax_int, states_number_period_int, periods_rewards_systematic_int, mapping_state_idx_int, states_all_int, shocks_cholesky, delta, is_debug, is_interpolated, .False., edu_start, edu_max, is_ambiguity, measure, level, is_write)
 
     ! Allocate to intermidiaries
     periods_emax_int = periods_emax
@@ -831,7 +832,7 @@ SUBROUTINE wrapper_point_predictions(Y, X, coeffs, num_states)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE wrapper_get_predictions(predictions, endogenous, exogenous, maxe, is_simulated, num_points_interp_int, num_states)
+SUBROUTINE wrapper_get_predictions(predictions, endogenous, exogenous, maxe, is_simulated, num_points_interp_int, num_states, is_write)
 
     !/* external libraries      */
 
@@ -853,6 +854,7 @@ SUBROUTINE wrapper_get_predictions(predictions, endogenous, exogenous, maxe, is_
     INTEGER, INTENT(IN)                         :: num_points_interp_int
 
     LOGICAL, INTENT(IN)                         :: is_simulated(:)
+    LOGICAL, INTENT(IN)                         :: is_write
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -863,7 +865,7 @@ SUBROUTINE wrapper_get_predictions(predictions, endogenous, exogenous, maxe, is_
     num_points_interp = num_points_interp_int
 
     ! Call function of interest
-    CALL get_predictions(predictions, endogenous, exogenous, maxe, is_simulated, num_states)
+    CALL get_predictions(predictions, endogenous, exogenous, maxe, is_simulated, num_states, is_write)
 
 END SUBROUTINE
 !******************************************************************************
@@ -926,7 +928,7 @@ SUBROUTINE wrapper_get_coefficients(coeffs, Y, X, num_covars, num_states)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_periods_int, num_states, delta_int, periods_rewards_systematic_int, edu_max_int, edu_start_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_simulated, num_draws_emax_int, maxe, draws_emax_transformed, shocks_cov, is_ambiguity_int, measure_int, level_int)
+SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_periods_int, num_states, delta_int, periods_rewards_systematic_int, edu_max_int, edu_start_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_simulated, num_draws_emax_int, maxe, draws_emax_transformed, shocks_cov, is_ambiguity_int, measure_int, level_int, is_write)
 
     !/* external libraries      */
 
@@ -959,6 +961,7 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_perio
 
     LOGICAL, INTENT(IN)                 :: is_simulated(:)
     LOGICAL, INTENT(IN)                 :: is_ambiguity_int
+    LOGICAL, INTENT(IN)                 :: is_write
 
     CHARACTER(10), INTENT(IN)           :: measure_int
 
@@ -977,7 +980,7 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_perio
     delta = delta_int
 
     ! Call function of interest
-    CALL get_endogenous_variable(exogenous_variable, period, num_states, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_simulated, maxe, draws_emax_transformed, delta, edu_start, edu_max, shocks_cov, is_ambiguity, measure, level)
+    CALL get_endogenous_variable(exogenous_variable, period, num_states, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_simulated, maxe, draws_emax_transformed, delta, edu_start, edu_max, shocks_cov, is_ambiguity, measure, level, is_write)
 
 END SUBROUTINE
 !******************************************************************************

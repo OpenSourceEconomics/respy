@@ -335,7 +335,7 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
 
             CALL get_exogenous_variables(exogenous, maxe, period, num_states, periods_rewards_systematic, shifts, mapping_state_idx, periods_emax, states_all, delta, edu_start, edu_max)
 
-            CALL get_endogenous_variable(endogenous, period, num_states, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, is_simulated, maxe, draws_emax_transformed, delta, edu_start, edu_max, shocks_cov, is_ambiguity, measure, level)
+            CALL get_endogenous_variable(endogenous, period, num_states, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, is_simulated, maxe, draws_emax_transformed, delta, edu_start, edu_max, shocks_cov, is_ambiguity, measure, level, is_write)
 
             CALL get_predictions(predictions, endogenous, exogenous, maxe, is_simulated, num_states, is_write)
 
@@ -350,7 +350,7 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
                 rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
 
                 IF (is_ambiguity) THEN
-                    CALL construct_emax_ambiguity(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, measure, level)
+                    CALL construct_emax_ambiguity(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, measure, level, is_write)
                 ELSE
                     CALL construct_emax_risk(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
                 END IF
@@ -507,7 +507,7 @@ SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, num_stat
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_endogenous_variable(endogenous, period, num_states, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, is_simulated, maxe, draws_emax_transformed, delta, edu_start, edu_max, shocks_cov, is_ambiguity, measure, level)
+SUBROUTINE get_endogenous_variable(endogenous, period, num_states, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, is_simulated, maxe, draws_emax_transformed, delta, edu_start, edu_max, shocks_cov, is_ambiguity, measure, level, is_write)
 
     !/* external objects        */
 
@@ -530,6 +530,7 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_states, periods_rewar
 
     LOGICAL, INTENT(IN)                 :: is_simulated(num_states)
     LOGICAL, INTENT(IN)                 :: is_ambiguity
+    LOGICAL, INTENT(IN)                 :: is_write
 
     CHARACTER(10), INTENT(IN)           :: measure
 
@@ -559,7 +560,7 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_states, periods_rewar
         rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
 
         IF (is_ambiguity) THEN
-            CALL construct_emax_ambiguity(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, measure, level)
+            CALL construct_emax_ambiguity(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, measure, level, is_write)
         ELSE
             CALL construct_emax_risk(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
         END IF
@@ -582,33 +583,33 @@ SUBROUTINE get_predictions(predictions, endogenous, exogenous, maxe, is_simulate
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(OUT)       :: predictions(num_states)
+    REAL(our_dble), INTENT(OUT)         :: predictions(num_states)
 
-    REAL(our_dble), INTENT(IN)        :: exogenous(:, :)
-    REAL(our_dble), INTENT(IN)        :: endogenous(num_states)
-    REAL(our_dble), INTENT(IN)        :: maxe(num_states)
+    REAL(our_dble), INTENT(IN)          :: exogenous(:, :)
+    REAL(our_dble), INTENT(IN)          :: endogenous(num_states)
+    REAL(our_dble), INTENT(IN)          :: maxe(num_states)
 
-    INTEGER, INTENT(IN)               :: num_states
+    INTEGER, INTENT(IN)                 :: num_states
 
-    LOGICAL, INTENT(IN)               :: is_simulated(num_states)
-    LOGICAL, OPTIONAL, INTENT(IN)     :: is_write
+    LOGICAL, INTENT(IN)                 :: is_simulated(num_states)
+    LOGICAL, INTENT(IN)                 :: is_write
 
 
     !/* internal objects        */
 
-    INTEGER(our_int), ALLOCATABLE     :: infos(:)
+    INTEGER(our_int), ALLOCATABLE       :: infos(:)
 
-    REAL(our_dble)                    :: endogenous_predicted_available(num_points_interp)
-    REAL(our_dble)                    :: exogenous_is_available(num_points_interp, 9)
-    REAL(our_dble)                    :: endogenous_is_available(num_points_interp)
-    REAL(our_dble)                    :: endogenous_predicted(num_states)
-    REAL(our_dble)                    :: endogenous_predicted_clipped(num_states)
-    REAL(our_dble)                    :: coeffs(9)
-    REAL(our_dble)                    :: r_squared
-    REAL(our_dble)                    :: bse(9)
+    REAL(our_dble)                      :: endogenous_predicted_available(num_points_interp)
+    REAL(our_dble)                      :: exogenous_is_available(num_points_interp, 9)
+    REAL(our_dble)                      :: endogenous_is_available(num_points_interp)
+    REAL(our_dble)                      :: endogenous_predicted(num_states)
+    REAL(our_dble)                      :: endogenous_predicted_clipped(num_states)
+    REAL(our_dble)                      :: coeffs(9)
+    REAL(our_dble)                      :: r_squared
+    REAL(our_dble)                      :: bse(9)
 
-    INTEGER(our_int)                  :: i
-    INTEGER(our_int)                  :: k
+    INTEGER(our_int)                    :: i
+    INTEGER(our_int)                    :: k
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -669,10 +670,8 @@ SUBROUTINE get_predictions(predictions, endogenous, exogenous, maxe, is_simulate
     END DO
 
     ! Perform some basic logging to spot problems early.
-    IF(PRESENT(is_write)) THEN
-        IF(is_write) THEN
-            CALL record_solution(coeffs, r_squared, bse)
-        END IF
+    IF(is_write) THEN
+        CALL record_solution(coeffs, r_squared, bse)
     END IF
 
 END SUBROUTINE

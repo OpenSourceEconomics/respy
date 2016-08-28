@@ -24,7 +24,7 @@ MODULE recording_solution
 
     INTERFACE record_solution
 
-        MODULE PROCEDURE record_solution_progress, record_prediction_model
+        MODULE PROCEDURE record_solution_progress, record_solution_prediction
 
     END INTERFACE
 
@@ -90,7 +90,7 @@ SUBROUTINE record_solution_progress(indicator, period, num_states)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE record_prediction_model(coeffs, r_squared, bse)
+SUBROUTINE record_solution_prediction(coeffs, r_squared, bse)
 
     !/* external objects        */
 
