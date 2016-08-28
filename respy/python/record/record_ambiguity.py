@@ -10,26 +10,27 @@ def record_ambiguity(period, k, x_shift, div, success, message):
         string = ' PERIOD{0[0]:>7}  STATE{0[1]:>7}\n\n'
         file_.write(string.format([period, k]))
 
-        string = '   {:<1}{:+10.5f}\n'
-        args = ['A'] + [x_shift[0]]
+        string = '   {:<12}{:+10.5f}\n'
+        args = ['Occupation A'] + [x_shift[0]]
         file_.write(string.format(*args))
 
-        string = '   {:<1}{:+10.5f}\n\n'
-        args = ['B'] + [x_shift[1]]
+        string = '   {:<12}{:+10.5f}\n\n'
+        args = ['Occupation B'] + [x_shift[1]]
         file_.write(string.format(*args))
 
-        string = '   {:<15}{:<15.5f}\n'
+        string = '   {:<12}{:>10.5f}\n\n'
         file_.write(string.format(*['Divergence', div]))
 
-        string = '   {:<15}{:<25}\n'
+        string = '   {:<15}{:<5}\n'
         file_.write(string.format(*['Success', str(success)]))
 
-        string = '   {:<15}{:<25}\n\n\n'
+        string = '   {:<15}{:<100}\n\n\n'
         file_.write(string.format(*['Message', message]))
 
     # Summarize the overall performance.
-    if period == 0:
-        record_ambiguity_summary()
+    #if period == 0:
+    #    record_ambiguity_summary()
+
 
 def record_ambiguity_summary():
     """ Summarize optimizations in case of ambiguity.

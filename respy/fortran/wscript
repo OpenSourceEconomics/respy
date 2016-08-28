@@ -13,7 +13,8 @@ def build(ctx):
         'evaluate/evaluate_auxiliary.f90', 'evaluate/evaluate_fortran.f90',
         'estimate/estimate_auxiliary.f90', 'estimate/estimate_fortran.f90',
         'record/record_estimation.f90', 'record/record_solution.f90', 'record/record_simulation.f90',
-        'simulate/simulate_fortran.f90', 'optimizers/slsqp.f', 
+        'record/record_ambiguity.f90',
+        'simulate/simulate_fortran.f90', 'optimizers/slsqp.f',
         'optimizers/newuoa.f90', 'optimizers/dfpmin.f90', 'resfort_library.f90']
 
     flags = ctx.env.FCFLAGS + ['-fPIC']

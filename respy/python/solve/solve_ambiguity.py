@@ -17,8 +17,8 @@ def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
         mapping_state_idx, delta)
 
     if measure == 'abs':
-        x_shift, div = [-level, -level], level
-        success, message = True, 'Optimization terminated successfully.'
+        x_shift, div = [-level, -level], -level
+        is_success, message = True, 'Optimization terminated successfully.'
 
     else:
         raise NotImplementedError
@@ -28,7 +28,7 @@ def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
         #     level)
 
     if is_write:
-        record_ambiguity(period, k, x_shift, div, success, message)
+        record_ambiguity(period, k, x_shift, div, is_success, message)
 
     emax = criterion_ambiguity(x_shift, *args)
 

@@ -4,6 +4,8 @@ MODULE solve_ambiguity
 
     !/*	external modules	*/
 
+    USE recording_ambiguity
+
     USE shared_constants
 
     USE shared_auxiliary
@@ -89,6 +91,11 @@ SUBROUTINE construct_emax_ambiguity(emax, period, k, draws_emax_transformed, rew
     !/* internals objects    */
 
     REAL(our_dble)                  :: x_shift(2)
+    REAL(our_dble)                  :: div
+
+    CHARACTER(100)                  :: message
+
+    LOGICAL                         :: is_success
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -96,11 +103,18 @@ SUBROUTINE construct_emax_ambiguity(emax, period, k, draws_emax_transformed, rew
 
     IF(TRIM(measure) == 'abs') THEN
         x_shift = (/-level, -level/)
+        div = -level
+        is_success = .True.
+        message = 'Optimization terminated successfully.'
+
     ELSE
         PRINT *, "NotImplemented"
         STOP
         !CALL get_worst_case(emax, draws_emax_transformed, period, k, rewards_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max, level)
     END IF
+
+
+    IF(is_write) CALL record_ambiguity(period, k, x_shift, div, is_success, message)
 
 
     CALL criterion_ambiguity(emax, x_shift, draws_emax_transformed, period, k, rewards_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max)

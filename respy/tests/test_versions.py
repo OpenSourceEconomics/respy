@@ -258,6 +258,9 @@ class TestClass(object):
         constr['flag_interpolation'] = False
         constr['maxfun'] = 0
 
+        # TODO: Remove later
+        constr['is_ambiguity'] = True
+
         # Generate random initialization file
         init_dict = generate_init(constr)
 
@@ -266,7 +269,7 @@ class TestClass(object):
 
         # Iterate over alternative implementations
         base_sol_log, base_est_info_log, base_est_log = None, None, None
-        base_sim_log = None
+        base_sim_log, base_amb_log = None, None
 
         num_periods = init_dict['BASICS']['periods']
         write_draws(num_periods, max_draws)
@@ -290,6 +293,14 @@ class TestClass(object):
             if base_sim_log is None:
                 base_sim_log = open('sim.respy.log', 'r').read()
             assert open('sim.respy.log', 'r').read() == base_sim_log
+
+            # Check for identical logging
+            if base_amb_log is None:
+                import shutil
+                shutil.copy('amb.respy.log', 'amb.respy.fort')
+
+                base_amb_log = open('amb.respy.log', 'r').read()
+            assert open('amb.respy.log', 'r').read() == base_amb_log
 
             estimate(respy_obj)
 
