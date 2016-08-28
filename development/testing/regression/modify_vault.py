@@ -51,9 +51,8 @@ for idx, _ in enumerate(tests_old):
     print('\n Modfiying Test ', idx, 'with version ', PYTHON_VERSION)
     init_dict, crit_val = tests_old[idx]
 
-    init_dict['ESTIMATION']['tau'] = float('{:20.0f}'.format(init_dict[
-        'ESTIMATION']['tau']))
-
+    init_dict['AMBIGUITY']['measure'] = 'abs'
+    
     tests_new += [(init_dict, crit_val)]
 
 pkl.dump(tests_new, open(fname, 'wb'))

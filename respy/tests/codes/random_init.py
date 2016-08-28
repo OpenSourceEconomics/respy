@@ -91,6 +91,8 @@ def generate_random_dict(constraints=None):
     # AMBIGUITY
     dict_['AMBIGUITY'] = dict()
     dict_['AMBIGUITY']['flag'] = np.random.choice([True, False])
+    # TODO: KL measure to be added soon.
+    dict_['AMBIGUITY']['measure'] = 'abs'
     dict_['AMBIGUITY']['level'] = np.random.uniform()
 
     # ESTIMATION
@@ -402,5 +404,3 @@ def generate_random_dict(constraints=None):
 
     # Finishing
     return dict_
-
-
