@@ -92,7 +92,6 @@ SUBROUTINE construct_emax_ambiguity(emax, period, k, draws_emax_transformed, rew
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    PRINT *, TRIM(measure) == 'abs', measure, TRIM(measure)
     IF(TRIM(measure) == 'abs') THEN
         x_shift = (/-level, -level/)
     ELSE
