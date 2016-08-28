@@ -18,7 +18,6 @@ import shutil
 
 import time
 
-from respy.python.evaluate.evaluate_python import pyth_evaluate
 
 
 from respy.python.evaluate.evaluate_auxiliary import check_input

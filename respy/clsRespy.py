@@ -90,6 +90,8 @@ class RespyCls(object):
 
         self.attr['is_store'] = None
 
+        self.attr['measure'] = None
+
         self.attr['edu_max'] = None
 
         self.attr['version'] = None
@@ -297,6 +299,7 @@ class RespyCls(object):
         # Ambiguity
         init_dict['AMBIGUITY'] = dict()
         init_dict['AMBIGUITY']['flag'] = self.attr['is_ambiguity']
+        init_dict['AMBIGUITY']['measure'] = self.attr['measure']
         init_dict['AMBIGUITY']['level'] = self.attr['level']
 
         # Simulation
@@ -402,6 +405,8 @@ class RespyCls(object):
         self.attr['edu_start'] = init_dict['EDUCATION']['start']
 
         self.attr['seed_prob'] = init_dict['ESTIMATION']['seed']
+
+        self.attr['measure'] = init_dict['AMBIGUITY']['measure']
 
         self.attr['maxfun'] = init_dict['ESTIMATION']['maxfun']
 
@@ -518,6 +523,8 @@ class RespyCls(object):
         time the class is locked and if the package is running in debug mode.
         """
         # Distribute class attributes
+        num_points_interp = self.attr['num_points_interp']
+
         is_interpolated = self.attr['is_interpolated']
 
         optimizer_used = self.attr['optimizer_used']
@@ -542,13 +549,9 @@ class RespyCls(object):
 
         model_paras = self.attr['model_paras']
 
-        num_points_interp = self.attr['num_points_interp']
-
         edu_start = self.attr['edu_start']
 
         is_myopic = self.attr['is_myopic']
-
-        seed_sim = self.attr['seed_sim']
 
         seed_prob = self.attr['seed_prob']
 
@@ -558,11 +561,15 @@ class RespyCls(object):
 
         is_debug = self.attr['is_debug']
 
+        seed_sim = self.attr['seed_sim']
+
         edu_max = self.attr['edu_max']
 
         version = self.attr['version']
 
         scaling = self.attr['scaling']
+
+        measure = self.attr['measure']
 
         maxfun = self.attr['maxfun']
 
@@ -675,6 +682,7 @@ class RespyCls(object):
         # Ambiguity
         assert (is_ambiguity in [False, True])
         assert (level >= 0.00)
+        assert (measure in ['abs', 'kl'])
 
     def _check_integrity_results(self):
         """ This methods check the integrity of the results.
