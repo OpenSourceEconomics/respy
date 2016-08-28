@@ -234,7 +234,7 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, states_
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max, is_ambiguity, level, is_write)
+SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max, is_ambiguity, measure, level, is_write)
 
     !/* external objects        */
 
@@ -256,8 +256,9 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
     LOGICAL, INTENT(IN)                 :: is_ambiguity
     LOGICAL, INTENT(IN)                 :: is_myopic
     LOGICAL, INTENT(IN)                 :: is_debug
-
     LOGICAL, INTENT(IN)                 :: is_write
+
+    CHARACTER(10), INTENT(IN)           :: measure
 
     !/* internals objects       */
 
@@ -334,7 +335,7 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
 
             CALL get_exogenous_variables(exogenous, maxe, period, num_states, periods_rewards_systematic, shifts, mapping_state_idx, periods_emax, states_all, delta, edu_start, edu_max)
 
-            CALL get_endogenous_variable(endogenous, period, num_states, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, is_simulated, maxe, draws_emax_transformed, delta, edu_start, edu_max, shocks_cov, is_ambiguity, level)
+            CALL get_endogenous_variable(endogenous, period, num_states, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, is_simulated, maxe, draws_emax_transformed, delta, edu_start, edu_max, shocks_cov, is_ambiguity, measure, level)
 
             CALL get_predictions(predictions, endogenous, exogenous, maxe, is_simulated, num_states, is_write)
 
@@ -349,7 +350,7 @@ SUBROUTINE fort_backward_induction(periods_emax, periods_draws_emax, states_numb
                 rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
 
                 IF (is_ambiguity) THEN
-                    CALL construct_emax_ambiguity(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, level)
+                    CALL construct_emax_ambiguity(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, measure, level)
                 ELSE
                     CALL construct_emax_risk(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
                 END IF
@@ -506,7 +507,7 @@ SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, num_stat
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_endogenous_variable(endogenous, period, num_states, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, is_simulated, maxe, draws_emax_transformed, delta, edu_start, edu_max, shocks_cov, is_ambiguity, level)
+SUBROUTINE get_endogenous_variable(endogenous, period, num_states, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, is_simulated, maxe, draws_emax_transformed, delta, edu_start, edu_max, shocks_cov, is_ambiguity, measure, level)
 
     !/* external objects        */
 
@@ -529,6 +530,8 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_states, periods_rewar
 
     LOGICAL, INTENT(IN)                 :: is_simulated(num_states)
     LOGICAL, INTENT(IN)                 :: is_ambiguity
+
+    CHARACTER(10), INTENT(IN)           :: measure
 
     !/* internal objects        */
 
@@ -556,7 +559,7 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_states, periods_rewar
         rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
 
         IF (is_ambiguity) THEN
-            CALL construct_emax_ambiguity(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, level)
+            CALL construct_emax_ambiguity(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, measure, level)
         ELSE
             CALL construct_emax_risk(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
         END IF

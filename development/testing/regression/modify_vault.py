@@ -52,7 +52,7 @@ for idx, _ in enumerate(tests_old):
     init_dict, crit_val = tests_old[idx]
 
     init_dict['AMBIGUITY']['measure'] = 'abs'
-    
+
     tests_new += [(init_dict, crit_val)]
 
 pkl.dump(tests_new, open(fname, 'wb'))

@@ -62,7 +62,7 @@ FUNCTION kl_divergence(mean_old, cov_old, mean_new, cov_new)
 END FUNCTION
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE construct_emax_ambiguity(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, level)
+SUBROUTINE construct_emax_ambiguity(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, measure, level)
 
     !/* external objects    */
 
@@ -82,11 +82,27 @@ SUBROUTINE construct_emax_ambiguity(emax, period, k, draws_emax_transformed, rew
     REAL(our_dble), INTENT(IN)      :: level
     REAL(our_dble), INTENT(IN)      :: delta
 
+    CHARACTER(10), INTENT(IN)       :: measure
+
+    !/* internals objects    */
+
+    REAL(our_dble)                  :: x_shift(2)
+
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    CALL get_worst_case(emax, draws_emax_transformed, period, k, rewards_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max, level)
+    PRINT *, TRIM(measure) == 'abs', measure, TRIM(measure)
+    IF(TRIM(measure) == 'abs') THEN
+        x_shift = (/-level, -level/)
+    ELSE
+        PRINT *, "NotImplemented"
+        STOP
+        !CALL get_worst_case(emax, draws_emax_transformed, period, k, rewards_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max, level)
+    END IF
+
+
+    CALL criterion_ambiguity(emax, x_shift, draws_emax_transformed, period, k, rewards_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max)
 
 END SUBROUTINE
 !******************************************************************************
@@ -110,17 +126,9 @@ SUBROUTINE get_worst_case(emax, draws_emax_transformed, period, k, rewards_syste
     REAL(our_dble), INTENT(IN)      :: level
     REAL(our_dble), INTENT(IN)      :: delta
 
-    !/* internals objects    */
-
-    REAL(our_dble)                  :: x(2)
-
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
-
-    x = (/-level, -level/)
-
-    CALL criterion_ambiguity(emax, x, draws_emax_transformed, period, k, rewards_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max)
 
 END SUBROUTINE
 !******************************************************************************

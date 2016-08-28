@@ -457,7 +457,7 @@ SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period,
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max, is_ambiguity, level, num_states_slaves, update_master)
+SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max, is_ambiguity, measure, level, num_states_slaves, update_master)
 
     !/* external objects        */
 
@@ -482,37 +482,39 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, state
     LOGICAL, INTENT(IN)                 :: is_myopic
     LOGICAL, INTENT(IN)                 :: is_debug
 
+    CHARACTER(10), INTENT(IN)           :: measure
+
     !/* internal objects        */
 
-    INTEGER(our_int)                :: seed_inflated(15)
-    INTEGER(our_int)                :: lower_bound
-    INTEGER(our_int)                :: upper_bound
-    INTEGER(our_int)                :: num_states
-    INTEGER(our_int)                :: seed_size
-    INTEGER(our_int)                :: period
-    INTEGER(our_int)                :: count
-    INTEGER(our_int)                :: info
-    INTEGER(our_int)                :: k
+    INTEGER(our_int)                    :: seed_inflated(15)
+    INTEGER(our_int)                    :: lower_bound
+    INTEGER(our_int)                    :: upper_bound
+    INTEGER(our_int)                    :: num_states
+    INTEGER(our_int)                    :: seed_size
+    INTEGER(our_int)                    :: period
+    INTEGER(our_int)                    :: count
+    INTEGER(our_int)                    :: info
+    INTEGER(our_int)                    :: k
 
-    REAL(our_dble)                  :: rewards_systematic(4)
-    REAL(our_dble)                  :: shocks_cov(4, 4)
-    REAL(our_dble)                  :: shifts(4)
-    REAL(our_dble)                  :: emax
+    REAL(our_dble)                      :: rewards_systematic(4)
+    REAL(our_dble)                      :: shocks_cov(4, 4)
+    REAL(our_dble)                      :: shifts(4)
+    REAL(our_dble)                      :: emax
 
-    REAL(our_dble)                  :: draws_emax_transformed(num_draws_emax, 4)
-    REAL(our_dble)                  :: draws_emax(num_draws_emax, 4)
+    REAL(our_dble)                      :: draws_emax_transformed(num_draws_emax, 4)
+    REAL(our_dble)                      :: draws_emax(num_draws_emax, 4)
 
-    LOGICAL, ALLOCATABLE            :: is_simulated(:)
+    LOGICAL, ALLOCATABLE                :: is_simulated(:)
 
-    LOGICAL                         :: any_interpolated
-    LOGICAL                         :: is_head
+    LOGICAL                             :: any_interpolated
+    LOGICAL                             :: is_head
 
-    REAL(our_dble), ALLOCATABLE     :: periods_emax_slaves(:)
-    REAL(our_dble), ALLOCATABLE     :: endogenous_slaves(:)
-    REAL(our_dble), ALLOCATABLE     :: exogenous(:, :)
-    REAL(our_dble), ALLOCATABLE     :: predictions(:)
-    REAL(our_dble), ALLOCATABLE     :: endogenous(:)
-    REAL(our_dble), ALLOCATABLE     :: maxe(:)
+    REAL(our_dble), ALLOCATABLE         :: periods_emax_slaves(:)
+    REAL(our_dble), ALLOCATABLE         :: endogenous_slaves(:)
+    REAL(our_dble), ALLOCATABLE         :: exogenous(:, :)
+    REAL(our_dble), ALLOCATABLE         :: predictions(:)
+    REAL(our_dble), ALLOCATABLE         :: endogenous(:)
+    REAL(our_dble), ALLOCATABLE         :: maxe(:)
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -602,7 +604,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, state
                 rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
 
                 IF (is_ambiguity) THEN
-                    CALL construct_emax_ambiguity(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, level)
+                    CALL construct_emax_ambiguity(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, measure, level)
                 ELSE
                     CALL construct_emax_risk(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
                 END IF
@@ -637,7 +639,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, periods_draws_emax, state
                 rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
 
                 IF (is_ambiguity) THEN
-                    CALL construct_emax_ambiguity(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, level)
+                    CALL construct_emax_ambiguity(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, measure, level)
                 ELSE
                     CALL construct_emax_risk(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
                 END IF

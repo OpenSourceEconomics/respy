@@ -15,7 +15,7 @@ def pyth_contributions(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         num_points_interp, is_myopic, edu_start, is_debug, edu_max, delta,
         data_array, num_agents_est, num_draws_prob, tau, periods_draws_emax,
         periods_draws_prob, states_all, states_number_period,
-        mapping_state_idx, max_states_period, is_ambiguity, level):
+        mapping_state_idx, max_states_period, is_ambiguity, measure, level):
     """ Evaluate criterion function. This code allows for a deterministic
     model, where there is no random variation in the rewards. If that is the
     case and all agents have corresponding experiences, then one is returned.
@@ -47,7 +47,7 @@ def pyth_contributions(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
             periods_draws_emax, num_draws_emax, states_number_period,
             periods_rewards_systematic, edu_max, edu_start,
             mapping_state_idx, states_all, delta, is_debug, is_interpolated,
-            num_points_interp, shocks_cholesky, is_ambiguity, level)
+            num_points_interp, shocks_cholesky, is_ambiguity, measure, level)
 
     # Initialize auxiliary objects
     contribs = np.tile(-HUGE_FLOAT, (num_agents_est * num_periods))

@@ -44,6 +44,8 @@ MODULE shared_containers
     LOGICAL                         :: crit_estimation = .False.
     LOGICAL                         :: crit_scaled = .False.
 
+    CHARACTER(10)                   :: measure
+
     ! Parameters for the optimization
     INTEGER(our_int)                :: maxfun
 

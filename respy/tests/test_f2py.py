@@ -246,11 +246,11 @@ class TestClass(object):
         # Extract class attributes
         num_periods, edu_start, edu_max, min_idx, model_paras, num_draws_emax, \
             seed_emax, is_debug, delta, is_interpolated, num_points_interp, \
-            is_ambiguity, level = dist_class_attributes(respy_obj,
+            is_ambiguity, measure, level = dist_class_attributes(respy_obj,
                 'num_periods', 'edu_start', 'edu_max', 'min_idx',
                 'model_paras', 'num_draws_emax', 'seed_emax', 'is_debug',
                 'delta', 'is_interpolated', 'num_points_interp',
-                'is_ambiguity', 'level')
+                'is_ambiguity', 'measure', 'level')
 
         # Auxiliary objects
         coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
@@ -289,7 +289,7 @@ class TestClass(object):
             num_draws_emax, states_number_period, periods_rewards_systematic,
             edu_max, edu_start, mapping_state_idx, states_all, delta,
             is_debug, is_interpolated, num_points_interp, shocks_cholesky,
-            is_ambiguity, level)
+            is_ambiguity, measure, level)
 
         pyth = pyth_backward_induction(*args)
         f2py = fort_debug.f2py_backward_induction(*args)
@@ -315,14 +315,13 @@ class TestClass(object):
         num_periods, edu_start, edu_max, min_idx, model_paras, num_draws_emax, \
             is_debug, delta, is_interpolated, num_points_interp, is_myopic, \
             num_agents_sim, num_draws_prob, tau, paras_fixed, seed_sim, \
-            is_ambiguity, level, num_agents_est, states_number_period = \
-                dist_class_attributes(respy_obj,
-                    'num_periods', 'edu_start', 'edu_max', 'min_idx',
-                    'model_paras', 'num_draws_emax', 'is_debug', 'delta',
-                    'is_interpolated', 'num_points_interp', 'is_myopic',
-                    'num_agents_sim', 'num_draws_prob', 'tau', 'paras_fixed',
-                    'seed_sim', 'is_ambiguity', 'level', 'num_agents_est',
-                    'states_number_period')
+            is_ambiguity, measure, level, num_agents_est, states_number_period \
+            = dist_class_attributes(respy_obj, 'num_periods', 'edu_start',
+                'edu_max', 'min_idx', 'model_paras', 'num_draws_emax',
+                'is_debug', 'delta', 'is_interpolated', 'num_points_interp',
+                'is_myopic', 'num_agents_sim', 'num_draws_prob', 'tau',
+                'paras_fixed', 'seed_sim', 'is_ambiguity', 'measure', 'level',
+                'num_agents_est', 'states_number_period')
 
         # Write out random components and interpolation grid to align the
         # three implementations.
@@ -343,9 +342,10 @@ class TestClass(object):
             min_idx, delta)
 
         fort, _ = resfort_interface(respy_obj, 'simulate')
-        py = pyth_solve(*base_args + (periods_draws_emax, is_ambiguity, level))
+        py = pyth_solve(*base_args + (periods_draws_emax, is_ambiguity,
+                                      measure, level))
         f2py = fort_debug.f2py_solve(*base_args + (periods_draws_emax,
-                    max_states_period, is_ambiguity, level))
+                    max_states_period, is_ambiguity, measure, level))
 
         for alt in [f2py, fort]:
             for i in range(5):
@@ -374,7 +374,7 @@ class TestClass(object):
             delta, data_array, num_agents_est, num_draws_prob, tau,
             periods_draws_emax, periods_draws_prob, states_all,
             states_number_period, mapping_state_idx, max_states_period,
-            is_ambiguity, level)
+            is_ambiguity, measure, level)
 
         py = pyth_contributions(*args)
         f2py = fort_debug.f2py_contributions(*args)
@@ -390,7 +390,7 @@ class TestClass(object):
             delta, data_array, num_agents_est, num_draws_prob, tau,
             periods_draws_emax, periods_draws_prob, states_all,
             states_number_period, mapping_state_idx, max_states_period,
-            is_ambiguity, level)
+            is_ambiguity, measure, level)
 
         py = pyth_criterion(x0, *args)
         f2py = fort_debug.f2py_criterion(x0, *args)
@@ -410,12 +410,13 @@ class TestClass(object):
         periods_rewards_systematic, states_number_period, mapping_state_idx, \
             seed_prob, periods_emax, num_periods, states_all, \
             num_points_interp, edu_start, num_draws_emax, is_debug, edu_max, \
-            delta, is_ambiguity, level, model_paras = dist_class_attributes(respy_obj,
+            delta, is_ambiguity, measure, level, model_paras = \
+            dist_class_attributes(respy_obj,
                 'periods_rewards_systematic', 'states_number_period',
                 'mapping_state_idx', 'seed_prob', 'periods_emax',
                 'num_periods', 'states_all', 'num_points_interp', 'edu_start',
-                'num_draws_emax', 'is_debug', 'edu_max', 'delta', 'level',
-                'is_ambiguity', 'model_paras')
+                'num_draws_emax', 'is_debug', 'edu_max', 'delta',
+                'is_ambiguity', 'measure', 'level', 'model_paras')
 
         shocks_cholesky = model_paras['shocks_cholesky']
         shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
@@ -461,7 +462,8 @@ class TestClass(object):
         args = (period, num_periods, num_states, delta,
             periods_rewards_systematic, edu_max, edu_start,
             mapping_state_idx, periods_emax, states_all, is_simulated,
-            num_draws_emax, maxe, draws_emax, shocks_cov, is_ambiguity, level)
+            num_draws_emax, maxe, draws_emax, shocks_cov, is_ambiguity,
+                measure, level)
 
         py = get_endogenous_variable(*args)
         f90 = fort_debug.wrapper_get_endogenous_variable(*args)

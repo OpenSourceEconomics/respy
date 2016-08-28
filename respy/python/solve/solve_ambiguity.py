@@ -6,13 +6,25 @@ from respy.python.solve.solve_risk import construct_emax_risk
 
 def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
         draws_emax_transformed, rewards_systematic, edu_max, edu_start,
-        periods_emax, states_all, mapping_state_idx, delta, shocks_cov, level):
+        periods_emax, states_all, mapping_state_idx, delta, shocks_cov,
+        measure, level):
     """ Construct EMAX accounting for a worst case evaluation.
     """
 
-    emax = get_worst_case(num_periods, num_draws_emax, period, k,
-        draws_emax_transformed, rewards_systematic, edu_max, edu_start,
-        periods_emax, states_all, mapping_state_idx, delta, shocks_cov, level)
+    args = (num_periods, num_draws_emax, period, k, draws_emax_transformed,
+        rewards_systematic, edu_max, edu_start, periods_emax, states_all,
+        mapping_state_idx, delta)
+
+    if measure == 'abs':
+        x_shift = [-level, -level]
+    else:
+        raise NotImplementedError
+        # x_shift = get_worst_case(num_periods, num_draws_emax, period, k,
+        #     draws_emax_transformed, rewards_systematic, edu_max, edu_start,
+        #     periods_emax, states_all, mapping_state_idx, delta, shocks_cov,
+        #     level)
+
+    emax = criterion_ambiguity(x_shift, *args)
 
     return emax
 
@@ -62,13 +74,10 @@ def get_worst_case(num_periods, num_draws_emax, period, k,
 #        _write_result(period, k, opt, div)
 
 
- #   x_shift = opt['x']
+    x_shift = opt['x']
 
-    x_shift = [-level, -level]
 
-    emax = criterion_ambiguity(x_shift, *args)
-
-    return emax
+    return x_shift
 
 
 def criterion_ambiguity(x, num_periods, num_draws_emax, period, k,
@@ -121,6 +130,7 @@ def kl_divergence(mean_old, cov_old, mean_new, cov_new):
 
     # Finishing.
     return rslt
+
 
 def write_result(period, k, opt, div):
     """ Write result of optimization problem to loggging file.
