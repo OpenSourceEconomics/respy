@@ -22,24 +22,23 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
 
     DOUBLE PRECISION, INTENT(IN)    :: x(26)
 
+    INTEGER, INTENT(IN)             :: mapping_state_idx_int(:, :, :, :, :)
+    INTEGER, INTENT(IN)             :: states_number_period_int(:)
+    INTEGER, INTENT(IN)             :: states_all_int(:, :, :)
+    INTEGER, INTENT(IN)             :: num_points_interp_int
+    INTEGER, INTENT(IN)             :: max_states_period_int
     INTEGER, INTENT(IN)             :: num_draws_prob_int
     INTEGER, INTENT(IN)             :: num_draws_emax_int
     INTEGER, INTENT(IN)             :: num_agents_est_int
-    INTEGER, INTENT(IN)             :: edu_max_int
     INTEGER, INTENT(IN)             :: num_periods_int
-    INTEGER, INTENT(IN)             :: num_points_interp_int
     INTEGER, INTENT(IN)             :: edu_start_int
-    INTEGER, INTENT(IN)             :: max_states_period_int
-    INTEGER, INTENT(IN)             :: mapping_state_idx_int(:, :, :, :, :)
-    INTEGER, INTENT(IN)             :: states_all_int(:, :, :)
-    INTEGER, INTENT(IN)             :: states_number_period_int(:)
+    INTEGER, INTENT(IN)             :: edu_max_int
 
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_emax_int(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_prob_int(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: data_est_int(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: level_int
     DOUBLE PRECISION, INTENT(IN)    :: delta_int
-
     DOUBLE PRECISION, INTENT(IN)    :: tau_int
 
     LOGICAL, INTENT(IN)             :: is_interpolated_int
@@ -65,10 +64,11 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
 !------------------------------------------------------------------------------
 
     ! Assign global RESPFRT variables
-    min_idx = SIZE(mapping_state_idx_int, 4)
     max_states_period = max_states_period_int
+    min_idx = SIZE(mapping_state_idx_int, 4)
 
     ! Transfer global RESFORT variables
+    num_points_interp = num_points_interp_int
     num_agents_est = num_agents_est_int
     num_draws_emax = num_draws_emax_int
     num_draws_prob = num_draws_prob_int
@@ -102,17 +102,17 @@ SUBROUTINE f2py_contributions(contribs, coeffs_a, coeffs_b, coeffs_edu, coeffs_h
 
     DOUBLE PRECISION, INTENT(OUT)   :: contribs(num_agents_est_int * num_periods_int)
 
+    INTEGER, INTENT(IN)             :: mapping_state_idx_int(:, :, :, :, :)
+    INTEGER, INTENT(IN)             :: states_number_period_int(:)
+    INTEGER, INTENT(IN)             :: states_all_int(:, :, :)
+    INTEGER, INTENT(IN)             :: num_points_interp_int
+    INTEGER, INTENT(IN)             :: max_states_period_int
     INTEGER, INTENT(IN)             :: num_draws_prob_int
     INTEGER, INTENT(IN)             :: num_draws_emax_int
     INTEGER, INTENT(IN)             :: num_agents_est_int
-    INTEGER, INTENT(IN)             :: edu_max_int
     INTEGER, INTENT(IN)             :: num_periods_int
-    INTEGER, INTENT(IN)             :: num_points_interp_int
     INTEGER, INTENT(IN)             :: edu_start_int
-    INTEGER, INTENT(IN)             :: max_states_period_int
-    INTEGER, INTENT(IN)             :: mapping_state_idx_int(:, :, :, :, :)
-    INTEGER, INTENT(IN)             :: states_all_int(:, :, :)
-    INTEGER, INTENT(IN)             :: states_number_period_int(:)
+    INTEGER, INTENT(IN)             :: edu_max_int
 
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_emax_int(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_prob_int(:, :, :)
@@ -120,11 +120,10 @@ SUBROUTINE f2py_contributions(contribs, coeffs_a, coeffs_b, coeffs_edu, coeffs_h
     DOUBLE PRECISION, INTENT(IN)    :: data_est_int(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_home(:)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_edu(:)
-    DOUBLE PRECISION, INTENT(IN)    :: level_int
-    DOUBLE PRECISION, INTENT(IN)    :: delta_int
-
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(:)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(:)
+    DOUBLE PRECISION, INTENT(IN)    :: level_int
+    DOUBLE PRECISION, INTENT(IN)    :: delta_int
     DOUBLE PRECISION, INTENT(IN)    :: tau_int
 
     LOGICAL, INTENT(IN)             :: is_interpolated_int
@@ -139,10 +138,11 @@ SUBROUTINE f2py_contributions(contribs, coeffs_a, coeffs_b, coeffs_edu, coeffs_h
 !------------------------------------------------------------------------------
 
     ! Assign global RESPFRT variables
-    min_idx = SIZE(mapping_state_idx_int, 4)
     max_states_period = max_states_period_int
+    min_idx = SIZE(mapping_state_idx_int, 4)
 
     ! Transfer global RESFORT variables
+    num_points_interp = num_points_interp_int
     num_agents_est = num_agents_est_int
     num_draws_prob = num_draws_prob_int
     num_draws_emax = num_draws_emax_int
@@ -177,15 +177,13 @@ SUBROUTINE f2py_solve(periods_rewards_systematic_int, states_number_period_int, 
 
     DOUBLE PRECISION, INTENT(OUT)   :: periods_rewards_systematic_int(num_periods_int, max_states_period_int, 4)
     DOUBLE PRECISION, INTENT(OUT)   :: periods_emax_int(num_periods_int, max_states_period_int)
-    DOUBLE PRECISION, INTENT(IN)    :: delta_int
-    DOUBLE PRECISION, INTENT(IN)    :: level_int
 
     INTEGER, INTENT(IN)             :: max_states_period_int
-    INTEGER, INTENT(IN)             :: num_draws_emax_int
-    INTEGER, INTENT(IN)             :: edu_max_int
-    INTEGER, INTENT(IN)             :: num_periods_int
     INTEGER, INTENT(IN)             :: num_points_interp_int
+    INTEGER, INTENT(IN)             :: num_draws_emax_int
+    INTEGER, INTENT(IN)             :: num_periods_int
     INTEGER, INTENT(IN)             :: edu_start_int
+    INTEGER, INTENT(IN)             :: edu_max_int
     INTEGER, INTENT(IN)             :: min_idx_int
 
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_emax_int(:, :, :)
@@ -194,6 +192,8 @@ SUBROUTINE f2py_solve(periods_rewards_systematic_int, states_number_period_int, 
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_edu(:)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(:)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(:)
+    DOUBLE PRECISION, INTENT(IN)    :: delta_int
+    DOUBLE PRECISION, INTENT(IN)    :: level_int
 
     LOGICAL, INTENT(IN)             :: is_interpolated_int
     LOGICAL, INTENT(IN)             :: is_ambiguity_int
@@ -207,6 +207,7 @@ SUBROUTINE f2py_solve(periods_rewards_systematic_int, states_number_period_int, 
 !-----------------------------------------------------------------------------
 
     !# Transfer global RESFORT variables
+    num_points_interp = num_points_interp_int
     max_states_period = max_states_period_int
     num_draws_emax = num_draws_emax_int
     num_periods = num_periods_int
@@ -249,13 +250,13 @@ SUBROUTINE f2py_simulate(data_sim_int, periods_rewards_systematic_int, mapping_s
 
     DOUBLE PRECISION, INTENT(IN)    :: periods_rewards_systematic_int(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_sims(:, :, :)
-    DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(4, 4)
     DOUBLE PRECISION, INTENT(IN)    :: periods_emax_int(:, :)
+    DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(4, 4)
     DOUBLE PRECISION, INTENT(IN)    :: delta_int
 
     INTEGER, INTENT(IN)             :: num_periods_int
-    INTEGER, INTENT(IN)             :: edu_max_int
     INTEGER, INTENT(IN)             :: edu_start_int
+    INTEGER, INTENT(IN)             :: edu_max_int
     INTEGER, INTENT(IN)             :: seed_sim
 
     INTEGER, INTENT(IN)             :: mapping_state_idx_int(:, :, :, :, :)
@@ -308,11 +309,11 @@ SUBROUTINE f2py_backward_induction(periods_emax_int, num_periods_int, max_states
     INTEGER, INTENT(IN)             :: states_number_period_int(:)
     INTEGER, INTENT(IN)             :: states_all_int(:, :, :)
     INTEGER, INTENT(IN)             :: max_states_period_int
-    INTEGER, INTENT(IN)             :: num_draws_emax_int
-    INTEGER, INTENT(IN)             :: edu_max_int
-    INTEGER, INTENT(IN)             :: num_periods_int
     INTEGER, INTENT(IN)             :: num_points_interp_int
+    INTEGER, INTENT(IN)             :: num_draws_emax_int
+    INTEGER, INTENT(IN)             :: num_periods_int
     INTEGER, INTENT(IN)             :: edu_start_int
+    INTEGER, INTENT(IN)             :: edu_max_int
 
     LOGICAL, INTENT(IN)             :: is_interpolated_int
     LOGICAL, INTENT(IN)             :: is_ambiguity_int
@@ -326,24 +327,16 @@ SUBROUTINE f2py_backward_induction(periods_emax_int, num_periods_int, max_states
 !------------------------------------------------------------------------------
 
     !# Transfer auxiliary variable to global variable.
-    max_states_period = max_states_period_int
     num_points_interp = num_points_interp_int
-    is_interpolated = is_interpolated_int
+    max_states_period = max_states_period_int
     num_draws_emax = num_draws_emax_int
-    is_ambiguity = is_ambiguity_int
     num_periods = num_periods_int
-    edu_start = edu_start_int
-    is_debug = is_debug_int
-    measure = measure_int
-    edu_max = edu_max_int
-    delta = delta_int
-    level = level_int
 
     ! Ensure that there is no problem with the repeated allocation of the containers.
     IF(ALLOCATED(periods_emax)) DEALLOCATE(periods_emax)
 
     ! Call actual function of interest
-    CALL fort_backward_induction(periods_emax, periods_draws_emax_int, states_number_period_int, periods_rewards_systematic_int, mapping_state_idx_int, states_all_int, shocks_cholesky, delta, is_debug, is_interpolated, num_points_interp, .False., edu_start, edu_max, is_ambiguity, measure, level, is_write)
+    CALL fort_backward_induction(periods_emax, periods_draws_emax_int, states_number_period_int, periods_rewards_systematic_int, mapping_state_idx_int, states_all_int, shocks_cholesky, delta_int, is_debug_int, is_interpolated_int, num_points_interp_int, .False., edu_start_int, edu_max_int, is_ambiguity_int, measure_int, level_int, is_write)
 
     ! Allocate to intermidiaries
     periods_emax_int = periods_emax
@@ -381,19 +374,16 @@ SUBROUTINE f2py_create_state_space(states_all_int, states_number_period_int, map
     !# Transfer global RESFORT variables
     max_states_period = max_states_period_int
     num_periods = num_periods_int
-    edu_start = edu_start_int
     min_idx = min_idx_int
-    edu_max = edu_max_int
 
     states_all_int = MISSING_INT
 
     ! Ensure that there is no problem with the repeated allocation of the containers.
+    IF (ALLOCATED(states_number_period)) DEALLOCATE(states_number_period)
     IF (ALLOCATED(mapping_state_idx)) DEALLOCATE(mapping_state_idx)
     IF (ALLOCATED(states_all)) DEALLOCATE(states_all)
-    IF (ALLOCATED(states_number_period)) DEALLOCATE(states_number_period)
-    IF (ALLOCATED(states_all)) DEALLOCATE(states_all)
 
-    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, edu_start, edu_max)
+    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, edu_start_int, edu_max_int)
 
     states_all_int(:, :max_states_period, :) = states_all
     states_number_period_int = states_number_period
@@ -437,13 +427,12 @@ SUBROUTINE f2py_calculate_rewards_systematic(periods_rewards_systematic_int, num
     ! Transfer global RESOFORT variables
     max_states_period = max_states_period_int
     num_periods = num_periods_int
-    edu_start = edu_start_int
 
     ! Ensure that there is no problem with the repeated allocation of the containers.
     IF(ALLOCATED(periods_rewards_systematic)) DEALLOCATE(periods_rewards_systematic)
 
     ! Call function of interest
-    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, states_number_period_int, states_all_int, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start)
+    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, states_number_period_int, states_all_int, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start_int)
 
     periods_rewards_systematic_int = periods_rewards_systematic
 
@@ -575,12 +564,9 @@ SUBROUTINE wrapper_construct_emax_risk(emax, num_periods_int, num_draws_emax_int
     !# Transfer global RESFORT variables
     num_draws_emax = num_draws_emax_int
     num_periods = num_periods_int
-    edu_start = edu_start_int
-    edu_max = edu_max_int
-    delta = delta_int
 
     ! Call function of interest
-    CALL construct_emax_risk(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax_int, states_all_int, mapping_state_idx_int, delta)
+    CALL construct_emax_risk(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta_int)
 
 END SUBROUTINE
 !******************************************************************************
@@ -805,8 +791,8 @@ SUBROUTINE wrapper_get_predictions(predictions, endogenous, exogenous, maxe, is_
     DOUBLE PRECISION, INTENT(IN)                :: endogenous(:)
     DOUBLE PRECISION, INTENT(IN)                :: maxe(:)
 
-    INTEGER, INTENT(IN)                         :: num_states
     INTEGER, INTENT(IN)                         :: num_points_interp_int
+    INTEGER, INTENT(IN)                         :: num_states
 
     LOGICAL, INTENT(IN)                         :: is_simulated(:)
     LOGICAL, INTENT(IN)                         :: is_write
@@ -839,8 +825,8 @@ SUBROUTINE wrapper_random_choice(sample, candidates, num_candidates, num_points)
 
     INTEGER, INTENT(OUT)            :: sample(num_points)
 
-    INTEGER, INTENT(IN)             :: candidates(:)
     INTEGER, INTENT(IN)             :: num_candidates
+    INTEGER, INTENT(IN)             :: candidates(:)
     INTEGER, INTENT(IN)             :: num_points
 
 !------------------------------------------------------------------------------
@@ -908,14 +894,14 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_perio
     INTEGER, INTENT(IN)                 :: mapping_state_idx_int(:, :, :, :, :)
     INTEGER, INTENT(IN)                 :: states_all_int(:, :, :)
     INTEGER, INTENT(IN)                 :: num_draws_emax_int
-    INTEGER, INTENT(IN)                 :: edu_max_int
     INTEGER, INTENT(IN)                 :: num_periods_int
-    INTEGER, INTENT(IN)                 :: num_states
     INTEGER, INTENT(IN)                 :: edu_start_int
+    INTEGER, INTENT(IN)                 :: edu_max_int
+    INTEGER, INTENT(IN)                 :: num_states
     INTEGER, INTENT(IN)                 :: period
 
-    LOGICAL, INTENT(IN)                 :: is_simulated(:)
     LOGICAL, INTENT(IN)                 :: is_ambiguity_int
+    LOGICAL, INTENT(IN)                 :: is_simulated(:)
     LOGICAL, INTENT(IN)                 :: is_write
 
     CHARACTER(10), INTENT(IN)           :: measure_int
@@ -926,16 +912,10 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_perio
 
     ! Transfer global RESFORT variables
     num_draws_emax = num_draws_emax_int
-    is_ambiguity = is_ambiguity_int
     num_periods = num_periods_int
-    edu_start = edu_start_int
-    measure = measure_int
-    edu_max = edu_max_int
-    level = level_int
-    delta = delta_int
 
     ! Call function of interest
-    CALL get_endogenous_variable(exogenous_variable, period, num_states, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_simulated, maxe, draws_emax_transformed, delta, edu_start, edu_max, shocks_cov, is_ambiguity, measure, level, is_write)
+    CALL get_endogenous_variable(exogenous_variable, period, num_states, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_simulated, maxe, draws_emax_transformed, delta_int, edu_start_int, edu_max_int, shocks_cov, is_ambiguity_int, measure_int, level_int, is_write)
 
 END SUBROUTINE
 !******************************************************************************
@@ -952,8 +932,8 @@ SUBROUTINE wrapper_get_exogenous_variables(independent_variables, maxe, period, 
 
     !/* external objects        */
 
-    DOUBLE PRECISION, INTENT(OUT)        :: independent_variables(num_states, 9)
-    DOUBLE PRECISION, INTENT(OUT)        :: maxe(num_states)
+    DOUBLE PRECISION, INTENT(OUT)       :: independent_variables(num_states, 9)
+    DOUBLE PRECISION, INTENT(OUT)       :: maxe(num_states)
 
 
     DOUBLE PRECISION, INTENT(IN)        :: periods_rewards_systematic_int(:, :, :)
@@ -963,10 +943,10 @@ SUBROUTINE wrapper_get_exogenous_variables(independent_variables, maxe, period, 
 
     INTEGER, INTENT(IN)                 :: mapping_state_idx_int(:, :, :, :, :)
     INTEGER, INTENT(IN)                 :: states_all_int(:, :, :)
-    INTEGER, INTENT(IN)                 :: edu_max_int
     INTEGER, INTENT(IN)                 :: num_periods_int
-    INTEGER, INTENT(IN)                 :: num_states
     INTEGER, INTENT(IN)                 :: edu_start_int
+    INTEGER, INTENT(IN)                 :: edu_max_int
+    INTEGER, INTENT(IN)                 :: num_states
     INTEGER, INTENT(IN)                 :: period
 
 !------------------------------------------------------------------------------
@@ -979,12 +959,9 @@ SUBROUTINE wrapper_get_exogenous_variables(independent_variables, maxe, period, 
 
     !# Transfer global RESFORT variables
     num_periods = num_periods_int
-    edu_start = edu_start_int
-    edu_max = edu_max_int
-    delta = delta_int
 
     ! Call function of interest
-    CALL get_exogenous_variables(independent_variables, maxe, period, num_states, periods_rewards_systematic_int, shifts, mapping_state_idx_int, periods_emax_int, states_all_int, delta, edu_start, edu_max)
+    CALL get_exogenous_variables(independent_variables, maxe, period, num_states, periods_rewards_systematic_int, shifts, mapping_state_idx_int, periods_emax_int, states_all_int, delta_int, edu_start_int, edu_max_int)
 
 END SUBROUTINE
 !******************************************************************************
@@ -1016,10 +993,9 @@ SUBROUTINE wrapper_get_simulated_indicator(is_simulated, num_points, num_states,
 
     !# Transfer global RESFORT variables
     num_periods = num_periods_int
-    is_debug = is_debug_int
 
     ! Call function of interest
-    is_simulated = get_simulated_indicator(num_points, num_states, period, .True.)
+    is_simulated = get_simulated_indicator(num_points, num_states, period, is_debug_int)
 
 END SUBROUTINE
 !******************************************************************************

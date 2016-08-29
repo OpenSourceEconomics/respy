@@ -1,5 +1,5 @@
-import numpy as np
 from scipy.optimize import minimize
+import numpy as np
 
 from respy.python.record.record_ambiguity import record_ambiguity
 from respy.python.solve.solve_risk import construct_emax_risk

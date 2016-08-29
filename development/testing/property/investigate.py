@@ -33,13 +33,12 @@ else:
 
 #MODULE test_parallelism METHOD test_1 SEED: 24029
 
-seed = 1223 # 6216748723
 
 
 ''' Error Reproduction
 '''
 cleanup_testing_infrastructure(True)
-
+seed = 134223 # 6216748723
 np.random.seed(seed)
 
 # Construct test
@@ -50,6 +49,10 @@ module, method = 'test_f2py', 'test_1'
 count = 0
 #os.system('git clean -d -f')
 for i in range(300):
+
+    seed = i + 112 # 6216748723
+    print("seed ", i)
+    np.random.seed(seed)
 
     method = 'test_' + str(np.random.choice(range(1, 11)))
     print(module, method)
