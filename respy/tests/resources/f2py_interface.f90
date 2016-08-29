@@ -268,18 +268,15 @@ SUBROUTINE f2py_simulate(data_sim_int, periods_rewards_systematic_int, mapping_s
 !------------------------------------------------------------------------------
 
     ! Assign global RESPFRT variables
-    min_idx = SIZE(mapping_state_idx_int, 4)
     max_states_period = SIZE(states_all_int, 2)
+    min_idx = SIZE(mapping_state_idx_int, 4)
 
     ! Transfer global RESFORT variables
     num_agents_sim = num_agents_sim_int
     num_periods = num_periods_int
-    edu_start = edu_start_int
-    edu_max = edu_max_int
-    delta = delta_int
 
     ! Call function of interest
-    CALL fort_simulate(data_sim, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, num_agents_sim, periods_draws_sims, shocks_cholesky, delta, edu_start, edu_max, seed_sim)
+    CALL fort_simulate(data_sim, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, num_agents_sim, periods_draws_sims, shocks_cholesky, delta_int, edu_start_int, edu_max_int, seed_sim)
 
     ! Assign to initial objects for return to PYTHON
     data_sim_int = data_sim
