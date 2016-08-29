@@ -142,33 +142,17 @@ SUBROUTINE f2py_contributions(contribs, coeffs_a, coeffs_b, coeffs_edu, coeffs_h
     min_idx = SIZE(mapping_state_idx_int, 4)
     max_states_period = max_states_period_int
 
-    states_all = states_all_int
-    states_number_period = states_number_period_int
-    mapping_state_idx = mapping_state_idx_int
+    ! Transfer global RESFORT variables
+    num_agents_est = num_agents_est_int
+    num_draws_prob = num_draws_prob_int
+    num_draws_emax = num_draws_emax_int
+    num_periods = num_periods_int
 
-     ! Transfer global RESFORT variables
-     num_points_interp = num_points_interp_int
-     is_interpolated = is_interpolated_int
-     num_agents_est = num_agents_est_int
-     num_draws_prob = num_draws_prob_int
-     num_draws_emax = num_draws_emax_int
-     is_ambiguity = is_ambiguity_int
-     num_periods = num_periods_int
-     edu_start = edu_start_int
-     is_myopic = is_myopic_int
-     data_est = data_est_int
-     is_debug = is_debug_int
-     measure = measure_int
-     edu_max = edu_max_int
-     delta = delta_int
-     level = level_int
-     tau = tau_int
+    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, states_number_period_int, states_all_int, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start_int)
 
-    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, states_number_period_int, states_all_int, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start)
+    CALL fort_backward_induction(periods_emax, periods_draws_emax_int, states_number_period_int, periods_rewards_systematic, mapping_state_idx_int, states_all_int, shocks_cholesky, delta_int, is_debug_int, is_interpolated_int, num_points_interp_int, is_myopic_int, edu_start_int, edu_max_int, is_ambiguity_int, measure_int, level_int, .False.)
 
-    CALL fort_backward_induction(periods_emax, periods_draws_emax_int, states_number_period_int, periods_rewards_systematic, mapping_state_idx_int, states_all_int, shocks_cholesky, delta, is_debug, is_interpolated, num_points_interp, is_myopic, edu_start, edu_max, is_ambiguity, measure, level, .False.)
-
-    CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all_int, shocks_cholesky, data_est, periods_draws_prob_int, delta, tau, edu_start, edu_max)
+    CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx_int, periods_emax, states_all_int, shocks_cholesky, data_est_int, periods_draws_prob_int, delta_int, tau_int, edu_start_int, edu_max_int)
 
 END SUBROUTINE
 !******************************************************************************
@@ -224,30 +208,20 @@ SUBROUTINE f2py_solve(periods_rewards_systematic_int, states_number_period_int, 
 
     !# Transfer global RESFORT variables
     max_states_period = max_states_period_int
-    num_points_interp = num_points_interp_int
-    is_interpolated = is_interpolated_int
     num_draws_emax = num_draws_emax_int
-    is_ambiguity = is_ambiguity_int
     num_periods = num_periods_int
-    edu_start = edu_start_int
-    is_myopic = is_myopic_int
-    is_debug = is_debug_int
-    measure = measure_int
     min_idx = min_idx_int
-    edu_max = edu_max_int
-    level = level_int
-    delta = delta_int
 
     ! Ensure that there is no problem with the repeated allocation of the containers.
-    IF (ALLOCATED(mapping_state_idx)) DEALLOCATE(mapping_state_idx)
     IF (ALLOCATED(periods_rewards_systematic)) DEALLOCATE(periods_rewards_systematic)
-    IF (ALLOCATED(states_all)) DEALLOCATE(states_all)
-    IF (ALLOCATED(periods_emax)) DEALLOCATE(periods_emax)
     IF (ALLOCATED(states_number_period)) DEALLOCATE(states_number_period)
+    IF (ALLOCATED(mapping_state_idx)) DEALLOCATE(mapping_state_idx)
+    IF (ALLOCATED(periods_emax)) DEALLOCATE(periods_emax)
+    IF (ALLOCATED(states_all)) DEALLOCATE(states_all)
     IF (ALLOCATED(states_all)) DEALLOCATE(states_all)
 
     ! Call FORTRAN solution
-    CALL fort_solve(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, is_interpolated, num_points_interp, num_draws_emax, num_periods, is_myopic, edu_start, is_debug, edu_max, min_idx, delta, periods_draws_emax_int, is_ambiguity, measure, level)
+    CALL fort_solve(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, is_interpolated_int, num_points_interp_int, num_draws_emax, num_periods, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, min_idx, delta_int, periods_draws_emax_int, is_ambiguity_int, measure_int, level_int)
 
     ! Assign to initial objects for return to PYTHON
     periods_rewards_systematic_int = periods_rewards_systematic
