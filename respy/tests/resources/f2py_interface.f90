@@ -68,10 +68,6 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
     min_idx = SIZE(mapping_state_idx_int, 4)
     max_states_period = max_states_period_int
 
-    states_all = states_all_int
-    states_number_period = states_number_period_int
-    mapping_state_idx = mapping_state_idx_int
-
     ! Transfer global RESFORT variables
     num_points_interp = num_points_interp_int
     is_interpolated = is_interpolated_int
@@ -80,12 +76,12 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
     num_draws_prob = num_draws_prob_int
     is_ambiguity = is_ambiguity_int
     num_periods = num_periods_int
-    measure = measure_int
-    data_est = data_est_int
     is_myopic = is_myopic_int
     edu_start = edu_start_int
     is_debug = is_debug_int
+    data_est = data_est_int
     edu_max = edu_max_int
+    measure = measure_int
     delta = delta_int
     level = level_int
     tau = tau_int
@@ -97,7 +93,7 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
 
     CALL fort_backward_induction(periods_emax, periods_draws_emax_int, states_number_period_int, periods_rewards_systematic, mapping_state_idx_int, states_all_int, shocks_cholesky, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max, is_ambiguity, measure, level, .False.)
 
-    CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all_int, shocks_cholesky, data_est, periods_draws_prob_int, delta, tau, edu_start, edu_max)
+    CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx_int, periods_emax, states_all_int, shocks_cholesky, data_est, periods_draws_prob_int, delta, tau, edu_start, edu_max)
 
     crit_val = get_log_likl(contribs, num_agents_est, num_periods)
 

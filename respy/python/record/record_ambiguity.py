@@ -28,8 +28,8 @@ def record_ambiguity(period, k, x_shift, div, success, message):
         file_.write(string.format(*['Message', message]))
 
     # Summarize the overall performance.
-    #if period == 0:
-    #    record_ambiguity_summary()
+    if period == 0:
+        record_ambiguity_summary()
 
 
 def record_ambiguity_summary():
