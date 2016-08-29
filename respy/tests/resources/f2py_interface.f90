@@ -69,31 +69,19 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
     max_states_period = max_states_period_int
 
     ! Transfer global RESFORT variables
-    num_points_interp = num_points_interp_int
-    is_interpolated = is_interpolated_int
     num_agents_est = num_agents_est_int
     num_draws_emax = num_draws_emax_int
     num_draws_prob = num_draws_prob_int
-    is_ambiguity = is_ambiguity_int
     num_periods = num_periods_int
-    is_myopic = is_myopic_int
-    edu_start = edu_start_int
-    is_debug = is_debug_int
-    data_est = data_est_int
-    edu_max = edu_max_int
-    measure = measure_int
-    delta = delta_int
-    level = level_int
-    tau = tau_int
 
     !# Distribute model parameters
     CALL dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x, dist_optim_paras_info)
 
-    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, states_number_period_int, states_all_int, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start)
+    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, states_number_period_int, states_all_int, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start_int)
 
-    CALL fort_backward_induction(periods_emax, periods_draws_emax_int, states_number_period_int, periods_rewards_systematic, mapping_state_idx_int, states_all_int, shocks_cholesky, delta, is_debug, is_interpolated, num_points_interp, is_myopic, edu_start, edu_max, is_ambiguity, measure, level, .False.)
+    CALL fort_backward_induction(periods_emax, periods_draws_emax_int, states_number_period_int, periods_rewards_systematic, mapping_state_idx_int, states_all_int, shocks_cholesky, delta_int, is_debug_int, is_interpolated_int, num_points_interp_int, is_myopic_int, edu_start_int, edu_max_int, is_ambiguity_int, measure_int, level_int, .False.)
 
-    CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx_int, periods_emax, states_all_int, shocks_cholesky, data_est, periods_draws_prob_int, delta, tau, edu_start, edu_max)
+    CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx_int, periods_emax, states_all_int, shocks_cholesky, data_est_int, periods_draws_prob_int, delta_int, tau_int, edu_start_int, edu_max_int)
 
     crit_val = get_log_likl(contribs, num_agents_est, num_periods)
 
