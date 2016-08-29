@@ -33,7 +33,7 @@ SUBROUTINE fort_solve(periods_rewards_systematic, states_number_period, mapping_
     INTEGER(our_int), INTENT(IN)                    :: edu_start
     INTEGER(our_int), INTENT(IN)                    :: edu_max
     INTEGER(our_int), INTENT(IN)                    :: min_idx
-    
+
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_rewards_systematic(:, :, :)
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_emax(: ,:)
 
@@ -72,7 +72,7 @@ SUBROUTINE fort_solve(periods_rewards_systematic, states_number_period, mapping_
 
     CALL record_solution(3)
 
-    CALL fort_backward_induction(periods_emax, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max, is_ambiguity, measure, level, .True.)
+    CALL fort_backward_induction(periods_emax, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, num_points_interp, is_myopic, edu_start, edu_max, is_ambiguity, measure, level, .True.)
 
     IF (.NOT. is_myopic) THEN
         CALL record_solution(-1)

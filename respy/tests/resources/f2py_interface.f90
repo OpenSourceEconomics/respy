@@ -91,7 +91,7 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
 
     CALL fort_calculate_rewards_systematic(periods_rewards_systematic, states_number_period_int, states_all_int, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start)
 
-    CALL fort_backward_induction(periods_emax, periods_draws_emax_int, states_number_period_int, periods_rewards_systematic, mapping_state_idx_int, states_all_int, shocks_cholesky, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max, is_ambiguity, measure, level, .False.)
+    CALL fort_backward_induction(periods_emax, periods_draws_emax_int, states_number_period_int, periods_rewards_systematic, mapping_state_idx_int, states_all_int, shocks_cholesky, delta, is_debug, is_interpolated, num_points_interp, is_myopic, edu_start, edu_max, is_ambiguity, measure, level, .False.)
 
     CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx_int, periods_emax, states_all_int, shocks_cholesky, data_est, periods_draws_prob_int, delta, tau, edu_start, edu_max)
 
@@ -178,7 +178,7 @@ SUBROUTINE f2py_contributions(contribs, coeffs_a, coeffs_b, coeffs_edu, coeffs_h
 
     CALL fort_calculate_rewards_systematic(periods_rewards_systematic, states_number_period_int, states_all_int, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start)
 
-    CALL fort_backward_induction(periods_emax, periods_draws_emax_int, states_number_period_int, periods_rewards_systematic, mapping_state_idx_int, states_all_int, shocks_cholesky, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max, is_ambiguity, measure, level, .False.)
+    CALL fort_backward_induction(periods_emax, periods_draws_emax_int, states_number_period_int, periods_rewards_systematic, mapping_state_idx_int, states_all_int, shocks_cholesky, delta, is_debug, is_interpolated, num_points_interp, is_myopic, edu_start, edu_max, is_ambiguity, measure, level, .False.)
 
     CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all_int, shocks_cholesky, data_est, periods_draws_prob_int, delta, tau, edu_start, edu_max)
 
@@ -384,7 +384,7 @@ SUBROUTINE f2py_backward_induction(periods_emax_int, num_periods_int, max_states
     IF(ALLOCATED(periods_emax)) DEALLOCATE(periods_emax)
 
     ! Call actual function of interest
-    CALL fort_backward_induction(periods_emax, periods_draws_emax_int, states_number_period_int, periods_rewards_systematic_int, mapping_state_idx_int, states_all_int, shocks_cholesky, delta, is_debug, is_interpolated, .False., edu_start, edu_max, is_ambiguity, measure, level, is_write)
+    CALL fort_backward_induction(periods_emax, periods_draws_emax_int, states_number_period_int, periods_rewards_systematic_int, mapping_state_idx_int, states_all_int, shocks_cholesky, delta, is_debug, is_interpolated, num_points_interp, .False., edu_start, edu_max, is_ambiguity, measure, level, is_write)
 
     ! Allocate to intermidiaries
     periods_emax_int = periods_emax
