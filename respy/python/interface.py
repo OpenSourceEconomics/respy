@@ -151,7 +151,7 @@ def respy_interface(respy_obj, request, data_array=None):
         periods_rewards_systematic, states_number_period, mapping_state_idx, \
             periods_emax, states_all = pyth_solve(coeffs_a, coeffs_b,
             coeffs_edu, coeffs_home, shocks_cholesky, is_interpolated,
-            num_draws_emax, num_periods, num_points_interp, is_myopic,
+            num_points_interp, num_draws_emax, num_periods, is_myopic,
             edu_start, is_debug, edu_max, min_idx, delta, periods_draws_emax,
             is_ambiguity, measure, level)
 

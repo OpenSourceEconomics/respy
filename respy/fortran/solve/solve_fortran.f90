@@ -19,7 +19,7 @@ MODULE solve_fortran
  CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_solve(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max, is_ambiguity, measure, level)
+SUBROUTINE fort_solve(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax, delta, is_debug, is_interpolated, num_points_interp, is_myopic, edu_start, edu_max, is_ambiguity, measure, level)
 
     !/* external objects        */
 
@@ -27,6 +27,7 @@ SUBROUTINE fort_solve(periods_rewards_systematic, states_number_period, mapping_
     INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: states_number_period(:)
     INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: states_all(:, :, :)
 
+    INTEGER(our_int), INTENT(IN)                    :: num_points_interp
     INTEGER(our_int), INTENT(IN)                    :: edu_start
     INTEGER(our_int), INTENT(IN)                    :: edu_max
 

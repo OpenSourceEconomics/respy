@@ -8,7 +8,7 @@ from respy.python.record.record_solution import record_solution_progress
 
 
 def pyth_solve(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
-        is_interpolated, num_draws_emax, num_periods, num_points_interp,
+        is_interpolated, num_points_interp, num_draws_emax, num_periods,
         is_myopic, edu_start, is_debug, edu_max, min_idx, delta,
         periods_draws_emax, is_ambiguity, measure, level):
     """ Solving the model using pure PYTHON code.

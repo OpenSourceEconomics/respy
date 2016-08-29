@@ -185,7 +185,7 @@ SUBROUTINE f2py_contributions(contribs, coeffs_a, coeffs_b, coeffs_edu, coeffs_h
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE f2py_solve(periods_rewards_systematic_int, states_number_period_int, mapping_state_idx_int, periods_emax_int, states_all_int, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, is_interpolated_int, num_draws_emax_int, num_periods_int, num_points_interp_int, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, min_idx_int, delta_int, periods_draws_emax_int, max_states_period_int, is_ambiguity_int, measure_int, level_int)
+SUBROUTINE f2py_solve(periods_rewards_systematic_int, states_number_period_int, mapping_state_idx_int, periods_emax_int, states_all_int, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, is_interpolated_int, num_points_interp_int, num_draws_emax_int, num_periods_int, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, min_idx_int, delta_int, periods_draws_emax_int, max_states_period_int, is_ambiguity_int, measure_int, level_int)
 
     ! The presence of max_states_period breaks the equality of interfaces. However, this is required so that the size of the return arguments is known from the beginning.
 
@@ -259,7 +259,7 @@ SUBROUTINE f2py_solve(periods_rewards_systematic_int, states_number_period_int, 
     IF (ALLOCATED(states_all)) DEALLOCATE(states_all)
 
     ! Call FORTRAN solution
-    CALL fort_solve(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax_int, delta, is_debug, is_interpolated, is_myopic, edu_start, edu_max, is_ambiguity, measure, level)
+    CALL fort_solve(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, periods_draws_emax_int, delta, is_debug, is_interpolated, num_points_interp, is_myopic, edu_start, edu_max, is_ambiguity, measure, level)
 
     ! Assign to initial objects for return to PYTHON
     periods_rewards_systematic_int = periods_rewards_systematic

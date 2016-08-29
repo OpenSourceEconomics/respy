@@ -337,9 +337,9 @@ class TestClass(object):
 
         # Check the full solution procedure
         base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-            shocks_cholesky, is_interpolated, num_draws_emax, num_periods,
-            num_points_interp, is_myopic, edu_start, is_debug, edu_max,
-            min_idx, delta)
+            shocks_cholesky, is_interpolated, num_points_interp,
+            num_draws_emax, num_periods, is_myopic, edu_start, is_debug,
+            edu_max, min_idx, delta)
 
         fort, _ = resfort_interface(respy_obj, 'simulate')
         py = pyth_solve(*base_args + (periods_draws_emax, is_ambiguity,
