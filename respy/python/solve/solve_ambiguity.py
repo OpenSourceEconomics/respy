@@ -21,6 +21,7 @@ def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
         is_success, message = True, 'Optimization terminated successfully.'
 
     else:
+        
         raise NotImplementedError
         # x_shift = get_worst_case(num_periods, num_draws_emax, period, k,
         #     draws_emax_transformed, rewards_systematic, edu_max, edu_start,
