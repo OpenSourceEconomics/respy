@@ -43,29 +43,13 @@ def pyth_solve(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
     # procedure is not called upon.
     record_solution_progress(3)
 
-    # Initialize containers, which contain a lot of missing values as we
-    # capture the tree structure in arrays of fixed dimension.
-    i, j = num_periods, max_states_period
-    periods_emax = np.tile(MISSING_FLOAT, (i, j))
+    periods_emax = pyth_backward_induction(num_periods,
+        is_myopic, max_states_period, periods_draws_emax, num_draws_emax,
+        states_number_period, periods_rewards_systematic, edu_max, edu_start,
+        mapping_state_idx, states_all, delta, is_debug, is_interpolated,
+        num_points_interp, shocks_cholesky, is_ambiguity, measure, level, True)
 
-    if is_myopic:
-        record_solution_progress(-2)
-
-        # All other objects remain set to MISSING_FLOAT. This align the
-        # treatment for the two special cases: (1) is_myopic and (2)
-        # is_interpolated.
-        for period, num_states in enumerate(states_number_period):
-            periods_emax[period, :num_states] = 0.0
-
-    else:
-        periods_emax = pyth_backward_induction(num_periods, max_states_period,
-            periods_draws_emax, num_draws_emax, states_number_period,
-            periods_rewards_systematic, edu_max, edu_start,
-            mapping_state_idx, states_all, delta, is_debug, is_interpolated,
-            num_points_interp, shocks_cholesky, is_ambiguity, measure, level,
-            True)
-
-        record_solution_progress(-1)
+    record_solution_progress(-1)
 
     # Collect return arguments in tuple
     args = (periods_rewards_systematic, states_number_period,

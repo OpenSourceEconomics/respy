@@ -156,14 +156,28 @@ def pyth_calculate_rewards_systematic(num_periods, states_number_period,
     return periods_rewards_systematic
 
 
-def pyth_backward_induction(num_periods, max_states_period, periods_draws_emax,
-        num_draws_emax, states_number_period, periods_rewards_systematic,
-        edu_max, edu_start, mapping_state_idx, states_all, delta, is_debug,
-        is_interpolated, num_points_interp, shocks_cholesky, is_ambiguity,
-        measure, level, is_write):
+def pyth_backward_induction(num_periods, is_myopic, max_states_period,
+        periods_draws_emax, num_draws_emax, states_number_period,
+        periods_rewards_systematic, edu_max, edu_start, mapping_state_idx,
+        states_all, delta, is_debug, is_interpolated, num_points_interp,
+        shocks_cholesky, is_ambiguity, measure, level, is_write):
     """ Backward induction procedure. There are two main threads to this
     function depending on whether interpolation is requested or not.
     """
+    # Initialize containers, which contain a lot of missing values as we
+    # capture the tree structure in arrays of fixed dimension.
+    i, j = num_periods, max_states_period
+    periods_emax = np.tile(MISSING_FLOAT, (i, j))
+
+    if is_myopic:
+        record_solution_progress(-2)
+
+        # All other objects remain set to MISSING_FLOAT. This align the
+        # treatment for the two special cases: (1) is_myopic and (2)
+        # is_interpolated.
+        for period, num_states in enumerate(states_number_period):
+            periods_emax[period, :num_states] = 0.0
+
     # Construct auxiliary objects
     shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
 

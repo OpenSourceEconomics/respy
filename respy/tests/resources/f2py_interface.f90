@@ -285,7 +285,7 @@ SUBROUTINE f2py_simulate(data_sim_int, periods_rewards_systematic_int, mapping_s
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE f2py_backward_induction(periods_emax_int, num_periods_int, max_states_period_int, periods_draws_emax_int, num_draws_emax_int, states_number_period_int, periods_rewards_systematic_int, edu_max_int, edu_start_int, mapping_state_idx_int, states_all_int, delta_int, is_debug_int, is_interpolated_int, num_points_interp_int, shocks_cholesky, is_ambiguity_int, measure_int, level_int, is_write)
+SUBROUTINE f2py_backward_induction(periods_emax_int, num_periods_int, is_myopic_int, max_states_period_int, periods_draws_emax_int, num_draws_emax_int, states_number_period_int, periods_rewards_systematic_int, edu_max_int, edu_start_int, mapping_state_idx_int, states_all_int, delta_int, is_debug_int, is_interpolated_int, num_points_interp_int, shocks_cholesky, is_ambiguity_int, measure_int, level_int, is_write)
 
     !/* external libraries      */
 
@@ -317,6 +317,7 @@ SUBROUTINE f2py_backward_induction(periods_emax_int, num_periods_int, max_states
 
     LOGICAL, INTENT(IN)             :: is_interpolated_int
     LOGICAL, INTENT(IN)             :: is_ambiguity_int
+    LOGICAL, INTENT(IN)             :: is_myopic_int
     LOGICAL, INTENT(IN)             :: is_debug_int
     LOGICAL, INTENT(IN)             :: is_write
 
@@ -336,7 +337,7 @@ SUBROUTINE f2py_backward_induction(periods_emax_int, num_periods_int, max_states
     IF(ALLOCATED(periods_emax)) DEALLOCATE(periods_emax)
 
     ! Call actual function of interest
-    CALL fort_backward_induction(periods_emax, num_periods_int, periods_draws_emax_int, states_number_period_int, periods_rewards_systematic_int, mapping_state_idx_int, states_all_int, shocks_cholesky, delta_int, is_debug_int, is_interpolated_int, num_points_interp_int, .False., edu_start_int, edu_max_int, is_ambiguity_int, measure_int, level_int, max_states_period_int, num_draws_emax_int, is_write)
+    CALL fort_backward_induction(periods_emax, num_periods_int, periods_draws_emax_int, states_number_period_int, periods_rewards_systematic_int, mapping_state_idx_int, states_all_int, shocks_cholesky, delta_int, is_debug_int, is_interpolated_int, num_points_interp_int, is_myopic_int, edu_start_int, edu_max_int, is_ambiguity_int, measure_int, level_int, max_states_period_int, num_draws_emax_int, is_write)
 
     ! Allocate to intermidiaries
     periods_emax_int = periods_emax

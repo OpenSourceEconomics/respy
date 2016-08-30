@@ -285,7 +285,7 @@ class TestClass(object):
         periods_rewards_systematic = pyth
 
         # Check backward induction procedure.
-        args = (num_periods, max_states_period, periods_draws_emax,
+        args = (num_periods, False, max_states_period, periods_draws_emax,
             num_draws_emax, states_number_period, periods_rewards_systematic,
             edu_max, edu_start, mapping_state_idx, states_all, delta,
             is_debug, is_interpolated, num_points_interp, shocks_cholesky,

@@ -30,25 +30,12 @@ def pyth_contributions(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         states_number_period, states_all, edu_start, coeffs_a, coeffs_b,
         coeffs_edu, coeffs_home, max_states_period)
 
-    # Initialize containers, which contain a lot of missing values as we
-    # capture the tree structure in arrays of fixed dimension.
-    i, j = num_periods, max_states_period
-    periods_emax = np.tile(MISSING_FLOAT, (i, j))
-
-    if is_myopic:
-        # All other objects remain set to MISSING_FLOAT. This align the
-        # treatment for the two special cases: (1) is_myopic and (2)
-        # is_interpolated.
-        for period, num_states in enumerate(states_number_period):
-            periods_emax[period, :num_states] = 0.0
-
-    else:
-        periods_emax = pyth_backward_induction(num_periods, max_states_period,
-            periods_draws_emax, num_draws_emax, states_number_period,
-            periods_rewards_systematic, edu_max, edu_start,
-            mapping_state_idx, states_all, delta, is_debug, is_interpolated,
-            num_points_interp, shocks_cholesky, is_ambiguity, measure, level,
-            False)
+    periods_emax = pyth_backward_induction(num_periods, is_myopic,
+        max_states_period, periods_draws_emax, num_draws_emax,
+        states_number_period, periods_rewards_systematic, edu_max, edu_start,
+        mapping_state_idx, states_all, delta, is_debug, is_interpolated,
+        num_points_interp, shocks_cholesky, is_ambiguity, measure, level,
+        False)
 
     # Initialize auxiliary objects
     contribs = np.tile(-HUGE_FLOAT, (num_agents_est * num_periods))
