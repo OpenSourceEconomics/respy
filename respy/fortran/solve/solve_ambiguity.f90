@@ -21,49 +21,6 @@ MODULE solve_ambiguity
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-FUNCTION kl_divergence(mean_old, cov_old, mean_new, cov_new)
-
-    !/* external objects        */
-
-    REAL(our_dble)                      :: kl_divergence
-
-    REAL(our_dble), INTENT(IN)          :: cov_old(:, :)
-    REAL(our_dble), INTENT(IN)          :: cov_new(:, :)
-    REAL(our_dble), INTENT(IN)          :: mean_old(:)
-    REAL(our_dble), INTENT(IN)          :: mean_new(:)
-
-    !/* internal objects        */
-
-    INTEGER(our_int)                    :: num_dims
-
-    REAL(our_dble), ALLOCATABLE         :: cov_old_inv(:, :)
-    REAL(our_dble), ALLOCATABLE         :: mean_diff(:, :)
-
-    REAL(our_dble)                      :: comp_b(1, 1)
-    REAL(our_dble)                      :: comp_a
-    REAL(our_dble)                      :: comp_c
-
-!------------------------------------------------------------------------------
-! Algorithm
-!------------------------------------------------------------------------------
-
-    num_dims = SIZE(mean_old)
-
-    ALLOCATE(cov_old_inv(num_dims, num_dims))
-    ALLOCATE(mean_diff(num_dims, 1))
-
-    mean_diff = RESHAPE(mean_old, (/num_dims, 1/)) - RESHAPE(mean_new, (/num_dims, 1/))
-    cov_old_inv = inverse(cov_old, num_dims)
-
-    comp_a = trace(MATMUL(cov_old_inv, cov_new))
-    comp_b = MATMUL(MATMUL(TRANSPOSE(mean_diff), cov_old_inv), mean_diff)
-    comp_c = LOG(determinant(cov_old) / determinant(cov_new))
-
-    kl_divergence = half_dble * (comp_a + comp_b(1, 1) - num_dims + comp_c)
-
-END FUNCTION
-!******************************************************************************
-!******************************************************************************
 SUBROUTINE construct_emax_ambiguity(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, measure, level, is_write)
 
     !/* external objects    */
@@ -108,9 +65,8 @@ SUBROUTINE construct_emax_ambiguity(emax, period, k, draws_emax_transformed, rew
         message = 'Optimization terminated successfully.'
 
     ELSE
-        PRINT *, "NotImplemented"
-        STOP
-        !CALL get_worst_case(emax, draws_emax_transformed, period, k, rewards_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max, level)
+
+        CALL get_worst_case(emax, draws_emax_transformed, period, k, rewards_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max, level)
     END IF
 
 
@@ -144,6 +100,9 @@ SUBROUTINE get_worst_case(emax, draws_emax_transformed, period, k, rewards_syste
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
+
+PRINT *, "NotImplemented, yet"
+STOP
 
 END SUBROUTINE
 !******************************************************************************
@@ -182,6 +141,49 @@ SUBROUTINE criterion_ambiguity(emax, x, draws_emax_transformed, period, k, rewar
     CALL construct_emax_risk(emax, period, k, draws_relevant, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
 
 END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+FUNCTION kl_divergence(mean_old, cov_old, mean_new, cov_new)
+
+    !/* external objects        */
+
+    REAL(our_dble)                      :: kl_divergence
+
+    REAL(our_dble), INTENT(IN)          :: cov_old(:, :)
+    REAL(our_dble), INTENT(IN)          :: cov_new(:, :)
+    REAL(our_dble), INTENT(IN)          :: mean_old(:)
+    REAL(our_dble), INTENT(IN)          :: mean_new(:)
+
+    !/* internal objects        */
+
+    INTEGER(our_int)                    :: num_dims
+
+    REAL(our_dble), ALLOCATABLE         :: cov_old_inv(:, :)
+    REAL(our_dble), ALLOCATABLE         :: mean_diff(:, :)
+
+    REAL(our_dble)                      :: comp_b(1, 1)
+    REAL(our_dble)                      :: comp_a
+    REAL(our_dble)                      :: comp_c
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    num_dims = SIZE(mean_old)
+
+    ALLOCATE(cov_old_inv(num_dims, num_dims))
+    ALLOCATE(mean_diff(num_dims, 1))
+
+    mean_diff = RESHAPE(mean_old, (/num_dims, 1/)) - RESHAPE(mean_new, (/num_dims, 1/))
+    cov_old_inv = inverse(cov_old, num_dims)
+
+    comp_a = trace(MATMUL(cov_old_inv, cov_new))
+    comp_b = MATMUL(MATMUL(TRANSPOSE(mean_diff), cov_old_inv), mean_diff)
+    comp_c = LOG(determinant(cov_old) / determinant(cov_new))
+
+    kl_divergence = half_dble * (comp_a + comp_b(1, 1) - num_dims + comp_c)
+
+END FUNCTION
 !******************************************************************************
 !******************************************************************************
 END MODULE

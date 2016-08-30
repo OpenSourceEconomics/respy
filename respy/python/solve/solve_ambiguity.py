@@ -20,13 +20,18 @@ def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
         x_shift, div = [-level, -level], -level
         is_success, message = True, 'Optimization terminated successfully.'
 
+    elif measure == 'kl':
+        opt = get_worst_case(num_periods, num_draws_emax, period, k,
+             draws_emax_transformed, rewards_systematic, edu_max, edu_start,
+             periods_emax, states_all, mapping_state_idx, delta, shocks_cov,
+             level)
+
+        x_shift = opt['x']
+        div = constraint_ambiguity(x_shift, shocks_cov, level) - level
+        is_success, message = opt['success'], opt['message']
+
     else:
-        
         raise NotImplementedError
-        # x_shift = get_worst_case(num_periods, num_draws_emax, period, k,
-        #     draws_emax_transformed, rewards_systematic, edu_max, edu_start,
-        #     periods_emax, states_all, mapping_state_idx, delta, shocks_cov,
-        #     level)
 
     if is_write:
         record_ambiguity(period, k, x_shift, div, is_success, message)
@@ -67,24 +72,10 @@ def get_worst_case(num_periods, num_draws_emax, period, k,
     # Stabilization. If the optimization fails the starting values are
     # used otherwise it happens that the constraint is not satisfied by far
     # at the return values from the interface.
- #   if not opt['success']:
- #       opt['x'] = x0
+    if not opt['success']:
+        opt['x'] = x0
 
-    # TODO: Channel debug, write
-#    if True:
-#        div = constraint_ambiguity(opt['x'], shocks_cov, level)
-#        write_result(period, k, opt, div)
-    # Logging result to file
- #   if is_debug:
-        # Evaluate divergence at final value.
-#        div = divergence(opt['x'], shocks_cov, level) - level
-#        _write_result(period, k, opt, div)
-
-
-    x_shift = opt['x']
-
-
-    return x_shift
+    return opt
 
 
 def criterion_ambiguity(x, num_periods, num_draws_emax, period, k,
