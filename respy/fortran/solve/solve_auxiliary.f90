@@ -238,7 +238,7 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_backward_induction(periods_emax, num_periods, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, num_points_interp, is_myopic, edu_start, edu_max, is_ambiguity, measure, level, is_write)
+SUBROUTINE fort_backward_induction(periods_emax, num_periods, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, num_points_interp, is_myopic, edu_start, edu_max, is_ambiguity, measure, level, max_states_period, num_draws_emax, is_write)
 
     !/* external objects        */
 
@@ -253,7 +253,9 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, periods_draws_emax
     INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 4)
     INTEGER(our_int), INTENT(IN)        :: states_number_period(num_periods)
+    INTEGER(our_int), INTENT(IN)        :: max_states_period
     INTEGER(our_int), INTENT(IN)        :: num_points_interp
+    INTEGER(our_int), INTENT(IN)        :: num_draws_emax
     INTEGER(our_int), INTENT(IN)        :: num_periods
     INTEGER(our_int), INTENT(IN)        :: edu_start
     INTEGER(our_int), INTENT(IN)        :: edu_max
