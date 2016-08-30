@@ -115,7 +115,7 @@ PROGRAM resfort_parallel_slave
 
             IF (rank == zero_int) CALL record_solution(3)
 
-            CALL fort_backward_induction_slave(periods_emax, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, num_points_interp, is_myopic, edu_start, edu_max, is_ambiguity, measure, level, num_states_slaves, .True.)
+            CALL fort_backward_induction_slave(periods_emax, num_periods, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, num_points_interp, is_myopic, edu_start, edu_max, is_ambiguity, measure, level, num_states_slaves, .True.)
 
             IF (rank == zero_int .AND. .NOT. is_myopic) THEN
                 CALL record_solution(-1)
@@ -150,7 +150,7 @@ PROGRAM resfort_parallel_slave
 
             CALL fort_calculate_rewards_systematic(periods_rewards_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start)
 
-            CALL fort_backward_induction_slave(periods_emax, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, num_points_interp, is_myopic, edu_start, edu_max, is_ambiguity, measure, level, num_states_slaves, .False.)
+            CALL fort_backward_induction_slave(periods_emax, num_periods, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, num_points_interp, is_myopic, edu_start, edu_max, is_ambiguity, measure, level, num_states_slaves, .False.)
 
             CALL fort_contributions(contribs(lower_bound:upper_bound), periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_slave, periods_draws_prob, delta, tau, edu_start, edu_max)
 
