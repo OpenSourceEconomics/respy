@@ -58,14 +58,14 @@ SUBROUTINE fort_solve(periods_rewards_systematic, states_number_period, mapping_
 
     CALL record_solution(1)
 
-    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, edu_start, edu_max)
+    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, edu_start, edu_max, min_idx)
 
     CALL record_solution(-1)
 
 
     CALL record_solution(2)
 
-    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start)
+    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, edu_start, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, max_states_period)
 
     CALL record_solution(-1)
 

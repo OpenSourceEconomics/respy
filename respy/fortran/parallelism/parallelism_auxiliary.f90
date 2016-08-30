@@ -211,7 +211,7 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, coeffs_a, coeffs_b
     ! Some ingredients for the evaluation of the criterion function need to be created once and shared globally.
     CALL get_free_optim_paras(x_all_start, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, all_free)
 
-    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, edu_start, edu_max)
+    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, edu_start, edu_max, min_idx)
 
     CALL get_free_optim_paras(x_free_start, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed)
 
@@ -437,9 +437,9 @@ SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period,
     CALL MPI_Bcast(x_all_current, 26, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
 
 
-    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, edu_start, edu_max)
+    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, edu_start, edu_max, min_idx)
 
-    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, states_number_period, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, edu_start)
+    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, edu_start, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, max_states_period)
 
 
     ALLOCATE(periods_emax(num_periods, max_states_period))
