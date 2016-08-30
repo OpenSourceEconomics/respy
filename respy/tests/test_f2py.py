@@ -11,6 +11,7 @@ import pytest
 import scipy
 
 from respy.python.solve.solve_auxiliary import pyth_calculate_rewards_systematic
+from respy.python.solve.solve_ambiguity import construct_emax_ambiguity
 from respy.python.shared.shared_auxiliary import replace_missing_values
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
 from respy.python.solve.solve_auxiliary import pyth_backward_induction
@@ -18,12 +19,12 @@ from respy.python.solve.solve_auxiliary import get_simulated_indicator
 from respy.python.solve.solve_auxiliary import get_exogenous_variables
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.solve.solve_auxiliary import get_endogenous_variable
+from respy.python.evaluate.evaluate_python import pyth_contributions
 from respy.python.estimate.estimate_auxiliary import get_optim_paras
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.python.shared.shared_auxiliary import dist_model_paras
 from respy.python.estimate.estimate_python import pyth_criterion
 from respy.python.simulate.simulate_python import pyth_simulate
-from respy.python.evaluate.evaluate_python import pyth_contributions
 from respy.python.solve.solve_auxiliary import get_predictions
 from respy.python.solve.solve_risk import construct_emax_risk
 from respy.python.shared.shared_auxiliary import get_cholesky
@@ -74,10 +75,15 @@ class TestClass(object):
         # Extract class attributes
         periods_rewards_systematic, states_number_period, mapping_state_idx, \
             periods_emax, num_periods, states_all, num_draws_emax, edu_start, \
-            edu_max, delta = dist_class_attributes(respy_obj,
-                'periods_rewards_systematic', 'states_number_period',
-                'mapping_state_idx', 'periods_emax', 'num_periods',
-                'states_all', 'num_draws_emax', 'edu_start', 'edu_max', 'delta')
+            edu_max, delta, level, measure, model_paras = \
+                dist_class_attributes(respy_obj,
+                    'periods_rewards_systematic', 'states_number_period',
+                    'mapping_state_idx', 'periods_emax', 'num_periods',
+                    'states_all', 'num_draws_emax', 'edu_start', 'edu_max',
+                    'delta', 'level', 'measure', 'model_paras')
+
+        shocks_cholesky = model_paras['shocks_cholesky']
+        shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
 
         # Sample draws
         draws_standard = np.random.multivariate_normal(np.zeros(4),
@@ -99,6 +105,16 @@ class TestClass(object):
         f90 = fort_debug.wrapper_construct_emax_risk(*args)
 
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
+
+        args = (num_periods, num_draws_emax, period, k, draws_standard,
+            rewards_systematic, edu_max, edu_start, periods_emax, states_all,
+            mapping_state_idx, delta, shocks_cov, measure, level, False)
+
+        py = construct_emax_ambiguity(*args)
+        f90 = fort_debug.wrapper_construct_emax_ambiguity(*args)
+
+        np.testing.assert_allclose(py, f90)
+
 
     def test_2(self):
         """ Compare results between FORTRAN and PYTHON of selected

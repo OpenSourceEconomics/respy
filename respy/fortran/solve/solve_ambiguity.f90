@@ -21,7 +21,7 @@ MODULE solve_ambiguity
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE construct_emax_ambiguity(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, measure, level, is_write)
+SUBROUTINE construct_emax_ambiguity(emax, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, measure, level, is_write)
 
     !/* external objects    */
 
@@ -29,6 +29,8 @@ SUBROUTINE construct_emax_ambiguity(emax, period, k, draws_emax_transformed, rew
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
+    INTEGER(our_int), INTENT(IN)    :: num_draws_emax
+    INTEGER(our_int), INTENT(IN)    :: num_periods
     INTEGER(our_int), INTENT(IN)    :: edu_start
     INTEGER(our_int), INTENT(IN)    :: edu_max
     INTEGER(our_int), INTENT(IN)    :: period
@@ -54,6 +56,8 @@ SUBROUTINE construct_emax_ambiguity(emax, period, k, draws_emax_transformed, rew
 
     LOGICAL                         :: is_success
 
+
+
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
@@ -66,19 +70,29 @@ SUBROUTINE construct_emax_ambiguity(emax, period, k, draws_emax_transformed, rew
 
     ELSE
 
-        CALL get_worst_case(emax, draws_emax_transformed, period, k, rewards_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max, level)
+        ! Parameterizations for optimizations
+        x_start = zero_dble
+        maxiter = 100000000_our_int
+        ftol = 1e-06_our_dble
+        tiny = 1.4901161193847656e-08
+
+
+        !CALL get_worst_case(emax, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, level)
+
     END IF
 
 
-    IF(is_write) CALL record_ambiguity(period, k, x_shift, div, is_success, message)
+    PRINT *, "NotImplemented, yet"
+    STOP
 
+    IF(is_write) CALL record_ambiguity(period, k, x_shift, div, is_success, message)
 
     CALL criterion_ambiguity(emax, x_shift, draws_emax_transformed, period, k, rewards_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max)
 
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_worst_case(emax, draws_emax_transformed, period, k, rewards_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max, level)
+SUBROUTINE get_worst_case(emax, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, level)
 
     !/* external objects    */
 
@@ -86,6 +100,8 @@ SUBROUTINE get_worst_case(emax, draws_emax_transformed, period, k, rewards_syste
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
+    INTEGER(our_int), INTENT(IN)    :: num_draws_emax
+    INTEGER(our_int), INTENT(IN)    :: num_periods
     INTEGER(our_int), INTENT(IN)    :: edu_start
     INTEGER(our_int), INTENT(IN)    :: edu_max
     INTEGER(our_int), INTENT(IN)    :: period
@@ -94,6 +110,7 @@ SUBROUTINE get_worst_case(emax, draws_emax_transformed, period, k, rewards_syste
     REAL(our_dble), INTENT(IN)      :: periods_emax(num_periods, max_states_period)
     REAL(our_dble), INTENT(IN)      :: draws_emax_transformed(num_draws_emax, 4)
     REAL(our_dble), INTENT(IN)      :: rewards_systematic(4)
+    REAL(our_dble), INTENT(IN)      :: shocks_cov(4, 4)
     REAL(our_dble), INTENT(IN)      :: level
     REAL(our_dble), INTENT(IN)      :: delta
 
@@ -101,8 +118,6 @@ SUBROUTINE get_worst_case(emax, draws_emax_transformed, period, k, rewards_syste
 ! Algorithm
 !------------------------------------------------------------------------------
 
-PRINT *, "NotImplemented, yet"
-STOP
 
 END SUBROUTINE
 !******************************************************************************

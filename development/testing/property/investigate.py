@@ -54,8 +54,8 @@ for i in range(300):
     print("seed ", i)
     np.random.seed(seed)
 
-    method = 'test_' + str(np.random.choice(range(1, 11)))
-    print(module, method)
+    #method = 'test_' + str(np.random.choice(range(1, 11)))
+    #print(module, method)
 
 
     mod = importlib.import_module(module)
