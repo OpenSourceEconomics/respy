@@ -49,7 +49,7 @@ SUBROUTINE construct_emax_ambiguity(emax, num_periods, num_draws_emax, period, k
 
     !/* internals objects    */
 
-    REAL(our_dble)                  :: x_shift(2), x_start(2) = zero_dble, x_internal(2)
+    REAL(our_dble)                  :: x_shift(2), x_start(2) = zero_dble
     REAL(our_dble)                  :: div, ftol, tiny
 
     CHARACTER(100)                  :: message
@@ -79,7 +79,7 @@ SUBROUTINE construct_emax_ambiguity(emax, num_periods, num_draws_emax, period, k
         tiny = 1.4901161193847656e-08
 
 
-        CALL get_worst_case(x_internal, x_start, maxiter, ftol, tiny, num_draws_emax, draws_emax_transformed, period, k, rewards_systematic, edu_max, edu_start, mapping_state_idx, states_all, num_periods, periods_emax, delta, is_debug, shocks_cov, level)
+        CALL get_worst_case(x_shift, x_start, maxiter, ftol, tiny, num_draws_emax, draws_emax_transformed, period, k, rewards_systematic, edu_max, edu_start, mapping_state_idx, states_all, num_periods, periods_emax, delta, is_debug, shocks_cov, level)
 
             PRINT *, "NotImplemented, yet"
             STOP
@@ -88,7 +88,7 @@ SUBROUTINE construct_emax_ambiguity(emax, num_periods, num_draws_emax, period, k
 
     IF(is_write) CALL record_ambiguity(period, k, x_shift, div, is_success, message)
 
-    emax = criterion_ambiguity(x_shift, draws_emax_transformed, period, k, rewards_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max)
+    emax = criterion_ambiguity(x_shift, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
 
 END SUBROUTINE
 !*******************************************************************************
@@ -187,10 +187,10 @@ SUBROUTINE get_worst_case(x_internal, x_start, maxiter, ftol, tiny, num_draws_em
     is_finished = .False.
 
     ! Initialize criterion function at starting values
-    F = criterion_ambiguity(x, draws_emax_transformed, period, k, rewards_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max)
+    F = criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
 
 
-    G(:2) = criterion_ambiguity_derivative(x, draws_emax_transformed, period, k, rewards_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max)
+    G(:2) = criterion_ambiguity_derivative(x, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
 
     ! ! Initialize constraint at starting values
     ! C = divergence(X, shocks_cov, level)
@@ -254,7 +254,7 @@ SUBROUTINE get_worst_case(x_internal, x_start, maxiter, ftol, tiny, num_draws_em
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-FUNCTION criterion_ambiguity_derivative(x, draws_emax_transformed, period, k, rewards_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max)
+FUNCTION criterion_ambiguity_derivative(x, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
 
     !/* external objects        */
 
@@ -262,6 +262,8 @@ FUNCTION criterion_ambiguity_derivative(x, draws_emax_transformed, period, k, re
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
+    INTEGER(our_int), INTENT(IN)    :: num_draws_emax
+    INTEGER(our_int), INTENT(IN)    :: num_periods
     INTEGER(our_int), INTENT(IN)    :: edu_start
     INTEGER(our_int), INTENT(IN)    :: edu_max
     INTEGER(our_int), INTENT(IN)    :: period
@@ -290,15 +292,15 @@ FUNCTION criterion_ambiguity_derivative(x, draws_emax_transformed, period, k, re
     ei = zero_dble
 
     ! Evaluate baseline
-    f0 = criterion_ambiguity(x, draws_emax_transformed, period, k, rewards_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max)
+    f0 = criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
 
-    DO j = 1, num_free
+    DO j = 1, 2
 
         ei(j) = one_dble
 
         d = dfunc_eps * ei
 
-        f1 = criterion_ambiguity(x + d, draws_emax_transformed, period, k, rewards_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max)
+        f1 = criterion_ambiguity(x + d, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
 
         criterion_ambiguity_derivative(j) = (f1 - f0) / d(j)
 
@@ -339,7 +341,7 @@ SUBROUTINE get_worst_case_old(emax, num_periods, num_draws_emax, period, k, draw
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-FUNCTION criterion_ambiguity(x, draws_emax_transformed, period, k, rewards_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max)
+FUNCTION criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
 
     !/* external objects    */
 
@@ -347,6 +349,8 @@ FUNCTION criterion_ambiguity(x, draws_emax_transformed, period, k, rewards_syste
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
+    INTEGER(our_int), INTENT(IN)    :: num_draws_emax
+    INTEGER(our_int), INTENT(IN)    :: num_periods
     INTEGER(our_int), INTENT(IN)    :: edu_start
     INTEGER(our_int), INTENT(IN)    :: edu_max
     INTEGER(our_int), INTENT(IN)    :: period

@@ -526,7 +526,7 @@ SUBROUTINE wrapper_svd(U, S, VT, A, m)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE wrapper_criterion_ambiguity(emax, x, draws_emax_transformed, period, k, rewards_systematic, mapping_state_idx_int, states_all_int,  periods_emax_int, delta_int, edu_start_int, edu_max_int)
+SUBROUTINE wrapper_criterion_ambiguity(emax, x, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic, edu_start_int, edu_max_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta_int)
 
     !/* external libraries      */
 
@@ -548,8 +548,11 @@ SUBROUTINE wrapper_criterion_ambiguity(emax, x, draws_emax_transformed, period, 
 
     INTEGER, INTENT(IN)             :: mapping_state_idx_int(:,:,:,:,:)
     INTEGER, INTENT(IN)             :: states_all_int(:,:,:)
+    INTEGER, INTENT(IN)             :: num_draws_emax_int
+    INTEGER, INTENT(IN)             :: num_periods_int
     INTEGER, INTENT(IN)             :: edu_start_int
     INTEGER, INTENT(IN)             :: edu_max_int
+
     INTEGER, INTENT(IN)             :: period
     INTEGER, INTENT(IN)             :: k
 
@@ -561,10 +564,58 @@ SUBROUTINE wrapper_criterion_ambiguity(emax, x, draws_emax_transformed, period, 
     max_states_period = SIZE(states_all_int, 2)
     min_idx = SIZE(mapping_state_idx_int, 4)
 
-    num_draws_emax = SIZE(draws_emax_transformed, 1)
-    num_periods = SIZE(periods_emax_int, 1)
+    num_draws_emax = num_draws_emax_int
+    num_periods = num_periods_int
 
-    emax = criterion_ambiguity(x, draws_emax_transformed, period, k, rewards_systematic, mapping_state_idx_int, states_all_int, periods_emax_int, delta_int, edu_start_int, edu_max_int)
+    emax = criterion_ambiguity(x, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta_int)
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE wrapper_criterion_ambiguity_derivative(grad, x, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic, edu_start_int, edu_max_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta_int, dfunc_eps_int)
+
+    !/* external libraries      */
+
+    USE resfort_library
+
+    !/* setup                   */
+
+    IMPLICIT NONE
+
+    !/* external objects        */
+
+    DOUBLE PRECISION, INTENT(OUT)   :: grad(2)
+
+    DOUBLE PRECISION, INTENT(IN)    :: draws_emax_transformed(:,:)
+    DOUBLE PRECISION, INTENT(IN)    :: periods_emax_int(:,:)
+    DOUBLE PRECISION, INTENT(IN)    :: rewards_systematic(:)
+    DOUBLE PRECISION, INTENT(IN)    :: dfunc_eps_int
+    DOUBLE PRECISION, INTENT(IN)    :: delta_int
+    DOUBLE PRECISION, INTENT(IN)    :: x(:)
+
+    INTEGER, INTENT(IN)             :: mapping_state_idx_int(:,:,:,:,:)
+    INTEGER, INTENT(IN)             :: states_all_int(:,:,:)
+    INTEGER, INTENT(IN)             :: num_draws_emax_int
+    INTEGER, INTENT(IN)             :: num_periods_int
+    INTEGER, INTENT(IN)             :: edu_start_int
+    INTEGER, INTENT(IN)             :: edu_max_int
+
+    INTEGER, INTENT(IN)             :: period
+    INTEGER, INTENT(IN)             :: k
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    ! Assign global RESFORT variables
+    max_states_period = SIZE(states_all_int, 2)
+    min_idx = SIZE(mapping_state_idx_int, 4)
+
+    num_draws_emax = num_draws_emax_int
+    num_periods = num_periods_int
+    dfunc_eps = dfunc_eps_int
+
+    grad = criterion_ambiguity_derivative(x, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta_int)
 
 END SUBROUTINE
 !******************************************************************************

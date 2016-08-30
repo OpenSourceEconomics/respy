@@ -105,7 +105,6 @@ class TestClass(object):
 
         py = construct_emax_risk(*args)
         f90 = fort_debug.wrapper_construct_emax_risk(*args)
-
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
         args = (num_periods, num_draws_emax, period, k, draws_standard,
@@ -114,26 +113,23 @@ class TestClass(object):
 
         py = construct_emax_ambiguity(*args)
         f90 = fort_debug.wrapper_construct_emax_ambiguity(*args)
-
         np.testing.assert_allclose(py, f90)
 
         x = np.random.uniform(-1, 1, size=2)
 
+        args = (num_periods, num_draws_emax, period, k, draws_standard,
+            rewards_systematic, edu_max, edu_start, periods_emax, states_all,
+            mapping_state_idx, delta)
 
-        py = criterion_ambiguity(x, num_periods, num_draws_emax, period, k,
-            draws_standard, rewards_systematic, edu_max, edu_start,
-            periods_emax, states_all, mapping_state_idx, delta)
-
-        f90 = fort_debug.wrapper_criterion_ambiguity(x,
-            draws_standard, period, k, rewards_systematic,
-            mapping_state_idx, states_all, periods_emax, delta,
-            edu_start, edu_max)
-
+        py = criterion_ambiguity(x, *args)
+        f90 = fort_debug.wrapper_criterion_ambiguity(x, *args)
         np.testing.assert_allclose(py, f90)
 
-        eps = derivatives[1]
-        #print(approx_fprime(x, criterion_ambiguity, eps, args))
-        raise SystemExit
+        dfunc_eps = derivatives[1]
+        py = approx_fprime(x, criterion_ambiguity, dfunc_eps, *args)
+        f90 = fort_debug.wrapper_criterion_ambiguity_derivative(x, *args + (
+            dfunc_eps, ))
+        np.testing.assert_allclose(py, f90)
 
     def test_2(self):
         """ Compare results between FORTRAN and PYTHON of selected
