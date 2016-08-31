@@ -59,45 +59,42 @@ class TestClass(object):
 
                 np.testing.assert_allclose(base_val, crit_val)
 
+    def test_2(self):
+        """ This test ensures that it does not matter which version runs
+        the ambiguity codes.
+        """
 
-        def test_2(self):
-            """ This test ensures that it does not matter which version runs
-            the ambiguity codes.
-            """
+        max_draws = np.random.randint(10, 100)
 
-            max_draws = np.random.randint(10, 100)
+        constr = dict()
+        constr['flag_parallelism'] = False
+        constr['max_draws'] = max_draws
+        constr['level'] = np.random.uniform()
+        constr['maxfun'] = 0
 
-            constr = dict()
-            constr['flag_parallelism'] = True
-            constr['max_draws'] = max_draws
-            # TODO: LAter simply a level larger than zero.
-            constr['level'] = 0.00
-            constr['maxfun'] = 0
+        init_dict = generate_init(constr)
 
-            init_dict = generate_init(constr)
+        num_periods = init_dict['BASICS']['periods']
+        write_draws(num_periods, max_draws)
+        write_interpolation_grid('test.respy.ini')
 
-            # We also check explicitly across the different program implementations.
-            num_periods = init_dict['BASICS']['periods']
-            write_draws(num_periods, max_draws)
-            write_interpolation_grid('test.respy.ini')
+        versions = ['PYTHON']
+        if IS_FORTRAN:
+            versions += ['FORTRAN']
 
-            versions = ['PYTHON']
-            if IS_FORTRAN:
-                versions += ['FORTRAN']
+        base_val = None
+        for version in versions:
+            print(version)
+            init_dict['PROGRAM']['version'] = version
 
-            base_val = None
-            for version in versions:
+            print_init_dict(init_dict)
 
-                init_dict['PROGRAM']['version'] = version
+            respy_obj = RespyCls('test.respy.ini')
 
-                print_init_dict(init_dict)
+            simulate(respy_obj)
+            _, crit_val = estimate(respy_obj)
 
-                respy_obj = RespyCls('test.respy.ini')
+            if base_val is None:
+                base_val = crit_val
 
-                simulate(respy_obj)
-                _, crit_val = estimate(respy_obj)
-
-                if base_val is None:
-                    base_val = crit_val
-
-                np.testing.assert_allclose(base_val, crit_val)
+            np.testing.assert_allclose(base_val, crit_val)
