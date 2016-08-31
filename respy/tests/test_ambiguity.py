@@ -18,46 +18,33 @@ class TestClass(object):
     """
     def test_1(self):
         """ This test ensures that using the ambiguity functionality with a
-        level of zero yields the same results as using the risk functionality
+        tiny level yields the same results as using the risk functionality
         directly.
 
         """
-        max_draws = np.random.randint(10, 100)
-
         constr = dict()
-        constr['flag_parallelism'] = False
-        constr['max_draws'] = max_draws
-        constr['level'] = 0.01
         constr['maxfun'] = 0
+        #s Thid scan go later.
+        constr['flag_parallelism'] = False
 
         init_dict = generate_init(constr)
 
-        # We also check explicitly across the different program implementations.
-        num_periods = init_dict['BASICS']['periods']
-        write_draws(num_periods, max_draws)
-        write_interpolation_grid('test.respy.ini')
-
-        versions = ['PYTHON']
-        if IS_FORTRAN:
-            versions += ['FORTRAN']
-
         base_val = None
-        for version in versions:
-            for is_ambiguity in [True, False]:
+        for level in [0.00, 0.00000000001]:
 
-                init_dict['PROGRAM']['version'] = version
+            init_dict['AMBIGUITY']['level'] = level
 
-                print_init_dict(init_dict)
+            print_init_dict(init_dict)
 
-                respy_obj = RespyCls('test.respy.ini')
+            respy_obj = RespyCls('test.respy.ini')
 
-                simulate(respy_obj)
-                _, crit_val = estimate(respy_obj)
+            simulate(respy_obj)
+            _, crit_val = estimate(respy_obj)
 
-                if base_val is None:
-                    base_val = crit_val
+            if base_val is None:
+                base_val = crit_val
 
-                np.testing.assert_allclose(base_val, crit_val)
+            np.testing.assert_allclose(base_val, crit_val)
 
     def test_2(self):
         """ This test ensures that it does not matter which version runs
@@ -98,3 +85,4 @@ class TestClass(object):
                 base_val = crit_val
 
             np.testing.assert_allclose(base_val, crit_val)
+            print(base_val - crit_val)

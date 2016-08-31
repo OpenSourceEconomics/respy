@@ -17,7 +17,7 @@ def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
         mapping_state_idx, delta)
 
     if measure == 'abs':
-        x_shift, div = [-level, -level], -level
+        x_shift, div = [-level, -level], level
         is_success, message = True, 'Optimization terminated successfully.'
 
     elif measure == 'kl':
@@ -26,7 +26,7 @@ def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
             rewards_systematic, edu_max, edu_start, periods_emax, states_all,
             mapping_state_idx, delta, shocks_cov, level)
 
-        div = constraint_ambiguity(x_shift, shocks_cov, level) - level
+        div = -(constraint_ambiguity(x_shift, shocks_cov, level) - level)
 
     else:
         raise NotImplementedError

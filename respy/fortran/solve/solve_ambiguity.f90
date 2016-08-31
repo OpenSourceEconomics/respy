@@ -49,16 +49,12 @@ SUBROUTINE construct_emax_ambiguity(emax, num_periods, num_draws_emax, period, k
 
     !/* internals objects    */
 
-    REAL(our_dble)                  :: x_shift(2), x_start(2) = zero_dble
-    REAL(our_dble)                  :: div, ftol
+    REAL(our_dble)                  :: x_shift(2)
+    REAL(our_dble)                  :: div
 
     CHARACTER(100)                  :: message
 
     LOGICAL                         :: is_success
-
-    INTEGER(our_int)                :: maxiter
-
-
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -66,13 +62,15 @@ SUBROUTINE construct_emax_ambiguity(emax, num_periods, num_draws_emax, period, k
 
     IF(TRIM(measure) == 'abs') THEN
         x_shift = (/-level, -level/)
-        div = -level
+        div = level
         is_success = .True.
         message = 'Optimization terminated successfully.'
 
     ELSE
 
         CALL get_worst_case(x_shift, is_success, message, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, level)
+
+        div = -(constraint_ambiguity(x_shift, shocks_cov, level) - level)
 
     END IF
 
@@ -119,7 +117,6 @@ SUBROUTINE get_worst_case(x_shift, is_success, message, num_periods, num_draws_e
 
 
 
-    REAL(our_dble)                  :: div
     REAL(our_dble)                  :: x_start(2)
     LOGICAL                         :: is_finished
 
@@ -195,12 +192,11 @@ SUBROUTINE get_worst_case(x_shift, is_success, message, num_periods, num_draws_e
     ! Iterate until completion
     DO WHILE (.NOT. is_finished)
 
-
         ! Evaluate criterion function and constraints
         IF (MODE == one_int) THEN
 
-                F = criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
-                C = constraint_ambiguity(x, shocks_cov, level)
+            F = criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
+            C = constraint_ambiguity(x, shocks_cov, level)
 
          ! Evaluate gradient of criterion function and constraints. Note that the
          ! A is of dimension (1, N + 1) and the last element needs to always
