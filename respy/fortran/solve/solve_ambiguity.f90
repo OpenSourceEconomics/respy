@@ -78,13 +78,9 @@ SUBROUTINE construct_emax_ambiguity(emax, num_periods, num_draws_emax, period, k
         ftol = 1e-06_our_dble
         tiny = 1.4901161193847656e-08
 
-
         CALL get_worst_case(x_shift, x_start, maxiter, ftol, tiny, num_draws_emax, draws_emax_transformed, period, k, rewards_systematic, edu_max, edu_start, mapping_state_idx, states_all, num_periods, periods_emax, delta, is_debug, shocks_cov, level)
 
-            PRINT *, "NotImplemented, yet"
-            STOP
     END IF
-
 
     IF(is_write) CALL record_ambiguity(period, k, x_shift, div, is_success, message)
 
@@ -189,67 +185,55 @@ SUBROUTINE get_worst_case(x_internal, x_start, maxiter, ftol, tiny, num_draws_em
     ! Initialize criterion function at starting values
     F = criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
 
-
     G(:2) = criterion_ambiguity_derivative(x, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
 
-    ! ! Initialize constraint at starting values
-    ! C = divergence(X, shocks_cov, level)
-    ! A(1,:2) = divergence_derivative(X, shocks_cov, level, tiny)
+    ! Initialize constraint at starting values
+    C = constraint_ambiguity(x, shocks_cov, level)
+
+    A(1,:2) = constraint_ambiguity_derivative(x, shocks_cov, level, tiny)
+
+
+    ! Iterate until completion
+    DO WHILE (.NOT. is_finished)
+
+        ! Evaluate criterion function and constraints
+        IF (MODE == one_int) THEN
+
+                F = criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
+
+             C = constraint_ambiguity(x, shocks_cov, level)
+
+         ! Evaluate gradient of criterion function and constraints. Note that the
+         ! A is of dimension (1, N + 1) and the last element needs to always
+         ! be zero.
+         ELSEIF (MODE == - one_int) THEN
+             G(:2) = criterion_ambiguity_derivative(x, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
+
+
+        A(1,:2) = constraint_ambiguity_derivative(x, shocks_cov, level, tiny)
+
+         END IF
+
+         !Call to SLSQP code
+         CALL SLSQP(M, MEQ, LA, N, X, XL, XU, F, C, G, A, ACC, &
+                 ITER, MODE, W, L_W, JW, L_JW)
+
+         ! Check if SLSQP has completed
+         IF (.NOT. ABS(MODE) == one_int) THEN
+             is_finished = .True.
+         END IF
+
+     END DO
     !
-    ! ! Iterate until completion
-    ! DO WHILE (.NOT. is_finished)
-    !
-    !     ! Evaluate criterion function and constraints
-    !     IF (MODE == one_int) THEN
-    !
-    !            F = criterion_ambiguity(x, draws_emax_transformed, period, k, rewards_systematic, mapping_state_idx, states_all, periods_emax, delta, edu_start, edu_max)
-    !
-    !         C = divergence(X, shocks_cov, level)
-    !
-    !     ! Evaluate gradient of criterion function and constraints. Note that the
-    !     ! A is of dimension (1, N + 1) and the last element needs to always
-    !     ! be zero.
-    !     ELSEIF (MODE == - one_int) THEN
-    !
-    !         G(:2) = criterion_ambiguity_derivative(X, tiny, &
-    !                     num_draws_emax, draws_emax, period, k, &
-    !                     payoffs_systematic, edu_max, edu_start, &
-    !                     mapping_state_idx, states_all, num_periods, &
-    !                     periods_emax, delta, shocks_cholesky)
-    !
-    !         A(1,:2) = divergence_derivative(X, shocks_cov, level, tiny)
-    !
-    !     END IF
-    !
-    !     !Call to SLSQP code
-    !     CALL SLSQP(M, MEQ, LA, N, X, XL, XU, F, C, G, A, ACC, &
-    !             ITER, MODE, W, L_W, JW, L_JW)
-    !
-    !     ! Check if SLSQP has completed
-    !     IF (.NOT. ABS(MODE) == one_int) THEN
-    !         is_finished = .True.
-    !     END IF
-    !
-    ! END DO
-    !
-    ! x_internal = X
+    x_internal = X
     !
     ! ! Stabilization. If the optimization fails the starting values are
     ! ! used otherwise it happens that the constraint is not satisfied by far.
     ! is_success = (MODE == zero_int)
     !
-    ! IF(.NOT. is_success) THEN
-    !     x_internal = x_start
-    ! END IF
-    !
-    !
-    ! ! Logging.
-    ! IF (is_debug) THEN
-    !     ! Evaluate divergence at final value
-    !     div = divergence(x_internal, shocks_cov, level) - level
-    !     ! Write to logging file
-    !     CALL logging_ambiguity(x_internal, div, MODE, period, k, is_success)
-    ! END IF
+     IF(.NOT. is_success) THEN
+         x_internal = x_start
+     END IF
 
 END SUBROUTINE
 !******************************************************************************
@@ -311,34 +295,51 @@ FUNCTION criterion_ambiguity_derivative(x, num_periods, num_draws_emax, period, 
 END FUNCTION
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_worst_case_old(emax, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, level)
+FUNCTION constraint_ambiguity_derivative(x, shocks_cov, level, dfunc_eps)
 
-    !/* external objects    */
+    !/* external objects        */
 
-    REAL(our_dble), INTENT(OUT)     :: emax
+    REAL(our_dble)                      :: constraint_ambiguity_derivative(2)
 
-    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
-    INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
-    INTEGER(our_int), INTENT(IN)    :: num_draws_emax
-    INTEGER(our_int), INTENT(IN)    :: num_periods
-    INTEGER(our_int), INTENT(IN)    :: edu_start
-    INTEGER(our_int), INTENT(IN)    :: edu_max
-    INTEGER(our_int), INTENT(IN)    :: period
-    INTEGER(our_int), INTENT(IN)    :: k
+    REAL(our_dble), INTENT(IN)          :: shocks_cov(4, 4)
+    REAL(our_dble), INTENT(IN)          :: dfunc_eps
+    REAL(our_dble), INTENT(IN)          :: level
+    REAL(our_dble), INTENT(IN)          :: x(2)
 
-    REAL(our_dble), INTENT(IN)      :: periods_emax(num_periods, max_states_period)
-    REAL(our_dble), INTENT(IN)      :: draws_emax_transformed(num_draws_emax, 4)
-    REAL(our_dble), INTENT(IN)      :: rewards_systematic(4)
-    REAL(our_dble), INTENT(IN)      :: shocks_cov(4, 4)
-    REAL(our_dble), INTENT(IN)      :: level
-    REAL(our_dble), INTENT(IN)      :: delta
+    !/* internals objects       */
+
+    REAL(our_dble)                      :: ei(2)
+    REAL(our_dble)                      :: d(2)
+    REAL(our_dble)                      :: f0
+    REAL(our_dble)                      :: f1
+
+    INTEGER(our_int)                    :: j
 
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
 
+    ! Initialize containers
+    ei = zero_dble
 
-END SUBROUTINE
+    ! Evaluate baseline
+    f0 = constraint_ambiguity(x, shocks_cov, level )
+
+    DO j = 1, 2
+
+        ei(j) = one_dble
+
+        d = dfunc_eps * ei
+
+        f1 = constraint_ambiguity(x + d, shocks_cov, level)
+
+        constraint_ambiguity_derivative(j) = (f1 - f0) / d(j)
+
+        ei(j) = zero_dble
+
+    END DO
+
+END FUNCTION
 !******************************************************************************
 !******************************************************************************
 FUNCTION criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
@@ -418,6 +419,38 @@ FUNCTION kl_divergence(mean_old, cov_old, mean_new, cov_new)
     comp_c = LOG(determinant(cov_old) / determinant(cov_new))
 
     kl_divergence = half_dble * (comp_a + comp_b(1, 1) - num_dims + comp_c)
+
+END FUNCTION
+!******************************************************************************
+!******************************************************************************
+FUNCTION constraint_ambiguity(x, shocks_cov, level)
+
+    !/* external objects        */
+
+    REAL(our_dble)                      :: constraint_ambiguity
+
+    REAL(our_dble), INTENT(IN)          :: shocks_cov(4, 4)
+    REAL(our_dble), INTENT(IN)          :: level
+    REAL(our_dble), INTENT(IN)          :: x(2)
+
+    !/* internal objects        */
+
+    REAL(our_dble)                      :: cov_old(4, 4)
+    REAL(our_dble)                      :: cov_new(4, 4)
+    REAL(our_dble)                      :: mean_old(4)
+    REAL(our_dble)                      :: mean_new(4)
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    cov_old = shocks_cov; cov_new = shocks_cov
+
+    mean_old = zero_dble; mean_new = zero_dble
+
+    mean_new(:2) = x
+
+    constraint_ambiguity = level - kl_divergence(mean_old, cov_old, mean_new, cov_new)
 
 END FUNCTION
 !******************************************************************************

@@ -1468,3 +1468,84 @@ SUBROUTINE debug_constraint_derivative(rslt, x, n, la)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
+SUBROUTINE wrapper_constraint_ambiguity(rslt, x, shocks_cov, level_int)
+
+    !/* external libraries      */
+
+    USE resfort_library
+
+    !/* setup                   */
+
+    IMPLICIT NONE
+
+    !/* external objects        */
+
+    DOUBLE PRECISION, INTENT(OUT)       :: rslt
+
+    DOUBLE PRECISION, INTENT(IN)        :: shocks_cov(4, 4)
+    DOUBLE PRECISION, INTENT(IN)        :: level_int
+    DOUBLE PRECISION, INTENT(IN)        :: x(2)
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    rslt = constraint_ambiguity(x, shocks_cov, level_int)
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE wrapper_get_worst_case(rslt)
+
+    !/* external libraries      */
+
+    USE resfort_library
+
+    !/* setup                   */
+
+    IMPLICIT NONE
+
+    !/* external objects        */
+
+    DOUBLE PRECISION, INTENT(OUT)       :: rslt(2)
+
+
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+!    rslt = constraint_ambiguity(x, shocks_cov, level_int)
+
+    rslt = zero_dble
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE wrapper_constraint_ambiguity_derivative(rslt, x, shocks_cov, level_int, dfunc_eps_int)
+
+    !/* external libraries      */
+
+    USE resfort_library
+
+    !/* setup                   */
+
+    IMPLICIT NONE
+
+    !/* external objects        */
+
+    DOUBLE PRECISION, INTENT(OUT)       :: rslt(2)
+
+    DOUBLE PRECISION, INTENT(IN)        :: shocks_cov(4, 4)
+    DOUBLE PRECISION, INTENT(IN)        :: dfunc_eps_int
+    DOUBLE PRECISION, INTENT(IN)        :: level_int
+    DOUBLE PRECISION, INTENT(IN)        :: x(2)
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    rslt = constraint_ambiguity_derivative(x, shocks_cov, level_int, dfunc_eps_int)
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************

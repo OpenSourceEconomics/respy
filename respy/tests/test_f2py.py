@@ -23,12 +23,14 @@ from respy.python.solve.solve_auxiliary import get_endogenous_variable
 from respy.python.evaluate.evaluate_python import pyth_contributions
 from respy.python.estimate.estimate_auxiliary import get_optim_paras
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
+from respy.python.solve.solve_ambiguity import constraint_ambiguity
 from respy.python.solve.solve_ambiguity import criterion_ambiguity
 from respy.python.shared.shared_auxiliary import dist_model_paras
 from respy.python.estimate.estimate_python import pyth_criterion
 from respy.python.simulate.simulate_python import pyth_simulate
 from respy.python.solve.solve_auxiliary import get_predictions
 from respy.python.solve.solve_risk import construct_emax_risk
+from respy.python.solve.solve_ambiguity import get_worst_case
 from respy.python.shared.shared_auxiliary import get_cholesky
 from respy.python.shared.shared_auxiliary import create_draws
 from respy.python.solve.solve_ambiguity import kl_divergence
@@ -130,6 +132,26 @@ class TestClass(object):
         f90 = fort_debug.wrapper_criterion_ambiguity_derivative(x, *args + (
             dfunc_eps, ))
         np.testing.assert_allclose(py, f90)
+
+        args = (shocks_cov, level)
+        py = constraint_ambiguity(x, *args)
+        f90 = fort_debug.wrapper_constraint_ambiguity(x, *args)
+        np.testing.assert_allclose(py, f90)
+
+        py = approx_fprime(x, constraint_ambiguity, dfunc_eps, *args)
+        f90 = fort_debug.wrapper_constraint_ambiguity_derivative(x, *args + (dfunc_eps, ))
+        np.testing.assert_allclose(py, f90)
+
+        py = get_worst_case(num_periods, num_draws_emax, period, k,
+            draws_standard, rewards_systematic, edu_max, edu_start,
+            periods_emax, states_all, mapping_state_idx, delta, shocks_cov,
+            level)['x']
+
+        f90 = fort_debug.wrapper_get_worst_case()
+        print(py, f90)
+        np.testing.assert_allclose(py, f90)
+
+        raise SystemExit
 
     def test_2(self):
         """ Compare results between FORTRAN and PYTHON of selected

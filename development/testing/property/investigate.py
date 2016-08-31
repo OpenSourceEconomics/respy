@@ -32,9 +32,6 @@ else:
     print('not recompiling')
 
 #MODULE test_parallelism METHOD test_1 SEED: 24029
-
-
-
 ''' Error Reproduction
 '''
 cleanup_testing_infrastructure(True)
@@ -48,7 +45,7 @@ module, method = get_random_request(test_dict)
 module, method = 'test_f2py', 'test_1'
 count = 0
 #os.system('git clean -d -f')
-for i in range(300):
+for i in range(100):
 
     seed = i + 112 # 6216748723
     print("seed ", i)
