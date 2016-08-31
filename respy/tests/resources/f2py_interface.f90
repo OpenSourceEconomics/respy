@@ -572,7 +572,7 @@ SUBROUTINE wrapper_criterion_ambiguity(emax, x, num_periods_int, num_draws_emax_
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE wrapper_criterion_ambiguity_derivative(grad, x, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic, edu_start_int, edu_max_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta_int, dfunc_eps_int)
+SUBROUTINE wrapper_criterion_ambiguity_derivative(grad, x, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta_int, dfunc_eps_int)
 
     !/* external libraries      */
 
