@@ -50,7 +50,7 @@ SUBROUTINE construct_emax_ambiguity(emax, num_periods, num_draws_emax, period, k
     !/* internals objects    */
 
     REAL(our_dble)                  :: x_shift(2), x_start(2) = zero_dble
-    REAL(our_dble)                  :: div, ftol, tiny
+    REAL(our_dble)                  :: div, ftol
 
     CHARACTER(100)                  :: message
 
@@ -72,13 +72,7 @@ SUBROUTINE construct_emax_ambiguity(emax, num_periods, num_draws_emax, period, k
 
     ELSE
 
-        ! Parameterizations for optimizations
-        x_start = zero_dble
-        maxiter = 100000000_our_int
-        ftol = 1e-06_our_dble
-        tiny = 1.4901161193847656e-08
-
-        CALL get_worst_case(x_shift, x_start, maxiter, ftol, tiny, num_draws_emax, draws_emax_transformed, period, k, rewards_systematic, edu_max, edu_start, mapping_state_idx, states_all, num_periods, periods_emax, delta, is_debug, shocks_cov, level)
+        CALL get_worst_case(x_shift, is_success, message, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, level)
 
     END IF
 
@@ -89,26 +83,24 @@ SUBROUTINE construct_emax_ambiguity(emax, num_periods, num_draws_emax, period, k
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE get_worst_case(x_internal, x_start, maxiter, ftol, tiny, num_draws_emax, draws_emax_transformed, period, k, rewards_systematic, edu_max, edu_start, mapping_state_idx, states_all, num_periods, periods_emax, delta, is_debug, shocks_cov, level)
+SUBROUTINE get_worst_case(x_shift, is_success, message, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, level)
 
     ! TODO: Fix array dimensions
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(OUT)     :: x_internal(:)
+    REAL(our_dble), INTENT(OUT)     :: x_shift(2)
 
-    REAL(our_dble), INTENT(IN)      :: shocks_cov(:, :)
-    REAL(our_dble), INTENT(IN)      :: x_start(:)
+    CHARACTER(100), INTENT(OUT)      :: message
+
+    LOGICAL, INTENT(OUT)            :: is_success
+
+    REAL(our_dble), INTENT(IN)      :: shocks_cov(4, 4)
     REAL(our_dble), INTENT(IN)      :: level
-    REAL(our_dble), INTENT(IN)      :: ftol
-
-    INTEGER(our_int), INTENT(IN)    :: maxiter
-
     REAL(our_dble), INTENT(IN)      :: rewards_systematic(:)
     REAL(our_dble), INTENT(IN)      :: periods_emax(:,:)
     REAL(our_dble), INTENT(IN)      :: draws_emax_transformed(:, :)
     REAL(our_dble), INTENT(IN)      :: delta
-    REAL(our_dble), INTENT(IN)      :: tiny
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:, :, :, :, :)
     INTEGER(our_int), INTENT(IN)    :: states_all(:, :, :)
@@ -119,14 +111,17 @@ SUBROUTINE get_worst_case(x_internal, x_start, maxiter, ftol, tiny, num_draws_em
     INTEGER(our_int), INTENT(IN)    :: period
     INTEGER(our_int), INTENT(IN)    :: k
 
-    LOGICAL, INTENT(IN)             :: is_debug
-
     !/* internal objects        */
 
-    REAL(our_dble)                  :: div
+    REAL(our_dble)      :: ftol
 
+    INTEGER(our_int)    :: maxiter
+
+
+
+    REAL(our_dble)                  :: div
+    REAL(our_dble)                  :: x_start(2)
     LOGICAL                         :: is_finished
-    LOGICAL                         :: is_success
 
     !/* SLSQP interface          */
 
@@ -160,9 +155,14 @@ SUBROUTINE get_worst_case(x_internal, x_start, maxiter, ftol, tiny, num_draws_em
 ! Algorithm
 !-------------------------------------------------------------------------------
 
+    ! Setup
+    x_start = zero_dble
+    maxiter = 100000000_our_int
+    ftol = 1e-06_our_dble
+
     ! Preparing SLSQP interface
     ACC = ftol; X = x_start; M = 1; MEQ = 1
-    N = SIZE(x_internal); LA = MAX(1, M)
+    N = SIZE(x_shift); LA = MAX(1, M)
     N1 = N + 1;  MINEQ = M - MEQ + N1 + N1
     L_W = (3 * N1 + M) *( N1 + 1) + (N1 - MEQ + 1) * (MINEQ + 2) + 2 * MINEQ + &
         (N1 + MINEQ) * (N1 - MEQ) + 2 * MEQ + N1 + (N + 1) * N / 2 + &
@@ -190,33 +190,29 @@ SUBROUTINE get_worst_case(x_internal, x_start, maxiter, ftol, tiny, num_draws_em
     ! Initialize constraint at starting values
     C = constraint_ambiguity(x, shocks_cov, level)
 
-    A(1,:2) = constraint_ambiguity_derivative(x, shocks_cov, level, tiny)
-
+    A(1,:2) = constraint_ambiguity_derivative(x, shocks_cov, level, dfunc_eps)
 
     ! Iterate until completion
     DO WHILE (.NOT. is_finished)
+
 
         ! Evaluate criterion function and constraints
         IF (MODE == one_int) THEN
 
                 F = criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
-
-             C = constraint_ambiguity(x, shocks_cov, level)
+                C = constraint_ambiguity(x, shocks_cov, level)
 
          ! Evaluate gradient of criterion function and constraints. Note that the
          ! A is of dimension (1, N + 1) and the last element needs to always
          ! be zero.
          ELSEIF (MODE == - one_int) THEN
              G(:2) = criterion_ambiguity_derivative(x, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
-
-
-        A(1,:2) = constraint_ambiguity_derivative(x, shocks_cov, level, tiny)
+             A(1,:2) = constraint_ambiguity_derivative(x, shocks_cov, level, dfunc_eps)
 
          END IF
 
          !Call to SLSQP code
-         CALL SLSQP(M, MEQ, LA, N, X, XL, XU, F, C, G, A, ACC, &
-                 ITER, MODE, W, L_W, JW, L_JW)
+         CALL SLSQP(M, MEQ, LA, N, X, XL, XU, F, C, G, A, ACC, ITER, MODE, W, L_W, JW, L_JW)
 
          ! Check if SLSQP has completed
          IF (.NOT. ABS(MODE) == one_int) THEN
@@ -224,18 +220,64 @@ SUBROUTINE get_worst_case(x_internal, x_start, maxiter, ftol, tiny, num_draws_em
          END IF
 
      END DO
-    !
-    x_internal = X
-    !
-    ! ! Stabilization. If the optimization fails the starting values are
-    ! ! used otherwise it happens that the constraint is not satisfied by far.
-    ! is_success = (MODE == zero_int)
-    !
-     IF(.NOT. is_success) THEN
-         x_internal = x_start
-     END IF
+
+    x_shift = X
+
+    ! Stabilization. If the optimization fails the starting values are
+    ! used otherwise it happens that the constraint is not satisfied by far.
+    is_success = (MODE == zero_int)
+
+    IF(.NOT. is_success) THEN
+        x_shift = x_start
+    END IF
+
+    message =  get_message(mode)
 
 END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
+FUNCTION get_message(mode)
+
+    !/* external objects        */
+
+    CHARACTER(100)                   :: get_message
+
+    INTEGER(our_int), INTENT(IN)    :: mode
+
+    !/* internal objects        */
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+
+    ! Optimizer get_message
+    IF (mode == -1) THEN
+        get_message = 'Gradient evaluation required (g & a)'
+    ELSEIF (mode == 0) THEN
+        get_message = 'Optimization terminated successfully.'
+    ELSEIF (mode == 1) THEN
+        get_message = 'Function evaluation required (f & c)'
+    ELSEIF (mode == 2) THEN
+        get_message = 'More equality constraints than independent variables'
+    ELSEIF (mode == 3) THEN
+        get_message = 'More than 3*n iterations in LSQ subproblem'
+    ELSEIF (mode == 4) THEN
+        get_message = 'Inequality constraints incompatible'
+    ELSEIF (mode == 5) THEN
+        get_message = 'Singular matrix E in LSQ subproblem'
+    ELSEIF (mode == 6) THEN
+        get_message = 'Singular matrix C in LSQ subproblem'
+    ELSEIF (mode == 7) THEN
+        get_message = 'Rank-deficient equality constraint subproblem HFTI'
+    ELSEIF (mode == 8) THEN
+        get_message = 'Positive directional derivative for linesearch'
+    ELSEIF (mode == 9) THEN
+        get_message = 'Iteration limit exceeded'
+    ELSEIF (mode == 10) THEN
+        get_message = 'No random variation in shocks.'
+    END IF
+
+END FUNCTION
 !******************************************************************************
 !******************************************************************************
 FUNCTION criterion_ambiguity_derivative(x, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)

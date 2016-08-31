@@ -1495,7 +1495,7 @@ SUBROUTINE wrapper_constraint_ambiguity(rslt, x, shocks_cov, level_int)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE wrapper_get_worst_case(rslt)
+SUBROUTINE wrapper_get_worst_case(x_shift, is_success, message, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic_int, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta_int, shocks_cov, level_int)
 
     !/* external libraries      */
 
@@ -1507,17 +1507,41 @@ SUBROUTINE wrapper_get_worst_case(rslt)
 
     !/* external objects        */
 
-    DOUBLE PRECISION, INTENT(OUT)       :: rslt(2)
 
+        DOUBLE PRECISION, INTENT(OUT)     :: x_shift(2)
+
+        CHARACTER(100), INTENT(OUT)      :: message
+
+        LOGICAL, INTENT(OUT)            :: is_success
+
+        DOUBLE PRECISION, INTENT(IN)      :: shocks_cov(4, 4)
+        DOUBLE PRECISION, INTENT(IN)      :: level_int
+        DOUBLE PRECISION, INTENT(IN)      :: rewards_systematic_int(:)
+        DOUBLE PRECISION, INTENT(IN)      :: periods_emax_int(:,:)
+        DOUBLE PRECISION, INTENT(IN)      :: draws_emax_transformed(:, :)
+        DOUBLE PRECISION, INTENT(IN)      :: delta_int
+
+        INTEGER, INTENT(IN)    :: mapping_state_idx_int(:, :, :, :, :)
+        INTEGER, INTENT(IN)    :: states_all_int(:, :, :)
+        INTEGER, INTENT(IN)    :: num_draws_emax_int
+        INTEGER, INTENT(IN)    :: num_periods_int
+        INTEGER, INTENT(IN)    :: edu_start_int
+        INTEGER, INTENT(IN)    :: edu_max_int
+        INTEGER, INTENT(IN)    :: period
+        INTEGER, INTENT(IN)    :: k
 
 
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
 
-!    rslt = constraint_ambiguity(x, shocks_cov, level_int)
+    !TODO: Assign RESFORT globals
+    dfunc_eps = 1.4901161193847656e-08
 
-    rslt = zero_dble
+
+    CALL get_worst_case(x_shift, is_success, message, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic_int, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta_int, shocks_cov, level_int)
+
+
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************

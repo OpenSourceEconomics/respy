@@ -21,14 +21,12 @@ def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
         is_success, message = True, 'Optimization terminated successfully.'
 
     elif measure == 'kl':
-        opt = get_worst_case(num_periods, num_draws_emax, period, k,
-             draws_emax_transformed, rewards_systematic, edu_max, edu_start,
-             periods_emax, states_all, mapping_state_idx, delta, shocks_cov,
-             level)
+        x_shift, is_success, message = get_worst_case(num_periods,
+            num_draws_emax, period, k, draws_emax_transformed,
+            rewards_systematic, edu_max, edu_start, periods_emax, states_all,
+            mapping_state_idx, delta, shocks_cov, level)
 
-        x_shift = opt['x']
         div = constraint_ambiguity(x_shift, shocks_cov, level) - level
-        is_success, message = opt['success'], opt['message']
 
     else:
         raise NotImplementedError
@@ -49,6 +47,7 @@ def get_worst_case(num_periods, num_draws_emax, period, k,
     # Initialize options.
     options = dict()
     options['maxiter'] = 100000000
+    options['ftol'] = 1e-06
 
     x0 = np.tile(0.0, 2)
 
@@ -75,7 +74,10 @@ def get_worst_case(num_periods, num_draws_emax, period, k,
     if not opt['success']:
         opt['x'] = x0
 
-    return opt
+    is_success, message = opt['success'], opt['message']
+    x_shift = opt['x']
+
+    return x_shift, is_success, message
 
 
 def criterion_ambiguity(x, num_periods, num_draws_emax, period, k,

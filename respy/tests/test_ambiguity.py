@@ -20,7 +20,10 @@ class TestClass(object):
         """ This test ensures that using the ambiguity functionality with a
         level of zero yields the same results as using the risk functionality
         directly.
+
         """
+        #TODO: AFter removal of is_ambiguity level needs to be tiny.
+
         max_draws = np.random.randint(10, 100)
 
         constr = dict()
@@ -45,6 +48,49 @@ class TestClass(object):
             for is_ambiguity in [True, False]:
 
                 init_dict['AMBIGUITY']['flag'] = is_ambiguity
+                init_dict['PROGRAM']['version'] = version
+
+                print_init_dict(init_dict)
+
+                respy_obj = RespyCls('test.respy.ini')
+
+                simulate(respy_obj)
+                _, crit_val = estimate(respy_obj)
+
+                if base_val is None:
+                    base_val = crit_val
+
+                np.testing.assert_allclose(base_val, crit_val)
+
+
+        def test_2(self):
+            """ This test ensures that it does not matter which version runs
+            the ambiguity codes.
+            """
+
+            max_draws = np.random.randint(10, 100)
+
+            constr = dict()
+            constr['flag_parallelism'] = True
+            constr['max_draws'] = max_draws
+            # TODO: LAter simply a level larger than zero.
+            constr['level'] = 0.00
+            constr['maxfun'] = 0
+
+            init_dict = generate_init(constr)
+
+            # We also check explicitly across the different program implementations.
+            num_periods = init_dict['BASICS']['periods']
+            write_draws(num_periods, max_draws)
+            write_interpolation_grid('test.respy.ini')
+
+            versions = ['PYTHON']
+            if IS_FORTRAN:
+                versions += ['FORTRAN']
+
+            base_val = None
+            for version in versions:
+
                 init_dict['PROGRAM']['version'] = version
 
                 print_init_dict(init_dict)

@@ -142,16 +142,15 @@ class TestClass(object):
         f90 = fort_debug.wrapper_constraint_ambiguity_derivative(x, *args + (dfunc_eps, ))
         np.testing.assert_allclose(py, f90)
 
-        py = get_worst_case(num_periods, num_draws_emax, period, k,
+        args = (num_periods, num_draws_emax, period, k,
             draws_standard, rewards_systematic, edu_max, edu_start,
             periods_emax, states_all, mapping_state_idx, delta, shocks_cov,
-            level)['x']
+            level)
 
-        f90 = fort_debug.wrapper_get_worst_case()
-        print(py, f90)
+        py, _, _ = get_worst_case(*args)
+        f90, _, _ = fort_debug.wrapper_get_worst_case(*args)
         np.testing.assert_allclose(py, f90)
 
-        raise SystemExit
 
     def test_2(self):
         """ Compare results between FORTRAN and PYTHON of selected
