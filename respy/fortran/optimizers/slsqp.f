@@ -745,7 +745,7 @@ c   set rest of the multipliers to nan (they are not used)
 
           IF (n3 .GT. 0) THEN
              y(m+1) = 0
-             y(m+1) = 0 / y(m+1)
+             !y(m+1) = 0 / y(m+1)
              do 60 i=m+2,m+n3+n3
                 y(i) = y(m+1)
  60          continue

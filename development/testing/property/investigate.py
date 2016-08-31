@@ -47,12 +47,12 @@ count = 0
 #os.system('git clean -d -f')
 for i in range(100000):
 
-    seed = i + 112 # 6216748723
+    seed = i + 789 # 6216748723
     print("seed ", i)
     np.random.seed(seed)
 
-    #method = 'test_' + str(np.random.choice(range(1, 11)))
-    #print(module, method)
+    method = 'test_' + str(np.random.choice(range(1, 3)))
+    print(module, method)
 
 
     mod = importlib.import_module(module)

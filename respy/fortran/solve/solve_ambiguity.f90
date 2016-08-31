@@ -17,8 +17,196 @@ MODULE solve_ambiguity
     IMPLICIT NONE
 
     PUBLIC
-
+        !
+        interface  ! in :slsqp
+        !SLSQP(M, MEQ, LA, N, X, XL, XU, F, C, G, A, ACC, ITER, MODE, W, LEN_W, JW, LEN_JW)
+                 subroutine slsqp(m,meq,la,n,x,xl,xu,f,c,g,a,acc,iter,mode,w,LEN_W,jw,LEN_JW) ! in :slsqp:slsqp_optmz.f
+                     integer :: m
+                     integer :: meq
+                     integer  :: la
+                     integer :: n
+                     double precision, intent(inout) :: x(n)
+                     double precision   :: xl(n)
+                     double precision  :: xu(n)
+                     double precision :: f
+                     double precision :: c(la)
+                     double precision :: g(n + 1)
+                     double precision :: a(la,n + 1)
+                     double precision, intent(inout) :: acc
+                     integer, intent(inout) :: iter
+                     integer, intent(inout) :: mode
+                     double precision   :: w(LEN_W)
+                     integer  :: LEN_W
+                     integer :: jw(LEN_JW)
+                     integer :: LEN_JW
+                 end subroutine slsqp
+             end interface
 CONTAINS
+    !*******************************************************************************
+    !*******************************************************************************
+    SUBROUTINE get_worst_case(x_shift, is_success, message, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, level)
+
+        ! TODO: Fix array dimensions
+
+        !/* external objects        */
+
+        REAL(our_dble), INTENT(OUT)     :: x_shift(2)
+
+        CHARACTER(100), INTENT(OUT)      :: message
+
+        LOGICAL, INTENT(OUT)            :: is_success
+
+        REAL(our_dble), INTENT(IN)      :: shocks_cov(4, 4)
+        REAL(our_dble), INTENT(IN)      :: level
+        REAL(our_dble), INTENT(IN)      :: rewards_systematic(:)
+        REAL(our_dble), INTENT(IN)      :: periods_emax(:,:)
+        REAL(our_dble), INTENT(IN)      :: draws_emax_transformed(:, :)
+        REAL(our_dble), INTENT(IN)      :: delta
+
+        INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:, :, :, :, :)
+        INTEGER(our_int), INTENT(IN)    :: states_all(:, :, :)
+        INTEGER(our_int), INTENT(IN)    :: num_draws_emax
+        INTEGER(our_int), INTENT(IN)    :: num_periods
+        INTEGER(our_int), INTENT(IN)    :: edu_start
+        INTEGER(our_int), INTENT(IN)    :: edu_max
+        INTEGER(our_int), INTENT(IN)    :: period
+        INTEGER(our_int), INTENT(IN)    :: k
+
+        !/* internal objects        */
+
+        REAL(our_dble)      :: ftol
+
+        INTEGER(our_int)    :: maxiter
+
+
+
+        REAL(our_dble)                  :: x_start(2)
+        LOGICAL                         :: is_finished
+
+        !/* SLSQP interface          */
+
+        INTEGER(our_int)                :: M        ! Total number of constraints
+        INTEGER(our_int)                :: MEQ      ! Total number of equality constraints
+        INTEGER(our_int)                :: LA       ! MAX(M, 1)
+        INTEGER(our_int)                :: N        ! Number of variables
+
+        REAL(our_dble)                  :: X(2)     ! Current iterate
+        REAL(our_dble)                  :: XL(2)    ! Lower bounds for x
+        REAL(our_dble)                  :: XU(2)    ! Upper bounds for x
+        REAL(our_dble)                  :: FX        ! Value of objective function
+
+        REAL(our_dble), ALLOCATABLE     :: C(:)     ! Stores the constraints
+        REAL(our_dble), ALLOCATABLE     :: G(:)     ! Partials of objective function
+        REAL(our_dble), ALLOCATABLE     :: A(:, :)  ! Normals of constraints
+
+        REAL(our_dble)                  :: ACC      ! Final accuracy
+        INTEGER(our_int)                :: ITER     ! Maximum number of iterations
+        INTEGER(our_int)                :: MODE     ! Control for communication
+
+        REAL(our_dble), ALLOCATABLE     :: W(:)     ! Working space
+        INTEGER(our_int), ALLOCATABLE   :: JW(:)    ! Working space
+        INTEGER(our_int)                :: LEN_JW     ! Working space
+        INTEGER(our_int)                :: LEN_W      ! Working space
+
+        INTEGER(our_int)                :: MINEQ    ! Locals
+        INTEGER(our_int)                :: N1       ! Locals
+
+    !-------------------------------------------------------------------------------
+    ! Algorithm
+    !-------------------------------------------------------------------------------
+
+        ! Setup
+        x_start = zero_dble
+        maxiter = 100000000_our_int
+        ftol = 1e-06_our_dble
+
+        ! Preparing SLSQP interface
+        ACC = ftol;
+        X = x_start
+        M = 1
+        MEQ = 1
+        N = 2
+        LA = 1
+
+        N1 = N + 1
+        MINEQ = M - MEQ + N1 + N1
+
+        LEN_W = (3*n1+m)*(n1+1)+(n1-meq+1)*(mineq+2) + 2*mineq+(n1+mineq)*(n1-meq) + 2*meq + n1 + ((n+1)*n)/2 + 2*m + 3*n + 3*n1 + 1
+
+        LEN_JW = MINEQ
+
+
+
+        ALLOCATE(C(LA), G(N + 1)); ALLOCATE(A(LA, N + 1))
+        ALLOCATE(W(LEN_W), JW(LEN_JW))
+
+        C = zero_dble
+        G = zero_dble
+        A = zero_dble
+        W = zero_dble
+        JW = zero_int
+
+        ! Decompose upper and lower bounds
+        XL = - HUGE_FLOAT; XU = HUGE_FLOAT
+
+        ! Initialize the iteration counter and MODE value
+        ITER = maxiter
+        MODE = zero_int
+
+        ! Initialization of SLSQP
+        is_finished = .False.
+
+        ! Initialize criterion function at starting values
+        FX = criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
+
+        G(:2) = criterion_ambiguity_derivative(x, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
+
+        ! Initialize constraint at starting values
+        C = constraint_ambiguity(x, shocks_cov, level)
+
+        A(1,:2) = constraint_ambiguity_derivative(x, shocks_cov, level, dfunc_eps)
+
+        ! Iterate until completion
+        DO WHILE (.NOT. is_finished)
+
+            ! Evaluate criterion function and constraints
+            IF (MODE == one_int) THEN
+
+                FX = criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
+                C = constraint_ambiguity(x, shocks_cov, level)
+
+             ! Evaluate gradient of criterion function and constraints. Note that the
+             ! A is of dimension (1, N + 1) and the last element needs to always
+             ! be zero.
+             ELSEIF (MODE == - one_int) THEN
+                 G(:2) = criterion_ambiguity_derivative(x, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
+                 A(1,:2) = constraint_ambiguity_derivative(x, shocks_cov, level, dfunc_eps)
+
+             END IF
+
+             !Call to SLSQP code
+             CALL SLSQP(M, MEQ, LA, N, X, XL, XU, FX, C, G, A, ACC, ITER, MODE, W, LEN_W, JW, LEN_JW)
+
+             ! Check if SLSQP has completed
+             IF (.NOT. ABS(MODE) == one_int) THEN
+                 is_finished = .True.
+             END IF
+
+         END DO
+
+        x_shift = X
+
+        ! Stabilization. If the optimization fails the starting values are
+        ! used otherwise it happens that the constraint is not satisfied by far.
+        is_success = (MODE == zero_int)
+
+        IF(.NOT. is_success) THEN
+            x_shift = x_start
+        END IF
+
+        message =  get_message(mode)
+
+    END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
 SUBROUTINE construct_emax_ambiguity(emax, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, measure, level, is_write)
@@ -77,157 +265,6 @@ SUBROUTINE construct_emax_ambiguity(emax, num_periods, num_draws_emax, period, k
     IF(is_write) CALL record_ambiguity(period, k, x_shift, div, is_success, message)
 
     emax = criterion_ambiguity(x_shift, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
-
-END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE get_worst_case(x_shift, is_success, message, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, level)
-
-    ! TODO: Fix array dimensions
-
-    !/* external objects        */
-
-    REAL(our_dble), INTENT(OUT)     :: x_shift(2)
-
-    CHARACTER(100), INTENT(OUT)      :: message
-
-    LOGICAL, INTENT(OUT)            :: is_success
-
-    REAL(our_dble), INTENT(IN)      :: shocks_cov(4, 4)
-    REAL(our_dble), INTENT(IN)      :: level
-    REAL(our_dble), INTENT(IN)      :: rewards_systematic(:)
-    REAL(our_dble), INTENT(IN)      :: periods_emax(:,:)
-    REAL(our_dble), INTENT(IN)      :: draws_emax_transformed(:, :)
-    REAL(our_dble), INTENT(IN)      :: delta
-
-    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(:, :, :, :, :)
-    INTEGER(our_int), INTENT(IN)    :: states_all(:, :, :)
-    INTEGER(our_int), INTENT(IN)    :: num_draws_emax
-    INTEGER(our_int), INTENT(IN)    :: num_periods
-    INTEGER(our_int), INTENT(IN)    :: edu_start
-    INTEGER(our_int), INTENT(IN)    :: edu_max
-    INTEGER(our_int), INTENT(IN)    :: period
-    INTEGER(our_int), INTENT(IN)    :: k
-
-    !/* internal objects        */
-
-    REAL(our_dble)      :: ftol
-
-    INTEGER(our_int)    :: maxiter
-
-
-
-    REAL(our_dble)                  :: x_start(2)
-    LOGICAL                         :: is_finished
-
-    !/* SLSQP interface          */
-
-    INTEGER(our_int)                :: M        ! Total number of constraints
-    INTEGER(our_int)                :: MEQ      ! Total number of equality constraints
-    INTEGER(our_int)                :: LA       ! MAX(M, 1)
-    INTEGER(our_int)                :: N        ! Number of variables
-
-    REAL(our_dble)                  :: X(2)     ! Current iterate
-    REAL(our_dble)                  :: XL(2)    ! Lower bounds for x
-    REAL(our_dble)                  :: XU(2)    ! Upper bounds for x
-    REAL(our_dble)                  :: F        ! Value of objective function
-
-    REAL(our_dble), ALLOCATABLE     :: C(:)     ! Stores the constraints
-    REAL(our_dble), ALLOCATABLE     :: G(:)     ! Partials of objective function
-    REAL(our_dble), ALLOCATABLE     :: A(:, :)  ! Normals of constraints
-
-    REAL(our_dble)                  :: ACC      ! Final accuracy
-    INTEGER(our_int)                :: ITER     ! Maximum number of iterations
-    INTEGER(our_int)                :: MODE     ! Control for communication
-
-    REAL(our_dble), ALLOCATABLE     :: W(:)     ! Working space
-    INTEGER(our_int), ALLOCATABLE   :: JW(:)    ! Working space
-    INTEGER(our_int)                :: L_JW     ! Working space
-    INTEGER(our_int)                :: L_W      ! Working space
-
-    INTEGER(our_int)                :: MINEQ    ! Locals
-    INTEGER(our_int)                :: N1       ! Locals
-
-!-------------------------------------------------------------------------------
-! Algorithm
-!-------------------------------------------------------------------------------
-
-    ! Setup
-    x_start = zero_dble
-    maxiter = 100000000_our_int
-    ftol = 1e-06_our_dble
-
-    ! Preparing SLSQP interface
-    ACC = ftol; X = x_start; M = 1; MEQ = 1
-    N = SIZE(x_shift); LA = MAX(1, M)
-    N1 = N + 1;  MINEQ = M - MEQ + N1 + N1
-    L_W = (3 * N1 + M) *( N1 + 1) + (N1 - MEQ + 1) * (MINEQ + 2) + 2 * MINEQ + &
-        (N1 + MINEQ) * (N1 - MEQ) + 2 * MEQ + N1 + (N + 1) * N / 2 + &
-        2 * M + 3 * N + 3 * N1 + 1
-    L_JW = MINEQ
-
-    ALLOCATE(C(LA), G(N + 1)); ALLOCATE(A(LA, N + 1))
-    ALLOCATE(W(L_W), JW(L_JW))
-
-    ! Decompose upper and lower bounds
-    XL = - HUGE_FLOAT; XU = HUGE_FLOAT
-
-    ! Initialize the iteration counter and MODE value
-    ITER = maxiter
-    MODE = zero_int
-
-    ! Initialization of SLSQP
-    is_finished = .False.
-
-    ! Initialize criterion function at starting values
-    F = criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
-
-    G(:2) = criterion_ambiguity_derivative(x, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
-
-    ! Initialize constraint at starting values
-    C = constraint_ambiguity(x, shocks_cov, level)
-
-    A(1,:2) = constraint_ambiguity_derivative(x, shocks_cov, level, dfunc_eps)
-
-    ! Iterate until completion
-    DO WHILE (.NOT. is_finished)
-
-        ! Evaluate criterion function and constraints
-        IF (MODE == one_int) THEN
-
-            F = criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
-            C = constraint_ambiguity(x, shocks_cov, level)
-
-         ! Evaluate gradient of criterion function and constraints. Note that the
-         ! A is of dimension (1, N + 1) and the last element needs to always
-         ! be zero.
-         ELSEIF (MODE == - one_int) THEN
-             G(:2) = criterion_ambiguity_derivative(x, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
-             A(1,:2) = constraint_ambiguity_derivative(x, shocks_cov, level, dfunc_eps)
-
-         END IF
-
-         !Call to SLSQP code
-         CALL SLSQP(M, MEQ, LA, N, X, XL, XU, F, C, G, A, ACC, ITER, MODE, W, L_W, JW, L_JW)
-
-         ! Check if SLSQP has completed
-         IF (.NOT. ABS(MODE) == one_int) THEN
-             is_finished = .True.
-         END IF
-
-     END DO
-
-    x_shift = X
-
-    ! Stabilization. If the optimization fails the starting values are
-    ! used otherwise it happens that the constraint is not satisfied by far.
-    is_success = (MODE == zero_int)
-
-    IF(.NOT. is_success) THEN
-        x_shift = x_start
-    END IF
-
-    message =  get_message(mode)
 
 END SUBROUTINE
 !*******************************************************************************
@@ -320,7 +357,7 @@ FUNCTION criterion_ambiguity_derivative(x, num_periods, num_draws_emax, period, 
 
         ei(j) = one_dble
 
-        d = dfunc_eps * ei
+        d = 1.4901161193847656e-08_our_dble * ei
 
         f1 = criterion_ambiguity(x + d, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
 
@@ -367,7 +404,7 @@ FUNCTION constraint_ambiguity_derivative(x, shocks_cov, level, dfunc_eps)
 
         ei(j) = one_dble
 
-        d = dfunc_eps * ei
+        d = 1.4901161193847656e-08_our_dble * ei
 
         f1 = constraint_ambiguity(x + d, shocks_cov, level)
 
