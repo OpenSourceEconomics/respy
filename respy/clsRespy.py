@@ -15,7 +15,7 @@ from respy.python.read.read_python import read
 
 # Special care with derived attributes is required to maintain integrity of
 # the class instance. These derived attributes cannot be changed directly.
-DERIVED_ATTR = ['min_idx', 'is_myopic']
+DERIVED_ATTR = ['min_idx', 'is_myopic', 'is_ambiguity']
 
 # Special care with solution attributes is required. These are only returned
 # if the class instance was solved.
@@ -55,8 +55,6 @@ class RespyCls(object):
         self.attr['num_agents_sim'] = None
 
         self.attr['num_agents_est'] = None
-
-        self.attr['is_ambiguity'] = None
 
         self.attr['paras_fixed'] = None
 
@@ -107,6 +105,8 @@ class RespyCls(object):
         self.attr['tau'] = None
 
         # Derived attributes
+        self.attr['is_ambiguity'] = None
+
         self.attr['is_myopic'] = None
 
         self.attr['min_idx'] = None
@@ -298,7 +298,6 @@ class RespyCls(object):
 
         # Ambiguity
         init_dict['AMBIGUITY'] = dict()
-        init_dict['AMBIGUITY']['flag'] = self.attr['is_ambiguity']
         init_dict['AMBIGUITY']['measure'] = self.attr['measure']
         init_dict['AMBIGUITY']['level'] = self.attr['level']
 
@@ -395,8 +394,6 @@ class RespyCls(object):
         self.attr['num_draws_emax'] = init_dict['SOLUTION']['draws']
 
         self.attr['is_parallel'] = init_dict['PARALLELISM']['flag']
-
-        self.attr['is_ambiguity'] = init_dict['AMBIGUITY']['flag']
 
         self.attr['num_procs'] = init_dict['PARALLELISM']['procs']
 
@@ -517,6 +514,8 @@ class RespyCls(object):
         self.attr['min_idx'] = min(num_periods, (edu_max - edu_start + 1))
 
         self.attr['is_myopic'] = (self.attr['delta'] == 0.00)
+
+        self.attr['is_ambiguity'] = (self.attr['level'] > 0.00)
 
     def _check_integrity_attributes(self):
         """ Check integrity of class instance. This testing is done the first

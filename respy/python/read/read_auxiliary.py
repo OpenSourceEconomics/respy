@@ -14,7 +14,7 @@ STRUCTURE['EDUCATION'] = ['coeff', 'max', 'start']
 STRUCTURE['HOME'] = ['coeff']
 STRUCTURE['SHOCKS'] = ['coeff']
 STRUCTURE['SOLUTION'] = ['draws', 'store', 'seed']
-STRUCTURE['AMBIGUITY'] = ['flag', 'level', 'measure']
+STRUCTURE['AMBIGUITY'] = ['level', 'measure']
 
 STRUCTURE['SIMULATION'] = ['agents', 'seed', 'file']
 
@@ -105,8 +105,6 @@ def check_line(group, flag, value):
             if flag in ['level']:
                 assert isinstance(value, float)
                 assert (value >= 0)
-            if flag in ['flag']:
-                assert value in [True, False]
             if flag in ['measure']:
                 assert value in ['kl', 'abs']
 

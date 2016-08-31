@@ -90,8 +90,8 @@ SUBROUTINE record_ambiguity_summary()
 
     LOGICAL                     :: success_info
 
-    REAL(our_int)               :: share_success
-    REAL(our_int)               :: share_failure
+    REAL(our_dble)               :: share_success
+    REAL(our_dble)               :: share_failure
 
 !------------------------------------------------------------------------------
 ! Algorithm

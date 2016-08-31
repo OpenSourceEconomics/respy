@@ -22,14 +22,12 @@ class TestClass(object):
         directly.
 
         """
-        #TODO: AFter removal of is_ambiguity level needs to be tiny.
-
         max_draws = np.random.randint(10, 100)
 
         constr = dict()
         constr['flag_parallelism'] = False
         constr['max_draws'] = max_draws
-        constr['level'] = 0.00
+        constr['level'] = 0.01
         constr['maxfun'] = 0
 
         init_dict = generate_init(constr)
@@ -47,7 +45,6 @@ class TestClass(object):
         for version in versions:
             for is_ambiguity in [True, False]:
 
-                init_dict['AMBIGUITY']['flag'] = is_ambiguity
                 init_dict['PROGRAM']['version'] = version
 
                 print_init_dict(init_dict)

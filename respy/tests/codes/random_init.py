@@ -90,9 +90,8 @@ def generate_random_dict(constraints=None):
 
     # AMBIGUITY
     dict_['AMBIGUITY'] = dict()
-    dict_['AMBIGUITY']['flag'] = np.random.choice([True, False])
     dict_['AMBIGUITY']['measure'] = np.random.choice(['abs', 'kl'])
-    dict_['AMBIGUITY']['level'] = np.random.uniform()
+    dict_['AMBIGUITY']['level'] = np.random.choice([0.0, np.random.uniform()])
 
     # ESTIMATION
     dict_['ESTIMATION'] = dict()
