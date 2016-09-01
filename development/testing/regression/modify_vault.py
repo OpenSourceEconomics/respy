@@ -51,7 +51,15 @@ for idx, _ in enumerate(tests_old):
     print('\n Modfiying Test ', idx, 'with version ', PYTHON_VERSION)
     init_dict, crit_val = tests_old[idx]
 
-    init_dict['AMBIGUITY']['measure'] = 'abs'
+    del init_dict['AMBIGUITY']['flag']
+
+    init_dict['FORT-SLSQP'] = dict()
+    init_dict['FORT-SLSQP']['maxiter'] = 100
+    init_dict['FORT-SLSQP']['ftol'] = 1e-6
+
+    init_dict['SCIPY-SLSQP'] = dict()
+    init_dict['SCIPY-SLSQP']['maxiter'] = 100
+    init_dict['SCIPY-SLSQP']['ftol'] = 1e-6
 
     tests_new += [(init_dict, crit_val)]
 

@@ -37,7 +37,7 @@ def resfort_interface(respy_obj, request, data_array=None):
     if request == 'estimate':
         # Check that selected optimizer is in line with version of program.
         if maxfun > 0:
-            assert optimizer_used in OPTIMIZERS_FORT
+            assert optimizer_used in OPT_EST_FORT
 
         assert data_array is not None
         # If an evaluation is requested, then a specially formatted dataset is
