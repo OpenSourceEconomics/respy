@@ -48,6 +48,7 @@ def get_worst_case(num_periods, num_draws_emax, period, k,
     options = dict()
     options['maxiter'] = 100000000
     options['ftol'] = 1e-06
+    options['eps'] = 1e-06
 
     x0 = np.tile(0.0, 2)
 
@@ -130,5 +131,3 @@ def kl_divergence(mean_old, cov_old, mean_new, cov_new):
 
     # Finishing.
     return rslt
-
-

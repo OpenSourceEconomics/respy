@@ -24,6 +24,7 @@ SOLUTION_ATTR += ['mapping_state_idx', 'periods_emax', 'states_all']
 
 # Full list of admissible optimizers
 OPTIMIZERS = ['SCIPY-BFGS', 'SCIPY-POWELL', 'FORT-NEWUOA', 'FORT-BFGS']
+OPTIMIZERS += ['SCIPY-SLSQP', 'FORT-SLSQP']
 
 
 class RespyCls(object):
@@ -494,11 +495,81 @@ class RespyCls(object):
                 self.attr['optimizer_options'][optimizer] = \
                     init_dict[optimizer]
 
+        self.check_optimizer_options()
+
         # Delete the duplicated information from the initialization
         # dictionary. Special treatment of EDUCATION is required as it
         # contains other information about education than just the
         # rewards parametrization.
         del self.attr['init_dict']
+
+    def check_optimizer_options(self):
+        """ This function makes sure that the optimizer options are all valid. At
+        least for those that are defined.
+        """
+        optimizer_options = self.attr['optimizer_options']
+
+        # FORT-NEWUOA
+        maxfun = optimizer_options['FORT-NEWUOA']['maxfun']
+        rhobeg = optimizer_options['FORT-NEWUOA']['rhobeg']
+        rhoend = optimizer_options['FORT-NEWUOA']['rhoend']
+        npt = optimizer_options['FORT-NEWUOA']['npt']
+
+        for var in [maxfun, npt]:
+            assert isinstance(var, int)
+            assert (var > 0)
+        for var in [rhobeg, rhoend]:
+            assert (rhobeg > rhoend)
+            assert isinstance(var, float)
+            assert (var > 0)
+
+        # FORT-BFGS
+        maxiter = optimizer_options['FORT-BFGS']['maxiter']
+        stpmx = optimizer_options['FORT-BFGS']['stpmx']
+        gtol = optimizer_options['FORT-BFGS']['gtol']
+        assert isinstance(maxiter, int)
+        assert (maxiter > 0)
+        for var in [stpmx, gtol]:
+            assert isinstance(var, float)
+            assert (var > 0)
+
+        # FORT-SLSQP
+        maxiter = optimizer_options['FORT-SLSQP']['maxiter']
+        ftol = optimizer_options['FORT-SLSQP']['ftol']
+        assert isinstance(maxiter, int)
+        assert (maxiter > 0)
+        assert isinstance(ftol, float)
+        assert (ftol > 0)
+
+        # SCIPY-BFGS
+        maxiter = optimizer_options['SCIPY-BFGS']['maxiter']
+        gtol = optimizer_options['SCIPY-BFGS']['gtol']
+        assert isinstance(maxiter, int)
+        assert (maxiter > 0)
+        assert isinstance(gtol, float)
+        assert (gtol > 0)
+
+        # SCIPY-POWELL
+        maxiter = optimizer_options['SCIPY-POWELL']['maxiter']
+        maxfun = optimizer_options['SCIPY-POWELL']['maxfun']
+        xtol = optimizer_options['SCIPY-POWELL']['xtol']
+        ftol = optimizer_options['SCIPY-POWELL']['ftol']
+        assert isinstance(maxiter, int)
+        assert (maxiter > 0)
+        assert isinstance(maxfun, int)
+        assert (maxfun > 0)
+        assert isinstance(xtol, float)
+        assert (xtol > 0)
+        assert isinstance(ftol, float)
+        assert (ftol > 0)
+
+        # SCIPY-SLSQP
+        maxiter = optimizer_options['SCIPY-SLSQP']['maxiter']
+        ftol = optimizer_options['SCIPY-SLSQP']['ftol']
+        assert isinstance(maxiter, int)
+        assert (maxiter > 0)
+        assert isinstance(ftol, float)
+        assert (ftol > 0)
 
     def _update_derived_attributes(self):
         """ Update derived attributes.

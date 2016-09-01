@@ -35,5 +35,6 @@ if not IS_FORTRAN:
     assert (not IS_PARALLEL)
 
 # Each implementation has its own set of optimizers available.
-OPTIMIZERS_PYTH = ['SCIPY-BFGS', 'SCIPY-POWELL']
-OPTIMIZERS_FORT = ['FORT-NEWUOA', 'FORT-BFGS']
+OPT_EST_PYTH = ['SCIPY-BFGS', 'SCIPY-POWELL']
+OPT_EST_FORT = ['FORT-NEWUOA', 'FORT-BFGS']
+

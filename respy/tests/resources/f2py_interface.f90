@@ -1535,9 +1535,10 @@ SUBROUTINE wrapper_get_worst_case(x_shift, is_success, message, num_periods_int,
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    !TODO: Assign RESFORT globals
-    dfunc_eps = 1.4901161193847656e-08
+    optimizer_options%fort_slsqp_maxiter = 100000000
+    optimizer_options%fort_slsqp_ftol = 1e-6
 
+    dfunc_eps = 1e-6
 
     CALL get_worst_case(x_shift, is_success, message, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic_int, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta_int, shocks_cov, level_int)
 

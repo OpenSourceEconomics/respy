@@ -175,6 +175,11 @@ def generate_random_dict(constraints=None):
     dict_['SCIPY-POWELL']['maxfun'] = np.random.randint(1, 100)
     dict_['SCIPY-POWELL']['maxiter'] = np.random.randint(1, 100)
 
+    # SCIPY-SLSQP
+    dict_['SCIPY-SLSQP'] = dict()
+    dict_['SCIPY-SLSQP']['maxiter'] = np.random.randint(1, 100)
+    dict_['SCIPY-SLSQP']['ftol'] = np.random.uniform(0.0001, 0.1)
+
     # FORT-NEWUOA
     rhobeg = np.random.uniform(0.0000001, 0.1)
 
@@ -192,6 +197,11 @@ def generate_random_dict(constraints=None):
     dict_['FORT-BFGS']['maxiter'] = np.random.randint(1, 100)
     dict_['FORT-BFGS']['stpmx'] = np.random.uniform(75, 125)
     dict_['FORT-BFGS']['gtol'] = np.random.uniform(0.0001, 0.1)
+
+    # FORT-SLSQP
+    dict_['FORT-SLSQP'] = dict()
+    dict_['FORT-SLSQP']['maxiter'] = np.random.randint(1, 100)
+    dict_['FORT-SLSQP']['ftol'] = np.random.uniform(0.0001, 0.1)
 
     """ We now impose selected constraints on the final model specification.
     These constraints can be very useful in the generation of test cases.

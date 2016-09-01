@@ -48,6 +48,15 @@ MODULE shared_constants
     REAL(our_dble), PARAMETER   :: HUGE_FLOAT                   = 1.0e20_our_dble
     REAL(our_dble), PARAMETER   :: LARGE_FLOAT                  = 1.0e8_our_dble
 
+
+
+    type optimizer_collection
+       INTEGER(our_int)   :: fort_slsqp_maxiter
+       REAL(our_dble)   :: fort_slsqp_ftol
+    end type optimizer_collection
+
+    type (optimizer_collection) optimizer_options
+
 !******************************************************************************
 !******************************************************************************
 END MODULE

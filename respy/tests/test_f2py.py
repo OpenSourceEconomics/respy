@@ -151,7 +151,6 @@ class TestClass(object):
         f90, _, _ = fort_debug.wrapper_get_worst_case(*args)
         np.testing.assert_allclose(py, f90)
 
-
     def test_2(self):
         """ Compare results between FORTRAN and PYTHON of selected
         hand-crafted functions. In test_97() we test FORTRAN implementations

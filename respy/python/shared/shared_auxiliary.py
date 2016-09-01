@@ -447,7 +447,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
     labels += ['SIMULATION', 'ESTIMATION', 'DERIVATIVES', 'SCALING']
     labels += ['PROGRAM', 'PARALLELISM']
     labels += ['INTERPOLATION', 'SCIPY-BFGS', 'SCIPY-POWELL', 'FORT-NEWUOA']
-    labels += ['FORT-BFGS']
+    labels += ['FORT-BFGS', 'SCIPY-SLSQP', 'FORT-SLSQP']
 
     # Create initialization.
     with open(file_name, 'w') as file_:
@@ -546,7 +546,8 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
 
                 file_.write('\n')
 
-            if flag in ['SCIPY-POWELL', 'SCIPY-BFGS', 'FORT-NEWUOA', 'FORT-BFGS']:
+            if flag in ['SCIPY-POWELL', 'SCIPY-BFGS', 'FORT-NEWUOA',
+                        'FORT-BFGS', 'SCIPY-SLSQP', 'FORT-SLSQP']:
 
                 # This function can also be used to print out initialization
                 # files without any optimization options. This is enough for

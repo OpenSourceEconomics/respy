@@ -8,7 +8,7 @@ import os
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import dist_model_paras
-from respy.python.shared.shared_constants import OPTIMIZERS_FORT
+from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.shared.shared_constants import EXEC_DIR
 
@@ -16,10 +16,6 @@ from respy.python.shared.shared_constants import EXEC_DIR
 def resfort_interface(respy_obj, request, data_array=None):
     """ This function provides the interface to the FORTRAN functionality.
     """
-    # Add mock specification for FORTRAN optimizers if not defined by user.
-    # This is required so the initialization file for FORTRAN is complete.
-    respy_obj = add_optimizers(respy_obj)
-
     # Distribute class attributes
     model_paras, num_periods, edu_start, is_debug, edu_max, delta, \
         num_draws_emax, seed_emax, is_interpolated, num_points_interp, \
@@ -82,39 +78,6 @@ def resfort_interface(respy_obj, request, data_array=None):
         raise AssertionError
 
     return args
-
-
-def add_optimizers(respy_obj):
-    """ This function fills up missing information about optimizers to ensure a
-    common interface.
-    """
-    optimizer_options = respy_obj.get_attr('optimizer_options')
-
-
-    for optimizer in ['FORT-NEWUOA', 'FORT-BFGS']:
-
-        # Skip if defined by user.
-        if optimizer in optimizer_options.keys():
-            continue
-
-        if optimizer in ['FORT-NEWUOA']:
-            optimizer_options[optimizer] = dict()
-            optimizer_options[optimizer]['npt'] = 40
-            optimizer_options[optimizer]['rhobeg'] = 0.1
-            optimizer_options[optimizer]['rhoend'] = 0.0001
-            optimizer_options[optimizer]['maxfun'] = 20
-
-        if optimizer in ['FORT-BFGS']:
-            optimizer_options[optimizer] = dict()
-            optimizer_options[optimizer]['gtol'] = 0.00001
-            optimizer_options[optimizer]['maxiter'] = 10
-            optimizer_options[optimizer]['stpmx'] = 100.0
-
-    respy_obj.unlock()
-    respy_obj.set_attr('optimizer_options', optimizer_options)
-    respy_obj.lock()
-
-    return respy_obj
 
 
 def get_results(num_periods, min_idx, num_agents_sim, which):
@@ -333,6 +296,12 @@ def write_resfort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         file_.write(line)
 
         line = '{0:10d}\n'.format(optimizer_options['FORT-BFGS']['maxiter'])
+        file_.write(line)
+
+        line = ' {0:15.10f}\n'.format(optimizer_options['FORT-SLSQP']['ftol'])
+        file_.write(line)
+
+        line = '{0:10d}\n'.format(optimizer_options['FORT-SLSQP']['maxiter'])
         file_.write(line)
 
 

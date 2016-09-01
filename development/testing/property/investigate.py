@@ -42,7 +42,7 @@ np.random.seed(seed)
 test_dict = get_test_dict(PACKAGE_DIR + '/respy/tests')
 module, method = get_random_request(test_dict)
 
-module, method = 'test_ambiguity', 'test_1'
+module, method = 'test_f2py', 'test_1'
 count = 0
 #os.system('git clean -d -f')
 for i in range(100000):
@@ -51,7 +51,7 @@ for i in range(100000):
     print("seed ", i)
     np.random.seed(seed)
 
-    method = 'test_' + str(np.random.choice(range(1, 3)))
+    #method = 'test_' + str(np.random.choice(range(1, 3)))
     print(module, method)
 
 

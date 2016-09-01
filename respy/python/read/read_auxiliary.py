@@ -32,6 +32,8 @@ STRUCTURE['SCIPY-BFGS'] = ['gtol', 'maxiter']
 STRUCTURE['SCIPY-POWELL'] = ['maxfun', 'xtol', 'ftol', 'maxiter']
 STRUCTURE['FORT-NEWUOA'] = ['maxfun', 'npt', 'rhobeg', 'rhoend']
 STRUCTURE['FORT-BFGS'] = ['maxiter', 'stpmx', 'gtol']
+STRUCTURE['SCIPY-SLSQP'] = ['maxiter', 'ftol']
+STRUCTURE['FORT-SLSQP'] = ['maxiter', 'ftol']
 
 
 def check_line(group, flag, value):

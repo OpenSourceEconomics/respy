@@ -8,7 +8,7 @@ from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.estimate.estimate_auxiliary import get_optim_paras
 from respy.python.estimate.estimate_wrapper import OptimizationClass
 from respy.python.shared.shared_auxiliary import dist_model_paras
-from respy.python.shared.shared_constants import OPTIMIZERS_PYTH
+from respy.python.shared.shared_constants import OPT_EST_PYTH
 from respy.python.simulate.simulate_python import pyth_simulate
 from respy.python.estimate.estimate_wrapper import MaxfunError
 from respy.python.shared.shared_auxiliary import create_draws
@@ -42,7 +42,7 @@ def respy_interface(respy_obj, request, data_array=None):
     if request == 'estimate':
         # Check that selected optimizer is in line with version of program.
         if maxfun > 0:
-            assert optimizer_used in OPTIMIZERS_PYTH
+            assert optimizer_used in OPT_EST_PYTH
 
         periods_draws_prob = create_draws(num_periods, num_draws_prob,
             seed_prob, is_debug)
@@ -129,7 +129,6 @@ def respy_interface(respy_obj, request, data_array=None):
                     message = 'Maximum number of function evaluations.'
                 elif rslt[5] == 2:
                     message = 'Maximum number of iterations.'
-
             except MaxfunError:
                 success = False
                 message = 'Maximum number of iterations exceeded.'

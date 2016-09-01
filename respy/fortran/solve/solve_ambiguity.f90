@@ -74,10 +74,6 @@ CONTAINS
 
         !/* internal objects        */
 
-        REAL(our_dble)      :: ftol
-
-        INTEGER(our_int)    :: maxiter
-
 
 
         REAL(our_dble)                  :: x_start(2)
@@ -117,11 +113,8 @@ CONTAINS
 
         ! Setup
         x_start = zero_dble
-        maxiter = 100000000_our_int
-        ftol = 1e-06_our_dble
-
         ! Preparing SLSQP interface
-        ACC = ftol;
+        ACC = optimizer_options%fort_slsqp_ftol
         X = x_start
         M = 1
         MEQ = 1
@@ -150,7 +143,7 @@ CONTAINS
         XL = - HUGE_FLOAT; XU = HUGE_FLOAT
 
         ! Initialize the iteration counter and MODE value
-        ITER = maxiter
+        ITER = optimizer_options%fort_slsqp_maxiter
         MODE = zero_int
 
         ! Initialization of SLSQP
@@ -357,7 +350,7 @@ FUNCTION criterion_ambiguity_derivative(x, num_periods, num_draws_emax, period, 
 
         ei(j) = one_dble
 
-        d = 1.4901161193847656e-08_our_dble * ei
+        d = dfunc_eps * ei
 
         f1 = criterion_ambiguity(x + d, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
 
@@ -404,7 +397,7 @@ FUNCTION constraint_ambiguity_derivative(x, shocks_cov, level, dfunc_eps)
 
         ei(j) = one_dble
 
-        d = 1.4901161193847656e-08_our_dble * ei
+        d = dfunc_eps * ei
 
         f1 = constraint_ambiguity(x + d, shocks_cov, level)
 
