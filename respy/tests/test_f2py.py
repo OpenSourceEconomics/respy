@@ -99,7 +99,6 @@ class TestClass(object):
 
         dfunc_eps = derivatives[1]
 
-
         # Sample draws
         draws_standard = np.random.multivariate_normal(np.zeros(4),
                             np.identity(4), (num_draws_emax,))
@@ -346,6 +345,7 @@ class TestClass(object):
         # Check calculation of systematic components of rewards.
         args = (num_periods, states_number_period, states_all, edu_start,
             coeffs_a, coeffs_b, coeffs_edu, coeffs_home, max_states_period)
+
         pyth = pyth_calculate_rewards_systematic(*args)
         f2py = fort_debug.f2py_calculate_rewards_systematic(*args)
         np.testing.assert_allclose(pyth, f2py)
@@ -424,13 +424,12 @@ class TestClass(object):
         base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
             shocks_cholesky, is_interpolated, num_points_interp,
             num_draws_emax, num_periods, is_myopic, edu_start, is_debug,
-            edu_max, min_idx, delta)
+            edu_max, min_idx, delta, periods_draws_emax, is_ambiguity,
+            measure, level)
 
         fort, _ = resfort_interface(respy_obj, 'simulate')
-        py = pyth_solve(*base_args + (periods_draws_emax, is_ambiguity,
-                                      measure, level, optimizer_options))
-        f2py = fort_debug.f2py_solve(*base_args + (periods_draws_emax,
-                    max_states_period, is_ambiguity, measure, level) + (
+        py = pyth_solve(*base_args + (optimizer_options, ))
+        f2py = fort_debug.f2py_solve(*base_args + (max_states_period,
             fort_slsqp_maxiter, fort_slsqp_ftol, dfunc_eps))
 
         for alt in [f2py, fort]:
@@ -559,7 +558,8 @@ class TestClass(object):
                 measure, level)
 
         py = get_endogenous_variable(*args + (optimizer_options, False))
-        f90 = fort_debug.wrapper_get_endogenous_variable(*args + (fort_slsqp_maxiter, fort_slsqp_ftol, dfunc_eps, False))
+        f90 = fort_debug.wrapper_get_endogenous_variable(*args +
+                (fort_slsqp_maxiter, fort_slsqp_ftol, dfunc_eps, False))
 
         np.testing.assert_equal(py, replace_missing_values(f90))
 

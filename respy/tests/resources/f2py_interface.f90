@@ -146,9 +146,9 @@ SUBROUTINE f2py_contributions(contribs, periods_rewards_systematic_int, mapping_
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE f2py_solve(periods_rewards_systematic_int, states_number_period_int, mapping_state_idx_int, periods_emax_int, states_all_int, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, is_interpolated_int, num_points_interp_int, num_draws_emax_int, num_periods_int, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, min_idx_int, delta_int, periods_draws_emax_int, max_states_period_int, is_ambiguity_int, measure_int, level_int, fort_slsqp_maxiter, fort_slsqp_ftol, dfunc_eps_int)
+SUBROUTINE f2py_solve(periods_rewards_systematic_int, states_number_period_int, mapping_state_idx_int, periods_emax_int, states_all_int, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, is_interpolated_int, num_points_interp_int, num_draws_emax_int, num_periods_int, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, min_idx_int, delta_int, periods_draws_emax_int, is_ambiguity_int, measure_int, level_int, max_states_period_int, fort_slsqp_maxiter, fort_slsqp_ftol, dfunc_eps_int)
 
-    ! The presence of max_states_period breaks the equality of interfaces. However, this is required so that the size of the return arguments is known from the beginning.
+    ! The presence of max_states_period breaks thequality of interfaces. However, this is required so that the size of the return arguments is known from the beginning.
 
     !/* external libraries      */
 
