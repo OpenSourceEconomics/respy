@@ -70,7 +70,7 @@ def respy_interface(respy_obj, request, data_array=None):
         # must be in the correct order already.
         args = (is_interpolated, num_draws_emax, num_periods,
             num_points_interp, is_myopic, edu_start, is_debug, edu_max, delta,
-            data_array, num_agents_est, num_draws_prob, tau, periods_draws_emax,
+            data_array, num_draws_prob, tau, periods_draws_emax,
             periods_draws_prob, states_all, states_number_period,
             mapping_state_idx, max_states_period, is_ambiguity, measure,
             level, optimizer_options)

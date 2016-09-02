@@ -6,7 +6,7 @@
 !
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, num_periods_int, num_points_interp_int, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, delta_int, data_est_int, num_agents_est_int, num_draws_prob_int, tau_int, periods_draws_emax_int, periods_draws_prob_int, states_all_int, states_number_period_int, mapping_state_idx_int, max_states_period_int, is_ambiguity_int, measure_int, level_int, fort_slsqp_maxiter, fort_slsqp_ftol, dfunc_eps_int)
+SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, num_periods_int, num_points_interp_int, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, delta_int, data_est_int, num_draws_prob_int, tau_int, periods_draws_emax_int, periods_draws_prob_int, states_all_int, states_number_period_int, mapping_state_idx_int, max_states_period_int, is_ambiguity_int, measure_int, level_int, fort_slsqp_maxiter, fort_slsqp_ftol, dfunc_eps_int)
 
     !/* external libraries      */
 
@@ -29,7 +29,6 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
     INTEGER, INTENT(IN)             :: max_states_period_int
     INTEGER, INTENT(IN)             :: num_draws_prob_int
     INTEGER, INTENT(IN)             :: num_draws_emax_int
-    INTEGER, INTENT(IN)             :: num_agents_est_int
     INTEGER, INTENT(IN)             :: fort_slsqp_maxiter
     INTEGER, INTENT(IN)             :: num_periods_int
     INTEGER, INTENT(IN)             :: edu_start_int
@@ -53,7 +52,7 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
 
     !/* internal objects            */
 
-    DOUBLE PRECISION                :: contribs(num_agents_est_int * num_periods_int)
+    DOUBLE PRECISION                :: contribs(SIZE(data_est_int, 1))
     DOUBLE PRECISION                :: shocks_cholesky(4, 4)
     DOUBLE PRECISION                :: coeffs_home(1)
     DOUBLE PRECISION                :: coeffs_edu(3)
@@ -72,11 +71,10 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
 
     ! Transfer global RESFORT variables
     num_points_interp = num_points_interp_int
-    num_agents_est = num_agents_est_int
+    num_agents_est = SIZE(data_est_int, 1) / INT(num_periods_int)
     num_draws_emax = num_draws_emax_int
     num_draws_prob = num_draws_prob_int
     num_periods = num_periods_int
-
 
     optimizer_options%fort_slsqp_maxiter = fort_slsqp_maxiter
     optimizer_options%fort_slsqp_ftol = fort_slsqp_ftol

@@ -470,12 +470,12 @@ class TestClass(object):
 
         args = (is_interpolated, num_draws_emax, num_periods,
             num_points_interp, is_myopic, edu_start, is_debug, edu_max,
-            delta, data_array, num_agents_est, num_draws_prob, tau,
+            delta, data_array, num_draws_prob, tau,
             periods_draws_emax, periods_draws_prob, states_all,
             states_number_period, mapping_state_idx, max_states_period,
             is_ambiguity, measure, level)
 
-        py = pyth_criterion(x0, *args + (optimizer_options, ))
+        py = pyth_criterion(x0, *args + (optimizer_options,))
         f2py = fort_debug.f2py_criterion(x0, *args + (
             fort_slsqp_maxiter, fort_slsqp_ftol, dfunc_eps))
         np.testing.assert_allclose(py, f2py)
