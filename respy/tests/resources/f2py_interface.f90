@@ -81,14 +81,14 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
 
     CALL fort_backward_induction(periods_emax, num_periods_int, is_myopic_int, max_states_period_int, periods_draws_emax_int, num_draws_emax_int, states_number_period_int, periods_rewards_systematic, edu_max_int, edu_start_int, mapping_state_idx_int, states_all_int, delta_int, is_debug_int, is_interpolated_int, num_points_interp_int, shocks_cholesky, is_ambiguity_int, measure_int, level_int, .False.)
 
-    CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx_int, periods_emax, states_all_int, shocks_cholesky, data_est_int, periods_draws_prob_int, delta_int, tau_int, edu_start_int, edu_max_int)
+    CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx_int, periods_emax, states_all_int, shocks_cholesky, data_est_int, periods_draws_prob_int, delta_int, tau_int, edu_start_int, edu_max_int, num_periods_int, num_draws_prob_int)
 
     crit_val = get_log_likl(contribs, num_agents_est, num_periods)
 
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE f2py_contributions(contribs, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, shocks_cholesky, data_est_int, periods_draws_prob_int, delta_int, tau_int, edu_start_int, edu_max_int, num_agents_est_int, num_periods_int, num_draws_prob_int)
+SUBROUTINE f2py_contributions(contribs, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, shocks_cholesky, data_est_int, periods_draws_prob_int, delta_int, tau_int, edu_start_int, edu_max_int, num_periods_int, num_draws_prob_int, num_agents_est_int)
 
     !/* external libraries      */
 
@@ -134,10 +134,7 @@ SUBROUTINE f2py_contributions(contribs, periods_rewards_systematic_int, mapping_
     num_periods = num_periods_int
     tau = tau_int
 
-    !num_agents_est_int, num_periods_int, num_draws_prob_int
-
-
-    CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx_int, periods_emax_int, states_all_int, shocks_cholesky, data_est_int, periods_draws_prob_int, delta_int, tau_int, edu_start_int, edu_max_int)
+    CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx_int, periods_emax_int, states_all_int, shocks_cholesky, data_est_int, periods_draws_prob_int, delta_int, tau_int, edu_start_int, edu_max_int, num_periods_int, num_draws_prob_int)
 
 END SUBROUTINE
 !******************************************************************************

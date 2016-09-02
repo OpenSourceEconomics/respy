@@ -159,7 +159,7 @@ SUBROUTINE transform_disturbances(draws_transformed, draws, shocks_cholesky, num
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_total_values(total_values, period, rewards_systematic, draws, mapping_state_idx, periods_emax, k, states_all, delta, edu_start, edu_max)
+SUBROUTINE get_total_values(total_values, period, num_periods, rewards_systematic, draws, mapping_state_idx, periods_emax, k, states_all, delta, edu_start, edu_max)
 
     !/* external objects        */
 
@@ -167,6 +167,7 @@ SUBROUTINE get_total_values(total_values, period, rewards_systematic, draws, map
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
+    INTEGER(our_int), INTENT(IN)    :: num_periods
     INTEGER(our_int), INTENT(IN)    :: edu_start
     INTEGER(our_int), INTENT(IN)    :: edu_max
     INTEGER(our_int), INTENT(IN)    :: period

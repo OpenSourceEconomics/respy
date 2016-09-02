@@ -59,7 +59,7 @@ SUBROUTINE construct_emax_risk(emax, period, k, draws_emax_transformed, rewards_
         draws = draws_emax_transformed(i, :)
 
         ! Calculate total value
-        CALL get_total_values(total_values, period, rewards_systematic, draws, mapping_state_idx, periods_emax, k, states_all, delta, edu_start, edu_max)
+        CALL get_total_values(total_values, period, num_periods, rewards_systematic, draws, mapping_state_idx, periods_emax, k, states_all, delta, edu_start, edu_max)
 
         ! Determine optimal choice
         maximum = MAXVAL(total_values)

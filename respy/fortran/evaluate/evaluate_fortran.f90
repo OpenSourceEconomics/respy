@@ -21,7 +21,7 @@ MODULE evaluate_fortran
  CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_evaluate, periods_draws_prob, delta, tau, edu_start, edu_max)
+SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_evaluate, periods_draws_prob, delta, tau, edu_start, edu_max, num_periods, num_draws_prob)
 
     !   DEVELOPMENT NOTES
     !
@@ -45,6 +45,8 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
+    INTEGER(our_int), INTENT(IN)    :: num_draws_prob
+    INTEGER(our_int), INTENT(IN)    :: num_periods
     INTEGER(our_int), INTENT(IN)    :: edu_start
     INTEGER(our_int), INTENT(IN)    :: edu_max
 
@@ -181,7 +183,7 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
                 CALL clip_value(draws(2), EXP(draws(2)), zero_dble, HUGE_FLOAT, info)
 
                 ! Calculate total values.
-                CALL get_total_values(total_values, period, rewards_systematic, draws, mapping_state_idx, periods_emax, k, states_all, delta, edu_start, edu_max)
+                CALL get_total_values(total_values, period, num_periods, rewards_systematic, draws, mapping_state_idx, periods_emax, k, states_all, delta, edu_start, edu_max)
 
                 ! Record optimal choices
                 counts(MAXLOC(total_values)) = counts(MAXLOC(total_values)) + 1

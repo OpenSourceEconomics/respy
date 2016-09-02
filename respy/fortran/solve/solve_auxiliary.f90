@@ -496,7 +496,7 @@ SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, num_stat
 
         rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
 
-        CALL get_total_values(total_values, period, rewards_systematic, shifts, mapping_state_idx, periods_emax, k, states_all, delta, edu_start, edu_max)
+        CALL get_total_values(total_values, period, num_periods, rewards_systematic, shifts, mapping_state_idx, periods_emax, k, states_all, delta, edu_start, edu_max)
 
         ! Implement level shifts
         maxe(k + 1) = MAXVAL(total_values)

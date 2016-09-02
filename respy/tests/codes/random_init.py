@@ -263,15 +263,6 @@ def generate_random_dict(constraints=None):
         dict_['EDUCATION']['start'] = start
         dict_['EDUCATION']['max'] = max_
 
-    # Replace presence of ambiguity
-    if 'is_ambiguity' in constraints.keys():
-        # Extract objects
-        is_ambiguity = constraints['is_ambiguity']
-        # Checks
-        assert (is_ambiguity in [True, False])
-        # Replace initialization file
-        dict_['AMBIGUITY']['flag'] = is_ambiguity
-
     # Replace level of ambiguity
     if 'level' in constraints.keys():
         # Extract object

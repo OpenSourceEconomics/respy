@@ -258,9 +258,6 @@ class TestClass(object):
         constr['flag_interpolation'] = False
         constr['maxfun'] = 0
 
-        # TODO: Remove later
-        constr['is_ambiguity'] = True
-
         # Generate random initialization file
         init_dict = generate_init(constr)
 

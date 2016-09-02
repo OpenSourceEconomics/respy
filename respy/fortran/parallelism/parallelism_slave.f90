@@ -152,7 +152,7 @@ PROGRAM resfort_parallel_slave
 
             CALL fort_backward_induction_slave(periods_emax, num_periods, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, num_points_interp, is_myopic, edu_start, edu_max, is_ambiguity, measure, level, num_states_slaves, .False.)
 
-            CALL fort_contributions(contribs(lower_bound:upper_bound), periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_slave, periods_draws_prob, delta, tau, edu_start, edu_max)
+            CALL fort_contributions(contribs(lower_bound:upper_bound), periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_slave, periods_draws_prob, delta, tau, edu_start, edu_max, num_periods, num_draws_prob)
 
             CALL MPI_GATHERV(contribs(lower_bound:upper_bound), num_obs_slaves(rank + 1), MPI_DOUBLE, contribs, 0, displs, MPI_DOUBLE, 0, PARENTCOMM, ierr)
 
