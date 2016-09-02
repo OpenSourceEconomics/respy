@@ -48,7 +48,9 @@ count = 0
 for i in range(100000):
 
     seed = i + 789 # 6216748723
-    print("seed ", i)
+
+    seed = 789 + 25
+    print("seed ", seed)
     np.random.seed(i)
 
     method = 'test_' + str(np.random.choice(range(1, 11)))
