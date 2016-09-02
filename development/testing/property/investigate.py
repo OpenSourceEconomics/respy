@@ -48,8 +48,7 @@ count = 0
 for i in range(100000):
 
 #    seed = 47092
-    seed = i + 1098744
-    seed = 1098752
+    seed = i + 109874564
     print("seed ", seed)
     np.random.seed(seed)
 

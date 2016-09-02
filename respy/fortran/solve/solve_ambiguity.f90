@@ -484,7 +484,7 @@ FUNCTION kl_divergence(mean_old, cov_old, mean_new, cov_new)
     ALLOCATE(mean_diff(num_dims, 1))
 
     mean_diff = RESHAPE(mean_old, (/num_dims, 1/)) - RESHAPE(mean_new, (/num_dims, 1/))
-    cov_old_inv = inverse(cov_old, num_dims)
+    cov_old_inv = pinv(cov_old, num_dims)
 
     comp_a = trace(MATMUL(cov_old_inv, cov_new))
     comp_b = MATMUL(MATMUL(TRANSPOSE(mean_diff), cov_old_inv), mean_diff)

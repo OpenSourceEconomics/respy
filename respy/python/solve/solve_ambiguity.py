@@ -124,7 +124,7 @@ def kl_divergence(mean_old, cov_old, mean_new, cov_new):
 
     num_dims = mean_old.shape[0]
 
-    cov_old_inv = np.linalg.inv(cov_old)
+    cov_old_inv = np.linalg.pinv(cov_old)
     mean_diff = mean_old - mean_new
 
     comp_a = np.trace(np.dot(cov_old_inv, cov_new))
