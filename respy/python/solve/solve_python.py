@@ -1,4 +1,3 @@
-import respy.python.shared.shared_constants as shared_constants
 from respy.python.solve.solve_auxiliary import pyth_calculate_rewards_systematic
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
 from respy.python.solve.solve_auxiliary import pyth_backward_induction

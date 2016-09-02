@@ -430,11 +430,12 @@ class TestClass(object):
         py = pyth_solve(*base_args + (periods_draws_emax, is_ambiguity,
                                       measure, level, optimizer_options))
         f2py = fort_debug.f2py_solve(*base_args + (periods_draws_emax,
-                    max_states_period, is_ambiguity, measure, level) +  (
+                    max_states_period, is_ambiguity, measure, level) + (
             fort_slsqp_maxiter, fort_slsqp_ftol, dfunc_eps))
 
         for alt in [f2py, fort]:
             for i in range(5):
+                print(i)
                 np.testing.assert_allclose(py[i], alt[i])
 
         # Distribute solution arguments for further use in simulation test.
