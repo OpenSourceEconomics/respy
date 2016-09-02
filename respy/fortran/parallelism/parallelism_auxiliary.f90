@@ -338,7 +338,7 @@ FUNCTION fort_criterion_parallel(x)
 
     CALL MPI_GATHERV(contribs, 0, MPI_DOUBLE, contribs, num_obs_slaves, displs, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
 
-    fort_criterion_parallel = get_log_likl(contribs, num_agents_est, num_periods)
+    fort_criterion_parallel = get_log_likl(contribs)
 
     IF (crit_estimation .OR. (maxfun == zero_int)) THEN
 

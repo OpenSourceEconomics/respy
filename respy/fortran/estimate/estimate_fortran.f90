@@ -188,7 +188,7 @@ FUNCTION fort_criterion(x)
     CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_est, periods_draws_prob, delta, tau, edu_start, edu_max, num_periods, num_draws_prob)
 
 
-    fort_criterion = get_log_likl(contribs, num_agents_est, num_periods)
+    fort_criterion = get_log_likl(contribs)
 
     IF (crit_estimation .OR. (maxfun == zero_int)) THEN
 

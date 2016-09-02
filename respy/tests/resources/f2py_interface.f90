@@ -92,7 +92,7 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
 
     CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx_int, periods_emax, states_all_int, shocks_cholesky, data_est_int, periods_draws_prob_int, delta_int, tau_int, edu_start_int, edu_max_int, num_periods_int, num_draws_prob_int)
 
-    crit_val = get_log_likl(contribs, num_agents_est, num_periods)
+    crit_val = get_log_likl(contribs)
 
 END SUBROUTINE
 !******************************************************************************

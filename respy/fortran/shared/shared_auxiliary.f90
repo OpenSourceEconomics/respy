@@ -29,16 +29,13 @@ MODULE shared_auxiliary
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-FUNCTION get_log_likl(contribs, num_agents_est, num_periods)
+FUNCTION get_log_likl(contribs)
 
       !/* external objects    */
 
       REAL(our_dble)                  :: get_log_likl
 
       REAL(our_dble), INTENT(IN)      :: contribs(num_agents_est * num_periods)
-
-      INTEGER(our_int), INTENT(IN)    :: num_agents_est
-      INTEGER(our_int), INTENT(IN)    :: num_periods
 
       !/* internal objects        */
 
@@ -53,7 +50,7 @@ FUNCTION get_log_likl(contribs, num_agents_est, num_periods)
     CALL clip_value_2(contribs_clipped, LOG(contribs), -HUGE_FLOAT, HUGE_FLOAT, infos)
     IF (SUM(infos) > zero_int) CALL record_warning(5)
 
-    get_log_likl = -SUM(contribs_clipped) / (DBLE(num_periods) * DBLE(num_agents_est))
+    get_log_likl = -SUM(contribs_clipped) / SIZE(contribs, 1)
 
 END FUNCTION
 !******************************************************************************
