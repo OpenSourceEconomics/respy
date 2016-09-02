@@ -45,7 +45,7 @@ def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
 def get_worst_case(num_periods, num_draws_emax, period, k,
         draws_emax_transformed, rewards_systematic, edu_max, edu_start,
         periods_emax, states_all, mapping_state_idx, delta, shocks_cov,
-                   level, optimizer_options):
+        level, optimizer_options):
     """ Run the optimization.
     """
     # Initialize options.

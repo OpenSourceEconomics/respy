@@ -10,11 +10,11 @@ def record_ambiguity(period, k, x_shift, div, success, message):
         string = ' PERIOD{0[0]:>7}  STATE{0[1]:>7}\n\n'
         file_.write(string.format([period, k]))
 
-        string = '   {:<12}{:+10.5f}\n'
+        string = '   {:<12}{:10.5f}\n'
         args = ['Occupation A'] + [x_shift[0]]
         file_.write(string.format(*args))
 
-        string = '   {:<12}{:+10.5f}\n\n'
+        string = '   {:<12}{:10.5f}\n\n'
         args = ['Occupation B'] + [x_shift[1]]
         file_.write(string.format(*args))
 

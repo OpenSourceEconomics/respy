@@ -25,7 +25,7 @@ sys.path.insert(0, PACKAGE_DIR + 'respy/tests')
 if len(sys.argv) > 1:
     cwd = os.getcwd()
     os.chdir(PACKAGE_DIR + '/respy')
-    subprocess.check_call('./waf distclean', shell=True)
+    subprocess.check_call('git clean -d -f', shell=True)
     subprocess.check_call('./waf configure build --debug', shell=True)
     os.chdir(cwd)
 else:
@@ -35,21 +35,25 @@ else:
 ''' Error Reproduction
 '''
 cleanup_testing_infrastructure(True)
-seed = 47092 # 6216748723
+seed = 28949 # 6216748723
 np.random.seed(seed)
 
 # Construct test
 test_dict = get_test_dict(PACKAGE_DIR + '/respy/tests')
 module, method = get_random_request(test_dict)
 
-#module, method = 'test_f2py', 'test_5'
+module, method = 'test_f2py', 'test_1'
 count = 0
 #os.system('git clean -d -f')
 for i in range(100000):
 
 #    seed = 47092
+    seed = i + 1098744
+    seed = 1098752
     print("seed ", seed)
     np.random.seed(seed)
+
+    module, method = get_random_request(test_dict)
 
     #method = 'test_' + str(np.random.choice(range(1, 11)))
     print(module, method)
