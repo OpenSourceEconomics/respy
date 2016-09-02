@@ -72,7 +72,8 @@ def respy_interface(respy_obj, request, data_array=None):
             num_points_interp, is_myopic, edu_start, is_debug, edu_max, delta,
             data_array, num_agents_est, num_draws_prob, tau, periods_draws_emax,
             periods_draws_prob, states_all, states_number_period,
-            mapping_state_idx, max_states_period, is_ambiguity, measure, level)
+            mapping_state_idx, max_states_period, is_ambiguity, measure,
+            level, optimizer_options)
 
         # Special case where just an evaluation at the starting values is
         # requested is accounted for. Note, that the relevant value of the
@@ -152,7 +153,7 @@ def respy_interface(respy_obj, request, data_array=None):
             coeffs_edu, coeffs_home, shocks_cholesky, is_interpolated,
             num_points_interp, num_draws_emax, num_periods, is_myopic,
             edu_start, is_debug, edu_max, min_idx, delta, periods_draws_emax,
-            is_ambiguity, measure, level)
+            is_ambiguity, measure, level, optimizer_options)
 
         solution = (periods_rewards_systematic, states_number_period,
             mapping_state_idx, periods_emax, states_all)

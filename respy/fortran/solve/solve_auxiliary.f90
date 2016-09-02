@@ -238,7 +238,7 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_backward_induction(periods_emax, num_periods, is_myopic, max_states_period, periods_draws_emax, num_draws_emax, states_number_period, periods_rewards_systematic, edu_max, edu_start, mapping_state_idx, states_all, delta, is_debug, is_interpolated, num_points_interp, shocks_cholesky, is_ambiguity, measure, level, is_write)
+SUBROUTINE fort_backward_induction(periods_emax, num_periods, is_myopic, max_states_period, periods_draws_emax, num_draws_emax, states_number_period, periods_rewards_systematic, edu_max, edu_start, mapping_state_idx, states_all, delta, is_debug, is_interpolated, num_points_interp, shocks_cholesky, is_ambiguity, measure, level, optimizer_options, is_write)
 
     !/* external objects        */
 
@@ -267,6 +267,8 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, is_myopic, max_sta
     LOGICAL, INTENT(IN)                 :: is_write
 
     CHARACTER(10), INTENT(IN)           :: measure
+
+    TYPE(optimizer_collection), INTENT(IN)  :: optimizer_options
 
     !/* internals objects       */
 

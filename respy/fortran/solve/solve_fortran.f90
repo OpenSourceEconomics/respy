@@ -19,7 +19,7 @@ MODULE solve_fortran
  CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_solve(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, is_interpolated, num_points_interp, num_draws_emax, num_periods, is_myopic, edu_start, is_debug, edu_max, min_idx, delta, periods_draws_emax, is_ambiguity, measure, level)
+SUBROUTINE fort_solve(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, is_interpolated, num_points_interp, num_draws_emax, num_periods, is_myopic, edu_start, is_debug, edu_max, min_idx, delta, periods_draws_emax, is_ambiguity, measure, level, optimizer_options)
 
     !/* external objects        */
 
@@ -52,6 +52,9 @@ SUBROUTINE fort_solve(periods_rewards_systematic, states_number_period, mapping_
     LOGICAL, INTENT(IN)                             :: is_debug
 
     CHARACTER(10), INTENT(IN)                       :: measure
+
+    TYPE(optimizer_collection), INTENT(IN)          :: optimizer_options
+
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
@@ -72,7 +75,7 @@ SUBROUTINE fort_solve(periods_rewards_systematic, states_number_period, mapping_
 
     CALL record_solution(3)
 
-    CALL fort_backward_induction(periods_emax, num_periods, is_myopic, max_states_period, periods_draws_emax, num_draws_emax, states_number_period, periods_rewards_systematic, edu_max, edu_start, mapping_state_idx, states_all, delta, is_debug, is_interpolated, num_points_interp, shocks_cholesky, is_ambiguity, measure, level, .True.)
+    CALL fort_backward_induction(periods_emax, num_periods, is_myopic, max_states_period, periods_draws_emax, num_draws_emax, states_number_period, periods_rewards_systematic, edu_max, edu_start, mapping_state_idx, states_all, delta, is_debug, is_interpolated, num_points_interp, shocks_cholesky, is_ambiguity, measure, level, optimizer_options, .True.)
 
     IF (.NOT. is_myopic) THEN
         CALL record_solution(-1)

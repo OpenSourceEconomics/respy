@@ -457,7 +457,7 @@ SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period,
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_backward_induction_slave(periods_emax, num_periods, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, num_points_interp, is_myopic, edu_start, edu_max, is_ambiguity, measure, level, num_states_slaves, update_master)
+SUBROUTINE fort_backward_induction_slave(periods_emax, num_periods, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, num_points_interp, is_myopic, edu_start, edu_max, is_ambiguity, measure, level, optimizer_options,  num_states_slaves, update_master)
 
     !/* external objects        */
 
@@ -485,6 +485,8 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, num_periods, periods_draw
     LOGICAL, INTENT(IN)                 :: is_debug
 
     CHARACTER(10), INTENT(IN)           :: measure
+
+    TYPE(optimizer_collection), INTENT(IN)  :: optimizer_options
 
     !/* internal objects        */
 

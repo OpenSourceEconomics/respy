@@ -309,11 +309,21 @@ class TestClass(object):
         # Extract class attributes
         num_periods, edu_start, edu_max, min_idx, model_paras, num_draws_emax, \
             seed_emax, is_debug, delta, is_interpolated, num_points_interp, \
-            is_ambiguity, measure, level = dist_class_attributes(respy_obj,
+            is_ambiguity, measure, level, optimizer_options, derivatives = \
+            dist_class_attributes(respy_obj,
                 'num_periods', 'edu_start', 'edu_max', 'min_idx',
                 'model_paras', 'num_draws_emax', 'seed_emax', 'is_debug',
                 'delta', 'is_interpolated', 'num_points_interp',
-                'is_ambiguity', 'measure', 'level')
+                'is_ambiguity', 'measure', 'level', 'optimizer_options',
+                'derivatives')
+
+        fort_slsqp_maxiter = optimizer_options['FORT-SLSQP']['maxiter']
+        fort_slsqp_ftol = optimizer_options['FORT-SLSQP']['ftol']
+
+        optimizer_options['SCIPY-SLSQP']['maxiter'] = fort_slsqp_maxiter
+        optimizer_options['SCIPY-SLSQP']['ftol'] = fort_slsqp_ftol
+
+        dfunc_eps = derivatives[1]
 
         # Auxiliary objects
         coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
@@ -352,10 +362,11 @@ class TestClass(object):
             num_draws_emax, states_number_period, periods_rewards_systematic,
             edu_max, edu_start, mapping_state_idx, states_all, delta,
             is_debug, is_interpolated, num_points_interp, shocks_cholesky,
-            is_ambiguity, measure, level, False)
+            is_ambiguity, measure, level)
 
-        pyth = pyth_backward_induction(*args)
-        f2py = fort_debug.f2py_backward_induction(*args)
+        pyth = pyth_backward_induction(*args + (optimizer_options, False))
+        f2py = fort_debug.f2py_backward_induction(*args + (
+            fort_slsqp_maxiter, fort_slsqp_ftol, dfunc_eps, False))
         np.testing.assert_allclose(pyth, f2py)
 
     def test_5(self):
@@ -378,13 +389,24 @@ class TestClass(object):
         num_periods, edu_start, edu_max, min_idx, model_paras, num_draws_emax, \
             is_debug, delta, is_interpolated, num_points_interp, is_myopic, \
             num_agents_sim, num_draws_prob, tau, paras_fixed, seed_sim, \
-            is_ambiguity, measure, level, num_agents_est, states_number_period \
-            = dist_class_attributes(respy_obj, 'num_periods', 'edu_start',
+            is_ambiguity, measure, level, num_agents_est, \
+            states_number_period, optimizer_options, derivatives \
+            = dist_class_attributes(respy_obj,
+                'num_periods', 'edu_start',
                 'edu_max', 'min_idx', 'model_paras', 'num_draws_emax',
                 'is_debug', 'delta', 'is_interpolated', 'num_points_interp',
                 'is_myopic', 'num_agents_sim', 'num_draws_prob', 'tau',
                 'paras_fixed', 'seed_sim', 'is_ambiguity', 'measure', 'level',
-                'num_agents_est', 'states_number_period')
+                'num_agents_est', 'states_number_period',
+                'optimizer_options', 'derivatives')
+
+        fort_slsqp_maxiter = optimizer_options['FORT-SLSQP']['maxiter']
+        fort_slsqp_ftol = optimizer_options['FORT-SLSQP']['ftol']
+
+        optimizer_options['SCIPY-SLSQP']['maxiter'] = fort_slsqp_maxiter
+        optimizer_options['SCIPY-SLSQP']['ftol'] = fort_slsqp_ftol
+
+        dfunc_eps = derivatives[1]
 
         # Write out random components and interpolation grid to align the
         # three implementations.
@@ -406,14 +428,14 @@ class TestClass(object):
 
         fort, _ = resfort_interface(respy_obj, 'simulate')
         py = pyth_solve(*base_args + (periods_draws_emax, is_ambiguity,
-                                      measure, level))
+                                      measure, level, optimizer_options))
         f2py = fort_debug.f2py_solve(*base_args + (periods_draws_emax,
-                    max_states_period, is_ambiguity, measure, level))
+                    max_states_period, is_ambiguity, measure, level) +  (
+            fort_slsqp_maxiter, fort_slsqp_ftol, dfunc_eps))
 
-        # TODO: Commnet back in later
-        #for alt in [f2py, fort]:
-        #    for i in range(5):
-        #        np.testing.assert_allclose(py[i], alt[i])
+        for alt in [f2py, fort]:
+            for i in range(5):
+                np.testing.assert_allclose(py[i], alt[i])
 
         # Distribute solution arguments for further use in simulation test.
         periods_rewards_systematic, _, mapping_state_idx, periods_emax, \
@@ -452,10 +474,10 @@ class TestClass(object):
             states_number_period, mapping_state_idx, max_states_period,
             is_ambiguity, measure, level)
 
-        py = pyth_criterion(x0, *args)
-        f2py = fort_debug.f2py_criterion(x0, *args)
-        # TODO: COmment back in, involves SLSQP tuning parameters
-        #np.testing.assert_allclose(py, f2py)
+        py = pyth_criterion(x0, *args + (optimizer_options, ))
+        f2py = fort_debug.f2py_criterion(x0, *args + (
+            fort_slsqp_maxiter, fort_slsqp_ftol, dfunc_eps))
+        np.testing.assert_allclose(py, f2py)
 
     def test_6(self):
         """ Further tests for the interpolation routines.
