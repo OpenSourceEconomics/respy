@@ -419,17 +419,13 @@ class TestClass(object):
         # estimation sample.
         data_array = py[:num_agents_est * num_periods, :]
 
-        args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-            shocks_cholesky, is_interpolated, num_draws_emax, num_periods,
-            num_points_interp, is_myopic, edu_start, is_debug, edu_max,
-            delta, data_array, num_agents_est, num_draws_prob, tau,
-            periods_draws_emax, periods_draws_prob, states_all,
-            states_number_period, mapping_state_idx, max_states_period,
-            is_ambiguity, measure, level)
+        args = (periods_rewards_systematic, mapping_state_idx,
+            periods_emax, states_all, shocks_cholesky, data_array,
+            periods_draws_prob, delta, tau, edu_start, edu_max,
+            num_agents_est, num_periods, num_draws_prob)
 
         py = pyth_contributions(*args)
         f2py = fort_debug.f2py_contributions(*args)
-
         np.testing.assert_allclose(py, f2py)
 
         # Evaluation of criterion function
