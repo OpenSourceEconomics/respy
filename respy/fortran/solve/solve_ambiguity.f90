@@ -44,7 +44,7 @@ MODULE solve_ambiguity
 CONTAINS
     !*******************************************************************************
     !*******************************************************************************
-    SUBROUTINE get_worst_case(x_shift, is_success, message, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, level)
+    SUBROUTINE get_worst_case(x_shift, is_success, message, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, level, optimizer_options)
 
         ! TODO: Fix array dimensions
 
@@ -71,6 +71,8 @@ CONTAINS
         INTEGER(our_int), INTENT(IN)    :: edu_max
         INTEGER(our_int), INTENT(IN)    :: period
         INTEGER(our_int), INTENT(IN)    :: k
+
+        TYPE(optimizer_collection), INTENT(IN) :: optimizer_options
 
         !/* internal objects        */
 
@@ -202,7 +204,7 @@ CONTAINS
     END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE construct_emax_ambiguity(emax, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, measure, level, is_write)
+SUBROUTINE construct_emax_ambiguity(emax, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, measure, level, optimizer_options, is_write)
 
     !/* external objects    */
 
@@ -228,6 +230,8 @@ SUBROUTINE construct_emax_ambiguity(emax, num_periods, num_draws_emax, period, k
 
     LOGICAL, INTENT(IN)             :: is_write
 
+    TYPE(optimizer_collection), INTENT(IN) :: optimizer_options
+
     !/* internals objects    */
 
     REAL(our_dble)                  :: x_shift(2)
@@ -249,7 +253,7 @@ SUBROUTINE construct_emax_ambiguity(emax, num_periods, num_draws_emax, period, k
 
     ELSE
 
-        CALL get_worst_case(x_shift, is_success, message, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, level)
+        CALL get_worst_case(x_shift, is_success, message, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, level, optimizer_options)
 
         div = -(constraint_ambiguity(x_shift, shocks_cov, level) - level)
 

@@ -4,11 +4,13 @@ import numpy as np
 from respy.python.record.record_ambiguity import record_ambiguity
 from respy.python.solve.solve_risk import construct_emax_risk
 
+import respy.python.shared.shared_constants as shared_constants
+
 
 def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
         draws_emax_transformed, rewards_systematic, edu_max, edu_start,
         periods_emax, states_all, mapping_state_idx, delta, shocks_cov,
-        measure, level, is_write):
+        measure, level, optimizer_options, is_write):
     """ Construct EMAX accounting for a worst case evaluation.
     """
 
@@ -24,7 +26,8 @@ def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
         x_shift, is_success, message = get_worst_case(num_periods,
             num_draws_emax, period, k, draws_emax_transformed,
             rewards_systematic, edu_max, edu_start, periods_emax, states_all,
-            mapping_state_idx, delta, shocks_cov, level)
+            mapping_state_idx, delta, shocks_cov, level,
+            optimizer_options)
 
         div = -(constraint_ambiguity(x_shift, shocks_cov, level) - level)
 
@@ -41,14 +44,15 @@ def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
 
 def get_worst_case(num_periods, num_draws_emax, period, k,
         draws_emax_transformed, rewards_systematic, edu_max, edu_start,
-        periods_emax, states_all, mapping_state_idx, delta, shocks_cov, level):
+        periods_emax, states_all, mapping_state_idx, delta, shocks_cov,
+                   level, optimizer_options):
     """ Run the optimization.
     """
     # Initialize options.
     options = dict()
-    options['maxiter'] = 100000000
-    options['ftol'] = 1e-06
-    options['eps'] = 1e-06
+    options['maxiter'] = optimizer_options['SCIPY-SLSQP']['maxiter']
+    options['ftol'] = optimizer_options['SCIPY-SLSQP']['ftol']
+    options['eps'] = shared_constants.dfunc_eps
 
     x0 = np.tile(0.0, 2)
 

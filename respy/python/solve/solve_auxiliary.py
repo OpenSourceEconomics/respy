@@ -14,6 +14,7 @@ from respy.python.solve.solve_risk import construct_emax_risk
 from respy.python.shared.shared_constants import MISSING_INT
 from respy.python.shared.shared_constants import HUGE_FLOAT
 
+import respy.python.shared.shared_constants as shared_constants
 
 def pyth_create_state_space(num_periods, edu_start, edu_max, min_idx):
     """ Create grid for state space.
@@ -231,7 +232,8 @@ def pyth_backward_induction(num_periods, is_myopic, max_states_period,
                 num_states, delta, periods_rewards_systematic, edu_max,
                 edu_start, mapping_state_idx, periods_emax, states_all,
                 is_simulated, num_draws_emax, maxe, draws_emax_transformed,
-                shocks_cov, is_ambiguity, measure, level, is_write)
+                shocks_cov, is_ambiguity, measure, level,
+                shared_constants.optimizer_options, is_write)
 
             # Create prediction model based on the random subset of points where
             # the EMAX is actually simulated and thus dependent and
@@ -257,7 +259,7 @@ def pyth_backward_induction(num_periods, is_myopic, max_states_period,
                         period, k, draws_emax_transformed, rewards_systematic,
                         edu_max, edu_start, periods_emax, states_all,
                         mapping_state_idx, delta, shocks_cov, measure, level,
-                        is_write)
+                        shared_constants.optimizer_options, is_write)
                 else:
                     emax = construct_emax_risk(num_periods, num_draws_emax,
                         period, k, draws_emax_transformed, rewards_systematic,
@@ -339,7 +341,7 @@ def get_endogenous_variable(period, num_periods, num_states, delta,
         periods_rewards_systematic, edu_max, edu_start, mapping_state_idx,
         periods_emax, states_all, is_simulated, num_draws_emax, maxe,
         draws_emax_transformed, shocks_cov, is_ambiguity, measure, level,
-        is_write):
+        optimizer_options, is_write):
     """ Construct endogenous variable for the subset of interpolation points.
     """
     # Construct auxiliary objects
@@ -359,7 +361,8 @@ def get_endogenous_variable(period, num_periods, num_states, delta,
             emax = construct_emax_ambiguity(num_periods, num_draws_emax,
                 period, k, draws_emax_transformed, rewards_systematic,
                 edu_max, edu_start, periods_emax, states_all,
-                mapping_state_idx, delta, shocks_cov, measure, level, is_write)
+                mapping_state_idx, delta, shocks_cov, measure, level,
+                optimizer_options, is_write)
         else:
             emax = construct_emax_risk(num_periods, num_draws_emax,
                 period, k, draws_emax_transformed, rewards_systematic,

@@ -648,7 +648,7 @@ SUBROUTINE wrapper_construct_emax_risk(emax, num_periods_int, num_draws_emax_int
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE wrapper_construct_emax_ambiguity(emax, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta_int, shocks_cov_int, measure_int, level_int, is_write)
+SUBROUTINE wrapper_construct_emax_ambiguity(emax, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta_int, shocks_cov_int, measure_int, level_int, fort_slsqp_maxiter, fort_slsqp_ftol, dfunc_eps_int, is_write)
 
     !/* external libraries      */
 
@@ -666,6 +666,8 @@ SUBROUTINE wrapper_construct_emax_ambiguity(emax, num_periods_int, num_draws_ema
     DOUBLE PRECISION, INTENT(IN)    :: rewards_systematic(:)
     DOUBLE PRECISION, INTENT(IN)    :: periods_emax_int(:,:)
     DOUBLE PRECISION, INTENT(IN)    :: shocks_cov_int(4, 4)
+    DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_ftol
+    DOUBLE PRECISION, INTENT(IN)    :: dfunc_eps_int
     DOUBLE PRECISION, INTENT(IN)    :: delta_int
     DOUBLE PRECISION, INTENT(IN)    :: level_int
 
@@ -674,6 +676,7 @@ SUBROUTINE wrapper_construct_emax_ambiguity(emax, num_periods_int, num_draws_ema
     INTEGER, INTENT(IN)             :: mapping_state_idx_int(:,:,:,:,:)
     INTEGER, INTENT(IN)             :: states_all_int(:,:,:)
     INTEGER, INTENT(IN)             :: num_draws_emax_int
+    INTEGER, INTENT(IN)             :: fort_slsqp_maxiter
     INTEGER, INTENT(IN)             :: num_periods_int
     INTEGER, INTENT(IN)             :: edu_start_int
     INTEGER, INTENT(IN)             :: edu_max_int
@@ -690,12 +693,18 @@ SUBROUTINE wrapper_construct_emax_ambiguity(emax, num_periods_int, num_draws_ema
     max_states_period = SIZE(states_all_int, 2)
     min_idx = SIZE(mapping_state_idx_int, 4)
 
+
+    optimizer_options%fort_slsqp_maxiter = fort_slsqp_maxiter
+    optimizer_options%fort_slsqp_ftol = fort_slsqp_ftol
+
+    dfunc_eps = dfunc_eps_int
+
     !# Transfer global RESFORT variables
     num_draws_emax = num_draws_emax_int
     num_periods = num_periods_int
 
     ! Call function of interest
-    CALL construct_emax_ambiguity(emax, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta_int, shocks_cov_int, measure_int, level_int, is_write)
+    CALL construct_emax_ambiguity(emax, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta_int, shocks_cov_int, measure_int, level_int, optimizer_options, is_write)
 
 END SUBROUTINE
 !******************************************************************************
@@ -998,7 +1007,7 @@ SUBROUTINE wrapper_get_coefficients(coeffs, Y, X, num_covars, num_states)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_periods_int, num_states, delta_int, periods_rewards_systematic_int, edu_max_int, edu_start_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_simulated, num_draws_emax_int, maxe, draws_emax_transformed, shocks_cov, is_ambiguity_int, measure_int, level_int, is_write)
+SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_periods_int, num_states, delta_int, periods_rewards_systematic_int, edu_max_int, edu_start_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_simulated, num_draws_emax_int, maxe, draws_emax_transformed, shocks_cov, is_ambiguity_int, measure_int, level_int, fort_slsqp_maxiter, fort_slsqp_ftol, dfunc_eps_int, is_write)
 
     !/* external libraries      */
 
@@ -1016,12 +1025,15 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_perio
     DOUBLE PRECISION, INTENT(IN)        :: draws_emax_transformed(:, :)
     DOUBLE PRECISION, INTENT(IN)        :: periods_emax_int(:, :)
     DOUBLE PRECISION, INTENT(IN)        :: shocks_cov(4, 4)
+    DOUBLE PRECISION, INTENT(IN)        :: fort_slsqp_ftol
+    DOUBLE PRECISION, INTENT(IN)        :: dfunc_eps_int
     DOUBLE PRECISION, INTENT(IN)        :: delta_int
     DOUBLE PRECISION, INTENT(IN)        :: level_int
     DOUBLE PRECISION, INTENT(IN)        :: maxe(:)
 
     INTEGER, INTENT(IN)                 :: mapping_state_idx_int(:, :, :, :, :)
     INTEGER, INTENT(IN)                 :: states_all_int(:, :, :)
+    INTEGER, INTENT(IN)                 :: fort_slsqp_maxiter
     INTEGER, INTENT(IN)                 :: num_draws_emax_int
     INTEGER, INTENT(IN)                 :: num_periods_int
     INTEGER, INTENT(IN)                 :: edu_start_int
@@ -1043,8 +1055,13 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_perio
     num_draws_emax = num_draws_emax_int
     num_periods = num_periods_int
 
+    optimizer_options%fort_slsqp_maxiter = fort_slsqp_maxiter
+    optimizer_options%fort_slsqp_ftol = fort_slsqp_ftol
+
+    dfunc_eps = dfunc_eps_int
+
     ! Call function of interest
-    CALL get_endogenous_variable(exogenous_variable, period, num_states, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_simulated, maxe, draws_emax_transformed, delta_int, edu_start_int, edu_max_int, shocks_cov, is_ambiguity_int, measure_int, level_int, is_write)
+    CALL get_endogenous_variable(exogenous_variable, period, num_states, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_simulated, maxe, draws_emax_transformed, delta_int, edu_start_int, edu_max_int, shocks_cov, is_ambiguity_int, measure_int, level_int, optimizer_options, is_write)
 
 END SUBROUTINE
 !******************************************************************************
@@ -1477,7 +1494,7 @@ SUBROUTINE wrapper_constraint_ambiguity(rslt, x, shocks_cov, level_int)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE wrapper_get_worst_case(x_shift, is_success, message, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic_int, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta_int, shocks_cov, level_int)
+SUBROUTINE wrapper_get_worst_case(x_shift, is_success, message, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic_int, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta_int, shocks_cov, level_int, fort_slsqp_maxiter, fort_slsqp_ftol, dfunc_eps_int)
 
     !/* external libraries      */
 
@@ -1496,16 +1513,19 @@ SUBROUTINE wrapper_get_worst_case(x_shift, is_success, message, num_periods_int,
 
         LOGICAL, INTENT(OUT)            :: is_success
 
-        DOUBLE PRECISION, INTENT(IN)      :: shocks_cov(4, 4)
-        DOUBLE PRECISION, INTENT(IN)      :: level_int
         DOUBLE PRECISION, INTENT(IN)      :: rewards_systematic_int(:)
         DOUBLE PRECISION, INTENT(IN)      :: periods_emax_int(:,:)
         DOUBLE PRECISION, INTENT(IN)      :: draws_emax_transformed(:, :)
+        DOUBLE PRECISION, INTENT(IN)      :: fort_slsqp_ftol
+        DOUBLE PRECISION, INTENT(IN)      :: shocks_cov(4, 4)
+        DOUBLE PRECISION, INTENT(IN)      :: dfunc_eps_int
         DOUBLE PRECISION, INTENT(IN)      :: delta_int
+        DOUBLE PRECISION, INTENT(IN)      :: level_int
 
         INTEGER, INTENT(IN)    :: mapping_state_idx_int(:, :, :, :, :)
         INTEGER, INTENT(IN)    :: states_all_int(:, :, :)
         INTEGER, INTENT(IN)    :: num_draws_emax_int
+        INTEGER, INTENT(IN)    :: fort_slsqp_maxiter
         INTEGER, INTENT(IN)    :: num_periods_int
         INTEGER, INTENT(IN)    :: edu_start_int
         INTEGER, INTENT(IN)    :: edu_max_int
@@ -1517,12 +1537,12 @@ SUBROUTINE wrapper_get_worst_case(x_shift, is_success, message, num_periods_int,
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    optimizer_options%fort_slsqp_maxiter = 100000000
-    optimizer_options%fort_slsqp_ftol = 1e-6
+    optimizer_options%fort_slsqp_maxiter = fort_slsqp_maxiter
+    optimizer_options%fort_slsqp_ftol = fort_slsqp_ftol
 
-    dfunc_eps = 1e-6
+    dfunc_eps = dfunc_eps_int
 
-    CALL get_worst_case(x_shift, is_success, message, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic_int, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta_int, shocks_cov, level_int)
+    CALL get_worst_case(x_shift, is_success, message, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic_int, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta_int, shocks_cov, level_int, optimizer_options)
 
 
 END SUBROUTINE

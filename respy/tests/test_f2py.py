@@ -79,15 +79,26 @@ class TestClass(object):
         # Extract class attributes
         periods_rewards_systematic, states_number_period, mapping_state_idx, \
             periods_emax, num_periods, states_all, num_draws_emax, edu_start, \
-            edu_max, delta, level, measure, model_paras, derivatives = \
+            edu_max, delta, level, measure, model_paras, derivatives, \
+            optimizer_options = \
                 dist_class_attributes(respy_obj,
                     'periods_rewards_systematic', 'states_number_period',
                     'mapping_state_idx', 'periods_emax', 'num_periods',
                     'states_all', 'num_draws_emax', 'edu_start', 'edu_max',
-                    'delta', 'level', 'measure', 'model_paras', 'derivatives')
+                    'delta', 'level', 'measure', 'model_paras', 'derivatives',
+                    'optimizer_options')
 
         shocks_cholesky = model_paras['shocks_cholesky']
         shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
+
+        fort_slsqp_maxiter = optimizer_options['FORT-SLSQP']['maxiter']
+        fort_slsqp_ftol = optimizer_options['FORT-SLSQP']['ftol']
+
+        optimizer_options['SCIPY-SLSQP']['maxiter'] = fort_slsqp_maxiter
+        optimizer_options['SCIPY-SLSQP']['ftol'] = fort_slsqp_ftol
+
+        dfunc_eps = derivatives[1]
+
 
         # Sample draws
         draws_standard = np.random.multivariate_normal(np.zeros(4),
@@ -111,10 +122,11 @@ class TestClass(object):
 
         args = (num_periods, num_draws_emax, period, k, draws_standard,
             rewards_systematic, edu_max, edu_start, periods_emax, states_all,
-            mapping_state_idx, delta, shocks_cov, measure, level, False)
+            mapping_state_idx, delta, shocks_cov, measure, level)
 
-        py = construct_emax_ambiguity(*args)
-        f90 = fort_debug.wrapper_construct_emax_ambiguity(*args)
+        py = construct_emax_ambiguity(*args + (optimizer_options, False))
+        f90 = fort_debug.wrapper_construct_emax_ambiguity(*args +
+                (fort_slsqp_maxiter, fort_slsqp_ftol, dfunc_eps, False))
         np.testing.assert_allclose(py, f90)
 
         x = np.random.uniform(-1, 1, size=2)
@@ -127,7 +139,6 @@ class TestClass(object):
         f90 = fort_debug.wrapper_criterion_ambiguity(x, *args)
         np.testing.assert_allclose(py, f90)
 
-        dfunc_eps = derivatives[1]
         py = approx_fprime(x, criterion_ambiguity, dfunc_eps, *args)
         f90 = fort_debug.wrapper_criterion_ambiguity_derivative(x, *args + (
             dfunc_eps, ))
@@ -147,8 +158,9 @@ class TestClass(object):
             periods_emax, states_all, mapping_state_idx, delta, shocks_cov,
             level)
 
-        py, _, _ = get_worst_case(*args)
-        f90, _, _ = fort_debug.wrapper_get_worst_case(*args)
+        py, _, _ = get_worst_case(*args + (optimizer_options, ))
+        f90, _, _ = fort_debug.wrapper_get_worst_case(*args + (
+            fort_slsqp_maxiter, fort_slsqp_ftol, dfunc_eps))
         np.testing.assert_allclose(py, f90)
 
     def test_2(self):
@@ -459,16 +471,25 @@ class TestClass(object):
         periods_rewards_systematic, states_number_period, mapping_state_idx, \
             seed_prob, periods_emax, num_periods, states_all, \
             num_points_interp, edu_start, num_draws_emax, is_debug, edu_max, \
-            delta, is_ambiguity, measure, level, model_paras = \
-            dist_class_attributes(respy_obj,
+            delta, is_ambiguity, measure, level, model_paras, \
+            optimizer_options, derivatives = dist_class_attributes(respy_obj,
                 'periods_rewards_systematic', 'states_number_period',
                 'mapping_state_idx', 'seed_prob', 'periods_emax',
                 'num_periods', 'states_all', 'num_points_interp', 'edu_start',
                 'num_draws_emax', 'is_debug', 'edu_max', 'delta',
-                'is_ambiguity', 'measure', 'level', 'model_paras')
+                'is_ambiguity', 'measure', 'level', 'model_paras',
+                'optimizer_options', 'derivatives')
 
         shocks_cholesky = model_paras['shocks_cholesky']
         shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
+
+        fort_slsqp_maxiter = optimizer_options['FORT-SLSQP']['maxiter']
+        fort_slsqp_ftol = optimizer_options['FORT-SLSQP']['ftol']
+
+        optimizer_options['SCIPY-SLSQP']['maxiter'] = fort_slsqp_maxiter
+        optimizer_options['SCIPY-SLSQP']['ftol'] = fort_slsqp_ftol
+
+        dfunc_eps = derivatives[1]
 
         # Add some additional objects required for the interfaces to the
         # functions.
@@ -512,10 +533,10 @@ class TestClass(object):
             periods_rewards_systematic, edu_max, edu_start,
             mapping_state_idx, periods_emax, states_all, is_simulated,
             num_draws_emax, maxe, draws_emax, shocks_cov, is_ambiguity,
-                measure, level, False)
+                measure, level)
 
-        py = get_endogenous_variable(*args)
-        f90 = fort_debug.wrapper_get_endogenous_variable(*args)
+        py = get_endogenous_variable(*args + (optimizer_options, False))
+        f90 = fort_debug.wrapper_get_endogenous_variable(*args + (fort_slsqp_maxiter, fort_slsqp_ftol, dfunc_eps, False))
 
         np.testing.assert_equal(py, replace_missing_values(f90))
 

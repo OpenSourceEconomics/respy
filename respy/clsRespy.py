@@ -13,6 +13,8 @@ from respy.python.shared.shared_auxiliary import print_init_dict
 from respy.python.shared.shared_auxiliary import dist_optim_paras
 from respy.python.read.read_python import read
 
+import respy.python.shared.shared_constants as shared_constants
+
 # Special care with derived attributes is required to maintain integrity of
 # the class instance. These derived attributes cannot be changed directly.
 DERIVED_ATTR = ['min_idx', 'is_myopic', 'is_ambiguity']
@@ -434,6 +436,8 @@ class RespyCls(object):
         self.attr['derivatives'][0] = init_dict['DERIVATIVES']['version']
         self.attr['derivatives'][1] = init_dict['DERIVATIVES']['eps']
 
+        shared_constants.dfunc_eps = self.attr['derivatives'][1]
+
         self.attr['scaling'] = [None, None]
         self.attr['scaling'][0] = init_dict['SCALING']['flag']
         self.attr['scaling'][1] = init_dict['SCALING']['minimum']
@@ -494,6 +498,8 @@ class RespyCls(object):
             if is_defined:
                 self.attr['optimizer_options'][optimizer] = \
                     init_dict[optimizer]
+
+        shared_constants.optimizer_options = self.attr['optimizer_options']
 
         self.check_optimizer_options()
 

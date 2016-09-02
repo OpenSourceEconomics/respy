@@ -51,7 +51,7 @@ for i in range(100000):
     print("seed ", i)
     np.random.seed(i)
 
-    #method = 'test_' + str(np.random.choice(range(1, 3)))
+    method = 'test_' + str(np.random.choice(range(1, 11)))
     print(module, method)
 
 
