@@ -60,78 +60,50 @@ SUBROUTINE get_worst_case(x_shift, is_success, message, num_periods, num_draws_e
 
     !/* SLSQP interface          */
 
-    INTEGER(our_int)                :: M        ! Total number of constraints
-    INTEGER(our_int)                :: MEQ      ! Total number of equality constraints
-    INTEGER(our_int)                :: LA       ! MAX(M, 1)
-    INTEGER(our_int)                :: N        ! Number of variables
-
-    REAL(our_dble)                  :: X(2)     ! Current iterate
-    REAL(our_dble)                  :: XL(2)    ! Lower bounds for x
-    REAL(our_dble)                  :: XU(2)    ! Upper bounds for x
-    REAL(our_dble)                  :: FX        ! Value of objective function
-
-    REAL(our_dble), ALLOCATABLE     :: C(:)     ! Stores the constraints
-    REAL(our_dble), ALLOCATABLE     :: G(:)     ! Partials of objective function
-    REAL(our_dble), ALLOCATABLE     :: A(:, :)  ! Normals of constraints
-
-    REAL(our_dble)                  :: ACC      ! Final accuracy
     INTEGER(our_int)                :: ITER     ! Maximum number of iterations
     INTEGER(our_int)                :: MODE     ! Control for communication
+    INTEGER(our_int)                :: MEQ      ! Total number of equality constraints
+    INTEGER(our_int)                :: LA       ! MAX(M, 1)
+    INTEGER(our_int)                :: M        ! Total number of constraints
+    INTEGER(our_int)                :: N        ! Number of variables
 
-    REAL(our_dble), ALLOCATABLE     :: W(:)     ! Working space
-    INTEGER(our_int), ALLOCATABLE   :: JW(:)    ! Working space
+    REAL(our_dble)                  :: XL(2)    ! Lower bounds for x
+    REAL(our_dble)                  :: XU(2)    ! Upper bounds for x
+    REAL(our_dble)                  :: X(2)     ! Current iterate
+    REAL(our_dble)                  :: F        ! Value of objective function
+
+    REAL(our_dble)                  :: A(1, 3)  ! Normals of constraints
+    REAL(our_dble)                  :: C(1)     ! Stores the constraints
+    REAL(our_dble)                  :: G(3)     ! Partials of objective function
+    REAL(our_dble)                  :: ACC      ! Final accuracy
+
+    REAL(our_dble)                  :: W(120)   ! Working space
+    INTEGER(our_int)                :: JW(6)    ! Working space
     INTEGER(our_int)                :: LEN_JW   ! Working space
     INTEGER(our_int)                :: LEN_W    ! Working space
-    INTEGER(our_int)                :: MINEQ    ! Locals
-    INTEGER(our_int)                :: N1       ! Locals
 
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
 
     ! Setup
-    x_start = zero_dble
     eps_der_approx = optimizer_options%fort_slsqp_eps
 
     ! Preparing SLSQP interface
     ACC = optimizer_options%fort_slsqp_ftol
-    X = x_start
-
-
-    ! These settings are deduced from the documentation at the beginning of the source file slsq.f and hard-coded for the application at hand to save some cluttering code.
-    M = 1
-    MEQ = 1
-    N = 2
-    LA = 1
-
-    N1 = N + 1
-    MINEQ = M - MEQ + N1 + N1
-
-    LEN_W = (3*n1+m)*(n1+1)+(n1-meq+1)*(mineq+2) + 2*mineq+(n1+mineq)*(n1-meq) + 2*meq + n1 + ((n+1)*n)/2 + 2*m + 3*n + 3*n1 + 1
-
-    LEN_JW = MINEQ
-
-    ALLOCATE(C(LA), G(N + 1)); ALLOCATE(A(LA, N + 1))
-    ALLOCATE(W(LEN_W), JW(LEN_JW))
-
-    C = zero_dble
-    G = zero_dble
-    A = zero_dble
-    W = zero_dble
-    JW = zero_int
-
-    ! Decompose upper and lower bounds
-    XL = - HUGE_FLOAT; XU = HUGE_FLOAT
-
-    ! Initialize the iteration counter and MODE value
     ITER = optimizer_options%fort_slsqp_maxiter
     MODE = zero_int
+    X = zero_dble
+
+    ! These settings are deduced from the documentation at the beginning of the source file slsq.f and hard-coded for the application at hand to save some cluttering code.
+    M = 1; N = 2; LA = 1; LEN_W = 120; LEN_JW = 6; MEQ = 1
+    XL = - HUGE_FLOAT; XU = HUGE_FLOAT
 
     ! Initialization of SLSQP
     is_finished = .False.
 
     ! Initialize criterion function at starting values
-    FX = criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
+    F = criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
 
     G(:2) = criterion_ambiguity_derivative(x, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, eps_der_approx)
 
@@ -146,7 +118,7 @@ SUBROUTINE get_worst_case(x_shift, is_success, message, num_periods, num_draws_e
         ! Evaluate criterion function and constraints
         IF (MODE == one_int) THEN
 
-            FX = criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
+            F = criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
             C = constraint_ambiguity(x, shocks_cov, level)
 
         ! Evaluate gradient of criterion function and constraints.
@@ -157,7 +129,7 @@ SUBROUTINE get_worst_case(x_shift, is_success, message, num_periods, num_draws_e
         END IF
 
         !Call to SLSQP code
-        CALL SLSQP(M, MEQ, LA, N, X, XL, XU, FX, C, G, A, ACC, ITER, MODE, W, LEN_W, JW, LEN_JW)
+        CALL SLSQP(M, MEQ, LA, N, X, XL, XU, F, C, G, A, ACC, ITER, MODE, W, LEN_W, JW, LEN_JW)
 
         ! Check if SLSQP has completed
         IF (.NOT. ABS(MODE) == one_int) THEN
@@ -173,7 +145,7 @@ SUBROUTINE get_worst_case(x_shift, is_success, message, num_periods, num_draws_e
     is_success = (MODE == zero_int)
 
     IF(.NOT. is_success) THEN
-        x_shift = x_start
+        x_shift = zero_dble
     END IF
 
     message =  get_message(mode)
