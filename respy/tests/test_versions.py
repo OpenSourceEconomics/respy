@@ -263,6 +263,7 @@ class TestClass(object):
 
         # Perform toolbox actions
         respy_obj = RespyCls('test.respy.ini')
+        is_ambiguity = respy_obj.get_attr('is_ambiguity')
 
         # Iterate over alternative implementations
         base_sol_log, base_est_info_log, base_est_log = None, None, None
@@ -292,12 +293,13 @@ class TestClass(object):
             assert open('sim.respy.log', 'r').read() == base_sim_log
 
             # Check for identical logging
-            if base_amb_log is None:
-                import shutil
-                shutil.copy('amb.respy.log', 'amb.respy.fort')
+            if is_ambiguity:
+                if base_amb_log is None:
+                    import shutil
+                    shutil.copy('amb.respy.log', 'amb.respy.fort')
 
-                base_amb_log = open('amb.respy.log', 'r').read()
-            assert open('amb.respy.log', 'r').read() == base_amb_log
+                    base_amb_log = open('amb.respy.log', 'r').read()
+                assert open('amb.respy.log', 'r').read() == base_amb_log
 
             estimate(respy_obj)
 
