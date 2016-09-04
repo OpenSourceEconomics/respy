@@ -1,11 +1,44 @@
 !******************************************************************************
 !******************************************************************************
-MODULE shared_lapack_interfaces
+MODULE shared_interfaces
 
     INTERFACE
 
+        SUBROUTINE SLSQP(M, MEQ, LA, N, X, XL, XU, F, C, G, A, ACC, ITER, MODE, W, LEN_W, JW, LEN_JW) !
+
+            !/* external modules    */
+
+            USE shared_constants
+
+            !/* external objects    */
+
+            INTEGER(our_int), INTENT(INOUT)     :: ITER
+            INTEGER(our_int), INTENT(INOUT)     :: MODE
+
+            REAL(our_dble), INTENT(INOUT)       :: X(N)
+            REAL(our_dble), INTENT(INOUT)       :: ACC
+
+            INTEGER(our_int), INTENT(IN)        :: JW(LEN_W)
+            INTEGER(our_int), INTENT(IN)        :: LEN_JW
+            INTEGER(our_int), INTENT(IN)        :: LEN_W
+            INTEGER(our_int), INTENT(IN)        :: MEQ
+            INTEGER(our_int), INTENT(IN)        :: LA
+            INTEGER(our_int), INTENT(IN)        :: M
+            INTEGER(our_int), INTENT(IN)        :: N
+
+            REAL(our_dble), INTENT(IN)          :: A(LA, N + 1)
+            REAL(our_dble), INTENT(IN)          :: G(N + 1)
+            REAL(our_dble), INTENT(IN)          :: W(LEN_W)
+            REAL(our_dble), INTENT(IN)          :: XL(N)
+            REAL(our_dble), INTENT(IN)          :: XU(N)
+            REAL(our_dble), INTENT(IN)          :: C(LA)
+            REAL(our_dble), INTENT(IN)          :: F
+
+        END SUBROUTINE
+
+
         SUBROUTINE DGESDD(JOBZ, M, N, A, LDA, S, U, LDU, VT, LDVT, WORK, LWORK, IWORK, INFO)
-            
+
             !/* external modules    */
 
             USE shared_constants
@@ -43,7 +76,7 @@ MODULE shared_lapack_interfaces
             !/* external objects    */
 
             REAL(our_dble), INTENT(INOUT)   :: A(N, N)
- 
+
             INTEGER(our_int), INTENT(IN)    :: INFO
             INTEGER(our_int), INTENT(IN)    :: LDA
             INTEGER(our_int), INTENT(IN)    :: N
@@ -52,7 +85,7 @@ MODULE shared_lapack_interfaces
 
         END SUBROUTINE
 
-   
+
         SUBROUTINE DGETRF(M, N, A, LDA, IPIV, INFO)
 
             !/* external modules    */
@@ -72,9 +105,9 @@ MODULE shared_lapack_interfaces
 
          END SUBROUTINE
 
-   
+
         SUBROUTINE DGETRI(N, A, LDA, IPIV, WORK, LWORK, INFO)
-            
+
             !/* external modules    */
 
             USE shared_constants

@@ -4,7 +4,7 @@ MODULE shared_auxiliary
 
     !/* external modules    */
 
-    USE shared_lapack_interfaces
+    USE shared_interfaces
 
     USE recording_warning
 

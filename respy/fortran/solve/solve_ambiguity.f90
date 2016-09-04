@@ -6,6 +6,8 @@ MODULE solve_ambiguity
 
     USE recording_ambiguity
 
+    USE shared_interfaces
+
     USE shared_constants
 
     USE shared_auxiliary
@@ -17,30 +19,7 @@ MODULE solve_ambiguity
     IMPLICIT NONE
 
     PUBLIC
-        !
-        interface  ! in :slsqp
-        !SLSQP(M, MEQ, LA, N, X, XL, XU, F, C, G, A, ACC, ITER, MODE, W, LEN_W, JW, LEN_JW)
-                 subroutine slsqp(m,meq,la,n,x,xl,xu,f,c,g,a,acc,iter,mode,w,LEN_W,jw,LEN_JW) ! in :slsqp:slsqp_optmz.f
-                     integer :: m
-                     integer :: meq
-                     integer  :: la
-                     integer :: n
-                     double precision, intent(inout) :: x(n)
-                     double precision   :: xl(n)
-                     double precision  :: xu(n)
-                     double precision :: f
-                     double precision :: c(la)
-                     double precision :: g(n + 1)
-                     double precision :: a(la,n + 1)
-                     double precision, intent(inout) :: acc
-                     integer, intent(inout) :: iter
-                     integer, intent(inout) :: mode
-                     double precision   :: w(LEN_W)
-                     integer  :: LEN_W
-                     integer :: jw(LEN_JW)
-                     integer :: LEN_JW
-                 end subroutine slsqp
-             end interface
+
 CONTAINS
     !*******************************************************************************
     !*******************************************************************************

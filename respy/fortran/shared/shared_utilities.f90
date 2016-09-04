@@ -10,8 +10,8 @@ MODULE shared_utilities
 
     !/* external modules    */
 
-    USE shared_lapack_interfaces
-    
+    USE shared_interfaces
+
     USE shared_constants
 
     !/* setup   */
