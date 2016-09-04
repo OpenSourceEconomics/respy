@@ -93,10 +93,6 @@ class TestClass(object):
 
         fort_slsqp_maxiter = optimizer_options['FORT-SLSQP']['maxiter']
         fort_slsqp_ftol = optimizer_options['FORT-SLSQP']['ftol']
-
-        optimizer_options['SCIPY-SLSQP']['maxiter'] = fort_slsqp_maxiter
-        optimizer_options['SCIPY-SLSQP']['ftol'] = fort_slsqp_ftol
-
         dfunc_eps = derivatives[1]
 
         # Sample draws
@@ -318,10 +314,6 @@ class TestClass(object):
 
         fort_slsqp_maxiter = optimizer_options['FORT-SLSQP']['maxiter']
         fort_slsqp_ftol = optimizer_options['FORT-SLSQP']['ftol']
-
-        optimizer_options['SCIPY-SLSQP']['maxiter'] = fort_slsqp_maxiter
-        optimizer_options['SCIPY-SLSQP']['ftol'] = fort_slsqp_ftol
-
         dfunc_eps = derivatives[1]
 
         # Auxiliary objects
@@ -402,10 +394,6 @@ class TestClass(object):
 
         fort_slsqp_maxiter = optimizer_options['FORT-SLSQP']['maxiter']
         fort_slsqp_ftol = optimizer_options['FORT-SLSQP']['ftol']
-
-        optimizer_options['SCIPY-SLSQP']['maxiter'] = fort_slsqp_maxiter
-        optimizer_options['SCIPY-SLSQP']['ftol'] = fort_slsqp_ftol
-
         dfunc_eps = derivatives[1]
 
         # Write out random components and interpolation grid to align the
@@ -506,10 +494,6 @@ class TestClass(object):
 
         fort_slsqp_maxiter = optimizer_options['FORT-SLSQP']['maxiter']
         fort_slsqp_ftol = optimizer_options['FORT-SLSQP']['ftol']
-
-        optimizer_options['SCIPY-SLSQP']['maxiter'] = fort_slsqp_maxiter
-        optimizer_options['SCIPY-SLSQP']['ftol'] = fort_slsqp_ftol
-
         dfunc_eps = derivatives[1]
 
         # Add some additional objects required for the interfaces to the

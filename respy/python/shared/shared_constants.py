@@ -40,5 +40,4 @@ OPT_EST_FORT = ['FORT-NEWUOA', 'FORT-BFGS']
 
 # TODO: THIS is only temporary as I slowly channel the info through the
 # interfacse.
-optimizer_options = None
 dfunc_eps = None

@@ -21,18 +21,16 @@ MODULE solve_ambiguity
     PUBLIC
 
 CONTAINS
-    !*******************************************************************************
-    !*******************************************************************************
-    SUBROUTINE get_worst_case(x_shift, is_success, message, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, level, optimizer_options)
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE get_worst_case(x_shift, is_success, message, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, level, optimizer_options)
 
         ! TODO: Fix array dimensions
 
         !/* external objects        */
 
         REAL(our_dble), INTENT(OUT)     :: x_shift(2)
-
         CHARACTER(100), INTENT(OUT)      :: message
-
         LOGICAL, INTENT(OUT)            :: is_success
 
         REAL(our_dble), INTENT(IN)      :: shocks_cov(4, 4)
@@ -55,9 +53,8 @@ CONTAINS
 
         !/* internal objects        */
 
-
-
         REAL(our_dble)                  :: x_start(2)
+
         LOGICAL                         :: is_finished
 
         !/* SLSQP interface          */
@@ -88,9 +85,9 @@ CONTAINS
         INTEGER(our_int)                :: MINEQ    ! Locals
         INTEGER(our_int)                :: N1       ! Locals
 
-    !-------------------------------------------------------------------------------
-    ! Algorithm
-    !-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
 
         ! Setup
         x_start = zero_dble
