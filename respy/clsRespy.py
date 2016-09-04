@@ -499,7 +499,10 @@ class RespyCls(object):
                 self.attr['optimizer_options'][optimizer] = \
                     init_dict[optimizer]
 
-        shared_constants.optimizer_options = self.attr['optimizer_options']
+        self.attr['optimizer_options']['FORT-SLSQP']['eps'] = init_dict[
+            'DERIVATIVES']['eps']
+        self.attr['optimizer_options']['SCIPY-SLSQP']['eps'] = init_dict[
+            'DERIVATIVES']['eps']
 
         self.check_optimizer_options()
 

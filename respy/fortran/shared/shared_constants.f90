@@ -53,6 +53,7 @@ MODULE shared_constants
     type optimizer_collection
        INTEGER(our_int)   :: fort_slsqp_maxiter
        REAL(our_dble)   :: fort_slsqp_ftol
+       REAL(our_dble)   :: fort_slsqp_eps
     end type optimizer_collection
 
     type (optimizer_collection) optimizer_options

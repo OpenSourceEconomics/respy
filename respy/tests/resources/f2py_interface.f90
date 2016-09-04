@@ -6,7 +6,7 @@
 !
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, num_periods_int, num_points_interp_int, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, delta_int, data_est_int, num_draws_prob_int, tau_int, periods_draws_emax_int, periods_draws_prob_int, states_all_int, states_number_period_int, mapping_state_idx_int, max_states_period_int, is_ambiguity_int, measure_int, level_int, fort_slsqp_maxiter, fort_slsqp_ftol, dfunc_eps_int)
+SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, num_periods_int, num_points_interp_int, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, delta_int, data_est_int, num_draws_prob_int, tau_int, periods_draws_emax_int, periods_draws_prob_int, states_all_int, states_number_period_int, mapping_state_idx_int, max_states_period_int, is_ambiguity_int, measure_int, level_int, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
 
     !/* external libraries      */
 
@@ -38,7 +38,7 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_prob_int(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: data_est_int(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_ftol
-    DOUBLE PRECISION, INTENT(IN)    :: dfunc_eps_int
+    DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_eps
     DOUBLE PRECISION, INTENT(IN)    :: level_int
     DOUBLE PRECISION, INTENT(IN)    :: delta_int
     DOUBLE PRECISION, INTENT(IN)    :: tau_int
@@ -78,8 +78,7 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
 
     optimizer_options%fort_slsqp_maxiter = fort_slsqp_maxiter
     optimizer_options%fort_slsqp_ftol = fort_slsqp_ftol
-
-    dfunc_eps = dfunc_eps_int
+    optimizer_options%fort_slsqp_eps = fort_slsqp_eps
 
     !# Distribute model parameters
     CALL dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x, dist_optim_paras_info)
@@ -146,7 +145,7 @@ SUBROUTINE f2py_contributions(contribs, periods_rewards_systematic_int, mapping_
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE f2py_solve(periods_rewards_systematic_int, states_number_period_int, mapping_state_idx_int, periods_emax_int, states_all_int, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, is_interpolated_int, num_points_interp_int, num_draws_emax_int, num_periods_int, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, min_idx_int, delta_int, periods_draws_emax_int, is_ambiguity_int, measure_int, level_int, max_states_period_int, fort_slsqp_maxiter, fort_slsqp_ftol, dfunc_eps_int)
+SUBROUTINE f2py_solve(periods_rewards_systematic_int, states_number_period_int, mapping_state_idx_int, periods_emax_int, states_all_int, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, is_interpolated_int, num_points_interp_int, num_draws_emax_int, num_periods_int, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, min_idx_int, delta_int, periods_draws_emax_int, is_ambiguity_int, measure_int, level_int, max_states_period_int, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
 
     ! The presence of max_states_period breaks thequality of interfaces. However, this is required so that the size of the return arguments is known from the beginning.
 
@@ -179,7 +178,7 @@ SUBROUTINE f2py_solve(periods_rewards_systematic_int, states_number_period_int, 
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_emax_int(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(4, 4)
     DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_ftol
-    DOUBLE PRECISION, INTENT(IN)    :: dfunc_eps_int
+    DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_eps
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_home(:)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_edu(:)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(:)
@@ -208,8 +207,7 @@ SUBROUTINE f2py_solve(periods_rewards_systematic_int, states_number_period_int, 
 
     optimizer_options%fort_slsqp_maxiter = fort_slsqp_maxiter
     optimizer_options%fort_slsqp_ftol = fort_slsqp_ftol
-
-    dfunc_eps = dfunc_eps_int
+    optimizer_options%fort_slsqp_eps = fort_slsqp_eps
 
     ! Ensure that there is no problem with the repeated allocation of the containers.
     IF (ALLOCATED(periods_rewards_systematic)) DEALLOCATE(periods_rewards_systematic)
@@ -283,7 +281,7 @@ SUBROUTINE f2py_simulate(data_sim_int, periods_rewards_systematic_int, mapping_s
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE f2py_backward_induction(periods_emax_int, num_periods_int, is_myopic_int, max_states_period_int, periods_draws_emax_int, num_draws_emax_int, states_number_period_int, periods_rewards_systematic_int, edu_max_int, edu_start_int, mapping_state_idx_int, states_all_int, delta_int, is_debug_int, is_interpolated_int, num_points_interp_int, shocks_cholesky, is_ambiguity_int, measure_int, level_int, fort_slsqp_maxiter, fort_slsqp_ftol, dfunc_eps_int, is_write)
+SUBROUTINE f2py_backward_induction(periods_emax_int, num_periods_int, is_myopic_int, max_states_period_int, periods_draws_emax_int, num_draws_emax_int, states_number_period_int, periods_rewards_systematic_int, edu_max_int, edu_start_int, mapping_state_idx_int, states_all_int, delta_int, is_debug_int, is_interpolated_int, num_points_interp_int, shocks_cholesky, is_ambiguity_int, measure_int, level_int, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, is_write)
 
     !/* external libraries      */
 
@@ -301,7 +299,7 @@ SUBROUTINE f2py_backward_induction(periods_emax_int, num_periods_int, is_myopic_
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_emax_int(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(4, 4)
     DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_ftol
-    DOUBLE PRECISION, INTENT(IN)    :: dfunc_eps_int
+    DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_eps
     DOUBLE PRECISION, INTENT(IN)    :: delta_int
     DOUBLE PRECISION, INTENT(IN)    :: level_int
 
@@ -336,8 +334,7 @@ SUBROUTINE f2py_backward_induction(periods_emax_int, num_periods_int, is_myopic_
 
     optimizer_options%fort_slsqp_maxiter = fort_slsqp_maxiter
     optimizer_options%fort_slsqp_ftol = fort_slsqp_ftol
-
-    dfunc_eps = dfunc_eps_int
+    optimizer_options%fort_slsqp_eps = fort_slsqp_eps
 
     ! Ensure that there is no problem with the repeated allocation of the containers.
     IF(ALLOCATED(periods_emax)) DEALLOCATE(periods_emax)
@@ -578,7 +575,7 @@ SUBROUTINE wrapper_criterion_ambiguity(emax, x, num_periods_int, num_draws_emax_
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE wrapper_criterion_ambiguity_derivative(grad, x, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta_int, dfunc_eps_int)
+SUBROUTINE wrapper_criterion_ambiguity_derivative(grad, x, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta_int, fort_slsqp_eps)
 
     !/* external libraries      */
 
@@ -595,7 +592,7 @@ SUBROUTINE wrapper_criterion_ambiguity_derivative(grad, x, num_periods_int, num_
     DOUBLE PRECISION, INTENT(IN)    :: draws_emax_transformed(:,:)
     DOUBLE PRECISION, INTENT(IN)    :: periods_emax_int(:,:)
     DOUBLE PRECISION, INTENT(IN)    :: rewards_systematic(:)
-    DOUBLE PRECISION, INTENT(IN)    :: dfunc_eps_int
+    DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_eps
     DOUBLE PRECISION, INTENT(IN)    :: delta_int
     DOUBLE PRECISION, INTENT(IN)    :: x(:)
 
@@ -619,9 +616,8 @@ SUBROUTINE wrapper_criterion_ambiguity_derivative(grad, x, num_periods_int, num_
 
     num_draws_emax = num_draws_emax_int
     num_periods = num_periods_int
-    dfunc_eps = dfunc_eps_int
 
-    grad = criterion_ambiguity_derivative(x, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta_int)
+    grad = criterion_ambiguity_derivative(x, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta_int, fort_slsqp_eps)
 
 END SUBROUTINE
 !******************************************************************************
@@ -672,7 +668,7 @@ SUBROUTINE wrapper_construct_emax_risk(emax, num_periods_int, num_draws_emax_int
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE wrapper_construct_emax_ambiguity(emax, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta_int, shocks_cov_int, measure_int, level_int, fort_slsqp_maxiter, fort_slsqp_ftol, dfunc_eps_int, is_write)
+SUBROUTINE wrapper_construct_emax_ambiguity(emax, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta_int, shocks_cov_int, measure_int, level_int, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, is_write)
 
     !/* external libraries      */
 
@@ -691,7 +687,7 @@ SUBROUTINE wrapper_construct_emax_ambiguity(emax, num_periods_int, num_draws_ema
     DOUBLE PRECISION, INTENT(IN)    :: periods_emax_int(:,:)
     DOUBLE PRECISION, INTENT(IN)    :: shocks_cov_int(4, 4)
     DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_ftol
-    DOUBLE PRECISION, INTENT(IN)    :: dfunc_eps_int
+    DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_eps
     DOUBLE PRECISION, INTENT(IN)    :: delta_int
     DOUBLE PRECISION, INTENT(IN)    :: level_int
 
@@ -717,11 +713,9 @@ SUBROUTINE wrapper_construct_emax_ambiguity(emax, num_periods_int, num_draws_ema
     max_states_period = SIZE(states_all_int, 2)
     min_idx = SIZE(mapping_state_idx_int, 4)
 
-
     optimizer_options%fort_slsqp_maxiter = fort_slsqp_maxiter
     optimizer_options%fort_slsqp_ftol = fort_slsqp_ftol
-
-    dfunc_eps = dfunc_eps_int
+    optimizer_options%fort_slsqp_eps = fort_slsqp_eps
 
     !# Transfer global RESFORT variables
     num_draws_emax = num_draws_emax_int
@@ -1031,7 +1025,7 @@ SUBROUTINE wrapper_get_coefficients(coeffs, Y, X, num_covars, num_states)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_periods_int, num_states, delta_int, periods_rewards_systematic_int, edu_max_int, edu_start_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_simulated, num_draws_emax_int, maxe, draws_emax_transformed, shocks_cov, is_ambiguity_int, measure_int, level_int, fort_slsqp_maxiter, fort_slsqp_ftol, dfunc_eps_int, is_write)
+SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_periods_int, num_states, delta_int, periods_rewards_systematic_int, edu_max_int, edu_start_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_simulated, num_draws_emax_int, maxe, draws_emax_transformed, shocks_cov, is_ambiguity_int, measure_int, level_int, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, is_write)
 
     !/* external libraries      */
 
@@ -1050,7 +1044,7 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_perio
     DOUBLE PRECISION, INTENT(IN)        :: periods_emax_int(:, :)
     DOUBLE PRECISION, INTENT(IN)        :: shocks_cov(4, 4)
     DOUBLE PRECISION, INTENT(IN)        :: fort_slsqp_ftol
-    DOUBLE PRECISION, INTENT(IN)        :: dfunc_eps_int
+    DOUBLE PRECISION, INTENT(IN)        :: fort_slsqp_eps
     DOUBLE PRECISION, INTENT(IN)        :: delta_int
     DOUBLE PRECISION, INTENT(IN)        :: level_int
     DOUBLE PRECISION, INTENT(IN)        :: maxe(:)
@@ -1081,8 +1075,7 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_perio
 
     optimizer_options%fort_slsqp_maxiter = fort_slsqp_maxiter
     optimizer_options%fort_slsqp_ftol = fort_slsqp_ftol
-
-    dfunc_eps = dfunc_eps_int
+    optimizer_options%fort_slsqp_eps = fort_slsqp_eps
 
     ! Call function of interest
     CALL get_endogenous_variable(exogenous_variable, period, num_states, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_simulated, maxe, draws_emax_transformed, delta_int, edu_start_int, edu_max_int, shocks_cov, is_ambiguity_int, measure_int, level_int, optimizer_options, is_write)
@@ -1518,7 +1511,7 @@ SUBROUTINE wrapper_constraint_ambiguity(rslt, x, shocks_cov, level_int)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE wrapper_get_worst_case(x_shift, is_success, message, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic_int, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta_int, shocks_cov, level_int, fort_slsqp_maxiter, fort_slsqp_ftol, dfunc_eps_int)
+SUBROUTINE wrapper_get_worst_case(x_shift, is_success, message, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic_int, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta_int, shocks_cov, level_int, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
 
     !/* external libraries      */
 
@@ -1542,7 +1535,7 @@ SUBROUTINE wrapper_get_worst_case(x_shift, is_success, message, num_periods_int,
         DOUBLE PRECISION, INTENT(IN)      :: draws_emax_transformed(:, :)
         DOUBLE PRECISION, INTENT(IN)      :: fort_slsqp_ftol
         DOUBLE PRECISION, INTENT(IN)      :: shocks_cov(4, 4)
-        DOUBLE PRECISION, INTENT(IN)      :: dfunc_eps_int
+        DOUBLE PRECISION, INTENT(IN)      :: fort_slsqp_eps
         DOUBLE PRECISION, INTENT(IN)      :: delta_int
         DOUBLE PRECISION, INTENT(IN)      :: level_int
 
@@ -1563,8 +1556,7 @@ SUBROUTINE wrapper_get_worst_case(x_shift, is_success, message, num_periods_int,
 
     optimizer_options%fort_slsqp_maxiter = fort_slsqp_maxiter
     optimizer_options%fort_slsqp_ftol = fort_slsqp_ftol
-
-    dfunc_eps = dfunc_eps_int
+    optimizer_options%fort_slsqp_eps = fort_slsqp_eps
 
     CALL get_worst_case(x_shift, is_success, message, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic_int, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta_int, shocks_cov, level_int, optimizer_options)
 
@@ -1572,7 +1564,7 @@ SUBROUTINE wrapper_get_worst_case(x_shift, is_success, message, num_periods_int,
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE wrapper_constraint_ambiguity_derivative(rslt, x, shocks_cov, level_int, dfunc_eps_int)
+SUBROUTINE wrapper_constraint_ambiguity_derivative(rslt, x, shocks_cov, level_int, eps_der_approx)
 
     !/* external libraries      */
 
@@ -1587,7 +1579,7 @@ SUBROUTINE wrapper_constraint_ambiguity_derivative(rslt, x, shocks_cov, level_in
     DOUBLE PRECISION, INTENT(OUT)       :: rslt(2)
 
     DOUBLE PRECISION, INTENT(IN)        :: shocks_cov(4, 4)
-    DOUBLE PRECISION, INTENT(IN)        :: dfunc_eps_int
+    DOUBLE PRECISION, INTENT(IN)        :: eps_der_approx
     DOUBLE PRECISION, INTENT(IN)        :: level_int
     DOUBLE PRECISION, INTENT(IN)        :: x(2)
 
@@ -1595,7 +1587,7 @@ SUBROUTINE wrapper_constraint_ambiguity_derivative(rslt, x, shocks_cov, level_in
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    rslt = constraint_ambiguity_derivative(x, shocks_cov, level_int, dfunc_eps_int)
+    rslt = constraint_ambiguity_derivative(x, shocks_cov, level_int, eps_der_approx)
 
 END SUBROUTINE
 !******************************************************************************

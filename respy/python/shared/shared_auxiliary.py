@@ -560,6 +560,12 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                 keys.sort()
                 for key_ in keys:
 
+                    # The derivative is approximated with the dfunc_eps
+                    # attribute. All derivatives in the package have a single
+                    # approximation step size.
+                    if key_ == 'eps':
+                        continue
+
                     if key_ in ['maxfun', 'npt', 'maxiter']:
                         str_ = '{0:<10} {1:>20}\n'
                         file_.write(str_.format(key_, dict_[flag][key_]))

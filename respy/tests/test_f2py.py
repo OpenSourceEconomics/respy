@@ -93,7 +93,7 @@ class TestClass(object):
 
         fort_slsqp_maxiter = optimizer_options['FORT-SLSQP']['maxiter']
         fort_slsqp_ftol = optimizer_options['FORT-SLSQP']['ftol']
-        dfunc_eps = derivatives[1]
+        fort_slsqp_eps = optimizer_options['FORT-SLSQP']['eps']
 
         # Sample draws
         draws_standard = np.random.multivariate_normal(np.zeros(4),
@@ -121,7 +121,7 @@ class TestClass(object):
 
         py = construct_emax_ambiguity(*args + (optimizer_options, False))
         f90 = fort_debug.wrapper_construct_emax_ambiguity(*args +
-                (fort_slsqp_maxiter, fort_slsqp_ftol, dfunc_eps, False))
+                (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, False))
         np.testing.assert_allclose(py, f90)
 
         x = np.random.uniform(-1, 1, size=2)
@@ -134,9 +134,9 @@ class TestClass(object):
         f90 = fort_debug.wrapper_criterion_ambiguity(x, *args)
         np.testing.assert_allclose(py, f90)
 
-        py = approx_fprime(x, criterion_ambiguity, dfunc_eps, *args)
+        py = approx_fprime(x, criterion_ambiguity, fort_slsqp_eps, *args)
         f90 = fort_debug.wrapper_criterion_ambiguity_derivative(x, *args + (
-            dfunc_eps, ))
+            fort_slsqp_eps, ))
         np.testing.assert_allclose(py, f90)
 
         args = (shocks_cov, level)
@@ -144,8 +144,8 @@ class TestClass(object):
         f90 = fort_debug.wrapper_constraint_ambiguity(x, *args)
         np.testing.assert_allclose(py, f90)
 
-        py = approx_fprime(x, constraint_ambiguity, dfunc_eps, *args)
-        f90 = fort_debug.wrapper_constraint_ambiguity_derivative(x, *args + (dfunc_eps, ))
+        py = approx_fprime(x, constraint_ambiguity, fort_slsqp_eps, *args)
+        f90 = fort_debug.wrapper_constraint_ambiguity_derivative(x, *args + (fort_slsqp_eps, ))
         np.testing.assert_allclose(py, f90)
 
         args = (num_periods, num_draws_emax, period, k,
@@ -155,7 +155,7 @@ class TestClass(object):
 
         py, _, _ = get_worst_case(*args + (optimizer_options, ))
         f90, _, _ = fort_debug.wrapper_get_worst_case(*args + (
-            fort_slsqp_maxiter, fort_slsqp_ftol, dfunc_eps))
+            fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps))
         np.testing.assert_allclose(py, f90)
 
     def test_2(self):
@@ -314,7 +314,7 @@ class TestClass(object):
 
         fort_slsqp_maxiter = optimizer_options['FORT-SLSQP']['maxiter']
         fort_slsqp_ftol = optimizer_options['FORT-SLSQP']['ftol']
-        dfunc_eps = derivatives[1]
+        fort_slsqp_eps = optimizer_options['FORT-SLSQP']['eps']
 
         # Auxiliary objects
         coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
@@ -358,7 +358,7 @@ class TestClass(object):
 
         pyth = pyth_backward_induction(*args + (optimizer_options, False))
         f2py = fort_debug.f2py_backward_induction(*args + (
-            fort_slsqp_maxiter, fort_slsqp_ftol, dfunc_eps, False))
+            fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, False))
         np.testing.assert_allclose(pyth, f2py)
 
     def test_5(self):
@@ -394,7 +394,7 @@ class TestClass(object):
 
         fort_slsqp_maxiter = optimizer_options['FORT-SLSQP']['maxiter']
         fort_slsqp_ftol = optimizer_options['FORT-SLSQP']['ftol']
-        dfunc_eps = derivatives[1]
+        fort_slsqp_eps = optimizer_options['FORT-SLSQP']['eps']
 
         # Write out random components and interpolation grid to align the
         # three implementations.
@@ -418,7 +418,7 @@ class TestClass(object):
         fort, _ = resfort_interface(respy_obj, 'simulate')
         py = pyth_solve(*base_args + (optimizer_options, ))
         f2py = fort_debug.f2py_solve(*base_args + (max_states_period,
-            fort_slsqp_maxiter, fort_slsqp_ftol, dfunc_eps))
+            fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps))
 
         for alt in [f2py, fort]:
             for i in range(5):
@@ -463,7 +463,7 @@ class TestClass(object):
 
         py = pyth_criterion(x0, *args + (optimizer_options,))
         f2py = fort_debug.f2py_criterion(x0, *args + (
-            fort_slsqp_maxiter, fort_slsqp_ftol, dfunc_eps))
+            fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps))
         np.testing.assert_allclose(py, f2py)
 
     def test_6(self):
@@ -494,7 +494,7 @@ class TestClass(object):
 
         fort_slsqp_maxiter = optimizer_options['FORT-SLSQP']['maxiter']
         fort_slsqp_ftol = optimizer_options['FORT-SLSQP']['ftol']
-        dfunc_eps = derivatives[1]
+        fort_slsqp_eps = optimizer_options['FORT-SLSQP']['eps']
 
         # Add some additional objects required for the interfaces to the
         # functions.
@@ -542,7 +542,7 @@ class TestClass(object):
 
         py = get_endogenous_variable(*args + (optimizer_options, False))
         f90 = fort_debug.wrapper_get_endogenous_variable(*args +
-                (fort_slsqp_maxiter, fort_slsqp_ftol, dfunc_eps, False))
+                (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, False))
 
         np.testing.assert_equal(py, replace_missing_values(f90))
 

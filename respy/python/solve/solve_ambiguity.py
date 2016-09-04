@@ -58,7 +58,7 @@ def get_worst_case(num_periods, num_draws_emax, period, k,
     options = dict()
     options['maxiter'] = optimizer_options['SCIPY-SLSQP']['maxiter']
     options['ftol'] = optimizer_options['SCIPY-SLSQP']['ftol']
-    options['eps'] = shared_constants.dfunc_eps
+    options['eps'] = optimizer_options['SCIPY-SLSQP']['eps']
 
     x0 = np.tile(0.0, 2)
 

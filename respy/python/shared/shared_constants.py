@@ -37,7 +37,3 @@ if not IS_FORTRAN:
 # Each implementation has its own set of optimizers available.
 OPT_EST_PYTH = ['SCIPY-BFGS', 'SCIPY-POWELL']
 OPT_EST_FORT = ['FORT-NEWUOA', 'FORT-BFGS']
-
-# TODO: THIS is only temporary as I slowly channel the info through the
-# interfacse.
-dfunc_eps = None

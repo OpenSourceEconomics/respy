@@ -811,7 +811,7 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
 
     CLOSE(99)
 
-    !optimizer_options%fort_slsqp_maxiter = 123
+    optimizer_options%fort_slsqp_eps = dfunc_eps
 
     ! Constructed attributes
     num_free =  COUNT(.NOT. paras_fixed)
