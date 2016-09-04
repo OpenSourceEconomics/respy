@@ -14,11 +14,17 @@ def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
     """ Construct EMAX accounting for a worst case evaluation.
     """
 
+    is_deterministic = (np.count_nonzero(shocks_cov) == 0)
+
     args = (num_periods, num_draws_emax, period, k, draws_emax_transformed,
         rewards_systematic, edu_max, edu_start, periods_emax, states_all,
         mapping_state_idx, delta)
 
-    if measure == 'abs':
+    if is_deterministic:
+        x_shift, div = [0.0, 0.0], 0.0
+        is_success, message = True, 'No random variation in shocks.'
+
+    elif measure == 'abs':
         x_shift, div = [-level, -level], level
         is_success, message = True, 'Optimization terminated successfully.'
 

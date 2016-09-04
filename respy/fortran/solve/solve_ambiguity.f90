@@ -239,20 +239,28 @@ SUBROUTINE construct_emax_ambiguity(emax, num_periods, num_draws_emax, period, k
 
     CHARACTER(100)                  :: message
 
+    LOGICAL                         :: is_deterministic
     LOGICAL                         :: is_success
 
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    IF(TRIM(measure) == 'abs') THEN
+    is_deterministic = ALL(shocks_cov .EQ. zero_dble)
+
+    IF(is_deterministic) THEN
+        x_shift = (/zero_dble, zero_dble/)
+        div = zero_dble
+        is_success = .True.
+        message = 'No random variation in shocks.'
+
+    ELSE IF(TRIM(measure) == 'abs') THEN
         x_shift = (/-level, -level/)
         div = level
         is_success = .True.
         message = 'Optimization terminated successfully.'
 
     ELSE
-
         CALL get_worst_case(x_shift, is_success, message, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, level, optimizer_options)
 
         div = -(constraint_ambiguity(x_shift, shocks_cov, level) - level)
@@ -303,8 +311,6 @@ FUNCTION get_message(mode)
         get_message = 'Positive directional derivative for linesearch'
     ELSEIF (mode == 9) THEN
         get_message = 'Iteration limit exceeded'
-    ELSEIF (mode == 10) THEN
-        get_message = 'No random variation in shocks.'
     END IF
 
 END FUNCTION
