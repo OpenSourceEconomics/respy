@@ -545,10 +545,12 @@ class RespyCls(object):
         # FORT-SLSQP
         maxiter = optimizer_options['FORT-SLSQP']['maxiter']
         ftol = optimizer_options['FORT-SLSQP']['ftol']
+        eps = optimizer_options['FORT-SLSQP']['eps']
         assert isinstance(maxiter, int)
         assert (maxiter > 0)
-        assert isinstance(ftol, float)
-        assert (ftol > 0)
+        for var in [eps, ftol]:
+            assert isinstance(var, float)
+            assert (var > 0)
 
         # SCIPY-BFGS
         maxiter = optimizer_options['SCIPY-BFGS']['maxiter']
@@ -575,10 +577,12 @@ class RespyCls(object):
         # SCIPY-SLSQP
         maxiter = optimizer_options['SCIPY-SLSQP']['maxiter']
         ftol = optimizer_options['SCIPY-SLSQP']['ftol']
+        eps = optimizer_options['SCIPY-SLSQP']['eps']
         assert isinstance(maxiter, int)
         assert (maxiter > 0)
-        assert isinstance(ftol, float)
-        assert (ftol > 0)
+        for var in [eps, ftol]:
+            assert isinstance(var, float)
+            assert (var > 0)
 
     def _update_derived_attributes(self):
         """ Update derived attributes.
@@ -596,6 +600,11 @@ class RespyCls(object):
         self.attr['is_myopic'] = (self.attr['delta'] == 0.00)
 
         self.attr['is_ambiguity'] = (self.attr['level'] > 0.00)
+
+        self.attr['optimizer_options']['FORT-SLSQP']['eps'] = self.attr[
+            'derivatives'][1]
+        self.attr['optimizer_options']['SCIPY-SLSQP']['eps'] = self.attr[
+            'derivatives'][1]
 
     def _check_integrity_attributes(self):
         """ Check integrity of class instance. This testing is done the first
