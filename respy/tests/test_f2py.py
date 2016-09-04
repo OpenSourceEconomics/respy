@@ -434,7 +434,6 @@ class TestClass(object):
 
         for alt in [f2py, fort]:
             for i in range(5):
-                print(i)
                 np.testing.assert_allclose(py[i], alt[i])
 
         # Distribute solution arguments for further use in simulation test.
