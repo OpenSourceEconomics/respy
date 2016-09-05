@@ -76,9 +76,9 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
     num_draws_prob = num_draws_prob_int
     num_periods = num_periods_int
 
-    optimizer_options%fort_slsqp_maxiter = fort_slsqp_maxiter
-    optimizer_options%fort_slsqp_ftol = fort_slsqp_ftol
-    optimizer_options%fort_slsqp_eps = fort_slsqp_eps
+    optimizer_options%slsqp%maxiter = fort_slsqp_maxiter
+    optimizer_options%slsqp%ftol = fort_slsqp_ftol
+    optimizer_options%slsqp%eps = fort_slsqp_eps
 
     !# Distribute model parameters
     CALL dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x, dist_optim_paras_info)
@@ -204,10 +204,9 @@ SUBROUTINE f2py_solve(periods_rewards_systematic_int, states_number_period_int, 
     num_periods = num_periods_int
     min_idx = min_idx_int
 
-
-    optimizer_options%fort_slsqp_maxiter = fort_slsqp_maxiter
-    optimizer_options%fort_slsqp_ftol = fort_slsqp_ftol
-    optimizer_options%fort_slsqp_eps = fort_slsqp_eps
+    optimizer_options%slsqp%maxiter = fort_slsqp_maxiter
+    optimizer_options%slsqp%ftol = fort_slsqp_ftol
+    optimizer_options%slsqp%eps = fort_slsqp_eps
 
     ! Ensure that there is no problem with the repeated allocation of the containers.
     IF (ALLOCATED(periods_rewards_systematic)) DEALLOCATE(periods_rewards_systematic)
@@ -332,9 +331,9 @@ SUBROUTINE f2py_backward_induction(periods_emax_int, num_periods_int, is_myopic_
     num_draws_emax = num_draws_emax_int
     num_periods = num_periods_int
 
-    optimizer_options%fort_slsqp_maxiter = fort_slsqp_maxiter
-    optimizer_options%fort_slsqp_ftol = fort_slsqp_ftol
-    optimizer_options%fort_slsqp_eps = fort_slsqp_eps
+    optimizer_options%slsqp%maxiter = fort_slsqp_maxiter
+    optimizer_options%slsqp%ftol = fort_slsqp_ftol
+    optimizer_options%slsqp%eps = fort_slsqp_eps
 
     ! Ensure that there is no problem with the repeated allocation of the containers.
     IF(ALLOCATED(periods_emax)) DEALLOCATE(periods_emax)
@@ -713,9 +712,9 @@ SUBROUTINE wrapper_construct_emax_ambiguity(emax, num_periods_int, num_draws_ema
     max_states_period = SIZE(states_all_int, 2)
     min_idx = SIZE(mapping_state_idx_int, 4)
 
-    optimizer_options%fort_slsqp_maxiter = fort_slsqp_maxiter
-    optimizer_options%fort_slsqp_ftol = fort_slsqp_ftol
-    optimizer_options%fort_slsqp_eps = fort_slsqp_eps
+    optimizer_options%slsqp%maxiter = fort_slsqp_maxiter
+    optimizer_options%slsqp%ftol = fort_slsqp_ftol
+    optimizer_options%slsqp%eps = fort_slsqp_eps
 
     !# Transfer global RESFORT variables
     num_draws_emax = num_draws_emax_int
@@ -1073,9 +1072,9 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_perio
     num_draws_emax = num_draws_emax_int
     num_periods = num_periods_int
 
-    optimizer_options%fort_slsqp_maxiter = fort_slsqp_maxiter
-    optimizer_options%fort_slsqp_ftol = fort_slsqp_ftol
-    optimizer_options%fort_slsqp_eps = fort_slsqp_eps
+    optimizer_options%slsqp%maxiter = fort_slsqp_maxiter
+    optimizer_options%slsqp%ftol = fort_slsqp_ftol
+    optimizer_options%slsqp%eps = fort_slsqp_eps
 
     ! Call function of interest
     CALL get_endogenous_variable(exogenous_variable, period, num_states, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_simulated, maxe, draws_emax_transformed, delta_int, edu_start_int, edu_max_int, shocks_cov, is_ambiguity_int, measure_int, level_int, optimizer_options, is_write)
@@ -1554,9 +1553,9 @@ SUBROUTINE wrapper_get_worst_case(x_shift, is_success, message, num_periods_int,
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    optimizer_options%fort_slsqp_maxiter = fort_slsqp_maxiter
-    optimizer_options%fort_slsqp_ftol = fort_slsqp_ftol
-    optimizer_options%fort_slsqp_eps = fort_slsqp_eps
+    optimizer_options%slsqp%maxiter = fort_slsqp_maxiter
+    optimizer_options%slsqp%ftol = fort_slsqp_ftol
+    optimizer_options%slsqp%eps = fort_slsqp_eps
 
     CALL get_worst_case(x_shift, is_success, message, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic_int, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta_int, shocks_cov, level_int, optimizer_options)
 

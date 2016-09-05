@@ -806,12 +806,12 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
         READ(99, 1500) bfgs_stpmx
         READ(99, 1505) bfgs_maxiter
 
-        READ(99, 1500) optimizer_options%fort_slsqp_ftol
-        READ(99, 1505) optimizer_options%fort_slsqp_maxiter
+        READ(99, 1500) optimizer_options%slsqp%ftol
+        READ(99, 1505) optimizer_options%slsqp%maxiter
 
     CLOSE(99)
 
-    optimizer_options%fort_slsqp_eps = dfunc_eps
+    optimizer_options%slsqp%eps = dfunc_eps
 
     ! Constructed attributes
     num_free =  COUNT(.NOT. paras_fixed)

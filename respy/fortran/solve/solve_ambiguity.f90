@@ -86,11 +86,11 @@ SUBROUTINE get_worst_case(x_shift, is_success, message, num_periods, num_draws_e
 !------------------------------------------------------------------------------
 
     ! Setup
-    eps_der_approx = optimizer_options%fort_slsqp_eps
+    eps_der_approx = optimizer_options%slsqp%eps
 
     ! Preparing SLSQP interface
-    ACC = optimizer_options%fort_slsqp_ftol
-    ITER = optimizer_options%fort_slsqp_maxiter
+    ITER = optimizer_options%slsqp%maxiter
+    ACC = optimizer_options%slsqp%ftol
     MODE = zero_int
     X = zero_dble
 

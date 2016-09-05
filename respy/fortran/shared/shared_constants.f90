@@ -50,13 +50,42 @@ MODULE shared_constants
 
 
 
-    type optimizer_collection
-       INTEGER(our_int)   :: fort_slsqp_maxiter
-       REAL(our_dble)   :: fort_slsqp_ftol
-       REAL(our_dble)   :: fort_slsqp_eps
-    end type optimizer_collection
+    TYPE OPTIMIZER_BFGS
 
-    type (optimizer_collection) optimizer_options
+        INTEGER(our_int)  :: maxiter
+
+        REAL(our_dble)  :: gtol
+        REAL(our_dble)  :: stpmx
+
+    END TYPE
+
+    TYPE OPTIMIZER_NEWUOA
+
+        INTEGER(our_int)  :: npt
+        INTEGER(our_int)  :: maxfun
+
+        REAL(our_dble)  :: rhobeg
+        REAL(our_dble)  :: rhoend
+
+    END TYPE
+
+    TYPE OPTIMIZER_SLSQP
+
+        INTEGER(our_int)  :: maxiter
+
+        REAL(our_dble)  :: ftol
+        REAL(our_dble)  :: eps
+
+    END TYPE
+
+    TYPE OPTIMIZER_COLLECTION
+        TYPE(OPTIMIZER_NEWUOA)  :: newuoa
+        TYPE(OPTIMIZER_BFGS)    :: bfgs
+        TYPE(OPTIMIZER_SLSQP)   :: slsqp
+
+    END TYPE
+
+    type (OPTIMIZER_COLLECTION) optimizer_options
 
 !******************************************************************************
 !******************************************************************************
