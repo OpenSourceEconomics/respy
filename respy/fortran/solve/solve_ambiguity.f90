@@ -54,7 +54,6 @@ SUBROUTINE get_worst_case(x_shift, is_success, message, num_periods, num_draws_e
     !/* internal objects        */
 
     REAL(our_dble)                  :: eps_der_approx
-    REAL(our_dble)                  :: x_start(2)
 
     LOGICAL                         :: is_finished
 

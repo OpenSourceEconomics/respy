@@ -65,4 +65,4 @@ for i in range(1):
     #count = count +1
     #print('completed ', count)
 
-    os.system('git clean -d -f')
+    #os.system('git clean -d -f')

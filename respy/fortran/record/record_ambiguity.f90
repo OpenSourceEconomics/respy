@@ -134,7 +134,7 @@ SUBROUTINE record_ambiguity_summary()
 
         DO i = 1, SIZE(success_count, 2)
             total_count = SUM(success_count(:, i))
-            share_success = success_count(1, i) / total_count
+            share_success = success_count(1, i) / DBLE(total_count)
             share_failure = one_dble - share_success
             WRITE(99, 100) i - 1, total_count, share_success, share_failure
         END DO
