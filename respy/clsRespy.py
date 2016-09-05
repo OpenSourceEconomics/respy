@@ -291,7 +291,7 @@ class RespyCls(object):
         shocks_cholesky = self.attr['model_paras']['shocks_cholesky']
         shocks_coeffs = cholesky_to_coeffs(shocks_cholesky)
         init_dict['SHOCKS']['coeffs'] = shocks_coeffs
-        init_dict['SHOCKS']['fixed'] = np.array(self.attr['paras_fixed'][17:])
+        init_dict['SHOCKS']['fixed'] = np.array(self.attr['paras_fixed'][17:27])
 
         # Solution
         init_dict['SOLUTION'] = dict()

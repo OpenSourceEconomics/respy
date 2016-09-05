@@ -144,7 +144,6 @@ class TestClass(object):
         respy_obj = RespyCls('test.respy.ini')
         estimate(respy_obj)
 
-    @pytest.mark.skipif(True, reason='Scripts not maintained at the moment')
     def test_5(self):
         """ Test the scripts.
         """

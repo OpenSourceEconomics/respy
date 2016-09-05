@@ -24,15 +24,15 @@ def add_gradient_information(respy_obj):
             'paras_fixed', 'derivatives')
 
     # Auxiliary objects
-    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
+    level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
         dist_model_paras(model_paras, is_debug)
 
     # Construct starting values
-    x_all_start = get_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-            shocks_cholesky, 'all', paras_fixed, is_debug)
+    x_all_start = get_optim_paras(level, coeffs_a, coeffs_b, coeffs_edu,
+        coeffs_home, shocks_cholesky, 'all', paras_fixed, is_debug)
 
-    x_free_start = get_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-            shocks_cholesky, 'free', paras_fixed, is_debug)
+    x_free_start = get_optim_paras(level, coeffs_a, coeffs_b, coeffs_edu,
+        coeffs_home, shocks_cholesky, 'free', paras_fixed, is_debug)
 
     # Construct auxiliary information
     num_free = len(x_free_start)

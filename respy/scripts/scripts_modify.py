@@ -89,12 +89,11 @@ def change_status(identifiers, init_file, is_fixed):
             dist_model_paras(model_paras, True)
 
     for identifier in identifiers:
-
-        if identifier == 0:
+        if identifier in [0]:
             j = identifier
             init_dict['AMBIGUITY']['coeffs'][j] = level[j]
             init_dict['AMBIGUITY']['fixed'][j] = is_fixed
-        if identifier in list(range(1, 7)):
+        elif identifier in list(range(1, 7)):
             j = identifier - 1
             init_dict['OCCUPATION A']['coeffs'][j] = coeffs_a[j]
             init_dict['OCCUPATION A']['fixed'][j] = is_fixed

@@ -33,7 +33,6 @@ class OptimizationClass(object):
         """
         # Evaluate criterion function
         x_all_current = self._construct_all_current_values(x)
-
         fval = pyth_criterion(x_all_current, *args)
 
         # Identify events

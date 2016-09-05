@@ -35,7 +35,7 @@ else:
 ''' Error Reproduction
 '''
 cleanup_testing_infrastructure(True)
-seed = 2168
+seed = 62698
 
 
  # 6216748723
@@ -45,7 +45,7 @@ np.random.seed(seed)
 test_dict = get_test_dict(PACKAGE_DIR + '/respy/tests')
 module, method = get_random_request(test_dict)
 
-module, method = 'test_versions', 'test_6'
+#module, method = 'test_versions', 'test_6'
 count = 0
 #os.system('git clean -d -f')
 for i in range(1000):

@@ -108,9 +108,8 @@ def record_ambiguity_summary():
         for period in range(max(dict_.keys()) + 1):
             total = dict_[period]['total']
 
-            success = dict_[period]['success'] / total
-            failure = dict_[period]['failure'] / total
-
+            success = dict_[period]['success'] / float(total)
+            failure = dict_[period]['failure'] / float(total)
             string = '''{0[0]:>10} {0[1]:>10} {0[2]:10.2f} {0[3]:10.2f}\n'''
             file_.write(string.format([period, total, success, failure]))
 
