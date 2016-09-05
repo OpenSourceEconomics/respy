@@ -259,7 +259,7 @@ def write_resfort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         line = '{0}'.format(is_myopic)
         file_.write(line + '\n')
 
-        fmt = '{:} ' * 26
+        fmt = '{:} ' * 27
         line = fmt.format(*paras_fixed)
         file_.write(line + '\n')
 

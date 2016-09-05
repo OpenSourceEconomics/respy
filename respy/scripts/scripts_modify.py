@@ -85,29 +85,33 @@ def change_status(identifiers, init_file, is_fixed):
     respy_obj = RespyCls(init_file)
 
     model_paras = respy_obj.get_attr('model_paras')
-    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
+    level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
             dist_model_paras(model_paras, True)
 
     for identifier in identifiers:
 
-        if identifier in list(range(0, 6)):
+        if identifier == 0:
             j = identifier
+            init_dict['AMBIGUITY']['coeffs'][j] = level[j]
+            init_dict['AMBIGUITY']['fixed'][j] = is_fixed
+        if identifier in list(range(1, 7)):
+            j = identifier - 1
             init_dict['OCCUPATION A']['coeffs'][j] = coeffs_a[j]
             init_dict['OCCUPATION A']['fixed'][j] = is_fixed
-        elif identifier in list(range(6, 12)):
-            j = identifier - 6
+        elif identifier in list(range(7, 13)):
+            j = identifier - 7
             init_dict['OCCUPATION B']['coeffs'][j] = coeffs_b[j]
             init_dict['OCCUPATION B']['fixed'][j] = is_fixed
-        elif identifier in list(range(12, 15)):
-            j = identifier - 12
+        elif identifier in list(range(13, 16)):
+            j = identifier - 13
             init_dict['EDUCATION']['coeffs'][j] = coeffs_edu[j]
             init_dict['EDUCATION']['fixed'][j] = is_fixed
-        elif identifier in list(range(15, 16)):
-            j = identifier - 15
+        elif identifier in list(range(16, 17)):
+            j = identifier - 16
             init_dict['HOME']['coeffs'][j] = coeffs_home[j]
             init_dict['HOME']['fixed'][j] = is_fixed
-        elif identifier in list(range(16, 26)):
-            j = identifier - 16
+        elif identifier in list(range(17, 27)):
+            j = identifier - 17
             shocks_coeffs = cholesky_to_coeffs(shocks_cholesky)
             init_dict['SHOCKS']['coeffs'] = shocks_coeffs
             init_dict['SHOCKS']['fixed'][j] = is_fixed

@@ -2,34 +2,39 @@ import numpy as np
 
 from respy.python.shared.shared_auxiliary import check_optimization_parameters
 from respy.python.shared.shared_auxiliary import check_model_parameters
+from respy.python.shared.shared_constants import SMALL_FLOAT
 
 
-def get_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+def get_optim_paras(level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         shocks_cholesky, which, paras_fixed, is_debug):
     """ Get optimization parameters.
     """
     # Checks
     if is_debug:
-        args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky)
+        args = (level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+                shocks_cholesky)
         assert check_model_parameters(*args)
 
     # Initialize container
-    x = np.tile(np.nan, 26)
+    x = np.tile(np.nan, 27)
+
+    # Level of Ambiguity
+    x[0:1] = np.log(np.clip(level, SMALL_FLOAT, None))
 
     # Occupation A
-    x[0:6] = coeffs_a
+    x[1:7] = coeffs_a
 
     # Occupation B
-    x[6:12] = coeffs_b
+    x[7:13] = coeffs_b
 
     # Education
-    x[12:15] = coeffs_edu
+    x[13:16] = coeffs_edu
 
     # Home
-    x[15:16] = coeffs_home
+    x[16:17] = coeffs_home
 
     # Shocks
-    x[16:26] = shocks_cholesky[np.tril_indices(4)]
+    x[17:27] = shocks_cholesky[np.tril_indices(4)]
 
     # Checks
     if is_debug:
@@ -38,7 +43,7 @@ def get_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
     # Select subset
     if which == 'free':
         x_free_curre = []
-        for i in range(26):
+        for i in range(27):
             if not paras_fixed[i]:
                 x_free_curre += [x[i]]
 

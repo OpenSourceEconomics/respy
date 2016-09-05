@@ -31,7 +31,7 @@ class TestClass(object):
         base_val = None
         for level in [0.00, 0.00000000001]:
 
-            init_dict['AMBIGUITY']['level'] = level
+            init_dict['AMBIGUITY']['coeffs'] = [level]
 
             print_init_dict(init_dict)
 

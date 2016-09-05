@@ -101,7 +101,7 @@ def _process_line(group, flag, value, is_fixed, dict_):
     """
     # This aligns the label from the initialization file with the label
     # inside the RESPY logic.
-    if flag == 'coeff':
+    if flag in ['coeff']:
         flag = 'coeffs'
 
     # Prepare container for information about coefficients

@@ -48,7 +48,7 @@ def add_gradient_information(respy_obj):
     original_lines[-3] = fmt_.format(*[' Number of Evaluations', num_free])
 
     # Approximate gradient by forward finite differences.
-    grad, ei = np.zeros((num_free,), float), np.zeros((26,), float)
+    grad, ei = np.zeros((num_free,), float), np.zeros((27,), float)
     dfunc_eps = derivatives[1]
 
     # Making sure that the criterion is only evaluated at the relevant
@@ -71,7 +71,7 @@ def add_gradient_information(respy_obj):
         grad[k] = (f1 - f0) / d[k]
         ei[i] = 0.0
 
-    grad = np.random.uniform(0, 1, 26 - sum(paras_fixed)).tolist()
+    grad = np.random.uniform(0, 1, 27 - sum(paras_fixed)).tolist()
     norm = np.amax(np.abs(grad))
 
     # Write out extended information
@@ -84,7 +84,7 @@ def add_gradient_information(respy_obj):
 
         # Iterate over all candidate values, but only write the free
         # ones to file. This ensure that the identifiers line up.
-        for j in range(26):
+        for j in range(27):
             is_fixed = paras_fixed[j]
             if not is_fixed:
                 values = [j, grad.pop(0)]

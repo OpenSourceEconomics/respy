@@ -7,6 +7,7 @@ from respy.python.record.record_warning import record_warning
 from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.shared.shared_constants import INADMISSIBILITY_PENALTY
 from respy.python.shared.shared_constants import MISSING_FLOAT
+from respy.python.shared.shared_constants import SMALL_FLOAT
 from respy.python.shared.shared_constants import TINY_FLOAT
 
 
@@ -41,28 +42,32 @@ def dist_optim_paras(x_all_curre, is_debug, info=None):
     if is_debug:
         check_optimization_parameters(x_all_curre)
 
+    # Level of Ambiguity
+    level = np.exp(x_all_curre[0:1])
+
     # Occupation A
-    coeffs_a = x_all_curre[0:6]
+    coeffs_a = x_all_curre[1:7]
 
     # Occupation B
-    coeffs_b = x_all_curre[6:12]
+    coeffs_b = x_all_curre[7:13]
 
     # Education
-    coeffs_edu = x_all_curre[12:15]
+    coeffs_edu = x_all_curre[13:16]
 
     # Home
-    coeffs_home = x_all_curre[15:16]
+    coeffs_home = x_all_curre[16:17]
 
     # Cholesky
     shocks_cholesky, info = get_cholesky(x_all_curre, info)
 
     # Checks
     if is_debug:
-        args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky)
+        args = (level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+                shocks_cholesky)
         assert check_model_parameters(*args)
 
     # Collect arguments
-    args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky)
+    args = (level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky)
 
     # Finishing
     return args
@@ -72,10 +77,10 @@ def get_cholesky(x, info=None):
     """ Construct the Cholesky matrix.
     """
     shocks_cholesky = np.tile(0.0, (4, 4))
-    shocks_cholesky[0, :1] = x[16:17]
-    shocks_cholesky[1, :2] = x[17:19]
-    shocks_cholesky[2, :3] = x[19:22]
-    shocks_cholesky[3, :4] = x[22:26]
+    shocks_cholesky[0, :1] = x[17:18]
+    shocks_cholesky[1, :2] = x[18:20]
+    shocks_cholesky[2, :3] = x[20:23]
+    shocks_cholesky[3, :4] = x[23:27]
 
     # Stabilization
     if info is not None:
@@ -303,6 +308,7 @@ def check_dataset(data_frame, respy_obj, which):
 def dist_model_paras(model_paras, is_debug):
     """ Distribute model parameters.
     """
+    level = model_paras['level']
     coeffs_a = model_paras['coeffs_a']
     coeffs_b = model_paras['coeffs_b']
 
@@ -311,11 +317,12 @@ def dist_model_paras(model_paras, is_debug):
     shocks_cholesky = model_paras['shocks_cholesky']
 
     if is_debug:
-        args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky)
+        args = (level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+                shocks_cholesky)
         assert (check_model_parameters(*args))
 
     # Finishing
-    return coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky
+    return level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky
 
 
 def replace_missing_values(arguments):
@@ -351,16 +358,19 @@ def replace_missing_values(arguments):
     return rslt
 
 
-def check_model_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+def check_model_parameters(level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         shocks_cholesky):
     """ Check the integrity of all model parameters.
     """
     # Checks for all arguments
-    args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky)
+    args = (level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky)
     for coeffs in args:
         assert (isinstance(coeffs, np.ndarray))
         assert (np.all(np.isfinite(coeffs)))
         assert (coeffs.dtype == 'float')
+
+    # Check for level of ambiguity
+    assert (level >= 0)
 
     # Checks for occupations
     assert (coeffs_a.size == 6)
@@ -432,7 +442,8 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
     # Antibugging.
     assert (isinstance(dict_, dict))
 
-    paras_fixed = dict_['OCCUPATION A']['fixed'][:]
+    paras_fixed = dict_['AMBIGUITY']['fixed'][:]
+    paras_fixed += dict_['OCCUPATION A']['fixed'][:]
     paras_fixed += dict_['OCCUPATION B']['fixed'][:]
     paras_fixed += dict_['EDUCATION']['fixed'][:]
     paras_fixed += dict_['HOME']['fixed'][:]
@@ -470,21 +481,21 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                 file_.write(flag.upper() + '\n\n')
 
                 val = dict_['HOME']['coeffs'][0]
-                line = format_opt_parameters(val, 15, paras_fixed)
+                line = format_opt_parameters(val, 16, paras_fixed)
                 file_.write(str_optim.format(*line))
 
                 file_.write('\n')
 
             if flag in ['SOLUTION', 'SIMULATION', 'PROGRAM', 'INTERPOLATION',
                         'ESTIMATION', 'PARALLELISM', 'SCALING',
-                        'DERIVATIVES', 'AMBIGUITY']:
+                        'DERIVATIVES']:
 
                 file_.write(flag.upper() + '\n\n')
                 keys = list(dict_[flag].keys())
                 keys.sort()
                 for key_ in keys:
 
-                    if key_ in ['tau', 'level']:
+                    if key_ in ['tau']:
                         str_ = '{0:<10} {1:20.15f}\n'
                         file_.write(str_.format(key_, dict_[flag][key_]))
                     else:
@@ -500,7 +511,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
 
                 for i in range(10):
                     val = dict_['SHOCKS']['coeffs'][i]
-                    line = format_opt_parameters(val, 16 + i, paras_fixed)
+                    line = format_opt_parameters(val, 17 + i, paras_fixed)
                     file_.write(str_optim.format(*line))
                 file_.write('\n')
 
@@ -509,15 +520,15 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                 file_.write(flag.upper() + '\n\n')
 
                 val = dict_['EDUCATION']['coeffs'][0]
-                line = format_opt_parameters(val, 12, paras_fixed)
-                file_.write(str_optim.format(*line))
-
-                val = dict_['EDUCATION']['coeffs'][1]
                 line = format_opt_parameters(val, 13, paras_fixed)
                 file_.write(str_optim.format(*line))
 
-                val = dict_['EDUCATION']['coeffs'][2]
+                val = dict_['EDUCATION']['coeffs'][1]
                 line = format_opt_parameters(val, 14, paras_fixed)
+                file_.write(str_optim.format(*line))
+
+                val = dict_['EDUCATION']['coeffs'][2]
+                line = format_opt_parameters(val, 15, paras_fixed)
                 file_.write(str_optim.format(*line))
 
                 file_.write('\n')
@@ -527,12 +538,24 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
 
                 file_.write('\n')
 
+            if flag in ['AMBIGUITY']:
+                file_.write(flag.upper() + '\n\n')
+
+                val = dict_['AMBIGUITY']['coeffs'][0]
+                line = format_opt_parameters(val, 0, paras_fixed)
+                file_.write(str_optim.format(*line))
+
+                str_ = '{0:<10} {1:>20}\n'
+                file_.write(str_.format('measure', dict_[flag]['measure']))
+
+                file_.write('\n')
+
             if flag in ['OCCUPATION A', 'OCCUPATION B']:
                 identifier = None
                 if flag == 'OCCUPATION A':
-                    identifier = 0
+                    identifier = 1
                 if flag == 'OCCUPATION B':
-                    identifier = 6
+                    identifier = 7
 
                 file_.write(flag + '\n\n')
 

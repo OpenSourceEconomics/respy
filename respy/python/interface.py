@@ -23,7 +23,7 @@ def respy_interface(respy_obj, request, data_array=None):
         delta, num_draws_prob, seed_prob, num_draws_emax, seed_emax, \
         min_idx, is_myopic, is_interpolated, num_points_interp, maxfun, \
         optimizer_used, tau, paras_fixed, optimizer_options, seed_sim, \
-        num_agents_sim, derivatives, is_ambiguity, measure, level = \
+        num_agents_sim, derivatives, is_ambiguity, measure = \
             dist_class_attributes(respy_obj, 'model_paras', 'num_periods',
                 'num_agents_est', 'edu_start', 'is_debug', 'edu_max',
                 'delta', 'num_draws_prob', 'seed_prob', 'num_draws_emax',
@@ -31,12 +31,12 @@ def respy_interface(respy_obj, request, data_array=None):
                 'num_points_interp', 'maxfun', 'optimizer_used', 'tau',
                 'paras_fixed', 'optimizer_options', 'seed_sim',
                 'num_agents_sim', 'derivatives', 'is_ambiguity',
-                'measure', 'level')
+                'measure')
 
     # Auxiliary objects
     dfunc_eps = derivatives[1]
 
-    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
+    level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
         dist_model_paras(model_paras, is_debug)
 
     if request == 'estimate':
@@ -52,10 +52,10 @@ def respy_interface(respy_obj, request, data_array=None):
             seed_emax, is_debug)
 
         # Construct starting values
-        x_free_start = get_optim_paras(coeffs_a, coeffs_b, coeffs_edu,
+        x_free_start = get_optim_paras(level, coeffs_a, coeffs_b, coeffs_edu,
             coeffs_home, shocks_cholesky, 'free', paras_fixed, is_debug)
 
-        x_all_start = get_optim_paras(coeffs_a, coeffs_b, coeffs_edu,
+        x_all_start = get_optim_paras(level, coeffs_a, coeffs_b, coeffs_edu,
             coeffs_home, shocks_cholesky, 'all', paras_fixed, is_debug)
 
         # Construct the state space
@@ -73,7 +73,7 @@ def respy_interface(respy_obj, request, data_array=None):
             data_array, num_draws_prob, tau, periods_draws_emax,
             periods_draws_prob, states_all, states_number_period,
             mapping_state_idx, max_states_period, is_ambiguity, measure,
-            level, optimizer_options)
+            optimizer_options)
 
         # Special case where just an evaluation at the starting values is
         # requested is accounted for. Note, that the relevant value of the

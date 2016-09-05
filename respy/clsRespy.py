@@ -103,8 +103,6 @@ class RespyCls(object):
 
         self.attr['delta'] = None
 
-        self.attr['level'] = None
-
         self.attr['tau'] = None
 
         # Derived attributes
@@ -144,17 +142,19 @@ class RespyCls(object):
         self.reset()
 
         # Determine use of interface
-        coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
+        level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
                     dist_optim_paras(x, True)
 
         # Check integrity
-        check_model_parameters(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-            shocks_cholesky)
+        check_model_parameters(level, coeffs_a, coeffs_b, coeffs_edu,
+            coeffs_home, shocks_cholesky)
 
         # Distribute class attributes
         model_paras = self.attr['model_paras']
 
         # Update model parametrization
+        model_paras['shocks_cholesky'] = shocks_cholesky
+
         model_paras['coeffs_home'] = coeffs_home
 
         model_paras['coeffs_edu'] = coeffs_edu
@@ -163,7 +163,7 @@ class RespyCls(object):
 
         model_paras['coeffs_b'] = coeffs_b
 
-        model_paras['shocks_cholesky'] = shocks_cholesky
+        model_paras['level'] = level
 
         # Update class attributes
         self.attr['model_paras'] = model_paras
@@ -263,19 +263,19 @@ class RespyCls(object):
         init_dict['OCCUPATION A']['coeffs'] = \
             self.attr['model_paras']['coeffs_a']
 
-        init_dict['OCCUPATION A']['fixed'] = self.attr['paras_fixed'][0:6]
+        init_dict['OCCUPATION A']['fixed'] = self.attr['paras_fixed'][1:7]
 
         # Occupation A
         init_dict['OCCUPATION B'] = dict()
         init_dict['OCCUPATION B']['coeffs'] = \
             self.attr['model_paras']['coeffs_b']
-        init_dict['OCCUPATION B']['fixed'] = self.attr['paras_fixed'][6:12]
+        init_dict['OCCUPATION B']['fixed'] = self.attr['paras_fixed'][7:13]
 
         # Education
         init_dict['EDUCATION'] = dict()
         init_dict['EDUCATION']['coeffs'] = \
             self.attr['model_paras']['coeffs_edu']
-        init_dict['EDUCATION']['fixed'] = self.attr['paras_fixed'][12:15]
+        init_dict['EDUCATION']['fixed'] = self.attr['paras_fixed'][13:16]
 
         init_dict['EDUCATION']['start'] = self.attr['edu_start']
         init_dict['EDUCATION']['max'] = self.attr['edu_max']
@@ -284,14 +284,14 @@ class RespyCls(object):
         init_dict['HOME'] = dict()
         init_dict['HOME']['coeffs'] = \
             self.attr['model_paras']['coeffs_home']
-        init_dict['HOME']['fixed'] = self.attr['paras_fixed'][15:16]
+        init_dict['HOME']['fixed'] = self.attr['paras_fixed'][16:17]
 
         # Shocks
         init_dict['SHOCKS'] = dict()
         shocks_cholesky = self.attr['model_paras']['shocks_cholesky']
         shocks_coeffs = cholesky_to_coeffs(shocks_cholesky)
         init_dict['SHOCKS']['coeffs'] = shocks_coeffs
-        init_dict['SHOCKS']['fixed'] = np.array(self.attr['paras_fixed'][16:])
+        init_dict['SHOCKS']['fixed'] = np.array(self.attr['paras_fixed'][17:])
 
         # Solution
         init_dict['SOLUTION'] = dict()
@@ -302,7 +302,8 @@ class RespyCls(object):
         # Ambiguity
         init_dict['AMBIGUITY'] = dict()
         init_dict['AMBIGUITY']['measure'] = self.attr['measure']
-        init_dict['AMBIGUITY']['level'] = self.attr['level']
+        init_dict['AMBIGUITY']['coeffs'] = self.attr['model_paras']['level']
+        init_dict['AMBIGUITY']['fixed'] = self.attr['paras_fixed'][0:1]
 
         # Simulation
         init_dict['SIMULATION'] = dict()
@@ -426,8 +427,6 @@ class RespyCls(object):
 
         self.attr['edu_max'] = init_dict['EDUCATION']['max']
 
-        self.attr['level'] = init_dict['AMBIGUITY']['level']
-
         self.attr['delta'] = init_dict['BASICS']['delta']
 
         self.attr['tau'] = init_dict['ESTIMATION']['tau']
@@ -474,9 +473,12 @@ class RespyCls(object):
             init_dict['EDUCATION']['coeffs']
         self.attr['model_paras']['coeffs_home'] = \
             init_dict['HOME']['coeffs']
+        self.attr['model_paras']['level'] = \
+            init_dict['AMBIGUITY']['coeffs']
 
         # Initialize information about optimization parameters
-        self.attr['paras_fixed'] = init_dict['OCCUPATION A']['fixed'][:]
+        self.attr['paras_fixed'] = init_dict['AMBIGUITY']['fixed'][:]
+        self.attr['paras_fixed'] += init_dict['OCCUPATION A']['fixed'][:]
         self.attr['paras_fixed'] += init_dict['OCCUPATION B']['fixed'][:]
         self.attr['paras_fixed'] += init_dict['EDUCATION']['fixed'][:]
         self.attr['paras_fixed'] += init_dict['HOME']['fixed'][:]
@@ -485,7 +487,7 @@ class RespyCls(object):
         # Ensure that all elements in the dictionary are of the same
         # type.
         keys = ['coeffs_a', 'coeffs_b', 'coeffs_edu', 'coeffs_home']
-        keys += ['shocks_cholesky']
+        keys += ['shocks_cholesky', 'level']
         for key_ in keys:
             self.attr['model_paras'][key_] = \
                 np.array(self.attr['model_paras'][key_])
@@ -599,7 +601,7 @@ class RespyCls(object):
 
         self.attr['is_myopic'] = (self.attr['delta'] == 0.00)
 
-        self.attr['is_ambiguity'] = (self.attr['level'] > 0.00)
+        self.attr['is_ambiguity'] = (self.attr['model_paras']['level'] > 0.00)
 
         self.attr['optimizer_options']['FORT-SLSQP']['eps'] = self.attr[
             'derivatives'][1]
@@ -663,8 +665,6 @@ class RespyCls(object):
 
         delta = self.attr['delta']
 
-        level = self.attr['level']
-
         tau = self.attr['tau']
 
         # Auxiliary objects
@@ -678,7 +678,7 @@ class RespyCls(object):
 
         # Status of optimization parameters
         assert isinstance(paras_fixed, list)
-        assert (len(paras_fixed) == 26)
+        assert (len(paras_fixed) == 27)
         assert (np.all(paras_fixed) in [True, False])
 
         # Debug status
@@ -769,7 +769,6 @@ class RespyCls(object):
 
         # Ambiguity
         assert (is_ambiguity in [False, True])
-        assert (level >= 0.00)
         assert (measure in ['abs', 'kl'])
 
     def _check_integrity_results(self):

@@ -46,7 +46,7 @@ def record_estimation_eval(opt_obj, fval):
         is_large[1] = abs(opt_obj.crit_vals[1]) > LARGE_FLOAT
         is_large[2] = abs(value_current) > LARGE_FLOAT
 
-        for i in range(26):
+        for i in range(27):
             out_file.write(
                 fmt_.format(*[i, opt_obj.x_container[i, 0],
                     opt_obj.x_container[i, 1],
@@ -77,7 +77,7 @@ def record_estimation_final(opt_obj, success, message):
         fmt_ = '\n\n   {0:>10}' + '    {1:>25}\n\n'
         out_file.write(fmt_.format(*['Identifier', 'Final']))
         fmt_ = '   {:>10}' + '    {:25.5f}\n'
-        for i in range(26):
+        for i in range(27):
             out_file.write(
                 fmt_.format(*[i, opt_obj.x_container[i, 1]]))
         out_file.write('\n')
@@ -144,4 +144,3 @@ def write_est_info(num_start, value_start, paras_start, num_step,
         fmt_ = '\n{0:<25}{1:>15}\n'
         out_file.write(fmt_.format(*[' Number of Steps', num_step]))
         out_file.write(fmt_.format(*[' Number of Evaluations', num_eval]))
-        

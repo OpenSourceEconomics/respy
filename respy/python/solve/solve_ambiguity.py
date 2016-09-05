@@ -25,7 +25,7 @@ def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
         is_success, message = True, 'No random variation in shocks.'
 
     elif measure == 'abs':
-        x_shift, div = [-level, -level], level
+        x_shift, div = [-float(level), -float(level)], float(level)
         is_success, message = True, 'Optimization terminated successfully.'
 
     elif measure == 'kl':
@@ -35,7 +35,7 @@ def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
             mapping_state_idx, delta, shocks_cov, level,
             optimizer_options)
 
-        div = -(constraint_ambiguity(x_shift, shocks_cov, level) - level)
+        div = float(-(constraint_ambiguity(x_shift, shocks_cov, level) - level))
 
     else:
         raise NotImplementedError
@@ -86,7 +86,7 @@ def get_worst_case(num_periods, num_draws_emax, period, k,
         opt['x'] = x0
 
     is_success, message = opt['success'], opt['message']
-    x_shift = opt['x']
+    x_shift = opt['x'].tolist()
 
     return x_shift, is_success, message
 

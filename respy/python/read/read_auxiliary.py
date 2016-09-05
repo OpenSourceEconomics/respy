@@ -14,7 +14,7 @@ STRUCTURE['EDUCATION'] = ['coeff', 'max', 'start']
 STRUCTURE['HOME'] = ['coeff']
 STRUCTURE['SHOCKS'] = ['coeff']
 STRUCTURE['SOLUTION'] = ['draws', 'store', 'seed']
-STRUCTURE['AMBIGUITY'] = ['level', 'measure']
+STRUCTURE['AMBIGUITY'] = ['coeff', 'measure']
 
 STRUCTURE['SIMULATION'] = ['agents', 'seed', 'file']
 

@@ -37,5 +37,6 @@ respy_obj = RespyCls('model.respy.ini')
 respy_obj = simulate(respy_obj)
 x, crit_val = estimate(respy_obj)
 print(crit_val)
+assert crit_val == 1.185946601338745
 #np.testing.assert_equal(crit_val, 4.1093e-11)
 #print(respy_obj.get_attr('periods_emax')[0, 0])

@@ -22,7 +22,7 @@ class OptimizationClass(object):
         self.maxfun = np.inf
 
         # Updated attributes
-        self.x_container = np.tile(np.nan, (26, 3))
+        self.x_container = np.tile(np.nan, (27, 3))
         self.crit_vals = np.tile(np.inf, 3)
         self.num_step = -1
         self.num_eval = 0
@@ -33,6 +33,7 @@ class OptimizationClass(object):
         """
         # Evaluate criterion function
         x_all_current = self._construct_all_current_values(x)
+
         fval = pyth_criterion(x_all_current, *args)
 
         # Identify events
@@ -76,9 +77,9 @@ class OptimizationClass(object):
         x_all_start = self.x_all_start
         paras_fixed = self.paras_fixed
 
-        x_all_current = np.tile(np.nan, 26)
+        x_all_current = np.tile(np.nan, 27)
         j = 0
-        for i in range(26):
+        for i in range(27):
             if paras_fixed[i]:
                 x_all_current[i] = x_all_start[i].copy()
             else:

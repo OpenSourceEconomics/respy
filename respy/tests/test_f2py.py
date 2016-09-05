@@ -620,7 +620,7 @@ class TestClass(object):
         each other.
         """
         # Draw a random vector of parameters
-        x = np.random.uniform(size=26)
+        x = np.random.uniform(size=27)
 
         # Construct the Cholesky decompositions
         py = get_cholesky(x, info=0)

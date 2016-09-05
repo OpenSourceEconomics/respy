@@ -8,8 +8,8 @@ from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.shared.shared_auxiliary import get_total_values
 
 
-def pyth_simulate(periods_rewards_systematic, mapping_state_idx,
-        periods_emax, states_all, shocks_cholesky, num_periods, edu_start, edu_max, delta,
+def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax,
+        states_all, shocks_cholesky, num_periods, edu_start, edu_max, delta,
         num_agents_sim, periods_draws_sims, seed_sim):
     """ Wrapper for PYTHON and F2PY implementation of sample simulation.
     """

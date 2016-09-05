@@ -45,9 +45,9 @@ def generate_random_dict(constraints=None):
     # The dictionary also contains the information whether parameters are
     # fixed during an estimation. We need to ensure that at least one
     # parameter is always free.
-    paras_fixed = np.random.choice([True, False], 26).tolist()
-    if sum(paras_fixed) == 26:
-        paras_fixed[np.random.randint(0, 26)] = True
+    paras_fixed = np.random.choice([True, False], 27).tolist()
+    if sum(paras_fixed) == 27:
+        paras_fixed[np.random.randint(0, 27)] = True
 
     # Sampling number of agents for the simulation. This is then used as the
     # upper bound for the dataset used in the estimation.
@@ -61,22 +61,22 @@ def generate_random_dict(constraints=None):
     # Home
     dict_['HOME'] = dict()
     dict_['HOME']['coeffs'] = np.random.uniform(-0.05, 0.05, 1).tolist()
-    dict_['HOME']['fixed'] = paras_fixed[15:16]
+    dict_['HOME']['fixed'] = paras_fixed[16:17]
 
     # Occupation A
     dict_['OCCUPATION A'] = dict()
     dict_['OCCUPATION A']['coeffs'] = np.random.uniform(-0.05, 0.05, 6).tolist()
-    dict_['OCCUPATION A']['fixed'] = paras_fixed[0:6]
+    dict_['OCCUPATION A']['fixed'] = paras_fixed[1:7]
 
     # Occupation B
     dict_['OCCUPATION B'] = dict()
     dict_['OCCUPATION B']['coeffs'] = np.random.uniform(-0.05, 0.05, 6).tolist()
-    dict_['OCCUPATION B']['fixed'] = paras_fixed[6:12]
+    dict_['OCCUPATION B']['fixed'] = paras_fixed[7:13]
 
     # Education
     dict_['EDUCATION'] = dict()
     dict_['EDUCATION']['coeffs'] = np.random.uniform(-0.05, 0.05, 6).tolist()
-    dict_['EDUCATION']['fixed'] = paras_fixed[12:15]
+    dict_['EDUCATION']['fixed'] = paras_fixed[13:16]
 
     dict_['EDUCATION']['start'] = np.random.randint(1, 10)
     dict_['EDUCATION']['max'] = np.random.randint(
@@ -91,7 +91,8 @@ def generate_random_dict(constraints=None):
     # AMBIGUITY
     dict_['AMBIGUITY'] = dict()
     dict_['AMBIGUITY']['measure'] = np.random.choice(['abs', 'kl'])
-    dict_['AMBIGUITY']['level'] = np.random.choice([0.0, np.random.uniform()])
+    dict_['AMBIGUITY']['coeffs'] = [np.random.choice([0.0, np.random.uniform()])]
+    dict_['AMBIGUITY']['fixed'] = paras_fixed[0:1]
 
     # ESTIMATION
     dict_['ESTIMATION'] = dict()
@@ -183,8 +184,8 @@ def generate_random_dict(constraints=None):
     dict_['FORT-NEWUOA']['rhobeg'] = rhobeg
     dict_['FORT-NEWUOA']['rhoend'] = np.random.uniform(0.01, 0.99) * rhobeg
 
-    lower = (26 - sum(paras_fixed)) + 2
-    upper = (2 * (26 - sum(paras_fixed)) + 1)
+    lower = (27 - sum(paras_fixed)) + 2
+    upper = (2 * (27 - sum(paras_fixed)) + 1)
     dict_['FORT-NEWUOA']['npt'] = np.random.randint(lower, upper)
 
     # FORT-BFGS
@@ -274,7 +275,7 @@ def generate_random_dict(constraints=None):
         assert isinstance(level, float)
         assert level >= 0.0
         # Replace in initialization file
-        dict_['AMBIGUITY']['level'] = level
+        dict_['AMBIGUITY']['coeffs'] = [level]
 
     # Replace version
     if 'version' in constraints.keys():

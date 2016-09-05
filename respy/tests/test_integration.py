@@ -144,6 +144,7 @@ class TestClass(object):
         respy_obj = RespyCls('test.respy.ini')
         estimate(respy_obj)
 
+    @pytest.mark.skipif(True, reason='Scripts not maintained at the moment')
     def test_5(self):
         """ Test the scripts.
         """
@@ -186,7 +187,7 @@ class TestClass(object):
             # sampling of the diagonal terms of the covariance matrix.
             # Otherwise, we sometimes run into the problem of very ill
             # conditioned matrices resulting in a failed Cholesky decomposition.
-            set_ = list(range(16)) + [16, 18, 21, 25]
+            set_ = list(range(17)) + [17, 19, 22, 26]
 
             identifiers = np.random.choice(set_, num_draws, replace=False)
             values = np.random.uniform(size=num_draws)

@@ -10,11 +10,11 @@ def pyth_criterion(x, is_interpolated, num_draws_emax, num_periods,
         delta, data_array, num_draws_prob, tau, periods_draws_emax,
         periods_draws_prob, states_all, states_number_period,
         mapping_state_idx, max_states_period, is_ambiguity, measure,
-        level, optimizer_options):
+        optimizer_options):
     """ This function provides the wrapper for optimization routines.
     """
 
-    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky \
+    level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky \
         = dist_optim_paras(x, is_debug)
 
     # Calculate all systematic rewards
