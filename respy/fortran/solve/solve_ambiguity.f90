@@ -37,7 +37,7 @@ SUBROUTINE get_worst_case(x_shift, is_success, message, num_periods, num_draws_e
     REAL(our_dble), INTENT(IN)      :: rewards_systematic(4)
     REAL(our_dble), INTENT(IN)      :: periods_emax(num_periods, max_states_period)
     REAL(our_dble), INTENT(IN)      :: shocks_cov(4, 4)
-    REAL(our_dble), INTENT(IN)      :: level
+    REAL(our_dble), INTENT(IN)      :: level(1)
     REAL(our_dble), INTENT(IN)      :: delta
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
@@ -171,7 +171,7 @@ SUBROUTINE construct_emax_ambiguity(emax, num_periods, num_draws_emax, period, k
     REAL(our_dble), INTENT(IN)      :: draws_emax_transformed(num_draws_emax, 4)
     REAL(our_dble), INTENT(IN)      :: rewards_systematic(4)
     REAL(our_dble), INTENT(IN)      :: shocks_cov(4, 4)
-    REAL(our_dble), INTENT(IN)      :: level
+    REAL(our_dble), INTENT(IN)      :: level(1)
     REAL(our_dble), INTENT(IN)      :: delta
 
     CHARACTER(10), INTENT(IN)       :: measure
@@ -183,7 +183,7 @@ SUBROUTINE construct_emax_ambiguity(emax, num_periods, num_draws_emax, period, k
     !/* internals objects    */
 
     REAL(our_dble)                  :: x_shift(2)
-    REAL(our_dble)                  :: div
+    REAL(our_dble)                  :: div(1)
 
     CHARACTER(100)                  :: message
 
@@ -330,7 +330,7 @@ FUNCTION constraint_ambiguity_derivative(x, shocks_cov, level, eps_der_approx)
 
     REAL(our_dble), INTENT(IN)          :: shocks_cov(4, 4)
     REAL(our_dble), INTENT(IN)          :: eps_der_approx
-    REAL(our_dble), INTENT(IN)          :: level
+    REAL(our_dble), INTENT(IN)          :: level(1)
     REAL(our_dble), INTENT(IN)          :: x(2)
 
     !/* internals objects       */
@@ -350,7 +350,7 @@ FUNCTION constraint_ambiguity_derivative(x, shocks_cov, level, eps_der_approx)
     ei = zero_dble
 
     ! Evaluate baseline
-    f0 = constraint_ambiguity(x, shocks_cov, level )
+    f0 = constraint_ambiguity(x, shocks_cov, level)
 
     DO j = 1, 2
 
@@ -457,7 +457,7 @@ FUNCTION constraint_ambiguity(x, shocks_cov, level)
     REAL(our_dble)                      :: constraint_ambiguity
 
     REAL(our_dble), INTENT(IN)          :: shocks_cov(4, 4)
-    REAL(our_dble), INTENT(IN)          :: level
+    REAL(our_dble), INTENT(IN)          :: level(1)
     REAL(our_dble), INTENT(IN)          :: x(2)
 
     !/* internal objects        */
@@ -477,7 +477,7 @@ FUNCTION constraint_ambiguity(x, shocks_cov, level)
 
     mean_new(:2) = x
 
-    constraint_ambiguity = level - kl_divergence(mean_old, cov_old, mean_new, cov_new)
+    constraint_ambiguity = level(1) - kl_divergence(mean_old, cov_old, mean_new, cov_new)
 
 END FUNCTION
 !******************************************************************************

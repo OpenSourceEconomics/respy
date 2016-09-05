@@ -71,9 +71,14 @@ class TestClass(object):
             assert open('sol.respy.log', 'r').read() == base_sol_log
 
             if base_est_info_log is None:
+                import shutil
+                shutil.copy('est.respy.info', 'est.respy.scalar')
                 base_est_info_log = open('est.respy.info', 'r').read()
             assert open('est.respy.info', 'r').read() == base_est_info_log
 
             if base_est_log is None:
+                shutil.copy('est.respy.log', 'est.respy.log.scalar')
+                shutil.copy('amb.respy.log', 'amb.respy.log.scalar')
+
                 base_est_log = open('est.respy.log', 'r').readlines()
             compare_est_log(base_est_log)

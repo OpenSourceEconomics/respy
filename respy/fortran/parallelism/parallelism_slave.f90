@@ -37,6 +37,7 @@ PROGRAM resfort_parallel_slave
     REAL(our_dble)                  :: coeffs_edu(3)
     REAL(our_dble)                  :: coeffs_a(6)
     REAL(our_dble)                  :: coeffs_b(6)
+    REAL(our_dble)                  :: level(1)
 
     LOGICAL                         :: STAY_AVAILABLE = .TRUE.
     LOGICAL                         :: is_scaled
@@ -86,7 +87,7 @@ PROGRAM resfort_parallel_slave
 
         CALL MPI_Bcast(x_all_current, 26, MPI_DOUBLE, 0, PARENTCOMM, ierr)
 
-        CALL dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x_all_current)
+        CALL dist_optim_paras(level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x_all_current)
 
 
 

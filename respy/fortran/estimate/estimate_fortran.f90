@@ -29,7 +29,7 @@ MODULE estimate_fortran
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_estimate(crit_val, success, message, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed, optimizer_used, maxfun, is_scaled, scaled_minimum, optimizer_options)
+SUBROUTINE fort_estimate(crit_val, success, message, level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed, optimizer_used, maxfun, is_scaled, scaled_minimum, optimizer_options)
 
     !/* external objects    */
 
@@ -41,13 +41,14 @@ SUBROUTINE fort_estimate(crit_val, success, message, coeffs_a, coeffs_b, coeffs_
     REAL(our_dble), INTENT(IN)      :: coeffs_edu(3)
     REAL(our_dble), INTENT(IN)      :: coeffs_a(6)
     REAL(our_dble), INTENT(IN)      :: coeffs_b(6)
+    REAL(our_dble), INTENT(IN)      :: level(1)
 
     INTEGER(our_int), INTENT(IN)    :: maxfun
 
     CHARACTER(225), INTENT(IN)      :: optimizer_used
     CHARACTER(150), INTENT(OUT)     :: message
 
-    LOGICAL, INTENT(IN)             :: paras_fixed(26)
+    LOGICAL, INTENT(IN)             :: paras_fixed(27)
     LOGICAL, INTENT(OUT)            :: is_scaled
     LOGICAL, INTENT(OUT)            :: success
 
@@ -58,21 +59,21 @@ SUBROUTINE fort_estimate(crit_val, success, message, coeffs_a, coeffs_b, coeffs_
     REAL(our_dble)                  :: x_free_start(num_free)
     REAL(our_dble)                  :: x_free_final(num_free)
 
-    REAL(our_dble)                  :: x_all_final(26)
+    REAL(our_dble)                  :: x_all_final(27)
 
     INTEGER(our_int)                :: iter
 
-    LOGICAL, PARAMETER              :: all_free(26) = .False.
+    LOGICAL, PARAMETER              :: all_free(27) = .False.
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
 
     ! Some ingredients for the evaluation of the criterion function need to be created once and shared globally.
-    CALL get_free_optim_paras(x_all_start, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, all_free)
+    CALL get_free_optim_paras(x_all_start, level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, all_free)
 
     CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, edu_start, edu_max, min_idx)
 
-    CALL get_free_optim_paras(x_free_start, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed)
+    CALL get_free_optim_paras(x_free_start, level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed)
 
 
     ! If a scaling of the criterion function is requested, then we determine the scaled and transform the starting values. Also, the boolean indicates that inside the criterion function the scaling is undone.
@@ -150,6 +151,7 @@ FUNCTION fort_criterion(x)
     REAL(our_dble)                  :: coeffs_edu(3)
     REAL(our_dble)                  :: coeffs_a(6)
     REAL(our_dble)                  :: coeffs_b(6)
+    REAL(our_dble)                  :: level(1)
 
     INTEGER(our_int)                :: dist_optim_paras_info
 
@@ -173,7 +175,7 @@ FUNCTION fort_criterion(x)
 
     CALL construct_all_current_values(x_all_current, x_input, paras_fixed)
 
-    CALL dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x_all_current, dist_optim_paras_info)
+    CALL dist_optim_paras(level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x_all_current, dist_optim_paras_info)
 
     CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, edu_start, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, max_states_period)
 
@@ -244,9 +246,9 @@ SUBROUTINE construct_all_current_values(x_all_current, x, paras_fixed)
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(OUT)     :: x_all_current(26)
+    REAL(our_dble), INTENT(OUT)     :: x_all_current(27)
 
-    LOGICAL, INTENT(IN)             :: paras_fixed(26)
+    LOGICAL, INTENT(IN)             :: paras_fixed(27)
 
     REAL(our_dble), INTENT(IN)      :: x(COUNT(.not. paras_fixed))
 
@@ -262,7 +264,7 @@ SUBROUTINE construct_all_current_values(x_all_current, x, paras_fixed)
 
     j = 1
 
-    DO i = 1, 26
+    DO i = 1, 27
 
         IF(paras_fixed(i)) THEN
             x_all_current(i) = x_all_start(i)

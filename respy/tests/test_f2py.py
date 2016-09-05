@@ -79,15 +79,16 @@ class TestClass(object):
         # Extract class attributes
         periods_rewards_systematic, states_number_period, mapping_state_idx, \
             periods_emax, num_periods, states_all, num_draws_emax, edu_start, \
-            edu_max, delta, level, measure, model_paras, derivatives, \
+            edu_max, delta, measure, model_paras, derivatives, \
             optimizer_options = \
                 dist_class_attributes(respy_obj,
                     'periods_rewards_systematic', 'states_number_period',
                     'mapping_state_idx', 'periods_emax', 'num_periods',
                     'states_all', 'num_draws_emax', 'edu_start', 'edu_max',
-                    'delta', 'level', 'measure', 'model_paras', 'derivatives',
+                    'delta', 'measure', 'model_paras', 'derivatives',
                     'optimizer_options')
 
+        level = model_paras['level']
         shocks_cholesky = model_paras['shocks_cholesky']
         shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
 
@@ -304,12 +305,12 @@ class TestClass(object):
         # Extract class attributes
         num_periods, edu_start, edu_max, min_idx, model_paras, num_draws_emax, \
             seed_emax, is_debug, delta, is_interpolated, num_points_interp, \
-            is_ambiguity, measure, level, optimizer_options, derivatives = \
+            is_ambiguity, measure, optimizer_options, derivatives = \
             dist_class_attributes(respy_obj,
                 'num_periods', 'edu_start', 'edu_max', 'min_idx',
                 'model_paras', 'num_draws_emax', 'seed_emax', 'is_debug',
                 'delta', 'is_interpolated', 'num_points_interp',
-                'is_ambiguity', 'measure', 'level', 'optimizer_options',
+                'is_ambiguity', 'measure',  'optimizer_options',
                 'derivatives')
 
         fort_slsqp_maxiter = optimizer_options['FORT-SLSQP']['maxiter']
@@ -317,7 +318,7 @@ class TestClass(object):
         fort_slsqp_eps = optimizer_options['FORT-SLSQP']['eps']
 
         # Auxiliary objects
-        coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
+        level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
             dist_model_paras(model_paras, is_debug)
 
         # Check the state space creation.
@@ -381,14 +382,13 @@ class TestClass(object):
         num_periods, edu_start, edu_max, min_idx, model_paras, num_draws_emax, \
             is_debug, delta, is_interpolated, num_points_interp, is_myopic, \
             num_agents_sim, num_draws_prob, tau, paras_fixed, seed_sim, \
-            is_ambiguity, measure, level, num_agents_est, \
-            states_number_period, optimizer_options, derivatives \
-            = dist_class_attributes(respy_obj,
+            is_ambiguity, measure, num_agents_est, states_number_period, \
+            optimizer_options, derivatives = dist_class_attributes(respy_obj,
                 'num_periods', 'edu_start',
                 'edu_max', 'min_idx', 'model_paras', 'num_draws_emax',
                 'is_debug', 'delta', 'is_interpolated', 'num_points_interp',
                 'is_myopic', 'num_agents_sim', 'num_draws_prob', 'tau',
-                'paras_fixed', 'seed_sim', 'is_ambiguity', 'measure', 'level',
+                'paras_fixed', 'seed_sim', 'is_ambiguity', 'measure',
                 'num_agents_est', 'states_number_period',
                 'optimizer_options', 'derivatives')
 
@@ -405,7 +405,7 @@ class TestClass(object):
         periods_draws_sims = read_draws(num_periods, num_agents_sim)
 
         # Extract coefficients
-        coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
+        level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
             dist_model_paras(model_paras, True)
 
         # Check the full solution procedure
@@ -451,7 +451,7 @@ class TestClass(object):
         np.testing.assert_allclose(py, f2py)
 
         # Evaluation of criterion function
-        x0 = get_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+        x0 = get_optim_paras(level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
             shocks_cholesky, 'all', paras_fixed, is_debug)
 
         args = (is_interpolated, num_draws_emax, num_periods,
@@ -459,7 +459,7 @@ class TestClass(object):
             delta, data_array, num_draws_prob, tau,
             periods_draws_emax, periods_draws_prob, states_all,
             states_number_period, mapping_state_idx, max_states_period,
-            is_ambiguity, measure, level)
+            is_ambiguity, measure)
 
         py = pyth_criterion(x0, *args + (optimizer_options,))
         f2py = fort_debug.f2py_criterion(x0, *args + (
@@ -480,15 +480,16 @@ class TestClass(object):
         periods_rewards_systematic, states_number_period, mapping_state_idx, \
             seed_prob, periods_emax, num_periods, states_all, \
             num_points_interp, edu_start, num_draws_emax, is_debug, edu_max, \
-            delta, is_ambiguity, measure, level, model_paras, \
+            delta, is_ambiguity, measure, model_paras, \
             optimizer_options, derivatives = dist_class_attributes(respy_obj,
                 'periods_rewards_systematic', 'states_number_period',
                 'mapping_state_idx', 'seed_prob', 'periods_emax',
                 'num_periods', 'states_all', 'num_points_interp', 'edu_start',
                 'num_draws_emax', 'is_debug', 'edu_max', 'delta',
-                'is_ambiguity', 'measure', 'level', 'model_paras',
+                'is_ambiguity', 'measure', 'model_paras',
                 'optimizer_options', 'derivatives')
 
+        level = model_paras['level']
         shocks_cholesky = model_paras['shocks_cholesky']
         shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
 

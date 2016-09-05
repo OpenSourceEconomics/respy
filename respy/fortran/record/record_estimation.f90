@@ -53,7 +53,7 @@ SUBROUTINE record_estimation_eval(x_all_current, val_current, num_eval)
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(IN)      :: x_all_current(26)
+    REAL(our_dble), INTENT(IN)      :: x_all_current(27)
     REAL(our_dble), INTENT(IN)      :: val_current
 
     INTEGER(our_int), INTENT(IN)    :: num_eval
@@ -62,7 +62,7 @@ SUBROUTINE record_estimation_eval(x_all_current, val_current, num_eval)
 
     INTEGER(our_int), SAVE          :: num_step = - one_int
 
-    REAL(our_dble), SAVE            :: x_container(26, 3)
+    REAL(our_dble), SAVE            :: x_container(27, 3)
 
 
     REAL(our_dble), SAVE            :: crit_vals(3)
@@ -151,7 +151,7 @@ SUBROUTINE record_estimation_eval(x_all_current, val_current, num_eval)
         WRITE(99, 140) 'Identifier', 'Start', 'Step', 'Current'
         WRITE(99, *)
 
-        DO i = 1, 26
+        DO i = 1, 27
             WRITE(99, 150) (i - 1), x_container(i, :)
         END DO
 
@@ -195,7 +195,7 @@ SUBROUTINE record_estimation_eval(x_all_current, val_current, num_eval)
         WRITE(99, 220) 'Identifier', 'Start', 'Step', 'Current'
         WRITE(99, *)
 
-        DO i = 1, 26
+        DO i = 1, 27
             WRITE(99, 230) (i - 1), x_container(i, :)
         END DO
 
@@ -243,7 +243,7 @@ SUBROUTINE record_estimation_final(success, message, crit_val, x_all_final)
 
     LOGICAL, INTENT(IN)             :: success
 
-    REAL(our_dble), INTENT(IN)      :: x_all_final(26)
+    REAL(our_dble), INTENT(IN)      :: x_all_final(27)
     REAL(our_dble), INTENT(IN)      :: crit_val
 
     CHARACTER(*), INTENT(IN)        :: message
@@ -281,7 +281,7 @@ SUBROUTINE record_estimation_final(success, message, crit_val, x_all_final)
 
         WRITE(99, *)
 
-        DO i = 1, 26
+        DO i = 1, 27
             WRITE(99, 120) (i - 1), x_all_final(i)
         END DO
 

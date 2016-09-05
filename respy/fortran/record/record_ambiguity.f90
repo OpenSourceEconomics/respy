@@ -29,7 +29,7 @@ SUBROUTINE record_ambiguity(period, k, x_shift, div, is_success, message)
     INTEGER(our_int)                :: k
 
     REAL(our_dble)                  :: x_shift(2)
-    REAL(our_dble)                  :: div
+    REAL(our_dble)                  :: div(1)
 
     CHARACTER(100)                  :: message
 
@@ -54,7 +54,7 @@ SUBROUTINE record_ambiguity(period, k, x_shift, div, is_success, message)
         WRITE(99, 110) 'Occupation B', x_shift(2)
 
         WRITE(99, *)
-        WRITE(99, 120) 'Divergence  ', div
+        WRITE(99, 120) 'Divergence  ', div(1)
 
         WRITE(99, *)
 

@@ -247,8 +247,8 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, is_myopic, max_sta
     REAL(our_dble), INTENT(IN)          :: periods_rewards_systematic(num_periods, max_states_period, 4)
     REAL(our_dble), INTENT(IN)          :: periods_draws_emax(num_periods, num_draws_emax, 4)
     REAL(our_dble), INTENT(IN)          :: shocks_cholesky(4, 4)
+    REAL(our_dble), INTENT(IN)          :: level(1)
     REAL(our_dble), INTENT(IN)          :: delta
-    REAL(our_dble), INTENT(IN)          :: level
 
     INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 4)
@@ -528,8 +528,8 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_states, periods_rewar
     REAL(our_dble), INTENT(IN)          :: draws_emax_transformed(num_periods, max_states_period)
     REAL(our_dble), INTENT(IN)          :: maxe(num_states)
     REAL(our_dble), INTENT(IN)          :: shocks_cov(4, 4)
+    REAL(our_dble), INTENT(IN)          :: level(1)
     REAL(our_dble), INTENT(IN)          :: delta
-    REAL(our_dble), INTENT(IN)          :: level
 
     INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 4)

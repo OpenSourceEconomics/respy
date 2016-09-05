@@ -43,8 +43,8 @@ SUBROUTINE fort_solve(periods_rewards_systematic, states_number_period, mapping_
     REAL(our_dble), INTENT(IN)                      :: coeffs_edu(3)
     REAL(our_dble), INTENT(IN)                      :: coeffs_a(6)
     REAL(our_dble), INTENT(IN)                      :: coeffs_b(6)
+    REAL(our_dble), INTENT(IN)                      :: level(1)
     REAL(our_dble), INTENT(IN)                      :: delta
-    REAL(our_dble), INTENT(IN)                      :: level
 
     LOGICAL, INTENT(IN)                             :: is_interpolated
     LOGICAL, INTENT(IN)                             :: is_ambiguity

@@ -22,14 +22,14 @@ def resfort_interface(respy_obj, request, data_array=None):
         is_myopic, min_idx, tau, is_parallel, num_procs, num_agents_sim, \
         num_draws_prob, num_agents_est, seed_prob, seed_sim, paras_fixed, \
         optimizer_options, optimizer_used, maxfun, paras_fixed, derivatives, \
-        scaling, is_ambiguity, measure, level = dist_class_attributes(respy_obj,
+        scaling, is_ambiguity, measure = dist_class_attributes(respy_obj,
             'model_paras', 'num_periods', 'edu_start', 'is_debug', 'edu_max',
             'delta', 'num_draws_emax', 'seed_emax', 'is_interpolated',
             'num_points_interp', 'is_myopic', 'min_idx', 'tau', 'is_parallel',
             'num_procs', 'num_agents_sim', 'num_draws_prob',
             'num_agents_est', 'seed_prob', 'seed_sim', 'paras_fixed',
             'optimizer_options', 'optimizer_used', 'maxfun', 'paras_fixed',
-            'derivatives', 'scaling', 'is_ambiguity', 'measure', 'level')
+            'derivatives', 'scaling', 'is_ambiguity', 'measure')
 
     dfunc_eps = derivatives[1]
     is_scaled, scale_minimum = scaling
@@ -46,7 +46,7 @@ def resfort_interface(respy_obj, request, data_array=None):
         write_dataset(data_array)
 
     # Distribute model parameters
-    coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
+    level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
         dist_model_paras(model_paras, is_debug)
 
     args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
@@ -196,13 +196,13 @@ def write_resfort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         file_.write(line)
 
         # AMBIGUITY
-        line = '{0}'.format(is_ambiguity)
+        line = '{0}'.format(is_ambiguity[0])
         file_.write(line + '\n')
 
         line = '"{0}"'.format(measure)
         file_.write(line + '\n')
 
-        line = '{0:15.10f}\n'.format(level)
+        line = '{0:15.10f}\n'.format(level[0])
         file_.write(line)
 
         # PROGRAM

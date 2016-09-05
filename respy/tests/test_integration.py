@@ -144,6 +144,7 @@ class TestClass(object):
         respy_obj = RespyCls('test.respy.ini')
         estimate(respy_obj)
 
+    @pytest.mark.slow
     def test_5(self):
         """ Test the scripts.
         """

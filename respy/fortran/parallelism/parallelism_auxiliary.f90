@@ -163,7 +163,7 @@ SUBROUTINE determine_workload(jobs_slaves, jobs_total)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_estimate_parallel(crit_val, success, message, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed, optimizer_used, maxfun, is_scaled, scaled_minimum, optimizer_options)
+SUBROUTINE fort_estimate_parallel(crit_val, success, message, level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed, optimizer_used, maxfun, is_scaled, scaled_minimum, optimizer_options)
 
     !/* external objects    */
 
@@ -180,10 +180,11 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, coeffs_a, coeffs_b
     REAL(our_dble), INTENT(IN)      :: coeffs_edu(3)
     REAL(our_dble), INTENT(IN)      :: coeffs_a(6)
     REAL(our_dble), INTENT(IN)      :: coeffs_b(6)
+    REAL(our_dble), INTENT(IN)      :: level(1)
 
     CHARACTER(225), INTENT(IN)      :: optimizer_used
 
-    LOGICAL, INTENT(IN)             :: paras_fixed(26)
+    LOGICAL, INTENT(IN)             :: paras_fixed(27)
     LOGICAL, INTENT(IN)             :: is_scaled
 
     TYPE(OPTIMIZER_COLLECTION), INTENT(IN) :: optimizer_options
@@ -193,22 +194,22 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, coeffs_a, coeffs_b
 
     REAL(our_dble)                  :: x_free_start(COUNT(.not. paras_fixed))
     REAL(our_dble)                  :: x_free_final(COUNT(.not. paras_fixed))
-    REAL(our_dble)                  :: x_all_final(26)
+    REAL(our_dble)                  :: x_all_final(27)
 
     INTEGER(our_int)                :: iter
 
-    LOGICAL, PARAMETER              :: all_free(26) = .False.
+    LOGICAL, PARAMETER              :: all_free(27) = .False.
 
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
 
     ! Some ingredients for the evaluation of the criterion function need to be created once and shared globally.
-    CALL get_free_optim_paras(x_all_start, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, all_free)
+    CALL get_free_optim_paras(x_all_start, level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, all_free)
 
     CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, edu_start, edu_max, min_idx)
 
-    CALL get_free_optim_paras(x_free_start, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed)
+    CALL get_free_optim_paras(x_free_start, level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed)
 
     ! If a scaling of the criterion function is requested, then we determine the scaled and transform the starting values. Also, the boolean indicates that inside the criterion function the scaling is undone.
     IF (is_scaled .AND. (.NOT. maxfun == zero_int)) THEN
@@ -284,6 +285,7 @@ FUNCTION fort_criterion_parallel(x)
     REAL(our_dble)                  :: coeffs_edu(3)
     REAL(our_dble)                  :: coeffs_a(6)
     REAL(our_dble)                  :: coeffs_b(6)
+    REAL(our_dble)                  :: level(1)
 
     INTEGER(our_int), ALLOCATABLE   :: num_states_slaves(:, :)
     INTEGER(our_int), ALLOCATABLE   :: num_obs_slaves(:)
@@ -317,7 +319,7 @@ FUNCTION fort_criterion_parallel(x)
     CALL MPI_Bcast(x_all_current, 26, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
 
     ! This extra work is only required to align the logging across the scalar and parallel implementation. In the case of an otherwise zero variance, we stabilize the algorithm. However, we want this indicated as a warning in the log file.
-    CALL dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x_all_current, dist_optim_paras_info)
+    CALL dist_optim_paras(level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x_all_current, dist_optim_paras_info)
 
     ! We need to know how the workload is distributed across the slaves.
     IF (.NOT. ALLOCATED(num_states_slaves)) THEN
@@ -391,7 +393,7 @@ FUNCTION fort_dcriterion_parallel(x)
 END FUNCTION
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max)
+SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max)
 
     !/* external objects        */
 
@@ -407,18 +409,19 @@ SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period,
     REAL(our_dble), INTENT(IN)                      :: coeffs_edu(3)
     REAL(our_dble), INTENT(IN)                      :: coeffs_a(6)
     REAL(our_dble), INTENT(IN)                      :: coeffs_b(6)
+    REAL(our_dble), INTENT(IN)                      :: level(1)
 
     INTEGER(our_int), INTENT(IN)                    :: edu_start
     INTEGER(our_int), INTENT(IN)                    :: edu_max
 
     !/* internal objects        */
 
-    REAL(our_dble)                                  :: x_all_current(26)
+    REAL(our_dble)                                  :: x_all_current(27)
 
     INTEGER(our_int)                                :: num_states
     INTEGER(our_int)                                :: period
 
-    LOGICAL, PARAMETER                              :: all_free(26) = .False.
+    LOGICAL, PARAMETER                              :: all_free(27) = .False.
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -427,7 +430,7 @@ SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period,
     CALL MPI_Bcast(2, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
 
 
-    CALL get_free_optim_paras(x_all_current, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, all_free)
+    CALL get_free_optim_paras(x_all_current, level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, all_free)
 
     CALL MPI_Bcast(x_all_current, 26, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
 
@@ -461,8 +464,8 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, num_periods, periods_draw
     REAL(our_dble), INTENT(IN)          :: periods_rewards_systematic(num_periods, max_states_period, 4)
     REAL(our_dble), INTENT(IN)          :: periods_draws_emax(num_periods, num_draws_emax, 4)
     REAL(our_dble), INTENT(IN)          :: shocks_cholesky(4, 4)
+    REAL(our_dble), INTENT(IN)          :: level(1)
     REAL(our_dble), INTENT(IN)          :: delta
-    REAL(our_dble), INTENT(IN)          :: level
 
     INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 4)

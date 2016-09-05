@@ -24,6 +24,7 @@ PROGRAM resfort_parallel
     REAL(our_dble)                  :: coeffs_edu(3)
     REAL(our_dble)                  :: coeffs_a(6)
     REAL(our_dble)                  :: coeffs_b(6)
+    REAL(our_dble)                  :: level(1)
     REAL(our_dble)                  :: crit_val
 
     REAL(our_dble), ALLOCATABLE     :: periods_draws_sims(:, :, :)
@@ -54,11 +55,11 @@ PROGRAM resfort_parallel
 
     IF (request == 'estimate') THEN
 
-        CALL fort_estimate_parallel(crit_val, success, message, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed, optimizer_used, maxfun, is_scaled, scaled_minimum, optimizer_options)
+        CALL fort_estimate_parallel(crit_val, success, message, level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed, optimizer_used, maxfun, is_scaled, scaled_minimum, optimizer_options)
 
     ELSE IF (request == 'simulate') THEN
 
-        CALL fort_solve_parallel(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max)
+        CALL fort_solve_parallel(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max)
 
         CALL create_draws(periods_draws_sims, num_agents_sim, seed_sim, is_debug)
 

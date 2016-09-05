@@ -2,19 +2,19 @@
 !******************************************************************************
 MODULE estimate_auxiliary
 
-	!/*	external modules	*/
+    !/*	external modules	*/
 
     USE recording_estimation
 
-    USE shared_containers 
+    USE shared_containers
 
     USE shared_constants
 
     USE shared_utilities
 
-    USE shared_auxiliary 
+    USE shared_auxiliary
 
-	!/*	setup	*/
+    !/*	setup	*/
 
     IMPLICIT NONE
 
@@ -23,7 +23,7 @@ MODULE estimate_auxiliary
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x, info)
+SUBROUTINE dist_optim_paras(level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x, info)
 
     !/* external objects        */
 
@@ -32,8 +32,9 @@ SUBROUTINE dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_
     REAL(our_dble), INTENT(OUT)     :: coeffs_edu(3)
     REAL(our_dble), INTENT(OUT)     :: coeffs_a(6)
     REAL(our_dble), INTENT(OUT)     :: coeffs_b(6)
+    REAL(our_dble), INTENT(OUT)     :: level(1)
 
-    REAL(our_dble), INTENT(IN)      :: x(26)
+    REAL(our_dble), INTENT(IN)      :: x(27)
 
     INTEGER(our_int), OPTIONAL, INTENT(OUT)   :: info
 
@@ -42,13 +43,15 @@ SUBROUTINE dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_
 !------------------------------------------------------------------------------
 
     ! Extract model ingredients
-    coeffs_a = x(1:6)
+    level = EXP(x(1:1))
 
-    coeffs_b = x(7:12)
+    coeffs_a = x(2:7)
 
-    coeffs_edu = x(13:15)
+    coeffs_b = x(8:13)
 
-    coeffs_home = x(16:16)
+    coeffs_edu = x(14:16)
+
+    coeffs_home = x(17:17)
 
     ! The information pertains to the stabilization of an otherwise zero variance.
     IF (PRESENT(info)) THEN
@@ -60,7 +63,7 @@ SUBROUTINE dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_free_optim_paras(x, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed)
+SUBROUTINE get_free_optim_paras(x, level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed)
 
     !/* external objects        */
 
@@ -69,15 +72,19 @@ SUBROUTINE get_free_optim_paras(x, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, 
     REAL(our_dble), INTENT(IN)      :: coeffs_edu(3)
     REAL(our_dble), INTENT(IN)      :: coeffs_a(6)
     REAL(our_dble), INTENT(IN)      :: coeffs_b(6)
+    REAL(our_dble), INTENT(IN)      :: level(1)
 
-    LOGICAL, INTENT(IN)             :: paras_fixed(26)
+    LOGICAL, INTENT(IN)             :: paras_fixed(27)
 
     REAL(our_dble), INTENT(OUT)     :: x(COUNT(.not. paras_fixed))
 
-    !/* internal objects        */    
+    !/* internal objects        */
 
-    REAL(our_dble)                  :: x_internal(26)
+    REAL(our_dble)                  :: x_internal(27)
+    REAL(our_dble)                  :: level_clipped(1)
 
+    INTEGER(our_int), ALLOCATABLE   :: infos(:)
+    
     INTEGER(our_int)                :: i
     INTEGER(our_int)                :: j
 
@@ -85,31 +92,35 @@ SUBROUTINE get_free_optim_paras(x, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, 
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    x_internal(1:6) = coeffs_a(:)
-        
-    x_internal(7:12) = coeffs_b(:)
-        
-    x_internal(13:15) = coeffs_edu(:)
-        
-    x_internal(16:16) = coeffs_home(:)
+    CALL clip_value(level_clipped, level, SMALL_FLOAT, HUGE_FLOAT, infos)
 
-    x_internal(17:17) = shocks_cholesky(1, :1)
-        
-    x_internal(18:19) = shocks_cholesky(2, :2)
-        
-    x_internal(20:22) = shocks_cholesky(3, :3)
-        
-    x_internal(23:26) = shocks_cholesky(4, :4)
+    x_internal(1:1) = LOG(level_clipped)
+
+    x_internal(2:7) = coeffs_a(:)
+
+    x_internal(8:13) = coeffs_b(:)
+
+    x_internal(14:16) = coeffs_edu(:)
+
+    x_internal(17:17) = coeffs_home(:)
+
+    x_internal(18:18) = shocks_cholesky(1, :1)
+
+    x_internal(19:20) = shocks_cholesky(2, :2)
+
+    x_internal(21:23) = shocks_cholesky(3, :3)
+
+    x_internal(24:27) = shocks_cholesky(4, :4)
 
 
     j = 1
 
-    DO i = 1, 26
+    DO i = 1, 27
 
         IF(paras_fixed(i)) CYCLE
 
         x(j) = x_internal(i)
-        
+
         j = j + 1
 
     END DO

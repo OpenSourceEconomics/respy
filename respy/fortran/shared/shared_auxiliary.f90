@@ -85,7 +85,7 @@ SUBROUTINE get_cholesky(shocks_cholesky, x, info)
 
     REAL(our_dble), INTENT(OUT)     :: shocks_cholesky(4, 4)
 
-    REAL(our_dble), INTENT(IN)      :: x(26)
+    REAL(our_dble), INTENT(IN)      :: x(27)
 
     INTEGER(our_int), OPTIONAL, INTENT(OUT)    :: info
 
@@ -101,13 +101,13 @@ SUBROUTINE get_cholesky(shocks_cholesky, x, info)
 
     shocks_cholesky = zero_dble
 
-    shocks_cholesky(1, :1) = x(17:17)
+    shocks_cholesky(1, :1) = x(18:18)
 
-    shocks_cholesky(2, :2) = x(18:19)
+    shocks_cholesky(2, :2) = x(19:20)
 
-    shocks_cholesky(3, :3) = x(20:22)
+    shocks_cholesky(3, :3) = x(21:23)
 
-    shocks_cholesky(4, :4) = x(23:26)
+    shocks_cholesky(4, :4) = x(24:27)
 
     ! We need to ensure that the diagonal elements are larger than zero during an estimation. However, we want to allow for the special case of total absence of randomness for testing purposes of simulated datasets.
     IF (.NOT. ALL(shocks_cholesky .EQ. zero_dble)) THEN
@@ -668,8 +668,8 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
     REAL(our_dble), INTENT(OUT)     :: coeffs_edu(3)
     REAL(our_dble), INTENT(OUT)     :: coeffs_a(6)
     REAL(our_dble), INTENT(OUT)     :: coeffs_b(6)
+    REAL(our_dble), INTENT(OUT)     :: level(1)
     REAL(our_dble), INTENT(OUT)     :: delta
-    REAL(our_dble), INTENT(OUT)     :: level
     REAL(our_dble), INTENT(OUT)     :: tau
 
     INTEGER(our_int), INTENT(OUT)   :: num_points_interp
@@ -693,7 +693,7 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
     CHARACTER(10), INTENT(OUT)      :: measure
 
     LOGICAL, INTENT(OUT)            :: is_interpolated
-    LOGICAL, INTENT(OUT)            :: paras_fixed(26)
+    LOGICAL, INTENT(OUT)            :: paras_fixed(27)
     LOGICAL, INTENT(OUT)            :: is_ambiguity
     LOGICAL, INTENT(OUT)            :: is_scaled
     LOGICAL, INTENT(OUT)            :: is_myopic

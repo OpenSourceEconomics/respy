@@ -6,7 +6,7 @@
 !
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, num_periods_int, num_points_interp_int, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, delta_int, data_est_int, num_draws_prob_int, tau_int, periods_draws_emax_int, periods_draws_prob_int, states_all_int, states_number_period_int, mapping_state_idx_int, max_states_period_int, is_ambiguity_int, measure_int, level_int, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
+SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, num_periods_int, num_points_interp_int, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, delta_int, data_est_int, num_draws_prob_int, tau_int, periods_draws_emax_int, periods_draws_prob_int, states_all_int, states_number_period_int, mapping_state_idx_int, max_states_period_int, is_ambiguity_int, measure_int, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
 
     !/* external libraries      */
 
@@ -20,7 +20,7 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
 
     DOUBLE PRECISION, INTENT(OUT)   :: crit_val
 
-    DOUBLE PRECISION, INTENT(IN)    :: x(26)
+    DOUBLE PRECISION, INTENT(IN)    :: x(27)
 
     INTEGER, INTENT(IN)             :: mapping_state_idx_int(:, :, :, :, :)
     INTEGER, INTENT(IN)             :: states_number_period_int(:)
@@ -39,7 +39,6 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
     DOUBLE PRECISION, INTENT(IN)    :: data_est_int(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_ftol
     DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_eps
-    DOUBLE PRECISION, INTENT(IN)    :: level_int
     DOUBLE PRECISION, INTENT(IN)    :: delta_int
     DOUBLE PRECISION, INTENT(IN)    :: tau_int
 
@@ -58,6 +57,7 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
     DOUBLE PRECISION                :: coeffs_edu(3)
     DOUBLE PRECISION                :: coeffs_a(6)
     DOUBLE PRECISION                :: coeffs_b(6)
+    DOUBLE PRECISION                :: level(1)
 
     INTEGER                         :: dist_optim_paras_info
 
@@ -81,11 +81,11 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
     optimizer_options%slsqp%eps = fort_slsqp_eps
 
     !# Distribute model parameters
-    CALL dist_optim_paras(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x, dist_optim_paras_info)
+    CALL dist_optim_paras(level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x, dist_optim_paras_info)
 
     CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period_int, states_all_int, edu_start_int, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, max_states_period_int)
 
-    CALL fort_backward_induction(periods_emax, num_periods_int, is_myopic_int, max_states_period_int, periods_draws_emax_int, num_draws_emax_int, states_number_period_int, periods_rewards_systematic, edu_max_int, edu_start_int, mapping_state_idx_int, states_all_int, delta_int, is_debug_int, is_interpolated_int, num_points_interp_int, shocks_cholesky, is_ambiguity_int, measure_int, level_int, optimizer_options, .False.)
+    CALL fort_backward_induction(periods_emax, num_periods_int, is_myopic_int, max_states_period_int, periods_draws_emax_int, num_draws_emax_int, states_number_period_int, periods_rewards_systematic, edu_max_int, edu_start_int, mapping_state_idx_int, states_all_int, delta_int, is_debug_int, is_interpolated_int, num_points_interp_int, shocks_cholesky, is_ambiguity_int, measure_int, level, optimizer_options, .False.)
 
     CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx_int, periods_emax, states_all_int, shocks_cholesky, data_est_int, periods_draws_prob_int, delta_int, tau_int, edu_start_int, edu_max_int, num_periods_int, num_draws_prob_int)
 
@@ -183,8 +183,8 @@ SUBROUTINE f2py_solve(periods_rewards_systematic_int, states_number_period_int, 
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_edu(:)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(:)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(:)
+    DOUBLE PRECISION, INTENT(IN)    :: level_int(1)
     DOUBLE PRECISION, INTENT(IN)    :: delta_int
-    DOUBLE PRECISION, INTENT(IN)    :: level_int
 
     LOGICAL, INTENT(IN)             :: is_interpolated_int
     LOGICAL, INTENT(IN)             :: is_ambiguity_int
@@ -299,8 +299,8 @@ SUBROUTINE f2py_backward_induction(periods_emax_int, num_periods_int, is_myopic_
     DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(4, 4)
     DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_ftol
     DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_eps
+    DOUBLE PRECISION, INTENT(IN)    :: level_int(1)
     DOUBLE PRECISION, INTENT(IN)    :: delta_int
-    DOUBLE PRECISION, INTENT(IN)    :: level_int
 
     INTEGER, INTENT(IN)             :: mapping_state_idx_int(:, :, :, :, :)
     INTEGER, INTENT(IN)             :: states_number_period_int(:)
@@ -687,8 +687,8 @@ SUBROUTINE wrapper_construct_emax_ambiguity(emax, num_periods_int, num_draws_ema
     DOUBLE PRECISION, INTENT(IN)    :: shocks_cov_int(4, 4)
     DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_ftol
     DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_eps
+    DOUBLE PRECISION, INTENT(IN)    :: level_int(1)
     DOUBLE PRECISION, INTENT(IN)    :: delta_int
-    DOUBLE PRECISION, INTENT(IN)    :: level_int
 
     CHARACTER(10), INTENT(IN)       :: measure_int
 
@@ -1044,8 +1044,8 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_perio
     DOUBLE PRECISION, INTENT(IN)        :: shocks_cov(4, 4)
     DOUBLE PRECISION, INTENT(IN)        :: fort_slsqp_ftol
     DOUBLE PRECISION, INTENT(IN)        :: fort_slsqp_eps
+    DOUBLE PRECISION, INTENT(IN)        :: level_int(1)
     DOUBLE PRECISION, INTENT(IN)        :: delta_int
-    DOUBLE PRECISION, INTENT(IN)        :: level_int
     DOUBLE PRECISION, INTENT(IN)        :: maxe(:)
 
     INTEGER, INTENT(IN)                 :: mapping_state_idx_int(:, :, :, :, :)
@@ -1176,7 +1176,7 @@ SUBROUTINE wrapper_get_cholesky(shocks_cholesky, info, x)
 
     DOUBLE PRECISION, INTENT(OUT)   :: shocks_cholesky(4, 4)
 
-    DOUBLE PRECISION, INTENT(IN)    :: x(26)
+    DOUBLE PRECISION, INTENT(IN)    :: x(27)
 
     INTEGER, INTENT(OUT)            :: info
 
@@ -1498,7 +1498,7 @@ SUBROUTINE wrapper_constraint_ambiguity(rslt, x, shocks_cov, level_int)
     DOUBLE PRECISION, INTENT(OUT)       :: rslt
 
     DOUBLE PRECISION, INTENT(IN)        :: shocks_cov(4, 4)
-    DOUBLE PRECISION, INTENT(IN)        :: level_int
+    DOUBLE PRECISION, INTENT(IN)        :: level_int(1)
     DOUBLE PRECISION, INTENT(IN)        :: x(2)
 
 !------------------------------------------------------------------------------
@@ -1535,8 +1535,8 @@ SUBROUTINE wrapper_get_worst_case(x_shift, is_success, message, num_periods_int,
         DOUBLE PRECISION, INTENT(IN)      :: fort_slsqp_ftol
         DOUBLE PRECISION, INTENT(IN)      :: shocks_cov(4, 4)
         DOUBLE PRECISION, INTENT(IN)      :: fort_slsqp_eps
+        DOUBLE PRECISION, INTENT(IN)      :: level_int(1)
         DOUBLE PRECISION, INTENT(IN)      :: delta_int
-        DOUBLE PRECISION, INTENT(IN)      :: level_int
 
         INTEGER, INTENT(IN)    :: mapping_state_idx_int(:, :, :, :, :)
         INTEGER, INTENT(IN)    :: states_all_int(:, :, :)
@@ -1579,7 +1579,7 @@ SUBROUTINE wrapper_constraint_ambiguity_derivative(rslt, x, shocks_cov, level_in
 
     DOUBLE PRECISION, INTENT(IN)        :: shocks_cov(4, 4)
     DOUBLE PRECISION, INTENT(IN)        :: eps_der_approx
-    DOUBLE PRECISION, INTENT(IN)        :: level_int
+    DOUBLE PRECISION, INTENT(IN)        :: level_int(1)
     DOUBLE PRECISION, INTENT(IN)        :: x(2)
 
 !------------------------------------------------------------------------------
