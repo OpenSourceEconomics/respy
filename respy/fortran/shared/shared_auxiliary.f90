@@ -653,7 +653,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_rewards
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, is_scaled, scaled_minimum, is_ambiguity, measure, level, optimizer_used, dfunc_eps, newuoa_npt, newuoa_maxfun, newuoa_rhobeg, newuoa_rhoend, bfgs_gtol, bfgs_stpmx, bfgs_maxiter)
+SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, is_scaled, scaled_minimum, is_ambiguity, measure, level, optimizer_used, dfunc_eps, optimizer_options)
 
     !
     !   This function serves as the replacement for the RespyCls and reads in
@@ -672,9 +672,6 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
     REAL(our_dble), INTENT(OUT)     :: level
     REAL(our_dble), INTENT(OUT)     :: tau
 
-    REAL(our_dble), INTENT(OUT)     :: newuoa_rhobeg
-    REAL(our_dble), INTENT(OUT)     :: newuoa_rhoend
-
     INTEGER(our_int), INTENT(OUT)   :: num_points_interp
     INTEGER(our_int), INTENT(OUT)   :: num_slaves
     INTEGER(our_int), INTENT(OUT)   :: num_procs
@@ -686,13 +683,7 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
     INTEGER(our_int), INTENT(OUT)   :: edu_max
     INTEGER(our_int), INTENT(OUT)   :: maxfun
 
-    INTEGER(our_int), INTENT(OUT)   :: newuoa_maxfun
-    INTEGER(our_int), INTENT(OUT)   :: newuoa_npt
-    INTEGER(our_int), INTENT(OUT)   :: bfgs_maxiter
-
     REAL(our_dble), INTENT(OUT)     :: scaled_minimum
-    REAL(our_dble), INTENT(OUT)     :: bfgs_stpmx
-    REAL(our_dble), INTENT(OUT)     :: bfgs_gtol
     REAL(our_dble), INTENT(OUT)     :: dfunc_eps
 
     CHARACTER(225), INTENT(OUT)     :: optimizer_used
@@ -707,6 +698,8 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
     LOGICAL, INTENT(OUT)            :: is_scaled
     LOGICAL, INTENT(OUT)            :: is_myopic
     LOGICAL, INTENT(OUT)            :: is_debug
+
+    TYPE(OPTIMIZER_COLLECTION), INTENT(OUT)  :: optimizer_options
 
     !/* internal objects        */
 
@@ -797,14 +790,14 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
         ! OPTIMIZERS
         READ(99, *) optimizer_used
 
-        READ(99, 1505) newuoa_npt
-        READ(99, 1505) newuoa_maxfun
-        READ(99, 1500) newuoa_rhobeg
-        READ(99, 1500) newuoa_rhoend
+        READ(99, 1505) optimizer_options%newuoa%npt
+        READ(99, 1505) optimizer_options%newuoa%maxfun
+        READ(99, 1500) optimizer_options%newuoa%rhobeg
+        READ(99, 1500) optimizer_options%newuoa%rhoend
 
-        READ(99, 1500) bfgs_gtol
-        READ(99, 1500) bfgs_stpmx
-        READ(99, 1505) bfgs_maxiter
+        READ(99, 1500) optimizer_options%bfgs%gtol
+        READ(99, 1500) optimizer_options%bfgs%stpmx
+        READ(99, 1505) optimizer_options%bfgs%maxiter
 
         READ(99, 1500) optimizer_options%slsqp%ftol
         READ(99, 1505) optimizer_options%slsqp%maxiter

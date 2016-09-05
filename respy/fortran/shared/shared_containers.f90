@@ -47,6 +47,8 @@ MODULE shared_containers
     CHARACTER(10)                   :: measure
 
     ! Parameters for the optimization
+    TYPE(OPTIMIZER_COLLECTION)      :: optimizer_options
+
     INTEGER(our_int)                :: maxfun
 
 !******************************************************************************

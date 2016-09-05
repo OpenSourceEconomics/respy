@@ -48,44 +48,34 @@ MODULE shared_constants
     REAL(our_dble), PARAMETER   :: HUGE_FLOAT                   = 1.0e20_our_dble
     REAL(our_dble), PARAMETER   :: LARGE_FLOAT                  = 1.0e8_our_dble
 
-
-
+    ! We create a type that resembles the dictionary with the optimizer options in PYTHON.
     TYPE OPTIMIZER_BFGS
+        INTEGER(our_int)        :: maxiter
 
-        INTEGER(our_int)  :: maxiter
-
-        REAL(our_dble)  :: gtol
-        REAL(our_dble)  :: stpmx
-
+        REAL(our_dble)          :: stpmx
+        REAL(our_dble)          :: gtol
     END TYPE
 
     TYPE OPTIMIZER_NEWUOA
+        INTEGER(our_int)        :: maxfun
+        INTEGER(our_int)        :: npt
 
-        INTEGER(our_int)  :: npt
-        INTEGER(our_int)  :: maxfun
-
-        REAL(our_dble)  :: rhobeg
-        REAL(our_dble)  :: rhoend
-
+        REAL(our_dble)          :: rhobeg
+        REAL(our_dble)          :: rhoend
     END TYPE
 
     TYPE OPTIMIZER_SLSQP
+        INTEGER(our_int)        :: maxiter
 
-        INTEGER(our_int)  :: maxiter
-
-        REAL(our_dble)  :: ftol
-        REAL(our_dble)  :: eps
-
+        REAL(our_dble)          :: ftol
+        REAL(our_dble)          :: eps
     END TYPE
 
     TYPE OPTIMIZER_COLLECTION
         TYPE(OPTIMIZER_NEWUOA)  :: newuoa
         TYPE(OPTIMIZER_BFGS)    :: bfgs
         TYPE(OPTIMIZER_SLSQP)   :: slsqp
-
     END TYPE
-
-    type (OPTIMIZER_COLLECTION) optimizer_options
 
 !******************************************************************************
 !******************************************************************************
