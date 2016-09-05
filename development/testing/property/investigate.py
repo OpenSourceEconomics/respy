@@ -35,7 +35,7 @@ else:
 ''' Error Reproduction
 '''
 cleanup_testing_infrastructure(True)
-seed = 2990 # 6216748723
+seed = 51395 # 6216748723
 np.random.seed(seed)
 
 # Construct test
