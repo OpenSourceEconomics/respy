@@ -85,7 +85,7 @@ PROGRAM resfort_parallel_slave
         END IF
 
 
-        CALL MPI_Bcast(x_all_current, 26, MPI_DOUBLE, 0, PARENTCOMM, ierr)
+        CALL MPI_Bcast(x_all_current, 27, MPI_DOUBLE, 0, PARENTCOMM, ierr)
 
         CALL dist_optim_paras(level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x_all_current)
 
