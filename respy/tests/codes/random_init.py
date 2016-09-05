@@ -199,7 +199,7 @@ def generate_random_dict(constraints=None):
     # FORT-SLSQP
     dict_['FORT-SLSQP'] = dict()
     dict_['FORT-SLSQP']['maxiter'] = np.random.randint(1, 100)
-    dict_['FORT-SLSQP']['ftol'] = np.random.uniform(0.0001, 0.1)
+    dict_['FORT-SLSQP']['ftol'] = np.random.uniform(1e-9, 1e-6)
 
     # SCIPY-SLSQP
     dict_['SCIPY-SLSQP'] = dict()

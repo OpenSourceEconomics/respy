@@ -295,9 +295,6 @@ class TestClass(object):
             # Check for identical logging
             if is_ambiguity:
                 if base_amb_log is None:
-                    import shutil
-                    shutil.copy('amb.respy.log', 'amb.respy.fort')
-
                     base_amb_log = open('amb.respy.log', 'r').read()
                 assert open('amb.respy.log', 'r').read() == base_amb_log
 
