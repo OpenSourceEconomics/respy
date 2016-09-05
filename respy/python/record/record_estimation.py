@@ -144,3 +144,4 @@ def write_est_info(num_start, value_start, paras_start, num_step,
         fmt_ = '\n{0:<25}{1:>15}\n'
         out_file.write(fmt_.format(*[' Number of Steps', num_step]))
         out_file.write(fmt_.format(*[' Number of Evaluations', num_eval]))
+        
