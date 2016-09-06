@@ -267,6 +267,15 @@ def generate_random_dict(constraints=None):
         dict_['EDUCATION']['start'] = start
         dict_['EDUCATION']['max'] = max_
 
+    # Replace measure of ambiguity
+    if 'measure' in constraints.keys():
+        # Extract object
+        measure = constraints['measure']
+        # Checks
+        assert measure in ['kl', 'abs']
+        # Replace in initialization file
+        dict_['AMBIGUITY']['measure'] = measure
+
     # Replace level of ambiguity
     if 'level' in constraints.keys():
         # Extract object
