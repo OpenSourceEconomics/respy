@@ -25,7 +25,7 @@ class TestClass(object):
     """
     def test_1(self):
         """ Testing the equality of an evaluation of the criterion function for
-        a random request.
+        a random request. This test focuses on the risk-only case.
         """
         # Run evaluation for multiple random requests.
         is_deterministic = np.random.choice([True, False], p=[0.10, 0.9])
@@ -40,6 +40,7 @@ class TestClass(object):
         constr['is_myopic'] = is_myopic
         constr['max_draws'] = max_draws
         constr['maxfun'] = 0
+        constr['level'] = 0.0
 
         init_dict = generate_random_dict(constr)
 
@@ -118,6 +119,7 @@ class TestClass(object):
     def test_2(self):
         """ This test ensures that the evaluation of the criterion function
         at the starting value is identical between the different versions.
+        This test focuses on the risk-only case.
         """
 
         max_draws = np.random.randint(10, 100)
@@ -127,6 +129,7 @@ class TestClass(object):
         constr['flag_parallelism'] = False
         constr['max_draws'] = max_draws
         constr['flag_interpolation'] = False
+        constr['level'] = 0.00
         constr['maxfun'] = 0
 
         # Generate random initialization file

@@ -364,11 +364,15 @@ class TestClass(object):
 
     def test_5(self):
         """ This methods ensures that the core functions yield the same
-        results across implementations.
+        results across implementations. This function focuses on the risk
+        case only, an analogous function for the case of ambiguity is defined
+        in the test_ambiguity.py file.
         """
 
         # Generate random initialization file
-        generate_init()
+        constr = dict()
+        constr['level'] = 0.00
+        generate_init(constr)
 
         # Perform toolbox actions
         respy_obj = RespyCls('test.respy.ini')

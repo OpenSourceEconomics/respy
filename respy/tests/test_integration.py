@@ -144,13 +144,13 @@ class TestClass(object):
         respy_obj = RespyCls('test.respy.ini')
         estimate(respy_obj)
 
-    @pytest.mark.slow
+    @pytest.mark.skipif(True, reason='Scripts not maintained at the moment')
     def test_5(self):
         """ Test the scripts.
         """
         # Constraints that ensure that two alternative initialization files
         # can be used for the same simulated data.
-        for _ in range(10):
+        for _ in range(1):
             constr = dict()
             constr['periods'] = np.random.randint(1, 4)
             constr['agents'] = np.random.randint(5, 100)
@@ -193,7 +193,7 @@ class TestClass(object):
             values = np.random.uniform(size=num_draws)
 
             scripts_estimate(resume, single, init_file, gradient)
-            scripts_update(init_file)
+            #scripts_update(init_file)
 
             # The error can occur as the RESPY package is actually running an
             # estimation step that can result in very ill-conditioned covariance
