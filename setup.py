@@ -43,7 +43,7 @@ def setup_package():
         packages=find_packages(),
         package_data={'respy': ['fortran/bin/*', 'fortran/*.so',
             'fortran/lib/*.*', 'fortran/include/*.*', 'tests/resources/*']},
-        version="1.0.00",
+        version="2.0.00",
         description='respy is a Python package for the simulation and estimation of a prototypical finite-horizon dynamic discrete choice model.',
         author='Philipp Eisenhauer',
         author_email='eisenhauer@policy-lab.org',
@@ -52,7 +52,7 @@ def setup_package():
         classifiers=[],
         setup_requires=['pytest-runner>=2.7'],
         tests_require=['pytest>=2.9'],
-        install_requires=['numpy>=1.11', 'scipy>=0.17', 'pandas>=0.18',
+        install_requires=['numpy>=1.11', 'scipy>=0.18', 'pandas>=0.18',
             'statsmodels>=0.6', 'pip>=8.0'],
         cmdclass={'build_py': CustomBuildCommand, 'develop':
             CustomDevelopCommand},

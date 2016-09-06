@@ -286,6 +286,13 @@ def generate_random_dict(constraints=None):
         # Replace in initialization file
         dict_['AMBIGUITY']['coeffs'] = [level]
 
+    # Treat level of ambiguity as fixed in an estimation
+    if 'flag_ambiguity' in constraints.keys():
+        # Checks
+        assert (constraints['flag_ambiguity'] in [True, False])
+        # Replace in initialization files
+        dict_['AMBIGUITY']['fixed'] = [constraints['flag_ambiguity']]
+
     # Replace version
     if 'version' in constraints.keys():
         # Extract objects
