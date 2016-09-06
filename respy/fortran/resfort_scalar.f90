@@ -38,11 +38,20 @@ PROGRAM resfort_scalar
     CHARACTER(150)                  :: message
     CHARACTER(10)                   :: request
 
+    ! Temporary fix
+    REAL(our_dble)                  :: x_tmp(27)
+    LOGICAL, PARAMETER              :: all_free(27) = .False.
+
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
 
     CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, is_scaled, scaled_minimum, is_ambiguity, measure, level, optimizer_used, dfunc_eps, optimizer_options)
+
+    ! This is a temporary fix that aligns the numerical results between the parallel and scalar implementations of the model. Otherwise small numerical differences may arise (if ambiguity is present) as LOG and EXP operations are done in the parallel implementation before any solution or estimation efforts. Due to the two lines below, this is also the case in the scalar impelementation now.
+    CALL get_free_optim_paras(x_tmp, level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, all_free)
+    CALL dist_optim_paras(level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x_tmp)
+
 
     CALL create_draws(periods_draws_emax, num_draws_emax, seed_emax, is_debug)
 
