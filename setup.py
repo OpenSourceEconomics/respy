@@ -50,10 +50,8 @@ def setup_package():
         url='http://respy.readthedocs.io',
         keywords=['Economics', ' Dynamic Discrete Choice Model'],
         classifiers=[],
-        setup_requires=['pytest-runner>=2.7'],
-        tests_require=['pytest>=2.9'],
         install_requires=['numpy>=1.11', 'scipy>=0.18', 'pandas>=0.18',
-            'statsmodels>=0.6', 'pip>=8.0'],
+            'statsmodels>=0.6', 'pip>=8.0', 'pytest>=3.0'],
         cmdclass={'build_py': CustomBuildCommand, 'develop':
             CustomDevelopCommand},
         include_package_data=True

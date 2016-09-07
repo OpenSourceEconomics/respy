@@ -217,6 +217,7 @@ class TestClass(object):
             fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps))
         np.testing.assert_allclose(py, f2py)
 
+    @pytest.mark.skipif(not IS_FORTRAN, reason='No FORTRAN available')
     def test_4(self):
         """ Testing the equality of an evaluation of the criterion function for
         a random request. This test focuses on the risk-only case.
@@ -310,6 +311,7 @@ class TestClass(object):
             if constr['is_deterministic']:
                 assert (crit_val in [-1.0, 0.0])
 
+    @pytest.mark.skipif(not IS_FORTRAN, reason='No FORTRAN available')
     def test_5(self):
         """ This test ensures that the evaluation of the criterion function
         at the starting value is identical between the different versions.
