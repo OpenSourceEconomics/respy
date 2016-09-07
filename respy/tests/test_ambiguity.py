@@ -362,3 +362,4 @@ class TestClass(object):
             if base_val is None:
                 base_val = val
             np.testing.assert_allclose(base_val, val)
+
