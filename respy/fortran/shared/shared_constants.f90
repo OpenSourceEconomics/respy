@@ -43,6 +43,7 @@ MODULE shared_constants
 
     REAL(our_dble), PARAMETER   :: INADMISSIBILITY_PENALTY      = -40000.00_our_dble
     REAL(our_dble), PARAMETER   :: MISSING_FLOAT                = -99.0_our_dble
+    REAL(our_dble), PARAMETER   :: MINISCULE_FLOAT              = 1.0e-100_our_dble
     REAL(our_dble), PARAMETER   :: SMALL_FLOAT                  = 1.0e-5_our_dble
     REAL(our_dble), PARAMETER   :: TINY_FLOAT                   = 1.0e-8_our_dble
     REAL(our_dble), PARAMETER   :: HUGE_FLOAT                   = 1.0e20_our_dble

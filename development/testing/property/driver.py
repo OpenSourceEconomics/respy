@@ -41,6 +41,22 @@ def run(args):
     if args.is_compile:
         compile_package(True)
 
+    # Processing of command line arguments.
+    if args.request[0] == 'investigate':
+        is_investigation, is_run = True, False
+    elif args.request[0] == 'run':
+        is_investigation, is_run = False, True
+    else:
+        raise AssertionError('request in [run, investigate]')
+
+    seed_investigation, hours = None, 0.0
+    if is_investigation:
+        seed_investigation = int(args.request[1])
+        assert isinstance(seed_investigation, int)
+    elif is_run:
+        hours = float(args.request[1])
+        assert (hours > 0.0)
+
     # Get a dictionary with all candidate test cases.
     test_dict = get_test_dict(PACKAGE_DIR + 'respy/tests')
 
@@ -53,15 +69,21 @@ def run(args):
             full_test_record[key_][value] = [0, 0]
 
     # Start with a clean slate.
-    start, timeout = datetime.now(), timedelta(hours=args.hours)
-    cleanup_testing_infrastructure(False)
-    initialize_record_canvas(full_test_record, start, timeout)
+    start, timeout = datetime.now(), timedelta(hours=hours)
+
+    if not is_investigation:
+        cleanup_testing_infrastructure(False)
+        initialize_record_canvas(full_test_record, start, timeout)
 
     # Evaluation loop.
     while True:
 
         # Set seed.
-        seed = random.randrange(1, 100000)
+        if is_investigation:
+            seed = seed_investigation
+        else:
+            seed = random.randrange(1, 100000)
+
         np.random.seed(seed)
 
         # Construct test case.
@@ -78,41 +100,46 @@ def run(args):
         os.mkdir(tmp_dir)
         os.chdir(tmp_dir)
 
-        try:
+        if not is_investigation:
+            try:
+                test()
+                full_test_record[module][method][0] += 1
+                is_success = True
+            except Exception:
+                full_test_record[module][method][1] += 1
+                msg = traceback.format_exc()
+                is_success = False
+        else:
             test()
-            full_test_record[module][method][0] += 1
-            is_success = True
-        except Exception:
-            full_test_record[module][method][1] += 1
-            msg = traceback.format_exc()
-            is_success = False
 
         # The directory is deleted by the cleanup
         os.chdir('../')
 
         # Record iteration
-        update_testing_record(module, method, seed, is_success, msg,
-            full_test_record)
-        cleanup_testing_infrastructure(True)
+        if not is_investigation:
+            update_testing_record(module, method, seed, is_success, msg,
+                full_test_record)
+            cleanup_testing_infrastructure(True)
 
         #  Timeout.
         if timeout < datetime.now() - start:
             break
 
-    finalize_testing_record(full_test_record)
+    if not is_investigation:
+        finalize_testing_record(full_test_record)
 
     # This allows to call this test from another script, that runs other
     # tests as well.
-    if not args.is_background:
-        send_notification('property', hours=args.hours)
+    if not args.is_background and not is_investigation:
+        send_notification('property', hours=hours)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run development test '
                 'battery of RESPY package.',
                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    parser.add_argument('--hours', action='store', dest='hours',
-                        type=float, default=1.0, help='run time in hours')
+    parser.add_argument('--request', action='store', dest='request',
+        help='task to perform', nargs=2, required=True)
 
     parser.add_argument('--compile', action='store_true', dest='is_compile',
         default=False, help='compile RESPY package')

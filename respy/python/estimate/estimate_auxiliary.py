@@ -2,7 +2,7 @@ import numpy as np
 
 from respy.python.shared.shared_auxiliary import check_optimization_parameters
 from respy.python.shared.shared_auxiliary import check_model_parameters
-from respy.python.shared.shared_constants import SMALL_FLOAT
+from respy.python.shared.shared_constants import MINISCULE_FLOAT
 
 
 def get_optim_paras(level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
@@ -19,7 +19,7 @@ def get_optim_paras(level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
     x = np.tile(np.nan, 27)
 
     # Level of Ambiguity
-    x[0:1] = np.log(np.clip(level, SMALL_FLOAT, None))
+    x[0:1] = np.log(np.clip(level, MINISCULE_FLOAT, None))
 
     # Occupation A
     x[1:7] = coeffs_a

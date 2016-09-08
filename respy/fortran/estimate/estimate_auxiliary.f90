@@ -84,7 +84,7 @@ SUBROUTINE get_free_optim_paras(x, level, coeffs_a, coeffs_b, coeffs_edu, coeffs
     REAL(our_dble)                  :: level_clipped(1)
 
     INTEGER(our_int), ALLOCATABLE   :: infos(:)
-    
+
     INTEGER(our_int)                :: i
     INTEGER(our_int)                :: j
 
@@ -92,7 +92,7 @@ SUBROUTINE get_free_optim_paras(x, level, coeffs_a, coeffs_b, coeffs_edu, coeffs
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    CALL clip_value(level_clipped, level, SMALL_FLOAT, HUGE_FLOAT, infos)
+    CALL clip_value(level_clipped, level, MINISCULE_FLOAT, HUGE_FLOAT, infos)
 
     x_internal(1:1) = LOG(level_clipped)
 
