@@ -41,6 +41,8 @@ MODULE shared_constants
     ! Variables that need to be aligned across FORTRAN and PYTHON implementations.
     INTEGER(our_int), PARAMETER :: MISSING_INT                  = -99_our_int
 
+    REAL(our_dble), PARAMETER   :: MIN_AMBIGUITY                = 1.0e-20_our_dble
+
     REAL(our_dble), PARAMETER   :: INADMISSIBILITY_PENALTY      = -40000.00_our_dble
     REAL(our_dble), PARAMETER   :: MISSING_FLOAT                = -99.0_our_dble
     REAL(our_dble), PARAMETER   :: MINISCULE_FLOAT              = 1.0e-100_our_dble

@@ -7,6 +7,7 @@ import pytest
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.python.shared.shared_auxiliary import print_init_dict
+from respy.python.shared.shared_constants import MIN_AMBIGUITY
 from respy.python.shared.shared_constants import IS_FORTRAN
 from codes.auxiliary import write_interpolation_grid
 from codes.random_init import generate_random_dict
@@ -267,7 +268,7 @@ class TestClass(object):
 
         # Perform toolbox actions
         respy_obj = RespyCls('test.respy.ini')
-        is_ambiguity = respy_obj.get_attr('is_ambiguity')
+        is_ambiguity = (respy_obj.get_attr('level') > MIN_AMBIGUITY)
 
         # Iterate over alternative implementations
         base_sol_log, base_est_info_log, base_est_log = None, None, None

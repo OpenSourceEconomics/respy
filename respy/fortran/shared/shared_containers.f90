@@ -36,7 +36,6 @@ MODULE shared_containers
 
     LOGICAL                         :: is_interpolated
     LOGICAL                         :: paras_fixed(27)
-    LOGICAL                         :: is_ambiguity
     LOGICAL                         :: is_myopic
     LOGICAL                         :: is_debug
 

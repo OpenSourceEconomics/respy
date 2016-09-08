@@ -9,6 +9,7 @@ from respy.python.record.record_solution import record_solution_progress
 from respy.python.shared.shared_auxiliary import transform_disturbances
 from respy.python.solve.solve_ambiguity import construct_emax_ambiguity
 from respy.python.shared.shared_auxiliary import get_total_values
+from respy.python.shared.shared_constants import MIN_AMBIGUITY
 from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.solve.solve_risk import construct_emax_risk
 from respy.python.shared.shared_constants import MISSING_INT
@@ -161,7 +162,7 @@ def pyth_backward_induction(num_periods, is_myopic, max_states_period,
         periods_draws_emax, num_draws_emax, states_number_period,
         periods_rewards_systematic, edu_max, edu_start, mapping_state_idx,
         states_all, delta, is_debug, is_interpolated, num_points_interp,
-        shocks_cholesky, is_ambiguity, measure, level, optimizer_options,
+        shocks_cholesky, measure, level, optimizer_options,
         is_write):
     """ Backward induction procedure. There are two main threads to this
     function depending on whether interpolation is requested or not.
@@ -233,7 +234,7 @@ def pyth_backward_induction(num_periods, is_myopic, max_states_period,
                 num_states, delta, periods_rewards_systematic, edu_max,
                 edu_start, mapping_state_idx, periods_emax, states_all,
                 is_simulated, num_draws_emax, maxe, draws_emax_transformed,
-                shocks_cov, is_ambiguity, measure, level, optimizer_options,
+                shocks_cov, measure, level, optimizer_options,
                 is_write)
 
             # Create prediction model based on the random subset of points where
@@ -255,7 +256,7 @@ def pyth_backward_induction(num_periods, is_myopic, max_states_period,
                 rewards_systematic = periods_rewards_systematic[period, k, :]
 
                 # Simulate the expected future value.
-                if is_ambiguity:
+                if level > MIN_AMBIGUITY:
                     emax = construct_emax_ambiguity(num_periods, num_draws_emax,
                         period, k, draws_emax_transformed, rewards_systematic,
                         edu_max, edu_start, periods_emax, states_all,
@@ -341,7 +342,7 @@ def get_exogenous_variables(period, num_periods, num_states, delta,
 def get_endogenous_variable(period, num_periods, num_states, delta,
         periods_rewards_systematic, edu_max, edu_start, mapping_state_idx,
         periods_emax, states_all, is_simulated, num_draws_emax, maxe,
-        draws_emax_transformed, shocks_cov, is_ambiguity, measure, level,
+        draws_emax_transformed, shocks_cov, measure, level,
         optimizer_options, is_write):
     """ Construct endogenous variable for the subset of interpolation points.
     """
@@ -358,7 +359,7 @@ def get_endogenous_variable(period, num_periods, num_states, delta,
         rewards_systematic = periods_rewards_systematic[period, k, :]
 
         # Simulate the expected future value.
-        if is_ambiguity:
+        if level > MIN_AMBIGUITY:
             emax = construct_emax_ambiguity(num_periods, num_draws_emax,
                 period, k, draws_emax_transformed, rewards_systematic,
                 edu_max, edu_start, periods_emax, states_all,

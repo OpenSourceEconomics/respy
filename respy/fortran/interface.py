@@ -22,14 +22,14 @@ def resfort_interface(respy_obj, request, data_array=None):
         is_myopic, min_idx, tau, is_parallel, num_procs, num_agents_sim, \
         num_draws_prob, num_agents_est, seed_prob, seed_sim, paras_fixed, \
         optimizer_options, optimizer_used, maxfun, paras_fixed, derivatives, \
-        scaling, is_ambiguity, measure = dist_class_attributes(respy_obj,
+        scaling, measure = dist_class_attributes(respy_obj,
             'model_paras', 'num_periods', 'edu_start', 'is_debug', 'edu_max',
             'delta', 'num_draws_emax', 'seed_emax', 'is_interpolated',
             'num_points_interp', 'is_myopic', 'min_idx', 'tau', 'is_parallel',
             'num_procs', 'num_agents_sim', 'num_draws_prob',
             'num_agents_est', 'seed_prob', 'seed_sim', 'paras_fixed',
             'optimizer_options', 'optimizer_used', 'maxfun', 'paras_fixed',
-            'derivatives', 'scaling', 'is_ambiguity', 'measure')
+            'derivatives', 'scaling', 'measure')
 
     dfunc_eps = derivatives[1]
     is_scaled, scale_minimum = scaling
@@ -56,7 +56,7 @@ def resfort_interface(respy_obj, request, data_array=None):
     args = args + (num_draws_prob, num_agents_est, num_agents_sim, seed_prob,
         seed_emax, tau, num_procs, request, seed_sim, optimizer_options,
         optimizer_used, maxfun, paras_fixed, dfunc_eps, is_scaled,
-        scale_minimum, is_ambiguity, measure, level)
+        scale_minimum, measure, level)
 
     write_resfort_initialization(*args)
 
@@ -149,7 +149,7 @@ def write_resfort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         delta, num_draws_prob, num_agents_est, num_agents_sim, seed_prob,
         seed_emax, tau, num_procs, request, seed_sim, optimizer_options,
         optimizer_used, maxfun, paras_fixed, dfunc_eps, is_scaled,
-        scale_minimum, is_ambiguity, measure, level):
+        scale_minimum, measure, level):
     """ Write out model request to hidden file .model.resfort.ini.
     """
 
@@ -196,9 +196,6 @@ def write_resfort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         file_.write(line)
 
         # AMBIGUITY
-        line = '{0}'.format(is_ambiguity[0])
-        file_.write(line + '\n')
-
         line = '"{0}"'.format(measure)
         file_.write(line + '\n')
 

@@ -17,7 +17,7 @@ import respy.python.shared.shared_constants as shared_constants
 
 # Special care with derived attributes is required to maintain integrity of
 # the class instance. These derived attributes cannot be changed directly.
-DERIVED_ATTR = ['min_idx', 'is_myopic', 'is_ambiguity']
+DERIVED_ATTR = ['min_idx', 'is_myopic']
 
 # Special care with solution attributes is required. These are only returned
 # if the class instance was solved.
@@ -106,8 +106,6 @@ class RespyCls(object):
         self.attr['tau'] = None
 
         # Derived attributes
-        self.attr['is_ambiguity'] = None
-
         self.attr['is_myopic'] = None
 
         self.attr['min_idx'] = None
@@ -601,8 +599,6 @@ class RespyCls(object):
 
         self.attr['is_myopic'] = (self.attr['delta'] == 0.00)
 
-        self.attr['is_ambiguity'] = (self.attr['model_paras']['level'] > 0.00)
-
         self.attr['optimizer_options']['FORT-SLSQP']['eps'] = self.attr[
             'derivatives'][1]
         self.attr['optimizer_options']['SCIPY-SLSQP']['eps'] = self.attr[
@@ -626,8 +622,6 @@ class RespyCls(object):
         num_agents_sim = self.attr['num_agents_sim']
 
         num_agents_est = self.attr['num_agents_est']
-
-        is_ambiguity = self.attr['is_ambiguity']
 
         derivatives = self.attr['derivatives']
 
@@ -768,7 +762,6 @@ class RespyCls(object):
         assert (derivatives[1] > 0.0)
 
         # Ambiguity
-        assert (is_ambiguity in [False, True])
         assert (measure in ['abs', 'kl'])
 
     def _check_integrity_results(self):

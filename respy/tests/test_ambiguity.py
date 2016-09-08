@@ -132,13 +132,13 @@ class TestClass(object):
         num_periods, edu_start, edu_max, min_idx, model_paras, num_draws_emax, \
         is_debug, delta, is_interpolated, num_points_interp, is_myopic, \
         num_agents_sim, num_draws_prob, tau, paras_fixed, seed_sim, \
-        is_ambiguity, measure, num_agents_est, states_number_period, \
+        measure, num_agents_est, states_number_period, \
         optimizer_options, derivatives = dist_class_attributes(respy_obj,
             'num_periods', 'edu_start',
             'edu_max', 'min_idx', 'model_paras', 'num_draws_emax',
             'is_debug', 'delta', 'is_interpolated', 'num_points_interp',
             'is_myopic', 'num_agents_sim', 'num_draws_prob', 'tau',
-            'paras_fixed', 'seed_sim', 'is_ambiguity', 'measure',
+            'paras_fixed', 'seed_sim', 'measure',
             'num_agents_est', 'states_number_period',
             'optimizer_options', 'derivatives')
 
@@ -160,10 +160,9 @@ class TestClass(object):
 
         # Check the full solution procedure
         base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-                     shocks_cholesky, is_interpolated, num_points_interp,
-                     num_draws_emax, num_periods, is_myopic, edu_start, is_debug,
-                     edu_max, min_idx, delta, periods_draws_emax, is_ambiguity,
-                     measure, level)
+            shocks_cholesky, is_interpolated, num_points_interp,
+            num_draws_emax, num_periods, is_myopic, edu_start, is_debug,
+            edu_max, min_idx, delta, periods_draws_emax, measure, level)
 
         fort, _ = resfort_interface(respy_obj, 'simulate')
         py = pyth_solve(*base_args + (optimizer_options,))
@@ -210,7 +209,7 @@ class TestClass(object):
                 delta, data_array, num_draws_prob, tau,
                 periods_draws_emax, periods_draws_prob, states_all,
                 states_number_period, mapping_state_idx, max_states_period,
-                is_ambiguity, measure)
+                measure)
 
         py = pyth_criterion(x0, *args + (optimizer_options,))
         f2py = fort_debug.f2py_criterion(x0, *args + (
@@ -362,4 +361,3 @@ class TestClass(object):
             if base_val is None:
                 base_val = val
             np.testing.assert_allclose(base_val, val)
-
