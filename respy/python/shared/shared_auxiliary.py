@@ -672,20 +672,20 @@ def get_est_info():
 
             list_ = shlex.split(line)
 
-            if i in range(12, 39):
-                paras_start += [float(list_[1])]
-                paras_step += [float(list_[2])]
-                paras_current += [float(list_[3])]
-
             if i == 5:
                 value_start = _process_value(list_[0])
                 value_step = _process_value(list_[1])
                 value_current = _process_value(list_[2])
 
-            if i == 65:
-                num_step = int(float(list_[3]))
+            if i in range(12, 39):
+                paras_start += [float(list_[1])]
+                paras_step += [float(list_[2])]
+                paras_current += [float(list_[3])]
 
             if i == 67:
+                num_step = int(float(list_[3]))
+
+            if i == 69:
                 num_eval = int(float(list_[3]))
 
     rslt['paras_current'] = np.array(paras_current)
