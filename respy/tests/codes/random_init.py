@@ -159,7 +159,7 @@ def generate_random_dict(constraints=None):
     for i in [0, 4, 7, 9]:
         shocks[i] = np.random.uniform(0.05, 1)
     dict_['SHOCKS']['coeffs'] = shocks.tolist()
-    dict_['SHOCKS']['fixed'] = np.array(paras_fixed[16:])
+    dict_['SHOCKS']['fixed'] = paras_fixed[16:]
 
     # INTERPOLATION
     dict_['INTERPOLATION'] = dict()
