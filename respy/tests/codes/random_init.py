@@ -49,6 +49,10 @@ def generate_random_dict(constraints=None):
     if sum(paras_fixed) == 27:
         paras_fixed[np.random.randint(0, 27)] = True
 
+    # All booleans are treated as strings to allow for an easy serialization
+    # with JSON. This is useful for storing the regression tests which need
+    # to be readable by PYTHON2/3. This is not the case if using the pickle
+    # library.
     [str(i) for i in paras_fixed]
 
     # Sampling number of agents for the simulation. This is then used as the

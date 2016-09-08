@@ -1,6 +1,6 @@
-import pickle as pkl
 import numpy as np
 import pytest
+import json
 import sys
 
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
@@ -132,10 +132,8 @@ class TestClass(object):
         criterion function for previously analyzed scenarios.
         """
         # Prepare setup
-        version = str(sys.version_info[0])
-        fname = 'test_vault_' + version + '.respy.pkl'
-
-        tests = pkl.load(open(TEST_RESOURCES_DIR + '/' + fname, 'rb'))
+        fname = 'regression_vault.respy.json'
+        tests = json.load(open(TEST_RESOURCES_DIR + '/' + fname, 'r'))
 
         # We want this test to run even when not FORTRAN version is available.
         while True:

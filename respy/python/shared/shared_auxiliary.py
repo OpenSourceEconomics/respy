@@ -446,7 +446,12 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
     paras_fixed += dict_['OCCUPATION B']['fixed'][:]
     paras_fixed += dict_['EDUCATION']['fixed'][:]
     paras_fixed += dict_['HOME']['fixed'][:]
-    paras_fixed += dict_['SHOCKS']['fixed'].tolist()[:]
+
+    # TODO: This needs to be better understood before a release.
+    try:
+        paras_fixed += dict_['SHOCKS']['fixed'][:]
+    except ValueError:
+        paras_fixed += dict_['SHOCKS']['fixed'][:].tolist()
 
     str_optim = '{0:<10} {1:20.4f} {2:>5}\n'
 
