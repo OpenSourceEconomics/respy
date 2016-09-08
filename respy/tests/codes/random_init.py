@@ -227,6 +227,13 @@ def generate_random_dict(constraints=None):
         'flag_parallelism']:
             assert constraints['version'] == 'FORTRAN'
 
+    # Replace path to dataset used for estimation
+    if 'file_est' in constraints.keys():
+        # Checks
+        assert isinstance(constraints['file_est'], str)
+        # Replace in initialization files
+        dict_['ESTIMATION']['file'] = constraints['file_est']
+
     # Replace interpolation
     if 'flag_interpolation' in constraints.keys():
         # Checks

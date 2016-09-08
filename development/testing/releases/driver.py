@@ -4,32 +4,56 @@ are supposed to lead to the same results for selected requests.
 """
 from datetime import timedelta
 from datetime import datetime
+
+import pickle as pkl
 import numpy as np
+
 import subprocess
 import argparse
 import random
 import sys
-import pickle as pkl
 import os
 
+# We are using features for the automatic creation of the virtual environment
+# which are only available in Python 3.
+if int(sys.version[0]) < 3:
+    raise AssertionError('Please use Python 3')
+
 sys.path.insert(0, '../../../respy/tests')
-from codes.random_init import generate_init
 from respy import RespyCls
 from respy import simulate
 
 sys.path.insert(0, '../_modules')
+from auxiliary_release import prepare_release_tests
 from auxiliary_shared import send_notification
 from auxiliary_shared import cleanup
 
-SCRIPT = '../_modules/auxiliary_release.py'
+
+SCRIPT_FNAME = '../../_modules/auxiliary_release.py'
 
 
 def run(args):
     """ Test the different releases against each other.
     """
-    # Distribute arguments
+    cleanup()
+
+    # Processing of command line arguments.
+    if args.request[0] == 'investigate':
+        is_investigation, is_run = True, False
+    elif args.request[0] == 'run':
+        is_investigation, is_run = False, True
+    else:
+        raise AssertionError('request in [run, investigate]')
+
+    seed_investigation, hours = None, 0.0
+    if is_investigation:
+        seed_investigation = int(args.request[1])
+        assert isinstance(seed_investigation, int)
+    elif is_run:
+        hours = float(args.request[1])
+        assert (hours > 0.0)
+
     is_create = args.is_create
-    hours = args.hours
 
     # Set up auxiliary information to construct commands.
     env_dir = os.environ['HOME'] + '/.envs'
@@ -54,88 +78,71 @@ def run(args):
 
             # TODO: This is a temporary bug fix. The problem seems to be the
             # slightly outdated pip. It needs to be 8.1.2 instead of the
-            # precursing reason. This should simply solve itself over time.
-            cmd = [python_exec, SCRIPT, 'upgrade']
+            # 8.1.1, which is the current default when invoking pyvenv. This
+            # should simply solve itself over time.
+            cmd = [python_exec, SCRIPT_FNAME, 'upgrade']
             subprocess.check_call(cmd)
 
-            cmd = [python_exec, SCRIPT, 'prepare', release]
+            cmd = [python_exec, SCRIPT_FNAME, 'prepare', release]
             subprocess.check_call(cmd)
 
-    # # Run tests
-    # # TODO: How about log files.
-    cleanup()
-    is_failed = False
     # Evaluation loop.
     start, timeout = datetime.now(), timedelta(hours=hours)
-    num_tests = 0
+    num_tests, is_failure = 0, False
 
-    is_running = True
-    while is_running:
+    while True:
         num_tests += 1
 
-        print('\n\n')
-        print(num_tests)
-        print('\n\n')
         # Set seed.
-        seed = random.randrange(1, 100000)
+        if is_investigation:
+            seed = seed_investigation
+        else:
+            seed = random.randrange(1, 100000)
+
         np.random.seed(seed)
 
-        # Create a random estimation task.
+        # The idea is to have all elements that are hand-crafted for the
+        # release comparison in the function below.
         constr = dict()
         constr['is_estimation'] = True
 
-        # TODO: This is where some code that is specific to the release
-        # comparison is put.
-        constr['level'] = 0.00
-        constr['flag_ambiguity'] = True
-
-        init_dict = generate_init(constr)
-
-        # TODO: Some modifications are required so that the old release is
-        # working on the same model.
-        init_dict['ESTIMATION']['tau'] = int(init_dict['ESTIMATION']['tau'])
-        pkl.dump(init_dict, open('release_new.respy.pkl', 'wb'))
-
-        del init_dict['AMBIGUITY']
-        pkl.dump(init_dict, open('release_old.respy.pkl', 'wb'))
+        prepare_release_tests(constr)
 
         # We use the current release for the simulation of the underlying
         # dataset.
         respy_obj = RespyCls('test.respy.ini')
         simulate(respy_obj)
 
-        crit_val = None
         for which in ['old', 'new']:
+            os.chdir(which)
             if which == 'old':
                 release, python_exec = OLD_RELEASE, old_exec
             elif which == 'new':
                 release, python_exec = NEW_RELEASE, new_exec
             else:
                 raise AssertionError
-            cmd = [python_exec, SCRIPT, 'estimate', which]
+            cmd = [python_exec, SCRIPT_FNAME, 'estimate', which]
             subprocess.check_call(cmd)
 
-            if crit_val is None:
-                crit_val = np.genfromtxt('.crit_val')
+            os.chdir('../')
 
+        # Compare the resulting values of the criterion function.
+        crit_val_old = pkl.load(open('old/crit_val.respy.pkl', 'rb'))
+        crit_val_new = pkl.load(open('new/crit_val.respy.pkl', 'rb'))
 
-            np.testing.assert_equal(crit_val, np.genfromtxt('.crit_val'))
+        try:
+            np.testing.assert_allclose(crit_val_old, crit_val_new)
+        except AssertionError:
+            is_failure = True
 
-                 #
-    #         try:
-    #             np.testing.assert_equal(crit_val, np.genfromtxt(
-    #                 '.crit_val'))
-    #         except AssertionError:
-    #             is_failed = True
-    #             is_running = False
-    #
-        # Timeout.
-        if timeout < datetime.now() - start:
+        is_timeout = timeout < datetime.now() - start
+
+        if is_investigation or is_failure or is_timeout:
             break
-    #
-    # send_notification('release', hours=args.hours, is_failed=is_failed,
-    #         seed=seed, num_tests=num_tests)
-    #
+
+    if not is_investigation:
+        send_notification('release', hours=hours, is_failed=is_failure,
+             seed=seed, num_tests=num_tests)
 
 if __name__ == '__main__':
 
@@ -143,11 +150,11 @@ if __name__ == '__main__':
     # downloaded from PYPI in their own virtual environments.
     OLD_RELEASE, NEW_RELEASE = '1.0.00', '2.0.00'
 
-    parser = argparse.ArgumentParser(description='Run testing of release.',
+    parser = argparse.ArgumentParser(description='Run release testing.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    parser.add_argument('--hours', action='store', dest='hours',
-        type=float, default=1.0, help='run time in hours')
+    parser.add_argument('--request', action='store', dest='request',
+        help='task to perform', nargs=2, required=True)
 
     parser.add_argument('--create', action='store_true', dest='is_create',
         default=False, help='create new virtual environments')

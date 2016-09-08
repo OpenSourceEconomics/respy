@@ -12,7 +12,9 @@ from clsMail import MailCls
 
 from config import SPECS
 
+
 def get_executable():
+
     PYTHON_VERSION = sys.version_info[0]
 
     if PYTHON_VERSION == 2:
@@ -98,11 +100,12 @@ def send_notification(which, **kwargs):
     elif which == 'release':
         subject = ' RESPY: Release Testing'
         if is_failed:
-            message = ' Failure during release testing with seeed ' + str(seed) + '.'
+            message = ' Failure during release testing with seed ' + \
+                str(seed) + ' on @' + hostname + '.'
         else:
             message = ' Release testing completed successfully after ' + str(
-                hours) + ' hours. We ran a total of ' + str(num_tests) + \
-                      ' tests.'
+                hours) + ' hours on @' + hostname + '. We ran a total of ' + \
+                str(num_tests) + ' tests.'
     else:
         raise AssertionError
 
