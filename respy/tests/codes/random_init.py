@@ -49,6 +49,8 @@ def generate_random_dict(constraints=None):
     if sum(paras_fixed) == 27:
         paras_fixed[np.random.randint(0, 27)] = True
 
+    [str(i) for i in paras_fixed]
+
     # Sampling number of agents for the simulation. This is then used as the
     # upper bound for the dataset used in the estimation.
     num_agents_sim = np.random.randint(3, MAX_AGENTS)
@@ -112,7 +114,7 @@ def generate_random_dict(constraints=None):
     # SCALING
     dict_['SCALING'] = dict()
     dict_['SCALING']['minimum'] = np.random.uniform(0.0000001, 0.1)
-    dict_['SCALING']['flag'] = np.random.choice([True, False])
+    dict_['SCALING']['flag'] = np.random.choice(['True', 'False'])
 
     # PARALLELISM
     dict_['PARALLELISM'] = dict()
@@ -120,9 +122,9 @@ def generate_random_dict(constraints=None):
 
     # Parallelism is only supported in FORTRAN implementation.
     if IS_PARALLEL:
-        dict_['PARALLELISM']['flag'] = np.random.choice([True, False])
+        dict_['PARALLELISM']['flag'] = np.random.choice(['True', 'False'])
     else:
-        dict_['PARALLELISM']['flag'] = False
+        dict_['PARALLELISM']['flag'] = 'False'
 
     versions = ['FORTRAN', 'PYTHON']
     if dict_['PARALLELISM']['flag']:
@@ -156,12 +158,12 @@ def generate_random_dict(constraints=None):
     shocks = np.zeros(10)
     for i in [0, 4, 7, 9]:
         shocks[i] = np.random.uniform(0.05, 1)
-    dict_['SHOCKS']['coeffs'] = shocks
+    dict_['SHOCKS']['coeffs'] = shocks.tolist()
     dict_['SHOCKS']['fixed'] = np.array(paras_fixed[16:])
 
     # INTERPOLATION
     dict_['INTERPOLATION'] = dict()
-    dict_['INTERPOLATION']['flag'] = np.random.choice([True, False])
+    dict_['INTERPOLATION']['flag'] = np.random.choice(['True', 'False'])
     dict_['INTERPOLATION']['points'] = np.random.randint(10, 100)
 
     # SCIPY-BFGS
@@ -348,7 +350,7 @@ def generate_random_dict(constraints=None):
         # Checks
         assert (flag_parallelism in [True, False])
         # Replace in initialization file
-        dict_['PARALLELISM']['flag'] = flag_parallelism
+        dict_['PARALLELISM']['flag'] = str(flag_parallelism)
         # Ensure that the constraints are met
         if dict_['PARALLELISM']['flag']:
             dict_['PROGRAM']['version'] = 'FORTRAN'
@@ -360,7 +362,7 @@ def generate_random_dict(constraints=None):
         # Checks
         assert (flag_scaling in [True, False])
         # Replace in initialization file
-        dict_['SCALING']['flag'] = flag_scaling
+        dict_['SCALING']['flag'] = str(flag_scaling)
 
     # Replace store attribute
     if 'is_store' in constraints.keys():
@@ -369,7 +371,7 @@ def generate_random_dict(constraints=None):
         # Checks
         assert (is_store in [True, False])
         # Replace in initialization file
-        dict_['SOLUTION']['store'] = is_store
+        dict_['SOLUTION']['store'] = str(is_store)
 
     # Replace number of periods
     if 'periods' in constraints.keys():
@@ -412,7 +414,7 @@ def generate_random_dict(constraints=None):
         assert (constraints['is_deterministic'] in [True, False])
         # Replace in initialization files
         if constraints['is_deterministic']:
-            dict_['SHOCKS']['coeffs'] = np.zeros(10)
+            dict_['SHOCKS']['coeffs'] = np.zeros(10).tolist()
 
     # Number of agents
     if 'agents' in constraints.keys():
@@ -436,7 +438,9 @@ def generate_random_dict(constraints=None):
         # Replace in initialization files
         if constraints['is_estimation']:
             dict_['ESTIMATION']['maxfun'] = np.random.randint(1, 10)
-            dict_['SCALING']['flag'] = np.random.choice([True, False], p=[0.1, 0.9])
+            dict_['SCALING']['flag'] = np.random.choice(['True', 'False'],
+                                                        p=[0.1,
+                                                                         0.9])
 
     # Finishing
     return dict_

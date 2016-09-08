@@ -8,7 +8,7 @@ import subprocess
 import sys
 import os
 
-from auxiliary import read_request
+#from auxiliary import read_request
 
 sys.path.insert(0, '../../_modules')
 from config import python2_exec
@@ -30,11 +30,11 @@ num_tests = read_request()
 # We need to be explicit about the PYTHON version as otherwise the F2PY
 # libraries are not compiled in accordance with the PYTHON version used by
 # for the execution of the script.
-cwd = os.getcwd()
-os.chdir(PACKAGE_DIR + '/respy')
-subprocess.check_call(python_exec + ' waf distclean', shell=True)
-subprocess.check_call(python_exec + ' waf configure build --debug', shell=True)
-os.chdir(cwd)
+#cwd = os.getcwd()
+#os.chdir(PACKAGE_DIR + '/respy')
+#subprocess.check_call(python_exec + ' waf distclean', shell=True)
+#subprocess.check_call(python_exec + ' waf configure build --debug', shell=True)
+#os.chdir(cwd)
 
 # Import package. The late import is required as the compilation needs to
 # take place first.
@@ -73,3 +73,5 @@ for idx in range(num_tests):
     tests += [test]
 
     pkl.dump(tests, open(fname, 'wb'))
+
+    raise SystemExit
