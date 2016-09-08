@@ -268,7 +268,8 @@ class TestClass(object):
 
         # Perform toolbox actions
         respy_obj = RespyCls('test.respy.ini')
-        is_ambiguity = (respy_obj.get_attr('level') > MIN_AMBIGUITY)
+        level = respy_obj.get_attr('model_paras')['level']
+        is_ambiguity = (level > MIN_AMBIGUITY)
 
         # Iterate over alternative implementations
         base_sol_log, base_est_info_log, base_est_log = None, None, None

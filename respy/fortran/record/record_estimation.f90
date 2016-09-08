@@ -164,10 +164,12 @@ SUBROUTINE record_estimation_eval(x_all_current, val_current, num_eval)
     220 FORMAT(A15,3(4x,A15))
     210 FORMAT(A15,A57)
     230 FORMAT(i15,3(4x,f15.4))
-    240 FORMAT(A15)
-    250 FORMAT(f15.4,3(4x,f15.4))
-    260 FORMAT(1x,A15,9x,i15)
-    270 FORMAT(1x,A21,3x,i15)
+    240 FORMAT(A15,3(4x,f15.4))
+
+    250 FORMAT(A15)
+    260 FORMAT(f15.4,3(4x,f15.4))
+    270 FORMAT(1x,A15,9x,i15)
+    280 FORMAT(1x,A21,3x,i15)
 
     val_char = ''
     DO i = 1, 3
@@ -200,15 +202,17 @@ SUBROUTINE record_estimation_eval(x_all_current, val_current, num_eval)
         END DO
 
         WRITE(99, *)
+        WRITE(99, 240) 'Level', EXP(x_container(1, :))
         WRITE(99, *)
-        WRITE(99, *) 'Covariance Matrix'
+        WRITE(99, *)
+        WRITE(99, *)   'Covariance Matrix'
         WRITE(99, *)
 
         DO i = 1, 3
 
-            IF (i == 1) WRITE(99, 240) 'Start'
-            IF (i == 2) WRITE(99, 240) 'Step'
-            IF (i == 3) WRITE(99, 240) 'Current'
+            IF (i == 1) WRITE(99, 250) 'Start'
+            IF (i == 2) WRITE(99, 250) 'Step'
+            IF (i == 3) WRITE(99, 250) 'Current'
 
             CALL get_cholesky(shocks_cholesky, x_container(:, i))
             shocks_cov = MATMUL(shocks_cholesky, TRANSPOSE(shocks_cholesky))
@@ -216,7 +220,7 @@ SUBROUTINE record_estimation_eval(x_all_current, val_current, num_eval)
             WRITE(99, *)
 
             DO j = 1, 4
-                WRITE(99, 250) shocks_cov(j, :)
+                WRITE(99, 260) shocks_cov(j, :)
             END DO
 
             WRITE(99, *)
@@ -224,9 +228,9 @@ SUBROUTINE record_estimation_eval(x_all_current, val_current, num_eval)
         END DO
 
         WRITE(99, *)
-        WRITE(99, 260) 'Number of Steps', num_step
+        WRITE(99, 270) 'Number of Steps', num_step
         WRITE(99, *)
-        WRITE(99, 270) 'Number of Evaluations', num_eval
+        WRITE(99, 280) 'Number of Evaluations', num_eval
 
     CLOSE(99)
 
