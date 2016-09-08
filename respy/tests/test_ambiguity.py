@@ -33,9 +33,9 @@ if IS_FORTRAN:
 
 sys.path.insert(0, TEST_DIR)
 
-from test_integration import TestClass as TestClass_integration
-from test_versions import TestClass as TestClass_versions
-from test_f2py import TestClass as TestClass_f2py
+from test_integration import TestClass as link_integration
+from test_versions import TestClass as link_versions
+from test_f2py import TestClass as link_f2py
 
 
 @pytest.mark.usefixtures('fresh_directory', 'set_seed')
@@ -71,6 +71,7 @@ class TestClass(object):
 
             np.testing.assert_allclose(base_val, crit_val)
 
+    @pytest.mark.skipif(not IS_FORTRAN, reason='No FORTRAN available')
     def test_2(self):
         """ Testing the F2PY implementations of the ambiguity-related functions.
         """
@@ -162,6 +163,7 @@ class TestClass(object):
             fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps))
         np.testing.assert_allclose(py, f90)
 
+    @pytest.mark.skipif(not IS_FORTRAN, reason='No FORTRAN available')
     def test_3(self):
         """ Check the calculation of the KL divergence across implementations.
         """
@@ -187,6 +189,7 @@ class TestClass(object):
 
             np.testing.assert_almost_equal(fort, py)
 
+    @pytest.mark.skipif(not IS_FORTRAN, reason='No FORTRAN available')
     def test_4(self):
         """ Check the SLSQP implementations.
         """
@@ -236,44 +239,41 @@ class TestClass(object):
     """ This section reproduces the tests from test_versions but runs them
     with ambiguity.
     """
-    @pytest.mark.parametrize("flag_ambiguity", [True])
-    def test_versions_1(self, flag_ambiguity):
-        TestClass_versions().test_1(flag_ambiguity)
+    @pytest.mark.skipif(not IS_FORTRAN, reason='No FORTRAN available')
+    def test_versions_1(self, flag_ambiguity=True):
+        link_versions().test_1(flag_ambiguity)
 
-    @pytest.mark.parametrize("flag_ambiguity", [True])
-    def test_versions_2(self, flag_ambiguity):
-        TestClass_versions().test_2(flag_ambiguity)
+    @pytest.mark.skipif(not IS_FORTRAN, reason='No FORTRAN available')
+    def test_versions_2(self, flag_ambiguity=True):
+        link_versions().test_2(flag_ambiguity)
 
-    @pytest.mark.parametrize("flag_ambiguity", [True])
-    def test_versions_6(self, flag_ambiguity):
-        TestClass_versions().test_6(flag_ambiguity)
+    @pytest.mark.skipif(not IS_FORTRAN, reason='No FORTRAN available')
+    def test_versions_6(self, flag_ambiguity=True):
+        link_versions().test_6(flag_ambiguity)
 
     """ This section reproduces the tests from test_f2py but runs them with
     ambiguity.
     """
-    @pytest.mark.parametrize("flag_ambiguity", [True])
-    def test_f2py_4(self, flag_ambiguity):
-        TestClass_f2py().test_4(flag_ambiguity)
+    @pytest.mark.skipif(not IS_FORTRAN, reason='No FORTRAN available')
+    def test_f2py_4(self, flag_ambiguity=True):
+        link_f2py().test_4(flag_ambiguity)
 
-    @pytest.mark.parametrize("flag_ambiguity", [True])
-    def test_f2py_5(self, flag_ambiguity):
-        TestClass_f2py().test_5(flag_ambiguity)
+    @pytest.mark.skipif(not IS_FORTRAN, reason='No FORTRAN available')
+    def test_f2py_5(self, flag_ambiguity=True):
+        link_f2py().test_5(flag_ambiguity)
 
-    @pytest.mark.parametrize("flag_ambiguity", [True])
-    def test_f2py_6(self, flag_ambiguity):
-        TestClass_f2py().test_6(flag_ambiguity)
+    @pytest.mark.skipif(not IS_FORTRAN, reason='No FORTRAN available')
+    def test_f2py_6(self, flag_ambiguity=True):
+        link_f2py().test_6(flag_ambiguity)
 
     """ This section reproduces the tests from test_integration but runs them
     with ambiguity.
     """
-    @pytest.mark.parametrize("flag_ambiguity", [True])
-    def test_integration_3(self, flag_ambiguity):
-        TestClass_integration().test_3(flag_ambiguity)
+    def test_integration_3(self, flag_ambiguity=True):
+        link_integration().test_3(flag_ambiguity)
 
-    @pytest.mark.parametrize("flag_ambiguity", [True])
-    def test_integration_4(self, flag_ambiguity):
-        TestClass_integration().test_4(flag_ambiguity)
+    def test_integration_4(self, flag_ambiguity=True):
+        link_integration().test_4(flag_ambiguity)
 
-    @pytest.mark.parametrize("flag_ambiguity", [True])
-    def test_integration_6(self, flag_ambiguity):
-        TestClass_integration().test_6(flag_ambiguity)
+    def test_integration_6(self, flag_ambiguity=True):
+        link_integration().test_6(flag_ambiguity)

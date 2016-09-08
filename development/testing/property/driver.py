@@ -36,10 +36,7 @@ from auxiliary_shared import cleanup
 def run(args):
     """ Run the property test battery.
     """
-    cleanup()
 
-    if args.is_compile:
-        compile_package(True)
 
     # Processing of command line arguments.
     if args.request[0] == 'investigate':
@@ -56,6 +53,12 @@ def run(args):
     elif is_run:
         hours = float(args.request[1])
         assert (hours > 0.0)
+
+    if not is_investigation:
+        cleanup()
+
+    if args.is_compile:
+        compile_package(True)
 
     # Get a dictionary with all candidate test cases.
     test_dict = get_test_dict(PACKAGE_DIR + 'respy/tests')
@@ -148,4 +151,3 @@ if __name__ == '__main__':
         dest='is_background', default=False, help='background process')
 
     run(parser.parse_args())
-
