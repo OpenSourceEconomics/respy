@@ -1,10 +1,6 @@
 import sys
 import os
 
-from scipy.optimize.slsqp import _minimize_slsqp
-from scipy.optimize import approx_fprime
-from scipy.optimize import rosen_der
-from scipy.optimize import rosen
 from scipy.stats import norm
 import statsmodels.api as sm
 import numpy as np
@@ -12,7 +8,6 @@ import pytest
 import scipy
 
 from respy.python.solve.solve_auxiliary import pyth_calculate_rewards_systematic
-from respy.python.solve.solve_ambiguity import construct_emax_ambiguity
 from respy.python.shared.shared_auxiliary import replace_missing_values
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
 from respy.python.solve.solve_auxiliary import pyth_backward_induction
@@ -23,17 +18,13 @@ from respy.python.solve.solve_auxiliary import get_endogenous_variable
 from respy.python.evaluate.evaluate_python import pyth_contributions
 from respy.python.estimate.estimate_auxiliary import get_optim_paras
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
-from respy.python.solve.solve_ambiguity import constraint_ambiguity
-from respy.python.solve.solve_ambiguity import criterion_ambiguity
 from respy.python.shared.shared_auxiliary import dist_model_paras
 from respy.python.estimate.estimate_python import pyth_criterion
 from respy.python.simulate.simulate_python import pyth_simulate
 from respy.python.solve.solve_auxiliary import get_predictions
 from respy.python.solve.solve_risk import construct_emax_risk
-from respy.python.solve.solve_ambiguity import get_worst_case
 from respy.python.shared.shared_auxiliary import get_cholesky
 from respy.python.shared.shared_auxiliary import create_draws
-from respy.python.solve.solve_ambiguity import kl_divergence
 from respy.python.shared.shared_constants import IS_FORTRAN
 from respy.python.shared.shared_auxiliary import read_draws
 from respy.python.solve.solve_python import pyth_solve
@@ -58,7 +49,7 @@ if IS_FORTRAN:
 class TestClass(object):
     """ This class groups together some tests.
     """
-    def test_1(self):
+    def test_1(self, flag_ambiguity=False):
         """ Compare the evaluation of the criterion function for the ambiguity
         optimization and the simulated expected future value between the FORTRAN
         and PYTHON implementations. These tests are set up a separate test case
@@ -67,6 +58,7 @@ class TestClass(object):
         # Generate constraint periods
         constraints = dict()
         constraints['version'] = 'PYTHON'
+        constraints['flag_ambiguity'] = flag_ambiguity
 
         # Generate random initialization file
         generate_init(constraints)
@@ -79,22 +71,10 @@ class TestClass(object):
         # Extract class attributes
         periods_rewards_systematic, states_number_period, mapping_state_idx, \
             periods_emax, num_periods, states_all, num_draws_emax, edu_start, \
-            edu_max, delta, measure, model_paras, derivatives, \
-            optimizer_options = \
-                dist_class_attributes(respy_obj,
-                    'periods_rewards_systematic', 'states_number_period',
-                    'mapping_state_idx', 'periods_emax', 'num_periods',
-                    'states_all', 'num_draws_emax', 'edu_start', 'edu_max',
-                    'delta', 'measure', 'model_paras', 'derivatives',
-                    'optimizer_options')
-
-        level = model_paras['level']
-        shocks_cholesky = model_paras['shocks_cholesky']
-        shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
-
-        fort_slsqp_maxiter = optimizer_options['FORT-SLSQP']['maxiter']
-        fort_slsqp_ftol = optimizer_options['FORT-SLSQP']['ftol']
-        fort_slsqp_eps = optimizer_options['FORT-SLSQP']['eps']
+            edu_max, delta = dist_class_attributes(respy_obj,
+                'periods_rewards_systematic', 'states_number_period',
+                'mapping_state_idx', 'periods_emax', 'num_periods',
+                'states_all', 'num_draws_emax', 'edu_start', 'edu_max', 'delta')
 
         # Sample draws
         draws_standard = np.random.multivariate_normal(np.zeros(4),
@@ -116,55 +96,11 @@ class TestClass(object):
         f90 = fort_debug.wrapper_construct_emax_risk(*args)
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
-        args = (num_periods, num_draws_emax, period, k, draws_standard,
-            rewards_systematic, edu_max, edu_start, periods_emax, states_all,
-            mapping_state_idx, delta, shocks_cov, measure, level)
-
-        py = construct_emax_ambiguity(*args + (optimizer_options, False))
-        f90 = fort_debug.wrapper_construct_emax_ambiguity(*args +
-                (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, False))
-        np.testing.assert_allclose(py, f90)
-
-        x = np.random.uniform(-1, 1, size=2)
-
-        args = (num_periods, num_draws_emax, period, k, draws_standard,
-            rewards_systematic, edu_max, edu_start, periods_emax, states_all,
-            mapping_state_idx, delta)
-
-        py = criterion_ambiguity(x, *args)
-        f90 = fort_debug.wrapper_criterion_ambiguity(x, *args)
-        np.testing.assert_allclose(py, f90)
-
-        py = approx_fprime(x, criterion_ambiguity, fort_slsqp_eps, *args)
-        f90 = fort_debug.wrapper_criterion_ambiguity_derivative(x, *args + (
-            fort_slsqp_eps, ))
-        np.testing.assert_allclose(py, f90)
-
-        args = (shocks_cov, level)
-        py = constraint_ambiguity(x, *args)
-        f90 = fort_debug.wrapper_constraint_ambiguity(x, *args)
-        np.testing.assert_allclose(py, f90)
-
-        py = approx_fprime(x, constraint_ambiguity, fort_slsqp_eps, *args)
-        f90 = fort_debug.wrapper_constraint_ambiguity_derivative(x, *args + (fort_slsqp_eps, ))
-        np.testing.assert_allclose(py, f90)
-
-        args = (num_periods, num_draws_emax, period, k,
-            draws_standard, rewards_systematic, edu_max, edu_start,
-            periods_emax, states_all, mapping_state_idx, delta, shocks_cov,
-            level)
-
-        py, _, _ = get_worst_case(*args + (optimizer_options, ))
-        f90, _, _ = fort_debug.wrapper_get_worst_case(*args + (
-            fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps))
-        np.testing.assert_allclose(py, f90)
-
     def test_2(self):
         """ Compare results between FORTRAN and PYTHON of selected
         hand-crafted functions. In test_97() we test FORTRAN implementations
         against PYTHON intrinsic routines.
         """
-
         for _ in range(25):
 
             # Create grid of admissible state space values.
@@ -287,13 +223,16 @@ class TestClass(object):
 
             np.testing.assert_almost_equal(py, f90)
 
-    def test_4(self):
+    def test_4(sel, flag_ambiguity=False):
         """ Testing the core functions of the solution step for the equality
         of results between the PYTHON and FORTRAN implementations.
         """
 
         # Generate random initialization file
-        generate_init()
+        constr = dict()
+        constr['flag_ambiguity'] = flag_ambiguity
+
+        generate_init(constr)
 
         # Perform toolbox actions
         respy_obj = RespyCls('test.respy.ini')
@@ -361,16 +300,14 @@ class TestClass(object):
             fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, False))
         np.testing.assert_allclose(pyth, f2py)
 
-    def test_5(self):
+    def test_5(self, flag_ambiguity=False):
         """ This methods ensures that the core functions yield the same
-        results across implementations. This function focuses on the risk
-        case only, an analogous function for the case of ambiguity is defined
-        in the test_ambiguity.py file.
+        results across implementations.
         """
 
         # Generate random initialization file
         constr = dict()
-        constr['level'] = 0.00
+        constr['flag_ambiguity'] = flag_ambiguity
         generate_init(constr)
 
         # Perform toolbox actions
@@ -468,11 +405,13 @@ class TestClass(object):
             fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps))
         np.testing.assert_allclose(py, f2py)
 
-    def test_6(self):
+    def test_6(self, flag_ambiguity=False):
         """ Further tests for the interpolation routines.
         """
         # Generate random initialization file
-        generate_init()
+        constr = dict()
+        constr['flag_ambiguity'] = flag_ambiguity
+        generate_init(constr)
 
         # Perform toolbox actions
         respy_obj = RespyCls('test.respy.ini')
@@ -632,73 +571,3 @@ class TestClass(object):
         # Compare the results based on the two methods
         np.testing.assert_equal(fort, py)
 
-    def test_9(self):
-        """ Check the calculation of the KL divergence across implementations.
-        """
-        for i in range(1000):
-
-            num_dims = np.random.randint(1, 5)
-            old_mean = np.random.uniform(size=num_dims)
-            new_mean = np.random.uniform(size=num_dims)
-
-            cov = np.random.random((num_dims, num_dims))
-            old_cov = np.matmul(cov.T, cov)
-
-            cov = np.random.random((num_dims, num_dims))
-            new_cov = np.matmul(cov.T, cov)
-
-            np.fill_diagonal(new_cov, new_cov.diagonal() * 5)
-            np.fill_diagonal(old_cov, old_cov.diagonal() * 5)
-
-            args = (old_mean, old_cov, new_mean, new_cov)
-
-            py = kl_divergence(*args)
-            fort = fort_debug.wrapper_kl_divergence(*args)
-
-            np.testing.assert_almost_equal(fort, py)
-
-    def test_10(self):
-        """ Check the SLSQP implementations.
-        """
-        # Test the FORTRAN codes against the PYTHON implementation. This is
-        # expected to fail sometimes due to differences in precision between the
-        # two implementations. In particular, as updating steps of the optimizer
-        # are very sensitive to just small differences in the derivative
-        # information. The same functions are available as a FORTRAN
-        # implementations.
-        def debug_constraint_derivative(x):
-            return np.ones(len(x))
-
-        def debug_constraint_function(x):
-            return np.sum(x) - 10.0
-
-        # Sample basic test case
-        ftol = np.random.uniform(0.000000, 1e-5)
-        maxiter = np.random.randint(1, 100)
-        num_dim = np.random.randint(2, 4)
-
-        x0 = np.random.normal(size=num_dim)
-
-        # Evaluation of Rosenbrock function. We are using the FORTRAN version
-        # in the development of the optimization routines.
-        f90 = fort_debug.debug_criterion_function(x0, num_dim)
-        py = rosen(x0)
-        np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
-
-        py = rosen_der(x0)
-        f90 = fort_debug.debug_criterion_derivative(x0, len(x0))
-        np.testing.assert_allclose(py, f90[:-1], rtol=1e-05, atol=1e-06)
-
-        # Setting up PYTHON SLSQP interface for constraints
-        constraint = dict()
-        constraint['type'] = 'eq'
-        constraint['args'] = ()
-        constraint['fun'] = debug_constraint_function
-        constraint['jac'] = debug_constraint_derivative
-
-        # Evaluate both implementations
-        fort = fort_debug.wrapper_slsqp_debug(x0, maxiter, ftol, num_dim)
-        py = _minimize_slsqp(rosen, x0, jac=rosen_der, maxiter=maxiter,
-                ftol=ftol, constraints=constraint)['x']
-
-        np.testing.assert_allclose(py, fort, rtol=1e-05, atol=1e-06)

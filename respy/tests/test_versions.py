@@ -3,7 +3,6 @@ import numpy as np
 import pandas as pd
 import pytest
 
-
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.python.shared.shared_auxiliary import print_init_dict
@@ -24,9 +23,9 @@ from respy import RespyCls
 class TestClass(object):
     """ This class groups together some tests.
     """
-    def test_1(self):
+    def test_1(self, flag_ambiguity=False):
         """ Testing the equality of an evaluation of the criterion function for
-        a random request. This test focuses on the risk-only case.
+        a random request.
         """
         # Run evaluation for multiple random requests.
         is_deterministic = np.random.choice([True, False], p=[0.10, 0.9])
@@ -37,11 +36,11 @@ class TestClass(object):
         # Generate random initialization file
         constr = dict()
         constr['is_deterministic'] = is_deterministic
+        constr['flag_ambiguity'] = flag_ambiguity
         constr['flag_parallelism'] = False
         constr['is_myopic'] = is_myopic
         constr['max_draws'] = max_draws
         constr['maxfun'] = 0
-        constr['level'] = 0.0
 
         init_dict = generate_random_dict(constr)
 
@@ -117,16 +116,16 @@ class TestClass(object):
             if constr['is_deterministic']:
                 assert (crit_val in [-1.0, 0.0])
 
-    def test_2(self):
+    def test_2(self, flag_ambiguity=False):
         """ This test ensures that the evaluation of the criterion function
         at the starting value is identical between the different versions.
-        This test focuses on the risk-only case.
         """
 
         max_draws = np.random.randint(10, 100)
 
         # Generate random initialization file
         constr = dict()
+        constr['flag_ambiguity'] = flag_ambiguity
         constr['flag_parallelism'] = False
         constr['max_draws'] = max_draws
         constr['flag_interpolation'] = False
@@ -248,7 +247,7 @@ class TestClass(object):
             _, val = estimate(respy_obj)
             np.testing.assert_allclose(val, -1.0)
 
-    def test_6(self):
+    def test_6(self, flag_ambiguity=False):
         """ This test ensures that the logging looks exactly the same for the
         different versions.
         """
@@ -257,10 +256,11 @@ class TestClass(object):
 
         # Generate random initialization file
         constr = dict()
+        constr['flag_ambiguity'] = flag_ambiguity
         constr['flag_parallelism'] = False
         constr['max_draws'] = max_draws
         constr['flag_interpolation'] = False
-        constr['measure'] = 'abs'
+        constr['flag_ambiguity'] = False
         constr['maxfun'] = 0
 
         # Generate random initialization file

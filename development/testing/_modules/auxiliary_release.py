@@ -34,7 +34,7 @@ def prepare_release_tests(constr):
         os.mkdir(which)
 
     constr['level'] = 0.00
-    constr['flag_ambiguity'] = True
+    constr['fixed_ambiguity'] = True
     constr['file_est'] = '../data.respy.dat'
 
     init_dict = generate_init(constr)

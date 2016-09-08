@@ -1,27 +1,24 @@
-import sys
+from scipy.optimize.slsqp import _minimize_slsqp
+from scipy.optimize import approx_fprime
+from scipy.optimize import rosen_der
+from scipy.optimize import rosen
+
 import numpy as np
 import pytest
-from pandas.util.testing import assert_frame_equal
-import pandas as pd
+import sys
 
-from codes.random_init import generate_random_dict
-
-from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
-from respy.python.solve.solve_auxiliary import pyth_create_state_space
+from respy.python.solve.solve_ambiguity import construct_emax_ambiguity
 from respy.python.shared.shared_auxiliary import dist_class_attributes
-from respy.python.evaluate.evaluate_python import pyth_contributions
-from respy.python.estimate.estimate_auxiliary import get_optim_paras
-from respy.python.shared.shared_auxiliary import dist_model_paras
+from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
+from respy.python.solve.solve_ambiguity import constraint_ambiguity
+from respy.python.solve.solve_ambiguity import criterion_ambiguity
 from respy.python.shared.shared_auxiliary import print_init_dict
-from respy.python.estimate.estimate_python import pyth_criterion
-from respy.python.simulate.simulate_python import pyth_simulate
+from respy.python.solve.solve_ambiguity import get_worst_case
+from respy.python.solve.solve_ambiguity import kl_divergence
 from respy.python.shared.shared_constants import IS_FORTRAN
-from respy.python.shared.shared_auxiliary import read_draws
-from respy.python.solve.solve_python import pyth_solve
-from respy.fortran.interface import resfort_interface
-from codes.auxiliary import write_interpolation_grid
+from respy.python.shared.shared_constants import TEST_DIR
+
 from codes.random_init import generate_init
-from codes.auxiliary import write_draws
 
 from respy import RespyCls
 from respy import simulate
@@ -33,6 +30,12 @@ from respy import estimate
 if IS_FORTRAN:
     sys.path.insert(0, TEST_RESOURCES_DIR)
     import f2py_interface as fort_debug
+
+sys.path.insert(0, TEST_DIR)
+
+from test_integration import TestClass as TestClass_integration
+from test_versions import TestClass as TestClass_versions
+from test_f2py import TestClass as TestClass_f2py
 
 
 @pytest.mark.usefixtures('fresh_directory', 'set_seed')
@@ -69,295 +72,208 @@ class TestClass(object):
             np.testing.assert_allclose(base_val, crit_val)
 
     def test_2(self):
-        """ This test ensures that it does not matter which version runs
-        the ambiguity codes.
+        """ Testing the F2PY implementations of the ambiguity-related functions.
         """
-
-        max_draws = np.random.randint(10, 100)
-
-        constr = dict()
-        constr['flag_parallelism'] = False
-        constr['max_draws'] = max_draws
-        constr['level'] = np.random.uniform()
-        constr['maxfun'] = 0
-
-        init_dict = generate_init(constr)
-
-        num_periods = init_dict['BASICS']['periods']
-        write_draws(num_periods, max_draws)
-        write_interpolation_grid('test.respy.ini')
-
-        versions = ['PYTHON']
-        if IS_FORTRAN:
-            versions += ['FORTRAN']
-
-        base_val = None
-        for version in versions:
-            init_dict['PROGRAM']['version'] = version
-
-            print_init_dict(init_dict)
-
-            respy_obj = RespyCls('test.respy.ini')
-
-            simulate(respy_obj)
-            _, crit_val = estimate(respy_obj)
-
-            if base_val is None:
-                base_val = crit_val
-
-            np.testing.assert_allclose(base_val, crit_val)
-
-    @pytest.mark.skipif(not IS_FORTRAN, reason='No FORTRAN available')
-    def test_3(self):
-        """ This methods ensures that the core functions yield the same
-        results across implementations in the case of ambiguity. The same
-        function for the risk-only case is available in the test_f2py.py
-        battery.
-        """
+        # Generate constraint periods
+        constraints = dict()
+        constraints['version'] = 'PYTHON'
+        constraints['flag_ambiguity'] = True
 
         # Generate random initialization file
-        constr = dict()
-        constr['level'] = np.random.uniform(0.01, 0.99)
-        generate_init(constr)
+        generate_init(constraints)
 
         # Perform toolbox actions
         respy_obj = RespyCls('test.respy.ini')
+
         respy_obj = simulate(respy_obj)
 
-        # Ensure that backward induction routines use the same grid for the
-        # interpolation.
-        max_states_period = write_interpolation_grid('test.respy.ini')
-
         # Extract class attributes
-        num_periods, edu_start, edu_max, min_idx, model_paras, num_draws_emax, \
-        is_debug, delta, is_interpolated, num_points_interp, is_myopic, \
-        num_agents_sim, num_draws_prob, tau, paras_fixed, seed_sim, \
-        measure, num_agents_est, states_number_period, \
-        optimizer_options, derivatives = dist_class_attributes(respy_obj,
-            'num_periods', 'edu_start',
-            'edu_max', 'min_idx', 'model_paras', 'num_draws_emax',
-            'is_debug', 'delta', 'is_interpolated', 'num_points_interp',
-            'is_myopic', 'num_agents_sim', 'num_draws_prob', 'tau',
-            'paras_fixed', 'seed_sim', 'measure',
-            'num_agents_est', 'states_number_period',
-            'optimizer_options', 'derivatives')
+        periods_rewards_systematic, states_number_period, mapping_state_idx, \
+            periods_emax, num_periods, states_all, num_draws_emax, edu_start, \
+            edu_max, delta, measure, model_paras, derivatives, \
+            optimizer_options = \
+                dist_class_attributes(respy_obj,
+                    'periods_rewards_systematic', 'states_number_period',
+                    'mapping_state_idx', 'periods_emax', 'num_periods',
+                    'states_all', 'num_draws_emax', 'edu_start', 'edu_max',
+                    'delta', 'measure', 'model_paras', 'derivatives',
+                    'optimizer_options')
+
+        level = model_paras['level']
+        shocks_cholesky = model_paras['shocks_cholesky']
+        shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
 
         fort_slsqp_maxiter = optimizer_options['FORT-SLSQP']['maxiter']
         fort_slsqp_ftol = optimizer_options['FORT-SLSQP']['ftol']
         fort_slsqp_eps = optimizer_options['FORT-SLSQP']['eps']
 
-        # Write out random components and interpolation grid to align the
-        # three implementations.
-        max_draws = max(num_agents_sim, num_draws_emax, num_draws_prob)
-        write_draws(num_periods, max_draws)
-        periods_draws_emax = read_draws(num_periods, num_draws_emax)
-        periods_draws_prob = read_draws(num_periods, num_draws_prob)
-        periods_draws_sims = read_draws(num_periods, num_agents_sim)
+        # Sample draws
+        draws_standard = np.random.multivariate_normal(np.zeros(4),
+                            np.identity(4), (num_draws_emax,))
 
-        # Extract coefficients
-        level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
-            dist_model_paras(model_paras, True)
+        # Sampling of random period and admissible state index
+        period = np.random.choice(range(num_periods))
+        k = np.random.choice(range(states_number_period[period]))
 
-        # Check the full solution procedure
-        base_args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-            shocks_cholesky, is_interpolated, num_points_interp,
-            num_draws_emax, num_periods, is_myopic, edu_start, is_debug,
-            edu_max, min_idx, delta, periods_draws_emax, measure, level)
+        # Select systematic rewards
+        rewards_systematic = periods_rewards_systematic[period, k, :]
 
-        fort, _ = resfort_interface(respy_obj, 'simulate')
-        py = pyth_solve(*base_args + (optimizer_options,))
-        f2py = fort_debug.f2py_solve(*base_args + (max_states_period,
-                                                   fort_slsqp_maxiter,
-                                                   fort_slsqp_ftol, fort_slsqp_eps))
+        args = (num_periods, num_draws_emax, period, k, draws_standard,
+            rewards_systematic, edu_max, edu_start, periods_emax, states_all,
+            mapping_state_idx, delta, shocks_cov, measure, level)
 
-        for alt in [f2py, fort]:
-            for i in range(5):
-                np.testing.assert_allclose(py[i], alt[i])
+        py = construct_emax_ambiguity(*args + (optimizer_options, False))
+        f90 = fort_debug.wrapper_construct_emax_ambiguity(*args +
+                (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, False))
+        np.testing.assert_allclose(py, f90)
 
-        # Distribute solution arguments for further use in simulation test.
-        periods_rewards_systematic, _, mapping_state_idx, periods_emax, \
-        states_all = py
+        x = np.random.uniform(-1, 1, size=2)
 
-        args = (periods_rewards_systematic, mapping_state_idx, periods_emax,
-                states_all, shocks_cholesky, num_periods, edu_start, edu_max,
-                delta, num_agents_sim, periods_draws_sims, seed_sim)
+        args = (num_periods, num_draws_emax, period, k, draws_standard,
+            rewards_systematic, edu_max, edu_start, periods_emax, states_all,
+            mapping_state_idx, delta)
 
-        py = pyth_simulate(*args)
+        py = criterion_ambiguity(x, *args)
+        f90 = fort_debug.wrapper_criterion_ambiguity(x, *args)
+        np.testing.assert_allclose(py, f90)
 
-        f2py = fort_debug.f2py_simulate(*args)
-        np.testing.assert_allclose(py, f2py)
+        py = approx_fprime(x, criterion_ambiguity, fort_slsqp_eps, *args)
+        f90 = fort_debug.wrapper_criterion_ambiguity_derivative(x, *args + (
+            fort_slsqp_eps, ))
+        np.testing.assert_allclose(py, f90)
 
-        # Is is very important to cut the data array down to the size of the
-        # estimation sample.
-        data_array = py[:num_agents_est * num_periods, :]
+        args = (shocks_cov, level)
+        py = constraint_ambiguity(x, *args)
+        f90 = fort_debug.wrapper_constraint_ambiguity(x, *args)
+        np.testing.assert_allclose(py, f90)
 
-        args = (periods_rewards_systematic, mapping_state_idx,
-                periods_emax, states_all, shocks_cholesky, data_array,
-                periods_draws_prob, delta, tau, edu_start, edu_max,
-                num_periods, num_draws_prob)
+        py = approx_fprime(x, constraint_ambiguity, fort_slsqp_eps, *args)
+        f90 = fort_debug.wrapper_constraint_ambiguity_derivative(x, *args +
+                (fort_slsqp_eps, ))
+        np.testing.assert_allclose(py, f90)
 
-        py = pyth_contributions(*args)
-        f2py = fort_debug.f2py_contributions(*args + (num_agents_est,))
-        np.testing.assert_allclose(py, f2py)
+        args = (num_periods, num_draws_emax, period, k,
+            draws_standard, rewards_systematic, edu_max, edu_start,
+            periods_emax, states_all, mapping_state_idx, delta, shocks_cov,
+            level)
 
-        # Evaluation of criterion function
-        x0 = get_optim_paras(level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-            shocks_cholesky, 'all', paras_fixed, is_debug)
-
-        args = (is_interpolated, num_draws_emax, num_periods,
-                num_points_interp, is_myopic, edu_start, is_debug, edu_max,
-                delta, data_array, num_draws_prob, tau,
-                periods_draws_emax, periods_draws_prob, states_all,
-                states_number_period, mapping_state_idx, max_states_period,
-                measure)
-
-        py = pyth_criterion(x0, *args + (optimizer_options,))
-        f2py = fort_debug.f2py_criterion(x0, *args + (
+        py, _, _ = get_worst_case(*args + (optimizer_options, ))
+        f90, _, _ = fort_debug.wrapper_get_worst_case(*args + (
             fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps))
-        np.testing.assert_allclose(py, f2py)
+        np.testing.assert_allclose(py, f90)
 
-    @pytest.mark.skipif(not IS_FORTRAN, reason='No FORTRAN available')
+    def test_3(self):
+        """ Check the calculation of the KL divergence across implementations.
+        """
+        for i in range(1000):
+
+            num_dims = np.random.randint(1, 5)
+            old_mean = np.random.uniform(size=num_dims)
+            new_mean = np.random.uniform(size=num_dims)
+
+            cov = np.random.random((num_dims, num_dims))
+            old_cov = np.matmul(cov.T, cov)
+
+            cov = np.random.random((num_dims, num_dims))
+            new_cov = np.matmul(cov.T, cov)
+
+            np.fill_diagonal(new_cov, new_cov.diagonal() * 5)
+            np.fill_diagonal(old_cov, old_cov.diagonal() * 5)
+
+            args = (old_mean, old_cov, new_mean, new_cov)
+
+            py = kl_divergence(*args)
+            fort = fort_debug.wrapper_kl_divergence(*args)
+
+            np.testing.assert_almost_equal(fort, py)
+
     def test_4(self):
-        """ Testing the equality of an evaluation of the criterion function for
-        a random request. This test focuses on the risk-only case.
+        """ Check the SLSQP implementations.
         """
-        # Run evaluation for multiple random requests.
-        is_deterministic = np.random.choice([True, False], p=[0.10, 0.9])
-        is_interpolated = np.random.choice([True, False], p=[0.10, 0.9])
-        is_myopic = np.random.choice([True, False], p=[0.10, 0.9])
-        max_draws = np.random.randint(10, 100)
+        # Test the FORTRAN codes against the PYTHON implementation. This is
+        # expected to fail sometimes due to differences in precision between the
+        # two implementations. In particular, as updating steps of the optimizer
+        # are very sensitive to just small differences in the derivative
+        # information. The same functions are available as a FORTRAN
+        # implementations.
+        def debug_constraint_derivative(x):
+            return np.ones(len(x))
 
-        # Generate random initialization file
-        constr = dict()
-        constr['is_deterministic'] = is_deterministic
-        constr['flag_parallelism'] = False
-        constr['is_myopic'] = is_myopic
-        constr['max_draws'] = max_draws
-        constr['maxfun'] = 0
-        constr['level'] = np.random.uniform(0.01, 0.99)
+        def debug_constraint_function(x):
+            return np.sum(x) - 10.0
 
-        init_dict = generate_random_dict(constr)
+        # Sample basic test case
+        ftol = np.random.uniform(0.000000, 1e-5)
+        maxiter = np.random.randint(1, 100)
+        num_dim = np.random.randint(2, 4)
 
-        # The use of the interpolation routines is a another special case.
-        # Constructing a request that actually involves the use of the
-        # interpolation routine is a little involved as the number of
-        # interpolation points needs to be lower than the actual number of
-        # states. And to know the number of states each period, I need to
-        # construct the whole state space.
-        if is_interpolated:
-            # Extract from future initialization file the information
-            # required to construct the state space. The number of periods
-            # needs to be at least three in order to provide enough state
-            # points.
-            num_periods = np.random.randint(3, 6)
-            edu_start = init_dict['EDUCATION']['start']
-            edu_max = init_dict['EDUCATION']['max']
-            min_idx = min(num_periods, (edu_max - edu_start + 1))
+        x0 = np.random.normal(size=num_dim)
 
-            max_states_period = pyth_create_state_space(num_periods, edu_start,
-                edu_max, min_idx)[3]
+        # Evaluation of Rosenbrock function. We are using the FORTRAN version
+        # in the development of the optimization routines.
+        f90 = fort_debug.debug_criterion_function(x0, num_dim)
+        py = rosen(x0)
+        np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
-            # Updates to initialization dictionary that trigger a use of the
-            # interpolation code.
-            init_dict['BASICS']['periods'] = num_periods
-            init_dict['INTERPOLATION']['flag'] = True
-            init_dict['INTERPOLATION']['points'] = \
-                np.random.randint(10, max_states_period)
+        py = rosen_der(x0)
+        f90 = fort_debug.debug_criterion_derivative(x0, len(x0))
+        np.testing.assert_allclose(py, f90[:-1], rtol=1e-05, atol=1e-06)
 
-        # Print out the relevant initialization file.
-        print_init_dict(init_dict)
+        # Setting up PYTHON SLSQP interface for constraints
+        constraint = dict()
+        constraint['type'] = 'eq'
+        constraint['args'] = ()
+        constraint['fun'] = debug_constraint_function
+        constraint['jac'] = debug_constraint_derivative
 
-        # Write out random components and interpolation grid to align the
-        # three implementations.
-        num_periods = init_dict['BASICS']['periods']
-        write_draws(num_periods, max_draws)
-        write_interpolation_grid('test.respy.ini')
+        # Evaluate both implementations
+        fort = fort_debug.wrapper_slsqp_debug(x0, maxiter, ftol, num_dim)
+        py = _minimize_slsqp(rosen, x0, jac=rosen_der, maxiter=maxiter,
+                ftol=ftol, constraints=constraint)['x']
 
-        # Clean evaluations based on interpolation grid,
-        base_val, base_data = None, None
+        np.testing.assert_allclose(py, fort, rtol=1e-05, atol=1e-06)
 
-        for version in ['PYTHON', 'FORTRAN']:
-            respy_obj = RespyCls('test.respy.ini')
+    """ This section reproduces the tests from test_versions but runs them
+    with ambiguity.
+    """
+    @pytest.mark.parametrize("flag_ambiguity", [True])
+    def test_versions_1(self, flag_ambiguity):
+        TestClass_versions().test_1(flag_ambiguity)
 
-            # Modify the version of the program for the different requests.
-            respy_obj.unlock()
-            respy_obj.set_attr('version', version)
-            respy_obj.lock()
+    @pytest.mark.parametrize("flag_ambiguity", [True])
+    def test_versions_2(self, flag_ambiguity):
+        TestClass_versions().test_2(flag_ambiguity)
 
-            # Solve the model
-            respy_obj = simulate(respy_obj)
+    @pytest.mark.parametrize("flag_ambiguity", [True])
+    def test_versions_6(self, flag_ambiguity):
+        TestClass_versions().test_6(flag_ambiguity)
 
-            # This parts checks the equality of simulated dataset for the
-            # different versions of the code.
-            data_frame = pd.read_csv('data.respy.dat', delim_whitespace=True)
+    """ This section reproduces the tests from test_f2py but runs them with
+    ambiguity.
+    """
+    @pytest.mark.parametrize("flag_ambiguity", [True])
+    def test_f2py_4(self, flag_ambiguity):
+        TestClass_f2py().test_4(flag_ambiguity)
 
-            if base_data is None:
-                base_data = data_frame.copy()
+    @pytest.mark.parametrize("flag_ambiguity", [True])
+    def test_f2py_5(self, flag_ambiguity):
+        TestClass_f2py().test_5(flag_ambiguity)
 
-            assert_frame_equal(base_data, data_frame)
+    @pytest.mark.parametrize("flag_ambiguity", [True])
+    def test_f2py_6(self, flag_ambiguity):
+        TestClass_f2py().test_6(flag_ambiguity)
 
-            # This part checks the equality of an evaluation of the
-            # criterion function.
-            _, crit_val = estimate(respy_obj)
+    """ This section reproduces the tests from test_integration but runs them
+    with ambiguity.
+    """
+    @pytest.mark.parametrize("flag_ambiguity", [True])
+    def test_integration_3(self, flag_ambiguity):
+        TestClass_integration().test_3(flag_ambiguity)
 
-            if base_val is None:
-                base_val = crit_val
+    @pytest.mark.parametrize("flag_ambiguity", [True])
+    def test_integration_4(self, flag_ambiguity):
+        TestClass_integration().test_4(flag_ambiguity)
 
-            np.testing.assert_allclose(base_val, crit_val, rtol=1e-05,
-                atol=1e-06)
-
-            # We know even more for the deterministic case.
-            if constr['is_deterministic']:
-                assert (crit_val in [-1.0, 0.0])
-
-    @pytest.mark.skipif(not IS_FORTRAN, reason='No FORTRAN available')
-    def test_5(self):
-        """ This test ensures that the evaluation of the criterion function
-        at the starting value is identical between the different versions.
-        This test focuses on the risk-only case.
-        """
-
-        max_draws = np.random.randint(10, 100)
-
-        # Generate random initialization file
-        constr = dict()
-        constr['flag_parallelism'] = False
-        constr['max_draws'] = max_draws
-        constr['flag_interpolation'] = False
-        constr['level'] = np.random.uniform(0.01, 0.99)
-        constr['maxfun'] = 0
-
-        # Generate random initialization file
-        init_dict = generate_init(constr)
-
-        # Perform toolbox actions
-        respy_obj = RespyCls('test.respy.ini')
-
-        # Simulate a dataset
-        simulate(respy_obj)
-
-        # Iterate over alternative implementations
-        base_x, base_val = None, None
-
-        num_periods = init_dict['BASICS']['periods']
-        write_draws(num_periods, max_draws)
-
-        for version in ['FORTRAN', 'PYTHON']:
-
-            respy_obj.unlock()
-
-            respy_obj.set_attr('version', version)
-
-            respy_obj.lock()
-
-            x, val = estimate(respy_obj)
-
-            # Check for the returned parameters.
-            if base_x is None:
-                base_x = x
-            np.testing.assert_allclose(base_x, x)
-
-            # Check for the value of the criterion function.
-            if base_val is None:
-                base_val = val
-            np.testing.assert_allclose(base_val, val)
+    @pytest.mark.parametrize("flag_ambiguity", [True])
+    def test_integration_6(self, flag_ambiguity):
+        TestClass_integration().test_6(flag_ambiguity)

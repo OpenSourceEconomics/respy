@@ -6,6 +6,7 @@ import tempfile
 import pytest
 import os
 
+
 @pytest.fixture(scope='function')
 def set_seed():
     """ Each test is executed with the same random seed.

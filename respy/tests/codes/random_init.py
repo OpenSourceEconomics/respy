@@ -298,7 +298,17 @@ def generate_random_dict(constraints=None):
         # Checks
         assert (constraints['flag_ambiguity'] in [True, False])
         # Replace in initialization files
-        dict_['AMBIGUITY']['fixed'] = [constraints['flag_ambiguity']]
+        if constraints['flag_ambiguity']:
+            dict_['AMBIGUITY']['coeffs'] = [np.random.uniform(0.01, 1.0)]
+        else:
+            dict_['AMBIGUITY']['coeffs'] = [0.00]
+
+    # Treat level of ambiguity as fixed in an estimation
+    if 'fixed_ambiguity' in constraints.keys():
+        # Checks
+        assert (constraints['fixed_ambiguity'] in [True, False])
+        # Replace in initialization files
+        dict_['AMBIGUITY']['fixed'] = [constraints['fixed_ambiguity']]
 
     # Replace version
     if 'version' in constraints.keys():

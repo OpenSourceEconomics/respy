@@ -76,7 +76,7 @@ class TestClass(object):
             assert (np.isfinite(diff))
             assert (diff < 10e-10)
 
-    def test_3(self):
+    def test_3(self, flag_ambiguity=False):
         """ Testing whether the a simulated dataset and the evaluation of the
         criterion function are the same for a tiny delta and a myopic agent.
         """
@@ -84,6 +84,7 @@ class TestClass(object):
         # Generate random initialization dictionary
         constr = dict()
         constr['maxfun'] = 0
+        constr['flag_ambiguity'] = flag_ambiguity
 
         generate_init(constr)
 
@@ -120,15 +121,16 @@ class TestClass(object):
 
             np.testing.assert_allclose(base_val, crit_val, rtol=1e-03, atol=1e-03)
 
-    def test_4(self):
+    def test_4(self, flag_ambiguity=False):
         """ Test the evaluation of the criterion function for random
         requests, not just at the true values.
         """
         # Constraints that ensure that two alternative initialization files
         # can be used for the same simulated data.
         constr = dict()
-        constr['periods'] = np.random.randint(1, 4)
         constr['agents'] = np.random.randint(1, 100)
+        constr['periods'] = np.random.randint(1, 4)
+        constr['flag_ambiguity'] = flag_ambiguity
         constr['edu'] = (7, 15)
         constr['maxfun'] = 0
 
@@ -205,7 +207,7 @@ class TestClass(object):
                 pass
 
     @pytest.mark.slow
-    def test_6(self):
+    def test_6(self, flag_ambiguity=False):
         """ Test short estimation tasks.
         """
         # Constraints that ensures that the maximum number of iterations and
@@ -213,6 +215,7 @@ class TestClass(object):
         # one.
         constr = dict()
         constr['is_estimation'] = True
+        constr['flag_ambiguity'] = flag_ambiguity
 
         generate_init(constr)
 
