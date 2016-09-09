@@ -82,7 +82,7 @@ def initialize_record_canvas(full_test_record, start, timeout):
         # Iterate over all _modules. There is a potential conflict in the
         # namespace.
         for module_ in full_test_record.keys():
-            str_ = '\t{0[0]:<29}{0[1]:<20}{0[2]:<20} \n\n'
+            str_ = '\t{0[0]:<27}{0[1]:<20}{0[2]:<20} \n\n'
             log_file.write(str_.format([module_, 'Success', 'Failure']))
             # Iterate over all methods in the particular module.
             for method_ in sorted(full_test_record[module_]):
