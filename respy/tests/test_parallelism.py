@@ -61,14 +61,16 @@ class TestClass(object):
 
             respy_obj = RespyCls('test.respy.ini')
 
+            file_sim = respy_obj.get_attr('file_sim')
             simulate(respy_obj)
 
             estimate(respy_obj)
 
             # Check for identical records
+            fname = file_sim + '.respy.sol'
             if base_sol_log is None:
-                base_sol_log = open('sol.respy.log', 'r').read()
-            assert open('sol.respy.log', 'r').read() == base_sol_log
+                base_sol_log = open(fname, 'r').read()
+            assert open(fname, 'r').read() == base_sol_log
 
             if base_est_info_log is None:
                 base_est_info_log = open('est.respy.info', 'r').read()

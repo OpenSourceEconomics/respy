@@ -5,7 +5,7 @@ def record_solution_progress(indicator, file_sim, period=None, num_states=None):
 
     if indicator == 1:
         if os.path.exists(file_sim + '.respy.sol'):
-            os.unlink('sol.respy.log')
+            os.unlink(file_sim + '.respy.sol')
 
         line = 'Starting state space creation'
     elif indicator == 2:

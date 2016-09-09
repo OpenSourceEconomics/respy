@@ -244,12 +244,12 @@ class TestClass(object):
         # Extract class attributes
         num_periods, edu_start, edu_max, min_idx, model_paras, num_draws_emax, \
             seed_emax, is_debug, delta, is_interpolated, num_points_interp, \
-            measure, optimizer_options, derivatives = \
+            measure, optimizer_options, derivatives, file_sim = \
             dist_class_attributes(respy_obj,
                 'num_periods', 'edu_start', 'edu_max', 'min_idx',
                 'model_paras', 'num_draws_emax', 'seed_emax', 'is_debug',
                 'delta', 'is_interpolated', 'num_points_interp',
-                'measure',  'optimizer_options', 'derivatives')
+                'measure',  'optimizer_options', 'derivatives', 'file_sim')
 
         fort_slsqp_maxiter = optimizer_options['FORT-SLSQP']['maxiter']
         fort_slsqp_ftol = optimizer_options['FORT-SLSQP']['ftol']
@@ -295,9 +295,10 @@ class TestClass(object):
             is_debug, is_interpolated, num_points_interp, shocks_cholesky,
             measure, level)
 
-        pyth = pyth_backward_induction(*args + (optimizer_options, False))
+        pyth = pyth_backward_induction(*args + (optimizer_options, file_sim, False))
         f2py = fort_debug.f2py_backward_induction(*args + (
-            fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, False))
+            fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, file_sim,
+            False))
         np.testing.assert_allclose(pyth, f2py)
 
     def test_5(self, flag_ambiguity=False):
@@ -323,14 +324,15 @@ class TestClass(object):
             is_debug, delta, is_interpolated, num_points_interp, is_myopic, \
             num_agents_sim, num_draws_prob, tau, paras_fixed, seed_sim, \
             measure, num_agents_est, states_number_period, \
-            optimizer_options, derivatives = dist_class_attributes(respy_obj,
+            optimizer_options, derivatives, file_sim = dist_class_attributes(
+            respy_obj,
                 'num_periods', 'edu_start',
                 'edu_max', 'min_idx', 'model_paras', 'num_draws_emax',
                 'is_debug', 'delta', 'is_interpolated', 'num_points_interp',
                 'is_myopic', 'num_agents_sim', 'num_draws_prob', 'tau',
                 'paras_fixed', 'seed_sim', 'measure',
                 'num_agents_est', 'states_number_period',
-                'optimizer_options', 'derivatives')
+                'optimizer_options', 'derivatives', 'file_sim')
 
         fort_slsqp_maxiter = optimizer_options['FORT-SLSQP']['maxiter']
         fort_slsqp_ftol = optimizer_options['FORT-SLSQP']['ftol']
@@ -355,9 +357,9 @@ class TestClass(object):
             edu_max, min_idx, delta, periods_draws_emax, measure, level)
 
         fort, _ = resfort_interface(respy_obj, 'simulate')
-        py = pyth_solve(*base_args + (optimizer_options, ))
+        py = pyth_solve(*base_args + (file_sim, optimizer_options, ))
         f2py = fort_debug.f2py_solve(*base_args + (max_states_period,
-            fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps))
+            file_sim, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps))
 
         for alt in [f2py, fort]:
             for i in range(5):
@@ -369,7 +371,7 @@ class TestClass(object):
 
         args = (periods_rewards_systematic, mapping_state_idx, periods_emax,
             states_all, shocks_cholesky, num_periods, edu_start, edu_max,
-            delta, num_agents_sim, periods_draws_sims, seed_sim)
+            delta, num_agents_sim, periods_draws_sims, seed_sim, file_sim)
 
         py = pyth_simulate(*args)
 
@@ -422,13 +424,13 @@ class TestClass(object):
             seed_prob, periods_emax, num_periods, states_all, \
             num_points_interp, edu_start, num_draws_emax, is_debug, edu_max, \
             delta, measure, model_paras, \
-            optimizer_options, derivatives = dist_class_attributes(respy_obj,
+            optimizer_options, derivatives, file_sim = dist_class_attributes(respy_obj,
                 'periods_rewards_systematic', 'states_number_period',
                 'mapping_state_idx', 'seed_prob', 'periods_emax',
                 'num_periods', 'states_all', 'num_points_interp', 'edu_start',
                 'num_draws_emax', 'is_debug', 'edu_max', 'delta',
                 'measure', 'model_paras',
-                'optimizer_options', 'derivatives')
+                'optimizer_options', 'derivatives', 'file_sim')
 
         level = model_paras['level']
         shocks_cholesky = model_paras['shocks_cholesky']
@@ -482,9 +484,11 @@ class TestClass(object):
             num_draws_emax, maxe, draws_emax, shocks_cov,
                 measure, level)
 
-        py = get_endogenous_variable(*args + (optimizer_options, False))
+        py = get_endogenous_variable(*args + (optimizer_options, file_sim,
+                                              False))
         f90 = fort_debug.wrapper_get_endogenous_variable(*args +
-                (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, False))
+                (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps,
+                 file_sim, False))
 
         np.testing.assert_equal(py, replace_missing_values(f90))
 
@@ -492,9 +496,9 @@ class TestClass(object):
 
         args = (py, exogenous, maxe, is_simulated)
 
-        py = get_predictions(*args + (False,))
+        py = get_predictions(*args + (file_sim, False,))
         f90 = fort_debug.wrapper_get_predictions(*args + (num_points_interp,
-            num_states, False))
+            num_states, file_sim, False))
 
         np.testing.assert_array_almost_equal(py, f90)
 

@@ -92,13 +92,13 @@ class TestClass(object):
         periods_rewards_systematic, states_number_period, mapping_state_idx, \
             periods_emax, num_periods, states_all, num_draws_emax, edu_start, \
             edu_max, delta, measure, model_paras, derivatives, \
-            optimizer_options = \
+            optimizer_options, file_sim = \
                 dist_class_attributes(respy_obj,
                     'periods_rewards_systematic', 'states_number_period',
                     'mapping_state_idx', 'periods_emax', 'num_periods',
                     'states_all', 'num_draws_emax', 'edu_start', 'edu_max',
                     'delta', 'measure', 'model_paras', 'derivatives',
-                    'optimizer_options')
+                    'optimizer_options', 'file_sim')
 
         level = model_paras['level']
         shocks_cholesky = model_paras['shocks_cholesky']
@@ -123,9 +123,11 @@ class TestClass(object):
             rewards_systematic, edu_max, edu_start, periods_emax, states_all,
             mapping_state_idx, delta, shocks_cov, measure, level)
 
-        py = construct_emax_ambiguity(*args + (optimizer_options, False))
+        py = construct_emax_ambiguity(*args + (optimizer_options,
+                                               file_sim, False))
         f90 = fort_debug.wrapper_construct_emax_ambiguity(*args +
-                (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, False))
+                (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps,
+                 file_sim, False))
         np.testing.assert_allclose(py, f90)
 
         x = np.random.uniform(-1, 1, size=2)

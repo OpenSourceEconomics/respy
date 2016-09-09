@@ -268,6 +268,7 @@ class TestClass(object):
         # Perform toolbox actions
         respy_obj = RespyCls('test.respy.ini')
         level = respy_obj.get_attr('model_paras')['level']
+        file_sim = respy_obj.get_attr('file_sim')
         is_ambiguity = (level > MIN_AMBIGUITY)
 
         # Iterate over alternative implementations
@@ -288,20 +289,23 @@ class TestClass(object):
             simulate(respy_obj)
 
             # Check for identical logging
+            fname = file_sim + '.respy.sol'
             if base_sol_log is None:
-                base_sol_log = open('sol.respy.log', 'r').read()
-            assert open('sol.respy.log', 'r').read() == base_sol_log
+                base_sol_log = open(fname, 'r').read()
+            assert open(fname, 'r').read() == base_sol_log
 
             # Check for identical logging
+            fname = file_sim + '.respy.sim'
             if base_sim_log is None:
-                base_sim_log = open('sim.respy.log', 'r').read()
-            assert open('sim.respy.log', 'r').read() == base_sim_log
+                base_sim_log = open(fname, 'r').read()
+            assert open(fname, 'r').read() == base_sim_log
 
             # Check for identical logging
+            fname = file_sim + '.respy.amb'
             if is_ambiguity:
                 if base_amb_log is None:
-                    base_amb_log = open('amb.respy.log', 'r').read()
-                assert open('amb.respy.log', 'r').read() == base_amb_log
+                    base_amb_log = open(fname, 'r').read()
+                assert open(fname, 'r').read() == base_amb_log
 
             estimate(respy_obj)
 

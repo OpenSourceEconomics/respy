@@ -9,8 +9,7 @@ def pyth_criterion(x, is_interpolated, num_draws_emax, num_periods,
         num_points_interp, is_myopic, edu_start, is_debug, edu_max,
         delta, data_array, num_draws_prob, tau, periods_draws_emax,
         periods_draws_prob, states_all, states_number_period,
-        mapping_state_idx, max_states_period, measure, file_sim,
-        optimizer_options):
+        mapping_state_idx, max_states_period, measure, optimizer_options):
     """ This function provides the wrapper for optimization routines.
     """
 
@@ -27,7 +26,7 @@ def pyth_criterion(x, is_interpolated, num_draws_emax, num_periods,
         states_number_period, periods_rewards_systematic, edu_max, edu_start,
         mapping_state_idx, states_all, delta, is_debug, is_interpolated,
         num_points_interp, shocks_cholesky, measure, level,
-        optimizer_options, file_sim, False)
+        optimizer_options, '', False)
 
     contribs = pyth_contributions(periods_rewards_systematic, mapping_state_idx,
         periods_emax, states_all, shocks_cholesky, data_array,

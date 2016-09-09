@@ -71,8 +71,7 @@ def respy_interface(respy_obj, request, data_array=None):
             num_points_interp, is_myopic, edu_start, is_debug, edu_max, delta,
             data_array, num_draws_prob, tau, periods_draws_emax,
             periods_draws_prob, states_all, states_number_period,
-            mapping_state_idx, max_states_period, measure, file_sim,
-            optimizer_options)
+            mapping_state_idx, max_states_period, measure, optimizer_options)
 
         # Special case where just an evaluation at the starting values is
         # requested is accounted for. Note, that the relevant value of the

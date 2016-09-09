@@ -75,9 +75,12 @@ def run(args):
             print('\n Modfiying Test ', idx)
 
             init_dict, crit_val = tests_old[idx]
-            init_dict['AMBIGUITY']['coeffs'] = [init_dict['AMBIGUITY']['level']]
-            del init_dict['AMBIGUITY']['level']
-            init_dict['AMBIGUITY']['fixed'] = [True]
+
+            init_dict['SIMULATION']['file'] = 'data'
+            #init_dict['AMBIGUITY']['coeffs'] = [init_dict['AMBIGUITY'][
+            # 'level']]
+            #del init_dict['AMBIGUITY']['level']
+            #init_dict['AMBIGUITY']['fixed'] = [True]
 
             tests_new += [(init_dict, crit_val)]
 
