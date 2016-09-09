@@ -226,6 +226,9 @@ def generate_random_dict(constraints=None):
         assert 'maxfun' not in keys
         assert 'flag_scaling' not in keys
 
+    if 'flag_ambiguity' in keys:
+        assert 'level' not in keys
+
     if 'agents' in keys:
         assert 'max_draws' not in keys
 

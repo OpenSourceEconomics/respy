@@ -15,7 +15,6 @@ from respy.python.solve.solve_risk import construct_emax_risk
 from respy.python.shared.shared_constants import MISSING_INT
 from respy.python.shared.shared_constants import HUGE_FLOAT
 
-import respy.python.shared.shared_constants as shared_constants
 
 def pyth_create_state_space(num_periods, edu_start, edu_max, min_idx):
     """ Create grid for state space.

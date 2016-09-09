@@ -223,7 +223,7 @@ class TestClass(object):
 
             np.testing.assert_almost_equal(py, f90)
 
-    def test_4(sel, flag_ambiguity=False):
+    def test_4(self, flag_ambiguity=False):
         """ Testing the core functions of the solution step for the equality
         of results between the PYTHON and FORTRAN implementations.
         """
