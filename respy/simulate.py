@@ -15,15 +15,17 @@ def simulate(respy_obj):
     """ Simulate dataset of synthetic agent following the model specified in
     the initialization file.
     """
-    # Cleanup
-    for fname in ['sim.respy.log', 'sol.respy.log', 'amb.respy.log']:
-        if os.path.exists(fname):
-            os.unlink(fname)
 
     # Distribute class attributes
-    is_debug, version, num_agents_sim, is_store = \
+    is_debug, version, num_agents_sim, is_store, file_sim = \
         dist_class_attributes(respy_obj, 'is_debug', 'version',
-                'num_agents_sim', 'is_store')
+                'num_agents_sim', 'is_store', 'file_sim')
+
+    # Cleanup
+    for ext in ['sim', 'sol', 'amb', 'dat', 'info']:
+        fname = file_sim + '.respy.' + ext
+        if os.path.exists(fname):
+            os.unlink(fname)
 
     # Select appropriate interface
     if version in ['PYTHON']:

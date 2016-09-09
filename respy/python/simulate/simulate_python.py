@@ -10,11 +10,11 @@ from respy.python.shared.shared_auxiliary import get_total_values
 
 def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax,
         states_all, shocks_cholesky, num_periods, edu_start, edu_max, delta,
-        num_agents_sim, periods_draws_sims, seed_sim):
+        num_agents_sim, periods_draws_sims, seed_sim, file_sim):
     """ Wrapper for PYTHON and F2PY implementation of sample simulation.
     """
 
-    record_simulation_start(num_agents_sim, seed_sim)
+    record_simulation_start(num_agents_sim, seed_sim, file_sim)
 
     # Standard deviates transformed to the distributions relevant for
     # the agents actual decision making as traversing the tree.
@@ -37,7 +37,7 @@ def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax,
 
         dataset[count, 0] = i
 
-        record_simulation_progress(i)
+        record_simulation_progress(i, file_sim)
 
         # Iterate over each period for the agent
         for period in range(num_periods):
@@ -93,7 +93,7 @@ def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax,
             # Update row indicator
             count += 1
 
-    record_simulation_stop()
+    record_simulation_stop(file_sim)
 
     # Finishing
     return dataset

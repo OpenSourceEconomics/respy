@@ -45,7 +45,7 @@ SUBROUTINE record_ambiguity(period, k, x_shift, div, is_success, message)
     130 FORMAT(3x,A7,8x,A5,20x)
     140 FORMAT(3x,A7,8x,A100)
 
-    OPEN(UNIT=99, FILE='amb.respy.log', ACCESS='APPEND', ACTION='WRITE')
+    OPEN(UNIT=99, FILE=TRIM(file_sim)//'.respy.amb', ACCESS='APPEND', ACTION='WRITE')
 
         WRITE(99, 100) 'PERIOD', period, 'STATE', k
 
@@ -97,7 +97,7 @@ SUBROUTINE record_ambiguity_summary()
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    OPEN(UNIT=99, FILE='amb.respy.log', ACTION='READ', STATUS='OLD', ACCESS='sequential')
+    OPEN(UNIT=99, FILE=TRIM(file_sim)//'.respy.amb', ACTION='READ', STATUS='OLD', ACCESS='sequential')
 
         DO
 
@@ -125,7 +125,7 @@ SUBROUTINE record_ambiguity_summary()
 
     100 FORMAT(i10,1x,i10,1x,f10.2,1x,f10.2)
 
-    OPEN(UNIT=99, FILE='amb.respy.log', ACTION='WRITE', STATUS='OLD', ACCESS='APPEND')
+    OPEN(UNIT=99, FILE=TRIM(file_sim)//'.respy.amb', ACTION='WRITE', STATUS='OLD', ACCESS='APPEND')
 
         WRITE(99, *) 'SUMMARY'
         WRITE(99, *)

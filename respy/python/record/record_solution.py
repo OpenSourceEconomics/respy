@@ -1,10 +1,10 @@
 import os
 
 
-def record_solution_progress(indicator, period=None, num_states=None):
+def record_solution_progress(indicator, file_sim, period=None, num_states=None):
 
     if indicator == 1:
-        if os.path.exists('sol.respy.log'):
+        if os.path.exists(file_sim + '.respy.sol'):
             os.unlink('sol.respy.log')
 
         line = 'Starting state space creation'
@@ -22,15 +22,15 @@ def record_solution_progress(indicator, period=None, num_states=None):
     else:
         raise AssertionError
 
-    with open('sol.respy.log', 'a') as outfile:
+    with open(file_sim + '.respy.sol', 'a') as outfile:
         outfile.write('  ' + line + '\n\n')
 
 
-def record_solution_prediction(results):
+def record_solution_prediction(results, file_sim):
     """ Write out some basic information to the solutions log file.
     """
 
-    with open('sol.respy.log', 'a') as outfile:
+    with open(file_sim + '.respy.sol', 'a') as outfile:
         outfile.write('    Information about Prediction Model')
 
         string = '      {:<19}' + '{:15.4f}' * 9

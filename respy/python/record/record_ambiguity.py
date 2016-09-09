@@ -1,11 +1,11 @@
 import shlex
 
 
-def record_ambiguity(period, k, x_shift, div, success, message):
+def record_ambiguity(period, k, x_shift, div, success, message, file_sim):
     """ Write result of optimization problem to log file.
     """
 
-    with open('amb.respy.log', 'a') as file_:
+    with open(file_sim + '.respy.amb', 'a') as file_:
 
         string = ' PERIOD{0[0]:>7}  STATE{0[1]:>7}\n\n'
         file_.write(string.format([period, k]))
@@ -29,10 +29,10 @@ def record_ambiguity(period, k, x_shift, div, success, message):
 
     # Summarize the overall performance.
     if period == 0:
-        record_ambiguity_summary()
+        record_ambiguity_summary(file_sim)
 
 
-def record_ambiguity_summary():
+def record_ambiguity_summary(file_sim):
     """ Summarize optimizations in case of ambiguity.
     """
 
@@ -60,7 +60,7 @@ def record_ambiguity_summary():
     # Distribute class attributes
     dict_ = dict()
 
-    for line in open('amb.respy.log').readlines():
+    for line in open(file_sim + '.respy.amb').readlines():
 
         # Split line
         list_ = shlex.split(line)
@@ -95,7 +95,7 @@ def record_ambiguity_summary():
             else:
                 dict_[period]['failure'] += 1
 
-    with open('amb.respy.log', 'a') as file_:
+    with open(file_sim + '.respy.amb', 'a') as file_:
 
         file_.write(' SUMMARY\n\n')
 

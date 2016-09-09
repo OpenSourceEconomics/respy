@@ -773,6 +773,7 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
         ! SIMULATION
         READ(99, 1505) num_agents_sim
         READ(99, 1505) seed_sim
+        READ(99, *) file_sim
 
         ! AUXILIARY
         READ(99, 1505) min_idx

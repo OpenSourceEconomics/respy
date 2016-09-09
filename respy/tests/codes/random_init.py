@@ -155,7 +155,7 @@ def generate_random_dict(constraints=None):
     dict_['SIMULATION'] = dict()
     dict_['SIMULATION']['seed'] = np.random.randint(1, 10000)
     dict_['SIMULATION']['agents'] = num_agents_sim
-    dict_['SIMULATION']['file'] = 'data.respy.dat'
+    dict_['SIMULATION']['file'] = 'data'
 
     # SHOCKS
     dict_['SHOCKS'] = dict()

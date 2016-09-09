@@ -23,14 +23,14 @@ def respy_interface(respy_obj, request, data_array=None):
         delta, num_draws_prob, seed_prob, num_draws_emax, seed_emax, \
         min_idx, is_myopic, is_interpolated, num_points_interp, maxfun, \
         optimizer_used, tau, paras_fixed, optimizer_options, seed_sim, \
-        num_agents_sim, derivatives, measure = \
+        num_agents_sim, derivatives, measure, file_sim = \
             dist_class_attributes(respy_obj, 'model_paras', 'num_periods',
                 'num_agents_est', 'edu_start', 'is_debug', 'edu_max',
                 'delta', 'num_draws_prob', 'seed_prob', 'num_draws_emax',
                 'seed_emax', 'min_idx', 'is_myopic', 'is_interpolated',
                 'num_points_interp', 'maxfun', 'optimizer_used', 'tau',
                 'paras_fixed', 'optimizer_options', 'seed_sim',
-                'num_agents_sim', 'derivatives', 'measure')
+                'num_agents_sim', 'derivatives', 'measure', 'file_sim')
 
     # Auxiliary objects
     dfunc_eps = derivatives[1]
@@ -71,7 +71,7 @@ def respy_interface(respy_obj, request, data_array=None):
             num_points_interp, is_myopic, edu_start, is_debug, edu_max, delta,
             data_array, num_draws_prob, tau, periods_draws_emax,
             periods_draws_prob, states_all, states_number_period,
-            mapping_state_idx, max_states_period, measure,
+            mapping_state_idx, max_states_period, measure, file_sim,
             optimizer_options)
 
         # Special case where just an evaluation at the starting values is
@@ -152,7 +152,7 @@ def respy_interface(respy_obj, request, data_array=None):
             coeffs_edu, coeffs_home, shocks_cholesky, is_interpolated,
             num_points_interp, num_draws_emax, num_periods, is_myopic,
             edu_start, is_debug, edu_max, min_idx, delta, periods_draws_emax,
-            measure, level, optimizer_options)
+            measure, level, file_sim, optimizer_options)
 
         solution = (periods_rewards_systematic, states_number_period,
             mapping_state_idx, periods_emax, states_all)
@@ -160,7 +160,7 @@ def respy_interface(respy_obj, request, data_array=None):
         data_array = pyth_simulate(periods_rewards_systematic,
             mapping_state_idx, periods_emax, states_all, shocks_cholesky,
             num_periods, edu_start, edu_max, delta, num_agents_sim,
-            periods_draws_sims, seed_sim)
+            periods_draws_sims, seed_sim, file_sim)
 
         args = (solution, data_array)
     else:

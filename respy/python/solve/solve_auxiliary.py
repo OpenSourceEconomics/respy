@@ -161,7 +161,7 @@ def pyth_backward_induction(num_periods, is_myopic, max_states_period,
         periods_draws_emax, num_draws_emax, states_number_period,
         periods_rewards_systematic, edu_max, edu_start, mapping_state_idx,
         states_all, delta, is_debug, is_interpolated, num_points_interp,
-        shocks_cholesky, measure, level, optimizer_options,
+        shocks_cholesky, measure, level, optimizer_options, file_sim,
         is_write):
     """ Backward induction procedure. There are two main threads to this
     function depending on whether interpolation is requested or not.
@@ -172,7 +172,7 @@ def pyth_backward_induction(num_periods, is_myopic, max_states_period,
     periods_emax = np.tile(MISSING_FLOAT, (i, j))
 
     if is_myopic:
-        record_solution_progress(-2)
+        record_solution_progress(-2, file_sim)
 
         # All other objects remain set to MISSING_FLOAT. This align the
         # treatment for the two special cases: (1) is_myopic and (2)
@@ -204,7 +204,7 @@ def pyth_backward_induction(num_periods, is_myopic, max_states_period,
                                     shocks_cholesky)
 
         if is_write:
-            record_solution_progress(4, period, num_states)
+            record_solution_progress(4, file_sim, period, num_states)
 
         # The number of interpolation points is the same for all periods.
         # Thus, for some periods the number of interpolation points is
@@ -233,7 +233,7 @@ def pyth_backward_induction(num_periods, is_myopic, max_states_period,
                 num_states, delta, periods_rewards_systematic, edu_max,
                 edu_start, mapping_state_idx, periods_emax, states_all,
                 is_simulated, num_draws_emax, maxe, draws_emax_transformed,
-                shocks_cov, measure, level, optimizer_options,
+                shocks_cov, measure, level, optimizer_options, file_sim,
                 is_write)
 
             # Create prediction model based on the random subset of points where
@@ -241,7 +241,7 @@ def pyth_backward_induction(num_periods, is_myopic, max_states_period,
             # independent variables are available. For the interpolation
             # points, the actual values are used.
             predictions = get_predictions(endogenous, exogenous, maxe,
-                is_simulated, is_write)
+                is_simulated, file_sim, is_write)
 
             # Store results
             periods_emax[period, :num_states] = predictions
@@ -260,7 +260,7 @@ def pyth_backward_induction(num_periods, is_myopic, max_states_period,
                         period, k, draws_emax_transformed, rewards_systematic,
                         edu_max, edu_start, periods_emax, states_all,
                         mapping_state_idx, delta, shocks_cov, measure, level,
-                        optimizer_options, is_write)
+                        optimizer_options, file_sim, is_write)
                 else:
                     emax = construct_emax_risk(num_periods, num_draws_emax,
                         period, k, draws_emax_transformed, rewards_systematic,
@@ -342,7 +342,7 @@ def get_endogenous_variable(period, num_periods, num_states, delta,
         periods_rewards_systematic, edu_max, edu_start, mapping_state_idx,
         periods_emax, states_all, is_simulated, num_draws_emax, maxe,
         draws_emax_transformed, shocks_cov, measure, level,
-        optimizer_options, is_write):
+        optimizer_options, file_sim, is_write):
     """ Construct endogenous variable for the subset of interpolation points.
     """
     # Construct auxiliary objects
@@ -363,7 +363,7 @@ def get_endogenous_variable(period, num_periods, num_states, delta,
                 period, k, draws_emax_transformed, rewards_systematic,
                 edu_max, edu_start, periods_emax, states_all,
                 mapping_state_idx, delta, shocks_cov, measure, level,
-                optimizer_options, is_write)
+                optimizer_options, file_sim, is_write)
         else:
             emax = construct_emax_risk(num_periods, num_draws_emax,
                 period, k, draws_emax_transformed, rewards_systematic,
@@ -377,7 +377,8 @@ def get_endogenous_variable(period, num_periods, num_states, delta,
     return endogenous_variable
 
 
-def get_predictions(endogenous, exogenous, maxe, is_simulated, is_write):
+def get_predictions(endogenous, exogenous, maxe, is_simulated, file_sim,
+        is_write):
     """ Fit an OLS regression of the exogenous variables on the endogenous
     variables and use the results to predict the endogenous variables for all
     points in the state space.
@@ -401,7 +402,7 @@ def get_predictions(endogenous, exogenous, maxe, is_simulated, is_write):
 
     # Write out some basic information to spot problems easily.
     if is_write:
-        record_solution_prediction(results)
+        record_solution_prediction(results, file_sim)
 
     # Finishing
     return predictions

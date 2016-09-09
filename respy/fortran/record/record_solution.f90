@@ -44,12 +44,12 @@ SUBROUTINE record_solution_progress(indicator, period, num_states)
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    OPEN(UNIT=99, FILE='sol.respy.log', ACCESS='APPEND', ACTION='WRITE')
+    OPEN(UNIT=99, FILE=TRIM(file_sim)//'.respy.sol', ACCESS='APPEND', ACTION='WRITE')
 
     IF (indicator == 1) THEN
 
         CLOSE(99, STATUS ='DELETE')
-        OPEN(UNIT=99, FILE='sol.respy.log', ACTION='WRITE')
+        OPEN(UNIT=99, FILE=TRIM(file_sim)//'.respy.sol', ACTION='WRITE')
 
         WRITE(99, *) ' Starting state space creation'
         WRITE(99, *)
@@ -106,7 +106,7 @@ SUBROUTINE record_solution_prediction(coeffs, r_squared, bse)
     110 FORMAT(8x,A15,4x,9(f15.4))
     120 FORMAT(8x,A9,10x,f15.4)
 
-    OPEN(UNIT=99, FILE='sol.respy.log', ACCESS='APPEND', ACTION='WRITE')
+    OPEN(UNIT=99, FILE=TRIM(file_sim)//'.respy.sol', ACCESS='APPEND', ACTION='WRITE')
 
         WRITE(99, *) '     Information about Prediction Model '
         WRITE(99, *)

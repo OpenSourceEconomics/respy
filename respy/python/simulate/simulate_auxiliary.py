@@ -17,15 +17,8 @@ def write_info(respy_obj, data_frame):
 
     num_periods = data_frame[0].value_counts().iloc[0]
 
-    # Determine name of output file
-    fname_split = file_sim.split('.')
-    if len(fname_split) > 1:
-        fname = '.'.join(fname_split[:-1]) + '.info'
-    else:
-        fname = '{}.info'.format(file_sim)
-
     # Write information to file
-    with open(fname, 'w') as file_:
+    with open(file_sim + '.respy.info', 'w') as file_:
 
         file_.write('\n Simulated Economy\n\n')
 
@@ -136,7 +129,7 @@ def write_out(respy_obj, data_frame):
 
     formats += [_format_integer, _format_integer]
 
-    with open(file_sim, 'w') as file_:
+    with open(file_sim + '.respy.dat', 'w') as file_:
 
         data_frame.to_string(file_, index=False, header=None, na_rep='.',
                             formatters=formats)

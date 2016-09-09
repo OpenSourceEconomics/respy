@@ -10,7 +10,7 @@ import respy.python.shared.shared_constants as shared_constants
 def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
         draws_emax_transformed, rewards_systematic, edu_max, edu_start,
         periods_emax, states_all, mapping_state_idx, delta, shocks_cov,
-        measure, level, optimizer_options, is_write):
+        measure, level, optimizer_options, file_sim, is_write):
     """ Construct EMAX accounting for a worst case evaluation.
     """
 
@@ -41,7 +41,7 @@ def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
         raise NotImplementedError
 
     if is_write:
-        record_ambiguity(period, k, x_shift, div, is_success, message)
+        record_ambiguity(period, k, x_shift, div, is_success, message, file_sim)
 
     emax = criterion_ambiguity(x_shift, *args)
 
