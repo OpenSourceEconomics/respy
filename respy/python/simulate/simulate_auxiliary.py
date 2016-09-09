@@ -111,7 +111,7 @@ def write_info(respy_obj, data_frame):
                 (num_periods - 1)].ix[:, 5].mean()
         file_.write(string.format(['Average Experience B', stat]))
 
-        file_.write('\n\n   Parameterization\n\n')
+        file_.write('\n\n   Economic Parameters\n\n')
         fmt_ = '\n   {0:>10}' + '    {1:>25}\n\n'
         file_.write(fmt_.format(*['Identifier', 'Value']))
         # Write out the parametrization of the simulated economy.
