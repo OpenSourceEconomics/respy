@@ -129,7 +129,6 @@ class TestClass(object):
         constr['flag_parallelism'] = False
         constr['max_draws'] = max_draws
         constr['flag_interpolation'] = False
-        constr['level'] = 0.00
         constr['maxfun'] = 0
 
         # Generate random initialization file
