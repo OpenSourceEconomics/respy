@@ -359,7 +359,7 @@ def generate_random_dict(constraints=None):
         # Replace in initialization file
         dict_['PARALLELISM']['flag'] = str(flag_parallelism)
         # Ensure that the constraints are met
-        if dict_['PARALLELISM']['flag']:
+        if dict_['PARALLELISM']['flag'] == 'True':
             dict_['PROGRAM']['version'] = 'FORTRAN'
 
     # Replace parallelism ...
