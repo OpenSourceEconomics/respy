@@ -4,8 +4,6 @@ import numpy as np
 from respy.python.record.record_ambiguity import record_ambiguity
 from respy.python.solve.solve_risk import construct_emax_risk
 
-import respy.python.shared.shared_constants as shared_constants
-
 
 def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
         draws_emax_transformed, rewards_systematic, edu_max, edu_start,

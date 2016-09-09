@@ -25,12 +25,14 @@ MODULE recording_simulation
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE record_simulation_start(num_agents_sim, seed_sim)
+SUBROUTINE record_simulation_start(num_agents_sim, seed_sim, file_sim)
 
     !/* external objects        */
 
     INTEGER(our_int), INTENT(IN)    :: num_agents_sim
     INTEGER(our_int), INTENT(IN)    :: seed_sim
+
+    CHARACTER(225), INTENT(IN)      :: file_sim
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -48,7 +50,11 @@ SUBROUTINE record_simulation_start(num_agents_sim, seed_sim)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE record_simulation_stop()
+SUBROUTINE record_simulation_stop(file_sim)
+
+    !/* external objects        */
+
+    CHARACTER(225), INTENT(IN)      :: file_sim
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -64,11 +70,13 @@ SUBROUTINE record_simulation_stop()
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE record_simulation_progress(i)
+SUBROUTINE record_simulation_progress(i, file_sim)
 
     !/* external objects        */
 
     INTEGER(our_int), INTENT(IN)    :: i
+
+    CHARACTER(225), INTENT(IN)      :: file_sim
 
 !------------------------------------------------------------------------------
 ! Algorithm

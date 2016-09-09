@@ -152,7 +152,7 @@ SUBROUTINE get_worst_case(x_shift, is_success, message, num_periods, num_draws_e
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE construct_emax_ambiguity(emax, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, measure, level, optimizer_options, is_write)
+SUBROUTINE construct_emax_ambiguity(emax, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, measure, level, optimizer_options, file_sim, is_write)
 
     !/* external objects    */
 
@@ -174,6 +174,7 @@ SUBROUTINE construct_emax_ambiguity(emax, num_periods, num_draws_emax, period, k
     REAL(our_dble), INTENT(IN)      :: level(1)
     REAL(our_dble), INTENT(IN)      :: delta
 
+    CHARACTER(225), INTENT(IN)      :: file_sim
     CHARACTER(10), INTENT(IN)       :: measure
 
     LOGICAL, INTENT(IN)             :: is_write
@@ -215,7 +216,7 @@ SUBROUTINE construct_emax_ambiguity(emax, num_periods, num_draws_emax, period, k
 
     END IF
 
-    IF(is_write) CALL record_ambiguity(period, k, x_shift, div, is_success, message)
+    IF(is_write) CALL record_ambiguity(period, k, x_shift, div, is_success, message, file_sim)
 
     emax = criterion_ambiguity(x_shift, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
 

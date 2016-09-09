@@ -49,6 +49,7 @@ PROGRAM resfort_parallel_slave
     INTEGER(our_int)                :: i
 
     CHARACTER(225)                  :: optimizer_used
+    CHARACTER(225)                  :: file_sim
     CHARACTER(225)                  :: exec_dir
     CHARACTER(10)                   :: request
 
@@ -63,7 +64,7 @@ PROGRAM resfort_parallel_slave
     CALL MPI_COMM_GET_PARENT(PARENTCOMM, ierr)
 
 
-    CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, is_scaled, scaled_minimum, measure, level, optimizer_used, dfunc_eps, optimizer_options)
+    CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, is_scaled, scaled_minimum, measure, level, optimizer_used, dfunc_eps, optimizer_options, file_sim)
 
     CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, edu_start, edu_max, min_idx)
 
@@ -96,24 +97,24 @@ PROGRAM resfort_parallel_slave
 
             ! This is required to keep the logging aligned between the scalar and the parallel implementations. We cannot have the master write the log for the state space creation as this interferes with other write requests for the slaves leading to an unreadable file.
             IF (rank == zero_int) THEN
-                CALL record_solution(1)
-                CALL record_solution(-1)
+                CALL record_solution(1, file_sim)
+                CALL record_solution(-1, file_sim)
             END IF
 
-            IF (rank == zero_int) CALL record_solution(2)
+            IF (rank == zero_int) CALL record_solution(2, file_sim)
 
             CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, edu_start, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, max_states_period)
 
-            IF (rank == zero_int) CALL record_solution(-1)
+            IF (rank == zero_int) CALL record_solution(-1, file_sim)
 
-            IF (rank == zero_int) CALL record_solution(3)
+            IF (rank == zero_int) CALL record_solution(3, file_sim)
 
-            CALL fort_backward_induction_slave(periods_emax, num_periods, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, num_points_interp, is_myopic, edu_start, edu_max, measure, level, optimizer_options, num_states_slaves, .True.)
+            CALL fort_backward_induction_slave(periods_emax, num_periods, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, num_points_interp, is_myopic, edu_start, edu_max, measure, level, optimizer_options, file_sim, num_states_slaves, .True.)
 
             IF (rank == zero_int .AND. .NOT. is_myopic) THEN
-                CALL record_solution(-1)
+                CALL record_solution(-1, file_sim)
             ELSEIF (rank == zero_int) THEN
-                CALL record_solution(-2)
+                CALL record_solution(-2, file_sim)
             END IF
 
         ELSEIF (task == 3) THEN
@@ -143,7 +144,7 @@ PROGRAM resfort_parallel_slave
 
             CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, edu_start, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, max_states_period)
 
-            CALL fort_backward_induction_slave(periods_emax, num_periods, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, num_points_interp, is_myopic, edu_start, edu_max, measure, level, optimizer_options, num_states_slaves, .False.)
+            CALL fort_backward_induction_slave(periods_emax, num_periods, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, num_points_interp, is_myopic, edu_start, edu_max, measure, level, optimizer_options, file_sim, num_states_slaves, .False.)
 
             CALL fort_contributions(contribs(lower_bound:upper_bound), periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_slave, periods_draws_prob, delta, tau, edu_start, edu_max, num_periods, num_draws_prob)
 

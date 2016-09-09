@@ -39,6 +39,7 @@ PROGRAM resfort_parallel
     LOGICAL                         :: success
 
     CHARACTER(225)                  :: optimizer_used
+    CHARACTER(225)                  :: file_sim
     CHARACTER(225)                  :: exec_dir
     CHARACTER(150)                  :: message
     CHARACTER(10)                   :: request
@@ -47,7 +48,7 @@ PROGRAM resfort_parallel
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, is_scaled, scaled_minimum, measure, level, optimizer_used, dfunc_eps, optimizer_options)
+    CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, is_scaled, scaled_minimum, measure, level, optimizer_used, dfunc_eps, optimizer_options, file_sim)
 
     CALL MPI_INIT(ierr)
 
@@ -63,7 +64,7 @@ PROGRAM resfort_parallel
 
         CALL create_draws(periods_draws_sims, num_agents_sim, seed_sim, is_debug)
 
-        CALL fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, num_agents_sim, periods_draws_sims, shocks_cholesky, delta, edu_start, edu_max, seed_sim)
+        CALL fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, num_agents_sim, periods_draws_sims, shocks_cholesky, delta, edu_start, edu_max, seed_sim, file_sim)
 
     END IF
 

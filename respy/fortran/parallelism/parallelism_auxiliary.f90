@@ -455,7 +455,7 @@ SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period,
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_backward_induction_slave(periods_emax, num_periods, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, num_points_interp, is_myopic, edu_start, edu_max, measure, level, optimizer_options,  num_states_slaves, update_master)
+SUBROUTINE fort_backward_induction_slave(periods_emax, num_periods, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, num_points_interp, is_myopic, edu_start, edu_max, measure, level, optimizer_options, file_sim, num_states_slaves, update_master)
 
     !/* external objects        */
 
@@ -481,6 +481,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, num_periods, periods_draw
     LOGICAL, INTENT(IN)                 :: is_myopic
     LOGICAL, INTENT(IN)                 :: is_debug
 
+    CHARACTER(225), INTENT(IN)          :: file_sim
     CHARACTER(10), INTENT(IN)           :: measure
 
     TYPE(optimizer_collection), INTENT(IN)  :: optimizer_options
@@ -570,7 +571,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, num_periods, periods_draw
 
         ALLOCATE(periods_emax_slaves(num_states), endogenous_slaves(num_states))
 
-        IF(is_write) CALL record_solution(4, period, num_states)
+        IF(is_write) CALL record_solution(4, file_sim, period, num_states)
 
         ! Distinguish case with and without interpolation
         any_interpolated = (num_points_interp .LE. num_states) .AND. is_interpolated
@@ -608,7 +609,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, num_periods, periods_draw
                 rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
 
                 IF (level(1) .GT. MIN_AMBIGUITY) THEN
-                    CALL construct_emax_ambiguity(emax, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, measure, level, optimizer_options, is_write)
+                    CALL construct_emax_ambiguity(emax, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, measure, level, optimizer_options, file_sim, is_write)
                 ELSE
                     CALL construct_emax_risk(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
                 END IF
@@ -623,7 +624,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, num_periods, periods_draw
             CALL distribute_information_slaves(num_states_slaves, period, endogenous_slaves, endogenous)
 
             ! Create prediction model based on the random subset of points where the EMAX is actually simulated and thus endogenous and exogenous variables are available. For the interpolation  points, the actual values are used.
-            CALL get_predictions(predictions, endogenous, exogenous, maxe, is_simulated, num_states, is_write)
+            CALL get_predictions(predictions, endogenous, exogenous, maxe, is_simulated, num_states, file_sim, is_write)
 
             ! Store results
             periods_emax(period + 1, :num_states) = predictions
@@ -643,7 +644,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, num_periods, periods_draw
                 rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
 
                 IF (level(1) .GT. MIN_AMBIGUITY) THEN
-                    CALL construct_emax_ambiguity(emax, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, measure, level, optimizer_options, is_write)
+                    CALL construct_emax_ambiguity(emax, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, measure, level, optimizer_options, file_sim, is_write)
                 ELSE
                     CALL construct_emax_risk(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
                 END IF

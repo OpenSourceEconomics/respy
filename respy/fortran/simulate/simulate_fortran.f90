@@ -19,7 +19,7 @@ MODULE simulate_fortran
  CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, num_agents_sim, periods_draws_sims, shocks_cholesky, delta, edu_start, edu_max, seed_sim)
+SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, num_agents_sim, periods_draws_sims, shocks_cholesky, delta, edu_start, edu_max, seed_sim, file_sim)
 
     !/* external objects        */
 
@@ -37,6 +37,8 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
     INTEGER(our_int), INTENT(IN)    :: edu_start
     INTEGER(our_int), INTENT(IN)    :: seed_sim
     INTEGER(our_int), INTENT(IN)    :: edu_max
+
+    CHARACTER(225), INTENT(IN)      :: file_sim
 
     !/* internal objects        */
 
@@ -63,7 +65,7 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    CALL record_simulation(num_agents_sim, seed_sim)
+    CALL record_simulation(num_agents_sim, seed_sim, file_sim)
 
 
     ALLOCATE(data_sim(num_periods * num_agents_sim, 8))
@@ -86,7 +88,7 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
         ! Baseline state
         current_state = states_all(1, 1, :)
 
-        CALL record_simulation(i)
+        CALL record_simulation(i, file_sim)
 
         DO period = 0, (num_periods - 1)
 
@@ -156,7 +158,7 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
 
     END DO
 
-    CALL record_simulation()
+    CALL record_simulation(file_sim)
 
 END SUBROUTINE
 !*******************************************************************************

@@ -21,7 +21,7 @@ MODULE recording_ambiguity
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE record_ambiguity(period, k, x_shift, div, is_success, message)
+SUBROUTINE record_ambiguity(period, k, x_shift, div, is_success, message, file_sim)
 
     !/* external objects    */
 
@@ -31,6 +31,7 @@ SUBROUTINE record_ambiguity(period, k, x_shift, div, is_success, message)
     REAL(our_dble)                  :: x_shift(2)
     REAL(our_dble)                  :: div(1)
 
+    CHARACTER(225)                  :: file_sim
     CHARACTER(100)                  :: message
 
     LOGICAL                         :: is_success
@@ -70,12 +71,16 @@ SUBROUTINE record_ambiguity(period, k, x_shift, div, is_success, message)
 
     CLOSE(99)
 
-    IF(period == zero_int) CALL record_ambiguity_summary()
+    IF(period == zero_int) CALL record_ambiguity_summary(file_sim)
 
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE record_ambiguity_summary()
+SUBROUTINE record_ambiguity_summary(file_sim)
+
+    !/* external objects    */
+
+    CHARACTER(225)                  :: file_sim
 
     !/* internal objects    */
 

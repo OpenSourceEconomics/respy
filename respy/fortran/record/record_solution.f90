@@ -31,7 +31,7 @@ MODULE recording_solution
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE record_solution_progress(indicator, period, num_states)
+SUBROUTINE record_solution_progress(indicator, file_sim, period, num_states)
 
     !/* external objects        */
 
@@ -39,6 +39,8 @@ SUBROUTINE record_solution_progress(indicator, period, num_states)
 
     INTEGER(our_int), INTENT(IN), OPTIONAL  :: num_states
     INTEGER(our_int), INTENT(IN), OPTIONAL  :: period
+
+    CHARACTER(225), INTENT(IN)              :: file_sim
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -90,13 +92,15 @@ SUBROUTINE record_solution_progress(indicator, period, num_states)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE record_solution_prediction(coeffs, r_squared, bse)
+SUBROUTINE record_solution_prediction(coeffs, r_squared, bse, file_sim)
 
     !/* external objects        */
 
     REAL(our_dble), INTENT(IN)      :: coeffs(9)
     REAL(our_dble), INTENT(IN)      :: r_squared
     REAL(our_dble), INTENT(IN)      :: bse(9)
+
+    CHARACTER(225), INTENT(IN)      :: file_sim
 
 !------------------------------------------------------------------------------
 ! Algorithm
