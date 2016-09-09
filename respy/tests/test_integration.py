@@ -146,65 +146,65 @@ class TestClass(object):
         respy_obj = RespyCls('test.respy.ini')
         estimate(respy_obj)
 
-    @pytest.mark.skipif(True, reason='Scripts not maintained at the moment')
-    def test_5(self):
-        """ Test the scripts.
-        """
-        # Constraints that ensure that two alternative initialization files
-        # can be used for the same simulated data.
-        for _ in range(1):
-            constr = dict()
-            constr['periods'] = np.random.randint(1, 4)
-            constr['agents'] = np.random.randint(5, 100)
-            constr['is_estimation'] = True
-            constr['edu'] = (7, 15)
-
-            # Simulate a dataset
-            generate_init(constr)
-            respy_obj = RespyCls('test.respy.ini')
-            simulate(respy_obj)
-
-            # Create output to process a baseline.
-            respy_obj.unlock()
-            respy_obj.set_attr('maxfun', 0)
-            respy_obj.lock()
-
-            estimate(respy_obj)
-
-            # Potentially evaluate at different points.
-            generate_init(constr)
-
-            init_file = 'test.respy.ini'
-            file_sim = 'sim.respy.dat'
-
-            gradient = np.random.choice([True, False])
-            single = np.random.choice([True, False])
-            resume = np.random.choice([True, False])
-            update = np.random.choice([True, False])
-
-            action = np.random.choice(['fix', 'free', 'value'])
-            num_draws = np.random.randint(1, 20)
-
-            # The set of identifiers is a little complicated as we only allow
-            # sampling of the diagonal terms of the covariance matrix.
-            # Otherwise, we sometimes run into the problem of very ill
-            # conditioned matrices resulting in a failed Cholesky decomposition.
-            set_ = list(range(17)) + [17, 19, 22, 26]
-
-            identifiers = np.random.choice(set_, num_draws, replace=False)
-            values = np.random.uniform(size=num_draws)
-
-            scripts_estimate(resume, single, init_file, gradient)
-            #scripts_update(init_file)
-
-            # The error can occur as the RESPY package is actually running an
-            # estimation step that can result in very ill-conditioned covariance
-            # matrices.
-            try:
-                scripts_simulate(update, init_file, file_sim, None)
-                scripts_modify(identifiers, values, action, init_file)
-            except np.linalg.linalg.LinAlgError:
-                pass
+    # @pytest.mark.skipif(True, reason='Scripts not maintained at the moment')
+    # def test_5(self):
+    #     """ Test the scripts.
+    #     """
+    #     # Constraints that ensure that two alternative initialization files
+    #     # can be used for the same simulated data.
+    #     for _ in range(1):
+    #         constr = dict()
+    #         constr['periods'] = np.random.randint(1, 4)
+    #         constr['agents'] = np.random.randint(5, 100)
+    #         constr['is_estimation'] = True
+    #         constr['edu'] = (7, 15)
+    #
+    #         # Simulate a dataset
+    #         generate_init(constr)
+    #         respy_obj = RespyCls('test.respy.ini')
+    #         simulate(respy_obj)
+    #
+    #         # Create output to process a baseline.
+    #         respy_obj.unlock()
+    #         respy_obj.set_attr('maxfun', 0)
+    #         respy_obj.lock()
+    #
+    #         estimate(respy_obj)
+    #
+    #         # Potentially evaluate at different points.
+    #         generate_init(constr)
+    #
+    #         init_file = 'test.respy.ini'
+    #         file_sim = 'sim.respy.dat'
+    #
+    #         gradient = np.random.choice([True, False])
+    #         single = np.random.choice([True, False])
+    #         resume = np.random.choice([True, False])
+    #         update = np.random.choice([True, False])
+    #
+    #         action = np.random.choice(['fix', 'free', 'value'])
+    #         num_draws = np.random.randint(1, 20)
+    #
+    #         # The set of identifiers is a little complicated as we only allow
+    #         # sampling of the diagonal terms of the covariance matrix.
+    #         # Otherwise, we sometimes run into the problem of very ill
+    #         # conditioned matrices resulting in a failed Cholesky decomposition.
+    #         set_ = list(range(17)) + [17, 19, 22, 26]
+    #
+    #         identifiers = np.random.choice(set_, num_draws, replace=False)
+    #         values = np.random.uniform(size=num_draws)
+    #
+    #         scripts_estimate(resume, single, init_file, gradient)
+    #         #scripts_update(init_file)
+    #
+    #         # The error can occur as the RESPY package is actually running an
+    #         # estimation step that can result in very ill-conditioned covariance
+    #         # matrices.
+    #         try:
+    #             scripts_simulate(update, init_file, file_sim, None)
+    #             scripts_modify(identifiers, values, action, init_file)
+    #         except np.linalg.linalg.LinAlgError:
+    #             pass
 
     @pytest.mark.slow
     def test_6(self, flag_ambiguity=False):
