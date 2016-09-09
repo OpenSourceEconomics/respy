@@ -112,7 +112,7 @@ def write_info(respy_obj, data_frame):
         file_.write(string.format(['Average Experience B', stat]))
 
         file_.write('\n\n   Parameterization\n\n')
-        fmt_ = '\n\n   {0:>10}' + '    {1:>25}\n\n'
+        fmt_ = '\n   {0:>10}' + '    {1:>25}\n\n'
         file_.write(fmt_.format(*['Identifier', 'Value']))
         # Write out the parametrization of the simulated economy.
         model_paras = respy_obj.get_attr('model_paras')
@@ -169,6 +169,8 @@ def get_estimation_vector(model_paras, is_debug):
 
     # Collect parameters
     vector = list()
+
+    vector += model_paras['level'].tolist()
 
     vector += model_paras['coeffs_a'].tolist()
 

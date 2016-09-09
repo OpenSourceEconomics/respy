@@ -19,7 +19,6 @@ def dist_input_arguments(parser):
     init_file = args.init_file
     file_sim = args.file_sim
     update = args.update
-    solved = args.solved
 
     # Check attributes
     assert (update in [False, True])
@@ -28,22 +27,14 @@ def dist_input_arguments(parser):
     if update:
         assert (os.path.exists('est.respy.info'))
 
-    if solved is not None:
-        assert (os.path.exists(solved))
-        assert (update is False)
-
     # Finishing
-    return update, init_file, file_sim, solved
+    return update, init_file, file_sim
 
 
-def scripts_simulate(update, init_file, file_sim, solved):
+def scripts_simulate(update, init_file, file_sim):
     """ Wrapper for the estimation.
     """
-    # Read in baseline model specification.
-    if solved is not None:
-        respy_obj = pkl.load(open(solved, 'rb'))
-    else:
-        respy_obj = RespyCls(init_file)
+    respy_obj = RespyCls(init_file)
 
     # Update parametrization of the model if resuming from a previous
     # estimation run.
@@ -74,9 +65,6 @@ if __name__ == '__main__':
 
     parser.add_argument('--file_sim', action='store', dest='file_sim',
         default=None, help='output file')
-
-    parser.add_argument('--solved', action='store', dest='solved',
-        default=None, help='use solved class instance')
 
     # Process command line arguments
     args = dist_input_arguments(parser)
