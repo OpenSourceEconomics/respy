@@ -41,7 +41,7 @@ SUBROUTINE dist_optim_paras(level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, 
 !------------------------------------------------------------------------------
 
     ! Extract model ingredients
-    level = EXP(x(1:1))
+    level = x(1:1) ** 2
 
     coeffs_a = x(2:7)
 
@@ -79,9 +79,6 @@ SUBROUTINE get_free_optim_paras(x, level, coeffs_a, coeffs_b, coeffs_edu, coeffs
     !/* internal objects        */
 
     REAL(our_dble)                  :: x_internal(27)
-    REAL(our_dble)                  :: level_clipped(1)
-
-    INTEGER(our_int), ALLOCATABLE   :: infos(:)
 
     INTEGER(our_int)                :: i
     INTEGER(our_int)                :: j
@@ -90,9 +87,7 @@ SUBROUTINE get_free_optim_paras(x, level, coeffs_a, coeffs_b, coeffs_edu, coeffs
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    CALL clip_value(level_clipped, level, MINISCULE_FLOAT, HUGE_FLOAT, infos)
-
-    x_internal(1:1) = LOG(level_clipped)
+    x_internal(1:1) = SQRT(level)
 
     x_internal(2:7) = coeffs_a(:)
 

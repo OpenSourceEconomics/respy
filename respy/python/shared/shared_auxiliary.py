@@ -42,7 +42,7 @@ def dist_optim_paras(x_all_curre, is_debug, info=None):
         check_optimization_parameters(x_all_curre)
 
     # Level of Ambiguity
-    level = np.exp(x_all_curre[0:1])
+    level = x_all_curre[0:1] ** 2
 
     # Occupation A
     coeffs_a = x_all_curre[1:7]

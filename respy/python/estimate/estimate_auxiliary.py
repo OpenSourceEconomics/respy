@@ -19,7 +19,7 @@ def get_optim_paras(level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
     x = np.tile(np.nan, 27)
 
     # Level of Ambiguity
-    x[0:1] = np.log(np.clip(level, MINISCULE_FLOAT, None))
+    x[0:1] = np.sqrt(level)
 
     # Occupation A
     x[1:7] = coeffs_a
