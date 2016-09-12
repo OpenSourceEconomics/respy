@@ -42,5 +42,5 @@ from respy import estimate
 
 #sys.path.insert(0, '/home/peisenha/restudToolbox/package/respy/tests/resources')
 respy_obj = RespyCls('model.respy.ini')
-respy_obj = simulate(respy_obj)
-#x, crit_val = estimate(respy_obj)
+#respy_obj = simulate(respy_obj)
+x, crit_val = estimate(respy_obj)

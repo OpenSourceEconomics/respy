@@ -12,7 +12,6 @@ from respy import estimate
 from respy import RespyCls
 
 
-
 def dist_input_arguments(parser):
     """ Check input for estimation script.
     """
@@ -21,31 +20,21 @@ def dist_input_arguments(parser):
 
     # Distribute arguments
     init_file = args.init_file
-    resume = args.resume
     single = args.single
 
     # Check attributes
     assert (single in [True, False])
-    assert (resume in [False, True])
     assert (os.path.exists(init_file))
 
-    if resume:
-        assert (os.path.exists('est.respy.info'))
-
     # Finishing
-    return resume, single, init_file
+    return single, init_file
 
 
-def scripts_estimate(resume, single, init_file):
+def scripts_estimate(single, init_file):
     """ Wrapper for the estimation.
     """
     # Read in baseline model specification.
     respy_obj = RespyCls(init_file)
-
-    # Update parametrization of the model if resuming from a previous
-    # estimation run.
-    if resume:
-        respy_obj.update_model_paras(get_est_info()['paras_step'])
 
     # Set maximum iteration count when only an evaluation of the criterion
     # function is requested.
@@ -63,9 +52,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=
         'Start of estimation run with the RESPY package.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-
-    parser.add_argument('--resume', action='store_true', dest='resume',
-        default=False, help='resume estimation run')
 
     parser.add_argument('--single', action='store_true', dest='single',
         default=False, help='single evaluation')

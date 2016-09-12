@@ -453,7 +453,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
     except ValueError:
         paras_fixed += dict_['SHOCKS']['fixed'][:].tolist()
 
-    str_optim = '{0:<10} {1:20.4f} {2:>5}\n'
+    str_optim = '{0:<10} {1:25.15f} {2:>5}\n'
 
     # Construct labels. This ensures that the initialization files always look
     # identical.
