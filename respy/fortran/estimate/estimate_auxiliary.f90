@@ -6,8 +6,6 @@ MODULE estimate_auxiliary
 
     USE recording_estimation
 
-    USE shared_containers
-
     USE shared_constants
 
     USE shared_utilities

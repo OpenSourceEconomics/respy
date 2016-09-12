@@ -2,9 +2,7 @@
 !******************************************************************************
 MODULE recording_solution
 
-  !/*	external modules	*/
-
-    USE shared_containers
+    !/*	external modules	*/
 
     USE shared_constants
 

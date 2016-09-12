@@ -6,8 +6,6 @@ MODULE recording_estimation
 
     USE recording_warning
 
-    USE shared_containers
-
     USE shared_constants
 
     USE shared_auxiliary

@@ -7,8 +7,6 @@ MODULE resfort_library
     USE recording_warning
 
     USE shared_constants
-
-    USE shared_containers
     
     USE solve_ambiguity
 

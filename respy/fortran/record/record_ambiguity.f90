@@ -4,8 +4,6 @@ MODULE recording_ambiguity
 
     !/*	external modules	*/
 
-    USE shared_containers
-
     USE shared_constants
 
     USE shared_auxiliary
