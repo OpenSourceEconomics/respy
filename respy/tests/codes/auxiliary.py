@@ -11,7 +11,8 @@ from respy import RespyCls
 
 def compare_est_log(base_est_log):
     """ This function is required as the log files can be slightly different
-    for good reasons. The error capturing of an IndexError is required as sometimes the
+    for good reasons. The error capturing of an IndexError is required as
+    sometimes the ...
     """
 
     for i in range(25):
@@ -41,6 +42,7 @@ def compare_est_log(base_est_log):
 
         except IndexError:
             pass
+
 
 def write_interpolation_grid(file_name):
     """ Write out an interpolation grid that can be used across

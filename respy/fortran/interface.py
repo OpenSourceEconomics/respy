@@ -160,17 +160,17 @@ def write_resfort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         line = '{0:10d}\n'.format(num_periods)
         file_.write(line)
 
-        line = '{0:15.10f}\n'.format(delta)
+        line = '{0:25.15f}\n'.format(delta)
         file_.write(line)
 
         # WORK
         for num in [coeffs_a, coeffs_b]:
-            fmt_ = ' {:15.10f}' * 6 + '\n'
+            fmt_ = ' {:25.15f}' * 6 + '\n'
             file_.write(fmt_.format(*num))
 
         # EDUCATION
         num = coeffs_edu
-        line = ' {:20.10f} {:20.10f} {:20.10f}\n'.format(*num)
+        line = ' {:25.15f} {:25.15f} {:20.15f}\n'.format(*num)
         file_.write(line)
 
         line = '{0:10d} '.format(edu_start)
@@ -180,12 +180,12 @@ def write_resfort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         file_.write(line)
 
         # HOME
-        line = ' {0:15.10f}\n'.format(coeffs_home[0])
+        line = ' {0:25.15f}\n'.format(coeffs_home[0])
         file_.write(line)
 
         # SHOCKS
         for j in range(4):
-            fmt_ = ' {:20.10f}' * 4 + '\n'
+            fmt_ = ' {:25.15f}' * 4 + '\n'
             file_.write(fmt_.format(*shocks_cholesky[j, :]))
 
         # SOLUTION
@@ -199,7 +199,7 @@ def write_resfort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         line = '"{0}"'.format(measure)
         file_.write(line + '\n')
 
-        line = '{0:15.10f}\n'.format(level[0])
+        line = '{0:25.15f}\n'.format(level[0])
         file_.write(line)
 
         # PROGRAM

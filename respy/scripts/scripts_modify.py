@@ -73,15 +73,17 @@ def scripts_modify(identifiers, values, action, init_file):
     respy_obj = RespyCls(init_file)
 
     model_paras = respy_obj.get_attr('model_paras')
+    level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
+            dist_model_paras(model_paras, True)
 
-    x = get_optim_paras(*dist_model_paras(model_paras, True), 'all', None, True)
+    x = get_optim_paras(level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+                    shocks_cholesky, 'all', None, True)
 
     # Transform to the external value
     x[0] = x[0] ** 2
 
     if action == 'value':
         for i, j in enumerate(identifiers):
-            print(i, j)
             x[j] = values[i]
 
     for identifier in identifiers:

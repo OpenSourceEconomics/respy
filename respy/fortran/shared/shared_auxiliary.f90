@@ -711,9 +711,7 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
 !------------------------------------------------------------------------------
 
     ! Fix formatting
-    1500 FORMAT(6(1x,f15.10))
-    1510 FORMAT(f15.10)
-    1520 FORMAT(6(1x,f20.10))
+    1500 FORMAT(6(1x,f25.15))
 
     1505 FORMAT(i10)
     1515 FORMAT(i10,1x,i10)
@@ -723,14 +721,14 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
 
         ! BASICS
         READ(99, 1505) num_periods
-        READ(99, 1510) delta
+        READ(99, 1500) delta
 
         ! WORK
         READ(99, 1500) coeffs_a
         READ(99, 1500) coeffs_b
 
         ! EDUCATION
-        READ(99, 1520) coeffs_edu
+        READ(99, 1500) coeffs_edu
         READ(99, 1515) edu_start, edu_max
 
         ! HOME
@@ -738,7 +736,7 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
 
         ! SHOCKS
         DO j = 1, 4
-            READ(99, 1520) (shocks_cholesky(j, k), k=1, 4)
+            READ(99, 1500) (shocks_cholesky(j, k), k=1, 4)
         END DO
 
         ! SOLUTION
@@ -747,7 +745,7 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
 
         ! AMBIGUITY
         READ(99, *) measure
-        READ(99, 1510) level
+        READ(99, 1500) level
 
         ! PROGRAM
         READ(99, *) is_debug
@@ -762,7 +760,7 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
         READ(99, 1505) num_agents_est
         READ(99, 1505) num_draws_prob
         READ(99, 1505) seed_prob
-        READ(99, 1510) tau
+        READ(99, 1500) tau
 
         ! DERIVATIVES
         READ(99, 1500) dfunc_eps

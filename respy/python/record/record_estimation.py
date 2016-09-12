@@ -124,8 +124,8 @@ def write_est_info(num_start, value_start, paras_start, num_step,
 
         # Transform the optimization parameter to level units.
         out_file.write('\n')
-        paras = ['Level'] + [np.exp(paras_start[0]), np.exp(paras_step[0]),
-                             np.exp(paras_current[0])]
+        paras = ['Level'] + [paras_start[0] ** 2, paras_step[0]  ** 2,
+                             paras_current[0] ** 2]
         out_file.write(fmt_.format(*paras))
 
 

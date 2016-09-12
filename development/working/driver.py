@@ -44,3 +44,5 @@ from respy import estimate
 respy_obj = RespyCls('model.respy.ini')
 #respy_obj = simulate(respy_obj)
 x, crit_val = estimate(respy_obj)
+
+print(crit_val)

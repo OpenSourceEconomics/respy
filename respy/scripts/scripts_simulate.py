@@ -18,28 +18,18 @@ def dist_input_arguments(parser):
     # Distribute arguments
     init_file = args.init_file
     file_sim = args.file_sim
-    update = args.update
 
     # Check attributes
-    assert (update in [False, True])
     assert (os.path.exists(init_file))
 
-    if update:
-        assert (os.path.exists('est.respy.info'))
-
     # Finishing
-    return update, init_file, file_sim
+    return init_file, file_sim
 
 
-def scripts_simulate(update, init_file, file_sim):
+def scripts_simulate(init_file, file_sim):
     """ Wrapper for the estimation.
     """
     respy_obj = RespyCls(init_file)
-
-    # Update parametrization of the model if resuming from a previous
-    # estimation run.
-    if update:
-        respy_obj.update_model_paras(get_est_info()['paras_step'])
 
     # Update file for output.
     if file_sim is not None:
@@ -56,9 +46,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=
         'Start of simulation with the RESPY package.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-
-    parser.add_argument('--update', action='store_true', dest='update',
-        default=False, help='update model parametrization')
 
     parser.add_argument('--init_file', action='store', dest='init_file',
         default='model.respy.ini', help='initialization file')
