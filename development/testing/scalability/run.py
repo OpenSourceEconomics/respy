@@ -45,6 +45,9 @@ if __name__ == '__main__':
     # reflected in teh PBS submission script.
     GRID_SLAVES = range(0, 12, 2)
 
+    # TODO: Investment in the scalability infrastructure by using a single
+    # function evaluation and actually getting the time for the backward
+    # induction loop.
     parser = argparse.ArgumentParser(description='Check scalability of RESPY '
         'package.', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
