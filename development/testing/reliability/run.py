@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 import argparse
 import sys
 
@@ -19,9 +18,7 @@ def check_reliability(args, maxfun):
     spec_dict = dict()
     spec_dict['num_procs'] = 3
     spec_dict['maxfun'] = maxfun
-
-    # Introducing ambiguity requires special care, which is addressed in the
-    # called function.
+    spec_dict['file_est'] = '../truth/start/data.respy.dat'
     spec_dict['measure'] = 'kl'
     spec_dict['level'] = 0.05
 
@@ -47,6 +44,9 @@ def check_reliability(args, maxfun):
 
 if __name__ == '__main__':
 
+    # This is a key parameter for the whole reliability exercise.
+    maxfun = 5
+
     parser = argparse.ArgumentParser(description='Check reliability of RESPY '
         'package.', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
@@ -55,8 +55,5 @@ if __name__ == '__main__':
 
     parser.add_argument('--compile', action='store_true', dest='is_compile',
         default=False, help='compile package')
-
-    # Setting the maximum number of evaluations.
-    maxfun = 0
 
     check_reliability(parser.parse_args(), maxfun)

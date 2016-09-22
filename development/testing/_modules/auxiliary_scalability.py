@@ -1,10 +1,11 @@
 from datetime import datetime
 import datetime as dt
-import numpy as np
 import shlex
 import os
 
+from auxiliary_shared import update_class_instance
 from auxiliary_shared import strfdelta
+
 from config import SPEC_DIR
 
 import respy
@@ -14,29 +15,12 @@ def run(spec_dict, fname, grid_slaves):
     """ Run an estimation task that allows to get a sense of the scalability
     of the code.
     """
-    dirname = fname.replace('.ini', '')
-
-    os.mkdir(dirname)
-    os.chdir(dirname)
+    os.mkdir(fname.replace('.ini', ''))
+    os.chdir(fname.replace('.ini', ''))
 
     # Read in the baseline specification.
     respy_obj = respy.RespyCls(SPEC_DIR + fname)
-
-    respy_obj.unlock()
-
-    respy_obj.set_attr('is_debug', False)
-    respy_obj.set_attr('file_est', '../data.respy.dat')
-
-    for key_ in spec_dict.keys():
-        if key_ == 'level':
-            continue
-        respy_obj.set_attr(key_, spec_dict[key_])
-
-    # Varying the baseline level of ambiguity requires special case.
-    if 'level' in spec_dict.keys():
-        respy_obj.attr['model_paras']['level'] = np.array([spec_dict['level']])
-
-    respy_obj.lock()
+    update_class_instance(respy_obj, spec_dict)
 
     min_slave = min(grid_slaves)
 

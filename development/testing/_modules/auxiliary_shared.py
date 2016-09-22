@@ -1,8 +1,11 @@
-import os
-import socket
-import subprocess
-import sys
 from string import Formatter
+
+import subprocess
+import socket
+import sys
+import os
+
+import numpy as np
 
 from config import PACKAGE_DIR
 from config import python2_exec
@@ -11,6 +14,31 @@ from config import python3_exec
 from clsMail import MailCls
 
 from config import SPECS
+
+
+def update_class_instance(respy_obj, spec_dict):
+    """ Update model specification from the baseline initialization file.
+    """
+
+    respy_obj.unlock()
+
+    # Varying the baseline level of ambiguity requires special case.
+    if 'level' in spec_dict.keys():
+        respy_obj.attr['model_paras']['level'] = np.array([spec_dict['level']])
+
+    for key_ in spec_dict.keys():
+        if key_ == 'level':
+            continue
+        respy_obj.set_attr(key_, spec_dict[key_])
+
+    if respy_obj.attr['num_procs'] > 1:
+        respy_obj.set_attr('is_parallel', True)
+    else:
+        respy_obj.set_attr('is_parallel', False)
+
+    respy_obj.lock()
+
+    return respy_obj
 
 
 def get_executable():

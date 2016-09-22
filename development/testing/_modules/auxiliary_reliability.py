@@ -6,6 +6,7 @@ import os
 
 from config import SPEC_DIR
 
+from auxiliary_shared import update_class_instance
 import respy
 
 
@@ -16,30 +17,9 @@ def run(spec_dict, fname):
     os.chdir(fname.replace('.ini', ''))
 
     # We first read in the first specification from the initial paper for our
-    # baseline and process the deviations.
+    # baseline and process only the specified deviations.
     respy_obj = respy.RespyCls(SPEC_DIR + fname)
-
-    respy_obj.unlock()
-
-    respy_obj.set_attr('file_est', '../truth/start/data.respy.dat')
-
-    # Varying the baseline level of ambiguity requires special case.
-    if 'level' in spec_dict.keys():
-        respy_obj.attr['model_paras']['level'] = np.array([spec_dict['level']])
-
-    for key_ in spec_dict.keys():
-        if key_ == 'level':
-            continue
-        respy_obj.set_attr(key_, spec_dict[key_])
-
-    if respy_obj.attr['num_procs'] > 1:
-        respy_obj.set_attr('is_parallel', True)
-    else:
-        respy_obj.set_attr('is_parallel', False)
-
-    respy_obj.lock()
-
-    maxfun = respy_obj.get_attr('maxfun')
+    update_class_instance(respy_obj, spec_dict)
 
     # Let us first simulate a baseline sample, store the results for future
     # reference, and start an estimation from the true values.
@@ -86,6 +66,7 @@ def run(spec_dict, fname):
         x, _ = respy.estimate(respy_obj)
         simulate_specification(respy_obj, 'stop', True, x)
 
+        maxfun = respy_obj.get_attr('maxfun')
         rmse_start, rmse_stop = get_rmse()
         num_evals, num_steps = get_est_log_info()
 

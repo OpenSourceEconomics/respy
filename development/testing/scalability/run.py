@@ -19,9 +19,8 @@ def check_scalability(args, GRID_SLAVES):
     spec_dict = dict()
     spec_dict['maxfun'] = 0
     spec_dict['scaling'] = [False, 0.00001]
-
-    # Introducing ambiguity requires special care, which is addressed in the
-    # called function.
+    spec_dict['file_est'] = '../data.respy.dat'
+    spec_dict['is_debug'] = False
     spec_dict['measure'] = 'kl'
     spec_dict['level'] = 0.05
 
