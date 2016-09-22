@@ -170,7 +170,7 @@ def write_resfort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
 
         # EDUCATION
         num = coeffs_edu
-        line = ' {:25.15f} {:25.15f} {:20.15f}\n'.format(*num)
+        line = ' {:25.15f} {:25.15f} {:25.15f}\n'.format(*num)
         file_.write(line)
 
         line = '{0:10d} '.format(edu_start)
