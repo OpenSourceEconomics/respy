@@ -4,7 +4,7 @@ MODULE shared_interfaces
 
     INTERFACE
 
-        SUBROUTINE SLSQP(M, MEQ, LA, N, X, XL, XU, F, C, G, A, ACC, ITER, MODE, W, LEN_W, JW, LEN_JW) !
+        PURE SUBROUTINE SLSQP(M, MEQ, LA, N, X, XL, XU, F, C, G, A, ACC, ITER, MODE, W, LEN_W, JW, LEN_JW) !
 
             !/* external modules    */
 
@@ -37,7 +37,7 @@ MODULE shared_interfaces
         END SUBROUTINE
 
 
-        SUBROUTINE DGESDD(JOBZ, M, N, A, LDA, S, U, LDU, VT, LDVT, WORK, LWORK, IWORK, INFO)
+        PURE SUBROUTINE DGESDD(JOBZ, M, N, A, LDA, S, U, LDU, VT, LDVT, WORK, LWORK, IWORK, INFO)
 
             !/* external modules    */
 
@@ -67,7 +67,7 @@ MODULE shared_interfaces
         END SUBROUTINE
 
 
-        SUBROUTINE DPOTRF(UPLO, N, A, LDA, INFO)
+        PURE SUBROUTINE DPOTRF(UPLO, N, A, LDA, INFO)
 
             !/* external modules    */
 
@@ -86,7 +86,7 @@ MODULE shared_interfaces
         END SUBROUTINE
 
 
-        SUBROUTINE DGETRF(M, N, A, LDA, IPIV, INFO)
+        PURE SUBROUTINE DGETRF(M, N, A, LDA, IPIV, INFO)
 
             !/* external modules    */
 
@@ -106,7 +106,7 @@ MODULE shared_interfaces
          END SUBROUTINE
 
 
-        SUBROUTINE DGETRI(N, A, LDA, IPIV, WORK, LWORK, INFO)
+        PURE SUBROUTINE DGETRI(N, A, LDA, IPIV, WORK, LWORK, INFO)
 
             !/* external modules    */
 

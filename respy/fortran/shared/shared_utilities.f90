@@ -24,7 +24,7 @@ CONTAINS
 
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE svd(U, S, VT, A, m)
+PURE SUBROUTINE svd(U, S, VT, A, m)
 
     !/* external objects        */
 
@@ -52,7 +52,7 @@ SUBROUTINE svd(U, S, VT, A, m)
     A_sub = A
 
     ! Auxiliary objects
-    LWORK =  M * (7 + 4 * M)
+    LWORK = M * (7 + 4 * M)
 
     ! Allocate containers
     ALLOCATE(WORK(LWORK)); ALLOCATE(IWORK(8 * M))
@@ -63,7 +63,7 @@ SUBROUTINE svd(U, S, VT, A, m)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE random_choice(sample, candidates, num_candidates, num_draws)
+PURE SUBROUTINE random_choice(sample, candidates, num_candidates, num_draws)
 
   !
   ! Source
