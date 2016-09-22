@@ -1,6 +1,7 @@
 from scipy.optimize import fmin_powell
 from scipy.optimize import fmin_bfgs
 
+from respy.python.record.record_estimation import record_estimation_scalability
 from respy.python.record.record_estimation import record_estimation_stop
 from respy.python.record.record_estimation import record_estimation_final
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
@@ -84,7 +85,12 @@ def respy_interface(respy_obj, request, data_array=None):
         opt_obj.x_all_start = x_all_start
 
         if maxfun == 0:
+            record_estimation_scalability('Start')
+
             opt_obj.crit_func(x_free_start, *args)
+
+            record_estimation_scalability('Finish')
+
             success = True
             message = 'Single evaluation of criterion function at starting ' \
                       'values.'

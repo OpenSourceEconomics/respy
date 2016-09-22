@@ -9,6 +9,94 @@ from config import SPEC_DIR
 import respy
 
 
+def run(spec_dict, fname):
+    """ Run a version of the Monte Carlo exercise.
+    """
+    os.mkdir(fname.replace('.ini', ''))
+    os.chdir(fname.replace('.ini', ''))
+
+    # We first read in the first specification from the initial paper for our
+    # baseline and process the deviations.
+    respy_obj = respy.RespyCls(SPEC_DIR + fname)
+
+    respy_obj.unlock()
+
+    respy_obj.set_attr('file_est', '../truth/start/data.respy.dat')
+
+    # Varying the baseline level of ambiguity requires special case.
+    if 'level' in spec_dict.keys():
+        respy_obj.attr['model_paras']['level'] = np.array([spec_dict['level']])
+
+    for key_ in spec_dict.keys():
+        if key_ == 'level':
+            continue
+        respy_obj.set_attr(key_, spec_dict[key_])
+
+    if respy_obj.attr['num_procs'] > 1:
+        respy_obj.set_attr('is_parallel', True)
+    else:
+        respy_obj.set_attr('is_parallel', False)
+
+    respy_obj.lock()
+
+    maxfun = respy_obj.get_attr('maxfun')
+
+    # Let us first simulate a baseline sample, store the results for future
+    # reference, and start an estimation from the true values.
+    for request in ['Truth', 'Static', 'Risk', 'Ambiguity']:
+
+        respy_obj.unlock()
+
+        if request == 'Truth':
+            pass
+
+        elif request == 'Static':
+            # There is no update required, we start with the true parameters
+            # from the dynamic ambiguity model.
+            respy_obj.set_attr('delta', 0.00)
+            respy_obj.attr['model_paras']['level'] = np.array([0.00])
+            respy_obj.attr['paras_fixed'][0] = True
+
+        elif request == 'Risk':
+            # This is an update with the results from the static estimation.
+            respy_obj.update_model_paras(x)
+
+            respy_obj.set_attr('delta', 0.95)
+            respy_obj.attr['model_paras']['level'] = np.array([0.00])
+            respy_obj.attr['paras_fixed'][0] = True
+
+        elif request == 'Ambiguity':
+            # This is an update with the results from the dynamic risk
+            # estimation.
+            respy_obj.update_model_paras(x)
+
+            respy_obj.set_attr('delta', 0.95)
+            respy_obj.attr['model_paras']['level'] = np.array([0.00])
+            respy_obj.attr['paras_fixed'][0] = False
+        else:
+            raise AssertionError
+
+        respy_obj.lock()
+
+        os.mkdir(request.lower()), os.chdir(request.lower())
+
+        respy_obj.write_out()
+
+        simulate_specification(respy_obj, 'start', False)
+        x, _ = respy.estimate(respy_obj)
+        simulate_specification(respy_obj, 'stop', True, x)
+
+        rmse_start, rmse_stop = get_rmse()
+        num_evals, num_steps = get_est_log_info()
+
+        os.chdir('../')
+
+        args = (request, rmse_start, rmse_stop, num_evals, num_steps, maxfun)
+        record_results(*args)
+
+    os.chdir('../')
+
+
 def get_est_log_info():
     """ Get the choice probabilities.
     """
@@ -31,100 +119,6 @@ def get_est_log_info():
 
     # Finishing
     return num_evals, num_steps
-
-
-def run(spec_dict, fname):
-    """ Run a version of the Monte Carlo exercise.
-    """
-    dirname = fname.replace('.ini', '')
-    os.mkdir(dirname)
-    os.chdir(dirname)
-
-    # We first read in the first specification from the initial paper for our
-    # baseline and process the deviations.
-    respy_obj = respy.RespyCls(SPEC_DIR + fname)
-
-    respy_obj.unlock()
-
-    respy_obj.set_attr('file_est', '../truth/start/data.respy.dat')
-
-    for key_ in spec_dict.keys():
-        respy_obj.set_attr(key_, spec_dict[key_])
-
-    if respy_obj.attr['num_procs'] > 1:
-        respy_obj.set_attr('is_parallel', True)
-    else:
-        respy_obj.set_attr('is_parallel', False)
-
-    respy_obj.lock()
-
-    maxfun = respy_obj.get_attr('maxfun')
-
-    # Let us first simulate a baseline sample, store the results for future
-    # reference, and start an estimation from the true values.
-    os.mkdir('truth')
-    os.chdir('truth')
-    respy_obj.write_out()
-
-    simulate_specification(respy_obj, 'start', False)
-    x, _ = respy.estimate(respy_obj)
-    simulate_specification(respy_obj, 'stop', True, x)
-
-    rmse_start, rmse_stop = get_rmse()
-    num_evals, num_steps = get_est_log_info()
-
-    os.chdir('../')
-
-    record_results('Truth', rmse_start, rmse_stop, num_evals, num_steps, maxfun)
-
-    # Now we will estimate a misspecified model on this dataset assuming that
-    # agents are myopic. This will serve as a form of well behaved starting
-    # values for the real estimation to follow.
-    respy_obj.unlock()
-    respy_obj.set_attr('delta', 0.00)
-    respy_obj.lock()
-
-    os.mkdir('static')
-    os.chdir('static')
-
-    respy_obj.write_out()
-
-    simulate_specification(respy_obj, 'start', False)
-    x, _ = respy.estimate(respy_obj)
-    simulate_specification(respy_obj, 'stop', True, x)
-
-    rmse_start, rmse_stop = get_rmse()
-    num_evals, num_steps = get_est_log_info()
-
-    os.chdir('../')
-
-    record_results('Static', rmse_start, rmse_stop, num_evals, num_steps, maxfun)
-
-    # # Using the results from the misspecified model as starting values, we see
-    # # whether we can obtain the initial values.
-    respy_obj.update_model_paras(x)
-
-    respy_obj.unlock()
-    respy_obj.set_attr('delta', 0.95)
-    respy_obj.lock()
-
-    os.mkdir('dynamic')
-    os.chdir('dynamic')
-    respy_obj.write_out()
-
-    simulate_specification(respy_obj, 'start', False)
-    x, _ = respy.estimate(respy_obj)
-    simulate_specification(respy_obj, 'stop', True, x)
-
-    rmse_start, rmse_stop = get_rmse()
-    num_evals, num_steps = get_est_log_info()
-
-    os.chdir('../')
-
-    record_results('Dynamic', rmse_start, rmse_stop, num_evals, num_steps,
-                   maxfun)
-
-    os.chdir('../')
 
 
 def get_choice_probabilities(fname, is_flatten=True):
@@ -172,14 +166,16 @@ def record_results(label, rmse_start, rmse_stop, num_evals, num_steps, maxfun):
         # Setting up
         if label == 'Truth':
             out_file.write('\n RMSE\n\n')
-            fmt = '{:>15} {:>15} {:>15} {:>15} {:>15}\n\n'
-            out_file.write(fmt.format(*['Setup', 'Start', 'Stop', 'Evals', 'Steps']))
-        fmt = '{:>15} {:15.10f} {:15.10f} {:15} {:15}\n'
-        out_file.write(fmt.format(*[label, rmse_start, rmse_stop, num_evals, num_steps]))
+            fmt = '     {:<10} {:>15} {:>15} {:>15} {:>15}\n\n'
+            str_ = fmt.format(*['Setup', 'Start', 'Stop', 'Evals', 'Steps'])
+            out_file.write(str_)
+        fmt = '     {:<10} {:15.10f} {:15.10f} {:15} {:15}\n'
+        str_ = fmt.format(*[label, rmse_start, rmse_stop, num_evals, num_steps])
+        out_file.write(str_)
 
         # Add information on maximum allowed evaluations
-        if label == 'Dynamic':
-            fmt = '\n{:>15} {:<15} {:15}\n'
+        if label == 'Ambiguity':
+            fmt = '\n     {:<7} {:<15}    {:15}\n'
             out_file.write(fmt.format(*['Maximum', 'Evaluations', maxfun]))
 
 

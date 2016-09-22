@@ -6,6 +6,23 @@ from respy.python.record.record_warning import record_warning
 from respy.python.shared.shared_constants import LARGE_FLOAT
 
 
+def record_estimation_scalability(which):
+
+    fmt_ = '   {:<6}     {:>10}     {:>8}\n'
+
+    today = time.strftime("%d/%m/%Y")
+    now = time.strftime("%H:%M:%S")
+
+    if which == 'Start':
+        with open('.scalability.respy.log', 'w') as out_file:
+            out_file.write(fmt_.format(*[which, today, now]))
+    elif which == 'Finish':
+        with open('.scalability.respy.log', 'a') as out_file:
+            out_file.write(fmt_.format(*[which, today, now]))
+    else:
+        raise AssertionError
+
+
 def record_estimation_stop():
     with open('est.respy.info', 'a') as out_file:
         out_file.write('\n TERMINATED\n')

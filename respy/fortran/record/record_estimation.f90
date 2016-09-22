@@ -24,11 +24,44 @@ MODULE recording_estimation
 
     INTERFACE record_estimation
 
-        MODULE PROCEDURE record_estimation_eval, record_estimation_final, record_scaling, record_estimation_stop
+        MODULE PROCEDURE record_estimation_eval, record_estimation_final, record_scaling, record_estimation_stop, record_estimation_scalability
 
     END INTERFACE
 
 CONTAINS
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE record_estimation_scalability(which)
+
+    !/* external objects        */
+
+    CHARACTER(*), INTENT(IN)   :: which
+
+    !/* internal objects        */
+
+    CHARACTER(55)               :: today
+    CHARACTER(55)               :: now
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+  115 FORMAT(3x,A5,6X,A10,5X,A8)
+  125 FORMAT(3x,A6,5X,A10,5X,A8)
+
+  CALL get_time(today, now)
+
+  IF (which == 'Start') THEN
+    OPEN(UNIT=99, FILE='.scalability.respy.log', ACTION='WRITE')
+        WRITE(99, 115) which, today, now
+  ELSE
+    OPEN(UNIT=99, FILE='.scalability.respy.log', ACCESS='APPEND', ACTION='WRITE')
+        WRITE(99, 125) which, today, now
+  END IF
+
+  CLOSE(99)
+
+END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
 SUBROUTINE record_estimation_stop()

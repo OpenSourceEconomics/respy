@@ -63,7 +63,7 @@ PURE SUBROUTINE svd(U, S, VT, A, m)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-PURE SUBROUTINE random_choice(sample, candidates, num_candidates, num_draws)
+SUBROUTINE random_choice(sample, candidates, num_candidates, num_draws)
 
   !
   ! Source

@@ -257,8 +257,13 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, level, coeffs_a, c
 
     END IF
 
+    ! The following allows for scalability exercise.
+    IF (maxfun == zero_int) CALL record_estimation('Start')
 
     crit_val = fort_criterion_parallel(x_free_final)
+
+    IF (maxfun == zero_int) CALL record_estimation('Finish')
+
 
     CALL construct_all_current_values(x_all_final, x_free_final, paras_fixed)
 

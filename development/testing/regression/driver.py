@@ -53,7 +53,6 @@ def run(args):
     if idx is not None:
         assert idx > 0
 
-
     if is_investigation:
         fname = TEST_RESOURCES_DIR + '/regression_vault.respy.json'
         tests = json.load(open(fname, 'r'))
