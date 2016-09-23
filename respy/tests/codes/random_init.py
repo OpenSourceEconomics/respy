@@ -120,26 +120,23 @@ def generate_random_dict(constraints=None):
     dict_['SCALING']['minimum'] = np.random.uniform(0.0000001, 0.1)
     dict_['SCALING']['flag'] = np.random.choice(['True', 'False'])
 
-    # PARALLELISM
-    dict_['PARALLELISM'] = dict()
 
-    # Parallelism is only supported in FORTRAN implementation.
+    # PROGRAM
+
+    dict_['PROGRAM'] = dict()
     if IS_PARALLEL:
-        dict_['PARALLELISM']['procs'] = np.random.randint(2, 5)
+        dict_['PROGRAM']['procs'] = np.random.randint(2, 5)
     else:
-        dict_['PARALLELISM']['procs'] = 1
+        dict_['PROGRAM']['procs'] = 1
 
     versions = ['FORTRAN', 'PYTHON']
-    if dict_['PARALLELISM']['procs'] > 1:
+    if dict_['PROGRAM']['procs'] > 1:
         versions = ['FORTRAN']
 
     if not IS_FORTRAN:
         versions = ['PYTHON']
 
-    # PROGRAM
-    dict_['PROGRAM'] = dict()
     dict_['PROGRAM']['debug'] = 'True'
-
     dict_['PROGRAM']['version'] = np.random.choice(versions)
 
     # The optimizer has to align with the Program version.
@@ -328,7 +325,7 @@ def generate_random_dict(constraints=None):
         dict_['PROGRAM']['version'] = version
         # Ensure that the constraints are met
         if version != 'FORTRAN':
-            dict_['PARALLELISM']['procs'] = 1
+            dict_['PROGRAM']['procs'] = 1
         if version == 'FORTRAN':
             dict_['ESTIMATION']['optimizer'] = np.random.choice(['FORT-NEWUOA', 'FORT-BFGS'])
         else:
@@ -357,14 +354,13 @@ def generate_random_dict(constraints=None):
         assert (flag_parallelism in [True, False])
         # Replace in initialization file
         if flag_parallelism:
-            dict_['PARALLELISM']['procs'] = np.random.randint(2, 5)
+            dict_['PROGRAM']['procs'] = np.random.randint(2, 5)
         else:
-            dict_['PARALLELISM']['procs'] = 1
+            dict_['PROGRAM']['procs'] = 1
         # Ensure that the constraints are met
-        if dict_['PARALLELISM']['procs'] > 1:
+        if dict_['PROGRAM']['procs'] > 1:
             dict_['PROGRAM']['version'] = 'FORTRAN'
 
-    # Replace parallelism ...
     if 'flag_scaling' in constraints.keys():
         # Extract objects
         flag_scaling = constraints['flag_scaling']

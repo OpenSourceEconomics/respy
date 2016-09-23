@@ -331,10 +331,7 @@ class RespyCls(object):
         init_dict['PROGRAM'] = dict()
         init_dict['PROGRAM']['version'] = self.attr['version']
         init_dict['PROGRAM']['debug'] = self.attr['is_debug']
-
-        # Parallelism
-        init_dict['PARALLELISM'] = dict()
-        init_dict['PARALLELISM']['procs'] = self.attr['num_procs']
+        init_dict['PROGRAM']['procs'] = self.attr['num_procs']
 
         # Interpolation
         init_dict['INTERPOLATION'] = dict()
@@ -392,7 +389,7 @@ class RespyCls(object):
 
         self.attr['num_draws_emax'] = init_dict['SOLUTION']['draws']
 
-        self.attr['num_procs'] = init_dict['PARALLELISM']['procs']
+        self.attr['num_procs'] = init_dict['PROGRAM']['procs']
 
         self.attr['num_periods'] = init_dict['BASICS']['periods']
 

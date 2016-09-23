@@ -460,7 +460,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
     labels = ['BASICS', 'AMBIGUITY', 'OCCUPATION A', 'OCCUPATION B']
     labels += ['EDUCATION', 'HOME', 'SHOCKS', 'SOLUTION']
     labels += ['SIMULATION', 'ESTIMATION', 'DERIVATIVES', 'SCALING']
-    labels += ['PROGRAM', 'PARALLELISM']
+    labels += ['PROGRAM']
     labels += ['INTERPOLATION', 'SCIPY-BFGS', 'SCIPY-POWELL', 'FORT-NEWUOA']
     labels += ['FORT-BFGS', 'SCIPY-SLSQP', 'FORT-SLSQP']
 
@@ -491,8 +491,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                 file_.write('\n')
 
             if flag in ['SOLUTION', 'SIMULATION', 'PROGRAM', 'INTERPOLATION',
-                        'ESTIMATION', 'PARALLELISM', 'SCALING',
-                        'DERIVATIVES']:
+                        'ESTIMATION', 'SCALING', 'DERIVATIVES']:
 
                 file_.write(flag.upper() + '\n\n')
                 keys = list(dict_[flag].keys())
@@ -706,5 +705,3 @@ def get_est_info():
 
     # Finishing
     return rslt
-
-

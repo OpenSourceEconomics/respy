@@ -75,7 +75,8 @@ def run(args):
 
             init_dict, crit_val = tests_old[idx]
 
-            del init_dict['PARALLELISM']['flag'] 
+            init_dict['PROGRAM']['procs'] = init_dict['PARALLELISM']['procs']
+            del init_dict['PARALLELISM']
             tests_new += [(init_dict, crit_val)]
 
         json.dump(tests_new, open('regression_vault.respy.json', 'w'))

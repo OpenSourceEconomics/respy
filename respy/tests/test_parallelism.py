@@ -28,9 +28,9 @@ class TestClass(object):
         base = None
         for is_parallel in [True, False]:
 
-            init_dict['PARALLELISM']['procs'] = 1
+            init_dict['PROGRAM']['procs'] = 1
             if is_parallel:
-                init_dict['PARALLELISM']['procs'] = np.random.randint(2, 5)
+                init_dict['PROGRAM']['procs'] = np.random.randint(2, 5)
 
             print_init_dict(init_dict)
 
@@ -59,9 +59,9 @@ class TestClass(object):
         base_sol_log, base_est_info_log, base_est_log = None, None, None
         for is_parallel in [False, True]:
 
-            init_dict['PARALLELISM']['procs'] = 1
+            init_dict['PROGRAM']['procs'] = 1
             if is_parallel:
-                init_dict['PARALLELISM']['procs'] = np.random.randint(2, 5)
+                init_dict['PROGRAM']['procs'] = np.random.randint(2, 5)
 
             print_init_dict(init_dict)
 

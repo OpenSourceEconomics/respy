@@ -175,7 +175,7 @@ def _check_integrity_complete(dict_):
         sys.exit(msg)
 
     try:
-        if dict_['PARALLELISM']['procs'] > 1:
+        if dict_['PROGRAM']['procs'] > 1:
             assert (dict_['PROGRAM']['version'] == 'FORTRAN')
     except AssertionError:
         msg = '\n Parallelism only available with FORTRAN implementation.\n'
@@ -185,7 +185,7 @@ def _check_integrity_complete(dict_):
     # exists due to the specification of optimizer options.
     keys_ = ['BASICS', 'EDUCATION', 'OCCUPATION A', 'OCCUPATION B']
     keys_ += ['HOME', 'INTERPOLATION', 'SHOCKS', 'SOLUTION']
-    keys_ += ['SIMULATION', 'PROGRAM', 'ESTIMATION', 'PARALLELISM']
+    keys_ += ['SIMULATION', 'PROGRAM', 'ESTIMATION']
     try:
         assert (set(keys_) <= set(dict_.keys()))
     except AssertionError:

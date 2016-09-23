@@ -24,8 +24,7 @@ STRUCTURE['ESTIMATION'] += ['tau', 'file', 'agents']
 STRUCTURE['DERIVATIVES'] = ['version', 'eps']
 STRUCTURE['SCALING'] = ['flag', 'minimum']
 
-STRUCTURE['PROGRAM'] = ['debug', 'version']
-STRUCTURE['PARALLELISM'] = ['procs']
+STRUCTURE['PROGRAM'] = ['debug', 'version', 'procs']
 
 STRUCTURE['INTERPOLATION'] = ['flag', 'points']
 STRUCTURE['SCIPY-BFGS'] = ['gtol', 'maxiter']
@@ -95,7 +94,6 @@ def check_line(group, flag, value):
                 assert isinstance(value, int)
                 assert value > 0
 
-        if group == 'PARALLELISM':
             if flag in ['procs']:
                 assert isinstance(value, int)
                 assert value > 0
