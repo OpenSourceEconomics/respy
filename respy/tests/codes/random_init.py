@@ -122,16 +122,15 @@ def generate_random_dict(constraints=None):
 
     # PARALLELISM
     dict_['PARALLELISM'] = dict()
-    dict_['PARALLELISM']['procs'] = np.random.randint(2, 5)
 
     # Parallelism is only supported in FORTRAN implementation.
     if IS_PARALLEL:
-        dict_['PARALLELISM']['flag'] = np.random.choice(['True', 'False'])
+        dict_['PARALLELISM']['procs'] = np.random.randint(2, 5)
     else:
-        dict_['PARALLELISM']['flag'] = 'False'
+        dict_['PARALLELISM']['procs'] = 1
 
     versions = ['FORTRAN', 'PYTHON']
-    if dict_['PARALLELISM']['flag']:
+    if dict_['PARALLELISM']['procs'] > 1:
         versions = ['FORTRAN']
 
     if not IS_FORTRAN:
@@ -329,7 +328,7 @@ def generate_random_dict(constraints=None):
         dict_['PROGRAM']['version'] = version
         # Ensure that the constraints are met
         if version != 'FORTRAN':
-            dict_['PARALLELISM']['flag'] = False
+            dict_['PARALLELISM']['procs'] = 1
         if version == 'FORTRAN':
             dict_['ESTIMATION']['optimizer'] = np.random.choice(['FORT-NEWUOA', 'FORT-BFGS'])
         else:
@@ -357,9 +356,12 @@ def generate_random_dict(constraints=None):
         # Checks
         assert (flag_parallelism in [True, False])
         # Replace in initialization file
-        dict_['PARALLELISM']['flag'] = str(flag_parallelism)
+        if flag_parallelism:
+            dict_['PARALLELISM']['procs'] = np.random.randint(2, 5)
+        else:
+            dict_['PARALLELISM']['procs'] = 1
         # Ensure that the constraints are met
-        if dict_['PARALLELISM']['flag'] == 'True':
+        if dict_['PARALLELISM']['procs'] > 1:
             dict_['PROGRAM']['version'] = 'FORTRAN'
 
     # Replace parallelism ...

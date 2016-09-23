@@ -65,8 +65,6 @@ class RespyCls(object):
 
         self.attr['model_paras'] = None
 
-        self.attr['is_parallel'] = None
-
         self.attr['derivatives'] = None
 
         self.attr['num_procs'] = None
@@ -336,7 +334,6 @@ class RespyCls(object):
 
         # Parallelism
         init_dict['PARALLELISM'] = dict()
-        init_dict['PARALLELISM']['flag'] = self.attr['is_parallel']
         init_dict['PARALLELISM']['procs'] = self.attr['num_procs']
 
         # Interpolation
@@ -394,8 +391,6 @@ class RespyCls(object):
         self.attr['num_draws_prob'] = init_dict['ESTIMATION']['draws']
 
         self.attr['num_draws_emax'] = init_dict['SOLUTION']['draws']
-
-        self.attr['is_parallel'] = init_dict['PARALLELISM']['flag']
 
         self.attr['num_procs'] = init_dict['PARALLELISM']['procs']
 
@@ -625,8 +620,6 @@ class RespyCls(object):
 
         derivatives = self.attr['derivatives']
 
-        is_parallel = self.attr['is_parallel']
-
         paras_fixed = self.attr['paras_fixed']
 
         num_periods = self.attr['num_periods']
@@ -665,9 +658,8 @@ class RespyCls(object):
         shocks_cholesky = model_paras['shocks_cholesky']
 
         # Parallelism
-        assert (is_parallel in [True, False])
         assert (num_procs > 0)
-        if is_parallel:
+        if num_procs > 1:
             assert (version == 'FORTRAN')
 
         # Status of optimization parameters

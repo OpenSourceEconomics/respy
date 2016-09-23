@@ -75,12 +75,7 @@ def run(args):
 
             init_dict, crit_val = tests_old[idx]
 
-            init_dict['SIMULATION']['file'] = 'data'
-            #init_dict['AMBIGUITY']['coeffs'] = [init_dict['AMBIGUITY'][
-            # 'level']]
-            #del init_dict['AMBIGUITY']['level']
-            #init_dict['AMBIGUITY']['fixed'] = [True]
-
+            del init_dict['PARALLELISM']['flag'] 
             tests_new += [(init_dict, crit_val)]
 
         json.dump(tests_new, open('regression_vault.respy.json', 'w'))

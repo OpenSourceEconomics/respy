@@ -37,7 +37,6 @@ def run(args):
     """ Run the property test battery.
     """
 
-
     # Processing of command line arguments.
     if args.request[0] == 'investigate':
         is_investigation, is_run = True, False

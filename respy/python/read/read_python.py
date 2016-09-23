@@ -175,17 +175,10 @@ def _check_integrity_complete(dict_):
         sys.exit(msg)
 
     try:
-        if dict_['PARALLELISM']['flag']:
+        if dict_['PARALLELISM']['procs'] > 1:
             assert (dict_['PROGRAM']['version'] == 'FORTRAN')
     except AssertionError:
         msg = '\n Parallelism only available with FORTRAN implementation.\n'
-        sys.exit(msg)
-
-    try:
-        if dict_['PARALLELISM']['flag']:
-            assert (dict_['PARALLELISM']['procs'] > 1)
-    except AssertionError:
-        msg = '\n Parallelism requires at least two processors.\n'
         sys.exit(msg)
 
     # Check all required keys are defined. Note that additional keys might

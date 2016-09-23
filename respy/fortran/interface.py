@@ -19,13 +19,13 @@ def resfort_interface(respy_obj, request, data_array=None):
     # Distribute class attributes
     model_paras, num_periods, edu_start, is_debug, edu_max, delta, \
         num_draws_emax, seed_emax, is_interpolated, num_points_interp, \
-        is_myopic, min_idx, tau, is_parallel, num_procs, num_agents_sim, \
+        is_myopic, min_idx, tau, num_procs, num_agents_sim, \
         num_draws_prob, num_agents_est, seed_prob, seed_sim, paras_fixed, \
         optimizer_options, optimizer_used, maxfun, paras_fixed, derivatives, \
         scaling, measure, file_sim = dist_class_attributes(respy_obj,
             'model_paras', 'num_periods', 'edu_start', 'is_debug', 'edu_max',
             'delta', 'num_draws_emax', 'seed_emax', 'is_interpolated',
-            'num_points_interp', 'is_myopic', 'min_idx', 'tau', 'is_parallel',
+            'num_points_interp', 'is_myopic', 'min_idx', 'tau',
             'num_procs', 'num_agents_sim', 'num_draws_prob',
             'num_agents_est', 'seed_prob', 'seed_sim', 'paras_fixed',
             'optimizer_options', 'optimizer_used', 'maxfun', 'paras_fixed',
@@ -61,13 +61,15 @@ def resfort_interface(respy_obj, request, data_array=None):
     write_resfort_initialization(*args)
 
     # Call executable
-    if not is_parallel:
+    if num_procs == 1:
         cmd = [EXEC_DIR + '/resfort_scalar']
         subprocess.check_call(cmd)
-    else:
+    elif num_procs > 1:
         cmd = ['mpiexec', '-n', '1', EXEC_DIR + '/resfort_parallel_master']
         subprocess.check_call(cmd)
-
+    else:
+        raise AssertionError
+        
     # Return arguments depends on the request.
     if request == 'simulate':
         results = get_results(num_periods, min_idx, num_agents_sim, 'simulate')

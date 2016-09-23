@@ -57,11 +57,8 @@ def run_single(spec_dict, fname, grid_slaves):
 
         respy_obj.unlock()
         respy_obj.set_attr('num_procs', num_slaves + 1)
-        if num_slaves > 1:
-            respy_obj.set_attr('is_parallel', True)
-        else:
-            respy_obj.set_attr('is_parallel', False)
         respy_obj.lock()
+
         respy_obj.write_out()
 
         respy.estimate(respy_obj)
@@ -122,5 +119,3 @@ def record_information(start_time, finish_time, num_slaves, duration_baseline,
         line = [num_slaves, start_str, finish_str, duration_actual_str,
                 duration_linear_str]
         out_file.write(fmt.format(*line))
-
-

@@ -25,7 +25,7 @@ STRUCTURE['DERIVATIVES'] = ['version', 'eps']
 STRUCTURE['SCALING'] = ['flag', 'minimum']
 
 STRUCTURE['PROGRAM'] = ['debug', 'version']
-STRUCTURE['PARALLELISM'] = ['flag', 'procs']
+STRUCTURE['PARALLELISM'] = ['procs']
 
 STRUCTURE['INTERPOLATION'] = ['flag', 'points']
 STRUCTURE['SCIPY-BFGS'] = ['gtol', 'maxiter']
@@ -96,12 +96,12 @@ def check_line(group, flag, value):
                 assert value > 0
 
         if group == 'PARALLELISM':
-            if flag in ['flag'] and value:
-                fname = EXEC_DIR + '/resfort_parallel_master'
-                assert os.path.exists(fname)
             if flag in ['procs']:
                 assert isinstance(value, int)
                 assert value > 0
+                if value > 1:
+                    fname = EXEC_DIR + '/resfort_parallel_master'
+                    assert os.path.exists(fname)
 
         if group == 'AMBIGUITY':
             if flag in ['level']:

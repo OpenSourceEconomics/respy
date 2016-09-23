@@ -151,7 +151,7 @@ class TestClass(object):
         # that the request remains valid. This is fine as the disturbances
         # are aligned across parallel and scalar implementation.
         if not IS_PARALLEL:
-            init_dict['PARALLELISM']['flag'] = False
+            init_dict['PARALLELISM']['procs'] = 1
         if not IS_FORTRAN:
             init_dict['PROGRAM']['version'] = 'PYTHON'
 

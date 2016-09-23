@@ -31,11 +31,6 @@ def update_class_instance(respy_obj, spec_dict):
             continue
         respy_obj.set_attr(key_, spec_dict[key_])
 
-    if respy_obj.attr['num_procs'] > 1:
-        respy_obj.set_attr('is_parallel', True)
-    else:
-        respy_obj.set_attr('is_parallel', False)
-
     respy_obj.lock()
 
     return respy_obj
