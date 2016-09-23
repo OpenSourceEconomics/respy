@@ -23,7 +23,6 @@ def check_reliability(args, maxfun):
     spec_dict['level'] = 0.025
 
     # TODO: Remove
-    
     spec_dict['scaling'] = [False, 0.00001]
 
     if args.is_debug:
@@ -49,7 +48,7 @@ def check_reliability(args, maxfun):
 if __name__ == '__main__':
 
     # This is a key parameter for the whole reliability exercise.
-    maxfun = 5
+    maxfun = 0
 
     # TODO: I turned off the scaling to get a faster sense on an appropriate
     # level of ambiguity.
