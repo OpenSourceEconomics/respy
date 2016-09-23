@@ -2,21 +2,13 @@
 import argparse
 import numpy as np
 import json
-import sys
-import os
 
-sys.path.insert(0, '../_modules')
 from auxiliary_shared import send_notification
 from auxiliary_shared import compile_package
-
-# Reconstruct directory structure and edits to PYTHONPATH
-PACKAGE_DIR = os.path.dirname(os.path.realpath(__file__))
-PACKAGE_DIR = PACKAGE_DIR.replace('development/testing/regression', '')
 
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.python.shared.shared_auxiliary import print_init_dict
 
-sys.path.insert(0, PACKAGE_DIR + '/respy/tests')
 from codes.random_init import generate_init
 
 
