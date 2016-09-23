@@ -1,63 +1,23 @@
 #!/usr/bin/env python
-
-import argparse
-import sys
-
-sys.path.insert(0, '../_modules')
-from auxiliary_shared import aggregate_information
-from auxiliary_shared import send_notification
-from auxiliary_shared import compile_package
 from auxiliary_scalability import run
-from auxiliary_shared import cleanup
-
-
-def check_scalability(args, GRID_SLAVES):
-    """ Details of the scalability exercise can be specified in the code block
-    below. Note that only deviations from the benchmark initialization files
-    need to be addressed.
-    """
-    spec_dict = dict()
-    spec_dict['maxfun'] = 0
-    spec_dict['scaling'] = [False, 0.00001]
-    spec_dict['file_est'] = '../data.respy.dat'
-    spec_dict['is_debug'] = False
-    spec_dict['measure'] = 'kl'
-    spec_dict['level'] = 0.05
-
-    if args.is_debug:
-        GRID_SLAVES = [0, 2, 4]
-        spec_dict['num_periods'] = 40
-#        spec_dict['num_draws_emax'] = 5
-#        spec_dict['num_draws_prob'] = 3
-#        spec_dict['num_agents_est'] = 100
-#        spec_dict['num_agents_sim'] = spec_dict['num_agents_est']
-
-    cleanup()
-
-    if args.is_compile:
-        compile_package()
-
-    run(spec_dict, 'kw_data_one.ini', GRID_SLAVES)
-
-    aggregate_information('scalability')
-    send_notification('scalability')
 
 if __name__ == '__main__':
 
-    # The grid of slaves for the analysis. Note that this needs to be
-    # reflected in the PBS submission script.
-    GRID_SLAVES = range(0, 4, 2)
+    # The following key value pairs describe the quantification exercise itself.
+    spec_dict = dict()
+    spec_dict['slaves'] = [0, 2, 4]
 
-    parser = argparse.ArgumentParser(description='Check scalability of RESPY '
-        'package.', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    # The following key value pairs are the requested updates from the
+    # baseline initialization file.
+    spec_dict['update'] = dict()
+    spec_dict['update']['file_est'] = '../data.respy.dat'
+    spec_dict['update']['scaling'] = [False, 0.00001]
+    spec_dict['update']['is_debug'] = False
+    spec_dict['update']['measure'] = 'kl'
+    spec_dict['update']['level'] = 0.05
+    spec_dict['update']['maxfun'] = 0
 
-    parser.add_argument('--debug', action='store_true', dest='is_debug',
-        default=False, help='use debug specification')
+    # The following key value pair describes the debugging setup.
+    spec_dict['update']['num_periods'] = 3
 
-    parser.add_argument('--compile', action='store_true', dest='is_compile',
-        default=False, help='compile package')
-
-    parser.add_argument('--finalize', action='store_true', dest='is_finalize',
-        default=False, help='just create graph')
-
-    check_scalability(parser.parse_args(), GRID_SLAVES)
+    run(spec_dict)

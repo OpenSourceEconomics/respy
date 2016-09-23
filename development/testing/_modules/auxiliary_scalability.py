@@ -4,14 +4,33 @@ import shlex
 import os
 
 from auxiliary_shared import update_class_instance
+from auxiliary_shared import aggregate_information
+from auxiliary_shared import send_notification
 from auxiliary_shared import strfdelta
-
+from auxiliary_shared import cleanup
 from config import SPEC_DIR
 
 import respy
 
 
-def run(spec_dict, fname, grid_slaves):
+def run(spec_dict):
+    """ Details of the scalability exercise can be specified in the code block
+    below. Note that only deviations from the benchmark initialization files
+    need to be addressed.
+    """
+
+    cleanup()
+
+    grid_slaves = spec_dict['slaves']
+
+    run_single(spec_dict, 'kw_data_one.ini', grid_slaves)
+
+    aggregate_information('scalability')
+
+    send_notification('scalability')
+
+
+def run_single(spec_dict, fname, grid_slaves):
     """ Run an estimation task that allows to get a sense of the scalability
     of the code.
     """
@@ -20,7 +39,7 @@ def run(spec_dict, fname, grid_slaves):
 
     # Read in the baseline specification.
     respy_obj = respy.RespyCls(SPEC_DIR + fname)
-    update_class_instance(respy_obj, spec_dict)
+    update_class_instance(respy_obj, spec_dict['update'])
 
     min_slave = min(grid_slaves)
 

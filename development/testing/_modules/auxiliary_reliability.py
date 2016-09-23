@@ -4,10 +4,29 @@ import numpy as np
 import shlex
 import os
 
+from auxiliary_shared import update_class_instance
+from auxiliary_shared import aggregate_information
+from auxiliary_shared import send_notification
+from auxiliary_shared import cleanup
+
 from config import SPEC_DIR
 
-from auxiliary_shared import update_class_instance
 import respy
+
+
+def run(spec_dict):
+    """ Details of the Monte Carlo exercise can be specified in the code block
+    below. Note that only deviations from the benchmark initialization files
+    need to be addressed.
+    """
+
+    cleanup()
+
+    run_single(spec_dict, 'kw_data_one.ini')
+
+    aggregate_information('reliability')
+
+    send_notification('reliability')
 
 
 def run_single(spec_dict, fname):

@@ -1,24 +1,5 @@
 #!/usr/bin/env python
-
-from auxiliary_shared import aggregate_information
-from auxiliary_shared import send_notification
-from auxiliary_reliability import run_single
-from auxiliary_shared import cleanup
-
-
-def run(spec_dict):
-    """ Details of the Monte Carlo exercise can be specified in the code block
-    below. Note that only deviations from the benchmark initialization files
-    need to be addressed.
-    """
-
-    cleanup()
-
-    run_single(spec_dict, 'kw_data_one.ini')
-
-    aggregate_information('reliability')
-
-    send_notification('reliability')
+from auxiliary_reliability import run
 
 if __name__ == '__main__':
 
