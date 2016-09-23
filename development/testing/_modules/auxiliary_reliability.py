@@ -10,7 +10,7 @@ from auxiliary_shared import update_class_instance
 import respy
 
 
-def run(spec_dict, fname):
+def run_single(spec_dict, fname):
     """ Run a version of the Monte Carlo exercise.
     """
     os.mkdir(fname.replace('.ini', ''))
