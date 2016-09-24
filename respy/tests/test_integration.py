@@ -198,7 +198,7 @@ class TestClass(object):
             # matrices.
             try:
                 scripts_simulate(init_file, file_sim)
-                scripts_modify(identifiers, values, action, init_file)
+                scripts_modify(identifiers, action, init_file, values)
             except np.linalg.linalg.LinAlgError:
                 pass
 
@@ -219,3 +219,31 @@ class TestClass(object):
         respy_obj = RespyCls('test.respy.ini')
         simulate(respy_obj)
         estimate(respy_obj)
+
+    def test_7(self, flag_ambiguity=False):
+        """ We test whether a restart does result in the exact function
+        evaluation. Additionally, we change the status of parameters at random.
+        """
+        constr = dict()
+        constr['is_estimation'] = True
+        constr['flag_ambiguity'] = flag_ambiguity
+        generate_init(constr)
+
+        respy_obj = RespyCls('test.respy.ini')
+        respy_obj = simulate(respy_obj)
+        _, base_val = estimate(respy_obj)
+
+        scripts_update('test.respy.ini')
+
+        respy_obj.unlock()
+        respy_obj.set_attr('maxfun', 0)
+        respy_obj.lock()
+
+        action = np.random.choice(['fix', 'free'])
+        num_draws = np.random.randint(1, 27)
+        identifiers = np.random.choice(range(27), num_draws, replace=False)
+        scripts_modify(identifiers, action, 'test.respy.ini')
+
+        _, update_val = estimate(respy_obj)
+
+        np.testing.assert_almost_equal(update_val, base_val)

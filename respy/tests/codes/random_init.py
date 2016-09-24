@@ -120,9 +120,7 @@ def generate_random_dict(constraints=None):
     dict_['SCALING']['minimum'] = np.random.uniform(0.0000001, 0.1)
     dict_['SCALING']['flag'] = np.random.choice(['True', 'False'])
 
-
     # PROGRAM
-
     dict_['PROGRAM'] = dict()
     if IS_PARALLEL:
         dict_['PROGRAM']['procs'] = np.random.randint(2, 5)
@@ -159,7 +157,7 @@ def generate_random_dict(constraints=None):
     for i in [0, 4, 7, 9]:
         shocks[i] = np.random.uniform(0.05, 1)
     dict_['SHOCKS']['coeffs'] = shocks.tolist()
-    dict_['SHOCKS']['fixed'] = paras_fixed[16:]
+    dict_['SHOCKS']['fixed'] = paras_fixed[17:]
 
     # INTERPOLATION
     dict_['INTERPOLATION'] = dict()
@@ -186,6 +184,9 @@ def generate_random_dict(constraints=None):
     dict_['FORT-NEWUOA']['rhobeg'] = rhobeg
     dict_['FORT-NEWUOA']['rhoend'] = np.random.uniform(0.01, 0.99) * rhobeg
 
+    # It is not recommended that N is larger than upper as the code might
+    # break down due to a segmentation fault. See newuoa.f90 for the absolute
+    # upper bounds.
     lower = (27 - sum(paras_fixed)) + 2
     upper = (2 * (27 - sum(paras_fixed)) + 1)
     dict_['FORT-NEWUOA']['npt'] = np.random.randint(lower, upper)

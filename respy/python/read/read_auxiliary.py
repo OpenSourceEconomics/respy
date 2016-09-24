@@ -93,10 +93,6 @@ def check_line(group, flag, value):
             if flag in ['procs']:
                 assert isinstance(value, int)
                 assert value > 0
-
-            if flag in ['procs']:
-                assert isinstance(value, int)
-                assert value > 0
                 if value > 1:
                     fname = EXEC_DIR + '/resfort_parallel_master'
                     assert os.path.exists(fname)

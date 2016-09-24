@@ -61,7 +61,7 @@ def dist_input_arguments(parser):
     return identifiers_list, values, action, init_file
 
 
-def scripts_modify(identifiers, values, action, init_file):
+def scripts_modify(identifiers, action, init_file, values=None):
     """ Modify optimization parameters by either changing their status or
     values.
     """

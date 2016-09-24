@@ -93,6 +93,8 @@ def run(args):
         mod = importlib.import_module(module)
         test = getattr(mod.TestClass(), method)
 
+        if seed_investigation:
+            print('... running ', module, method)
         # Run random test
         is_success, msg = None, None
 
