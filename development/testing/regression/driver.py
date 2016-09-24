@@ -66,11 +66,11 @@ def run(args):
             print('\n Modfiying Test ', idx)
 
             init_dict, crit_val = tests_old[idx]
-            # TODO: With the next iteration, also comment back in the checks
-            # for the NPT in NEWUOA in clsRespy. This is marked as a TODO in
-            # the clsRespy.py.
+
+            # This is where the modifications take place
             init_dict['PROGRAM']['procs'] = init_dict['PARALLELISM']['procs']
             del init_dict['PARALLELISM']
+
             tests_new += [(init_dict, crit_val)]
 
         json.dump(tests_new, open('regression_vault.respy.json', 'w'))
@@ -81,6 +81,8 @@ def run(args):
         for idx in range(num_tests):
             print('\n Creating Test ', idx)
 
+            # We impose a couple of constraints that make the requests
+            # manageable.
             constr = dict()
             constr['maxfun'] = int(np.random.choice([0, 1, 2, 3, 5, 6], p=[0.5, 0.1, 0.1, 0.1, 0.1, 0.1]))
             constr['flag_scaling'] = np.random.choice([True, False], p=[0.1, 0.9])
@@ -88,7 +90,6 @@ def run(args):
 
             init_dict = generate_init(constr)
             respy_obj = RespyCls('test.respy.ini')
-
             simulate(respy_obj)
             crit_val = estimate(respy_obj)[1]
             test = (init_dict, crit_val)

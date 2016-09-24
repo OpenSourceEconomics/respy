@@ -523,15 +523,13 @@ class RespyCls(object):
             assert isinstance(var, float)
             assert (var > 0)
 
-        # The lower bound is also enforced in the orginal codes. For the
-        # upper bound, the code constraint is higher. However, it is well
-        # known that npt higher than the upper bound below might result in a
-        # segmentation fault.
-        # TODO: This results in failing regression tests. So, I will comment
-        # it back in with the next vault.
-        # num_free = 27 - sum(self.attr['paras_fixed'])
-        # lower, upper = num_free + 2, (2 * num_free + 1)
-        # assert lower <= npt <= upper
+        # The lower bound is also enforced in the original codes. For the
+        # upper bound, the code allows for a larger number of interpolation
+        # points. However, it is well known that npt higher than the upper
+        # bound below might result in a segmentation fault.
+        num_free = 27 - sum(self.attr['paras_fixed'])
+        lower, upper = num_free + 2, (2 * num_free + 1)
+        assert lower <= npt <= upper
 
         # FORT-BFGS
         maxiter = optimizer_options['FORT-BFGS']['maxiter']
