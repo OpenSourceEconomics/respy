@@ -95,6 +95,9 @@ def run(args):
 
         if seed_investigation:
             print('... running ', module, method)
+
+        # TODO: Remove later ...
+        print(seed, module, method)
         # Run random test
         is_success, msg = None, None
 
