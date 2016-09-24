@@ -66,7 +66,9 @@ def run(args):
             print('\n Modfiying Test ', idx)
 
             init_dict, crit_val = tests_old[idx]
-
+            # TODO: With the next iteration, also comment back in the checks
+            # for the NPT in NEWUOA in clsRespy. This is marked as a TODO in
+            # the clsRespy.py.
             init_dict['PROGRAM']['procs'] = init_dict['PARALLELISM']['procs']
             del init_dict['PARALLELISM']
             tests_new += [(init_dict, crit_val)]
