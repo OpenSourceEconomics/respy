@@ -44,7 +44,11 @@ def run_single(spec_dict, fname, grid_slaves):
     min_slave = min(grid_slaves)
 
     # Simulate the baseline dataset, which is used regardless of the number
-    # of slaves.
+    # of slaves. We will use the largest processor count for this step.
+    respy_obj.unlock()
+    respy_obj.set_attr('num_procs', max(grid_slaves))
+    respy_obj.lock()
+
     respy_obj.write_out()
     respy.simulate(respy_obj)
 
