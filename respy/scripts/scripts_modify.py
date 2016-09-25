@@ -58,7 +58,7 @@ def dist_input_arguments(parser):
         assert os.path.exists(init_file)
 
     # Finishing
-    return identifiers_list, values, action, init_file
+    return identifiers_list, action, init_file, values
 
 
 def scripts_modify(identifiers, action, init_file, values=None):
