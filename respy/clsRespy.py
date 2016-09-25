@@ -526,9 +526,14 @@ class RespyCls(object):
         # The two bounds are also enforced in the original codes. However,
         # using an upper bound larger than (2 * num_free + 1) is not
         # recommended. Sometimes, this results in a segmentation fault.
-        num_free = 27 - sum(self.attr['paras_fixed'])
-        lower, upper = num_free + 2, ((num_free + 2) * (num_free + 1))/2
-        assert lower <= npt <= upper
+        # However, these vary with the number of free parameters so we only
+        # check it if a serious estimation run is requested with the NEWUOA
+        # algorithm.
+        maxfun, optimizer_used = self.attr['maxfun'], self.attr['optimizer_used']
+        if (maxfun > 0) and (optimizer_used == 'FORT-NEWUOA'):
+            num_free = 27 - sum(self.attr['paras_fixed'])
+            lower, upper = num_free + 2, ((num_free + 2) * (num_free + 1))/2
+            assert lower <= npt <= upper
 
         # FORT-BFGS
         maxiter = optimizer_options['FORT-BFGS']['maxiter']
