@@ -2,6 +2,15 @@
 !******************************************************************************
 MODULE shared_interfaces
 
+    IMPLICIT NONE
+
+    abstract interface
+        real function f_simple(x)
+        real :: x
+        end function
+    end interface
+
+
     INTERFACE
 
         PURE SUBROUTINE SLSQP(M, MEQ, LA, N, X, XL, XU, F, C, G, A, ACC, ITER, MODE, W, LEN_W, JW, LEN_JW) !
