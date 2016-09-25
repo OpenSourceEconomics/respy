@@ -4,12 +4,35 @@ MODULE shared_interfaces
 
     IMPLICIT NONE
 
-    abstract interface
-        real function f_simple(x)
-        real :: x
-        end function
-    end interface
+    ABSTRACT INTERFACE
 
+        FUNCTION interface_func(x)
+
+            !/* external modules    */
+
+            USE shared_constants
+
+            !/* dummy arguments     *
+
+            REAL(our_dble), INTENT(IN)      :: x(:)
+            REAL(our_dble)                  :: interface_func
+
+        END FUNCTION
+
+        FUNCTION interface_dfunc(x)
+
+            !/* external modules    */
+
+            USE shared_constants
+
+            !/* dummy arguments     *
+
+            REAL(our_dble), INTENT(IN)      :: x(:)
+            REAL(our_dble)                  :: interface_dfunc(SIZE(x))
+
+        END FUNCTION
+
+    END INTERFACE
 
     INTERFACE
 

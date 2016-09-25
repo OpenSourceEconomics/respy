@@ -1,12 +1,14 @@
 MODULE dfpmin_module
 
     !
-    !   Optimize a function using gradient information using the quasi-Newton 
+    !   Optimize a function using gradient information using the quasi-Newton
     !   method of Broyden, Fletcher, Goldfarb, and Shanno (BFGS)
     !
 
     !/* external modules    */
-    
+
+    USE shared_interfaces
+
     USE shared_constants
 
     IMPLICIT NONE
@@ -37,31 +39,8 @@ SUBROUTINE dfpmin(func, dfunc, p, gtol, maxiter, stpmx, maxfun, success, message
 
     CHARACTER(150), INTENT(OUT)     :: message
 
-    INTERFACE
-
-        FUNCTION func(p)
-    
-            USE shared_constants
-
-            IMPLICIT NONE
-    
-            REAL(our_dble), INTENT(IN)  :: p(:)
-            REAL(our_dble)              :: func
-    
-        END FUNCTION  
-
-        FUNCTION dfunc(p)
-    
-            USE shared_constants
-    
-            IMPLICIT NONE
-    
-            REAL(our_dble), INTENT(IN)  :: p(:)
-            REAL(our_dble)              :: dfunc(SIZE(p))
-    
-        END FUNCTION  
-
-    END INTERFACE
+    PROCEDURE(interface_func)       :: func
+    PROCEDURE(interface_dfunc)      :: dfunc
 
     !/* internal objects        */
 
@@ -98,11 +77,11 @@ SUBROUTINE dfpmin(func, dfunc, p, gtol, maxiter, stpmx, maxfun, success, message
     DO i = 1, SIZE(p)
         hessin(i, i) = one_dble
     END DO
-    
+
     xi = -g
-    
+
     stpmax = stpmx * MAX(SQRT(DOT_PRODUCT(p, p)), REAL(size(p), our_dble))
-    
+
     DO its = 1, maxiter
 
         iter = its
@@ -118,11 +97,11 @@ SUBROUTINE dfpmin(func, dfunc, p, gtol, maxiter, stpmx, maxfun, success, message
 
         END IF
 
-        fp = fret       
+        fp = fret
         xi = pnew - p
         p = pnew
 
-    
+
         dg = g
         g = dfunc(p)
         den = max(fret, one_dble)
@@ -150,17 +129,17 @@ SUBROUTINE dfpmin(func, dfunc, p, gtol, maxiter, stpmx, maxfun, success, message
             dg = fac * xi - fad * hdg
 
             hessin = hessin + fac * outerprod(xi, xi) - fad * outerprod(hdg,hdg) + fae * outerprod(dg,dg)
-        
+
         END IF
 
         xi = -matmul(hessin,g)
-    
+
     END DO
 
     success = .False.
     message = 'Exceeded maximum number of iterations.'
-    
-END SUBROUTINE 
+
+END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
 SUBROUTINE lnsrch(xold, fold, g, p, x, f, stpmax, check, func, maxfun)
@@ -169,14 +148,14 @@ SUBROUTINE lnsrch(xold, fold, g, p, x, f, stpmax, check, func, maxfun)
 
     REAL(our_dble), INTENT(OUT)     :: x(:)
     REAL(our_dble), INTENT(OUT)     :: f
-    
+
     REAL(our_dble), INTENT(IN)      :: xold(:)
     REAL(our_dble), INTENT(IN)      :: stpmax
     REAL(our_dble), INTENT(IN)      :: fold
     REAL(our_dble), INTENT(IN)      :: g(:)
 
     REAL(our_dble), INTENT(INOUT)   :: p(:)
-    
+
     LOGICAL, INTENT(OUT)            :: check
 
     INTEGER(our_int), INTENT(IN)    :: maxfun
@@ -193,7 +172,7 @@ SUBROUTINE lnsrch(xold, fold, g, p, x, f, stpmax, check, func, maxfun)
 
         REAL(our_dble), INTENT(IN)  :: x(:)
 
-        END FUNCTION 
+        END FUNCTION
 
     END INTERFACE
 
@@ -230,16 +209,16 @@ SUBROUTINE lnsrch(xold, fold, g, p, x, f, stpmax, check, func, maxfun)
     IF (pabs > stpmax) p = p * stpmax / pabs
 
     slope = DOT_PRODUCT(g, p)
-    
+
     alamin = eps / MAXVAL(ABS(p)/MAX(ABS(xold), one_dble))
 
     alam = 1.0
 
     DO
         x(:) = xold(:) + alam * p(:)
-        
+
         f = func(x)
-    
+
         IF (num_eval == maxfun) THEN
             RETURN
         END IF
@@ -251,22 +230,22 @@ SUBROUTINE lnsrch(xold, fold, g, p, x, f, stpmax, check, func, maxfun)
             RETURN
 
         ELSEIF (f <= fold + ALF * alam * slope) THEN
-        
+
             RETURN
-        
+
         ELSE
-        
+
             IF (alam == one_dble) THEN
-        
+
                 tmplam = -slope / (two_dble * (f -fold - slope))
-        
+
             ELSE
-        
+
                 rhs1 = f - fold - alam * slope
                 rhs2 = f2 - fold2 - alam2 * slope
                 a = (rhs1 / alam ** 2 - rhs2 / alam2 ** 2) / (alam - alam2)
                 b = (-alam2 * rhs1 / alam ** 2 + alam * rhs2 / alam2 ** 2) / (alam - alam2)
-        
+
                 IF (a == zero_dble) THEN
 
                     tmplam = -slope / (two_dble * b)
@@ -274,7 +253,7 @@ SUBROUTINE lnsrch(xold, fold, g, p, x, f, stpmax, check, func, maxfun)
                 ELSE
 
                     disc = b * b - three_dble * a * slope
-                    
+
                     IF (disc < zero_dble) THEN
                         disc = 0.001
                     END IF
@@ -282,21 +261,21 @@ SUBROUTINE lnsrch(xold, fold, g, p, x, f, stpmax, check, func, maxfun)
                     tmplam = (-b + SQRT(disc)) / (three_dble * a)
 
                 END IF
-                
+
                 IF (tmplam > half_dble * alam) tmplam = half_dble * alam
-            
+
             END IF
-        
+
         END IF
-        
+
         alam2 = alam
         f2 = f
         fold2 = fold
         alam = MAX(tmplam, 0.1_our_dble * alam)
-    
+
     END DO
 
-END SUBROUTINE 
+END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
 PURE FUNCTION outerprod(a,b)

@@ -1,13 +1,15 @@
 MODULE newuoa_module
 
     !
-    !   M. J. D. Powell, "The NEWUOA software for unconstrained optimization 
-    !   without derivatives", in Large-Scale Nonlinear Optimization, Series: 
-    !   Nonconvex Optimization and Its Applications, Vol. 83, Di Pillo, 
+    !   M. J. D. Powell, "The NEWUOA software for unconstrained optimization
+    !   without derivatives", in Large-Scale Nonlinear Optimization, Series:
+    !   Nonconvex Optimization and Its Applications, Vol. 83, Di Pillo,
     !   Gianni; Roma, Massimo (Eds.) 2006, New York: Springer US.
     !
-    
+
     !/* external modules  */
+
+    USE shared_interfaces
 
     USE shared_constants
 
@@ -20,7 +22,7 @@ MODULE newuoa_module
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE NEWUOA (FUNC, X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUCCESS, MESSAGE, NF)
+SUBROUTINE NEWUOA(FUNC, X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUCCESS, MESSAGE, NF)
 
     !/* external objects    */
 
@@ -29,7 +31,7 @@ SUBROUTINE NEWUOA (FUNC, X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUCCESS, MESSAG
     INTEGER(our_int), INTENT(IN)    :: NPT
     INTEGER(our_int), INTENT(IN)    :: IPRINT
     INTEGER(our_int), INTENT(IN)    :: MAXFUN
-    
+
     REAL(our_dble), INTENT(IN)      :: RHOBEG
     REAL(our_dble), INTENT(IN)      :: RHOEND
 
@@ -37,20 +39,7 @@ SUBROUTINE NEWUOA (FUNC, X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUCCESS, MESSAG
 
     CHARACTER(150), INTENT(OUT)     :: MESSAGE
 
-    INTERFACE
-
-        FUNCTION FUNC(X)
-    
-            USE shared_constants
-
-            IMPLICIT NONE
-    
-            REAL(our_dble), INTENT(IN)  :: X(:)
-            REAL(our_dble)              :: FUNC
-    
-        END FUNCTION  
-
-    END INTERFACE
+    PROCEDURE(interface_func)       :: FUNC
 
     !/* internal objects    */
 
@@ -72,26 +61,13 @@ END SUBROUTINE
 SUBROUTINE NEWUOA_ORIGINAL (FUNC, X, N, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUCCESS, MESSAGE, NF, W)
 
     IMPLICIT REAL*8 (A-H,O-Z)
-    DIMENSION W(*) 
-    
+    DIMENSION W(*)
+
     REAL(our_dble)                  :: X(:)
     LOGICAL                         :: SUCCESS
     CHARACTER(150)                  :: MESSAGE
 
-    INTERFACE
-
-        FUNCTION FUNC(X)
-    
-            USE shared_constants
-
-            IMPLICIT NONE
-    
-            REAL(our_dble), INTENT(IN)  :: X(:)
-            REAL(our_dble)              :: FUNC
-    
-        END FUNCTION  
-
-    END INTERFACE
+    PROCEDURE(interface_func)       :: FUNC
 
     !/*  internal objects       */
 
@@ -179,20 +155,7 @@ SUBROUTINE NEWUOA_ORIGINAL (FUNC, X, N, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUC
       CHARACTER(150)    :: MESSAGE
       LOGICAL           :: SUCCESS
 
-    INTERFACE
-
-        FUNCTION FUNC(X)
-    
-            USE shared_constants
-
-            IMPLICIT NONE
-    
-            REAL(our_dble), INTENT(IN)  :: X(:)
-            REAL(our_dble)              :: FUNC
-    
-        END FUNCTION  
-
-    END INTERFACE
+      PROCEDURE(interface_func)       :: FUNC
 
 !------------------------------------------------------------------------------
 ! Algorithm
