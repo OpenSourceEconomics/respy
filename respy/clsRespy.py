@@ -523,12 +523,11 @@ class RespyCls(object):
             assert isinstance(var, float)
             assert (var > 0)
 
-        # The lower bound is also enforced in the original codes. For the
-        # upper bound, the code allows for a larger number of interpolation
-        # points. However, it is well known that npt higher than the upper
-        # bound below might result in a segmentation fault.
+        # The two bounds are also enforced in the original codes. However,
+        # using an upper bound larger than (2 * num_free + 1) is not
+        # recommended. Sometimes, this results in a segmentation fault.
         num_free = 27 - sum(self.attr['paras_fixed'])
-        lower, upper = num_free + 2, (2 * num_free + 1)
+        lower, upper = num_free + 2, ((num_free + 2) * (num_free + 1))/2
         assert lower <= npt <= upper
 
         # FORT-BFGS
