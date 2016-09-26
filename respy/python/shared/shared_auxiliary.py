@@ -8,8 +8,12 @@ from respy.python.record.record_warning import record_warning
 from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
+from respy.python.shared.shared_constants import OPT_AMB_FORT
+from respy.python.shared.shared_constants import OPT_AMB_PYTH
 from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.shared.shared_constants import TINY_FLOAT
+
+OPTIMIZERS = OPT_EST_FORT + OPT_EST_PYTH + OPT_AMB_FORT + OPT_AMB_PYTH
 
 
 def get_log_likl(contribs):
@@ -573,9 +577,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
 
                 file_.write('\n')
 
-            if flag in ['SCIPY-POWELL', 'SCIPY-BFGS', 'FORT-NEWUOA',
-                        'FORT-BFGS', 'SCIPY-SLSQP', 'FORT-SLSQP',
-                        'FORT-BOBYQA']:
+            if flag in OPTIMIZERS:
 
                 # This function can also be used to print out initialization
                 # files without any optimization options. This is enough for
