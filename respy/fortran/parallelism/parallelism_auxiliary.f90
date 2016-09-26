@@ -234,7 +234,11 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, level, coeffs_a, c
 
     ELSEIF (optimizer_used == 'FORT-NEWUOA') THEN
 
-        CALL newuoa(fort_criterion_parallel, x_free_start, optimizer_options%newuoa%npt, optimizer_options%newuoa%rhobeg, optimizer_options%newuoa%rhoend, zero_int, MIN(maxfun, optimizer_options%newuoa%maxfun), success, message, iter)
+        CALL newuoa(fort_criterion_parallel, x_free_start, optimizer_options%newuoa%npt, optimizer_options%newuoa%rhobeg, optimizer_options%newuoa%rhoend, zero_int, MIN(maxfun, optimizer_options%newuoa%maxfun), success, message)
+
+    ELSEIF (optimizer_used == 'FORT-BOBYQA') THEN
+
+        CALL bobyqa(fort_criterion_parallel, x_free_start, optimizer_options%newuoa%npt, optimizer_options%newuoa%rhobeg, optimizer_options%newuoa%rhoend, zero_int, MIN(maxfun, optimizer_options%newuoa%maxfun), success, message)
 
     ELSEIF (optimizer_used == 'FORT-BFGS') THEN
 

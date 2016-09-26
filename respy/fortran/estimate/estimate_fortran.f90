@@ -101,11 +101,11 @@ SUBROUTINE fort_estimate(crit_val, success, message, level, coeffs_a, coeffs_b, 
 
     ELSEIF (optimizer_used == 'FORT-NEWUOA') THEN
 
-        !CALL newuoa(fort_criterion, x_free_start, optimizer_options%newuoa%npt, optimizer_options%newuoa%rhobeg, optimizer_options%newuoa%rhoend, zero_int, MIN(maxfun, optimizer_options%newuoa%maxfun), success, message, iter)
-        CALL bobyqa(fort_criterion, x_free_start, optimizer_options%newuoa%npt, optimizer_options%newuoa%rhobeg, optimizer_options%newuoa%rhoend, zero_int, MIN(maxfun, optimizer_options%newuoa%maxfun))
+        CALL newuoa(fort_criterion, x_free_start, optimizer_options%newuoa%npt, optimizer_options%newuoa%rhobeg, optimizer_options%newuoa%rhoend, zero_int, MIN(maxfun, optimizer_options%newuoa%maxfun), success, message)
 
-        success = .True.
-        message = 'Juphiee BobYQUA.'
+    ELSEIF (optimizer_used == 'FORT-BOBYQA') THEN
+
+        CALL bobyqa(fort_criterion, x_free_start, optimizer_options%newuoa%npt, optimizer_options%newuoa%rhobeg, optimizer_options%newuoa%rhoend, zero_int, MIN(maxfun, optimizer_options%newuoa%maxfun), success, message)
 
     ELSEIF (optimizer_used == 'FORT-BFGS') THEN
 

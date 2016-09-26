@@ -15,7 +15,7 @@ MODULE bobyqa_module
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE BOBYQA(FUNC, X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN)
+SUBROUTINE BOBYQA(FUNC, X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUCCESS, MESSAGE)
 
     !/* dummy arguments    */
 
@@ -28,7 +28,9 @@ SUBROUTINE BOBYQA(FUNC, X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN)
     INTEGER(our_int), INTENT(IN)    :: MAXFUN
 
     PROCEDURE(interface_func)       :: FUNC
+    LOGICAL, INTENT(OUT)            :: SUCCESS
 
+    CHARACTER(150), INTENT(OUT)     :: MESSAGE
     !/* internal arguments    */
 
     ! TODO: ENDOGENIZE BOUNDS
@@ -50,7 +52,11 @@ SUBROUTINE BOBYQA(FUNC, X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN)
     XL = BDL
     XU = BDU
 
-    CALL  BOBYQA_ORIGINAL(FUNC, N,NPT,X,XL,XU,RHOBEG,RHOEND,IPRINT,MAXFUN,W)
+    CALL  BOBYQA_ORIGINAL(FUNC,N,NPT,X,XL,XU,RHOBEG,RHOEND,IPRINT,MAXFUN,W)
+
+
+            success = .True.
+            message = 'Juphiee BobYQUA.'
 
 END SUBROUTINE
 !******************************************************************************

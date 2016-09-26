@@ -22,7 +22,7 @@ MODULE newuoa_module
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE NEWUOA(FUNC, X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUCCESS, MESSAGE, NF)
+SUBROUTINE NEWUOA(FUNC, X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUCCESS, MESSAGE)
 
     !/* external objects    */
 
