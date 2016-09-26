@@ -165,10 +165,12 @@ def check_optimizer_options(optimizer_options, paras_fixed):
     # SCIPY-BFGS
     maxiter = optimizer_options['SCIPY-BFGS']['maxiter']
     gtol = optimizer_options['SCIPY-BFGS']['gtol']
+    eps = optimizer_options['SCIPY-BFGS']['eps']
     assert isinstance(maxiter, int)
     assert (maxiter > 0)
-    assert isinstance(gtol, float)
-    assert (gtol > 0)
+    for var in [eps, gtol]:
+        assert isinstance(var, float)
+        assert (var > 0)
 
     # SCIPY-POWELL
     maxiter = optimizer_options['SCIPY-POWELL']['maxiter']

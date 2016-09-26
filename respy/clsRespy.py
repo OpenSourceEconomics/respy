@@ -496,6 +496,8 @@ class RespyCls(object):
             'DERIVATIVES']['eps']
         self.attr['optimizer_options']['SCIPY-SLSQP']['eps'] = init_dict[
             'DERIVATIVES']['eps']
+        self.attr['optimizer_options']['SCIPY-BFGS']['eps'] = init_dict[
+            'DERIVATIVES']['eps']
 
         # Delete the duplicated information from the initialization
         # dictionary. Special treatment of EDUCATION is required as it

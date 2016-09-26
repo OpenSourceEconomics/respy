@@ -445,6 +445,9 @@ def generate_optimizer_options(which, paras_fixed):
     if which == 'SCIPY-BFGS':
         dict_['gtol'] = np.random.uniform(0.0000001, 0.1)
         dict_['maxiter'] = np.random.randint(1, 10)
+        # This key-value pair is actually replaced with the information from
+        # the requested step for the approximation of the derivatives.
+        dict_['eps'] = np.random.uniform(1e-9, 1e-6)
 
     elif which == 'SCIPY-POWELL':
         dict_['xtol'] = np.random.uniform(0.0000001, 0.1)
