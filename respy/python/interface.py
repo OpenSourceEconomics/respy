@@ -1,3 +1,4 @@
+from scipy.optimize import fmin_l_bfgs_b
 from scipy.optimize import fmin_powell
 from scipy.optimize import fmin_bfgs
 
@@ -103,11 +104,36 @@ def respy_interface(respy_obj, request, data_array=None):
                     full_output=True, disp=False)
 
                 success = (rslt[6] not in [1, 2])
-                rslt = 'Optimization terminated successfully.'
-                if rslt[5] == 1:
+                message = 'Optimization terminated successfully.'
+                if rslt[6] == 1:
                     message = 'Maximum number of iterations exceeded.'
-                elif rslt == 2:
+                elif rslt[6] == 2:
                     message = 'Gradient and/or function calls not changing.'
+
+            except MaxfunError:
+                success = False
+                message = 'Maximum number of iterations exceeded.'
+
+        elif optimizer_used == 'SCIPY-LBFGSB':
+
+            # TODO: Manage bounds ...
+            bounds = None
+            lbfgsb_maxiter = optimizer_options['SCIPY-LBFGSB']['maxiter']
+            lbfgsb_maxls = optimizer_options['SCIPY-LBFGSB']['maxls']
+            lbfgsb_factr = optimizer_options['SCIPY-LBFGSB']['factr']
+            lbfgsb_pgtol = optimizer_options['SCIPY-LBFGSB']['pgtol']
+            lbfgsb_eps = optimizer_options['SCIPY-LBFGSB']['eps']
+            lbfgsb_m = optimizer_options['SCIPY-LBFGSB']['m']
+
+            try:
+                rslt = fmin_l_bfgs_b(opt_obj.crit_func, x_free_start, args=args,
+                    approx_grad=True, bounds=bounds, m=lbfgsb_m,
+                    factr=lbfgsb_factr, pgtol=lbfgsb_pgtol,
+                    epsilon=lbfgsb_eps, iprint=-1, maxfun=maxfun,
+                    maxiter=lbfgsb_maxiter, maxls=lbfgsb_maxls)
+
+                success = (rslt[2]['warnflag'] in [0])
+                message = rslt[2]['task']
 
             except MaxfunError:
                 success = False

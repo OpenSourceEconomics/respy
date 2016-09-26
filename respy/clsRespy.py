@@ -492,12 +492,12 @@ class RespyCls(object):
                 self.attr['optimizer_options'][optimizer] = \
                     init_dict[optimizer]
 
-        self.attr['optimizer_options']['FORT-SLSQP']['eps'] = init_dict[
-            'DERIVATIVES']['eps']
-        self.attr['optimizer_options']['SCIPY-SLSQP']['eps'] = init_dict[
-            'DERIVATIVES']['eps']
-        self.attr['optimizer_options']['SCIPY-BFGS']['eps'] = init_dict[
-            'DERIVATIVES']['eps']
+        # There is only one explicit place in the initialization file where
+        # the step size for any derivative approximation is specified.
+        eps = init_dict['DERIVATIVES']['eps']
+        for optimizer in ['FORT-SLSQP', 'SCIPY-SLSQP', 'SCIPY-BFGS',
+                          'SCIPY-LBFGSB']:
+            self.attr['optimizer_options'][optimizer]['eps'] = eps
 
         # Delete the duplicated information from the initialization
         # dictionary. Special treatment of EDUCATION is required as it

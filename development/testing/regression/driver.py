@@ -68,7 +68,15 @@ def run(args):
             init_dict, crit_val = tests_old[idx]
 
             # This is where the modifications take place
-            init_dict['FORT-BOBYQA'] = init_dict['FORT-NEWUOA']
+            init_dict['SCIPY-LBFGSB'] = dict()
+            init_dict['SCIPY-LBFGSB']['factr'] = np.random.uniform(1e7, 1e12)
+            init_dict['SCIPY-LBFGSB']['pgtol'] = np.random.uniform(1e-6, 1e-4)
+            init_dict['SCIPY-LBFGSB']['maxiter'] = np.random.randint(1, 10)
+            init_dict['SCIPY-LBFGSB']['maxls'] = np.random.randint(1, 10)
+            init_dict['SCIPY-LBFGSB']['m'] = np.random.randint(1, 10)
+            # This key-value pair is actually replaced with the information from
+            # the requested step for the approximation of the derivatives.
+            init_dict['SCIPY-LBFGSB']['eps'] = np.random.uniform(1e-9, 1e-6)
 
             tests_new += [(init_dict, crit_val)]
 

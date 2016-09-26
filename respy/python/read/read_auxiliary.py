@@ -27,11 +27,18 @@ STRUCTURE['SCALING'] = ['flag', 'minimum']
 STRUCTURE['PROGRAM'] = ['debug', 'version', 'procs']
 
 STRUCTURE['INTERPOLATION'] = ['flag', 'points']
+
+# There is a special setup to test the validity of all optimizer options. This
+# is done only when an estimation is requested. That is why they are not further
+# checked below.
+STRUCTURE['SCIPY-LBFGSB'] = ['gtol', 'maxiter', 'm', 'factr', 'pgtol', 'maxls']
 STRUCTURE['SCIPY-BFGS'] = ['gtol', 'maxiter']
 STRUCTURE['SCIPY-POWELL'] = ['maxfun', 'xtol', 'ftol', 'maxiter']
+
 STRUCTURE['FORT-NEWUOA'] = ['maxfun', 'npt', 'rhobeg', 'rhoend']
 STRUCTURE['FORT-BOBYQA'] = ['maxfun', 'npt', 'rhobeg', 'rhoend']
 STRUCTURE['FORT-BFGS'] = ['maxiter', 'stpmx', 'gtol']
+
 STRUCTURE['SCIPY-SLSQP'] = ['maxiter', 'ftol']
 STRUCTURE['FORT-SLSQP'] = ['maxiter', 'ftol']
 

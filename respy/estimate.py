@@ -172,6 +172,21 @@ def check_optimizer_options(optimizer_options, paras_fixed):
         assert isinstance(var, float)
         assert (var > 0)
 
+    # SCIPY-LBFGSB
+    maxiter = optimizer_options['SCIPY-LBFGSB']['maxiter']
+    pgtol = optimizer_options['SCIPY-LBFGSB']['pgtol']
+    factr = optimizer_options['SCIPY-LBFGSB']['factr']
+    maxls = optimizer_options['SCIPY-LBFGSB']['maxls']
+    eps = optimizer_options['SCIPY-LBFGSB']['eps']
+    m = optimizer_options['SCIPY-LBFGSB']['m']
+
+    for var in [pgtol, factr, eps]:
+        assert isinstance(var, float)
+        assert var > 0
+    for var in [m, maxiter, maxls]:
+        assert isinstance(var, int)
+        assert (var >= 0)
+
     # SCIPY-POWELL
     maxiter = optimizer_options['SCIPY-POWELL']['maxiter']
     maxfun = optimizer_options['SCIPY-POWELL']['maxfun']

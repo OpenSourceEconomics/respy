@@ -129,7 +129,7 @@ def generate_random_dict(constraints=None):
     # PROGRAM
     dict_['PROGRAM'] = dict()
     if IS_PARALLEL:
-        dict_['PROGRAM']['procs'] = np.random.randint(2, 5)
+        dict_['PROGRAM']['procs'] = np.random.randint(1, 5)
     else:
         dict_['PROGRAM']['procs'] = 1
 
