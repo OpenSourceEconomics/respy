@@ -35,10 +35,10 @@ else:
 ''' Error Reproduction
 '''
 cleanup_testing_infrastructure(True)
-seed =97274
+seed =45765
 #39083
-#13681
 #693
+#13681
 #61552
 np.random.seed(seed)
 
@@ -46,7 +46,7 @@ np.random.seed(seed)
 test_dict = get_test_dict(PACKAGE_DIR + '/respy/tests')
 module, method = get_random_request(test_dict)
 
-module, method = 'test_integration', 'test_5'
+module, method = 'test_integration', 'test_7'
 count = 0
 #os.system('git clean -d -f')
 for i in range(10000):
@@ -54,8 +54,8 @@ for i in range(10000):
 #    seed = 47092
     #seed = i + 109874564
 
-    seed = i + 1
-    np.random.seed(seed)
+    #seed = i + 1
+    #np.random.seed(seed)
     print("seed ", seed)
     #module, method = get_random_request(test_dict)
     #method = 'test_' + str(np.random.choice(range(1, 11)))

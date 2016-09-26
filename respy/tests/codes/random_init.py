@@ -2,14 +2,18 @@
 """
 import numpy as np
 
+from respy.python.shared.shared_auxiliary import generate_optimizer_options
 from respy.python.shared.shared_auxiliary import print_init_dict
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
+from respy.python.shared.shared_constants import OPT_AMB_FORT
+from respy.python.shared.shared_constants import OPT_AMB_PYTH
 from respy.python.shared.shared_constants import IS_PARALLEL
 from respy.python.shared.shared_constants import IS_FORTRAN
 
 # module-wide variables
-OPTIMIZERS = OPT_EST_FORT + OPT_EST_PYTH
+OPTIMIZERS_EST = OPT_EST_FORT + OPT_EST_PYTH
+OPTIMIZERS_AMB = OPT_AMB_FORT + OPT_AMB_PYTH
 
 MAX_AGENTS = 1000
 MAX_DRAWS = 100
@@ -108,7 +112,7 @@ def generate_random_dict(constraints=None):
     dict_['ESTIMATION']['draws'] = np.random.randint(1, MAX_DRAWS)
     dict_['ESTIMATION']['seed'] = np.random.randint(1, 10000)
     dict_['ESTIMATION']['file'] = 'data.respy.dat'
-    dict_['ESTIMATION']['optimizer'] = np.random.choice(OPTIMIZERS)
+    dict_['ESTIMATION']['optimizer'] = np.random.choice(OPTIMIZERS_EST)
     dict_['ESTIMATION']['maxfun'] = np.random.randint(1, 10000)
     dict_['ESTIMATION']['tau'] = np.random.uniform(100, 500)
 
@@ -164,51 +168,13 @@ def generate_random_dict(constraints=None):
     dict_['INTERPOLATION']['flag'] = np.random.choice(['True', 'False'])
     dict_['INTERPOLATION']['points'] = np.random.randint(10, 100)
 
-    # SCIPY-BFGS
-    dict_['SCIPY-BFGS'] = dict()
-    dict_['SCIPY-BFGS']['gtol'] = np.random.uniform(0.0000001, 0.1)
-    dict_['SCIPY-BFGS']['maxiter'] = np.random.randint(1, 10)
-
-    # SCIPY-BFGS
-    dict_['SCIPY-POWELL'] = dict()
-    dict_['SCIPY-POWELL']['xtol'] = np.random.uniform(0.0000001, 0.1)
-    dict_['SCIPY-POWELL']['ftol'] = np.random.uniform(0.0000001, 0.1)
-    dict_['SCIPY-POWELL']['maxfun'] = np.random.randint(1, 100)
-    dict_['SCIPY-POWELL']['maxiter'] = np.random.randint(1, 100)
-
-    # FORT-POWELL
-    for optimizer in ['FORT-NEWUOA', 'FORT-BOBYQA']:
-        rhobeg = np.random.uniform(0.0000001, 0.1)
-        dict_[optimizer] = dict()
-        dict_[optimizer]['maxfun'] = np.random.randint(1, 100)
-        dict_[optimizer]['rhobeg'] = rhobeg
-        dict_[optimizer]['rhoend'] = np.random.uniform(0.01, 0.99) * rhobeg
-
-        # It is not recommended that N is larger than upper as the code might
-        # break down due to a segmentation fault. See the source files for the
-        # absolute upper bounds.
-        lower = (27 - sum(paras_fixed)) + 2
-        upper = (2 * (27 - sum(paras_fixed)) + 1)
-        dict_[optimizer]['npt'] = np.random.randint(lower, upper)
-
-    # FORT-BFGS
-    dict_['FORT-BFGS'] = dict()
-    dict_['FORT-BFGS']['maxiter'] = np.random.randint(1, 100)
-    dict_['FORT-BFGS']['stpmx'] = np.random.uniform(75, 125)
-    dict_['FORT-BFGS']['gtol'] = np.random.uniform(0.0001, 0.1)
+    for optimizer in OPTIMIZERS_EST + OPTIMIZERS_AMB:
+        dict_[optimizer] = generate_optimizer_options(optimizer, paras_fixed)
 
     # The options for the optimizers across the program versions are
     # identical. Otherwise it is not possible to simply run the solution of a
     # model with just changing the program version.
-    # FORT-SLSQP
-    dict_['FORT-SLSQP'] = dict()
-    dict_['FORT-SLSQP']['maxiter'] = np.random.randint(1, 100)
-    dict_['FORT-SLSQP']['ftol'] = np.random.uniform(1e-9, 1e-6)
-
-    # SCIPY-SLSQP
-    dict_['SCIPY-SLSQP'] = dict()
-    dict_['SCIPY-SLSQP']['maxiter'] = dict_['FORT-SLSQP']['maxiter']
-    dict_['SCIPY-SLSQP']['ftol'] = dict_['FORT-SLSQP']['ftol']
+    dict_['FORT-SLSQP'] = dict_['SCIPY-SLSQP']
 
     """ We now impose selected constraints on the final model specification.
     These constraints can be very useful in the generation of test cases.
@@ -450,3 +416,5 @@ def generate_random_dict(constraints=None):
 
     # Finishing
     return dict_
+
+

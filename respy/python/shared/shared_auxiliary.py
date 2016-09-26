@@ -438,6 +438,49 @@ def transform_disturbances(draws, shocks_cholesky):
     return draws_transformed
 
 
+def generate_optimizer_options(which, paras_fixed):
+
+    dict_ = dict()
+
+    if which == 'SCIPY-BFGS':
+        dict_['gtol'] = np.random.uniform(0.0000001, 0.1)
+        dict_['maxiter'] = np.random.randint(1, 10)
+
+    elif which == 'SCIPY-POWELL':
+        dict_['xtol'] = np.random.uniform(0.0000001, 0.1)
+        dict_['ftol'] = np.random.uniform(0.0000001, 0.1)
+        dict_['maxfun'] = np.random.randint(1, 100)
+        dict_['maxiter'] = np.random.randint(1, 100)
+
+    elif which in ['FORT-NEWUOA', 'FORT-BOBYQA']:
+        rhobeg = np.random.uniform(0.0000001, 0.1)
+        dict_['maxfun'] = np.random.randint(1, 100)
+        dict_['rhobeg'] = rhobeg
+        dict_['rhoend'] = np.random.uniform(0.01, 0.99) * rhobeg
+
+        # It is not recommended that N is larger than upper as the code might
+        # break down due to a segmentation fault. See the source files for the
+        # absolute upper bounds.
+        lower = (27 - sum(paras_fixed)) + 2
+        upper = (2 * (27 - sum(paras_fixed)) + 1)
+        dict_['npt'] = np.random.randint(lower, upper)
+
+    elif which == 'FORT-BFGS':
+        dict_['maxiter'] = np.random.randint(1, 100)
+        dict_['stpmx'] = np.random.uniform(75, 125)
+        dict_['gtol'] = np.random.uniform(0.0001, 0.1)
+
+    elif which in ['FORT-SLSQP', 'SCIPY-SLSQP']:
+        dict_['maxiter'] = np.random.randint(1, 100)
+        dict_['ftol'] = np.random.uniform(1e-9, 1e-6)
+
+        # This key-value pair is actually replaced with the information from
+        # the requested step for the approximation of the derivatives.
+        dict_['eps'] = np.random.uniform(1e-9, 1e-6)
+
+    return dict_
+
+
 def print_init_dict(dict_, file_name='test.respy.ini'):
     """ Print initialization dictionary to file. The different formatting
     makes the file rather involved. The resulting initialization files are

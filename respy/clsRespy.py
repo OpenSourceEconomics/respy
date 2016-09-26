@@ -497,97 +497,11 @@ class RespyCls(object):
         self.attr['optimizer_options']['SCIPY-SLSQP']['eps'] = init_dict[
             'DERIVATIVES']['eps']
 
-        self.check_optimizer_options()
-
         # Delete the duplicated information from the initialization
         # dictionary. Special treatment of EDUCATION is required as it
         # contains other information about education than just the
         # rewards parametrization.
         del self.attr['init_dict']
-
-    def check_optimizer_options(self):
-        """ This function makes sure that the optimizer options are all valid.
-        """
-        optimizer_options = self.attr['optimizer_options']
-
-        # POWELL's algorithms
-        for optimizer in ['FORT-NEWUOA', 'FORT-BOBYQA']:
-            maxfun = optimizer_options[optimizer]['maxfun']
-            rhobeg = optimizer_options[optimizer]['rhobeg']
-            rhoend = optimizer_options[optimizer]['rhoend']
-            npt = optimizer_options[optimizer]['npt']
-
-            for var in [maxfun, npt]:
-                assert isinstance(var, int)
-                assert (var > 0)
-            for var in [rhobeg, rhoend]:
-                assert (rhobeg > rhoend)
-                assert isinstance(var, float)
-                assert (var > 0)
-
-            # The two bounds are also enforced in the original codes. However,
-            # using an upper bound larger than (2 * num_free + 1) is not
-            # recommended. Sometimes, this results in a segmentation fault.
-            # However, these vary with the number of free parameters so we only
-            # check it if a serious estimation run is requested with the POWELL
-            # algorithms.
-            maxfun, optimizer_used = self.attr['maxfun'], self.attr['optimizer_used']
-            if (maxfun > 0) and (optimizer_used == optimizer):
-                num_free = 27 - sum(self.attr['paras_fixed'])
-                lower, upper = num_free + 2, ((num_free + 2) * (num_free + 1))/2
-                assert lower <= npt <= upper
-
-        # FORT-BFGS
-        maxiter = optimizer_options['FORT-BFGS']['maxiter']
-        stpmx = optimizer_options['FORT-BFGS']['stpmx']
-        gtol = optimizer_options['FORT-BFGS']['gtol']
-        assert isinstance(maxiter, int)
-        assert (maxiter > 0)
-        for var in [stpmx, gtol]:
-            assert isinstance(var, float)
-            assert (var > 0)
-
-        # FORT-SLSQP
-        maxiter = optimizer_options['FORT-SLSQP']['maxiter']
-        ftol = optimizer_options['FORT-SLSQP']['ftol']
-        eps = optimizer_options['FORT-SLSQP']['eps']
-        assert isinstance(maxiter, int)
-        assert (maxiter > 0)
-        for var in [eps, ftol]:
-            assert isinstance(var, float)
-            assert (var > 0)
-
-        # SCIPY-BFGS
-        maxiter = optimizer_options['SCIPY-BFGS']['maxiter']
-        gtol = optimizer_options['SCIPY-BFGS']['gtol']
-        assert isinstance(maxiter, int)
-        assert (maxiter > 0)
-        assert isinstance(gtol, float)
-        assert (gtol > 0)
-
-        # SCIPY-POWELL
-        maxiter = optimizer_options['SCIPY-POWELL']['maxiter']
-        maxfun = optimizer_options['SCIPY-POWELL']['maxfun']
-        xtol = optimizer_options['SCIPY-POWELL']['xtol']
-        ftol = optimizer_options['SCIPY-POWELL']['ftol']
-        assert isinstance(maxiter, int)
-        assert (maxiter > 0)
-        assert isinstance(maxfun, int)
-        assert (maxfun > 0)
-        assert isinstance(xtol, float)
-        assert (xtol > 0)
-        assert isinstance(ftol, float)
-        assert (ftol > 0)
-
-        # SCIPY-SLSQP
-        maxiter = optimizer_options['SCIPY-SLSQP']['maxiter']
-        ftol = optimizer_options['SCIPY-SLSQP']['ftol']
-        eps = optimizer_options['SCIPY-SLSQP']['eps']
-        assert isinstance(maxiter, int)
-        assert (maxiter > 0)
-        for var in [eps, ftol]:
-            assert isinstance(var, float)
-            assert (var > 0)
 
     def _update_derived_attributes(self):
         """ Update derived attributes.
