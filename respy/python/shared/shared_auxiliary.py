@@ -3,10 +3,12 @@ import shlex
 
 import numpy as np
 
-from respy.python.record.record_warning import record_warning
-from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.shared.shared_constants import INADMISSIBILITY_PENALTY
+from respy.python.record.record_warning import record_warning
 from respy.python.shared.shared_constants import MISSING_FLOAT
+from respy.python.shared.shared_constants import OPT_EST_FORT
+from respy.python.shared.shared_constants import OPT_EST_PYTH
+from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.shared.shared_constants import TINY_FLOAT
 
 
@@ -460,9 +462,8 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
     labels = ['BASICS', 'AMBIGUITY', 'OCCUPATION A', 'OCCUPATION B']
     labels += ['EDUCATION', 'HOME', 'SHOCKS', 'SOLUTION']
     labels += ['SIMULATION', 'ESTIMATION', 'DERIVATIVES', 'SCALING']
-    labels += ['PROGRAM']
-    labels += ['INTERPOLATION', 'SCIPY-BFGS', 'SCIPY-POWELL', 'FORT-NEWUOA']
-    labels += ['FORT-BFGS', 'SCIPY-SLSQP', 'FORT-SLSQP']
+    labels += ['PROGRAM', 'INTERPOLATION']
+    labels += OPT_EST_FORT + OPT_EST_PYTH + ['SCIPY-SLSQP', 'FORT-SLSQP']
 
     # Create initialization.
     with open(file_name, 'w') as file_:
@@ -573,7 +574,8 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                 file_.write('\n')
 
             if flag in ['SCIPY-POWELL', 'SCIPY-BFGS', 'FORT-NEWUOA',
-                        'FORT-BFGS', 'SCIPY-SLSQP', 'FORT-SLSQP']:
+                        'FORT-BFGS', 'SCIPY-SLSQP', 'FORT-SLSQP',
+                        'FORT-BOBYQA']:
 
                 # This function can also be used to print out initialization
                 # files without any optimization options. This is enough for

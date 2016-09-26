@@ -11,6 +11,8 @@ from respy.python.shared.shared_auxiliary import check_model_parameters
 from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
 from respy.python.shared.shared_auxiliary import print_init_dict
 from respy.python.shared.shared_auxiliary import dist_optim_paras
+from respy.python.shared.shared_constants import OPT_EST_FORT
+from respy.python.shared.shared_constants import OPT_EST_PYTH
 from respy.python.read.read_python import read
 
 import respy.python.shared.shared_constants as shared_constants
@@ -25,8 +27,7 @@ SOLUTION_ATTR = ['periods_rewards_systematic', 'states_number_period']
 SOLUTION_ATTR += ['mapping_state_idx', 'periods_emax', 'states_all']
 
 # Full list of admissible optimizers
-OPTIMIZERS = ['SCIPY-BFGS', 'SCIPY-POWELL', 'FORT-NEWUOA', 'FORT-BFGS']
-OPTIMIZERS += ['SCIPY-SLSQP', 'FORT-SLSQP']
+OPTIMIZERS = OPT_EST_FORT + OPT_EST_PYTH + ['FORT-SLSQP', 'SCIPY-SLSQP']
 
 
 class RespyCls(object):
@@ -509,31 +510,32 @@ class RespyCls(object):
         """
         optimizer_options = self.attr['optimizer_options']
 
-        # FORT-NEWUOA
-        maxfun = optimizer_options['FORT-NEWUOA']['maxfun']
-        rhobeg = optimizer_options['FORT-NEWUOA']['rhobeg']
-        rhoend = optimizer_options['FORT-NEWUOA']['rhoend']
-        npt = optimizer_options['FORT-NEWUOA']['npt']
+        # POWELL's algorithms
+        for optimizer in ['FORT-NEWUOA', 'FORT-BOBYQA']:
+            maxfun = optimizer_options[optimizer]['maxfun']
+            rhobeg = optimizer_options[optimizer]['rhobeg']
+            rhoend = optimizer_options[optimizer]['rhoend']
+            npt = optimizer_options[optimizer]['npt']
 
-        for var in [maxfun, npt]:
-            assert isinstance(var, int)
-            assert (var > 0)
-        for var in [rhobeg, rhoend]:
-            assert (rhobeg > rhoend)
-            assert isinstance(var, float)
-            assert (var > 0)
+            for var in [maxfun, npt]:
+                assert isinstance(var, int)
+                assert (var > 0)
+            for var in [rhobeg, rhoend]:
+                assert (rhobeg > rhoend)
+                assert isinstance(var, float)
+                assert (var > 0)
 
-        # The two bounds are also enforced in the original codes. However,
-        # using an upper bound larger than (2 * num_free + 1) is not
-        # recommended. Sometimes, this results in a segmentation fault.
-        # However, these vary with the number of free parameters so we only
-        # check it if a serious estimation run is requested with the NEWUOA
-        # algorithm.
-        maxfun, optimizer_used = self.attr['maxfun'], self.attr['optimizer_used']
-        if (maxfun > 0) and (optimizer_used == 'FORT-NEWUOA'):
-            num_free = 27 - sum(self.attr['paras_fixed'])
-            lower, upper = num_free + 2, ((num_free + 2) * (num_free + 1))/2
-            assert lower <= npt <= upper
+            # The two bounds are also enforced in the original codes. However,
+            # using an upper bound larger than (2 * num_free + 1) is not
+            # recommended. Sometimes, this results in a segmentation fault.
+            # However, these vary with the number of free parameters so we only
+            # check it if a serious estimation run is requested with the POWELL
+            # algorithms.
+            maxfun, optimizer_used = self.attr['maxfun'], self.attr['optimizer_used']
+            if (maxfun > 0) and (optimizer_used == optimizer):
+                num_free = 27 - sum(self.attr['paras_fixed'])
+                lower, upper = num_free + 2, ((num_free + 2) * (num_free + 1))/2
+                assert lower <= npt <= upper
 
         # FORT-BFGS
         maxiter = optimizer_options['FORT-BFGS']['maxiter']
@@ -748,8 +750,7 @@ class RespyCls(object):
         assert (maxfun >= 0)
 
         # Optimizers
-        assert (optimizer_used in ['SCIPY-BFGS', 'SCIPY-POWELL',
-            'FORT-NEWUOA', 'FORT-BFGS'])
+        assert (optimizer_used in OPT_EST_FORT + OPT_EST_PYTH)
 
         # Scaling
         assert (scaling[0] in [True, False])

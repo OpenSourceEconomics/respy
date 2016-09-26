@@ -105,7 +105,7 @@ SUBROUTINE fort_estimate(crit_val, success, message, level, coeffs_a, coeffs_b, 
 
     ELSEIF (optimizer_used == 'FORT-BOBYQA') THEN
 
-        CALL bobyqa(fort_criterion, x_free_start, optimizer_options%newuoa%npt, optimizer_options%newuoa%rhobeg, optimizer_options%newuoa%rhoend, zero_int, MIN(maxfun, optimizer_options%newuoa%maxfun), success, message)
+        CALL bobyqa(fort_criterion, x_free_start, optimizer_options%bobyqa%npt, optimizer_options%bobyqa%rhobeg, optimizer_options%bobyqa%rhoend, zero_int, MIN(maxfun, optimizer_options%bobyqa%maxfun), success, message)
 
     ELSEIF (optimizer_used == 'FORT-BFGS') THEN
 

@@ -3,15 +3,17 @@
 import numpy as np
 
 from respy.python.shared.shared_auxiliary import print_init_dict
+from respy.python.shared.shared_constants import OPT_EST_FORT
+from respy.python.shared.shared_constants import OPT_EST_PYTH
 from respy.python.shared.shared_constants import IS_PARALLEL
 from respy.python.shared.shared_constants import IS_FORTRAN
 
 # module-wide variables
+OPTIMIZERS = OPT_EST_FORT + OPT_EST_PYTH
+
 MAX_AGENTS = 1000
 MAX_DRAWS = 100
 MAX_PERIODS = 5
-
-OPTIMIZERS = ['SCIPY-BFGS', 'SCIPY-POWELL', 'FORT-NEWUOA', 'FORT-BFGS']
 
 
 def generate_init(constraints=None):
@@ -139,11 +141,9 @@ def generate_random_dict(constraints=None):
 
     # The optimizer has to align with the Program version.
     if dict_['PROGRAM']['version'] == 'FORTRAN':
-        dict_['ESTIMATION']['optimizer'] = np.random.choice(['FORT-NEWUOA',
-            'FORT-BFGS'])
+        dict_['ESTIMATION']['optimizer'] = np.random.choice(OPT_EST_FORT)
     else:
-        dict_['ESTIMATION']['optimizer'] = np.random.choice(['SCIPY-BFGS',
-            'SCIPY-POWELL'])
+        dict_['ESTIMATION']['optimizer'] = np.random.choice(OPT_EST_PYTH)
 
     # SIMULATION
     dict_['SIMULATION'] = dict()
@@ -176,20 +176,20 @@ def generate_random_dict(constraints=None):
     dict_['SCIPY-POWELL']['maxfun'] = np.random.randint(1, 100)
     dict_['SCIPY-POWELL']['maxiter'] = np.random.randint(1, 100)
 
-    # FORT-NEWUOA
-    rhobeg = np.random.uniform(0.0000001, 0.1)
+    # FORT-POWELL
+    for optimizer in ['FORT-NEWUOA', 'FORT-BOBYQA']:
+        rhobeg = np.random.uniform(0.0000001, 0.1)
+        dict_[optimizer] = dict()
+        dict_[optimizer]['maxfun'] = np.random.randint(1, 100)
+        dict_[optimizer]['rhobeg'] = rhobeg
+        dict_[optimizer]['rhoend'] = np.random.uniform(0.01, 0.99) * rhobeg
 
-    dict_['FORT-NEWUOA'] = dict()
-    dict_['FORT-NEWUOA']['maxfun'] = np.random.randint(1, 100)
-    dict_['FORT-NEWUOA']['rhobeg'] = rhobeg
-    dict_['FORT-NEWUOA']['rhoend'] = np.random.uniform(0.01, 0.99) * rhobeg
-
-    # It is not recommended that N is larger than upper as the code might
-    # break down due to a segmentation fault. See newuoa.f90 for the absolute
-    # upper bounds.
-    lower = (27 - sum(paras_fixed)) + 2
-    upper = (2 * (27 - sum(paras_fixed)) + 1)
-    dict_['FORT-NEWUOA']['npt'] = np.random.randint(lower, upper)
+        # It is not recommended that N is larger than upper as the code might
+        # break down due to a segmentation fault. See the source files for the
+        # absolute upper bounds.
+        lower = (27 - sum(paras_fixed)) + 2
+        upper = (2 * (27 - sum(paras_fixed)) + 1)
+        dict_[optimizer]['npt'] = np.random.randint(lower, upper)
 
     # FORT-BFGS
     dict_['FORT-BFGS'] = dict()
@@ -328,9 +328,9 @@ def generate_random_dict(constraints=None):
         if version != 'FORTRAN':
             dict_['PROGRAM']['procs'] = 1
         if version == 'FORTRAN':
-            dict_['ESTIMATION']['optimizer'] = np.random.choice(['FORT-NEWUOA', 'FORT-BFGS'])
+            dict_['ESTIMATION']['optimizer'] = np.random.choice(OPT_EST_FORT)
         else:
-            dict_['ESTIMATION']['optimizer'] = np.random.choice(['SCIPY-BFGS', 'SCIPY-POWELL'])
+            dict_['ESTIMATION']['optimizer'] = np.random.choice(OPT_EST_PYTH)
 
     # Ensure that random deviates do not exceed a certain number. This is
     # useful when aligning the randomness across implementations.

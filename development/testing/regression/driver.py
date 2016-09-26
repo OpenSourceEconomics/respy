@@ -68,8 +68,7 @@ def run(args):
             init_dict, crit_val = tests_old[idx]
 
             # This is where the modifications take place
-            init_dict['PROGRAM']['procs'] = init_dict['PARALLELISM']['procs']
-            del init_dict['PARALLELISM']
+            init_dict['FORT-BOBYQA'] = init_dict['FORT-NEWUOA']
 
             tests_new += [(init_dict, crit_val)]
 

@@ -279,17 +279,18 @@ def write_resfort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         line = '"{0}"\n'.format(optimizer_used)
         file_.write(line)
 
-        line = '{0:10d}\n'.format(optimizer_options['FORT-NEWUOA']['npt'])
-        file_.write(line)
+        for optimizer in ['FORT-NEWUOA', 'FORT-BOBYQA']:
+            line = '{0:10d}\n'.format(optimizer_options[optimizer]['npt'])
+            file_.write(line)
 
-        line = '{0:10d}\n'.format(optimizer_options['FORT-NEWUOA']['maxfun'])
-        file_.write(line)
+            line = '{0:10d}\n'.format(optimizer_options[optimizer]['maxfun'])
+            file_.write(line)
 
-        line = ' {0:15.10f}\n'.format(optimizer_options['FORT-NEWUOA']['rhobeg'])
-        file_.write(line)
+            line = ' {0:15.10f}\n'.format(optimizer_options[optimizer]['rhobeg'])
+            file_.write(line)
 
-        line = ' {0:15.10f}\n'.format(optimizer_options['FORT-NEWUOA']['rhoend'])
-        file_.write(line)
+            line = ' {0:15.10f}\n'.format(optimizer_options[optimizer]['rhoend'])
+            file_.write(line)
 
         line = ' {0:15.10f}\n'.format(optimizer_options['FORT-BFGS']['gtol'])
         file_.write(line)

@@ -793,6 +793,11 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
         READ(99, 1500) optimizer_options%newuoa%rhobeg
         READ(99, 1500) optimizer_options%newuoa%rhoend
 
+        READ(99, 1505) optimizer_options%bobyqa%npt
+        READ(99, 1505) optimizer_options%bobyqa%maxfun
+        READ(99, 1500) optimizer_options%bobyqa%rhobeg
+        READ(99, 1500) optimizer_options%bobyqa%rhoend
+
         READ(99, 1500) optimizer_options%bfgs%gtol
         READ(99, 1500) optimizer_options%bfgs%stpmx
         READ(99, 1505) optimizer_options%bfgs%maxiter

@@ -67,6 +67,14 @@ MODULE shared_constants
         REAL(our_dble)          :: rhoend
     END TYPE
 
+    TYPE OPTIMIZER_BOBYQA
+        INTEGER(our_int)        :: maxfun
+        INTEGER(our_int)        :: npt
+
+        REAL(our_dble)          :: rhobeg
+        REAL(our_dble)          :: rhoend
+    END TYPE
+
     TYPE OPTIMIZER_SLSQP
         INTEGER(our_int)        :: maxiter
 
@@ -75,6 +83,7 @@ MODULE shared_constants
     END TYPE
 
     TYPE OPTIMIZER_COLLECTION
+        TYPE(OPTIMIZER_BOBYQA)  :: bobyqa
         TYPE(OPTIMIZER_NEWUOA)  :: newuoa
         TYPE(OPTIMIZER_BFGS)    :: bfgs
         TYPE(OPTIMIZER_SLSQP)   :: slsqp

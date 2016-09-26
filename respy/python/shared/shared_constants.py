@@ -40,4 +40,4 @@ if not IS_FORTRAN:
 
 # Each implementation has its own set of optimizers available.
 OPT_EST_PYTH = ['SCIPY-BFGS', 'SCIPY-POWELL']
-OPT_EST_FORT = ['FORT-NEWUOA', 'FORT-BFGS']
+OPT_EST_FORT = ['FORT-NEWUOA', 'FORT-BFGS', 'FORT-BOBYQA']
