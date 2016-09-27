@@ -21,8 +21,8 @@ STRUCTURE['SIMULATION'] = ['agents', 'seed', 'file']
 STRUCTURE['ESTIMATION'] = ['draws', 'optimizer', 'maxfun', 'seed']
 STRUCTURE['ESTIMATION'] += ['tau', 'file', 'agents']
 
-STRUCTURE['DERIVATIVES'] = ['version', 'eps']
-STRUCTURE['SCALING'] = ['flag', 'minimum']
+STRUCTURE['DERIVATIVES'] = ['version']
+STRUCTURE['SCALING'] = ['flag', 'minimum', 'eps']
 
 STRUCTURE['PROGRAM'] = ['debug', 'version', 'procs']
 
@@ -31,16 +31,16 @@ STRUCTURE['INTERPOLATION'] = ['flag', 'points']
 # There is a special setup to test the validity of all optimizer options. This
 # is done only when an estimation is requested. That is why they are not further
 # checked below.
-STRUCTURE['SCIPY-LBFGSB'] = ['gtol', 'maxiter', 'm', 'factr', 'pgtol', 'maxls']
-STRUCTURE['SCIPY-BFGS'] = ['gtol', 'maxiter']
+STRUCTURE['SCIPY-LBFGSB'] = ['gtol', 'maxiter', 'm', 'factr', 'pgtol', 'maxls', 'eps']
+STRUCTURE['SCIPY-BFGS'] = ['gtol', 'maxiter', 'eps']
 STRUCTURE['SCIPY-POWELL'] = ['maxfun', 'xtol', 'ftol', 'maxiter']
 
 STRUCTURE['FORT-NEWUOA'] = ['maxfun', 'npt', 'rhobeg', 'rhoend']
 STRUCTURE['FORT-BOBYQA'] = ['maxfun', 'npt', 'rhobeg', 'rhoend']
-STRUCTURE['FORT-BFGS'] = ['maxiter', 'stpmx', 'gtol']
+STRUCTURE['FORT-BFGS'] = ['maxiter', 'stpmx', 'gtol', 'eps']
 
-STRUCTURE['SCIPY-SLSQP'] = ['maxiter', 'ftol']
-STRUCTURE['FORT-SLSQP'] = ['maxiter', 'ftol']
+STRUCTURE['SCIPY-SLSQP'] = ['maxiter', 'ftol', 'eps']
+STRUCTURE['FORT-SLSQP'] = ['maxiter', 'ftol', 'eps']
 
 
 def check_line(group, flag, value):

@@ -42,11 +42,10 @@ from respy import estimate
 from codes.random_init import generate_init
 
 
-#respy_obj = RespyCls('model.respy.ini')
-
-#simulate(respy_obj)
-#estimate(respy_obj)
-#raise SystemExit('just reading in')
+respy_obj = RespyCls('model.respy.ini')
+simulate(respy_obj)
+estimate(respy_obj)
+raise SystemExit('just reading in')
 np.random.seed(123)
 for _ in range(100000):
     print('Neeeeeeeeeeeeeew')

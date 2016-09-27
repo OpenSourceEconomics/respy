@@ -61,13 +61,11 @@ def check_estimation(respy_obj):
     optimizer_used = respy_obj.get_attr('optimizer_used')
     model_paras = respy_obj.get_attr('model_paras')
     paras_fixed = respy_obj.get_attr('paras_fixed')
-    derivatives = respy_obj.get_attr('derivatives')
     version = respy_obj.get_attr('version')
     maxfun = respy_obj.get_attr('maxfun')
 
     # Get auxiliary objects
     level = model_paras['level'][0]
-    eps = derivatives[1]
 
     # Check that the used optimizers were defined by the user.
     if level > 0:
@@ -108,12 +106,6 @@ def check_estimation(respy_obj):
                 assert optimizer_used in ['SCIPY-LBFGSB']
             else:
                 assert optimizer_used in ['FORT-BOBYQA']
-
-    # There is only one explicit place in the initialization file where
-    # the step size for any derivative approximation is specified.
-    for optimizer in ['FORT-SLSQP', 'SCIPY-SLSQP', 'SCIPY-BFGS',
-                      'SCIPY-LBFGSB']:
-        full_options[optimizer]['eps'] = eps
 
     # Update the enlarged set of optimizer options.
     check_optimizer_options(full_options, paras_fixed)

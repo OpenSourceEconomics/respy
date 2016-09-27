@@ -331,13 +331,13 @@ class RespyCls(object):
 
         # Derivatives
         init_dict['DERIVATIVES'] = dict()
-        init_dict['DERIVATIVES']['version'] = self.attr['derivatives'][0]
-        init_dict['DERIVATIVES']['eps'] = self.attr['derivatives'][1]
+        init_dict['DERIVATIVES']['version'] = self.attr['derivatives']
 
         # Scaling
         init_dict['SCALING'] = dict()
         init_dict['SCALING']['flag'] = self.attr['scaling'][0]
         init_dict['SCALING']['minimum'] = self.attr['scaling'][1]
+        init_dict['SCALING']['eps'] = self.attr['scaling'][2]
 
         # Program
         init_dict['PROGRAM'] = dict()
@@ -433,15 +433,12 @@ class RespyCls(object):
 
         self.attr['tau'] = init_dict['ESTIMATION']['tau']
 
-        self.attr['derivatives'] = [None, None]
-        self.attr['derivatives'][0] = init_dict['DERIVATIVES']['version']
-        self.attr['derivatives'][1] = init_dict['DERIVATIVES']['eps']
+        self.attr['derivatives'] = init_dict['DERIVATIVES']['version']
 
-        shared_constants.dfunc_eps = self.attr['derivatives'][1]
-
-        self.attr['scaling'] = [None, None]
+        self.attr['scaling'] = [None, None, None]
         self.attr['scaling'][0] = init_dict['SCALING']['flag']
         self.attr['scaling'][1] = init_dict['SCALING']['minimum']
+        self.attr['scaling'][2] = init_dict['SCALING']['eps']
 
         # Initialize model parameters
         self.attr['model_paras'] = dict()
@@ -504,14 +501,6 @@ class RespyCls(object):
                 self.attr['optimizer_options'][optimizer] = \
                     init_dict[optimizer]
 
-        # The treatment of the step size is not well developed. Most
-        # replacements are done in estimate.py module. However,
-        # this particular replacement is required here as it is also relevant
-        # in the simulation step.
-        eps = init_dict['DERIVATIVES']['eps']
-        for optimizer in ['FORT-SLSQP', 'SCIPY-SLSQP']:
-            self.attr['optimizer_options'][optimizer]['eps'] = eps
-
         # Delete the duplicated information from the initialization
         # dictionary. Special treatment of EDUCATION is required as it
         # contains other information about education than just the
@@ -532,11 +521,6 @@ class RespyCls(object):
         self.attr['min_idx'] = min(num_periods, (edu_max - edu_start + 1))
 
         self.attr['is_myopic'] = (self.attr['delta'] == 0.00)
-
-        self.attr['optimizer_options']['FORT-SLSQP']['eps'] = self.attr[
-            'derivatives'][1]
-        self.attr['optimizer_options']['SCIPY-SLSQP']['eps'] = self.attr[
-            'derivatives'][1]
 
     def _check_integrity_attributes(self):
         """ Check integrity of class instance. This testing is done the first
@@ -681,11 +665,11 @@ class RespyCls(object):
         assert (scaling[0] in [True, False])
         assert (isinstance(scaling[1], float))
         assert (scaling[1] > 0.0)
+        assert (isinstance(scaling[2], float))
+        assert (scaling[2] > 0.0)
 
         # Derivatives
-        assert (derivatives[0] in ['FORWARD-DIFFERENCES'])
-        assert (isinstance(derivatives[1], float))
-        assert (derivatives[1] > 0.0)
+        assert (derivatives in ['FORWARD-DIFFERENCES'])
 
         # Ambiguity
         assert (measure in ['abs', 'kl'])
