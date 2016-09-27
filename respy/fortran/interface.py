@@ -33,8 +33,7 @@ def resfort_interface(respy_obj, request, data_array=None):
                 'optimizer_options', 'optimizer_used', 'maxfun', 'paras_fixed',
                 'derivatives', 'scaling', 'measure', 'file_sim', 'paras_bounds')
 
-    dfunc_eps = derivatives[1]
-    is_scaled, scale_minimum = scaling
+    is_scaled, scale_minimum, scale_eps = scaling
 
     if request == 'estimate':
         # Check that selected optimizer is in line with version of program.
@@ -57,7 +56,7 @@ def resfort_interface(respy_obj, request, data_array=None):
 
     args = args + (num_draws_prob, num_agents_est, num_agents_sim, seed_prob,
         seed_emax, tau, num_procs, request, seed_sim, optimizer_options,
-        optimizer_used, maxfun, paras_fixed, dfunc_eps, is_scaled,
+        optimizer_used, maxfun, paras_fixed, scale_eps, is_scaled,
         scale_minimum, measure, level, file_sim, paras_bounds)
 
     write_resfort_initialization(*args)
@@ -152,7 +151,7 @@ def write_resfort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         num_points_interp, is_myopic, edu_start, is_debug, edu_max, min_idx,
         delta, num_draws_prob, num_agents_est, num_agents_sim, seed_prob,
         seed_emax, tau, num_procs, request, seed_sim, optimizer_options,
-        optimizer_used, maxfun, paras_fixed, dfunc_eps, is_scaled,
+        optimizer_used, maxfun, paras_fixed, scale_eps, is_scaled,
         scale_minimum, measure, level, file_sim, paras_bounds):
     """ Write out model request to hidden file .model.resfort.ini.
     """
@@ -232,18 +231,17 @@ def write_resfort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         line = '{0:10d}\n'.format(seed_prob)
         file_.write(line)
 
-        line = '{0:15.10f}\n'.format(tau)
-        file_.write(line)
-
-        # DERIVATIVES
-        line = '{0:15.10f}\n'.format(dfunc_eps)
+        line = '{0:25.15f}\n'.format(tau)
         file_.write(line)
 
         # SCALING
         line = '{0}\n'.format(is_scaled)
         file_.write(line)
 
-        line = '{0:15.10f}\n'.format(scale_minimum)
+        line = '{0:25.15f}\n'.format(scale_minimum)
+        file_.write(line)
+
+        line = '{0:25.15f}\n'.format(scale_eps)
         file_.write(line)
 
         # SIMULATION
@@ -288,25 +286,31 @@ def write_resfort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
             line = '{0:10d}\n'.format(optimizer_options[optimizer]['maxfun'])
             file_.write(line)
 
-            line = ' {0:15.10f}\n'.format(optimizer_options[optimizer]['rhobeg'])
+            line = ' {0:25.15f}\n'.format(optimizer_options[optimizer]['rhobeg'])
             file_.write(line)
 
-            line = ' {0:15.10f}\n'.format(optimizer_options[optimizer]['rhoend'])
+            line = ' {0:25.15f}\n'.format(optimizer_options[optimizer]['rhoend'])
             file_.write(line)
 
-        line = ' {0:15.10f}\n'.format(optimizer_options['FORT-BFGS']['gtol'])
+        line = ' {0:25.15f}\n'.format(optimizer_options['FORT-BFGS']['gtol'])
         file_.write(line)
 
-        line = ' {0:15.10f}\n'.format(optimizer_options['FORT-BFGS']['stpmx'])
+        line = ' {0:25.15f}\n'.format(optimizer_options['FORT-BFGS']['stpmx'])
         file_.write(line)
 
         line = '{0:10d}\n'.format(optimizer_options['FORT-BFGS']['maxiter'])
         file_.write(line)
 
-        line = ' {0:15.10f}\n'.format(optimizer_options['FORT-SLSQP']['ftol'])
+        line = '{0:25.15f}\n'.format(optimizer_options['FORT-BFGS']['eps'])
+        file_.write(line)
+
+        line = ' {0:25.15f}\n'.format(optimizer_options['FORT-SLSQP']['ftol'])
         file_.write(line)
 
         line = '{0:10d}\n'.format(optimizer_options['FORT-SLSQP']['maxiter'])
+        file_.write(line)
+
+        line = '{0:25.15f}\n'.format(optimizer_options['FORT-SLSQP']['eps'])
         file_.write(line)
 
         # Transform bounds

@@ -647,7 +647,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_rewards
     END IF
 
     ! Remove temporary files
-    OPEN(UNIT=99, FILE='.model.resfort.ini'); CLOSE(99, STATUS='delete')
+    !OPEN(UNIT=99, FILE='.model.resfort.ini'); CLOSE(99, STATUS='delete')
     OPEN(UNIT=99, FILE='.data.resfort.dat'); CLOSE(99, STATUS='delete')
 
 END SUBROUTINE
@@ -769,12 +769,10 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
         READ(99, 1505) seed_prob
         READ(99, 1500) tau
 
-        ! DERIVATIVES
-        READ(99, 1500) dfunc_eps
-
         ! SCALING
         READ(99, *) is_scaled
         READ(99, *) scaled_minimum
+        READ(99, 1500) scale_eps
 
         ! SIMULATION
         READ(99, 1505) num_agents_sim
@@ -808,9 +806,11 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
         READ(99, 1500) optimizer_options%bfgs%gtol
         READ(99, 1500) optimizer_options%bfgs%stpmx
         READ(99, 1505) optimizer_options%bfgs%maxiter
+        READ(99, 1500) optimizer_options%bfgs%eps
 
         READ(99, 1500) optimizer_options%slsqp%ftol
         READ(99, 1505) optimizer_options%slsqp%maxiter
+        READ(99, 1500) optimizer_options%slsqp%eps
 
         ! TODO: Better positioning
         READ(99, 1525) paras_bounds(1, :)
@@ -832,15 +832,12 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
         IF (.NOT. paras_fixed(i)) THEN
             paras_bounds_free(1, j) = paras_bounds(1, i)
             paras_bounds_free(2, j) = paras_bounds(2, i)
-            !PRINT *, paras_bounds_free(:, j)
 
             j = j + 1
 
         END IF
 
     END DO
-
-    optimizer_options%slsqp%eps = dfunc_eps
 
     ! Constructed attributes
     num_free =  COUNT(.NOT. paras_fixed)

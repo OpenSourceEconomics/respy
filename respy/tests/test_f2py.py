@@ -244,12 +244,12 @@ class TestClass(object):
         # Extract class attributes
         num_periods, edu_start, edu_max, min_idx, model_paras, num_draws_emax, \
             seed_emax, is_debug, delta, is_interpolated, num_points_interp, \
-            measure, optimizer_options, derivatives, file_sim = \
+            measure, optimizer_options, file_sim = \
             dist_class_attributes(respy_obj,
                 'num_periods', 'edu_start', 'edu_max', 'min_idx',
                 'model_paras', 'num_draws_emax', 'seed_emax', 'is_debug',
                 'delta', 'is_interpolated', 'num_points_interp',
-                'measure',  'optimizer_options', 'derivatives', 'file_sim')
+                'measure',  'optimizer_options', 'file_sim')
 
         fort_slsqp_maxiter = optimizer_options['FORT-SLSQP']['maxiter']
         fort_slsqp_ftol = optimizer_options['FORT-SLSQP']['ftol']
@@ -324,7 +324,7 @@ class TestClass(object):
             is_debug, delta, is_interpolated, num_points_interp, is_myopic, \
             num_agents_sim, num_draws_prob, tau, paras_fixed, seed_sim, \
             measure, num_agents_est, states_number_period, \
-            optimizer_options, derivatives, file_sim = dist_class_attributes(
+            optimizer_options, file_sim = dist_class_attributes(
             respy_obj,
                 'num_periods', 'edu_start',
                 'edu_max', 'min_idx', 'model_paras', 'num_draws_emax',
@@ -332,7 +332,7 @@ class TestClass(object):
                 'is_myopic', 'num_agents_sim', 'num_draws_prob', 'tau',
                 'paras_fixed', 'seed_sim', 'measure',
                 'num_agents_est', 'states_number_period',
-                'optimizer_options', 'derivatives', 'file_sim')
+                'optimizer_options', 'file_sim')
 
         fort_slsqp_maxiter = optimizer_options['FORT-SLSQP']['maxiter']
         fort_slsqp_ftol = optimizer_options['FORT-SLSQP']['ftol']
@@ -363,7 +363,7 @@ class TestClass(object):
 
         for alt in [f2py, fort]:
             for i in range(5):
-                np.testing.assert_allclose(py[i], alt[i])
+                np.testing.assert_allclose(py[i], alt[i], rtol=1e-6)
 
         # Distribute solution arguments for further use in simulation test.
         periods_rewards_systematic, _, mapping_state_idx, periods_emax, \
@@ -424,22 +424,21 @@ class TestClass(object):
             seed_prob, periods_emax, num_periods, states_all, \
             num_points_interp, edu_start, num_draws_emax, is_debug, edu_max, \
             delta, measure, model_paras, \
-            optimizer_options, derivatives, file_sim = dist_class_attributes(respy_obj,
+            optimizer_options, file_sim = dist_class_attributes(respy_obj,
                 'periods_rewards_systematic', 'states_number_period',
                 'mapping_state_idx', 'seed_prob', 'periods_emax',
                 'num_periods', 'states_all', 'num_points_interp', 'edu_start',
                 'num_draws_emax', 'is_debug', 'edu_max', 'delta',
                 'measure', 'model_paras',
-                'optimizer_options', 'derivatives', 'file_sim')
+                'optimizer_options', 'file_sim')
 
-        eps = derivatives[1]
         level = model_paras['level']
         shocks_cholesky = model_paras['shocks_cholesky']
         shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
 
         fort_slsqp_maxiter = optimizer_options['FORT-SLSQP']['maxiter']
         fort_slsqp_ftol = optimizer_options['FORT-SLSQP']['ftol']
-        fort_slsqp_eps = eps
+        fort_slsqp_eps = optimizer_options['FORT-SLSQP']['eps']
 
         # Add some additional objects required for the interfaces to the
         # functions.

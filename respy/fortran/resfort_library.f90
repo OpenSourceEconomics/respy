@@ -7,7 +7,7 @@ MODULE resfort_library
     USE recording_warning
 
     USE shared_constants
-    
+
     USE solve_ambiguity
 
     USE solve_fortran

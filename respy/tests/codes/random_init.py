@@ -150,12 +150,12 @@ def generate_random_dict(constraints=None):
     # DERIVATIVES
     dict_['DERIVATIVES'] = dict()
     dict_['DERIVATIVES']['version'] = 'FORWARD-DIFFERENCES'
-    dict_['DERIVATIVES']['eps'] = np.random.uniform(0.0000001, 0.1)
 
     # SCALING
     dict_['SCALING'] = dict()
     dict_['SCALING']['minimum'] = np.random.uniform(0.0000001, 0.1)
     dict_['SCALING']['flag'] = np.random.choice(['True', 'False'])
+    dict_['SCALING']['eps'] = np.random.uniform(0.0000001, 0.1)
 
     # PROGRAM
     dict_['PROGRAM'] = dict()
@@ -445,8 +445,9 @@ def generate_random_dict(constraints=None):
             dict_['is_store'] = False
             dict_['ESTIMATION']['maxfun'] = int(np.random.choice(range(6),
                 p=[0.5, 0.1, 0.1, 0.1, 0.1, 0.1]))
-            dict_['SCALING']['flag'] = np.random.choice(['True', 'False'],
-                p=[0.1, 0.9])
+            dict_['SCALING']['flag'] = False
+            # TODO: Comment back in
+            # np.random.choice(['True', 'False'],p=[0.1, 0.9])
 
             # Ensure that a valid estimator is selected, at least if the
             # level of ambiguity is a free parameter.

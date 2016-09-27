@@ -445,8 +445,6 @@ def generate_optimizer_options(which, paras_fixed):
     if which == 'SCIPY-BFGS':
         dict_['gtol'] = np.random.uniform(0.0000001, 0.1)
         dict_['maxiter'] = np.random.randint(1, 10)
-        # This key-value pair is actually replaced with the information from
-        # the requested step for the approximation of the derivatives.
         dict_['eps'] = np.random.uniform(1e-9, 1e-6)
 
     elif which == 'SCIPY-LBFGSB':
@@ -455,8 +453,6 @@ def generate_optimizer_options(which, paras_fixed):
         dict_['maxiter'] = np.random.randint(1, 10)
         dict_['maxls'] = np.random.randint(1, 10)
         dict_['m'] = np.random.randint(1, 10)
-        # This key-value pair is actually replaced with the information from
-        # the requested step for the approximation of the derivatives.
         dict_['eps'] = np.random.uniform(1e-9, 1e-6)
 
     elif which == 'SCIPY-POWELL':
@@ -482,13 +478,11 @@ def generate_optimizer_options(which, paras_fixed):
         dict_['maxiter'] = np.random.randint(1, 100)
         dict_['stpmx'] = np.random.uniform(75, 125)
         dict_['gtol'] = np.random.uniform(0.0001, 0.1)
+        dict_['eps'] = np.random.uniform(1e-9, 1e-6)
 
     elif which in ['FORT-SLSQP', 'SCIPY-SLSQP']:
         dict_['maxiter'] = np.random.randint(1, 100)
         dict_['ftol'] = np.random.uniform(1e-9, 1e-6)
-
-        # This key-value pair is actually replaced with the information from
-        # the requested step for the approximation of the derivatives.
         dict_['eps'] = np.random.uniform(1e-9, 1e-6)
 
     return dict_
@@ -648,12 +642,6 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                 keys = list(dict_[flag].keys())
                 keys.sort()
                 for key_ in keys:
-
-                    # The derivative is approximated with the dfunc_eps
-                    # attribute. All derivatives in the package have a single
-                    # approximation step size.
-                    if key_ == 'eps':
-                        continue
 
                     if key_ in ['maxfun', 'npt', 'maxiter', 'm', 'maxls']:
                         str_ = '{0:<10} {1:>20}\n'

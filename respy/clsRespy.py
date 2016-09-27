@@ -16,8 +16,6 @@ from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
 from respy.python.read.read_python import read
 
-import respy.python.shared.shared_constants as shared_constants
-
 # Special care with derived attributes is required to maintain integrity of
 # the class instance. These derived attributes cannot be changed directly.
 DERIVED_ATTR = ['min_idx', 'is_myopic']

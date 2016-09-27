@@ -60,21 +60,16 @@ def run(args):
     if is_modification:
         fname = TEST_RESOURCES_DIR + '/regression_vault.respy.json'
         tests_old = json.load(open(fname, 'r'))
-        # TODO: Is this True, cant we do that in the regression test file?
-        # [str(i) for i in paras_fixed], see random_init
+
         tests_new = []
         for idx, _ in enumerate(tests_old):
             print('\n Modfiying Test ', idx)
 
             init_dict, crit_val = tests_old[idx]
 
-            print(init_dict['PROGRAM']['version'])
-            if init_dict['PROGRAM']['version'] == 'FORTRAN':
-                continue
             # This is where the modifications take place
             tests_new += [(init_dict, crit_val)]
 
-        print(len(tests_new))
         json.dump(tests_new, open('regression_vault.respy.json', 'w'))
         return
 
@@ -110,7 +105,6 @@ def run(args):
 
             print_init_dict(init_dict)
             respy_obj = RespyCls('test.respy.ini')
-
             simulate(respy_obj)
             np.testing.assert_almost_equal(estimate(respy_obj)[1], crit_val)
 

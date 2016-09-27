@@ -45,8 +45,10 @@ SUBROUTINE get_scales_parallel(auto_scales, x_free_start, scaled_minimum)
 
     CALL record_estimation(auto_scales, x_free_start, .True.)
 
+    dfunc_eps = scale_eps
     grad = fort_dcriterion_parallel(x_free_start)
-
+    dfunc_eps = -HUGE_FLOAT
+    
     auto_scales = zero_dble
 
     DO i = 1, num_free
@@ -242,7 +244,10 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, level, coeffs_a, c
 
     ELSEIF (optimizer_used == 'FORT-BFGS') THEN
 
+        dfunc_eps = optimizer_options%bfgs%eps
         CALL dfpmin(fort_criterion_parallel, fort_dcriterion_parallel, x_free_start, optimizer_options%bfgs%gtol, optimizer_options%bfgs%maxiter, optimizer_options%bfgs%stpmx, maxfun, success, message, iter)
+        dfunc_eps = -HUGE_FLOAT
+
 
     END IF
 

@@ -76,10 +76,16 @@ def check_estimation(respy_obj):
 
     if maxfun > 0:
         assert optimizer_used in optimizer_options.keys()
-        if (level > 0) and (version == 'FORTRAN'):
-            assert 'FORT-SLSQP' in optimizer_options.keys()
-        elif (level > 0) and (version == 'PYTHON'):
-            assert 'SCIPY-SLSQP' in optimizer_options.keys()
+
+        # When the level of ambiguity is a free parameter, then we can only
+        # allow for the constraint optimizers in the estimation.
+        if not paras_fixed[0]:
+            if version == 'PYTHON':
+                assert optimizer_used in ['SCIPY-LBFGSB']
+                assert 'SCIPY-SLSQP' in optimizer_options.keys()
+            else:
+                assert optimizer_used in ['FORT-BOBYQA']
+                assert 'FORT-SLSQP' in optimizer_options.keys()
 
     # We need to make sure that all optimizers are fully defined for the
     # FORTRAN interface. At the same time, we do not want to require the user
@@ -90,22 +96,8 @@ def check_estimation(respy_obj):
         full_options[optimizer] = \
             generate_optimizer_options(optimizer, paras_fixed)
 
-    if level > 0:
-        if version == 'FORTRAN':
-            full_options['FORT-SLSQP'] = optimizer_options['FORT-SLSQP']
-        if version == 'PYTHON':
-            full_options['SCIPY-SLSQP'] = optimizer_options['SCIPY-SLSQP']
-
-    if maxfun > 0:
-        full_options[optimizer_used] = optimizer_options[optimizer_used]
-
-        # When the level of ambiguity is a free parameter, then we can only
-        # allow for the constraint optimizers in the estimation.
-        if not paras_fixed[0]:
-            if version == 'PYTHON':
-                assert optimizer_used in ['SCIPY-LBFGSB']
-            else:
-                assert optimizer_used in ['FORT-BOBYQA']
+    for optimizer in optimizer_options.keys():
+        full_options[optimizer] = optimizer_options[optimizer]
 
     # Update the enlarged set of optimizer options.
     check_optimizer_options(full_options, paras_fixed)
