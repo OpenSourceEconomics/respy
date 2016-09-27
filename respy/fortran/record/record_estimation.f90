@@ -233,7 +233,7 @@ SUBROUTINE record_estimation_eval(x_all_current, val_current, num_eval)
         END DO
 
         WRITE(99, *)
-        WRITE(99, 240) 'Level', x_container(1, :) ** 2
+        WRITE(99, 240) 'Level', x_container(1, :) 
         WRITE(99, *)
         WRITE(99, *)
         WRITE(99, *)   'Covariance Matrix'

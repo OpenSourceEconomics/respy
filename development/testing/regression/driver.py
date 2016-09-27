@@ -68,16 +68,6 @@ def run(args):
             init_dict, crit_val = tests_old[idx]
 
             # This is where the modifications take place
-            paras_bounds = [[0.00, None]]
-            for i in range(26):
-                paras_bounds += [[None, None]]
-
-            init_dict['AMBIGUITY']['bounds'] = paras_bounds[0:1]
-            init_dict['OCCUPATION A']['bounds'] = paras_bounds[1:7]
-            init_dict['OCCUPATION B']['bounds'] = paras_bounds[7:13]
-            init_dict['EDUCATION']['bounds'] = paras_bounds[13:16]
-            init_dict['HOME']['bounds'] = paras_bounds[16:17]
-            init_dict['SHOCKS']['bounds'] =  paras_bounds[17:27]
 
             tests_new += [(init_dict, crit_val)]
 
