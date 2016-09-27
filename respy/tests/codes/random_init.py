@@ -397,7 +397,7 @@ def generate_random_dict(constraints=None):
         assert (constraints['is_deterministic'] in [True, False])
         # Replace in initialization files
         if constraints['is_deterministic']:
-            dict_['SHOCKS']['coeffs'] = np.zeros(10).tolist()
+            dict_['SHOCKS']['coeffs'] = [0.0] * 10
 
     # Number of agents
     if 'agents' in constraints.keys():

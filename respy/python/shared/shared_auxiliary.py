@@ -508,24 +508,14 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
     paras_fixed += dict_['OCCUPATION B']['fixed'][:]
     paras_fixed += dict_['EDUCATION']['fixed'][:]
     paras_fixed += dict_['HOME']['fixed'][:]
-
-    # TODO: This needs to be better understood before a release.
-    try:
-        paras_fixed += dict_['SHOCKS']['fixed'][:]
-    except ValueError:
-        paras_fixed += dict_['SHOCKS']['fixed'][:].tolist()
+    paras_fixed += dict_['SHOCKS']['fixed'][:]
 
     paras_bounds = dict_['AMBIGUITY']['bounds'][:]
     paras_bounds += dict_['OCCUPATION A']['bounds'][:]
     paras_bounds += dict_['OCCUPATION B']['bounds'][:]
     paras_bounds += dict_['EDUCATION']['bounds'][:]
     paras_bounds += dict_['HOME']['bounds'][:]
-
-    # TODO: This needs to be better understood before a release.
-    try:
-        paras_bounds += dict_['SHOCKS']['bounds'][:]
-    except ValueError:
-        paras_bounds += dict_['SHOCKS']['bounds'][:].tolist()
+    paras_bounds += dict_['SHOCKS']['bounds'][:]
 
     str_optim = '{0:<10} {1:25.15f} {2:>5} {3:>15}\n'
 

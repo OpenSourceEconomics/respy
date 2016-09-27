@@ -297,10 +297,8 @@ class RespyCls(object):
         shocks_coeffs = cholesky_to_coeffs(shocks_cholesky)
         init_dict['SHOCKS']['coeffs'] = shocks_coeffs
 
-        init_dict['SHOCKS']['bounds'] = np.array(self.attr['paras_bounds'][
-                                                 17:27])
-        init_dict['SHOCKS']['fixed'] = np.array(self.attr['paras_fixed'][
-                                                 17:27])
+        init_dict['SHOCKS']['bounds'] = self.attr['paras_bounds'][17:27]
+        init_dict['SHOCKS']['fixed'] = self.attr['paras_fixed'][17:27]
 
         # Solution
         init_dict['SOLUTION'] = dict()
@@ -487,7 +485,7 @@ class RespyCls(object):
             self.attr['paras_' + which] += init_dict['OCCUPATION B'][which][:]
             self.attr['paras_' + which] += init_dict['EDUCATION'][which][:]
             self.attr['paras_' + which] += init_dict['HOME'][which][:]
-            self.attr['paras_' + which] += init_dict['SHOCKS'][which].tolist()
+            self.attr['paras_' + which] += init_dict['SHOCKS'][which]
 
         # Ensure that all elements in the dictionary are of the same
         # type.
@@ -717,7 +715,7 @@ class RespyCls(object):
             if upper is not None:
                 assert isinstance(upper, float)
                 assert upper >= x[i]
-            if (upper is not None) and (lower is not NOne):
+            if (upper is not None) and (lower is not None):
                 assert upper >= lower
 
     def _check_integrity_results(self):

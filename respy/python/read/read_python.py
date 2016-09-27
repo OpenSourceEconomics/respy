@@ -56,8 +56,7 @@ def read(fname):
             dict_ = _process_line(group, flag, value, is_fixed, bounds, dict_)
 
     # Type conversion for Shocks
-    for key_ in ['coeffs', 'fixed', 'bounds']:
-        dict_['SHOCKS'][key_] = np.array(dict_['SHOCKS'][key_])
+    dict_['SHOCKS']['coeffs'] = np.array(dict_['SHOCKS']['coeffs'])
 
     # Finishing
     return dict_
