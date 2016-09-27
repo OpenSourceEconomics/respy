@@ -79,7 +79,6 @@ def run(args):
         return
 
     if is_creation:
-        # CHECK SOME TODOS.
         tests = []
         for idx in range(num_tests):
             print('\n Creating Test ', idx)
@@ -87,9 +86,7 @@ def run(args):
             # We impose a couple of constraints that make the requests
             # manageable.
             constr = dict()
-            constr['maxfun'] = int(np.random.choice([0, 1, 2, 3, 5, 6], p=[0.5, 0.1, 0.1, 0.1, 0.1, 0.1]))
-            constr['flag_scaling'] = np.random.choice([True, False], p=[0.1, 0.9])
-            constr['is_store'] = False
+            constr['is_estimation'] = True
 
             init_dict = generate_init(constr)
             respy_obj = RespyCls('test.respy.ini')
@@ -97,6 +94,7 @@ def run(args):
             crit_val = estimate(respy_obj)[1]
             test = (init_dict, crit_val)
             tests += [test]
+            print_init_dict(init_dict)
 
         json.dump(tests, open('regression_vault.respy.json', 'w'))
         return

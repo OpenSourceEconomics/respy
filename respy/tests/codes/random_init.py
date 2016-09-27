@@ -86,8 +86,7 @@ def generate_random_dict(constraints=None):
     if sum(paras_fixed) == 17:
         paras_fixed[np.random.randint(0, 17)] = True
     paras_fixed += [np.random.choice([True, False]).tolist()] * 10
-    # TODO: Is this True, cant we do that in the regression test file?
-    [str(i) for i in paras_fixed]
+
 
     # Sampling number of agents for the simulation. This is then used as the
     # upper bound for the dataset used in the estimation.
@@ -441,9 +440,11 @@ def generate_random_dict(constraints=None):
         assert (constraints['is_estimation'] in [True, False])
         # Replace in initialization files
         if constraints['is_estimation']:
-            dict_['ESTIMATION']['maxfun'] = np.random.randint(1, 10)
+            dict_['is_store'] = False
+            dict_['ESTIMATION']['maxfun'] = int(np.random.choice(range(6),
+                p=[0.5, 0.1, 0.1, 0.1, 0.1, 0.1]))
             dict_['SCALING']['flag'] = np.random.choice(['True', 'False'],
-                                                            p=[0.1, 0.9])
+                p=[0.1, 0.9])
 
             # Ensure that a valid estimator is selected, at least if the
             # level of ambiguity is a free parameter.

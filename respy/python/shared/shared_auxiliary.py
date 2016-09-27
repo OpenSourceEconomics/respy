@@ -450,7 +450,7 @@ def generate_optimizer_options(which, paras_fixed):
         dict_['eps'] = np.random.uniform(1e-9, 1e-6)
 
     elif which == 'SCIPY-LBFGSB':
-        dict_['factr'] = np.random.uniform(1e7, 1e12)
+        dict_['factr'] = np.random.uniform(10, 100)
         dict_['pgtol'] = np.random.uniform(1e-6, 1e-4)
         dict_['maxiter'] = np.random.randint(1, 10)
         dict_['maxls'] = np.random.randint(1, 10)
