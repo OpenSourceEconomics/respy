@@ -41,7 +41,7 @@ SUBROUTINE dist_optim_paras(level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, 
 !------------------------------------------------------------------------------
 
     ! Extract model ingredients
-    level = x(1:1) ** 2
+    level = MAX(x(1:1), zero_dble)
 
     coeffs_a = x(2:7)
 
@@ -87,7 +87,7 @@ SUBROUTINE get_free_optim_paras(x, level, coeffs_a, coeffs_b, coeffs_edu, coeffs
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    x_internal(1:1) = SQRT(level)
+    x_internal(1:1) = level
 
     x_internal(2:7) = coeffs_a(:)
 

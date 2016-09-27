@@ -48,22 +48,45 @@ def generate_random_dict(constraints=None):
     # Initialize container
     dict_ = dict()
 
+    # We now draw all parameter values. This is necessarily done here as we
+    # subsequently determine a set of valid bounds.
+    paras_values = []
+    for i in range(27):
+        if i in [0]:
+            value = np.random.choice([0.0, np.random.uniform()])
+        elif i in range(1, 17):
+            value = np.random.uniform(-0.05, 0.05)
+        elif i in [17, 21, 24, 26]:
+            value = np.random.uniform(0.05, 1)
+        else:
+            value = 0.0
+
+        paras_values += [value]
+
+    # Construct a set of valid bounds. Note that there are now bounds for the
+    # coefficients of the covariance matrix. It is not clear how to enforce
+    # these during an estimation on the Cholesky factors. Same problem occurs
+    # for the set of fixed parameters.
+    paras_bounds = []
+    for i, value in enumerate(paras_values):
+        lower = np.random.choice([None, value - np.random.uniform()])
+        upper = np.random.choice([None, value + np.random.uniform()])
+        if i in [0]:
+            lower = max(0.0, value - np.random.uniform())
+        if i in range(17, 27):
+            lower, upper = None, None
+        paras_bounds += [[lower, upper]]
+
     # The dictionary also contains the information whether parameters are
     # fixed during an estimation. We need to ensure that at least one
-    # parameter is always free.
-    paras_fixed = np.random.choice([True, False], 27).tolist()
-    if sum(paras_fixed) == 27:
-        paras_fixed[np.random.randint(0, 27)] = True
-
-    # TODO: These needs to be more flexible.
-    paras_bounds = [[0.00, None]]
-    for i in range(26):
-        paras_bounds += [[None, None]]
-
-    # All booleans are treated as strings to allow for an easy serialization
-    # with JSON. This is useful for storing the regression tests which need
-    # to be readable by PYTHON2/3. This is not the case if using the pickle
-    # library.
+    # parameter is always free. At this point we also want to ensure that
+    # either all shock coefficients are fixed or none. It is not clear how to
+    # ensure other constraints on the Cholesky factors.
+    paras_fixed = np.random.choice([True, False], 17).tolist()
+    if sum(paras_fixed) == 17:
+        paras_fixed[np.random.randint(0, 17)] = True
+    paras_fixed += [np.random.choice([True, False]).tolist()] * 10
+    # TODO: Is this True, cant we do that in the regression test file?
     [str(i) for i in paras_fixed]
 
     # Sampling number of agents for the simulation. This is then used as the
@@ -77,25 +100,25 @@ def generate_random_dict(constraints=None):
 
     # Home
     dict_['HOME'] = dict()
-    dict_['HOME']['coeffs'] = np.random.uniform(-0.05, 0.05, 1).tolist()
+    dict_['HOME']['coeffs'] = paras_values[16:17]
     dict_['HOME']['bounds'] = paras_bounds[16:17]
     dict_['HOME']['fixed'] = paras_fixed[16:17]
 
     # Occupation A
     dict_['OCCUPATION A'] = dict()
-    dict_['OCCUPATION A']['coeffs'] = np.random.uniform(-0.05, 0.05, 6).tolist()
+    dict_['OCCUPATION A']['coeffs'] = paras_values[1:7]
     dict_['OCCUPATION A']['bounds'] = paras_bounds[1:7]
     dict_['OCCUPATION A']['fixed'] = paras_fixed[1:7]
 
     # Occupation B
     dict_['OCCUPATION B'] = dict()
-    dict_['OCCUPATION B']['coeffs'] = np.random.uniform(-0.05, 0.05, 6).tolist()
+    dict_['OCCUPATION B']['coeffs'] = paras_values[7:13]
     dict_['OCCUPATION B']['bounds'] = paras_bounds[7:13]
     dict_['OCCUPATION B']['fixed'] = paras_fixed[7:13]
 
     # Education
     dict_['EDUCATION'] = dict()
-    dict_['EDUCATION']['coeffs'] = np.random.uniform(-0.05, 0.05, 6).tolist()
+    dict_['EDUCATION']['coeffs'] = paras_values[13:16]
     dict_['EDUCATION']['bounds'] = paras_bounds[13:16]
     dict_['EDUCATION']['fixed'] = paras_fixed[13:16]
 
@@ -112,7 +135,7 @@ def generate_random_dict(constraints=None):
     # AMBIGUITY
     dict_['AMBIGUITY'] = dict()
     dict_['AMBIGUITY']['measure'] = np.random.choice(['abs', 'kl'])
-    dict_['AMBIGUITY']['coeffs'] = [np.random.choice([0.0, np.random.uniform()])]
+    dict_['AMBIGUITY']['coeffs'] = paras_values[0:1]
     dict_['AMBIGUITY']['bounds'] = paras_bounds[0:1]
     dict_['AMBIGUITY']['fixed'] = paras_fixed[0:1]
 
@@ -167,10 +190,7 @@ def generate_random_dict(constraints=None):
 
     # SHOCKS
     dict_['SHOCKS'] = dict()
-    shocks = np.zeros(10)
-    for i in [0, 4, 7, 9]:
-        shocks[i] = np.random.uniform(0.05, 1)
-    dict_['SHOCKS']['coeffs'] = shocks.tolist()
+    dict_['SHOCKS']['coeffs'] = paras_values[17:]
     dict_['SHOCKS']['bounds'] = paras_bounds[17:]
     dict_['SHOCKS']['fixed'] = paras_fixed[17:]
 
@@ -414,7 +434,8 @@ def generate_random_dict(constraints=None):
         else:
             dict_['ESTIMATION']['agents'] = np.random.randint(1, num_agents)
 
-    # Estimation task, but very small.
+    # Estimation task, but very small. A host of other constraints need to be
+    # honored as well.
     if 'is_estimation' in constraints.keys():
         # Checks
         assert (constraints['is_estimation'] in [True, False])
@@ -422,8 +443,15 @@ def generate_random_dict(constraints=None):
         if constraints['is_estimation']:
             dict_['ESTIMATION']['maxfun'] = np.random.randint(1, 10)
             dict_['SCALING']['flag'] = np.random.choice(['True', 'False'],
-                                                        p=[0.1,
-                                                                         0.9])
+                                                            p=[0.1, 0.9])
+
+            # Ensure that a valid estimator is selected, at least if the
+            # level of ambiguity is a free parameter.
+            if not dict_['AMBIGUITY']['fixed'][0]:
+                if dict_['PROGRAM']['version'] == 'FORTRAN':
+                    dict_['ESTIMATION']['optimizer'] = 'FORT-BOBYQA'
+                else:
+                    dict_['ESTIMATION']['optimizer'] = 'SCIPY-LBFGSB'
 
     # Finishing
     return dict_

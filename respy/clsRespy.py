@@ -705,6 +705,14 @@ class RespyCls(object):
         x = get_optim_paras(level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
             shocks_cholesky, 'all', None, True)
 
+        # It is not clear at this point how to impose parameter constraints
+        # on the covariance matrix in a flexible manner. So, either all fixed
+        # or none.
+        shocks_fixed = paras_fixed[17:]
+        all_fixed = all(is_fixed is False for is_fixed in shocks_fixed)
+        all_free = all(is_free is True for is_free in shocks_fixed)
+        assert all_free or all_fixed
+
         # Ambiguity needs to be larger than one ...
         assert paras_bounds[0][0] >= 0.00
         for i in range(27):
@@ -717,6 +725,10 @@ class RespyCls(object):
                 assert upper >= x[i]
             if (upper is not None) and (lower is not None):
                 assert upper >= lower
+            # At this point no bounds for the elements of the covariance
+            # matrix are allowed.
+            if i in range(17, 27):
+                assert paras_bounds[i] == [None, None]
 
     def _check_integrity_results(self):
         """ This methods check the integrity of the results.

@@ -42,32 +42,30 @@ from respy import estimate
 from codes.random_init import generate_init
 
 
-respy_obj = RespyCls('model.respy.ini')
+#respy_obj = RespyCls('model.respy.ini')
 
-simulate(respy_obj)
-estimate(respy_obj)
-raise SystemExit('just reading in')
-
-for _ in range(10000000):
-
+#simulate(respy_obj)
+#estimate(respy_obj)
+#raise SystemExit('just reading in')
+np.random.seed(123)
+for _ in range(100000):
+    print('Neeeeeeeeeeeeeew')
     constr = dict()
     constr['is_estimation'] = True
-    constr['flag_ambiguity'] = False
-    constr['flag_parallelism'] = False
 
     init_dict = generate_init(constr)
 
-    version = np.random.choice(['PYTHON', 'FORTRAN'])
-
-    print(version)
-    init_dict['PROGRAM']['version'] = version
-
-    if version == 'PYTHON':
-        init_dict['ESTIMATION']['optimizer'] = 'SCIPY-LBFGSB'
-    else:
-        init_dict['ESTIMATION']['optimizer'] = 'FORT-BOBYQA'
-        init_dict['PROGRAM']['procs'] = np.random.randint(1, 5)
-
+    # version = np.random.choice(['PYTHON', 'FORTRAN'])
+    #
+    # print(version)
+    # init_dict['PROGRAM']['version'] = version
+    #
+    # if version == 'PYTHON':
+    #     init_dict['ESTIMATION']['optimizer'] = 'SCIPY-LBFGSB'
+    # else:
+    #     init_dict['ESTIMATION']['optimizer'] = 'FORT-BOBYQA'
+    #     init_dict['PROGRAM']['procs'] = np.random.randint(1, 5)
+    #
     print_init_dict(init_dict)
 
     respy_obj = RespyCls('test.respy.ini')

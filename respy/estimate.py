@@ -101,14 +101,19 @@ def check_estimation(respy_obj):
     if maxfun > 0:
         full_options[optimizer_used] = optimizer_options[optimizer_used]
 
+        # When the level of ambiguity is a free parameter, then we can only
+        # allow for the constraint optimizers in the estimation.
+        if not paras_fixed[0]:
+            if version == 'PYTHON':
+                assert optimizer_used in ['SCIPY-LBFGSB']
+            else:
+                assert optimizer_used in ['FORT-BOBYQA']
+
     # There is only one explicit place in the initialization file where
     # the step size for any derivative approximation is specified.
     for optimizer in ['FORT-SLSQP', 'SCIPY-SLSQP', 'SCIPY-BFGS',
                       'SCIPY-LBFGSB']:
         full_options[optimizer]['eps'] = eps
-
-    # When the level of ambiguity is a free parameter, then we can only allow
-    # for the constraint optimizers in the estimation.
 
     # Update the enlarged set of optimizer options.
     check_optimizer_options(full_options, paras_fixed)
