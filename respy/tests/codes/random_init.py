@@ -87,7 +87,6 @@ def generate_random_dict(constraints=None):
         paras_fixed[np.random.randint(0, 17)] = True
     paras_fixed += [np.random.choice([True, False]).tolist()] * 10
 
-
     # Sampling number of agents for the simulation. This is then used as the
     # upper bound for the dataset used in the estimation.
     num_agents_sim = np.random.randint(3, MAX_AGENTS)
@@ -294,6 +293,7 @@ def generate_random_dict(constraints=None):
         assert level >= 0.0
         # Replace in initialization file
         dict_['AMBIGUITY']['coeffs'] = [level]
+        dict_['AMBIGUITY']['bounds'] = [[0.00, None]]
 
     # Treat level of ambiguity as fixed in an estimation
     if 'flag_ambiguity' in constraints.keys():
@@ -302,8 +302,10 @@ def generate_random_dict(constraints=None):
         # Replace in initialization files
         if constraints['flag_ambiguity']:
             dict_['AMBIGUITY']['coeffs'] = [np.random.uniform(0.01, 1.0)]
+            dict_['AMBIGUITY']['bounds'] = [[0.00, None]]
         else:
             dict_['AMBIGUITY']['coeffs'] = [0.00]
+            dict_['AMBIGUITY']['bounds'] = [[0.00, None]]
 
     # Treat level of ambiguity as fixed in an estimation
     if 'fixed_ambiguity' in constraints.keys():

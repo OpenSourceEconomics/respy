@@ -179,13 +179,13 @@ class TestClass(object):
             single = np.random.choice([True, False])
 
             action = np.random.choice(['fix', 'free', 'value'])
-            num_draws = np.random.randint(1, 20)
+            num_draws = np.random.randint(1, 17)
 
             # The set of identifiers is a little complicated as we only allow
             # sampling of the diagonal terms of the covariance matrix.
             # Otherwise, we sometimes run into the problem of very ill
             # conditioned matrices resulting in a failed Cholesky decomposition.
-            set_ = list(range(17)) + [17, 19, 22, 26]
+            set_ = list(range(17))
 
             identifiers = np.random.choice(set_, num_draws, replace=False)
             values = np.random.uniform(size=num_draws)
