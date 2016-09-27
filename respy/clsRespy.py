@@ -11,6 +11,7 @@ from respy.python.shared.shared_auxiliary import check_model_parameters
 from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
 from respy.python.shared.shared_auxiliary import print_init_dict
 from respy.python.shared.shared_auxiliary import dist_optim_paras
+from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
 from respy.python.read.read_python import read
@@ -260,18 +261,23 @@ class RespyCls(object):
         init_dict['OCCUPATION A']['coeffs'] = \
             self.attr['model_paras']['coeffs_a']
 
+        init_dict['OCCUPATION A']['bounds'] = self.attr['paras_bounds'][1:7]
         init_dict['OCCUPATION A']['fixed'] = self.attr['paras_fixed'][1:7]
 
         # Occupation A
         init_dict['OCCUPATION B'] = dict()
         init_dict['OCCUPATION B']['coeffs'] = \
             self.attr['model_paras']['coeffs_b']
+
+        init_dict['OCCUPATION B']['bounds'] = self.attr['paras_bounds'][7:13]
         init_dict['OCCUPATION B']['fixed'] = self.attr['paras_fixed'][7:13]
 
         # Education
         init_dict['EDUCATION'] = dict()
         init_dict['EDUCATION']['coeffs'] = \
             self.attr['model_paras']['coeffs_edu']
+
+        init_dict['EDUCATION']['bounds'] = self.attr['paras_bounds'][13:16]
         init_dict['EDUCATION']['fixed'] = self.attr['paras_fixed'][13:16]
 
         init_dict['EDUCATION']['start'] = self.attr['edu_start']
@@ -281,6 +287,8 @@ class RespyCls(object):
         init_dict['HOME'] = dict()
         init_dict['HOME']['coeffs'] = \
             self.attr['model_paras']['coeffs_home']
+
+        init_dict['HOME']['bounds'] = self.attr['paras_bounds'][16:17]
         init_dict['HOME']['fixed'] = self.attr['paras_fixed'][16:17]
 
         # Shocks
@@ -288,7 +296,9 @@ class RespyCls(object):
         shocks_cholesky = self.attr['model_paras']['shocks_cholesky']
         shocks_coeffs = cholesky_to_coeffs(shocks_cholesky)
         init_dict['SHOCKS']['coeffs'] = shocks_coeffs
-        init_dict['SHOCKS']['fixed'] = np.array(self.attr['paras_fixed'][17:27])
+
+        init_dict['SHOCKS']['fixed'] = np.array(self.attr['paras_fixed'][
+                                                 17:27])
 
         # Solution
         init_dict['SOLUTION'] = dict()
@@ -300,6 +310,7 @@ class RespyCls(object):
         init_dict['AMBIGUITY'] = dict()
         init_dict['AMBIGUITY']['measure'] = self.attr['measure']
         init_dict['AMBIGUITY']['coeffs'] = self.attr['model_paras']['level']
+        init_dict['AMBIGUITY']['bounds'] = self.attr['paras_bounds'][0:1]
         init_dict['AMBIGUITY']['fixed'] = self.attr['paras_fixed'][0:1]
 
         # Simulation
@@ -468,12 +479,13 @@ class RespyCls(object):
             init_dict['AMBIGUITY']['coeffs']
 
         # Initialize information about optimization parameters
-        self.attr['paras_fixed'] = init_dict['AMBIGUITY']['fixed'][:]
-        self.attr['paras_fixed'] += init_dict['OCCUPATION A']['fixed'][:]
-        self.attr['paras_fixed'] += init_dict['OCCUPATION B']['fixed'][:]
-        self.attr['paras_fixed'] += init_dict['EDUCATION']['fixed'][:]
-        self.attr['paras_fixed'] += init_dict['HOME']['fixed'][:]
-        self.attr['paras_fixed'] += init_dict['SHOCKS']['fixed'].tolist()
+        for which in ['fixed', 'bounds']:
+            self.attr['paras_' + which] = init_dict['AMBIGUITY'][which][:]
+            self.attr['paras_' + which] += init_dict['OCCUPATION A'][which][:]
+            self.attr['paras_' + which] += init_dict['OCCUPATION B'][which][:]
+            self.attr['paras_' + which] += init_dict['EDUCATION'][which][:]
+            self.attr['paras_' + which] += init_dict['HOME'][which][:]
+            self.attr['paras_' + which] += init_dict['SHOCKS'][which].tolist()
 
         # Ensure that all elements in the dictionary are of the same
         # type.
@@ -544,6 +556,8 @@ class RespyCls(object):
 
         num_agents_est = self.attr['num_agents_est']
 
+        paras_bounds = self.attr['paras_bounds']
+
         derivatives = self.attr['derivatives']
 
         paras_fixed = self.attr['paras_fixed']
@@ -580,17 +594,16 @@ class RespyCls(object):
 
         tau = self.attr['tau']
 
-        # Auxiliary objects
-        shocks_cholesky = model_paras['shocks_cholesky']
-
         # Parallelism
         assert (num_procs > 0)
         if num_procs > 1:
             assert (version == 'FORTRAN')
 
         # Status of optimization parameters
-        assert isinstance(paras_fixed, list)
-        assert (len(paras_fixed) == 27)
+        for var in [paras_fixed, paras_bounds]:
+            assert isinstance(var, list)
+            assert (len(var) == 27)
+
         assert (np.all(paras_fixed) in [True, False])
 
         # Debug status
@@ -647,11 +660,6 @@ class RespyCls(object):
         # Version version of package
         assert (version in ['FORTRAN', 'PYTHON'])
 
-        # Shock distribution
-        assert (isinstance(shocks_cholesky, np.ndarray))
-        assert (np.all(np.isfinite(shocks_cholesky)))
-        assert (shocks_cholesky.shape == (4, 4))
-
         # Interpolation
         assert (is_interpolated in [True, False])
         assert (isinstance(num_points_interp, int))
@@ -680,6 +688,34 @@ class RespyCls(object):
 
         # Ambiguity
         assert (measure in ['abs', 'kl'])
+
+        # Check model parameters
+        shocks_cholesky = model_paras['shocks_cholesky']
+        coeffs_home = model_paras['coeffs_home']
+        coeffs_edu = model_paras['coeffs_edu']
+        coeffs_a = model_paras['coeffs_a']
+        coeffs_b = model_paras['coeffs_b']
+        level = model_paras['level']
+
+        check_model_parameters(level, coeffs_a, coeffs_b, coeffs_edu,
+            coeffs_home, shocks_cholesky)
+
+        # Check that all parameter values are within the bounds.
+        x = get_optim_paras(level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+            shocks_cholesky, 'all', None, True)
+
+        # Ambiguity needs to be larger than one ...
+        assert paras_bounds[0][0] >= 0.00
+        for i in range(27):
+            lower, upper = paras_bounds[i]
+            if lower is not None:
+		assert isinstance(lower, float)
+                assert lower <= x[i]
+            if upper is not None:
+		assert isinstance(upper, float)
+                assert upper >= x[i]
+            if (upper is not None) and (lower is not NOne):
+                assert upper >= lower
 
     def _check_integrity_results(self):
         """ This methods check the integrity of the results.

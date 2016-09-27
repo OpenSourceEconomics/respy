@@ -68,15 +68,16 @@ def run(args):
             init_dict, crit_val = tests_old[idx]
 
             # This is where the modifications take place
-            init_dict['SCIPY-LBFGSB'] = dict()
-            init_dict['SCIPY-LBFGSB']['factr'] = np.random.uniform(1e7, 1e12)
-            init_dict['SCIPY-LBFGSB']['pgtol'] = np.random.uniform(1e-6, 1e-4)
-            init_dict['SCIPY-LBFGSB']['maxiter'] = np.random.randint(1, 10)
-            init_dict['SCIPY-LBFGSB']['maxls'] = np.random.randint(1, 10)
-            init_dict['SCIPY-LBFGSB']['m'] = np.random.randint(1, 10)
-            # This key-value pair is actually replaced with the information from
-            # the requested step for the approximation of the derivatives.
-            init_dict['SCIPY-LBFGSB']['eps'] = np.random.uniform(1e-9, 1e-6)
+            paras_bounds = [[0.00, None]]
+            for i in range(26):
+                paras_bounds += [[None, None]]
+
+            init_dict['AMBIGUITY']['bounds'] = paras_bounds[0:1]
+            init_dict['OCCUPATION A']['bounds'] = paras_bounds[1:7]
+            init_dict['OCCUPATION B']['bounds'] = paras_bounds[7:13]
+            init_dict['EDUCATION']['bounds'] = paras_bounds[13:16]
+            init_dict['HOME']['bounds'] = paras_bounds[16:17]
+            init_dict['SHOCKS']['bounds'] =  paras_bounds[17:27]
 
             tests_new += [(init_dict, crit_val)]
 

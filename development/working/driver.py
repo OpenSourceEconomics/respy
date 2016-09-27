@@ -42,6 +42,12 @@ from respy import estimate
 from codes.random_init import generate_init
 
 
+respy_obj = RespyCls('model.respy.ini')
+
+simulate(respy_obj)
+estimate(respy_obj)
+raise SystemExit('just reading in')
+
 for _ in range(10000000):
 
     constr = dict()

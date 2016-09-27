@@ -51,6 +51,10 @@ MODULE shared_constants
     REAL(our_dble), PARAMETER   :: HUGE_FLOAT                   = 1.0e20_our_dble
     REAL(our_dble), PARAMETER   :: LARGE_FLOAT                  = 1.0e8_our_dble
 
+    ! TODO: Move around
+    REAL(our_dble)  :: paras_bounds(2, 27)
+    REAL(our_dble), ALLOCATABLE  :: paras_bounds_free(:, :)
+
     ! We create a type that resembles the dictionary with the optimizer options in PYTHON.
     TYPE OPTIMIZER_BFGS
         INTEGER(our_int)        :: maxiter

@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from respy.python.estimate.estimate_auxiliary import get_optim_paras
+from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.shared.shared_auxiliary import dist_optim_paras
 from codes.random_init import generate_init
 from respy import RespyCls

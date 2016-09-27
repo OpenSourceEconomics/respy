@@ -55,6 +55,11 @@ def generate_random_dict(constraints=None):
     if sum(paras_fixed) == 27:
         paras_fixed[np.random.randint(0, 27)] = True
 
+    # TODO: These needs to be more flexible.
+    paras_bounds = [[0.00, None]]
+    for i in range(26):
+        paras_bounds += [[None, None]]
+
     # All booleans are treated as strings to allow for an easy serialization
     # with JSON. This is useful for storing the regression tests which need
     # to be readable by PYTHON2/3. This is not the case if using the pickle
@@ -73,21 +78,25 @@ def generate_random_dict(constraints=None):
     # Home
     dict_['HOME'] = dict()
     dict_['HOME']['coeffs'] = np.random.uniform(-0.05, 0.05, 1).tolist()
+    dict_['HOME']['bounds'] = paras_bounds[16:17]
     dict_['HOME']['fixed'] = paras_fixed[16:17]
 
     # Occupation A
     dict_['OCCUPATION A'] = dict()
     dict_['OCCUPATION A']['coeffs'] = np.random.uniform(-0.05, 0.05, 6).tolist()
+    dict_['OCCUPATION A']['bounds'] = paras_bounds[1:7]
     dict_['OCCUPATION A']['fixed'] = paras_fixed[1:7]
 
     # Occupation B
     dict_['OCCUPATION B'] = dict()
     dict_['OCCUPATION B']['coeffs'] = np.random.uniform(-0.05, 0.05, 6).tolist()
+    dict_['OCCUPATION B']['bounds'] = paras_bounds[7:13]
     dict_['OCCUPATION B']['fixed'] = paras_fixed[7:13]
 
     # Education
     dict_['EDUCATION'] = dict()
     dict_['EDUCATION']['coeffs'] = np.random.uniform(-0.05, 0.05, 6).tolist()
+    dict_['EDUCATION']['bounds'] = paras_bounds[13:16]
     dict_['EDUCATION']['fixed'] = paras_fixed[13:16]
 
     dict_['EDUCATION']['start'] = np.random.randint(1, 10)
@@ -104,6 +113,7 @@ def generate_random_dict(constraints=None):
     dict_['AMBIGUITY'] = dict()
     dict_['AMBIGUITY']['measure'] = np.random.choice(['abs', 'kl'])
     dict_['AMBIGUITY']['coeffs'] = [np.random.choice([0.0, np.random.uniform()])]
+    dict_['AMBIGUITY']['bounds'] = paras_bounds[0:1]
     dict_['AMBIGUITY']['fixed'] = paras_fixed[0:1]
 
     # ESTIMATION
@@ -161,6 +171,7 @@ def generate_random_dict(constraints=None):
     for i in [0, 4, 7, 9]:
         shocks[i] = np.random.uniform(0.05, 1)
     dict_['SHOCKS']['coeffs'] = shocks.tolist()
+    dict_['SHOCKS']['bounds'] = paras_bounds[17:]
     dict_['SHOCKS']['fixed'] = paras_fixed[17:]
 
     # INTERPOLATION

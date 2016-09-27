@@ -706,6 +706,11 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
     INTEGER(our_int)                :: j
     INTEGER(our_int)                :: k
 
+
+    ! TODO: Getting BOBQUA to work
+    INTEGER(our_int)                :: i
+
+
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
@@ -715,6 +720,8 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
 
     1505 FORMAT(i10)
     1515 FORMAT(i10,1x,i10)
+
+    1525 FORMAT(27(1x,f25.15))
 
     ! Read model specification
     OPEN(UNIT=99, FILE='.model.resfort.ini', ACTION='READ')
@@ -805,7 +812,33 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
         READ(99, 1500) optimizer_options%slsqp%ftol
         READ(99, 1505) optimizer_options%slsqp%maxiter
 
+        ! TODO: Better positioning
+        READ(99, 1525) paras_bounds(1, :)
+        READ(99, 1525) paras_bounds(2, :)
+
     CLOSE(99)
+
+    DO i = 1, 27
+
+        IF(paras_bounds(1, i) == -MISSING_FLOAT) paras_bounds(1, i) = - HUGE_FLOAT
+        IF(paras_bounds(2, i) == MISSING_FLOAT) paras_bounds(2, i) =  HUGE_FLOAT
+
+    END DO
+
+    ALLOCATE(paras_bounds_free(2, COUNT(.NOT. paras_fixed)))
+
+    j = 1
+    DO i = 1, 27
+        IF (.NOT. paras_fixed(i)) THEN
+            paras_bounds_free(1, j) = paras_bounds(1, i)
+            paras_bounds_free(2, j) = paras_bounds(2, i)
+            !PRINT *, paras_bounds_free(:, j)
+
+            j = j + 1
+
+        END IF
+
+    END DO
 
     optimizer_options%slsqp%eps = dfunc_eps
 

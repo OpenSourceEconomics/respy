@@ -210,3 +210,4 @@ def check_optimizer_options(optimizer_options, paras_fixed):
     for var in [eps, ftol]:
         assert isinstance(var, float)
         assert (var > 0)
+

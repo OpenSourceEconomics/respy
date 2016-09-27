@@ -9,6 +9,7 @@ import os
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import dist_model_paras
 from respy.python.shared.shared_constants import OPT_EST_FORT
+from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.shared.shared_constants import EXEC_DIR
 
@@ -22,14 +23,15 @@ def resfort_interface(respy_obj, request, data_array=None):
         is_myopic, min_idx, tau, num_procs, num_agents_sim, \
         num_draws_prob, num_agents_est, seed_prob, seed_sim, paras_fixed, \
         optimizer_options, optimizer_used, maxfun, paras_fixed, derivatives, \
-        scaling, measure, file_sim = dist_class_attributes(respy_obj,
-            'model_paras', 'num_periods', 'edu_start', 'is_debug', 'edu_max',
-            'delta', 'num_draws_emax', 'seed_emax', 'is_interpolated',
-            'num_points_interp', 'is_myopic', 'min_idx', 'tau',
-            'num_procs', 'num_agents_sim', 'num_draws_prob',
-            'num_agents_est', 'seed_prob', 'seed_sim', 'paras_fixed',
-            'optimizer_options', 'optimizer_used', 'maxfun', 'paras_fixed',
-            'derivatives', 'scaling', 'measure', 'file_sim')
+        scaling, measure, file_sim, paras_bounds = \
+            dist_class_attributes(respy_obj, 'model_paras', 'num_periods',
+                'edu_start', 'is_debug', 'edu_max',
+                'delta', 'num_draws_emax', 'seed_emax', 'is_interpolated',
+                'num_points_interp', 'is_myopic', 'min_idx', 'tau',
+                'num_procs', 'num_agents_sim', 'num_draws_prob',
+                'num_agents_est', 'seed_prob', 'seed_sim', 'paras_fixed',
+                'optimizer_options', 'optimizer_used', 'maxfun', 'paras_fixed',
+                'derivatives', 'scaling', 'measure', 'file_sim', 'paras_bounds')
 
     dfunc_eps = derivatives[1]
     is_scaled, scale_minimum = scaling
@@ -56,7 +58,7 @@ def resfort_interface(respy_obj, request, data_array=None):
     args = args + (num_draws_prob, num_agents_est, num_agents_sim, seed_prob,
         seed_emax, tau, num_procs, request, seed_sim, optimizer_options,
         optimizer_used, maxfun, paras_fixed, dfunc_eps, is_scaled,
-        scale_minimum, measure, level, file_sim)
+        scale_minimum, measure, level, file_sim, paras_bounds)
 
     write_resfort_initialization(*args)
 
@@ -151,7 +153,7 @@ def write_resfort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         delta, num_draws_prob, num_agents_est, num_agents_sim, seed_prob,
         seed_emax, tau, num_procs, request, seed_sim, optimizer_options,
         optimizer_used, maxfun, paras_fixed, dfunc_eps, is_scaled,
-        scale_minimum, measure, level, file_sim):
+        scale_minimum, measure, level, file_sim, paras_bounds):
     """ Write out model request to hidden file .model.resfort.ini.
     """
 
@@ -306,6 +308,28 @@ def write_resfort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
 
         line = '{0:10d}\n'.format(optimizer_options['FORT-SLSQP']['maxiter'])
         file_.write(line)
+
+        # Transform bounds
+        bounds_lower = []
+        bounds_upper = []
+        for i in range(27):
+            bounds_lower += [paras_bounds[i][0]]
+            bounds_upper += [paras_bounds[i][1]]
+
+        for i in range(27):
+            if bounds_lower[i] is None:
+                bounds_lower[i] = -MISSING_FLOAT
+
+        for i in range(27):
+            if bounds_upper[i] is None:
+                bounds_upper[i] = MISSING_FLOAT
+
+        fmt_ = ' {:25.15f}' * 27
+        line = fmt_.format(*bounds_lower)
+        file_.write(line + '\n')
+
+        line = fmt_.format(*bounds_upper)
+        file_.write(line + '\n')
 
 
 def write_dataset(data_array):

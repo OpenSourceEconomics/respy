@@ -7,7 +7,7 @@ from respy.python.record.record_estimation import record_estimation_stop
 from respy.python.record.record_estimation import record_estimation_final
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
 from respy.python.shared.shared_auxiliary import dist_class_attributes
-from respy.python.estimate.estimate_auxiliary import get_optim_paras
+from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.estimate.estimate_wrapper import OptimizationClass
 from respy.python.shared.shared_auxiliary import dist_model_paras
 from respy.python.shared.shared_constants import OPT_EST_PYTH
@@ -25,14 +25,14 @@ def respy_interface(respy_obj, request, data_array=None):
         delta, num_draws_prob, seed_prob, num_draws_emax, seed_emax, \
         min_idx, is_myopic, is_interpolated, num_points_interp, maxfun, \
         optimizer_used, tau, paras_fixed, optimizer_options, seed_sim, \
-        num_agents_sim, measure, file_sim = \
+        num_agents_sim, measure, file_sim, paras_bounds = \
             dist_class_attributes(respy_obj, 'model_paras', 'num_periods',
                 'num_agents_est', 'edu_start', 'is_debug', 'edu_max',
                 'delta', 'num_draws_prob', 'seed_prob', 'num_draws_emax',
                 'seed_emax', 'min_idx', 'is_myopic', 'is_interpolated',
                 'num_points_interp', 'maxfun', 'optimizer_used', 'tau',
                 'paras_fixed', 'optimizer_options', 'seed_sim',
-                'num_agents_sim', 'measure', 'file_sim')
+                'num_agents_sim', 'measure', 'file_sim', 'paras_bounds')
 
     level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
         dist_model_paras(model_paras, is_debug)
@@ -115,9 +115,11 @@ def respy_interface(respy_obj, request, data_array=None):
                 message = 'Maximum number of iterations exceeded.'
 
         elif optimizer_used == 'SCIPY-LBFGSB':
+            bounds = []
+            for i in range(27):
+                if not paras_fixed[i]:
+                    bounds += [paras_bounds[i]]
 
-            # TODO: Manage bounds ...
-            bounds = None
             lbfgsb_maxiter = optimizer_options['SCIPY-LBFGSB']['maxiter']
             lbfgsb_maxls = optimizer_options['SCIPY-LBFGSB']['maxls']
             lbfgsb_factr = optimizer_options['SCIPY-LBFGSB']['factr']

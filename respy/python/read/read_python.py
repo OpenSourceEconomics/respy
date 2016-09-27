@@ -39,13 +39,12 @@ def read(fname):
                 dict_[group] = {}
                 continue
 
-            # Construct the required information for further processing.
+            # is the block for the optimization coefficients.
             flag, value = list_[:2]
-            is_fixed = None
+            is_fixed, bounds = None, None
+
             if flag in ['coeff']:
-                is_fixed = (len(list_) == 3)
-                if is_fixed:
-                    assert (list_[2] == '!')
+                is_fixed, bounds = process_coefficient_line(line)
 
             # Type conversions
             value = _type_conversions(flag, value)
@@ -54,25 +53,49 @@ def read(fname):
             check_line(group, flag, value)
 
             # Process blocks of information
-            dict_ = _process_line(group, flag, value, is_fixed, dict_)
+            dict_ = _process_line(group, flag, value, is_fixed, bounds, dict_)
 
     # Type conversion for Shocks
-    for key_ in ['coeffs', 'fixed']:
+    for key_ in ['coeffs', 'fixed', 'bounds']:
         dict_['SHOCKS'][key_] = np.array(dict_['SHOCKS'][key_])
-
-    # Check SHOCKS. The covariance matrix can only be constructed after all
-    # coefficients are processed. This then allow to check the basic
-    # requirements.
-    for key_ in ['coeffs', 'fixed']:
-        assert (np.all(np.isfinite(dict_['SHOCKS'][key_])))
-        if key_ == 'coeffs':
-            assert (dict_['SHOCKS'][key_].shape == (10,))
-
-    # Check quality.
-    _check_integrity_complete(dict_)
 
     # Finishing
     return dict_
+
+
+def process_coefficient_line(line):
+    """ This function extracts the information about the estimation.
+    """
+    def _process_bounds(line):
+
+        start, end = line.find('(') + 1, line.find(')')
+        bounds = line[start:end].split(',')
+        for i in range(2):
+            if bounds[i].upper() == 'NONE':
+                bounds[i] = None
+            else:
+                bounds[i] = float(bounds[i])
+
+        return bounds
+
+    list_ = shlex.split(line)
+
+    # The coefficient is neither fixed nor are any bounds specified.
+    if len(list_) == 2:
+        is_fixed, bounds = False, [None, None]
+    # The coefficient is both fixed and bounds are specified.
+    elif len(list_) == 4:
+        is_fixed, bounds = True, _process_bounds(line)
+    # The coefficient is only fixed.
+    elif (len(list_) == 3) and (list_[2] == '!'):
+        is_fixed, bounds = True, [None, None]
+    # The coefficient has only bounds
+    elif len(list_) == 3 and (list_[2][0] == '('):
+        is_fixed, bounds = False, _process_bounds(line)
+    else:
+        raise AssertionError
+
+    return is_fixed, bounds
 
 
 def _type_conversions(flag, value):
@@ -97,7 +120,7 @@ def _type_conversions(flag, value):
     return value
 
 
-def _process_line(group, flag, value, is_fixed, dict_):
+def _process_line(group, flag, value, is_fixed, bounds, dict_):
     """ This function processes most parts of the initialization file.
     """
     # This aligns the label from the initialization file with the label
@@ -108,11 +131,13 @@ def _process_line(group, flag, value, is_fixed, dict_):
     # Prepare container for information about coefficients
     if ('coeffs' not in dict_[group].keys()) and (flag in ['coeffs']):
         dict_[group]['coeffs'] = []
+        dict_[group]['bounds'] = []
         dict_[group]['fixed'] = []
 
     # Collect information
     if flag in ['coeffs']:
         dict_[group]['coeffs'] += [value]
+        dict_[group]['bounds'] += [bounds]
         dict_[group]['fixed'] += [is_fixed]
     else:
         dict_[group][flag] = value
@@ -141,57 +166,3 @@ def _process_cases(list_):
 
     # Finishing
     return is_empty, is_group
-
-
-def _check_integrity_complete(dict_):
-    """ Perform some additional checks that are only possible after the full
-    file is processed.
-    """
-    # Antibugging
-    assert (isinstance(dict_, dict))
-
-    try:
-        for label in ['OCCUPATION A', 'OCCUPATION B']:
-            assert (len(dict_[label]['coeffs']) == 6)
-    except AssertionError:
-        msg = '\n Too many coefficients in group OCCUPATION.\n'
-        sys.exit(msg)
-
-    try:
-        assert (len(dict_['EDUCATION']['coeffs']) == 3)
-    except AssertionError:
-        msg = '\n Too many coefficients in group EDUCATION.\n'
-        sys.exit(msg)
-
-    try:
-        assert (dict_['EDUCATION']['max'] > dict_['EDUCATION']['start'])
-    except AssertionError:
-        msg = '\n Maximum number of schooling less that start EDUCATION.\n'
-        sys.exit(msg)
-
-    try:
-        assert (len(dict_['HOME']['coeffs']) == 1)
-    except AssertionError:
-        msg = '\n Too many coefficients in group HOME.\n'
-        sys.exit(msg)
-
-    try:
-        if dict_['PROGRAM']['procs'] > 1:
-            assert (dict_['PROGRAM']['version'] == 'FORTRAN')
-    except AssertionError:
-        msg = '\n Parallelism only available with FORTRAN implementation.\n'
-        sys.exit(msg)
-
-    # Check all required keys are defined. Note that additional keys might
-    # exists due to the specification of optimizer options.
-    keys_ = ['BASICS', 'EDUCATION', 'OCCUPATION A', 'OCCUPATION B']
-    keys_ += ['HOME', 'INTERPOLATION', 'SHOCKS', 'SOLUTION']
-    keys_ += ['SIMULATION', 'PROGRAM', 'ESTIMATION']
-    try:
-        assert (set(keys_) <= set(dict_.keys()))
-    except AssertionError:
-        msg = '\n Not all required groups specified.\n'
-        sys.exit(msg)
-
-    # Finishing
-    return True

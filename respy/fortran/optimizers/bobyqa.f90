@@ -27,16 +27,17 @@ SUBROUTINE BOBYQA(FUNC, X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUCCESS, MESSAGE
     INTEGER(our_int), INTENT(IN)    :: IPRINT
     INTEGER(our_int), INTENT(IN)    :: MAXFUN
 
-    PROCEDURE(interface_func)       :: FUNC
     LOGICAL, INTENT(OUT)            :: SUCCESS
 
     CHARACTER(150), INTENT(OUT)     :: MESSAGE
+
+    PROCEDURE(interface_func)       :: FUNC
+
     !/* internal arguments    */
 
-    ! TODO: ENDOGENIZE BOUNDS
-    REAL(our_dble) :: XL(SIZE(X)), XU(SIZE(X))
-
-    REAL(our_dble)  :: W(20000)
+    REAL(our_dble)                  :: XL(SIZE(X))
+    REAL(our_dble)                  :: XU(SIZE(X))
+    REAL(our_dble)                  :: W(20000)
 
     INTEGER(our_int)                :: N
 
@@ -46,26 +47,22 @@ SUBROUTINE BOBYQA(FUNC, X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUCCESS, MESSAGE
 
     N = SIZE(X)
 
-    BDL=-HUGE_FLOAT
-    BDU= HUGE_FLOAT
+    XL = paras_bounds_free(1, :); XU = paras_bounds_free(2, :)
 
-    XL = BDL
-    XU = BDU
-
-    CALL  BOBYQA_ORIGINAL(FUNC,N,NPT,X,XL,XU,RHOBEG,RHOEND,IPRINT,MAXFUN,W)
-
-
-            success = .True.
-            message = 'Juphiee BobYQUA.'
+    CALL  BOBYQA_ORIGINAL(FUNC,N,NPT,X,XL,XU,RHOBEG,RHOEND,IPRINT,MAXFUN,W,SUCCESS,MESSAGE)
 
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE BOBYQA_ORIGINAL (FUNC,N,NPT,X,XL,XU,RHOBEG,RHOEND,IPRINT, MAXFUN,W)
+SUBROUTINE BOBYQA_ORIGINAL (FUNC,N,NPT,X,XL,XU,RHOBEG,RHOEND,IPRINT,MAXFUN,W,SUCCESS,MESSAGE)
 
 IMPLICIT REAL*8 (A-H,O-Z)
 DIMENSION X(*),XL(*),XU(*),W(*)
 PROCEDURE(interface_func)       :: FUNC
+
+LOGICAL, INTENT(OUT)            :: SUCCESS
+
+CHARACTER(150), INTENT(OUT)     :: MESSAGE
 
 !C
 !C     This subroutine seeks the least value of a function of many variables,
@@ -111,11 +108,14 @@ PROCEDURE(interface_func)       :: FUNC
 !C
 !C     Return if the value of NPT is unacceptable.
 !C
+
+MESSAGE = 'Successful return from BOBYQA.'
+SUCCESS = .True.
+
 NP=N+1
 IF (NPT .LT. N+2 .OR. NPT .GT. ((N+2)*NP)/2) THEN
-    PRINT 10
-10     FORMAT (/4X,'Return from BOBYQA because NPT is not in', &
-      ' the required interval')
+    MESSAGE = 'Return from BOBYQA because NPT is not in the required interval'
+    SUCCESS = .False.
     GO TO 40
 END IF
 !C
@@ -153,9 +153,8 @@ ZERO=0.0D0
 DO 30 J=1,N
 TEMP=XU(J)-XL(J)
 IF (TEMP .LT. RHOBEG+RHOBEG) THEN
-    PRINT 20
-20     FORMAT (/4X,'Return from BOBYQA because one of the', &
-      ' differences XU(I)-XL(I)'/6X,' is less than 2*RHOBEG.')
+    MESSAGE = 'Return from BOBYQA because one of the differences XU(I)-XL(I) is less than 2*RHOBEG.'
+    SUCCESS = .False.
     GO TO 40
 END IF
 JSL=ISL+J-1

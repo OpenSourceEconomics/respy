@@ -16,7 +16,7 @@ from respy.python.solve.solve_auxiliary import get_exogenous_variables
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.solve.solve_auxiliary import get_endogenous_variable
 from respy.python.evaluate.evaluate_python import pyth_contributions
-from respy.python.estimate.estimate_auxiliary import get_optim_paras
+from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.python.shared.shared_auxiliary import dist_model_paras
 from respy.python.estimate.estimate_python import pyth_criterion

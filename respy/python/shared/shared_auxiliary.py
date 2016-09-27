@@ -48,7 +48,7 @@ def dist_optim_paras(x_all_curre, is_debug, info=None):
         check_optimization_parameters(x_all_curre)
 
     # Level of Ambiguity
-    level = x_all_curre[0:1] ** 2
+    level = x_all_curre[0:1] ** 2#max(x_all_curre[0:1], 0.00)
 
     # Occupation A
     coeffs_a = x_all_curre[1:7]
@@ -515,7 +515,19 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
     except ValueError:
         paras_fixed += dict_['SHOCKS']['fixed'][:].tolist()
 
-    str_optim = '{0:<10} {1:25.15f} {2:>5}\n'
+    paras_bounds = dict_['AMBIGUITY']['bounds'][:]
+    paras_bounds += dict_['OCCUPATION A']['bounds'][:]
+    paras_bounds += dict_['OCCUPATION B']['bounds'][:]
+    paras_bounds += dict_['EDUCATION']['bounds'][:]
+    paras_bounds += dict_['HOME']['bounds'][:]
+
+    # TODO: This needs to be better understood before a release.
+    try:
+        paras_bounds += dict_['SHOCKS']['bounds'][:]
+    except ValueError:
+        paras_bounds += dict_['SHOCKS']['bounds'][:].tolist()
+
+    str_optim = '{0:<10} {1:25.15f} {2:>5} {3:>15}\n'
 
     # Construct labels. This ensures that the initialization files always look
     # identical.
@@ -546,7 +558,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                 file_.write(flag.upper() + '\n\n')
 
                 val = dict_['HOME']['coeffs'][0]
-                line = format_opt_parameters(val, 16, paras_fixed)
+                line = format_opt_parameters(val, 16, paras_fixed, paras_bounds)
                 file_.write(str_optim.format(*line))
 
                 file_.write('\n')
@@ -575,7 +587,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
 
                 for i in range(10):
                     val = dict_['SHOCKS']['coeffs'][i]
-                    line = format_opt_parameters(val, 17 + i, paras_fixed)
+                    line = format_opt_parameters(val, 17 + i, paras_fixed, paras_bounds)
                     file_.write(str_optim.format(*line))
                 file_.write('\n')
 
@@ -584,15 +596,15 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                 file_.write(flag.upper() + '\n\n')
 
                 val = dict_['EDUCATION']['coeffs'][0]
-                line = format_opt_parameters(val, 13, paras_fixed)
+                line = format_opt_parameters(val, 13, paras_fixed, paras_bounds)
                 file_.write(str_optim.format(*line))
 
                 val = dict_['EDUCATION']['coeffs'][1]
-                line = format_opt_parameters(val, 14, paras_fixed)
+                line = format_opt_parameters(val, 14, paras_fixed, paras_bounds)
                 file_.write(str_optim.format(*line))
 
                 val = dict_['EDUCATION']['coeffs'][2]
-                line = format_opt_parameters(val, 15, paras_fixed)
+                line = format_opt_parameters(val, 15, paras_fixed, paras_bounds)
                 file_.write(str_optim.format(*line))
 
                 file_.write('\n')
@@ -606,7 +618,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                 file_.write(flag.upper() + '\n\n')
 
                 val = dict_['AMBIGUITY']['coeffs'][0]
-                line = format_opt_parameters(val, 0, paras_fixed)
+                line = format_opt_parameters(val, 0, paras_fixed, paras_bounds)
                 file_.write(str_optim.format(*line))
 
                 str_ = '{0:<10} {1:>20}\n'
@@ -626,7 +638,8 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                 # Coefficient
                 for j in range(6):
                     val = dict_[flag]['coeffs'][j]
-                    line = format_opt_parameters(val, identifier, paras_fixed)
+                    line = format_opt_parameters(val, identifier, paras_fixed,
+                                                 paras_bounds)
                     identifier += 1
 
                     file_.write(str_optim.format(*line))
@@ -662,14 +675,19 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                 file_.write('\n')
 
 
-def format_opt_parameters(val, identifier, paras_fixed):
+def format_opt_parameters(val, identifier, paras_fixed, paras_bounds):
     """ This function formats the values depending on whether they are fixed
     during the optimization or not.
     """
     # Initialize baseline line
-    line = ['coeff', val, ' ']
+    line = ['coeff', val, ' ', ' ']
     if paras_fixed[identifier]:
-        line[-1] = '!'
+        line[-2] = '!'
+
+    # Check if any bounds defined
+    bounds = paras_bounds[identifier]
+    if any(x is not None for x in bounds):
+        line[-1] = '(' + str(bounds[0]) + ',' + str(bounds[1]) + ')'
 
     # Finishing
     return line
@@ -765,3 +783,51 @@ def get_est_info():
 
     # Finishing
     return rslt
+
+
+def get_optim_paras(level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+        shocks_cholesky, which, paras_fixed, is_debug):
+    """ Get optimization parameters.
+    """
+    # Checks
+    if is_debug:
+        args = (level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+                shocks_cholesky)
+        assert check_model_parameters(*args)
+
+    # Initialize container
+    x = np.tile(np.nan, 27)
+
+    # Level of Ambiguity
+    x[0:1] = np.sqrt(level)
+
+    # Occupation A
+    x[1:7] = coeffs_a
+
+    # Occupation B
+    x[7:13] = coeffs_b
+
+    # Education
+    x[13:16] = coeffs_edu
+
+    # Home
+    x[16:17] = coeffs_home
+
+    # Shocks
+    x[17:27] = shocks_cholesky[np.tril_indices(4)]
+
+    # Checks
+    if is_debug:
+        check_optimization_parameters(x)
+
+    # Select subset
+    if which == 'free':
+        x_free_curre = []
+        for i in range(27):
+            if not paras_fixed[i]:
+                x_free_curre += [x[i]]
+
+        x = np.array(x_free_curre)
+
+    # Finishing
+    return x
