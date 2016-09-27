@@ -297,6 +297,8 @@ class RespyCls(object):
         shocks_coeffs = cholesky_to_coeffs(shocks_cholesky)
         init_dict['SHOCKS']['coeffs'] = shocks_coeffs
 
+        init_dict['SHOCKS']['bounds'] = np.array(self.attr['paras_bounds'][
+                                                 17:27])
         init_dict['SHOCKS']['fixed'] = np.array(self.attr['paras_fixed'][
                                                  17:27])
 
@@ -504,11 +506,12 @@ class RespyCls(object):
                 self.attr['optimizer_options'][optimizer] = \
                     init_dict[optimizer]
 
-        # There is only one explicit place in the initialization file where
-        # the step size for any derivative approximation is specified.
+        # The treatment of the step size is not well developed. Most
+        # replacements are done in estimate.py module. However,
+        # this particular replacement is required here as it is also relevant
+        # in the simulation step.
         eps = init_dict['DERIVATIVES']['eps']
-        for optimizer in ['FORT-SLSQP', 'SCIPY-SLSQP', 'SCIPY-BFGS',
-                          'SCIPY-LBFGSB']:
+        for optimizer in ['FORT-SLSQP', 'SCIPY-SLSQP']:
             self.attr['optimizer_options'][optimizer]['eps'] = eps
 
         # Delete the duplicated information from the initialization
@@ -709,10 +712,10 @@ class RespyCls(object):
         for i in range(27):
             lower, upper = paras_bounds[i]
             if lower is not None:
-		assert isinstance(lower, float)
+                assert isinstance(lower, float)
                 assert lower <= x[i]
             if upper is not None:
-		assert isinstance(upper, float)
+                assert isinstance(upper, float)
                 assert upper >= x[i]
             if (upper is not None) and (lower is not NOne):
                 assert upper >= lower

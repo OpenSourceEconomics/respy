@@ -432,13 +432,14 @@ class TestClass(object):
                 'measure', 'model_paras',
                 'optimizer_options', 'derivatives', 'file_sim')
 
+        eps = derivatives[1]
         level = model_paras['level']
         shocks_cholesky = model_paras['shocks_cholesky']
         shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
 
         fort_slsqp_maxiter = optimizer_options['FORT-SLSQP']['maxiter']
         fort_slsqp_ftol = optimizer_options['FORT-SLSQP']['ftol']
-        fort_slsqp_eps = optimizer_options['FORT-SLSQP']['eps']
+        fort_slsqp_eps = eps
 
         # Add some additional objects required for the interfaces to the
         # functions.
