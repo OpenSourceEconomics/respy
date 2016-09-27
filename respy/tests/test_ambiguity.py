@@ -58,6 +58,7 @@ class TestClass(object):
         for level in [0.00, 0.00000000001]:
 
             init_dict['AMBIGUITY']['coeffs'] = [level]
+            init_dict['AMBIGUITY']['bounds'] = [[0.00, None]]
 
             print_init_dict(init_dict)
 
