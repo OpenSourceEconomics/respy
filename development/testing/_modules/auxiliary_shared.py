@@ -26,8 +26,12 @@ def update_class_instance(respy_obj, spec_dict):
     if 'level' in spec_dict.keys():
         respy_obj.attr['model_paras']['level'] = np.array([spec_dict['level']])
 
+    # Also, specifying bounds for the level of ambiguity during an estimation.
+    if 'amb_max' in spec_dict.keys():
+        respy_obj.attr['paras_bounds'][0] = [0.00, spec_dict['amb_max']]
+
     for key_ in spec_dict.keys():
-        if key_ == 'level':
+        if key_ in ['level', 'amb_max']:
             continue
         respy_obj.set_attr(key_, spec_dict[key_])
 
