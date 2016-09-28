@@ -647,7 +647,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_rewards
     END IF
 
     ! Remove temporary files
-    !OPEN(UNIT=99, FILE='.model.resfort.ini'); CLOSE(99, STATUS='delete')
+    OPEN(UNIT=99, FILE='.model.resfort.ini'); CLOSE(99, STATUS='delete')
     OPEN(UNIT=99, FILE='.data.resfort.dat'); CLOSE(99, STATUS='delete')
 
 END SUBROUTINE
