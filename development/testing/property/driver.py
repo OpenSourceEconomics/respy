@@ -104,6 +104,7 @@ def run(args):
         # Create a fresh test directory.
         tmp_dir = get_testdir(5)
 
+
         os.mkdir(tmp_dir)
         os.chdir(tmp_dir)
 
