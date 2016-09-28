@@ -105,8 +105,9 @@ def run(args):
         tmp_dir = get_testdir(5)
 
 
-        os.mkdir(tmp_dir)
-        os.chdir(tmp_dir)
+        if not is_investigation:
+            os.mkdir(tmp_dir)
+            os.chdir(tmp_dir)
 
         if not is_investigation:
             try:
@@ -120,8 +121,8 @@ def run(args):
         else:
             test()
 
-        # The directory is deleted by the cleanup
-        os.chdir('../')
+        if not is_investigation:
+            os.chdir('../')
 
         # Record iteration
         if not is_investigation:
