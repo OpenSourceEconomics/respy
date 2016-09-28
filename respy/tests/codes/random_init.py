@@ -53,11 +53,11 @@ def generate_random_dict(constraints=None):
     paras_values = []
     for i in range(27):
         if i in [0]:
-            value = np.random.choice([0.0, np.random.uniform()])
+            value = get_valid_values('amb')
         elif i in range(1, 17):
-            value = np.random.uniform(-0.05, 0.05)
+            value = get_valid_values('coeff')
         elif i in [17, 21, 24, 26]:
-            value = np.random.uniform(0.05, 1)
+            value = get_valid_values('cov')
         else:
             value = 0.0
 
@@ -69,13 +69,14 @@ def generate_random_dict(constraints=None):
     # for the set of fixed parameters.
     paras_bounds = []
     for i, value in enumerate(paras_values):
-        lower = np.random.choice([None, value - np.random.uniform()])
-        upper = np.random.choice([None, value + np.random.uniform()])
         if i in [0]:
-            lower = max(0.0, value - np.random.uniform())
-        if i in range(17, 27):
-            lower, upper = None, None
-        paras_bounds += [[lower, upper]]
+            bounds = get_valid_bounds('amb', value)
+        elif i in range(17, 27):
+            bounds = get_valid_bounds('cov', value)
+        else:
+            bounds = get_valid_bounds('coeff', value)
+
+        paras_bounds += [bounds]
 
     # The dictionary also contains the information whether parameters are
     # fixed during an estimation. We need to ensure that at least one
@@ -293,7 +294,7 @@ def generate_random_dict(constraints=None):
         assert level >= 0.0
         # Replace in initialization file
         dict_['AMBIGUITY']['coeffs'] = [level]
-        dict_['AMBIGUITY']['bounds'] = [[0.00, None]]
+        dict_['AMBIGUITY']['bounds'] = [get_valid_bounds('amb', level)]
 
     # Treat level of ambiguity as fixed in an estimation
     if 'flag_ambiguity' in constraints.keys():
@@ -301,11 +302,12 @@ def generate_random_dict(constraints=None):
         assert (constraints['flag_ambiguity'] in [True, False])
         # Replace in initialization files
         if constraints['flag_ambiguity']:
-            dict_['AMBIGUITY']['coeffs'] = [np.random.uniform(0.01, 1.0)]
-            dict_['AMBIGUITY']['bounds'] = [[0.00, None]]
+            value = np.random.uniform(0.01, 1.0)
+            dict_['AMBIGUITY']['coeffs'] = [value]
+            dict_['AMBIGUITY']['bounds'] = [get_valid_bounds('amb', value)]
         else:
             dict_['AMBIGUITY']['coeffs'] = [0.00]
-            dict_['AMBIGUITY']['bounds'] = [[0.00, None]]
+            dict_['AMBIGUITY']['bounds'] = [get_valid_bounds('amb', 0.00)]
 
     # Treat level of ambiguity as fixed in an estimation
     if 'fixed_ambiguity' in constraints.keys():
@@ -458,5 +460,40 @@ def generate_random_dict(constraints=None):
 
     # Finishing
     return dict_
+
+
+def get_valid_values(which):
+    """ Simply get a valid value.
+    """
+    assert which in ['amb', 'cov', 'coeff']
+
+    if which in ['amb']:
+        value = np.random.choice([0.0, np.random.uniform()])
+    elif which in ['coeff']:
+        value = np.random.uniform(-0.05, 0.05)
+    elif which in ['cov']:
+        value = np.random.uniform(0.05, 1)
+
+    return value
+
+
+def get_valid_bounds(which, value):
+    """ Simply get a valid set of bounds.
+    """
+    assert which in ['amb', 'cov', 'coeff']
+
+    # The bounds cannot be too tight as otherwise the BOBYQA might not start
+    # properly.
+    if which in ['amb']:
+        upper = np.random.choice([None, value + np.random.uniform(low=0.1)])
+        bounds = [max(0.0, value - np.random.uniform(low=0.1)), upper]
+    elif which in ['coeff']:
+        upper = np.random.choice([None, value + np.random.uniform(low=0.1)])
+        lower = np.random.choice([None, value - np.random.uniform(low=0.1)])
+        bounds = [lower, upper]
+    elif which in ['cov']:
+        bounds = [None, None]
+
+    return bounds
 
 

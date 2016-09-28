@@ -141,10 +141,9 @@ def write_est_info(num_start, value_start, paras_start, num_step,
 
         # Transform the optimization parameter to level units.
         out_file.write('\n')
-        paras = ['Level'] + [paras_start[0] ** 2, paras_step[0]  ** 2,
-                             paras_current[0] ** 2]
+        paras = ['Level'] + [paras_start[0], paras_step[0],
+                             paras_current[0]]
         out_file.write(fmt_.format(*paras))
-
 
         # Write out the current covariance matrix of the reward shocks.
         out_file.write('\n\n Covariance Matrix\n\n')

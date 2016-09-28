@@ -8,9 +8,9 @@ MODULE estimate_fortran
 
     USE recording_estimation
 
-    USE estimate_auxiliary
-
     USE shared_containers
+
+    USE shared_auxiliary
 
     USE evaluate_fortran
 
