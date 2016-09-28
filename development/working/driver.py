@@ -42,11 +42,11 @@ from respy import estimate
 from codes.random_init import generate_init
 
 
-#respy_obj = RespyCls('model.respy.ini')
-#simulate(respy_obj)
-#x, val = estimate(respy_obj)
+respy_obj = RespyCls('model.respy.ini')
+simulate(respy_obj)
+x, val = estimate(respy_obj)
 #print(val)
-#raise SystemExit('just reading in')
+raise SystemExit('just reading in')
 i = 0
 while True:
     i = i + 1
