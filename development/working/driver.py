@@ -42,13 +42,18 @@ from respy import estimate
 from codes.random_init import generate_init
 
 
-respy_obj = RespyCls('model.respy.ini')
-simulate(respy_obj)
-x, val = estimate(respy_obj)
-print(val)
-raise SystemExit('just reading in')
-np.random.seed(123)
-for _ in range(100000):
+#respy_obj = RespyCls('model.respy.ini')
+#simulate(respy_obj)
+#x, val = estimate(respy_obj)
+#print(val)
+#raise SystemExit('just reading in')
+i = 0
+while True:
+    i = i + 1
+    seed = 24227
+    print(seed)
+    np.random.seed(seed)
+
     print('Neeeeeeeeeeeeeew')
     constr = dict()
     constr['is_estimation'] = True
@@ -69,5 +74,14 @@ for _ in range(100000):
     print_init_dict(init_dict)
 
     respy_obj = RespyCls('test.respy.ini')
-    simulate(respy_obj)
-    estimate(respy_obj)
+
+    paras_fixed = respy_obj.get_attr('paras_fixed')
+
+    lower = (27 - sum(paras_fixed)) + 2
+    upper = (2 * (27 - sum(paras_fixed)) + 1)
+    print(lower, upper, sum(paras_fixed))
+
+    np.random.randint(lower, upper)
+
+#    simulate(respy_obj)
+#    estimate(respy_obj)

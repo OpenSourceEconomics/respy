@@ -75,6 +75,8 @@ def run(args):
 
     if is_creation:
         tests = []
+        print('fixing seed\n')
+        np.random.seed(123)
         for idx in range(num_tests):
             print('\n Creating Test ', idx)
 
