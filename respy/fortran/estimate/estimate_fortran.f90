@@ -87,6 +87,10 @@ SUBROUTINE fort_estimate(crit_val, success, message, level, coeffs_a, coeffs_b, 
 
         crit_scaled = .True.
 
+        ! We also apply the scaling to the parameter bounds.
+        paras_bounds_free(1, :) = apply_scaling(paras_bounds_free(1, :), auto_scales, 'do')
+        paras_bounds_free(2, :) = apply_scaling(paras_bounds_free(2, :), auto_scales, 'do')
+
     END IF
 
 

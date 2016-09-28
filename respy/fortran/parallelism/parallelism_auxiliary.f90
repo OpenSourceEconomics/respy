@@ -48,7 +48,7 @@ SUBROUTINE get_scales_parallel(auto_scales, x_free_start, scaled_minimum)
     dfunc_eps = scale_eps
     grad = fort_dcriterion_parallel(x_free_start)
     dfunc_eps = -HUGE_FLOAT
-    
+
     auto_scales = zero_dble
 
     DO i = 1, num_free
@@ -221,6 +221,10 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, level, coeffs_a, c
         x_free_start = apply_scaling(x_free_start, auto_scales, 'do')
 
         crit_scaled = .True.
+
+        ! We also apply the scaling to the parameter bounds.
+        paras_bounds_free(1, :) = apply_scaling(paras_bounds_free(1, :), auto_scales, 'do')
+        paras_bounds_free(2, :) = apply_scaling(paras_bounds_free(2, :), auto_scales, 'do')
 
     END IF
 
