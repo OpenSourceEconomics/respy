@@ -9,9 +9,9 @@
 import argparse
 import os
 
-from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
 from respy.python.shared.shared_auxiliary import dist_model_paras
+from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.shared.shared_auxiliary import print_init_dict
 from respy.python.read.read_python import read
 from respy import RespyCls
