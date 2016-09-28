@@ -140,7 +140,7 @@ def check_optimizer_options(optimizer_options, paras_fixed):
         # algorithms.
         num_free = 27 - sum(paras_fixed)
         lower, upper = num_free + 2, ((num_free + 2) * (num_free + 1)) / 2
-        assert lower <= npt <= upper
+        assert lower <= npt <= upper, (lower, upper)
 
     # FORT-BFGS
     maxiter = optimizer_options['FORT-BFGS']['maxiter']
