@@ -462,7 +462,7 @@ def generate_optimizer_options(which, paras_fixed):
         dict_['maxiter'] = np.random.randint(1, 100)
 
     elif which in ['FORT-NEWUOA', 'FORT-BOBYQA']:
-        rhobeg = np.random.uniform(0.0000001, 0.1)
+        rhobeg = np.random.uniform(0.0000001, 0.001)
         dict_['maxfun'] = np.random.randint(1, 100)
         dict_['rhobeg'] = rhobeg
         dict_['rhoend'] = np.random.uniform(0.01, 0.99) * rhobeg

@@ -1,5 +1,11 @@
 MODULE bobyqa_module
 
+    !
+    !   M. J. D. Powell, "The BOBYQA algorithm for constrained optimization
+    !   without derivatives", 2009, Department of Applied Mathematics and
+    !   Theoretical Physics, Cambridge University.
+    !
+
     !/* external modules  */
 
     USE shared_interfaces
@@ -10,12 +16,12 @@ MODULE bobyqa_module
 
     PRIVATE
 
-    PUBLIC:: BOBYQA
+    PUBLIC:: bobyqa
 
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE BOBYQA(FUNC, X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUCCESS, MESSAGE)
+SUBROUTINE bobyqa(FUNC, X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUCCESS, MESSAGE)
 
     !/* dummy arguments    */
 

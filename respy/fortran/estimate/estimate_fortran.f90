@@ -4,21 +4,17 @@ MODULE estimate_fortran
 
     !/* external modules    */
 
-    USE estimate_auxiliary
+    USE optimizers_interfaces
 
     USE recording_estimation
+
+    USE estimate_auxiliary
 
     USE shared_containers
 
     USE evaluate_fortran
 
     USE shared_constants
-
-    USE dfpmin_module
-
-    USE newuoa_module
-
-    USE bobyqa_module
 
     USE solve_fortran
 

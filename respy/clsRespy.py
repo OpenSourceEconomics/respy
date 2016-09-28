@@ -5,6 +5,7 @@
 import pickle as pkl
 import pandas as pd
 import numpy as np
+import os
 
 from respy.python.shared.shared_auxiliary import replace_missing_values
 from respy.python.shared.shared_auxiliary import check_model_parameters
@@ -14,6 +15,7 @@ from respy.python.shared.shared_auxiliary import dist_optim_paras
 from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
+from respy.python.shared.shared_constants import EXEC_DIR
 from respy.python.read.read_python import read
 
 # Special care with derived attributes is required to maintain integrity of
@@ -578,9 +580,12 @@ class RespyCls(object):
         tau = self.attr['tau']
 
         # Parallelism
+        assert isinstance(num_procs, int)
         assert (num_procs > 0)
         if num_procs > 1:
             assert (version == 'FORTRAN')
+            fname = EXEC_DIR + '/resfort_parallel_master'
+            assert os.path.exists(fname)
 
         # Status of optimization parameters
         for var in [paras_fixed, paras_bounds]:
@@ -642,6 +647,9 @@ class RespyCls(object):
 
         # Version version of package
         assert (version in ['FORTRAN', 'PYTHON'])
+        if version == 'FORTRAN':
+            fname = EXEC_DIR + '/resfort_scalar'
+            assert os.path.exists(fname)
 
         # Interpolation
         assert (is_interpolated in [True, False])

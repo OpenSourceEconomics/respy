@@ -1,9 +1,7 @@
 import numpy as np
 import shlex
-import sys
 import os
 
-from respy.python.read.read_auxiliary import check_line
 
 
 def read(fname):
@@ -48,9 +46,6 @@ def read(fname):
 
             # Type conversions
             value = _type_conversions(flag, value)
-
-            # Distribute information
-            check_line(group, flag, value)
 
             # Process blocks of information
             dict_ = _process_line(group, flag, value, is_fixed, bounds, dict_)

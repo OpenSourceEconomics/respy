@@ -17,12 +17,12 @@ MODULE newuoa_module
 
     PRIVATE
 
-    PUBLIC:: NEWUOA
+    PUBLIC:: newuoa
 
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE NEWUOA(FUNC, X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUCCESS, MESSAGE)
+SUBROUTINE newuoa(FUNC, X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUCCESS, MESSAGE)
 
     !/* external objects    */
 
