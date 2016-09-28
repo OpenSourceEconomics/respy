@@ -472,7 +472,7 @@ def generate_optimizer_options(which, paras_fixed):
         # absolute upper bounds.
         lower = (27 - sum(paras_fixed)) + 2
         upper = (2 * (27 - sum(paras_fixed)) + 1)
-        dict_['npt'] = np.random.randint(lower, upper)
+        dict_['npt'] = np.random.randint(lower, upper + 1)
 
     elif which == 'FORT-BFGS':
         dict_['maxiter'] = np.random.randint(1, 100)

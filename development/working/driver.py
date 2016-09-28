@@ -50,7 +50,7 @@ from codes.random_init import generate_init
 i = 0
 while True:
     i = i + 1
-    seed = 24227
+    seed = i
     print(seed)
     np.random.seed(seed)
 
@@ -77,11 +77,6 @@ while True:
 
     paras_fixed = respy_obj.get_attr('paras_fixed')
 
-    lower = (27 - sum(paras_fixed)) + 2
-    upper = (2 * (27 - sum(paras_fixed)) + 1)
-    print(lower, upper, sum(paras_fixed))
-
-    np.random.randint(lower, upper)
 
 #    simulate(respy_obj)
 #    estimate(respy_obj)
