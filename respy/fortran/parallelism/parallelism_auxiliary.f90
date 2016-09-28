@@ -53,9 +53,9 @@ SUBROUTINE get_scales_parallel(auto_scales, x_free_start, scaled_minimum)
 
     DO i = 1, num_free
 
-        val = grad(i)
+        val = ABS(grad(i))
 
-        IF (ABS(val) .LT. scaled_minimum) val = scaled_minimum
+        IF (val .LT. scaled_minimum) val = scaled_minimum
 
         auto_scales(i, i) = val
 
