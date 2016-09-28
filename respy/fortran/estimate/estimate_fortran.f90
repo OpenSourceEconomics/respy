@@ -79,13 +79,16 @@ SUBROUTINE fort_estimate(crit_val, success, message, level, coeffs_a, coeffs_b, 
 
         CALL get_scales_scalar(auto_scales, x_free_start, scaled_minimum)
 
-        x_free_start = apply_scaling(x_free_start, auto_scales, 'do')
-
         crit_scaled = .True.
 
         ! We also apply the scaling to the parameter bounds.
         paras_bounds_free(1, :) = apply_scaling(paras_bounds_free(1, :), auto_scales, 'do')
         paras_bounds_free(2, :) = apply_scaling(paras_bounds_free(2, :), auto_scales, 'do')
+ 
+        CALL record_estimation(auto_scales, x_free_start, .False.)
+
+        x_free_start = apply_scaling(x_free_start, auto_scales, 'do')
+
 
     END IF
 
@@ -333,8 +336,6 @@ SUBROUTINE get_scales_scalar(auto_scales, x_free_start, scaled_minimum)
         auto_scales(i, i) = val
 
     END DO
-
-    CALL record_estimation(auto_scales, x_free_start, .False.)
 
 END SUBROUTINE
 !******************************************************************************

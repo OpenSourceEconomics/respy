@@ -15,8 +15,9 @@ if __name__ == '__main__':
     spec_dict['maxfun'] = 1000
 
     # The following key value pair describes the debugging setup.
-    spec_dict['scaling'] = [False, 0.00001, 1e-6]
+    spec_dict['scaling'] = [True, 0.00001, 1e-6]
     spec_dict['num_periods'] = 3
-    spec_dict['maxfun'] = 0
+    spec_dict['num_procs'] = 1
+    spec_dict['maxfun'] = 1
 
     run(spec_dict)

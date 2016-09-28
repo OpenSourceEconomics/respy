@@ -233,7 +233,7 @@ SUBROUTINE record_estimation_eval(x_all_current, val_current, num_eval)
         END DO
 
         WRITE(99, *)
-        WRITE(99, 240) 'Level', x_container(1, :) 
+        WRITE(99, 240) 'Level', x_container(1, :)
         WRITE(99, *)
         WRITE(99, *)
         WRITE(99, *)   'Covariance Matrix'
@@ -341,7 +341,10 @@ SUBROUTINE record_scaling(auto_scales, x_free_start, is_setup)
 
     REAL(our_dble)                  :: x_free_scaled(num_free)
 
-    INTEGER(our_int)                :: i
+    INTEGER(our_int)                :: i, j
+    CHARACTER(155)                  :: val_char
+    CHARACTER(50)                   :: tmp_char
+    LOGICAL                         :: no_bounds
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -350,8 +353,9 @@ SUBROUTINE record_scaling(auto_scales, x_free_start, is_setup)
     x_free_scaled = apply_scaling(x_free_start, auto_scales, 'do')
 
 
-    120 FORMAT(3x,A10,3(4x,A25))
-    130 FORMAT(3x,i10,3(4x,f25.15))
+    120 FORMAT(3x,A10,5(4x,A25))
+    130 FORMAT(3x,i10,5(4x,f25.15))
+    135 FORMAT(3x,i10,3(4x,f25.15),A57)
 
     OPEN(UNIT=99, FILE='est.respy.log', ACCESS='APPEND', ACTION='WRITE')
 
@@ -363,13 +367,33 @@ SUBROUTINE record_scaling(auto_scales, x_free_start, is_setup)
 
             WRITE(99, *) 'SCALING'
             WRITE(99, *)
-            WRITE(99, 120) 'Identifier', 'Original', 'Scale', 'Transformed Value'
+            WRITE(99, 120) 'Identifier', 'Original', 'Scale', 'Transformed Value', 'Transformed Lower', 'Transformed Upper'
             WRITE(99, *)
 
         ELSE
 
+            ! Sometimes on the bounds are just too large for pretty printing
+
             DO i = 1, num_free
-                WRITE(99, 130) i, x_free_start(i), auto_scales(i, i), x_free_scaled(i)
+                ! We need to do some pre-processing for the transformed bounds.
+                val_char = ''
+                DO j = 1, 2
+                    ! TODO: THis is not a very reliable cirterion, I need to somehow be able to obtain that
+                    ! information even after the transforamtion.
+                    no_bounds = (ABS(paras_bounds_free(j, i)) > Large_FLOAT)
+
+                    IF(no_bounds) THEN
+                        WRITE(tmp_char, '(4x,A25)') '---'
+                    ELSE
+                        WRITE(tmp_char, '(4x,f25.15)') paras_bounds_free(j, i)
+                    END IF
+                    val_char = TRIM(val_char) // TRIM(tmp_char)
+
+                END DO
+
+            !    WRITE(99, 130) i, x_free_start(i), auto_scales(i, i), x_free_scaled(i), paras_bounds_free(1, i), paras_bounds_free(2, i)
+            WRITE(99, 135) i, x_free_start(i), auto_scales(i, i), x_free_scaled(i), val_char
+
             END DO
 
             WRITE(99, *)
