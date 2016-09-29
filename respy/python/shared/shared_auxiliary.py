@@ -470,6 +470,7 @@ def generate_optimizer_options(which, paras_fixed):
         # It is not recommended that N is larger than upper as the code might
         # break down due to a segmentation fault. See the source files for the
         # absolute upper bounds.
+        assert sum(paras_fixed) != 27
         lower = (27 - sum(paras_fixed)) + 2
         upper = (2 * (27 - sum(paras_fixed)) + 1)
         dict_['npt'] = np.random.randint(lower, upper + 1)

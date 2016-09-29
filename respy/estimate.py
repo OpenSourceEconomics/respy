@@ -67,6 +67,9 @@ def check_estimation(respy_obj):
     # Get auxiliary objects
     level = model_paras['level'][0]
 
+    # Ensure that at least one free parameter.
+    assert sum(paras_fixed) != 27
+
     # Check that the used optimizers were defined by the user.
     if level > 0:
         if version == 'FORTRAN':
