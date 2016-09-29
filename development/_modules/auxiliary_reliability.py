@@ -40,6 +40,10 @@ def run_single(spec_dict, fname):
     respy_obj = respy.RespyCls(SPEC_DIR + fname)
     update_class_instance(respy_obj, spec_dict)
 
+    # TODO: For now we keep the coefficients of the covariance matrix fixed.
+    # The code base is currently extended to allow for better management.
+    respy_obj.attr['paras_fixed'][17:] = [True] * 10
+
     # Let us first simulate a baseline sample, store the results for future
     # reference, and start an estimation from the true values.
     for request in ['Truth', 'Static', 'Risk', 'Ambiguity']:
