@@ -238,11 +238,11 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, level, coeffs_a, c
 
         npt = optimizer_options%newuoa%npt
         is_misspecified = (NPT .LT. num_free + 2 .OR. NPT .GT. ((num_free + 2)* num_free) / 2)
-        IF (is_misspecified) optimizer_options%newuoa%npt = ((num_free + 2)* num_free) / 2
+        IF (is_misspecified) optimizer_options%newuoa%npt = (2 * num_free) + 1
 
         npt = optimizer_options%bobyqa%npt
         is_misspecified = (NPT .LT. num_free + 2 .OR. NPT .GT. ((num_free + 2)* num_free) / 2)
-        IF (is_misspecified) optimizer_options%bobyqa%npt = ((num_free + 2)* num_free) / 2
+        IF (is_misspecified) optimizer_options%bobyqa%npt = (2 * num_free) + 1
 
         rhobeg = optimizer_options%bobyqa%rhobeg
         tmp = paras_bounds_free(2, :) - paras_bounds_free(1, :)
