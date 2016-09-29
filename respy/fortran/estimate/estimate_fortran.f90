@@ -50,8 +50,6 @@ SUBROUTINE fort_estimate(crit_val, success, message, level, coeffs_a, coeffs_b, 
     LOGICAL, INTENT(OUT)            :: is_scaled
     LOGICAL, INTENT(OUT)            :: success
 
-    TYPE(OPTIMIZER_COLLECTION), INTENT(IN) :: optimizer_options
-
     !/* internal objects    */
 
     REAL(our_dble)                  :: x_free_start(num_free)
@@ -62,6 +60,14 @@ SUBROUTINE fort_estimate(crit_val, success, message, level, coeffs_a, coeffs_b, 
     INTEGER(our_int)                :: iter
 
     LOGICAL, PARAMETER              :: all_free(27) = .False.
+
+    ! TODO: Cleanup in refactoring
+    TYPE(OPTIMIZER_COLLECTION), INTENT(INOUT) :: optimizer_options
+    LOGICAL                                   :: is_misspecified
+    INTEGER(our_int)                          :: npt
+    REAL(our_dble)                            :: rhobeg
+    REAL(our_dble)                            :: tmp(num_free)
+    
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
@@ -94,6 +100,30 @@ SUBROUTINE fort_estimate(crit_val, success, message, level, coeffs_a, coeffs_b, 
 
 
     crit_estimation = .True.
+
+    ! TODO: This is a temporary fix to prepare for Powell's algorithms and needs to be noted in the log files later.
+    IF ((optimizer_used == 'FORT-NEWUOA') .OR. (optimizer_used == 'FORT-BOBYQA')) THEN
+
+        npt = optimizer_options%newuoa%npt
+        is_misspecified = (NPT .LT. num_free + 2 .OR. NPT .GT. ((num_free + 2)* num_free) / 2)
+        IF (is_misspecified) optimizer_options%newuoa%npt = ((num_free + 2)* num_free) / 2
+
+        npt = optimizer_options%bobyqa%npt
+        is_misspecified = (NPT .LT. num_free + 2 .OR. NPT .GT. ((num_free + 2)* num_free) / 2)
+        IF (is_misspecified) optimizer_options%bobyqa%npt = ((num_free + 2)* num_free) / 2
+
+        rhobeg = optimizer_options%bobyqa%rhobeg
+        tmp = paras_bounds_free(2, :) - paras_bounds_free(1, :)
+
+        rhobeg = optimizer_options%bobyqa%rhobeg
+        is_misspecified = ANY(tmp .LT. rhobeg+rhobeg)
+        IF (is_misspecified) THEN
+            optimizer_options%bobyqa%rhobeg = MINval(tmp) * 0.5_our_dble
+            optimizer_options%bobyqa%rhoend = optimizer_options%bobyqa%rhobeg * 1e-6
+
+        END IF
+
+    END IF
 
     IF (maxfun == zero_int) THEN
 

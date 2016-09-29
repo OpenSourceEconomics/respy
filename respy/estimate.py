@@ -132,16 +132,6 @@ def check_optimizer_options(optimizer_options, paras_fixed):
             assert isinstance(var, float)
             assert (var > 0)
 
-        # The two bounds are also enforced in the original codes. However,
-        # using an upper bound larger than (2 * num_free + 1) is not
-        # recommended. Sometimes, this results in a segmentation fault.
-        # However, these vary with the number of free parameters so we only
-        # check it if a serious estimation run is requested with the POWELL
-        # algorithms.
-        num_free = 27 - sum(paras_fixed)
-        lower, upper = num_free + 2, ((num_free + 2) * (num_free + 1)) / 2
-        assert lower <= npt <= upper, (lower, upper)
-
     # FORT-BFGS
     maxiter = optimizer_options['FORT-BFGS']['maxiter']
     stpmx = optimizer_options['FORT-BFGS']['stpmx']
