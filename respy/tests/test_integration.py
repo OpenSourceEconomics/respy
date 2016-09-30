@@ -178,7 +178,11 @@ class TestClass(object):
 
             single = np.random.choice([True, False])
 
-            action = np.random.choice(['fix', 'free', 'value'])
+            # TODO: Extend set of admissible actions. If we want to include
+            # values and bounds then we need to put in some extra effort to
+            # ensure that all are valid, i.e. that a random value is within
+            # the bounds.
+            action = np.random.choice(['fix', 'free'])
             num_draws = np.random.randint(1, 17)
 
             # The set of identifiers is a little complicated as we only allow

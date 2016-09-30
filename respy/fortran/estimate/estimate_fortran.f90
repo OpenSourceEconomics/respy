@@ -138,6 +138,8 @@ SUBROUTINE fort_estimate(crit_val, success, message, level, coeffs_a, coeffs_b, 
 
     ELSEIF (optimizer_used == 'FORT-BOBYQA') THEN
 
+        ! The BOBYQA algorithm might adjust the starting values. So we simply make sure that the very first evaluation of the criterion function is at the actual starting values.
+        crit_val = fort_criterion(x_free_start)
         CALL bobyqa(fort_criterion, x_free_start, optimizer_options%bobyqa%npt, optimizer_options%bobyqa%rhobeg, optimizer_options%bobyqa%rhoend, zero_int, MIN(maxfun, optimizer_options%bobyqa%maxfun), success, message)
 
     ELSEIF (optimizer_used == 'FORT-BFGS') THEN
