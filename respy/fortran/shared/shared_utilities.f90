@@ -21,7 +21,6 @@ MODULE shared_utilities
     PUBLIC
 
 CONTAINS
-
 !******************************************************************************
 !******************************************************************************
 PURE SUBROUTINE svd(U, S, VT, A, m)
@@ -179,6 +178,33 @@ FUNCTION pinv(A, m)
     END DO
 
     pinv = MATMUL(TRANSPOSE(VT), pinv)
+
+END FUNCTION
+!******************************************************************************
+!******************************************************************************
+FUNCTION create_identity(m)
+
+    !/* external objects        */
+
+    INTEGER(our_int), INTENT(IN)    :: m
+
+    REAL(our_dble)                  :: create_identity(m, m)
+
+    !/* internal objects        */
+
+    INTEGER(our_int)                :: i
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    create_identity = zero_dble
+
+    DO i = 1, m
+
+        create_identity(i, i) = one_dble
+
+    END DO
 
 END FUNCTION
 !******************************************************************************
