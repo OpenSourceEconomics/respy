@@ -80,11 +80,13 @@ SUBROUTINE record_estimation_stop()
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE record_estimation_eval(x_all_current, val_current, num_eval)
+SUBROUTINE record_estimation_eval(x_optim_all_unscaled, val_current, num_eval)
+
+    ! We record all things related to the optimization in est.respy.log. That is why we print the values actually relevant for the optimization, i.e. free and scaled. In est.respy.info we switch to the users perspective, all parameter are printed with their economic interpreation intact.
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(IN)      :: x_all_current(27)
+    REAL(our_dble), INTENT(IN)      :: x_optim_all_unscaled(27)
     REAL(our_dble), INTENT(IN)      :: val_current
 
     INTEGER(our_int), INTENT(IN)    :: num_eval
@@ -145,11 +147,11 @@ SUBROUTINE record_estimation_eval(x_all_current, val_current, num_eval)
     END DO
 
     ! Update container
-    IF (is_start) x_container(:, 1) = x_all_current
+    IF (is_start) x_container(:, 1) = x_optim_all_unscaled
 
-    IF (is_step) x_container(:, 2) = x_all_current
+    IF (is_step) x_container(:, 2) = x_optim_all_unscaled
 
-    x_container(:, 3) = x_all_current
+    x_container(:, 3) = x_optim_all_unscaled
 
 
     CALL get_time(today_char, now_char)

@@ -32,6 +32,7 @@ PROGRAM resfort_parallel_slave
     REAL(our_dble), ALLOCATABLE     :: contribs(:)
 
     REAL(our_dble)                  :: shocks_cholesky(4, 4)
+    REAL(our_dble)                  :: x_optim_all_unscaled(27)
     REAL(our_dble)                  :: precond_minimum
     REAL(our_dble)                  :: coeffs_home(1)
     REAL(our_dble)                  :: coeffs_edu(3)
@@ -86,9 +87,9 @@ PROGRAM resfort_parallel_slave
         END IF
 
 
-        CALL MPI_Bcast(x_all_current, 27, MPI_DOUBLE, 0, PARENTCOMM, ierr)
+        CALL MPI_Bcast(x_optim_all_unscaled, 27, MPI_DOUBLE, 0, PARENTCOMM, ierr)
 
-        CALL dist_optim_paras(level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x_all_current)
+        CALL dist_optim_paras(level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x_optim_all_unscaled)
 
 
 

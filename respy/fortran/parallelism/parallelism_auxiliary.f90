@@ -318,6 +318,7 @@ FUNCTION fort_criterion_parallel(x)
 
     REAL(our_dble)                  :: contribs(num_agents_est * num_periods)
     REAL(our_dble)                  :: shocks_cholesky(4, 4)
+    REAL(our_dble)                  :: x_all_current(27)
     REAL(our_dble)                  :: x_input(num_free)
     REAL(our_dble)                  :: coeffs_home(1)
     REAL(our_dble)                  :: coeffs_edu(3)
