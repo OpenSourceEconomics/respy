@@ -1,5 +1,6 @@
-import os
+import linecache
 import shlex
+import os
 
 import numpy as np
 
@@ -672,51 +673,11 @@ def format_opt_parameters(val, identifier, paras_fixed, paras_bounds):
     return line
 
 
-def process_est_log():
-    """ Process information in the est.respy.log for further inspection.
-    """
-    rslt = dict()
-
-    rslt['value_final'] = None
-    rslt['paras_final'] = []
-
-    is_report = False
-    is_final = False
-    with open('est.respy.log') as in_file:
-        for _, line in enumerate(in_file.readlines()):
-            list_ = shlex.split(line)
-
-            if not list_:
-                continue
-
-            if list_[0] == 'ESTIMATION':
-                is_report = True
-            try:
-                if list_[1] == 'Final':
-                    is_final = True
-            except IndexError:
-                pass
-
-            # Collect the final value of criterion function
-            if is_report and (list_[0] == 'Criterion'):
-                rslt['value_final'] = float(list_[1])
-
-            if is_final:
-                try:
-                    rslt['paras_final'] += [float(list_[1])]
-                except ValueError:
-                    pass
-
-    # Type transformations
-    rslt['paras_final'] = np.array(rslt['paras_final'])
-
-    return rslt
-
-
 def get_est_info():
     """ This function reads in the parameters from the last step of a
     previous estimation run.
     """
+    # TODO: This can be nicely cleaned up using the linecache module.
     def _process_value(input_):
         try:
             value = float(input_)
@@ -732,7 +693,6 @@ def get_est_info():
         for i, line in enumerate(in_file.readlines()):
 
             list_ = shlex.split(line)
-
             if i == 5:
                 value_start = _process_value(list_[0])
                 value_step = _process_value(list_[1])
@@ -743,10 +703,10 @@ def get_est_info():
                 paras_step += [float(list_[2])]
                 paras_current += [float(list_[3])]
 
-            if i == 67:
+            if i == 64:
                 num_step = int(float(list_[3]))
 
-            if i == 69:
+            if i == 66:
                 num_eval = int(float(list_[3]))
 
     rslt['paras_current'] = np.array(paras_current)

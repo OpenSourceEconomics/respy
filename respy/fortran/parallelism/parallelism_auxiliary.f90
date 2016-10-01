@@ -296,11 +296,12 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, level, coeffs_a, c
 
 
     ! If scaling is requested, then we transform the resulting parameter vector and indicate that the critterion function is to be used with the actual parameters again.
+    CALL record_estimation(success, message, crit_val, x_free_start)
+
     x_free_final = apply_scaling(x_free_start, precond_matrix, 'undo')
 
     CALL construct_all_current_values(x_all_final, x_free_final, paras_fixed)
 
-    CALL record_estimation(success, message, crit_val, x_all_final)
 
     CALL record_estimation()
 
@@ -374,7 +375,7 @@ FUNCTION fort_criterion_parallel(x)
 
         num_eval = num_eval + 1
 
-        CALL record_estimation(x_all_current, fort_criterion_parallel, num_eval)
+        CALL record_estimation(x, x_all_current, fort_criterion_parallel, num_eval)
 
         IF (dist_optim_paras_info .NE. zero_int) CALL record_warning(4)
 

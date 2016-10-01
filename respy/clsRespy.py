@@ -139,6 +139,9 @@ class RespyCls(object):
 
         self.reset()
 
+        print('We need to revisit this...')
+        raise AssertionError
+
         # Determine use of interface
         level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
                     dist_optim_paras(x, True)

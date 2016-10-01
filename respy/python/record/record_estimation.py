@@ -107,10 +107,10 @@ def write_est_info(num_start, value_start, paras_start, num_step,
     with open('est.respy.info', 'w') as out_file:
         # Write out information about criterion function
         out_file.write('\n Criterion Function\n\n')
-        fmt_ = '{0:>15}    {1:>15}    {2:>15}    {3:>15}\n\n'
+        fmt_ = '{0:>15}    {1:>25}    {2:>25}    {3:>25}\n\n'
         out_file.write(fmt_.format(*['', 'Start', 'Step', 'Current']))
 
-        line = '{:>15}'.format('')
+        line = '{:>25}'.format('')
 
         crit_vals = [value_start, value_step, value_current]
 
@@ -126,27 +126,21 @@ def write_est_info(num_start, value_start, paras_start, num_step,
             if is_large[i]:
                 line += '    {:>15}'.format('---')
             else:
-                line += '    {:15.4f}'.format(crit_vals[i])
+                line += '    {:25.15f}'.format(crit_vals[i])
 
         out_file.write(line + '\n\n')
 
         # Write out information about the optimization parameters directly.
         out_file.write('\n Optimization Parameters\n\n')
-        fmt_ = '{0:>15}    {1:>15}    {2:>15}    {3:>15}\n\n'
+        fmt_ = '{0:>15}    {1:>25}    {2:>25}    {3:>25}\n\n'
         out_file.write(fmt_.format(*['Identifier', 'Start', 'Step', 'Current']))
-        fmt_ = '{0:>15}    {1:15.4f}    {2:15.4f}    {3:15.4f}\n'
+        fmt_ = '{0:>15}    {1:25.15f}    {2:25.15f}    {3:25.15f}\n'
         for i, _ in enumerate(paras_current):
             paras = [i, paras_start[i], paras_step[i], paras_current[i]]
             out_file.write(fmt_.format(*paras))
 
-        # Transform the optimization parameter to level units.
-        out_file.write('\n')
-        paras = ['Level'] + [paras_start[0], paras_step[0],
-                             paras_current[0]]
-        out_file.write(fmt_.format(*paras))
-
         # Write out the current covariance matrix of the reward shocks.
-        out_file.write('\n\n Covariance Matrix\n\n')
+        out_file.write('\n Covariance Matrix\n\n')
 
         for which in ['Start', 'Step', 'Current']:
             if which == 'Start':
@@ -155,15 +149,15 @@ def write_est_info(num_start, value_start, paras_start, num_step,
                 paras = paras_step
             else:
                 paras = paras_current
-            fmt_ = '{0:>15}\n\n'
+            fmt_ = '{0:>25}\n\n'
             out_file.write(fmt_.format(*[which]))
             shocks_cholesky = dist_optim_paras(paras, True)[-1]
             shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
-            fmt_ = '{0:15.4f}    {1:15.4f}    {2:15.4f}    {3:15.4f}\n'
+            fmt_ = '{0:25.15f}    {1:25.15f}    {2:25.15f}    {3:25.15f}\n'
             for i in range(4):
                 out_file.write(fmt_.format(*shocks_cov[i, :]))
             out_file.write('\n')
 
-        fmt_ = '\n{0:<25}{1:>15}\n'
+        fmt_ = '\n{0:<25}{1:>25}\n'
         out_file.write(fmt_.format(*[' Number of Steps', num_step]))
         out_file.write(fmt_.format(*[' Number of Evaluations', num_eval]))

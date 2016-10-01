@@ -157,12 +157,11 @@ SUBROUTINE fort_estimate(crit_val, success, message, level, coeffs_a, coeffs_b, 
 
     IF (maxfun == zero_int) CALL record_estimation('Finish')
 
-    ! THis has to be done after last call to criterion as criterion only works with INTERNAL, which should be naming convention.
+    CALL record_estimation(success, message, crit_val, x_optim_free_scaled_start)
+
     x_optim_free_unscaled_end = apply_scaling(x_optim_free_scaled_start, precond_matrix, 'undo')
 
     CALL construct_all_current_values(x_optim_all_unscaled_end, x_optim_free_unscaled_end, paras_fixed)
-
-    CALL record_estimation(success, message, crit_val, x_optim_all_unscaled_end)
 
     CALL record_estimation()
 
@@ -199,7 +198,7 @@ FUNCTION fort_criterion(x_optim_free_scaled)
 
     ! Ensuring that the criterion function is not evaluated more than specified. However, there is the special request of MAXFUN equal to zero which needs to be allowed.
     IF ((num_eval == maxfun) .AND. crit_estimation .AND. (.NOT. maxfun == zero_int)) THEN
-        fort_criterion = -HUGE_FLOAT
+        fort_criterion = HUGE_FLOAT
         RETURN
     END IF
 
@@ -222,7 +221,7 @@ FUNCTION fort_criterion(x_optim_free_scaled)
 
         num_eval = num_eval + 1
 
-        CALL record_estimation(x_optim_all_unscaled, fort_criterion, num_eval)
+        CALL record_estimation(x_optim_free_scaled, x_optim_all_unscaled, fort_criterion, num_eval)
 
         IF (dist_optim_paras_info .NE. zero_int) CALL record_warning(4)
 

@@ -1,8 +1,8 @@
 import os
 
 from respy.python.shared.shared_auxiliary import generate_optimizer_options
-from respy.python.shared.shared_auxiliary import process_est_log
 from respy.python.shared.shared_auxiliary import check_dataset
+from respy.python.shared.shared_auxiliary import get_est_info
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_AMB_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
@@ -43,8 +43,8 @@ def estimate(respy_obj):
     else:
         raise NotImplementedError
 
-    rslt = process_est_log()
-    x, val = rslt['paras_final'], rslt['value_final']
+    rslt = get_est_info()
+    x, val = rslt['paras_step'], rslt['value_step']
 
     # Finishing
     return x, val

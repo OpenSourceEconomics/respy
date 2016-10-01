@@ -80,12 +80,13 @@ SUBROUTINE record_estimation_stop()
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE record_estimation_eval(x_optim_all_unscaled, val_current, num_eval)
+SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val_current, num_eval)
 
     ! We record all things related to the optimization in est.respy.log. That is why we print the values actually relevant for the optimization, i.e. free and scaled. In est.respy.info we switch to the users perspective, all parameter are printed with their economic interpreation intact.
 
     !/* external objects        */
 
+    REAL(our_dble), INTENT(IN)      :: x_optim_free_scaled(num_free)
     REAL(our_dble), INTENT(IN)      :: x_optim_all_unscaled(27)
     REAL(our_dble), INTENT(IN)      :: val_current
 
@@ -95,16 +96,19 @@ SUBROUTINE record_estimation_eval(x_optim_all_unscaled, val_current, num_eval)
 
     INTEGER(our_int), SAVE          :: num_step = - one_int
 
-    REAL(our_dble), SAVE            :: x_container(27, 3)
-
+    REAL(our_dble), SAVE            :: x_optim_container(27, 3)
+    REAL(our_dble), SAVE            :: x_econ_container(27, 3)
 
     REAL(our_dble), SAVE            :: crit_vals(3)
 
     REAL(our_dble)                  :: shocks_cholesky(4, 4)
-    REAL(our_dble)                  :: shocks_cov(4, 4)
+    REAL(our_dble)                  :: shocks_cov(3, 4, 4)
+    REAL(our_dble)                  :: flattened_cov(3, 10)
 
     INTEGER(our_int)                :: i
     INTEGER(our_int)                :: j
+    INTEGER(our_int)                :: k
+    INTEGER(our_int)                :: l
 
     LOGICAL                         :: is_large(3) = .False.
     LOGICAL                         :: is_start
@@ -146,12 +150,41 @@ SUBROUTINE record_estimation_eval(x_optim_all_unscaled, val_current, num_eval)
         is_large(i) = (ABS(crit_vals(i)) > LARGE_FLOAT)
     END DO
 
-    ! Update container
-    IF (is_start) x_container(:, 1) = x_optim_all_unscaled
+    ! Create the container for the *.log file. The subsetting is required as an automatic object cannot be saved.
+    If(is_start) x_optim_container(:num_free, 1) = x_optim_free_scaled
 
-    IF (is_step) x_container(:, 2) = x_optim_all_unscaled
+    If(is_step) x_optim_container(:num_free, 2) = x_optim_free_scaled
 
-    x_container(:, 3) = x_optim_all_unscaled
+    x_optim_container(:num_free, 3) = x_optim_free_scaled
+
+    ! Create the container for the *.info file.
+    DO i = 1, 3
+        CALL get_cholesky(shocks_cholesky, x_optim_all_unscaled)
+        shocks_cov(i, :, :) = MATMUL(shocks_cholesky, TRANSPOSE(shocks_cholesky))
+
+        k = 1
+        DO j = 1, 4
+            DO l = j, 4
+                flattened_cov(i, k) = shocks_cov(i, j, l)
+                IF (j == l) flattened_cov(i, k) = SQRT(flattened_cov(i, k))
+
+                k = k + 1
+            END DO
+        END DO
+    END DO
+
+    IF (is_start) THEN
+        x_econ_container(:17, 1) = x_optim_all_unscaled(:17)
+        x_econ_container(18:, 1) = flattened_cov(1, :)
+    END IF
+
+    IF (is_step) THEN
+        x_econ_container(:17, 2) = x_optim_all_unscaled(:17)
+        x_econ_container(18:, 2) = flattened_cov(2, :)
+    END IF
+
+    x_econ_container(:17, 3) = x_optim_all_unscaled(:17)
+    x_econ_container(18:, 3) = flattened_cov(3, :)
 
 
     CALL get_time(today_char, now_char)
@@ -184,8 +217,8 @@ SUBROUTINE record_estimation_eval(x_optim_all_unscaled, val_current, num_eval)
         WRITE(99, 140) 'Identifier', 'Start', 'Step', 'Current'
         WRITE(99, *)
 
-        DO i = 1, 27
-            WRITE(99, 150) (i - 1), x_container(i, :)
+        DO i = 1, num_free
+            WRITE(99, 150) (i - 1), x_optim_container(i, :)
         END DO
 
         WRITE(99, *)
@@ -194,13 +227,13 @@ SUBROUTINE record_estimation_eval(x_optim_all_unscaled, val_current, num_eval)
 
 
     200 FORMAT(A15,3(4x,A15))
-    220 FORMAT(A15,3(4x,A15))
-    210 FORMAT(A15,A57)
-    230 FORMAT(i15,3(4x,f15.4))
-    240 FORMAT(A15,3(4x,f15.4))
+    220 FORMAT(A15,3(4x,A25))
+    210 FORMAT(A15,A157)
+    230 FORMAT(i15,3(4x,f25.15))
+    240 FORMAT(A15,3(4x,f25.15))
 
     250 FORMAT(A15)
-    260 FORMAT(f15.4,3(4x,f15.4))
+    260 FORMAT(f15.4,3(4x,f25.15))
     270 FORMAT(1x,A15,9x,i15)
     280 FORMAT(1x,A21,3x,i15)
 
@@ -209,7 +242,7 @@ SUBROUTINE record_estimation_eval(x_optim_all_unscaled, val_current, num_eval)
         IF (is_large(i)) THEN
             WRITE(tmp_char, '(4x,A15)') '---'
         ELSE
-            WRITE(tmp_char, '(4x,f15.4)') crit_vals(i)
+            WRITE(tmp_char, '(4x,f25.15)') crit_vals(i)
         END IF
 
         val_char = TRIM(val_char) // TRIM(tmp_char)
@@ -231,12 +264,9 @@ SUBROUTINE record_estimation_eval(x_optim_all_unscaled, val_current, num_eval)
         WRITE(99, *)
 
         DO i = 1, 27
-            WRITE(99, 230) (i - 1), x_container(i, :)
+            WRITE(99, 230) (i - 1), x_econ_container(i, :)
         END DO
 
-        WRITE(99, *)
-        WRITE(99, 240) 'Level', x_container(1, :)
-        WRITE(99, *)
         WRITE(99, *)
         WRITE(99, *)   'Covariance Matrix'
         WRITE(99, *)
@@ -247,13 +277,10 @@ SUBROUTINE record_estimation_eval(x_optim_all_unscaled, val_current, num_eval)
             IF (i == 2) WRITE(99, 250) 'Step'
             IF (i == 3) WRITE(99, 250) 'Current'
 
-            CALL get_cholesky(shocks_cholesky, x_container(:, i))
-            shocks_cov = MATMUL(shocks_cholesky, TRANSPOSE(shocks_cholesky))
-
             WRITE(99, *)
 
             DO j = 1, 4
-                WRITE(99, 260) shocks_cov(j, :)
+                WRITE(99, 260) shocks_cov(i, j, :)
             END DO
 
             WRITE(99, *)
@@ -274,13 +301,13 @@ SUBROUTINE record_estimation_eval(x_optim_all_unscaled, val_current, num_eval)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE record_estimation_final(success, message, crit_val, x_all_final)
+SUBROUTINE record_estimation_final(success, message, crit_val, x_optim_free_scaled_final)
 
     !/* external objects        */
 
     LOGICAL, INTENT(IN)             :: success
 
-    REAL(our_dble), INTENT(IN)      :: x_all_final(27)
+    REAL(our_dble), INTENT(IN)      :: x_optim_free_scaled_final(num_free)
     REAL(our_dble), INTENT(IN)      :: crit_val
 
     CHARACTER(*), INTENT(IN)        :: message
@@ -318,8 +345,8 @@ SUBROUTINE record_estimation_final(success, message, crit_val, x_all_final)
 
         WRITE(99, *)
 
-        DO i = 1, 27
-            WRITE(99, 120) (i - 1), x_all_final(i)
+        DO i = 1, num_free
+            WRITE(99, 120) (i - 1), x_optim_free_scaled_final(i)
         END DO
 
         WRITE(99, *)
