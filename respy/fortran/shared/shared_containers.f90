@@ -40,7 +40,6 @@ MODULE shared_containers
     LOGICAL                         :: is_debug
 
     LOGICAL                         :: crit_estimation = .False.
-    LOGICAL                         :: crit_scaled = .False.
 
     CHARACTER(10)                   :: measure
 

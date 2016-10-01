@@ -6,6 +6,8 @@ MODULE parallelism_auxiliary
 
     USE parallelism_constants
 
+    USE shared_utilities
+
     USE resfort_library
 
     USE mpi
@@ -23,7 +25,7 @@ SUBROUTINE get_scales_parallel(auto_scales, x_free_start, scaled_minimum)
 
     !/* external objects    */
 
-    REAL(our_dble), ALLOCATABLE, INTENT(OUT)     :: auto_scales(:, :)
+    REAL(our_dble), INTENT(OUT)                  :: auto_scales(:, :)
 
     REAL(our_dble), INTENT(IN)                   :: x_free_start(:)
     REAL(our_dble), INTENT(IN)                   :: scaled_minimum
@@ -40,10 +42,6 @@ SUBROUTINE get_scales_parallel(auto_scales, x_free_start, scaled_minimum)
 !------------------------------------------------------------------------------
 
     crit_estimation = .False.
-
-    ALLOCATE(auto_scales(num_free, num_free))
-
-    CALL record_estimation(auto_scales, x_free_start, .True.)
 
     dfunc_eps = scale_eps
     grad = fort_dcriterion_parallel(x_free_start)
@@ -216,22 +214,24 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, level, coeffs_a, c
 
     CALL get_free_optim_paras(x_free_start, level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed)
 
-    ! If a scaling of the criterion function is requested, then we determine the scaled and transform the starting values. Also, the boolean indicates that inside the criterion function the scaling is undone.
-    IF (is_scaled .AND. (.NOT. maxfun == zero_int)) THEN
+    ! TODO: Cleanup later
+    ALLOCATE(auto_scales(num_free, num_free))
+    ! THIs is imprtant as criterion function always uses it even
+    ! when determining the scales!!!!
+    auto_scales = create_identity(num_free)
 
+    CALL record_estimation(auto_scales, x_free_start, .True.)
+    IF (is_scaled) THEN
         CALL get_scales_parallel(auto_scales, x_free_start, scaled_minimum)
-
-        crit_scaled = .True.
-
-        ! We also apply the scaling to the parameter bounds.
-        paras_bounds_free(1, :) = apply_scaling(paras_bounds_free(1, :), auto_scales, 'do')
-        paras_bounds_free(2, :) = apply_scaling(paras_bounds_free(2, :), auto_scales, 'do')
-
-        CALL record_estimation(auto_scales, x_free_start, .False.)
-
-        x_free_start = apply_scaling(x_free_start, auto_scales, 'do')
-
+    ELSE
+        auto_scales = create_identity(num_free)
     END IF
+    x_free_start = apply_scaling(x_free_start, auto_scales, 'do')
+    paras_bounds_free(1, :) = apply_scaling(paras_bounds_free(1, :), auto_scales, 'do')
+    paras_bounds_free(2, :) = apply_scaling(paras_bounds_free(2, :), auto_scales, 'do')
+
+    CALL record_estimation(auto_scales, x_free_start, .False.)
+
 
     ! TODO: This is a temporary fix to prepare for Powell's algorithms and needs to be noted in the log files later.
     IF ((optimizer_used == 'FORT-NEWUOA') .OR. (optimizer_used == 'FORT-BOBYQA')) THEN
@@ -256,7 +256,6 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, level, coeffs_a, c
         END IF
 
     END IF
-
 
     crit_estimation = .True.
 
@@ -288,26 +287,16 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, level, coeffs_a, c
 
     crit_estimation = .False.
 
-    ! If scaling is requested, then we transform the resulting parameter vector and indicate that the critterion function is to be used with the actual parameters again.
-    IF (is_scaled .AND. (.NOT. maxfun == zero_int)) THEN
-
-        crit_scaled = .False.
-
-        x_free_final = apply_scaling(x_free_start, auto_scales, 'undo')
-
-    ELSE
-
-        x_free_final = x_free_start
-
-    END IF
-
     ! The following allows for scalability exercise.
     IF (maxfun == zero_int) CALL record_estimation('Start')
 
-    crit_val = fort_criterion_parallel(x_free_final)
+    crit_val = fort_criterion_parallel(x_free_start)
 
     IF (maxfun == zero_int) CALL record_estimation('Finish')
 
+
+    ! If scaling is requested, then we transform the resulting parameter vector and indicate that the critterion function is to be used with the actual parameters again.
+    x_free_final = apply_scaling(x_free_start, auto_scales, 'undo')
 
     CALL construct_all_current_values(x_all_final, x_free_final, paras_fixed)
 
@@ -353,13 +342,7 @@ FUNCTION fort_criterion_parallel(x)
         RETURN
     END IF
 
-    ! Undo the scaling (if required)
-    IF (crit_scaled) THEN
-        x_input = apply_scaling(x, auto_scales, 'undo')
-    ELSE
-        x_input = x
-    END IF
-
+    x_input = apply_scaling(x, auto_scales, 'undo')
 
     CALL construct_all_current_values(x_all_current, x_input, paras_fixed)
 
