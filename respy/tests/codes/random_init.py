@@ -152,11 +152,12 @@ def generate_random_dict(constraints=None):
     dict_['DERIVATIVES'] = dict()
     dict_['DERIVATIVES']['version'] = 'FORWARD-DIFFERENCES'
 
-    # SCALING
-    dict_['SCALING'] = dict()
-    dict_['SCALING']['minimum'] = np.random.uniform(0.0000001, 0.1)
-    dict_['SCALING']['flag'] = np.random.choice(['True', 'False'])
-    dict_['SCALING']['eps'] = np.random.uniform(0.0000001, 0.1)
+    # PRECONDITIONING
+    dict_['PRECONDITIONING'] = dict()
+    dict_['PRECONDITIONING']['minimum'] = np.random.uniform(0.0000001, 0.1)
+    dict_['PRECONDITIONING']['type'] = np.random.choice(['gradient',
+                                                         'identity'])
+    dict_['PRECONDITIONING']['eps'] = np.random.uniform(0.0000001, 0.1)
 
     # PROGRAM
     dict_['PROGRAM'] = dict()
@@ -217,7 +218,7 @@ def generate_random_dict(constraints=None):
 
     if 'is_estimation' in keys:
         assert 'maxfun' not in keys
-        assert 'flag_scaling' not in keys
+        assert 'flag_precond' not in keys
 
     if 'flag_ambiguity' in keys:
         assert 'level' not in keys
@@ -362,13 +363,16 @@ def generate_random_dict(constraints=None):
         if dict_['PROGRAM']['procs'] > 1:
             dict_['PROGRAM']['version'] = 'FORTRAN'
 
-    if 'flag_scaling' in constraints.keys():
+    if 'flag_precond' in constraints.keys():
         # Extract objects
-        flag_scaling = constraints['flag_scaling']
+        flag_precond = constraints['flag_precond']
         # Checks
-        assert (flag_scaling in [True, False])
+        assert (flag_precond in [True, False])
         # Replace in initialization file
-        dict_['SCALING']['flag'] = str(flag_scaling)
+        if flag_precond:
+            dict_['PRECONDITIONING']['type'] = 'gradient'
+        else:
+            dict_['PRECONDITIONING']['type'] = 'identity'
 
     # Replace store attribute
     if 'is_store' in constraints.keys():
@@ -447,7 +451,8 @@ def generate_random_dict(constraints=None):
             dict_['is_store'] = False
             dict_['ESTIMATION']['maxfun'] = int(np.random.choice(range(6),
                 p=[0.5, 0.1, 0.1, 0.1, 0.1, 0.1]))
-            dict_['SCALING']['flag'] = np.random.choice(['True', 'False'],
+            dict_['PRECONDITIONING']['type'] = np.random.choice(['gradient',
+                                                                'identity'],
                                                        p=[0.1, 0.9])
 
             # Ensure that a valid estimator is selected, at least if the

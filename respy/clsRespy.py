@@ -49,6 +49,8 @@ class RespyCls(object):
 
         self.attr['optimizer_options'] = None
 
+        self.attr['preconditioning'] = None
+
         self.attr['is_interpolated'] = None
 
         self.attr['num_draws_emax'] = None
@@ -96,8 +98,6 @@ class RespyCls(object):
         self.attr['edu_max'] = None
 
         self.attr['version'] = None
-
-        self.attr['scaling'] = None
 
         self.attr['maxfun'] = None
 
@@ -334,10 +334,10 @@ class RespyCls(object):
         init_dict['DERIVATIVES']['version'] = self.attr['derivatives']
 
         # Scaling
-        init_dict['SCALING'] = dict()
-        init_dict['SCALING']['flag'] = self.attr['scaling'][0]
-        init_dict['SCALING']['minimum'] = self.attr['scaling'][1]
-        init_dict['SCALING']['eps'] = self.attr['scaling'][2]
+        init_dict['PRECONDITIONING'] = dict()
+        init_dict['PRECONDITIONING']['type'] = self.attr['preconditioning'][0]
+        init_dict['PRECONDITIONING']['minimum'] = self.attr['preconditioning'][1]
+        init_dict['PRECONDITIONING']['eps'] = self.attr['preconditioning'][2]
 
         # Program
         init_dict['PROGRAM'] = dict()
@@ -435,10 +435,10 @@ class RespyCls(object):
 
         self.attr['derivatives'] = init_dict['DERIVATIVES']['version']
 
-        self.attr['scaling'] = [None, None, None]
-        self.attr['scaling'][0] = init_dict['SCALING']['flag']
-        self.attr['scaling'][1] = init_dict['SCALING']['minimum']
-        self.attr['scaling'][2] = init_dict['SCALING']['eps']
+        self.attr['preconditioning'] = [None, None, None]
+        self.attr['preconditioning'][0] = init_dict['PRECONDITIONING']['type']
+        self.attr['preconditioning'][1] = init_dict['PRECONDITIONING']['minimum']
+        self.attr['preconditioning'][2] = init_dict['PRECONDITIONING']['eps']
 
         # Initialize model parameters
         self.attr['model_paras'] = dict()
@@ -531,6 +531,8 @@ class RespyCls(object):
 
         is_interpolated = self.attr['is_interpolated']
 
+        preconditioning = self.attr['preconditioning']
+
         optimizer_used = self.attr['optimizer_used']
 
         num_draws_emax = self.attr['num_draws_emax']
@@ -568,8 +570,6 @@ class RespyCls(object):
         edu_max = self.attr['edu_max']
 
         version = self.attr['version']
-
-        scaling = self.attr['scaling']
 
         measure = self.attr['measure']
 
@@ -668,11 +668,11 @@ class RespyCls(object):
         assert (optimizer_used in OPT_EST_FORT + OPT_EST_PYTH)
 
         # Scaling
-        assert (scaling[0] in [True, False])
-        assert (isinstance(scaling[1], float))
-        assert (scaling[1] > 0.0)
-        assert (isinstance(scaling[2], float))
-        assert (scaling[2] > 0.0)
+        assert (preconditioning[0] in ['identity', 'gradient'])
+        assert (isinstance(preconditioning[1], float))
+        assert (preconditioning[1] > 0.0)
+        assert (isinstance(preconditioning[2], float))
+        assert (preconditioning[2] > 0.0)
 
         # Derivatives
         assert (derivatives in ['FORWARD-DIFFERENCES'])

@@ -47,9 +47,9 @@ SUBROUTINE fort_estimate(crit_val, success, message, level, coeffs_a, coeffs_b, 
 
     CHARACTER(225), INTENT(IN)      :: optimizer_used
     CHARACTER(150), INTENT(OUT)     :: message
+    CHARACTER(50), INTENT(OUT)      :: precond_type
 
     LOGICAL, INTENT(IN)             :: paras_fixed(27)
-    LOGICAL, INTENT(OUT)            :: precond_type
     LOGICAL, INTENT(OUT)            :: success
 
     !/* internal objects    */
@@ -88,7 +88,7 @@ SUBROUTINE fort_estimate(crit_val, success, message, level, coeffs_a, coeffs_b, 
     precond_matrix = create_identity(num_free)
 
     CALL record_estimation(precond_matrix, x_free_start, .True.)
-    IF (precond_type) THEN
+    IF (precond_type == 'gradient') THEN
         CALL get_scales_scalar(precond_matrix, x_free_start, precond_minimum)
     ELSE
         precond_matrix = create_identity(num_free)

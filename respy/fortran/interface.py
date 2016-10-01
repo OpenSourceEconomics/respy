@@ -23,7 +23,7 @@ def resfort_interface(respy_obj, request, data_array=None):
         is_myopic, min_idx, tau, num_procs, num_agents_sim, \
         num_draws_prob, num_agents_est, seed_prob, seed_sim, paras_fixed, \
         optimizer_options, optimizer_used, maxfun, paras_fixed, derivatives, \
-        scaling, measure, file_sim, paras_bounds = \
+        preconditioning, measure, file_sim, paras_bounds = \
             dist_class_attributes(respy_obj, 'model_paras', 'num_periods',
                 'edu_start', 'is_debug', 'edu_max',
                 'delta', 'num_draws_emax', 'seed_emax', 'is_interpolated',
@@ -31,9 +31,10 @@ def resfort_interface(respy_obj, request, data_array=None):
                 'num_procs', 'num_agents_sim', 'num_draws_prob',
                 'num_agents_est', 'seed_prob', 'seed_sim', 'paras_fixed',
                 'optimizer_options', 'optimizer_used', 'maxfun', 'paras_fixed',
-                'derivatives', 'scaling', 'measure', 'file_sim', 'paras_bounds')
+                'derivatives', 'preconditioning', 'measure', 'file_sim',
+                'paras_bounds')
 
-    precond_type, precond_minimum, precond_eps = scaling
+    precond_type, precond_minimum, precond_eps = preconditioning
 
     if request == 'estimate':
         # Check that selected optimizer is in line with version of program.
@@ -234,7 +235,7 @@ def write_resfort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         line = '{0:25.15f}\n'.format(tau)
         file_.write(line)
 
-        # SCALING
+        # PRECONDITIONING
         line = '{0}\n'.format(precond_type)
         file_.write(line)
 

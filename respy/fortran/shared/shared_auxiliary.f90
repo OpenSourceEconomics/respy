@@ -690,12 +690,12 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
     CHARACTER(225), INTENT(OUT)     :: file_sim
     CHARACTER(225), INTENT(OUT)     :: exec_dir
 
+    CHARACTER(50), INTENT(OUT)      :: precond_type
     CHARACTER(10), INTENT(OUT)      :: request
     CHARACTER(10), INTENT(OUT)      :: measure
 
     LOGICAL, INTENT(OUT)            :: is_interpolated
     LOGICAL, INTENT(OUT)            :: paras_fixed(27)
-    LOGICAL, INTENT(OUT)            :: precond_type
     LOGICAL, INTENT(OUT)            :: is_myopic
     LOGICAL, INTENT(OUT)            :: is_debug
 

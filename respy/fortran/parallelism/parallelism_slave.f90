@@ -40,7 +40,6 @@ PROGRAM resfort_parallel_slave
     REAL(our_dble)                  :: level(1)
 
     LOGICAL                         :: STAY_AVAILABLE = .TRUE.
-    LOGICAL                         :: precond_type
 
     INTEGER(our_int)                :: num_procs
     INTEGER(our_int)                :: seed_prob
@@ -51,6 +50,7 @@ PROGRAM resfort_parallel_slave
     CHARACTER(225)                  :: optimizer_used
     CHARACTER(225)                  :: file_sim
     CHARACTER(225)                  :: exec_dir
+    CHARACTER(50)                   :: precond_type
     CHARACTER(10)                   :: request
 
 !------------------------------------------------------------------------------

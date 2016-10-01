@@ -35,13 +35,13 @@ PROGRAM resfort_parallel
     INTEGER(our_int)                :: seed_emax
     INTEGER(our_int)                :: seed_sim
 
-    LOGICAL                         :: precond_type
     LOGICAL                         :: success
 
     CHARACTER(225)                  :: optimizer_used
     CHARACTER(225)                  :: file_sim
     CHARACTER(225)                  :: exec_dir
     CHARACTER(150)                  :: message
+    CHARACTER(50)                   :: precond_type
     CHARACTER(10)                   :: request
 
 !------------------------------------------------------------------------------

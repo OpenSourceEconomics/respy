@@ -30,7 +30,6 @@ PROGRAM resfort_scalar
     INTEGER(our_int)                :: seed_emax
     INTEGER(our_int)                :: seed_sim
 
-    LOGICAL                         :: precond_type
     LOGICAL                         :: success
 
     CHARACTER(225)                  :: optimizer_used
@@ -38,6 +37,7 @@ PROGRAM resfort_scalar
     CHARACTER(225)                  :: exec_dir
     CHARACTER(150)                  :: message
     CHARACTER(10)                   :: request
+    CHARACTER(50)                   :: precond_type
 
     ! Temporary fix
     REAL(our_dble)                  :: x_tmp(27)

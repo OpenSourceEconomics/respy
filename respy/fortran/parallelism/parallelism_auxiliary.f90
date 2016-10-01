@@ -181,9 +181,9 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, level, coeffs_a, c
     REAL(our_dble), INTENT(IN)      :: level(1)
 
     CHARACTER(225), INTENT(IN)      :: optimizer_used
+    CHARACTER(50), INTENT(OUT)      :: precond_type
 
     LOGICAL, INTENT(IN)             :: paras_fixed(27)
-    LOGICAL, INTENT(IN)             :: precond_type
 
     !/* internal objects    */
 
@@ -221,7 +221,7 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, level, coeffs_a, c
     precond_matrix = create_identity(num_free)
 
     CALL record_estimation(precond_matrix, x_free_start, .True.)
-    IF (precond_type) THEN
+    IF (precond_type == 'gradient') THEN
         CALL get_scales_parallel(precond_matrix, x_free_start, precond_minimum)
     ELSE
         precond_matrix = create_identity(num_free)

@@ -2,6 +2,7 @@
 import argparse
 import numpy as np
 import json
+import copy
 
 from auxiliary_shared import send_notification
 from auxiliary_shared import compile_package
