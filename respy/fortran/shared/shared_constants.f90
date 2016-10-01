@@ -54,7 +54,7 @@ MODULE shared_constants
     ! TODO: Move around
     REAL(our_dble)  :: paras_bounds(2, 27)
     REAL(our_dble), ALLOCATABLE  :: paras_bounds_free(:, :)
-    REAL(our_dble)  :: scale_eps 
+    REAL(our_dble)  :: precond_eps 
 
     ! We create a type that resembles the dictionary with the optimizer options in PYTHON.
     TYPE OPTIMIZER_BFGS

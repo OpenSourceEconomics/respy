@@ -21,14 +21,14 @@ MODULE parallelism_auxiliary
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_scales_parallel(auto_scales, x_free_start, scaled_minimum)
+SUBROUTINE get_scales_parallel(precond_matrix, x_free_start, precond_minimum)
 
     !/* external objects    */
 
-    REAL(our_dble), INTENT(OUT)                  :: auto_scales(:, :)
+    REAL(our_dble), INTENT(OUT)                  :: precond_matrix(:, :)
 
     REAL(our_dble), INTENT(IN)                   :: x_free_start(:)
-    REAL(our_dble), INTENT(IN)                   :: scaled_minimum
+    REAL(our_dble), INTENT(IN)                   :: precond_minimum
 
     !/* internal objects    */
 
@@ -43,19 +43,19 @@ SUBROUTINE get_scales_parallel(auto_scales, x_free_start, scaled_minimum)
 
     crit_estimation = .False.
 
-    dfunc_eps = scale_eps
+    dfunc_eps = precond_eps
     grad = fort_dcriterion_parallel(x_free_start)
     dfunc_eps = -HUGE_FLOAT
 
-    auto_scales = zero_dble
+    precond_matrix = zero_dble
 
     DO i = 1, num_free
 
         val = ABS(grad(i))
 
-        IF (val .LT. scaled_minimum) val = scaled_minimum
+        IF (val .LT. precond_minimum) val = precond_minimum
 
-        auto_scales(i, i) = val
+        precond_matrix(i, i) = val
 
     END DO
 
@@ -161,7 +161,7 @@ SUBROUTINE determine_workload(jobs_slaves, jobs_total)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_estimate_parallel(crit_val, success, message, level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed, optimizer_used, maxfun, is_scaled, scaled_minimum, optimizer_options)
+SUBROUTINE fort_estimate_parallel(crit_val, success, message, level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed, optimizer_used, maxfun, precond_type, precond_minimum, optimizer_options)
 
     !/* external objects    */
 
@@ -173,7 +173,7 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, level, coeffs_a, c
     INTEGER(our_int), INTENT(IN)    :: maxfun
 
     REAL(our_dble), INTENT(IN)      :: shocks_cholesky(4, 4)
-    REAL(our_dble), INTENT(IN)      :: scaled_minimum
+    REAL(our_dble), INTENT(IN)      :: precond_minimum
     REAL(our_dble), INTENT(IN)      :: coeffs_home(1)
     REAL(our_dble), INTENT(IN)      :: coeffs_edu(3)
     REAL(our_dble), INTENT(IN)      :: coeffs_a(6)
@@ -183,7 +183,7 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, level, coeffs_a, c
     CHARACTER(225), INTENT(IN)      :: optimizer_used
 
     LOGICAL, INTENT(IN)             :: paras_fixed(27)
-    LOGICAL, INTENT(IN)             :: is_scaled
+    LOGICAL, INTENT(IN)             :: precond_type
 
     !/* internal objects    */
 
@@ -215,22 +215,22 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, level, coeffs_a, c
     CALL get_free_optim_paras(x_free_start, level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed)
 
     ! TODO: Cleanup later
-    ALLOCATE(auto_scales(num_free, num_free))
+    ALLOCATE(precond_matrix(num_free, num_free))
     ! THIs is imprtant as criterion function always uses it even
     ! when determining the scales!!!!
-    auto_scales = create_identity(num_free)
+    precond_matrix = create_identity(num_free)
 
-    CALL record_estimation(auto_scales, x_free_start, .True.)
-    IF (is_scaled) THEN
-        CALL get_scales_parallel(auto_scales, x_free_start, scaled_minimum)
+    CALL record_estimation(precond_matrix, x_free_start, .True.)
+    IF (precond_type) THEN
+        CALL get_scales_parallel(precond_matrix, x_free_start, precond_minimum)
     ELSE
-        auto_scales = create_identity(num_free)
+        precond_matrix = create_identity(num_free)
     END IF
-    x_free_start = apply_scaling(x_free_start, auto_scales, 'do')
-    paras_bounds_free(1, :) = apply_scaling(paras_bounds_free(1, :), auto_scales, 'do')
-    paras_bounds_free(2, :) = apply_scaling(paras_bounds_free(2, :), auto_scales, 'do')
+    x_free_start = apply_scaling(x_free_start, precond_matrix, 'do')
+    paras_bounds_free(1, :) = apply_scaling(paras_bounds_free(1, :), precond_matrix, 'do')
+    paras_bounds_free(2, :) = apply_scaling(paras_bounds_free(2, :), precond_matrix, 'do')
 
-    CALL record_estimation(auto_scales, x_free_start, .False.)
+    CALL record_estimation(precond_matrix, x_free_start, .False.)
 
 
     ! TODO: This is a temporary fix to prepare for Powell's algorithms and needs to be noted in the log files later.
@@ -296,7 +296,7 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, level, coeffs_a, c
 
 
     ! If scaling is requested, then we transform the resulting parameter vector and indicate that the critterion function is to be used with the actual parameters again.
-    x_free_final = apply_scaling(x_free_start, auto_scales, 'undo')
+    x_free_final = apply_scaling(x_free_start, precond_matrix, 'undo')
 
     CALL construct_all_current_values(x_all_final, x_free_final, paras_fixed)
 
@@ -342,7 +342,7 @@ FUNCTION fort_criterion_parallel(x)
         RETURN
     END IF
 
-    x_input = apply_scaling(x, auto_scales, 'undo')
+    x_input = apply_scaling(x, precond_matrix, 'undo')
 
     CALL construct_all_current_values(x_all_current, x_input, paras_fixed)
 

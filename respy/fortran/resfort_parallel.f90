@@ -19,7 +19,7 @@ PROGRAM resfort_parallel
     !/* objects                 */
 
     REAL(our_dble)                  :: shocks_cholesky(4, 4)
-    REAL(our_dble)                  :: scaled_minimum
+    REAL(our_dble)                  :: precond_minimum
     REAL(our_dble)                  :: coeffs_home(1)
     REAL(our_dble)                  :: coeffs_edu(3)
     REAL(our_dble)                  :: coeffs_a(6)
@@ -35,7 +35,7 @@ PROGRAM resfort_parallel
     INTEGER(our_int)                :: seed_emax
     INTEGER(our_int)                :: seed_sim
 
-    LOGICAL                         :: is_scaled
+    LOGICAL                         :: precond_type
     LOGICAL                         :: success
 
     CHARACTER(225)                  :: optimizer_used
@@ -48,7 +48,7 @@ PROGRAM resfort_parallel
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, is_scaled, scaled_minimum, measure, level, optimizer_used, dfunc_eps, optimizer_options, file_sim)
+    CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, precond_type, precond_minimum, measure, level, optimizer_used, dfunc_eps, optimizer_options, file_sim)
 
     CALL MPI_INIT(ierr)
 
@@ -56,7 +56,7 @@ PROGRAM resfort_parallel
 
     IF (request == 'estimate') THEN
 
-        CALL fort_estimate_parallel(crit_val, success, message, level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed, optimizer_used, maxfun, is_scaled, scaled_minimum, optimizer_options)
+        CALL fort_estimate_parallel(crit_val, success, message, level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed, optimizer_used, maxfun, precond_type, precond_minimum, optimizer_options)
 
     ELSE IF (request == 'simulate') THEN
 

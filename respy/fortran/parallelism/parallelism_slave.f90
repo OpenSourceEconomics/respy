@@ -32,7 +32,7 @@ PROGRAM resfort_parallel_slave
     REAL(our_dble), ALLOCATABLE     :: contribs(:)
 
     REAL(our_dble)                  :: shocks_cholesky(4, 4)
-    REAL(our_dble)                  :: scaled_minimum
+    REAL(our_dble)                  :: precond_minimum
     REAL(our_dble)                  :: coeffs_home(1)
     REAL(our_dble)                  :: coeffs_edu(3)
     REAL(our_dble)                  :: coeffs_a(6)
@@ -40,7 +40,7 @@ PROGRAM resfort_parallel_slave
     REAL(our_dble)                  :: level(1)
 
     LOGICAL                         :: STAY_AVAILABLE = .TRUE.
-    LOGICAL                         :: is_scaled
+    LOGICAL                         :: precond_type
 
     INTEGER(our_int)                :: num_procs
     INTEGER(our_int)                :: seed_prob
@@ -64,7 +64,7 @@ PROGRAM resfort_parallel_slave
     CALL MPI_COMM_GET_PARENT(PARENTCOMM, ierr)
 
 
-    CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, is_scaled, scaled_minimum, measure, level, optimizer_used, dfunc_eps, optimizer_options, file_sim)
+    CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, precond_type, precond_minimum, measure, level, optimizer_used, dfunc_eps, optimizer_options, file_sim)
 
     CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, edu_start, edu_max, min_idx)
 

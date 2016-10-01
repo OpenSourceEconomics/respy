@@ -33,7 +33,7 @@ def resfort_interface(respy_obj, request, data_array=None):
                 'optimizer_options', 'optimizer_used', 'maxfun', 'paras_fixed',
                 'derivatives', 'scaling', 'measure', 'file_sim', 'paras_bounds')
 
-    is_scaled, scale_minimum, scale_eps = scaling
+    precond_type, precond_minimum, precond_eps = scaling
 
     if request == 'estimate':
         # Check that selected optimizer is in line with version of program.
@@ -56,8 +56,8 @@ def resfort_interface(respy_obj, request, data_array=None):
 
     args = args + (num_draws_prob, num_agents_est, num_agents_sim, seed_prob,
         seed_emax, tau, num_procs, request, seed_sim, optimizer_options,
-        optimizer_used, maxfun, paras_fixed, scale_eps, is_scaled,
-        scale_minimum, measure, level, file_sim, paras_bounds)
+        optimizer_used, maxfun, paras_fixed, precond_eps, precond_type,
+        precond_minimum, measure, level, file_sim, paras_bounds)
 
     write_resfort_initialization(*args)
 
@@ -151,8 +151,8 @@ def write_resfort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         num_points_interp, is_myopic, edu_start, is_debug, edu_max, min_idx,
         delta, num_draws_prob, num_agents_est, num_agents_sim, seed_prob,
         seed_emax, tau, num_procs, request, seed_sim, optimizer_options,
-        optimizer_used, maxfun, paras_fixed, scale_eps, is_scaled,
-        scale_minimum, measure, level, file_sim, paras_bounds):
+        optimizer_used, maxfun, paras_fixed, precond_eps, precond_type,
+        precond_minimum, measure, level, file_sim, paras_bounds):
     """ Write out model request to hidden file .model.resfort.ini.
     """
 
@@ -235,13 +235,13 @@ def write_resfort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         file_.write(line)
 
         # SCALING
-        line = '{0}\n'.format(is_scaled)
+        line = '{0}\n'.format(precond_type)
         file_.write(line)
 
-        line = '{0:25.15f}\n'.format(scale_minimum)
+        line = '{0:25.15f}\n'.format(precond_minimum)
         file_.write(line)
 
-        line = '{0:25.15f}\n'.format(scale_eps)
+        line = '{0:25.15f}\n'.format(precond_eps)
         file_.write(line)
 
         # SIMULATION

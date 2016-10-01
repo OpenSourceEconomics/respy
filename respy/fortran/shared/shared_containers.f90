@@ -22,7 +22,7 @@ MODULE shared_containers
     REAL(our_dble), ALLOCATABLE     :: periods_emax(:, :)
     REAL(our_dble), ALLOCATABLE     :: data_est(:, :)
 
-    REAL(our_dble), ALLOCATABLE     :: auto_scales(:, :)
+    REAL(our_dble), ALLOCATABLE     :: precond_matrix(:, :)
 
     REAL(our_dble)                  :: x_all_current(27)
     REAL(our_dble)                  :: x_all_start(27)

@@ -328,11 +328,11 @@ SUBROUTINE record_estimation_final(success, message, crit_val, x_all_final)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE record_scaling(auto_scales, x_free_start, is_setup)
+SUBROUTINE record_scaling(precond_matrix, x_free_start, is_setup)
 
     !/* external objects    */
 
-    REAL(our_dble), INTENT(IN)      :: auto_scales(num_free, num_free)
+    REAL(our_dble), INTENT(IN)      :: precond_matrix(num_free, num_free)
     REAL(our_dble), INTENT(IN)      :: x_free_start(num_free)
 
     LOGICAL, INTENT(IN)             :: is_setup
@@ -350,7 +350,7 @@ SUBROUTINE record_scaling(auto_scales, x_free_start, is_setup)
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    x_free_scaled = apply_scaling(x_free_start, auto_scales, 'do')
+    x_free_scaled = apply_scaling(x_free_start, precond_matrix, 'do')
 
 
     120 FORMAT(3x,A10,5(4x,A25))
@@ -391,8 +391,8 @@ SUBROUTINE record_scaling(auto_scales, x_free_start, is_setup)
 
                 END DO
 
-            !    WRITE(99, 130) i, x_free_start(i), auto_scales(i, i), x_free_scaled(i), paras_bounds_free(1, i), paras_bounds_free(2, i)
-            WRITE(99, 135) i, x_free_start(i), auto_scales(i, i), x_free_scaled(i), val_char
+            !    WRITE(99, 130) i, x_free_start(i), precond_matrix(i, i), x_free_scaled(i), paras_bounds_free(1, i), paras_bounds_free(2, i)
+            WRITE(99, 135) i, x_free_start(i), precond_matrix(i, i), x_free_scaled(i), val_char
 
             END DO
 

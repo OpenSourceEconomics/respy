@@ -29,14 +29,14 @@ MODULE estimate_fortran
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_estimate(crit_val, success, message, level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed, optimizer_used, maxfun, is_scaled, scaled_minimum, optimizer_options)
+SUBROUTINE fort_estimate(crit_val, success, message, level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed, optimizer_used, maxfun, precond_type, precond_minimum, optimizer_options)
 
     !/* external objects    */
 
     REAL(our_dble), INTENT(OUT)     :: crit_val
 
     REAL(our_dble), INTENT(IN)      :: shocks_cholesky(4, 4)
-    REAL(our_dble), INTENT(IN)      :: scaled_minimum
+    REAL(our_dble), INTENT(IN)      :: precond_minimum
     REAL(our_dble), INTENT(IN)      :: coeffs_home(1)
     REAL(our_dble), INTENT(IN)      :: coeffs_edu(3)
     REAL(our_dble), INTENT(IN)      :: coeffs_a(6)
@@ -49,7 +49,7 @@ SUBROUTINE fort_estimate(crit_val, success, message, level, coeffs_a, coeffs_b, 
     CHARACTER(150), INTENT(OUT)     :: message
 
     LOGICAL, INTENT(IN)             :: paras_fixed(27)
-    LOGICAL, INTENT(OUT)            :: is_scaled
+    LOGICAL, INTENT(OUT)            :: precond_type
     LOGICAL, INTENT(OUT)            :: success
 
     !/* internal objects    */
@@ -82,21 +82,21 @@ SUBROUTINE fort_estimate(crit_val, success, message, level, coeffs_a, coeffs_b, 
     CALL get_free_optim_paras(x_free_start, level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed)
 
     ! TODO: Cleanup later
-    ALLOCATE(auto_scales(num_free, num_free))
+    ALLOCATE(precond_matrix(num_free, num_free))
     ! THIs is imprtant as criterion function always uses it even
     ! when determining the scales!!!!
-    auto_scales = create_identity(num_free)
+    precond_matrix = create_identity(num_free)
 
-    CALL record_estimation(auto_scales, x_free_start, .True.)
-    IF (is_scaled) THEN
-        CALL get_scales_scalar(auto_scales, x_free_start, scaled_minimum)
+    CALL record_estimation(precond_matrix, x_free_start, .True.)
+    IF (precond_type) THEN
+        CALL get_scales_scalar(precond_matrix, x_free_start, precond_minimum)
     ELSE
-        auto_scales = create_identity(num_free)
+        precond_matrix = create_identity(num_free)
     END IF
-    x_free_start = apply_scaling(x_free_start, auto_scales, 'do')
-    paras_bounds_free(1, :) = apply_scaling(paras_bounds_free(1, :), auto_scales, 'do')
-    paras_bounds_free(2, :) = apply_scaling(paras_bounds_free(2, :), auto_scales, 'do')
-    CALL record_estimation(auto_scales, x_free_start, .False.)
+    x_free_start = apply_scaling(x_free_start, precond_matrix, 'do')
+    paras_bounds_free(1, :) = apply_scaling(paras_bounds_free(1, :), precond_matrix, 'do')
+    paras_bounds_free(2, :) = apply_scaling(paras_bounds_free(2, :), precond_matrix, 'do')
+    CALL record_estimation(precond_matrix, x_free_start, .False.)
 
     ! TODO: This is a temporary fix to prepare for Powell's algorithms and needs to be noted in the log files later.
     IF ((optimizer_used == 'FORT-NEWUOA') .OR. (optimizer_used == 'FORT-BOBYQA')) THEN
@@ -158,7 +158,7 @@ SUBROUTINE fort_estimate(crit_val, success, message, level, coeffs_a, coeffs_b, 
     IF (maxfun == zero_int) CALL record_estimation('Finish')
 
     ! THis has to be done after last call to criterion as criterion only works with INTERNAL, which should be naming convention.
-    x_free_final = apply_scaling(x_free_start, auto_scales, 'undo')
+    x_free_final = apply_scaling(x_free_start, precond_matrix, 'undo')
 
     CALL construct_all_current_values(x_all_final, x_free_final, paras_fixed)
 
@@ -202,7 +202,7 @@ FUNCTION fort_criterion(x)
         RETURN
     END IF
 
-    x_input = apply_scaling(x, auto_scales, 'undo')
+    x_input = apply_scaling(x, precond_matrix, 'undo')
 
     CALL construct_all_current_values(x_all_current, x_input, paras_fixed)
 
@@ -309,14 +309,14 @@ SUBROUTINE construct_all_current_values(x_all_current, x, paras_fixed)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_scales_scalar(auto_scales, x_free_start, scaled_minimum)
+SUBROUTINE get_scales_scalar(precond_matrix, x_free_start, precond_minimum)
 
     !/* external objects    */
 
-    REAL(our_dble), INTENT(OUT)                  :: auto_scales(:, :)
+    REAL(our_dble), INTENT(OUT)                  :: precond_matrix(:, :)
 
     REAL(our_dble), INTENT(IN)                   :: x_free_start(num_free)
-    REAL(our_dble), INTENT(IN)                   :: scaled_minimum
+    REAL(our_dble), INTENT(IN)                   :: precond_minimum
 
     !/* internal objects    */
 
@@ -331,19 +331,19 @@ SUBROUTINE get_scales_scalar(auto_scales, x_free_start, scaled_minimum)
 
     crit_estimation = .False.
 
-    dfunc_eps = scale_eps
+    dfunc_eps = precond_eps
     grad = fort_dcriterion(x_free_start)
     dfunc_eps = -HUGE_FLOAT
 
-    auto_scales = zero_dble
+    precond_matrix = zero_dble
 
     DO i = 1, num_free
 
         val = ABS(grad(i))
 
-        IF (val .LT. scaled_minimum) val = scaled_minimum
+        IF (val .LT. precond_minimum) val = precond_minimum
 
-        auto_scales(i, i) = val
+        precond_matrix(i, i) = val
 
     END DO
 

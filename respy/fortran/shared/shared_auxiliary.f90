@@ -55,13 +55,13 @@ FUNCTION get_log_likl(contribs)
 END FUNCTION
 !******************************************************************************
 !******************************************************************************
-FUNCTION apply_scaling(x_in, auto_scales, request)
+FUNCTION apply_scaling(x_in, precond_matrix, request)
 
     !/* external objects    */
 
     REAL(our_dble)                  :: apply_scaling(num_free)
 
-    REAL(our_dble), INTENT(IN)      :: auto_scales(num_free, num_free)
+    REAL(our_dble), INTENT(IN)      :: precond_matrix(num_free, num_free)
     REAL(our_dble), INTENT(IN)      :: x_in(num_free)
 
     CHARACTER(*), INTENT(IN)        :: request
@@ -71,9 +71,9 @@ FUNCTION apply_scaling(x_in, auto_scales, request)
 !------------------------------------------------------------------------------
 
     IF (request == 'do') THEN
-        apply_scaling = MATMUL(auto_scales, x_in)
+        apply_scaling = MATMUL(precond_matrix, x_in)
     ELSE
-        apply_scaling = MATMUL(pinv(auto_scales, num_free), x_in)
+        apply_scaling = MATMUL(pinv(precond_matrix, num_free), x_in)
     END IF
 
 END FUNCTION
@@ -653,7 +653,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_rewards
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, is_scaled, scaled_minimum, measure, level, optimizer_used, dfunc_eps, optimizer_options, file_sim)
+SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, precond_type, precond_minimum, measure, level, optimizer_used, dfunc_eps, optimizer_options, file_sim)
 
     !
     !   This function serves as the replacement for the RespyCls and reads in
@@ -683,7 +683,7 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
     INTEGER(our_int), INTENT(OUT)   :: edu_max
     INTEGER(our_int), INTENT(OUT)   :: maxfun
 
-    REAL(our_dble), INTENT(OUT)     :: scaled_minimum
+    REAL(our_dble), INTENT(OUT)     :: precond_minimum
     REAL(our_dble), INTENT(OUT)     :: dfunc_eps
 
     CHARACTER(225), INTENT(OUT)     :: optimizer_used
@@ -695,7 +695,7 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
 
     LOGICAL, INTENT(OUT)            :: is_interpolated
     LOGICAL, INTENT(OUT)            :: paras_fixed(27)
-    LOGICAL, INTENT(OUT)            :: is_scaled
+    LOGICAL, INTENT(OUT)            :: precond_type
     LOGICAL, INTENT(OUT)            :: is_myopic
     LOGICAL, INTENT(OUT)            :: is_debug
 
@@ -770,9 +770,9 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
         READ(99, 1500) tau
 
         ! SCALING
-        READ(99, *) is_scaled
-        READ(99, *) scaled_minimum
-        READ(99, 1500) scale_eps
+        READ(99, *) precond_type
+        READ(99, *) precond_minimum
+        READ(99, 1500) precond_eps
 
         ! SIMULATION
         READ(99, 1505) num_agents_sim
