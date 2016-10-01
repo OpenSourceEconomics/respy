@@ -215,16 +215,17 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, level, coeffs_a, c
     CALL get_free_optim_paras(x_free_start, level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed)
 
     ! TODO: Cleanup later
+    crit_estimation = .False.
     ALLOCATE(precond_matrix(num_free, num_free))
     ! THIs is imprtant as criterion function always uses it even
     ! when determining the scales!!!!
     precond_matrix = create_identity(num_free)
 
     CALL record_estimation(precond_matrix, x_free_start, .True.)
-    IF (precond_type == 'gradient') THEN
-        CALL get_scales_parallel(precond_matrix, x_free_start, precond_minimum)
-    ELSE
+    IF ((precond_type == 'identity') .OR. (maxfun == zero_int)) THEN
         precond_matrix = create_identity(num_free)
+    ELSE
+        CALL get_scales_parallel(precond_matrix, x_free_start, precond_minimum)
     END IF
     x_free_start = apply_scaling(x_free_start, precond_matrix, 'do')
     paras_bounds_free(1, :) = apply_scaling(paras_bounds_free(1, :), precond_matrix, 'do')
@@ -340,7 +341,7 @@ FUNCTION fort_criterion_parallel(x)
 
     ! Ensuring that the criterion function is not evaluated more than specified. However, there is the special request of MAXFUN equal to zero which needs to be allowed.
     IF ((num_eval == maxfun) .AND. crit_estimation .AND. (.NOT. maxfun == zero_int)) THEN
-        fort_criterion_parallel = -HUGE_FLOAT
+        fort_criterion_parallel = HUGE_FLOAT
         RETURN
     END IF
 
@@ -371,7 +372,7 @@ FUNCTION fort_criterion_parallel(x)
 
     fort_criterion_parallel = get_log_likl(contribs)
 
-    IF (crit_estimation .OR. (maxfun == zero_int)) THEN
+    IF (crit_estimation .OR. maxfun == zero_int) THEN
 
         num_eval = num_eval + 1
 
