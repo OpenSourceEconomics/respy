@@ -301,14 +301,13 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE record_estimation_final(success, message, crit_val, x_optim_free_scaled_final)
+SUBROUTINE record_estimation_final(success, message, x_optim_free_scaled_final)
 
     !/* external objects        */
 
     LOGICAL, INTENT(IN)             :: success
 
     REAL(our_dble), INTENT(IN)      :: x_optim_free_scaled_final(num_free)
-    REAL(our_dble), INTENT(IN)      :: crit_val
 
     CHARACTER(*), INTENT(IN)        :: message
 
@@ -336,20 +335,6 @@ SUBROUTINE record_estimation_final(success, message, crit_val, x_optim_free_scal
         END IF
 
         WRITE(99, *) '  Message ', TRIM(message)
-        WRITE(99, *)
-        WRITE(99, 100) 'Criterion', crit_val
-
-        WRITE(99, *)
-        WRITE(99, *)
-        WRITE(99, 110), 'Identifier', 'Final'
-
-        WRITE(99, *)
-
-        DO i = 1, num_free
-            WRITE(99, 120) (i - 1), x_optim_free_scaled_final(i)
-        END DO
-
-        WRITE(99, *)
 
     CLOSE(99)
 
@@ -394,7 +379,7 @@ SUBROUTINE record_scaling(precond_matrix, x_free_start, is_setup)
         ! time consuming.
         IF (is_setup) THEN
 
-            WRITE(99, *) 'SCALING'
+            WRITE(99, *) 'PRECONDITIONING'
             WRITE(99, *)
             WRITE(99, 120) 'Identifier', 'Original', 'Scale', 'Transformed Value', 'Transformed Lower', 'Transformed Upper'
             WRITE(99, *)

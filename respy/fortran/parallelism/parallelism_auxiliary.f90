@@ -188,7 +188,6 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, level, coeffs_a, c
     !/* internal objects    */
 
     REAL(our_dble)                  :: x_free_start(COUNT(.not. paras_fixed))
-    REAL(our_dble)                  :: x_free_final(COUNT(.not. paras_fixed))
     REAL(our_dble)                  :: x_all_final(27)
 
     INTEGER(our_int)                :: iter
@@ -265,7 +264,10 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, level, coeffs_a, c
         success = .True.
         message = 'Single evaluation of criterion function at starting values.'
 
-        x_free_final = x_free_start
+        ! The following allows for scalability exercise.
+        CALL record_estimation('Start')
+        crit_val = fort_criterion_parallel(x_free_start)
+        CALL record_estimation('Finish')
 
     ELSEIF (optimizer_used == 'FORT-NEWUOA') THEN
 
@@ -288,21 +290,8 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, level, coeffs_a, c
 
     crit_estimation = .False.
 
-    ! The following allows for scalability exercise.
-    IF (maxfun == zero_int) CALL record_estimation('Start')
 
-    crit_val = fort_criterion_parallel(x_free_start)
-
-    IF (maxfun == zero_int) CALL record_estimation('Finish')
-
-
-    ! If scaling is requested, then we transform the resulting parameter vector and indicate that the critterion function is to be used with the actual parameters again.
-    CALL record_estimation(success, message, crit_val, x_free_start)
-
-    x_free_final = apply_scaling(x_free_start, precond_matrix, 'undo')
-
-    CALL construct_all_current_values(x_all_final, x_free_final, paras_fixed)
-
+    CALL record_estimation(success, message, x_free_start)
 
     CALL record_estimation()
 

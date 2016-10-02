@@ -125,12 +125,17 @@ SUBROUTINE fort_estimate(crit_val, success, message, level, coeffs_a, coeffs_b, 
 
     END IF
 
+    ! This will probably go ...
     crit_estimation = .True.
 
     IF (maxfun == zero_int) THEN
 
         success = .True.
         message = 'Single evaluation of criterion function at starting values.'
+
+        CALL record_estimation('Start')
+        crit_val = fort_criterion(x_optim_free_scaled_start)
+        CALL record_estimation('Finish')
 
     ELSEIF (optimizer_used == 'FORT-NEWUOA') THEN
 
@@ -151,18 +156,7 @@ SUBROUTINE fort_estimate(crit_val, success, message, level, coeffs_a, coeffs_b, 
     crit_estimation = .False.
 
 
-    ! The following allows for scalability exercise.
-    IF (maxfun == zero_int) CALL record_estimation('Start')
-
-    crit_val = fort_criterion(x_optim_free_scaled_start)
-
-    IF (maxfun == zero_int) CALL record_estimation('Finish')
-
-    CALL record_estimation(success, message, crit_val, x_optim_free_scaled_start)
-
-    x_optim_free_unscaled_end = apply_scaling(x_optim_free_scaled_start, precond_matrix, 'undo')
-
-    CALL construct_all_current_values(x_optim_all_unscaled_end, x_optim_free_unscaled_end, paras_fixed)
+    CALL record_estimation(success, message, x_optim_free_scaled_start)
 
     CALL record_estimation()
 
