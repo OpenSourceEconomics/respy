@@ -2,6 +2,8 @@ from scipy.optimize import fmin_l_bfgs_b
 from scipy.optimize import fmin_powell
 from scipy.optimize import fmin_bfgs
 
+import numpy as np
+
 from respy.python.record.record_estimation import record_estimation_scalability
 from respy.python.record.record_estimation import record_estimation_stop
 from respy.python.record.record_estimation import record_estimation_final
@@ -14,8 +16,9 @@ from respy.python.shared.shared_constants import OPT_EST_PYTH
 from respy.python.simulate.simulate_python import pyth_simulate
 from respy.python.estimate.estimate_wrapper import MaxfunError
 from respy.python.shared.shared_auxiliary import create_draws
+from respy.python.shared.shared_constants import LARGE_FLOAT
+from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.solve.solve_python import pyth_solve
-
 
 def respy_interface(respy_obj, request, data_array=None):
     """ This function provides the interface to the PYTHOn functionality.
@@ -25,14 +28,15 @@ def respy_interface(respy_obj, request, data_array=None):
         delta, num_draws_prob, seed_prob, num_draws_emax, seed_emax, \
         min_idx, is_myopic, is_interpolated, num_points_interp, maxfun, \
         optimizer_used, tau, paras_fixed, optimizer_options, seed_sim, \
-        num_agents_sim, measure, file_sim, paras_bounds = \
+        num_agents_sim, measure, file_sim, paras_bounds, preconditioning = \
             dist_class_attributes(respy_obj, 'model_paras', 'num_periods',
                 'num_agents_est', 'edu_start', 'is_debug', 'edu_max',
                 'delta', 'num_draws_prob', 'seed_prob', 'num_draws_emax',
                 'seed_emax', 'min_idx', 'is_myopic', 'is_interpolated',
                 'num_points_interp', 'maxfun', 'optimizer_used', 'tau',
                 'paras_fixed', 'optimizer_options', 'seed_sim',
-                'num_agents_sim', 'measure', 'file_sim', 'paras_bounds')
+                'num_agents_sim', 'measure', 'file_sim', 'paras_bounds',
+                'preconditioning')
 
     level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
         dist_model_paras(model_paras, is_debug)
@@ -50,10 +54,12 @@ def respy_interface(respy_obj, request, data_array=None):
             seed_emax, is_debug)
 
         # Construct starting values
-        x_free_start = get_optim_paras(level, coeffs_a, coeffs_b, coeffs_edu,
+        x_optim_free_unscaled_start = get_optim_paras(level, coeffs_a,
+                                                      coeffs_b, coeffs_edu,
             coeffs_home, shocks_cholesky, 'free', paras_fixed, is_debug)
 
-        x_all_start = get_optim_paras(level, coeffs_a, coeffs_b, coeffs_edu,
+        x_optim_all_unscaled_start = get_optim_paras(level, coeffs_a, coeffs_b,
+                                                coeffs_edu,
             coeffs_home, shocks_cholesky, 'all', paras_fixed, is_debug)
 
         # Construct the state space
@@ -76,16 +82,110 @@ def respy_interface(respy_obj, request, data_array=None):
         # requested is accounted for. Note, that the relevant value of the
         # criterion function is always the one indicated by the class
         # attribute and not the value returned by the optimization algorithm.
-        opt_obj = OptimizationClass()
+        num_free = paras_fixed.count(False)
 
+        opt_obj = OptimizationClass()
         opt_obj.maxfun = maxfun
         opt_obj.paras_fixed = paras_fixed
-        opt_obj.x_all_start = x_all_start
+        opt_obj.precond_matrix = np.identity(num_free)
+        opt_obj.x_optim_all_unscaled_start = x_optim_all_unscaled_start
+        opt_obj.is_scaling = False
+
+        paras_bounds_free = []
+        for i in range(27):
+            if not paras_fixed[i]:
+                paras_bounds_free += [paras_bounds[i]]
+
+
+        precond_matrix = np.zeros((num_free, num_free))
+
+        precond_type, precond_minimum, precond_eps = preconditioning
+
+        from scipy.optimize import approx_fprime
+
+        if precond_type == 'identity' or maxfun == 0:
+            precond_matrix = np.identity(num_free)
+        else:
+            opt_obj.is_scaling = True
+            grad = approx_fprime(x_optim_free_unscaled_start, opt_obj.crit_func,
+                                   precond_eps, *args)
+            opt_obj.is_scaling = False
+
+            for i in range(num_free):
+
+                grad[i] = max(np.abs(grad[i]), precond_minimum)
+
+                precond_matrix[i, i] = grad[i]
+
+        # Update and reset is required.
+        opt_obj.precond_matrix = precond_matrix
+        opt_obj.crit_vals = np.tile(np.inf, 3)
+        opt_obj.num_step = -1
+        opt_obj.num_eval = 0
+        # TODO: Restructure cirterion function that is always applying a
+        # preconditioning and allow for gradient.
+
+        # Reanaming needs to happen here as well.
+        x_optim_free_scaled_start = np.dot(precond_matrix,
+                                           x_optim_free_unscaled_start)
+
+        bounds_lower = np.tile(np.nan, num_free)
+        bounds_upper = np.tile(np.nan, num_free)
+        for i in range(num_free):
+            lower, upper = paras_bounds_free[i]
+            if lower is None:
+                bounds_lower[i] = -HUGE_FLOAT
+            else:
+                bounds_lower[i] = lower
+
+            if upper is None:
+                bounds_upper[i] = HUGE_FLOAT
+            else:
+                bounds_upper[i] = upper
+
+        paras_bounds_free_scaled_lower = np.dot(precond_matrix, bounds_lower)
+        paras_bounds_free_scaled_upper = np.dot(precond_matrix, bounds_upper)
+
+        with open('est.respy.log', 'w') as out_file:
+            out_file.write(' {:}\n\n'.format('PRECONDITIONING'))
+            fmt_ = '   {:>10}' + '    {:>25}' * 5 + '\n\n'
+            labels = ['Identifier', 'Original', 'Scale']
+            labels += ['Transformed Value', 'Transformed Lower']
+            labels += ['Transformed Upper']
+            out_file.write(fmt_.format(*labels))
+
+            j = 0
+            for i in range(27):
+                if paras_fixed[i]:
+                    continue
+
+                paras = [i, x_optim_free_unscaled_start[j], precond_matrix[j,
+                                                                           j]]
+                paras += [x_optim_free_scaled_start[j]]
+                paras += [paras_bounds_free_scaled_lower[j]]
+                paras += [paras_bounds_free_scaled_upper[j]]
+
+                for k in [4, 5]:
+                    if abs(paras[k]) > LARGE_FLOAT:
+                        paras[k] = '---'
+                    else:
+                        paras[k] = '{:25.15f}'.format(paras[k])
+
+                fmt = '   {:>10}' + '    {:25.15f}' * 3 + '    {:>25}' * 2 + \
+                      '\n'
+                out_file.write(fmt.format(*paras))
+
+                j = j + 1
+            out_file.write('\n')
+
+
+
+
 
         if maxfun == 0:
             record_estimation_scalability('Start')
 
-            opt_obj.crit_func(x_free_start, *args)
+            opt_obj.crit_func(x_optim_free_scaled_start, *args)
 
             record_estimation_scalability('Finish')
 
@@ -99,7 +199,7 @@ def respy_interface(respy_obj, request, data_array=None):
             bfgs_gtol = optimizer_options['SCIPY-BFGS']['gtol']
             bfgs_eps = optimizer_options['SCIPY-BFGS']['eps']
             try:
-                rslt = fmin_bfgs(opt_obj.crit_func, x_free_start, args=args,
+                rslt = fmin_bfgs(opt_obj.crit_func, x_optim_free_scaled_start, args=args,
                     gtol=bfgs_gtol, epsilon=bfgs_eps, maxiter=bfgs_maxiter,
                     full_output=True, disp=False)
 
@@ -128,8 +228,9 @@ def respy_interface(respy_obj, request, data_array=None):
             lbfgsb_m = optimizer_options['SCIPY-LBFGSB']['m']
 
             try:
-                rslt = fmin_l_bfgs_b(opt_obj.crit_func, x_free_start, args=args,
-                    approx_grad=True, bounds=bounds, m=lbfgsb_m,
+                rslt = fmin_l_bfgs_b(opt_obj.crit_func,
+                                     x_optim_free_scaled_start, args=args,
+                    approx_grad=True, bounds=paras_bounds_free, m=lbfgsb_m,
                     factr=lbfgsb_factr, pgtol=lbfgsb_pgtol,
                     epsilon=lbfgsb_eps, iprint=-1, maxfun=maxfun,
                     maxiter=lbfgsb_maxiter, maxls=lbfgsb_maxls)
@@ -149,7 +250,7 @@ def respy_interface(respy_obj, request, data_array=None):
             powell_ftol = optimizer_options['SCIPY-POWELL']['ftol']
 
             try:
-                rslt = fmin_powell(opt_obj.crit_func, x_free_start, args,
+                rslt = fmin_powell(opt_obj.crit_func, x_optim_free_scaled_start, args,
                     powell_xtol, powell_ftol, powell_maxiter, powell_maxfun,
                     disp=0)
 
@@ -163,7 +264,7 @@ def respy_interface(respy_obj, request, data_array=None):
                 success = False
                 message = 'Maximum number of iterations exceeded.'
 
-        record_estimation_final(opt_obj, success, message)
+        record_estimation_final(success, message)
         record_estimation_stop()
 
     elif request == 'simulate':

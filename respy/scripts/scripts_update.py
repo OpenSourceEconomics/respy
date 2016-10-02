@@ -38,9 +38,9 @@ def scripts_update(init_file):
     paras_steps = get_est_info()['paras_step']
 
     # Get and construct ingredients
-    level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky \
+    level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, _ \
         = dist_optim_paras(paras_steps, True)
-    shocks_coeffs = cholesky_to_coeffs(shocks_cholesky)
+    shocks_coeffs = paras_steps[17:]
 
     # Update initialization dictionary
     init_dict['AMBIGUITY']['coeffs'] = level

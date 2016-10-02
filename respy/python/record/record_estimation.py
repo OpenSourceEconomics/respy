@@ -1,6 +1,7 @@
 import numpy as np
 import time
 
+from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
 from respy.python.shared.shared_auxiliary import dist_optim_paras
 from respy.python.record.record_warning import record_warning
 from respy.python.shared.shared_constants import LARGE_FLOAT
@@ -33,6 +34,12 @@ def record_estimation_eval(opt_obj, fval):
     parts as two files provide information about the progress.
     """
 
+    # Distribute class attributes
+    paras_fixed = opt_obj.paras_fixed
+
+    x_optim_container = opt_obj.x_optim_container
+    x_econ_container = opt_obj.x_econ_container
+
     # Now we turn to est.respy.info
     with open('est.respy.log', 'a') as out_file:
         fmt_ = ' {0:>4}{1:>13}' + ' ' * 10 + '{2:>4}{3:>10}\n\n'
@@ -64,10 +71,12 @@ def record_estimation_eval(opt_obj, fval):
         is_large[2] = abs(value_current) > LARGE_FLOAT
 
         for i in range(27):
+            if paras_fixed[i]:
+                continue
             out_file.write(
-                fmt_.format(*[i, opt_obj.x_container[i, 0],
-                    opt_obj.x_container[i, 1],
-                              opt_obj.x_container[i, 2]]))
+                fmt_.format(*[i, x_optim_container[i, 0],
+                              x_optim_container[i, 1],
+                              x_optim_container[i, 2]]))
 
         out_file.write('\n')
 
@@ -75,29 +84,18 @@ def record_estimation_eval(opt_obj, fval):
             if is_large[i]:
                 record_warning(i + 1)
 
-    write_est_info(0, opt_obj.crit_vals[0], opt_obj.x_container[:, 0],
-        opt_obj.num_step, opt_obj.crit_vals[1], opt_obj.x_container[:, 1],
-        opt_obj.num_eval, opt_obj.crit_vals[2], opt_obj.x_container[:, 2])
+    write_est_info(0, opt_obj.crit_vals[0], x_econ_container[:, 0],
+        opt_obj.num_step, opt_obj.crit_vals[1], x_econ_container[:, 1],
+        opt_obj.num_eval, opt_obj.crit_vals[2], x_econ_container[:, 2])
 
 
-def record_estimation_final(opt_obj, success, message):
+def record_estimation_final(success, message):
     """ We summarize the results of the estimation.
     """
-    fval = opt_obj.crit_vals[1]
     with open('est.respy.log', 'a') as out_file:
         out_file.write(' ESTIMATION REPORT\n\n')
         out_file.write('   Success ' + str(success) + '\n')
-        out_file.write('   Message ' + message + '\n\n')
-
-        fmt_ = '   {0:>9}' + '     {1:45.15f}\n'
-        out_file.write(fmt_.format(*['Criterion', fval]))
-        fmt_ = '\n\n   {0:>10}' + '    {1:>25}\n\n'
-        out_file.write(fmt_.format(*['Identifier', 'Final']))
-        fmt_ = '   {:>10}' + '    {:25.5f}\n'
-        for i in range(27):
-            out_file.write(
-                fmt_.format(*[i, opt_obj.x_container[i, 1]]))
-        out_file.write('\n')
+        out_file.write('   Message ' + message + '\n')
 
 
 def write_est_info(num_start, value_start, paras_start, num_step,
@@ -106,8 +104,8 @@ def write_est_info(num_start, value_start, paras_start, num_step,
     # Write information to file.
     with open('est.respy.info', 'w') as out_file:
         # Write out information about criterion function
-        out_file.write('\n Criterion Function\n\n')
-        fmt_ = '{0:>15}    {1:>25}    {2:>25}    {3:>25}\n\n'
+        out_file.write('\n{:>25}\n\n'.format('Criterion Function'))
+        fmt_ = '{0:>25}    {1:>25}    {2:>25}    {3:>25}\n\n'
         out_file.write(fmt_.format(*['', 'Start', 'Step', 'Current']))
 
         line = '{:>25}'.format('')
@@ -124,23 +122,24 @@ def write_est_info(num_start, value_start, paras_start, num_step,
 
         for i in range(3):
             if is_large[i]:
-                line += '    {:>15}'.format('---')
+                line += '    {:>25}'.format('---')
             else:
                 line += '    {:25.15f}'.format(crit_vals[i])
 
         out_file.write(line + '\n\n')
 
         # Write out information about the optimization parameters directly.
-        out_file.write('\n Optimization Parameters\n\n')
-        fmt_ = '{0:>15}    {1:>25}    {2:>25}    {3:>25}\n\n'
+
+        out_file.write('\n{:>25}\n\n'.format('Economic Parameters'))
+        fmt_ = '{0:>25}    {1:>25}    {2:>25}    {3:>25}\n\n'
         out_file.write(fmt_.format(*['Identifier', 'Start', 'Step', 'Current']))
-        fmt_ = '{0:>15}    {1:25.15f}    {2:25.15f}    {3:25.15f}\n'
-        for i, _ in enumerate(paras_current):
+        fmt_ = '{0:>25}    {1:25.15f}    {2:25.15f}    {3:25.15f}\n'
+        for i, _ in enumerate(range(27)):
             paras = [i, paras_start[i], paras_step[i], paras_current[i]]
             out_file.write(fmt_.format(*paras))
 
         # Write out the current covariance matrix of the reward shocks.
-        out_file.write('\n Covariance Matrix\n\n')
+        out_file.write('\n{:>25}\n\n'.format('Covariance Matrix'))
 
         for which in ['Start', 'Step', 'Current']:
             if which == 'Start':

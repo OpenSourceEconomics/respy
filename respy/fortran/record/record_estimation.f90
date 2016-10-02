@@ -80,7 +80,7 @@ SUBROUTINE record_estimation_stop()
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val_current, num_eval)
+SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val_current, num_eval, paras_fixed)
 
     ! We record all things related to the optimization in est.respy.log. That is why we print the values actually relevant for the optimization, i.e. free and scaled. In est.respy.info we switch to the users perspective, all parameter are printed with their economic interpreation intact.
 
@@ -91,6 +91,8 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
     REAL(our_dble), INTENT(IN)      :: val_current
 
     INTEGER(our_int), INTENT(IN)    :: num_eval
+
+    LOGICAL, INTENT(IN)             :: paras_fixed(27)
 
     !/* internal objects        */
 
@@ -151,6 +153,8 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
     END DO
 
     ! Create the container for the *.log file. The subsetting is required as an automatic object cannot be saved.
+    x_optim_container = -HUGE_FLOAT
+
     If(is_start) x_optim_container(:num_free, 1) = x_optim_free_scaled
 
     If(is_step) x_optim_container(:num_free, 2) = x_optim_free_scaled
@@ -217,8 +221,11 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
         WRITE(99, 140) 'Identifier', 'Start', 'Step', 'Current'
         WRITE(99, *)
 
-        DO i = 1, num_free
-            WRITE(99, 150) (i - 1), x_optim_container(i, :)
+        j = 1
+        DO i = 1, 27
+            IF(paras_fixed(i)) CYCLE
+            WRITE(99, 150) i - 1, x_optim_container(j, :)
+            j = j + 1
         END DO
 
         WRITE(99, *)
@@ -226,16 +233,16 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
     CLOSE(99)
 
 
-    200 FORMAT(A15,3(4x,A15))
-    220 FORMAT(A15,3(4x,A25))
-    210 FORMAT(A15,A157)
-    230 FORMAT(i15,3(4x,f25.15))
-    240 FORMAT(A15,3(4x,f25.15))
+    200 FORMAT(A25,3(4x,A25))
+    210 FORMAT(A25,A87)
+    220 FORMAT(A25,3(4x,A25))
+    230 FORMAT(i25,3(4x,f25.15))
+    240 FORMAT(A25,3(4x,f25.15))
 
-    250 FORMAT(A15)
-    260 FORMAT(f15.4,3(4x,f25.15))
-    270 FORMAT(1x,A15,9x,i15)
-    280 FORMAT(1x,A21,3x,i15)
+    250 FORMAT(A25)
+    260 FORMAT(f25.15,3(4x,f25.15))
+    270 FORMAT(1x,A15,9x,i25)
+    280 FORMAT(1x,A21,3x,i25)
 
     val_char = ''
     DO i = 1, 3
@@ -251,14 +258,14 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
     OPEN(UNIT=99, FILE='est.respy.info', ACTION='WRITE')
 
         WRITE(99, *)
-        WRITE(99, *) 'Criterion Function'
+        WRITE(99, 250) 'Criterion Function'
         WRITE(99, *)
         WRITE(99, 200) '', 'Start', 'Step', 'Current'
         WRITE(99, *)
         WRITE(99, 210)  '', val_char
         WRITE(99, *)
         WRITE(99, *)
-        WRITE(99,*) 'Optimization Parameters'
+        WRITE(99, 250) 'Economic Parameters'
         WRITE(99, *)
         WRITE(99, 220) 'Identifier', 'Start', 'Step', 'Current'
         WRITE(99, *)
@@ -268,7 +275,7 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
         END DO
 
         WRITE(99, *)
-        WRITE(99, *)   'Covariance Matrix'
+        WRITE(99, 250) 'Covariance Matrix'
         WRITE(99, *)
 
         DO i = 1, 3
@@ -301,19 +308,12 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE record_estimation_final(success, message, x_optim_free_scaled_final)
+SUBROUTINE record_estimation_final(success, message)
 
     !/* external objects        */
 
     LOGICAL, INTENT(IN)             :: success
-
-    REAL(our_dble), INTENT(IN)      :: x_optim_free_scaled_final(num_free)
-
     CHARACTER(*), INTENT(IN)        :: message
-
-    !/* internal objects        */
-
-    INTEGER(our_int)                :: i
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -342,7 +342,7 @@ SUBROUTINE record_estimation_final(success, message, x_optim_free_scaled_final)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE record_scaling(precond_matrix, x_free_start, is_setup)
+SUBROUTINE record_scaling(precond_matrix, x_free_start, paras_fixed, is_setup)
 
     !/* external objects    */
 
@@ -350,12 +350,16 @@ SUBROUTINE record_scaling(precond_matrix, x_free_start, is_setup)
     REAL(our_dble), INTENT(IN)      :: x_free_start(num_free)
 
     LOGICAL, INTENT(IN)             :: is_setup
+    LOGICAL, INTENT(IN)             :: paras_fixed(27)
 
     !/* internal objects    */
 
     REAL(our_dble)                  :: x_free_scaled(num_free)
 
-    INTEGER(our_int)                :: i, j
+    INTEGER(our_int)                :: i
+    INTEGER(our_int)                :: j
+    INTEGER(our_int)                :: k
+
     CHARACTER(155)                  :: val_char
     CHARACTER(50)                   :: tmp_char
     LOGICAL                         :: no_bounds
@@ -369,7 +373,7 @@ SUBROUTINE record_scaling(precond_matrix, x_free_start, is_setup)
 
     120 FORMAT(3x,A10,5(4x,A25))
     130 FORMAT(3x,i10,5(4x,f25.15))
-    135 FORMAT(3x,i10,3(4x,f25.15),A57)
+    135 FORMAT(3x,i10,3(4x,f25.15),A58)
 
     OPEN(UNIT=99, FILE='est.respy.log', ACCESS='APPEND', ACTION='WRITE')
 
@@ -387,26 +391,29 @@ SUBROUTINE record_scaling(precond_matrix, x_free_start, is_setup)
         ELSE
 
             ! Sometimes on the bounds are just too large for pretty printing
+            j = 1
+            DO i = 1, 27
+                IF(paras_fixed(i)) CYCLE
 
-            DO i = 1, num_free
                 ! We need to do some pre-processing for the transformed bounds.
                 val_char = ''
-                DO j = 1, 2
+                DO k = 1, 2
                     ! TODO: THis is not a very reliable cirterion, I need to somehow be able to obtain that
                     ! information even after the transforamtion.
-                    no_bounds = (ABS(paras_bounds_free(j, i)) > Large_FLOAT)
+                    no_bounds = (ABS(paras_bounds_free(k, j)) > Large_FLOAT)
 
                     IF(no_bounds) THEN
                         WRITE(tmp_char, '(4x,A25)') '---'
                     ELSE
-                        WRITE(tmp_char, '(4x,f25.15)') paras_bounds_free(j, i)
+                        WRITE(tmp_char, '(4x,f25.15)') paras_bounds_free(k, j)
                     END IF
                     val_char = TRIM(val_char) // TRIM(tmp_char)
 
                 END DO
 
-            !    WRITE(99, 130) i, x_free_start(i), precond_matrix(i, i), x_free_scaled(i), paras_bounds_free(1, i), paras_bounds_free(2, i)
-            WRITE(99, 135) i, x_free_start(i), precond_matrix(i, i), x_free_scaled(i), val_char
+                WRITE(99, 135) i - 1, x_free_start(j), precond_matrix(j, j), x_free_scaled(j), val_char
+
+                j = j + 1
 
             END DO
 

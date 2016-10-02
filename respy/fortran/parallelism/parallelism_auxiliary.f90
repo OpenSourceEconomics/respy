@@ -188,7 +188,6 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, level, coeffs_a, c
     !/* internal objects    */
 
     REAL(our_dble)                  :: x_free_start(COUNT(.not. paras_fixed))
-    REAL(our_dble)                  :: x_all_final(27)
 
     INTEGER(our_int)                :: iter
 
@@ -220,7 +219,7 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, level, coeffs_a, c
     ! when determining the scales!!!!
     precond_matrix = create_identity(num_free)
 
-    CALL record_estimation(precond_matrix, x_free_start, .True.)
+    CALL record_estimation(precond_matrix, x_free_start, paras_fixed, .True.)
     IF ((precond_type == 'identity') .OR. (maxfun == zero_int)) THEN
         precond_matrix = create_identity(num_free)
     ELSE
@@ -230,7 +229,7 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, level, coeffs_a, c
     paras_bounds_free(1, :) = apply_scaling(paras_bounds_free(1, :), precond_matrix, 'do')
     paras_bounds_free(2, :) = apply_scaling(paras_bounds_free(2, :), precond_matrix, 'do')
 
-    CALL record_estimation(precond_matrix, x_free_start, .False.)
+    CALL record_estimation(precond_matrix, x_free_start, paras_fixed, .False.)
 
 
     ! TODO: This is a temporary fix to prepare for Powell's algorithms and needs to be noted in the log files later.
@@ -290,8 +289,7 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, level, coeffs_a, c
 
     crit_estimation = .False.
 
-
-    CALL record_estimation(success, message, x_free_start)
+    CALL record_estimation(success, message)
 
     CALL record_estimation()
 
@@ -365,7 +363,7 @@ FUNCTION fort_criterion_parallel(x)
 
         num_eval = num_eval + 1
 
-        CALL record_estimation(x, x_all_current, fort_criterion_parallel, num_eval)
+        CALL record_estimation(x, x_all_current, fort_criterion_parallel, num_eval, paras_fixed)
 
         IF (dist_optim_paras_info .NE. zero_int) CALL record_warning(4)
 

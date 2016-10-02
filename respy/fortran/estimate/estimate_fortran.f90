@@ -57,9 +57,7 @@ SUBROUTINE fort_estimate(crit_val, success, message, level, coeffs_a, coeffs_b, 
     REAL(our_dble)                  :: x_optim_free_scaled_start(num_free)
 
     REAL(our_dble)                  :: x_optim_free_unscaled_start(num_free)
-    REAL(our_dble)                  :: x_optim_free_unscaled_end(num_free)
 
-    REAL(our_dble)                  :: x_optim_all_unscaled_end(27)
 
     INTEGER(our_int)                :: iter
 
@@ -90,7 +88,7 @@ SUBROUTINE fort_estimate(crit_val, success, message, level, coeffs_a, coeffs_b, 
     ! when determining the scales!!!!
     precond_matrix = create_identity(num_free)
 
-    CALL record_estimation(precond_matrix, x_optim_free_unscaled_start, .True.)
+    CALL record_estimation(precond_matrix, x_optim_free_unscaled_start, paras_fixed, .True.)
     IF ((precond_type == 'identity') .OR. (maxfun == zero_int)) THEN
         precond_matrix = create_identity(num_free)
     ELSE
@@ -99,7 +97,7 @@ SUBROUTINE fort_estimate(crit_val, success, message, level, coeffs_a, coeffs_b, 
     x_optim_free_scaled_start = apply_scaling(x_optim_free_unscaled_start, precond_matrix, 'do')
     paras_bounds_free(1, :) = apply_scaling(paras_bounds_free(1, :), precond_matrix, 'do')
     paras_bounds_free(2, :) = apply_scaling(paras_bounds_free(2, :), precond_matrix, 'do')
-    CALL record_estimation(precond_matrix, x_optim_free_scaled_start, .False.)
+    CALL record_estimation(precond_matrix, x_optim_free_scaled_start, paras_fixed, .False.)
 
     ! TODO: This is a temporary fix to prepare for Powell's algorithms and needs to be noted in the log files later.
     IF ((optimizer_used == 'FORT-NEWUOA') .OR. (optimizer_used == 'FORT-BOBYQA')) THEN
@@ -155,8 +153,7 @@ SUBROUTINE fort_estimate(crit_val, success, message, level, coeffs_a, coeffs_b, 
 
     crit_estimation = .False.
 
-
-    CALL record_estimation(success, message, x_optim_free_scaled_start)
+    CALL record_estimation(success, message)
 
     CALL record_estimation()
 
@@ -216,7 +213,7 @@ FUNCTION fort_criterion(x_optim_free_scaled)
 
         num_eval = num_eval + 1
 
-        CALL record_estimation(x_optim_free_scaled, x_optim_all_unscaled, fort_criterion, num_eval)
+        CALL record_estimation(x_optim_free_scaled, x_optim_all_unscaled, fort_criterion, num_eval, paras_fixed)
 
         IF (dist_optim_paras_info .NE. zero_int) CALL record_warning(4)
 
