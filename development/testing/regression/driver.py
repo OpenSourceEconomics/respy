@@ -71,7 +71,6 @@ def run(args):
             # This is where the modifications take place
             tests_new += [(init_dict, crit_val)]
 
-            raise SystemExit('exit')
         json.dump(tests_new, open('regression_vault.respy.json', 'w'))
         return
 
