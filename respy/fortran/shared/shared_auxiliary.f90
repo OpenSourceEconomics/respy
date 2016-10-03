@@ -531,29 +531,6 @@ FUNCTION determinant(A)
 END FUNCTION
 !******************************************************************************
 !******************************************************************************
-FUNCTION matrix_norm(A, norm)
-
-    !/* external objects        */
-
-    REAL(our_dble)                  :: matrix_norm
-
-    REAL(our_dble), INTENT(IN)      :: A(:, :)
-
-    CHARACTER(1), INTENT(IN)        :: norm
-
-    !/* internal objects        */
-
-    REAL(our_dble)                  :: WORK(SIZE(A, 1))
-
-!------------------------------------------------------------------------------
-! Algorithm
-!------------------------------------------------------------------------------
-
-    matrix_norm = DLANGE(norm, SIZE(A, 1), SIZE(A, 2), A, SIZE(A, 1), WORK)
-
-END FUNCTION
-!******************************************************************************
-!******************************************************************************
 SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_rewards_systematic, states_number_period, periods_emax, data_sim)
 
     !/* external objects        */

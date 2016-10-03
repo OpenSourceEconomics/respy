@@ -165,8 +165,7 @@ class TestClass(object):
             num_draws_emax = np.random.randint(2, 1000)
             dim = np.random.randint(1, 6)
 
-            matrix = (np.random.multivariate_normal(np.zeros(dim),
-                np.identity(dim), dim))
+            matrix = np.random.uniform(size=dim ** 2).reshape(dim, dim)
             cov = np.dot(matrix, matrix.T)
 
             # PDF of normal distribution
@@ -223,17 +222,6 @@ class TestClass(object):
             py = np.clip(values, lower_bound, upper_bound)
 
             np.testing.assert_almost_equal(py, f90)
-
-            # Matrix norms
-            norm_cand = np.random.choice(['infinity', 'frobenius'])
-            if norm_cand == 'frobenius':
-                py_norm, f90_norm = ('fro', 'F')
-            else:
-                py_norm, f90_norm = (1, 'I')
-
-            norm_py = np.linalg.norm(cov.T, ord=py_norm)
-            norm_f90 = fort_debug.wrapper_matrix_norm(cov, f90_norm)
-            np.testing.assert_almost_equal(norm_py, norm_f90)
 
             # Spectral condition number
             py = spectral_condition_number(cov)

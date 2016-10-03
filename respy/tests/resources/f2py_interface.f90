@@ -1601,35 +1601,6 @@ SUBROUTINE wrapper_constraint_ambiguity_derivative(rslt, x, shocks_cov, level_in
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE wrapper_matrix_norm(rslt, A, norm)
-
-    !/* external libraries      */
-
-    USE resfort_library
-
-    !/* setup                   */
-
-    IMPLICIT NONE
-
-    !/* external objects        */
-
-    DOUBLE PRECISION, INTENT(OUT)       :: rslt
-
-    DOUBLE PRECISION, INTENT(IN)        :: A(:, :)
-
-    CHARACTER(1), INTENT(IN)            :: norm
-
-    !/* internal objects        */
-
-!------------------------------------------------------------------------------
-! Algorithm
-!------------------------------------------------------------------------------
-
-    rslt = matrix_norm(A, norm)
-
-END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
 SUBROUTINE wrapper_spectral_condition_number(rslt, A)
 
     !/* external libraries      */
