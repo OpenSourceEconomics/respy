@@ -209,4 +209,29 @@ FUNCTION create_identity(m)
 END FUNCTION
 !******************************************************************************
 !******************************************************************************
+PURE SUBROUTINE spectral_condition_number(rslt, A)
+
+    !/* external objects        */
+
+    REAL(our_dble), INTENT(OUT)         :: rslt
+
+    REAL(our_dble), INTENT(IN)          :: A(:, :)
+
+    !/* internal objects        */
+
+    REAL(our_dble)                      :: VT(SIZE(A, 1), SIZE(A, 1))
+    REAL(our_dble)                      :: U(SIZE(A, 1), SIZE(A, 1))
+    REAL(our_dble)                      :: S(SIZE(A, 1))
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    CALL svd(U, S, VT, A, SIZE(A, 1))
+
+    rslt = MAXVAL(ABS(S)) / MINVAL(ABS(S))
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
 END MODULE

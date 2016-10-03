@@ -8,6 +8,7 @@ import pytest
 import scipy
 
 from respy.python.solve.solve_auxiliary import pyth_calculate_rewards_systematic
+from respy.python.shared.shared_utilities import spectral_condition_number
 from respy.python.shared.shared_auxiliary import replace_missing_values
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
 from respy.python.solve.solve_auxiliary import pyth_backward_induction
@@ -222,6 +223,22 @@ class TestClass(object):
             py = np.clip(values, lower_bound, upper_bound)
 
             np.testing.assert_almost_equal(py, f90)
+
+            # Matrix norms
+            norm_cand = np.random.choice(['infinity', 'frobenius'])
+            if norm_cand == 'frobenius':
+                py_norm, f90_norm = ('fro', 'F')
+            else:
+                py_norm, f90_norm = (1, 'I')
+
+            norm_py = np.linalg.norm(cov.T, ord=py_norm)
+            norm_f90 = fort_debug.wrapper_matrix_norm(cov, f90_norm)
+            np.testing.assert_almost_equal(norm_py, norm_f90)
+
+            # Spectral condition number
+            py = spectral_condition_number(cov)
+            fort = fort_debug.wrapper_spectral_condition_number(cov)
+            np.testing.assert_almost_equal(py, fort)
 
     def test_4(self, flag_ambiguity=False):
         """ Testing the core functions of the solution step for the equality

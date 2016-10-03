@@ -157,6 +157,26 @@ MODULE shared_interfaces
 
          END SUBROUTINE
 
+         FUNCTION DLANGE(NORM, M, N, A, LDA, WORK)
+
+             !/* external modules    */
+
+             USE shared_constants
+
+             !/* external objects    */
+
+             REAL(our_dble), INTENT(INOUT)   :: WORK(:)
+
+             INTEGER(our_int), INTENT(IN)    :: LDA
+             INTEGER(our_int), INTENT(IN)    :: M
+             INTEGER(our_int), INTENT(IN)    :: N
+
+             REAL(our_dble), INTENT(IN)      :: A(M, N)
+
+             CHARACTER(1), INTENT(IN)        :: NORM
+
+          END FUNCTION
+
     END INTERFACE
 
 !******************************************************************************
