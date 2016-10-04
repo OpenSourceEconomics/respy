@@ -98,8 +98,8 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
 
     INTEGER(our_int), SAVE          :: num_step = - one_int
 
-    REAL(our_dble), SAVE            :: x_optim_container(27, 3)
-    REAL(our_dble), SAVE            :: x_econ_container(27, 3)
+    REAL(our_dble), SAVE            :: x_optim_container(27, 3) = -HUGE_FLOAT
+    REAL(our_dble), SAVE            :: x_econ_container(27, 3) = -HUGE_FLOAT
 
     REAL(our_dble), SAVE            :: crit_vals(3)
 
@@ -153,8 +153,6 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
     END DO
 
     ! Create the container for the *.log file. The subsetting is required as an automatic object cannot be saved.
-    x_optim_container = -HUGE_FLOAT
-
     If(is_start) x_optim_container(:num_free, 1) = x_optim_free_scaled
 
     If(is_step) x_optim_container(:num_free, 2) = x_optim_free_scaled
