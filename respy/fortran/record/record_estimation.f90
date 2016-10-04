@@ -106,6 +106,7 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
     REAL(our_dble)                  :: shocks_cholesky(4, 4)
     REAL(our_dble)                  :: shocks_cov(3, 4, 4)
     REAL(our_dble)                  :: flattened_cov(3, 10)
+    REAL(our_dble)                  :: cond(3)
 
     INTEGER(our_int)                :: i
     INTEGER(our_int)                :: j
@@ -163,6 +164,7 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
     DO i = 1, 3
         CALL get_cholesky(shocks_cholesky, x_optim_all_unscaled)
         shocks_cov(i, :, :) = MATMUL(shocks_cholesky, TRANSPOSE(shocks_cholesky))
+        CALL spectral_condition_number(cond(i), shocks_cov(i, :, :))
 
         k = 1
         DO j = 1, 4
@@ -199,6 +201,7 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
     135 FORMAT(3x,A9,5X,A25)
     140 FORMAT(3x,A10,3(4x,A25))
     150 FORMAT(3x,i10,3(4x,f25.15))
+    155 FORMAT(3x,A9,1x,3(4x,f25.15))
 
     OPEN(UNIT=99, FILE='est.respy.log', ACCESS='APPEND', ACTION='WRITE')
 
@@ -225,6 +228,10 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
             WRITE(99, 150) i - 1, x_optim_container(j, :)
             j = j + 1
         END DO
+
+        WRITE(99, *)
+
+        WRITE(99, 155) 'Condition', LOG(cond)
 
         WRITE(99, *)
 
@@ -270,26 +277,6 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
 
         DO i = 1, 27
             WRITE(99, 230) (i - 1), x_econ_container(i, :)
-        END DO
-
-        WRITE(99, *)
-        WRITE(99, 250) 'Covariance Matrix'
-        WRITE(99, *)
-
-        DO i = 1, 3
-
-            IF (i == 1) WRITE(99, 250) 'Start'
-            IF (i == 2) WRITE(99, 250) 'Step'
-            IF (i == 3) WRITE(99, 250) 'Current'
-
-            WRITE(99, *)
-
-            DO j = 1, 4
-                WRITE(99, 260) shocks_cov(i, j, :)
-            END DO
-
-            WRITE(99, *)
-
         END DO
 
         WRITE(99, *)

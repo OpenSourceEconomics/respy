@@ -41,6 +41,44 @@ def check_optimization_parameters(x):
     return True
 
 
+def dist_econ_paras(x_all_curre):
+    """ Update parameter values. The np.array type is maintained.
+    """
+
+    # Level of Ambiguity
+    level = x_all_curre[0:1]
+
+    # Occupation A
+    coeffs_a = x_all_curre[1:7]
+
+    # Occupation B
+    coeffs_b = x_all_curre[7:13]
+
+    # Education
+    coeffs_edu = x_all_curre[13:16]
+
+    # Home
+    coeffs_home = x_all_curre[16:17]
+
+    shocks_coeffs = x_all_curre[17:]
+    for i in [0, 4, 7, 9]:
+        shocks_coeffs[i] **= 2
+
+    shocks = np.zeros((4, 4))
+    shocks[0, :] = shocks_coeffs[0:4]
+    shocks[1, 1:] = shocks_coeffs[4:7]
+    shocks[2, 2:] = shocks_coeffs[7:9]
+    shocks[3, 3:] = shocks_coeffs[9:10]
+
+    shocks_cov = shocks + shocks.T - np.diag(shocks.diagonal())
+
+    # Collect arguments
+    args = (level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov)
+
+    # Finishing
+    return args
+
+
 def dist_optim_paras(x_all_curre, is_debug, info=None):
     """ Update parameter values. The np.array type is maintained.
     """
@@ -703,10 +741,10 @@ def get_est_info():
                 paras_step += [float(list_[2])]
                 paras_current += [float(list_[3])]
 
-            if i == 64:
+            if i == 40:
                 num_step = int(float(list_[3]))
 
-            if i == 66:
+            if i == 42:
                 num_eval = int(float(list_[3]))
 
     rslt['paras_current'] = np.array(paras_current)

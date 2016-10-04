@@ -1,8 +1,8 @@
 import numpy as np
 import time
 
-from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
-from respy.python.shared.shared_auxiliary import dist_optim_paras
+from respy.python.shared.shared_utilities import spectral_condition_number
+from respy.python.shared.shared_auxiliary import dist_econ_paras
 from respy.python.record.record_warning import record_warning
 from respy.python.shared.shared_constants import LARGE_FLOAT
 
@@ -80,6 +80,22 @@ def record_estimation_eval(opt_obj, fval):
 
         out_file.write('\n')
 
+        cond = []
+        for which in ['Start', 'Step', 'Current']:
+            if which == 'Start':
+                paras = x_econ_container[:, 0].copy()
+            elif which == 'Step':
+                paras = x_econ_container[:, 1].copy()
+            else:
+                paras = x_econ_container[:, 2].copy()
+
+            shocks_cov = dist_econ_paras(paras)[-1]
+            cond += [np.log(spectral_condition_number(shocks_cov))]
+        fmt_ = '   {:>9} ' + '    {:25.15f}' * 3 + '\n'
+        out_file.write(fmt_.format(*['Condition'] + cond))
+
+        out_file.write('\n')
+
         for i in range(3):
             if is_large[i]:
                 record_warning(i + 1)
@@ -128,8 +144,6 @@ def write_est_info(num_start, value_start, paras_start, num_step,
 
         out_file.write(line + '\n\n')
 
-        # Write out information about the optimization parameters directly.
-
         out_file.write('\n{:>25}\n\n'.format('Economic Parameters'))
         fmt_ = '{0:>25}    {1:>25}    {2:>25}    {3:>25}\n\n'
         out_file.write(fmt_.format(*['Identifier', 'Start', 'Step', 'Current']))
@@ -137,25 +151,6 @@ def write_est_info(num_start, value_start, paras_start, num_step,
         for i, _ in enumerate(range(27)):
             paras = [i, paras_start[i], paras_step[i], paras_current[i]]
             out_file.write(fmt_.format(*paras))
-
-        # Write out the current covariance matrix of the reward shocks.
-        out_file.write('\n{:>25}\n\n'.format('Covariance Matrix'))
-
-        for which in ['Start', 'Step', 'Current']:
-            if which == 'Start':
-                paras = paras_start
-            elif which == 'Step':
-                paras = paras_step
-            else:
-                paras = paras_current
-            fmt_ = '{0:>25}\n\n'
-            out_file.write(fmt_.format(*[which]))
-            shocks_cholesky = dist_optim_paras(paras, True)[-1]
-            shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
-            fmt_ = '{0:25.15f}    {1:25.15f}    {2:25.15f}    {3:25.15f}\n'
-            for i in range(4):
-                out_file.write(fmt_.format(*shocks_cov[i, :]))
-            out_file.write('\n')
 
         fmt_ = '\n{0:<25}{1:>25}\n'
         out_file.write(fmt_.format(*[' Number of Steps', num_step]))

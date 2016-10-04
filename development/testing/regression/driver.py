@@ -1,8 +1,9 @@
 #!/usr/bin/env python
+from __future__ import print_function
+
 import argparse
 import numpy as np
 import json
-import copy
 
 from auxiliary_shared import send_notification
 from auxiliary_shared import compile_package
@@ -76,8 +77,6 @@ def run(args):
 
     if is_creation:
         tests = []
-        print('fixing seed\n')
-        np.random.seed(123)
         for idx in range(num_tests):
             print('\n Creating Test ', idx)
 
@@ -102,7 +101,7 @@ def run(args):
         tests = json.load(open(fname, 'r'))
 
         for idx in range(num_tests):
-            #print('\n Checking Test ', idx)
+            print('\n Checking Test ', idx, '\n')
 
             init_dict, crit_val = tests[idx]
 
