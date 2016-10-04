@@ -141,11 +141,11 @@ def scripts_modify(identifiers, action, init_file, values=None, bounds=None):
         else:
             raise NotImplementedError
 
-        # Check that the new candidate initialization file is valid. If so,
-        # go ahead and replace the original file.
-        print_init_dict(init_dict, '.tmp.respy.ini')
-        RespyCls('.tmp.respy.ini')
-        shutil.move('.tmp.respy.ini', init_file)
+    # Check that the new candidate initialization file is valid. If so,
+    # go ahead and replace the original file.
+    print_init_dict(init_dict, '.tmp.respy.ini')
+    RespyCls('.tmp.respy.ini')
+    shutil.move('.tmp.respy.ini', init_file)
 
 
 if __name__ == '__main__':
