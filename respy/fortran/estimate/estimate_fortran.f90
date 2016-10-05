@@ -94,21 +94,33 @@ SUBROUTINE fort_estimate(crit_val, success, message, level, coeffs_a, coeffs_b, 
     ELSE
         CALL get_scales_scalar(precond_matrix, x_optim_free_unscaled_start, precond_minimum)
     END IF
+
     x_optim_free_scaled_start = apply_scaling(x_optim_free_unscaled_start, precond_matrix, 'do')
     x_optim_bounds_free_scaled(1, :) = apply_scaling(x_optim_bounds_free_unscaled(1, :), precond_matrix, 'do')
     x_optim_bounds_free_scaled(2, :) = apply_scaling(x_optim_bounds_free_unscaled(2, :), precond_matrix, 'do')
+
     CALL record_estimation(precond_matrix, x_optim_free_scaled_start, paras_fixed, .False.)
 
     ! TODO: This is a temporary fix to prepare for Powell's algorithms and needs to be noted in the log files later.
-    IF ((optimizer_used == 'FORT-NEWUOA') .OR. (optimizer_used == 'FORT-BOBYQA')) THEN
+    IF (optimizer_used == 'FORT-NEWUOA') THEN
 
         npt = optimizer_options%newuoa%npt
-        is_misspecified = (NPT .LT. num_free + 2 .OR. NPT .GT. ((num_free + 2)* num_free) / 2)
-        IF (is_misspecified) optimizer_options%newuoa%npt = (2 * num_free) + 1
+        is_misspecified = (npt .LT. num_free + 2 .OR. npt .GT. ((num_free + 2)* num_free) / 2)
+        IF (is_misspecified) THEN
+            optimizer_options%newuoa%npt = (2 * num_free) + 1
+            CALL record_estimation('NEWUOA', optimizer_options%newuoa%npt)
+        END IF
+
+    END IF
+
+    IF (optimizer_used == 'FORT-BOBYQA') THEN
 
         npt = optimizer_options%bobyqa%npt
-        is_misspecified = (NPT .LT. num_free + 2 .OR. NPT .GT. ((num_free + 2)* num_free) / 2)
-        IF (is_misspecified) optimizer_options%bobyqa%npt =  (2 * num_free) + 1
+        is_misspecified = (npt .LT. num_free + 2 .OR. npt .GT. ((num_free + 2)* num_free) / 2)
+        IF (is_misspecified) THEN
+            optimizer_options%bobyqa%npt =  (2 * num_free) + 1
+            CALL record_estimation('BOBYQA', optimizer_options%bobyqa%npt)
+        END IF
 
         rhobeg = optimizer_options%bobyqa%rhobeg
         tmp = x_optim_bounds_free_scaled(2, :) - x_optim_bounds_free_scaled(1, :)
@@ -118,12 +130,12 @@ SUBROUTINE fort_estimate(crit_val, success, message, level, coeffs_a, coeffs_b, 
         IF (is_misspecified) THEN
             optimizer_options%bobyqa%rhobeg = MINval(tmp) * 0.5_our_dble
             optimizer_options%bobyqa%rhoend = optimizer_options%bobyqa%rhobeg * 1e-6
-
+            CALL record_estimation('BOBYQA', optimizer_options%bobyqa%rhobeg, optimizer_options%bobyqa%rhoend)
         END IF
 
     END IF
 
-    ! This will probably go ...
+
     crit_estimation = .True.
 
     IF (maxfun == zero_int) THEN

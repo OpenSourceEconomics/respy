@@ -24,11 +24,64 @@ MODULE recording_estimation
 
     INTERFACE record_estimation
 
-        MODULE PROCEDURE record_estimation_eval, record_estimation_final, record_scaling, record_estimation_stop, record_estimation_scalability
+        MODULE PROCEDURE record_estimation_eval, record_estimation_final, record_scaling, record_estimation_stop, record_estimation_scalability, record_estimation_auto_npt, record_estimation_auto_rhobeg
 
     END INTERFACE
 
 CONTAINS
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE record_estimation_auto_rhobeg(algorithm, rhobeg, rhoend)
+
+    !/* external objects        */
+
+    CHARACTER(*), INTENT(IN)        :: algorithm
+
+    REAL(our_dble), INTENT(IN)      :: rhobeg
+    REAL(our_dble), INTENT(IN)      :: rhoend
+
+    !/* internal objects        */
+
+    CHARACTER(25)                   :: rho_char(2)
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    WRITE(rho_char(1), '(f25.15)') rhobeg
+    WRITE(rho_char(2), '(f25.15)') rhoend
+
+    OPEN(UNIT=99, FILE='est.respy.log', ACCESS='APPEND', ACTION='WRITE')
+        WRITE(99, *) 'Warning: Automatic adjustment of rhobeg/rhoend for ' // algorithm // ' required. Both are set to their recommended values of (rhobeg/rhoend): (' // TRIM(ADJUSTL(rho_char(1))) // ',' // TRIM(ADJUSTL(rho_char(2))) // ')'
+        WRITE(99, *)
+    CLOSE(99)
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE record_estimation_auto_npt(algorithm, npt)
+
+    !/* external objects        */
+
+    INTEGER(our_int), INTENT(IN)    :: npt
+
+    CHARACTER(*), INTENT(IN)        :: algorithm
+
+    !/* internal objects        */
+
+    CHARACTER(10)                   :: npt_char
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    WRITE(npt_char, '(i10)') npt
+
+    OPEN(UNIT=99, FILE='est.respy.log', ACCESS='APPEND', ACTION='WRITE')
+        WRITE(99, *) 'Warning: Automatic adjustment of NPT for ' // algorithm // ' required. NPT set to its recommended value of ' // TRIM(ADJUSTL(npt_char)) // '.'
+        WRITE(99, *)
+    CLOSE(99)
+
+END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
 SUBROUTINE record_estimation_scalability(which)
