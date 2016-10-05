@@ -11,8 +11,8 @@ from respy.python.solve.solve_ambiguity import construct_emax_ambiguity
 from respy.python.shared.shared_auxiliary import get_total_values
 from respy.python.shared.shared_constants import MIN_AMBIGUITY
 from respy.python.shared.shared_constants import MISSING_FLOAT
-from respy.python.solve.solve_risk import construct_emax_risk
 from respy.python.shared.shared_constants import opt_ambi_info
+from respy.python.solve.solve_risk import construct_emax_risk
 from respy.python.shared.shared_constants import MISSING_INT
 from respy.python.shared.shared_constants import HUGE_FLOAT
 

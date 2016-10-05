@@ -44,7 +44,14 @@ from codes.random_init import generate_init
 
 respy_obj = RespyCls('model.respy.ini')
 simulate(respy_obj)
-x, val = estimate(respy_obj)
+x, base = estimate(respy_obj)
+
+respy_obj.update_model_paras(x)
+
+respy_obj.attr['maxfun'] = 0
+x, alt = estimate(respy_obj)
+
+np.testing.assert_almost_equal(alt, base)
 
 #print(val)
 raise SystemExit('just reading in')

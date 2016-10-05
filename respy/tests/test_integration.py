@@ -210,9 +210,6 @@ class TestClass(object):
     def test_6(self, flag_ambiguity=False):
         """ Test short estimation tasks.
         """
-        # Constraints that ensures that the maximum number of iterations and
-        # the number of function evaluations is set to the minimum values of
-        # one.
         constr = dict()
         constr['is_estimation'] = True
         constr['flag_ambiguity'] = flag_ambiguity
@@ -222,7 +219,17 @@ class TestClass(object):
         # Run estimation task.
         respy_obj = RespyCls('test.respy.ini')
         simulate(respy_obj)
-        estimate(respy_obj)
+        base_x, base_val = estimate(respy_obj)
+
+        # We also check whether updating the class instance and a single
+        # evaluation of the criterion function give the same result.
+        respy_obj.update_model_paras(base_x)
+        respy_obj.attr['maxfun'] = 0
+
+        alt_x, alt_val = estimate(respy_obj)
+
+        for arg in [(alt_val, base_val), (alt_x, base_x)]:
+            np.testing.assert_almost_equal(arg[0], arg[1])
 
     def test_7(self, flag_ambiguity=False):
         """ We test whether a restart does result in the exact function

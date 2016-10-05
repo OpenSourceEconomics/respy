@@ -363,7 +363,7 @@ FUNCTION fort_criterion_parallel(x)
     CALL MPI_GATHER(opt_ambi_info_slaves, 0, MPI_INT, opt_ambi_info_slaves, 2, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
     opt_ambi_info = SUM(opt_ambi_info_slaves, 2)
 
-    IF (crit_estimation .OR. maxfun == zero_int) THEN
+    IF (crit_estimation .OR. (maxfun == zero_int)) THEN
 
         num_eval = num_eval + 1
 

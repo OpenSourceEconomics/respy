@@ -5,13 +5,14 @@
 import pickle as pkl
 import pandas as pd
 import numpy as np
+import copy
 import os
 
 from respy.python.shared.shared_auxiliary import replace_missing_values
 from respy.python.shared.shared_auxiliary import check_model_parameters
 from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
 from respy.python.shared.shared_auxiliary import print_init_dict
-from respy.python.shared.shared_auxiliary import dist_optim_paras
+from respy.python.shared.shared_auxiliary import dist_econ_paras
 from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
@@ -133,18 +134,18 @@ class RespyCls(object):
 
         self.lock()
 
-    def update_model_paras(self, x):
+    def update_model_paras(self, x_econ):
         """ Update model parameters.
         """
+        x_econ = copy.deepcopy(x_econ)
 
         self.reset()
 
-        print('We need to revisit this...')
-        raise AssertionError
-
         # Determine use of interface
-        level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
-                    dist_optim_paras(x, True)
+        level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov = \
+            dist_econ_paras(x_econ)
+
+        shocks_cholesky = np.linalg.cholesky(shocks_cov)
 
         # Check integrity
         check_model_parameters(level, coeffs_a, coeffs_b, coeffs_edu,

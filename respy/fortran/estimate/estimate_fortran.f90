@@ -174,7 +174,7 @@ FUNCTION fort_criterion(x_optim_free_scaled)
 
     fort_criterion = get_log_likl(contribs)
 
-    IF (crit_estimation .OR. maxfun == zero_int) THEN
+    IF (crit_estimation .OR. (maxfun == zero_int)) THEN
 
         num_eval = num_eval + 1
 
@@ -353,8 +353,8 @@ SUBROUTINE auto_adjustment_optimizers(optimizer_options, optimizer_used)
 
     INTEGER(our_int)                            :: npt
 
-    REAL(our_dble)                              :: rhobeg
     REAL(our_dble)                              :: tmp(num_free)
+    REAL(our_dble)                              :: rhobeg
 
     LOGICAL                                     :: is_misspecified
 
