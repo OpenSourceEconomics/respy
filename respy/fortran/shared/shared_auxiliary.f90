@@ -653,7 +653,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_rewards
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, precond_type, precond_minimum, measure, level, optimizer_used, dfunc_eps, optimizer_options, file_sim)
+SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, precond_type, precond_minimum, measure, level, optimizer_used, optimizer_options, file_sim)
 
     !
     !   This function serves as the replacement for the RespyCls and reads in
@@ -684,7 +684,6 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
     INTEGER(our_int), INTENT(OUT)   :: maxfun
 
     REAL(our_dble), INTENT(OUT)     :: precond_minimum
-    REAL(our_dble), INTENT(OUT)     :: dfunc_eps
 
     CHARACTER(225), INTENT(OUT)     :: optimizer_used
     CHARACTER(225), INTENT(OUT)     :: file_sim
@@ -825,13 +824,14 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
 
     END DO
 
-    ALLOCATE(paras_bounds_free(2, COUNT(.NOT. paras_fixed)))
+    ALLOCATE(x_optim_bounds_free_scaled(2, COUNT(.NOT. paras_fixed)))
+    ALLOCATE(x_optim_bounds_free_unscaled(2, COUNT(.NOT. paras_fixed)))
 
     j = 1
     DO i = 1, 27
         IF (.NOT. paras_fixed(i)) THEN
-            paras_bounds_free(1, j) = x_econ_bounds_all_unscaled(1, i)
-            paras_bounds_free(2, j) = x_econ_bounds_all_unscaled(2, i)
+            x_optim_bounds_free_unscaled(1, j) = x_econ_bounds_all_unscaled(1, i)
+            x_optim_bounds_free_unscaled(2, j) = x_econ_bounds_all_unscaled(2, i)
 
             j = j + 1
 

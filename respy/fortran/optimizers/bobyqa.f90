@@ -53,7 +53,7 @@ SUBROUTINE bobyqa(FUNC, X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUCCESS, MESSAGE
 
     N = SIZE(X)
 
-    XL = paras_bounds_free(1, :); XU = paras_bounds_free(2, :)
+    XL = x_optim_bounds_free_scaled(1, :); XU = x_optim_bounds_free_scaled(2, :)
 
     CALL  BOBYQA_ORIGINAL(FUNC,N,NPT,X,XL,XU,RHOBEG,RHOEND,IPRINT,MAXFUN,W,SUCCESS,MESSAGE)
 

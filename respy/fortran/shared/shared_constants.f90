@@ -53,9 +53,10 @@ MODULE shared_constants
 
     ! TODO: Move around
     REAL(our_dble)  :: x_econ_bounds_all_unscaled(2, 27)
-    REAL(our_dble), ALLOCATABLE  :: paras_bounds_free(:, :)
     REAL(our_dble), ALLOCATABLE  :: x_optim_bounds_free_unscaled(:, :)
-    REAL(our_dble), ALLOCATABLE  :: x_optim_bounds_all_unscaled(:, :)
+    REAL(our_dble), ALLOCATABLE  :: x_optim_bounds_free_scaled(:, :)
+
+    REAL(our_dble)  :: x_optim_bounds_all_unscaled(2, 27)
 
     REAL(our_dble)  :: precond_eps
 

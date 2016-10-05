@@ -95,8 +95,8 @@ SUBROUTINE fort_estimate(crit_val, success, message, level, coeffs_a, coeffs_b, 
         CALL get_scales_scalar(precond_matrix, x_optim_free_unscaled_start, precond_minimum)
     END IF
     x_optim_free_scaled_start = apply_scaling(x_optim_free_unscaled_start, precond_matrix, 'do')
-    paras_bounds_free(1, :) = apply_scaling(paras_bounds_free(1, :), precond_matrix, 'do')
-    paras_bounds_free(2, :) = apply_scaling(paras_bounds_free(2, :), precond_matrix, 'do')
+    x_optim_bounds_free_scaled(1, :) = apply_scaling(x_optim_bounds_free_unscaled(1, :), precond_matrix, 'do')
+    x_optim_bounds_free_scaled(2, :) = apply_scaling(x_optim_bounds_free_unscaled(2, :), precond_matrix, 'do')
     CALL record_estimation(precond_matrix, x_optim_free_scaled_start, paras_fixed, .False.)
 
     ! TODO: This is a temporary fix to prepare for Powell's algorithms and needs to be noted in the log files later.
@@ -111,7 +111,7 @@ SUBROUTINE fort_estimate(crit_val, success, message, level, coeffs_a, coeffs_b, 
         IF (is_misspecified) optimizer_options%bobyqa%npt =  (2 * num_free) + 1
 
         rhobeg = optimizer_options%bobyqa%rhobeg
-        tmp = paras_bounds_free(2, :) - paras_bounds_free(1, :)
+        tmp = x_optim_bounds_free_scaled(2, :) - x_optim_bounds_free_scaled(1, :)
 
         rhobeg = optimizer_options%bobyqa%rhobeg
         is_misspecified = ANY(tmp .LT. rhobeg+rhobeg)

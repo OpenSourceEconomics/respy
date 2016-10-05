@@ -226,8 +226,8 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, level, coeffs_a, c
         CALL get_scales_parallel(precond_matrix, x_free_start, precond_minimum)
     END IF
     x_free_start = apply_scaling(x_free_start, precond_matrix, 'do')
-    paras_bounds_free(1, :) = apply_scaling(paras_bounds_free(1, :), precond_matrix, 'do')
-    paras_bounds_free(2, :) = apply_scaling(paras_bounds_free(2, :), precond_matrix, 'do')
+    x_optim_bounds_free_scaled(1, :) = apply_scaling(x_optim_bounds_free_unscaled(1, :), precond_matrix, 'do')
+    x_optim_bounds_free_scaled(2, :) = apply_scaling(x_optim_bounds_free_unscaled(2, :), precond_matrix, 'do')
 
     CALL record_estimation(precond_matrix, x_free_start, paras_fixed, .False.)
 
@@ -244,7 +244,7 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, level, coeffs_a, c
         IF (is_misspecified) optimizer_options%bobyqa%npt = (2 * num_free) + 1
 
         rhobeg = optimizer_options%bobyqa%rhobeg
-        tmp = paras_bounds_free(2, :) - paras_bounds_free(1, :)
+        tmp = x_optim_bounds_free_scaled(2, :) - x_optim_bounds_free_scaled(1, :)
 
         rhobeg = optimizer_options%bobyqa%rhobeg
         is_misspecified = ANY(tmp .LT. rhobeg+rhobeg)
