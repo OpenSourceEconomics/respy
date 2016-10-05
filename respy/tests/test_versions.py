@@ -308,16 +308,10 @@ class TestClass(object):
 
             estimate(respy_obj)
 
-            import shutil
-            #if base_est_info is None:
-            #    shutil.copy('est.respy.info', 'est.respy.info.fort')
-            #
-            #    base_est_info = open('est.respy.info', 'r').read()
-            #assert open('est.respy.info', 'r').read() == base_est_info
+            if base_est_info is None:
+                base_est_info = open('est.respy.info', 'r').read()
+                assert open('est.respy.info', 'r').read() == base_est_info
 
             if base_est_log is None:
-                import shutil
-                shutil.copy('est.respy.log', 'est.respy.log.fort')
-
                 base_est_log = open('est.respy.log', 'r').readlines()
             compare_est_log(base_est_log)

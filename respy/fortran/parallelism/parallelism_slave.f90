@@ -23,6 +23,7 @@ PROGRAM resfort_parallel_slave
     INTEGER(our_int), ALLOCATABLE   :: num_states_slaves(:, :)
     INTEGER(our_int), ALLOCATABLE   :: num_obs_slaves(:)
     INTEGER(our_int), ALLOCATABLE   :: displs(:)
+    INTEGER(our_int), ALLOCATABLE   :: opt_ambi_info_slaves(:, :)
 
     INTEGER(our_int)                :: lower_bound
     INTEGER(our_int)                :: upper_bound
@@ -74,6 +75,7 @@ PROGRAM resfort_parallel_slave
 
     CALL create_draws(periods_draws_emax, num_draws_emax, seed_emax, is_debug)
 
+    ALLOCATE(opt_ambi_info_slaves(2, num_slaves))
 
     DO WHILE (STAY_AVAILABLE)
 
@@ -145,11 +147,16 @@ PROGRAM resfort_parallel_slave
 
             CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, edu_start, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, max_states_period)
 
+            opt_ambi_info = zero_int
             CALL fort_backward_induction_slave(periods_emax, num_periods, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, num_points_interp, is_myopic, edu_start, edu_max, measure, level, optimizer_options, file_sim, num_states_slaves, .False.)
+            opt_ambi_info_slaves(:, rank + 1) = opt_ambi_info
 
             CALL fort_contributions(contribs(lower_bound:upper_bound), periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_slave, periods_draws_prob, delta, tau, edu_start, edu_max, num_periods, num_draws_prob)
 
             CALL MPI_GATHERV(contribs(lower_bound:upper_bound), num_obs_slaves(rank + 1), MPI_DOUBLE, contribs, 0, displs, MPI_DOUBLE, 0, PARENTCOMM, ierr)
+
+            ! We also need to monitor the quality of the worst-case determination.
+            CALL MPI_GATHER(opt_ambi_info_slaves(:, rank + 1), 2, MPI_INT, opt_ambi_info_slaves, 0, MPI_INT, 0, PARENTCOMM, ierr)
 
         END IF
 

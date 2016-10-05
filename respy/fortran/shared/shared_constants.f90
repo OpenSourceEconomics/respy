@@ -52,9 +52,15 @@ MODULE shared_constants
     REAL(our_dble), PARAMETER   :: LARGE_FLOAT                  = 1.0e8_our_dble
 
     ! TODO: Move around
-    REAL(our_dble)  :: paras_bounds(2, 27)
+    REAL(our_dble)  :: x_econ_bounds_all_unscaled(2, 27)
     REAL(our_dble), ALLOCATABLE  :: paras_bounds_free(:, :)
-    REAL(our_dble)  :: precond_eps 
+    REAL(our_dble), ALLOCATABLE  :: x_optim_bounds_free_unscaled(:, :)
+    REAL(our_dble), ALLOCATABLE  :: x_optim_bounds_all_unscaled(:, :)
+
+    REAL(our_dble)  :: precond_eps
+
+    ! TODO: Better integration. This container provides some information about the success of the worst-case determination. It's printed to the *.log file.
+    INTEGER(our_int)            :: opt_ambi_info(2) = MISSING_INT
 
     ! We create a type that resembles the dictionary with the optimizer options in PYTHON.
     TYPE OPTIMIZER_BFGS

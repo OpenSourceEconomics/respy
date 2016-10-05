@@ -3,6 +3,7 @@ import time
 
 from respy.python.shared.shared_utilities import spectral_condition_number
 from respy.python.shared.shared_auxiliary import dist_econ_paras
+from respy.python.shared.shared_constants import opt_ambi_info
 from respy.python.record.record_warning import record_warning
 from respy.python.shared.shared_constants import LARGE_FLOAT
 
@@ -93,6 +94,14 @@ def record_estimation_eval(opt_obj, fval):
             cond += [np.log(spectral_condition_number(shocks_cov))]
         fmt_ = '   {:>9} ' + '    {:25.15f}' * 3 + '\n'
         out_file.write(fmt_.format(*['Condition'] + cond))
+
+        if opt_ambi_info[0] != 0:
+            fmt_ = '   {:>9} ' + '    {:25.15f}\n'
+            share = float(opt_ambi_info[1]) / float(opt_ambi_info[0])
+            out_file.write(fmt_.format(*['Ambiguity', share]))
+        else:
+            fmt_ = '   {:>9} ' + '    {:>25}\n'
+            out_file.write(fmt_.format(*['Ambiguity', '---']))
 
         out_file.write('\n')
 

@@ -12,6 +12,7 @@ from respy.python.shared.shared_auxiliary import get_total_values
 from respy.python.shared.shared_constants import MIN_AMBIGUITY
 from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.solve.solve_risk import construct_emax_risk
+from respy.python.shared.shared_constants import opt_ambi_info
 from respy.python.shared.shared_constants import MISSING_INT
 from respy.python.shared.shared_constants import HUGE_FLOAT
 
@@ -166,6 +167,10 @@ def pyth_backward_induction(num_periods, is_myopic, max_states_period,
     """ Backward induction procedure. There are two main threads to this
     function depending on whether interpolation is requested or not.
     """
+    # Provides summary information about the success of the worst-case
+    # determination.
+    opt_ambi_info = [0, 0]
+
     # Initialize containers, which contain a lot of missing values as we
     # capture the tree structure in arrays of fixed dimension.
     i, j = num_periods, max_states_period

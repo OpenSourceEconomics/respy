@@ -2,6 +2,7 @@ from scipy.optimize import minimize
 import numpy as np
 
 from respy.python.record.record_ambiguity import record_ambiguity
+from respy.python.shared.shared_constants import opt_ambi_info
 from respy.python.solve.solve_risk import construct_emax_risk
 
 
@@ -84,6 +85,11 @@ def get_worst_case(num_periods, num_draws_emax, period, k,
 
     is_success, message = opt['success'], opt['message']
     x_shift = opt['x'].tolist()
+
+    # Record some information about all worst-case determinations.
+    opt_ambi_info[0] += 1
+    if is_success:
+        opt_ambi_info[1] += 1
 
     return x_shift, is_success, message
 

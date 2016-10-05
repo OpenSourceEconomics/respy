@@ -43,8 +43,10 @@ from codes.random_init import generate_init
 
 
 respy_obj = RespyCls('model.respy.ini')
-#simulate(respy_obj)
+simulate(respy_obj)
+respy_obj.attr['num_procs'] = 2
 x, val = estimate(respy_obj)
+
 #print(val)
 raise SystemExit('just reading in')
 i = 0

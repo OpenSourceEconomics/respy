@@ -44,3 +44,6 @@ OPT_EST_FORT = ['FORT-NEWUOA', 'FORT-BFGS', 'FORT-BOBYQA']
 
 OPT_AMB_PYTH = ['SCIPY-SLSQP']
 OPT_AMB_FORT = ['FORT-SLSQP']
+
+# Summary information about worst-case determination.
+opt_ambi_info = [0, 0]

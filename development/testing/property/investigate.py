@@ -46,21 +46,21 @@ np.random.seed(seed)
 test_dict = get_test_dict(PACKAGE_DIR + '/respy/tests')
 module, method = get_random_request(test_dict)
 
-module, method = 'test_integration', 'test_7'
+module, method = 'test_ambiguity', 'test_versions_6'
 count = 0
 #os.system('git clean -d -f')
-for i in range(1):
+for i in range(1000):
 
 #    seed = 47092
     #seed = i + 109874564
 
+    print(module, method)
     seed = i + 1
-    np.random.seed(1223)
+    np.random.seed(seed)
     print("seed ", seed)
+
     #module, method = get_random_request(test_dict)
     #method = 'test_' + str(np.random.choice(range(1, 11)))
-    print(module, method)
-
 
     mod = importlib.import_module(module)
     test = getattr(mod.TestClass(), method)
@@ -69,4 +69,4 @@ for i in range(1):
     #count = count +1
     #print('completed ', count)
 
-    #os.system('git clean -d -f')
+    os.system('git clean -d -f')

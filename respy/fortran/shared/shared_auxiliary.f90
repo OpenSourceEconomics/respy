@@ -813,15 +813,15 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
         READ(99, 1500) optimizer_options%slsqp%eps
 
         ! TODO: Better positioning
-        READ(99, 1525) paras_bounds(1, :)
-        READ(99, 1525) paras_bounds(2, :)
+        READ(99, 1525) x_econ_bounds_all_unscaled(1, :)
+        READ(99, 1525) x_econ_bounds_all_unscaled(2, :)
 
     CLOSE(99)
 
     DO i = 1, 27
 
-        IF(paras_bounds(1, i) == -MISSING_FLOAT) paras_bounds(1, i) = - HUGE_FLOAT
-        IF(paras_bounds(2, i) == MISSING_FLOAT) paras_bounds(2, i) =  HUGE_FLOAT
+        IF(x_econ_bounds_all_unscaled(1, i) == -MISSING_FLOAT) x_econ_bounds_all_unscaled(1, i) = - HUGE_FLOAT
+        IF(x_econ_bounds_all_unscaled(2, i) == MISSING_FLOAT) x_econ_bounds_all_unscaled(2, i) =  HUGE_FLOAT
 
     END DO
 
@@ -830,8 +830,8 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
     j = 1
     DO i = 1, 27
         IF (.NOT. paras_fixed(i)) THEN
-            paras_bounds_free(1, j) = paras_bounds(1, i)
-            paras_bounds_free(2, j) = paras_bounds(2, i)
+            paras_bounds_free(1, j) = x_econ_bounds_all_unscaled(1, i)
+            paras_bounds_free(2, j) = x_econ_bounds_all_unscaled(2, i)
 
             j = j + 1
 

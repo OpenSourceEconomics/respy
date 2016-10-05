@@ -202,6 +202,7 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
     140 FORMAT(3x,A10,3(4x,A25))
     150 FORMAT(3x,i10,3(4x,f25.15))
     155 FORMAT(3x,A9,1x,3(4x,f25.15))
+    157 FORMAT(3x,A9,1x,4x,f25.15)
 
     OPEN(UNIT=99, FILE='est.respy.log', ACCESS='APPEND', ACTION='WRITE')
 
@@ -232,6 +233,13 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
         WRITE(99, *)
 
         WRITE(99, 155) 'Condition', LOG(cond)
+
+        IF (.NOT. opt_ambi_info(1) == zero_int) THEN
+            WRITE(99, 157) 'Ambiguity', DBLE(opt_ambi_info(2)) / DBLE(opt_ambi_info(1))
+        ELSE
+            WRITE(99, 135) 'Ambiguity', '---'
+
+        END IF
 
         WRITE(99, *)
 
