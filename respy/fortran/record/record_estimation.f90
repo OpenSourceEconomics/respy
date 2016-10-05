@@ -303,10 +303,8 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
     210 FORMAT(A25,A87)
     220 FORMAT(A25,3(4x,A25))
     230 FORMAT(i25,3(4x,f25.15))
-    240 FORMAT(A25,3(4x,f25.15))
 
     250 FORMAT(A25)
-    260 FORMAT(f25.15,3(4x,f25.15))
     270 FORMAT(1x,A15,9x,i25)
     280 FORMAT(1x,A21,3x,i25)
 
@@ -365,10 +363,6 @@ SUBROUTINE record_estimation_final(success, message)
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    100 FORMAT(3x,A9,5X,f45.15)
-    110 FORMAT(3x,A10,4x,A25)
-    120 FORMAT(3x,i10,4x,f25.5)
-
     OPEN(UNIT=99, FILE='est.respy.log', ACCESS='APPEND', ACTION='WRITE')
 
         WRITE(99, *) 'ESTIMATION REPORT'
@@ -418,7 +412,6 @@ SUBROUTINE record_scaling(precond_matrix, x_free_start, paras_fixed, is_setup)
 
 
     120 FORMAT(3x,A10,5(4x,A25))
-    130 FORMAT(3x,i10,5(4x,f25.15))
     135 FORMAT(3x,i10,3(4x,f25.15),A58)
 
     OPEN(UNIT=99, FILE='est.respy.log', ACCESS='APPEND', ACTION='WRITE')
