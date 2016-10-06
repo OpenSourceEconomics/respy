@@ -101,7 +101,7 @@ def run(args):
         tests = json.load(open(fname, 'r'))
 
         for idx in range(num_tests):
-            print('\n Checking Test ', idx, '\n')
+            #print('\n Checking Test ', idx, '\n')
 
             init_dict, crit_val = tests[idx]
 
@@ -110,7 +110,10 @@ def run(args):
             simulate(respy_obj)
 
             est_val = estimate(respy_obj)[1]
-            np.testing.assert_almost_equal(est_val, crit_val)
+            try:
+                np.testing.assert_almost_equal(est_val, crit_val)
+            except AssertionError:
+                print('There is a problem', idx)
 
         # This allows to call this test from another script, that runs other
         # tests as well.
