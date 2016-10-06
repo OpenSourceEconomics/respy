@@ -19,11 +19,9 @@ import os
 if int(sys.version[0]) < 3:
     raise AssertionError('Please use Python 3')
 
-sys.path.insert(0, '../../../respy/tests')
 from respy import RespyCls
 from respy import simulate
 
-sys.path.insert(0, '../_modules')
 from auxiliary_release import prepare_release_tests
 from auxiliary_shared import send_notification
 from auxiliary_shared import cleanup
@@ -76,13 +74,6 @@ def run(args):
             else:
                 raise AssertionError
 
-            # TODO: This is a temporary bug fix. The problem seems to be the
-            # slightly outdated pip. It needs to be 8.1.2 instead of the
-            # 8.1.1, which is the current default when invoking pyvenv. This
-            # should simply solve itself over time.
-            cmd = [python_exec, SCRIPT_FNAME, 'upgrade']
-            subprocess.check_call(cmd)
-
             cmd = [python_exec, SCRIPT_FNAME, 'prepare', release]
             subprocess.check_call(cmd)
 
@@ -114,26 +105,27 @@ def run(args):
         simulate(respy_obj)
 
         for which in ['old', 'new']:
-            os.chdir(which)
+
             if which == 'old':
                 release, python_exec = OLD_RELEASE, old_exec
             elif which == 'new':
                 release, python_exec = NEW_RELEASE, new_exec
             else:
                 raise AssertionError
+
             cmd = [python_exec, SCRIPT_FNAME, 'estimate', which]
             subprocess.check_call(cmd)
-
-            os.chdir('../')
 
         # Compare the resulting values of the criterion function.
         crit_val_old = pkl.load(open('old/crit_val.respy.pkl', 'rb'))
         crit_val_new = pkl.load(open('new/crit_val.respy.pkl', 'rb'))
 
-        try:
-            np.testing.assert_allclose(crit_val_old, crit_val_new)
-        except AssertionError:
-            is_failure = True
+        #try:
+        print('relevant seed', seed)
+        np.testing.assert_allclose(crit_val_old, crit_val_new)
+#        print('past testing', seed)
+        #except AssertionError:
+#            is_failure = True
 
         is_timeout = timeout < datetime.now() - start
 
@@ -148,7 +140,7 @@ if __name__ == '__main__':
 
     # The two releases that are tested against each other. These are
     # downloaded from PYPI in their own virtual environments.
-    OLD_RELEASE, NEW_RELEASE = '1.0.00', '2.0.00'
+    OLD_RELEASE, NEW_RELEASE = '1.0.00', '2.0.01'
 
     parser = argparse.ArgumentParser(description='Run release testing.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
