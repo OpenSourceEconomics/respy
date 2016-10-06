@@ -74,6 +74,13 @@ def run(args):
             else:
                 raise AssertionError
 
+            # TODO: This is a temporary bug fix. The problem seems to be the
+            # slightly outdated pip. It needs to be 8.1.2 instead of the
+            # 8.1.1, which is the current default when invoking pyvenv. This
+            # should simply solve itself over time.
+            cmd = [python_exec, SCRIPT_FNAME, 'upgrade']
+            subprocess.check_call(cmd)
+
             cmd = [python_exec, SCRIPT_FNAME, 'prepare', release]
             subprocess.check_call(cmd)
 

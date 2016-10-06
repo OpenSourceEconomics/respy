@@ -140,6 +140,8 @@ if __name__ == '__main__':
     if sys.argv[1] == 'prepare':
         version = sys.argv[2]
         install(version)
+    elif sys.argv[1] == 'upgrade':
+        pip.main(['install', '--upgrade', 'pip'])
     elif sys.argv[1] == 'estimate':
         which = sys.argv[2]
         run_estimation(which)
