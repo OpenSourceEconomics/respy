@@ -1,6 +1,8 @@
 import pickle as pkl
+import numpy as np
 
 import shutil
+import shlex
 import sys
 import pip
 import os
@@ -48,13 +50,13 @@ def prepare_release_tests(constr):
     # for all derivative approximations.
     eps = np.round(init_dict['SCIPY-BFGS']['eps'], decimals=15)
     init_dict['PRECONDITIONING']['eps'] = eps
+    init_dict['FORT-BFGS']['eps'] = eps
 
     # We did not have any preconditioning implemented in the PYTHON version
-    # initially.
-    if init_dict['PROGRAM']['version'] == 'PYTHON':
-        init_dict['PRECONDITIONING']['type'] = 'identity'
-    else:
-        pass
+    # initially. We had to switch the preconditioning scheme in the new
+    # release and now use the absolute value and thus preserve the sign of
+    # the derivative.
+    init_dict['PRECONDITIONING']['type'] = 'identity'
 
     # Some of the optimization algorithms were not available in the old release.
     opt_pyth = np.random.choice(['SCIPY-BFGS', 'SCIPY-POWELL'])
@@ -131,7 +133,29 @@ def run_estimation(which):
     print_init_dict(init_dict)
 
     respy_obj = RespyCls('test.respy.ini')
-    pkl.dump(estimate(respy_obj)[1], open('crit_val.respy.pkl', 'wb'))
+
+    # TODO: There was a bug in version 1.0 which might lead to crit_val not
+    # to actually take the lowest value that was visited by the optimizer.
+    # So, we reprocess the log file again to be sure.
+    estimate(respy_obj)
+
+    crit_val = np.inf
+    with open('est.respy.log') as infile:
+        for line in infile.readlines():
+            list_ = shlex.split(line)
+            # Skip empty lines
+            if not list_:
+                continue
+            # Process candidate value
+            if list_[0] == 'Criterion':
+                try:
+                    value = float(list_[1])
+                    if value < crit_val:
+                        crit_val = value
+                except ValueError:
+                    pass
+
+    pkl.dump(crit_val, open('crit_val.respy.pkl', 'wb'))
 
     os.chdir('../')
 

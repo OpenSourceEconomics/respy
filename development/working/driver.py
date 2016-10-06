@@ -42,49 +42,7 @@ from respy import estimate
 from codes.random_init import generate_init
 
 
-respy_obj = RespyCls('model.respy.ini')
+respy_obj = RespyCls('test.respy.ini')
 simulate(respy_obj)
 x, base = estimate(respy_obj)
-
-respy_obj.update_model_paras(x)
-
-respy_obj.attr['maxfun'] = 0
-x, alt = estimate(respy_obj)
-
-np.testing.assert_almost_equal(alt, base)
-
-#print(val)
-raise SystemExit('just reading in')
-i = 0
-while True:
-    i = i + 1
-    seed = i
-    print(seed)
-    np.random.seed(seed)
-
-    print('Neeeeeeeeeeeeeew')
-    constr = dict()
-    constr['is_estimation'] = True
-
-    init_dict = generate_init(constr)
-
-    # version = np.random.choice(['PYTHON', 'FORTRAN'])
-    #
-    # print(version)
-    # init_dict['PROGRAM']['version'] = version
-    #
-    # if version == 'PYTHON':
-    #     init_dict['ESTIMATION']['optimizer'] = 'SCIPY-LBFGSB'
-    # else:
-    #     init_dict['ESTIMATION']['optimizer'] = 'FORT-BOBYQA'
-    #     init_dict['PROGRAM']['procs'] = np.random.randint(1, 5)
-    #
-    print_init_dict(init_dict)
-
-    respy_obj = RespyCls('test.respy.ini')
-
-    paras_fixed = respy_obj.get_attr('paras_fixed')
-
-
-#    simulate(respy_obj)
-#    estimate(respy_obj)
+print(base)
