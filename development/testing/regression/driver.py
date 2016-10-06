@@ -110,10 +110,7 @@ def run(args):
             simulate(respy_obj)
 
             est_val = estimate(respy_obj)[1]
-            try:
-                np.testing.assert_almost_equal(est_val, crit_val)
-            except AssertionError:
-                print(est_val, crit_val, idx)
+            np.testing.assert_almost_equal(est_val, crit_val)
 
         # This allows to call this test from another script, that runs other
         # tests as well.
