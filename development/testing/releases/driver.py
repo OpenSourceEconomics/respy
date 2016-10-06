@@ -26,7 +26,6 @@ from auxiliary_release import prepare_release_tests
 from auxiliary_shared import send_notification
 from auxiliary_shared import cleanup
 
-
 SCRIPT_FNAME = '../../_modules/auxiliary_release.py'
 
 
@@ -127,12 +126,10 @@ def run(args):
         crit_val_old = pkl.load(open('old/crit_val.respy.pkl', 'rb'))
         crit_val_new = pkl.load(open('new/crit_val.respy.pkl', 'rb'))
 
-        #try:
-        print('relevant seed', seed)
-        np.testing.assert_allclose(crit_val_old, crit_val_new)
-#        print('past testing', seed)
-        #except AssertionError:
-#            is_failure = True
+        try:
+            np.testing.assert_allclose(crit_val_old, crit_val_new)
+        except AssertionError:
+            is_failure = True
 
         is_timeout = timeout < datetime.now() - start
 
