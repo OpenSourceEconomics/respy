@@ -9,6 +9,8 @@ import socket
 import sys
 import os
 
+from auxiliary_shared import compile_package
+
 # Get some basic information about the system and only start the work if
 # server not in other use.
 if socket.gethostname() != 'pontos':
@@ -24,22 +26,25 @@ HRS_PROPERTY_TESTS = 0.001
 CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 PACKAGE_DIR = CURRENT_DIR.replace('/tools/ec2', '')
 
+# Fresh setup
+compile_package()
+
 ###############################################################################
 # Regression Testing
 ###############################################################################
 os.chdir(PACKAGE_DIR + '/development/testing/regression')
-subprocess.call(['driver.py', '--request', 'check', str(NUM_REGRESSION_TESTS)])
+subprocess.call(['./driver.py', '--request', 'check', str(NUM_REGRESSION_TESTS)])
 os.chdir(CURRENT_DIR)
 ###############################################################################
 # Release Testing
 ###############################################################################
-os.chdir(PACKAGE_DIR + '/development/testing/release')
-subprocess.call(['driver.py', '--request', 'run', str(HRS_RELEASE_TESTS)])
+os.chdir(PACKAGE_DIR + '/development/testing/releases')
+subprocess.call(['./driver.py', '--request', 'run', str(HRS_RELEASE_TESTS)])
 os.chdir(CURRENT_DIR)
 ###############################################################################
 # Property-based Testing
 ###############################################################################
 os.chdir(PACKAGE_DIR + '/development/testing/property')
-subprocess.call(['driver.py', '--request', 'run', str(HRS_PROPERTY_TESTS)])
+subprocess.call(['./driver.py', '--request', 'run', str(HRS_PROPERTY_TESTS)])
 os.chdir(CURRENT_DIR)
 
