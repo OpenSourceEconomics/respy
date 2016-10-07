@@ -138,7 +138,7 @@ def run_estimation(which):
     # So, we reprocess the log file again to be sure.
     estimate(respy_obj)
 
-    crit_val = np.inf
+    crit_val = 1e10
     with open('est.respy.log') as infile:
         for line in infile.readlines():
             list_ = shlex.split(line)
