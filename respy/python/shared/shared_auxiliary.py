@@ -729,48 +729,41 @@ def get_est_info():
     """ This function reads in the parameters from the last step of a
     previous estimation run.
     """
-    # TODO: This can be nicely cleaned up using the linecache module.
-    def _process_value(input_):
+    def _process_value(input_, type_):
         try:
-            value = float(input_)
+            if type_ == 'float':
+                value = float(input_)
+            elif type_ == 'int':
+                value = int(input_)
         except ValueError:
             value = '---'
 
         return value
 
+    # Initialize container and ensure a fresh start processing the file
+    linecache.clearcache()
     rslt = dict()
 
-    paras_start, paras_step, paras_current = [], [], []
-    with open('est.respy.info') as in_file:
-        for i, line in enumerate(in_file.readlines()):
+    # Value of the criterion function
+    line = shlex.split(linecache.getline('est.respy.info', 6))
+    for key_ in ['start', 'step', 'current']:
+        rslt['value_' + key_] = _process_value(line.pop(0), 'float')
 
-            list_ = shlex.split(line)
-            if i == 5:
-                value_start = _process_value(list_[0])
-                value_step = _process_value(list_[1])
-                value_current = _process_value(list_[2])
+    # Total number of evaluations and steps
+    line = shlex.split(linecache.getline('est.respy.info', 41))
+    rslt['num_step'] = _process_value(line[3], 'int')
 
-            if i in range(12, 39):
-                paras_start += [float(list_[1])]
-                paras_step += [float(list_[2])]
-                paras_current += [float(list_[3])]
+    line = shlex.split(linecache.getline('est.respy.info', 43))
+    rslt['num_eval'] = _process_value(line[3], 'int')
 
-            if i == 40:
-                num_step = int(float(list_[3]))
-
-            if i == 42:
-                num_eval = int(float(list_[3]))
-
-    rslt['paras_current'] = np.array(paras_current)
-    rslt['paras_start'] = np.array(paras_start)
-    rslt['paras_step'] = np.array(paras_step)
-
-    rslt['value_current'] = value_current
-    rslt['value_start'] = value_start
-    rslt['value_step'] = value_step
-
-    rslt['num_eval'] = num_eval
-    rslt['num_step'] = num_step
+    # Parameter values
+    for i, key_ in enumerate(['start', 'step', 'current']):
+        rslt['paras_' + key_] = []
+        for j in range(13, 40):
+            line = shlex.split(linecache.getline('est.respy.info', j))
+            print(line[i + 1])
+            rslt['paras_' + key_] += [_process_value(line[i + 1], 'float')]
+        rslt['paras_' + key_] = np.array(rslt['paras_' + key_])
 
     # Finishing
     return rslt

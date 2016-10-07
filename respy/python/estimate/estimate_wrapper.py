@@ -75,6 +75,8 @@ class OptimizationClass(object):
             self.x_econ_container[:17, 2] = x_optim_all_unscaled[:17]
             self.x_econ_container[17:, 2] = shocks_coeffs
 
+        # We do not want to record anything if we are evaluating the
+        # criterion function simply to get the precondition matrix.
         if not hasattr(self, 'is_scaling'):
             # Record the progress of the estimation.
             record_estimation_eval(self, fval)
