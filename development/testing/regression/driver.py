@@ -116,12 +116,11 @@ def run(args):
             est_val = estimate(respy_obj)[1]
 
             # TODO: At this point we need to cut the comparison a little more
-            # slack as otherwise the tests fail on our compute servers. This
-            # might be due to slight differences in the LAPACK versions. It
+            # slack as otherwise the tests fail on our compute servers. It
             # is the worst-case determination which might have slightly
-            # different results.
+            # different results. At this point it remains a mystery what is
+            # driving the discrepancy.
             is_slack = (HOSTNAME != 'pontos') and (idx in [46])
-
             if is_slack:
                 pass
             else:

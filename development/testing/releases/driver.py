@@ -136,7 +136,7 @@ def run(args):
         if is_investigation or is_failure or is_timeout:
             break
 
-    if not is_investigation:
+    if not args.is_background and not is_investigation:
         send_notification('release', hours=hours, is_failed=is_failure,
              seed=seed, num_tests=num_tests)
 
@@ -154,5 +154,8 @@ if __name__ == '__main__':
 
     parser.add_argument('--create', action='store_true', dest='is_create',
         default=False, help='create new virtual environments')
+
+    parser.add_argument('--background', action='store_true',
+        dest='is_background', default=False, help='background process')
 
     run(parser.parse_args())
