@@ -1,5 +1,4 @@
 import pickle as pkl
-import numpy as np
 
 import shutil
 import shlex
