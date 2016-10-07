@@ -113,7 +113,7 @@ msg_regression = finalize_message(ret, 'We ran the requested regression tests')
 # Release Testing
 ###############################################################################
 os.chdir(PACKAGE_DIR + '/development/testing/releases')
-cmd = [python3_exec, 'driver.py', '--request', 'run', str(HRS_RELEASE_TESTS)]
+cmd = [python3_exec, 'driver.py', '--request', 'run', str(HRS_RELEASE_TESTS), '--create']
 ret = subprocess.call(cmd + ['--background'])
 os.chdir(CURRENT_DIR)
 
