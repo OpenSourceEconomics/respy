@@ -1,8 +1,9 @@
+import numpy as np
+
 import linecache
 import shlex
 import os
 
-import numpy as np
 
 from respy.python.shared.shared_constants import INADMISSIBILITY_PENALTY
 from respy.python.record.record_warning import record_warning
@@ -709,6 +710,19 @@ def format_opt_parameters(val, identifier, paras_fixed, paras_bounds):
 
     # Finishing
     return line
+
+
+def apply_scaling(x, precond_matrix, request):
+    """ Apply or revert the preconditioning step
+    """
+    if request == 'do':
+        out = np.dot(precond_matrix, x)
+    elif request == 'undo':
+        out = np.dot(np.linalg.pinv(precond_matrix), x)
+    else:
+        raise AssertionError
+
+    return out
 
 
 def get_est_info():

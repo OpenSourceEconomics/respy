@@ -1,24 +1,26 @@
 from scipy.optimize import fmin_l_bfgs_b
+from scipy.optimize import approx_fprime
 from scipy.optimize import fmin_powell
 from scipy.optimize import fmin_bfgs
 
 import numpy as np
 
 from respy.python.record.record_estimation import record_estimation_scalability
-from respy.python.record.record_estimation import record_estimation_stop
+from respy.python.record.record_estimation import record_estimation_scaling
 from respy.python.record.record_estimation import record_estimation_final
+from respy.python.record.record_estimation import record_estimation_stop
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
 from respy.python.shared.shared_auxiliary import dist_class_attributes
-from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.estimate.estimate_wrapper import OptimizationClass
+from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.shared.shared_auxiliary import dist_model_paras
-from respy.python.shared.shared_constants import OPT_EST_PYTH
 from respy.python.simulate.simulate_python import pyth_simulate
 from respy.python.estimate.estimate_wrapper import MaxfunError
+from respy.python.shared.shared_auxiliary import apply_scaling
 from respy.python.shared.shared_auxiliary import create_draws
-from respy.python.shared.shared_constants import LARGE_FLOAT
 from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.solve.solve_python import pyth_solve
+
 
 def respy_interface(respy_obj, request, data_array=None):
     """ This function provides the interface to the PYTHOn functionality.
@@ -42,9 +44,6 @@ def respy_interface(respy_obj, request, data_array=None):
         dist_model_paras(model_paras, is_debug)
 
     if request == 'estimate':
-        # Check that selected optimizer is in line with version of program.
-        if maxfun > 0:
-            assert optimizer_used in OPT_EST_PYTH
 
         periods_draws_prob = create_draws(num_periods, num_draws_prob,
             seed_prob, is_debug)
@@ -55,12 +54,12 @@ def respy_interface(respy_obj, request, data_array=None):
 
         # Construct starting values
         x_optim_free_unscaled_start = get_optim_paras(level, coeffs_a,
-                                                      coeffs_b, coeffs_edu,
-            coeffs_home, shocks_cholesky, 'free', paras_fixed, is_debug)
+            coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, 'free',
+            paras_fixed, is_debug)
 
         x_optim_all_unscaled_start = get_optim_paras(level, coeffs_a, coeffs_b,
-                                                coeffs_edu,
-            coeffs_home, shocks_cholesky, 'all', paras_fixed, is_debug)
+            coeffs_edu, coeffs_home, shocks_cholesky, 'all', paras_fixed,
+            is_debug)
 
         # Construct the state space
         states_all, states_number_period, mapping_state_idx, \
@@ -82,111 +81,52 @@ def respy_interface(respy_obj, request, data_array=None):
         # requested is accounted for. Note, that the relevant value of the
         # criterion function is always the one indicated by the class
         # attribute and not the value returned by the optimization algorithm.
+
         num_free = paras_fixed.count(False)
+
+        paras_bounds_free_unscaled = []
+        for i in range(27):
+            if not paras_fixed[i]:
+                lower, upper = paras_bounds[i][:]
+                if lower is None:
+                    lower = -HUGE_FLOAT
+                else:
+                    lower = lower
+
+                if upper is None:
+                    upper = HUGE_FLOAT
+                else:
+                    upper = upper
+
+                paras_bounds_free_unscaled += [[lower, upper]]
+
+        paras_bounds_free_unscaled = np.array(paras_bounds_free_unscaled)
+
+        precond_matrix = get_precondition_matrix(preconditioning, paras_fixed,
+            x_optim_all_unscaled_start, args, maxfun)
+
+        x_optim_free_scaled_start = apply_scaling(x_optim_free_unscaled_start,
+            precond_matrix, 'do')
+
+        paras_bounds_free_scaled = np.tile(np.nan, (num_free, 2))
+        for i in range(2):
+            paras_bounds_free_scaled[:, i] = apply_scaling(
+                paras_bounds_free_unscaled[:, i], precond_matrix, 'do')
+
+        record_estimation_scaling(x_optim_free_unscaled_start,
+            x_optim_free_scaled_start, paras_bounds_free_scaled,
+            precond_matrix, paras_fixed)
 
         opt_obj = OptimizationClass()
         opt_obj.maxfun = maxfun
         opt_obj.paras_fixed = paras_fixed
-        opt_obj.precond_matrix = np.identity(num_free)
         opt_obj.x_optim_all_unscaled_start = x_optim_all_unscaled_start
-        opt_obj.is_scaling = False
-
-        paras_bounds_free = []
-        for i in range(27):
-            if not paras_fixed[i]:
-                paras_bounds_free += [paras_bounds[i]]
-
-
-        precond_matrix = np.zeros((num_free, num_free))
-
-        precond_type, precond_minimum, precond_eps = preconditioning
-
-        from scipy.optimize import approx_fprime
-
-        if precond_type == 'identity' or maxfun == 0:
-            precond_matrix = np.identity(num_free)
-        else:
-            opt_obj.is_scaling = True
-            grad = approx_fprime(x_optim_free_unscaled_start, opt_obj.crit_func,
-                                   precond_eps, *args)
-            opt_obj.is_scaling = False
-
-            for i in range(num_free):
-
-                grad[i] = max(np.abs(grad[i]), precond_minimum)
-
-                precond_matrix[i, i] = grad[i]
-
-        # Update and reset is required.
         opt_obj.precond_matrix = precond_matrix
-        opt_obj.crit_vals = np.tile(np.inf, 3)
-        opt_obj.num_step = -1
-        opt_obj.num_eval = 0
-        # TODO: Restructure cirterion function that is always applying a
-        # preconditioning and allow for gradient.
-
-        # Reanaming needs to happen here as well.
-        x_optim_free_scaled_start = np.dot(precond_matrix,
-                                           x_optim_free_unscaled_start)
-
-        bounds_lower = np.tile(np.nan, num_free)
-        bounds_upper = np.tile(np.nan, num_free)
-        for i in range(num_free):
-            lower, upper = paras_bounds_free[i]
-            if lower is None:
-                bounds_lower[i] = -HUGE_FLOAT
-            else:
-                bounds_lower[i] = lower
-
-            if upper is None:
-                bounds_upper[i] = HUGE_FLOAT
-            else:
-                bounds_upper[i] = upper
-
-        paras_bounds_free_scaled_lower = np.dot(precond_matrix, bounds_lower)
-        paras_bounds_free_scaled_upper = np.dot(precond_matrix, bounds_upper)
-
-        with open('est.respy.log', 'w') as out_file:
-            out_file.write(' {:}\n\n'.format('PRECONDITIONING'))
-            fmt_ = '   {:>10}' + '    {:>25}' * 5 + '\n\n'
-            labels = ['Identifier', 'Original', 'Scale']
-            labels += ['Transformed Value', 'Transformed Lower']
-            labels += ['Transformed Upper']
-            out_file.write(fmt_.format(*labels))
-
-            j = 0
-            for i in range(27):
-                if paras_fixed[i]:
-                    continue
-
-                paras = [i, x_optim_free_unscaled_start[j], precond_matrix[j,
-                                                                           j]]
-                paras += [x_optim_free_scaled_start[j]]
-                paras += [paras_bounds_free_scaled_lower[j]]
-                paras += [paras_bounds_free_scaled_upper[j]]
-
-                for k in [4, 5]:
-                    if abs(paras[k]) > LARGE_FLOAT:
-                        paras[k] = '---'
-                    else:
-                        paras[k] = '{:25.15f}'.format(paras[k])
-
-                fmt = '   {:>10}' + '    {:25.15f}' * 3 + '    {:>25}' * 2 + \
-                      '\n'
-                out_file.write(fmt.format(*paras))
-
-                j = j + 1
-            out_file.write('\n')
-
-
-
-
 
         if maxfun == 0:
+
             record_estimation_scalability('Start')
-
             opt_obj.crit_func(x_optim_free_scaled_start, *args)
-
             record_estimation_scalability('Finish')
 
             success = True
@@ -198,10 +138,11 @@ def respy_interface(respy_obj, request, data_array=None):
             bfgs_maxiter = optimizer_options['SCIPY-BFGS']['maxiter']
             bfgs_gtol = optimizer_options['SCIPY-BFGS']['gtol']
             bfgs_eps = optimizer_options['SCIPY-BFGS']['eps']
+
             try:
-                rslt = fmin_bfgs(opt_obj.crit_func, x_optim_free_scaled_start, args=args,
-                    gtol=bfgs_gtol, epsilon=bfgs_eps, maxiter=bfgs_maxiter,
-                    full_output=True, disp=False)
+                rslt = fmin_bfgs(opt_obj.crit_func, x_optim_free_scaled_start,
+                    args=args, gtol=bfgs_gtol, epsilon=bfgs_eps,
+                    maxiter=bfgs_maxiter, full_output=True, disp=False)
 
                 success = (rslt[6] not in [1, 2])
                 message = 'Optimization terminated successfully.'
@@ -215,10 +156,6 @@ def respy_interface(respy_obj, request, data_array=None):
                 message = 'Maximum number of iterations exceeded.'
 
         elif optimizer_used == 'SCIPY-LBFGSB':
-            bounds = []
-            for i in range(num_free):
-                bounds += [[paras_bounds_free_scaled_lower[i],
-                               paras_bounds_free_scaled_upper[i]]]
 
             lbfgsb_maxiter = optimizer_options['SCIPY-LBFGSB']['maxiter']
             lbfgsb_maxls = optimizer_options['SCIPY-LBFGSB']['maxls']
@@ -229,8 +166,8 @@ def respy_interface(respy_obj, request, data_array=None):
 
             try:
                 rslt = fmin_l_bfgs_b(opt_obj.crit_func,
-                                     x_optim_free_scaled_start, args=args,
-                    approx_grad=True, bounds=bounds, m=lbfgsb_m,
+                    x_optim_free_scaled_start, args=args, approx_grad=True,
+                    bounds=paras_bounds_free_scaled, m=lbfgsb_m,
                     factr=lbfgsb_factr, pgtol=lbfgsb_pgtol,
                     epsilon=lbfgsb_eps, iprint=-1, maxfun=maxfun,
                     maxiter=lbfgsb_maxiter, maxls=lbfgsb_maxls)
@@ -250,9 +187,9 @@ def respy_interface(respy_obj, request, data_array=None):
             powell_ftol = optimizer_options['SCIPY-POWELL']['ftol']
 
             try:
-                rslt = fmin_powell(opt_obj.crit_func, x_optim_free_scaled_start, args,
-                    powell_xtol, powell_ftol, powell_maxiter, powell_maxfun,
-                    disp=0)
+                rslt = fmin_powell(opt_obj.crit_func, x_optim_free_scaled_start,
+                    args, powell_xtol, powell_ftol, powell_maxiter,
+                    powell_maxfun, disp=0)
 
                 success = (rslt[5] not in [1, 2])
                 message = 'Optimization terminated successfully.'
@@ -260,6 +197,7 @@ def respy_interface(respy_obj, request, data_array=None):
                     message = 'Maximum number of function evaluations.'
                 elif rslt[5] == 2:
                     message = 'Maximum number of iterations.'
+
             except MaxfunError:
                 success = False
                 message = 'Maximum number of iterations exceeded.'
@@ -270,7 +208,8 @@ def respy_interface(respy_obj, request, data_array=None):
     elif request == 'simulate':
 
         # Draw draws for the simulation.
-        periods_draws_sims = create_draws(num_periods, num_agents_sim, seed_sim, is_debug)
+        periods_draws_sims = create_draws(num_periods, num_agents_sim,
+            seed_sim, is_debug)
 
         # Draw standard normal deviates for the solution and evaluation step.
         periods_draws_emax = create_draws(num_periods, num_draws_emax,
@@ -294,7 +233,50 @@ def respy_interface(respy_obj, request, data_array=None):
             periods_draws_sims, seed_sim, file_sim)
 
         args = (solution, data_array)
+
     else:
         raise AssertionError
 
     return args
+
+
+def get_precondition_matrix(preconditioning, paras_fixed,
+        x_optim_all_unscaled_start, args, maxfun):
+    """ Get the preconditioning matrix for the optimization.
+    """
+    # Auxiliary objects
+    num_free = paras_fixed.count(False)
+
+    # Set up a special instance of the optimization class.
+    opt_obj = OptimizationClass()
+
+    opt_obj.x_optim_all_unscaled_start = x_optim_all_unscaled_start
+    opt_obj.precond_matrix = np.identity(num_free)
+    opt_obj.paras_fixed = paras_fixed
+    opt_obj.is_scaling = False
+
+    # Distribute information about user request.
+    precond_type, precond_minimum, precond_eps = preconditioning
+
+    # Get the subset of free parameters for subsequent numerical
+    # approximation of the gradient.
+    x_optim_free_unscaled_start = []
+    for i in range(27):
+        if not paras_fixed[i]:
+            x_optim_free_unscaled_start += [x_optim_all_unscaled_start[i]]
+
+    precond_matrix = np.zeros((num_free, num_free))
+
+    if precond_type == 'identity' or maxfun == 0:
+        precond_matrix = np.identity(num_free)
+    else:
+        opt_obj.is_scaling = None
+        grad = approx_fprime(x_optim_free_unscaled_start, opt_obj.crit_func,
+            precond_eps, *args)
+
+        for i in range(num_free):
+            grad[i] = max(np.abs(grad[i]), precond_minimum)
+            precond_matrix[i, i] = grad[i]
+
+    return precond_matrix
+

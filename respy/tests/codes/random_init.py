@@ -451,18 +451,20 @@ def generate_random_dict(constraints=None):
             dict_['is_store'] = False
             dict_['ESTIMATION']['maxfun'] = int(np.random.choice(range(6),
                 p=[0.5, 0.1, 0.1, 0.1, 0.1, 0.1]))
-            dict_['PRECONDITIONING']['type'] = np.random.choice(['gradient',
-                                                                'identity'],
-                                                       p=[0.1, 0.9])
+            dict_['PRECONDITIONING']['type'] = \
+                np.random.choice(['gradient', 'identity'], p=[0.1, 0.9])
 
-            # Ensure that a valid estimator is selected, at least if the
-            # level of ambiguity is a free parameter.
-            if not dict_['AMBIGUITY']['fixed'][0]:
-                if dict_['PROGRAM']['version'] == 'FORTRAN':
-                    dict_['ESTIMATION']['optimizer'] = 'FORT-BOBYQA'
-                else:
-                    dict_['ESTIMATION']['optimizer'] = 'SCIPY-LBFGSB'
-
+            # Ensure that a valid estimator is selected in the case that a
+            # free parameter has bounds.
+            for i in range(27):
+                if paras_fixed[i]:
+                    continue
+                if any(item is not None for item in paras_bounds[i]):
+                    if dict_['PROGRAM']['version'] == 'FORTRAN':
+                        dict_['ESTIMATION']['optimizer'] = 'FORT-BOBYQA'
+                    else:
+                        dict_['ESTIMATION']['optimizer'] = 'SCIPY-LBFGSB'
+                    break
     # Finishing
     return dict_
 

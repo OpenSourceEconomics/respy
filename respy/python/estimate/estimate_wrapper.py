@@ -75,7 +75,7 @@ class OptimizationClass(object):
             self.x_econ_container[:17, 2] = x_optim_all_unscaled[:17]
             self.x_econ_container[17:, 2] = shocks_coeffs
 
-        if not self.is_scaling:
+        if not hasattr(self, 'is_scaling'):
             # Record the progress of the estimation.
             record_estimation_eval(self, fval)
 

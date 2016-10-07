@@ -80,6 +80,15 @@ def check_estimation(respy_obj):
     if maxfun > 0:
         assert optimizer_used in optimizer_options.keys()
 
+        # We need to make sure that an optimizer that aligns with the
+        # requested optimization is requested.
+        if version == 'PYTHON':
+            assert optimizer_used in OPT_EST_PYTH
+        elif version == 'FORTRAN':
+            assert optimizer_used in OPT_EST_FORT
+        else:
+            raise AssertionError
+
         # When the level of ambiguity is a free parameter, then we can only
         # allow for the constraint optimizers in the estimation.
         if not paras_fixed[0]:
