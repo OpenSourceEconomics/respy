@@ -216,9 +216,9 @@ def respy_interface(respy_obj, request, data_array=None):
 
         elif optimizer_used == 'SCIPY-LBFGSB':
             bounds = []
-            for i in range(27):
-                if not paras_fixed[i]:
-                    bounds += [paras_bounds[i]]
+            for i in range(num_free):
+                bounds += [[paras_bounds_free_scaled_lower[i],
+                               paras_bounds_free_scaled_upper[i]]]
 
             lbfgsb_maxiter = optimizer_options['SCIPY-LBFGSB']['maxiter']
             lbfgsb_maxls = optimizer_options['SCIPY-LBFGSB']['maxls']
@@ -230,7 +230,7 @@ def respy_interface(respy_obj, request, data_array=None):
             try:
                 rslt = fmin_l_bfgs_b(opt_obj.crit_func,
                                      x_optim_free_scaled_start, args=args,
-                    approx_grad=True, bounds=paras_bounds_free, m=lbfgsb_m,
+                    approx_grad=True, bounds=bounds, m=lbfgsb_m,
                     factr=lbfgsb_factr, pgtol=lbfgsb_pgtol,
                     epsilon=lbfgsb_eps, iprint=-1, maxfun=maxfun,
                     maxiter=lbfgsb_maxiter, maxls=lbfgsb_maxls)
