@@ -18,8 +18,7 @@ from respy.python.shared.shared_constants import ROOT_DIR
 
 # We are using features for the automatic creation of the virtual environment
 # for the release testing which are only available in Python 3.
-if int(sys.version[0]) < 3:
-    raise AssertionError('Please use Python 3')
+from config import python3_exec
 
 CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 PACKAGE_DIR = ROOT_DIR.replace('respy', '')
@@ -98,14 +97,13 @@ def send_notification(msg_regression, msg_release, msg_property):
 
 
 # Fresh setup
-# TODO: Back in
-#compile_package()
+compile_package()
 
 ###############################################################################
 # Regression Testing
 ###############################################################################
 os.chdir(PACKAGE_DIR + '/development/testing/regression')
-cmd = ['./driver.py', '--request', 'check', str(NUM_REGRESSION_TESTS)]
+cmd = [python3_exec, 'driver.py', '--request', 'check', str(NUM_REGRESSION_TESTS)]
 ret = subprocess.call(cmd + ['--background'])
 os.chdir(CURRENT_DIR)
 
@@ -115,7 +113,7 @@ msg_regression = finalize_message(ret, 'We ran the requested regression tests')
 # Release Testing
 ###############################################################################
 os.chdir(PACKAGE_DIR + '/development/testing/releases')
-cmd = ['./driver.py', '--request', 'run', str(HRS_RELEASE_TESTS)]
+cmd = [python3_exec, 'driver.py', '--request', 'run', str(HRS_RELEASE_TESTS)]
 ret = subprocess.call(cmd + ['--background'])
 os.chdir(CURRENT_DIR)
 
@@ -124,7 +122,7 @@ msg_release = finalize_message(ret, 'We ran the requested release tests')
 # Property-based Testing
 ###############################################################################
 os.chdir(PACKAGE_DIR + '/development/testing/property')
-cmd = ['./driver.py', '--request', 'run', str(HRS_PROPERTY_TESTS)]
+cmd = [python3_exec, 'driver.py', '--request', 'run', str(HRS_PROPERTY_TESTS)]
 ret = subprocess.call(cmd + ['--background'])
 os.chdir(CURRENT_DIR)
 
