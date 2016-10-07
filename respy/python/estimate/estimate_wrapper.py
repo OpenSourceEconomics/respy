@@ -3,6 +3,7 @@ import numpy as np
 from respy.python.record.record_estimation import record_estimation_eval
 from respy.python.estimate.estimate_python import pyth_criterion
 from respy.python.shared.shared_auxiliary import get_cholesky
+from respy.python.shared.shared_auxiliary import apply_scaling
 from respy.python.record.record_warning import record_warning
 
 
@@ -34,56 +35,24 @@ class OptimizationClass(object):
         """ This method serves as a wrapper around the alternative
         implementations of the criterion function.
         """
-        # Evaluate criterion function
+        # Distribute class attributes
         precond_matrix = self.precond_matrix
 
-        from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
-
-        from numpy.linalg import pinv
-        x_optim_free_unscaled = np.dot(pinv(precond_matrix), x_optim_free_scaled)
-
+        # Construct full set of optimization parameters and evaluate
+        # criterion function.
         x_optim_all_unscaled = self._construct_all_current_values(
-            x_optim_free_unscaled)
+            apply_scaling(x_optim_free_scaled, precond_matrix, 'do'))
         fval = pyth_criterion(x_optim_all_unscaled, *args)
-
-        shocks_cholesky, _ = get_cholesky(x_optim_all_unscaled, 0)
-
-        shocks_coeffs = cholesky_to_coeffs(shocks_cholesky)
-
-        # Identify events
-        is_start = (self.num_eval == 0)
-        is_step = (self.crit_vals[1] > fval)
-
-        # Update class attributes
-        if is_start:
-            self.crit_vals[0] = fval
-            self.x_optim_container[:, 0] = x_optim_all_unscaled
-            self.x_econ_container[:17, 0] = x_optim_all_unscaled[:17]
-            self.x_econ_container[17:, 0] = shocks_coeffs
-
-        if is_step:
-            self.num_step += 1
-            self.crit_vals[1] = fval
-            self.x_optim_container[:, 1] = x_optim_all_unscaled
-            self.x_econ_container[:17, 1] = x_optim_all_unscaled[:17]
-            self.x_econ_container[17:, 1] = shocks_coeffs
-
-        if True:
-            self.num_eval += 1
-            self.crit_vals[2] = fval
-            self.x_optim_container[:, 2] = x_optim_all_unscaled
-            self.x_econ_container[:17, 2] = x_optim_all_unscaled[:17]
-            self.x_econ_container[17:, 2] = shocks_coeffs
 
         # We do not want to record anything if we are evaluating the
         # criterion function simply to get the precondition matrix.
         if not hasattr(self, 'is_scaling'):
+
             # Record the progress of the estimation.
-            record_estimation_eval(self, fval)
+            record_estimation_eval(self, fval, x_optim_all_unscaled)
 
             # This is only used to determine whether a stabilization of the
             # Cholesky matrix is required.
-            # TODO: I also need cholesky earlier
             _, info = get_cholesky(x_optim_all_unscaled, 0)
             if info != 0:
                 record_warning(4)
@@ -98,9 +67,11 @@ class OptimizationClass(object):
     def _construct_all_current_values(self, x_optim_free_unscaled):
         """ Construct the full set of current values.
         """
+        # Distribute class attributes
         x_optim_all_unscaled_start = self.x_optim_all_unscaled_start
         paras_fixed = self.paras_fixed
 
+        # Construct the complete list of optimization parameters.
         x_optim_all_unscaled = np.tile(np.nan, 27)
         j = 0
         for i in range(27):

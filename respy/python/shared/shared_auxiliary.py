@@ -761,7 +761,6 @@ def get_est_info():
         rslt['paras_' + key_] = []
         for j in range(13, 40):
             line = shlex.split(linecache.getline('est.respy.info', j))
-            print(line[i + 1])
             rslt['paras_' + key_] += [_process_value(line[i + 1], 'float')]
         rslt['paras_' + key_] = np.array(rslt['paras_' + key_])
 

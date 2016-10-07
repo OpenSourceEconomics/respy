@@ -2,9 +2,11 @@ import numpy as np
 import time
 
 from respy.python.shared.shared_utilities import spectral_condition_number
+from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
 from respy.python.shared.shared_auxiliary import dist_econ_paras
 from respy.python.shared.shared_constants import opt_ambi_info
 from respy.python.record.record_warning import record_warning
+from respy.python.shared.shared_auxiliary import get_cholesky
 from respy.python.shared.shared_constants import LARGE_FLOAT
 
 
@@ -68,13 +70,41 @@ def record_estimation_stop():
         out_file.write('\n TERMINATED\n')
 
 
-def record_estimation_eval(opt_obj, fval):
+def record_estimation_eval(opt_obj, fval, x_optim_all_unscaled):
     """ Logging the progress of an estimation. This function contains two
     parts as two files provide information about the progress.
     """
 
     # Distribute class attributes
     paras_fixed = opt_obj.paras_fixed
+
+    shocks_cholesky, _ = get_cholesky(x_optim_all_unscaled, 0)
+    shocks_coeffs = cholesky_to_coeffs(shocks_cholesky)
+
+    # Identify events
+    is_start = (opt_obj.num_eval == 0)
+    is_step = (opt_obj.crit_vals[1] > fval)
+
+    # Update class attributes
+    if is_start:
+        opt_obj.crit_vals[0] = fval
+        opt_obj.x_optim_container[:, 0] = x_optim_all_unscaled
+        opt_obj.x_econ_container[:17, 0] = x_optim_all_unscaled[:17]
+        opt_obj.x_econ_container[17:, 0] = shocks_coeffs
+
+    if is_step:
+        opt_obj.num_step += 1
+        opt_obj.crit_vals[1] = fval
+        opt_obj.x_optim_container[:, 1] = x_optim_all_unscaled
+        opt_obj.x_econ_container[:17, 1] = x_optim_all_unscaled[:17]
+        opt_obj.x_econ_container[17:, 1] = shocks_coeffs
+
+    if True:
+        opt_obj.num_eval += 1
+        opt_obj.crit_vals[2] = fval
+        opt_obj.x_optim_container[:, 2] = x_optim_all_unscaled
+        opt_obj.x_econ_container[:17, 2] = x_optim_all_unscaled[:17]
+        opt_obj.x_econ_container[17:, 2] = shocks_coeffs
 
     x_optim_container = opt_obj.x_optim_container
     x_econ_container = opt_obj.x_econ_container
