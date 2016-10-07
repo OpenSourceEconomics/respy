@@ -11,6 +11,11 @@ import os
 
 from auxiliary_shared import compile_package
 
+# We are using features for the automatic creation of the virtual environment
+# for the release testing which are only available in Python 3.
+if int(sys.version[0]) < 3:
+    raise AssertionError('Please use Python 3')
+
 # Get some basic information about the system and only start the work if
 # server not in other use.
 if socket.gethostname() != 'pontos':
