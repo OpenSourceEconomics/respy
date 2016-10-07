@@ -41,7 +41,7 @@ class OptimizationClass(object):
         # Construct full set of optimization parameters and evaluate
         # criterion function.
         x_optim_all_unscaled = self._construct_all_current_values(
-            apply_scaling(x_optim_free_scaled, precond_matrix, 'do'))
+            apply_scaling(x_optim_free_scaled, precond_matrix, 'undo'))
         fval = pyth_criterion(x_optim_all_unscaled, *args)
 
         # We do not want to record anything if we are evaluating the
