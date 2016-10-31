@@ -6,6 +6,8 @@ import pytest
 from respy.python.simulate.simulate_auxiliary import write_out
 from respy.scripts.scripts_estimate import scripts_estimate
 from respy.scripts.scripts_simulate import scripts_simulate
+from respy.python.shared.shared_constants import FORMATS
+from respy.python.shared.shared_constants import LABELS
 from respy.scripts.scripts_update import scripts_update
 from respy.scripts.scripts_modify import scripts_modify
 from respy.python.process.process_python import process
@@ -267,15 +269,6 @@ class TestClass(object):
         """ We now test that more less restrictive observed data can be
         processed properly.
         """
-        formats = dict()
-        formats.update({0: np.int, 1: np.int, 2: np.int, 3: np.float})
-        formats.update({4: np.int, 5: np.int, 6: np.int, 7: np.int})
-
-        labels = []
-        labels += ['Identifier', 'Period', 'Choice', 'Earnings']
-        labels += ['Experience A', 'Experience B', 'Years Schooling']
-        labels += ['Lagged Schooling']
-
         def drop_agents_obs(group):
             """ We drop a random number of observations for each agent.
             """
@@ -298,7 +291,7 @@ class TestClass(object):
         # We want to drop random observations. This mimics the frequent
         # empirical fact that we loose track of agents (at least temporarily).
         data_frame = pd.read_csv('data.respy.dat', delim_whitespace=True,
-             header=-1, na_values='.', dtype=formats, names=labels)
+             header=-1, na_values='.', dtype=FORMATS, names=LABELS)
 
         data_subset = data_frame.groupby('Identifier').apply(drop_agents_obs)
         write_out(respy_obj, data_subset)
@@ -314,7 +307,7 @@ class TestClass(object):
         _, base = estimate(respy_obj)
 
         data_frame = pd.read_csv('data.respy.dat', delim_whitespace=True,
-             header=-1, na_values='.', dtype=formats, names=labels)
+             header=-1, na_values='.', dtype=FORMATS, names=LABELS)
 
         data_frame = data_frame.reindex(np.random.permutation(data_frame.index))
         write_out(respy_obj, data_frame)

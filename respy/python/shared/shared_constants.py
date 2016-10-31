@@ -1,7 +1,7 @@
 """ Module for program constants used across the RESPY package. This is
 aligned with the constants from the FORTRAN implementation.
 """
-
+import numpy as np
 import os
 
 # Obtain the root directory of the package
@@ -47,3 +47,13 @@ OPT_AMB_FORT = ['FORT-SLSQP']
 
 # Summary information about worst-case determination.
 opt_ambi_info = [0, 0]
+
+# Labels for columns in a dataset as well as the formatters.
+LABELS = []
+LABELS += ['Identifier', 'Period', 'Choice', 'Earnings']
+LABELS += ['Experience A', 'Experience B', 'Years Schooling']
+LABELS += ['Lagged Schooling']
+
+FORMATS = dict()
+FORMATS.update({0: np.int, 1: np.int, 2: np.int, 3: np.float})
+FORMATS.update({4: np.int, 5: np.int, 6: np.int, 7: np.int})
