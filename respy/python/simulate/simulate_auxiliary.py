@@ -1,8 +1,8 @@
 import pandas as pd
 import numpy as np
 
+from respy.python.process.process_auxiliary import check_dataset_est
 from respy.python.shared.shared_auxiliary import dist_model_paras
-from respy.python.shared.shared_constants import LABELS
 
 
 def write_info(respy_obj, data_frame):
@@ -111,15 +111,11 @@ def write_out(respy_obj, data_frame):
     file_sim = respy_obj.get_attr('file_sim')
 
     formats = []
-
     formats += [_format_integer, _format_integer, _format_integer]
-
     formats += [_format_float, _format_integer, _format_integer]
-
     formats += [_format_integer, _format_integer]
 
     with open(file_sim + '.respy.dat', 'w') as file_:
-
         data_frame.to_string(file_, index=False, header=None, na_rep='.',
                             formatters=formats)
 
@@ -151,23 +147,14 @@ def get_estimation_vector(model_paras, is_debug):
 
     # Collect parameters
     vector = list()
-
     vector += model_paras['level'].tolist()
-
     vector += model_paras['coeffs_a'].tolist()
-
     vector += model_paras['coeffs_b'].tolist()
-
     vector += model_paras['coeffs_edu'].tolist()
-
     vector += model_paras['coeffs_home'].tolist()
-
     vector += shocks_cholesky[0, :1].tolist()
-
     vector += shocks_cholesky[1, :2].tolist()
-
     vector += shocks_cholesky[2, :3].tolist()
-
     vector += shocks_cholesky[3, :4].tolist()
 
     # Type conversion
@@ -178,57 +165,31 @@ def get_estimation_vector(model_paras, is_debug):
 
 
 def check_dataset_sim(data_frame, respy_obj):
-    """ This routine runs some consistency checks on the simulated data frame.
+    """ This routine runs some consistency checks on the simulated dataset.
+    Some more restrictions are imposed on the simulated dataset than the
+    observed data.
     """
     # Distribute class attributes
     num_agents = respy_obj.get_attr('num_agents_sim')
     num_periods = respy_obj.get_attr('num_periods')
 
-    # Check that there are not missing values in any of the columns but for
-    # the earnings information.
-    for label in LABELS:
-        if label == 'Earnings':
-            continue
-        assert ~ data_frame[label].isnull().any()
+    # So, we run all checks on the observed dataset.
+    check_dataset_est(data_frame, respy_obj)
 
     # Checks for IDENTIFIER
-    np.testing.assert_equal(data_frame['Identifier'].max(), num_agents - 1)
-
-    # Checks for PERIODS
-    np.testing.assert_equal(data_frame['Period'].max(), num_periods - 1)
-
-    # Checks for CHOICE
-    np.testing.assert_equal(data_frame['Choice'].isin([1, 2, 3, 4]).all(), True)
-
-    # Checks for EARNINGS
-    np.testing.assert_equal((data_frame['Earnings'].fillna(99) >= 0.00).all(),
-        True)
-
-    # Checks for EXPERIENCE
-    for label in ['Experience A', 'Experience B']:
-        np.testing.assert_equal((data_frame[label] >= 0.00).all(), True)
-
-    # Checks for LAGGED SCHOOLING
-    np.testing.assert_equal(data_frame['Lagged Schooling'].isin([0, 1]).all(),
-        True)
-
-    # Checks for YEARS SCHOOLING
-    np.testing.assert_equal((data_frame['Years Schooling'] >= 0.00).all(), True)
-
-    # Check that there are no duplicated observations for any period by agent.
-    def check_unique_periods(group):
-        np.testing.assert_equal(group['Period'].duplicated().any(), False)
-
-    data_frame.groupby('Identifier').apply(check_unique_periods)
+    dat = data_frame['Identifier']
+    np.testing.assert_equal(dat.max(), num_agents - 1)
 
     # Check that there are not missing wage observations if an agent is
     # working. Also, we check that if an agent is not working, there also is
     # no wage observation.
     is_working = data_frame['Choice'].isin([1, 2])
-    np.testing.assert_equal(data_frame['Earnings'][is_working].isnull().any(),
-        False)
-    np.testing.assert_equal(data_frame['Earnings'][~is_working].isnull().all(),
-        True)
+
+    dat = data_frame['Earnings'][is_working]
+    np.testing.assert_equal(dat.isnull().any(), False)
+
+    dat = data_frame['Earnings'][~ is_working]
+    np.testing.assert_equal(dat.isnull().all(), True)
 
     # Check that there are no missing observations and we follow an agent
     # each period.

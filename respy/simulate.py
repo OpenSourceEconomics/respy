@@ -16,11 +16,10 @@ def simulate(respy_obj):
     """ Simulate dataset of synthetic agent following the model specified in
     the initialization file.
     """
-
     # Distribute class attributes
     is_debug, version, num_agents_sim, is_store, file_sim = \
         dist_class_attributes(respy_obj, 'is_debug', 'version',
-                'num_agents_sim', 'is_store', 'file_sim')
+            'num_agents_sim', 'is_store', 'file_sim')
 
     # Cleanup
     for ext in ['sim', 'sol', 'amb', 'dat', 'info']:
@@ -58,7 +57,6 @@ def simulate(respy_obj):
         check_dataset_sim(data_frame, respy_obj)
 
     write_out(respy_obj, data_frame)
-
     write_info(respy_obj, data_frame)
 
     # Finishing
