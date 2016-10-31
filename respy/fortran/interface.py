@@ -58,7 +58,7 @@ def resfort_interface(respy_obj, request, data_array=None):
     args = args + (num_draws_prob, num_agents_est, num_agents_sim, seed_prob,
         seed_emax, tau, num_procs, request, seed_sim, optimizer_options,
         optimizer_used, maxfun, paras_fixed, precond_eps, precond_type,
-        precond_minimum, measure, level, file_sim, paras_bounds)
+        precond_minimum, measure, level, file_sim, paras_bounds, data_array)
 
     write_resfort_initialization(*args)
 
@@ -153,9 +153,15 @@ def write_resfort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         delta, num_draws_prob, num_agents_est, num_agents_sim, seed_prob,
         seed_emax, tau, num_procs, request, seed_sim, optimizer_options,
         optimizer_used, maxfun, paras_fixed, precond_eps, precond_type,
-        precond_minimum, measure, level, file_sim, paras_bounds):
+        precond_minimum, measure, level, file_sim, paras_bounds, data_array):
     """ Write out model request to hidden file .model.resfort.ini.
     """
+
+    # Auxiliary objects
+    if data_array is not None:
+        num_obs = data_array.shape[0]
+    else:
+        num_obs = -1
 
     # Write out to link file
     with open('.model.resfort.ini', 'w') as file_:
@@ -233,6 +239,9 @@ def write_resfort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         file_.write(line)
 
         line = '{0:25.15f}\n'.format(tau)
+        file_.write(line)
+
+        line = '{0:10d}\n'.format(num_obs)
         file_.write(line)
 
         # PRECONDITIONING

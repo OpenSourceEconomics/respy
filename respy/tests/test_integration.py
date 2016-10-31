@@ -3,11 +3,13 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from respy.python.simulate.simulate_auxiliary import write_out
 from respy.scripts.scripts_estimate import scripts_estimate
 from respy.scripts.scripts_simulate import scripts_simulate
 from respy.scripts.scripts_update import scripts_update
 from respy.scripts.scripts_modify import scripts_modify
 from respy.python.process.process_python import process
+
 from codes.random_init import generate_init
 from respy import estimate
 from respy import simulate
@@ -260,3 +262,62 @@ class TestClass(object):
         _, update_val = estimate(respy_obj)
 
         np.testing.assert_almost_equal(update_val, base_val)
+
+    def test_8(self, flag_ambiguity=False):
+        """ We now test that more less restrictive observed data can be
+        processed properly.
+        """
+        formats = dict()
+        formats.update({0: np.int, 1: np.int, 2: np.int, 3: np.float})
+        formats.update({4: np.int, 5: np.int, 6: np.int, 7: np.int})
+
+        labels = []
+        labels += ['Identifier', 'Period', 'Choice', 'Earnings']
+        labels += ['Experience A', 'Experience B', 'Years Schooling']
+        labels += ['Lagged Schooling']
+
+        def drop_agents_obs(group):
+            """ We drop a random number of observations for each agent.
+            """
+            num_drop = np.random.randint(0, group.shape[0])
+            group.set_index('Period', drop=False, inplace=True)
+            indices = np.random.choice(group.index, num_drop, replace=False)
+            group.drop(indices, inplace=True)
+            return group
+
+        constr = dict()
+        constr['flag_ambiguity'] = flag_ambiguity
+        constr['is_estimation'] = True
+        generate_init(constr)
+
+        respy_obj = RespyCls('test.respy.ini')
+        respy_obj = simulate(respy_obj)
+
+        num_agents_sim = respy_obj.get_attr('num_agents_sim')
+
+        # We want to drop random observations. This mimics the frequent
+        # empirical fact that we loose track of agents (at least temporarily).
+        data_frame = pd.read_csv('data.respy.dat', delim_whitespace=True,
+             header=-1, na_values='.', dtype=formats, names=labels)
+
+        data_subset = data_frame.groupby('Identifier').apply(drop_agents_obs)
+        write_out(respy_obj, data_subset)
+
+        # We need to ensure that all available agents are processed,
+        # otherwise the reshuffling changes results.
+        respy_obj.unlock()
+        respy_obj.set_attr('num_agents_est', num_agents_sim)
+        respy_obj.lock()
+
+        # We want to make sure that random reordering does not affect the
+        # criterion function.
+        _, base = estimate(respy_obj)
+
+        data_frame = pd.read_csv('data.respy.dat', delim_whitespace=True,
+             header=-1, na_values='.', dtype=formats, names=labels)
+
+        data_frame = data_frame.reindex(np.random.permutation(data_frame.index))
+        write_out(respy_obj, data_frame)
+
+        _, alt = estimate(respy_obj)
+        np.testing.assert_almost_equal(base, alt)

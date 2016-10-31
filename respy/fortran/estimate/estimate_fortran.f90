@@ -134,10 +134,11 @@ FUNCTION fort_criterion(x_optim_free_scaled)
 
     !/* internal objects    */
 
-    REAL(our_dble)                  :: contribs(num_agents_est * num_periods)
+
     REAL(our_dble)                  :: x_optim_free_unscaled(num_free)
-    REAL(our_dble)                  :: shocks_cholesky(4, 4)
     REAL(our_dble)                  :: x_optim_all_unscaled(27)
+    REAL(our_dble)                  :: shocks_cholesky(4, 4)
+    REAL(our_dble)                  :: contribs(num_obs)
     REAL(our_dble)                  :: coeffs_home(1)
     REAL(our_dble)                  :: coeffs_edu(3)
     REAL(our_dble)                  :: coeffs_a(6)
