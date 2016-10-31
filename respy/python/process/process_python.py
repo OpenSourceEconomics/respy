@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-from respy.python.shared.shared_auxiliary import check_dataset
+from respy.python.simulate.simulate_auxiliary import check_dataset_sim
 
 
 def process(respy_obj):
@@ -24,7 +24,8 @@ def process(respy_obj):
     data_frame.drop(drop_indices, inplace=True)
 
     # Check the dataset against the initialization files.
-    check_dataset(data_frame, respy_obj, 'est')
+    # TODO: Check for observed data ...
+    #check_dataset(data_frame, respy_obj, 'est')
 
     # Finishing
     return data_frame

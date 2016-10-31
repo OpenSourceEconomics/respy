@@ -3,10 +3,10 @@ import os
 
 from respy.python.shared.shared_auxiliary import replace_missing_values
 from respy.python.shared.shared_auxiliary import dist_class_attributes
-from respy.python.shared.shared_auxiliary import add_solution
+from respy.python.simulate.simulate_auxiliary import check_dataset_sim
 from respy.python.simulate.simulate_auxiliary import write_info
 from respy.python.simulate.simulate_auxiliary import write_out
-from respy.python.shared.shared_auxiliary import check_dataset
+from respy.python.shared.shared_auxiliary import add_solution
 from respy.fortran.interface import resfort_interface
 from respy.python.interface import respy_interface
 
@@ -52,7 +52,7 @@ def simulate(respy_obj):
     # Wrapping up by running some checks on the dataset and then writing out
     # the file and some basic information.
     if is_debug:
-        check_dataset(data_frame, respy_obj, 'sim')
+        check_dataset_sim(data_frame, respy_obj)
 
     write_out(respy_obj, data_frame)
 
