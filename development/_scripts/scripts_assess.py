@@ -27,7 +27,8 @@ def dist_input_arguments(parser):
 
 
 def run(base, alt):
-
+    """ Check the model fit based on the RMSE.
+    """
     probs_base = get_choice_probabilities(base, is_flatten=True)
     probs_alt = get_choice_probabilities(alt, is_flatten=True)
     stat = rmse(probs_base, probs_alt)

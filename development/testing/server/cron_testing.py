@@ -10,7 +10,6 @@ import subprocess
 import smtplib
 import socket
 import json
-import sys
 import os
 
 from auxiliary_shared import compile_package

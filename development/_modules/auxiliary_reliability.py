@@ -47,7 +47,7 @@ def run_single(spec_dict, fname):
     # Let us first simulate a baseline sample, store the results for future
     # reference, and start an estimation from the true values.
     x = None
-    
+
     for request in ['Truth', 'Static', 'Risk', 'Ambiguity']:
 
         respy_obj.unlock()
@@ -78,12 +78,14 @@ def run_single(spec_dict, fname):
             respy_obj.set_attr('delta', 0.95)
             respy_obj.attr['model_paras']['level'] = np.array([0.00])
             respy_obj.attr['paras_fixed'][0] = False
+
         else:
             raise AssertionError
 
         respy_obj.lock()
 
-        os.mkdir(request.lower()), os.chdir(request.lower())
+        os.mkdir(request.lower())
+        os.chdir(request.lower())
 
         respy_obj.write_out()
 

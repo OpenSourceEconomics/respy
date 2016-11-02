@@ -84,7 +84,7 @@ def compare_est_log(base_est_log):
     sometimes the ...
     """
 
-    for i in range(25):
+    for _ in range(25):
 
         try:
 

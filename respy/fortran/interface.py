@@ -71,7 +71,7 @@ def resfort_interface(respy_obj, request, data_array=None):
         subprocess.check_call(cmd)
     else:
         raise AssertionError
-        
+
     # Return arguments depends on the request.
     if request == 'simulate':
         results = get_results(num_periods, min_idx, num_agents_sim, 'simulate')
