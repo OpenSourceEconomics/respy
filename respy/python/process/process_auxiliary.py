@@ -16,9 +16,11 @@ def check_dataset_est(data_frame, respy_obj):
             continue
         assert ~ data_frame[label].isnull().any()
 
-    # Checks for PERIODS
+    # Checks for PERIODS. It can happen that the last period is deleted for all
+    # agents. Thus, this is not a strict equality for observed data. It is
+    # for simulated data.
     dat = data_frame['Period']
-    np.testing.assert_equal(dat.max(), num_periods - 1)
+    np.testing.assert_equal(dat.max() <= num_periods - 1, True)
 
     # Checks for CHOICE
     dat = data_frame['Choice'].isin([1, 2, 3, 4])

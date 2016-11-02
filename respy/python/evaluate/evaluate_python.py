@@ -31,6 +31,11 @@ def pyth_contributions(periods_rewards_systematic, mapping_state_idx,
         # decision.
         exp_a, exp_b, edu, edu_lagged = data_array[j, 4:].astype(int)
         choice = data_array[j, 2].astype(int)
+        wage = data_array[j, 3]
+
+        # We now determine whether we also have information about the agent's
+        # wage.
+        is_wage_missing = np.isnan(wage)
         is_working = choice in [1, 2]
 
         # Transform total years of education to additional years of
@@ -49,11 +54,12 @@ def pyth_contributions(periods_rewards_systematic, mapping_state_idx,
 
         # If an agent is observed working, then the the labor market shocks
         # are observed and the conditional distribution is used to determine
-        # the choice probabilities.
-        if is_working:
+        # the choice probabilities. At least if the wage information is
+        # available as well.
+        if is_working and (not is_wage_missing):
             # Calculate the disturbance which are implied by the model
             # and the observed wages.
-            dist = np.clip(np.log(data_array[j, 3]), -HUGE_FLOAT, HUGE_FLOAT) - \
+            dist = np.clip(np.log(wage), -HUGE_FLOAT, HUGE_FLOAT) - \
                    np.clip(np.log(rewards_systematic[idx]), -HUGE_FLOAT,
                        HUGE_FLOAT)
 
@@ -80,7 +86,7 @@ def pyth_contributions(periods_rewards_systematic, mapping_state_idx,
             # structure of the disturbances.  Special care is needed in case
             # of a deterministic model, as otherwise a zero division error
             # occurs.
-            if is_working:
+            if is_working and (not is_wage_missing):
                 if is_deterministic:
                     prob_wage = HUGE_FLOAT
                 else:

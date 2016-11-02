@@ -6,6 +6,7 @@ from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.simulate.simulate_auxiliary import check_dataset_sim
 from respy.python.simulate.simulate_auxiliary import write_info
 from respy.python.simulate.simulate_auxiliary import write_out
+from respy.python.shared.shared_constants import FORMATS_DICT
 from respy.python.shared.shared_auxiliary import add_solution
 from respy.python.shared.shared_constants import LABELS
 from respy.fortran.interface import resfort_interface
@@ -49,6 +50,13 @@ def simulate(respy_obj):
     # Create pandas data frame with missing values.
     data_frame = pd.DataFrame(replace_missing_values(data_array),
         columns=LABELS)
+
+    # Enforce types
+    for label in LABELS:
+        if label == 'Earnings':
+            continue
+        data_frame[label] = data_frame[label].astype('int64')
+
     data_frame.set_index(['Identifier', 'Period'], drop=False, inplace=True)
 
     # Wrapping up by running some checks on the dataset and then writing out

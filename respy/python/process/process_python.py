@@ -1,7 +1,7 @@
 import pandas as pd
 
 from respy.python.process.process_auxiliary import check_dataset_est
-from respy.python.shared.shared_constants import FORMATS
+from respy.python.shared.shared_constants import FORMATS_DICT
 from respy.python.shared.shared_constants import LABELS
 
 
@@ -14,7 +14,7 @@ def process(respy_obj):
 
     # Process dataset from files.
     data_frame = pd.read_csv(file_est, delim_whitespace=True, header=-1,
-        na_values='.', dtype=FORMATS, names=LABELS)
+        na_values='.', dtype=FORMATS_DICT, names=LABELS)
 
     # We now subset the dataframe to include only the number of agents that
     # are requested for the estimation.

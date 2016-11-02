@@ -18,10 +18,11 @@ from respy.python.solve.solve_ambiguity import kl_divergence
 from respy.python.shared.shared_constants import IS_FORTRAN
 from respy.python.shared.shared_constants import TEST_DIR
 
+from codes.auxiliary import simulate_observed
 from codes.random_init import generate_init
 
+
 from respy import RespyCls
-from respy import simulate
 from respy import estimate
 
 # Edit of PYTHONPATH required for PYTHON 2 as no __init__.py in tests
@@ -48,6 +49,8 @@ class TestClass(object):
         directly.
 
         """
+        seed_observed = np.random.randint(0, 100)
+
         constr = dict()
         constr['maxfun'] = 0
         constr['flag_parallelism'] = False
@@ -64,7 +67,7 @@ class TestClass(object):
 
             respy_obj = RespyCls('test.respy.ini')
 
-            simulate(respy_obj)
+            simulate_observed(respy_obj, seed=seed_observed)
             _, crit_val = estimate(respy_obj)
 
             if base_val is None:
@@ -87,7 +90,7 @@ class TestClass(object):
         # Perform toolbox actions
         respy_obj = RespyCls('test.respy.ini')
 
-        respy_obj = simulate(respy_obj)
+        respy_obj = simulate_observed(respy_obj)
 
         # Extract class attributes
         periods_rewards_systematic, states_number_period, mapping_state_idx, \
@@ -283,6 +286,3 @@ class TestClass(object):
 
     def test_integration_7(self, flag_ambiguity=True):
         link_integration().test_6(flag_ambiguity)
-
-    def test_integration_8(self, flag_ambiguity=True):
-        link_integration().test_8(flag_ambiguity)

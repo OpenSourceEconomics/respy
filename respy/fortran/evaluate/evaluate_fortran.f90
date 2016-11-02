@@ -65,6 +65,7 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
     REAL(our_dble)                  :: dist_1
     REAL(our_dble)                  :: dist_2
     REAL(our_dble)                  :: dist
+    REAL(our_dble)                  :: wage
 
     INTEGER(our_int)                :: edu_lagged
     INTEGER(our_int)                :: counts(4)
@@ -81,6 +82,7 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
     INTEGER(our_int)                :: j
 
     LOGICAL                         :: is_deterministic
+    LOGICAL                         :: is_wage_missing
     LOGICAL                         :: is_working
 
 !------------------------------------------------------------------------------
@@ -108,6 +110,8 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
 
             choice = INT(data_evaluate(j, 3))
             is_working = (choice == 1) .OR. (choice == 2)
+            wage = data_evaluate(j, 4)
+            is_wage_missing = (wage == HUGE_FLOAT)
 
             ! Transform total years of education to additional years of education and create an index from the choice.
             edu = edu - edu_start
@@ -124,7 +128,7 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
 
             ! If an agent is observed working, then the the labor market shocks are observed and the conditional distribution is used to determine the choice probabilities.
             dist = zero_dble
-            IF (is_working) THEN
+            IF (is_working .AND. (.NOT. is_wage_missing)) THEN
 
                 ! Calculate the disturbance, which follows a normal distribution.
                 CALL clip_value(dist_1, LOG(data_evaluate(j, 4)), -HUGE_FLOAT, HUGE_FLOAT, info)
@@ -152,7 +156,7 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
                 draws_stan = draws_prob_raw(s, :)
 
                 ! Construct independent normal draws implied by the agents state experience. This is need to maintain the correlation structure of the disturbances. Special care is needed in case of a deterministic model, as otherwise a zero division error occurs.
-                IF (is_working) THEN
+                IF (is_working .AND. (.NOT. is_wage_missing)) THEN
 
                     IF (is_deterministic) THEN
 

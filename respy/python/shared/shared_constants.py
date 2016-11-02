@@ -54,6 +54,6 @@ LABELS += ['Identifier', 'Period', 'Choice', 'Earnings']
 LABELS += ['Experience A', 'Experience B', 'Years Schooling']
 LABELS += ['Lagged Schooling']
 
-FORMATS = dict()
-FORMATS.update({0: np.int, 1: np.int, 2: np.int, 3: np.float})
-FORMATS.update({4: np.int, 5: np.int, 6: np.int, 7: np.int})
+FORMATS_DICT = dict()
+FORMATS_DICT.update({0: np.int, 1: np.int, 2: np.int, 3: np.float})
+FORMATS_DICT.update({4: np.int, 5: np.int, 6: np.int, 7: np.int})

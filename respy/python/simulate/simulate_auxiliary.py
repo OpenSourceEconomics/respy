@@ -176,6 +176,10 @@ def check_dataset_sim(data_frame, respy_obj):
     # So, we run all checks on the observed dataset.
     check_dataset_est(data_frame, respy_obj)
 
+    # Checks for PERIODS
+    dat = data_frame['Period']
+    np.testing.assert_equal(dat.max(), num_periods - 1)
+
     # Checks for IDENTIFIER
     dat = data_frame['Identifier']
     np.testing.assert_equal(dat.max(), num_agents - 1)

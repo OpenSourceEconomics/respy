@@ -10,11 +10,11 @@ from respy.python.shared.shared_constants import MIN_AMBIGUITY
 from respy.python.shared.shared_constants import IS_FORTRAN
 from codes.auxiliary import write_interpolation_grid
 from codes.random_init import generate_random_dict
+from codes.auxiliary import simulate_observed
 from codes.auxiliary import compare_est_log
 from codes.random_init import generate_init
 from codes.auxiliary import write_draws
 from respy import estimate
-from respy import simulate
 from respy import RespyCls
 
 
@@ -31,6 +31,7 @@ class TestClass(object):
         is_deterministic = np.random.choice([True, False], p=[0.10, 0.9])
         is_interpolated = np.random.choice([True, False], p=[0.10, 0.9])
         is_myopic = np.random.choice([True, False], p=[0.10, 0.9])
+        seed_observed = np.random.randint(10, 100)
         max_draws = np.random.randint(10, 100)
 
         # Generate random initialization file
@@ -91,7 +92,7 @@ class TestClass(object):
             respy_obj.lock()
 
             # Solve the model
-            respy_obj = simulate(respy_obj)
+            respy_obj = simulate_observed(respy_obj, seed=seed_observed)
 
             # This parts checks the equality of simulated dataset for the
             # different versions of the code.
@@ -138,7 +139,7 @@ class TestClass(object):
         respy_obj = RespyCls('test.respy.ini')
 
         # Simulate a dataset
-        simulate(respy_obj)
+        simulate_observed(respy_obj)
 
         # Iterate over alternative implementations
         base_x, base_val = None, None
@@ -191,7 +192,7 @@ class TestClass(object):
         respy_obj.set_attr('maxfun', 0)
         respy_obj.lock()
 
-        simulate(respy_obj)
+        simulate_observed(respy_obj, share_missing_obs=0, share_missing_wages=0)
         _, val = estimate(respy_obj)
         np.testing.assert_allclose(val, rslt)
 
@@ -211,7 +212,7 @@ class TestClass(object):
 
             respy_obj.lock()
 
-            respy_obj = simulate(respy_obj)
+            respy_obj = simulate_observed(respy_obj)
 
             # Assess expected future value
             val = respy_obj.get_attr('periods_emax')[0, :1]
@@ -236,7 +237,7 @@ class TestClass(object):
 
             respy_obj.lock()
 
-            respy_obj = simulate(respy_obj)
+            respy_obj = simulate_observed(respy_obj)
 
             # Assess expected future value
             val = respy_obj.get_attr('periods_emax')[0, :1]
@@ -251,6 +252,7 @@ class TestClass(object):
         different versions.
         """
 
+        seed_observed = np.random.random_integers(0, 100)
         max_draws = np.random.randint(10, 300)
 
         # Generate random initialization file
@@ -285,7 +287,7 @@ class TestClass(object):
 
             respy_obj.lock()
 
-            simulate(respy_obj)
+            simulate_observed(respy_obj, seed=seed_observed)
 
             # Check for identical logging
             fname = file_sim + '.respy.sol'
