@@ -92,14 +92,13 @@ class TestClass(object):
         # Extract class attributes
         periods_rewards_systematic, states_number_period, mapping_state_idx, \
             periods_emax, num_periods, states_all, num_draws_emax, edu_start, \
-            edu_max, delta, measure, model_paras, derivatives, \
-            optimizer_options, file_sim = \
-                dist_class_attributes(respy_obj,
-                    'periods_rewards_systematic', 'states_number_period',
-                    'mapping_state_idx', 'periods_emax', 'num_periods',
-                    'states_all', 'num_draws_emax', 'edu_start', 'edu_max',
-                    'delta', 'measure', 'model_paras', 'derivatives',
-                    'optimizer_options', 'file_sim')
+            edu_max, delta, measure, model_paras, optimizer_options, \
+            file_sim = dist_class_attributes(respy_obj,
+                'periods_rewards_systematic', 'states_number_period',
+                'mapping_state_idx', 'periods_emax', 'num_periods',
+                'states_all', 'num_draws_emax', 'edu_start', 'edu_max',
+                'delta', 'measure', 'model_paras', 'optimizer_options',
+                'file_sim')
 
         level = model_paras['level']
         shocks_cholesky = model_paras['shocks_cholesky']
@@ -170,7 +169,7 @@ class TestClass(object):
     def test_3(self):
         """ Check the calculation of the KL divergence across implementations.
         """
-        for i in range(1000):
+        for _ in range(1000):
 
             num_dims = np.random.randint(1, 5)
             old_mean = np.random.uniform(size=num_dims)
@@ -240,8 +239,7 @@ class TestClass(object):
         np.testing.assert_allclose(py, fort, rtol=1e-05, atol=1e-06)
 
     """ This section reproduces the tests from test_versions but runs them
-    with ambiguity.
-    """
+    with ambiguity. """
     @pytest.mark.skipif(not IS_FORTRAN, reason='No FORTRAN available')
     def test_versions_1(self, flag_ambiguity=True):
         link_versions().test_1(flag_ambiguity)
@@ -255,8 +253,7 @@ class TestClass(object):
         link_versions().test_4(flag_ambiguity)
 
     """ This section reproduces the tests from test_f2py but runs them with
-    ambiguity.
-    """
+    ambiguity. """
     @pytest.mark.skipif(not IS_FORTRAN, reason='No FORTRAN available')
     def test_f2py_4(self, flag_ambiguity=True):
         link_f2py().test_4(flag_ambiguity)
