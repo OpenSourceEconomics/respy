@@ -36,8 +36,6 @@ class TestClass(object):
         """ If there is no random variation in rewards then the number of
         draws to simulate the expected future value should have no effect.
         """
-        seed_observed = np.random.randint(0, 100)
-
         # Generate constraints
         constr = dict()
         constr['is_deterministic'] = True
@@ -83,9 +81,6 @@ class TestClass(object):
         """ Testing whether the a simulated dataset and the evaluation of the
         criterion function are the same for a tiny delta and a myopic agent.
         """
-
-        seed_observed = np.random.randint(0, 100)
-
         # Generate random initialization dictionary
         constr = dict()
         constr['maxfun'] = 0

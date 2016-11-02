@@ -31,7 +31,6 @@ class TestClass(object):
         is_deterministic = np.random.choice([True, False], p=[0.10, 0.9])
         is_interpolated = np.random.choice([True, False], p=[0.10, 0.9])
         is_myopic = np.random.choice([True, False], p=[0.10, 0.9])
-        seed_observed = np.random.randint(10, 100)
         max_draws = np.random.randint(10, 100)
 
         # Generate random initialization file
@@ -192,7 +191,8 @@ class TestClass(object):
         respy_obj.set_attr('maxfun', 0)
         respy_obj.lock()
 
-        simulate_observed(respy_obj, share_missing_obs=0, share_missing_wages=0)
+        simulate_observed(respy_obj, 0, 0)
+
         _, val = estimate(respy_obj)
         np.testing.assert_allclose(val, rslt)
 
@@ -200,8 +200,6 @@ class TestClass(object):
         """ This test ensures that the logging looks exactly the same for the
         different versions.
         """
-
-        seed_observed = np.random.random_integers(0, 100)
         max_draws = np.random.randint(10, 300)
 
         # Generate random initialization file

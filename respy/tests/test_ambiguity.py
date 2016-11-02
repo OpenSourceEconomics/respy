@@ -47,10 +47,7 @@ class TestClass(object):
         """ This test ensures that using the ambiguity functionality with a
         tiny level yields the same results as using the risk functionality
         directly.
-
         """
-        seed_observed = np.random.randint(0, 100)
-
         constr = dict()
         constr['maxfun'] = 0
         constr['flag_parallelism'] = False

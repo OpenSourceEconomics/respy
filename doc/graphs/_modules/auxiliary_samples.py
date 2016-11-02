@@ -139,8 +139,8 @@ def plot_return_experience(x, y, z, spec):
         ax.set_zlim(zlim)
 
     # Scaling
-    z['a'] = z['a'] / 1000
-    z['b'] = z['b'] / 1000
+    z['a'] /= 1000
+    z['b'] /= 1000
     if spec == 'one':
         zlim = [10, 35]
     elif spec == 'two':
@@ -170,16 +170,13 @@ def plot_return_experience(x, y, z, spec):
 def plot_return_education(xvals, yvals, spec):
     """ Function to produce plot for the return to education.
     """
-
-    labels = ['Occupation A', 'Occupation B']
-
     # Initialize plot
     ax = plt.figure(figsize=(12, 8)).add_subplot(111)
 
     # Scaling
     for occu in ['a', 'b']:
         for i, _ in enumerate(xvals):
-            yvals[occu][i] = yvals[occu][i] / 1000
+            yvals[occu][i] /= 1000
 
     # Draw lines
     ax.plot(xvals, yvals['a'], '-k', label='Occupation A', linewidth=5,

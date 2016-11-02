@@ -91,8 +91,8 @@ def compare_est_log(base_est_log):
             with open('est.respy.log') as in_file:
                 alt_est_log = in_file.readlines()
 
-            for i, _ in enumerate(alt_est_log):
-                alt_line, base_line = alt_est_log[i], base_est_log[i]
+            for j, _ in enumerate(alt_est_log):
+                alt_line, base_line = alt_est_log[j], base_est_log[j]
                 list_ = shlex.split(alt_line)
 
                 if not list_:

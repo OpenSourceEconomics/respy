@@ -21,8 +21,6 @@ class TestClass(object):
         """ This test ensures that it makes no difference whether the
         criterion function is evaluated in parallel or not.
         """
-        seed_observed = np.random.randint(0, 100)
-
         # Generate random initialization file
         constr = dict()
         constr['version'] = 'FORTRAN'
@@ -57,8 +55,6 @@ class TestClass(object):
     def test_2(self):
         """ This test ensures that the record files are identical.
         """
-        seed_observed = np.random.randint(0, 100)
-
         # Generate random initialization file. The number of periods is
         # higher than usual as only FORTRAN implementations are used to
         # solve the random request. This ensures that also some cases of

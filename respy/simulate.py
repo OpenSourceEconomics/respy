@@ -6,7 +6,6 @@ from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.simulate.simulate_auxiliary import check_dataset_sim
 from respy.python.simulate.simulate_auxiliary import write_info
 from respy.python.simulate.simulate_auxiliary import write_out
-from respy.python.shared.shared_constants import FORMATS_DICT
 from respy.python.shared.shared_auxiliary import add_solution
 from respy.python.shared.shared_constants import LABELS
 from respy.fortran.interface import resfort_interface
@@ -18,9 +17,9 @@ def simulate(respy_obj):
     the initialization file.
     """
     # Distribute class attributes
-    is_debug, version, num_agents_sim, is_store, file_sim = \
-        dist_class_attributes(respy_obj, 'is_debug', 'version',
-            'num_agents_sim', 'is_store', 'file_sim')
+    is_debug, version, is_store, file_sim = \
+        dist_class_attributes(respy_obj, 'is_debug', 'version', 'is_store',
+            'file_sim')
 
     # Cleanup
     for ext in ['sim', 'sol', 'amb', 'dat', 'info']:
