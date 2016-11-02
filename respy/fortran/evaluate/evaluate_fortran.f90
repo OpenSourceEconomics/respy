@@ -107,11 +107,12 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
             exp_b = INT(data_evaluate(j, 6))
             edu = INT(data_evaluate(j, 7))
             edu_lagged = INT(data_evaluate(j, 8))
-
             choice = INT(data_evaluate(j, 3))
-            is_working = (choice == 1) .OR. (choice == 2)
             wage = data_evaluate(j, 4)
+
+            ! We now determine whether we also have information about the agent's wage.
             is_wage_missing = (wage == HUGE_FLOAT)
+            is_working = (choice == 1) .OR. (choice == 2)
 
             ! Transform total years of education to additional years of education and create an index from the choice.
             edu = edu - edu_start

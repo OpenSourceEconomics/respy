@@ -38,7 +38,7 @@ class TestClass(object):
         """
         # Generate constraints
         constr = dict()
-        constr['is_deterministic'] = True
+        constr['flag_deterministic'] = True
 
         # Generate random initialization file
         generate_init(constr)

@@ -8,40 +8,20 @@ from codes.auxiliary import get_valid_bounds
 # We maintain a list of all valid constraints and check all specified keys
 # against it.
 VALID_KEYS = []
-VALID_KEYS += ['is_myopic', 'flag_estimation', 'flag_ambiguity', 'agents']
+VALID_KEYS += ['flag_estimation', 'flag_ambiguity', 'agents']
 VALID_KEYS += ['flag_parallelism', 'version', 'file_est', 'flag_interpolation']
-VALID_KEYS += ['points', 'maxfun', 'is_deterministic', 'is_myopic', 'delta']
+VALID_KEYS += ['points', 'maxfun', 'flag_deterministic', 'delta']
 VALID_KEYS += ['edu', 'measure', 'level', 'fixed_ambiguity', 'flag_ambiguity']
-VALID_KEYS += ['max_draws', 'flag_precond', 'is_store', 'periods']
+VALID_KEYS += ['max_draws', 'flag_precond', 'periods']
+VALID_KEYS += ['is_store', 'is_myopic']
 
 
 def process_constraints(dict_, constraints, paras_fixed, paras_bounds):
     """ Check and process constraints.
     """
-    # Check all specifie dconstraints
-    for key_ in constraints.keys():
-        assert key_ in VALID_KEYS
 
-    # Address incompatibility issues
-    keys = constraints.keys()
-
-    if 'is_myopic' in keys:
-        assert 'delta' not in keys
-
-    if 'flag_estimation' in keys:
-        assert 'maxfun' not in keys
-        assert 'flag_precond' not in keys
-
-    if 'flag_ambiguity' in keys:
-        assert 'level' not in keys
-
-    if 'agents' in keys:
-        assert 'max_draws' not in keys
-
-    cond = ('flag_parallelism' in keys) and ('version' in keys)
-    cond = cond and constraints['flag_parallelism']
-    if cond:
-            assert constraints['version'] == 'FORTRAN'
+    # Check request
+    _check_constraints(constraints)
 
     # Replace path to dataset used for estimation
     if 'file_est' in constraints.keys():
@@ -232,11 +212,11 @@ def process_constraints(dict_, constraints, paras_fixed, paras_bounds):
         dict_['BASICS']['delta'] = delta
 
     # No random component to rewards
-    if 'is_deterministic' in constraints.keys():
+    if 'flag_deterministic' in constraints.keys():
         # Checks
-        assert (constraints['is_deterministic'] in [True, False])
+        assert (constraints['flag_deterministic'] in [True, False])
         # Replace in initialization files
-        if constraints['is_deterministic']:
+        if constraints['flag_deterministic']:
             dict_['SHOCKS']['coeffs'] = [0.0] * 10
 
     # Number of agents
@@ -280,3 +260,32 @@ def process_constraints(dict_, constraints, paras_fixed, paras_bounds):
                     break
 
     return dict_
+
+
+def _check_constraints(constraints):
+    """ Check that there are no conflicting constraints imposed.
+    """
+    # Check all specifie dconstraints
+    for key_ in constraints.keys():
+        assert key_ in VALID_KEYS
+
+    # Address incompatibility issues
+    keys = constraints.keys()
+
+    if 'is_myopic' in keys:
+        assert 'delta' not in keys
+
+    if 'flag_estimation' in keys:
+        assert 'maxfun' not in keys
+        assert 'flag_precond' not in keys
+
+    if 'flag_ambiguity' in keys:
+        assert 'level' not in keys
+
+    if 'agents' in keys:
+        assert 'max_draws' not in keys
+
+    cond = ('flag_parallelism' in keys) and ('version' in keys)
+    cond = cond and constraints['flag_parallelism']
+    if cond:
+        assert constraints['version'] == 'FORTRAN'

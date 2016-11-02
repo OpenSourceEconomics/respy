@@ -28,14 +28,14 @@ class TestClass(object):
         a random request.
         """
         # Run evaluation for multiple random requests.
-        is_deterministic = np.random.choice([True, False], p=[0.10, 0.9])
+        flag_deterministic = np.random.choice([True, False], p=[0.10, 0.9])
         is_interpolated = np.random.choice([True, False], p=[0.10, 0.9])
         is_myopic = np.random.choice([True, False], p=[0.10, 0.9])
         max_draws = np.random.randint(10, 100)
 
         # Generate random initialization file
         constr = dict()
-        constr['is_deterministic'] = is_deterministic
+        constr['flag_deterministic'] = flag_deterministic
         constr['flag_ambiguity'] = flag_ambiguity
         constr['flag_parallelism'] = False
         constr['is_myopic'] = is_myopic
@@ -113,7 +113,7 @@ class TestClass(object):
                                        atol=1e-06)
 
             # We know even more for the deterministic case.
-            if constr['is_deterministic']:
+            if constr['flag_deterministic']:
                 assert (crit_val in [-1.0, 0.0])
 
     def test_2(self, flag_ambiguity=False):
@@ -191,7 +191,7 @@ class TestClass(object):
         respy_obj.set_attr('maxfun', 0)
         respy_obj.lock()
 
-        simulate_observed(respy_obj, 0, 0)
+        simulate_observed(respy_obj, is_missings=False)
 
         _, val = estimate(respy_obj)
         np.testing.assert_allclose(val, rslt)

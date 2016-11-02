@@ -23,18 +23,17 @@ OPTIMIZERS_EST = OPT_EST_FORT + OPT_EST_PYTH
 OPTIMIZERS_AMB = OPT_AMB_FORT + OPT_AMB_PYTH
 
 
-def simulate_observed(respy_obj, share_missing_obs=None,
-        share_missing_wages=None):
+def simulate_observed(respy_obj, is_missings=True):
     """ This function addes two important features of observed datasests: (1)
     missing observations and missing wage information.
     """
     def drop_agents_obs(group, num_drop):
-            """ We drop a random number of observations for each agent.
-            """
-            group.set_index('Period', drop=False, inplace=True)
-            indices = np.random.choice(group.index, num_drop, replace=False)
-            group.drop(indices, inplace=True)
-            return group
+        """ We drop a random number of observations for each agent.
+        """
+        group.set_index('Period', drop=False, inplace=True)
+        indices = np.random.choice(group.index, num_drop, replace=False)
+        group.drop(indices, inplace=True)
+        return group
 
     num_periods = respy_obj.get_attr('num_periods')
     seed_sim = respy_obj.get_attr('seed_sim')
@@ -46,13 +45,15 @@ def simulate_observed(respy_obj, share_missing_obs=None,
     # the PYTHON and FORTRAN programs.
     np.random.seed(seed_sim)
 
-    if share_missing_obs is None:
+    if is_missings:
         share = np.random.uniform(high=0.9, size=1)
         share_missing_obs = np.random.choice([0, share])
 
-    if share_missing_wages is None:
         share = np.random.uniform(high=0.9, size=1)
         share_missing_wages = np.random.choice([0, share])
+    else:
+        share_missing_wages = 0
+        share_missing_obs = 0
 
     # We want to drop random observations by agents. This mimics the frequent
     # empirical fact that we loose track of agents (at least temporarily).
