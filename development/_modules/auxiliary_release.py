@@ -83,8 +83,8 @@ def prepare_release_tests(constr):
     init_dict['ESTIMATION']['tau'] = int(init_dict['ESTIMATION']['tau'])
     pkl.dump(init_dict, open('new/init_dict.respy.pkl', 'wb'))
 
-    ''' Now we just turn to to restructuring the old initialization dictionary
-    so it can be properly processed. '''
+    # Now we just turn to to restructuring the old initialization dictionary
+    # so it can be properly processed.
     init_dict['SHOCKS']['fixed'] = np.array(init_dict['SHOCKS']['fixed'])
 
     # Added more fine grained scaling. Needs to be aligned across old/new

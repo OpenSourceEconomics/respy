@@ -207,8 +207,8 @@ def generate_random_dict(constraints=None):
     # model with just changing the program version.
     dict_['FORT-SLSQP'] = dict_['SCIPY-SLSQP']
 
-    """ We now impose selected constraints on the final model specification.
-    These constraints can be very useful in the generation of test cases. """
+    # We now impose selected constraints on the final model specification.
+    # These constraints can be very useful in the generation of test cases.
 
     # Address incompatibility issues
     keys = constraints.keys()

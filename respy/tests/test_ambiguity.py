@@ -238,8 +238,8 @@ class TestClass(object):
 
         np.testing.assert_allclose(py, fort, rtol=1e-05, atol=1e-06)
 
-    """ This section reproduces the tests from test_versions but runs them
-    with ambiguity. """
+    # This section reproduces the tests from test_versions but runs them
+    # with ambiguity.
     @pytest.mark.skipif(not IS_FORTRAN, reason='No FORTRAN available')
     def test_versions_1(self, flag_ambiguity=True):
         link_versions().test_1(flag_ambiguity)
@@ -252,8 +252,8 @@ class TestClass(object):
     def test_versions_4(self, flag_ambiguity=True):
         link_versions().test_4(flag_ambiguity)
 
-    """ This section reproduces the tests from test_f2py but runs them with
-    ambiguity. """
+    # This section reproduces the tests from test_f2py but runs them with
+    # ambiguity.
     @pytest.mark.skipif(not IS_FORTRAN, reason='No FORTRAN available')
     def test_f2py_4(self, flag_ambiguity=True):
         link_f2py().test_4(flag_ambiguity)
@@ -266,9 +266,8 @@ class TestClass(object):
     def test_f2py_6(self, flag_ambiguity=True):
         link_f2py().test_6(flag_ambiguity)
 
-    """ This section reproduces the tests from test_integration but runs them
-    with ambiguity.
-    """
+    # This section reproduces the tests from test_integration but runs them
+    # with ambiguity.
     def test_integration_3(self, flag_ambiguity=True):
         link_integration().test_3(flag_ambiguity)
 
