@@ -28,7 +28,7 @@ class TestClass(object):
         init_dict = generate_random_dict(constr)
 
         # If ambiguity is a not fixed, we need to ensure a bound-constraint
-        # optimizer. However, this is not the standard is_estimation flag as
+        # optimizer. However, this is not the standard flag_estimation as
         # the number of function evaluation is possibly much larger to detect
         # and differences in the updates of the optimizer steps depending on
         # the implementation.

@@ -155,7 +155,7 @@ class TestClass(object):
             constr = dict()
             constr['periods'] = np.random.randint(1, 4)
             constr['agents'] = np.random.randint(5, 100)
-            constr['is_estimation'] = True
+            constr['flag_estimation'] = True
             constr['edu'] = (7, 15)
 
             # Simulate a dataset
@@ -211,7 +211,7 @@ class TestClass(object):
         """ Test short estimation tasks.
         """
         constr = dict()
-        constr['is_estimation'] = True
+        constr['flag_estimation'] = True
         constr['flag_ambiguity'] = flag_ambiguity
 
         generate_init(constr)
@@ -236,7 +236,7 @@ class TestClass(object):
         evaluation. Additionally, we change the status of parameters at random.
         """
         constr = dict()
-        constr['is_estimation'] = True
+        constr['flag_estimation'] = True
         constr['flag_ambiguity'] = flag_ambiguity
         constr['version'] = 'PYTHON'
         generate_init(constr)

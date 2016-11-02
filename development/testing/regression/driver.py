@@ -87,7 +87,7 @@ def run(args):
             # manageable.
             np.random.seed(idx)
             constr = dict()
-            constr['is_estimation'] = True
+            constr['flag_estimation'] = True
 
             init_dict = generate_init(constr)
             respy_obj = RespyCls('test.respy.ini')

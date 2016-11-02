@@ -101,7 +101,7 @@ def run(args):
         # The idea is to have all elements that are hand-crafted for the
         # release comparison in the function below.
         constr = dict()
-        constr['is_estimation'] = True
+        constr['flag_estimation'] = True
 
         prepare_release_tests(constr)
 

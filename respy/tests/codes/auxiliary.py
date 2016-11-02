@@ -1,8 +1,7 @@
 """ This module contains auxiliary functions for the PYTEST suite.
 """
-
-import numpy as np
 import pandas as pd
+import numpy as np
 
 import shlex
 
@@ -10,10 +9,18 @@ from respy.python.solve.solve_auxiliary import pyth_create_state_space
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.simulate.simulate_auxiliary import write_out
 from respy.python.shared.shared_constants import FORMATS_DICT
+from respy.python.shared.shared_constants import OPT_AMB_FORT
+from respy.python.shared.shared_constants import OPT_AMB_PYTH
+from respy.python.shared.shared_constants import OPT_EST_FORT
+from respy.python.shared.shared_constants import OPT_EST_PYTH
 from respy.python.shared.shared_constants import LABELS
 
 from respy import RespyCls
 from respy import simulate
+
+# module-wide variables
+OPTIMIZERS_EST = OPT_EST_FORT + OPT_EST_PYTH
+OPTIMIZERS_AMB = OPT_AMB_FORT + OPT_AMB_PYTH
 
 
 def simulate_observed(respy_obj, share_missing_obs=None,
@@ -180,3 +187,38 @@ def write_draws(num_periods, max_draws):
                 fmt = ' {0:15.10f} {1:15.10f} {2:15.10f} {3:15.10f}\n'
                 line = fmt.format(*draws_standard[period, i, :])
                 file_.write(line)
+
+
+def get_valid_values(which):
+    """ Simply get a valid value.
+    """
+    assert which in ['amb', 'cov', 'coeff']
+
+    if which in ['amb']:
+        value = np.random.choice([0.0, np.random.uniform()])
+    elif which in ['coeff']:
+        value = np.random.uniform(-0.05, 0.05)
+    elif which in ['cov']:
+        value = np.random.uniform(0.05, 1)
+
+    return value
+
+
+def get_valid_bounds(which, value):
+    """ Simply get a valid set of bounds.
+    """
+    assert which in ['amb', 'cov', 'coeff']
+
+    # The bounds cannot be too tight as otherwise the BOBYQA might not start
+    # properly.
+    if which in ['amb']:
+        upper = np.random.choice([None, value + np.random.uniform(low=0.1)])
+        bounds = [max(0.0, value - np.random.uniform(low=0.1)), upper]
+    elif which in ['coeff']:
+        upper = np.random.choice([None, value + np.random.uniform(low=0.1)])
+        lower = np.random.choice([None, value - np.random.uniform(low=0.1)])
+        bounds = [lower, upper]
+    elif which in ['cov']:
+        bounds = [None, None]
+
+    return bounds
