@@ -67,7 +67,7 @@ class TestClass(object):
 
             respy_obj = RespyCls('test.respy.ini')
 
-            simulate_observed(respy_obj, seed=seed_observed)
+            simulate_observed(respy_obj)
             _, crit_val = estimate(respy_obj)
 
             if base_val is None:
@@ -254,8 +254,8 @@ class TestClass(object):
         link_versions().test_2(flag_ambiguity)
 
     @pytest.mark.skipif(not IS_FORTRAN, reason='No FORTRAN available')
-    def test_versions_6(self, flag_ambiguity=True):
-        link_versions().test_6(flag_ambiguity)
+    def test_versions_4(self, flag_ambiguity=True):
+        link_versions().test_4(flag_ambiguity)
 
     """ This section reproduces the tests from test_f2py but runs them with
     ambiguity.

@@ -17,7 +17,7 @@ from respy import simulate
 
 
 def simulate_observed(respy_obj, share_missing_obs=None,
-        share_missing_wages=None, seed=None):
+        share_missing_wages=None):
     """ This function addes two important features of observed datasests: (1)
     missing observations and missing wage information.
     """
@@ -29,21 +29,23 @@ def simulate_observed(respy_obj, share_missing_obs=None,
             group.drop(indices, inplace=True)
             return group
 
+    num_periods = respy_obj.get_attr('num_periods')
+    seed_sim = respy_obj.get_attr('seed_sim')
+
     simulate(respy_obj)
 
     # It is important to set the seed after the simulation call. Otherwise,
     # the value of the seed differs due to the different implementations of
     # the PYTHON and FORTRAN programs.
-    if seed is not None:
-        np.random.seed(seed)
+    np.random.seed(seed_sim)
 
     if share_missing_obs is None:
-        share_missing_obs = np.random.uniform(high=0.9, size=1)
+        share = np.random.uniform(high=0.9, size=1)
+        share_missing_obs = np.random.choice([0, share])
 
     if share_missing_wages is None:
-        share_missing_wages = np.random.uniform(high=0.9, size=1)
-
-    num_periods = respy_obj.get_attr('num_periods')
+        share = np.random.uniform(high=0.9, size=1)
+        share_missing_wages = np.random.choice([0, share])
 
     # We want to drop random observations by agents. This mimics the frequent
     # empirical fact that we loose track of agents (at least temporarily).
@@ -60,13 +62,13 @@ def simulate_observed(respy_obj, share_missing_obs=None,
 
     # We also want to drop the some wage observations.
     is_working = data_subset['Choice'].isin([1, 2])
+    num_drop_wages = int(np.sum(is_working) * share_missing_wages)
 
     # As a special case, we might be dealing with a dataset where not one is
     # working anyway.
-    if (share_missing_wages != 0) and (np.sum(is_working) > 0):
-        num_drop_wages = int(np.sum(is_working) * share_missing_wages)
-        index_missing = np.random.choice(data_subset['Earnings'][is_working].index,
-            num_drop_wages, replace=False)
+    if num_drop_wages > 0:
+        indices = data_subset['Earnings'][is_working].index
+        index_missing = np.random.choice(indices, num_drop_wages, False)
         data_subset.loc[index_missing, 'Earnings'] = None
     else:
         pass

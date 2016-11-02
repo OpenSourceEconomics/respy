@@ -92,7 +92,7 @@ class TestClass(object):
             respy_obj.lock()
 
             # Solve the model
-            respy_obj = simulate_observed(respy_obj, seed=seed_observed)
+            respy_obj = simulate_observed(respy_obj)
 
             # This parts checks the equality of simulated dataset for the
             # different versions of the code.
@@ -196,58 +196,7 @@ class TestClass(object):
         _, val = estimate(respy_obj)
         np.testing.assert_allclose(val, rslt)
 
-    def test_4(self):
-        """ Test the solution of deterministic model with ambiguity and
-        interpolation. This test has the same result as in the absence of
-        random variation in rewards, it does not matter whether the
-        environment is ambiguous or not.
-        """
-        # Solve specified economy
-        for version in ['FORTRAN', 'PYTHON']:
-            respy_obj = RespyCls(TEST_RESOURCES_DIR + '/test_fifth.respy.ini')
-
-            respy_obj.unlock()
-
-            respy_obj.set_attr('version', version)
-
-            respy_obj.lock()
-
-            respy_obj = simulate_observed(respy_obj)
-
-            # Assess expected future value
-            val = respy_obj.get_attr('periods_emax')[0, :1]
-            np.testing.assert_allclose(val, 88750)
-
-            # Assess evaluation
-            _, val = estimate(respy_obj)
-            np.testing.assert_allclose(val, -1.0)
-
-    def test_5(self):
-        """ Test the solution of deterministic model without ambiguity,
-        but with interpolation. As a deterministic model is requested,
-        all versions should yield the same result without any additional effort.
-        """
-        # Solve specified economy
-        for version in ['FORTRAN', 'PYTHON']:
-            respy_obj = RespyCls(TEST_RESOURCES_DIR + '/test_fifth.respy.ini')
-
-            respy_obj.unlock()
-
-            respy_obj.set_attr('version', version)
-
-            respy_obj.lock()
-
-            respy_obj = simulate_observed(respy_obj)
-
-            # Assess expected future value
-            val = respy_obj.get_attr('periods_emax')[0, :1]
-            np.testing.assert_allclose(val, 88750)
-
-            # Assess evaluation
-            _, val = estimate(respy_obj)
-            np.testing.assert_allclose(val, -1.0)
-
-    def test_6(self, flag_ambiguity=False):
+    def test_4(self, flag_ambiguity=False):
         """ This test ensures that the logging looks exactly the same for the
         different versions.
         """
@@ -287,7 +236,7 @@ class TestClass(object):
 
             respy_obj.lock()
 
-            simulate_observed(respy_obj, seed=seed_observed)
+            simulate_observed(respy_obj)
 
             # Check for identical logging
             fname = file_sim + '.respy.sol'

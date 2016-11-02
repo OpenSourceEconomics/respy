@@ -47,7 +47,7 @@ class TestClass(object):
             print_init_dict(init_dict)
 
             respy_obj = RespyCls('test.respy.ini')
-            respy_obj = simulate_observed(respy_obj, seed=seed_observed)
+            respy_obj = simulate_observed(respy_obj)
             _, crit_val = estimate(respy_obj)
 
             if base is None:
@@ -82,7 +82,7 @@ class TestClass(object):
             respy_obj = RespyCls('test.respy.ini')
 
             file_sim = respy_obj.get_attr('file_sim')
-            simulate_observed(respy_obj, seed=seed_observed)
+            simulate_observed(respy_obj)
 
             estimate(respy_obj)
 

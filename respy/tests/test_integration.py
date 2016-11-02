@@ -63,7 +63,7 @@ class TestClass(object):
 
             respy_obj.lock()
 
-            respy_obj = simulate_observed(respy_obj, seed=seed_observed)
+            respy_obj = simulate_observed(respy_obj)
 
             # Distribute class attributes
             periods_emax = respy_obj.get_attr('periods_emax')
@@ -106,7 +106,7 @@ class TestClass(object):
 
             respy_obj.lock()
 
-            simulate_observed(respy_obj, seed=seed_observed)
+            simulate_observed(respy_obj)
 
             # This parts checks the equality of simulated dataset for the
             # different versions of the code.
