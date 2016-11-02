@@ -49,7 +49,8 @@ def record_estimation_scaling(x_optim_free_unscaled_start,
 
 
 def record_estimation_scalability(which):
-
+    """ Special output to investigate the scalability of the code.
+    """
     fmt_ = '   {:<6}     {:>10}     {:>8}\n'
 
     today = time.strftime("%d/%m/%Y")
