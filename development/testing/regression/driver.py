@@ -12,8 +12,8 @@ from auxiliary_shared import compile_package
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.python.shared.shared_auxiliary import print_init_dict
 
+from codes.auxiliary import simulate_observed
 from codes.random_init import generate_init
-
 
 HOSTNAME = socket.gethostname()
 
@@ -28,7 +28,6 @@ def run(args):
     # implementation is recognized. This is important for the creation of the
     # regression vault as we want to include FORTRAN use cases.
     from respy import RespyCls
-    from respy import simulate
     from respy import estimate
 
     # Process command line arguments
@@ -60,7 +59,7 @@ def run(args):
         print_init_dict(init_dict)
         respy_obj = RespyCls('test.respy.ini')
 
-        simulate(respy_obj)
+        simulate_observed(respy_obj)
         np.testing.assert_almost_equal(estimate(respy_obj)[1], crit_val)
 
     if is_modification:
@@ -86,12 +85,13 @@ def run(args):
 
             # We impose a couple of constraints that make the requests
             # manageable.
+            np.random.seed(idx)
             constr = dict()
             constr['is_estimation'] = True
 
             init_dict = generate_init(constr)
             respy_obj = RespyCls('test.respy.ini')
-            simulate(respy_obj)
+            simulate_observed(respy_obj)
             crit_val = estimate(respy_obj)[1]
             test = (init_dict, crit_val)
             tests += [test]
@@ -111,7 +111,7 @@ def run(args):
 
             print_init_dict(init_dict)
             respy_obj = RespyCls('test.respy.ini')
-            simulate(respy_obj)
+            simulate_observed(respy_obj)
 
             est_val = estimate(respy_obj)[1]
 

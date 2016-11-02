@@ -46,6 +46,8 @@ def run_single(spec_dict, fname):
 
     # Let us first simulate a baseline sample, store the results for future
     # reference, and start an estimation from the true values.
+    x = None
+    
     for request in ['Truth', 'Static', 'Risk', 'Ambiguity']:
 
         respy_obj.unlock()

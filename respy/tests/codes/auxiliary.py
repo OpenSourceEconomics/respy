@@ -2,11 +2,80 @@
 """
 
 import numpy as np
+import pandas as pd
+
 import shlex
 
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
 from respy.python.shared.shared_auxiliary import dist_class_attributes
+from respy.python.simulate.simulate_auxiliary import write_out
+from respy.python.shared.shared_constants import FORMATS_DICT
+from respy.python.shared.shared_constants import LABELS
+
 from respy import RespyCls
+from respy import simulate
+
+
+def simulate_observed(respy_obj, share_missing_obs=None,
+        share_missing_wages=None):
+    """ This function addes two important features of observed datasests: (1)
+    missing observations and missing wage information.
+    """
+    def drop_agents_obs(group, num_drop):
+            """ We drop a random number of observations for each agent.
+            """
+            group.set_index('Period', drop=False, inplace=True)
+            indices = np.random.choice(group.index, num_drop, replace=False)
+            group.drop(indices, inplace=True)
+            return group
+
+    num_periods = respy_obj.get_attr('num_periods')
+    seed_sim = respy_obj.get_attr('seed_sim')
+
+    simulate(respy_obj)
+
+    # It is important to set the seed after the simulation call. Otherwise,
+    # the value of the seed differs due to the different implementations of
+    # the PYTHON and FORTRAN programs.
+    np.random.seed(seed_sim)
+
+    if share_missing_obs is None:
+        share = np.random.uniform(high=0.9, size=1)
+        share_missing_obs = np.random.choice([0, share])
+
+    if share_missing_wages is None:
+        share = np.random.uniform(high=0.9, size=1)
+        share_missing_wages = np.random.choice([0, share])
+
+    # We want to drop random observations by agents. This mimics the frequent
+    # empirical fact that we loose track of agents (at least temporarily).
+    data_frame = pd.read_csv('data.respy.dat', delim_whitespace=True, header=-1,
+        na_values='.', dtype=FORMATS_DICT, names=LABELS)
+
+    if share_missing_obs != 0:
+        num_drop_obs = int(num_periods * share_missing_obs)
+    else:
+        num_drop_obs = 0
+
+    data_subset = data_frame.groupby('Identifier').apply(drop_agents_obs,
+        num_drop=num_drop_obs)
+
+    # We also want to drop the some wage observations.
+    is_working = data_subset['Choice'].isin([1, 2])
+    num_drop_wages = int(np.sum(is_working) * share_missing_wages)
+
+    # As a special case, we might be dealing with a dataset where not one is
+    # working anyway.
+    if num_drop_wages > 0:
+        indices = data_subset['Earnings'][is_working].index
+        index_missing = np.random.choice(indices, num_drop_wages, False)
+        data_subset.loc[index_missing, 'Earnings'] = None
+    else:
+        pass
+
+    write_out(respy_obj, data_subset)
+
+    return respy_obj
 
 
 def compare_est_log(base_est_log):
@@ -22,8 +91,8 @@ def compare_est_log(base_est_log):
             with open('est.respy.log') as in_file:
                 alt_est_log = in_file.readlines()
 
-            for i, _ in enumerate(alt_est_log):
-                alt_line, base_line = alt_est_log[i], base_est_log[i]
+            for j, _ in enumerate(alt_est_log):
+                alt_line, base_line = alt_est_log[j], base_est_log[j]
                 list_ = shlex.split(alt_line)
 
                 if not list_:

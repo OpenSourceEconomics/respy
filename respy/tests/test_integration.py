@@ -8,9 +8,10 @@ from respy.scripts.scripts_simulate import scripts_simulate
 from respy.scripts.scripts_update import scripts_update
 from respy.scripts.scripts_modify import scripts_modify
 from respy.python.process.process_python import process
+
+from codes.auxiliary import simulate_observed
 from codes.random_init import generate_init
 from respy import estimate
-from respy import simulate
 from respy import RespyCls
 
 
@@ -27,7 +28,7 @@ class TestClass(object):
 
         respy_obj = RespyCls('test.respy.ini')
 
-        simulate(respy_obj)
+        simulate_observed(respy_obj)
 
         process(respy_obj)
 
@@ -60,7 +61,7 @@ class TestClass(object):
 
             respy_obj.lock()
 
-            respy_obj = simulate(respy_obj)
+            respy_obj = simulate_observed(respy_obj)
 
             # Distribute class attributes
             periods_emax = respy_obj.get_attr('periods_emax')
@@ -80,7 +81,6 @@ class TestClass(object):
         """ Testing whether the a simulated dataset and the evaluation of the
         criterion function are the same for a tiny delta and a myopic agent.
         """
-
         # Generate random initialization dictionary
         constr = dict()
         constr['maxfun'] = 0
@@ -101,7 +101,7 @@ class TestClass(object):
 
             respy_obj.lock()
 
-            simulate(respy_obj)
+            simulate_observed(respy_obj)
 
             # This parts checks the equality of simulated dataset for the
             # different versions of the code.
@@ -137,7 +137,7 @@ class TestClass(object):
         # Simulate a dataset
         generate_init(constr)
         respy_obj = RespyCls('test.respy.ini')
-        simulate(respy_obj)
+        simulate_observed(respy_obj)
 
         # Evaluate at different points, ensuring that the simulated dataset
         # still fits.
@@ -161,7 +161,7 @@ class TestClass(object):
             # Simulate a dataset
             generate_init(constr)
             respy_obj = RespyCls('test.respy.ini')
-            simulate(respy_obj)
+            simulate_observed(respy_obj)
 
             # Create output to process a baseline.
             respy_obj.unlock()
@@ -218,7 +218,7 @@ class TestClass(object):
 
         # Run estimation task.
         respy_obj = RespyCls('test.respy.ini')
-        simulate(respy_obj)
+        simulate_observed(respy_obj)
         base_x, base_val = estimate(respy_obj)
 
         # We also check whether updating the class instance and a single
@@ -242,7 +242,7 @@ class TestClass(object):
         generate_init(constr)
 
         respy_obj = RespyCls('test.respy.ini')
-        respy_obj = simulate(respy_obj)
+        respy_obj = simulate_observed(respy_obj)
         _, base_val = estimate(respy_obj)
 
         scripts_update('test.respy.ini')

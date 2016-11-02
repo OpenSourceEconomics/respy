@@ -35,13 +35,13 @@ FUNCTION get_log_likl(contribs)
 
       REAL(our_dble)                  :: get_log_likl
 
-      REAL(our_dble), INTENT(IN)      :: contribs(num_agents_est * num_periods)
+      REAL(our_dble), INTENT(IN)      :: contribs(num_obs)
 
       !/* internal objects        */
 
       INTEGER(our_int), ALLOCATABLE   :: infos(:)
 
-      REAL(our_dble)                  :: contribs_clipped(num_agents_est * num_periods)
+      REAL(our_dble)                  :: contribs_clipped(num_obs)
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -653,7 +653,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_rewards
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, precond_type, precond_minimum, measure, level, optimizer_used, optimizer_options, file_sim)
+SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, precond_type, precond_minimum, measure, level, optimizer_used, optimizer_options, file_sim, num_obs)
 
     !
     !   This function serves as the replacement for the RespyCls and reads in
@@ -681,9 +681,11 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
     INTEGER(our_int), INTENT(OUT)   :: seed_sim
     INTEGER(our_int), INTENT(OUT)   :: num_free
     INTEGER(our_int), INTENT(OUT)   :: edu_max
+    INTEGER(our_int), INTENT(OUT)   :: num_obs
     INTEGER(our_int), INTENT(OUT)   :: maxfun
 
     REAL(our_dble), INTENT(OUT)     :: precond_minimum
+
 
     CHARACTER(225), INTENT(OUT)     :: optimizer_used
     CHARACTER(225), INTENT(OUT)     :: file_sim
@@ -704,9 +706,6 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
 
     INTEGER(our_int)                :: j
     INTEGER(our_int)                :: k
-
-
-    ! TODO: Getting BOBQUA to work
     INTEGER(our_int)                :: i
 
 
@@ -767,6 +766,7 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
         READ(99, 1505) num_draws_prob
         READ(99, 1505) seed_prob
         READ(99, 1500) tau
+        READ(99, 1505) num_obs
 
         ! SCALING
         READ(99, *) precond_type
@@ -846,13 +846,13 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE read_dataset(data_est, num_agents)
+SUBROUTINE read_dataset(data_est, num_obs)
 
     !/* external objects        */
 
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)  :: data_est(:, :)
 
-    INTEGER(our_int), INTENT(IN)                :: num_agents
+    INTEGER(our_int), INTENT(IN)                :: num_obs
 
     !/* internal objects        */
 
@@ -864,12 +864,12 @@ SUBROUTINE read_dataset(data_est, num_agents)
 !------------------------------------------------------------------------------
 
     ! Allocate data container
-    ALLOCATE(data_est(num_periods * num_agents, 8))
+    ALLOCATE(data_est(num_obs, 8))
 
     ! Read observed data to double precision array
     OPEN(UNIT=99, FILE='.data.resfort.dat', ACTION='READ')
 
-        DO j = 1, num_periods * num_agents
+        DO j = 1, num_obs
             READ(99, *) (data_est(j, k), k = 1, 8)
         END DO
 

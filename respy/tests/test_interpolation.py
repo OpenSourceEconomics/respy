@@ -4,8 +4,8 @@ import pytest
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import print_init_dict
 from codes.random_init import generate_random_dict
+from codes.auxiliary import simulate_observed
 from respy import RespyCls
-from respy import simulate
 
 
 @pytest.mark.usefixtures('fresh_directory', 'set_seed')
@@ -34,7 +34,7 @@ class TestClass(object):
 
             # Process and solve
             respy_obj = RespyCls('test.respy.ini')
-            respy_obj = simulate(respy_obj)
+            respy_obj = simulate_observed(respy_obj)
 
             # Extract class attributes
             states_number_period, periods_emax = \
@@ -76,7 +76,7 @@ class TestClass(object):
 
             # Process and solve
             respy_obj = RespyCls('test.respy.ini')
-            respy_obj = simulate(respy_obj)
+            respy_obj = simulate_observed(respy_obj)
 
             # Extract class attributes
             states_number_period, periods_emax = \

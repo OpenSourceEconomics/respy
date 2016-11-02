@@ -66,7 +66,7 @@ PROGRAM resfort_parallel_slave
     CALL MPI_COMM_GET_PARENT(PARENTCOMM, ierr)
 
 
-    CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, precond_type, precond_minimum, measure, level, optimizer_used, optimizer_options, file_sim)
+    CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, precond_type, precond_minimum, measure, level, optimizer_used, optimizer_options, file_sim, num_obs)
 
     CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, edu_start, edu_max, min_idx)
 
@@ -124,11 +124,11 @@ PROGRAM resfort_parallel_slave
 
             IF (.NOT. ALLOCATED(data_est)) THEN
 
-                CALL read_dataset(data_est, num_agents_est)
+                CALL read_dataset(data_est, num_obs)
 
                 CALL create_draws(periods_draws_prob, num_draws_prob, seed_prob, is_debug)
 
-                ALLOCATE(contribs(num_agents_est * num_periods))
+                ALLOCATE(contribs(num_obs))
 
                 ALLOCATE(data_slave(num_obs_slaves(rank + 1), 8))
 

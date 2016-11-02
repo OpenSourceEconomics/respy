@@ -1,7 +1,6 @@
 import os
 
 from respy.python.shared.shared_auxiliary import generate_optimizer_options
-from respy.python.shared.shared_auxiliary import check_dataset
 from respy.python.shared.shared_auxiliary import get_est_info
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_AMB_FORT
@@ -112,21 +111,17 @@ def check_estimation(respy_obj):
         full_options[optimizer] = optimizer_options[optimizer]
 
     # Update the enlarged set of optimizer options.
-    check_optimizer_options(full_options, paras_fixed)
+    check_optimizer_options(full_options)
 
     respy_obj.unlock()
     respy_obj.set_attr('optimizer_options', full_options)
     respy_obj.lock()
 
-    # Check that dataset aligns with model specification.
-    data_frame = process(respy_obj)
-    check_dataset(data_frame, respy_obj, 'est')
-
     # Finishing
     return respy_obj
 
 
-def check_optimizer_options(optimizer_options, paras_fixed):
+def check_optimizer_options(optimizer_options):
     """ This function makes sure that the optimizer options are all valid.
     """
     # POWELL's algorithms

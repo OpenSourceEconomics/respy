@@ -18,10 +18,11 @@ from respy.python.solve.solve_ambiguity import kl_divergence
 from respy.python.shared.shared_constants import IS_FORTRAN
 from respy.python.shared.shared_constants import TEST_DIR
 
+from codes.auxiliary import simulate_observed
 from codes.random_init import generate_init
 
+
 from respy import RespyCls
-from respy import simulate
 from respy import estimate
 
 # Edit of PYTHONPATH required for PYTHON 2 as no __init__.py in tests
@@ -46,7 +47,6 @@ class TestClass(object):
         """ This test ensures that using the ambiguity functionality with a
         tiny level yields the same results as using the risk functionality
         directly.
-
         """
         constr = dict()
         constr['maxfun'] = 0
@@ -64,7 +64,7 @@ class TestClass(object):
 
             respy_obj = RespyCls('test.respy.ini')
 
-            simulate(respy_obj)
+            simulate_observed(respy_obj)
             _, crit_val = estimate(respy_obj)
 
             if base_val is None:
@@ -87,7 +87,7 @@ class TestClass(object):
         # Perform toolbox actions
         respy_obj = RespyCls('test.respy.ini')
 
-        respy_obj = simulate(respy_obj)
+        respy_obj = simulate_observed(respy_obj)
 
         # Extract class attributes
         periods_rewards_systematic, states_number_period, mapping_state_idx, \
@@ -251,8 +251,8 @@ class TestClass(object):
         link_versions().test_2(flag_ambiguity)
 
     @pytest.mark.skipif(not IS_FORTRAN, reason='No FORTRAN available')
-    def test_versions_6(self, flag_ambiguity=True):
-        link_versions().test_6(flag_ambiguity)
+    def test_versions_4(self, flag_ambiguity=True):
+        link_versions().test_4(flag_ambiguity)
 
     """ This section reproduces the tests from test_f2py but runs them with
     ambiguity.

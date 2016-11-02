@@ -10,11 +10,11 @@ from respy.python.shared.shared_constants import MIN_AMBIGUITY
 from respy.python.shared.shared_constants import IS_FORTRAN
 from codes.auxiliary import write_interpolation_grid
 from codes.random_init import generate_random_dict
+from codes.auxiliary import simulate_observed
 from codes.auxiliary import compare_est_log
 from codes.random_init import generate_init
 from codes.auxiliary import write_draws
 from respy import estimate
-from respy import simulate
 from respy import RespyCls
 
 
@@ -91,7 +91,7 @@ class TestClass(object):
             respy_obj.lock()
 
             # Solve the model
-            respy_obj = simulate(respy_obj)
+            respy_obj = simulate_observed(respy_obj)
 
             # This parts checks the equality of simulated dataset for the
             # different versions of the code.
@@ -138,7 +138,7 @@ class TestClass(object):
         respy_obj = RespyCls('test.respy.ini')
 
         # Simulate a dataset
-        simulate(respy_obj)
+        simulate_observed(respy_obj)
 
         # Iterate over alternative implementations
         base_x, base_val = None, None
@@ -191,66 +191,15 @@ class TestClass(object):
         respy_obj.set_attr('maxfun', 0)
         respy_obj.lock()
 
-        simulate(respy_obj)
+        simulate_observed(respy_obj, 0, 0)
+
         _, val = estimate(respy_obj)
         np.testing.assert_allclose(val, rslt)
 
-    def test_4(self):
-        """ Test the solution of deterministic model with ambiguity and
-        interpolation. This test has the same result as in the absence of
-        random variation in rewards, it does not matter whether the
-        environment is ambiguous or not.
-        """
-        # Solve specified economy
-        for version in ['FORTRAN', 'PYTHON']:
-            respy_obj = RespyCls(TEST_RESOURCES_DIR + '/test_fifth.respy.ini')
-
-            respy_obj.unlock()
-
-            respy_obj.set_attr('version', version)
-
-            respy_obj.lock()
-
-            respy_obj = simulate(respy_obj)
-
-            # Assess expected future value
-            val = respy_obj.get_attr('periods_emax')[0, :1]
-            np.testing.assert_allclose(val, 88750)
-
-            # Assess evaluation
-            _, val = estimate(respy_obj)
-            np.testing.assert_allclose(val, -1.0)
-
-    def test_5(self):
-        """ Test the solution of deterministic model without ambiguity,
-        but with interpolation. As a deterministic model is requested,
-        all versions should yield the same result without any additional effort.
-        """
-        # Solve specified economy
-        for version in ['FORTRAN', 'PYTHON']:
-            respy_obj = RespyCls(TEST_RESOURCES_DIR + '/test_fifth.respy.ini')
-
-            respy_obj.unlock()
-
-            respy_obj.set_attr('version', version)
-
-            respy_obj.lock()
-
-            respy_obj = simulate(respy_obj)
-
-            # Assess expected future value
-            val = respy_obj.get_attr('periods_emax')[0, :1]
-            np.testing.assert_allclose(val, 88750)
-
-            # Assess evaluation
-            _, val = estimate(respy_obj)
-            np.testing.assert_allclose(val, -1.0)
-
-    def test_6(self, flag_ambiguity=False):
+    def test_4(self, flag_ambiguity=False):
         """ This test ensures that the logging looks exactly the same for the
         different versions.
         """
-
         max_draws = np.random.randint(10, 300)
 
         # Generate random initialization file
@@ -285,7 +234,7 @@ class TestClass(object):
 
             respy_obj.lock()
 
-            simulate(respy_obj)
+            simulate_observed(respy_obj)
 
             # Check for identical logging
             fname = file_sim + '.respy.sol'

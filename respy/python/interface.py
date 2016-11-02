@@ -26,19 +26,18 @@ def respy_interface(respy_obj, request, data_array=None):
     """ This function provides the interface to the PYTHOn functionality.
     """
     # Distribute class attributes
-    model_paras, num_periods, num_agents_est, edu_start, is_debug, edu_max, \
+    model_paras, num_periods, edu_start, is_debug, edu_max, \
         delta, num_draws_prob, seed_prob, num_draws_emax, seed_emax, \
         min_idx, is_myopic, is_interpolated, num_points_interp, maxfun, \
         optimizer_used, tau, paras_fixed, optimizer_options, seed_sim, \
         num_agents_sim, measure, file_sim, paras_bounds, preconditioning = \
             dist_class_attributes(respy_obj, 'model_paras', 'num_periods',
-                'num_agents_est', 'edu_start', 'is_debug', 'edu_max',
-                'delta', 'num_draws_prob', 'seed_prob', 'num_draws_emax',
-                'seed_emax', 'min_idx', 'is_myopic', 'is_interpolated',
-                'num_points_interp', 'maxfun', 'optimizer_used', 'tau',
-                'paras_fixed', 'optimizer_options', 'seed_sim',
-                'num_agents_sim', 'measure', 'file_sim', 'paras_bounds',
-                'preconditioning')
+                'edu_start', 'is_debug', 'edu_max', 'delta', 'num_draws_prob',
+                'seed_prob', 'num_draws_emax', 'seed_emax', 'min_idx',
+                'is_myopic', 'is_interpolated', 'num_points_interp', 'maxfun',
+                'optimizer_used', 'tau', 'paras_fixed', 'optimizer_options',
+                'seed_sim', 'num_agents_sim', 'measure', 'file_sim',
+                'paras_bounds', 'preconditioning')
 
     level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
         dist_model_paras(model_paras, is_debug)

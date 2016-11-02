@@ -151,7 +151,7 @@ SUBROUTINE distribute_workload(num_states_slaves, num_obs_slaves)
 
     ALLOCATE(num_states_slaves(num_periods, num_slaves), num_obs_slaves(num_slaves))
 
-    CALL determine_workload(num_obs_slaves, (num_agents_est * num_periods))
+    CALL determine_workload(num_obs_slaves, num_obs)
 
     DO period = 1, num_periods
         CALL determine_workload(num_states_slaves(period, :), states_number_period(period))
@@ -303,10 +303,10 @@ FUNCTION fort_criterion_parallel(x)
 
     !/* internal objects    */
 
-    REAL(our_dble)                  :: contribs(num_agents_est * num_periods)
     REAL(our_dble)                  :: shocks_cholesky(4, 4)
     REAL(our_dble)                  :: x_all_current(27)
     REAL(our_dble)                  :: x_input(num_free)
+    REAL(our_dble)                  :: contribs(num_obs)
     REAL(our_dble)                  :: coeffs_home(1)
     REAL(our_dble)                  :: coeffs_edu(3)
     REAL(our_dble)                  :: coeffs_a(6)

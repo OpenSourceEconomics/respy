@@ -34,6 +34,7 @@ MODULE shared_constants
     INTEGER(our_int)            :: num_periods
     INTEGER(our_int)            :: num_free
     INTEGER(our_int)            :: min_idx
+    INTEGER(our_int)            :: num_obs
 
     ! This variable needs to be accessible during optimization. It is defined here as it is required by the optimizers as well.
     INTEGER(our_int)            :: num_eval = zero_int

@@ -59,7 +59,7 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
     DOUBLE PRECISION                :: level(1)
 
     INTEGER                         :: dist_optim_paras_info
-
+    
     CHARACTER(225)                  :: file_sim_mock
 
 !------------------------------------------------------------------------------
@@ -69,6 +69,7 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
     ! Assign global RESPFRT variables
     max_states_period = max_states_period_int
     min_idx = SIZE(mapping_state_idx_int, 4)
+    num_obs = SIZE(data_est_int, 1)
 
     ! Transfer global RESFORT variables
     num_points_interp = num_points_interp_int

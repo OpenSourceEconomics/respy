@@ -3,9 +3,9 @@ import pytest
 
 from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.shared.shared_auxiliary import dist_optim_paras
+from codes.auxiliary import simulate_observed
 from codes.random_init import generate_init
 from respy import RespyCls
-from respy import simulate
 
 
 @pytest.mark.usefixtures('fresh_directory', 'set_seed')
@@ -27,7 +27,7 @@ class TestClass(object):
         # Perform toolbox actions
         respy_obj = RespyCls('test.respy.ini')
 
-        respy_obj = simulate(respy_obj)
+        respy_obj = simulate_observed(respy_obj)
 
         # Distribute class attributes
         states_number_period = respy_obj.get_attr('states_number_period')

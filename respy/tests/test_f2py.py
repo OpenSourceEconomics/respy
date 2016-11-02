@@ -17,8 +17,8 @@ from respy.python.solve.solve_auxiliary import get_exogenous_variables
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.solve.solve_auxiliary import get_endogenous_variable
 from respy.python.evaluate.evaluate_python import pyth_contributions
-from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
+from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.shared.shared_auxiliary import dist_model_paras
 from respy.python.estimate.estimate_python import pyth_criterion
 from respy.python.simulate.simulate_python import pyth_simulate
@@ -31,11 +31,11 @@ from respy.python.shared.shared_auxiliary import read_draws
 from respy.python.solve.solve_python import pyth_solve
 from respy.fortran.interface import resfort_interface
 from codes.auxiliary import write_interpolation_grid
+from codes.auxiliary import simulate_observed
 from codes.random_init import generate_init
 from codes.auxiliary import write_draws
 
 from respy import RespyCls
-from respy import simulate
 
 # Edit of PYTHONPATH required for PYTHON 2 as no __init__.py in tests
 # subdirectory. If __init__.py is added, the path resolution for PYTEST
@@ -67,7 +67,7 @@ class TestClass(object):
         # Perform toolbox actions
         respy_obj = RespyCls('test.respy.ini')
 
-        respy_obj = simulate(respy_obj)
+        respy_obj = simulate_observed(respy_obj)
 
         # Extract class attributes
         periods_rewards_systematic, states_number_period, mapping_state_idx, \
@@ -318,7 +318,7 @@ class TestClass(object):
 
         # Perform toolbox actions
         respy_obj = RespyCls('test.respy.ini')
-        respy_obj = simulate(respy_obj)
+        respy_obj = simulate_observed(respy_obj)
 
         # Ensure that backward induction routines use the same grid for the
         # interpolation.
@@ -422,7 +422,7 @@ class TestClass(object):
 
         # Perform toolbox actions
         respy_obj = RespyCls('test.respy.ini')
-        respy_obj = simulate(respy_obj)
+        respy_obj = simulate_observed(respy_obj)
 
         # Extract class attributes
         periods_rewards_systematic, states_number_period, mapping_state_idx, \

@@ -3,10 +3,12 @@ import pytest
 
 from respy.python.shared.shared_auxiliary import print_init_dict
 from respy.python.shared.shared_constants import IS_PARALLEL
+
 from codes.random_init import generate_random_dict
+from codes.auxiliary import simulate_observed
 from codes.auxiliary import compare_est_log
+
 from respy import estimate
-from respy import simulate
 from respy import RespyCls
 
 
@@ -43,7 +45,7 @@ class TestClass(object):
             print_init_dict(init_dict)
 
             respy_obj = RespyCls('test.respy.ini')
-            respy_obj = simulate(respy_obj)
+            respy_obj = simulate_observed(respy_obj)
             _, crit_val = estimate(respy_obj)
 
             if base is None:
@@ -76,7 +78,7 @@ class TestClass(object):
             respy_obj = RespyCls('test.respy.ini')
 
             file_sim = respy_obj.get_attr('file_sim')
-            simulate(respy_obj)
+            simulate_observed(respy_obj)
 
             estimate(respy_obj)
 

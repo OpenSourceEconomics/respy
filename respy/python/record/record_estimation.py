@@ -43,7 +43,7 @@ def record_estimation_scaling(x_optim_free_unscaled_start,
                   '\n'
             out_file.write(fmt.format(*paras))
 
-            j = j + 1
+            j += 1
 
         out_file.write('\n')
 
@@ -177,7 +177,7 @@ def record_estimation_eval(opt_obj, fval, x_optim_all_unscaled):
             if is_large[i]:
                 record_warning(i + 1)
 
-    write_est_info(0, opt_obj.crit_vals[0], x_econ_container[:, 0],
+    write_est_info(opt_obj.crit_vals[0], x_econ_container[:, 0],
         opt_obj.num_step, opt_obj.crit_vals[1], x_econ_container[:, 1],
         opt_obj.num_eval, opt_obj.crit_vals[2], x_econ_container[:, 2])
 
@@ -191,8 +191,8 @@ def record_estimation_final(success, message):
         out_file.write('   Message ' + message + '\n')
 
 
-def write_est_info(num_start, value_start, paras_start, num_step,
-                   value_step, paras_step, num_eval, value_current, paras_current):
+def write_est_info(value_start, paras_start, num_step, value_step, paras_step,
+        num_eval, value_current, paras_current):
 
     # Write information to file.
     with open('est.respy.info', 'w') as out_file:
