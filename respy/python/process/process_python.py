@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 from respy.python.process.process_auxiliary import check_dataset_est
 from respy.python.shared.shared_constants import FORMATS_DICT
@@ -21,6 +22,14 @@ def process(respy_obj):
     data_frame.set_index(['Identifier'], drop=False, inplace=True)
     drop_indices = data_frame.index.unique()[num_agents_est:]
     data_frame.drop(drop_indices, inplace=True)
+
+    # We want to make sure that the dataset contains exactly the number of
+    # agents that were requested. This might not necessarily be the case
+    # if a user requests an estimation with more agents than available. This
+    # cannot be part of the check_dataset_est() function that is also called
+    # by simulate().
+    dat = len(data_frame['Identifier'].unique())
+    np.testing.assert_equal(dat, num_agents_est)
 
     data_frame.set_index(['Identifier', 'Period'], drop=False, inplace=True)
 
