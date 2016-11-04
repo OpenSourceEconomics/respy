@@ -140,3 +140,8 @@ def scripts_compare():
                     stats = [format_float(x) for x in stats]
                     file_.write(fmt_.format(*line + stats))
                 file_.write('\n')
+
+
+if __name__ == '__main__':
+
+    scripts_compare()
