@@ -27,7 +27,7 @@ def check_dataset_est(data_frame, respy_obj):
     np.testing.assert_equal(dat.all(), True)
 
     # Checks for EARNINGS
-    dat = data_frame['Earnings'].fillna(99) >= 0.00
+    dat = data_frame['Earnings'].fillna(99) > 0.00
     np.testing.assert_equal(dat.all(), True)
 
     # Checks for EXPERIENCE

@@ -60,11 +60,10 @@ def scripts_check(request, init_file):
             exp_a, exp_b, edu, edu_lagged = data_array[j, 4:].astype(int)
             edu = edu - edu_start
 
-            # First of all, we need to ensure that all variables are greater
-            # or equal to zero.
+            # First of all, we need to ensure that all observed years of
+            # schooling are larger than the initial condition of the model.
             try:
-                for var in [exp_a, exp_b, edu, edu_lagged]:
-                    np.testing.assert_equal(var >= 0, True)
+                np.testing.assert_equal(edu >= 0, True)
             except AssertionError:
                 raise AssertionError(ERR_MSG)
 
