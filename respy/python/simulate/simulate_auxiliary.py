@@ -111,16 +111,16 @@ def write_out(respy_obj, data_frame):
     file_sim = respy_obj.get_attr('file_sim')
 
     formats = []
-    formats += [_format_integer, _format_integer, _format_integer]
-    formats += [_format_float, _format_integer, _format_integer]
-    formats += [_format_integer, _format_integer]
+    formats += [format_integer, format_integer, format_integer]
+    formats += [format_float, format_integer, format_integer]
+    formats += [format_integer, format_integer]
 
     with open(file_sim + '.respy.dat', 'w') as file_:
         data_frame.to_string(file_, index=False, header=None, na_rep='.',
                             formatters=formats)
 
 
-def _format_float(x):
+def format_float(x):
     """ Pretty formatting for floats
     """
     if pd.isnull(x):
@@ -129,7 +129,7 @@ def _format_float(x):
         return '{0:10.2f}'.format(x)
 
 
-def _format_integer(x):
+def format_integer(x):
     """ Pretty formatting for integers.
     """
     if pd.isnull(x):

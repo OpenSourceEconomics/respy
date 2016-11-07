@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+import numpy as np
+
 import argparse
 import os
 
@@ -6,6 +8,9 @@ from respy.python.solve.solve_auxiliary import pyth_create_state_space
 from respy.python.process.process_python import process
 from respy.estimate import check_estimation
 from respy import RespyCls
+
+# module-wide variables
+ERR_MSG = ' Observation not meeting model requirements.'
 
 
 def dist_input_arguments(parser):
@@ -55,13 +60,22 @@ def scripts_check(request, init_file):
             exp_a, exp_b, edu, edu_lagged = data_array[j, 4:].astype(int)
             edu = edu - edu_start
 
-            # Get state indicator to obtain the systematic component of the
-            # agents rewards.
+            # First of all, we need to ensure that all observed years of
+            # schooling are larger than the initial condition of the model.
             try:
-                mapping_state_idx[period, exp_a, exp_b, edu, edu_lagged]
-            except IndexError:
-                str_ = ' Observation not meeting model requirements.'
-                raise AssertionError(str_)
+                np.testing.assert_equal(edu >= 0, True)
+            except AssertionError:
+                raise AssertionError(ERR_MSG)
+
+            # Get state indicator to obtain the systematic component of the
+            # agents rewards. This might fail either because the state is
+            # simply infeasible at any period or just not defined for the
+            # particular period requested.
+            try:
+                k = mapping_state_idx[period, exp_a, exp_b, edu, edu_lagged]
+                np.testing.assert_equal(k >= 0, True)
+            except (IndexError, AssertionError):
+                raise AssertionError(ERR_MSG)
 
         # We also take a special look at the optimizer options.
         check_estimation(respy_obj)

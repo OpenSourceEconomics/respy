@@ -311,7 +311,7 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
     val_char = ''
     DO i = 1, 3
         IF (is_large(i)) THEN
-            WRITE(tmp_char, '(4x,A15)') '---'
+            WRITE(tmp_char, '(4x,A25)') '---'
         ELSE
             WRITE(tmp_char, '(4x,f25.15)') crit_vals(i)
         END IF

@@ -67,6 +67,6 @@ def simulate(respy_obj):
     write_info(respy_obj, data_frame)
 
     # Finishing
-    return respy_obj
+    return respy_obj, data_frame
 
 
