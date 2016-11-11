@@ -16,6 +16,7 @@ from respy.python.shared.shared_auxiliary import dist_econ_paras
 from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
+from respy.python.shared.shared_constants import PRINT_FLOAT
 from respy.python.shared.shared_constants import EXEC_DIR
 from respy.python.read.read_python import read
 
@@ -714,9 +715,11 @@ class RespyCls(object):
             if lower is not None:
                 assert isinstance(lower, float)
                 assert lower <= x[i]
+                assert abs(lower) < PRINT_FLOAT
             if upper is not None:
                 assert isinstance(upper, float)
                 assert upper >= x[i]
+                assert abs(upper) < PRINT_FLOAT
             if (upper is not None) and (lower is not None):
                 assert upper >= lower
             # At this point no bounds for the elements of the covariance

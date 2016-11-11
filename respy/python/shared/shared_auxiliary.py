@@ -10,6 +10,7 @@ from respy.python.shared.shared_constants import OPT_AMB_FORT
 from respy.python.shared.shared_constants import OPT_AMB_PYTH
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
+from respy.python.shared.shared_constants import PRINT_FLOAT
 from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.shared.shared_constants import TINY_FLOAT
 
@@ -342,6 +343,7 @@ def check_model_parameters(level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         assert (isinstance(coeffs, np.ndarray))
         assert (np.all(np.isfinite(coeffs)))
         assert (coeffs.dtype == 'float')
+        assert (np.all(abs(coeffs) < PRINT_FLOAT))
 
     # Check for level of ambiguity
     assert (level >= 0)

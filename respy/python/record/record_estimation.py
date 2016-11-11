@@ -120,50 +120,32 @@ def record_estimation_eval(opt_obj, fval, x_optim_all_unscaled):
         fmt_ = '   {0:<9}     {1:>25}\n'
         out_file.write(fmt_.format(*['Time', time.strftime("%H:%M:%S")]))
 
-        if abs(fval) < LARGE_FLOAT:
-            fmt_ = '   {0:>9}     {1:25.15f}\n\n'
-            out_file.write(fmt_.format(*['Criterion', fval]))
-        else:
-            fmt_ = '   {0:>9}     {1:>25}\n\n'
-            out_file.write(fmt_.format(*['Criterion', '---']))
+        fmt_ = '   {0:>9}     {1:>25}\n\n'
+        out_file.write(fmt_.format(*['Criterion', char_floats(fval)[0]]))
 
         fmt_ = '   {:>10}' + '    {:>25}' * 3 + '\n\n'
         out_file.write(fmt_.format(*['Identifier', 'Start', 'Step', 'Current']))
 
-        fmt_ = '   {:>10}' + '    {:25.15f}' * 3 + '\n'
-
-        value_start = opt_obj.crit_vals[0]
-        value_current = opt_obj.crit_vals[2]
-
-        is_large = [False, False, False]
-        is_large[0] = abs(value_start) > LARGE_FLOAT
-        is_large[1] = abs(opt_obj.crit_vals[1]) > LARGE_FLOAT
-        is_large[2] = abs(value_current) > LARGE_FLOAT
-
+        # Formatting for the file
+        fmt_ = '   {:>10}' + '    {:>25}' * 3
         for i in range(27):
             if paras_fixed[i]:
                 continue
-            out_file.write(
-                fmt_.format(*[i, x_optim_container[i, 0],
-                              x_optim_container[i, 1],
-                              x_optim_container[i, 2]]))
-
+            line = [i] + char_floats(x_optim_container[i, :])
+            out_file.write(fmt_.format(*line) + '\n')
         out_file.write('\n')
 
+        # Get information on the spectral condition number of the covariance
+        # matrix of the shock distribution.
         cond = []
-        for which in ['Start', 'Step', 'Current']:
-            if which == 'Start':
-                paras = x_econ_container[:, 0].copy()
-            elif which == 'Step':
-                paras = x_econ_container[:, 1].copy()
-            else:
-                paras = x_econ_container[:, 2].copy()
-
-            shocks_cov = dist_econ_paras(paras)[-1]
+        for i, which in enumerate(['Start', 'Step', 'Current']):
+            shocks_cov = dist_econ_paras(x_econ_container[:, i].copy())[-1]
             cond += [np.log(spectral_condition_number(shocks_cov))]
         fmt_ = '   {:>9} ' + '    {:25.15f}' * 3 + '\n'
         out_file.write(fmt_.format(*['Condition'] + cond))
 
+        # Record some information about the success rate of the nested
+        # optimization to determine the worst case outcomes.
         if opt_ambi_info[0] != 0:
             fmt_ = '   {:>9} ' + '    {:25.15f}\n'
             share = float(opt_ambi_info[1]) / float(opt_ambi_info[0])
@@ -174,6 +156,15 @@ def record_estimation_eval(opt_obj, fval, x_optim_all_unscaled):
 
         out_file.write('\n')
 
+        # Record warnings
+        value_current = opt_obj.crit_vals[2]
+        value_start = opt_obj.crit_vals[0]
+
+        is_large = [False, False, False]
+        is_large[0] = abs(value_start) > LARGE_FLOAT
+        is_large[1] = abs(opt_obj.crit_vals[1]) > LARGE_FLOAT
+        is_large[2] = abs(value_current) > LARGE_FLOAT
+
         for i in range(3):
             if is_large[i]:
                 record_warning(i + 1)
@@ -183,6 +174,60 @@ def record_estimation_eval(opt_obj, fval, x_optim_all_unscaled):
         opt_obj.num_eval, opt_obj.crit_vals[2], x_econ_container[:, 2])
 
 
+def write_est_info(value_start, paras_start, num_step, value_step, paras_step,
+        num_eval, value_current, paras_current):
+
+    # Formatting for the file
+    fmt_ = '{:>25}    ' * 4
+
+    # Write information to file.
+    with open('est.respy.info', 'w') as out_file:
+        # Write out information about criterion function
+        out_file.write('\n{:>25}\n\n'.format('Criterion Function'))
+        out_file.write(fmt_.format(*['', 'Start', 'Step', 'Current']) + '\n\n')
+
+        line = [''] + char_floats([value_start, value_step, value_current])
+        out_file.write(fmt_.format(*line) + '\n\n')
+
+        out_file.write('\n{:>25}\n\n'.format('Economic Parameters'))
+        line = ['Identifier', 'Start', 'Step', 'Current']
+        out_file.write(fmt_.format(*line) + '\n\n')
+        for i, _ in enumerate(range(27)):
+            line = [i]
+            line += char_floats([paras_start[i], paras_step[i]])
+            line += char_floats(paras_current[i])
+            out_file.write(fmt_.format(*line) + '\n')
+
+        fmt_ = '\n{0:<25}    {1:>25}\n'
+        out_file.write(fmt_.format(*[' Number of Steps', num_step]))
+        out_file.write(fmt_.format(*[' Number of Evaluations', num_eval]))
+
+
+def char_floats(floats):
+    """ Pretty printing of floats.
+    """
+    # We ensure that this function can also be called on for a single float
+    # value.
+    if isinstance(floats, float):
+        floats = [floats]
+
+    #is_large = []
+    #for value in floats:
+    #    try:
+    #        is_large += [abs(value) > LARGE_FLOAT]
+    #    except TypeError:
+    #        is_large += [True]
+
+    line = []
+    for i, value in enumerate(floats):
+        if abs(value) > LARGE_FLOAT:
+            line += ['{:>25}'.format('---')]
+        else:
+            line += ['{:25.15f}'.format(value)]
+
+    return line
+
+
 def record_estimation_final(success, message):
     """ We summarize the results of the estimation.
     """
@@ -190,46 +235,3 @@ def record_estimation_final(success, message):
         out_file.write(' ESTIMATION REPORT\n\n')
         out_file.write('   Success ' + str(success) + '\n')
         out_file.write('   Message ' + message + '\n')
-
-
-def write_est_info(value_start, paras_start, num_step, value_step, paras_step,
-        num_eval, value_current, paras_current):
-
-    # Write information to file.
-    with open('est.respy.info', 'w') as out_file:
-        # Write out information about criterion function
-        out_file.write('\n{:>25}\n\n'.format('Criterion Function'))
-        fmt_ = '{0:>25}    {1:>25}    {2:>25}    {3:>25}\n\n'
-        out_file.write(fmt_.format(*['', 'Start', 'Step', 'Current']))
-
-        line = '{:>25}'.format('')
-
-        crit_vals = [value_start, value_step, value_current]
-
-        is_large = [False, False, False]
-
-        for i in range(3):
-            try:
-                is_large[i] = abs(crit_vals[i]) > LARGE_FLOAT
-            except TypeError:
-                is_large[i] = True
-
-        for i in range(3):
-            if is_large[i]:
-                line += '    {:>25}'.format('---')
-            else:
-                line += '    {:25.15f}'.format(crit_vals[i])
-
-        out_file.write(line + '\n\n')
-
-        out_file.write('\n{:>25}\n\n'.format('Economic Parameters'))
-        fmt_ = '{0:>25}    {1:>25}    {2:>25}    {3:>25}\n\n'
-        out_file.write(fmt_.format(*['Identifier', 'Start', 'Step', 'Current']))
-        fmt_ = '{0:>25}    {1:25.15f}    {2:25.15f}    {3:25.15f}\n'
-        for i, _ in enumerate(range(27)):
-            paras = [i, paras_start[i], paras_step[i], paras_current[i]]
-            out_file.write(fmt_.format(*paras))
-
-        fmt_ = '\n{0:<25}{1:>25}\n'
-        out_file.write(fmt_.format(*[' Number of Steps', num_step]))
-        out_file.write(fmt_.format(*[' Number of Evaluations', num_eval]))
