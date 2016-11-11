@@ -52,7 +52,7 @@ def simulate(respy_obj):
 
     # Enforce types
     for label in LABELS:
-        if label == 'Earnings':
+        if label == 'Wage':
             continue
         data_frame[label] = data_frame[label].astype('int64')
 

@@ -25,8 +25,8 @@ def dist_input_arguments(parser):
     return init_file
 
 
-def _prepare_earnings(data_obs, data_sim, which):
-    """ Prepare the results from the earnings for the print out.
+def _prepare_wages(data_obs, data_sim, which):
+    """ Prepare the results from the wages for the print out.
     """
     if which == 'Occupation A':
         choice_ind = 1
@@ -42,7 +42,7 @@ def _prepare_earnings(data_obs, data_sim, which):
             data = data_sim
         for period in range(len(data_obs['Period'].unique())):
             is_occupation = data['Choice'] == choice_ind
-            series = data['Earnings'].ix[is_occupation][:, period]
+            series = data['Wage'].ix[is_occupation][:, period]
             rslt[label] += [list(series.describe().values)]
 
     return rslt
@@ -96,8 +96,8 @@ def scripts_compare(init_file):
 
     # Prepare results
     rslt_choice, rmse_choice = _prepare_choices(data_obs, data_sim)
-    rslt_A = _prepare_earnings(data_obs, data_sim, 'Occupation A')
-    rslt_B = _prepare_earnings(data_obs, data_sim, 'Occupation B')
+    rslt_A = _prepare_wages(data_obs, data_sim, 'Occupation A')
+    rslt_B = _prepare_wages(data_obs, data_sim, 'Occupation B')
 
     with open('compare.respy.info', 'w') as file_:
 
@@ -117,7 +117,7 @@ def scripts_compare(init_file):
         line = '   Overall RMSE {:14.5f}\n'.format(rmse_choice)
         file_.write(line)
 
-        # Comparing the earnings distributions
+        # Comparing the wages distributions
         file_.write('\n\n   Outcomes \n\n')
         fmt_ = '{:>15}' * 8 + '\n'
 

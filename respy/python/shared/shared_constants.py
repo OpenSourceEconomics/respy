@@ -50,7 +50,7 @@ opt_ambi_info = [0, 0]
 
 # Labels for columns in a dataset as well as the formatters.
 LABELS = []
-LABELS += ['Identifier', 'Period', 'Choice', 'Earnings']
+LABELS += ['Identifier', 'Period', 'Choice', 'Wage']
 LABELS += ['Experience A', 'Experience B', 'Years Schooling']
 LABELS += ['Lagged Schooling']
 

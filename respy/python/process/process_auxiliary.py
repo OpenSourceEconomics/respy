@@ -10,9 +10,9 @@ def check_dataset_est(data_frame, respy_obj):
     num_periods = respy_obj.get_attr('num_periods')
 
     # Check that there are not missing values in any of the columns but for
-    # the earnings information.
+    # the wages information.
     for label in LABELS:
-        if label == 'Earnings':
+        if label == 'Wage':
             continue
         assert ~ data_frame[label].isnull().any()
 
@@ -26,8 +26,8 @@ def check_dataset_est(data_frame, respy_obj):
     dat = data_frame['Choice'].isin([1, 2, 3, 4])
     np.testing.assert_equal(dat.all(), True)
 
-    # Checks for EARNINGS
-    dat = data_frame['Earnings'].fillna(99) > 0.00
+    # Checks for WAGE
+    dat = data_frame['Wage'].fillna(99) > 0.00
     np.testing.assert_equal(dat.all(), True)
 
     # Checks for EXPERIENCE

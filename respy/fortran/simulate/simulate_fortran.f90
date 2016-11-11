@@ -142,7 +142,7 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
                 current_state(4) = zero_int
             END IF
 
-            ! Record earnings
+            ! Record wages
             IF (choice(1) .EQ. one_int) THEN
                 data_sim(count + 1, 4) = rewards_systematic(1) * draws(1)
             END IF

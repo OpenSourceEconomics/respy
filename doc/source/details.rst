@@ -25,7 +25,7 @@ This file contains the agent choices and state experiences. The simulated datase
     1           agent identifier
     2           time period
     3           choice (1 = Occupation A, 2 = Occupation B, 3 = education, 4 = home)
-    4           earnings (missing value if not working)
+    4           wages (missing value if not working)
     5           work experience in Occupation A
     6           work experience in Occupation B
     7           years of schooling

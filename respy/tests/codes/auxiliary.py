@@ -76,9 +76,9 @@ def simulate_observed(respy_obj, is_missings=True):
     # As a special case, we might be dealing with a dataset where not one is
     # working anyway.
     if num_drop_wages > 0:
-        indices = data_subset['Earnings'][is_working].index
+        indices = data_subset['Wage'][is_working].index
         index_missing = np.random.choice(indices, num_drop_wages, False)
-        data_subset.loc[index_missing, 'Earnings'] = None
+        data_subset.loc[index_missing, 'Wage'] = None
     else:
         pass
 

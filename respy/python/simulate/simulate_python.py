@@ -65,7 +65,7 @@ def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax,
             # Record agent decision
             dataset[count, 2] = max_idx + 1
 
-            # Record earnings
+            # Record wages
             dataset[count, 3] = MISSING_FLOAT
             if max_idx in [0, 1]:
                 dataset[count, 3] = rewards_systematic[max_idx] * draws[max_idx]

@@ -58,7 +58,7 @@ def write_info(respy_obj, data_frame):
             for t in range(num_periods):
 
                 is_working = (choices.loc[slice(None), t] == j + 1)
-                wages = data_frame['Earnings'].loc[slice(None), t][is_working]
+                wages = data_frame['Wage'].loc[slice(None), t][is_working]
                 count = wages.count()
 
                 if count > 0:
@@ -189,10 +189,10 @@ def check_dataset_sim(data_frame, respy_obj):
     # no wage observation.
     is_working = data_frame['Choice'].isin([1, 2])
 
-    dat = data_frame['Earnings'][is_working]
+    dat = data_frame['Wage'][is_working]
     np.testing.assert_equal(dat.isnull().any(), False)
 
-    dat = data_frame['Earnings'][~ is_working]
+    dat = data_frame['Wage'][~ is_working]
     np.testing.assert_equal(dat.isnull().all(), True)
 
     # Check that there are no missing observations and we follow an agent
