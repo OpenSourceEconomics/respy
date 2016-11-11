@@ -250,10 +250,10 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
     100 FORMAT(1x,A4,i13,10x,A4,i10)
     110 FORMAT(3x,A4,25X,A10)
     120 FORMAT(3x,A4,27X,A8)
-    130 FORMAT(3x,A9,5X,f25.15)
+    130 FORMAT(3x,A9,5X,A25)
     135 FORMAT(3x,A9,5X,A25)
     140 FORMAT(3x,A10,3(4x,A25))
-    150 FORMAT(3x,i10,3(4x,f25.15))
+    150 FORMAT(3x,i10,3(4x,A25))
     155 FORMAT(3x,A9,1x,3(4x,f25.15))
     157 FORMAT(3x,A9,1x,4x,f25.15)
 
@@ -264,13 +264,7 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
         WRITE(99, 110) 'Date', today_char
         WRITE(99, 120) 'Time', now_char
 
-        IF (.NOT. is_large(3)) THEN
-            WRITE(99, 130) 'Criterion', crit_vals(3)
-        ELSE
-            WRITE(99, 135) 'Criterion', '---'
-
-        END IF
-
+        WRITE(99, 130) 'Criterion', char_floats(crit_vals(3:3))
 
         WRITE(99, *)
         WRITE(99, 140) 'Identifier', 'Start', 'Step', 'Current'
@@ -279,7 +273,7 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
         j = 1
         DO i = 1, 27
             IF(paras_fixed(i)) CYCLE
-            WRITE(99, 150) i - 1, x_optim_container(j, :)
+            WRITE(99, 150) i - 1, char_floats(x_optim_container(j, :))
             j = j + 1
         END DO
 
@@ -302,11 +296,11 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
     200 FORMAT(A25,3(4x,A25))
     210 FORMAT(A25,A87)
     220 FORMAT(A25,3(4x,A25))
-    230 FORMAT(i25,3(4x,f25.15))
+    230 FORMAT(i25,3(4x,A25))
 
     250 FORMAT(A25)
-    270 FORMAT(1x,A15,9x,i25)
-    280 FORMAT(1x,A21,3x,i25)
+    270 FORMAT(1x,A15,13x,i25)
+    280 FORMAT(1x,A21,7x,i25)
 
     val_char = ''
     DO i = 1, 3
@@ -335,7 +329,7 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
         WRITE(99, *)
 
         DO i = 1, 27
-            WRITE(99, 230) (i - 1), x_econ_container(i, :)
+            WRITE(99, 230) (i - 1), char_floats(x_econ_container(i, :))
         END DO
 
         WRITE(99, *)
@@ -395,6 +389,7 @@ SUBROUTINE record_scaling(precond_matrix, x_free_start, paras_fixed, is_setup)
     !/* internal objects    */
 
     REAL(our_dble)                  :: x_free_scaled(num_free)
+    REAL(our_dble)                  :: floats(3)
 
     INTEGER(our_int)                :: i
     INTEGER(our_int)                :: j
@@ -410,9 +405,8 @@ SUBROUTINE record_scaling(precond_matrix, x_free_start, paras_fixed, is_setup)
 
     x_free_scaled = apply_scaling(x_free_start, precond_matrix, 'do')
 
-
     120 FORMAT(3x,A10,5(4x,A25))
-    135 FORMAT(3x,i10,3(4x,f25.15),A58)
+    135 FORMAT(3x,i10,3(4x,A25),A58)
 
     OPEN(UNIT=99, FILE='est.respy.log', ACCESS='APPEND', ACTION='WRITE')
 
@@ -437,8 +431,7 @@ SUBROUTINE record_scaling(precond_matrix, x_free_start, paras_fixed, is_setup)
                 ! We need to do some pre-processing for the transformed bounds.
                 val_char = ''
                 DO k = 1, 2
-                    ! TODO: THis is not a very reliable cirterion, I need to somehow be able to obtain that
-                    ! information even after the transforamtion.
+                    ! TODO: THis is not a very reliable cirterion, I need to somehow be able to obtain that information even after the transforamtion.
                     no_bounds = (ABS(x_optim_bounds_free_scaled(k, j)) > Large_FLOAT)
 
                     IF(no_bounds) THEN
@@ -450,7 +443,8 @@ SUBROUTINE record_scaling(precond_matrix, x_free_start, paras_fixed, is_setup)
 
                 END DO
 
-                WRITE(99, 135) i - 1, x_free_start(j), precond_matrix(j, j), x_free_scaled(j), val_char
+                floats = (/ x_free_start(j), precond_matrix(j, j), x_free_scaled(j) /)
+                WRITE(99, 135) i - 1, char_floats(floats) , val_char
 
                 j = j + 1
 
@@ -491,6 +485,38 @@ SUBROUTINE get_time(today_char, now_char)
     WRITE(now_char, 5504) now
 
 END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+FUNCTION char_floats(floats)
+
+    !/* external objects        */
+
+    REAL(our_dble), INTENT(IN)      :: floats(:)
+
+    CHARACTER(50)                   :: char_floats(SIZE(floats))
+
+    !/* internal objects        */
+
+    INTEGER(our_int)                :: i
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    910 FORMAT(f25.15)
+    900 FORMAT(A25)
+
+    DO i = 1, SIZE(floats)
+
+        IF (ABS(floats(i)) > LARGE_FLOAT) THEN
+            WRITE(char_floats(i), 900) '---'
+        ELSE
+            WRITE(char_floats(i), 910) floats(i)
+        END IF
+
+    END DO
+
+END FUNCTION
 !******************************************************************************
 !******************************************************************************
 END MODULE
