@@ -303,7 +303,23 @@ class RespyCls(object):
         init_dict['SHOCKS']['coeffs'] = shocks_coeffs
 
         init_dict['SHOCKS']['bounds'] = self.attr['paras_bounds'][17:27]
-        init_dict['SHOCKS']['fixed'] = self.attr['paras_fixed'][17:27]
+
+        # Again we need to reorganize the order of the coefficients
+        paras_fixed_reordered = self.attr['paras_fixed'][:]
+
+        paras_fixed = paras_fixed_reordered[:]
+        paras_fixed[17] = paras_fixed_reordered[17]
+        paras_fixed[18] = paras_fixed_reordered[18]
+        paras_fixed[21] = paras_fixed_reordered[19]
+        paras_fixed[19] = paras_fixed_reordered[20]
+        paras_fixed[22] = paras_fixed_reordered[21]
+        paras_fixed[24] = paras_fixed_reordered[22]
+        paras_fixed[20] = paras_fixed_reordered[23]
+        paras_fixed[23] = paras_fixed_reordered[24]
+        paras_fixed[25] = paras_fixed_reordered[25]
+        paras_fixed[26] = paras_fixed_reordered[26]
+
+        init_dict['SHOCKS']['fixed'] = paras_fixed[17:27]
 
         # Solution
         init_dict['SOLUTION'] = dict()
