@@ -702,11 +702,22 @@ class RespyCls(object):
 
         # It is not clear at this point how to impose parameter constraints
         # on the covariance matrix in a flexible manner. So, either all fixed
-        # or none.
+        # or none. As a special case, we also allow for all off-diagonal
+        # elements to be fixed to zero.
+        shocks_coeffs = cholesky_to_coeffs(shocks_cholesky)
         shocks_fixed = paras_fixed[17:]
+
         all_fixed = all(is_fixed is False for is_fixed in shocks_fixed)
         all_free = all(is_free is True for is_free in shocks_fixed)
-        assert all_free or all_fixed
+
+        subset_fixed = [shocks_fixed[i] for i in [1, 2, 3, 5, 6, 8]]
+        subset_value = [shocks_coeffs[i] for i in [1, 2, 3, 5, 6, 8]]
+
+        off_diagonal_fixed = all(is_free is True for is_free in subset_fixed)
+        off_diagonal_value = all(value == 0.0 for value in subset_value)
+        off_diagonal = off_diagonal_fixed and off_diagonal_value
+
+        assert all_free or all_fixed or off_diagonal
 
         # Ambiguity needs to be larger than one ...
         assert paras_bounds[0][0] >= 0.00
