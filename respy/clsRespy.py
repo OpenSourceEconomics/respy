@@ -506,6 +506,26 @@ class RespyCls(object):
                 self.attr['optimizer_options'][optimizer] = \
                     init_dict[optimizer]
 
+        # We need to align the indicator for the fixed parameters. In the
+        # initialization file, these refer to the upper triangular matrix of
+        # the covariances. Inside the program, we rely on the lower
+        # triangular Cholesky decomposition.
+        paras_fixed = self.attr['paras_fixed'][:]
+
+        paras_fixed_reordered = paras_fixed[:]
+        paras_fixed_reordered[17] = paras_fixed[17]
+        paras_fixed_reordered[18] = paras_fixed[18]
+        paras_fixed_reordered[19] = paras_fixed[21]
+        paras_fixed_reordered[20] = paras_fixed[19]
+        paras_fixed_reordered[21] = paras_fixed[22]
+        paras_fixed_reordered[22] = paras_fixed[24]
+        paras_fixed_reordered[23] = paras_fixed[20]
+        paras_fixed_reordered[24] = paras_fixed[23]
+        paras_fixed_reordered[25] = paras_fixed[25]
+        paras_fixed_reordered[26] = paras_fixed[26]
+
+        self.attr['paras_fixed'] = paras_fixed_reordered
+
         # Delete the duplicated information from the initialization
         # dictionary. Special treatment of EDUCATION is required as it
         # contains other information about education than just the
@@ -704,14 +724,14 @@ class RespyCls(object):
         # on the covariance matrix in a flexible manner. So, either all fixed
         # or none. As a special case, we also allow for all off-diagonal
         # elements to be fixed to zero.
-        shocks_coeffs = cholesky_to_coeffs(shocks_cholesky)
+        shocks_coeffs = shocks_cholesky[np.tril_indices(4)]
         shocks_fixed = paras_fixed[17:]
 
         all_fixed = all(is_fixed is False for is_fixed in shocks_fixed)
         all_free = all(is_free is True for is_free in shocks_fixed)
 
-        subset_fixed = [shocks_fixed[i] for i in [1, 2, 3, 5, 6, 8]]
-        subset_value = [shocks_coeffs[i] for i in [1, 2, 3, 5, 6, 8]]
+        subset_fixed = [shocks_fixed[i] for i in [1, 3, 4, 6, 7, 8]]
+        subset_value = [shocks_coeffs[i] for i in [1, 3, 4, 6, 7, 8]]
 
         off_diagonal_fixed = all(is_free is True for is_free in subset_fixed)
         off_diagonal_value = all(value == 0.0 for value in subset_value)
