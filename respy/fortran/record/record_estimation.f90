@@ -133,7 +133,7 @@ SUBROUTINE record_estimation_stop()
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val_current, num_eval, paras_fixed)
+SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val_current, num_eval, paras_fixed, start)
 
     ! We record all things related to the optimization in est.respy.log. That is why we print the values actually relevant for the optimization, i.e. free and scaled. In est.respy.info we switch to the users perspective, all parameter are printed with their economic interpreation intact.
 
@@ -142,6 +142,7 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
     REAL(our_dble), INTENT(IN)      :: x_optim_free_scaled(num_free)
     REAL(our_dble), INTENT(IN)      :: x_optim_all_unscaled(27)
     REAL(our_dble), INTENT(IN)      :: val_current
+    REAL(our_dble), INTENT(IN)      :: start
 
     INTEGER(our_int), INTENT(IN)    :: num_eval
 
@@ -160,6 +161,7 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
     REAL(our_dble)                  :: shocks_cov(3, 4, 4)
     REAL(our_dble)                  :: flattened_cov(3, 10)
     REAL(our_dble)                  :: cond(3)
+    REAL(our_dble)                  :: finish
 
     INTEGER(our_int)                :: i
     INTEGER(our_int)                :: j
@@ -245,17 +247,18 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
 
 
     CALL get_time(today_char, now_char)
-
+    CALL CPU_TIME(finish)
 
     100 FORMAT(1x,A4,i13,10x,A4,i10)
     110 FORMAT(3x,A4,25X,A10)
     120 FORMAT(3x,A4,27X,A8)
+    125 FORMAT(3x,A8,23X,i8)
     130 FORMAT(3x,A9,5X,A25)
     135 FORMAT(3x,A9,5X,A25)
     140 FORMAT(3x,A10,3(4x,A25))
     150 FORMAT(3x,i10,3(4x,A25))
     155 FORMAT(3x,A9,1x,3(4x,f25.15))
-    157 FORMAT(3x,A9,1x,4x,f25.15)
+    157 FORMAT(3x,A9,1x,4x,f24.2,A1)
 
     OPEN(UNIT=99, FILE='est.respy.log', ACCESS='APPEND', ACTION='WRITE')
 
@@ -263,8 +266,17 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
         WRITE(99, *)
         WRITE(99, 110) 'Date', today_char
         WRITE(99, 120) 'Time', now_char
+        WRITE(99, 125) 'Duration', INT(finish - start)
+        WRITE(99, *)
 
         WRITE(99, 130) 'Criterion', char_floats(crit_vals(3:3))
+
+        IF (.NOT. opt_ambi_info(1) == zero_int) THEN
+            WRITE(99, 157) 'Ambiguity', (DBLE(opt_ambi_info(2)) / DBLE(opt_ambi_info(1)) * 100), '%'
+        ELSE
+            WRITE(99, 135) 'Ambiguity', '---'
+        END IF
+
 
         WRITE(99, *)
         WRITE(99, 140) 'Identifier', 'Start', 'Step', 'Current'
@@ -280,13 +292,6 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
         WRITE(99, *)
 
         WRITE(99, 155) 'Condition', LOG(cond)
-
-        IF (.NOT. opt_ambi_info(1) == zero_int) THEN
-            WRITE(99, 157) 'Ambiguity', DBLE(opt_ambi_info(2)) / DBLE(opt_ambi_info(1))
-        ELSE
-            WRITE(99, 135) 'Ambiguity', '---'
-
-        END IF
 
         WRITE(99, *)
 

@@ -1,3 +1,4 @@
+from datetime import datetime
 import numpy as np
 
 from respy.python.record.record_estimation import record_estimation_eval
@@ -35,6 +36,10 @@ class OptimizationClass(object):
         """ This method serves as a wrapper around the alternative
         implementations of the criterion function.
         """
+        # We intent to monitor the duration of each evaluation of the criterion
+        # function.
+        start = datetime.now()
+
         # Distribute class attributes
         precond_matrix = self.precond_matrix
 
@@ -49,7 +54,7 @@ class OptimizationClass(object):
         if not hasattr(self, 'is_scaling'):
 
             # Record the progress of the estimation.
-            record_estimation_eval(self, fval, x_optim_all_unscaled)
+            record_estimation_eval(self, fval, x_optim_all_unscaled, start)
 
             # This is only used to determine whether a stabilization of the
             # Cholesky matrix is required.

@@ -1,3 +1,4 @@
+from datetime import datetime
 import numpy as np
 import time
 
@@ -71,7 +72,7 @@ def record_estimation_stop():
         out_file.write('\n TERMINATED\n')
 
 
-def record_estimation_eval(opt_obj, fval, x_optim_all_unscaled):
+def record_estimation_eval(opt_obj, fval, x_optim_all_unscaled, start):
     """ Logging the progress of an estimation. This function contains two
     parts as two files provide information about the progress.
     """
@@ -120,10 +121,24 @@ def record_estimation_eval(opt_obj, fval, x_optim_all_unscaled):
         fmt_ = '   {0:<9}     {1:>25}\n'
         out_file.write(fmt_.format(*['Time', time.strftime("%H:%M:%S")]))
 
-        fmt_ = '   {0:>9}     {1:>25}\n\n'
+        fmt_ = '   {:<9} ' + '    {:>25}\n\n'
+        duration = int((datetime.now() - start).total_seconds())
+        out_file.write(fmt_.format(*['Duration', duration]))
+
+        fmt_ = '   {0:>9}     {1:>25}\n'
         out_file.write(fmt_.format(*['Criterion', char_floats(fval)[0]]))
 
-        fmt_ = '   {:>10}' + '    {:>25}' * 3 + '\n\n'
+        # Record some information about the success rate of the nested
+        # optimization to determine the worst case outcomes.
+        if opt_ambi_info[0] != 0:
+            fmt_ = '   {:<9} ' + '    {:24.2f}%\n'
+            share = (opt_ambi_info[1] / float(opt_ambi_info[0])) * 100
+            out_file.write(fmt_.format(*['Ambiguity', share]))
+        else:
+            fmt_ = '   {:<9} ' + '    {:>25}\n'
+            out_file.write(fmt_.format(*['Ambiguity', '---']))
+
+        fmt_ = '\n   {:>10}' + '    {:>25}' * 3 + '\n\n'
         out_file.write(fmt_.format(*['Identifier', 'Start', 'Step', 'Current']))
 
         # Formatting for the file
@@ -143,16 +158,6 @@ def record_estimation_eval(opt_obj, fval, x_optim_all_unscaled):
             cond += [np.log(spectral_condition_number(shocks_cov))]
         fmt_ = '   {:>9} ' + '    {:25.15f}' * 3 + '\n'
         out_file.write(fmt_.format(*['Condition'] + cond))
-
-        # Record some information about the success rate of the nested
-        # optimization to determine the worst case outcomes.
-        if opt_ambi_info[0] != 0:
-            fmt_ = '   {:>9} ' + '    {:25.15f}\n'
-            share = float(opt_ambi_info[1]) / float(opt_ambi_info[0])
-            out_file.write(fmt_.format(*['Ambiguity', share]))
-        else:
-            fmt_ = '   {:>9} ' + '    {:>25}\n'
-            out_file.write(fmt_.format(*['Ambiguity', '---']))
 
         out_file.write('\n')
 

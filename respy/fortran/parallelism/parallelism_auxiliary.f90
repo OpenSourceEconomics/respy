@@ -312,6 +312,7 @@ FUNCTION fort_criterion_parallel(x)
     REAL(our_dble)                  :: coeffs_a(6)
     REAL(our_dble)                  :: coeffs_b(6)
     REAL(our_dble)                  :: level(1)
+    REAL(our_dble)                  :: start
 
     INTEGER(our_int), ALLOCATABLE   :: num_states_slaves(:, :)
     INTEGER(our_int), ALLOCATABLE   :: num_obs_slaves(:)
@@ -324,6 +325,9 @@ FUNCTION fort_criterion_parallel(x)
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
+
+    ! We intent to monitor the execution time of every evaluation of the criterion function.
+    CALL CPU_TIME(start)
 
     ! Ensuring that the criterion function is not evaluated more than specified. However, there is the special request of MAXFUN equal to zero which needs to be allowed.
     IF ((num_eval == maxfun) .AND. crit_estimation .AND. (.NOT. maxfun == zero_int)) THEN
@@ -367,7 +371,7 @@ FUNCTION fort_criterion_parallel(x)
 
         num_eval = num_eval + 1
 
-        CALL record_estimation(x, x_all_current, fort_criterion_parallel, num_eval, paras_fixed)
+        CALL record_estimation(x, x_all_current, fort_criterion_parallel, num_eval, paras_fixed, start)
 
         IF (dist_optim_paras_info .NE. zero_int) CALL record_warning(4)
 

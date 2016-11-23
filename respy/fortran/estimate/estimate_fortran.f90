@@ -144,6 +144,7 @@ FUNCTION fort_criterion(x_optim_free_scaled)
     REAL(our_dble)                  :: coeffs_a(6)
     REAL(our_dble)                  :: coeffs_b(6)
     REAL(our_dble)                  :: level(1)
+    REAL(our_dble)                  :: start
 
     INTEGER(our_int)                :: dist_optim_paras_info
 
@@ -153,6 +154,9 @@ FUNCTION fort_criterion(x_optim_free_scaled)
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
+
+    ! We intent to monitor the execution time of every evaluation of the criterion function.
+    CALL CPU_TIME(start)
 
     ! Ensuring that the criterion function is not evaluated more than specified. However, there is the special request of MAXFUN equal to zero which needs to be allowed.
     IF ((num_eval == maxfun) .AND. crit_estimation .AND. (.NOT. maxfun == zero_int)) THEN
@@ -179,7 +183,7 @@ FUNCTION fort_criterion(x_optim_free_scaled)
 
         num_eval = num_eval + 1
 
-        CALL record_estimation(x_optim_free_scaled, x_optim_all_unscaled, fort_criterion, num_eval, paras_fixed)
+        CALL record_estimation(x_optim_free_scaled, x_optim_all_unscaled, fort_criterion, num_eval, paras_fixed, start)
 
         IF (dist_optim_paras_info .NE. zero_int) CALL record_warning(4)
 

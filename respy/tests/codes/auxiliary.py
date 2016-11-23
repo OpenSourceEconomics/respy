@@ -116,7 +116,7 @@ def compare_est_log(base_est_log):
                     # determination are very sensitive for ill-conditioned
                     # problems and thus the performance varies across versions.
                     pass
-                elif list_[0] in ['Time']:
+                elif list_[0] in ['Time', 'Duration']:
                     pass
                 else:
                     assert alt_line == base_line
