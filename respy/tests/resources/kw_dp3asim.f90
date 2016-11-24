@@ -3,9 +3,9 @@
 !
 !   Notes:
 !
-!       There exists and independent copy of this file at 
+!       There exists and independent copy of this file at
 !       RESPY/development/tests/random/modules. This is used as part of the
-!       testing efforts. This is required to ensure independence of 
+!       testing efforts. This is required to ensure independence of
 !       each GITHUB repository.
 !
 !******************************************************************************
@@ -16,7 +16,7 @@ PROGRAM dp3asim
   ! There are only minor modifications to the original source code.
   ! The input and output connections are opened and the commenting
   ! style is changed to comply with the FORTRAN95 standard. Line
-  ! breaks are removed. Some consecutive IF statements were changed to ELSEIF. 
+  ! breaks are removed. Some consecutive IF statements were changed to ELSEIF.
   !
   ! The program is amended to read in random components to allow for testing
   ! its output against the RESPY package (if requested).
@@ -24,11 +24,11 @@ PROGRAM dp3asim
   !****************************************************************************
 
   ! PEI: Interface to added functions
-  USE PEI_ADDITIONS 
+  USE PEI_ADDITIONS
 
   ! PEI: Interface to IMSL replacements
   USE IMSL_REPLACEMENTS
-  
+
 !********************************************************
 !*  PROGRAM TO CONSTRUCT MONTE CARLO DATA FOR DP MODEL  *
 !********************************************************
@@ -51,7 +51,7 @@ PROGRAM dp3asim
       ! PEI: Open files
       open(9,file='in.txt')
 
-      open(10,file='otest.txt'); 
+      open(10,file='otest.txt');
 
       open(11,file='ftest.txt')
 
@@ -83,7 +83,7 @@ PROGRAM dp3asim
       CBAR2 = CBAR2*1000.00
       CS    = CS   *1000.00
       VHOME = VHOME*1000.00
-      DO 1007 J=3,4             
+      DO 1007 J=3,4
         SIGMA(J) = SIGMA(J)*1000.0
  1007 CONTINUE
 !*********************************************************
@@ -119,7 +119,7 @@ PROGRAM dp3asim
       DO 21 X1=0,T-1
       DO 22 X2=0,T-1
         IF(X1+X2+E-10.LT.T) THEN
-           DO 23 LS=0,1 
+           DO 23 LS=0,1
            IF((LS.eq.0).and.((E-T).eq.9)) goto 23
            IF((LS.eq.1).and.(E.eq.10).and.(T.gt.1)) goto 23
            K=K+1
@@ -134,8 +134,8 @@ PROGRAM dp3asim
    21 CONTINUE
    20 CONTINUE
       KMAX(T)=K
-   10 CONTINUE 
-      do 24 t=1,nper 
+   10 CONTINUE
+      do 24 t=1,nper
          write(10,2001) t,kmax(t)
  2001    format(' t=',i2,' kmax(t)=',i6)
    24 continue
@@ -150,11 +150,11 @@ PROGRAM dp3asim
        EU1(J,T) = exp(A(1,1)*RNN(1))
        EU2(J,T) = exp(A(2,1)*RNN(1)+A(2,2)*RNN(2))
        C(J,T)   = A(3,1)*RNN(1)+A(3,2)*RNN(2)+A(3,3)*RNN(3)
-       B(J,T)   = A(4,1)*RNN(1)+A(4,2)*RNN(2)+A(4,3)*RNN(3)+A(4,4)*RNN(4)     
+       B(J,T)   = A(4,1)*RNN(1)+A(4,2)*RNN(2)+A(4,3)*RNN(3)+A(4,4)*RNN(4)
    30 CONTINUE
    31 CONTINUE
 !C  30 CONTINUE
- 
+
   ! PEI: Create zero disturbances.
   CALL READ_IN_DISTURBANCES(EU1, EU2, C, B)
 
@@ -172,19 +172,19 @@ PROGRAM dp3asim
         LS=KSTATE(NPER,K,4)
         W1=exp(BETA(1,1)+BETA(1,2)*E+BETA(1,3)*X1+BETA(1,4)*X1**2    +BETA(1,5)*X2+BETA(1,6)*X2**2)
         W2=exp(BETA(2,1)+BETA(2,2)*E+BETA(2,3)*X1+BETA(2,4)*X1**2  +BETA(2,5)*X2+BETA(2,6)*X2**2)
-        IF(E.GE.12) THEN                 
-          CBAR = CBAR1 - CBAR2 
+        IF(E.GE.12) THEN
+          CBAR = CBAR1 - CBAR2
          ELSE
           CBAR = CBAR1
         ENDIF
         IF(LS.eq.0) CBAR = CBAR - CS
       DO 42 J=1,DRAW
         V1 = W1*EU1(J,NPER)
-        V2 = W2*EU2(J,NPER) 
+        V2 = W2*EU2(J,NPER)
         IF(E.LE.19) THEN
           V3 = CBAR+C(J,NPER)
          ELSE
-          V3 = CBAR - 40000.0
+          V3 = CBAR - 400000.0
         ENDIF
         V4 = VHOME+B(J,NPER)
 !C        write(10,2002) j,eu1(nper,j),eu2(nper,j),c(nper,j)
@@ -215,8 +215,8 @@ PROGRAM dp3asim
         LS=KSTATE(T,K,4)
         W1=exp(BETA(1,1)+BETA(1,2)*E+BETA(1,3)*X1+BETA(1,4)*X1**2      +BETA(1,5)*X2+BETA(1,6)*X2**2)
         W2=exp(BETA(2,1)+BETA(2,2)*E+BETA(2,3)*X1+BETA(2,4)*X1**2      +BETA(2,5)*X2+BETA(2,6)*X2**2)
-        IF(E.GE.12) THEN                 
-          CBAR = CBAR1 - CBAR2 
+        IF(E.GE.12) THEN
+          CBAR = CBAR1 - CBAR2
          ELSE
           CBAR = CBAR1
         ENDIF
@@ -227,11 +227,11 @@ PROGRAM dp3asim
         IF(E.LE.19) then
           V3=CBAR+C(J,T)  + DELTA*EMAX(T+1,FSTATE(T+1,X1+1,X2+1,E-8,2))
          else
-          V3=CBAR - 40000.0
+          V3=CBAR - 400000.0
         ENDIF
         V4=VHOME+B(J,T)   + DELTA*EMAX(T+1,FSTATE(T+1,X1+1,X2+1,E-9,1))
 !C       SUMV=EXP((V1-VMAX)/TAU)+EXP((V2-VMAX)/TAU)
-!C    *     +EXP((V3-VMAX)/TAU)+EXP(V4-VMAX)/TAU)         
+!C    *     +EXP((V3-VMAX)/TAU)+EXP(V4-VMAX)/TAU)
         VMAX=AMAX1(V1,V2,V3,V4)
         EMAX(T,K)=EMAX(T,K)+VMAX
 !C       EMAX1(T,k)=EMAX1(T,K)
@@ -243,7 +243,7 @@ PROGRAM dp3asim
 !C      DO 54 T=2,NPER
 !C      DO 55 K=1,KMAX(T)
 !C        WRITE(10,2000) T,K,KSTATE(T,K,1),KSTATE(T,K,2),
-!C     *   KSTATE(T,K,3),EMAX(T,K)  
+!C     *   KSTATE(T,K,3),EMAX(T,K)
 !C 2000   FORMAT(' T=',I2,' K=',I4,' X1=',I2,' X2=',I2,
 !C     *    ' E=',I2,' EMAX=',F16.3)
 !C   55 CONTINUE
@@ -258,7 +258,7 @@ PROGRAM dp3asim
         prob1(t,j)=0.0
   59  continue
   58  continue
-      wealth = 0.0 
+      wealth = 0.0
       DO 60 L=1,NPOP
         X1=0
         X2=0
@@ -269,30 +269,30 @@ PROGRAM dp3asim
        W1=exp(BETA(1,1)+BETA(1,2)*E+BETA(1,3)*X1+BETA(1,4)*X1**2 +BETA(1,5)*X2+BETA(1,6)*X2**2)
        W2=exp(BETA(2,1)+BETA(2,2)*E+BETA(2,3)*X1+BETA(2,4)*X1**2 +BETA(2,5)*X2+BETA(2,6)*X2**2)
        WAGE1=W1*EU1(L,T)
-       WAGE2=W2*EU2(L,T)  
+       WAGE2=W2*EU2(L,T)
        V1=WAGE1 + DELTA*EMAX(T+1,FSTATE(T+1,X1+2,X2+1,E-9,1))
-       V2=WAGE2 + DELTA*EMAX(T+1,FSTATE(T+1,X1+1,X2+2,E-9,1)) 
-       IF(E.GE.12) THEN                 
-         CBAR = CBAR1 - CBAR2 
+       V2=WAGE2 + DELTA*EMAX(T+1,FSTATE(T+1,X1+1,X2+2,E-9,1))
+       IF(E.GE.12) THEN
+         CBAR = CBAR1 - CBAR2
         ELSE
          CBAR = CBAR1
        ENDIF
        IF(LS.eq.0) CBAR = CBAR - CS
-       IF(E.LE.19) then 
+       IF(E.LE.19) then
          V3=CBAR+C(L,T) + DELTA*EMAX(T+1,FSTATE(T+1,X1+1,X2+1,E-8,2))
-         WAGE3=CBAR+C(L,T)  
+         WAGE3=CBAR+C(L,T)
         ELSE
-         V3=CBAR - 40000.0
-         WAGE3=CBAR-40000.0
+         V3=CBAR - 400000.0
+         WAGE3=CBAR-400000.0
        ENDIF
        V4=VHOME+B(L,T) + DELTA*EMAX(T+1,FSTATE(T+1,X1+1,X2+1,E-9,1))
-       WAGE4=VHOME+B(L,T) 
+       WAGE4=VHOME+B(L,T)
        VMAX=AMAX1(V1,V2,V3,V4)
-       SUMV=EXP((V1-VMAX)/TAU)+EXP((V2-VMAX)/TAU)   +EXP((V3-VMAX)/TAU)+EXP((V4-VMAX)/TAU) 
-       prob(t,1)=prob(t,1)+( EXP((v1-vmax)/tau) /sumv ) /npop         
-       prob(t,2)=prob(t,2)+( EXP((v2-vmax)/tau) /sumv ) /npop         
-       prob(t,3)=prob(t,3)+( EXP((v3-vmax)/tau) /sumv ) /npop         
-       prob(t,4)=prob(t,4)+( EXP((v4-vmax)/tau) /sumv ) /npop         
+       SUMV=EXP((V1-VMAX)/TAU)+EXP((V2-VMAX)/TAU)   +EXP((V3-VMAX)/TAU)+EXP((V4-VMAX)/TAU)
+       prob(t,1)=prob(t,1)+( EXP((v1-vmax)/tau) /sumv ) /npop
+       prob(t,2)=prob(t,2)+( EXP((v2-vmax)/tau) /sumv ) /npop
+       prob(t,3)=prob(t,3)+( EXP((v3-vmax)/tau) /sumv ) /npop
+       prob(t,4)=prob(t,4)+( EXP((v4-vmax)/tau) /sumv ) /npop
        IF (VMAX .EQ. V1) THEN
          K=1
          LS1=0
@@ -327,30 +327,30 @@ PROGRAM dp3asim
         wealth = wealth + WAGE4*(DELTA**T)
        ENDIF
    61 CONTINUE
-       T = NPER 
+       T = NPER
        LS = LS1
        W1=exp(BETA(1,1)+BETA(1,2)*E+BETA(1,3)*X1+BETA(1,4)*X1**2 +BETA(1,5)*X2+BETA(1,6)*X2**2)
        W2=exp(BETA(2,1)+BETA(2,2)*E+BETA(2,3)*X1+BETA(2,4)*X1**2 +BETA(2,5)*X2+BETA(2,6)*X2**2)
        V1=W1*EU1(L,T)
-       V2=W2*EU2(L,T)  
-       IF(E.GE.12) THEN                 
-         CBAR = CBAR1 - CBAR2 
+       V2=W2*EU2(L,T)
+       IF(E.GE.12) THEN
+         CBAR = CBAR1 - CBAR2
         ELSE
          CBAR = CBAR1
        ENDIF
        IF(LS.eq.0) CBAR = CBAR - CS
-       IF(E.LE.19) then 
-         V3=CBAR+C(L,T) 
+       IF(E.LE.19) then
+         V3=CBAR+C(L,T)
         ELSE
-         V3=CBAR - 40000.0
+         V3=CBAR - 400000.0
        ENDIF
-       V4=VHOME+B(L,T) 
+       V4=VHOME+B(L,T)
        VMAX=AMAX1(V1,V2,V3,V4)
-       SUMV=EXP((V1-VMAX)/TAU)+EXP((V2-VMAX)/TAU) +EXP((V3-VMAX)/TAU)+EXP((V4-VMAX)/TAU) 
-       prob(t,1)=prob(t,1)+( EXP((v1-vmax)/tau) /sumv ) /npop         
-       prob(t,2)=prob(t,2)+( EXP((v2-vmax)/tau) /sumv ) /npop         
-       prob(t,3)=prob(t,3)+( EXP((v3-vmax)/tau) /sumv ) /npop         
-       prob(t,4)=prob(t,4)+( EXP((v4-vmax)/tau) /sumv ) /npop         
+       SUMV=EXP((V1-VMAX)/TAU)+EXP((V2-VMAX)/TAU) +EXP((V3-VMAX)/TAU)+EXP((V4-VMAX)/TAU)
+       prob(t,1)=prob(t,1)+( EXP((v1-vmax)/tau) /sumv ) /npop
+       prob(t,2)=prob(t,2)+( EXP((v2-vmax)/tau) /sumv ) /npop
+       prob(t,3)=prob(t,3)+( EXP((v3-vmax)/tau) /sumv ) /npop
+       prob(t,4)=prob(t,4)+( EXP((v4-vmax)/tau) /sumv ) /npop
        IF (VMAX .EQ. V1) THEN
          K=1
        ELSE IF (VMAX .EQ. V2) THEN
