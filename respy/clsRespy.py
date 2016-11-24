@@ -32,6 +32,14 @@ SOLUTION_ATTR += ['mapping_state_idx', 'periods_emax', 'states_all']
 # Full list of admissible optimizers
 OPTIMIZERS = OPT_EST_FORT + OPT_EST_PYTH + ['FORT-SLSQP', 'SCIPY-SLSQP']
 
+# We need to do some reorganization as the parameters from the initialization
+# file describing the covarianc structure need to be mapped to the Cholesky
+# factors that are the parameters the optimizer actually iterates on.
+PARAS_MAPPING = []
+PARAS_MAPPING += [(17, 17), (18, 18), (19, 21), (20, 19)]
+PARAS_MAPPING += [(21, 22), (22, 24), (23, 20), (24, 23)]
+PARAS_MAPPING += [(25, 25), (26, 26)]
+
 
 class RespyCls(object):
     """ This class manages the distribution of the use requests throughout
@@ -308,16 +316,8 @@ class RespyCls(object):
         paras_fixed_reordered = self.attr['paras_fixed'][:]
 
         paras_fixed = paras_fixed_reordered[:]
-        paras_fixed[17] = paras_fixed_reordered[17]
-        paras_fixed[18] = paras_fixed_reordered[18]
-        paras_fixed[21] = paras_fixed_reordered[19]
-        paras_fixed[19] = paras_fixed_reordered[20]
-        paras_fixed[22] = paras_fixed_reordered[21]
-        paras_fixed[24] = paras_fixed_reordered[22]
-        paras_fixed[20] = paras_fixed_reordered[23]
-        paras_fixed[23] = paras_fixed_reordered[24]
-        paras_fixed[25] = paras_fixed_reordered[25]
-        paras_fixed[26] = paras_fixed_reordered[26]
+        for old, new in PARAS_MAPPING:
+            paras_fixed[old] = paras_fixed_reordered[new]
 
         init_dict['SHOCKS']['fixed'] = paras_fixed[17:27]
 
@@ -529,16 +529,8 @@ class RespyCls(object):
         paras_fixed = self.attr['paras_fixed'][:]
 
         paras_fixed_reordered = paras_fixed[:]
-        paras_fixed_reordered[17] = paras_fixed[17]
-        paras_fixed_reordered[18] = paras_fixed[18]
-        paras_fixed_reordered[19] = paras_fixed[21]
-        paras_fixed_reordered[20] = paras_fixed[19]
-        paras_fixed_reordered[21] = paras_fixed[22]
-        paras_fixed_reordered[22] = paras_fixed[24]
-        paras_fixed_reordered[23] = paras_fixed[20]
-        paras_fixed_reordered[24] = paras_fixed[23]
-        paras_fixed_reordered[25] = paras_fixed[25]
-        paras_fixed_reordered[26] = paras_fixed[26]
+        for old, new in PARAS_MAPPING:
+            paras_fixed_reordered[new] = paras_fixed[old]
 
         self.attr['paras_fixed'] = paras_fixed_reordered
 
