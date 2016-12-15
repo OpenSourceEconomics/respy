@@ -19,17 +19,6 @@ EDU, EXP_A, EXP_B = 10.00, 5, 5
 """ Auxiliary function
 """
 
-def prepare_directories(SPECS):
-
-    for spec in SPECS:
-        dirname = 'data_' + spec
-        try:
-            shutil.rmtree(dirname)
-        except OSError:
-            pass
-
-        os.mkdir(dirname)
-
 
 def wage_function(edu, exp_A, exp_B, coeffs):
     """ This function calculates the expected wage based on an agent's
@@ -116,7 +105,7 @@ def get_choice_probabilities(fname):
     return stats
 
 
-def plot_return_experience(x, y, z, spec):
+def plot_return_experience(x, y, z):
     """ Function to produce plot for the return to experience.
     """
     def _beautify_subplot(subplot, zlim):
@@ -141,12 +130,8 @@ def plot_return_experience(x, y, z, spec):
     # Scaling
     z['a'] /= 1000
     z['b'] /= 1000
-    if spec == 'one':
-        zlim = [10, 35]
-    elif spec == 'two':
-        zlim = [0, 55]
-    elif spec == 'three':
-        zlim = [0, 55]
+
+    zlim = [0, 30]
 
     fig = plt.figure(figsize=(16, 8))
 
@@ -164,10 +149,10 @@ def plot_return_experience(x, y, z, spec):
     _beautify_subplot(ax, zlim)
 
     # Write out to
-    plt.savefig('data_' + spec.lower() + '/returns_experience.png', bbox_inches='tight', format='png')
+    plt.savefig('returns_experience.png', bbox_inches='tight', format='png')
 
 
-def plot_return_education(xvals, yvals, spec):
+def plot_return_education(xvals, yvals):
     """ Function to produce plot for the return to education.
     """
     # Initialize plot
@@ -204,11 +189,10 @@ def plot_return_education(xvals, yvals, spec):
         fancybox=False, frameon=False, shadow=False, ncol=2, fontsize=20)
 
     # Write out to
-    plt.savefig('data_' + spec.lower() + '/returns_schooling.png',
-                bbox_inches='tight', format='png')
+    plt.savefig('returns_schooling.png', bbox_inches='tight', format='png')
 
 
-def plot_choice_patterns(choice_probabilities, task):
+def plot_choice_patterns(choice_probabilities):
     """ Function to produce plot for choice patterns.
     """
 
@@ -252,5 +236,5 @@ def plot_choice_patterns(choice_probabilities, task):
                fontsize=20)
 
     # Write out to
-    plt.savefig('choices_' + task + '.png', bbox_inches='tight',
+    plt.savefig('choices.png', bbox_inches='tight',
                 format='png')

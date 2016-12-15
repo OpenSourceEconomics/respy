@@ -3,7 +3,9 @@
 """
 
 import numpy as np
+import shutil
 import sys
+import os
 
 np.random.seed(123)
 import respy
@@ -14,23 +16,33 @@ from auxiliary_scalability import plot_scalability
 from auxiliary_scalability import get_durations
 from auxiliary_scalability import linear_gains
 
+INIT_FILE = '../../../graphs.respy.ini'
+
 if __name__ == '__main__':
 
-    # Get the information about the durations from the result files.
-    rslt, labels, grid_slaves = get_durations()
+    # Cleanup results from a previous run and prepare the directory structure.
+    if os.path.exists('rslt'):
+        shutil.rmtree('rslt')
+    os.mkdir('rslt')
 
-    # Prepare the the values for the plot
-    ys, func_lin = [], []
-    for num_slaves in grid_slaves:
-        ys += [rslt[labels[0]][num_slaves].total_seconds()]
-        func_lin += [linear_gains(num_slaves, ys)]
+    os.chdir('rslt')
 
-    plot_scalability(ys, func_lin, grid_slaves)
+    #
+    # # Get the information about the durations from the result files.
+    # rslt, labels, grid_slaves = get_durations()
+    #
+    # # Prepare the the values for the plot
+    # ys, func_lin = [], []
+    # for num_slaves in grid_slaves:
+    #     ys += [rslt[labels[0]][num_slaves].total_seconds()]
+    #     func_lin += [linear_gains(num_slaves, ys)]
+    #
+    # plot_scalability(ys, func_lin, grid_slaves)
 
     # To give a feel for the computational challenge, we also plot the number
     # of different decision nodes each period. Read a baseline specification
     # from the original paper.
-    respy_obj = respy.RespyCls('../../../example/kw_data_one.ini')
+    respy_obj = respy.RespyCls(INIT_FILE)
 
     # Some modifications to the baseline initialization file to speed up the
     # solution and simulation step.
@@ -44,7 +56,8 @@ if __name__ == '__main__':
     # We simulate the model to get access to the solution objects which includes
     # the number of states per period. Then all there is left to do is to plot
     # the results in pretty way.
-    num_states = respy.simulate(respy_obj).get_attr('states_number_period')
+    respy_obj, _ = respy.simulate(respy_obj)
+    num_states = respy_obj.get_attr('states_number_period')
 
     num_states_total = np.tile(np.nan, 40)
     for i in range(len(num_states)):
