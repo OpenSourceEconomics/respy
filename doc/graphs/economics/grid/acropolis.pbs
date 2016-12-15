@@ -1,0 +1,16 @@
+#!/bin/bash
+#PBS -N mpi
+#PBS -j oe
+#PBS -l walltime=99:00:00
+#PBS -l nodes=1:ppn=20
+#PBS -V
+#PBS -m ae
+#PBS -M eisenhauer@policy-lab.org
+#PBS -l epilogue=/home/eisenhauer/epilogue_script.sh
+
+# Setting up the environment
+export ENV_BIN=/home/eisenhauer/.envs/structAmbiguity/bin
+
+# We can either request an estimation or perform the scalability exercise.
+cd $PBS_O_WORKDIR
+$ENV_BIN/python run.py
