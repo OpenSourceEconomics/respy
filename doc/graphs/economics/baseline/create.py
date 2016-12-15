@@ -38,6 +38,10 @@ if __name__ == '__main__':
     # Determine choice patterns over time by simulating the samples and
     # processing the summary information about the dataset.
     respy_obj = respy.RespyCls(INIT_FILE)
+    respy_obj.unlock()
+    respy_obj.set_attr('num_procs', 3)
+    respy_obj.lock()
+
     respy.simulate(respy_obj)
 
     choice_probabilities = get_choice_probabilities('data.respy.info')
