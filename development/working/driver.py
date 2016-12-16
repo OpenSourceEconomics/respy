@@ -32,7 +32,7 @@ from codes.random_init import generate_init
 
 respy_obj = RespyCls('model.respy.ini')
 simulate(respy_obj)
-print('going in')
-x, base = estimate(respy_obj)
-print(base)
+#print('going in')
+#x, base = estimate(respy_obj)
+#print(base)
 #np.testing.assert_almost_equal(0.350116964137, base)
