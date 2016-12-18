@@ -22,7 +22,7 @@ if __name__ == '__main__':
     spec_dict['update']['is_store'] = True
 
     # The following key value pair describes the debugging setup.
-    if False:
+    if True:
         spec_dict['update']['num_procs'] = 1
         spec_dict['update']['num_periods'] = 3
 

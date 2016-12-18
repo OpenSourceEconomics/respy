@@ -3,6 +3,8 @@
 import pickle as pkl
 import numpy as np
 import shlex
+import os
+import shutil
 
 import matplotlib
 matplotlib.use('Agg')
@@ -15,20 +17,25 @@ from respy.python.shared.shared_auxiliary import create_draws
 from respy.python.shared.shared_auxiliary import get_emaxs
 
 from auxiliary_economics import get_float_directories
+from auxiliary_economics import move_subdirectory
 from auxiliary_economics import float_to_string
+from auxiliary_economics import GRID_RSLT
+
+FNAME_BASELINE = GRID_RSLT + '/' + float_to_string(0.00) + '/solution.respy.pkl'
 
 
 def run(decision_levels):
-    """ We now evaluate the performance of alternative decision rules under different scenarios.
+    """ We now evaluate the performance of alternative decision rules under
+    different scenarios.
     """
     # We extract some information that is constant across all different models of the world.
-    base_obj = pkl.load(open('../grid/rslt/' + float_to_string(0.00) +
-                             '/solution.respy.pkl', 'rb'))
-    periods_emax, num_periods, num_agents_sim, seed_sim, delta, mapping_state_idx, model_paras, \
-        edu_start, edu_max, states_all, periods_rewards_systematic = dist_class_attributes(base_obj,
-            'periods_emax', 'num_periods', 'num_agents_sim', 'seed_sim', 'delta',
-            'mapping_state_idx', 'model_paras', 'edu_start', 'edu_max', 'states_all',
-            'periods_rewards_systematic')
+    base_obj = pkl.load(open(FNAME_BASELINE, 'rb'))
+    periods_emax, num_periods, num_agents_sim, seed_sim, delta, \
+        mapping_state_idx, model_paras, edu_start, edu_max, states_all, \
+        periods_rewards_systematic = dist_class_attributes(base_obj,
+        'periods_emax', 'num_periods', 'num_agents_sim', 'seed_sim', 'delta',
+        'mapping_state_idx', 'model_paras', 'edu_start', 'edu_max',
+        'states_all', 'periods_rewards_systematic')
 
     # Distribute model parameters
     shocks_cholesky = model_paras['shocks_cholesky']
@@ -44,17 +51,20 @@ def run(decision_levels):
     # Now we are ready to simulate the performance of each decision rule.
     rslt = dict()
 
+    # Cleanup results from a previous run and prepare the directory structure.
+    move_subdirectory()
+
     for decision_level in decision_levels:
 
         rslt[decision_level] = []
 
         # First we read in the model of the world that informs the decision making.
-        fname = '../grid/rslt/' + float_to_string(decision_level) + \
+        fname = GRID_RSLT + '/' + float_to_string(decision_level) + \
                 '/solution.respy.pkl'
         periods_emax = pkl.load(open(fname, 'rb')).get_attr('periods_emax')
 
         # We now iterate over all available models of the world.
-        for world_level in get_float_directories('../grid/rslt'):
+        for world_level in get_float_directories(GRID_RSLT):
             # If applicable, check for the results from the worst-case determination.
             is_ambiguity = (world_level > 0)
             if is_ambiguity:
@@ -69,7 +79,6 @@ def run(decision_levels):
             lifetime_utilities = []
 
             for i in range(num_agents_sim):
-
                 current_state = states_all[0, 0, :].copy()
 
                 lifetime_utility = 0.0
@@ -89,8 +98,6 @@ def run(decision_levels):
                     # If applicable, implementing the shift due to the ambiguity.
 
                     if is_ambiguity:
-                        print(shift_dict[period].keys())
-
                         shifts = shift_dict[period][k]
                     else:
                         shifts = [0.00, 0.00]
@@ -130,14 +137,16 @@ def run(decision_levels):
 
     pkl.dump(rslt, open('performance.respy.pkl', 'wb'))
 
+    os.chdir('../')
+
 
 def plot():
     """ Plot performance of alternative decision rules.
     """
 
-    rslt = pkl.load(open('performance.respy.pkl', 'rb'))
+    rslt = pkl.load(open('rslt/performance.respy.pkl', 'rb'))
 
-    world_levels = get_float_directories('../grid')
+    world_levels = get_float_directories(GRID_RSLT)
     decision_levels = rslt.keys()
 
     ax = plt.figure(figsize=(12, 8)).add_subplot(111)
@@ -149,6 +158,7 @@ def plot():
     for i, level in enumerate(decision_levels):
         yvalues = rslt[level]
         xvalues = world_levels
+        print(xvalues)
         ax.plot(xvalues, yvalues, label=labels[i], linewidth=5, color=colors[i])
 
     # Both axes
@@ -168,14 +178,14 @@ def plot():
         shadow=False, ncol=2, fontsize=20)
 
     # Write out to
-    plt.savefig('performance.respy.png', bbox_inches='tight', format='png')
+    plt.savefig('rslt/performance.respy.png', bbox_inches='tight', format='png')
 
 
 def get_shifts(level):
     """ We read in the results from the worst-case determination.
     """
     shift_dict = dict()
-    for line in open('../grid/rslt/' + float_to_string(level) +
+    for line in open(GRID_RSLT + '/' + float_to_string(level) +
             '/data.respy.amb').readlines():
         # Split line
         list_ = shlex.split(line)

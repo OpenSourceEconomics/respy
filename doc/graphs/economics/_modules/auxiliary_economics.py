@@ -1,6 +1,22 @@
 import subprocess
-import os
+import shutil
 import glob
+import os
+
+
+BASE_DIR = os.path.dirname(os.path.realpath(__file__))
+
+INIT_FILE = BASE_DIR.replace('/economics/_modules', '') + '/graphs.respy.ini'
+GRID_RSLT = BASE_DIR.replace('/_modules', '') + '/grid/rslt'
+
+
+def move_subdirectory():
+    if os.path.exists('rslt'):
+        shutil.rmtree('rslt')
+    os.mkdir('rslt')
+
+    os.chdir('rslt')
+
 
 def float_to_string(float_):
     """ Get string from a float.

@@ -46,7 +46,7 @@ def run():
     rslts['final_choices'] = track_final_choices(num_periods)
     rslts['education_period'] = track_schooling_over_time()
 
-    os.chdir('../../effect_ambiguity')
+    os.chdir('../../effects_ambiguity')
 
     pkl.dump(rslts, open('rslt/ambiguity_choices.respy.pkl', 'wb'))
 

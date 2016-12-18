@@ -1,48 +1,79 @@
-""" This module contains auxiliary functions to plot some information on the
-RESTUD economy.
-"""
-
-# standard library
 import matplotlib.pylab as plt
+from matplotlib import cm
+from mpl_toolkits.mplot3d import Axes3D
+
+import pickle as pkl
 import numpy as np
-import shutil
+
 import shlex
 import os
 
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib.ticker import FuncFormatter
-from matplotlib import cm
+import respy
 
-# Evaluation points
+from auxiliary_economics import move_subdirectory
+from auxiliary_economics import INIT_FILE
+
 EDU, EXP_A, EXP_B = 10.00, 5, 5
 
-""" Auxiliary function
-"""
+
+def run():
+    """ Create the input to plot some baseline information about the
+    specification.
+    """
+    move_subdirectory()
+
+    respy_obj = respy.RespyCls(INIT_FILE)
+    respy_obj.unlock()
+    respy_obj.set_attr('num_procs', 3)
+    respy_obj.lock()
+
+    respy.simulate(respy_obj)
+
+    choice_probabilities = get_choice_probabilities('data.respy.info')
+    pkl.dump(choice_probabilities, open('probabilities.respy.pkl', 'wb'))
+
+    os.chdir('../')
+
+
+def plot():
+    """ Plot some baseline information.
+    """
+
+    os.chdir('rslt')
+
+    plot_choice_patterns()
+    plot_return_education()
+    plot_return_experience()
+
+    os.chdir('../')
+
+
+def get_coeffs():
+    """ Extract coefficients from the initialization file.
+    """
+    move_subdirectory()
+    respy_obj = respy.RespyCls(INIT_FILE)
+    model_paras = respy_obj.get_attr('model_paras')
+    coeffs = dict()
+    for label in ['a', 'b']:
+        coeffs[label] = model_paras['coeffs_' + label]
+    return coeffs
 
 
 def wage_function(edu, exp_A, exp_B, coeffs):
     """ This function calculates the expected wage based on an agent's
-    covariates for a given parameterization.
+    covariates for a given parametrization.
     """
 
-    # Intercept
     wage = coeffs[0]
-
-    # Schooling
     wage += coeffs[1] * edu
-
-    # Experience A
     wage += coeffs[2] * exp_A
     wage += coeffs[3] * exp_A ** 2
-
-    # Experience B
     wage += coeffs[4] * exp_B
     wage += coeffs[5] * exp_B ** 2
 
-    # Transformation
     wage = np.exp(wage)
 
-    # Finishing
     return wage
 
 
@@ -56,58 +87,43 @@ def return_to_experience(exp_A, exp_B, coeffs, which):
     return wage
 
 
-# Auxiliary function
 def return_to_education(edu, coeffs, which):
     """ Wrapper to evaluate the wage function for varying levels of education
     """
-    # Get wage
     wage = wage_function(edu, EXP_A, EXP_B, coeffs[which])
 
-    # Finishing
     return wage
-
-""" Plotting functions
-"""
 
 
 def get_choice_probabilities(fname):
     """ Get the choice probabilities.
     """
-    # Initialize container.
     stats = np.tile(np.nan, (0, 4))
 
     with open(fname) as in_file:
-
         for line in in_file.readlines():
-
-            # Split line
             list_ = shlex.split(line)
-
-            # Skip empty lines
             if not list_:
                 continue
 
-            # If OUTCOMES is reached, then we are done for good.
             if list_[0] == 'Outcomes':
                 break
 
-            # Any lines that do not have an integer as their first element
-            # are not of interest.
             try:
                 int(list_[0])
             except ValueError:
                 continue
 
-            # All lines that make it down here are relevant.
             stats = np.vstack((stats, [float(x) for x in list_[1:]]))
 
     # Finishing
     return stats
 
 
-def plot_return_experience(x, y, z):
+def plot_return_experience():
     """ Function to produce plot for the return to experience.
     """
+
     def _beautify_subplot(subplot, zlim):
         subplot.view_init(azim=180 + 40)
 
@@ -127,6 +143,17 @@ def plot_return_experience(x, y, z):
 
         ax.set_zlim(zlim)
 
+    coeffs = get_coeffs()
+
+    z = dict()
+    for which in ['a', 'b']:
+        x, y = np.meshgrid(range(20), range(20))
+        z[which] = np.tile(np.nan, (20, 20))
+        for i in range(20):
+            for j in range(20):
+                args = [i, j, coeffs, which]
+                z[which][i, j] = return_to_experience(*args)
+
     # Scaling
     z['a'] /= 1000
     z['b'] /= 1000
@@ -135,13 +162,10 @@ def plot_return_experience(x, y, z):
 
     fig = plt.figure(figsize=(16, 8))
 
-
     ax = fig.add_subplot(121, projection='3d')
     ax.plot_surface(x, y, z['a'], rstride=1, cstride=1, cmap=cm.jet,
                     linewidth=0, antialiased=False, alpha=0.8)
     _beautify_subplot(ax, zlim)
-
-
 
     ax = fig.add_subplot(122, projection='3d')
     ax.plot_surface(x, y, z['b'], rstride=1, cstride=1, cmap=cm.jet,
@@ -152,9 +176,19 @@ def plot_return_experience(x, y, z):
     plt.savefig('returns_experience.png', bbox_inches='tight', format='png')
 
 
-def plot_return_education(xvals, yvals):
+def plot_return_education():
     """ Function to produce plot for the return to education.
     """
+
+    coeffs = get_coeffs()
+
+    # Determine wages for varying years of education in each occupation.
+    xvals, yvals = range(10, 21), dict()
+    for which in ['a', 'b']:
+        yvals[which] = []
+        for edu in xvals:
+            yvals[which] += [return_to_education(edu, coeffs, which)]
+
     # Initialize plot
     ax = plt.figure(figsize=(12, 8)).add_subplot(111)
 
@@ -192,10 +226,10 @@ def plot_return_education(xvals, yvals):
     plt.savefig('returns_schooling.png', bbox_inches='tight', format='png')
 
 
-def plot_choice_patterns(choice_probabilities):
+def plot_choice_patterns():
     """ Function to produce plot for choice patterns.
     """
-
+    choice_probabilities = pkl.load(open('probabilities.respy.pkl', 'rb'))
     deciles = range(40)
     colors = ['blue', 'yellow', 'orange', 'red']
     width = 0.9
@@ -213,9 +247,8 @@ def plot_choice_patterns(choice_probabilities):
         bottom = [heights[i] + bottom[i] for i in range(40)]
 
     # Both Axes
-    ax.tick_params(labelsize=16, direction='out', axis='both',
-                   top='off',
-                   right='off')
+    ax.tick_params(labelsize=16, direction='out', axis='both', top='off',
+        right='off')
 
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)

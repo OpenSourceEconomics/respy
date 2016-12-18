@@ -4,16 +4,19 @@ import shlex
 import os
 
 from auxiliary_economics import get_float_directories
+from auxiliary_economics import move_subdirectory
 from auxiliary_economics import float_to_string
-
-GRID_DIR = '../grid/rslt'
-QUANT_DIR = '../../quantification'
+from auxiliary_economics import GRID_RSLT
 
 
 def run():
     """ Quantify the level of ambiguity for the different parameter values.
     """
-    os.chdir(GRID_DIR)
+
+    # Cleanup results from a previous run and prepare the directory structure.
+    move_subdirectory()
+
+    os.chdir(GRID_RSLT)
 
     levels = get_float_directories()
     levels.sort()
@@ -21,7 +24,7 @@ def run():
     for level in levels:
         run_level(level)
 
-    os.chdir('../../quantification')
+    os.chdir('../../quantification/rslt')
 
     aggregate()
 
@@ -47,7 +50,7 @@ def run_level(level):
 def aggregate():
     """ Aggregate results by processing the log files.
     """
-    os.chdir(GRID_DIR)
+    os.chdir(GRID_RSLT)
 
     # Get all directories that are contain information about the criterion
     # function for selected pairs of ambiguity and psychic costs.
@@ -65,7 +68,7 @@ def aggregate():
         # Ready for a new candidate intercept.
         os.chdir('../')
 
-    os.chdir('../../quantification')
+    os.chdir('../../quantification/rslt')
 
     # Open file for logging purposes.
     with open('quantification.respy.log', 'w') as out_file:

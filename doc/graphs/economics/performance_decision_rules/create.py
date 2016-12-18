@@ -10,13 +10,8 @@ from auxiliary_performance import run
 
 if __name__ == '__main__':
 
-    # We only analyze a subset of alternative decision rules.
-    run([0.00, 0.015])
+    run([0.00, 0.05])
 
-    import pickle as pkl
-
-    rslt = pkl.load(open('performance.respy.pkl', 'rb'))
-    print(rslt)
-    #plot()
+    plot()
 
 

@@ -1,27 +1,23 @@
 import numpy as np
 
-import shutil
 import copy
 import os
 
 from respy import RespyCls
 from respy import simulate
 
+from auxiliary_economics import move_subdirectory
 from auxiliary_economics import float_to_string
+from auxiliary_economics import INIT_FILE
 
 
 def run(spec_dict):
     """ Simulate a number of economies with varying number of economies.
     """
-
     # Cleanup results from a previous run and prepare the directory structure.
-    if os.path.exists('rslt'):
-        shutil.rmtree('rslt')
-    os.mkdir('rslt')
+    move_subdirectory()
 
-    os.chdir('rslt')
-
-    respy_base = RespyCls('../../../graphs.respy.ini')
+    respy_base = RespyCls(INIT_FILE)
 
     # Construct the specs for the quantification exercise.
     levels = spec_dict['levels']
@@ -36,8 +32,7 @@ def run(spec_dict):
 
     # Prepare directory structure for request.
     for level in levels:
-        dirname = float_to_string(level)
-        os.mkdir(dirname)
+        os.mkdir(float_to_string(level))
 
     # Update to the baseline initialization file.
     respy_base.unlock()
@@ -45,7 +40,9 @@ def run(spec_dict):
         respy_base.set_attr(key_, spec_dict['update'][key_])
     respy_base.lock()
 
+    # Iterate over all levels and simulate a sample.
     for level in levels:
+
         respy_obj = copy.deepcopy(respy_base)
         respy_obj.attr['model_paras']['level'] = np.array([level])
 
@@ -55,7 +52,6 @@ def run(spec_dict):
 
         respy_obj, _ = simulate(respy_obj)
 
-        # Back to root directory
         os.chdir('../')
 
     os.chdir('../')
