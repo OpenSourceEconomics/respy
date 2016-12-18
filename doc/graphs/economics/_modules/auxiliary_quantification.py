@@ -24,7 +24,7 @@ def run():
     for level in levels:
         run_level(level)
 
-    os.chdir('../../quantification/rslt')
+    os.chdir('../../quantification_exercise/rslt')
 
     aggregate()
 
@@ -68,7 +68,7 @@ def aggregate():
         # Ready for a new candidate intercept.
         os.chdir('../')
 
-    os.chdir('../../quantification/rslt')
+    os.chdir('../../quantification_exercise/rslt')
 
     # Open file for logging purposes.
     with open('quantification.respy.log', 'w') as out_file:

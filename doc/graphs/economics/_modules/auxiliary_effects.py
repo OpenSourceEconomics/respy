@@ -17,7 +17,10 @@ import matplotlib.pylab as plt
 
 from respy import RespyCls
 
-from auxiliary_economics import float_to_string, get_float_directories
+from auxiliary_economics import get_float_directories
+from auxiliary_economics import move_subdirectory
+from auxiliary_economics import float_to_string
+from auxiliary_economics import GRID_RSLT
 
 # module-wide variables
 OCCUPATIONS = ['Occupation A', 'Occupation B', 'Schooling', 'Home']
@@ -29,11 +32,9 @@ def run():
     """ Process results from the models.
     """
     # Cleanup results from a previous run and prepare the directory structure.
-    if os.path.exists('rslt'):
-        shutil.rmtree('rslt')
-    os.mkdir('rslt')
+    move_subdirectory()
 
-    os.chdir('../grid/rslt')
+    os.chdir(GRID_RSLT)
 
     # We need to determine the maximum number of periods. The risk-only
     # baseline will always be available.
@@ -166,7 +167,7 @@ def plot_choices_ambiguity(shares_ambiguity):
     """ Plot the choices in the final periods under different levels of ambiguity.
     """
 
-    levels = get_float_directories('../grid/rslt')
+    levels = get_float_directories(GRID_RSLT)
 
     # Initialize plot
     ax = plt.figure(figsize=(12, 8)).add_subplot(111)

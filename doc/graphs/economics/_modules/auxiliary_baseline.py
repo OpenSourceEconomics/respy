@@ -5,29 +5,35 @@ from mpl_toolkits.mplot3d import Axes3D
 import pickle as pkl
 import numpy as np
 
+import shutil
 import shlex
+import glob
 import os
 
 import respy
 
 from auxiliary_economics import move_subdirectory
+from auxiliary_economics import float_to_string
 from auxiliary_economics import INIT_FILE
+from auxiliary_economics import GRID_RSLT
 
 EDU, EXP_A, EXP_B = 10.00, 5, 5
 
 
-def run():
+def run(base):
     """ Create the input to plot some baseline information about the
     specification.
     """
     move_subdirectory()
 
-    respy_obj = respy.RespyCls(INIT_FILE)
-    respy_obj.unlock()
-    respy_obj.set_attr('num_procs', 3)
-    respy_obj.lock()
+    fname = GRID_RSLT + '/' + float_to_string(base)
 
-    respy.simulate(respy_obj)
+    base_dir = os.getcwd()
+    os.chdir(fname)
+
+    for src in glob.glob('*'):
+        shutil.copy(src, base_dir)
+    os.chdir(base_dir)
 
     choice_probabilities = get_choice_probabilities('data.respy.info')
     pkl.dump(choice_probabilities, open('probabilities.respy.pkl', 'wb'))

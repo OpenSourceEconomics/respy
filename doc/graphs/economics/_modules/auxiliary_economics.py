@@ -7,7 +7,7 @@ import os
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 
 INIT_FILE = BASE_DIR.replace('/economics/_modules', '') + '/graphs.respy.ini'
-GRID_RSLT = BASE_DIR.replace('/_modules', '') + '/grid/rslt'
+GRID_RSLT = BASE_DIR.replace('/_modules', '') + '/grid_ambiguity/rslt'
 
 
 def move_subdirectory():

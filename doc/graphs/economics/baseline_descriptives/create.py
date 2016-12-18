@@ -11,7 +11,7 @@ from auxiliary_baseline import run
 
 if __name__ == '__main__':
 
-    run()
+    run(0.00)
 
     plot()
 
