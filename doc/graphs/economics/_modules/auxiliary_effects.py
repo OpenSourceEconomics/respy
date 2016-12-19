@@ -1,17 +1,12 @@
-""" This module contains some routines that help in the analysis of policy
-responsiveness.
-"""
-
-# standard library
 import pickle as pkl
 import numpy as np
+
 import shlex
 import glob
 import os
 
 from scipy.interpolate import interp1d
 import matplotlib
-import shutil
 matplotlib.use('Agg')
 import matplotlib.pylab as plt
 
@@ -133,7 +128,6 @@ def track_schooling_over_time():
 def get_levels():
     """ Infer ambiguity levels from directory structure.
     """
-
     levels = []
 
     for level in glob.glob('*'):

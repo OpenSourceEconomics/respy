@@ -1,10 +1,8 @@
-""" Some auxiliary functions for the evaluation of alternative decision rules.
-"""
 import pickle as pkl
 import numpy as np
+
 import shlex
 import os
-import shutil
 
 import matplotlib
 matplotlib.use('Agg')

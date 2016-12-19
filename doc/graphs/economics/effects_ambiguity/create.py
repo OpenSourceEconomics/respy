@@ -13,5 +13,4 @@ if __name__ == '__main__':
 
     run()
 
-    # We only plot a subset of points from the grid.
     plot([0.0, 0.01, 0.02])
