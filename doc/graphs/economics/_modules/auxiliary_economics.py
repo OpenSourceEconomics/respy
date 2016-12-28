@@ -1,4 +1,5 @@
 import subprocess
+import argparse
 import shutil
 import glob
 import os
@@ -7,6 +8,28 @@ import os
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 INIT_FILE = BASE_DIR.replace('/economics/_modules', '') + '/graphs.respy.ini'
 GRID_RSLT = BASE_DIR.replace('/_modules', '') + '/grid_ambiguity/rslt'
+
+
+def process_command_line(description):
+    """ Distribute command line arguments.
+    """
+    parser = argparse.ArgumentParser(description=description,
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    parser.add_argument('--debug', action='store_true', dest='is_debug',
+        help='use debug specification')
+
+    # Process command line arguments
+    args = parser.parse_args()
+
+    # Extract arguments
+    is_debug = args.is_debug
+
+    # Check arguments
+    assert (is_debug in [True, False])
+
+    # Finishing
+    return is_debug
 
 
 def move_subdirectory():

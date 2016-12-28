@@ -4,12 +4,16 @@
 
 import numpy as np
 
+from auxiliary_economics import process_command_line
 from auxiliary_grid import run
 
 ''' Execution of module as script.
 '''
 
 if __name__ == '__main__':
+
+    is_debug = \
+        process_command_line('Create grid with varying levels of ambiguity.')
 
     # The following key value pairs describe the quantification exercise itself.
     # The risk-only case and the actually estimated value is always included
@@ -22,7 +26,8 @@ if __name__ == '__main__':
     spec_dict['update']['is_store'] = True
 
     # The following key value pair describes the debugging setup.
-    if True:
+    if is_debug:
+        spec_dict['levels'] = [0.0, 0.05, 0.1]
         spec_dict['update']['num_procs'] = 1
         spec_dict['update']['num_periods'] = 3
 
