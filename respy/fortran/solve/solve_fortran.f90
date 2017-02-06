@@ -19,9 +19,11 @@ MODULE solve_fortran
  CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_solve(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, is_interpolated, num_points_interp, num_draws_emax, num_periods, is_myopic, edu_start, is_debug, edu_max, min_idx, delta, periods_draws_emax, measure, level, optimizer_options, file_sim)
+SUBROUTINE fort_solve(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, optim_paras, is_interpolated, num_points_interp, num_draws_emax, num_periods, is_myopic, edu_start, is_debug, edu_max, min_idx, delta, periods_draws_emax, measure, optimizer_options, file_sim)
 
     !/* external objects        */
+
+    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)       :: optim_paras
 
     INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: mapping_state_idx(:, :, :, :, :)
     INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: states_number_period(:)
@@ -38,12 +40,6 @@ SUBROUTINE fort_solve(periods_rewards_systematic, states_number_period, mapping_
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_emax(: ,:)
 
     REAL(our_dble), INTENT(IN)                      :: periods_draws_emax(num_periods, num_draws_emax, 4)
-    REAL(our_dble), INTENT(IN)                      :: shocks_cholesky(4, 4)
-    REAL(our_dble), INTENT(IN)                      :: coeffs_home(1)
-    REAL(our_dble), INTENT(IN)                      :: coeffs_edu(3)
-    REAL(our_dble), INTENT(IN)                      :: coeffs_a(6)
-    REAL(our_dble), INTENT(IN)                      :: coeffs_b(6)
-    REAL(our_dble), INTENT(IN)                      :: level(1)
     REAL(our_dble), INTENT(IN)                      :: delta
 
     LOGICAL, INTENT(IN)                             :: is_interpolated
@@ -68,14 +64,14 @@ SUBROUTINE fort_solve(periods_rewards_systematic, states_number_period, mapping_
 
     CALL record_solution(2, file_sim)
 
-    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, edu_start, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, max_states_period)
+    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, edu_start, optim_paras, max_states_period)
 
     CALL record_solution(-1, file_sim)
 
 
     CALL record_solution(3, file_sim)
 
-    CALL fort_backward_induction(periods_emax, num_periods, is_myopic, max_states_period, periods_draws_emax, num_draws_emax, states_number_period, periods_rewards_systematic, edu_max, edu_start, mapping_state_idx, states_all, delta, is_debug, is_interpolated, num_points_interp, shocks_cholesky, measure, level, optimizer_options, file_sim, .True.)
+    CALL fort_backward_induction(periods_emax, num_periods, is_myopic, max_states_period, periods_draws_emax, num_draws_emax, states_number_period, periods_rewards_systematic, edu_max, edu_start, mapping_state_idx, states_all, delta, is_debug, is_interpolated, num_points_interp, measure, optim_paras, optimizer_options, file_sim, .True.)
 
     IF (.NOT. is_myopic) THEN
         CALL record_solution(-1, file_sim)

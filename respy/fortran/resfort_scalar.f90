@@ -12,13 +12,7 @@ PROGRAM resfort_scalar
 
     !/* objects                 */
 
-    REAL(our_dble)                  :: shocks_cholesky(4, 4)
     REAL(our_dble)                  :: precond_minimum
-    REAL(our_dble)                  :: coeffs_home(1)
-    REAL(our_dble)                  :: coeffs_edu(3)
-    REAL(our_dble)                  :: coeffs_a(6)
-    REAL(our_dble)                  :: coeffs_b(6)
-    REAL(our_dble)                  :: level(1)
     REAL(our_dble)                  :: crit_val
 
     REAL(our_dble), ALLOCATABLE     :: periods_draws_sims(:, :, :)
@@ -47,11 +41,11 @@ PROGRAM resfort_scalar
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    CALL read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, precond_type, precond_minimum, measure, level, optimizer_used, optimizer_options, file_sim, num_obs)
+    CALL read_specification(optim_paras, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, precond_type, precond_minimum, measure, optimizer_used, optimizer_options, file_sim, num_obs)
 
     ! This is a temporary fix that aligns the numerical results between the parallel and scalar implementations of the model. Otherwise small numerical differences may arise (if ambiguity is present) as LOG and EXP operations are done in the parallel implementation before any solution or estimation efforts. Due to the two lines below, this is also the case in the scalar impelementation now.
-    CALL get_free_optim_paras(x_tmp, level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, all_free)
-    CALL dist_optim_paras(level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x_tmp)
+    CALL get_free_optim_paras(x_tmp, optim_paras, all_free)
+    CALL dist_optim_paras(optim_paras, x_tmp)
 
 
     CALL create_draws(periods_draws_emax, num_draws_emax, seed_emax, is_debug)
@@ -62,18 +56,17 @@ PROGRAM resfort_scalar
 
         CALL read_dataset(data_est, num_obs)
 
-        CALL fort_estimate(crit_val, success, message, level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed, optimizer_used, maxfun, precond_type, precond_minimum, optimizer_options)
+         CALL fort_estimate(crit_val, success, message, optim_paras, paras_fixed, optimizer_used, maxfun, precond_type, precond_minimum, optimizer_options)
 
     ELSE IF (request == 'simulate') THEN
 
-        CALL fort_solve(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, is_interpolated, num_points_interp, num_draws_emax, num_periods, is_myopic, edu_start, is_debug, edu_max, min_idx, delta, periods_draws_emax, measure, level, optimizer_options, file_sim)
+        CALL fort_solve(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, optim_paras, is_interpolated, num_points_interp, num_draws_emax, num_periods, is_myopic, edu_start, is_debug, edu_max, min_idx, delta, periods_draws_emax, measure, optimizer_options, file_sim)
 
         CALL create_draws(periods_draws_sims, num_agents_sim, seed_sim, is_debug)
 
-        CALL fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, num_agents_sim, periods_draws_sims, shocks_cholesky, delta, edu_start, edu_max, seed_sim, file_sim)
+        CALL fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, num_agents_sim, periods_draws_sims, optim_paras, delta, edu_start, edu_max, seed_sim, file_sim)
 
     END IF
-
 
     CALL store_results(request, mapping_state_idx, states_all, periods_rewards_systematic, states_number_period, periods_emax, data_sim)
 

@@ -29,19 +29,15 @@ MODULE estimate_fortran
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_estimate(crit_val, success, message, level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed, optimizer_used, maxfun, precond_type, precond_minimum, optimizer_options)
+SUBROUTINE fort_estimate(crit_val, success, message, optim_paras, paras_fixed, optimizer_used, maxfun, precond_type, precond_minimum, optimizer_options)
 
     !/* external objects    */
 
+    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN) :: optim_paras
+
     REAL(our_dble), INTENT(OUT)     :: crit_val
 
-    REAL(our_dble), INTENT(IN)      :: shocks_cholesky(4, 4)
     REAL(our_dble), INTENT(IN)      :: precond_minimum
-    REAL(our_dble), INTENT(IN)      :: coeffs_home(1)
-    REAL(our_dble), INTENT(IN)      :: coeffs_edu(3)
-    REAL(our_dble), INTENT(IN)      :: coeffs_a(6)
-    REAL(our_dble), INTENT(IN)      :: coeffs_b(6)
-    REAL(our_dble), INTENT(IN)      :: level(1)
 
     INTEGER(our_int), INTENT(IN)    :: maxfun
 
@@ -69,11 +65,11 @@ SUBROUTINE fort_estimate(crit_val, success, message, level, coeffs_a, coeffs_b, 
 !------------------------------------------------------------------------------
 
     ! Some ingredients for the evaluation of the criterion function need to be created once and shared globally.
-    CALL get_free_optim_paras(x_all_start, level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, all_free)
+    CALL get_free_optim_paras(x_all_start, optim_paras, all_free)
 
     CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, edu_start, edu_max, min_idx)
 
-    CALL get_free_optim_paras(x_optim_free_unscaled_start, level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed)
+    CALL get_free_optim_paras(x_optim_free_unscaled_start, optim_paras, paras_fixed)
 
 
     CALL get_precondition_matrix_scalar(precond_type, precond_minimum, maxfun, x_optim_free_unscaled_start)
@@ -134,18 +130,11 @@ FUNCTION fort_criterion(x_optim_free_scaled)
 
     !/* internal objects    */
 
-
+    TYPE(OPTIMIZATION_PARAMETERS)   :: optim_paras
     REAL(our_dble)                  :: x_optim_free_unscaled(num_free)
     REAL(our_dble)                  :: x_optim_all_unscaled(27)
-    REAL(our_dble)                  :: shocks_cholesky(4, 4)
     REAL(our_dble)                  :: contribs(num_obs)
-    REAL(our_dble)                  :: coeffs_home(1)
-    REAL(our_dble)                  :: coeffs_edu(3)
-    REAL(our_dble)                  :: coeffs_a(6)
-    REAL(our_dble)                  :: coeffs_b(6)
-    REAL(our_dble)                  :: level(1)
     REAL(our_dble)                  :: start
-
     INTEGER(our_int)                :: dist_optim_paras_info
 
     ! This mock object is required as we cannot simply pass in '' as it turns out.
@@ -168,13 +157,13 @@ FUNCTION fort_criterion(x_optim_free_scaled)
 
     CALL construct_all_current_values(x_optim_all_unscaled, x_optim_free_unscaled, paras_fixed)
 
-    CALL dist_optim_paras(level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x_optim_all_unscaled, dist_optim_paras_info)
+    CALL dist_optim_paras(optim_paras, x_optim_all_unscaled, dist_optim_paras_info)
 
-    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, edu_start, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, max_states_period)
+    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, edu_start, optim_paras, max_states_period)
 
-    CALL fort_backward_induction(periods_emax, num_periods, is_myopic, max_states_period, periods_draws_emax, num_draws_emax, states_number_period, periods_rewards_systematic, edu_max, edu_start, mapping_state_idx, states_all, delta, is_debug, is_interpolated, num_points_interp, shocks_cholesky, measure, level, optimizer_options, file_sim_mock, .False.)
+    CALL fort_backward_induction(periods_emax, num_periods, is_myopic, max_states_period, periods_draws_emax, num_draws_emax, states_number_period, periods_rewards_systematic, edu_max, edu_start, mapping_state_idx, states_all, delta, is_debug, is_interpolated, num_points_interp, measure, optim_paras, optimizer_options, file_sim_mock, .False.)
 
-    CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_est, periods_draws_prob, delta, tau, edu_start, edu_max, num_periods, num_draws_prob)
+    CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, optim_paras, data_est, periods_draws_prob, delta, tau, edu_start, edu_max, num_periods, num_draws_prob)
 
 
     fort_criterion = get_log_likl(contribs)

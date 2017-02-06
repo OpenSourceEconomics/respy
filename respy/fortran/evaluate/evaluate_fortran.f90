@@ -21,7 +21,7 @@ MODULE evaluate_fortran
  CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, shocks_cholesky, data_evaluate, periods_draws_prob, delta, tau, edu_start, edu_max, num_periods, num_draws_prob)
+SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, optim_paras, data_evaluate, periods_draws_prob, delta, tau, edu_start, edu_max, num_periods, num_draws_prob)
 
     !   DEVELOPMENT NOTES
     !
@@ -32,6 +32,8 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
 
     !/* external objects        */
 
+    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
+
     REAL(our_dble), INTENT(IN)      :: data_evaluate(:, :)
 
     REAL(our_dble), INTENT(OUT)     :: contribs(SIZE(data_evaluate, 1))
@@ -39,7 +41,6 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
     REAL(our_dble), INTENT(IN)      :: periods_rewards_systematic(num_periods, max_states_period, 4)
     REAL(our_dble), INTENT(IN)      :: periods_draws_prob(num_periods, num_draws_prob, 4)
     REAL(our_dble), INTENT(IN)      :: periods_emax(num_periods, max_states_period)
-    REAL(our_dble), INTENT(IN)      :: shocks_cholesky(4, 4)
     REAL(our_dble), INTENT(IN)      :: delta
     REAL(our_dble), INTENT(IN)      :: tau
 
@@ -92,7 +93,7 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
     ! Construct auxiliary objects
     num_obs = SIZE(data_evaluate, 1)
 
-    shocks_cov = MATMUL(shocks_cholesky, TRANSPOSE(shocks_cholesky))
+    shocks_cov = MATMUL(optim_paras%shocks_cholesky, TRANSPOSE(optim_paras%shocks_cholesky))
     is_deterministic = ALL(shocks_cov .EQ. zero_dble)
 
     ! Initialize container for likelihood contributions
@@ -166,9 +167,9 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
                     ELSE
 
                         IF (choice == 1) THEN
-                            draws_stan(idx) = dist / shocks_cholesky(idx, idx)
+                            draws_stan(idx) = dist / optim_paras%shocks_cholesky(idx, idx)
                         ELSE
-                            draws_stan(idx) = (dist - shocks_cholesky(idx, 1) * draws_stan(1)) / shocks_cholesky(idx, idx)
+                            draws_stan(idx) = (dist - optim_paras%shocks_cholesky(idx, 1) * draws_stan(1)) / optim_paras%shocks_cholesky(idx, idx)
                         END IF
 
                         prob_wage = normal_pdf(draws_stan(idx), zero_dble, one_dble) / SQRT(shocks_cov(idx, idx))
@@ -180,7 +181,7 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
                 END IF
 
                 ! As deviates are aligned with the state experiences, create the conditional draws. Note, that the realization of the random component of wages align withe their observed counterpart in the data.
-                draws_cond = MATMUL(draws_stan, TRANSPOSE(shocks_cholesky))
+                draws_cond = MATMUL(draws_stan, TRANSPOSE(optim_paras%shocks_cholesky))
 
                 ! Extract deviates from (un-)conditional normal distributions and transform labor market shocks.
                 draws = draws_cond

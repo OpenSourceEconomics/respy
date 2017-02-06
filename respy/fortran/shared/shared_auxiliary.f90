@@ -124,13 +124,13 @@ SUBROUTINE get_cholesky(shocks_cholesky, x, info)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE transform_disturbances(draws_transformed, draws, shocks_cholesky, num_draws)
+SUBROUTINE transform_disturbances(draws_transformed, draws, optim_paras, num_draws)
 
     !/* external objects        */
+    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
 
     REAL(our_dble), INTENT(OUT)     :: draws_transformed(num_draws, 4)
 
-    REAL(our_dble), INTENT(IN)      :: shocks_cholesky(4, 4)
     REAL(our_dble), INTENT(IN)      :: draws(num_draws, 4)
 
     INTEGER, INTENT(IN)             :: num_draws
@@ -145,7 +145,7 @@ SUBROUTINE transform_disturbances(draws_transformed, draws, shocks_cholesky, num
 !------------------------------------------------------------------------------
 
     DO i = 1, num_draws
-        draws_transformed(i:i, :) = TRANSPOSE(MATMUL(shocks_cholesky, TRANSPOSE(draws(i:i, :))))
+        draws_transformed(i:i, :) = TRANSPOSE(MATMUL(optim_paras%shocks_cholesky, TRANSPOSE(draws(i:i, :))))
     END DO
 
     DO i = 1, 2
@@ -653,7 +653,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_rewards
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, precond_type, precond_minimum, measure, level, optimizer_used, optimizer_options, file_sim, num_obs)
+SUBROUTINE read_specification(optim_paras, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, precond_type, precond_minimum, measure, optimizer_used, optimizer_options, file_sim, num_obs)
 
     !
     !   This function serves as the replacement for the RespyCls and reads in
@@ -663,12 +663,8 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(OUT)     :: shocks_cholesky(4, 4)
-    REAL(our_dble), INTENT(OUT)     :: coeffs_home(1)
-    REAL(our_dble), INTENT(OUT)     :: coeffs_edu(3)
-    REAL(our_dble), INTENT(OUT)     :: coeffs_a(6)
-    REAL(our_dble), INTENT(OUT)     :: coeffs_b(6)
-    REAL(our_dble), INTENT(OUT)     :: level(1)
+    TYPE(OPTIMIZATION_PARAMETERS), INTENT(OUT)   :: optim_paras
+
     REAL(our_dble), INTENT(OUT)     :: delta
     REAL(our_dble), INTENT(OUT)     :: tau
 
@@ -729,19 +725,19 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
         READ(99, 1500) delta
 
         ! WORK
-        READ(99, 1500) coeffs_a
-        READ(99, 1500) coeffs_b
+        READ(99, 1500) optim_paras%coeffs_a
+        READ(99, 1500) optim_paras%coeffs_b
 
         ! EDUCATION
-        READ(99, 1500) coeffs_edu
+        READ(99, 1500) optim_paras%coeffs_edu
         READ(99, 1515) edu_start, edu_max
 
         ! HOME
-        READ(99, 1500) coeffs_home
+        READ(99, 1500) optim_paras%coeffs_home
 
         ! SHOCKS
         DO j = 1, 4
-            READ(99, 1500) (shocks_cholesky(j, k), k=1, 4)
+            READ(99, 1500) (optim_paras%shocks_cholesky(j, k), k=1, 4)
         END DO
 
         ! SOLUTION
@@ -750,7 +746,7 @@ SUBROUTINE read_specification(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shock
 
         ! AMBIGUITY
         READ(99, *) measure
-        READ(99, 1500) level
+        READ(99, 1500) optim_paras%level
 
         ! PROGRAM
         READ(99, *) is_debug
@@ -970,16 +966,11 @@ SUBROUTINE clip_value_2(clip_value, value, lower_bound, upper_bound, infos)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE dist_optim_paras(level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x, info)
+SUBROUTINE dist_optim_paras(optim_paras, x, info)
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(OUT)     :: shocks_cholesky(4, 4)
-    REAL(our_dble), INTENT(OUT)     :: coeffs_home(1)
-    REAL(our_dble), INTENT(OUT)     :: coeffs_edu(3)
-    REAL(our_dble), INTENT(OUT)     :: coeffs_a(6)
-    REAL(our_dble), INTENT(OUT)     :: coeffs_b(6)
-    REAL(our_dble), INTENT(OUT)     :: level(1)
+    TYPE(OPTIMIZATION_PARAMETERS), INTENT(OUT)  :: optim_paras
 
     REAL(our_dble), INTENT(IN)      :: x(27)
 
@@ -990,36 +981,31 @@ SUBROUTINE dist_optim_paras(level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, 
 !------------------------------------------------------------------------------
 
     ! Extract model ingredients
-    level = MAX(x(1:1), zero_dble)
+    optim_paras%level = MAX(x(1:1), zero_dble)
 
-    coeffs_a = x(2:7)
+    optim_paras%coeffs_a = x(2:7)
 
-    coeffs_b = x(8:13)
+    optim_paras%coeffs_b = x(8:13)
 
-    coeffs_edu = x(14:16)
+    optim_paras%coeffs_edu = x(14:16)
 
-    coeffs_home = x(17:17)
+    optim_paras%coeffs_home = x(17:17)
 
     ! The information pertains to the stabilization of an otherwise zero variance.
     IF (PRESENT(info)) THEN
-        CALL get_cholesky(shocks_cholesky, x, info)
+        CALL get_cholesky(optim_paras%shocks_cholesky, x, info)
     ELSE
-        CALL get_cholesky(shocks_cholesky, x)
+        CALL get_cholesky(optim_paras%shocks_cholesky, x)
     END IF
 
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_free_optim_paras(x, level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed)
+SUBROUTINE get_free_optim_paras(x, optim_paras, paras_fixed)
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(IN)      :: shocks_cholesky(4, 4)
-    REAL(our_dble), INTENT(IN)      :: coeffs_home(1)
-    REAL(our_dble), INTENT(IN)      :: coeffs_edu(3)
-    REAL(our_dble), INTENT(IN)      :: coeffs_a(6)
-    REAL(our_dble), INTENT(IN)      :: coeffs_b(6)
-    REAL(our_dble), INTENT(IN)      :: level(1)
+    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
 
     LOGICAL, INTENT(IN)             :: paras_fixed(27)
 
@@ -1036,23 +1022,23 @@ SUBROUTINE get_free_optim_paras(x, level, coeffs_a, coeffs_b, coeffs_edu, coeffs
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    x_internal(1:1) = level
+    x_internal(1:1) = optim_paras%level
 
-    x_internal(2:7) = coeffs_a(:)
+    x_internal(2:7) = optim_paras%coeffs_a(:)
 
-    x_internal(8:13) = coeffs_b(:)
+    x_internal(8:13) = optim_paras%coeffs_b(:)
 
-    x_internal(14:16) = coeffs_edu(:)
+    x_internal(14:16) = optim_paras%coeffs_edu(:)
 
-    x_internal(17:17) = coeffs_home(:)
+    x_internal(17:17) = optim_paras%coeffs_home(:)
 
-    x_internal(18:18) = shocks_cholesky(1, :1)
+    x_internal(18:18) = optim_paras%shocks_cholesky(1, :1)
 
-    x_internal(19:20) = shocks_cholesky(2, :2)
+    x_internal(19:20) = optim_paras%shocks_cholesky(2, :2)
 
-    x_internal(21:23) = shocks_cholesky(3, :3)
+    x_internal(21:23) = optim_paras%shocks_cholesky(3, :3)
 
-    x_internal(24:27) = shocks_cholesky(4, :4)
+    x_internal(24:27) = optim_paras%shocks_cholesky(4, :4)
 
 
     j = 1

@@ -19,15 +19,15 @@ MODULE simulate_fortran
  CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, num_agents_sim, periods_draws_sims, shocks_cholesky, delta, edu_start, edu_max, seed_sim, file_sim)
+SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, num_agents_sim, periods_draws_sims, optim_paras, delta, edu_start, edu_max, seed_sim, file_sim)
 
     !/* external objects        */
 
-    REAL(our_dble), ALLOCATABLE, INTENT(OUT)     :: data_sim(:, :)
+    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
+    REAL(our_dble), ALLOCATABLE, INTENT(OUT)    :: data_sim(:, :)
 
     REAL(our_dble), INTENT(IN)      :: periods_rewards_systematic(num_periods, max_states_period, 4)
     REAL(our_dble), INTENT(IN)      :: periods_draws_sims(num_periods, num_agents_sim, 4)
-    REAL(our_dble), INTENT(IN)      :: shocks_cholesky(4, 4)
     REAL(our_dble), INTENT(IN)      :: periods_emax(num_periods, max_states_period)
     REAL(our_dble), INTENT(IN)      :: delta
 
@@ -73,7 +73,7 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
     !Standard deviates transformed to the distributions relevant for the agents actual decision making as traversing the tree.
     DO period = 1, num_periods
         draws_sims = periods_draws_sims(period, :, :)
-        CALL transform_disturbances(draws_sims_transformed, draws_sims, shocks_cholesky, num_agents_sim)
+        CALL transform_disturbances(draws_sims_transformed, draws_sims, optim_paras, num_agents_sim)
         periods_draws_sims_transformed(period, :, :) = draws_sims_transformed
     END DO
 

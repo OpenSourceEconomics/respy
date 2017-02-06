@@ -103,6 +103,16 @@ MODULE shared_constants
         TYPE(OPTIMIZER_SLSQP)   :: slsqp
     END TYPE
 
+    ! This container holds all the parameters that are potentially updated during the estimation step.
+    TYPE OPTIMIZATION_PARAMETERS
+        REAL(our_dble)          :: shocks_cholesky(4, 4)
+        REAL(our_dble)          :: coeffs_edu(3)
+        REAL(our_dble)          :: coeffs_home(1)
+        REAL(our_dble)          :: coeffs_a(6)
+        REAL(our_dble)          :: coeffs_b(6)
+        REAL(our_dble)          :: level(1)
+    END TYPE
+
 !******************************************************************************
 !******************************************************************************
 END MODULE
