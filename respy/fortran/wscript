@@ -37,13 +37,13 @@ def build(ctx):
     ctx.add_group()
 
     # Compile the required executables.
+    src = ['resfort.f90']
     flags = ctx.env.FCFLAGS + ['-cpp']
     if ctx.env['PARALLELISM']:
         flags += ['-DMPI_AVAILABLE']
 
-    src = ['parallelism/parallelism_constants.F90',
-           'parallelism/parallelism_auxiliary.F90',
-           'resfort.f90']
+        src += ['parallelism/parallelism_constants.f90',
+                'parallelism/parallelism_auxiliary.f90']
 
     ctx(features=['fc', 'fcprogram'], source=src, target='resfort',
         fcflags=flags)
@@ -54,8 +54,8 @@ def build(ctx):
 
         ctx.add_group()
 
-        slave = ['parallelism/parallelism_constants.F90',
-            'parallelism/parallelism_auxiliary.F90',
+        slave = ['parallelism/parallelism_constants.f90',
+            'parallelism/parallelism_auxiliary.f90',
             'parallelism/parallelism_slave.f90']
 
         ctx(features=['fc', 'fcprogram'], source=slave,

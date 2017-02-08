@@ -1,7 +1,5 @@
 MODULE parallelism_constants
 
-#if MPI_AVAILABLE
-
     !/* external modules    */
 
     USE resfort_library
@@ -26,6 +24,4 @@ MODULE parallelism_constants
 
 !******************************************************************************
 !******************************************************************************
-#endif
-
 END MODULE
