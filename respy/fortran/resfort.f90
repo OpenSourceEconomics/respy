@@ -28,7 +28,6 @@ PROGRAM resfort_scalar
     REAL(our_dble), ALLOCATABLE     :: periods_draws_sims(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: data_sim(:, :)
 
-    INTEGER(our_int)                :: num_slaves_tmp
     INTEGER(our_int)                :: num_procs
     INTEGER(our_int)                :: seed_prob
     INTEGER(our_int)                :: seed_emax
@@ -51,7 +50,7 @@ PROGRAM resfort_scalar
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    CALL read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves_tmp, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, precond_type, precond_minimum, measure, optimizer_used, optimizer_options, file_sim, num_obs)
+    CALL read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, precond_type, precond_minimum, measure, optimizer_used, optimizer_options, file_sim, num_obs)
 
     ! This is a temporary fix that aligns the numerical results between the parallel and scalar implementations of the model. Otherwise small numerical differences may arise (if ambiguity is present) as LOG and EXP operations are done in the parallel implementation before any solution or estimation efforts. Due to the two lines below, this is also the case in the scalar impelementation now.
     CALL get_free_optim_paras(x_tmp, optim_paras, all_free)
@@ -82,9 +81,6 @@ PROGRAM resfort_scalar
     ELSE
 
 #if MPI_AVAILABLE
-
-        ! TODO: Clean this up when iterating on first draft.
-        num_slaves = num_slaves_tmp
 
         CALL MPI_INIT(ierr)
 

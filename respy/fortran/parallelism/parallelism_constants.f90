@@ -16,7 +16,6 @@ MODULE parallelism_constants
 
     INTEGER(our_int)            :: PARENTCOMM
     INTEGER(our_int)            :: SLAVECOMM
-    INTEGER(our_int)            :: num_slaves
     INTEGER(our_int)            :: ierr
     INTEGER(our_int)            :: rank
 

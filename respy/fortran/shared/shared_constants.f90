@@ -32,6 +32,7 @@ MODULE shared_constants
     INTEGER(our_int)            :: num_draws_emax
     INTEGER(our_int)            :: num_draws_prob
     INTEGER(our_int)            :: num_periods
+    INTEGER(our_int)            :: num_slaves
     INTEGER(our_int)            :: num_free
     INTEGER(our_int)            :: min_idx
     INTEGER(our_int)            :: num_obs
